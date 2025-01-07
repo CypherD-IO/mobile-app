@@ -66,10 +66,10 @@ export const HeaderBar = ({
       </CyDTouchView>
       {isReadOnlyWallet && (
         <CyDView className='flex flex-row items-center p-[6px] bg-p20 rounded-[8px]'>
-          <CyDFastImage
-            source={AppImages.LOCK_BROWSER}
-            className={'h-[14px] w-[14px] mr-[5px] '}
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name='lock'
+            size={20}
+            className='text-base400 mr-[5px]'
           />
           <CyDText className='text-[14px] font-medium'>
             {t('READ_ONLY_MODE')}

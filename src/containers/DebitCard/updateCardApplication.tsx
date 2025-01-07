@@ -14,6 +14,8 @@ import {
   CyDTextInput,
   CyDScrollView,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
+  CydIcons,
 } from '../../styles/tailwindStyles';
 import { GlobalContext } from '../../core/globalContext';
 import { useIsFocused } from '@react-navigation/native';
@@ -391,7 +393,11 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                                   {userInfo.country}
                                 </CyDText>
                               </CyDView>
-                              <CyDImage source={AppImages.DOWN_ARROW} />
+                              <CydMaterialDesignIcons
+                                name={'chevron-down'}
+                                size={16}
+                                className={'text-base400'}
+                              />
                             </CyDView>
                           </CyDView>
                         </CyDTouchView>
@@ -539,7 +545,11 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                               )}
                             </CyDView>
 
-                            <CyDImage source={AppImages.CALENDAR} />
+                            <CydMaterialDesignIcons
+                              name='calendar-blank'
+                              size={20}
+                              className='text-base400 self-center items-center'
+                            />
                           </CyDView>
                         </CyDTouchView>
                         {formProps.touched.dateOfBirth &&
@@ -753,10 +763,10 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                                   onPress={() => {
                                     setPepToolTip(true);
                                   }}>
-                                  <CyDImage
-                                    source={AppImages.INFO_ICON}
-                                    resizeMode='contain'
-                                    className={'w-[14px] h-[14px] ml-[4px]'}
+                                  <CydIcons
+                                    name='information'
+                                    size={16}
+                                    className='text-base400 ml-[4px]'
                                   />
                                 </CyDTouchView>
                               </Tooltip>

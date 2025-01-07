@@ -280,7 +280,6 @@ export default function useTransactionManager() {
         );
         set(tx, 'maxFeePerGas', web3.utils.toWei(maxFee.toFixed(9), 'gwei'));
       }
-      console.log('🚀 ~ useTransactionManager ~ tx:', tx);
 
       const hash = await signEthTransaction({
         web3,

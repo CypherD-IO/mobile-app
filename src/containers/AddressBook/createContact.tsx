@@ -99,7 +99,7 @@ export const CreateContact = () => {
     ethereum: {
       label: t(`${ChainNames.ETH.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.ETHEREUM_NEW,
+      logo: AppImages.ETHEREUM,
     },
     cosmos: {
       label: t(`${ChainNames.COSMOS.toUpperCase()} ADDRESS`),
@@ -129,7 +129,7 @@ export const CreateContact = () => {
     binance: {
       label: t(`${ChainNames.BSC.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.BINANCE_NEW,
+      logo: AppImages.BINANCE,
     },
     polygon: {
       label: t(`${ChainNames.POLYGON.toUpperCase()} ADDRESS`),

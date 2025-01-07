@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDTouchView,
   CyDView,
@@ -299,10 +300,10 @@ export default function CardApplicationV2() {
             navigation.goBack();
           } else setIndex(0);
         }}>
-        <CyDFastImage
-          className={'w-[32px] h-[32px]'}
-          resizeMode='cover'
-          source={AppImages.BACK_ARROW_GRAY}
+        <CydMaterialDesignIcons
+          name={'arrow-left-thin'}
+          size={32}
+          className='text-base400'
         />
       </CyDTouchView>
 

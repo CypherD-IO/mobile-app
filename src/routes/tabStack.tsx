@@ -4,19 +4,26 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
+import {
+  Animated,
+  BackHandler,
+  StyleSheet,
+  ToastAndroid,
+  View,
+} from 'react-native';
 import AppImages from '../../assets/images/appImages';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
-import { CyDFastImage, CyDView } from '../styles/tailwindStyles';
+import { CydMaterialDesignIcons, CyDView } from '../styles/tailwindStyles';
 import {
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
   SwapStackScreen,
 } from './auth';
-import { themes, useTheme } from '../reducers/themeReducer';
+import { useTheme } from '../reducers/themeReducer';
+import clsx from 'clsx';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,17 +38,17 @@ interface TabStackProps {
   >;
 }
 
+const getActiveTintColor = (theme: string) => {
+  return theme === 'dark' ? 'var(--color-p150)' : 'var(--color-blue20)';
+};
+
 const screensToHaveNavBar = [
   screenTitle.PORTFOLIO,
-  screenTitle.OPTIONS,
   screenTitle.PORTFOLIO_SCREEN,
   screenTitle.DEBIT_CARD_SCREEN,
   screenTitle.OPTIONS_SCREEN,
-  screenTitle.SWAP,
-  screenTitle.BRIDGE_SKIP_API_SCREEN,
-  screenTitle.DEBIT_CARD_SCREEN,
-  screenTitle.BRIDGE_CARD_SCREEN,
-
+  screenTitle.SWAP_SCREEN,
+  screenTitle.CARD_SCREEN,
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,
 ];
@@ -86,13 +93,13 @@ function TabStack(props: TabStackProps) {
       let navigationParams: any;
       switch (deepLinkData.screenToNavigate) {
         case screenTitle.I_HAVE_REFERRAL_CODE_SCREEN:
-          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          tabName = screenTitle.CARD;
           break;
         case screenTitle.TELEGRAM_PIN_SETUP:
-          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          tabName = screenTitle.CARD;
           break;
         case screenTitle.TELEGRAM_SETUP:
-          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          tabName = screenTitle.CARD;
           navigationParams = {
             screen: deepLinkData.screenToNavigate,
             params: {
@@ -139,7 +146,7 @@ function TabStack(props: TabStackProps) {
         },
       ],
       opacity: tabBarAnimation,
-      backgroundColor: '#161616',
+      borderTopWidth: 0,
       position: 'absolute',
       bottom: 0,
       left: 0,
@@ -187,37 +194,41 @@ function TabStack(props: TabStackProps) {
           tabBarIcon: ({ focused }) => {
             let iconSource;
             if (route.name === screenTitle.PORTFOLIO) {
-              iconSource = focused
-                ? AppImages.PORTFOLIO_SEL
-                : AppImages.PORTFOLIO_UNSEL;
-            } else if (route.name === screenTitle.DEBIT_CARD_SCREEN) {
-              iconSource = focused ? AppImages.CARD_SEL : AppImages.CARD_UNSEL;
+              iconSource = focused ? 'chart-arc' : 'chart-donut';
+            } else if (route.name === screenTitle.CARD) {
+              iconSource = focused ? 'credit-card' : 'credit-card-outline';
             } else if (route.name === screenTitle.SWAP) {
-              iconSource = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
+              iconSource = focused
+                ? 'swap-horizontal-circle'
+                : 'swap-horizontal-circle-outline';
             } else if (route.name === screenTitle.OPTIONS) {
               iconSource = focused
-                ? AppImages.OPTION_SEL
-                : AppImages.OPTION_UNSEL;
+                ? 'dots-vertical-circle'
+                : 'dots-vertical-circle-outline';
             }
             return (
-              <CyDFastImage
-                source={iconSource}
-                className={'w-[32px] h-[32px]'}
+              <CydMaterialDesignIcons
+                name={iconSource}
+                size={24}
+                className={clsx('', {
+                  'text-p50': focused,
+                  'text-base400': !focused,
+                })}
               />
             );
           },
           tabBarHideOnKeyboard: true,
           tabBarInactiveTintColor: '#7A8699',
-          tabBarActiveTintColor: '#000000',
+          tabBarActiveTintColor: theme === 'dark' ? '#FFFFFF' : '#000000',
           tabBarLabelStyle: {
             fontSize: 12,
-            fontWeight: '400' as const,
+            fontWeight: '700' as const,
             fontFamily: 'Manrope',
           },
           tabBarStyle,
-          // tabBarBackground: () => (
-          //   <CyDView className='absolute inset-0 bg-n0 rounded-t-[22px] shadow-xl shadow-n20' />
-          // ),
+          tabBarBackground: () => (
+            <CyDView className='bg-n0 h-full rounded-[20px] shadow-xl' />
+          ),
         })}
         initialRouteName={screenTitle.PORTFOLIO}>
         <Tab.Screen
@@ -228,7 +239,7 @@ function TabStack(props: TabStackProps) {
           }}
         />
         <Tab.Screen
-          name={screenTitle.DEBIT_CARD_SCREEN}
+          name={screenTitle.CARD}
           component={DebitCardStackScreen}
           options={{
             lazy: true,
@@ -278,7 +289,7 @@ const styles = StyleSheet.create({
     // borderWidth: 1,
     // borderColor: '#EBEDF0',
     borderTopLeftRadius: 26,
-    borderTopRightRadius: 12,
+    borderTopRightRadius: 26,
     elevation: 24, // For Android
   },
 });

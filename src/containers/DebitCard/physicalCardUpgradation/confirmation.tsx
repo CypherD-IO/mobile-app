@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
   CyDFastImage,
   CyDScrollView,
 } from '../../../styles/tailwindStyles';
@@ -29,6 +28,7 @@ import Button from '../../../components/v2/button';
 import { isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -39,6 +39,7 @@ interface RouteParams {
 }
 
 export default function ShippingConfirmation() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const { t } = useTranslation();
@@ -88,7 +89,7 @@ export default function ShippingConfirmation() {
   }, [userData, shippingAddress]);
 
   return (
-    <CyDSafeAreaView className='bg-n20 h-full'>
+    <CyDView className='bg-n20 flex-1' style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <CyDView className='flex flex-1 flex-col justify-between h-full bg-transparent'>
         <CyDView className='mx-[16px] flex-1 pb-[92px]'>
@@ -124,13 +125,7 @@ export default function ShippingConfirmation() {
             </CyDView>
           </CyDScrollView>
         </CyDView>
-        <CyDView
-          className={clsx(
-            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
-            {
-              'bottom-[-32px]': isIOS(),
-            },
-          )}>
+        <CyDView className={clsx('bg-n0 py-[32px] px-[16px]')}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
@@ -141,6 +136,6 @@ export default function ShippingConfirmation() {
           />
         </CyDView>
       </CyDView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

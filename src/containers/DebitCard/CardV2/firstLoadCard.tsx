@@ -63,6 +63,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -1037,9 +1038,10 @@ export default function FirstLoadCard() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[32px] h-[32px]'
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
             <CyDText className='font-bold text-[28px]'>
               {'Lets Fund your Card'}
@@ -1101,9 +1103,10 @@ export default function FirstLoadCard() {
                       {`${round(selectedToken?.actualBalance ?? 0, 8)} ${String(selectedToken?.symbol ?? '')}`}
                     </CyDText>
                   )}
-                  <CyDFastImage
-                    source={AppImages.RIGHT_ARROW}
-                    className='w-[24px] h-[24px] rotate-90'
+                  <CydMaterialDesignIcons
+                    name='chevron-down'
+                    size={24}
+                    className='text-base400'
                   />
                 </CyDView>
               </CyDTouchView>
@@ -1171,9 +1174,10 @@ export default function FirstLoadCard() {
                       onPressToggle();
                     }}
                     disabled={!selectedToken}>
-                    <CyDFastImage
-                      source={AppImages.TOGGLE_ICON}
-                      className='w-[20px] h-[20px] self-center items-center'
+                    <CydMaterialDesignIcons
+                      name='swap-vertical'
+                      size={20}
+                      className='text-base400 self-center items-center'
                     />
                   </CyDTouchView>
                 </CyDView>

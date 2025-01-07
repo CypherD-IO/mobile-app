@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useState } from 'react';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -287,10 +288,10 @@ export default function KYCVerficicationV2() {
                 routes: [{ name: screenTitle.PORTFOLIO }],
               })
             }>
-            <CyDFastImage
-              className={'w-[32px] h-[32px]'}
-              resizeMode='cover'
-              source={AppImages.BACK_ARROW_GRAY}
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
           <CardProviderSwitch />
@@ -336,9 +337,10 @@ export default function KYCVerficicationV2() {
                 <CyDText className=' text-[18px] font-bold font-manrope '>
                   {t('EDIT_APPLICATION')}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EDIT}
-                  className='ml-[4px] h-[24px] w-[24px]'
+                <CydMaterialDesignIcons
+                  name='pencil-outline'
+                  size={24}
+                  className='text-base400 ml-1'
                 />
               </CyDView>
 
@@ -409,7 +411,7 @@ export default function KYCVerficicationV2() {
                       style={styles.loader}
                     />
                   )}
-                  <CyDText className='font-manrope ml-[4px] text-bold text-[12px]'>
+                  <CyDText className='font-manrope ml-[4px] font-bold text-[12px]'>
                     {t('REFRESH')}
                   </CyDText>
                 </CyDTouchView>

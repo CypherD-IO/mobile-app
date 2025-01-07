@@ -380,13 +380,19 @@ export default function CypherCardScreen() {
             </CyDView>
             <CyDView className={'h-[36px] w-[42%]'}>
               <Button
-                image={AppImages.PLUS_ICON}
+                icon={
+                  <CydMaterialDesignIcons
+                    name='plus'
+                    size={20}
+                    className='text-black mr-[4px]'
+                  />
+                }
                 disabled={shouldBlockAction()}
                 onPress={() => {
                   onPressFundCard();
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[4px] h-[12px] w-[12px]'}
+                // imageStyle={'mr-[4px] h-[12px] w-[12px]'}
                 title={t('ADD_FUNDS')}
                 titleStyle='text-[14px] text-black font-extrabold'
               />
@@ -405,13 +411,18 @@ export default function CypherCardScreen() {
             </CyDView>
             <CyDView className={'h-[36px] w-[42%]'}>
               <Button
-                image={AppImages.PLUS_ICON}
+                icon={
+                  <CydMaterialDesignIcons
+                    name='plus'
+                    size={20}
+                    className='text-black mr-[4px]'
+                  />
+                }
                 disabled={shouldBlockAction()}
                 onPress={() => {
                   onPressFundCard();
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[4px] h-[12px] w-[12px]'}
                 title={t('ADD_FUNDS')}
                 titleStyle='text-[14px] text-black font-extrabold'
               />

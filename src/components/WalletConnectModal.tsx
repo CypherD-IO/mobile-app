@@ -324,13 +324,7 @@ export default function WalletConnectModal(props) {
               </CText>
             </DynamicView>
             <DynamicView dynamic jC={'center'} width={'100%'}>
-              <DynamicImage
-                dynamic
-                source={AppImages.LINE}
-                width={308}
-                height={10}
-                mT={10}
-              />
+              <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
             </DynamicView>
             <DynamicView dynamic width={250} mL={41} mT={10} fD={'row'}>
               <CText
@@ -361,13 +355,7 @@ export default function WalletConnectModal(props) {
             </DynamicView>
 
             <DynamicView dynamic jC={'center'} width={'100%'} mB={10}>
-              <DynamicImage
-                dynamic
-                source={AppImages.LINE}
-                width={308}
-                height={10}
-                mT={10}
-              />
+              <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
             </DynamicView>
 
             <RenderData />
@@ -406,13 +394,7 @@ export default function WalletConnectModal(props) {
               params.payload.params[0].chainId !== 0 && (
                 <>
                   <DynamicView dynamic jC={'center'} width={'100%'} mB={10}>
-                    <DynamicImage
-                      dynamic
-                      source={AppImages.LINE}
-                      width={308}
-                      height={10}
-                      mT={10}
-                    />
+                    <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
                   </DynamicView>
                   <CyDView
                     className={
@@ -440,20 +422,16 @@ export default function WalletConnectModal(props) {
                       <CyDText className={'text-center'}>
                         {currentChain.name}
                       </CyDText>
-                      <CyDFastImage
-                        className={'h-[8px] w-[8px] ml-[8px]'}
-                        source={AppImages.DOWN}
+
+                      <CydMaterialDesignIcons
+                        name={'menu-down'}
+                        size={16}
+                        className={'text-base400 ml-[8px]'}
                       />
                     </CyDTouchView>
                   </CyDView>
                   <DynamicView dynamic jC={'center'} width={'100%'} mB={10}>
-                    <DynamicImage
-                      dynamic
-                      source={AppImages.LINE}
-                      width={308}
-                      height={10}
-                      mT={10}
-                    />
+                    <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
                   </DynamicView>
                 </>
               )}

@@ -67,10 +67,10 @@ export default function ChooseChainModal({
           </CyDView>
 
           {item.item.name === selectedItem && type === typeOfChain.CHAIN && (
-            <CyDImage
-              source={AppImages.CORRECT}
-              className={'w-[16px] h-[12px]'}
-              style={{ tintColor: '#58ADAB' }}
+            <CydMaterialDesignIcons
+              name='check-bold'
+              size={16}
+              className='text-base400 self-end'
             />
           )}
 
@@ -112,7 +112,7 @@ export default function ChooseChainModal({
           onPress={() => {
             setModalVisible(false);
           }}
-          className={''}>
+          className={'self-end'}>
           <CydMaterialDesignIcons
             name={'close'}
             size={24}
@@ -128,9 +128,10 @@ export default function ChooseChainModal({
           <CyDTouchView
             onPress={onPressBack}
             className={'absolute z-[50] top-[20px] left-[24px]'}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className={'w-[32px] h-[32px]'}
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
         )}

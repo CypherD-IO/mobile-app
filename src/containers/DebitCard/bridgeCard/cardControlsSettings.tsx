@@ -18,6 +18,7 @@ import axios from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDSwitch,
@@ -416,9 +417,10 @@ export default function CardControlsSettings() {
               <>
                 <CyDView className='bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
                   <CyDView className='flex flex-row justify-between items-center'>
-                    <CyDImage
-                      source={AppImages.INTERNATIONAL_ICON}
-                      className='h-[32px] w-[32px]'
+                    <CydMaterialDesignIcons
+                      name='airplane'
+                      size={32}
+                      className='text-base400'
                     />
                     <CyDSwitch
                       id='disabled'
@@ -453,11 +455,12 @@ export default function CardControlsSettings() {
                   <CyDView
                     className={`bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
                     <CyDView className='flex flex-row items-center'>
-                      <CyDImage
-                        source={AppImages.COUNTRIES}
-                        className='h-[32px] w-[32px] mr-[8px]'
+                      <CydMaterialDesignIcons
+                        name='earth'
+                        size={24}
+                        className='text-base400 mr-[8px]'
                       />
-                      <CyDText className='text-[16px] font-semibold mt-[4px]'>
+                      <CyDText className='text-[16px] font-semibold'>
                         {'Countries'}
                       </CyDText>
                     </CyDView>
@@ -476,9 +479,10 @@ export default function CardControlsSettings() {
                       <CyDView>
                         <CyDText>{getAllowedCountiesText()}</CyDText>
                       </CyDView>
-                      <CyDImage
-                        source={AppImages.DOWN_ARROW}
-                        className='w-[12px] h-[6px] mr-[12px]'
+                      <CydMaterialDesignIcons
+                        name={'chevron-down'}
+                        size={24}
+                        className={'text-base400 mr-3'}
                       />
                     </CyDTouchView>
                   </CyDView>
@@ -702,9 +706,10 @@ export default function CardControlsSettings() {
                     {'Mobile Wallets'}
                   </CyDText>
                   <CyDView className='flex flex-row mt-[12px]'>
-                    <CyDImage
-                      source={AppImages.INFO_CIRCLE}
-                      className='h-[14px] w-[14px] mr-[6px]'
+                    <CydMaterialDesignIcons
+                      name='information-outline'
+                      size={14}
+                      className='text-base400 mr-[6px]'
                     />
                     <CyDText className='text-[10px] text-n200'>
                       {

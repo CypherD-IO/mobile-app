@@ -181,10 +181,10 @@ const BannerCarouselItem = ({
               </CyDView>
             </CyDView>
             <CyDView>
-              <CyDFastImage
-                className='h-[32px] w-[32px]'
-                source={AppImages.APP_SEL}
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='chart-arc'
+                size={32}
+                className='text-base400'
               />
             </CyDView>
             <CyDView>

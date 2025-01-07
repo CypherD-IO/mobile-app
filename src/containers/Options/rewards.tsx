@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StatusBar } from 'react-native';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -91,9 +92,10 @@ export default function Rewards() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[36px] h-[36px] ml-[16px] mb-[12px]'
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400 ml-[16px] mb-[12px]'
             />
           </CyDTouchView>
         </CyDView>

@@ -132,9 +132,10 @@ export default function SeedPhrase() {
                 <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
                   {t('HIDE_SEED_PHRASE')}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_OPEN}
-                  className={'w-[27px] h-[18px] ml-[7px]'}
+                <CydMaterialDesignIcons
+                  name={'eye-outline'}
+                  size={27}
+                  className='text-base400 ml-[7px]'
                 />
               </CyDView>
             ) : (
@@ -142,9 +143,10 @@ export default function SeedPhrase() {
                 <CyDText className={'text-[#434343] text-[15px] font-semibold'}>
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_CLOSE}
-                  className={'w-[27px] h-[22px] ml-[7px] mt-[5px]'}
+                <CydMaterialDesignIcons
+                  name={'eye-off-outline'}
+                  size={27}
+                  className='text-base400 ml-[7px] mt-[5px]'
                 />
               </CyDView>
             )}

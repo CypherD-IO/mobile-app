@@ -9,12 +9,12 @@ import clsx from 'clsx';
 import LottieView from 'lottie-react-native';
 import AppImages from '../../../assets/images/appImages';
 import { AppState, Keyboard, StyleSheet } from 'react-native';
-import { ButtonType, ImagePosition } from '../../constants/enum';
+import { ButtonType, IconPosition, ImagePosition } from '../../constants/enum';
 import { HdWalletContext } from '../../core/util';
 interface IButton {
   onPress: () => void;
   loading?: boolean;
-  type?: string;
+  type?: ButtonType;
   disabled?: boolean;
   title: string;
   style?: string;
@@ -26,11 +26,13 @@ interface IButton {
   imagePosition?: string;
   isPrivateKeyDependent?: boolean;
   paddingY?: number;
+  icon?: React.ReactNode;
+  iconPosition?: IconPosition;
 }
 export default function Button({
   onPress,
   loading = false,
-  type = 'primary',
+  type = ButtonType.PRIMARY,
   disabled = false,
   title,
   style = 'p-[3%]',
@@ -42,6 +44,8 @@ export default function Button({
   imagePosition = ImagePosition.LEFT,
   isPrivateKeyDependent = false,
   paddingY,
+  icon,
+  iconPosition = IconPosition.LEFT,
 }: IButton) {
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState();
@@ -105,12 +109,20 @@ export default function Button({
       {!loading &&
         image &&
         !isLottie &&
+        !icon &&
         imagePosition === ImagePosition.LEFT && (
           <CyDImage
             source={image}
             className={imageStyle}
             resizeMode='contain'
           />
+        )}
+      {!loading &&
+        !image &&
+        !isLottie &&
+        icon &&
+        iconPosition === IconPosition.LEFT && (
+          <CyDView className=''>{icon}</CyDView>
         )}
       {!loading && image && isLottie && (
         <LottieView
@@ -125,9 +137,16 @@ export default function Button({
       {!loading && (
         <CyDText
           className={clsx(
-            `font-extrabold text-center text-base400 ${titleStyle}`,
+            `font-extrabold text-center text-black ${titleStyle}`,
             {
               'ml-[5px]': isLocked,
+              'text-white': [
+                ButtonType.RED,
+                ButtonType.DARK,
+                ButtonType.TERNARY,
+                ButtonType.SECONDARY,
+                ButtonType.GREY_FILL,
+              ].includes(type),
             },
           )}>
           {title}
@@ -136,6 +155,7 @@ export default function Button({
       {!loading &&
         image &&
         !isLottie &&
+        !icon &&
         imagePosition === ImagePosition.RIGHT && (
           <CyDImage
             source={image}
@@ -143,6 +163,11 @@ export default function Button({
             resizeMode='contain'
           />
         )}
+      {!loading &&
+        !image &&
+        !isLottie &&
+        icon &&
+        iconPosition === IconPosition.RIGHT && <>{icon}</>}
     </CyDTouchView>
   );
 }

@@ -437,9 +437,10 @@ export default function ShortcutsModal() {
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.BROWSER_REDIRECT}
-            className={'w-[18px] h-[18px] ml-[10px]'}
+          <CydMaterialDesignIcons
+            name='open-in-new'
+            size={18}
+            className='text-base400 ml-[10px]'
           />
         </CyDView>
       </CyDTouchView>
@@ -467,9 +468,10 @@ export default function ShortcutsModal() {
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.BROWSER_REDIRECT}
-            className={'w-[18px] h-[18px] ml-[10px]'}
+          <CydMaterialDesignIcons
+            name='open-in-new'
+            size={18}
+            className='text-base400 ml-[10px]'
           />
         </CyDView>
       </CyDTouchView>
@@ -684,9 +686,10 @@ export default function ShortcutsModal() {
                 setTimeout(() => setBuyModalVisible(true), 250);
               }}
               className={''}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className={'w-[32px] h-[32px]'}
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
@@ -734,9 +737,10 @@ export default function ShortcutsModal() {
                 setTimeout(() => setSellModalVisible(true), 250);
               }}
               className={''}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className={'w-[32px] h-[32px]'}
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>

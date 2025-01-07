@@ -17,6 +17,7 @@ import {
   CyDFastImage,
   CyDTouchView,
   CyDView,
+  CydMaterialDesignIcons,
 } from '../styles/tailwindStyles';
 import { Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -50,10 +51,10 @@ const CustomHeader = ({
             navigation.goBack();
           }
         }}>
-        <CyDFastImage
-          className={'w-[32px] h-[32px]'}
-          resizeMode='cover'
-          source={AppImages.BACK_ARROW_GRAY}
+        <CydMaterialDesignIcons
+          name={'arrow-left-thin'}
+          size={32}
+          className='text-base400'
         />
       </CyDTouchView>
       <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>

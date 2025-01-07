@@ -6,6 +6,7 @@ import { setHideBalanceStatus } from '../../../core/asyncStorage';
 import {
   CyDFastImage,
   CyDImageBackground,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -39,10 +40,10 @@ export const Banner = ({ portfolioBalance }: BannerProps) => {
     });
   };
   return (
-    <CyDView className={'h-[160px] px-[10px] '}>
+    <CyDView className={'h-[160px] px-[10px] mt-2'}>
       <CyDImageBackground
         className={
-          'w-full border mt-[4px] pt-[46px] rounded-[24px] border-n40 overflow-hidden'
+          'w-full border mt-[4px] pt-[46px] rounded-[24px] border-n40 overflow-hidden bg-n0'
         }
         source={AppImages.PORTFOLIO_BG_S3}
         resizeMode='cover'
@@ -61,12 +62,10 @@ export const Banner = ({ portfolioBalance }: BannerProps) => {
                 className={clsx(
                   'h-[32px] flex flex-row items-center pl-[10px] gap-[5px]',
                 )}>
-                <CyDFastImage
-                  source={
-                    hideBalance ? AppImages.CYPHER_HIDE : AppImages.CYPHER_SHOW
-                  }
-                  className='h-[16px] w-[16px] ml-[15px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={hideBalance ? 'eye-off-outline' : 'eye-outline'}
+                  size={16}
+                  className='text-base400 self-center items-center'
                 />
                 <CyDText className='text-[12px]'>
                   {hideBalance ? t('SHOW') : t('HIDE')}

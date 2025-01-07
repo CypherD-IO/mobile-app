@@ -50,7 +50,9 @@ export default function AdvancedSettings({ navigation }) {
 
   return (
     <CyDScrollView className={'bg-n20 h-full px-[24px] pt-[40px]'}>
-      <CyDView className={'flex flex-row justify-between items-center'}>
+      {/* commenting IBC on 07-01-2025 */}
+
+      {/* <CyDView className={'flex flex-row justify-between items-center'}>
         <CyDView>
           <CyDText className={'font-bold text-[18px]'}>
             {t<string>('IBC')}
@@ -73,7 +75,7 @@ export default function AdvancedSettings({ navigation }) {
           }}
           value={IBCStatus}
         />
-      </CyDView>
+      </CyDView> */}
       <CyDView className={'h-[01px] my-[14px] bg-portfolioBorderColor'} />
       <CyDTouchView
         onPress={() => {

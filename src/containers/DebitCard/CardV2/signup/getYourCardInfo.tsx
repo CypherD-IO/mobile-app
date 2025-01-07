@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -105,9 +106,10 @@ export default function GetYourCardInfo() {
                     : navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
                 }}
                 className='w-[36px] h-[36px] my-[16px]'>
-                <CyDImage
-                  source={AppImages.BACK_ARROW_GRAY}
-                  className='w-[36px] h-[36px]'
+                <CydMaterialDesignIcons
+                  name={'arrow-left-thin'}
+                  size={32}
+                  className='text-base400'
                 />
               </CyDTouchView>
 
@@ -120,9 +122,10 @@ export default function GetYourCardInfo() {
 
               <CyDView className='mt-[24px]'>
                 <CyDView className='flex flex-row '>
-                  <CyDImage
-                    source={AppImages.COUNTRIES_ICON}
-                    className='w-[24px] h-[24px] mr-[8px]'
+                  <CydMaterialDesignIcons
+                    name='earth'
+                    size={24}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDView>
                     <CyDText className='font-semibold text-[16px]'>
@@ -142,45 +145,50 @@ export default function GetYourCardInfo() {
                   </CyDView>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CyDImage
-                    source={AppImages.USER_OUTLINE_ICON}
-                    className='w-[24px] h-[24px] mr-[8px]'
+                  <CydMaterialDesignIcons
+                    name='account-outline'
+                    size={24}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDText className='font-semibold text-[16px]'>
                     {t('ENTER_BASIC_DETAILS')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CyDImage
-                    source={AppImages.HOUSE_OUTLINE_ICON}
-                    className='w-[24px] h-[24px] mr-[8px]'
+                  <CydMaterialDesignIcons
+                    name='home-outline'
+                    size={24}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDText className='font-semibold text-[16px]'>
                     {t('ENTER_BILLING_ADDRESS')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CyDImage
-                    source={AppImages.EMAIL_OUTLINE_ICON}
-                    className='w-[24px] h-[24px] mr-[8px]'
+                  <CydMaterialDesignIcons
+                    name='at'
+                    size={24}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDText className='font-semibold text-[16px]'>
                     {t('EMAIL_VERIFICATION')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CyDImage
-                    source={AppImages.TELEGRAM_ICON_BLACK}
-                    className='w-[24px] h-[24px] mr-[8px]'
+                  <CydMaterialDesignIcons
+                    name='send-outline'
+                    size={24}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDText className='font-semibold text-[16px]'>
                     {t('TELEGRAM_SETUP')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-start mt-[24px]'>
-                  <CyDImage
-                    source={AppImages.ID_CARD_OUTLINE_ICON}
-                    className='w-[24px] h-[24px] mr-[8px]'
+                  <CydMaterialDesignIcons
+                    name='card-account-details-outline'
+                    size={24}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDView>
                     <CyDText className='font-semibold text-[16px]'>
@@ -192,9 +200,10 @@ export default function GetYourCardInfo() {
                   </CyDView>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CyDImage
-                    source={AppImages.CASH_OUTLINE_ICON}
-                    className='w-[24px] h-[24px] mr-[8px]'
+                  <CydMaterialDesignIcons
+                    name='cash'
+                    size={24}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDText className='font-semibold text-[16px]'>
                     {t('FIRST_CARD_LOAD')}

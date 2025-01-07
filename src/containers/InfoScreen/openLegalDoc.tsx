@@ -14,7 +14,11 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { CyDSafeAreaView, CyDTouchView } from '../../styles/tailwindStyles';
+import {
+  CydMaterialDesignIcons,
+  CyDSafeAreaView,
+  CyDTouchView,
+} from '../../styles/tailwindStyles';
 const { DynamicImage } = require('../../styles');
 
 interface RouteParams {
@@ -54,15 +58,10 @@ export default function OpenLegalScreen() {
         sentry-label='legal-back'
         className='absolute top-[50px] left-[30px]'
         onPress={() => navigation.goBack()}>
-        <DynamicImage
-          dynamic
-          dynamicWidthFix
-          mT={5}
-          height={20}
-          width={20}
-          resizemode='contain'
-          source={AppImages.BACK_ARROW_GRAY}
-          style={{ tintColor: 'black' }}
+        <CydMaterialDesignIcons
+          name={'arrow-left-thin'}
+          size={32}
+          className='text-base400'
         />
       </CyDTouchView>
     </CyDSafeAreaView>

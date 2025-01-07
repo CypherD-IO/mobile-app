@@ -298,7 +298,7 @@ export default function CardTransactions() {
               className='text-base400'
             />
           </CyDTouchView>
-          <CyDText className={'mt-[10px] font-black text-center text-[22px]'}>
+          <CyDText className={'mt-[10px] text-center text-[22px]'}>
             {t('EXPORT_AS')}
           </CyDText>
           <CyDView className={'w-[100%]'}>
@@ -329,7 +329,7 @@ export default function CardTransactions() {
       />
       <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
         <CyDView className='flex flex-1 justify-center items-center'>
-          <CyDText className='text-[18px] font-bold text-center ml-[45px]'>
+          <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
             {viewableTransactionsDate}
           </CyDText>
         </CyDView>

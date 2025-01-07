@@ -25,6 +25,7 @@ import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -172,16 +173,16 @@ export default function Options() {
         <CyDView className='flex-1 mb-[120px]'>
           <CyDFastImage
             className='h-[100px] w-[100px] m-[15px] self-center'
-            source={AppImages.CYPHERD_WALLET}
+            source={AppImages.CYPHERD}
             resizeMode='cover'
           />
 
           <CyDView className='flex flex-row justify-center items-center pb-[25px]'>
             {isReadOnlyWallet && (
-              <CyDFastImage
-                source={AppImages.CYPHER_LOCK}
-                className='h-[18px] w-[18px] mr-[5px] self-center'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='lock'
+                size={20}
+                className='text-base400 mr-[5px] self-center'
               />
             )}
             <CyDText className='text-[18px] text-center font-bold'>

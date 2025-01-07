@@ -19,6 +19,7 @@ import { ButtonType, CardProviders } from '../../../constants/enum';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -55,7 +56,7 @@ export default function SetPin() {
     });
 
   const verifyWithOTP = () => {
-    navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, {
+    navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: () => {
         setPinSetSuccess(true);
       },
@@ -154,10 +155,10 @@ export default function SetPin() {
         <CyDTouchView
           className='flex-row items-center px-[16px]'
           onPress={() => navigation.goBack()}>
-          <CyDImage
-            source={AppImages.BACK_ARROW_GRAY}
-            className='w-[32px] h-[32px]'
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
           />
           <CyDText className='ml-[12px] text-[18px] font-normal'>
             {capitalize(card.type)} {'card **'}
@@ -169,10 +170,10 @@ export default function SetPin() {
       <CyDKeyboardAwareScrollView className='flex-1 mt-[24px] px-[16px]'>
         {!pinSetSuccess && (
           <CyDView>
-            <CyDImage
-              source={AppImages.CARD_SECURE}
-              className='w-[52px] h-[36px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='credit-card-lock-outline'
+              size={36}
+              className='text-base400'
             />
 
             <CyDText className='text-[28px] font-bold mt-[6px]'>
@@ -322,11 +323,11 @@ export default function SetPin() {
               {t('CREATE_PIN_SUCCESSFUL_DESCRIPTION')}
             </CyDText>
 
-            <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[16px] flex-row items-center'>
-              <CyDImage
-                source={AppImages.INFO_CIRCLE}
-                className='w-[24px] h-[24px] flex-shrink-0'
-                resizeMode='contain'
+            <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[16px] flex-row items-center'>
+              <CydMaterialDesignIcons
+                name='information-outline'
+                size={24}
+                className='text-base400 flex-shrink-0'
               />
               <CyDText className='text-[12px] ml-[8px] w-[80%]'>
                 {t('KEEP_PIN_SAFE')}

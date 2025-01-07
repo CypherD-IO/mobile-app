@@ -411,9 +411,10 @@ export default function Referrals() {
               navigation.goBack();
             }}
             className='w-[36px] h-[36px]'>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[36px] h-[36px]'
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDView className='flex-1 '>
@@ -444,8 +445,13 @@ export default function Referrals() {
               <Button
                 type={ButtonType.SECONDARY}
                 title={t('NEW_CODE')}
-                image={AppImages.CIRCULAR_PLUS}
-                imageStyle='w-[16px] h-[16px] mr-[4px]'
+                icon={
+                  <CydMaterialDesignIcons
+                    name='plus-circle'
+                    size={20}
+                    className='text-base400 mr-[4px]'
+                  />
+                }
                 onPress={() => {
                   setIsModalVisible(true);
                 }}

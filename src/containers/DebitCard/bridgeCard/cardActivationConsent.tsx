@@ -6,6 +6,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
 import { StyleSheet, StatusBar } from 'react-native';
 import {
@@ -110,10 +111,10 @@ export default function CardActivationConsent() {
             'bg-n0': hasConsent,
           })}>
           {hasConsent && (
-            <CyDImage
-              source={AppImages.CORRECT}
-              className='h-[15px] w-[15px] ml-[2px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='check-bold'
+              size={16}
+              className='text-base400 ml-[2px]'
             />
           )}
         </CyDView>
@@ -140,9 +141,10 @@ export default function CardActivationConsent() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

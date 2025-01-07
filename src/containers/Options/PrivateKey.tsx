@@ -257,15 +257,13 @@ export default function PrivateKey(props) {
         </CyDView>
         <CyDTouchView
           className={
-            'bg-blue20 rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center w-10/12 mt-[20px] mb-[20px]'
+            'bg-blue20 rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center my-5 mb-5 w-10/12 self-center'
           }
           onPress={() => {
             setShowChainModal(true);
           }}>
           <CyDView
-            className={
-              'flex flex-row justify-start items-center w-full gap-[10px]'
-            }>
+            className={'flex flex-row justify-start items-center gap-[10px]'}>
             <CyDView className={'flex flex-row justify-center items-center'}>
               <CyDImage
                 source={selectedChain.logo_url}
@@ -277,7 +275,11 @@ export default function PrivateKey(props) {
             </CyDView>
             <CyDText className={'text-[18px]'}>{selectedChain.name}</CyDText>
           </CyDView>
-          <CyDImage source={AppImages.DOWN} className={'w-[10px] h-[9px]'} />
+          <CydMaterialDesignIcons
+            name={'menu-down'}
+            size={28}
+            className={'text-base400'}
+          />
         </CyDTouchView>
         <CyDView className={'flex items-center justify-center w-full'}>
           {data.map(item => (
@@ -296,9 +298,10 @@ export default function PrivateKey(props) {
                 <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
                   {t('HIDE_PRIVATE_KEY')}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_OPEN}
-                  className={'w-[27px] h-[18px] ml-[7px]'}
+                <CydMaterialDesignIcons
+                  name='eye-outline'
+                  size={27}
+                  className='text-base400 ml-[7px]'
                 />
               </CyDView>
             ) : (
@@ -306,9 +309,11 @@ export default function PrivateKey(props) {
                 <CyDText className={'text-[#434343] text-[15px] font-semibold'}>
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_CLOSE}
-                  className={'w-[27px] h-[22px] ml-[7px] mt-[5px]'}
+
+                <CydMaterialDesignIcons
+                  name={'eye-off-outline'}
+                  size={27}
+                  className='text-base400 ml-[7px] mt-[5px]'
                 />
               </CyDView>
             )}

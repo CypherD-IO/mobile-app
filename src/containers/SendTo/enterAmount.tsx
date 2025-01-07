@@ -20,6 +20,7 @@ import { formatAmount, limitDecimalPlaces } from '../../core/util';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTextInput,
@@ -249,9 +250,10 @@ export default function EnterAmount(props: any) {
                     'absolute right-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}
                   style={styles.roundButtonContainer}>
-                  <CyDImage
-                    source={AppImages.TOGGLE_ICON}
-                    className={'w-[14px] h-[16px]'}
+                  <CydMaterialDesignIcons
+                    name='swap-vertical'
+                    size={16}
+                    className='text-base400 self-center items-center'
                   />
                 </CyDTouchView>
                 <CyDText className=' text-[15px] font-bold '>

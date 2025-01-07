@@ -49,10 +49,10 @@ export default function CardActivationConsentModal({
               'bg-black': hasConsent,
             })}>
             {hasConsent && (
-              <CyDImage
-                source={AppImages.CORRECT}
-                className='h-[15px] w-[15px] ml-[2px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='check-bold'
+                size={14}
+                className='text-base400 ml-[2px]'
               />
             )}
           </CyDView>

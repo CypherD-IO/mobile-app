@@ -199,10 +199,10 @@ export default function CosmosValidators({ route, navigation }) {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            className={'w-[32px] h-[32px]'}
-            resizeMode='cover'
-            source={AppImages.BACK_ARROW_GRAY}
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
           />
         </CyDTouchView>
         <CyDView className={'-mt-[10px] bg-n0'}>
@@ -321,7 +321,11 @@ export default function CosmosValidators({ route, navigation }) {
       </CyDModalLayout>
 
       <CyDView className='drop-shadow-md flex-row items-center border border-n40 rounded-[20px] m-[10px]'>
-        <CyDImage source={AppImages.SEARCH_BROWSER} style={styles.ImageStyle} />
+        <CydMaterialDesignIcons
+          name='magnify'
+          size={20}
+          className='text-base400 p-[10px] m-1'
+        />
         <CyDTextInput
           className='flex-1 rounded-[20px] py-[10px] px-[10px]'
           value={filterText}

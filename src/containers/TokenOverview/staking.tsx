@@ -561,10 +561,10 @@ export default function TokenStaking({
           </CyDView>
 
           <CyDView className={'flex flex-row mt-[20px]'}>
-            <CyDImage
-              source={AppImages.GAS_FEES}
-              className='h-[16px] w-[16px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='gas-station'
+              size={20}
+              className='text-base400'
             />
             <CyDView className={' flex flex-row mt-[3px]'}>
               <CyDText className={' font-medium text-[16px] ml-[10px] '}>
@@ -635,10 +635,10 @@ export default function TokenStaking({
           </CyDView>
 
           <CyDView className={'flex flex-row mt-[20px]'}>
-            <CyDImage
-              source={AppImages.GAS_FEES}
-              className={'w-[16px] h-[16px] mt-[3px]'}
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='gas-station'
+              size={20}
+              className='text-base400 mt-[3px]'
             />
             <CyDView className={' flex flex-row mt-[3px]'}>
               <CyDText className={' font-medium text-[16px] ml-[10px] '}>

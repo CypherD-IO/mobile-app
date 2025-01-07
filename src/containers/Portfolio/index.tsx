@@ -448,9 +448,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             void analytics().logEvent(`DAPP_${remoteMessage.data.title}`, {
               from: ethereum.address,
             });
-            navigation.navigate(C.screenTitle.BROWSER, {
+            navigation.navigate(C.screenTitle.OPTIONS, {
               params: { url: remoteMessage.data.url ?? '' },
-              screen: C.screenTitle.BROWSER_SCREEN,
+              screen: C.screenTitle.BROWSER,
             });
             break;
           }
@@ -458,7 +458,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             void analytics().logEvent('beefy_cta', {
               from: ethereum.address,
             });
-            navigation.navigate(C.screenTitle.BROWSER, {
+            navigation.navigate(C.screenTitle.OPTIONS, {
               params: {
                 url: remoteMessage.data.url ?? 'https://app.beefy.com/',
               },
@@ -554,7 +554,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               from: ethereum.address,
             });
             if (remoteMessage.data.url) {
-              navigation.navigate(C.screenTitle.BROWSER, {
+              navigation.navigate(C.screenTitle.OPTIONS, {
                 params: { url: remoteMessage.data.url },
                 screen: C.screenTitle.BROWSER_SCREEN,
               });

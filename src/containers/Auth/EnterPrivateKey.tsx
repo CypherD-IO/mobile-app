@@ -120,10 +120,10 @@ export default function Login(props) {
                 onSuccess,
               });
             }}>
-            <CyDImage
-              source={AppImages.QR_CODE_SCANNER_BLACK}
-              className='h-[22px] w-[22px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='qrcode-scan'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         ),

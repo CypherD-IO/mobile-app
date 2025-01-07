@@ -131,10 +131,10 @@ export default function TrackWallet({
   const RenderTrackWalletInfo = ({ item }) => {
     return (
       <CyDView className={'flex flex-row my-[18px]'} key={item}>
-        <CyDImage
-          className={'mt-[6px] h-[12px] w-[12px]'}
-          source={AppImages.RIGHT_ARROW_BULLET}
-          resizeMode='contain'
+        <CydMaterialDesignIcons
+          name={'triangle'}
+          size={14}
+          className='text-p150 rotate-90 mt-[6px]'
         />
         <CyDText className={'ml-[10px] text-[16px] font-semibold'}>
           {item}
@@ -178,9 +178,10 @@ export default function TrackWallet({
           </CyDTouchView>
         </CyDView>
         <CyDView className='flex flex-row items-center self-start mt-[15px] ml-[5px]'>
-          <CyDImage
-            source={AppImages.INFO_CIRCLE}
-            className='h-[16px] w-[16px]'
+          <CydMaterialDesignIcons
+            name='information-outline'
+            size={16}
+            className='text-base400 mr-[6px]'
           />
           <CyDText className='ml-[7px]'>
             {t<string>('ONLY_ETHEREUM_SUPPORTED')}
@@ -188,7 +189,13 @@ export default function TrackWallet({
         </CyDView>
         <Button
           title={t('TRACK')}
-          image={AppImages.TRACK}
+          icon={
+            <CydMaterialDesignIcons
+              name='target'
+              size={24}
+              className='text-base400'
+            />
+          }
           onPress={() => {
             void registerObserver(address);
           }}

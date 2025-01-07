@@ -20,6 +20,7 @@ import {
   CyDImage,
   CyDTouchView,
   CyDFastImage,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import {
   WalletConnectContext,
@@ -166,10 +167,10 @@ export default function WalletConnectCamera(props: {
               onSuccess,
             });
           }}>
-          <CyDFastImage
-            source={AppImages.QR_CODE_SCANNER_BLACK}
-            className='h-[25px] w-[25px]'
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name='qrcode-scan'
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
       ),
@@ -369,11 +370,6 @@ export default function WalletConnectCamera(props: {
                   </CyDView>
                 </CyDView>
               </CyDView>
-              {/* <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
-                  <CyDTouchView onPress ={() => { void disconnectSession(session.item.topic); }}>
-                    <CyDImage source={AppImages.DISCONNECT} />
-                  </CyDTouchView>
-                </CyDView> */}
             </CyDView>
             <CyDView className={'flex flex-row justify-center'}>
               <Button
@@ -532,7 +528,11 @@ export default function WalletConnectCamera(props: {
                     onPress={() => {
                       void endSession(key);
                     }}>
-                    <CyDImage source={AppImages.DISCONNECT} />
+                    <CydMaterialDesignIcons
+                      name='link-variant-off'
+                      size={24}
+                      className='text-red400'
+                    />
                   </CyDTouchView>
                 )}
                 {isV2 && (
@@ -540,9 +540,10 @@ export default function WalletConnectCamera(props: {
                     onPress={() => {
                       setSelectedPairingTopic(element.topic);
                     }}>
-                    <CyDImage
-                      className={'h-[16px] w-[16px]'}
-                      source={AppImages.SETTINGS}
+                    <CydMaterialDesignIcons
+                      name='cog-outline'
+                      size={20}
+                      className='text-base400'
                     />
                   </CyDTouchView>
                 )}

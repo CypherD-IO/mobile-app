@@ -7,7 +7,9 @@ import Login from '../../containers/Auth/EnterKey';
 import { HdWalletContext } from '../../core/util';
 import { PromptImportWalletDef } from '../../models/globalModal.interface';
 import {
+  CydIcons,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -115,10 +117,10 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
               onPress={() => {
                 store.onCancel();
               }}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[32px] h-[32px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDView className='flex flex-1 items-center'>
@@ -128,10 +130,10 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
             </CyDView>
           </CyDView>
           <CyDView className='flex flex-row items-center mt-[20px]'>
-            <CyDImage
-              source={AppImages.CYPHER_LOCKED}
-              className='h-[20px] w-[20px] mr-[10px]'
-              resizeMode='contain'
+            <CydIcons
+              name='lock'
+              size={20}
+              className='text-base400 mr-[10px]'
             />
             <CyDText className='font-extrabold text-center text-[20px]'>
               {t('ACTION_REQUIRED')}

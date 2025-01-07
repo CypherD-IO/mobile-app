@@ -100,53 +100,17 @@ export default function TokenOverviewToolBar({
         </CyDView>
       )}
 
-      {/* {canShowFundCard && <CyDView>
-              <CyDTouchView className={'flex items-center justify-center'}
-                onPress={() => {
-                  navigation.navigate(screenTitle.DEBIT_CARD, {
-                    screen: screenTitle.SOLID_FUND_CARD_SCREEN, params: { navigation }
-                  });
-                }}
-               >
-                  <CyDImage source={AppImages.FUND_CARD_SHORTCUT} className={'w-[35px] h-[35px]'} />
-              </CyDTouchView>
-              <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>{t<string>('FUND_CARD')}</CyDText>
-          </CyDView>} */}
-
-      {/* disbaled bridge Feb 10th 2024 */}
-
-      {/* {isBridgeable && (
-        <CyDView className='flex items-center'>
-          <CyDTouchView
-            className={
-              'bg-appColor rounded-full w-[35px] h-[35px] flex items-center justify-center'
-            }
-            onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                fromChainData: tokenData,
-                title: t<string>('BRIDGE'),
-                renderPage: 'bridgePage',
-              });
-            }}>
-            <CyDImage
-              source={AppImages.BRIDGE_SHORTCUT}
-              className={'w-[35px] h-[35px]'}
-            />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>
-            {t<string>('BRIDGE')}
-          </CyDText>
-        </CyDView>
-      )} */}
-
       {(isSwapable || isBridgeable) && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
-                tokenData,
-                backVisible: true,
+              navigation.navigate(screenTitle.SWAP, {
+                screen: screenTitle.SWAP_SCREEN,
+                params: {
+                  tokenData,
+                  backVisible: true,
+                },
               });
             }}>
             <CyDImage

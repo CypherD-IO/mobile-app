@@ -6,6 +6,7 @@ import {
   CyDTouchView,
   CyDKeyboardAvoidingView,
   CyDTextInput,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { t } from 'i18next';
@@ -73,9 +74,10 @@ export default function NewReferralCodeModal({
               {t('CREATE_REFERRAL_CODE')}
             </CyDText>
             <CyDTouchView onPress={() => setIsModalVisible(false)}>
-              <CyDImage
-                source={AppImages.BLACK_CLOSE}
-                className='h-[12px] w-[12px]'
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -95,13 +97,19 @@ export default function NewReferralCodeModal({
             />
             <Button
               title={''}
-              image={AppImages.RIGHT_ARROW_LONG}
               imageStyle={'my-[5px]'}
               onPress={() => {
                 setIsModalVisible(false);
                 void createReferralCode();
               }}
               disabled={!isCodeValid}
+              icon={
+                <CydMaterialDesignIcons
+                  name={'chevron-right'}
+                  size={16}
+                  className=''
+                />
+              }
             />
           </CyDView>
           {!isCodeValid && (

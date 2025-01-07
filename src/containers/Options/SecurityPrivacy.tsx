@@ -105,13 +105,6 @@ export default function SecurityPrivacy(props) {
               className={
                 'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
               }>
-              {/* <CyDImage
-                source={
-                  isSecurityOptionDisabled ? AppImages.CYPHER_LOCK : item.logo
-                }
-                className={'w-[17px] h-[17px]'}
-                resizeMode={'contain'}
-              /> */}
               <CydMaterialDesignIcons
                 name={isSecurityOptionDisabled ? 'shield-lock' : item.logo}
                 size={24}

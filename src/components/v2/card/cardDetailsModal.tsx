@@ -153,14 +153,12 @@ export default function CardDetailsModal({
             </CyDText>
             <CyDView className='flex flex-row items-center gap-[12px]'>
               <CyDTouchView onPress={() => toggleCardDetail('cardNumber')}>
-                <CyDImage
-                  source={
-                    showDetails.cardNumber
-                      ? AppImages.EYE_CLOSE
-                      : AppImages.EYE_OPEN
+                <CydMaterialDesignIcons
+                  name={
+                    showDetails.cardNumber ? 'eye-off-outline' : 'eye-outline'
                   }
-                  className='h-[24px] w-[24px]'
-                  resizeMode='contain'
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('cardNumber')}>
@@ -186,14 +184,10 @@ export default function CardDetailsModal({
             </CyDText>
             <CyDView className='flex flex-row items-center gap-[12px]'>
               <CyDTouchView onPress={() => toggleCardDetail('expiry')}>
-                <CyDImage
-                  source={
-                    showDetails.expiry
-                      ? AppImages.EYE_CLOSE
-                      : AppImages.EYE_OPEN
-                  }
-                  className='h-[24px] w-[24px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={showDetails.expiry ? 'eye-off-outline' : 'eye-outline'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('expiry')}>
@@ -217,12 +211,10 @@ export default function CardDetailsModal({
             </CyDText>
             <CyDView className='flex flex-row items-center gap-[12px]'>
               <CyDTouchView onPress={() => toggleCardDetail('cvv')}>
-                <CyDImage
-                  source={
-                    showDetails.cvv ? AppImages.EYE_CLOSE : AppImages.EYE_OPEN
-                  }
-                  className='h-[24px] w-[24px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={showDetails.cvv ? 'eye-off-outline' : 'eye-outline'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('cvv')}>

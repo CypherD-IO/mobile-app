@@ -56,10 +56,10 @@ export function NFTOverviewScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            className={'w-[32px] h-[32px]'}
-            resizeMode='cover'
-            source={AppImages.BACK_ARROW_GRAY}
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
           />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
@@ -98,11 +98,10 @@ export function NFTOverviewScreen() {
           setImageZoomIn(true);
         }}
         className={'z-10'}>
-        <CyDImage
-          className={
-            'absolute w-[36px] h-[36px] right-[10px] top-[10px] rounded-[40px]'
-          }
-          source={AppImages.EXPAND_ICON}
+        <CydMaterialDesignIcons
+          name='arrow-expand'
+          size={32}
+          className='text-base400 absolute right-[10px] top-[10px] rounded-[40px]'
         />
       </CyDTouchView>
       <CyDFastImage
@@ -118,10 +117,10 @@ export function NFTOverviewScreen() {
           className={
             'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
           }>
-          <CyDImage
-            resizeMode={'contain'}
-            className={'h-[20px] w-[20px] mr-[6px]'}
-            source={AppImages.DETAILS_ICON}
+          <CydMaterialDesignIcons
+            name='list-box-outline'
+            size={20}
+            className='text-base400 mr-[6px]'
           />
           <CyDText className={'text-[18px] font-bold'}>
             {t<string>('DETAILS_INIT_CAPS')}
@@ -209,10 +208,10 @@ export function NFTOverviewScreen() {
               className={
                 'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
               }>
-              <CyDImage
-                resizeMode={'contain'}
-                className={'h-[20px] w-[20px] mr-[6px]'}
-                source={AppImages.DESCRIPTION_ICON}
+              <CydMaterialDesignIcons
+                name='invoice-list'
+                size={20}
+                className='text-base400 mr-[6px]'
               />
               <CyDText className={'text-[18px] font-bold'}>
                 {t<string>('DESCRIPTION_INIT_CAPS')}

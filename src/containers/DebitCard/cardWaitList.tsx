@@ -6,6 +6,7 @@ import axios from '../../core/Http';
 import { isAndroid } from '../../misc/checkers';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -188,7 +189,11 @@ export default function CardWailtList({ navigation }: Props) {
                               {selectedCountry.name}
                             </CyDText>
                           </CyDView>
-                          <CyDImage source={AppImages.DOWN_ARROW} />
+                          <CydMaterialDesignIcons
+                            name={'chevron-down'}
+                            size={16}
+                            className={'text-base400'}
+                          />
                         </CyDView>
                       </CyDTouchView>
                       <CyDTextInput
@@ -276,9 +281,10 @@ export default function CardWailtList({ navigation }: Props) {
           {cardBenefits.map(item => {
             return (
               <CyDView className={'flex flex-row my-[4px]'} key={item}>
-                <CyDImage
-                  className={'mt-[6px]'}
-                  source={AppImages.RIGHT_ARROW_BULLET}
+                <CydMaterialDesignIcons
+                  name={'triangle'}
+                  size={14}
+                  className='text-p150 rotate-90 mt-[6px]'
                 />
                 <CyDText className={'ml-[10px] leading-[25px]'}>{item}</CyDText>
               </CyDView>

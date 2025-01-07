@@ -177,7 +177,7 @@ const ChooseMultipleCountryModal = ({
                       className={clsx(
                         'flex flex-row items-center justify-between px-[16px] py-[4px] my-[6px] mx-[12px] rounded-[8px] bg-n10/80',
                         {
-                          'bg-paleBlue': allCountriesSelected,
+                          'bg-blue20': allCountriesSelected,
                         },
                       )}>
                       <CyDView className={'flex flex-row items-center'}>
@@ -195,9 +195,10 @@ const ChooseMultipleCountryModal = ({
                               'bg-appColor': allCountriesSelected,
                             },
                           )}>
-                          <CyDImage
-                            source={AppImages.WHITE_CHECK_MARK}
-                            className='h-[18px] w-[18px]'
+                          <CydMaterialDesignIcons
+                            name='check-bold'
+                            size={18}
+                            className='text-n20'
                           />
                         </CyDView>
                       </CyDView>
@@ -233,7 +234,7 @@ const ChooseMultipleCountryModal = ({
                         className={clsx(
                           'flex flex-row items-center justify-between px-[16px] my-[6px] mx-[12px] rounded-[8px] bg-n10/80',
                           {
-                            'bg-paleBlue': some(selectedCountry, {
+                            'bg-blue20': some(selectedCountry, {
                               name: country.name,
                             }),
                           },
@@ -251,9 +252,10 @@ const ChooseMultipleCountryModal = ({
                         <CyDView className={'flex flex-row justify-end'}>
                           <CyDView
                             className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center`}>
-                            <CyDImage
-                              source={AppImages.WHITE_CHECK_MARK}
-                              className='h-[18px] w-[18px]'
+                            <CydMaterialDesignIcons
+                              name='check-bold'
+                              size={18}
+                              className='text-n20'
                             />
                           </CyDView>
                         </CyDView>

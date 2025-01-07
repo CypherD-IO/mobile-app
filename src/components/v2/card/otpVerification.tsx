@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -134,9 +135,10 @@ export default function OtpVerificationModal({
               setIsModalVisible(false);
             }}
             className='w-[36px] h-[36px]'>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[36px] h-[36px]'
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>

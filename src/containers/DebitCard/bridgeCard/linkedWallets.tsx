@@ -118,10 +118,10 @@ export function LinkedWallets({
                                 },
                               );
                             }}>
-                            <CyDImage
-                              source={AppImages.DELETE}
-                              className='h-[20px] w-[20px]'
-                              resizeMode='contain'
+                            <CydMaterialDesignIcons
+                              name='trash-can-outline'
+                              size={20}
+                              className='text-base400'
                             />
                           </CyDTouchView>
                         </CyDView>

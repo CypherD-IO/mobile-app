@@ -30,7 +30,7 @@ import Dialog, {
   DialogButton,
   DialogContent,
 } from 'react-native-popup-dialog';
-import { CyDText } from '../../styles/tailwindStyles';
+import { CydMaterialDesignIcons, CyDText } from '../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 const {
@@ -210,15 +210,10 @@ export default function LegalAgreementScreen(props) {
             color={Colors.primaryTextColor}>
             {item.title}
           </CText>
-          <DynamicImage
-            dynamic
-            dynamicWidthFix
-            mT={5}
-            height={20}
-            width={20}
-            resizemode='contain'
-            source={AppImages.UP_ARROW}
-            style={{ transform: [{ rotate: '90deg' }] }}
+          <CydMaterialDesignIcons
+            name={'chevron-up'}
+            size={16}
+            className={'text-base400'}
           />
         </DynamicView>
         <DynamicView

@@ -4,6 +4,7 @@ import { Colors } from '../constants/theme';
 import * as C from '../constants/index';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import LottieView from 'lottie-react-native';
+import { CyDFastImage, CyDText, CyDView } from '../styles/tailwindStyles';
 
 const { DynamicView, DynamicImage, CText } = require('../styles');
 
@@ -14,36 +15,22 @@ export default function EmptyView(props) {
     buyVisible,
     marginTop,
     isLottie = false,
-    height,
-    width,
+    height = 100,
+    width = 100,
   } = props;
   const { t } = useTranslation();
 
   return (
-    <DynamicView
-      dynamic
-      dynamicHeight
-      height={height || 100}
-      width={width || 100}
-      mT={marginTop || 10}
-      jC={'center'}
-    >
+    <CyDView
+      className={`flex flex-col items-center justify-center h-[${height}px] w-[${width}px] mt-[${marginTop}px]`}>
       {!isLottie ? (
-        <DynamicImage dynamic source={image} width={150} height={150} />
+        <CyDFastImage source={image} className='w-[150px] h-[150px]' />
       ) : (
-        <DynamicView dynamic width={150} height={150}>
+        <CyDView className='w-[150px] h-[150px]'>
           <LottieView source={image} autoPlay loop />
-        </DynamicView>
+        </CyDView>
       )}
-      <CText
-        dynamic
-        fF={C.fontsName.FONT_BOLD}
-        mT={15}
-        fS={14}
-        color={Colors.primaryTextColor}
-      >
-        {text}
-      </CText>
+      <CyDText className='mt-[15px] text-[14px]'>{text}</CyDText>
       {buyVisible ? (
         <ButtonWithOutImage
           mT={20}
@@ -60,6 +47,6 @@ export default function EmptyView(props) {
       ) : (
         <ButtonWithOutImage />
       )}
-    </DynamicView>
+    </CyDView>
   );
 }

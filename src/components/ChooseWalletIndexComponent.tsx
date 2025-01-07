@@ -11,6 +11,7 @@ import {
   CyDImage,
   CyDText,
   CyDFlatList,
+  CydMaterialDesignIcons,
 } from '../styles/tailwindStyles';
 import Button from './v2/button';
 import AppImages from '../../assets/images/appImages';
@@ -96,9 +97,10 @@ export default function ChooseWalletIndexComponent({
               onPress={() => {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[32px] h-[32px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
           )}
@@ -149,9 +151,6 @@ export default function ChooseWalletIndexComponent({
       <CyDView
         className={clsx(
           'absolute w-full bottom-[0px] bg-n0 pt-[10px] pb-[32px] px-[16px]',
-          {
-            'bottom-[-32px]': isIOS(),
-          },
         )}>
         <Button
           type={ButtonType.PRIMARY}
@@ -170,9 +169,10 @@ export default function ChooseWalletIndexComponent({
           loaderStyle={{ height: 25, width: 25 }}
         />
         <CyDView className='flex flex-row mt-[8px] justify-center'>
-          <CyDImage
-            className='h-[16px] w-[16px]'
-            source={AppImages.AUDIT_ICON}
+          <CydMaterialDesignIcons
+            name='shield-lock'
+            size={18}
+            className='text-base400'
           />
           <CyDText className='text-[10px] font-medium ml-[6px]'>
             {t('CYPHER_AUDIT_TEXT')}

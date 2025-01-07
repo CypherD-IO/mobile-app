@@ -52,6 +52,7 @@ import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import {
   CyDFastImage,
   CyDFlatList,
+  CydIcons,
   CyDImage,
   CyDImageBackground,
   CydMaterialDesignIcons,
@@ -249,10 +250,10 @@ export default function CardScreen({
         )}
         {card.status === CardStatus.HIDDEN && (
           <CyDView className='flex flex-row items-center bg-n30 px-[12px] py-[6px] rounded-[6px]'>
-            <CyDImage
-              source={AppImages.CYPHER_LOCKED}
-              className='h-[18px] w-[18px]'
-              resizeMode='contain'
+            <CydIcons
+              name='lock'
+              size={20}
+              className='text-base400 mr-[10px]'
             />
             <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
               {t('LOAD_TO_ACTIVATE')}
@@ -622,7 +623,7 @@ const RenderCardActions = ({
   };
 
   const verifyWithOTP = () => {
-    navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, {
+    navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, cardProvider: CardProviders) => {
         if (cardProvider === CardProviders.REAP_CARD) {
           void decryptMessage(data);
@@ -1086,10 +1087,10 @@ const RenderCardActions = ({
             {isFetchingCardDetails ? (
               <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />
             ) : (
-              <CyDImage
-                source={AppImages.MANAGE_CARD}
-                className='h-[26px] w-[26px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='credit-card-outline'
+                size={26}
+                className='text-black'
               />
             )}
           </CyDView>
@@ -1154,14 +1155,14 @@ const RenderCardActions = ({
           }}>
           <CyDView
             className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
-            <CyDImage
-              source={
+            <CydMaterialDesignIcons
+              name={
                 cardProvider === CardProviders.REAP_CARD
-                  ? AppImages.SETTINGS
-                  : AppImages.MORE
+                  ? 'cog-outline'
+                  : 'dots-vertical'
               }
-              className='h-[22px] w-[22px] accent-black'
-              resizeMode='contain'
+              size={32}
+              className={'text-black'}
             />
           </CyDView>
           <CyDView className='mt-[6px]'>

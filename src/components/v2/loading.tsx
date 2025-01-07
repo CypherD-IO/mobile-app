@@ -36,9 +36,7 @@ export default function Loading({
         style={styles.loader}
       />
       <CyDText
-        className={clsx('text-[16px] font-semibold z-50', {
-          'text-base400': blurBg,
-        })}>
+        className={clsx('text-[16px] font-semibold z-50 text-base400', {})}>
         {'Loading . . .'}
       </CyDText>
     </CyDView>

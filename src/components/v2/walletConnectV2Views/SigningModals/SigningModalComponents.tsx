@@ -105,9 +105,7 @@ const RenderMessage = ({
         </CyDText>
       </CyDView>
       <CyDScrollView
-        className={
-          'my-[5px] border-[1px] border-n40 bg-infoTextBackground rounded-[6px]'
-        }>
+        className={'my-[5px] border-[1px] border-n40 bg-n0 rounded-[6px]'}>
         <CyDView className={'p-[10px]'}>
           <CyDText className={'text-[14px] ml-[6px]'}>{message}</CyDText>
         </CyDView>

@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../assets/images/appImages';
 import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
@@ -11,7 +10,6 @@ import axios from '../core/Http';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import {
-  CyDImage,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -186,11 +184,10 @@ export default function RemoveWalletModal(props) {
                   setSelectAcc(!selectAcc);
                 }}>
                 {selectAcc && (
-                  <DynamicImage
-                    dynamic
-                    source={AppImages.CORRECT}
-                    width={10}
-                    height={15}
+                  <CydMaterialDesignIcons
+                    name='check-bold'
+                    size={16}
+                    className='text-base400'
                   />
                 )}
               </DynamicTouchView>
@@ -234,11 +231,10 @@ export default function RemoveWalletModal(props) {
                   setSelectAcc(!selectAcc);
                 }}>
                 {selectAcc && (
-                  <DynamicImage
-                    dynamic
-                    source={AppImages.CORRECT}
-                    width={10}
-                    height={15}
+                  <CydMaterialDesignIcons
+                    name='check-bold'
+                    size={16}
+                    className='text-base400'
                   />
                 )}
               </DynamicTouchView>

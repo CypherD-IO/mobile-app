@@ -126,7 +126,7 @@ export default function DebitCardScreen(props: RouteProps) {
                   index: 0,
                   routes: [
                     {
-                      name: screenTitle.BRIDGE_CARD_SCREEN,
+                      name: screenTitle.CARD_SCREEN,
                       params: {
                         cardProvider: provider,
                       },

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -133,9 +134,10 @@ export default function LockdownMode() {
                 onPress={() => {
                   navigation.goBack();
                 }}>
-                <CyDImage
-                  source={AppImages.BACK_ARROW_GRAY}
-                  className='w-[32px] h-[32px]'
+                <CydMaterialDesignIcons
+                  name={'arrow-left-thin'}
+                  size={32}
+                  className='text-base400'
                 />
               </CyDTouchView>
               <CyDView className='w-[calc(100% - 40px)] mx-auto'>
@@ -146,10 +148,14 @@ export default function LockdownMode() {
             </CyDView>
 
             <CyDView className='mt-[28px] rounded-[16px] bg-n0 items-center mx-[16px] py-[24px] px-[24px]'>
-              <CyDImage
-                source={AppImages.LOCKDOWN_MODE_IMAGE}
-                className='h-[112px] w-[112px] my-[24px]'
-              />
+              <CyDView className='rounded-lg h-[112px] w-[112px] my-[24px] bg-n20 flex flex-row items-center justify-center'>
+                <CydMaterialDesignIcons
+                  name='hand-front-right'
+                  size={70}
+                  className='text-p100 self-center'
+                />
+              </CyDView>
+
               <CyDText className='text-[16px] text-center'>
                 {t('LOCKDOWN_MODE_DESC_TEXT_1')}
               </CyDText>

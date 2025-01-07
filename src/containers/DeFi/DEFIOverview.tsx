@@ -265,10 +265,10 @@ export function DEFIOverviewScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            className={'w-[32px] h-[32px]'}
-            resizeMode='cover'
-            source={AppImages.BACK_ARROW_GRAY}
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
           />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
@@ -294,7 +294,7 @@ export function DEFIOverviewScreen() {
                 className='flex-1 flex-row gap-[4px] justify-start items-center'
                 onPress={() => {
                   if (!isReadOnlyWallet) {
-                    navigation.navigate(screenTitle.BROWSER, {
+                    navigation.navigate(screenTitle.OPTIONS, {
                       screen: screenTitle.BROWSER_SCREEN,
                       params: {
                         url: protocol.protocolURL,
@@ -367,13 +367,13 @@ export function DEFIOverviewScreen() {
         })}
       </Animated.ScrollView>
       <CyDAnimatedView
-        className={'absolute w-full bottom-[10px]'}
+        className={'absolute w-full bottom-[10px] mb-4'}
         style={animatedStyles}>
         <CyDTouchView
           className='w-[70%] h-[55px] flex flex-row my-[10px] mx-[60px] bg-n0 justify-center items-center rounded-[8px] border border-n40 px-[20px] py-[10px]'
           onPress={() => {
             if (!isReadOnlyWallet) {
-              navigation.navigate(screenTitle.BROWSER, {
+              navigation.navigate(screenTitle.OPTIONS, {
                 screen: screenTitle.BROWSER_SCREEN,
                 params: {
                   url: protocol.protocolURL,
@@ -407,10 +407,10 @@ export function DEFIOverviewScreen() {
               <CyDText className='underline text-[12px] text-appColor pr-[4px]'>
                 {protocol.protocolURL}
               </CyDText>
-              <CyDFastImage
-                source={AppImages.LINK_WHITE}
-                className='h-[10px] w-[10px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='open-in-new'
+                size={14}
+                className='text-base400'
               />
             </CyDView>
           </CyDView>

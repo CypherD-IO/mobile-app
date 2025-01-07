@@ -7,7 +7,11 @@ import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
 import { PayModalParams } from '../types/Browser';
-import { CydMaterialDesignIcons, CyDView } from '../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CydMaterialDesignIcons,
+  CyDView,
+} from '../styles/tailwindStyles';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
 const {
@@ -129,16 +133,9 @@ export default function BottomConfirm(props: {
             width={100}
             jC={'center'}
             fD={'row'}>
-            <DynamicImage
-              dynamic
-              dynamicWidthFix
-              aLIT={'flex-end'}
-              mT={10}
-              marginHorizontal={6}
-              height={20}
-              width={20}
-              resizemode='contain'
-              source={modalParams.appImage}
+            <CyDFastImage
+              className='h-[20px] w-[20px] mx-[6px]'
+              source={{ uri: modalParams.appImage }}
             />
             <CText
               dynamic

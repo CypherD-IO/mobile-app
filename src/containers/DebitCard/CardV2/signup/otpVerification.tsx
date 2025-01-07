@@ -246,10 +246,10 @@ export default function OTPVerification(): JSX.Element {
         {/* remove the CardProviderSwitch after sunsetting PC */}
         <CyDView className='flex-row justify-between items-center'>
           <CyDTouchView className='' onPress={handleBackPress}>
-            <CyDFastImage
-              className={'w-[32px] h-[32px]'}
-              resizeMode='cover'
-              source={AppImages.BACK_ARROW_GRAY}
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
           <CardProviderSwitch />

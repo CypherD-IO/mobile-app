@@ -61,75 +61,17 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
         </CyDText>
       </CyDView>
 
-      {/* {canShowIBC(tokenData) && (
-          <CyDView>
-            <CyDTouchView
-              className={
-                ' bg-appColor rounded-full flex items-center justify-center mx-[15px] p-[11px]'
-              }
-              onPress={() => {
-                navigation.navigate(screenTitle.IBC_SCREEN, {
-                  tokenData,
-                });
-              }}
-            >
-              <CyDImage
-                source={AppImages.IBC}
-                className={'w-[12px] h-[12px]'}
-                resizeMode='contain'
-              />
-            </CyDTouchView>
-            <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-              {t<string>('IBC')}
-            </CyDText>
-          </CyDView>
-        )} */}
-
-      {/* {canShowFundCard(tokenData) && <CyDView>
-          <CyDTouchView className={'flex items-center justify-center'}
-            onPress={() => {
-              props.navigation.navigate(screenTitle.DEBIT_CARD, {
-                screen: screenTitle.SOLID_FUND_CARD_SCREEN, params: { tokenData, navigation: props.navigation }, initial: false
-              });
-            }}
-          >
-              <CyDImage source={AppImages.FUND_CARD_SHORTCUT} className={'w-[35px] h-[35px]'} />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
-      </CyDView>} */}
-
-      {/* disabled bridge - Feb 10th 2024 */}
-
-      {/* {isBridgeable && (
-        <CyDView>
-          <CyDTouchView
-            className={'flex items-center justify-center mx-[15px]'}
-            onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                fromChainData: tokenData,
-                title: t('BRIDGE'),
-                renderPage: 'bridgePage',
-              });
-            }}>
-            <CyDImage
-              source={AppImages.BRIDGE_SHORTCUT}
-              className={'w-[30px] h-[30px]'}
-            />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('BRIDGE')}
-          </CyDText>
-        </CyDView>
-      )} */}
-
       {(isSwapable || isBridgeable) && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
-                tokenData,
-                backVisible: true,
+              navigation?.navigate(screenTitle.SWAP, {
+                screen: screenTitle.SWAP_SCREEN,
+                params: {
+                  tokenData,
+                  backVisible: true,
+                },
               });
             }}>
             <CyDImage

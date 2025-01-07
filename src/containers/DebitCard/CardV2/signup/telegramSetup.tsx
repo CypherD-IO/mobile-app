@@ -117,9 +117,10 @@ export default function TelegramSetup() {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[32px] h-[32px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
           )}
@@ -150,9 +151,10 @@ export default function TelegramSetup() {
                   <CyDText className='text-center '>
                     Click the below button to connect
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.RIGHT_ARROW_LONG}
-                    className='w-[12px] h-[10px] mt-[4px] ml-[4px] rotate-90'
+                  <CydMaterialDesignIcons
+                    name={'arrow-down-thin'}
+                    size={20}
+                    className='text-base400 ml-[4px]'
                   />
                 </CyDView>
                 <CyDTouchView
@@ -219,9 +221,10 @@ export default function TelegramSetup() {
                 </CyDTouchView>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CyDText className='text-[14px] '>Just press send</CyDText>
-                  <CyDImage
-                    source={AppImages.BACK_ARROW_GRAY}
-                    className='rotate-90 h-[24px] w-[24px] ml-[4px]'
+                  <CydMaterialDesignIcons
+                    name={'arrow-left-thin'}
+                    size={20}
+                    className='text-base400 rotate-90 ml-[4px]'
                   />
                 </CyDView>
               </CyDView>
@@ -261,7 +264,7 @@ export default function TelegramSetup() {
                 style={styles.lottie}
               />
             )}
-            <CyDText className='font-manrope text-base400 ml-[4px] text-bold font-black text-[12px]'>
+            <CyDText className='font-manrope text-base400 ml-[4px] font-bold text-black text-[12px]'>
               {t('REFRESH')}
             </CyDText>
           </CyDTouchView>

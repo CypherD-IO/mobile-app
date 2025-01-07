@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDSwitch,
   CyDText,
@@ -180,10 +181,10 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                 />
               </CyDView>
               <CyDView className='bg-base300 p-[4px] rounded-[25px]'>
-                <CyDImage
-                  source={AppImages.EDIT}
-                  className='h-[18px] w-[18px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name='pencil-outline'
+                  size={18}
+                  className='text-base400'
                 />
               </CyDView>
             </CyDView>
@@ -208,10 +209,10 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   />
                 </CyDView>
                 <CyDView className='bg-base300 p-[4px] rounded-[25px]'>
-                  <CyDImage
-                    source={AppImages.EDIT}
-                    className='h-[18px] w-[18px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name='pencil-outline'
+                    size={18}
+                    className='text-base400'
                   />
                 </CyDView>
               </CyDView>
@@ -237,10 +238,11 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   <CyDText className='font-bold'>
                     {capitalize(selectedToken?.chainDetails?.name) ?? 'Change'}
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.DOWN_ARROW}
-                    className='h-[15px] w-[12px] ml-[4px]'
-                    resizeMode='contain'
+
+                  <CydMaterialDesignIcons
+                    name={'chevron-down'}
+                    size={16}
+                    className={'text-base400 ml-2'}
                   />
                 </CyDTouchView>
               </CyDView>
@@ -274,10 +276,10 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                     </CyDText>
                   </CyDView>
                   <CyDView className='bg-cardBg p-[4px] rounded-[25px] ml-[12px]'>
-                    <CyDImage
-                      source={AppImages.EDIT}
-                      className='h-[18px] w-[18px]'
-                      resizeMode='contain'
+                    <CydMaterialDesignIcons
+                      name='pencil-outline'
+                      size={18}
+                      className='text-base400'
                     />
                   </CyDView>
                 </CyDTouchView>
@@ -298,10 +300,10 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                     />
                   </CyDView>
                   <CyDView className='bg-cardBg p-[4px] rounded-[25px]'>
-                    <CyDImage
-                      source={AppImages.EDIT}
-                      className='h-[18px] w-[18px]'
-                      resizeMode='contain'
+                    <CydMaterialDesignIcons
+                      name='pencil-outline'
+                      size={18}
+                      className='text-base400'
                     />
                   </CyDView>
                 </CyDView>

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
   CyDFastImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -86,17 +87,18 @@ export default function CryptoWithdrawal() {
         setIsModalVisible={setIsModalVisible}
         reason={reason}
       />
-      <CyDView className='flex-1'>
-        <CyDView className='flex flex-row items-center justify-between py-[16px] px-[16px] '>
+      <CyDView className='flex-1 bg-n20'>
+        <CyDView className='flex flex-row items-center justify-between py-[16px] px-[16px] bg-n0'>
           <CyDView className='flex flex-row items-center justify-start'>
             <CyDTouchView
               className='pr-[16px]'
               onPress={() => {
                 navigation.goBack();
               }}>
-              <CyDFastImage
-                source={AppImages.LEFT_ARROW_LONG}
-                className='w-[20px] h-[16px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDText className='text-[16px] font-bold text-base400'>
@@ -111,13 +113,14 @@ export default function CryptoWithdrawal() {
                 currentCardProvider,
               });
             }}>
-            <CyDFastImage
-              source={AppImages.LIST_HAMBURGER}
-              className='w-[32px] h-[32px]'
+            <CydMaterialDesignIcons
+              name={'history'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
-        <CyDKeyboardAwareScrollView className='flex-1 bg-n30 px-[16px]'>
+        <CyDKeyboardAwareScrollView className='flex-1 bg-20 px-[16px]'>
           <CyDView className='mt-[18px]'>
             <CyDText className='font-bold text-[12px] text-base400'>
               {t('AMOUNT_TO_BE_WITHDRAWN')}

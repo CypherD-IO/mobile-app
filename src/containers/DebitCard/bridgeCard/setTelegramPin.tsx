@@ -20,6 +20,7 @@ import { useKeyboard } from '../../../hooks/useKeyboard';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -55,7 +56,7 @@ export default function SetTelegramPin() {
   };
 
   const verifyWithOTP = () => {
-    navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, {
+    navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, cardProvider: CardProviders) => {
         void onPinSet();
       },
@@ -218,9 +219,10 @@ export default function SetTelegramPin() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[32px] h-[32px]'
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-base400 ml-[12px] text-[18px]'>
@@ -231,9 +233,10 @@ export default function SetTelegramPin() {
           contentContainerStyle={styles.contentContainerStyle}>
           <CyDView>
             <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-              <CyDImage
-                source={AppImages.LOCKED_ICON_BLACK}
-                className='w-[32px] h-[32px]'
+              <CydMaterialDesignIcons
+                name='lock'
+                size={32}
+                className='text-base400'
               />
               <CyDText className='text-base400 mt-[6px] font-bold text-[28px]'>
                 {t('SET_TELEGRAM_PIN')}

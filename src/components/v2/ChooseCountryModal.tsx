@@ -127,7 +127,7 @@ const ChooseCountryModal = ({
           className={clsx(
             'flex flex-row items-center justify-between px-[16px] py-[6px] mx-[12px] rounded-[8px]',
             {
-              'bg-p10': country.name === selectedCountry?.name,
+              'bg-blue20': country.name === selectedCountry?.name,
             },
           )}
           key={country?.name}>

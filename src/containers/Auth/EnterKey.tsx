@@ -51,16 +51,19 @@ import {
   CyDImage,
   CyDKeyboardAvoidingView,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
   const [seedPhraseTextValue, onChangeseedPhraseTextValue] =
     useState<string>('');
@@ -192,10 +195,10 @@ export default function Login(props) {
                 onSuccess,
               });
             }}>
-            <CyDImage
-              source={AppImages.QR_CODE_SCANNER_BLACK}
-              className='h-[22px] w-[22px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='qrcode-scan'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         ),
@@ -244,7 +247,7 @@ export default function Login(props) {
   }, []);
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n20'>
+    <CyDView className='flex-1 bg-n20' style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       {firstIndexAddress ? (
         <ChooseWalletIndexComponent
@@ -267,9 +270,10 @@ export default function Login(props) {
                     onPress={() => {
                       props.navigation.goBack();
                     }}>
-                    <CyDImage
-                      source={AppImages.BACK_ARROW_GRAY}
-                      className='w-[32px] h-[32px]'
+                    <CydMaterialDesignIcons
+                      name={'arrow-left-thin'}
+                      size={32}
+                      className='text-base400'
                     />
                   </CyDTouchView>
                   <CyDText className='font-semibold text-[20px]'>
@@ -282,9 +286,10 @@ export default function Login(props) {
                         onSuccess,
                       });
                     }}>
-                    <CyDImage
-                      source={AppImages.QR_CODE_V2}
-                      className='w-[24px] h-[24px]'
+                    <CydMaterialDesignIcons
+                      name='qrcode-scan'
+                      size={24}
+                      className='text-base400'
                     />
                   </CyDTouchView>
                 </CyDView>
@@ -311,9 +316,10 @@ export default function Login(props) {
                   />
                   {badKeyError && (
                     <CyDView className='flex flex-row items-center justify-center mt-[12px]'>
-                      <CyDImage
-                        source={AppImages.CANCEL_ICON}
-                        className='h-[16px] w-[16px]'
+                      <CydMaterialDesignIcons
+                        name='cancel'
+                        size={16}
+                        className='text-red400'
                       />
                       <CyDText className='text-[12px] ml-[4px] text-errorTextRed text-center'>
                         {t('BAD_KEY_PHARSE')}
@@ -329,8 +335,13 @@ export default function Login(props) {
                   }}
                   titleStyle={'text-[14px] ml-[4px] font-medium text-n900'}
                   paddingY={6}
-                  image={AppImages.PASTE_FILL}
-                  imageStyle={'h-[14px] w-[14px]'}
+                  icon={
+                    <CydMaterialDesignIcons
+                      name='clipboard-text'
+                      size={14}
+                      className='text-n900'
+                    />
+                  }
                   imagePosition={ImagePosition.LEFT}
                   style='px-[6px] py-[6px] w-[174px] mt-[12px] ml-[26px]'
                 />
@@ -350,9 +361,10 @@ export default function Login(props) {
                   loaderStyle={{ height: 25, width: 25 }}
                 />
                 <CyDView className='flex flex-row mt-[8px] justify-center'>
-                  <CyDImage
-                    className='h-[16px] w-[16px]'
-                    source={AppImages.AUDIT_ICON}
+                  <CydMaterialDesignIcons
+                    name='shield-lock'
+                    size={16}
+                    className='text-base400'
                   />
                   <CyDText className='text-[10px] font-medium ml-[6px]'>
                     {t('CYPHER_AUDIT_TEXT')}
@@ -383,7 +395,7 @@ export default function Login(props) {
           </CyDKeyboardAvoidingView>
         </CyDKeyboardAwareScrollView>
       )}
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }
 

@@ -198,10 +198,10 @@ export default function MigratePCFunds() {
                     setGaveConsent(!gaveConsent);
                   }}>
                   {gaveConsent && (
-                    <CyDImage
-                      source={AppImages.CORRECT}
-                      className='h-[15px] w-[15px] ml-[2px]'
-                      resizeMode='contain'
+                    <CydMaterialDesignIcons
+                      name='check-bold'
+                      size={16}
+                      className='text-base400 ml-[2px]'
                     />
                   )}
                 </CyDTouchView>
@@ -271,9 +271,10 @@ export default function MigratePCFunds() {
                 </CyDText>
               </CyDView>
               <CyDView className='flex flex-row items-start mt-[12px]'>
-                <CyDImage
-                  source={AppImages.MANAGE_CARD}
-                  className='w-[24px] h-[24px] mr-[12px]'
+                <CydMaterialDesignIcons
+                  name='credit-card-outline'
+                  size={24}
+                  className='text-base400 mr-3'
                 />
                 <CyDView className='w-[90%]'>
                   <CyDText className='font-semibold text-[14px] text-base200 w-[90%]'>

@@ -34,6 +34,7 @@ import {
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -282,8 +283,8 @@ const DeFiScene = ({
                 <CyDTouchView
                   className='flex-1 flex-row gap-[4px] justify-start items-center'
                   onPress={() => {
-                    navigation.navigate(screenTitle.BROWSER, {
-                      screen: screenTitle.BROWSER_SCREEN,
+                    navigation.navigate(screenTitle.OPTIONS, {
+                      screen: screenTitle.BROWSER,
                       params: {
                         url: protocol.protocolURL,
                       },
@@ -292,10 +293,10 @@ const DeFiScene = ({
                   <CyDText className='underline font-bold text-[20px]'>
                     {protocol.protocolName}
                   </CyDText>
-                  <CyDFastImage
-                    source={AppImages.LINK}
-                    className='h-[14px] w-[14px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name='open-in-new'
+                    size={14}
+                    className='text-base400'
                   />
                 </CyDTouchView>
                 <CyDView className='flex-1 flex-row justify-start items-center'>

@@ -23,6 +23,7 @@ import {
 import useAxios from '../../../../core/HttpRequest';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -135,9 +136,10 @@ const IHaveReferralCodeScreen = () => {
                 });
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

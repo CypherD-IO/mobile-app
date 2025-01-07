@@ -174,9 +174,10 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                   className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                   <CyDView
                     className={`${isChecked ? 'bg-base400' : ''} h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
-                    <CyDImage
-                      source={AppImages.WHITE_CHECK_MARK}
-                      className='h-[20px] w-[20px]'
+                    <CydMaterialDesignIcons
+                      name='check-bold'
+                      size={18}
+                      className='text-n0'
                     />
                   </CyDView>
                 </CyDTouchView>

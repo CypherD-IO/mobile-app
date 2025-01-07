@@ -8,6 +8,7 @@ import {
   CyDText,
   CyDScrollView,
   CyDFastImage,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
@@ -56,6 +57,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { ButtonType } from '../../constants/enum';
 
 function copyToClipboard(text: string) {
   Clipboard.setString(text);
@@ -344,25 +346,38 @@ export default function QRCodeGenerator() {
             {!isCapturingDetails && selectedChain.address && (
               <CyDView className='mt-[10px] justify-center items-center flex flex-row'>
                 <Button
-                  image={AppImages.COPY}
                   onPress={() => {
                     copyToClipboard(selectedChain.address);
                     showToast(t('ADDRESS_COPY'));
                   }}
-                  style='w-[40px] h-[40px] mr-[10px] rounded-[8px]'
-                  imageStyle='self-center  h-[18px] w-[18px]'
-                  type='secondary'
+                  icon={
+                    <CydMaterialDesignIcons
+                      name='content-copy'
+                      size={20}
+                      className='text-base400'
+                    />
+                  }
+                  style='w-[40px] h-[40px] mr-[10px] rounded-[8px] p-[0px]'
+                  type={ButtonType.SECONDARY}
                   title={''}
+                  paddingY={0}
                 />
                 <Button
-                  image={AppImages.SHARE}
+                  icon={
+                    <CydMaterialDesignIcons
+                      name='share-variant'
+                      size={24}
+                      className='text-base400'
+                    />
+                  }
                   onPress={() => {
                     void shareQR();
                   }}
                   style='w-[40px] h-[40px] ml-[10px] rounded-[8px]'
                   imageStyle='self-center h-[18px] w-[18px]'
-                  type='secondary'
+                  type={ButtonType.SECONDARY}
                   title={''}
+                  paddingY={0}
                 />
               </CyDView>
             )}

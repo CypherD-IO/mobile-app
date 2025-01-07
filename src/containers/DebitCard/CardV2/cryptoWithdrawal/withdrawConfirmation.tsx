@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import {
   CyDFastImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -106,9 +107,10 @@ export default function WithdrawConfirmation() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            source={AppImages.BACK_ARROW_GRAY}
-            className='w-[32px] h-[32px]'
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
           />
         </CyDTouchView>
 

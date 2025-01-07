@@ -24,6 +24,7 @@ import {
 } from '../../../constants/server';
 import { get } from 'lodash';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import clsx from 'clsx';
 
 export default function AutoLoadOptionsModal({
   isModalVisible,
@@ -135,7 +136,7 @@ export default function AutoLoadOptionsModal({
       {
         title: 'Update Auto Load',
         description: 'Update auto load configuration',
-        image: AppImages.CIRCLE_WITH_DOTS,
+        image: 'update',
         action: () => {
           onPressUpdateAutoLoad();
         },
@@ -143,7 +144,7 @@ export default function AutoLoadOptionsModal({
       {
         title: (autoLoadConfig?.isPaused ? 'Resume' : 'Pause') + ' Auto Load',
         description: 'Pause/Resume Auto load',
-        image: autoLoadConfig?.isPaused ? AppImages.RESUME : AppImages.PAUSE,
+        image: autoLoadConfig?.isPaused ? 'play' : 'pause',
         action: () => {
           void toggleAutoLoad();
         },
@@ -151,7 +152,7 @@ export default function AutoLoadOptionsModal({
       {
         title: 'Cancel Auto Load',
         description: 'Permanently cancel auto load',
-        image: AppImages.ICON_CANCEL,
+        image: 'cancel',
         action: () => {
           void cancelAutoLoad();
         },
@@ -198,10 +199,12 @@ export default function AutoLoadOptionsModal({
                   />
                 </CyDView>
               ) : (
-                <CyDImage
-                  source={image}
-                  className={'h-[24px] w-[24px] mx-[12px]'}
-                  resizeMode={'contain'}
+                <CydMaterialDesignIcons
+                  name={image}
+                  size={24}
+                  className={clsx('text-base400 mx-[12px]', {
+                    'text-red400': index === 2,
+                  })}
                 />
               )}
 

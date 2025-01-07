@@ -388,9 +388,10 @@ export default function SelectPlanModal({
                   </CyDView>
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.MANAGE_CARD}
-                        className='w-[24px] h-[24px]'
+                      <CydMaterialDesignIcons
+                        name='credit-card-outline'
+                        size={24}
+                        className='text-base400'
                       />
                     </CyDView>
                     <CyDText className='font-bold text-[12px]'>
@@ -627,9 +628,10 @@ export default function SelectPlanModal({
                 <CyDView className='w-[58%] flex flex-col bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.MANAGE_CARD}
-                        className='w-[24px] h-[24px]'
+                      <CydMaterialDesignIcons
+                        name='credit-card-outline'
+                        size={24}
+                        className='text-base400'
                       />
                     </CyDView>
                     <CyDText className='font-bold text-[12px] h-[18px]'>
@@ -799,10 +801,10 @@ export default function SelectPlanModal({
                   },
                 )}>
                 {consent && (
-                  <CyDImage
-                    source={AppImages.CORRECT}
-                    className='h-[15px] w-[15px] ml-[2px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name='check-bold'
+                    size={14}
+                    className='text-base400 ml-[2px]'
                   />
                 )}
               </CyDView>
@@ -864,20 +866,20 @@ export default function SelectPlanModal({
             <CyDScrollView className='flex-1'>
               <CyDView className='mt-[16px] px-[16px]'>
                 <CyDView className='flex-row items-center mt-[8px]'>
-                  <CyDImage
-                    source={AppImages.CORRECT_BLACK}
-                    className='h-[20px] w-[36px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name='check-bold'
+                    size={24}
+                    className='text-base400'
                   />
                   <CyDText className='text-[14px] ml-[8px] font-medium'>
                     {t('VIRTUAL_CARD')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex-row items-center mt-[8px]'>
-                  <CyDImage
-                    source={AppImages.CORRECT_BLACK}
-                    className='h-[20px] w-[36px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name='check-bold'
+                    size={24}
+                    className='text-base400'
                   />
                   <CyDText className='text-[14px] ml-[8px] font-medium'>
                     {t('APPLE_GOOGLE_PAY')}
@@ -1113,9 +1115,10 @@ export default function SelectPlanModal({
                               'bg-p150 border-p150': isChecked.physicalCard,
                             },
                           )}>
-                          <CyDImage
-                            source={AppImages.WHITE_CHECK_MARK}
-                            className='h-[20px] w-[20px]'
+                          <CydMaterialDesignIcons
+                            name='check-bold'
+                            size={18}
+                            className='text-n20'
                           />
                         </CyDView>
                       </CyDTouchView>
@@ -1139,9 +1142,10 @@ export default function SelectPlanModal({
                               'bg-p150 border-p150': isChecked.metalCard,
                             },
                           )}>
-                          <CyDImage
-                            source={AppImages.WHITE_CHECK_MARK}
-                            className='h-[20px] w-[20px]'
+                          <CydMaterialDesignIcons
+                            name='check-bold'
+                            size={18}
+                            className='text-n20'
                           />
                         </CyDView>
                       </CyDTouchView>
@@ -1165,9 +1169,10 @@ export default function SelectPlanModal({
                               'bg-p150 border-p150': isChecked.addonCard,
                             },
                           )}>
-                          <CyDImage
-                            source={AppImages.WHITE_CHECK_MARK}
-                            className='h-[20px] w-[20px]'
+                          <CydMaterialDesignIcons
+                            name='check-bold'
+                            size={18}
+                            className='text-n20'
                           />
                         </CyDView>
                       </CyDTouchView>

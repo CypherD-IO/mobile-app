@@ -19,8 +19,6 @@ import {
   CyDFastImage,
   CydIcons,
 } from '../../styles/tailwindStyles';
-import { IconProps } from '@react-native-vector-icons/common';
-import CydIconsPack from '../../customFonts/generator';
 
 const {
   CText,

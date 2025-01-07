@@ -63,6 +63,7 @@ import {
 import {
   CyDAnimatedView,
   CyDFastImage,
+  CydIcons,
   CyDImage,
   CydMaterialDesignIcons,
   CyDScrollView,
@@ -446,9 +447,10 @@ export default function Overview({
                 </CyDView>
 
                 {tokenData?.isVerified && (
-                  <CyDImage
-                    source={AppImages.VERIFIED_ICON}
-                    className={'w-[16px] h-[16px] mt-[-1px] ml-[4px]'}
+                  <CydMaterialDesignIcons
+                    name='check-decagram'
+                    size={16}
+                    className='text-blue100 mt-[-1px] ml-[4px]'
                   />
                 )}
               </CyDView>
@@ -489,14 +491,12 @@ export default function Overview({
                   className={clsx('flex flex-row justify-end items-center', {
                     'mt-[-12px]': isAndroid(),
                   })}>
-                  <CyDImage
-                    source={
-                      selectedTrend > 0
-                        ? AppImages.TREND_UP
-                        : AppImages.TREND_DOWN
-                    }
-                    className='h-[18px] w-[18px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name={selectedTrend > 0 ? 'trending-up' : 'trending-down'}
+                    size={20}
+                    className={clsx('text-green400 ml-[3px]', {
+                      'text-red400': selectedTrend < 0,
+                    })}
                   />
                   <CyDText
                     className={clsx('text-[14px] font-bold ml-[3px]', {
@@ -561,7 +561,7 @@ export default function Overview({
             baseStyle={{
               fontSize: '14px',
               fontFamily: 'Manrope',
-              color: Colors.primaryTextColor,
+              color: '#999999',
               lineHeight: 22,
             }}
             contentWidth={width}
@@ -581,7 +581,7 @@ export default function Overview({
               }}>
               <CyDText
                 className={
-                  'font-bold text-[14px] text-toastColor text-center underline'
+                  'font-bold text-[14px] text-base100 text-center underline'
                 }>
                 {t<string>('VIEW_MORE')}
               </CyDText>
@@ -667,10 +667,10 @@ export default function Overview({
       <CyDView className={'mx-[12px] mt-[12px] mb-[20px]'}>
         <CyDView className={'flex flex-row justify-between mb-[10px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.MARKET_CAP_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CydIcons
+              name='trend-up'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('MARKET_CAP_INIT_CAPS')}
@@ -680,7 +680,7 @@ export default function Overview({
                 isVisible={showMarketCapTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('MARKET_CAP_FORMULA')}
@@ -694,10 +694,10 @@ export default function Overview({
                 onClose={() => setMarketCapTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setMarketCapTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CydIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -711,10 +711,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.BAR_GRAPH_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CydIcons
+              name='bar-graph'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('VOLUME_INIT_CAPS')}
@@ -724,7 +724,7 @@ export default function Overview({
                 isVisible={showVolumeTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('VOLUME_TOOLTIP')}
@@ -735,10 +735,10 @@ export default function Overview({
                 onClose={() => setVolumeTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setVolumeTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CydIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -753,10 +753,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.CIRCULAR_ARROWS_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CydMaterialDesignIcons
+              name='sync'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('CURRENT_SUPPLY_INIT_CAPS')}
@@ -766,7 +766,7 @@ export default function Overview({
                 isVisible={showCirculatingSupplyTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('CIRCULATING_SUPPLY_TOOLTIP')}
@@ -777,10 +777,10 @@ export default function Overview({
                 onClose={() => setCirculatingSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setCirculatingSupplyTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CydIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -795,10 +795,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.TOTAL_SUPPLY_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CydIcons
+              name='blockchain-connected'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('TOTAL_SUPPLY_INIT_CAPS')}
@@ -808,7 +808,7 @@ export default function Overview({
                 isVisible={showTotalSupplyTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('TOTAL_SUPPLY_FORMULA')}
@@ -822,10 +822,10 @@ export default function Overview({
                 onClose={() => setTotalSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setTotalSupplyTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CydIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -840,10 +840,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.METER_MAX_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CydIcons
+              name='meter'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('MAXIMUM_SUPPLY_INIT_CAPS')}
@@ -853,7 +853,7 @@ export default function Overview({
                 isVisible={showMaxSupplyTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('MAX_SUPPLY_FORMULA')}
@@ -867,10 +867,10 @@ export default function Overview({
                 onClose={() => setMaxSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setMaxSupplyTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CydIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>

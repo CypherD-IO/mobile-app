@@ -107,9 +107,10 @@ export default function JoinDiscordModal(props: {
             <CyDView className='flex flex-col items-center px-[32px]'>
               {isJoinDiscordStatus === JoinDiscordStatus.ERROR ? (
                 <CyDView className='flex flex-col items-center'>
-                  <CyDImage
-                    source={AppImages.RED_CROSS_IMG}
-                    className='h-[60px] w-[60px] mt-[100px]'
+                  <CydMaterialDesignIcons
+                    name='close'
+                    size={60}
+                    className='text-red400'
                   />
                   <CyDText className='text-center text-[16px] font-semibold mt-[24px]'>
                     {'Access limited to Premium users only.'}

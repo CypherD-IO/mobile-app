@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
-  CyDFastImage,
   CyDImageBackground,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -231,10 +231,10 @@ const UpgradeToPhysicalCardScreen = () => {
                       </CyDText>
                     </CyDView>
                   </CyDView>
-                  <CyDFastImage
-                    className='h-[12px] w-[12px]'
-                    source={AppImages.DOWN_ARROW}
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name={'chevron-down'}
+                    size={16}
+                    className={'text-base400'}
                   />
                 </CyDTouchView>
                 <CyDView className='mx-[20px] mt-[20px] flex flex-row items-center'>
@@ -262,10 +262,10 @@ const UpgradeToPhysicalCardScreen = () => {
                       <CyDText className={'text-center text-[16px] mx-[4px]'}>
                         {selectedCountryForDialCode.dialCode}
                       </CyDText>
-                      <CyDFastImage
-                        className='h-[12px] w-[12px]'
-                        source={AppImages.DOWN_ARROW}
-                        resizeMode='contain'
+                      <CydMaterialDesignIcons
+                        name={'chevron-down'}
+                        size={16}
+                        className={'text-base400'}
                       />
                     </CyDTouchView>
                     <CyDTextInput
@@ -372,10 +372,10 @@ const UpgradeToPhysicalCardScreen = () => {
                       </CyDText>
                     </CyDView>
                   </CyDView>
-                  <CyDFastImage
-                    className='h-[12px] w-[12px]'
-                    source={AppImages.DOWN_ARROW}
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name={'chevron-down'}
+                    size={16}
+                    className={'text-base400'}
                   />
                 </CyDTouchView>
                 <CyDView className='mx-[20px] mt-[20px] flex flex-row items-center'>

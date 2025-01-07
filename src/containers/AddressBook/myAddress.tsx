@@ -92,7 +92,7 @@ export function AddressBook() {
               navigation.goBack();
             }}>
             <CydMaterialDesignIcons
-              name={'arrow-left-circle'}
+              name={'arrow-left-thin'}
               size={32}
               className='text-base400'
             />
@@ -114,7 +114,7 @@ export function AddressBook() {
               <AddressBookContainer
                 chain={CHAIN_ETH.name}
                 wallet={ethereum}
-                logo={AppImages.ETHEREUM_NEW}
+                logo={AppImages.ETHEREUM}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.EVM}
                 bGC={'#f6f6f9'}
@@ -150,7 +150,7 @@ export function AddressBook() {
               <AddressBookContainer
                 chain={CHAIN_JUNO.name}
                 wallet={juno.wallets[juno.currentIndex]}
-                logo={AppImages.JUNO_PNG}
+                logo={AppImages.JUNO_LOGO}
                 bGC={'#ebebeb'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.JUNO}
@@ -213,7 +213,7 @@ export function AddressBook() {
               <AddressBookContainer
                 chain={CHAIN_BSC.name}
                 wallet={ethereum}
-                logo={AppImages.BIANCE}
+                logo={AppImages.BINANCE}
                 bGC={'#fff7e3'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.BSC}

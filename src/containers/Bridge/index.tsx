@@ -43,8 +43,10 @@ import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
+  CydIcons,
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -1479,7 +1481,6 @@ const Bridge: React.FC = () => {
           throw new Error('Invalid chain');
         }
       } catch (err: unknown) {
-        console.log('🚀 ~ onAcceptSwap ~ err:', err);
         setLoading({ ...loading, acceptSwapLoading: false });
         showModal('state', {
           type: 'error',
@@ -1698,9 +1699,10 @@ const Bridge: React.FC = () => {
                   ? navigation.goBack()
                   : resetAndSetIndex();
               }}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[32px] h-[32px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
           )}
@@ -2006,10 +2008,10 @@ const Bridge: React.FC = () => {
                   </CyDView>
 
                   <CyDView className={'flex justify-center h-[30px] w-[30px]'}>
-                    <CyDFastImage
-                      source={AppImages.SWAP}
-                      className='h-[22px] w-[22px]'
-                      resizeMode='contain'
+                    <CydIcons
+                      name='refresh'
+                      size={32}
+                      className='text-base400'
                     />
                   </CyDView>
 
@@ -2250,10 +2252,6 @@ const Bridge: React.FC = () => {
           )}
         {index === 0 && (
           <CyDView className='mx-[16px] mt-[16px] bg-n0 rounded-[8px] p-[12px] flex flex-row items-start '>
-            <CyDImage
-              className='w-[20px] h-[20px] mr-[4px]'
-              source={AppImages.CURRENCY_DETAILS}
-            />
             <CyDView className='flex-1'>
               <CyDView className='flex flex-row justify-between'>
                 <CyDView>
@@ -2280,9 +2278,10 @@ const Bridge: React.FC = () => {
                     void manualRefreshQuote();
                   }}
                   disabled={loading.quoteLoading}>
-                  <CyDImage
-                    source={AppImages.REFRESH}
-                    className={clsx('w-[12px] h-[12px] mr-[4px]', {
+                  <CydMaterialDesignIcons
+                    name='autorenew'
+                    size={14}
+                    className={clsx('mr-[4px] text-base400', {
                       'opacity-50': loading.quoteLoading,
                     })}
                   />
@@ -2314,9 +2313,10 @@ const Bridge: React.FC = () => {
                     <CyDText>{`${signaturesRequired} signature required`}</CyDText>
                   </CyDSkeleton>
                   <CyDView className='flex flex-row items-center w-[50%] justify-end'>
-                    <CyDImage
-                      className='w-[20px] h-[20px] mr-[4px]'
-                      source={AppImages.CLOCK}
+                    <CydMaterialDesignIcons
+                      name={'clock-time-five'}
+                      size={20}
+                      className='text-base400 mr-[4px]'
                     />
                     <CyDSkeleton
                       width={50}

@@ -12,7 +12,12 @@ import {
   round,
 } from 'lodash';
 import { ethers } from 'ethers';
-import { CyDFastImage, CyDText, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CydMaterialDesignIcons,
+  CyDText,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';
@@ -124,9 +129,10 @@ export default function BridgeRoutePreview({
 
       {true && (
         <CyDView className='flex flex-row items-center bg-red20 rounded-[8px] p-[8px] mb-[12px]'>
-          <CyDFastImage
-            source={AppImages.WARNING}
-            className='w-[20px] h-[20px] mr-[10px]'
+          <CydMaterialDesignIcons
+            name='alert'
+            size={20}
+            className='text-red400 mr-[10px]'
           />
           <CyDText className='text-[12px] font-medium w-[85%]'>
             {`Please do not move out of this page or go back as ${signaturesRequired} more ${signaturesRequired > 1 ? 'signatures are' : 'signature is'}  required to complete your bridge`}

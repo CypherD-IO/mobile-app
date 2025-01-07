@@ -211,7 +211,6 @@ export const swapTokens = async ({
             'gwei',
           ),
         };
-        console.log('🚀 ~ void ~ tx:', tx);
         const privateKey = await loadPrivateKeyFromKeyChain(
           false,
           hdWallet.state.pinValue,

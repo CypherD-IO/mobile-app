@@ -83,16 +83,12 @@ export const RefreshTimerBar = (props: {
         <CyDView
           className={clsx(
             'h-[15px] w-[15px] justify-center items-center rounded-[4px] border-[1px] border-base400',
-            {
-              'bg-base400': isVerifyCoinChecked,
-              'bg-transparent': !isVerifyCoinChecked,
-            },
           )}>
           {isVerifyCoinChecked && (
-            <CyDFastImage
-              source={AppImages.CORRECT}
-              className='h-[14px] w-[10px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='check-bold'
+              size={12}
+              className='text-base400'
             />
           )}
         </CyDView>

@@ -270,8 +270,13 @@ export default function ActivitySendInfoModal({
                     void referFriend();
                   }}
                   style={'py-[5%] mx-[0px]'}
-                  image={AppImages.SHARE}
-                  imageStyle='h-[18px] w-[18px] mt-[3px] mr-[10px]'
+                  icon={
+                    <CydIcons
+                      name='share-filled'
+                      size={18}
+                      className='text-base400 mt-[3px] mr-[10px]'
+                    />
+                  }
                   title={t('SHARE_DETAILS')}
                   titleStyle='text-[14px]'
                 />

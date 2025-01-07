@@ -22,6 +22,7 @@ import {
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -806,10 +807,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           )}
 
           <CyDView className='flex flex-row items-center ml-[8px]'>
-            <CyDFastImage
-              source={AppImages.DOWN_ARROW}
-              className='h-[15px] w-[15px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='chevron-down'
+              size={20}
+              className='text-base400'
             />
           </CyDView>
         </CyDView>
@@ -1092,10 +1093,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               className={clsx(
                 'border border-n40 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
               )}>
-              <CyDFastImage
-                className='h-[16px] w-[16px]'
-                source={AppImages.TOGGLE_ICON}
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='swap-vertical'
+                size={20}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

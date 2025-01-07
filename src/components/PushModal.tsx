@@ -6,7 +6,7 @@ import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
-import { CydMaterialDesignIcons } from '../styles/tailwindStyles';
+import { CyDFastImage, CydMaterialDesignIcons } from '../styles/tailwindStyles';
 const { CText, DynamicView, DynamicImage } = require('../styles');
 
 export default function PushModal(props) {
@@ -98,15 +98,8 @@ export default function PushModal(props) {
             width={100}
             jC={'center'}
             fD={'row'}>
-            <DynamicImage
-              dynamic
-              dynamicWidthFix
-              aLIT={'flex-end'}
-              mT={10}
-              marginHorizontal={6}
-              height={20}
-              width={20}
-              resizemode='contain'
+            <CyDFastImage
+              className='h-[20px] w-[20px] mx-[6px]'
               source={{ uri: modalParams.appImage }}
             />
             <CText

@@ -6,6 +6,7 @@ import {
   CyDSafeAreaView,
   CyDTouchView,
   CyDImage,
+  CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -27,11 +28,10 @@ import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import useAxios from '../../../core/HttpRequest';
 import { capitalize } from 'lodash';
-import { getCountryNameFromISO2 } from '../../../core/locale';
 import CyDSkeleton from '../../../components/v2/skeleton';
 import { getCountryNameById } from '../../../core/util';
 import clsx from 'clsx';
-import { isIOS } from '../../../misc/checkers';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -39,6 +39,7 @@ interface RouteParams {
 }
 
 export default function VerifyShippingAddress() {
+  const insets = useSafeAreaInsets();
   const [shippingAddress, setShippingAddress] = useState<IShippingAddress>({
     city: '',
     country: '',
@@ -86,7 +87,9 @@ export default function VerifyShippingAddress() {
   };
 
   return (
-    <CyDSafeAreaView className='flex flex-1 bg-n20 h-full'>
+    <CyDView
+      className='flex flex-1 bg-n20 h-full'
+      style={{ paddingTop: insets.top }}>
       {/* <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} /> */}
       <CyDView className='flex flex-col justify-between h-full bg-transparent'>
         <CyDView className='mx-[16px]'>
@@ -96,9 +99,10 @@ export default function VerifyShippingAddress() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -115,10 +119,10 @@ export default function VerifyShippingAddress() {
           <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] mt-[12px]'>
             <CyDView className='flex flex-row items-center justify-between'>
               <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                <CyDImage
-                  source={AppImages.WALLET}
-                  className='w-[24px] h-[24px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name='wallet-bifold-outline'
+                  size={28}
+                  className='text-base400'
                 />
                 <CyDText className='text-[16px] font-medium'>
                   {t('SHIPPING_ADDRESS')}
@@ -198,21 +202,15 @@ export default function VerifyShippingAddress() {
               <CyDText className='text-[16px]'>
                 {t('ENTER_NEW_DELIVERY_ADDRESS')}
               </CyDText>
-              <CyDImage
-                source={AppImages.RIGHT_ARROW_LONG}
-                className='w-[16px] h-[16px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name={'arrow-right-thin'}
+                size={16}
+                className=''
               />
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView
-          className={clsx(
-            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
-            {
-              'bottom-[-32px]': isIOS(),
-            },
-          )}>
+        <CyDView className={clsx('py-[32px] px-[16px] bg-n0')}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.NAME_ON_CARD_SCREEN, {
@@ -229,6 +227,6 @@ export default function VerifyShippingAddress() {
           />
         </CyDView>
       </CyDView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

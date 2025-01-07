@@ -171,7 +171,7 @@ const StateModal: React.FC<State> = (store: State) => {
       style={styles.modalContainer}>
       <CyDView
         className={
-          'bg-n0 w-[100%] px-[40px] flex items-center rounded-t-[24px]'
+          'bg-n20 w-[100%] px-[40px] flex items-center rounded-t-[24px]'
         }>
         <RenderImage />
         <CyDText className={'mt-[10px] font-bold text-[20px] text-center'}>
@@ -284,7 +284,7 @@ export const BuyOrBridge = ({
             onPress={() => {
               hideModal();
               setTimeout(() => {
-                navigation.navigate(screenTitle.BRIDGE_SCREEN);
+                navigation.navigate(screenTitle.SWAP);
               }, MODAL_HIDE_TIMEOUT);
             }}>
             <CyDView

@@ -256,20 +256,20 @@ const AddressProfile = props => {
                     contactBook,
                   });
                 }}>
-                <CyDImage
-                  source={AppImages.EDIT}
-                  className={'w-[20px] h-[20px] mr-[15px]'}
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={'pencil'}
+                  size={20}
+                  className={'text-base400 mr-4'}
                 />
               </CyDTouchView>
               <CyDTouchView
                 onPress={() => {
                   deleteContact(name);
                 }}>
-                <CyDImage
-                  source={AppImages.DELETE}
-                  className={'w-[18px] h-[18px] mr-[15px]'}
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={'delete'}
+                  size={20}
+                  className={'text-base400 mr-4'}
                 />
               </CyDTouchView>
             </CyDView>
@@ -279,9 +279,12 @@ const AddressProfile = props => {
               <RenderIcon contact={contactBook[name]} />
             </CyDView>
           ) : null}
-          <Animated.Image
-            style={isActive ? animatedStyle : styles.inactiveArrowStyle}
-            source={AppImages.UP_ARROW}
+          <CydMaterialDesignIcons
+            name={'chevron-up'}
+            size={16}
+            className={clsx('text-base400', {
+              'rotate-180': !isActive,
+            })}
           />
         </CyDView>
       </CyDView>
@@ -441,8 +444,8 @@ const AddressProfile = props => {
                       <CyDImage
                         source={
                           isRadioButtonPressed === name.concat(backendName)
-                            ? AppImages.RADIO_BUTTON_SELECTED
-                            : AppImages.RADIO_BUTTON_UNSELECTED
+                            ? AppImages.RADIO_CHECK
+                            : AppImages.RADIO_UNCHECK
                         }
                         className={'w-[24px] h-[24px] mr-[10px]'}
                         resizeMode='contain'

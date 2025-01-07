@@ -568,7 +568,11 @@ export default function TokenSelectionV2({
                     </CyDView>
                   </CyDView>
                 </CyDView>
-                <CyDImage source={AppImages.DOWN_ARROW} />
+                <CydMaterialDesignIcons
+                  name={'chevron-down'}
+                  size={24}
+                  className={'text-base400'}
+                />
               </CyDView>
             </CyDTouchView>
           </CyDView>
@@ -576,9 +580,10 @@ export default function TokenSelectionV2({
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='bg-n40 h-[1px] w-[45%] my-[24px]' />
             <CyDTouchView onPress={onToggle}>
-              <CyDImage
-                source={AppImages.CIRCULAR_ARROWS_ICON}
-                className='p-[3px] h-[32px] w-[32px] rounded-full'
+              <CydMaterialDesignIcons
+                name='swap-vertical'
+                size={32}
+                className='text-base400 p-[3px]'
               />
             </CyDTouchView>
             <CyDView className='bg-n40 h-[1px] w-[45%] my-[24px]' />
@@ -658,7 +663,11 @@ export default function TokenSelectionV2({
                     )}
                   </CyDView>
                 </CyDView>
-                <CyDImage source={AppImages.DOWN_ARROW} />
+                <CydMaterialDesignIcons
+                  name={'chevron-down'}
+                  size={24}
+                  className={'text-base400'}
+                />
               </CyDView>
             </CyDTouchView>
           </CyDView>

@@ -10,6 +10,7 @@ import {
   CyDScrollView,
   CyDFastImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -153,9 +154,10 @@ export default function AddDeliveryAddress() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
+              <CydMaterialDesignIcons
+                name={'arrow-left-thin'}
+                size={32}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -200,10 +202,10 @@ export default function AddDeliveryAddress() {
                         </CyDText>
                       )}
                     </CyDView>
-                    <CyDFastImage
-                      className='h-[12px] w-[12px]'
-                      source={AppImages.DOWN_ARROW}
-                      resizeMode='contain'
+                    <CydMaterialDesignIcons
+                      name={'chevron-down'}
+                      size={16}
+                      className={'text-base400'}
                     />
                   </CyDTouchView>
                   <CyDView className=' mt-[20px] flex flex-row items-center'>
@@ -231,10 +233,10 @@ export default function AddDeliveryAddress() {
                         <CyDText className={'text-center text-[16px] mx-[4px]'}>
                           {selectedCountryForDialCode.dialCode}
                         </CyDText>
-                        <CyDFastImage
-                          className='h-[12px] w-[12px]'
-                          source={AppImages.DOWN_ARROW}
-                          resizeMode='contain'
+                        <CydMaterialDesignIcons
+                          name={'chevron-down'}
+                          size={16}
+                          className={'text-base400'}
                         />
                       </CyDTouchView>
                       <CyDTextInput

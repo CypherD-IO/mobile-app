@@ -35,10 +35,10 @@ export default function ShippingFeeConsentModal({
           Please Note:
         </CyDText>
         <CyDView className={'flex flex-row mt-[18px]'}>
-          <CyDImage
-            className={'mt-[6px] h-[12px] w-[12px]'}
-            source={AppImages.RIGHT_ARROW_BULLET}
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name={'triangle'}
+            size={14}
+            className='text-p150 rotate-90 mr-[4px]'
           />
           <CyDText className={'ml-[10px] font-semibold'}>
             {t('SHIPPING_FEE_SUB1') + '$' + feeAmount + t('SHIPPING_FEE_SUB2')}
@@ -58,10 +58,10 @@ export default function ShippingFeeConsentModal({
               },
             )}>
             {hasConsent && (
-              <CyDImage
-                source={AppImages.CORRECT}
-                className='h-[15px] w-[15px] ml-[2px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='check-bold'
+                size={16}
+                className='text-base400'
               />
             )}
           </CyDView>
@@ -85,7 +85,7 @@ export default function ShippingFeeConsentModal({
       isModalVisible={isModalVisible}>
       <CyDView
         className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-        <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
+        <CyDTouchView onPress={() => onFailure()} className={'z-[50] self-end'}>
           <CydMaterialDesignIcons
             name={'close'}
             size={24}

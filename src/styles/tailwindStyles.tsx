@@ -30,7 +30,6 @@ import {
 } from 'react-native-gesture-handler';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import CydIconsPack from '../customFonts/generator';
-import LottieView from 'lottie-react-native';
 
 export const CyDText = (props: TextProps) => {
   return (
