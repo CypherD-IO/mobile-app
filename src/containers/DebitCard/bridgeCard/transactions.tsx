@@ -367,7 +367,7 @@ export default function CardTransactions() {
           onViewableItemsChanged={handleViewableItemsChanged.current}
           refreshControl={
             <RefreshControl
-              className={clsx({ 'bg-white': isIOS() })}
+              className={clsx({ 'bg-n0': isIOS() })}
               refreshing={refreshing && !txnRetrievalOffset.current}
               onRefresh={() => {
                 void fetchTransactions(true);
