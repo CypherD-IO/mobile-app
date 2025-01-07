@@ -3,7 +3,6 @@ import { StyleSheet, BackHandler } from 'react-native';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDAnimatedView,
-  CyDFastImage,
   CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -36,7 +35,6 @@ import { Layout } from 'react-native-reanimated';
 import usePortfolio from '../../hooks/usePortfolio';
 import { Holding } from '../../core/portfolio';
 import { get, groupBy } from 'lodash';
-import AppImages from '../../../assets/images/appImages';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {

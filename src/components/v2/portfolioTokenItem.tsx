@@ -259,7 +259,9 @@ const PortfolioTokenItem = ({
                     className={
                       ' bg-p100 px-[5px] ml-[10px] text-[12px] rounded-[4px]'
                     }>
-                    <CyDText className='font-bold'>{t('STAKE')}</CyDText>
+                    <CyDText className='font-semibold text-black'>
+                      {t('STAKE')}
+                    </CyDText>
                   </CyDView>
                 )}
               </CyDView>

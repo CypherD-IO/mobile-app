@@ -23,7 +23,13 @@ export default function SwitchView(props) {
             'z-[10]': index === itemIndex,
           })}
           key={itemIndex}>
-          <CyDText className={'px-[15px] font-bold'}>{item}</CyDText>
+          <CyDText
+            className={clsx('px-[15px] font-bold ', {
+              'text-base400': index !== itemIndex,
+              'text-black': index === itemIndex,
+            })}>
+            {item}
+          </CyDText>
         </CyDTouchView>
       ))}
     </CyDView>
