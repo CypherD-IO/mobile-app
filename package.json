@@ -52,6 +52,7 @@
     "@react-navigation/native-stack": "^6.2.5",
     "@reown/appkit-auth-wagmi-react-native": "1.0.2",
     "@reown/appkit-wagmi-react-native": "1.0.2",
+    "@reown/walletkit": "^1.0.0",
     "@sentry/react-native": "^5.33.1",
     "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.95.1",
@@ -61,7 +62,6 @@
     "@walletconnect/core": "^2.7.0",
     "@walletconnect/react-native-compat": "^2.11.0",
     "@walletconnect/utils": "^2.7.0",
-    "@walletconnect/web3wallet": "^1.5.0",
     "assert": "^1.5.0",
     "asyncstorage-down": "^4.2.0",
     "axios": "^0.24.0",
@@ -176,6 +176,7 @@
     "vm-browserify": "^0.0.4",
     "wagmi": "^2.13.2",
     "web3": "^4.16.0",
+    "web3-validator": "^2.0.6",
     "whatwg-fetch": "^3.6.20",
     "yup": "^0.32.11"
   },

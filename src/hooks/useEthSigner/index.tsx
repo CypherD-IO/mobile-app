@@ -23,10 +23,8 @@ import {
   useSendTransaction,
   useSwitchChain,
   useWriteContract,
-  useWalletClient,
-  useEstimateGas,
+  WagmiContext,
 } from 'wagmi';
-import { wagmiConfig, walletClient } from '../../components/wagmiConfigBuilder';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ConnectionTypes } from '../../constants/enum';
 import { Chain, walletConnectChainData } from '../../constants/server';
@@ -49,6 +47,7 @@ import { ChainIdToBackendNameMapping } from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
 
 export default function useEthSigner() {
+  const wagmiConfig = useContext(WagmiContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync, sendTransaction } = useSendTransaction();
@@ -84,7 +83,7 @@ export default function useEthSigner() {
     );
   };
 
-  const findTransaction = (
+  const findTransaction = async (
     fromAddress: string,
     toAddress: string,
     value: bigint,
@@ -92,7 +91,7 @@ export default function useEthSigner() {
     startBlockNumber: bigint,
     contractAddress?: string,
   ): Promise<Hash | null> => {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       // Make API call to get transactions
       const getTransactions = async () => {
         try {
@@ -129,7 +128,7 @@ export default function useEthSigner() {
     const hash = await sendTransactionAsync({
       account: transactionToBeSigned.from as `0x${string}`,
       to: transactionToBeSigned.to as `0x${string}`,
-      chainId: chainId,
+      chainId,
       value: BigInt(transactionToBeSigned.value),
       data: transactionToBeSigned?.data ?? '0x',
     });
@@ -178,7 +177,11 @@ export default function useEthSigner() {
     return hash;
   }
 
-  const signApprovalEthereum = async ({ web3, sendChain, dataToSign }) => {
+  const signApprovalEthereum = async ({
+    web3,
+    sendChain,
+    transactionToBeSigned,
+  }: RawTransaction) => {
     try {
       const connectionType = await getConnectionType();
       const connectedChain = getChainId(wagmiConfig);
@@ -203,13 +206,20 @@ export default function useEthSigner() {
           } catch (e) {}
         }
         const numberOfTokensInWei = web3?.utils.toWei(
-          String(Number(dataToSign.contractParams.numberOfTokens).toFixed(9)),
+          String(
+            Number(transactionToBeSigned.contractParams.numberOfTokens).toFixed(
+              9,
+            ),
+          ),
         );
         const response = await writeContractAsync({
           abi: allowanceApprovalContractABI,
-          address: dataToSign.to as `0x${string}`,
+          address: transactionToBeSigned.to as `0x${string}`,
           functionName: 'approve',
-          args: [dataToSign.contractParams?.toAddress, numberOfTokensInWei],
+          args: [
+            transactionToBeSigned.contractParams?.toAddress,
+            numberOfTokensInWei,
+          ],
           chainId: chainConfig.id,
         });
         const receipt = await getTransactionReceipt(response, chainConfig.id);
@@ -221,7 +231,7 @@ export default function useEthSigner() {
         );
         if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
           const signedTransaction = await web3.eth.accounts.signTransaction(
-            dataToSign,
+            transactionToBeSigned,
             privateKey,
           );
           let txHash: string;

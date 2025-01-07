@@ -235,8 +235,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                     setIsChooseTokenVisible(true);
                   }}>
                   <CyDText className='font-bold'>
-                    {capitalize(selectedToken?.chainDetails?.chainName) ??
-                      'Change'}
+                    {capitalize(selectedToken?.chainDetails?.name) ?? 'Change'}
                   </CyDText>
                   <CyDImage
                     source={AppImages.DOWN_ARROW}

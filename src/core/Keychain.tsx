@@ -534,11 +534,11 @@ export const getSolanaWallet = async (hdWallet: any) => {
 
     if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
       const seed = bip39.mnemonicToSeedSync(seedPhrase);
-      const path = `m/44'/501'/0'/${String(
+      const path = `m/44'/501'/${String(
         hdWallet?.state?.choosenWalletIndex > 0
           ? hdWallet?.state?.choosenWalletIndex
           : 0,
-      )}'`;
+      )}'/0'`;
 
       const derivedKey = derivePath(path, seed.toString('hex')).key;
       const keypair = Keypair.fromSeed(derivedKey);

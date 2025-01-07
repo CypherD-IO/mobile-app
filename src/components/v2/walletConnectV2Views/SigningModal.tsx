@@ -267,12 +267,14 @@ export default function SigningModal({
               amount: parseFloat(
                 Web3.utils.fromWei(
                   Web3.utils.hexToNumberString(paramsForDecoding.value),
+                  'ether',
                 ),
               ),
               valueInUSD:
                 parseFloat(
                   Web3.utils.fromWei(
                     Web3.utils.hexToNumberString(paramsForDecoding.value),
+                    'ether',
                   ),
                 ) * tokenPrice,
             },
