@@ -5,11 +5,7 @@ export const CYPHER_CARD_IMAGES =
 const S3_BUCKET_URL_DAPPS = 'https://public.cypherd.io/assets/dapps';
 
 // used check and remove, including the component
-const HISTORY_BROWSER = require('./history_browser.png');
-const HOME_BROWSER = require('./home_browser.png');
 const REFRESH_BROWSER = require('./refresh_browser.png');
-const BACK = require('./back.png');
-const LOCK = require('./lock.png');
 // need dm image
 const EMPTY = require('./emptyImg.png');
 const CYPHERD = require('./cypherD.png');
@@ -129,8 +125,6 @@ const NO_TRANSACTIONS_YET = require('./noTransactions.png');
 const STARGAZE_PNG = require('./stargaze.png');
 const NOBLE_PNG = require('./noble.png');
 const APR_ICON = require('./apr.png');
-// to be removed
-// const VERIFIED_ICON = require('./verifiedIcon.png');
 const STAKING_EMPTY_ILLUSTRATION = require('./stakingEmptyIllustration.png');
 const CELEBRATE = require('./celebrate.png');
 const READ_ONLY_CARD_BACKGROUND = require('./readOnlyCardBackground.png');
@@ -707,10 +701,6 @@ const AppImages = {
   CRYPTO_COINS,
   // CORRECT_BLACK,
   CYPHER_TELEGRAM_BOT_LOGO,
-  BACK,
-  LOCK,
-  HISTORY_BROWSER,
-  HOME_BROWSER,
   REFRESH_BROWSER,
   EMPTY,
   // RIGHT_ARROW,

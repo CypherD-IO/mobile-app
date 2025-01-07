@@ -17,6 +17,7 @@ import useConnectionManager from '../../../hooks/useConnectionManager';
 import { HdWalletContext } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import { t } from 'i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderBarProps {
   navigation: any;
@@ -33,6 +34,7 @@ export const HeaderBar = ({
   onWCSuccess,
   renderTitleComponent,
 }: HeaderBarProps) => {
+  const insets = useSafeAreaInsets();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { connectionType } = useConnectionManager();

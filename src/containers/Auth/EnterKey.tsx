@@ -256,7 +256,6 @@ export default function Login(props) {
         />
       ) : (
         <CyDKeyboardAwareScrollView
-          // lunar fun ghost able dawn memory brain room enrich buyer worry young
           className='flex-1 h-full'
           keyboardShouldPersistTaps='handled'>
           {createWalletLoading && <Loading />}

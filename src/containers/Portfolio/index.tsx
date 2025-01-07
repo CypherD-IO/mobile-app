@@ -824,11 +824,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             setSelectedChain={setSelectedChain}
             where={WHERE_PORTFOLIO}
           />
-          <CopytoKeyModal
-            isModalVisible={copyToClipBoard}
-            onClipClick={() => setCopyToClipBoard(false)}
-            onPress={() => setCopyToClipBoard(false)}
-          />
           <HeaderBar
             navigation={navigation}
             renderTitleComponent={
