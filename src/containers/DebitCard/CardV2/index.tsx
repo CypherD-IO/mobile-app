@@ -116,7 +116,7 @@ export default function CypherCardScreen() {
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const { getWalletProfile } = useCardUtilities();
-  const { hasBothProviders } = useCardUtilities();
+  const { isLegacyCardClosed } = useCardUtilities();
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
@@ -542,6 +542,31 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
           </CyDView>
+          {cardProfile && isLegacyCardClosed(cardProfile) && (
+            <CyDView className='mx-[12px] my-[12px]'>
+              <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
+                {t<string>('OTHERS')}
+              </CyDText>
+              <CyDTouchView
+                className='border-[1.2px] border-cardBgTo flex flex-row justify-center items-center py-[16px] rounded-[16px]'
+                onPress={() =>
+                  navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
+                    navigation,
+                    cardProvider: CardProviders.PAYCADDY,
+                    currentCardIndex,
+                  })
+                }>
+                <CyDText className='text-[14px] font-bold'>
+                  {t<string>('LEGACY_CARD_TRANSACTIONS')}
+                </CyDText>
+                <CyDImage
+                  source={AppImages.RIGHT_ARROW_LONG}
+                  className='h-[14px] w-[14px] ml-[4px] mt-[4px] accent-black'
+                  resizeMode='contain'
+                />
+              </CyDTouchView>
+            </CyDView>
+          )}
         </CyDView>
       </CyDScrollView>
     </CyDSafeAreaView>

@@ -18,10 +18,10 @@ export default function useCardUtilities() {
   const getProvider = (profile: CardProfile) => {
     if (hasBothProviders(profile)) {
       return provider ?? CardProviders.REAP_CARD;
-    } else if (has(profile, CardProviders.PAYCADDY)) {
-      return CardProviders.PAYCADDY;
     } else if (has(profile, CardProviders.REAP_CARD)) {
       return CardProviders.REAP_CARD;
+    } else if (has(profile, CardProviders.PAYCADDY)) {
+      return CardProviders.PAYCADDY;
     }
   };
 
@@ -29,7 +29,15 @@ export default function useCardUtilities() {
   const hasBothProviders = (profile: CardProfile) => {
     return (
       has(profile, CardProviders.PAYCADDY) &&
+      !has(profile, [CardProviders.PAYCADDY, 'lastStatementLink']) &&
       has(profile, CardProviders.REAP_CARD)
+    );
+  };
+
+  const isLegacyCardClosed = (profile: CardProfile) => {
+    return (
+      has(profile, CardProviders.PAYCADDY) &&
+      has(profile, [CardProviders.PAYCADDY, 'lastStatementLink'])
     );
   };
 
@@ -97,6 +105,7 @@ export default function useCardUtilities() {
   return {
     getProvider,
     hasBothProviders,
+    isLegacyCardClosed,
     cardProfileModal,
     getWalletProfile,
     checkIsRCEnabled,
