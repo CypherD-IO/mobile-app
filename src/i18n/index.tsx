@@ -1520,6 +1520,12 @@ const resources = {
       MINIMUM_TOKEN_VALUE_ERROR: 'Minimum token value should be {{value}}',
       AUTO_LOAD_NO_TOKENS_AVAILABLE:
         "You don't have any tokens in this chain or the selected chain is not supported for auto load. Supported Chains: {{supportedChains}}",
+      APP_INTEGRITY_CHECK_FAILED_ANDROID:
+        '• Please check your internet connection\n• Update Google Play Store\n• Try again in a few minutes \n\n Do you want to retry?',
+      APP_INTEGRITY_CHECK_FAILED_IOS:
+        '• Please check your internet connection\n• Update to latest iOS version\n• Try again in a few minutes \n\n Do you want to retry?',
+      UNABLE_TO_VERIFY_APP: 'Unable to Verify App',
+      MAX_RETRIES_REACHED: 'Max retries reached. Please contact support at ',
     },
   },
 };
