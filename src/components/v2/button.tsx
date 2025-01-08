@@ -138,13 +138,10 @@ export default function Button({
         <CyDText
           className={clsx(`font-extrabold text-center ${titleStyle}`, {
             'ml-[5px]': isLocked,
-            'text-white': [
-              ButtonType.RED,
-              ButtonType.DARK,
-              ButtonType.TERNARY,
-              ButtonType.SECONDARY,
-            ].includes(type),
+            'text-white': [ButtonType.RED, ButtonType.DARK].includes(type),
             'text-base400': [
+              ButtonType.SECONDARY,
+              ButtonType.TERNARY,
               ButtonType.WHITE_FILL,
               ButtonType.GREY_FILL,
             ].includes(type),

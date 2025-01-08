@@ -151,7 +151,7 @@ export default function Rewards() {
               <CyDText className='text-[14px] font-bold'>
                 {'How to earn rewards'}
               </CyDText>
-              <CyDView className='flex flex-row w-full space-x-[6px] mt-[12px]'>
+              <CyDView className='flex flex-row w-full mt-[12px] gap-x-2'>
                 <CyDView className='w-1/2 flex-shrink-0 flex-col h-[228px] p-[12px] bg-rewardsBlue rounded-[16px]'>
                   <CyDView className='flex flex-col items-end'>
                     <CyDImage

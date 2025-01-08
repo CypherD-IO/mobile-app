@@ -92,6 +92,7 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
+import Loading from '../../components/v2/loading';
 
 export interface PortfolioProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
@@ -787,13 +788,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     <CyDSafeAreaView className='flex-1 bg-n20'>
       {isPortfolioLoading && (
         <CyDView className='justify-center items-center'>
-          <EmptyView
-            text={'Loading..'}
-            image={AppImages.LOADING_IMAGE}
-            buyVisible={false}
-            marginTop={0}
-            isLottie={true}
-          />
+          <Loading />
         </CyDView>
       )}
 

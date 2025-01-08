@@ -95,11 +95,8 @@ const TRANSACTION_APPROVAL = require('./transactionApproval.png');
 const WALLET_PERMISSION = require('./walletPermission.png');
 const ESTIMATED_TIME = require('./estimatedTime.json');
 const PORTFOLIO_EMPTY = require('./portfolioEmpty.json');
-// need dm image
 const ON_BOARDING_1 = require('./onBoarding1.png');
-// need dm image
 const ON_BOARDING_2 = require('./onBoarding2.png');
-// need dm image
 const ON_BOARDING_3 = require('./onBoarding3.png');
 const LOADER_TRANSPARENT = require('./loader_transparent.json');
 const CROSS_PINK = require('./transactions_crossPink.png');
@@ -383,23 +380,18 @@ const SHARE_ICON = {
 const REFERRAL_STAR = {
   uri: `${S3_BUCKET_URL_ICONS}/referralStar.png`,
 };
-// need dark mode
 const HOW_IT_WORKS_1 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks1.png`,
 };
-// need dark mode
 const HOW_IT_WORKS_2 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks2.png`,
 };
-// need dark mode
 const HOW_IT_WORKS_3 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks3.png`,
 };
-// need dark mode
 const HOW_IT_WORKS_4 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks4.png`,
 };
-// need dark mode
 const HOW_IT_WORKS_5 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks5.png`,
 };
@@ -466,7 +458,6 @@ const PREMIUM_TEXT_GRADIENT = {
 const WITHDRAW_CRYPTO_SUCCESS = {
   uri: `${S3_BUCKET_URL_ICONS}/withdrawCryptoSuccess.png`,
 };
-// need dark mode
 const FLYING_MONEY = {
   uri: `${S3_BUCKET_URL_ICONS}/flyingMoney.png`,
 };

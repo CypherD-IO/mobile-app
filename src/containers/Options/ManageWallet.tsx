@@ -16,14 +16,21 @@ import {
 import { HDWallet } from '../../reducers/hdwallet_reducer';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
+import { IconNames } from '../../customFonts';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
 interface IManageWalletData {
   index: number;
   title: string;
-  logo: number;
+  logo: IconNames;
   navigateTo: string;
   navigationProps: { [key: string]: boolean };
   firebaseEvent: string;
+  callback?: () => void;
 }
 
 const renderSettingsData = (
@@ -36,7 +43,7 @@ const renderSettingsData = (
       <CyDTouchView
         className={'flex flex-row justify-between pl-[15px] py-[24px]'}
         onPress={() => {
-          item.callback();
+          item.callback?.();
           sendFirebaseEvent(hdWalletContext, item.firebaseEvent);
         }}>
         <CyDView className={'flex flex-row items-center'}>
@@ -44,7 +51,7 @@ const renderSettingsData = (
             className={
               'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
             }>
-            <CydIcons name={item.logo} size={24} className='text-base400' />
+            <CydIcons name={item.logo} size={32} className='text-base400' />
           </CyDView>
           <CyDText className={'font-semibold text-[16px] text-[#434343]'}>
             {item.title}
@@ -56,8 +63,9 @@ const renderSettingsData = (
   );
 };
 
-export default function ManageWallet({ navigation }) {
+export default function ManageWallet() {
   const { t } = useTranslation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { connectionType, deleteWallet } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
@@ -73,7 +81,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 0,
             title: t('CONNECT_ANOTHER_WALLET'),
-            logo: 'wallet',
+            logo: 'wallet' as const,
             callback: () => {
               void deleteWallet({ navigation });
             },
@@ -82,7 +90,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 1,
             title: t('DISCONNECT_WALLET'),
-            logo: 'delete',
+            logo: 'delete' as const,
             callback: () => {
               void deleteWallet({ navigation });
             },
@@ -93,7 +101,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 0,
             title: t('IMPORT_WALLET_MSG'),
-            logo: 'wallet',
+            logo: 'wallet' as const,
             callback: () => {
               void deleteWallet({ navigation, importNewWallet: true });
             },
@@ -102,7 +110,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 1,
             title: t('DELTE_WALLET'),
-            logo: 'delete',
+            logo: 'delete' as const,
             callback: () => {
               void deleteWallet({ navigation });
             },

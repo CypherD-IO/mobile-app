@@ -110,14 +110,13 @@ export default function OnBoarding({ navigation }) {
                 setIsModalVisible(true);
               }}
               className={clsx(
-                'bg-buttonColor py-[14px] items-center rounded-[8px] mt-[20px] flex-row justify-around w-[98%]',
+                'bg-p150 py-[14px] items-center rounded-[8px] mt-[20px] flex-row justify-around w-[98%]',
                 {
                   'py-[30px]': loading,
                 },
               )}>
               {!loading && (
-                <CyDText
-                  className={'text-[16px] font-extrabold w-[80%] text-n0'}>
+                <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                   {t('CREATE_WALLET').toString()}
                 </CyDText>
               )}
@@ -126,7 +125,7 @@ export default function OnBoarding({ navigation }) {
                 <CydMaterialDesignIcons
                   name='chevron-right'
                   size={16}
-                  className='text-base400'
+                  className=''
                 />
               )}
             </CyDTouchView>
@@ -298,7 +297,7 @@ export default function OnBoarding({ navigation }) {
         animationOut={'slideOutDown'}
         setModalVisible={setIsModalVisible}>
         <CyDView
-          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDText className={'my-[14px] font-black text-center text-[22px]'}>
             {t<string>('CREATE_SEED_PHRASE_TYPE_TITLE')}
           </CyDText>
