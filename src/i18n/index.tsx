@@ -1463,6 +1463,12 @@ const resources = {
       CANCELLED: 'Cancelled',
       CRYPTO_WITHDRAWAL_INFO_MESSAGE:
         'Crypto withdrawals are processed in 3-5 business days. Note that you will receive the funds in USDC on BASE chain.',
+      APP_INTEGRITY_CHECK_FAILED_ANDROID:
+        '• Please check your internet connection\n• Update Google Play Store\n• Try again in a few minutes \n\n Do you want to retry?',
+      APP_INTEGRITY_CHECK_FAILED_IOS:
+        '• Please check your internet connection\n• Update to latest iOS version\n• Try again in a few minutes \n\n Do you want to retry?',
+      UNABLE_TO_VERIFY_APP: 'Unable to Verify App',
+      MAX_RETRIES_REACHED: 'Max retries reached. Please contact support at ',
     },
   },
 };

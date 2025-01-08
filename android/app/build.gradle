@@ -1,3 +1,8 @@
+project.ext.envConfigFiles = [
+    debug: ".env",
+    release: ".env"
+]
+
 apply plugin: "com.android.application"
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -87,6 +92,7 @@ android {
         versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 431
         versionName System.getenv('VERSION_NAME') ?: "4.20"
         missingDimensionStrategy 'react-native-camera', 'general'
+        buildConfigField "long", "CLOUD_PROJECT_NUMBER", project.env.get("CLOUD_PROJECT_NUMBER")
     }
     signingConfigs {
         release {
@@ -133,6 +139,8 @@ dependencies {
     // For WebP support, including animated WebP
     implementation('com.facebook.fresco:animated-webp:2.0.0')
     implementation('com.facebook.fresco:webpsupport:2.0.0')
+    implementation 'com.google.android.play:integrity:1.3.0'
+    implementation 'com.google.android.gms:play-services-base:18.2.0'
     implementation("androidx.appcompat:appcompat:1.6.1") {
         version {
             strictly '1.6.1'

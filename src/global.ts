@@ -4,6 +4,7 @@ let ARCH_HOST = 'https://arch.cypherhq.io';
 
 export async function initializeHostsFromAsync() {
   const archFromAsync = await getArchHost();
+  console.log('archFromAsync : ', archFromAsync);
   if (archFromAsync && archFromAsync !== '') {
     ARCH_HOST = archFromAsync;
   } else {

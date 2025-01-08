@@ -8,6 +8,7 @@ import React, {
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  getPlatform,
 } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
@@ -33,7 +34,11 @@ import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
 import analytics from '@react-native-firebase/analytics';
 import { getToken } from '../../notification/pushNotification';
-
+import { useGlobalModalContext } from '../v2/GlobalModal';
+import { t } from 'i18next';
+import { useIntegrityService } from '../../hooks/useIntegrityService';
+import RNExitApp from 'react-native-exit-app';
+import { IIntegrity } from '../../models/integrity.interface';
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
@@ -51,6 +56,8 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const { getWalletProfile } = useCardUtilities();
   const [isInitializing, setIsInitializing] = useState(true);
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { showModal, hideModal } = useGlobalModalContext();
+  const { getIntegrityToken } = useIntegrityService();
 
   useEffect(() => {
     setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);
@@ -58,11 +65,14 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const { signMessageAsync } = useSignMessage({
     mutation: {
-      async onSuccess(data) {
+      async onSuccess(data, variables) {
         const verifyMessageResponse = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
+          `${ARCH_HOST}/v1/authentication/verify-message/integrity/${address?.toLowerCase()}?format=ERC-4361`,
           {
             signature: data,
+            ...(variables?.integrityObj
+              ? { integrity: variables?.integrityObj }
+              : {}),
           },
         );
         if (verifyMessageResponse?.data.token) {
@@ -70,6 +80,10 @@ export const WalletConnectListener: React.FC = ({ children }) => {
           globalContext.globalDispatch({
             type: GlobalContextType.SIGN_IN,
             sessionToken: token,
+          });
+          globalContext.globalDispatch({
+            type: GlobalContextType.IS_APP_AUTHENTICATED,
+            isAuthenticated: true,
           });
           void setAuthToken(token);
           void setRefreshToken(refreshToken);
@@ -172,31 +186,71 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     }
   };
 
-  const verifySessionTokenAndSign = async () => {
-    setLoading(true);
-    const token = await getToken(String(address));
-    void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
-    const isSessionTokenValid = await verifySessionToken();
-    if (!isSessionTokenValid) {
-      void signConnectionMessage();
-    } else {
-      let authToken = await getAuthToken();
-      authToken = JSON.parse(String(authToken));
-      const profileData = await getWalletProfile(authToken);
-      globalContext.globalDispatch({
-        type: GlobalContextType.SIGN_IN,
-        sessionToken: authToken,
-      });
-      globalContext.globalDispatch({
-        type: GlobalContextType.CARD_PROFILE,
-        cardProfile: profileData,
-      });
-      void loadHdWallet();
+  const MAX_RETRY_ATTEMPTS = 3;
+
+  const verifySessionTokenAndSign = async (retryCount = 0) => {
+    try {
+      setLoading(true);
+      const token = await getToken(String(address));
+      void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
+      const integrityObj = await getIntegrityToken();
+
+      if (integrityObj) {
+        const isSessionTokenValid = await verifySessionToken(integrityObj);
+        if (!isSessionTokenValid) {
+          await signConnectionMessage(integrityObj);
+        } else {
+          let authToken = await getAuthToken();
+          authToken = JSON.parse(String(authToken));
+          const profileData = await getWalletProfile(authToken);
+          globalContext.globalDispatch({
+            type: GlobalContextType.SIGN_IN,
+            sessionToken: authToken,
+          });
+          globalContext.globalDispatch({
+            type: GlobalContextType.CARD_PROFILE,
+            cardProfile: profileData,
+          });
+          void loadHdWallet();
+        }
+      }
+    } catch (error) {
+      if (retryCount >= MAX_RETRY_ATTEMPTS) {
+        showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_VERIFY_APP'),
+          description: `<p style="color: #000000; font-size: 14px; font-weight: 500; text-align: center;">${t('MAX_RETRIES_REACHED')}<a href="https://cypherhq.io/support" style="color: #007AFF; text-decoration: underline;">https://cypherhq.io/support</a></p>`,
+          onSuccess: () => {
+            hideModal();
+            RNExitApp.exitApp();
+          },
+          onFailure: () => {
+            hideModal();
+            RNExitApp.exitApp();
+          },
+        });
+      } else {
+        showModal('state', {
+          type: 'warning',
+          title: t('UNABLE_TO_VERIFY_APP'),
+          description:
+            getPlatform() === 'android'
+              ? t('APP_INTEGRITY_CHECK_FAILED_ANDROID')
+              : t('APP_INTEGRITY_CHECK_FAILED_IOS'),
+          onSuccess: async () => {
+            hideModal();
+            // Retry with incremented counter
+            await verifySessionTokenAndSign(retryCount + 1);
+          },
+          onFailure: hideModal,
+        });
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const signConnectionMessage = async () => {
+  const signConnectionMessage = async (integrityObj: IIntegrity) => {
     const provider = await connector?.getProvider();
     if (!provider) {
       throw new Error('web3Provider not connected');
@@ -207,7 +261,10 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     );
     if (!response.isError) {
       const msg = response?.data?.message;
-      const signMsgResponse = await signMessageAsync({ message: msg });
+      const signMsgResponse = await signMessageAsync({
+        message: msg,
+        integrityObj,
+      });
       void analytics().logEvent('sign_wallet_connect_msg', {
         from: walletInfo?.name,
       });

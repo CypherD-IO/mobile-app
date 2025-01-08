@@ -69,6 +69,7 @@ import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cj
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import { Keypair } from '@solana/web3.js';
+import { IIntegrity } from '../models';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 10;
@@ -651,38 +652,36 @@ export async function signIn(
   ethereum: { address: string },
   hdWallet: HdWalletContextDef,
   setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+  integrityObj?: IIntegrity,
 ) {
   const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  try {
-    const { data } = await axios.get(
-      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+  const { data } = await axios.get(
+    `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+  );
+  const verifyMessage = data.message;
+  const validationResponse = isValidMessage(ethereum.address, verifyMessage);
+  if (validationResponse.message === SignMessageValidationType.VALID) {
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      true,
+      hdWallet.state.pinValue,
+      () => setShowDefaultAuthRemoveModal(true),
     );
-    const verifyMessage = data.message;
-    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
-    if (validationResponse.message === SignMessageValidationType.VALID) {
-      const privateKey = await loadPrivateKeyFromKeyChain(
-        true,
-        hdWallet.state.pinValue,
-        () => setShowDefaultAuthRemoveModal(true),
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
+      const result = await axios.post(
+        `${ARCH_HOST}/v1/authentication/verify-message/integrity/${ethereum.address}`,
+        {
+          signature,
+          ...(integrityObj ? { integrity: integrityObj } : {}),
+        },
       );
-      if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
-        const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
-          {
-            signature,
-          },
-        );
-        return {
-          ...validationResponse,
-          token: result.data.token,
-          refreshToken: result.data.refreshToken,
-        };
-      }
-      return validationResponse;
+      return {
+        ...validationResponse,
+        token: result.data.token,
+        refreshToken: result.data.refreshToken,
+      };
     }
-  } catch (error) {
-    Sentry.captureException(error);
+    return validationResponse;
   }
 }

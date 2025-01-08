@@ -101,12 +101,12 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'GET_WITHOUT_AUTH') {
-          const { data, status } = await axios.get(url, {
+          const resp = await axios.get(url, {
             params: body,
             timeout,
           });
-          response.data = data;
-          response.status = status;
+          response.data = resp.data;
+          response.status = resp.status;
         } else if (method === 'DELETE') {
           const { data, status } = await axiosInstance.delete(url, body);
           response.data = data;
