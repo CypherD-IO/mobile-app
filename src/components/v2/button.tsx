@@ -136,19 +136,27 @@ export default function Button({
       )}
       {!loading && (
         <CyDText
-          className={clsx(
-            `font-extrabold text-center text-black ${titleStyle}`,
-            {
-              'ml-[5px]': isLocked,
-              'text-white': [
-                ButtonType.RED,
-                ButtonType.DARK,
-                ButtonType.TERNARY,
-                ButtonType.SECONDARY,
-                ButtonType.GREY_FILL,
-              ].includes(type),
-            },
-          )}>
+          className={clsx(`font-extrabold text-center ${titleStyle}`, {
+            'ml-[5px]': isLocked,
+            'text-white': [
+              ButtonType.RED,
+              ButtonType.DARK,
+              ButtonType.TERNARY,
+              ButtonType.SECONDARY,
+            ].includes(type),
+            'text-base400': [
+              ButtonType.WHITE_FILL,
+              ButtonType.GREY_FILL,
+            ].includes(type),
+            'text-black': ![
+              ButtonType.RED,
+              ButtonType.DARK,
+              ButtonType.TERNARY,
+              ButtonType.SECONDARY,
+              ButtonType.WHITE_FILL,
+              ButtonType.GREY_FILL,
+            ].includes(type),
+          })}>
           {title}
         </CyDText>
       )}

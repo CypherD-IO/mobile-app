@@ -28,11 +28,9 @@ const Stack = createNativeStackNavigator();
 const CustomHeader = ({
   title,
   navigation,
-  keyboardHeight,
 }: {
   title: string;
   navigation: NavigationProp<ParamListBase>;
-  keyboardHeight: number;
 }) => {
   const insets = useSafeAreaInsets();
   return (
@@ -42,14 +40,7 @@ const CustomHeader = ({
       <CyDTouchView
         className='px-[12px]'
         onPress={() => {
-          if (keyboardHeight) {
-            Keyboard.dismiss();
-            setTimeout(() => {
-              navigation.goBack();
-            }, 100);
-          } else {
-            navigation.goBack();
-          }
+          navigation.goBack();
         }}>
         <CydMaterialDesignIcons
           name={'arrow-left-thin'}
@@ -99,11 +90,7 @@ function OnBoardingStack(props: any) {
         component={EnterPrivateKey}
         options={{
           header: () => (
-            <CustomHeader
-              title='Import Wallet'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
+            <CustomHeader title='Import Wallet' navigation={navigation} />
           ),
         }}
       />
@@ -112,37 +99,18 @@ function OnBoardingStack(props: any) {
         name={screenTitle.IMPORT_WALLET_OPTIONS}
         component={ImportWalletOptions}
         options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Import Wallet',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          header: () => (
+            <CustomHeader title='Import Wallet' navigation={navigation} />
+          ),
         }}
       />
       <Stack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
         options={({ navigation, route }) => ({
-          headerTransparent: true,
-          headerShadowVisible: false,
-          title: 'SCAN QR CODE',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-            color: Colors.whiteColor,
-          },
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          header: () => (
+            <CustomHeader title='SCAN QR CODE' navigation={navigation} />
+          ),
         })}
       />
       <Stack.Screen
@@ -156,20 +124,9 @@ function OnBoardingStack(props: any) {
         name={screenTitle.TRACK_WALLET_SCREEN}
         component={TrackWallet}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Track Any Wallet',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-          },
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          header: () => (
+            <CustomHeader title='Track Any Wallet' navigation={navigation} />
+          ),
         })}
       />
     </Stack.Navigator>

@@ -804,7 +804,7 @@ export default function SelectPlanModal({
                   <CydMaterialDesignIcons
                     name='check-bold'
                     size={14}
-                    className='text-base400 ml-[2px]'
+                    className='text-base400 '
                   />
                 )}
               </CyDView>
@@ -867,7 +867,7 @@ export default function SelectPlanModal({
               <CyDView className='mt-[16px] px-[16px]'>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CydMaterialDesignIcons
-                    name='check-bold'
+                    name='check'
                     size={24}
                     className='text-base400'
                   />
@@ -877,7 +877,7 @@ export default function SelectPlanModal({
                 </CyDView>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CydMaterialDesignIcons
-                    name='check-bold'
+                    name='check'
                     size={24}
                     className='text-base400'
                   />
@@ -1110,7 +1110,7 @@ export default function SelectPlanModal({
                         className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                         <CyDView
                           className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center p-[3px]',
+                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center',
                             {
                               'bg-p150 border-p150': isChecked.physicalCard,
                             },
@@ -1118,7 +1118,7 @@ export default function SelectPlanModal({
                           <CydMaterialDesignIcons
                             name='check-bold'
                             size={18}
-                            className='text-n20'
+                            className='text-n0'
                           />
                         </CyDView>
                       </CyDTouchView>
@@ -1137,7 +1137,7 @@ export default function SelectPlanModal({
                         className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                         <CyDView
                           className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center p-[3px]',
+                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center',
                             {
                               'bg-p150 border-p150': isChecked.metalCard,
                             },
@@ -1145,7 +1145,7 @@ export default function SelectPlanModal({
                           <CydMaterialDesignIcons
                             name='check-bold'
                             size={18}
-                            className='text-n20'
+                            className='text-n0'
                           />
                         </CyDView>
                       </CyDTouchView>
@@ -1164,7 +1164,7 @@ export default function SelectPlanModal({
                         className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                         <CyDView
                           className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center p-[3px]',
+                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center',
                             {
                               'bg-p150 border-p150': isChecked.addonCard,
                             },
@@ -1172,7 +1172,7 @@ export default function SelectPlanModal({
                           <CydMaterialDesignIcons
                             name='check-bold'
                             size={18}
-                            className='text-n20'
+                            className='text-n0'
                           />
                         </CyDView>
                       </CyDTouchView>

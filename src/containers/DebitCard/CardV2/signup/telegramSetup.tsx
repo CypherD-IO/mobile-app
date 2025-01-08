@@ -251,9 +251,10 @@ export default function TelegramSetup() {
               void refreshProfile();
             }}>
             {!isLoading && (
-              <CyDImage
-                source={AppImages.REFRESH_BROWSER}
-                className='w-[18px] h-[18px]'
+              <CydMaterialDesignIcons
+                name='refresh'
+                size={18}
+                className='text-base400'
               />
             )}
             {isLoading && (
@@ -264,7 +265,7 @@ export default function TelegramSetup() {
                 style={styles.lottie}
               />
             )}
-            <CyDText className='font-manrope text-base400 ml-[4px] font-bold text-black text-[12px]'>
+            <CyDText className='font-manrope text-base400 ml-[4px] font-bold text-[12px]'>
               {t('REFRESH')}
             </CyDText>
           </CyDTouchView>

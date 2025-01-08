@@ -34,7 +34,7 @@ export default function HowReferralWorksModal({
       setModalVisible={(_val: any) => {
         setIsModalVisible(_val);
       }}>
-      <CyDView className='bg-cardBg px-[20px] pt-[24px] pb-[36px] rounded-t-[16px]'>
+      <CyDView className='bg-n20 px-[20px] pt-[24px] pb-[36px] rounded-t-[16px]'>
         <CyDView className='flex flex-row items-center justify-between'>
           <CyDText className='font-semibold text-[18px]'>
             {t('HOW_REFERRAL_WORKS')}
@@ -48,7 +48,7 @@ export default function HowReferralWorksModal({
           </CyDTouchView>
         </CyDView>
         <CyDView className='mt-[24px]'>
-          <CyDView className='flex flex-col text-black bg-n0 rounded-[8px] mt-[6px] p-[24px]'>
+          <CyDView className='flex flex-co bg-n0 rounded-[8px] mt-[6px] p-[24px]'>
             <CyDView className='flex flex-row items-center justify-between'>
               <CyDImage
                 className='h-[78px] w-[70px] mr-[20px]'

@@ -950,9 +950,7 @@ export default function FirstLoadCard() {
   };
 
   return (
-    <CyDKeyboardAwareScrollView
-      className='bg-n20'
-      style={{ paddingTop: insect.top }}>
+    <CyDView className='bg-n20' style={{ paddingTop: insect.top }}>
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
@@ -1048,7 +1046,7 @@ export default function FirstLoadCard() {
             </CyDText>
           </CyDTouchView>
 
-          <CyDScrollView className=''>
+          <CyDKeyboardAwareScrollView className=''>
             <CyDView className='mt-[24px] bg-n0 rounded-[16px] p-[12px] flex-row justify-between items-center'>
               <CyDView>
                 <CyDText className='font-medium text-[14px] text-base100'>
@@ -1149,9 +1147,9 @@ export default function FirstLoadCard() {
                         }}
                         value={amount}
                         placeholder='0.00'
-                        placeholderTextColor={'#000000'}
+                        placeholderTextColor={'#999999'}
                         className={clsx(
-                          'font-bold w-[90%] p-[0px]',
+                          'font-bold w-[90%] p-[0px] bg-n20',
                           getFontClass(amount),
                         )}
                         editable={!!selectedToken}
@@ -1333,7 +1331,7 @@ export default function FirstLoadCard() {
                 </CyDView>
               </CyDView>
             </CyDView>
-          </CyDScrollView>
+          </CyDKeyboardAwareScrollView>
         </CyDView>
 
         <CyDView className='bg-n0 px-[16px] pt-[16px] rounded-t-[12px] pb-[32px]'>
@@ -1350,7 +1348,7 @@ export default function FirstLoadCard() {
           />
         </CyDView>
       </CyDView>
-    </CyDKeyboardAwareScrollView>
+    </CyDView>
   );
 }
 

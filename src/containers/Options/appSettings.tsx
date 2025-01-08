@@ -32,7 +32,7 @@ const appSettingsData: IAppSettingsData[] = [
   },
   {
     index: 2,
-    title: 'Theme',
+    title: 'Appearance',
     logo: 'theme-light-dark',
     navigateTo: screenTitle.THEME,
   },
@@ -57,9 +57,7 @@ const renderSettingsData = (item: IAppSettingsData, navigation: any) => {
               className='text-base400'
             />
           </CyDView>
-          <CyDText className={'font-semibold text-[16px]'}>
-            {item.title}
-          </CyDText>
+          <CyDText className={' text-[16px]'}>{item.title}</CyDText>
         </CyDView>
 
         <CydMaterialDesignIcons

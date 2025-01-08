@@ -9,7 +9,7 @@ import {
 import { t } from 'i18next';
 import { isEmpty } from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import AppImages from '../../../../../assets/images/appImages';
 import Button from '../../../../components/v2/button';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
@@ -30,6 +30,7 @@ import {
   CyDView,
 } from '../../../../styles/tailwindStyles';
 import SelectPlanModal from '../../../../components/selectPlanModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 interface RouteParams {
   deductAmountNow?: boolean;
   toPage?: string;
@@ -37,6 +38,7 @@ interface RouteParams {
 }
 
 const IHaveReferralCodeScreen = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
@@ -112,7 +114,7 @@ const IHaveReferralCodeScreen = () => {
   };
 
   return (
-    <SafeAreaView className='flex bg-n20 h-full'>
+    <CyDView className='flex bg-n20 h-full' style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <HowReferralWorksModal
         isModalVisible={isModalVisible}
@@ -144,7 +146,7 @@ const IHaveReferralCodeScreen = () => {
             </CyDTouchView>
           </CyDView>
           <CyDText className='text-[28px] font-bold mt-[12px]'>
-            Do you have any referral code?
+            Do you have a referral code?
           </CyDText>
           <CyDText className='text-[14px] font-[500] text-n200 mt-[6px]'>
             Get special rewards! if you are being invited by someone to cypher
@@ -160,7 +162,7 @@ const IHaveReferralCodeScreen = () => {
                 placeholder={t('ENTER_REFERRAL_CODE')}
                 value={referralCode}
                 onChangeText={setReferralCode}
-                placeholderTextColor={'text-base400'}
+                placeholderTextColor={'#999999'}
               />
               <Button
                 title={t('APPLY')}
@@ -225,7 +227,7 @@ const IHaveReferralCodeScreen = () => {
         </CyDView>
       </CyDView>
       {/* </ScrollView> */}
-    </SafeAreaView>
+    </CyDView>
   );
 };
 

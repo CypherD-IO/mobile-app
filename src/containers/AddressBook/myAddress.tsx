@@ -30,7 +30,6 @@ import {
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
-  CyDImage,
   CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,

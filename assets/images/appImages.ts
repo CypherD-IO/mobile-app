@@ -383,18 +383,23 @@ const SHARE_ICON = {
 const REFERRAL_STAR = {
   uri: `${S3_BUCKET_URL_ICONS}/referralStar.png`,
 };
+// need dark mode
 const HOW_IT_WORKS_1 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks1.png`,
 };
+// need dark mode
 const HOW_IT_WORKS_2 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks2.png`,
 };
+// need dark mode
 const HOW_IT_WORKS_3 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks3.png`,
 };
+// need dark mode
 const HOW_IT_WORKS_4 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks4.png`,
 };
+// need dark mode
 const HOW_IT_WORKS_5 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks5.png`,
 };

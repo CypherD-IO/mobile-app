@@ -8,12 +8,11 @@ import {
   CyDView,
   CyDTouchView,
   CyDText,
-  CyDImage,
   CyDFlatList,
   CyDImageBackground,
-  CydMaterialDesignIcons,
+  CydIcons,
 } from '../../styles/tailwindStyles';
-import { screenTitle } from '../../constants';
+
 import { HDWallet } from '../../reducers/hdwallet_reducer';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
@@ -45,11 +44,7 @@ const renderSettingsData = (
             className={
               'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
             }>
-            <CydMaterialDesignIcons
-              name={item.logo}
-              size={24}
-              className='text-base400'
-            />
+            <CydIcons name={item.logo} size={24} className='text-base400' />
           </CyDView>
           <CyDText className={'font-semibold text-[16px] text-[#434343]'}>
             {item.title}
@@ -78,7 +73,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 0,
             title: t('CONNECT_ANOTHER_WALLET'),
-            logo: 'wallet-plus',
+            logo: 'wallet',
             callback: () => {
               void deleteWallet({ navigation });
             },
@@ -87,7 +82,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 1,
             title: t('DISCONNECT_WALLET'),
-            logo: 'delete-empty',
+            logo: 'delete',
             callback: () => {
               void deleteWallet({ navigation });
             },
@@ -98,7 +93,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 0,
             title: t('IMPORT_WALLET_MSG'),
-            logo: 'wallet-plus',
+            logo: 'wallet',
             callback: () => {
               void deleteWallet({ navigation, importNewWallet: true });
             },
@@ -107,7 +102,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 1,
             title: t('DELTE_WALLET'),
-            logo: 'delete-empty',
+            logo: 'delete',
             callback: () => {
               void deleteWallet({ navigation });
             },

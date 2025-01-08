@@ -576,10 +576,10 @@ export default function CypherCardScreen() {
                 <CyDText className='text-[14px] font-bold'>
                   {t<string>('LEGACY_CARD_TRANSACTIONS')}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.RIGHT_ARROW_LONG}
-                  className='h-[14px] w-[14px] ml-[4px] mt-[4px] accent-black'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name='arrow-right-thin'
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>

@@ -246,7 +246,7 @@ export default function Options() {
                   });
                 }}
                 title={t('CYPHER_CARD_REWARDS')}
-                logo={''}
+                logo={'reward'}
               />
             )}
 
@@ -286,7 +286,7 @@ export default function Options() {
                 navigation.navigate(C.screenTitle.APP_SETTINGS);
               }}
               title={'App Settings'}
-              logo={''}
+              logo={'settings'}
             />
 
             <OptionsContainer
@@ -306,7 +306,7 @@ export default function Options() {
                 navigation.navigate(C.screenTitle.BROWSER);
               }}
               title={t('BROWSER')}
-              logo={''}
+              logo={'browser'}
             />
 
             <OptionsContainer

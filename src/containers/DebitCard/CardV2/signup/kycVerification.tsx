@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useState } from 'react';
 import {
   CyDFastImage,
-  CyDImage,
+  CydIcons,
   CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -21,6 +21,7 @@ import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
 import useAxios from '../../../../core/HttpRequest';
 import {
+  ButtonType,
   CardApplicationStatus,
   CardProviders,
   GlobalContextType,
@@ -283,9 +284,8 @@ export default function KYCVerficicationV2() {
           <CyDTouchView
             className='w-[60px]'
             onPress={() =>
-              navigation.reset({
-                index: 0,
-                routes: [{ name: screenTitle.PORTFOLIO }],
+              navigation.navigate(screenTitle.PORTFOLIO, {
+                screen: screenTitle.PORTFOLIO_SCREEN,
               })
             }>
             <CydMaterialDesignIcons
@@ -305,7 +305,7 @@ export default function KYCVerficicationV2() {
 
           <CyDView className='mt-[16px] rounded-[16px] bg-n0 px-[16px] py-[24px] flex flex-col items-center'>
             {renderKYCStatus()}
-            <CyDImage
+            <CyDFastImage
               source={renderKYCStatusImage()}
               className='mt-[24px] mb-[12px] flex self-center w-[102px] h-[102px]'
             />
@@ -398,9 +398,10 @@ export default function KYCVerficicationV2() {
                     setLoading({ ...loading, refresh: false });
                   }}>
                   {!loading.refresh && (
-                    <CyDImage
-                      source={AppImages.REFRESH_BROWSER}
-                      className='w-[18px] h-[18px]'
+                    <CydIcons
+                      name='refresh'
+                      size={18}
+                      className='text-base400'
                     />
                   )}
                   {loading.refresh && (
@@ -417,7 +418,6 @@ export default function KYCVerficicationV2() {
                 </CyDTouchView>
               )}
               {kycStatus === CardApplicationStatus.COMPLETED && (
-                // <CyDImage source={AppImages.CELEBRATE} />
                 <CyDText className='text-[40px]'>{'🎉'}</CyDText>
               )}
             </CyDView>
@@ -429,7 +429,7 @@ export default function KYCVerficicationV2() {
           {kycStatus === CardApplicationStatus.KYC_PENDING && (
             <CyDView className='mb-[8px]'>
               <Button
-                type='secondary'
+                type={ButtonType.SECONDARY}
                 title={t('RETRY_KYC')}
                 onPress={() => {
                   void getKyc();

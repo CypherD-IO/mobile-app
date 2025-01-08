@@ -82,10 +82,6 @@ const initialCardDetails: CardSecrets = {
   cardNumber: 'xxxx xxxx xxxx xxxx',
 };
 
-const CyDCarousel = cssInterop(Carousel, {
-  className: 'style',
-});
-
 export default function CardScreen({
   navigation,
   currentCardProvider,
@@ -192,10 +188,11 @@ export default function CardScreen({
     }
   };
 
-  const renderItem = ({ item }: { item: Card }) => {
+  const renderItem = ({ item, index }: { item: Card; index: number }) => {
     const card = item;
     return (
       <CyDImageBackground
+        key={index}
         className={clsx(
           'w-[300px] h-[190px] flex flex-col self-center shadow-md',
           {
@@ -341,66 +338,58 @@ export default function CardScreen({
   };
 
   return (
-    <CyDView className='h-[350px]'>
-      {/* <CyDCarousel
-        loop={false}
-        width={width}
-        height={cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250}
-        autoPlay={false}
-        data={cardsWithUpgrade}
-        snapEnabled={true}
-        mode='parallax'
-        modeConfig={{
-          parallaxScrollingScale: 0.9,
-          // parallaxScrollingOffset: 1,
-          // parallaxAdjacentItemScale: 0.74,
-        }}
-        scrollAnimationDuration={0}
-        onSnapToItem={setUpgradeCorrectedCardIndex}
-        renderItem={renderItem as any}
-      /> */}
-      <CyDFlatList
-        className='py-[24px] flex-1 '
-        horizontal
-        data={cardsWithUpgrade}
-        showsHorizontalScrollIndicator={false}
-        snapToAlignment='center'
-        decelerationRate='fast'
-        snapToInterval={320}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-        }}
-        renderItem={({ item, index }) => (
-          <CyDView
-            className='w-[270px] mx-[20px] h-[190px]'
-            style={{
-              opacity: currentCardIndex === index ? 1 : 0.4,
-              transform: [{ scale: currentCardIndex === index ? 1 : 0.9 }],
-            }}>
-            {renderItem({ item })}
-          </CyDView>
-        )}
-        onMomentumScrollEnd={event => {
-          const contentOffset = event.nativeEvent.contentOffset.x;
-          const index = Math.round(contentOffset / 320);
-          setUpgradeCorrectedCardIndex(index);
-        }}
-      />
-
-      {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) && (
-        <RenderCardActions
-          card={get(cardsWithUpgrade, currentCardIndex)}
-          cardProvider={currentCardProvider}
-          navigation={navigation}
-          refreshProfile={refreshProfile}
-          onPressUpgradeNow={onPressUpgradeNow}
-          onPressActivateCard={onPressActivateCard}
-          cardProfile={cardProfile}
-          trackingDetails={trackingDetails}
-          cardDesignData={cardDesignData}
-        />
+    <>
+      {get(cardsWithUpgrade, currentCardIndex)?.cardId !== 'hidden' ? (
+        <CyDView className={'h-[350px]'}>
+          <CyDFlatList
+            className='py-[24px] flex-1 '
+            horizontal
+            data={cardsWithUpgrade}
+            showsHorizontalScrollIndicator={false}
+            snapToAlignment='center'
+            decelerationRate='fast'
+            snapToInterval={320}
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+            }}
+            renderItem={({ item, index }) => (
+              <CyDView
+                className='w-[270px] mx-[20px] h-[190px]'
+                style={{
+                  opacity: currentCardIndex === index ? 1 : 0.4,
+                  transform: [{ scale: currentCardIndex === index ? 1 : 0.9 }],
+                }}>
+                {renderItem({ item, index })}
+              </CyDView>
+            )}
+            onMomentumScrollEnd={event => {
+              const contentOffset = event.nativeEvent.contentOffset.x;
+              const index = Math.round(contentOffset / 320);
+              setUpgradeCorrectedCardIndex(index);
+            }}
+          />
+          {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) && (
+            <RenderCardActions
+              card={get(cardsWithUpgrade, currentCardIndex)}
+              cardProvider={currentCardProvider}
+              navigation={navigation}
+              refreshProfile={refreshProfile}
+              onPressUpgradeNow={onPressUpgradeNow}
+              onPressActivateCard={onPressActivateCard}
+              cardProfile={cardProfile}
+              trackingDetails={trackingDetails}
+              cardDesignData={cardDesignData}
+            />
+          )}
+        </CyDView>
+      ) : (
+        <>
+          {cardsWithUpgrade.map((card, index) =>
+            renderItem({ item: card, index }),
+          )}
+        </>
       )}
-    </CyDView>
+    </>
   );
 }
 
@@ -1087,10 +1076,9 @@ const RenderCardActions = ({
             {isFetchingCardDetails ? (
               <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />
             ) : (
-              <CydMaterialDesignIcons
-                name='credit-card-outline'
-                size={26}
-                className='text-black'
+              <CydIcons
+                name='card-outline'
+                className='text-black text-[44px]'
               />
             )}
           </CyDView>
@@ -1155,15 +1143,15 @@ const RenderCardActions = ({
           }}>
           <CyDView
             className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
-            <CydMaterialDesignIcons
-              name={
-                cardProvider === CardProviders.REAP_CARD
-                  ? 'cog-outline'
-                  : 'dots-vertical'
-              }
-              size={32}
-              className={'text-black'}
-            />
+            {cardProvider === CardProviders.REAP_CARD ? (
+              <CydIcons name='settings' className='text-black text-[52px]' />
+            ) : (
+              <CydMaterialDesignIcons
+                name={'dots-vertical'}
+                size={32}
+                className={'text-black'}
+              />
+            )}
           </CyDView>
           <CyDView className='mt-[6px]'>
             <CyDText className='font-semibold text-[12px]'>

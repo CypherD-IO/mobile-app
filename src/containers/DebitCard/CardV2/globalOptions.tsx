@@ -36,6 +36,8 @@ import { showToast } from '../../utilities/toastUtility';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { StyleSheet } from 'react-native';
 import SelectPlanModal from '../../../components/selectPlanModal';
+import { useTheme } from '../../../reducers/themeReducer';
+import clsx from 'clsx';
 
 interface RouteParams {
   cardProvider: string;
@@ -44,6 +46,7 @@ interface RouteParams {
 
 export default function GlobalOptions() {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
@@ -198,7 +201,7 @@ export default function GlobalOptions() {
           {
             title: 'Telegram Bot',
             description: 'Manage your account with telegram',
-            image: 'send-outline',
+            image: 'telegram' as const,
             action: () => {
               navigation.navigate(screenTitle.TELEGRAM_SETUP, {
                 navigateTo: screenTitle.TELEGRAM_PIN_SETUP,
@@ -212,7 +215,7 @@ export default function GlobalOptions() {
     {
       title: 'Notification Settings',
       description: 'Set how you want to get notified',
-      image: 'bell-ring-outline' as const,
+      image: 'notification' as const,
       action: () => {
         navigation.navigate(screenTitle.CARD_NOTIFICATION_SETTINGS, {
           currentCardProvider: cardProvider,
@@ -222,7 +225,7 @@ export default function GlobalOptions() {
     {
       title: 'Personal Information',
       description: 'Update personal information for your account',
-      image: 'account',
+      image: 'account' as const,
       action: () => {
         navigation.navigate(screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN);
       },
@@ -285,7 +288,10 @@ export default function GlobalOptions() {
         <CyDScrollView className='flex-1 bg-n20 px-[16px]'>
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView
-              className='bg-p0 rounded-[16px] p-[16px] mt-[30px]'
+              className={clsx('rounded-[16px] p-[16px] mt-[30px]', {
+                'bg-n0': theme === 'dark',
+                'bg-p0': theme === 'light',
+              })}
               style={styles.shadow}>
               <CyDView className='p-[12px]'>
                 <CyDText className='text-[12px] font-medium text-center'>
@@ -299,7 +305,7 @@ export default function GlobalOptions() {
                 <CyDView className='mt-[12px] flex flex-row justify-center items-center'>
                   <CyDTouchView
                     style={styles.buttonShadow}
-                    className='flex flex-row items-center bg-n0 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
+                    className='flex flex-row items-center bg-n40 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
                     onPress={() => {
                       setOpenComparePlans(false);
                       setPlanChangeModalVisible(true);
@@ -314,12 +320,12 @@ export default function GlobalOptions() {
                   </CyDTouchView>
                   <CyDTouchView
                     style={styles.buttonShadow}
-                    className=' bg-n0 px-[10px] py-[6px] rounded-full'
+                    className=' bg-n40 px-[10px] py-[6px] rounded-full'
                     onPress={() => {
                       setOpenComparePlans(true);
                       setPlanChangeModalVisible(true);
                     }}>
-                    <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
+                    <CyDText className=' text-center text-[14px] font-semibold text-n100 mr-[2px]'>
                       {t('COMPARE_PLANS')}
                     </CyDText>
                   </CyDTouchView>
@@ -390,10 +396,10 @@ export default function GlobalOptions() {
                           }
                         }}
                         className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                        <CydMaterialDesignIcons
+                        <CydIcons
                           name={image}
-                          size={20}
-                          className='text-base400 mr-[8px] pb-[16px]'
+                          size={32}
+                          className='text-base400 pb-[16px]'
                         />
                         <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                           <CyDText className='text-[16px] font-regular text-base400'>
@@ -453,10 +459,10 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CydMaterialDesignIcons
+                    <CydIcons
                       name={image}
-                      size={20}
-                      className='text-base400 mr-[8px] pb-[16px]'
+                      size={28}
+                      className='text-base400 pb-[16px]'
                     />
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                       <CyDText className='text-[16px] font-regular text-base400'>

@@ -29,7 +29,7 @@ import {
   Swipeable,
 } from 'react-native-gesture-handler';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
-import CydIconsPack from '../customFonts/generator';
+import { IconNames, CydIconsPack } from '../customFonts';
 
 export const CyDText = (props: TextProps) => {
   return (
@@ -39,6 +39,7 @@ export const CyDText = (props: TextProps) => {
     />
   );
 };
+
 export const CyDTextInput = React.forwardRef<TextInput, TextInputProps>(
   (props, ref) => {
     return (
@@ -51,6 +52,7 @@ export const CyDTextInput = React.forwardRef<TextInput, TextInputProps>(
     );
   },
 );
+
 CyDTextInput.displayName = 'CyDTextInput';
 export const CyDView = View;
 export const CyDTouchView = TouchableOpacity;
@@ -106,4 +108,9 @@ export const CydIcons = cssInterop(CydIconsPack, {
       fontSize: 'size',
     },
   },
-});
+}) as React.ComponentType<{
+  name: IconNames;
+  size?: number;
+  color?: string;
+  className?: string;
+}>;

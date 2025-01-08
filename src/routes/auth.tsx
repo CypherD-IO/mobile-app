@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
 import { t } from 'i18next';
+import React, { useEffect } from 'react';
 import {
   BackHandler,
   Keyboard,
@@ -12,7 +12,7 @@ import {
   TextStyle,
   ToastAndroid,
 } from 'react-native';
-import AppImages from '../../assets/images/appImages';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as C from '../constants/index';
 import { screenTitle } from '../constants/index';
 import { Colors } from '../constants/theme';
@@ -20,11 +20,9 @@ import ActivityScreen from '../containers/Activities/activity';
 import ActivityFilter from '../containers/Activities/activityFilter';
 import { CreateContact } from '../containers/AddressBook/createContact';
 import { AddressBook } from '../containers/AddressBook/myAddress';
-import Backup from '../containers/Auth/Backup';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import EnterKeyScreen from '../containers/Auth/EnterKey';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
-import ImportWallet from '../containers/Auth/ImportWallet';
 import TransDetail from '../containers/Auth/TransDetail';
 import Bridge from '../containers/Bridge';
 import BrowserScreen from '../containers/Browser/Browser';
@@ -58,7 +56,6 @@ import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMen
 import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
 import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNotificationSettings';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
-import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegramSetup';
 import CardUnlockAuth from '../containers/DebitCard/bridgeCard/cardUnlockAuth';
 import EditLimits from '../containers/DebitCard/bridgeCard/editlimits';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
@@ -101,6 +98,7 @@ import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import OptionsScreen from '../containers/Options/index';
 import Referrals from '../containers/Options/referrals';
 import Rewards from '../containers/Options/rewards';
+import ThemeSelector from '../containers/Options/theme';
 import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
 import PinValidation from '../containers/PinAuthetication/pinValidation';
@@ -121,8 +119,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../styles/tailwindStyles';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ThemeSelector from '../containers/Options/theme';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -474,6 +470,7 @@ export function PortfolioStackScreen() {
       />
 
       {/* darkmode done */}
+      {/* used in two stacks */}
       <PortfolioStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
