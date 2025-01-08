@@ -529,7 +529,10 @@ export default function useInitializer() {
                 retryCount + 1,
               );
             },
-            onFailure: hideModal,
+            onFailure: () => {
+              hideModal();
+              RNExitApp.exitApp();
+            },
           });
         }
       }

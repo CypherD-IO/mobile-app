@@ -242,7 +242,10 @@ export const WalletConnectListener: React.FC = ({ children }) => {
             // Retry with incremented counter
             await verifySessionTokenAndSign(retryCount + 1);
           },
-          onFailure: hideModal,
+          onFailure: () => {
+            hideModal();
+            RNExitApp.exitApp();
+          },
         });
       }
     } finally {
