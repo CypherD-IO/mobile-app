@@ -19,13 +19,13 @@
 		61434CBA544428E769330103 /* libPods-Cypherd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CFF6A0E10778C91BF20A64C /* libPods-Cypherd.a */; };
 		74AD033A8F6C42298B70EC20 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8D14945D936E418B8781161E /* Manrope-Bold.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A2A66A66C0544AE6A981410D /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2ECEAB4CE1AA410298E0FE4D /* CydFont.ttf */; };
 		A67594D0737440EB9B17E75F /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3A58CD24D5E4CD58585B0B9 /* Manrope-ExtraLight.ttf */; };
 		B76522972792A50F002A2E46 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B76522962792A50F002A2E46 /* GoogleService-Info.plist */; };
 		C4AD7F8760D94720B5208CFB /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F26B3333AAA94E4295E41DF3 /* Manrope-ExtraBold.ttf */; };
 		CDE210CBAB79454CA4F5ED06 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1D28B9988E544FBBCC33FBC /* Manrope-Regular.ttf */; };
 		F7CB58729C1E4A10A4B3E9AB /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 75A14A8405CC4EECB558C5D9 /* Manrope-SemiBold.ttf */; };
 		F8E5660C31E34043A1A54151 /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4FD45345013848908F11EC7D /* Manrope-Light.ttf */; };
-		A2A66A66C0544AE6A981410D /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2ECEAB4CE1AA410298E0FE4D /* CydFont.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +52,7 @@
 		1B2716DE7FF54C2393402D17 /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 		2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2D6AF89D3BAE89AEEE140E8D /* Pods-Cypherd.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd.debug.xcconfig"; path = "Target Support Files/Pods-Cypherd/Pods-Cypherd.debug.xcconfig"; sourceTree = "<group>"; };
+		2ECEAB4CE1AA410298E0FE4D /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		3CC408C1228D48B28D032D9C /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		49EB4EE11042C6222724F7B1 /* Pods-Cypherd-CypherdTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd-CypherdTests.debug.xcconfig"; path = "Target Support Files/Pods-Cypherd-CypherdTests/Pods-Cypherd-CypherdTests.debug.xcconfig"; sourceTree = "<group>"; };
 		4CFF6A0E10778C91BF20A64C /* libPods-Cypherd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,7 +86,6 @@
 		F3A58CD24D5E4CD58585B0B9 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
 		F805352840AE4EE2B8EDA9FA /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 		FA085526D65F3FDEBF254B70 /* Pods-Cypherd-CypherdTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd-CypherdTests.release.xcconfig"; path = "Target Support Files/Pods-Cypherd-CypherdTests/Pods-Cypherd-CypherdTests.release.xcconfig"; sourceTree = "<group>"; };
-		2ECEAB4CE1AA410298E0FE4D /* CydFont.ttf */ = {isa = PBXFileReference; name = "CydFont.ttf"; path = "../assets/fonts/CydFont.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -355,7 +355,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/zsh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=\"/Users/rixhy/.nvm/versions/node/v18.19.1/bin/node\"\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=\"/Users/local/.nvm/versions/node/v18.17.1/bin/node\"\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
 		};
 		1360CFA87600DFAE3524B39B /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
