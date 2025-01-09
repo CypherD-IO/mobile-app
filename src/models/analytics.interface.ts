@@ -16,4 +16,6 @@ export interface ErrorAnalytics {
   screen?: string;
   address?: string;
   contractData?: string;
+  quoteId?: string;
+  connectionType?: string;
 }
