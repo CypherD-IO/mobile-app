@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { t } from 'i18next';
 import WebView from 'react-native-webview';
-import EmptyView from '../../components/EmptyView';
 import Loading from '../../components/v2/loading';
 import { ChainBackendNames, ChainNames } from '../../constants/server';
 import {
@@ -175,11 +174,9 @@ export function TokenTransactions({
         className={
           'h-[140px] flex flex-row items-center justify-center mt-[100px]'
         }>
-        <EmptyView
-          text={t('EMPTY_TRANSCATION_DETAIL_MSG')}
-          image={AppImages.EMPTY}
-          buyVisible={false}
-          marginTop={0}
+        <CyDFastImage
+          source={AppImages.EMPTY}
+          className='w-[150px] h-[150px]'
         />
       </CyDView>
     );

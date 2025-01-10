@@ -481,7 +481,7 @@ const DeclinedTransactionActionItem = ({
                 currentCardProvider: provider,
               });
             }}>
-            <CyDText className='text-center text-[14px] font-semibold'>
+            <CyDText className='text-center text-[14px] font-semibold text-black'>
               {t('REVIEW_SETTINGS')}
             </CyDText>
           </CyDTouchView>

@@ -20,7 +20,6 @@ import { BackHandler } from 'react-native';
 import { BarCodeReadEvent } from 'react-native-camera';
 import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
-import EmptyView from '../../components/EmptyView';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { SuccessTransaction } from '../../components/v2/StateModal';
@@ -65,6 +64,7 @@ import {
   SendTransactionActivity,
 } from '../../reducers/activity_reducer';
 import {
+  CyDFastImage,
   CyDFlatList,
   CyDImage,
   CydMaterialDesignIcons,
@@ -375,13 +375,15 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const emptyView = () => {
     return (
       <CyDView className='h-full w-full justify-center items-center'>
-        <EmptyView
-          text={t('NO_SEND_HISTORY')}
-          image={AppImages.SENDTO_EMPTY}
-          buyVisible={false}
-          marginTop={10}
-          width={200}
-        />
+        <CyDView className='flex flex-col justify-center items-center w-[200px] mt-3'>
+          <CyDFastImage
+            source={AppImages.SENDTO_EMPTY}
+            className='w-[150px] h-[150px] '
+          />
+          <CyDText className='mt-[15px] text-[14px]'>
+            {t('NO_SEND_HISTORY')}
+          </CyDText>
+        </CyDView>
       </CyDView>
     );
   };

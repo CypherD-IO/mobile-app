@@ -165,7 +165,7 @@ export default function WalletConnectModal(props) {
           </CyDText>
           <CyDScrollView
             className={
-              'max-h-[180px] bg-backLight p-[8px] mt-[10px] pb-[18px] rounded-[6px]'
+              'max-h-[180px] bg-p50 p-[8px] mt-[10px] pb-[18px] rounded-[6px]'
             }>
             <CyDText className={'mt-[10px] text-[14px]'}>
               {message ?? ''}

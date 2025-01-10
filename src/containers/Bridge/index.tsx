@@ -43,7 +43,7 @@ import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
   CyDImage,
   CyDKeyboardAwareScrollView,
   CydMaterialDesignIcons,
@@ -1943,7 +1943,6 @@ const Bridge: React.FC = () => {
           setModalVisible={setSignModalVisible}
           onCancel={() => {
             setSignModalVisible(false);
-            // void setQuoteCancelReasons(dontAskAgain);
           }}
           avoidKeyboard={true}>
           {isOdosSwap() ? (
@@ -2008,7 +2007,7 @@ const Bridge: React.FC = () => {
                   </CyDView>
 
                   <CyDView className={'flex justify-center h-[30px] w-[30px]'}>
-                    <CydIcons
+                    <CyDIcons
                       name='refresh'
                       size={32}
                       className='text-base400'
@@ -2223,7 +2222,7 @@ const Bridge: React.FC = () => {
           (!isEmpty(error) ||
             parseFloat(cryptoAmount) > (selectedFromToken?.balance ?? 0)) &&
           !loading.quoteLoading && (
-            <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row mx-[16px] mt-[16px] justify-between items-center'>
+            <CyDView className=' bg-red20 rounded-[8px] p-[12px] flex flex-row mx-[16px] mt-[16px] justify-between items-center'>
               <CyDFastImage
                 source={AppImages.CYPHER_WARNING_RED}
                 className='w-[32px] h-[32px]'

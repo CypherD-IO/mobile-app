@@ -1,11 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
-import AppImages from '../../assets/images/appImages';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import {
-  CyDImage,
   CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,

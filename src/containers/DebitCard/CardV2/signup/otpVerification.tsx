@@ -15,6 +15,7 @@ import {
   CyDScrollView,
   CyDKeyboardAvoidingView,
   CydMaterialDesignIcons,
+  CyDLottieView,
 } from '../../../../styles/tailwindStyles';
 import AppImages from '../../../../../assets/images/appImages';
 import OTPInput from '../../../../components/v2/otpBox';
@@ -32,7 +33,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CyDModalLayout from '../../../../components/v2/modal';
 import { Keyboard, Platform, StyleSheet } from 'react-native';
 import { showToast } from '../../../utilities/toastUtility';
-import LottieView from 'lottie-react-native';
 import { screenTitle } from '../../../../constants';
 import Loading from '../../../../components/v2/loading';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
@@ -301,7 +301,7 @@ export default function OTPVerification(): JSX.Element {
               )}
             </CyDText>
             {sendingOTP && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop

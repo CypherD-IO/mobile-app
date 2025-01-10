@@ -5,7 +5,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { CyDFastImage, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDLottieView,
+  CyDText,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import {
   ActivityContext,
@@ -27,7 +32,6 @@ import {
   PURE_COSMOS_CHAINS,
 } from '../../../constants/server';
 import { useTranslation } from 'react-i18next';
-import LottieView from 'lottie-react-native';
 import { PayTokenModalParams } from '../../../models/card.model';
 import {
   ActivityReducerAction,
@@ -540,7 +544,7 @@ export default function CardQuote({
             <CyDText className={'font-bold text-[14px]'}>
               {t('ESTIMATED_TIME')}
             </CyDText>
-            <LottieView
+            <CyDLottieView
               source={AppImages.ESTIMATED_TIME}
               resizeMode={'contain'}
               autoPlay

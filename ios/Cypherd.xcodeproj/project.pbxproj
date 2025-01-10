@@ -14,12 +14,12 @@
 		2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */; };
 		265D3B49A50645618DB4494F /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B2716DE7FF54C2393402D17 /* Manrope-Medium.ttf */; };
 		408AAFC4D63C74BA3B572E6B /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B115A5BD34494A92F5F1592C /* libPods-Cypherd-CypherdTests.a */; };
+		4B70C5BF34EB4835865542B2 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7BA2DF614A0B4C2EA494F99A /* CydFont.ttf */; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
 		61434CBA544428E769330103 /* libPods-Cypherd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CFF6A0E10778C91BF20A64C /* libPods-Cypherd.a */; };
 		74AD033A8F6C42298B70EC20 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8D14945D936E418B8781161E /* Manrope-Bold.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		A2A66A66C0544AE6A981410D /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2ECEAB4CE1AA410298E0FE4D /* CydFont.ttf */; };
 		A67594D0737440EB9B17E75F /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3A58CD24D5E4CD58585B0B9 /* Manrope-ExtraLight.ttf */; };
 		B76522972792A50F002A2E46 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B76522962792A50F002A2E46 /* GoogleService-Info.plist */; };
 		C4AD7F8760D94720B5208CFB /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F26B3333AAA94E4295E41DF3 /* Manrope-ExtraBold.ttf */; };
@@ -52,7 +52,6 @@
 		1B2716DE7FF54C2393402D17 /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 		2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2D6AF89D3BAE89AEEE140E8D /* Pods-Cypherd.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd.debug.xcconfig"; path = "Target Support Files/Pods-Cypherd/Pods-Cypherd.debug.xcconfig"; sourceTree = "<group>"; };
-		2ECEAB4CE1AA410298E0FE4D /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		3CC408C1228D48B28D032D9C /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		49EB4EE11042C6222724F7B1 /* Pods-Cypherd-CypherdTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd-CypherdTests.debug.xcconfig"; path = "Target Support Files/Pods-Cypherd-CypherdTests/Pods-Cypherd-CypherdTests.debug.xcconfig"; sourceTree = "<group>"; };
 		4CFF6A0E10778C91BF20A64C /* libPods-Cypherd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +64,7 @@
 		748FF36D74567F8A48ABF351 /* Pods-Cypherd.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd.release.xcconfig"; path = "Target Support Files/Pods-Cypherd/Pods-Cypherd.release.xcconfig"; sourceTree = "<group>"; };
 		75A14A8405CC4EECB558C5D9 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		7B69CC8348E34CA5B1F72BB9 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
+		7BA2DF614A0B4C2EA494F99A /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		7D992FCDCA1A451DBFBE582C /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Cypherd/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8344FF6AB5AA4763AEE029F2 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
@@ -151,7 +151,7 @@
 				1B2716DE7FF54C2393402D17 /* Manrope-Medium.ttf */,
 				F1D28B9988E544FBBCC33FBC /* Manrope-Regular.ttf */,
 				75A14A8405CC4EECB558C5D9 /* Manrope-SemiBold.ttf */,
-				2ECEAB4CE1AA410298E0FE4D /* CydFont.ttf */,
+				7BA2DF614A0B4C2EA494F99A /* CydFont.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -336,7 +336,7 @@
 				265D3B49A50645618DB4494F /* Manrope-Medium.ttf in Resources */,
 				CDE210CBAB79454CA4F5ED06 /* Manrope-Regular.ttf in Resources */,
 				F7CB58729C1E4A10A4B3E9AB /* Manrope-SemiBold.ttf in Resources */,
-				A2A66A66C0544AE6A981410D /* CydFont.ttf in Resources */,
+				4B70C5BF34EB4835865542B2 /* CydFont.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

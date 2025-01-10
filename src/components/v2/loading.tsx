@@ -1,6 +1,5 @@
-import { CyDView, CyDText } from '../../styles/tailwindStyles';
-import LottieView from 'lottie-react-native';
 import React from 'react';
+import { CyDView, CyDText, CyDLottieView } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
@@ -29,7 +28,7 @@ export default function Loading({
           reducedTransparencyFallbackColor='white'
         />
       )}
-      <LottieView
+      <CyDLottieView
         source={AppImages.LOADING_IMAGE}
         autoPlay
         loop

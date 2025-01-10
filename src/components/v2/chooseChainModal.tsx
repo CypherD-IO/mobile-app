@@ -10,7 +10,7 @@ import CyDModalLayout from './modal';
 import { StyleSheet } from 'react-native';
 import * as React from 'react';
 import clsx from 'clsx';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 
 enum typeOfChain {
   CHAIN = 'chain',

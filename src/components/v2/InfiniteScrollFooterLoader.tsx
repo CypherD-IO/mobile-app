@@ -1,6 +1,5 @@
 import React from 'react';
-import LottieView from 'lottie-react-native';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDLottieView, CyDView } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { StyleProp, ViewStyle } from 'react-native';
 
@@ -16,7 +15,7 @@ const InfiniteScrollFooterLoader = ({
   if (refreshing) {
     return (
       <CyDView className={'flex items-center justify-between'}>
-        <LottieView
+        <CyDLottieView
           source={AppImages.LOADER_TRANSPARENT}
           autoPlay
           loop

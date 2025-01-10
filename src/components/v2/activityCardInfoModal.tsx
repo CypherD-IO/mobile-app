@@ -9,7 +9,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import moment from 'moment';
 import { onShare } from '../../containers/utilities/socialShareUtility';

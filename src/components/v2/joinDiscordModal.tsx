@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet } from 'react-native';
 import {
   CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -11,10 +11,8 @@ import {
 import CyDModalLayout from './modal';
 import useAxios from '../../core/HttpRequest';
 import AppImages from '../../../assets/images/appImages';
-import LottieView from 'lottie-react-native';
 import clsx from 'clsx';
 import { JoinDiscordStatus } from '../../constants/enum';
-import { useNavigation } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -144,7 +142,7 @@ export default function JoinDiscordModal(props: {
             {isJoinDiscordStatus !== JoinDiscordStatus.ERROR && (
               <CyDView className='flex flex-row bg-n0 rounded-[12px] p-[16px] items-center'>
                 {isJoinDiscordLoading ? (
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop

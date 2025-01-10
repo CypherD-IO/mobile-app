@@ -6,7 +6,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 
 export default function SignatureModal({
   isModalVisible,
@@ -28,7 +28,7 @@ export default function SignatureModal({
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
       avoidKeyboard={avoidKeyboard}>
-      <CyDView className={'bg-n0 rounded-t-[20px]'}>
+      <CyDView className={'bg-n20 rounded-t-[20px]'}>
         <CyDTouchView
           onPress={() => {
             setModalVisible(false);

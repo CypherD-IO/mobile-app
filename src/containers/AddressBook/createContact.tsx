@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '../../components/v2/button';
 import {
   ALL_CHAINS,
-  ChainNameMapping,
   ChainNames,
-  CHAIN_ETH,
   QRScannerScreens,
 } from '../../constants/server';
 import { generateRandomInt, isEthereumAddress } from '../../core/util';
@@ -16,9 +14,8 @@ import {
   CyDScrollView,
   CyDTextInput,
   CyDTouchView,
-  CyDImage,
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
   CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
@@ -881,9 +878,9 @@ export const CreateContact = () => {
                                     },
                                   );
                                 }}>
-                                <CydIcons
+                                <CyDIcons
                                   name={'qr-scanner'}
-                                  size={32}
+                                  size={28}
                                   className='text-base400'
                                 />
                               </CyDTouchView>

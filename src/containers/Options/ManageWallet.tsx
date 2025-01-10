@@ -10,7 +10,7 @@ import {
   CyDText,
   CyDFlatList,
   CyDImageBackground,
-  CydIcons,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 
 import { HDWallet } from '../../reducers/hdwallet_reducer';
@@ -51,14 +51,14 @@ const renderSettingsData = (
             className={
               'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
             }>
-            <CydIcons name={item.logo} size={32} className='text-base400' />
+            <CyDIcons name={item.logo} size={24} className='text-base400' />
           </CyDView>
           <CyDText className={'font-semibold text-[16px] text-[#434343]'}>
             {item.title}
           </CyDText>
         </CyDView>
       </CyDTouchView>
-      <CyDView className={'h-[01px] bg-portfolioBorderColor'} />
+      <CyDView className={'h-[01px] bg-n40'} />
     </CyDView>
   );
 };

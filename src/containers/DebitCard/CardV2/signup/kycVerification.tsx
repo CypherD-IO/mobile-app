@@ -1,7 +1,8 @@
 import React, { useCallback, useContext, useState } from 'react';
 import {
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -35,7 +36,6 @@ import {
   GlobalContextDef,
 } from '../../../../core/globalContext';
 import { Linking, StyleSheet } from 'react-native';
-import LottieView from 'lottie-react-native';
 import Loading from '../../../../components/v2/loading';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
 
@@ -398,14 +398,14 @@ export default function KYCVerficicationV2() {
                     setLoading({ ...loading, refresh: false });
                   }}>
                   {!loading.refresh && (
-                    <CydIcons
+                    <CyDIcons
                       name='refresh'
                       size={18}
                       className='text-base400'
                     />
                   )}
                   {loading.refresh && (
-                    <LottieView
+                    <CyDLottieView
                       source={AppImages.LOADER_TRANSPARENT}
                       autoPlay
                       loop

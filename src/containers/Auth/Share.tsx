@@ -1,5 +1,4 @@
 import Clipboard from '@react-native-clipboard/clipboard';
-import LottieView from 'lottie-react-native';
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet } from 'react-native';
@@ -11,93 +10,20 @@ import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { HdWalletContext } from '../../core/util';
 import {
-  CyDImage,
   CyDText,
   CyDTouchView,
   CydMaterialDesignIcons,
   CyDView,
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
+  CyDLottieView,
 } from '../../styles/tailwindStyles';
 
-const {
-  CText,
-  DynamicView,
-  DynamicImage,
-  DynamicButton,
-  DynamicTouchView,
-} = require('../../styles');
+const { DynamicButton } = require('../../styles');
 
 function copyToClipboard(text) {
   Clipboard.setString(text);
 }
-
-export const ButtonWithImage = ({
-  mL,
-  mT,
-  bG,
-  vC,
-  text,
-  imageName,
-  isBorder,
-  onPress,
-  indicator,
-  wT,
-}) => {
-  return (
-    <DynamicButton
-      dynamic
-      dynamicWidth
-      bw={1}
-      width={wT || 100}
-      height={50}
-      bGC={bG}
-      mT={mT}
-      bR={8}
-      bW={isBorder ? 1 : 0}
-      bC={Colors.borderColor}
-      onPress={() => {
-        onPress();
-      }}>
-      <DynamicView
-        dynamic
-        dynamicWidthFix
-        dynamicHeightFix
-        jC={'center'}
-        bGC={vC}
-        height={35}
-        width={35}
-        bR={8}
-        style={[
-          { position: 'absolute', left: 8, top: 8 },
-          !isBorder && {
-            borderColor: '#FFDE59',
-            shadowColor: 'gray',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.7,
-            elevation: 3,
-          },
-        ]}>
-        <DynamicImage dynamic source={imageName} width={13} height={13} />
-      </DynamicView>
-      {indicator && (
-        <ActivityIndicator
-          size='large'
-          color={Colors.toastColor}
-          style={{ flex: 1, position: 'absolute', alignItems: 'center' }}
-        />
-      )}
-      <CText
-        dynamic
-        mL={mL || 20}
-        fF={C.fontsName.FONT_EXTRA_BOLD}
-        fS={13}
-        color={Colors.primaryTextColor}>
-        {text}
-      </CText>
-    </DynamicButton>
-  );
-};
 
 export const ButtonWithOutImage = ({
   fE = C.fontsName.FONT_BLACK,
@@ -170,72 +96,59 @@ export const AddressBookContainer = ({
   const hdWalletContext = useContext<any>(HdWalletContext);
 
   return (
-    <CyDView className='flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-n40'>
-      <CyDView className='flex flex-row w-[80%] items-center'>
-        <CyDView
-          className={'flex p-[5px] rounded-[50px] mr-[10px]'}
-          style={{ backgroundColor: bGC }}>
-          <CyDImage
-            source={logo}
-            className='h-[25px] w-[25px]'
-            resizeMode='contain'
-          />
-        </CyDView>
-        <CyDView className='flex-wrap w-[90%]'>
-          <CyDText className='font-bold'>{chain.toUpperCase()}</CyDText>
-          {wallet?.address !== '' ? (
-            <CyDText>
-              {wallet === undefined
-                ? 'Importing...'
-                : wallet.address.substring(0, 8) +
-                  '...' +
-                  wallet.address.substring(wallet.address.length - 8)}
-            </CyDText>
-          ) : (
-            <CyDImage
-              source={AppImages.BLURRED_ADDRESS}
-              className='h-[30px] w-[145px]'
-              resizeMode='contain'
+    <>
+      {wallet?.address !== '' && (
+        <CyDView className='flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-n40'>
+          <CyDView className='flex flex-row w-[80%] items-center'>
+            <CyDView className='flex-wrap w-[90%]'>
+              <CyDText className='font-bold'>{chain.toUpperCase()}</CyDText>
+              <CyDText>
+                {wallet === undefined
+                  ? 'Importing...'
+                  : wallet.address.substring(0, 8) +
+                    '...' +
+                    wallet.address.substring(wallet.address.length - 8)}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+          {chain.toUpperCase() === ChainBackendNames.SOLANA.toUpperCase() && (
+            <CyDLottieView
+              source={AppImages.NEW}
+              autoPlay
+              loop
+              style={styles.lottieViewWidth}
             />
           )}
-        </CyDView>
-      </CyDView>
-      {chain.toUpperCase() === ChainBackendNames.SOLANA.toUpperCase() && (
-        <LottieView
-          source={AppImages.NEW}
-          autoPlay
-          loop
-          style={styles.lottieViewWidth}
-        />
-      )}
-      <CyDView className='flex flex-row justify-between items-center w-[16%]'>
-        {wallet?.address !== '' && (
-          <CyDTouchView
-            onPress={() => {
-              navigation.navigate(C.screenTitle.QRCODE, {
-                addressType: addressTypeQRCode,
-              });
-            }}>
-            <CydIcons name={'qr-code-1'} size={32} className='text-base400' />
-          </CyDTouchView>
-        )}
+          <CyDView className='flex flex-row justify-between items-center w-[16%]'>
+            {wallet?.address !== '' && (
+              <CyDTouchView
+                onPress={() => {
+                  navigation.navigate(C.screenTitle.QRCODE, {
+                    addressType: addressTypeQRCode,
+                  });
+                }}>
+                <CyDIcons name={'qr-code'} size={32} className='text-base400' />
+              </CyDTouchView>
+            )}
 
-        {wallet?.address !== '' && (
-          <CyDTouchView
-            onPress={() => {
-              copyToClipboard(wallet.address);
-              showToast(`${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`);
-              sendFirebaseEvent(hdWalletContext, 'copy_address');
-            }}>
-            <CydMaterialDesignIcons
-              name={'content-copy'}
-              size={20}
-              className='text-base400'
-            />
-          </CyDTouchView>
-        )}
-      </CyDView>
-    </CyDView>
+            {wallet?.address !== '' && (
+              <CyDTouchView
+                onPress={() => {
+                  copyToClipboard(wallet.address);
+                  showToast(`${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`);
+                  sendFirebaseEvent(hdWalletContext, 'copy_address');
+                }}>
+                <CydMaterialDesignIcons
+                  name={'content-copy'}
+                  size={20}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+            )}
+          </CyDView>
+        </CyDView>
+      )}
+    </>
   );
 };
 
@@ -263,11 +176,11 @@ export const OptionsContainer = ({
         {image ? (
           <CyDFastImage source={image} className='h-[24px] w-[24px]' />
         ) : (
-          <CydIcons name={logo} size={32} className='text-base400' />
+          <CyDIcons name={logo} size={24} className='text-base400' />
         )}
         <CyDText className='font-normal text-[14px] ml-1'>{title}</CyDText>
         {shouldDot && (
-          <CyDView className='bg-red300 w-1.5 h-1.5 rounded-full' />
+          <CyDView className='bg-red300 w-2 h-2 rounded-full ml-2' />
         )}
       </CyDView>
       <CyDView>

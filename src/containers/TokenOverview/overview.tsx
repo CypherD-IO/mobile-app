@@ -63,7 +63,7 @@ import {
 import {
   CyDAnimatedView,
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
   CyDImage,
   CydMaterialDesignIcons,
   CyDScrollView,
@@ -667,7 +667,7 @@ export default function Overview({
       <CyDView className={'mx-[12px] mt-[12px] mb-[20px]'}>
         <CyDView className={'flex flex-row justify-between mb-[10px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CydIcons
+            <CyDIcons
               name='trend-up'
               size={16}
               className='text-base400 ml-[4px]'
@@ -694,7 +694,7 @@ export default function Overview({
                 onClose={() => setMarketCapTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setMarketCapTip(true)}>
-                  <CydIcons
+                  <CyDIcons
                     name='information'
                     size={20}
                     className='text-base400 ml-[8px]'
@@ -711,7 +711,7 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CydIcons
+            <CyDIcons
               name='bar-graph'
               size={16}
               className='text-base400 ml-[4px]'
@@ -735,7 +735,7 @@ export default function Overview({
                 onClose={() => setVolumeTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setVolumeTip(true)}>
-                  <CydIcons
+                  <CyDIcons
                     name='information'
                     size={20}
                     className='text-base400 ml-[8px]'
@@ -777,7 +777,7 @@ export default function Overview({
                 onClose={() => setCirculatingSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setCirculatingSupplyTip(true)}>
-                  <CydIcons
+                  <CyDIcons
                     name='information'
                     size={20}
                     className='text-base400 ml-[8px]'
@@ -795,8 +795,8 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CydIcons
-              name='blockchain-connected'
+            <CyDIcons
+              name='connected'
               size={16}
               className='text-base400 ml-[4px]'
             />
@@ -822,7 +822,7 @@ export default function Overview({
                 onClose={() => setTotalSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setTotalSupplyTip(true)}>
-                  <CydIcons
+                  <CyDIcons
                     name='information'
                     size={20}
                     className='text-base400 ml-[8px]'
@@ -840,7 +840,7 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CydIcons
+            <CyDIcons
               name='meter'
               size={16}
               className='text-base400 ml-[4px]'
@@ -867,7 +867,7 @@ export default function Overview({
                 onClose={() => setMaxSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setMaxSupplyTip(true)}>
-                  <CydIcons
+                  <CyDIcons
                     name='information'
                     size={20}
                     className='text-base400 ml-[8px]'

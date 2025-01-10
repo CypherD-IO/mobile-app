@@ -204,7 +204,7 @@ export default function Options() {
                 });
               }}
               title={t('ADDRESS_BOOK')}
-              logo={'contact-book'}
+              logo={'contactbook'}
             />
 
             <OptionsContainer
@@ -233,7 +233,7 @@ export default function Options() {
                   });
                 }}
                 title={t('CYPHER_CARD_REFERRALS')}
-                logo={'share-profile'}
+                logo={'account-share'}
               />
             )}
 
@@ -246,7 +246,7 @@ export default function Options() {
                   });
                 }}
                 title={t('CYPHER_CARD_REWARDS')}
-                logo={'reward'}
+                logo={'star'}
               />
             )}
 
@@ -268,7 +268,7 @@ export default function Options() {
                 navigation.navigate(C.screenTitle.SECURITY_PRIVACY);
               }}
               title={'Security & Privacy'}
-              logo={'lock'}
+              logo={'lock-1'}
             />
 
             <OptionsContainer
@@ -306,7 +306,7 @@ export default function Options() {
                 navigation.navigate(C.screenTitle.BROWSER);
               }}
               title={t('BROWSER')}
-              logo={'browser'}
+              logo={'web'}
             />
 
             <OptionsContainer
@@ -315,7 +315,7 @@ export default function Options() {
                 navigation.navigate(C.screenTitle.LEGAL_SCREEN);
               }}
               title={t('LEGAL')}
-              logo={'task'}
+              logo={'note'}
             />
 
             {updateModal && (

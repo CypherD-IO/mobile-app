@@ -8,6 +8,7 @@ import {
   CyDTouchView,
   CyDKeyboardAwareScrollView,
   CydMaterialDesignIcons,
+  CyDLottieView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { BackHandler, StyleSheet } from 'react-native';
@@ -17,7 +18,6 @@ import {
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
-import LottieView from 'lottie-react-native';
 import {
   CosmosActionType,
   CosmosStakingContext,
@@ -340,7 +340,7 @@ export default function CosmosAction({
           className={
             'bg-base200 my-[32px] py-[16px] px-[20px] rounded-[8px] flex flex-row'
           }>
-          <LottieView
+          <CyDLottieView
             source={AppImages.INSIGHT_BULB}
             autoPlay
             loop

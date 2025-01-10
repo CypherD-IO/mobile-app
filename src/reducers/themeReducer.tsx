@@ -10,17 +10,20 @@ import { vars } from 'nativewind';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sentry from '@sentry/react-native';
 
-export type ThemeType = 'light' | 'dark';
+export enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+}
 
 interface ThemeContextType {
-  theme: ThemeType;
-  changeTheme: (newTheme: ThemeType) => void;
+  theme: Theme;
+  changeTheme: (newTheme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const themes: Record<ThemeType, ReturnType<typeof vars>> = {
-  light: vars({
+export const themes: Record<Theme, ReturnType<typeof vars>> = {
+  [Theme.LIGHT]: vars({
     '--color-n0': '#ffffff',
     '--color-n10': '#fafbfb',
     '--color-n20': '#F5F6F7',
@@ -84,7 +87,7 @@ export const themes: Record<ThemeType, ReturnType<typeof vars>> = {
     '--color-blue200': '#2685CA',
     '--color-blue300': '#0061A7',
   }),
-  dark: vars({
+  [Theme.DARK]: vars({
     '--color-n0': '#0D0D0D',
     '--color-n10': '#111111',
     '--color-n20': '#161616',
@@ -156,12 +159,12 @@ interface ThemeProviderProps {
 
 const THEME_STORAGE_KEY = '@app_theme';
 
-const isValidTheme = (theme: unknown): theme is ThemeType => {
-  return theme === 'light' || theme === 'dark';
+const isValidTheme = (theme: unknown): theme is Theme => {
+  return theme === Theme.LIGHT || theme === Theme.DARK;
 };
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<ThemeType>('light');
+  const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
 
   useEffect(() => {
     void loadSavedTheme();
@@ -178,7 +181,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  const changeTheme = async (newTheme: ThemeType): Promise<void> => {
+  const changeTheme = async (newTheme: Theme): Promise<void> => {
     if (!isValidTheme(newTheme)) {
       throw new Error(`Invalid theme: ${String(newTheme)}`);
     }
@@ -195,7 +198,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     <ThemeContext.Provider
       value={{
         theme,
-        changeTheme: (newTheme: ThemeType) => {
+        changeTheme: (newTheme: Theme) => {
           void changeTheme(newTheme);
         },
       }}>

@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import { get } from 'lodash';
-import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -17,6 +16,7 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
+  CyDLottieView,
   CyDSwitch,
   CyDText,
   CyDTouchView,
@@ -320,7 +320,7 @@ export default function CardNotificationSettings() {
               </CyDText>
             </CyDView>
             {telegramSwitchLoading ? (
-              <LottieView
+              <CyDLottieView
                 style={styles.loader}
                 autoPlay
                 loop
@@ -349,7 +349,7 @@ export default function CardNotificationSettings() {
               </CyDText>
             </CyDView>
             {emailSwitchLoading ? (
-              <LottieView
+              <CyDLottieView
                 style={styles.loader}
                 autoPlay
                 loop
@@ -372,7 +372,7 @@ export default function CardNotificationSettings() {
                 </CyDText>
               </CyDView>
               {smsSwitchLoading ? (
-                <LottieView
+                <CyDLottieView
                   style={styles.loader}
                   autoPlay
                   loop
@@ -395,7 +395,7 @@ export default function CardNotificationSettings() {
               </CyDText>
             </CyDView>
             {fcmSwitchLoading ? (
-              <LottieView
+              <CyDLottieView
                 style={styles.loader}
                 autoPlay
                 loop
@@ -437,7 +437,7 @@ export default function CardNotificationSettings() {
               {t<string>('RESEND_CODE_INIT_CAPS')}
             </CyDText>
             {sendingOTP && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop

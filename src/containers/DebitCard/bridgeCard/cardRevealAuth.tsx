@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
@@ -11,7 +11,6 @@ import { PinInput } from '../../../components/v2/pinInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -313,7 +312,7 @@ export default function CardRevealAuthScreen() {
               </CyDText>
             </CyDText>
             {sendingOTP && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop

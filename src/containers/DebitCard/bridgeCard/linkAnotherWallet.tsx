@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { Formik } from 'formik';
 import { t } from 'i18next';
-import LottieView from 'lottie-react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { isAddress } from 'web3-validator';
@@ -18,8 +17,8 @@ import { GlobalContext } from '../../../core/globalContext';
 import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
-  CyDImage,
   CyDKeyboardAwareScrollView,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
@@ -293,7 +292,7 @@ export default function LinkAnotherWallet() {
                           {t<string>('RESEND_CODE_INIT_CAPS')}
                         </CyDText>
                         {sendingOTP && (
-                          <LottieView
+                          <CyDLottieView
                             source={AppImages.LOADER_TRANSPARENT}
                             autoPlay
                             loop

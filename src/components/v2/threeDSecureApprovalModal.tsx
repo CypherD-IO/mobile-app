@@ -8,10 +8,9 @@ import {
 } from '../../styles/tailwindStyles';
 import { t } from 'i18next';
 import AppImages from '../../../assets/images/appImages';
-import { Platform, StyleSheet, Modal } from 'react-native';
+import { StyleSheet, Modal } from 'react-native';
 import SlideToConfirmV2 from './slideToConfirmModalV2';
 import useAxios from '../../core/HttpRequest';
-import LottieView from 'lottie-react-native';
 import { useGlobalModalContext } from './GlobalModal';
 import { capitalize } from 'lodash';
 

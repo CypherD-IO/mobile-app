@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {
+  CyDLottieView,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
-  CyDImage,
   CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
-import OtpInput from '../../../components/v2/OTPInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -30,7 +28,6 @@ import {
 } from '../../../constants/enum';
 import { Card } from '../../../models/card.model';
 import { t } from 'i18next';
-import { capitalize } from 'lodash';
 import { PinInput } from '../../../components/v2/pinInput';
 
 interface RouteParams {
@@ -229,7 +226,7 @@ export default function CardUnlockAuth() {
                 </CyDText>
               </CyDText>
               {sendingOTP && (
-                <LottieView
+                <CyDLottieView
                   source={AppImages.LOADER_TRANSPARENT}
                   autoPlay
                   loop

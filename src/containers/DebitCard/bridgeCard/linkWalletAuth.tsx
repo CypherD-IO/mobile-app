@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  CyDLottieView,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -10,7 +11,6 @@ import OtpInput from '../../../components/v2/OTPInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -155,7 +155,7 @@ export default function LinkWalletAuth() {
                   {t<string>('RESEND_CODE_INIT_CAPS')}
                 </CyDText>
                 {sendingOTP && (
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop

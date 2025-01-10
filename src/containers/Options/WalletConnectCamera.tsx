@@ -5,9 +5,8 @@ import React, {
   useLayoutEffect,
   useRef,
 } from 'react';
-import { useTranslation } from 'react-i18next';
 import * as C from '../../constants/index';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
 import analytics from '@react-native-firebase/analytics';
@@ -340,7 +339,7 @@ export default function WalletConnectCamera(props: {
     return (
       <CyDView>
         <CyDView className={'flex items-center'}>
-          <CyDView className='mt-[12px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+          <CyDView className='mt-[12px] w-11/12 border-[1px] rounded-[8px] border-n40'>
             <CyDView className={'flex-row'}>
               <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
                 <CyDFastImage
@@ -481,7 +480,7 @@ export default function WalletConnectCamera(props: {
           setSelectedPairingTopic(element.topic);
         }}>
         <CyDView className={'flex items-center'}>
-          <CyDView className='flex flex-row items-center mt-[6px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+          <CyDView className='flex flex-row items-center mt-[6px] w-11/12 border-[1px] rounded-[8px] border-n40'>
             <CyDView className={'flex-row'}>
               <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
                 <CyDFastImage
@@ -491,7 +490,7 @@ export default function WalletConnectCamera(props: {
                 />
               </CyDView>
               {isV2 && (
-                <CyDView className='rounded-[60px] h-[16px] p-[4px] absolute mt-[43px] ml-[22px] bg-appColor'>
+                <CyDView className='rounded-[60px] h-[16px] p-[4px] absolute mt-[43px] ml-[22px] bg-p100'>
                   <CyDText className={'font-extrabold text-[8px]'}>V2</CyDText>
                 </CyDView>
               )}

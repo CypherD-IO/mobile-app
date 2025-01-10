@@ -1,3 +1,6 @@
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import clsx from 'clsx';
+import { t } from 'i18next';
 import React, {
   Dispatch,
   SetStateAction,
@@ -5,27 +8,21 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import {
-  CyDView,
-  CyDTouchView,
-  CyDImage,
-  CyDText,
-  CyDFlatList,
-  CydMaterialDesignIcons,
-} from '../styles/tailwindStyles';
-import Button from './v2/button';
 import AppImages from '../../assets/images/appImages';
+import { screenTitle } from '../constants';
+import { ButtonType } from '../constants/enum';
 import { HdWalletContext } from '../core/util';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { t } from 'i18next';
-import { ButtonType } from '../constants/enum';
-import { generateMultipleWalletAddressesFromSeedPhrase } from '../core/Address';
-import { screenTitle } from '../constants';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import { title } from 'process';
-import clsx from 'clsx';
-import { isIOS } from '../misc/checkers';
+import {
+  CyDFlatList,
+  CyDImage,
+  CyDLottieView,
+  CydMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../styles/tailwindStyles';
+import Button from './v2/button';
 
 const RadioButton = (props: { selected: boolean }) => {
   const { selected } = props;
@@ -137,7 +134,7 @@ export default function ChooseWalletIndexComponent({
               {!showMoreLoading ? (
                 <CyDText>{t('SHOW_MORE')}</CyDText>
               ) : (
-                <LottieView
+                <CyDLottieView
                   source={AppImages.LOADER_TRANSPARENT}
                   autoPlay
                   loop

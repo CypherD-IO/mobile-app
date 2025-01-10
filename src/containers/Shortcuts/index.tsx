@@ -7,6 +7,7 @@ import {
   CyDView,
   CyDFlatList,
   CydMaterialDesignIcons,
+  CyDLottieView,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
 import * as React from 'react';
@@ -29,7 +30,6 @@ import {
   getAvailableChains,
   sortJSONArrayByKey,
 } from '../../core/util';
-import LottieView from 'lottie-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
@@ -796,9 +796,9 @@ export default function ShortcutsModal() {
             ? 'mx-[12px] bg-transparent'
             : 'mx-[12px] mt-[4px] bg-transparent'
         }>
-        <LottieView
+        <CyDLottieView
           source={AppImages.SHORTCUTS}
-          ref={ref => setAnimation(ref)}
+          // ref={ref => setAnimation(ref)}
           autoPlay
           loop
           resizeMode={'contain'}

@@ -15,7 +15,7 @@ import {
   CyDScrollView,
   CyDKeyboardAwareScrollView,
   CydMaterialDesignIcons,
-  CydIcons,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import { GlobalContext } from '../../core/globalContext';
 import { useIsFocused } from '@react-navigation/native';
@@ -763,7 +763,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                                   onPress={() => {
                                     setPepToolTip(true);
                                   }}>
-                                  <CydIcons
+                                  <CyDIcons
                                     name='information'
                                     size={16}
                                     className='text-base400 ml-[4px]'

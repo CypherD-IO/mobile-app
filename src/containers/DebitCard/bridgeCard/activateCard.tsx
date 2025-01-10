@@ -6,7 +6,6 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, StyleSheet } from 'react-native';
@@ -27,6 +26,7 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import {
   CyDKeyboardAwareScrollView,
+  CyDLottieView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -254,7 +254,7 @@ export default function ActivateCard() {
                     {t<string>('RESEND_CODE_INIT_CAPS')}
                   </CyDText>
                   {sendingOTP && (
-                    <LottieView
+                    <CyDLottieView
                       source={AppImages.LOADER_TRANSPARENT}
                       autoPlay
                       loop

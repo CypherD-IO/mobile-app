@@ -8,7 +8,6 @@ import {
 } from '@react-navigation/native';
 import { t } from 'i18next';
 import { find, get } from 'lodash';
-import LottieView from 'lottie-react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,6 +33,7 @@ import { ICountry } from '../../../models/cardApplication.model';
 import {
   CyDFastImage,
   CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -438,7 +438,7 @@ export default function CardControlsMenu() {
                   </CyDView>
                   <CyDView className='flex flex-row items-center'>
                     {isZeroRestrictionModeLoading ? (
-                      <LottieView
+                      <CyDLottieView
                         source={AppImages.LOADER_TRANSPARENT}
                         autoPlay
                         loop

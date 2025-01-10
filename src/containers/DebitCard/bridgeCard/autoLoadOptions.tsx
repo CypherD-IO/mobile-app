@@ -5,7 +5,7 @@ import { CardProfile } from '../../../models/cardProfile.model';
 import AppImages from '../../../../assets/images/appImages';
 import CyDModalLayout from '../../../components/v2/modal';
 import {
-  CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -15,7 +15,6 @@ import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { IAutoLoadConfig } from '../../../models/autoLoad.interface';
 import Toast from 'react-native-toast-message';
-import LottieView from 'lottie-react-native';
 import useTransactionManager from '../../../hooks/useTransactionManager';
 import { getChain } from '../../../core/util';
 import {
@@ -191,7 +190,7 @@ export default function AutoLoadOptionsModal({
               className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-n0 rounded-[6px] mx-[12px]'>
               {(index === 1 && isToggling) || (index === 2 && isCancelling) ? (
                 <CyDView className='relative w-[48px]'>
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop

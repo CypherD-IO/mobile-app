@@ -9,7 +9,6 @@ import * as Sentry from '@sentry/react-native';
 import { ethers } from 'ethers';
 import { t } from 'i18next';
 import { random } from 'lodash';
-import LottieView from 'lottie-react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { RefreshControl, StyleSheet } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -43,6 +42,7 @@ import {
 } from '../../reducers/cosmosStakingReducer';
 import {
   CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
@@ -472,7 +472,7 @@ export default function TokenStaking({
             />
           </CyDTouchView>
           <CyDView>
-            <LottieView
+            <CyDLottieView
               source={AppImages.NEW}
               autoPlay
               loop
@@ -847,7 +847,7 @@ export default function TokenStaking({
                 />
                 <CyDText
                   className={
-                    'text-center w-3/4  text-[20px] font-semibold text-secondaryTextColor'
+                    'text-center w-3/4  text-[20px] font-semibold'
                   }>{`${t<string>(
                   'STAKE_YOUR_TEXT',
                 )} ${tokenData.name.toLowerCase()} ${t<string>(

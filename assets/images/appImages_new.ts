@@ -7,6 +7,8 @@ export const CYPHER_CARD_IMAGES =
   'https://public.cypherd.io/assets/programs/common/cypher-card';
 const S3_BUCKET_URL_DAPPS = 'https://public.cypherd.io/assets/dapps';
 
+// used check and remove, including the component
+const REFRESH_BROWSER = require('./refresh_browser.png');
 // need dm image
 const EMPTY = require('./emptyImg.png');
 const CYPHERD = require('./cypherD.png');
@@ -15,7 +17,9 @@ const POLYGON = require('./polygon.png');
 const SHARDEUM = require('./shardeum.png');
 const AVALANCHE = require('./avalanche.png');
 const ARBITRUM = require('./arbitrum.png');
+const COSMOS = require('./cosmos_hub.png');
 const OPTIMISM = require('./optimism.png');
+const CORRECT = require('./correct.png');
 const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
 const APP_LOGO = require('./appLogo.png');
@@ -30,6 +34,7 @@ const PURPLE_COIN = require('./coinPurple.png');
 const CYAN_COIN = require('./coinCyan.png');
 const PINK_COIN = require('./coinPink.png');
 const BLUE_COIN = require('./coinBlue.png');
+const GIFT_BOX = require('./giftBox.json');
 const STARS_LEFT = require('./stars_left.png');
 const STARS_RIGHT = require('./star_right.png');
 const INSIGHT_BULB = require('./bulb.json');
@@ -56,6 +61,7 @@ const CARD_PENDING = require('./card_pending.png');
 const SEND_SUCCESS = require('./send_success.png');
 const SEND_ERROR = require('./send_error.png');
 const SEND_PENDING = require('./send_pending.png');
+const QR_CODE = require('./qr_code.png');
 const NETWORK_ERROR = require('./network_error.png');
 const IBC_SUCCESS = require('./ibc_success.png');
 const IBC_ERROR = require('./ibc_error.png');
@@ -108,6 +114,7 @@ const CYPHER_SUCCESS = require('./cypher-success.png');
 const CYPHER_ERROR = require('./cypher-error.png');
 const MONEY_BAG = require('./money-bag.png');
 const CYPHER_WARNING_RED = require('./CypherWarningRed.png');
+const INFO_CIRCLE = require('./infoCircle.png');
 const CYPHER_ENJOYING = require('./cypher-enjoying.png');
 const CYPHER_LOVE = require('./cypher-love.png');
 const REFER = require('./refer.png');
@@ -121,6 +128,7 @@ const APR_ICON = require('./apr.png');
 const STAKING_EMPTY_ILLUSTRATION = require('./stakingEmptyIllustration.png');
 const CELEBRATE = require('./celebrate.png');
 const READ_ONLY_CARD_BACKGROUND = require('./readOnlyCardBackground.png');
+const BLURRED_ADDRESS = require('./blurredAddress.png');
 const NFT_EMPTY_ILLUSTATION = require('./emptyNFTIllustration.png');
 const DEFAULT_NFT = require('./defaultNftImage.png');
 const UNLOCK_FROM_TRACKWALLET = require('./unlockFromTrackWallet.png');
@@ -149,6 +157,7 @@ const CARD_ONBOARDING_1 = require('./cardOnBoarding1.png');
 const CARD_ONBOARDING_2 = require('./cardOnBoarding2.png');
 const CARD_ONBOARDING_3 = require('./cardOnBoarding3.png');
 const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
+const BACK_ARROW_GRAY = require('./backArrowGray.png');
 const ZRM_INTRO_1 = require('./zrmImage1.png');
 const ZRM_INTRO_2 = require('./zrmImage2.png');
 const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
@@ -434,6 +443,18 @@ const MIGRATION_PENDING_GIF = {
 const MIGRATION_SUCCESS = {
   uri: `${S3_BUCKET_URL_ICONS}/migrationSuccess.png`,
 };
+// const SETTINGS_TOOLS_ICON = {
+//   uri: `${S3_BUCKET_URL_ICONS}/settingsTools.png`,
+// };
+// const CRYPTO_WITHDRAWAL = {
+//   uri: `${S3_BUCKET_URL_ICONS}/cryptoWithdrawal.png`,
+// };
+// const RIGHT_ARROW = {
+//   uri: `${S3_BUCKET_URL_ICONS}/rightArrow.png`,
+// };
+// const LEFT_ARROW_LONG = {
+//   uri: `${S3_BUCKET_URL_ICONS}/leftBackArrowLong.png`,
+// };
 const PREMIUM_TEXT_GRADIENT = {
   uri: `${S3_BUCKET_URL_ICONS}/premiumGradient.png`,
 };
@@ -443,12 +464,31 @@ const WITHDRAW_CRYPTO_SUCCESS = {
 const FLYING_MONEY = {
   uri: `${S3_BUCKET_URL_ICONS}/flyingMoney.png`,
 };
+// const LIST_HAMBURGER = {
+//   uri: `${S3_BUCKET_URL_ICONS}/listHamburger.png`,
+// };
 const USDC_TOKEN = {
   uri: `${S3_BUCKET_URL_ICONS}/usdc.png`,
 };
+// const HOMEICON = {
+//   uri: `${S3_BUCKET_URL_ICONS}/home.png`,
+// };
+// const MANAGE_CARD = {
+//   uri: `${S3_BUCKET_URL_ICONS}/sampleCard.png`,
+// };
+// const BASIC_DETAILS = {
+//   uri: `${S3_BUCKET_URL_ICONS}/basicDetails.png`,
+// };
+// const ENVELOPE = {
+//   uri: `${S3_BUCKET_URL_ICONS}/envelope.png`,
+// };
 const CARD_SHIPMENT_ENVELOPE = {
   uri: `${S3_BUCKET_URL_ICONS}/cardShipmentEnvelope.png`,
 };
+// const SWITCH_OFF = {
+//   uri: `${S3_BUCKET_URL_ICONS}/switchOffIcon.png`,
+// };
+
 const REPLACE_VIRTUAL_CARD = {
   uri: `${S3_BUCKET_URL_ICONS}/replaceVirtualCard.png`,
 };
@@ -468,12 +508,30 @@ const KYC_VERIFICATION_FAILED = {
 const KYC_VERIFICATION_DELAYED = {
   uri: `${S3_BUCKET_URL_ICONS}/kycVerificationDelayed.png`,
 };
+// const LOCKED_ICON_BLACK = {
+//   uri: `${S3_BUCKET_URL_ICONS}/lockedIconBlack.png`,
+// };
+// const CARD_ICON_WHITE = {
+//   uri: `${S3_BUCKET_URL_ICONS}/cardIconWhite.png`,
+// };
 const VERIFIED_BY_VISA_WHITE = {
   uri: `${S3_BUCKET_URL_ICONS}/verifiedByVisaWhite.png`,
 };
+// const WHITE_CLOSE_ICON = {
+//   uri: `${S3_BUCKET_URL_ICONS}/whiteCloseIcon.png`,
+// };
 const CONNENCT_DISCORD_HERO = {
   uri: `${S3_BUCKET_URL_ICONS}/connectDiscordHero.png`,
 };
+// const RED_CROSS_IMG = {
+//   uri: `${S3_BUCKET_URL_ICONS}/RedCrossImg.png`,
+// };
+// const CARD_SECURE = {
+//   uri: `${S3_BUCKET_URL_ICONS}/cardPin.png`,
+// };
+// const SHIELD_FILLED = {
+//   uri: `${S3_BUCKET_URL_ICONS}/shieldFilled.png`,
+// };
 const ERROR_EXCLAMATION_RED_BG_ROUNDED = {
   uri: `${S3_BUCKET_URL_ICONS}/errorExclamationRedBgRounded.png`,
 };
@@ -595,6 +653,7 @@ export const AppImagesMap = {
     MIGRATION_BANNER_BG,
     SUCCESS_TICK_GREEN_BG,
     MIGRATE_FUNDS_ICON,
+    BACK_ARROW_GRAY,
     CARD_ONBOARDING_1,
     CARD_ONBOARDING_2,
     CARD_ONBOARDING_3,
@@ -607,14 +666,17 @@ export const AppImagesMap = {
     CHARGE_BACK,
     CRYPTO_COINS,
     CYPHER_TELEGRAM_BOT_LOGO,
+    REFRESH_BROWSER,
     EMPTY,
     CYPHERD,
     CYPHER_TEXT,
     PORTFOLIO_BG_S3,
+    CORRECT,
     POLYGON,
     SHARDEUM,
     AVALANCHE,
     ARBITRUM,
+    COSMOS,
     OPTIMISM,
     LOADING_IMAGE,
     APP_LOGO,
@@ -628,6 +690,7 @@ export const AppImagesMap = {
     CYAN_COIN,
     GREEN_COIN,
     PINK_COIN,
+    GIFT_BOX,
     STARS_LEFT,
     STARS_RIGHT,
     INSIGHT_BULB,
@@ -643,6 +706,7 @@ export const AppImagesMap = {
     IBC,
     RECEIVE,
     QR_LOGO,
+    QR_CODE,
     NETWORK_ERROR,
     IBC_GRAY,
     NO_ACTIVITIES,
@@ -702,6 +766,7 @@ export const AppImagesMap = {
     CYPHER_SUCCESS,
     CYPHER_ERROR,
     MONEY_BAG,
+    INFO_CIRCLE,
     CYPHER_ENJOYING,
     CYPHER_LOVE,
     REFER,
@@ -715,6 +780,7 @@ export const AppImagesMap = {
     STAKING_EMPTY_ILLUSTRATION,
     CELEBRATE,
     READ_ONLY_CARD_BACKGROUND,
+    BLURRED_ADDRESS,
     NFT_EMPTY_ILLUSTATION,
     DEFAULT_NFT,
     UNLOCK_FROM_TRACKWALLET,
@@ -851,6 +917,7 @@ enum AppImages {
   MIGRATION_BANNER_BG = 'MIGRATION_BANNER_BG',
   SUCCESS_TICK_GREEN_BG = 'SUCCESS_TICK_GREEN_BG',
   MIGRATE_FUNDS_ICON = 'MIGRATE_FUNDS_ICON',
+  BACK_ARROW_GRAY = 'BACK_ARROW_GRAY',
   CARD_ONBOARDING_1 = 'CARD_ONBOARDING_1',
   CARD_ONBOARDING_2 = 'CARD_ONBOARDING_2',
   CARD_ONBOARDING_3 = 'CARD_ONBOARDING_3',
@@ -863,14 +930,17 @@ enum AppImages {
   CHARGE_BACK = 'CHARGE_BACK',
   CRYPTO_COINS = 'CRYPTO_COINS',
   CYPHER_TELEGRAM_BOT_LOGO = 'CYPHER_TELEGRAM_BOT_LOGO',
+  REFRESH_BROWSER = 'REFRESH_BROWSER',
   EMPTY = 'EMPTY',
   CYPHERD = 'CYPHERD',
   CYPHER_TEXT = 'CYPHER_TEXT',
   PORTFOLIO_BG_S3 = 'PORTFOLIO_BG_S3',
+  CORRECT = 'CORRECT',
   POLYGON = 'POLYGON',
   SHARDEUM = 'SHARDEUM',
   AVALANCHE = 'AVALANCHE',
   ARBITRUM = 'ARBITRUM',
+  COSMOS = 'COSMOS',
   OPTIMISM = 'OPTIMISM',
   LOADING_IMAGE = 'LOADING_IMAGE',
   APP_LOGO = 'APP_LOGO',
@@ -884,6 +954,7 @@ enum AppImages {
   CYAN_COIN = 'CYAN_COIN',
   GREEN_COIN = 'GREEN_COIN',
   PINK_COIN = 'PINK_COIN',
+  GIFT_BOX = 'GIFT_BOX',
   STARS_LEFT = 'STARS_LEFT',
   STARS_RIGHT = 'STARS_RIGHT',
   INSIGHT_BULB = 'INSIGHT_BULB',
@@ -899,6 +970,7 @@ enum AppImages {
   IBC = 'IBC',
   RECEIVE = 'RECEIVE',
   QR_LOGO = 'QR_LOGO',
+  QR_CODE = 'QR_CODE',
   NETWORK_ERROR = 'NETWORK_ERROR',
   IBC_GRAY = 'IBC_GRAY',
   NO_ACTIVITIES = 'NO_ACTIVITIES',
@@ -972,6 +1044,7 @@ enum AppImages {
   STAKING_EMPTY_ILLUSTRATION = 'STAKING_EMPTY_ILLUSTRATION',
   CELEBRATE = 'CELEBRATE',
   READ_ONLY_CARD_BACKGROUND = 'READ_ONLY_CARD_BACKGROUND',
+  BLURRED_ADDRESS = 'BLURRED_ADDRESS',
   NFT_EMPTY_ILLUSTATION = 'NFT_EMPTY_ILLUSTATION',
   DEFAULT_NFT = 'DEFAULT_NFT',
   UNLOCK_FROM_TRACKWALLET = 'UNLOCK_FROM_TRACKWALLET',

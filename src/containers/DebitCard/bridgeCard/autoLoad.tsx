@@ -31,8 +31,14 @@ import { CardProfile } from '../../../models/cardProfile.model';
 import { EVM_CHAINS_TYPE } from '../../../constants/type';
 import { capitalize, get, map } from 'lodash';
 import usePortfolio from '../../../hooks/usePortfolio';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function AutoLoad({ navigation }: { navigation: any }) {
+export default function AutoLoad() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [threshold, setThreshold] = useState('100');
   const [amountToLoad, setAmountToLoad] = useState('500');
   const [expiryDate, setExpiryDate] = useState<string>(
@@ -64,8 +70,8 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
 
   const getSupportedTokens = async () => {
     const localPortfolio = await getLocalPortfolio();
-    const totalHoldings = localPortfolio.totalHoldings;
-    const tempSupportedTokens = totalHoldings.filter(token => {
+    const totalHoldings = localPortfolio?.totalHoldings;
+    const tempSupportedTokens = totalHoldings?.filter(token => {
       const { backendName: chain } = token.chainDetails;
       const stableTokens = STABLE_TOKEN_CHAIN_MAP.get(chain as EVM_CHAINS_TYPE);
       if (
@@ -89,8 +95,14 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
   const getAutoLoadConfig = async () => {
     const response = await getWithAuth('/v1/cards/autoLoad');
     if (!response.isError) {
-      const { chain, assetId, threshold, amountToBeLoaded, expiry, repeatFor } =
-        response.data;
+      const {
+        chain,
+        assetId,
+        threshold: _threshold,
+        amountToBeLoaded,
+        expiry,
+        repeatFor: _repeatFor,
+      } = response.data;
       const tempSelectedToken = supportedTokens?.find(
         (token: Holding) =>
           token.chainDetails.backendName === chain &&
@@ -103,10 +115,10 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
       );
       if (tempSelectedToken) {
         setSelectedToken(tempSelectedToken);
-        setThreshold(String(threshold));
+        setThreshold(String(_threshold));
         setAmountToLoad(String(amountToBeLoaded));
         setExpiryDate(expiry);
-        setRepeatFor(repeatFor);
+        setRepeatFor(_repeatFor);
       }
     }
   };
@@ -180,7 +192,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   }}
                 />
               </CyDView>
-              <CyDView className='bg-base300 p-[4px] rounded-[25px]'>
+              <CyDView className='bg-n40 p-[4px] rounded-[25px]'>
                 <CydMaterialDesignIcons
                   name='pencil-outline'
                   size={18}
@@ -196,11 +208,11 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                 <CyDView
                   className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
                   style={{ width: 65 + String(amountToLoad).length * 18 }}>
-                  <CyDText className='text-[36px] text-mandarin font-bold'>
+                  <CyDText className='text-[36px] text-p150 font-bold'>
                     {'$'}
                   </CyDText>
                   <CyDTextInput
-                    className='text-[36px] text-mandarin font-bold w-[90%]'
+                    className='text-[36px] text-p150 font-bold w-[90%]'
                     keyboardType={'number-pad'}
                     value={amountToLoad}
                     onChangeText={value => {
@@ -208,7 +220,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                     }}
                   />
                 </CyDView>
-                <CyDView className='bg-base300 p-[4px] rounded-[25px]'>
+                <CyDView className='bg-n40 p-[4px] rounded-[25px]'>
                   <CydMaterialDesignIcons
                     name='pencil-outline'
                     size={18}
@@ -275,7 +287,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                       {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
                     </CyDText>
                   </CyDView>
-                  <CyDView className='bg-cardBg p-[4px] rounded-[25px] ml-[12px]'>
+                  <CyDView className='bg-n20 p-[4px] rounded-[25px] ml-[12px]'>
                     <CydMaterialDesignIcons
                       name='pencil-outline'
                       size={18}
@@ -299,7 +311,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                       }}
                     />
                   </CyDView>
-                  <CyDView className='bg-cardBg p-[4px] rounded-[25px]'>
+                  <CyDView className='bg-n20 p-[4px] rounded-[25px]'>
                     <CydMaterialDesignIcons
                       name='pencil-outline'
                       size={18}

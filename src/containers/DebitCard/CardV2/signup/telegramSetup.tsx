@@ -10,7 +10,6 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { t } from 'i18next';
 import { get } from 'lodash';
-import LottieView from 'lottie-react-native';
 import React, { useContext, useState } from 'react';
 import { Linking, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,6 +26,7 @@ import { copyToClipboard } from '../../../../core/util';
 import useCardUtilities from '../../../../hooks/useCardUtilities';
 import {
   CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -258,7 +258,7 @@ export default function TelegramSetup() {
               />
             )}
             {isLoading && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop

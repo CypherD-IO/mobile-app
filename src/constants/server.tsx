@@ -215,7 +215,7 @@ export const CHAIN_COSMOS: Chain = {
   name: 'Cosmos',
   symbol: 'COSMOS',
   id: 7,
-  logo_url: AppImages.COSMOS,
+  logo_url: AppImages.COSMOS_LOGO,
   backendName: ChainBackendNames.COSMOS,
   chain_id: 'cosmoshub-4',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',

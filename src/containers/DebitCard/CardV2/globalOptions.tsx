@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
   CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -132,7 +132,7 @@ export default function GlobalOptions() {
           {
             title: 'Lockdown Mode',
             description: 'Secure account by blocking all Card Functionalities',
-            image: 'hand-back-left-outline' as const,
+            image: 'left-hand-pamp' as const,
             action: () => {
               navigation.navigate(screenTitle.LOCKDOWN_MODE, {
                 currentCardProvider: cardProvider,
@@ -144,7 +144,7 @@ export default function GlobalOptions() {
     {
       title: 'Auto Load',
       description: 'Manage auto load',
-      image: 'credit-card-sync-outline' as const,
+      image: 'card-load' as const,
       action: () => {
         isAutoloadConfigured
           ? setIsAutoLoadOptionsVisible(true)
@@ -156,7 +156,7 @@ export default function GlobalOptions() {
           {
             title: 'Withdraw Crypto',
             description: 'Convert your card balance to crypto',
-            image: 'tray-arrow-down' as const,
+            image: 'withdraw' as const,
             action: () => {
               navigation.navigate(screenTitle.CRYPTO_WITHDRAWAL, {
                 currentCardProvider: cardProvider,
@@ -169,7 +169,7 @@ export default function GlobalOptions() {
     {
       title: 'Linked Wallets',
       description: 'Link another wallet to card',
-      image: 'vector-link' as const,
+      image: 'wallet-multiple' as const,
       action: () => {
         navigation.navigate(screenTitle.LINKED_WALLETS, {
           currentCardProvider: cardProvider,
@@ -182,7 +182,7 @@ export default function GlobalOptions() {
           {
             title: 'Manage Premium',
             description: '',
-            image: 'bookmark-outline' as const,
+            image: 'bookmark' as const,
             action: () => {
               navigation.navigate(screenTitle.MANAGE_SUBSCRIPTION, {
                 currentCardProvider: cardProvider,
@@ -238,9 +238,12 @@ export default function GlobalOptions() {
       description: 'Clear your doubts',
       image: 'message-outline',
       action: () => {
-        navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
-          title: 'Card FAQ',
-          uri: 'https://cypherhq.io/card#faq',
+        navigation.navigate(screenTitle.OPTIONS, {
+          screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+          params: {
+            title: 'Card FAQ',
+            uri: 'https://cypherhq.io/card#faq',
+          },
         });
       },
     },
@@ -346,7 +349,7 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CydMaterialDesignIcons
+                    <CyDIcons
                       name={image}
                       size={20}
                       className='text-base400 mr-[8px] pb-[16px]'
@@ -396,10 +399,10 @@ export default function GlobalOptions() {
                           }
                         }}
                         className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                        <CydIcons
+                        <CyDIcons
                           name={image}
-                          size={32}
-                          className='text-base400 pb-[16px]'
+                          size={24}
+                          className='text-base400 mr-[8px] pb-[16px]'
                         />
                         <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                           <CyDText className='text-[16px] font-regular text-base400'>
@@ -459,10 +462,10 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CydIcons
+                    <CyDIcons
                       name={image}
-                      size={28}
-                      className='text-base400 pb-[16px]'
+                      size={24}
+                      className='text-base400 mr-[8px] pb-[16px]'
                     />
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                       <CyDText className='text-[16px] font-regular text-base400'>

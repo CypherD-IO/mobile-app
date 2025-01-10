@@ -2,14 +2,14 @@ import React, { useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
-  CydIcons,
+  CyDIcons,
   CyDImage,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import moment from 'moment';
 import {
@@ -238,7 +238,7 @@ export default function ActivitySendInfoModal({
                     String(getExplorerUrl(symbol, chainName, transactionHash)),
                   )
                 }>
-                <CydIcons name={'copy'} size={32} className='text-base400' />
+                <CyDIcons name={'copy'} size={16} className='text-base400' />
               </CyDTouchView>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
@@ -271,10 +271,10 @@ export default function ActivitySendInfoModal({
                   }}
                   style={'py-[5%] mx-[0px]'}
                   icon={
-                    <CydIcons
-                      name='share-filled'
-                      size={18}
-                      className='text-base400 mt-[3px] mr-[10px]'
+                    <CyDIcons
+                      name='share'
+                      size={24}
+                      className='text-black mt-[3px] mr-[10px]'
                     />
                   }
                   title={t('SHARE_DETAILS')}

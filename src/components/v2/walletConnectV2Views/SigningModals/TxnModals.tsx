@@ -12,7 +12,7 @@ import {
 import { formatAmount, getMaskedAddress } from '../../../../core/util';
 import {
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
   CyDText,
   CyDView,
 } from '../../../../styles/tailwindStyles';
@@ -489,7 +489,7 @@ const RenderSwapTransactionSignModal = ({
                 </CyDView>
               </CyDView>
               <CyDView className={'flex h-[16px] w-[16px] justify-center'}>
-                <CydIcons name='refresh' size={40} className='text-base400' />
+                <CyDIcons name='refresh' size={40} className='text-base400' />
               </CyDView>
               <CyDView
                 className={

@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
 import { HdWalletContext, getAvailableChains } from '../core/util';
 import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
-import { Colors } from '../constants/theme';
 import {
   CyDFastImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -14,7 +14,6 @@ import {
 } from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
 import clsx from 'clsx';
-import LottieView from 'lottie-react-native';
 
 export const WHERE_BROWSER = 'BROWSER';
 export const WHERE_PORTFOLIO = 'PORTFOLIO';
@@ -72,7 +71,7 @@ export function ChooseChainModal(props: {
                 </CyDText>
               </CyDView>
               {item.backendName === ChainBackendNames.SOLANA && (
-                <LottieView
+                <CyDLottieView
                   source={AppImages.NEW}
                   autoPlay
                   loop

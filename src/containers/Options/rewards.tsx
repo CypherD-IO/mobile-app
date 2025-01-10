@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StatusBar } from 'react-native';
 import {
   CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -10,7 +11,6 @@ import {
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import useAxios from '../../core/HttpRequest';
-import LottieView from 'lottie-react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -65,7 +65,7 @@ export default function Rewards() {
     return (
       <>
         {loading ? (
-          <LottieView
+          <CyDLottieView
             source={AppImages.LOADER_TRANSPARENT}
             autoPlay
             loop

@@ -10,7 +10,6 @@ import { captureRef } from 'react-native-view-shot';
 import { SHARE_TRANSACTION_TIMEOUT } from '../../core/Http';
 import {
   copyToClipboard,
-  getExplorerUrl,
   getExplorerUrlFromChainId,
   getMaskedAddress,
 } from '../../core/util';
@@ -18,18 +17,17 @@ import { isAndroid } from '../../misc/checkers';
 import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
-  CydIcons,
+  CyDIcons,
   CyDImage,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import CyDModalLayout from './modal';
 import { screenTitle } from '../../constants';
-import CydIconsPack from '../../customFonts/generator';
 
 const statuses: Record<string, string> = {
   [ActivityStatus.PENDING]: 'PENDING',
@@ -259,11 +257,7 @@ export default function ActivityBridgeInfoModal({
                       ),
                     )
                   }>
-                  <CydMaterialDesignIcons
-                    name={'content-copy'}
-                    size={16}
-                    className='text-base400'
-                  />
+                  <CyDIcons name={'copy'} size={16} className='text-base400' />
                 </CyDTouchView>
               </CyDView>
             )}
@@ -286,10 +280,10 @@ export default function ActivityBridgeInfoModal({
                   }}
                   style={'py-[5%] mx-[0px]'}
                   icon={
-                    <CydIcons
-                      name='share-filled'
-                      size={18}
-                      className='text-base400 mt-[3px] mr-[10px]'
+                    <CyDIcons
+                      name='share'
+                      size={24}
+                      className='text-black mt-[3px] mr-[10px]'
                     />
                   }
                   title={t('SHARE_DETAILS')}

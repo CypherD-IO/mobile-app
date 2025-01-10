@@ -28,6 +28,7 @@ import {
 } from '../../../styles/tailwindStyles';
 import EditLimitModal from './editLimitModal';
 import { ICountry } from '../../../models/cardApplication.model';
+import Loading from '../../../components/v2/loading';
 
 interface RouteParams {
   cardControlType: string;
@@ -329,7 +330,7 @@ export default function CardControlsSettings() {
   }, [editedLimits, selectedDomesticCountry, selectedAllowedCountries]);
 
   return loading ? (
-    <Loader />
+    <Loading />
   ) : (
     <>
       <CyDSafeAreaView className={'h-full bg-n20 pt-[10px]'}>

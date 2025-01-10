@@ -17,11 +17,6 @@
     "postversion": "react-native-version",
     "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'"
   },
-  "rnpm": {
-    "assets": [
-      "./assets/fonts/"
-    ]
-  },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
     "@cosmjs/cosmwasm-stargate": "^0.32.4",
@@ -130,7 +125,7 @@
     "react-native-device-info": "^8.7.1",
     "react-native-element-dropdown": "^1.8.13",
     "react-native-exit-app": "^1.1.0",
-    "react-native-fast-image": "^8.6.1",
+    "react-native-fast-image": "^8.6.3",
     "react-native-gesture-handler": "2.12.1",
     "react-native-get-random-values": "^1.11.0",
     "react-native-json-tree": "^1.3.0",

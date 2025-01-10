@@ -15,7 +15,11 @@ import AppImages from '../../assets/images/appImages';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
-import { CydMaterialDesignIcons, CyDView } from '../styles/tailwindStyles';
+import {
+  CyDIcons,
+  CydMaterialDesignIcons,
+  CyDView,
+} from '../styles/tailwindStyles';
 import {
   DebitCardStackScreen,
   OptionsStackScreen,
@@ -194,25 +198,21 @@ function TabStack(props: TabStackProps) {
           tabBarIcon: ({ focused }) => {
             let iconSource;
             if (route.name === screenTitle.PORTFOLIO) {
-              iconSource = focused ? 'chart-arc' : 'chart-donut';
+              iconSource = 'home-filled';
             } else if (route.name === screenTitle.CARD) {
-              iconSource = focused ? 'credit-card' : 'credit-card-outline';
+              iconSource = 'card-filled';
             } else if (route.name === screenTitle.SWAP) {
-              iconSource = focused
-                ? 'swap-horizontal-circle'
-                : 'swap-horizontal-circle-outline';
+              iconSource = 'swap-horizontal';
             } else if (route.name === screenTitle.OPTIONS) {
-              iconSource = focused
-                ? 'dots-vertical-circle'
-                : 'dots-vertical-circle-outline';
+              iconSource = 'tools-wrench-screwdriver';
             }
             return (
-              <CydMaterialDesignIcons
+              <CyDIcons
                 name={iconSource}
-                size={24}
+                size={32}
                 className={clsx('', {
-                  'text-p50': focused,
-                  'text-base400': !focused,
+                  'text-base400': focused,
+                  'text-n200': !focused,
                 })}
               />
             );
@@ -251,7 +251,7 @@ function TabStack(props: TabStackProps) {
           component={PortfolioStackScreen}
           options={({ route }) => ({
             tabBarButton: () => (
-              <CyDView className={'scale-110 shadow shadow-yellow-200'}>
+              <CyDView className={'scale-105'}>
                 <ShortcutsModal />
               </CyDView>
             ),

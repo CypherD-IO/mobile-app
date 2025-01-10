@@ -7,6 +7,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDScrollView,
+  CyDImageBackground,
 } from '../../styles/tailwindStyles';
 import { QRScannerScreens } from '../../constants/server';
 import { BarCodeReadEvent } from 'react-native-camera';
@@ -71,7 +72,7 @@ export default function QRScanner() {
         }}
         cameraStyle={{ height: SCREEN_HEIGHT }}
         customMarker={
-          <ImageBackground
+          <CyDImageBackground
             source={AppImages.SCANNER_BG}
             resizeMode='cover'
             style={{ height: '100%', width: '100%', marginTop: '-30%' }}
@@ -104,7 +105,7 @@ export default function QRScanner() {
                 )}
               </CyDView>
             </CyDView>
-          </ImageBackground>
+          </CyDImageBackground>
         }
       />
     </CyDScrollView>

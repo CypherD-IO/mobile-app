@@ -7,7 +7,7 @@ import Login from '../../containers/Auth/EnterKey';
 import { HdWalletContext } from '../../core/util';
 import { PromptImportWalletDef } from '../../models/globalModal.interface';
 import {
-  CydIcons,
+  CyDIcons,
   CyDImage,
   CydMaterialDesignIcons,
   CyDSafeAreaView,
@@ -130,7 +130,7 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
             </CyDView>
           </CyDView>
           <CyDView className='flex flex-row items-center mt-[20px]'>
-            <CydIcons
+            <CyDIcons
               name='lock'
               size={20}
               className='text-base400 mr-[10px]'

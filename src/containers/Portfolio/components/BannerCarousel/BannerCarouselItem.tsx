@@ -308,13 +308,18 @@ const BannerCarouselItem = ({
 
   const onBannerClick = () => {
     if (isActivity) {
-      navigation.navigate(screenTitle.ACTIVITIES);
+      navigation.navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.ACTIVITIES,
+      });
     } else {
       const { redirectURI, title, appCta } = item;
       if (redirectURI) {
-        navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
-          title,
-          uri: redirectURI,
+        navigation.navigate(screenTitle.OPTIONS, {
+          screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+          params: {
+            title,
+            uri: redirectURI,
+          },
         });
       } else if (appCta) {
         // appCta = 'DEBIT_CARD/CARD_INVITE/CARD_SIGNUP';

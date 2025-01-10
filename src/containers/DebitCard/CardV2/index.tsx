@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
   CyDImage,
+  CyDLottieView,
   CydLottieView,
   CydMaterialDesignIcons,
   CyDSafeAreaView,
@@ -54,7 +55,6 @@ import {
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import Loading from '../../../components/v2/loading';
-import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
@@ -368,12 +368,11 @@ export default function CypherCardScreen() {
                     </CyDView>
                   </CyDTouchView>
                 ) : (
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop
                     style={style.loaderStyle}
-                    // className='w-[24px] h-[24px] bg-base400'
                   />
                 )}
               </CyDView>

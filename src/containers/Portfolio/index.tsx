@@ -8,7 +8,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { isEmpty } from 'lodash';
-import LottieView from 'lottie-react-native';
 import moment from 'moment';
 import React, {
   useCallback,
@@ -35,8 +34,6 @@ import {
   ChooseChainModal,
   WHERE_PORTFOLIO,
 } from '../../components/ChooseChainModal';
-import EmptyView from '../../components/EmptyView';
-import CopytoKeyModal from '../../components/ShowPharseModal';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
@@ -80,8 +77,10 @@ import {
   BridgeReducerAction,
 } from '../../reducers/bridge.reducer';
 import {
+  CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CyDLottieView,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -547,7 +546,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             void analytics().logEvent('activity_cta', {
               from: ethereum.address,
             });
-            navigation.navigate(C.screenTitle.ACTIVITIES);
+            navigation.navigate(C.screenTitle.OPTIONS, {
+              screen: C.screenTitle.ACTIVITIES,
+            });
             break;
           }
           case NotificationEvents.ORBITAL_APES: {
@@ -638,8 +639,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   const onWCSuccess = (e: BarCodeReadEvent) => {
     const link = e.data;
-    navigation.navigate(C.screenTitle.WALLET_CONNECT, {
-      walletConnectURI: link,
+    navigation.navigate(C.screenTitle.OPTIONS, {
+      params: { url: link },
+      screen: C.screenTitle.BROWSER_SCREEN,
     });
   };
 
@@ -901,7 +903,7 @@ const TokenListEmptyComponent = ({
   if (isPortfolioEmpty) {
     return (
       <CyDView className={'flex h-full justify-start items-center mt-[5px]'}>
-        <LottieView
+        <CyDLottieView
           source={AppImages.PORTFOLIO_EMPTY}
           autoPlay
           loop
@@ -930,13 +932,14 @@ const TokenListEmptyComponent = ({
     );
   } else {
     return (
-      <CyDView className='flex flex-col justify-start items-center'>
-        <EmptyView
-          text={t('NO_CURRENT_HOLDINGS')}
-          image={AppImages.EMPTY}
-          buyVisible={false}
-          marginTop={30}
+      <CyDView className='flex flex-col justify-start items-center w-[100px] mt-8'>
+        <CyDFastImage
+          source={AppImages.EMPTY}
+          className='w-[150px] h-[150px]'
         />
+        <CyDText className='mt-[15px] text-[14px]'>
+          {t('NO_CURRENT_HOLDINGS')}
+        </CyDText>
       </CyDView>
     );
   }

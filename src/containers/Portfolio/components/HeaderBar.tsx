@@ -1,15 +1,12 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
-  CydIcons,
-  CyDImage,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { Chain, QRScannerScreens } from '../../../constants/server';
-import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { ConnectionTypes } from '../../../constants/enum';

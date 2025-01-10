@@ -4,9 +4,9 @@ import {
   CyDView,
   CyDTouchView,
   CyDImage,
+  CyDLottieView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
-import LottieView from 'lottie-react-native';
 import AppImages from '../../../assets/images/appImages';
 import { AppState, Keyboard, StyleSheet } from 'react-native';
 import { ButtonType, IconPosition, ImagePosition } from '../../constants/enum';
@@ -98,7 +98,7 @@ export default function Button({
       )}>
       {loading && (
         <CyDView className={'flex items-center justify-between'}>
-          <LottieView
+          <CyDLottieView
             source={AppImages.LOADER_TRANSPARENT}
             autoPlay
             loop
@@ -125,7 +125,7 @@ export default function Button({
           <CyDView className=''>{icon}</CyDView>
         )}
       {!loading && image && isLottie && (
-        <LottieView
+        <CyDLottieView
           source={image}
           ref={ref => setAnimation(ref)}
           resizeMode={'contain'}

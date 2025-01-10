@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {
   CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -16,7 +17,6 @@ import {
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import useAxios from '../../core/HttpRequest';
-import LottieView from 'lottie-react-native';
 import { t } from 'i18next';
 import Button from '../../components/v2/button';
 import { ButtonType, CardApplicationStatus } from '../../constants/enum';
@@ -474,7 +474,7 @@ export default function Referrals() {
               ))}
             {referralDataLoading && (
               <CyDView className='flex flex-col bg-n0 rounded-[8px] mt-[6px] p-[8px] items-center justify-center'>
-                <LottieView
+                <CyDLottieView
                   source={AppImages.LOADER_TRANSPARENT}
                   autoPlay
                   loop

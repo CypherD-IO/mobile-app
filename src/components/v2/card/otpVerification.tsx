@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
-  CyDImage,
+  CyDLottieView,
   CydMaterialDesignIcons,
-  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -13,7 +12,6 @@ import Loading from '../loading';
 import { useTranslation } from 'react-i18next';
 import useAxios from '../../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import CyDModalLayout from '../modal';
 import StateModal from '../StateModal';
 import { PinInput } from '../pinInput';
@@ -166,7 +164,7 @@ export default function OtpVerificationModal({
                   {t<string>('RESEND_CODE_INIT_CAPS')}
                 </CyDText>
                 {sendingOTP && (
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop

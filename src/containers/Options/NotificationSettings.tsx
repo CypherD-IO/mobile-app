@@ -1,16 +1,11 @@
-import * as C from '../../constants';
 import React, { useState, useEffect, useContext } from 'react';
 import { Switch, FlatList, BackHandler } from 'react-native';
-import { Colors } from '../../constants/theme';
 import { useTranslation } from 'react-i18next';
 import axios from '../../core/Http';
 import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from '../../core/util';
-import AppImages from '../../../assets/images/appImages';
-import EmptyView from '../../components/EmptyView';
 import { hostWorker } from '../../global';
 import { GlobalContext } from '../../core/globalContext';
-import useAxios from '../../core/HttpRequest';
 import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
 import Loading from '../../components/v2/loading';
 

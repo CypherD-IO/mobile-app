@@ -4,6 +4,7 @@ import { GlobalContextType } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import {
   CyDKeyboardAwareScrollView,
+  CyDLottieView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -27,7 +28,6 @@ import OtpInput from '../../../components/v2/OTPInput';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { StyleSheet } from 'react-native';
-import LottieView from 'lottie-react-native';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function UpdateCardContactDetails({
@@ -39,7 +39,6 @@ export default function UpdateCardContactDetails({
   const [isOTPTriggered, setIsOTPTriggered] = useState<boolean>(false);
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile.provider;
   const [userBasicDetails, setUserBasicDetails] = useState({
     phoneNumber: '',
     email: '',
@@ -383,7 +382,7 @@ export default function UpdateCardContactDetails({
                             {t<string>('RESEND_CODE_INIT_CAPS')}
                           </CyDText>
                           {sendingOTP && (
-                            <LottieView
+                            <CyDLottieView
                               source={AppImages.LOADER_TRANSPARENT}
                               autoPlay
                               loop

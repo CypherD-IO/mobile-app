@@ -4,7 +4,6 @@ import { HdWalletContext } from '../../../core/util';
 import { showToast } from '../../utilities/toastUtility';
 import { setHideBalanceStatus } from '../../../core/asyncStorage';
 import {
-  CyDFastImage,
   CyDImageBackground,
   CydMaterialDesignIcons,
   CyDText,
@@ -15,7 +14,6 @@ import CyDTokenValue from '../../../components/v2/tokenValue';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
-import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 
 interface BannerProps {

@@ -61,7 +61,6 @@ import {
 } from './src/reducers/modalReducer';
 import { InitializeAppProvider } from './src/components/initializeAppProvider';
 import { toastConfig } from './src/components/v2/toast';
-import { CyDText, CyDView } from './src/styles/tailwindStyles';
 import {
   BridgeContext,
   bridgeContextInitialState,
