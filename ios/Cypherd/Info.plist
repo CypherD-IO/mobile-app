@@ -88,29 +88,14 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>We use FaceID Scanner to secure your crypto wallet</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Record Message for Customer Support Team in the app</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Send photos during Customer Support Chat in the app</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>AntDesign.ttf</string>
-		<string>Entypo.ttf</string>
-		<string>EvilIcons.ttf</string>
-		<string>Feather.ttf</string>
-		<string>FontAwesome.ttf</string>
-		<string>FontAwesome5_Brands.ttf</string>
-		<string>FontAwesome5_Regular.ttf</string>
-		<string>FontAwesome5_Solid.ttf</string>
-		<string>Fontisto.ttf</string>
-		<string>Foundation.ttf</string>
-		<string>Ionicons.ttf</string>
 		<string>MaterialCommunityIcons.ttf</string>
-		<string>MaterialIcons.ttf</string>
-		<string>Octicons.ttf</string>
-		<string>SimpleLineIcons.ttf</string>
-		<string>Zocial.ttf</string>
 		<string>Manrope-Bold.ttf</string>
 		<string>Manrope-ExtraBold.ttf</string>
 		<string>Manrope-ExtraLight.ttf</string>
@@ -119,6 +104,7 @@
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
 		<string>CydFont.ttf</string>
+		<string>MaterialDesignIcons.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

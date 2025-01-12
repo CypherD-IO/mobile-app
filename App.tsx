@@ -69,6 +69,7 @@ import {
 import { screenTitle } from './src/constants';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
 import { ThemeProvider } from './src/reducers/themeReducer';
+import { CyDView } from './src/styles/tailwindStyles';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 

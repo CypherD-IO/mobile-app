@@ -465,9 +465,6 @@ PODS:
     - React
   - react-native-safe-area-context (3.3.2):
     - React-Core
-  - react-native-vector-icons (11.0.0):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
   - react-native-view-shot (3.5.0):
     - React-Core
   - react-native-webview (13.12.4):
@@ -664,7 +661,8 @@ PODS:
     - React-Core
   - RNSVG (15.3.0):
     - React-Core
-  - RNVectorIcons (9.2.0):
+  - RNVectorIcons (10.2.0):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -721,7 +719,6 @@ DEPENDENCIES:
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-rsa-native (from `../node_modules/react-native-rsa-native`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - "react-native-vector-icons (from `../node_modules/@react-native-vector-icons/common`)"
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -878,8 +875,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-rsa-native"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
-  react-native-vector-icons:
-    :path: "../node_modules/@react-native-vector-icons/common"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
   react-native-webview:
@@ -1033,7 +1028,6 @@ SPEC CHECKSUMS:
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
   react-native-rsa-native: 12132eb627797529fdb1f0d22fd0f8f9678df64a
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
-  react-native-vector-icons: 057cffe5aea6f6eea3613fc15b5169828d59035c
   react-native-view-shot: 792829857bbb23a9c8acdad9a640554bdee397a3
   react-native-webview: ef78d478cc450cd27e314fc11bc325a3271869f9
   React-NativeModulesApple: 649702e2b756b907c0c1c35f450a5bae61c33d6c
@@ -1075,7 +1069,7 @@ SPEC CHECKSUMS:
   RNSentry: 68e54ad0c8816e151c9b866855d6f8fb829f6a97
   RNShare: 11fcd7daa34825a26cffda827170493690c376a8
   RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
-  RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
+  RNVectorIcons: 4785c0f1161b4fdc691c802c989248326d0b005d
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: ee060c09b2f7ec1240e95c766ab44c04c7bdb052
