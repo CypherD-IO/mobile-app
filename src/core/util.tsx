@@ -944,10 +944,9 @@ export function addHexPrefix(value: string): string {
 export function isValidPrivateKey(privateKey: string): boolean {
   try {
     const wallet = new Wallet(addHexPrefix(privateKey));
-    console.log('wallet in ipc : ', wallet);
     return !!wallet;
   } catch (e) {
-    console.log('error in ipc : ', e);
+    return false;
     return false;
   }
 }
