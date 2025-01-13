@@ -484,8 +484,8 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: {
               accounts: stateAaccounts,
-              chainId: NumberToHex(stateChainId),
-              networkVersion: stateChainId,
+              chainId: NumberToHex(Number(stateChainId)),
+              networkVersion: Number(stateChainId),
             },
           };
         }
@@ -521,7 +521,9 @@ export default function useWeb3(origin: Web3Origin) {
           }
 
           const gasPriceInHex = Web3.utils.toHex(
-            Web3.utils.toWei(gasPriceDetail.gasPrice.toFixed(9), 'Gwei'),
+            Web3.utils.toBigInt(
+              Web3.utils.toWei(gasPriceDetail.gasPrice.toFixed(9), 'gwei'),
+            ),
           );
 
           try {
@@ -611,7 +613,7 @@ export default function useWeb3(origin: Web3Origin) {
             }
 
             callbackData.activityData = activityData;
-            callbackData.receipt = receipt;
+            callbackData.receipt = receipt?.transactionHash;
 
             if (signedTx.rawTransaction && receipt) {
               return {
@@ -632,7 +634,9 @@ export default function useWeb3(origin: Web3Origin) {
         case Web3Method.GET_BALANCE: {
           const addressToFetch = params ? (params[0] ?? address) : address;
           const balanceInHex = bigNumberToHex(
-            await web3RPCEndpoint.current.eth.getBalance(addressToFetch),
+            (
+              await web3RPCEndpoint.current.eth.getBalance(addressToFetch)
+            ).toString(),
           );
           return {
             result: balanceInHex,
@@ -672,7 +676,7 @@ export default function useWeb3(origin: Web3Origin) {
         case Web3Method.CHAIN_ID: {
           const chainId = await web3RPCEndpoint.current.eth.getChainId();
           return {
-            result: NumberToHex(chainId),
+            result: NumberToHex(Number(chainId)),
           };
         }
         case Web3Method.NET_VERSION: {

@@ -62,7 +62,10 @@ export default function Login(props) {
   const submitImportWallet = async (textValue = privateKey) => {
     const { isReadOnlyWallet } = hdWalletContext.state;
     const { ethereum } = hdWalletContext.state.wallet;
-    if (textValue.length >= 64 && isValidPrivateKey(textValue)) {
+    if (!textValue.startsWith('0x')) {
+      textValue = '0x' + textValue;
+    }
+    if (textValue.length === 66 && isValidPrivateKey(textValue)) {
       setLoading(true);
       if (isReadOnlyWallet) {
         const data = await getReadOnlyWalletData();

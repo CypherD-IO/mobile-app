@@ -76,7 +76,9 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
       const tempWagmiConfig = defaultWagmiConfig({
         chains,
         projectId,
-        enableWalletConnect: connectionType !== ConnectionTypes.SEED_PHRASE, // this should be set as false for wallet connect (mobile app to dapp connection, in that case the connection type will be SEED PHRASE)
+        enableWalletConnect:
+          connectionType !== ConnectionTypes.SEED_PHRASE &&
+          connectionType !== ConnectionTypes.PRIVATE_KEY, // this should be set as false for wallet connect (mobile app to dapp connection, in that case the connection type will be SEED PHRASE)
         metadata,
       });
 
