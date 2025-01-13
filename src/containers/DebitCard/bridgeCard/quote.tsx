@@ -386,6 +386,7 @@ export default function CardQuote({
                 hash,
               );
             } else {
+              const connectionType = await getConnectionType();
               void logAnalytics({
                 type: AnalyticsType.ERROR,
                 chain: selectedToken?.chainDetails?.backendName ?? '',
@@ -400,6 +401,8 @@ export default function CardQuote({
                       '',
                     )
                   : get(ethereum, 'address', ''),
+                ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
+                ...(connectionType ? { connectionType } : {}),
               });
               activityRef.current &&
                 activityContext.dispatch({
