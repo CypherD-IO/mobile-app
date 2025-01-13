@@ -212,7 +212,7 @@ export const showNotification = async (
         },
       },
       ios: {
-        categoryId: data?.categoryId,
+        categoryId: data?.categoryId ?? '',
       },
     });
   }
