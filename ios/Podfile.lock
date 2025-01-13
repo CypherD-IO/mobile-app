@@ -664,9 +664,6 @@ PODS:
     - React-Core
   - RNSVG (15.3.0):
     - React-Core
-  - RNVectorIcons (10.2.0):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -764,7 +761,6 @@ DEPENDENCIES:
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - transfi-ramp-react-native-sdk (from `../node_modules/transfi-ramp-react-native-sdk`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -963,8 +959,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNVectorIcons:
-    :path: "../node_modules/react-native-vector-icons"
   transfi-ramp-react-native-sdk:
     :path: "../node_modules/transfi-ramp-react-native-sdk"
   Yoga:
@@ -1076,7 +1070,6 @@ SPEC CHECKSUMS:
   RNSentry: 68e54ad0c8816e151c9b866855d6f8fb829f6a97
   RNShare: 11fcd7daa34825a26cffda827170493690c376a8
   RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
-  RNVectorIcons: 4785c0f1161b4fdc691c802c989248326d0b005d
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: ee060c09b2f7ec1240e95c766ab44c04c7bdb052
@@ -1084,6 +1077,6 @@ SPEC CHECKSUMS:
   transfi-ramp-react-native-sdk: 75063c233fff9f9eb04da96058103acb2c7262d4
   Yoga: ef534101bb891fb09bae657417f34d399c1efe38
 
-PODFILE CHECKSUM: f6d070f61086d9e1db2ff40e204e9439d2454ef1
+PODFILE CHECKSUM: d2389927d2b197d21e02877bd71c361df6890940
 
 COCOAPODS: 1.15.2

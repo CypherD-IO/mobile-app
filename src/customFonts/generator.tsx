@@ -1,11 +1,11 @@
-import { createIconSetFromIcoMoon } from 'react-native-vector-icons';
+import createIconSet from '@react-native-vector-icons/icomoon';
 import icoMoonConfig from './selection.json';
 import { IconNames } from './type';
 
 export const iconNames = icoMoonConfig.icons.map(icon => icon.properties.name);
 
 // Create the icon component with type-safe name prop
-export const CydIconsPack = createIconSetFromIcoMoon(
+export const CydIconsPack = createIconSet(
   icoMoonConfig,
   'CydFont',
   'CydFont.ttf',

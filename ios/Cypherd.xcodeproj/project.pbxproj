@@ -64,7 +64,7 @@
 		748FF36D74567F8A48ABF351 /* Pods-Cypherd.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd.release.xcconfig"; path = "Target Support Files/Pods-Cypherd/Pods-Cypherd.release.xcconfig"; sourceTree = "<group>"; };
 		75A14A8405CC4EECB558C5D9 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		7B69CC8348E34CA5B1F72BB9 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
-		7BA2DF614A0B4C2EA494F99A /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
+		7BA2DF614A0B4C2EA494F99A /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		7D992FCDCA1A451DBFBE582C /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Cypherd/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8344FF6AB5AA4763AEE029F2 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
@@ -355,7 +355,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/zsh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=\"/Users/local/.nvm/versions/node/v18.17.1/bin/node\"\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=\"/Users/rixhy/.nvm/versions/node/v18.19.1/bin/node\"\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
 		};
 		1360CFA87600DFAE3524B39B /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

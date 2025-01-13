@@ -66,7 +66,7 @@ const renderSettingsData = (item: IAppSettingsData, navigation: any) => {
           className='text-base400'
         />
       </CyDTouchView>
-      <CyDView className={'h-[01px] bg-portfolioBorderColor'} />
+      <CyDView className={'h-[01px] bg-n40'} />
     </CyDView>
   );
 };

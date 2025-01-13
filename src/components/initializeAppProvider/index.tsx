@@ -104,6 +104,7 @@ export const InitializeAppProvider = ({
         await requestUserPermission();
 
         setTimeout(() => {
+          console.log('SplashScreen.hide()', SPLASH_SCREEN_TIMEOUT);
           SplashScreen.hide();
         }, SPLASH_SCREEN_TIMEOUT);
 
