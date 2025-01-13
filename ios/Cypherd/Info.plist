@@ -88,7 +88,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>We use FaceID Scanner to secure your crypto wallet</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Record Message for Customer Support Team in the app</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -102,8 +102,8 @@
 		<string>Manrope-Medium.ttf</string>
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
-		<string>CydFont.ttf</string>
 		<string>MaterialDesignIcons.ttf</string>
+		<string>CydFont.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
