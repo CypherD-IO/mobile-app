@@ -1357,7 +1357,7 @@ export default function useTransactionManager() {
           };
           const hash = await signEthTransaction({
             web3,
-            sendChain: chainDetails,
+            sendChain: chainDetails.backendName,
             transactionToBeSigned: tx,
           });
           resolve({ isError: false, receipt: hash });

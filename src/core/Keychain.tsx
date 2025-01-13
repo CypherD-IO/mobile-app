@@ -80,9 +80,9 @@ export async function saveCredentialsToKeychain(
 ) {
   await clearAsyncStorage();
   await removeCredentialsFromKeychain();
-  if (SECRET_TYPES.MENEMONIC) {
+  if (secretType === SECRET_TYPES.MENEMONIC) {
     void setConnectionType(ConnectionTypes.SEED_PHRASE);
-  } else if (SECRET_TYPES.PRIVATE_KEY) {
+  } else if (secretType === SECRET_TYPES.PRIVATE_KEY) {
     void setConnectionType(ConnectionTypes.PRIVATE_KEY);
   }
 
