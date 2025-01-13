@@ -31,12 +31,11 @@ import {
   Swipeable,
 } from 'react-native-gesture-handler';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
-import { IconNames } from '../customFonts';
+import { IconNames, CydIconsPack } from '../customFonts';
 import { Theme, useTheme } from '../reducers/themeReducer';
 import { get } from 'lodash';
 import AppImages, { AppImagesMap } from '../../assets/images/appImages';
 import LottieView, { AnimatedLottieViewProps } from 'lottie-react-native';
-import CydIconsPack from '../customFonts/generator';
 
 export const CyDText = (props: TextProps) => {
   return (
