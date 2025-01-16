@@ -4,22 +4,11 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Animated,
-  BackHandler,
-  StyleSheet,
-  ToastAndroid,
-  View,
-} from 'react-native';
-import AppImages from '../../assets/images/appImages';
+import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
-import {
-  CyDIcons,
-  CydMaterialDesignIcons,
-  CyDView,
-} from '../styles/tailwindStyles';
+import { CyDIcons, CyDView } from '../styles/tailwindStyles';
 import {
   DebitCardStackScreen,
   OptionsStackScreen,
@@ -41,10 +30,6 @@ interface TabStackProps {
     } | null>
   >;
 }
-
-const getActiveTintColor = (theme: string) => {
-  return theme === 'dark' ? 'var(--color-p150)' : 'var(--color-blue20)';
-};
 
 const screensToHaveNavBar = [
   screenTitle.PORTFOLIO,
@@ -227,7 +212,7 @@ function TabStack(props: TabStackProps) {
           },
           tabBarStyle,
           tabBarBackground: () => (
-            <CyDView className='bg-n0 h-full rounded-[20px] shadow-xl' />
+            <CyDView className='bg-n0 h-full rounded-[20px] shadow-xl border-t-[1px] shadow-n40' />
           ),
         })}
         initialRouteName={screenTitle.PORTFOLIO}>

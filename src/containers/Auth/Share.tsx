@@ -88,7 +88,7 @@ export const AddressBookContainer = ({
   chain: string;
   wallet: { address: string };
   bGC: string;
-  logo: string;
+  logo: AppImages;
   navigation: any;
   addressTypeQRCode: string;
 }) => {
@@ -100,6 +100,15 @@ export const AddressBookContainer = ({
       {wallet?.address !== '' && (
         <CyDView className='flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-n40'>
           <CyDView className='flex flex-row w-[80%] items-center'>
+            <CyDView
+              className={'flex p-[5px] rounded-[50px] mr-[10px]'}
+              style={{ backgroundColor: bGC }}>
+              <CyDFastImage
+                source={logo}
+                className='h-[25px] w-[25px]'
+                resizeMode='contain'
+              />
+            </CyDView>
             <CyDView className='flex-wrap w-[90%]'>
               <CyDText className='font-bold'>{chain.toUpperCase()}</CyDText>
               <CyDText>
