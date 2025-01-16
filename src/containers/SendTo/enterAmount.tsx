@@ -34,6 +34,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -88,10 +89,13 @@ export default function EnterAmount(props: any) {
     const gasReserved = isNative
       ? gasFeeReservation[tokenData.chainDetails?.backendName]
       : 0;
-    return (
-      parseFloat(
-        (parseFloat(String(tokenData.actualBalance)) - gasReserved).toFixed(6),
-      ) >= parseFloat(cryptoValue)
+    const balanceAfterGasReservation = DecimalHelper.subtract(
+      tokenData.balanceDecimal,
+      gasReserved,
+    );
+    return DecimalHelper.isGreaterThanOrEqualTo(
+      balanceAfterGasReservation,
+      cryptoValue,
     );
   };
 
@@ -106,14 +110,17 @@ export default function EnterAmount(props: any) {
     );
     const nativeTokenBalance = nativeToken.actualBalance;
     const gasReserved = gasFeeReservation[backendName];
-    return nativeTokenBalance >= gasReserved;
+    return DecimalHelper.isGreaterThanOrEqualTo(
+      nativeTokenBalance,
+      gasReserved,
+    );
   };
 
   const _validateValueForUsd = async () => {
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
-    if (parseFloat(cryptoValue) > parseFloat(tokenData.actualBalance)) {
+    if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
@@ -130,13 +137,14 @@ export default function EnterAmount(props: any) {
         onFailure: hideModal,
       });
     } else if (!isGasReservedForNative(cryptoValue)) {
-      const cryVal =
-        parseFloat(tokenData.actualBalance) -
-        gasFeeReservation[tokenData.chainDetails.backendName];
+      const cryVal = DecimalHelper.subtract(
+        tokenData.actualBalance,
+        gasFeeReservation[tokenData.chainDetails.backendName],
+      );
       const reqAmount = enterCryptoAmount
-        ? `${cryVal.toFixed(6)} ${tokenData.symbol}`
-        : `${parseFloat(
-            (cryVal * parseFloat(tokenData.price)).toFixed(6),
+        ? `${DecimalHelper.toString(cryVal)} ${tokenData.symbol}`
+        : `${DecimalHelper.toString(
+            DecimalHelper.multiply(cryVal, tokenData.price),
           )} USD`;
       showModal('state', {
         type: 'error',
@@ -185,22 +193,30 @@ export default function EnterAmount(props: any) {
                         ? gasFeeReservation[tokenData.chainDetails.backendName]
                         : 0;
 
-                    const maxAmount =
-                      parseFloat(tokenData?.actualBalance) - gasReserved;
-                    const textAmount =
-                      maxAmount < 0
-                        ? '0.00'
-                        : limitDecimalPlaces(maxAmount.toString(), 6);
+                    const maxAmountDecimal = DecimalHelper.subtract(
+                      tokenData.balanceDecimal,
+                      gasReserved,
+                    );
+                    const textAmount = DecimalHelper.isLessThan(
+                      maxAmountDecimal,
+                      DecimalHelper.fromString('0'),
+                    )
+                      ? '0.00'
+                      : DecimalHelper.toString(maxAmountDecimal);
                     setValueForUsd(textAmount);
 
                     if (enterCryptoAmount) {
                       setCryptoValue(textAmount);
                       setUsdValue(
-                        (parseFloat(textAmount) * tokenData.price).toString(),
+                        DecimalHelper.toString(
+                          DecimalHelper.multiply(textAmount, tokenData.price),
+                        ),
                       );
                     } else {
                       setCryptoValue(
-                        (parseFloat(textAmount) / tokenData.price).toString(),
+                        DecimalHelper.toString(
+                          DecimalHelper.divide(textAmount, tokenData.price),
+                        ),
                       );
                       setUsdValue(textAmount);
                     }

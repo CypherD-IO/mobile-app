@@ -40,6 +40,9 @@ export interface Holding {
   contractDecimals: number;
   totalValue: number;
   actualBalance: number;
+  balanceInInteger: number;
+  balanceInteger: string;
+  balanceDecimal: string;
   isVerified: boolean;
   coinGeckoId: string;
   about: string;
@@ -263,6 +266,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         contractDecimals: holding.decimals,
         totalValue: holding.totalValue,
         actualBalance: holding.actualBalance,
+        balanceInInteger: holding.balanceInInteger,
+        balanceInteger: holding.balanceInteger,
+        balanceDecimal: holding.balanceDecimal,
         isVerified: flags.verified,
         coinGeckoId: holding.coingeckoId,
         about: '',

@@ -60,6 +60,7 @@ import {
   WebsiteInfo,
 } from '../../types/Browser';
 import Loading from '../../components/v2/loading';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 enum BROWSER_ERROR {
   SSL = 'ssl',
@@ -287,12 +288,15 @@ export default function Browser({ route, navigation }: any) {
     const nativeToken = await getNativeToken(
       selectedChain.backendName as ChainBackendNames,
     );
-    const isGasEnough =
-      round(
-        nativeToken?.actualBalance -
-          gasFeeReservation[selectedChain.backendName],
-        min([10, nativeToken.contractDecimals]),
-      ) > 0;
+    const balanceAfterGasReservation = DecimalHelper.subtract(
+      nativeToken.balanceDecimal,
+      gasFeeReservation[selectedChain.backendName],
+    );
+    const isGasEnough = DecimalHelper.isGreaterThanOrEqualTo(
+      balanceAfterGasReservation,
+      0,
+    );
+
     if (!isGasEnough && websiteInfo.url !== '') {
       setTimeout(() => {
         showModal('state', {

@@ -45,6 +45,7 @@ import { get, random } from 'lodash';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import { Holding } from '../../core/portfolio';
 import usePortfolio from '../../hooks/usePortfolio';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 export default function IBC({
   route,
@@ -782,12 +783,13 @@ export default function IBC({
                         ? gasFeeReservation[tokenData.chainDetails.backendName]
                         : 0;
 
-                    const maxAmount =
-                      parseFloat(tokenData?.actualBalance) - gasReserved;
-                    const textAmount =
-                      maxAmount < 0
-                        ? '0.00'
-                        : limitDecimalPlaces(maxAmount.toString(), 6);
+                    const maxAmount = DecimalHelper.subtract(
+                      tokenData.decimalBalance,
+                      gasReserved,
+                    );
+                    const textAmount = DecimalHelper.isLessThan(maxAmount, 0)
+                      ? '0.00'
+                      : limitDecimalPlaces(maxAmount.toString(), 6);
                     setAmount(textAmount);
                   }}
                   className={clsx(

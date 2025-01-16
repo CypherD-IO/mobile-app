@@ -101,6 +101,7 @@ import {
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
 import CyDSkeleton from '../../components/v2/skeleton';
+import { DecimalHelper } from '../../utils/decimalHelper';
 import { CyDIconsPack } from '../../customFonts/generator';
 
 export interface SwapBridgeChainData {
@@ -132,6 +133,7 @@ export interface SwapBridgeTokenData {
   price: number;
   balance: number;
   balanceInNumbers: number;
+  balanceDecimal: string;
 }
 
 enum TxnStatus {
@@ -388,6 +390,7 @@ const Bridge: React.FC = () => {
             ...token,
             balance: matchingHolding?.actualBalance ?? 0,
             balanceInNumbers: matchingHolding?.totalValue ?? 0,
+            balanceDecimal: matchingHolding?.balanceDecimal ?? 0,
           };
         })
         .sort(
@@ -641,18 +644,19 @@ const Bridge: React.FC = () => {
     const isNativeToken = selectedFromToken?.isNative ?? false;
 
     const bal = isNativeToken
-      ? round(
-          Number(get(selectedFromToken, 'balance', 0)) -
-            Number(
-              get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0),
-            ),
-          min([10, selectedFromToken?.decimals ?? 0]),
-        )?.toString()
-      : Number(get(selectedFromToken, 'balance', 0))?.toString();
+      ? DecimalHelper.subtract(
+          get(selectedFromToken, 'balanceDecimal', 0),
+          get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0),
+        )
+      : DecimalHelper.fromString(get(selectedFromToken, 'balanceDecimal', 0));
 
-    if (Number(bal) > 0) {
-      setCryptoAmount(bal.toString());
-      setUsdAmount(String(Number(bal) * Number(selectedFromToken?.price)));
+    if (DecimalHelper.isGreaterThan(bal, 0)) {
+      setCryptoAmount(DecimalHelper.toString(bal));
+      setUsdAmount(
+        DecimalHelper.toString(
+          DecimalHelper.multiply(bal, selectedFromToken?.price ?? 0),
+        ),
+      );
     } else {
       setError('Insufficient balance for gas fee');
     }
