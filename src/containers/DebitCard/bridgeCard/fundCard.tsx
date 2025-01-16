@@ -60,6 +60,7 @@ import Loading from '../../../components/v2/loading';
 import usePortfolio from '../../../hooks/usePortfolio';
 import CyDModalLayout from '../../../components/v2/modal';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import { DecimalHelper } from '../../../utils/decimalHelper';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -515,7 +516,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       denom,
       contractDecimals,
       chainDetails,
-      actualBalance,
+      balanceDecimal,
       symbol: selectedTokenSymbol,
     } = selectedToken as Holding;
 
@@ -525,7 +526,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     if (chainDetails.chainName === ChainNames.ETH) {
       const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
       setIsMaxLoading(true);
-      let amountInCrypto = actualBalance;
+      let amountInCrypto = balanceDecimal;
       try {
         // Reserving gas for the txn if the selected token is a native token.
         if (
@@ -540,17 +541,19 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName as ChainBackendNames,
             fromAddress: ethereum.address,
             toAddress: ethereum.address,
-            amountToSend: String(actualBalance),
+            amountToSend: amountInCrypto,
             contractAddress,
             contractDecimals,
           });
           if (gasDetails) {
             // Adjust the amountInCrypto with the estimated gas fee
-            amountInCrypto =
-              actualBalance -
-              parseFloat(String(gasDetails.gasFeeInCrypto)) *
-                GAS_BUFFER_FACTOR_FOR_LOAD_MAX;
-            amountInCrypto = Number(limitDecimalPlaces(amountInCrypto));
+            amountInCrypto = DecimalHelper.subtract(
+              balanceDecimal,
+              DecimalHelper.multiply(
+                gasDetails.gasFeeInCrypto,
+                GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+              ),
+            );
           } else {
             setIsMaxLoading(false);
             showModal('state', {
@@ -587,7 +590,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           ecosystem: 'evm',
           address: ethereum.address,
           chain: chainDetails.backendName,
-          amount: amountInCrypto,
+          amount: DecimalHelper.toNumber(amountInCrypto),
           tokenAddress: contractAddress,
           amountInCrypto: true,
         };
@@ -636,7 +639,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         });
       }
     } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
-      let amountInCrypto = actualBalance;
+      let amountInCrypto = balanceDecimal;
       // Reserving gas for the txn if the selected token is a native token.
       setIsMaxLoading(true);
       if (
@@ -651,13 +654,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               0.1,
             ),
           };
-
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
-            amountInCrypto =
-              actualBalance -
-              parseFloat(gasFeeEstimationForTxn) *
-                GAS_BUFFER_FACTOR_FOR_LOAD_MAX;
+            amountInCrypto = DecimalHelper.subtract(
+              balanceDecimal,
+              DecimalHelper.multiply(
+                gasFeeEstimationForTxn,
+                GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+              ),
+            );
           } else {
             setIsMaxLoading(false);
             showModal('state', {
@@ -692,7 +697,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           ecosystem: 'cosmos',
           address: wallet[chainDetails.chainName].address,
           chain: chainDetails.backendName,
-          amount: amountInCrypto,
+          amount: DecimalHelper.toNumber(amountInCrypto),
           coinId: coinGeckoId,
           amountInCrypto: true,
           tokenAddress: denom,
