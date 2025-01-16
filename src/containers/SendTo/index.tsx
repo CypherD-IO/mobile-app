@@ -427,9 +427,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           </CyDView>
           <CyDView className='flex flex-row justify-between items-center' />
         </CyDTouchView>
-        <CyDView
-          style={{ width: '100%', height: 1, backgroundColor: '#C5C5C5' }}
-        />
+        <CyDView className='h-[1px] bg-n40' />
       </CyDView>
     );
   };
@@ -1102,14 +1100,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           </CyDText>
           <CyDView
             className={clsx(
-              'flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-n40 rounded-[5px] pl-[15px] pr-[10px] py-[5px]',
+              'flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-n40 rounded-[5px] px-[15px] py-[5px]',
               {
                 'border-red80': !isAddressValid,
                 'border-n40': addressText === '',
               },
             )}>
             <CyDTextInput
-              className={clsx('max-w-[90%] pr-[0px]', {
+              className={clsx('w-[90%] pr-[0px] bg-n20', {
                 'py-[12px]': !(chainDetails?.chainName === ChainNames.ETH),
               })}
               value={addressText}
@@ -1130,7 +1128,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
               )}
             />
             <CyDTouchView
-              className='w-[5%]'
+              className=''
               onPress={() => {
                 addressText === ''
                   ? props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
@@ -1141,7 +1139,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
               }}>
               <CydMaterialDesignIcons
                 name={addressText === '' ? 'qrcode-scan' : 'close'}
-                size={24}
+                size={20}
                 className='text-base400'
               />
             </CyDTouchView>
@@ -1160,7 +1158,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                     size={14}
                     className='text-base400 mr-[8px]'
                   />
-                  <CyDText className={'text-[#434343] text-[12px] font-bold'}>
+                  <CyDText className={'text-[12px] font-bold'}>
                     {t<string>('PASTE_CLIPBOARD')}
                   </CyDText>
                 </CyDTouchView>
@@ -1226,7 +1224,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             </CyDView>
           )}
           <CyDView
-            className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-n0'
+            className='h-[80px] pb-[10px] w-full absolute justify-center items-center'
             style={
               keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }
             }>

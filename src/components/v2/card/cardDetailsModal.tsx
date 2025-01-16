@@ -120,7 +120,7 @@ export default function CardDetailsModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-cardBgTo px-[12px] py-[24px] m-[2px] mb-[12px] rounded-[16px]'>
+      <CyDView className='bg-n20 px-[12px] py-[24px] m-[2px] mb-[12px] rounded-[16px]'>
         <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
           <CyDView className='flex-1 justify-center items-center'>
             <CyDText className='text-[22px] font-semibold ml-[24px]'>

@@ -139,7 +139,7 @@ const ReferralInfo = ({
       </CyDView>
     </CyDView>
 
-    <CyDView className='h-[1px] bg-cardBg' />
+    <CyDView className='h-[1px] bg-n40' />
     <CyDView className='flex flex-row items-center justify-between p-[16px]'>
       <CyDText className='font-[500]'>{t('CODE')}</CyDText>
       <CyDView className='flex flex-row items-center'>
@@ -153,7 +153,7 @@ const ReferralInfo = ({
         </CyDTouchView>
       </CyDView>
     </CyDView>
-    <CyDView className='h-[1px] bg-cardBg' />
+    <CyDView className='h-[1px] bg-n40' />
     <ShareVia referralLink={referralLink} />
   </CyDView>
 );
@@ -228,7 +228,7 @@ const PointsInfo = ({
           </CyDView>
         )}
       </CyDView>
-      <CyDView className='h-[1px] bg-cardBg' />
+      <CyDView className='h-[1px] bg-n20' />
     </>
   );
 };

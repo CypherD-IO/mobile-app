@@ -333,7 +333,7 @@ export default function CardControlsSettings() {
     <Loading />
   ) : (
     <>
-      <CyDSafeAreaView className={'h-full bg-n20 pt-[10px]'}>
+      <CyDView className={'h-full bg-n20'}>
         <ChooseMultipleCountryModal
           isModalVisible={countryModalVisible}
           setModalVisible={setCountryModalVisible}
@@ -398,16 +398,20 @@ export default function CardControlsSettings() {
                     onPress={() => {
                       setIsChooseDomesticCountryModalVisible(true);
                     }}
-                    imagePosition={ImagePosition.LEFT}
                     paddingY={6}
                     loaderStyle={{
                       height: 15,
                       width: 15,
                     }}
                     style='w-[84.5px] h-[30px]'
-                    image={AppImages.CHANGE_ICON}
                     type={ButtonType.GREY_FILL}
-                    imageStyle={'h-[16px] w-[16px] mr-[6px]'}
+                    icon={
+                      <CydMaterialDesignIcons
+                        name='circle-edit-outline'
+                        size={16}
+                        className='text-base400 mr-2'
+                      />
+                    }
                     titleStyle={'text-[12px]'}
                     disabled={disableOptions}
                   />
@@ -554,11 +558,15 @@ export default function CardControlsSettings() {
                         onPress={() => {
                           openEditLimitModal(CARD_LIMIT_TYPE.ONLINE);
                         }}
-                        imagePosition={ImagePosition.LEFT}
                         paddingY={6}
-                        image={AppImages.CHANGE_ICON}
+                        icon={
+                          <CydMaterialDesignIcons
+                            name='circle-edit-outline'
+                            size={16}
+                            className='text-base400 mr-2'
+                          />
+                        }
                         type={ButtonType.GREY_FILL}
-                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                         titleStyle={'text-[12px]'}
                         disabled={disableOptions}
                       />
@@ -611,11 +619,15 @@ export default function CardControlsSettings() {
                           onPress={() => {
                             openEditLimitModal(CARD_LIMIT_TYPE.CONTACTLESS);
                           }}
-                          imagePosition={ImagePosition.LEFT}
                           paddingY={6}
-                          image={AppImages.CHANGE_ICON}
+                          icon={
+                            <CydMaterialDesignIcons
+                              name='circle-edit-outline'
+                              size={16}
+                              className='text-base400 mr-2'
+                            />
+                          }
                           type={ButtonType.GREY_FILL}
-                          imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                           titleStyle={'text-[12px]'}
                           disabled={disableOptions}
                         />
@@ -665,11 +677,15 @@ export default function CardControlsSettings() {
                         onPress={() => {
                           openEditLimitModal(CARD_LIMIT_TYPE.CARD_PIN);
                         }}
-                        imagePosition={ImagePosition.LEFT}
                         paddingY={6}
-                        image={AppImages.CHANGE_ICON}
+                        icon={
+                          <CydMaterialDesignIcons
+                            name='circle-edit-outline'
+                            size={16}
+                            className='text-base400 mr-2'
+                          />
+                        }
                         type={ButtonType.GREY_FILL}
-                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                         titleStyle={'text-[12px]'}
                         disabled={disableOptions}
                       />
@@ -734,11 +750,15 @@ export default function CardControlsSettings() {
                         onPress={() => {
                           openEditLimitModal(CARD_LIMIT_TYPE.MOBILE_WALLET);
                         }}
-                        imagePosition={ImagePosition.LEFT}
                         paddingY={6}
-                        image={AppImages.CHANGE_ICON}
+                        icon={
+                          <CydMaterialDesignIcons
+                            name='circle-edit-outline'
+                            size={16}
+                            className='text-base400 mr-2'
+                          />
+                        }
                         type={ButtonType.GREY_FILL}
-                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                         titleStyle={'text-[12px]'}
                         disabled={disableOptions}
                       />
@@ -749,21 +769,23 @@ export default function CardControlsSettings() {
             }
           </CyDView>
         </CyDScrollView>
-        <Button
-          type={ButtonType.PRIMARY}
-          title={t('SAVE_CHANGES')}
-          onPress={() => {
-            setLoading(true);
-            void saveLimits();
-          }}
-          paddingY={12}
-          style='mx-[26px] rounded-[12px] mt-[10px] mb-[20px]'
-          titleStyle='text-[18px]'
-          loading={loading}
-          disabled={!isDetailsChanged}
-          loaderStyle={{ height: 25, width: 25 }}
-        />
-      </CyDSafeAreaView>
+        <CyDView className='bg-n0 pt-[14px] pb-[10px]'>
+          <Button
+            type={ButtonType.PRIMARY}
+            title={t('SAVE_CHANGES')}
+            onPress={() => {
+              setLoading(true);
+              void saveLimits();
+            }}
+            paddingY={12}
+            style='mx-[26px] rounded-[12px] mt-[10px] mb-[20px]'
+            titleStyle='text-[18px]'
+            loading={loading}
+            disabled={!isDetailsChanged}
+            loaderStyle={{ height: 25, width: 25 }}
+          />
+        </CyDView>
+      </CyDView>
     </>
   );
 }

@@ -37,9 +37,7 @@ const renderSeedPhrase = (text: string, index: number) => {
       <CyDText className={'text-[17px] text-center text-[#929292] '}>
         {++index}
       </CyDText>
-      <CyDText className={'text-[17px] text-center text-[#434343]  ml-[5px]'}>
-        {text}
-      </CyDText>
+      <CyDText className={'text-[17px] text-center ml-[5px]'}>{text}</CyDText>
     </CyDView>
   );
 };
@@ -112,7 +110,7 @@ export default function SeedPhrase() {
             className={
               'bg-n0 rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'
             }>
-            <CyDText className={'text-[15px] text-center text-[#434343] '}>
+            <CyDText className={'text-[15px] text-center'}>
               {t('SEED_PHRASE_SUBTITLE')}
             </CyDText>
           </CyDView>
@@ -140,7 +138,7 @@ export default function SeedPhrase() {
               </CyDView>
             ) : (
               <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[#434343] text-[15px] font-semibold'}>
+                <CyDText className={'text-[15px] font-semibold'}>
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
                 <CydMaterialDesignIcons
@@ -183,7 +181,7 @@ export default function SeedPhrase() {
               size={20}
               className='text-base400 absolute left-[20]'
             />
-            <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>
+            <CyDText className={'text-[16px] font-extrabold'}>
               {t('COPY_TO_CLIPBOARD')}
             </CyDText>
           </CyDTouchView>

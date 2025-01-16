@@ -1,7 +1,3 @@
-// module.exports = {
-//   presets: ['module:metro-react-native-babel-preset'],
-//   plugins: ['react-native-reanimated/plugin', 'nativewind/babel'],
-// };
 const lazyImports = require('metro-react-native-babel-preset/src/configs/lazy-imports');
 
 module.exports = (api) => {

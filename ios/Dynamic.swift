@@ -8,7 +8,7 @@ import Lottie
     let animationView = AnimationView(name: lottieName)
     animationView.frame = rootView.frame
     animationView.center = rootView.center
-    animationView.backgroundColor = UIColor.white;
+    animationView.backgroundColor = UIColor.black;
     return animationView;
   }
 

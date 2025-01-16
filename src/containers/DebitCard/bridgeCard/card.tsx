@@ -1099,7 +1099,7 @@ const RenderCardActions = ({
             }
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-p100'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {isFetchingCardDetails ? (
               <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
@@ -1133,7 +1133,7 @@ const RenderCardActions = ({
                 ? 'bg-n40'
                 : status !== CardStatus.ACTIVE
                   ? 'bg-base100'
-                  : 'bg-p100',
+                  : 'bg-p50',
             )}>
             {isStatusLoading ? (
               <CyDLottieView
@@ -1180,9 +1180,9 @@ const RenderCardActions = ({
                 });
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-p100'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {cardProvider === CardProviders.REAP_CARD ? (
-              <CyDIcons name='settings' className='text-black text-[36px]' />
+              <CyDIcons name='settings' className='text-black text-[28px]' />
             ) : (
               <CydMaterialDesignIcons
                 name={'dots-vertical'}

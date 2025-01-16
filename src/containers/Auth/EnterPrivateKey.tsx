@@ -137,8 +137,7 @@ export default function Login(props) {
         {createWalletLoading && <Loading />}
         <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <CyDView>
-            <CyDText
-              className={'text-[#434343] text-[16px] mt-[30px] text-center'}>
+            <CyDText className={'text-[16px] mt-[30px] text-center'}>
               {t('PRIVATE_KEY_IMPORT_SUB_MSG')}
             </CyDText>
             <CyDView className={'flex flex-row justify-center'}>
@@ -175,8 +174,7 @@ export default function Login(props) {
                   size={16}
                   className='text-base400'
                 />
-                <CyDText
-                  className={'text-[#434343] text-[14px] font-extrabold'}>
+                <CyDText className={'text-[14px] font-extrabold'}>
                   {t('PASTE_CLIPBOARD')}
                 </CyDText>
               </CyDTouchView>

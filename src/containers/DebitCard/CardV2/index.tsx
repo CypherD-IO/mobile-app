@@ -564,7 +564,7 @@ export default function CypherCardScreen() {
                 {t<string>('OTHERS')}
               </CyDText>
               <CyDTouchView
-                className='border-[1.2px] border-cardBgTo flex flex-row justify-center items-center py-[16px] rounded-[16px]'
+                className='border-[1.2px] border-n20 flex flex-row justify-center items-center py-[16px] rounded-[16px]'
                 onPress={() =>
                   navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                     navigation,

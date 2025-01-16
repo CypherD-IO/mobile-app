@@ -111,7 +111,7 @@ export default function SecurityPrivacy(props) {
                 className='text-base400'
               />
             </CyDView>
-            <CyDText className={'font-semibold text-[16px] text-[#434343]'}>
+            <CyDText className={'font-semibold text-[16px]'}>
               {item.title}
             </CyDText>
           </CyDView>

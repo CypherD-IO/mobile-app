@@ -306,7 +306,7 @@ export default function PrivateKey(props) {
               </CyDView>
             ) : (
               <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[#434343] text-[15px] font-semibold'}>
+                <CyDText className={'text-[15px] font-semibold'}>
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
 
@@ -353,7 +353,7 @@ export default function PrivateKey(props) {
             size={16}
             className='text-base400 absolute left-[20]'
           />
-          <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>
+          <CyDText className={'text-[16px] font-extrabold'}>
             {t('COPY_TO_CLIPBOARD')}
           </CyDText>
         </CyDTouchView>

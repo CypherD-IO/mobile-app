@@ -2,24 +2,31 @@
  * @format
  * @flow
  */
+import { useIsFocused } from '@react-navigation/native';
 import clsx from 'clsx';
+import { get } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, StyleSheet } from 'react-native';
-import AppImages from '../../../assets/images/appImages';
+import { BackHandler } from 'react-native';
+import Button from '../../components/v2/button';
+import ChooseTokenModal from '../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import CyDTokenAmount from '../../components/v2/tokenAmount';
+import CyDTokenValue from '../../components/v2/tokenValue';
 import { gasFeeReservation } from '../../constants/data';
+import { ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
   ChainBackendNames,
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../constants/server';
-import { Colors } from '../../constants/theme';
+import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
 import { formatAmount, limitDecimalPlaces } from '../../core/util';
+import usePortfolio from '../../hooks/usePortfolio';
+import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDFastImage,
-  CyDImage,
   CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
@@ -27,18 +34,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import CyDTokenAmount from '../../components/v2/tokenAmount';
-import CyDTokenValue from '../../components/v2/tokenValue';
-import Button from '../../components/v2/button';
-import { ButtonType } from '../../constants/enum';
-import ChooseTokenModal from '../../components/v2/chooseTokenModal';
-import { useIsFocused } from '@react-navigation/native';
-import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
-import { TokenMeta } from '../../models/tokenMetaData.model';
-import { get } from 'lodash';
-import usePortfolio from '../../hooks/usePortfolio';
-
-const { CText } = require('../../styles');
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -56,10 +51,6 @@ export default function EnterAmount(props: any) {
   const { getNativeToken } = usePortfolio();
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(false);
-  const currencyFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  });
   const isFocused = useIsFocused();
 
   const { showModal, hideModal } = useGlobalModalContext();
@@ -87,16 +78,6 @@ export default function EnterAmount(props: any) {
       }
     }
   }, [isFocused]);
-
-  // const formatAmount = (amount: string) => {
-  //   if (amount.includes('.')) {
-  //     return amount.slice(
-  //       0,
-  //       amount.indexOf('.') + (tokenData.name === 'Ether' ? 7 : 3),
-  //     );
-  //   } else if (amount === '0') return '0.00';
-  //   return amount;
-  // };
 
   const isGasReservedForNative = (cryptoValue: string) => {
     const nativeTokenSymbol =
@@ -225,10 +206,9 @@ export default function EnterAmount(props: any) {
                     }
                   }}
                   className={clsx(
-                    'absolute left-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-                  )}
-                  style={styles.roundButtonContainer}>
-                  <CyDText className={' text-base400 '}>
+                    'absolute left-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
+                  )}>
+                  <CyDText className={' text-[10px]  font-bold'}>
                     {t<string>('MAX')}
                   </CyDText>
                 </CyDTouchView>
@@ -247,9 +227,8 @@ export default function EnterAmount(props: any) {
                     // }
                   }}
                   className={clsx(
-                    'absolute right-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-                  )}
-                  style={styles.roundButtonContainer}>
+                    'absolute right-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
+                  )}>
                   <CydMaterialDesignIcons
                     name='swap-vertical'
                     size={16}
@@ -302,9 +281,7 @@ export default function EnterAmount(props: any) {
                         : '0.00') + ` ${tokenData.name}`}
                 </CyDText>
 
-                <CyDView
-                  style={styles.tokenContainer}
-                  className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-n0'>
+                <CyDView className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-n0'>
                   <CyDView>
                     <CyDFastImage
                       className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -372,20 +349,3 @@ export default function EnterAmount(props: any) {
     </CyDSafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  tokenContainer: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.8,
-    elevation: 5,
-    shadowRadius: 1,
-  },
-  roundButtonContainer: {
-    shadowColor: '#E2E4F0',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.8,
-    elevation: 5,
-    shadowRadius: 10,
-  },
-});
