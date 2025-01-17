@@ -95,7 +95,7 @@ import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import OptionsScreen from '../containers/Options/index';
 import Referrals from '../containers/Options/referrals';
 import Rewards from '../containers/Options/rewards';
-import ThemeSelector from '../containers/Options/theme';
+import AppearanceSelector from '../containers/Options/theme';
 import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
 import PinValidation from '../containers/PinAuthetication/pinValidation';
@@ -1719,7 +1719,7 @@ export function OptionsStackScreen({
 
       <OptionsStack.Screen
         name={screenTitle.THEME}
-        component={ThemeSelector}
+        component={AppearanceSelector}
         options={({ navigation }) => ({
           header: () => (
             <CustomHeader

@@ -6,11 +6,12 @@ import React, {
   useEffect,
 } from 'react';
 import { View } from 'react-native';
-import { vars } from 'nativewind';
+import { vars, useColorScheme } from 'nativewind';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sentry from '@sentry/react-native';
 
 export enum Theme {
+  SYSTEM = 'system',
   LIGHT = 'light',
   DARK = 'dark',
 }
@@ -22,7 +23,10 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const themes: Record<Theme, ReturnType<typeof vars>> = {
+export const themes: Record<
+  Exclude<Theme, Theme.SYSTEM>,
+  ReturnType<typeof vars>
+> = {
   [Theme.LIGHT]: vars({
     '--color-n0': '#ffffff',
     '--color-n10': '#fafbfb',
@@ -160,11 +164,14 @@ interface ThemeProviderProps {
 const THEME_STORAGE_KEY = '@app_theme';
 
 const isValidTheme = (theme: unknown): theme is Theme => {
-  return theme === Theme.LIGHT || theme === Theme.DARK;
+  return (
+    theme === Theme.LIGHT || theme === Theme.DARK || theme === Theme.SYSTEM
+  );
 };
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
+  const { colorScheme } = useColorScheme();
+  const [theme, setTheme] = useState<Theme>(Theme.SYSTEM);
 
   useEffect(() => {
     void loadSavedTheme();
@@ -174,7 +181,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     try {
       const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme && isValidTheme(savedTheme)) {
-        setTheme(savedTheme);
+        if (savedTheme === Theme.SYSTEM) {
+          setTheme(colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT);
+        } else {
+          setTheme(savedTheme);
+        }
       }
     } catch (error) {
       Sentry.captureException(error);
@@ -194,6 +205,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
+  const getThemeToInject = (): Exclude<Theme, Theme.SYSTEM> => {
+    if (theme === Theme.SYSTEM) {
+      return colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT;
+    }
+    return theme;
+  };
+
   return (
     <ThemeContext.Provider
       value={{
@@ -202,7 +220,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           void changeTheme(newTheme);
         },
       }}>
-      <View style={themes[theme]} className='flex-1'>
+      <View style={themes[getThemeToInject()]} className='flex-1'>
         {children}
       </View>
     </ThemeContext.Provider>

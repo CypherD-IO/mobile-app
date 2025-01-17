@@ -1,18 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
-import {
-  CyDView,
-  CyDText,
-  CyDImage,
-  CyDTouchView,
-  CyDScrollView,
-} from '../../styles/tailwindStyles';
-import { BackHandler, Switch } from 'react-native';
-import { getIBC, setIBC } from '../../core/asyncStorage';
-import { GlobalContext } from '../../core/globalContext';
-import { GlobalContextType } from '../../constants/enum';
-import AppImages from '../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
+import { BackHandler } from 'react-native';
 import { screenTitle } from '../../constants';
+import { getIBC } from '../../core/asyncStorage';
+import { GlobalContext } from '../../core/globalContext';
+import {
+  CyDScrollView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 export interface IAdvancedSettingsData {
   ibc: boolean;
 }

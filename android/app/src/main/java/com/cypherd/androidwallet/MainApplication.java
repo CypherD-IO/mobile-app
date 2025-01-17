@@ -63,6 +63,8 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
+    ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope);
+    ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont);
     ReactFontManager fontManager = ReactFontManager.getInstance();
     fontManager.addCustomFont(this, "Manrope-Light", R.font.manrope_light);
     fontManager.addCustomFont(this, "Manrope-Regular", R.font.manrope_regular);

@@ -15,7 +15,6 @@ import { HdWalletContext } from '../core/util';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import {
   CyDFlatList,
-  CyDImage,
   CyDLottieView,
   CydMaterialDesignIcons,
   CyDText,
@@ -23,6 +22,16 @@ import {
   CyDView,
 } from '../styles/tailwindStyles';
 import Button from './v2/button';
+
+const randomIcons = [
+  'robot-happy-outline',
+  'rabbit-variant-outline',
+  'robot',
+  'penguin',
+  'cat',
+  'bird',
+  'ladybug',
+];
 
 const RadioButton = (props: { selected: boolean }) => {
   const { selected } = props;
@@ -46,17 +55,17 @@ const RenderWalletAddresses = (
   return (
     <CyDTouchView
       className={
-        'flex flex-row justify-evenly bg-n0 items-center self-center border-[1px] border-n40 w-[353px] h-[60px] rounded-[10px] px-[20px] mb-[10px]'
+        'flex flex-row justify-evenly bg-n0 items-center self-center border-[1px] border-n40 h-[60px] rounded-[10px] px-[20px] mb-[10px]'
       }
       onPress={() => {
-        n40;
+        // n40;
         setSelectedIndex(item.index);
       }}>
       <CyDText className='ml-[10px] mr-[20px]'>{item.index}</CyDText>
-      <CyDImage
-        source={AppImages[`ADDRESS_PROFILE_${(item.index % 4) + 1}`]}
-        className='h-[30px] w-[30px]'
-        resizeMode='contain'
+      <CydMaterialDesignIcons
+        name={randomIcons[item.index % randomIcons.length]}
+        size={24}
+        className='text-base400'
       />
       <CyDText className='grow text-center'>
         {item.address.substring(0, 8) +
@@ -147,7 +156,7 @@ export default function ChooseWalletIndexComponent({
       </CyDView>
       <CyDView
         className={clsx(
-          'absolute w-full bottom-[0px] bg-n0 pt-[10px] pb-[32px] px-[16px]',
+          'absolute w-full bottom-[0px] bg-n0 pt-[10px] pb-[32px] px-[16px] shadow-md shadow-n40',
         )}>
         <Button
           type={ButtonType.PRIMARY}

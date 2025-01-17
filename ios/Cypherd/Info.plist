@@ -95,6 +95,7 @@
 	<string>Send photos during Customer Support Chat in the app</string>
 	<key>UIAppFonts</key>
 	<array>
+		<string>MaterialDesignIcons.ttf</string>
 		<string>Manrope-Bold.ttf</string>
 		<string>Manrope-ExtraBold.ttf</string>
 		<string>Manrope-ExtraLight.ttf</string>
@@ -102,7 +103,6 @@
 		<string>Manrope-Medium.ttf</string>
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
-		<string>MaterialDesignIcons.ttf</string>
 		<string>CydFont.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
