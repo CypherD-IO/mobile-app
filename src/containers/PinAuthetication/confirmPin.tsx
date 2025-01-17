@@ -8,6 +8,7 @@ import {
   CyDSafeAreaView,
   CyDImage,
   CyDTouchView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import OtpInput from '../../components/v2/OTPInput';
 import AppImages from '../../../assets/images/appImages';
@@ -61,9 +62,10 @@ export default function ConfirmPin() {
             onPress={() => {
               navigation.navigate(screenTitle.SET_PIN);
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className={'w-[32px] h-[32px]'}
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
         )}
@@ -138,7 +140,7 @@ export default function ConfirmPin() {
 
   return (
     <CyDSafeAreaView>
-      <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
+      <CyDView className={'h-full bg-n20 px-[20px] pt-[10px]'}>
         <PINHeader />
         <PIN />
       </CyDView>

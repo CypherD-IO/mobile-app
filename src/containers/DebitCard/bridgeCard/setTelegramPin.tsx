@@ -20,6 +20,7 @@ import { useKeyboard } from '../../../hooks/useKeyboard';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -55,7 +56,7 @@ export default function SetTelegramPin() {
   };
 
   const verifyWithOTP = () => {
-    navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, {
+    navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, cardProvider: CardProviders) => {
         void onPinSet();
       },
@@ -67,7 +68,7 @@ export default function SetTelegramPin() {
   const ActivateCardHeader = () => {
     return (
       <CyDView className='mt-[6px]'>
-        <CyDText className={'text-[14px] font-medium text-[#6B788E]'}>
+        <CyDText className={'text-[14px] font-medium text-n200'}>
           {t<string>('SET_TELEGRAM_PIN_DESCRIPTION')}
         </CyDText>
       </CyDView>
@@ -211,19 +212,20 @@ export default function SetTelegramPin() {
   };
 
   return (
-    <CyDSafeAreaView style={{ flex: 1 }}>
-      <CyDView className='flex-1 pb-[12px] bg-[#F1F0F5]'>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
+      <CyDView className='flex-1 pb-[12px]'>
         <CyDView className='flex flex-row items-center mx-[20px]'>
           <CyDTouchView
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[32px] h-[32px]'
+            <CydMaterialDesignIcons
+              name={'arrow-left-thin'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
-          <CyDText className='text-black ml-[12px] text-[18px]'>
+          <CyDText className='text-base400 ml-[12px] text-[18px]'>
             {t('SET_TELEGRAM_PIN')}
           </CyDText>
         </CyDView>
@@ -231,16 +233,17 @@ export default function SetTelegramPin() {
           contentContainerStyle={styles.contentContainerStyle}>
           <CyDView>
             <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-              <CyDImage
-                source={AppImages.LOCKED_ICON_BLACK}
-                className='w-[32px] h-[32px]'
+              <CydMaterialDesignIcons
+                name='lock'
+                size={32}
+                className='text-base400'
               />
-              <CyDText className='text-black mt-[6px] font-bold text-[28px]'>
+              <CyDText className='text-base400 mt-[6px] font-bold text-[28px]'>
                 {t('SET_TELEGRAM_PIN')}
               </CyDText>
               <ActivateCardHeader />
               <CyDView className='mt-[24px]'>
-                <CyDText className={'text-[12px] text-[#6B788E]'}>
+                <CyDText className={'text-[12px] text-n200'}>
                   {t<string>('NEW_PIN')}
                 </CyDText>
                 <CyDView className={'mt-[5px]'}>
@@ -274,7 +277,7 @@ export default function SetTelegramPin() {
               </CyDView>
 
               <CyDView>
-                <CyDText className={'text-[12px] mt-[20px] text-[#6B788E]'}>
+                <CyDText className={'text-[12px] mt-[20px] text-n200'}>
                   {t<string>('CONFIRM_PIN_TELEGRAM')}
                 </CyDText>
                 <CyDView className={'mt-[5px]'}>
@@ -309,7 +312,7 @@ export default function SetTelegramPin() {
               </CyDView>
 
               <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
-                <CyDText className='text-[12px] mt-[16px] text-[#6B788E]'>
+                <CyDText className='text-[12px] mt-[16px] text-n200'>
                   Only 6 digits accepted.{'\n'}
                   Only two consecutive numbers accepted at most (eg: 124758){' '}
                   {'\n'}

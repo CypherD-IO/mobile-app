@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  CyDImage,
+  CyDLottieView,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -10,7 +11,6 @@ import { PinInput } from '../../../components/v2/pinInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -252,25 +252,27 @@ export default function CardRevealAuthScreen() {
   }
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className='bg-n20'>
+      <CyDView className={'h-full px-[20px] pt-[10px]'}>
         <CyDTouchView
           className='flex-row items-center'
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDImage
-            source={AppImages.BACK_ARROW_GRAY}
-            className='w-[32px] h-[32px]'
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
           />
           <CyDText className='ml-[12px] font-regular text-[18px]'>
             {capitalize(card?.type)} {' card ** '} {card?.last4}
           </CyDText>
         </CyDTouchView>
 
-        <CyDImage
-          source={AppImages.SHIELD_FILLED}
-          className='mt-[24px] w-[32px] h-[32px]'
+        <CydMaterialDesignIcons
+          name='shield-check'
+          size={32}
+          className='text-base400 mt-4'
         />
 
         <CyDText className='mt-[6px] text-[28px] font-bold'>
@@ -310,7 +312,7 @@ export default function CardRevealAuthScreen() {
               </CyDText>
             </CyDText>
             {sendingOTP && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop

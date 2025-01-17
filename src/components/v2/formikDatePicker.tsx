@@ -21,9 +21,9 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
   label,
   placeholder,
   containerClassName = '',
-  labelClassName = 'text-[12px] font-bold text-black',
-  inputClassName = 'p-[16px] rounded-[8px] bg-white font-semibold border-[1px] border-white',
-  errorClassName = 'text-red-500 text-[12px] mt-[2px] text-end w-full',
+  labelClassName = 'text-[12px] font-bold text-base400',
+  inputClassName = 'p-[16px] rounded-[8px] bg-n0 font-semibold border-[1px] border-n40',
+  errorClassName = 'text-red200 text-[12px] mt-[2px] text-end w-full',
 }) => {
   const [field, meta, helpers] = useField(name);
   const [show, setShow] = useState(false);
@@ -57,8 +57,8 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
                 : ''
           }
           className={clsx(inputClassName, {
-            'text-black border-white': !meta.error,
-            'text-red-500 border-red-500': meta.touched && meta.error,
+            'text-base400 border-n40': !meta.error,
+            'text-red200 border-red200': meta.touched && meta.error,
           })}
           onFocus={showDatepicker}
           showSoftInputOnFocus={false}
@@ -75,7 +75,7 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
       {meta.touched && meta.error && (
         <CyDText
           className={clsx(
-            'text-red-500 text-[10px] mt-[2px] text-end w-full',
+            'text-red200 text-[10px] mt-[2px] text-end w-full',
             errorClassName,
           )}>
           {meta.error}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -60,12 +61,12 @@ export const RefreshTimerBar = (props: {
   }, [isRefreshing, lastUpdatedAt]);
 
   return (
-    <CyDView className='bg-white flex flex-row justify-between rounded-t-[24px] border border-sepratorColor py-[10px] px-[10px] mx-[10px]'>
+    <CyDView className='bg-n0 flex flex-row justify-between rounded-t-[24px] border border-n40 py-[10px] px-[10px] mx-[10px]'>
       <CyDView className='flex flex-row items-center'>
-        <CyDFastImage
-          source={AppImages.CLOCK}
-          className='h-[16px] w-[16px]'
-          resizeMode='contain'
+        <CydMaterialDesignIcons
+          name='clock-time-four'
+          size={20}
+          className='text-base400'
         />
         <CyDText className='ml-[10px]'>
           {isRefreshing ? t('REFRESHING') : time}
@@ -81,17 +82,13 @@ export const RefreshTimerBar = (props: {
         }}>
         <CyDView
           className={clsx(
-            'h-[15px] w-[15px] justify-center items-center rounded-[4px] border-[1px] border-black',
-            {
-              'bg-black': isVerifyCoinChecked,
-              'bg-transparent': !isVerifyCoinChecked,
-            },
+            'h-[15px] w-[15px] justify-center items-center rounded-[4px] border-[1px] border-base400',
           )}>
           {isVerifyCoinChecked && (
-            <CyDFastImage
-              source={AppImages.CORRECT}
-              className='h-[14px] w-[10px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='check-bold'
+              size={12}
+              className='text-base400'
             />
           )}
         </CyDView>

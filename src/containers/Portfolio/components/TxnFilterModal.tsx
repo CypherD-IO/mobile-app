@@ -2,7 +2,7 @@ import React, { memo, useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, StyleSheet } from 'react-native';
 import {
-  CyDFastImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -13,7 +13,6 @@ import RadioButtons from '../../../components/radioButtons';
 import Button from '../../../components/v2/button';
 import CyDModalLayout from '../../../components/v2/modal';
 import { ButtonType } from '../../../constants/enum';
-import AppImages from '../../../../assets/images/appImages';
 import { TXN_FILTER_STATUSES } from '../../../constants/data';
 
 export const FILTERS = ['Type', 'Status'];
@@ -109,17 +108,17 @@ const TxnFilterModal = ({
       style={styles.modalLayout}
       animationIn='slideInUp'
       animationOut='slideOutDown'>
-      <CyDSafeAreaView className='bg-white flex-1'>
-        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-sepratorColor'>
+      <CyDSafeAreaView className='bg-n20 flex-1'>
+        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
           <CyDTouchView
             onPress={() => {
               setModalVisible(false);
             }}
             className='p-[5px]'>
-            <CyDFastImage
-              className='h-[16px] w-[16px]'
-              source={AppImages.CLOSE}
-              resizeMode='cover'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[20px] font-bold'>
@@ -139,7 +138,7 @@ const TxnFilterModal = ({
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-appColor' : 'bg-whiteflex'
+                  index === idx ? 'bg-appColor' : 'bg-n20 flex'
                 } justify-center py-[20px]`}>
                 <CyDText
                   className={'text-left pl-[12px] text-[16px] font-bold'}>
@@ -148,7 +147,7 @@ const TxnFilterModal = ({
               </CyDTouchView>
             ))}
           </CyDView>
-          <CyDView className={'bg-white w-[70%]'}>
+          <CyDView className={'w-[70%]'}>
             {index === 0 && (
               <CheckBoxes
                 radioButtonsData={TRANSACTION_TYPES}

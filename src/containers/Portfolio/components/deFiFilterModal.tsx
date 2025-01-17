@@ -15,6 +15,7 @@ import {
 } from '../../../models/defi.interface';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -62,17 +63,17 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
       style={styles.modalLayout}
       animationIn='slideInUp'
       animationOut='slideOutDown'>
-      <CyDSafeAreaView className='bg-white flex-1'>
-        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-sepratorColor'>
+      <CyDSafeAreaView className='bg-n0 flex-1'>
+        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
           <CyDTouchView
             onPress={() => {
               props.setVisible(false);
             }}
             className='p-[5px]'>
-            <CyDFastImage
-              className='h-[16px] w-[16px]'
-              source={AppImages.CLOSE}
-              resizeMode='cover'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[20px] font-bold'>
@@ -85,14 +86,13 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
           </CyDTouchView>
         </CyDView>
         <CyDView className='h-full flex flex-row'>
-          <CyDView
-            className={'border-r border-activityFilterBorderLine w-[30%]'}>
+          <CyDView className={'border-r border-n40 w-[30%]'}>
             {FILTERS.map((filter, idx) => (
               <CyDTouchView
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-appColor' : 'bg-whiteflex'
+                  index === idx ? 'bg-p100' : 'bg-n0flex'
                 } justify-center py-[20px]`}>
                 <CyDText
                   className={'text-left pl-[12px] text-[16px] font-bold'}>
@@ -105,7 +105,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
               </CyDTouchView>
             ))}
           </CyDView>
-          <CyDView className='bg-white w-[70%]'>
+          <CyDView className='bg-n0 w-[70%]'>
             {index === 0 && (
               <DeFiCheckBox
                 radioButtonsData={props.protocols}

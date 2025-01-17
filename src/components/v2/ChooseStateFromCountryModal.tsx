@@ -3,6 +3,7 @@ import CyDModalLayout from './modal';
 import {
   CyDFastImage,
   CyDKeyboardAvoidingView,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -62,7 +63,7 @@ const ChooseStateFromCountryModal = ({
       <CyDKeyboardAvoidingView
         behavior={isAndroid() ? 'height' : 'padding'}
         className='flex flex-col justify-end h-full'>
-        <CyDView className={'bg-white h-[70%] rounded-t-[24px]'}>
+        <CyDView className={'bg-n0 h-[70%] rounded-t-[24px]'}>
           <CyDView
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput
@@ -81,9 +82,10 @@ const ChooseStateFromCountryModal = ({
                 setModalVisible(false);
               }}
               className={'ml-[18px]'}>
-              <CyDFastImage
-                source={AppImages.CLOSE}
-                className={' w-[22px] h-[22px] z-[50] right-[0px] '}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

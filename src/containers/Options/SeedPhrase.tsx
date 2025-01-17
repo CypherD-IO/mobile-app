@@ -5,6 +5,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { BackHandler, NativeModules } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -36,9 +37,7 @@ const renderSeedPhrase = (text: string, index: number) => {
       <CyDText className={'text-[17px] text-center text-[#929292] '}>
         {++index}
       </CyDText>
-      <CyDText className={'text-[17px] text-center text-[#434343]  ml-[5px]'}>
-        {text}
-      </CyDText>
+      <CyDText className={'text-[17px] text-center ml-[5px]'}>{text}</CyDText>
     </CyDView>
   );
 };
@@ -105,13 +104,13 @@ export default function SeedPhrase() {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     !isFetchingSeedPhrase && (
-      <CyDScrollView className={'bg-white h-full w-full relative '}>
+      <CyDScrollView className={'bg-n20 h-full w-full relative '}>
         <CyDView className={'flex justify-center items-center'}>
           <CyDView
             className={
-              'bg-[#F8F8F8] rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'
+              'bg-n0 rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'
             }>
-            <CyDText className={'text-[15px] text-center text-[#434343] '}>
+            <CyDText className={'text-[15px] text-center'}>
               {t('SEED_PHRASE_SUBTITLE')}
             </CyDText>
           </CyDView>
@@ -131,19 +130,21 @@ export default function SeedPhrase() {
                 <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
                   {t('HIDE_SEED_PHRASE')}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_OPEN}
-                  className={'w-[27px] h-[18px] ml-[7px]'}
+                <CydMaterialDesignIcons
+                  name={'eye-outline'}
+                  size={27}
+                  className='text-base400 ml-[7px]'
                 />
               </CyDView>
             ) : (
               <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[#434343] text-[15px] font-semibold'}>
+                <CyDText className={'text-[15px] font-semibold'}>
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_CLOSE}
-                  className={'w-[27px] h-[22px] ml-[7px] mt-[5px]'}
+                <CydMaterialDesignIcons
+                  name={'eye-off-outline'}
+                  size={27}
+                  className='text-base400 ml-[7px] mt-[5px]'
                 />
               </CyDView>
             )}
@@ -175,11 +176,12 @@ export default function SeedPhrase() {
               'flex flex-row items-center justify-center mt-[40px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px] mb-[50px]'
             }
             onPress={() => onPressSeedPharse()}>
-            <CyDImage
-              source={AppImages.COPY}
-              className={'absolute left-[20] w-[16px] h-[18px]'}
+            <CydMaterialDesignIcons
+              name={'content-copy'}
+              size={20}
+              className='text-base400 absolute left-[20]'
             />
-            <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>
+            <CyDText className={'text-[16px] font-extrabold'}>
               {t('COPY_TO_CLIPBOARD')}
             </CyDText>
           </CyDTouchView>

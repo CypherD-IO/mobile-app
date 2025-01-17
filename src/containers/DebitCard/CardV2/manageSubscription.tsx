@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -50,9 +51,10 @@ export default function ManageSubscription() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            source={AppImages.LEFT_ARROW_LONG}
-            className='w-[20px] h-[16px]'
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
           />
         </CyDTouchView>
         <CyDText className='text-[16px] font-bold text-base400'>

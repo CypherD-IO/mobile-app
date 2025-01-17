@@ -152,7 +152,7 @@ const DateRangeFilterPicker = ({
             />
           ) : null}
         </CyDView>
-        <CyDView className='w-full border-y border-sepratorColor p-[10px]'>
+        <CyDView className='w-full border-y border-n40 p-[10px]'>
           <CyDView className='flex flex-row flex-wrap'>{Presets}</CyDView>
         </CyDView>
       </CyDView>

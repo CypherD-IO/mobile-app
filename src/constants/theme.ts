@@ -46,4 +46,6 @@ export const Colors: Record<string, string> = {
   secondaryBackgroundColor: '#F7F8FE',
   placeHolderColor: '#C5C5C5',
   buttonColor: '#F7C645',
+  n40: '#F4F4F4',
+  n0: '--color-n0',
 };

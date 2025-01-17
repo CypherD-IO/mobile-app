@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '../../components/v2/button';
 import {
   ALL_CHAINS,
-  ChainNameMapping,
   ChainNames,
-  CHAIN_ETH,
   QRScannerScreens,
 } from '../../constants/server';
 import { generateRandomInt, isEthereumAddress } from '../../core/util';
@@ -16,8 +14,9 @@ import {
   CyDScrollView,
   CyDTextInput,
   CyDTouchView,
-  CyDImage,
   CyDFastImage,
+  CyDIcons,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { Formik } from 'formik';
@@ -97,7 +96,7 @@ export const CreateContact = () => {
     ethereum: {
       label: t(`${ChainNames.ETH.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.ETHEREUM_NEW,
+      logo: AppImages.ETHEREUM,
     },
     cosmos: {
       label: t(`${ChainNames.COSMOS.toUpperCase()} ADDRESS`),
@@ -127,7 +126,7 @@ export const CreateContact = () => {
     binance: {
       label: t(`${ChainNames.BSC.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.BINANCE_NEW,
+      logo: AppImages.BINANCE,
     },
     polygon: {
       label: t(`${ChainNames.POLYGON.toUpperCase()} ADDRESS`),
@@ -686,7 +685,7 @@ export const CreateContact = () => {
   };
 
   return (
-    <CyDView className={'bg-white w-full h-full'}>
+    <CyDView className={'bg-n20 w-full h-full'}>
       <ChooseChainModal
         setModalVisible={setChooseChainModalVisible}
         isModalVisible={chooseChainModalVisible}
@@ -775,7 +774,11 @@ export const CreateContact = () => {
                               onPress={() => {
                                 formProps.setFieldValue(`${detail}`, '');
                               }}>
-                              <CyDImage source={AppImages.CLOSE_CIRCLE} />
+                              <CydMaterialDesignIcons
+                                name={'close'}
+                                size={24}
+                                className='text-base400'
+                              />
                             </CyDTouchView>
                           ) : (
                             <></>
@@ -816,7 +819,7 @@ export const CreateContact = () => {
                           <CyDView className='flex flex-row justify-between items-center w-[100%]'>
                             <CyDTextInput
                               className={clsx(
-                                'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
+                                'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]',
                                 {
                                   'border-redOffColor':
                                     formProps.touched[
@@ -875,9 +878,10 @@ export const CreateContact = () => {
                                     },
                                   );
                                 }}>
-                                <CyDImage
-                                  source={AppImages.QR_CODE_SCANNER}
-                                  className={'h-[20px] w-[20px] mt-[5px]'}
+                                <CyDIcons
+                                  name={'qr-scanner'}
+                                  size={28}
+                                  className='text-base400'
                                 />
                               </CyDTouchView>
                             ) : (
@@ -899,7 +903,11 @@ export const CreateContact = () => {
                                     addressIndex
                                   ] = '';
                                 }}>
-                                <CyDImage source={AppImages.CLOSE_CIRCLE} />
+                                <CydMaterialDesignIcons
+                                  name={'close'}
+                                  size={24}
+                                  className='text-base400'
+                                />
                               </CyDTouchView>
                             )}
                           </CyDView>

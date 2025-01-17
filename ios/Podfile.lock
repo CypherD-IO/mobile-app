@@ -73,7 +73,7 @@ PODS:
     - FirebaseSharedSwift (~> 11.0)
     - GoogleUtilities/Environment (~> 8.0)
     - "GoogleUtilities/NSData+zlib (~> 8.0)"
-  - FirebaseRemoteConfigInterop (11.5.0)
+  - FirebaseRemoteConfigInterop (11.7.0)
   - FirebaseSessions (11.5.0):
     - FirebaseCore (= 11.5)
     - FirebaseCoreExtension (= 11.5)
@@ -83,7 +83,7 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 8.0)
     - nanopb (~> 3.30910.0)
     - PromisesSwift (~> 2.1)
-  - FirebaseSharedSwift (11.5.0)
+  - FirebaseSharedSwift (11.7.0)
   - fmt (6.2.1)
   - glog (0.3.5)
   - GoogleAppMeasurement/WithoutAdIdSupport (11.5.0):
@@ -463,7 +463,10 @@ PODS:
     - React-Core
   - react-native-rsa-native (2.0.5):
     - React
-  - react-native-safe-area-context (3.4.1):
+  - react-native-safe-area-context (3.3.2):
+    - React-Core
+  - react-native-vector-icons (11.0.0):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-view-shot (3.5.0):
     - React-Core
@@ -661,8 +664,6 @@ PODS:
     - React-Core
   - RNSVG (15.3.0):
     - React-Core
-  - RNVectorIcons (9.2.0):
-    - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -718,6 +719,7 @@ DEPENDENCIES:
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-rsa-native (from `../node_modules/react-native-rsa-native`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - "react-native-vector-icons (from `../node_modules/@react-native-vector-icons/common`)"
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -759,7 +761,6 @@ DEPENDENCIES:
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - transfi-ramp-react-native-sdk (from `../node_modules/transfi-ramp-react-native-sdk`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -874,6 +875,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-rsa-native"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-vector-icons:
+    :path: "../node_modules/@react-native-vector-icons/common"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
   react-native-webview:
@@ -956,8 +959,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNVectorIcons:
-    :path: "../node_modules/react-native-vector-icons"
   transfi-ramp-react-native-sdk:
     :path: "../node_modules/transfi-ramp-react-native-sdk"
   Yoga:
@@ -979,9 +980,9 @@ SPEC CHECKSUMS:
   FirebaseMessaging: 9f4e42053241bd45ce8565c881bfdd9c1df2f7da
   FirebasePerformance: bd2f3c54fb768b0920bb31657e48df8d9f4e4121
   FirebaseRemoteConfig: 9c06ced90c1561c18ccfc258e2548371eb3a7137
-  FirebaseRemoteConfigInterop: 7a7aebb9342d53913a5c890efa88e289d9e5c1bc
+  FirebaseRemoteConfigInterop: ca12abf9da0003efd3a476b2dff4f7a04fd31b4f
   FirebaseSessions: b252b3f91a51186188882ea8e7e1730fc1eee391
-  FirebaseSharedSwift: 302ac5967857ad7e7388b15382d705b8c8d892aa
+  FirebaseSharedSwift: a45efd84d60ebbfdcdbaebc66948af3630459e62
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   GoogleAppMeasurement: ee5c2d2242816773fbf79e5b0563f5355ef1c315
@@ -1026,7 +1027,8 @@ SPEC CHECKSUMS:
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
   react-native-rsa-native: 12132eb627797529fdb1f0d22fd0f8f9678df64a
-  react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
+  react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
+  react-native-vector-icons: 057cffe5aea6f6eea3613fc15b5169828d59035c
   react-native-view-shot: 792829857bbb23a9c8acdad9a640554bdee397a3
   react-native-webview: ef78d478cc450cd27e314fc11bc325a3271869f9
   React-NativeModulesApple: 649702e2b756b907c0c1c35f450a5bae61c33d6c
@@ -1068,7 +1070,6 @@ SPEC CHECKSUMS:
   RNSentry: 68e54ad0c8816e151c9b866855d6f8fb829f6a97
   RNShare: 11fcd7daa34825a26cffda827170493690c376a8
   RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
-  RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: ee060c09b2f7ec1240e95c766ab44c04c7bdb052
@@ -1076,6 +1077,6 @@ SPEC CHECKSUMS:
   transfi-ramp-react-native-sdk: 75063c233fff9f9eb04da96058103acb2c7262d4
   Yoga: ef534101bb891fb09bae657417f34d399c1efe38
 
-PODFILE CHECKSUM: f6d070f61086d9e1db2ff40e204e9439d2454ef1
+PODFILE CHECKSUM: 919bd5cbff78a93c0f63dd81843e1307ea3fa46a
 
 COCOAPODS: 1.15.2

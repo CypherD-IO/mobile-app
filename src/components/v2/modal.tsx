@@ -203,7 +203,7 @@ export default function CyDModalLayout({
       onBackButtonPress={() => {
         setModalVisible(false);
       }}
-      backdropColor={'#000000'}
+      backdropColor={'#24292E'}
       propagateSwipe={propagateSwipe}
       backdropOpacity={backdropOpacity}
       backdropTransitionInTiming={backdropTransitionInTiming}

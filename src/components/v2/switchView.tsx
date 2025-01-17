@@ -1,14 +1,13 @@
 import clsx from 'clsx';
-import { title } from 'process';
 import React from 'react';
 import { CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 
 export default function SwitchView(props) {
-  const { titles, index, setIndexChange, length = 60 } = props;
+  const { titles, index, setIndexChange } = props;
   return (
     <CyDView
       className={clsx(
-        'flex flex-row justify-between items-center mt-[10px] px-[6px] pb-[5px] pt-[5px] bg-n10 h-[42px] rounded-[8px]',
+        'flex flex-row justify-between items-center mt-[10px] px-[6px] pb-[5px] pt-[5px] bg-n40 h-[42px] rounded-[8px]',
         {},
       )}>
       {titles.map((item, itemIndex) => (
@@ -17,13 +16,19 @@ export default function SwitchView(props) {
             setIndexChange(itemIndex);
           }}
           className={clsx('flex justify-center items-center h-[32px]', {
-            'bg-buttonColor': index === itemIndex,
+            'bg-p100': index === itemIndex,
             'rounded-[8px]': index === itemIndex,
             'px-[8px]': index === itemIndex,
             'z-[10]': index === itemIndex,
           })}
           key={itemIndex}>
-          <CyDText className={'px-[15px] font-bold'}>{item}</CyDText>
+          <CyDText
+            className={clsx('px-[15px] font-bold ', {
+              'text-base400': index !== itemIndex,
+              'text-black': index === itemIndex,
+            })}>
+            {item}
+          </CyDText>
         </CyDTouchView>
       ))}
     </CyDView>

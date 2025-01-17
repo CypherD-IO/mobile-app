@@ -9,6 +9,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -164,7 +165,7 @@ export default function ChooseTokenModal(props: TokenModal) {
       isModalVisible={isChooseTokenModalVisible}
       style={styles.modalContainer}>
       <CyDView
-        className={'bg-white pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
+        className={'bg-n0 pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
         style={{ height: height - 50 }}>
         <CyDView className='flex-row justify-between items-center mt-[20px]'>
           <CyDView />
@@ -175,22 +176,23 @@ export default function ChooseTokenModal(props: TokenModal) {
             </CyDText>
           </CyDView>
           <CyDTouchView
-            className={'z-10'}
+            className={'self-end mr-4'}
             onPress={() => {
               Keyboard.dismiss();
               clearSearch();
               onCancel();
             }}>
-            <CyDImage
-              source={AppImages.CLOSE_CIRCLE}
-              className={'w-[32px] h-[32px] right-[20px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
         <CyDView className={'mt-[20px] mb-[100px]'}>
           <CyDView
             className={clsx(
-              'flex flex-row justify-between items-center self-center border-[0.5px] w-[353px] h-[60px] rounded-[8px] px-[20px] border-sepratorColor',
+              'flex flex-row justify-between items-center self-center border-[0.5px] w-[353px] h-[60px] rounded-[8px] px-[20px] border-n40',
               {
                 'border-[#434343]': hasText,
               },
@@ -213,7 +215,11 @@ export default function ChooseTokenModal(props: TokenModal) {
             />
             {hasText ? (
               <CyDTouchView onPress={handleClearSearch}>
-                <CyDImage className={''} source={AppImages.CLOSE_CIRCLE} />
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
+                />
               </CyDTouchView>
             ) : (
               <></>
@@ -307,7 +313,7 @@ const TokenItem = ({
           onSelectingToken(item);
         }}
         className={clsx(
-          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[15px]',
+          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-n40 mx-[15px]',
           { 'opacity-25': isTokenDisabled(totalValue, isFundable, isSwapable) },
         )}>
         <CyDView className={'flex flex-row w-full justify-start items-center'}>
@@ -320,7 +326,7 @@ const TokenItem = ({
             <CyDView className='absolute top-[54%] right-[5px]'>
               <CyDFastImage
                 className={
-                  'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                  'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-n0'
                 }
                 source={
                   chainLogoUrl ??
@@ -349,10 +355,10 @@ const TokenItem = ({
                       onPress={() => {
                         copyContractAddress(contractAddress);
                       }}>
-                      <CyDImage
-                        source={AppImages.COPY}
-                        className='h-[10px] w-[10px] ml-[3px]'
-                        resizeMode='contain'
+                      <CydMaterialDesignIcons
+                        name={'content-copy'}
+                        size={10}
+                        className='text-base400'
                       />
                     </CyDTouchView>
                   </>
@@ -399,7 +405,7 @@ const SwapTokenItem = ({
         onSelectingToken(item);
       }}
       className={
-        'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[30px]'
+        'flex flex-row justify-between py-[20px] border-b-[1px] border-b-n40 mx-[30px]'
       }>
       <CyDView className={'flex flex-row justify-start items-center'}>
         <CyDView>

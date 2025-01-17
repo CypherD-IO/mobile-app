@@ -135,7 +135,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
   const memoizedValue = useMemo(() => renderItem, []);
 
   return (
-    <CyDView className={'bg-white h-full w-full'}>
+    <CyDView className={'bg-n0 h-full w-full'}>
       <CyDView
         className={
           'bg-[#F6F6F6] p-[8px] mt-[10px] mx-[20px] rounded-[8px] flex flex-row items-center'

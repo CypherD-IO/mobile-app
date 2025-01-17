@@ -251,14 +251,12 @@ export default function PairingModal({
   };
 
   const Divider = () => {
-    return (
-      <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'} />
-    );
+    return <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />;
   };
 
   const RenderMessage = () => {
     return (
-      <CyDScrollView className='my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'>
+      <CyDScrollView className='my-[5px] border-[1px] border-n40 bg-n0 rounded-[6px]'>
         <CyDView className={'p-[10px]'}>
           <CyDText className={'text-[14px] ml-[6px]'}>{message}</CyDText>
         </CyDView>
@@ -273,7 +271,7 @@ export default function PairingModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDView className='flex flex-col max-h-[70%] bg-white rounded-t-[24px] px-[20px] '>
+      <CyDView className='flex flex-col max-h-[70%] bg-n20 rounded-t-[24px] px-[20px] '>
         <CyDView className={'flex flex-row justify-center'}>
           <CyDText className={'text-[24px] font-extrabold mt-[14px] mb-[4px]'}>
             {t<string>('WALLET_PERMISSIONS')}

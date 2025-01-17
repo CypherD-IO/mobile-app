@@ -24,6 +24,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -266,7 +267,7 @@ export default function CardTransactions() {
       lastDate.current = parsedDate;
       return (
         <CyDView>
-          <CyDView className='bg-n20 py-[10px] ml-[12px]'>
+          <CyDView className='bg-n0 py-[10px] px-[12px]'>
             <CyDText className='text-[14px] font-semibold'>
               {parsedDate}
             </CyDText>
@@ -279,22 +280,25 @@ export default function CardTransactions() {
   };
 
   return (
-    <CyDView className='h-full'>
+    <CyDView className='h-full bg-n20'>
       <CyDModalLayout
         isModalVisible={exportOptionOpen}
         setModalVisible={setExportOptionOpen}
         style={styles.modalLayout}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={
+            'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative border border-n30'
+          }>
           <CyDTouchView
             onPress={() => setExportOptionOpen(false)}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            className={'z-[50] self-end'}>
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
-          <CyDText className={'mt-[10px] font-black text-center text-[22px]'}>
+          <CyDText className={'mt-[10px] text-center text-[22px]'}>
             {t('EXPORT_AS')}
           </CyDText>
           <CyDView className={'w-[100%]'}>
@@ -323,21 +327,21 @@ export default function CardTransactions() {
         modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
         filterState={[filter, setFilter]}
       />
-      <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-white border border-n30'>
+      <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
         <CyDView className='flex flex-1 justify-center items-center'>
-          <CyDText className='text-[18px] font-bold text-center ml-[45px]'>
+          <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
             {viewableTransactionsDate}
           </CyDText>
         </CyDView>
-        <CyDView className='flex flex-row justify-end items-center px-[5px]'>
+        <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
           <CyDTouchView
             onPress={() => {
               setFilterModalVisible(true);
             }}>
-            <CyDFastImage
-              className='w-[48px] h-[26px]'
-              source={AppImages.FILTER}
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='filter-variant'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDTouchView
@@ -347,10 +351,10 @@ export default function CardTransactions() {
               setExportOptionOpen(true);
               // void exportCardTransactions();
             }}>
-            <CyDFastImage
-              className='w-[48px] h-[26px]'
-              source={AppImages.EXPORT}
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='export-variant'
+              size={20}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
@@ -363,7 +367,7 @@ export default function CardTransactions() {
           onViewableItemsChanged={handleViewableItemsChanged.current}
           refreshControl={
             <RefreshControl
-              className={clsx({ 'bg-white': isIOS() })}
+              className={clsx({ 'bg-n0': isIOS() })}
               refreshing={refreshing && !txnRetrievalOffset.current}
               onRefresh={() => {
                 void fetchTransactions(true);

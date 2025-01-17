@@ -9,6 +9,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDImageBackground,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -180,10 +181,10 @@ const BannerCarouselItem = ({
               </CyDView>
             </CyDView>
             <CyDView>
-              <CyDFastImage
-                className='h-[32px] w-[32px]'
-                source={AppImages.APP_SEL}
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='chart-arc'
+                size={32}
+                className='text-base400'
               />
             </CyDView>
             <CyDView>
@@ -294,7 +295,7 @@ const BannerCarouselItem = ({
         );
       } else {
         return (
-          <CyDView className='h-full w-full flex flex-col justify-center items-center bg-privacyMessageBackgroundColor px-[2px]'>
+          <CyDView className='h-full w-full flex flex-col justify-center items-center bg-blue20 px-[2px]'>
             <CyDText className='text-[14px] font-bold'>{title}</CyDText>
             <CyDText className='text-[14px] text-subTextColor font-medium text-center'>
               {description}
@@ -307,13 +308,18 @@ const BannerCarouselItem = ({
 
   const onBannerClick = () => {
     if (isActivity) {
-      navigation.navigate(screenTitle.ACTIVITIES);
+      navigation.navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.ACTIVITIES,
+      });
     } else {
       const { redirectURI, title, appCta } = item;
       if (redirectURI) {
-        navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
-          title,
-          uri: redirectURI,
+        navigation.navigate(screenTitle.OPTIONS, {
+          screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+          params: {
+            title,
+            uri: redirectURI,
+          },
         });
       } else if (appCta) {
         // appCta = 'DEBIT_CARD/CARD_INVITE/CARD_SIGNUP';
@@ -339,7 +345,7 @@ const BannerCarouselItem = ({
       style={[animatedStyle, { width: boxWidth }]}>
       <CyDView className='flex flex-row h-[120px] w-full'>
         <CyDTouchView
-          className='h-full border border-sepratorColor overflow-hidden rounded-[16px]'
+          className='h-full border border-n40 overflow-hidden rounded-[16px]'
           disabled={
             !isActivity &&
             item.redirectURI === undefined &&
@@ -358,7 +364,7 @@ const BannerCarouselItem = ({
           {isActivity ? (
             <CyDView
               className={clsx(
-                'h-[25%] flex flex-row w-full bg-privacyMessageBackgroundColor justify-start items-center px-[30px]',
+                'h-[25%] flex flex-row w-full bg-blue20 justify-start items-center px-[30px]',
                 {
                   'bg-toastColor': item.status === ActivityStatus.SUCCESS,
                   'bg-redColor': item.status === ActivityStatus.FAILED,
@@ -387,11 +393,11 @@ const BannerCarouselItem = ({
                 void onStaticCardDismissal();
               }
             }}
-            className='absolute top-[-4px] right-[-4px] h-[20px] w-[20px] justify-center items-center bg-white border border-sepratorColor rounded-full overflow-hidden p-[3px]'>
-            <CyDFastImage
-              source={AppImages.CLOSE}
-              className='h-[8px] w-[8px]'
-              resizeMode='contain'
+            className='absolute top-[-4px] right-[-4px] h-[20px] w-[20px] justify-center items-center bg-n0 border border-n40 rounded-full overflow-hidden p-[3px]'>
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={12}
+              className='text-base400'
             />
           </CyDTouchView>
         ) : null}

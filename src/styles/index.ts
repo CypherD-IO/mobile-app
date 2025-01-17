@@ -2,7 +2,6 @@ import * as TextStyles from './textStyle';
 import * as ViewStyles from './viewStyle';
 import * as ButtonStyles from './buttonStyle';
 import * as ImageStyle from './imageStyle';
-import * as TextInputStyle from './textInputStyle';
 import {
   CyDText,
   CyDFlatList,
@@ -22,7 +21,6 @@ module.exports = {
   ...ViewStyles,
   ...ButtonStyles,
   ...ImageStyle,
-  ...TextInputStyle,
   CyDText,
   CyDFlatList,
   CyDScrollView,
