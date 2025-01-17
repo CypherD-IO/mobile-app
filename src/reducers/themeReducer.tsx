@@ -181,11 +181,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     try {
       const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme && isValidTheme(savedTheme)) {
-        if (savedTheme === Theme.SYSTEM) {
-          setTheme(colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT);
-        } else {
-          setTheme(savedTheme);
-        }
+        setTheme(savedTheme);
       }
     } catch (error) {
       Sentry.captureException(error);

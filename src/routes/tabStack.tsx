@@ -15,8 +15,9 @@ import {
   PortfolioStackScreen,
   SwapStackScreen,
 } from './auth';
-import { useTheme } from '../reducers/themeReducer';
+import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
+import { useColorScheme } from 'nativewind';
 
 const Tab = createBottomTabNavigator();
 
@@ -44,7 +45,7 @@ const screensToHaveNavBar = [
 
 function TabStack(props: TabStackProps) {
   const { theme } = useTheme();
-
+  const { colorScheme } = useColorScheme();
   const { deepLinkData, setDeepLinkData } = props;
   const [showTabBar, setShowTabBar] = useState(true);
   const tabBarAnimation = useState(new Animated.Value(1))[0];
@@ -175,6 +176,13 @@ function TabStack(props: TabStackProps) {
     };
   }, [getCurrentRouteName]);
 
+  const getTabBarTextColor = useCallback(() => {
+    if (theme === Theme.SYSTEM) {
+      return colorScheme === 'dark' ? '#FFFFFF' : '#000000';
+    }
+    return theme === 'dark' ? '#FFFFFF' : '#000000';
+  }, [theme, colorScheme]);
+
   return (
     <NavigationContainer independent={true} ref={navigationRef}>
       <Tab.Navigator
@@ -204,7 +212,7 @@ function TabStack(props: TabStackProps) {
           },
           tabBarHideOnKeyboard: true,
           tabBarInactiveTintColor: '#7A8699',
-          tabBarActiveTintColor: theme === 'dark' ? '#FFFFFF' : '#000000',
+          tabBarActiveTintColor: getTabBarTextColor(),
           tabBarLabelStyle: {
             fontSize: 12,
             fontWeight: '700' as const,
