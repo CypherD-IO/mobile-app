@@ -421,11 +421,11 @@ const TxnScene = ({
       ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1)
       : 'Unknown';
     return (
-      <CyDView>
+      <CyDView className='mx-[8px]'>
         {shouldRenderDate && (
           <CyDView
             className={clsx(
-              ' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center',
+              ' border-n40 pl-[10px] pr-[30px] py-[10px] justify-center',
               { 'mt-[28px]': index !== 0 },
             )}>
             <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
@@ -433,7 +433,7 @@ const TxnScene = ({
         )}
         <CyDTouchView
           className={clsx(
-            'flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]',
+            'flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-n40 pl-[10px] pr-[30px] bg-n0',
             {
               'rounded-t-[24px] border-t-[0.5px]': shouldRenderDate,
               'rounded-b-[24px]': nextTransactionFormatedDay !== formatedDay,
@@ -482,9 +482,11 @@ const TxnScene = ({
   return (
     <>
       {isLoading ? (
-        <Loading />
+        <CyDView className='flex-1'>
+          <Loading />
+        </CyDView>
       ) : (
-        <CyDView className='bg-white flex-1'>
+        <CyDView className='bg-n20 flex-1'>
           <TransactionInfoModal
             setModalVisible={setShowTransactionInfo}
             isModalVisible={showTransactionInfo}

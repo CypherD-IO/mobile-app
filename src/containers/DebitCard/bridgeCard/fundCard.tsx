@@ -22,6 +22,7 @@ import {
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -45,11 +46,7 @@ import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
 import { divide, floor, get, random } from 'lodash';
-import {
-  ButtonType,
-  CardProviders,
-  GlobalContextType,
-} from '../../../constants/enum';
+import { ButtonType, CardProviders } from '../../../constants/enum';
 import clsx from 'clsx';
 import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
@@ -58,8 +55,6 @@ import CyDNumberPad from '../../../components/v2/numberpad';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import Loading from '../../../components/v2/loading';
 import usePortfolio from '../../../hooks/usePortfolio';
-import CyDModalLayout from '../../../components/v2/modal';
-import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -759,7 +754,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return (
       <CyDTouchView
         className={
-          'bg-cardBg py-[6px] px-[16px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[34px] self-center'
+          'bg-n20 py-[6px] px-[16px] my-[16px] border-[1px] border-n40 rounded-[34px] self-center'
         }
         onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView
@@ -772,13 +767,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               />
               <CyDView className='flex flex-col justify-start items-start ml-[8px]'>
                 <CyDText
-                  className={clsx('text-black  font-extrabold text-[16px]', {
+                  className={clsx('font-extrabold text-[16px]', {
                     'text-[14px]': selectedToken.isZeroFeeCardFunding,
                   })}>
                   {selectedToken.name}
                 </CyDText>
                 {/* {selectedToken.isZeroFeeCardFunding ? (
-                  <CyDView className='h-[20px] bg-white rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
+                  <CyDView className='h-[20px] bg-n0 rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
                     <CyDText className={'font-black text-[10px]'}>
                       {'ZERO FEE ✨'}
                     </CyDText>
@@ -812,10 +807,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           )}
 
           <CyDView className='flex flex-row items-center ml-[8px]'>
-            <CyDFastImage
-              source={AppImages.DOWN_ARROW}
-              className='h-[15px] w-[15px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='chevron-down'
+              size={20}
+              className='text-base400'
             />
           </CyDView>
         </CyDView>
@@ -866,7 +861,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
         return (
           <CyDView className='my-[8px]'>
-            <CyDText className='text-center text-redColor font-medium text-wrap'>
+            <CyDText className='text-center text-red300 font-medium text-wrap'>
               {errorMessage}
             </CyDText>
           </CyDView>
@@ -1096,12 +1091,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 onPressToggle();
               }}
               className={clsx(
-                'border border-inputBorderColor bg-cardBg rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                'border border-n40 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
               )}>
-              <CyDFastImage
-                className='h-[16px] w-[16px]'
-                source={AppImages.TOGGLE_ICON}
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='swap-vertical'
+                size={20}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -1113,9 +1108,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             }}
             disabled={loading}
             className={clsx(
-              'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              'bg-base40 border border-n40 rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
             )}>
-            <CyDText className='font-extrabold'>
+            <CyDText className='font-extrabold '>
               {'$' + suggestedAmounts.low}
             </CyDText>
           </CyDTouchView>
@@ -1126,7 +1121,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               }}
               disabled={loading}
               className={clsx(
-                'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                'bg-base40 border border-n40 rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
               <CyDText className='font-extrabold'>
                 {'$' + suggestedAmounts.med}
@@ -1140,7 +1135,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               }}
               disabled={loading}
               className={clsx(
-                'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                'bg-base40 border border-n40 rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
               <CyDText className='font-extrabold'>
                 {'$' + suggestedAmounts.high}
@@ -1153,7 +1148,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             }}
             disabled={loading}
             className={clsx(
-              'bg-white border border-appColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              'bg-n0 border border-p150 rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
             )}>
             <CyDText className='font-extrabold'>{t('MAX')}</CyDText>
           </CyDTouchView>
@@ -1166,7 +1161,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         )}
       </CyDView>
       <CyDView>
-        <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
+        <CyDView className=' pt-[16px] bg-n0 px-[16px] pb-[24px] rounded-t-[16px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <Button
               onPress={() => {

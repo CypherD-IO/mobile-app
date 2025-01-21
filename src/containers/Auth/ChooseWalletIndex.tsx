@@ -1,7 +1,9 @@
 import React from 'react';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { StatusBar } from 'react-native';
 import ChooseWalletIndexComponent from '../../components/ChooseWalletIndexComponent';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDView } from '../../styles/tailwindStyles';
 
 interface RouteParams {
   walletAddresses: string[];
@@ -9,21 +11,14 @@ interface RouteParams {
 export function ChooseWalletIndex() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { walletAddresses = [] } = route.params;
+  const insets = useSafeAreaInsets();
 
   return (
-    <>
-      <SafeAreaView style={styles.topSafeArea} />
+    <CyDView
+      className={'flex-1 h-full bg-n20 w-full'}
+      style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
-      <SafeAreaView className={'flex-1 h-full bg-cardBg w-full'}>
-        <ChooseWalletIndexComponent walletAddresses={walletAddresses} />
-      </SafeAreaView>
-    </>
+      <ChooseWalletIndexComponent walletAddresses={walletAddresses} />
+    </CyDView>
   );
 }
-
-const styles = StyleSheet.create({
-  topSafeArea: {
-    flex: 0,
-    backgroundColor: '#EBEDF0',
-  },
-});

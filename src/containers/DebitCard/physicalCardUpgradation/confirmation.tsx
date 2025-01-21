@@ -2,9 +2,6 @@ import React, { useCallback } from 'react';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
-  CyDTouchView,
-  CyDImage,
   CyDFastImage,
   CyDScrollView,
 } from '../../../styles/tailwindStyles';
@@ -26,12 +23,12 @@ import {
 } from '../../../constants/enum';
 import { useTranslation } from 'react-i18next';
 import { capitalize } from 'lodash';
-import { getCountryNameFromISO2 } from '../../../core/locale';
 import { screenTitle } from '../../../constants';
 import Button from '../../../components/v2/button';
 import { isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -42,22 +39,17 @@ interface RouteParams {
 }
 
 export default function ShippingConfirmation() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const { t } = useTranslation();
-  const {
-    userData,
-    shippingAddress,
-    currentCardProvider,
-    preferredName,
-    physicalCardType,
-  } = route.params;
+  const { userData, shippingAddress, physicalCardType } = route.params;
 
   const RenderShippingAddress = useCallback(() => {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('DELIVERING_TO')}</CyDText>
-        <CyDView className='flex flex-col gap-y-[6px] bg-white rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
+        <CyDView className='flex flex-col gap-y-[6px] bg-n0 rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='gap-x-[12px]'>
               <CyDText className='text-[16px] font-semibold'>
@@ -97,7 +89,7 @@ export default function ShippingConfirmation() {
   }, [userData, shippingAddress]);
 
   return (
-    <CyDSafeAreaView className='bg-n20 h-full'>
+    <CyDView className='bg-n20 flex-1' style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <CyDView className='flex flex-1 flex-col justify-between h-full bg-transparent'>
         <CyDView className='mx-[16px] flex-1 pb-[92px]'>
@@ -123,7 +115,7 @@ export default function ShippingConfirmation() {
               <RenderShippingAddress />
             </CyDView>
             <CyDView className='mt-[24px] mb-[22px]'>
-              <CyDView className='flex flex-col gap-y-[6px] bg-white rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
+              <CyDView className='flex flex-col gap-y-[6px] bg-n0 rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
                 <CyDText className='font-semibold'>
                   {t('DELIVERING_IN')}
                 </CyDText>
@@ -133,13 +125,7 @@ export default function ShippingConfirmation() {
             </CyDView>
           </CyDScrollView>
         </CyDView>
-        <CyDView
-          className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
-            {
-              'bottom-[-32px]': isIOS(),
-            },
-          )}>
+        <CyDView className={clsx('bg-n0 py-[32px] px-[16px]')}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
@@ -150,6 +136,6 @@ export default function ShippingConfirmation() {
           />
         </CyDView>
       </CyDView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

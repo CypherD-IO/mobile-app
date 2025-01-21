@@ -8,7 +8,6 @@ import {
 } from '@react-navigation/native';
 import { t } from 'i18next';
 import { find, get } from 'lodash';
-import LottieView from 'lottie-react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,12 +33,15 @@ import { ICountry } from '../../../models/cardApplication.model';
 import {
   CyDFastImage,
   CyDImage,
+  CyDLottieView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
 import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   cardId: string;
@@ -295,17 +297,14 @@ export default function CardControlsMenu() {
         }}
       />
       <CyDView
-        className={'h-full bg-n0 pt-[10px]'}
+        className={'h-full bg-n20 pt-[10px]'}
         style={{ paddingTop: insets.top }}>
         <CyDTouchView
-          className='bg-n0 flex flex-row px-[16px] py-[13px] items-center'
+          className='flex flex-row px-[16px] py-[13px] items-center'
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            source={AppImages.LEFT_ARROW_LONG}
-            className='w-[20px] h-[16px]'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
           <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card?.last4 ?? ''}`}</CyDText>
         </CyDTouchView>
         {loading ? (
@@ -375,9 +374,10 @@ export default function CardControlsMenu() {
                     <CyDText className='text-[16px] font-semibold text-base400'>
                       {t('SET_USAGE_LIMIT')}
                     </CyDText>
-                    <CyDImage
-                      source={AppImages.RIGHT_ARROW}
-                      className='w-[20px] h-[20px]'
+                    <CydMaterialDesignIcons
+                      name='chevron-right'
+                      size={20}
+                      className='text-base400'
                     />
                   </CyDTouchView>
                 </CyDView>
@@ -410,7 +410,7 @@ export default function CardControlsMenu() {
                           setPlanChangeModalVisible(true);
                         }}>
                         <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
-                          {'Compare plans'}
+                          {t('COMPARE_PLANS')}
                         </CyDText>
                       </CyDTouchView>
                     </CyDView>
@@ -424,10 +424,10 @@ export default function CardControlsMenu() {
               <CyDView className='p-[16px] bg-n0 rounded-[10px] mt-[8px]'>
                 <CyDView className='flex flex-row items-center justify-between'>
                   <CyDView>
-                    <CyDImage
-                      source={AppImages.ZERO_RESTRICTION_MODE_ICON}
-                      className={'h-[20px] w-[24px]'}
-                      resizeMode={'contain'}
+                    <CydMaterialDesignIcons
+                      name='shield-check-outline'
+                      size={24}
+                      className='text-base400'
                     />
                     <CyDText className='text-[18px] font-medium text-base400 mt-[8px]'>
                       {'Zero Restriction'}
@@ -435,7 +435,7 @@ export default function CardControlsMenu() {
                   </CyDView>
                   <CyDView className='flex flex-row items-center'>
                     {isZeroRestrictionModeLoading ? (
-                      <LottieView
+                      <CyDLottieView
                         source={AppImages.LOADER_TRANSPARENT}
                         autoPlay
                         loop
@@ -454,18 +454,11 @@ export default function CardControlsMenu() {
                             onPress={() => {
                               void handleZeroRestionModeToggle();
                             }}
-                            className='bg-n0 rounded-full p-[10px] w-[44px] h-[44px]'
-                            // eslint-disable-next-line react-native/no-inline-styles
-                            style={{
-                              shadowColor: '#000',
-                              shadowOffset: { width: 0, height: 2 },
-                              shadowOpacity: 0.15,
-                              shadowRadius: 8,
-                              elevation: 4, // for Android
-                            }}>
-                            <CyDFastImage
-                              source={AppImages.SWITCH_OFF}
-                              className='w-[24px] h-[24px]'
+                            className='bg-n20 rounded-full p-[10px] w-[44px] h-[44px] shadow-sm'>
+                            <CydMaterialDesignIcons
+                              name='power'
+                              size={26}
+                              className='text-base400'
                             />
                           </CyDTouchView>
                         )}
@@ -521,7 +514,7 @@ export default function CardControlsMenu() {
                 Spend Category
               </CyDText>
               <CyDTouchView
-                className={`flex flex-row mt-[8px] bg-white rounded-[10px] px-[12px] py-[16px] justify-between items-center ${
+                className={`flex flex-row mt-[8px] bg-n0 rounded-[10px] px-[12px] py-[16px] justify-between items-center ${
                   disableOptions ? 'opacity-50' : ''
                 }`}
                 onPress={() => {
@@ -540,9 +533,10 @@ export default function CardControlsMenu() {
                 }}>
                 <CyDView className='flex flex-row items-center'>
                   {!domesticCountry.unicode_flag ? (
-                    <CyDImage
-                      className='w-[24px] h-[24px] mr-[8px]'
-                      source={AppImages.DOMESTIC_ICON}
+                    <CydMaterialDesignIcons
+                      name='home-outline'
+                      size={24}
+                      className='text-base400 mr-2'
                     />
                   ) : (
                     <CyDText className='text-[18px] mr-[12px]'>
@@ -557,14 +551,15 @@ export default function CardControlsMenu() {
                   <CyDText className='text-[14px] text-b150'>
                     {'Enabled'}
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.RIGHT_ARROW}
-                    className='w-[12px] h-[12px] ml-[8px]'
+                  <CydMaterialDesignIcons
+                    name='chevron-right'
+                    size={16}
+                    className='text-base400 ml-2'
                   />
                 </CyDView>
               </CyDTouchView>
               <CyDTouchView
-                className={`flex flex-row mt-[12px] bg-white rounded-[10px] px-[12px] py-[16px] items-center ${
+                className={`flex flex-row mt-[12px] bg-n0 rounded-[10px] px-[12px] py-[16px] items-center ${
                   disableOptions ? 'opacity-50' : ''
                 }`}
                 onPress={() => {
@@ -585,9 +580,10 @@ export default function CardControlsMenu() {
                   }
                 }}>
                 <CyDView className='flex-1 flex-row items-center'>
-                  <CyDImage
-                    className='w-[24px] h-[24px] mr-[12px] mt-[2px]'
-                    source={AppImages.INTERNATIONAL_ICON}
+                  <CydMaterialDesignIcons
+                    name='airplane'
+                    size={24}
+                    className='text-base400 mr-3 mt-0.5'
                   />
                   <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
                     <CyDText className='text-[16px] font-semibold flex-wrap'>
@@ -599,9 +595,10 @@ export default function CardControlsMenu() {
                   <CyDText className='text-[14px] text-b150'>
                     {isInternationalTransactionEnabled ? 'Enabled' : 'Disabled'}
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.RIGHT_ARROW}
-                    className='w-[12px] h-[12px] ml-[8px]'
+                  <CydMaterialDesignIcons
+                    name='chevron-right'
+                    size={16}
+                    className='text-base400 ml-2'
                   />
                 </CyDView>
               </CyDTouchView>
@@ -617,13 +614,13 @@ export default function CardControlsMenu() {
                   });
                 }}
                 className={
-                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'
+                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
                 }>
                 <CyDView className='flex flex-row flex-1 items-center'>
-                  <CyDImage
-                    source={AppImages.CIRCLE_WITH_DOTS}
-                    className={'h-[24px] w-[24px] mr-[12px]'}
-                    resizeMode={'contain'}
+                  <CydMaterialDesignIcons
+                    name='dots-horizontal-circle-outline'
+                    size={24}
+                    className='text-base400 mr-3'
                   />
                   <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
                     <CyDText className='text-[16px] font-semibold flex-wrap'>
@@ -632,9 +629,10 @@ export default function CardControlsMenu() {
                   </CyDView>
                 </CyDView>
                 <CyDView className='flex flex-row items-center'>
-                  <CyDImage
-                    source={AppImages.RIGHT_ARROW}
-                    className='w-[12px] h-[12px] ml-[8px]'
+                  <CydMaterialDesignIcons
+                    name='chevron-right'
+                    size={16}
+                    className='text-base400 ml-2'
                   />
                 </CyDView>
               </CyDTouchView>
@@ -643,13 +641,13 @@ export default function CardControlsMenu() {
                   setShow3DsModal(true);
                 }}
                 className={
-                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'
+                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
                 }>
                 <CyDView className='flex flex-row flex-1 items-center'>
-                  <CyDImage
-                    source={AppImages.THREE_D_SECURE}
-                    className={'h-[24px] w-[24px] mr-[12px]'}
-                    resizeMode={'contain'}
+                  <CydMaterialDesignIcons
+                    name='shield-check-outline'
+                    size={24}
+                    className='text-base400 mr-3'
                   />
                   <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
                     <CyDText className='text-[16px] font-semibold flex-wrap'>
@@ -661,9 +659,10 @@ export default function CardControlsMenu() {
                   <CyDText className='text-[14px] text-b150'>
                     {isTelegramEnabled ? 'Telegram & Email' : 'SMS'}
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.RIGHT_ARROW}
-                    className='w-[12px] h-[12px] ml-[8px]'
+                  <CydMaterialDesignIcons
+                    name='chevron-right'
+                    size={16}
+                    className='text-base400 ml-2'
                   />
                 </CyDView>
               </CyDTouchView>

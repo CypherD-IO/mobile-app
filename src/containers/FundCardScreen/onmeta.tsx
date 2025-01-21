@@ -1,4 +1,3 @@
-/* eslint-disable multiline-ternary */
 import {
   ActivityContext,
   getWeb3Endpoint,
@@ -188,13 +187,13 @@ export default function Onmeta({ route }) {
   if (error) {
     return (
       <CyDView className={'h-full w-full'}>
-        <CyDImage source={AppImages.NETWORK_ERROR}></CyDImage>
+        <CyDImage source={AppImages.NETWORK_ERROR} />
       </CyDView>
     );
   }
 
   if (!clientDetails.clientToken || !clientDetails.uri) {
-    return <Loading></Loading>;
+    return <Loading />;
   }
 
   const onRampHTMLCode = `
@@ -246,7 +245,7 @@ export default function Onmeta({ route }) {
   };
 
   return (
-    <CyDView className={'h-full w-full bg-black pb-[75px]'}>
+    <CyDView className={'h-full w-full bg-n20 pb-[75px]'}>
       {ometaOperation === 'buy' ? (
         <MetaWidget
           queryParams={{
@@ -433,7 +432,7 @@ export default function Onmeta({ route }) {
             startInLoadingState
             ref={webviewRef}
             renderLoading={() => {
-              return <Loading></Loading>;
+              return <Loading />;
             }}
             injectedJavaScriptBeforeContentLoaded={INJECTED_JAVASCRIPT}
             mediaPlaybackRequiresUserAction={true}

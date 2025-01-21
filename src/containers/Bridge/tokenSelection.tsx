@@ -14,6 +14,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -45,7 +46,7 @@ function RenderToken({
       className={clsx(
         'flex flex-row py-[12px] px-[24px] items-center justify-between',
         {
-          'bg-[#58ADAB17] rounded-[18px]':
+          'bg-n30 rounded-[18px]':
             item.recommendedSymbol === selected?.recommendedSymbol,
         },
       )}
@@ -179,16 +180,17 @@ function ChooseTokenModal({
           }}
         />
 
-        <CyDView className={'bg-[#F1F3F5] border-1 rounded-t-[16px] h-[80%]'}>
+        <CyDView className={'bg-p0 border-1 rounded-t-[16px] h-[80%]'}>
           <CyDView className=''>
             <CyDTouchView
               onPress={() => {
                 setModalVisible(false);
               }}
               className={'absolute z-[50] top-[20px] right-[24px]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={' w-[20px] h-[20px] '}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDText
@@ -216,7 +218,7 @@ function ChooseTokenModal({
                     onPress={() => setSelectedChain(chain)}
                     key={chain.chainId}
                     className={clsx('p-[10px] rounded-[8px] bg-n0', {
-                      'bg-p20': selectedChain?.chainId === chain.chainId,
+                      'bg-p40': selectedChain?.chainId === chain.chainId,
                     })}>
                     {endsWith(chain.logoUrl, '.svg') ? (
                       <SvgUri
@@ -243,7 +245,7 @@ function ChooseTokenModal({
                 <CyDTouchView
                   onPress={() => setChainModalVisible(true)}
                   className='p-[10px] rounded-[8px] bg-n0'>
-                  <CyDView className='w-[40px] h-[40px] rounded-full bg-[#E6E6E6] items-center justify-center'>
+                  <CyDView className='w-[40px] h-[40px] rounded-full bg-p50 items-center justify-center'>
                     <CyDText className='text-[12px] font-medium'>
                       +{chainData.length - 5}
                     </CyDText>
@@ -317,11 +319,15 @@ function ChainSelectionModal({
       setModalVisible={setModalVisible}
       isModalVisible={isModalVisible}
       style={styles.chainModalLayout}>
-      <CyDView className='bg-[#F1F3F5] border-1 rounded-[16px] h-[72%] pb-[20px]'>
+      <CyDView className='bg-base40 border-1 rounded-[16px] h-[72%] pb-[20px]'>
         <CyDTouchView
           onPress={() => setModalVisible(false)}
           className='absolute z-[50] top-[20px] right-[24px]'>
-          <CyDImage source={AppImages.CLOSE} className='w-[20px] h-[20px]' />
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400'
+          />
         </CyDTouchView>
 
         <CyDText className='text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold'>
@@ -463,12 +469,12 @@ export default function TokenSelectionV2({
       />
 
       <CyDView className='mt-[24px]'>
-        <CyDView className='mx-[16px] bg-white rounded-[8px] p-[12px]'>
+        <CyDView className='mx-[16px] bg-n0 rounded-[8px] p-[12px]'>
           <CyDText className='text-center font-medium'>
             {t('BIRDGE_SWAP_AVAILABLE')}{' '}
           </CyDText>
         </CyDView>
-        <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
+        <CyDView className='mx-[16px] mt-[16px] bg-n0 rounded-[8px] p-[12px]'>
           <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
             <CyDText className='text-[14px] font-medium'>{t('FROM')}</CyDText>
             <CyDTouchView
@@ -477,7 +483,7 @@ export default function TokenSelectionV2({
               <CyDText className='text-[14px] font-normal'>
                 {get(selectedFromToken, 'balance', 0)?.toFixed(6)}
               </CyDText>
-              <CyDView className='bg-[#EBEDF0] py-[4px] px-[9px] rounded-[4px] ml-[12px]'>
+              <CyDView className='bg-n40 py-[4px] px-[9px] rounded-[4px] ml-[12px]'>
                 <CyDText className='text-[10px] font-bold'>{t('MAX')}</CyDText>
               </CyDView>
             </CyDTouchView>
@@ -487,7 +493,7 @@ export default function TokenSelectionV2({
             <CyDView className='flex flex-col items-start w-[60%]'>
               <CyDTextInput
                 className={clsx(
-                  'font-semibold text-start  font-nunito text-[30px] w-[100%] p-[4px] ',
+                  'font-semibold text-start font-nunito text-[30px] w-[100%] p-[4px] ',
                 )}
                 keyboardType='numeric'
                 onChangeText={text => {
@@ -562,20 +568,25 @@ export default function TokenSelectionV2({
                     </CyDView>
                   </CyDView>
                 </CyDView>
-                <CyDImage source={AppImages.DOWN_ARROW} />
+                <CydMaterialDesignIcons
+                  name={'chevron-down'}
+                  size={24}
+                  className={'text-base400'}
+                />
               </CyDView>
             </CyDTouchView>
           </CyDView>
 
           <CyDView className='flex flex-row items-center justify-between'>
-            <CyDView className='bg-[#DFE2E6] h-[1px] w-[45%] my-[24px]' />
+            <CyDView className='bg-n40 h-[1px] w-[45%] my-[24px]' />
             <CyDTouchView onPress={onToggle}>
-              <CyDImage
-                source={AppImages.CIRCULAR_ARROWS_ICON}
-                className='p-[3px] h-[32px] w-[32px] rounded-full'
+              <CydMaterialDesignIcons
+                name='swap-vertical'
+                size={32}
+                className='text-base400 p-[3px]'
               />
             </CyDTouchView>
-            <CyDView className='bg-[#DFE2E6] h-[1px] w-[45%] my-[24px]' />
+            <CyDView className='bg-n40 h-[1px] w-[45%] my-[24px]' />
           </CyDView>
 
           <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
@@ -652,7 +663,11 @@ export default function TokenSelectionV2({
                     )}
                   </CyDView>
                 </CyDView>
-                <CyDImage source={AppImages.DOWN_ARROW} />
+                <CydMaterialDesignIcons
+                  name={'chevron-down'}
+                  size={24}
+                  className={'text-base400'}
+                />
               </CyDView>
             </CyDTouchView>
           </CyDView>

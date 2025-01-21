@@ -6,7 +6,8 @@ import { copyToClipboard } from '../../core/util';
 import Accordion from 'react-native-collapsible/Accordion';
 import { verticalScale } from 'react-native-size-matters';
 import {
-  CyDImage,
+  CyDFastImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -204,7 +205,7 @@ const AddressProfile = props => {
                 <CyDView
                   className={`p-[5px] rounded-[30px] bg-${chain} ml-[-7px]`}
                   key={index}>
-                  <CyDImage
+                  <CyDFastImage
                     source={ChainConfigMapping[chain].logo_url}
                     className={'h-[20px] w-[20px]'}
                     resizeMode='contain'
@@ -229,16 +230,14 @@ const AddressProfile = props => {
       <CyDView
         className={clsx(
           'flex flex-row justify-between items-center w-[100%] py-[12px]',
-          { 'border-b-[1px] border-sepratorColor': isActive },
+          { 'border-b-[1px] border-n40': isActive },
         )}
         key={index}>
         <CyDView className='flex flex-row justify-between items-center'>
-          <CyDImage
-            source={
-              AppImages[`ADDRESS_PROFILE_${contactBook[name]?.imageProfile}`]
-            }
-            className='h-[30px] w-[30px]'
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name='dog'
+            size={24}
+            className='text-base400 font-light'
           />
           <CyDText className='ml-[10px] text-[16px] font-bold'>
             {formatName(contactBook[name]?.name).join('\n')}
@@ -255,20 +254,20 @@ const AddressProfile = props => {
                     contactBook,
                   });
                 }}>
-                <CyDImage
-                  source={AppImages.EDIT}
-                  className={'w-[20px] h-[20px] mr-[15px]'}
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={'pencil'}
+                  size={20}
+                  className={'text-base400 mr-4'}
                 />
               </CyDTouchView>
               <CyDTouchView
                 onPress={() => {
                   deleteContact(name);
                 }}>
-                <CyDImage
-                  source={AppImages.DELETE}
-                  className={'w-[18px] h-[18px] mr-[15px]'}
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={'delete'}
+                  size={20}
+                  className={'text-base400 mr-4'}
                 />
               </CyDTouchView>
             </CyDView>
@@ -278,9 +277,12 @@ const AddressProfile = props => {
               <RenderIcon contact={contactBook[name]} />
             </CyDView>
           ) : null}
-          <Animated.Image
-            style={isActive ? animatedStyle : styles.inactiveArrowStyle}
-            source={AppImages.UP_ARROW}
+          <CydMaterialDesignIcons
+            name={'chevron-up'}
+            size={20}
+            className={clsx('text-base400', {
+              'rotate-180': !isActive,
+            })}
           />
         </CyDView>
       </CyDView>
@@ -357,18 +359,18 @@ const AddressProfile = props => {
               addressIsEOA = true;
             }
             return (
-              <CyDView key={`${index}-${address}`}>
+              <CyDView key={`${index}-${address}`} className=''>
                 {address ? (
                   !chainChoosen ? (
                     <CyDView
                       className='flex flex-row justify-between items-center py-[10px]'
                       key={`${index}-${address}`}>
-                      <CyDView className='flex flex-row flex-wrap justify-start items-center w-[80%]'>
+                      <CyDView className='flex flex-row flex-wrap justify-start items-center'>
                         <CyDView
                           className={`p-[5px] rounded-[30px] bg-${chain} ${
                             addressIsEOA ? '' : 'border border-blue-500'
                           }`}>
-                          <CyDImage
+                          <CyDFastImage
                             source={logoUrl}
                             className='h-[20px] w-[20px]'
                             resizeMode='contain'
@@ -381,30 +383,32 @@ const AddressProfile = props => {
                           {formatAddress(address)}
                         </CyDText>
                       </CyDView>
-                      <CyDView className='flex flex-row justify-between items-center'>
+                      <CyDView className='flex flex-row justify-between items-center gap-x-2'>
                         <CyDTouchView
+                          className='p-2 rounded-md border border-n40 bg-n0'
                           onPress={() => {
                             setSelectedChain(ChainConfigMapping[chain]);
                             setChooseTokenModal(true);
                             setSendAddress(address);
                           }}>
-                          <CyDImage
-                            source={AppImages.SEND}
-                            className='h-[25px] w-[25px] mr-[15px]'
-                            resizeMode='contain'
+                          <CydMaterialDesignIcons
+                            name='send-outline'
+                            size={16}
+                            className='text-base400 -rotate-45'
                           />
                         </CyDTouchView>
                         <CyDTouchView
+                          className='p-2 rounded-md border border-n40 bg-n0'
                           onPress={() => {
                             copyToClipboard(address);
                             showToast(
                               `${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`,
                             );
                           }}>
-                          <CyDImage
-                            source={AppImages.COPY}
-                            className='h-[15px] w-[15px] mr-[10px]'
-                            resizeMode='contain'
+                          <CydMaterialDesignIcons
+                            name={'content-copy'}
+                            size={16}
+                            className='text-base400'
                           />
                         </CyDTouchView>
                       </CyDView>
@@ -424,7 +428,7 @@ const AddressProfile = props => {
                           className={`p-[5px] rounded-[30px] bg-${chain} ${
                             addressIsEOA ? '' : 'border border-blue-500'
                           }`}>
-                          <CyDImage
+                          <CyDFastImage
                             source={logoUrl}
                             className='h-[20px] w-[20px]'
                             resizeMode='contain'
@@ -437,11 +441,11 @@ const AddressProfile = props => {
                           {formatAddress(address)}
                         </CyDText>
                       </CyDView>
-                      <CyDImage
+                      <CyDFastImage
                         source={
                           isRadioButtonPressed === name.concat(backendName)
-                            ? AppImages.RADIO_BUTTON_SELECTED
-                            : AppImages.RADIO_BUTTON_UNSELECTED
+                            ? AppImages.RADIO_CHECK
+                            : AppImages.RADIO_UNCHECK
                         }
                         className={'w-[24px] h-[24px] mr-[10px]'}
                         resizeMode='contain'
@@ -497,7 +501,7 @@ const styles = StyleSheet.create({
   sectionContainerSendTo: {
     borderWidth: 1,
     borderStyle: 'solid',
-    borderColor: Colors.sepratorColor,
+    borderColor: Colors.n40,
     borderRadius: 16,
     paddingHorizontal: 10,
     marginVertical: 10,
@@ -507,7 +511,7 @@ const styles = StyleSheet.create({
   sectionContainer: {
     borderWidth: 1,
     borderStyle: 'solid',
-    borderColor: Colors.sepratorColor,
+    borderColor: Colors.n40,
     borderRadius: 16,
     paddingHorizontal: 10,
     marginVertical: 10,

@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.96.0</string>
+	<string>2.97.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -32,20 +32,20 @@
 				<string>cypherwallet</string>
 			</array>
 		</dict>
-			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>com.cypherd.ioswalletv1.walletconnect</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>wc</string>
-				</array>
-			</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.cypherd.ioswalletv1.walletconnect</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wc</string>
+			</array>
+		</dict>
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-    <string>applinks:app.cypherhq.io</string>
+		<string>applinks:app.cypherhq.io</string>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
@@ -95,38 +95,7 @@
 	<string>Send photos during Customer Support Chat in the app</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Nunito-Black.ttf</string>
-		<string>Nunito-BlackItalic.ttf</string>
-		<string>Nunito-Bold.ttf</string>
-		<string>Nunito-BoldItalic.ttf</string>
-		<string>Nunito-ExtraBold.ttf</string>
-		<string>Nunito-ExtraBoldItalic.ttf</string>
-		<string>Nunito-ExtraLight.ttf</string>
-		<string>Nunito-ExtraLightItalic.ttf</string>
-		<string>Nunito-Italic.ttf</string>
-		<string>Nunito-Light.ttf</string>
-		<string>Nunito-LightItalic.ttf</string>
-		<string>Nunito-Medium.ttf</string>
-		<string>Nunito-MediumItalic.ttf</string>
-		<string>Nunito-Regular.ttf</string>
-		<string>Nunito-SemiBold.ttf</string>
-		<string>Nunito-SemiBoldItalic.ttf</string>
-		<string>AntDesign.ttf</string>
-		<string>Entypo.ttf</string>
-		<string>EvilIcons.ttf</string>
-		<string>Feather.ttf</string>
-		<string>FontAwesome.ttf</string>
-		<string>FontAwesome5_Brands.ttf</string>
-		<string>FontAwesome5_Regular.ttf</string>
-		<string>FontAwesome5_Solid.ttf</string>
-		<string>Fontisto.ttf</string>
-		<string>Foundation.ttf</string>
-		<string>Ionicons.ttf</string>
-		<string>MaterialCommunityIcons.ttf</string>
-		<string>MaterialIcons.ttf</string>
-		<string>Octicons.ttf</string>
-		<string>SimpleLineIcons.ttf</string>
-		<string>Zocial.ttf</string>
+		<string>MaterialDesignIcons.ttf</string>
 		<string>Manrope-Bold.ttf</string>
 		<string>Manrope-ExtraBold.ttf</string>
 		<string>Manrope-ExtraLight.ttf</string>
@@ -134,6 +103,7 @@
 		<string>Manrope-Medium.ttf</string>
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
+		<string>CydFont.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

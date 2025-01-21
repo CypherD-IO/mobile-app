@@ -7,6 +7,7 @@ import AppImages from '../../../assets/images/appImages';
 import {
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -137,7 +138,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
           onSelectingContact({ name, addresses, imageProfile });
         }}
         className={clsx(
-          'flex flex-row justify-between border-b-[1px] border-b-sepratorColor mx-[15px]',
+          'flex flex-row justify-between border-b-[1px] border-b-n40 mx-[15px]',
           { 'opacity-25': Object.values(filteredContactBook).length === 0 },
         )}>
         <CyDView
@@ -184,7 +185,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
       isModalVisible={isChooseContactModalVisible}
       style={styles.modalContainer}>
       <CyDView
-        className={'bg-white pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
+        className={'bg-n0 pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
         style={{ height: height - 50 }}>
         <CyDTouchView
           className={'flex flex-row justify-end z-10'}
@@ -192,9 +193,10 @@ export default function ChooseContactModal(props: ContactModalProps) {
             clearSearch();
             onCancel();
           }}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400 top-[20px] right-[20px]'
           />
         </CyDTouchView>
         <CyDView>
@@ -205,7 +207,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
         <CyDView className={'mt-[20px] mb-[100px]'}>
           <CyDView
             className={
-              'flex flex-row justify-between items-center self-center border-[1px] border-sepratorColor w-[353px] h-[60px] rounded-[30px] px-[20px]'
+              'flex flex-row justify-between items-center self-center border-[1px] border-n40 w-[353px] h-[60px] rounded-[30px] px-[20px]'
             }>
             <CyDTextInput
               className={'self-center py-[15px] w-[95%]'}
@@ -224,7 +226,11 @@ export default function ChooseContactModal(props: ContactModalProps) {
                 onPress={() => {
                   clearSearch();
                 }}>
-                <CyDImage className={''} source={AppImages.CLOSE_CIRCLE} />
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
+                />
               </CyDTouchView>
             ) : (
               <></>
@@ -248,7 +254,8 @@ export default function ChooseContactModal(props: ContactModalProps) {
                   addresses={item.addresses}
                 />
               )}
-              showsVerticalScrollIndicator={true}></CyDFlatList>
+              showsVerticalScrollIndicator={true}
+            />
           ) : (
             <CyDView className='flex h-full justify-center items-center mt-[-40px]'>
               <CyDText className='px-[25px] text-[18px] text-center font-bold'>

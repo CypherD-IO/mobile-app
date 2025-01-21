@@ -9,6 +9,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
@@ -230,7 +231,7 @@ export default function PrivateKey(props) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDScrollView className={'bg-white h-full w-full relative'}>
+    <CyDScrollView className={'bg-n20 h-full w-full relative'}>
       <ChooseChainModal
         isModalVisible={showChainModal}
         data={data}
@@ -248,23 +249,21 @@ export default function PrivateKey(props) {
       <CyDView className={'flex justify-center items-center w-full'}>
         <CyDView
           className={
-            'mt-[10px] bg-[#F8F8F8] rounded-[18px] mx-[20px] px-[20px] py-[15px]'
+            'mt-[10px] bg-n0 rounded-[18px] mx-[20px] px-[20px] py-[15px]'
           }>
-          <CyDText className={'text-[15px] text-center text-[#434343]'}>
+          <CyDText className={'text-[15px] text-center text-base200'}>
             {t('PRIVATE_KEY_SUBTITLE')}
           </CyDText>
         </CyDView>
         <CyDTouchView
           className={
-            'bg-[#E5FCFB] rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center w-10/12 mt-[20px] mb-[20px]'
+            'bg-blue20 rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center my-5 mb-5 w-10/12 self-center'
           }
           onPress={() => {
             setShowChainModal(true);
           }}>
           <CyDView
-            className={
-              'flex flex-row justify-start items-center w-full gap-[10px]'
-            }>
+            className={'flex flex-row justify-start items-center gap-[10px]'}>
             <CyDView className={'flex flex-row justify-center items-center'}>
               <CyDImage
                 source={selectedChain.logo_url}
@@ -276,17 +275,17 @@ export default function PrivateKey(props) {
             </CyDView>
             <CyDText className={'text-[18px]'}>{selectedChain.name}</CyDText>
           </CyDView>
-          <CyDImage source={AppImages.DOWN} className={'w-[10px] h-[9px]'} />
+          <CydMaterialDesignIcons
+            name={'menu-down'}
+            size={28}
+            className={'text-base400'}
+          />
         </CyDTouchView>
         <CyDView className={'flex items-center justify-center w-full'}>
           {data.map(item => (
             <RenderQRCode key={item.id} item={item} />
           ))}
-          <CyDView
-            className={
-              'w-[85%] border-[0.5px] border-portfolioBorderColor mt-[20px]'
-            }
-          />
+          <CyDView className={'w-[85%] border-[0.5px] border-n40 mt-[20px]'} />
           <CyDTouchView
             className={'mt-[30px]'}
             onPress={() => togglePrivateKey()}>
@@ -295,19 +294,22 @@ export default function PrivateKey(props) {
                 <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
                   {t('HIDE_PRIVATE_KEY')}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_OPEN}
-                  className={'w-[27px] h-[18px] ml-[7px]'}
+                <CydMaterialDesignIcons
+                  name='eye-outline'
+                  size={27}
+                  className='text-base400 ml-[7px]'
                 />
               </CyDView>
             ) : (
               <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[#434343] text-[15px] font-semibold'}>
+                <CyDText className={'text-[15px] font-semibold'}>
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.EYE_CLOSE}
-                  className={'w-[27px] h-[22px] ml-[7px] mt-[5px]'}
+
+                <CydMaterialDesignIcons
+                  name={'eye-off-outline'}
+                  size={27}
+                  className='text-base400 ml-[7px] mt-[5px]'
                 />
               </CyDView>
             )}
@@ -323,7 +325,7 @@ export default function PrivateKey(props) {
           {showPrivateKey && (
             <CyDView
               className={
-                'flex justify-center items-center mt-[15px] w-11/12 border-[1px] border-portfolioBorderColor px-[10px] py-[5px] rounded-[4px]'
+                'flex justify-center items-center mt-[15px] w-11/12 border-[1px] border-n40 px-[10px] py-[5px] rounded-[4px]'
               }>
               <CyDText
                 className={
@@ -336,17 +338,18 @@ export default function PrivateKey(props) {
         </CyDView>
         <CyDTouchView
           className={
-            'flex flex-row items-center justify-center mt-[30px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px]'
+            'flex flex-row items-center justify-center mt-[30px] h-[60px] w-3/4 border-[1px] border-n40 rounded-[12px]'
           }
           onPress={() => {
             copyToClipboard(privateKey);
             showToast(t('PRIVATE_KEY_COPY'));
           }}>
-          <CyDImage
-            source={AppImages.COPY}
-            className={'absolute left-[20] w-[16px] h-[18px]'}
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={16}
+            className='text-base400 absolute left-[20]'
           />
-          <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>
+          <CyDText className={'text-[16px] font-extrabold'}>
             {t('COPY_TO_CLIPBOARD')}
           </CyDText>
         </CyDTouchView>

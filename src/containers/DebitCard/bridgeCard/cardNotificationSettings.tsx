@@ -2,12 +2,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import { get } from 'lodash';
-import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import OtpInput from '../../../components/v2/OTPInput';
-import { screenTitle } from '../../../constants';
 import {
   CARD_ALERT_TYPES,
   CARD_NOTIFICATION_TYPES,
@@ -18,18 +16,13 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
+  CyDLottieView,
   CyDSwitch,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import clsx from 'clsx';
 
 interface RouteParams {
@@ -38,7 +31,6 @@ interface RouteParams {
 }
 
 export default function CardNotificationSettings() {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
   const RESENT_OTP_TIME = 30;
@@ -314,12 +306,12 @@ export default function CardNotificationSettings() {
   };
 
   return (
-    <CyDView className='h-full bg-white pt-[30px]'>
+    <CyDView className='h-full bg-n20 pt-[30px]'>
       {!isOTPTriggered && (
         <>
           <CyDView
             className={clsx(
-              'flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor',
+              'flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-n40',
               !isTelegramSetup && 'opacity-50',
             )}>
             <CyDView>
@@ -328,7 +320,7 @@ export default function CardNotificationSettings() {
               </CyDText>
             </CyDView>
             {telegramSwitchLoading ? (
-              <LottieView
+              <CyDLottieView
                 style={styles.loader}
                 autoPlay
                 loop
@@ -350,14 +342,14 @@ export default function CardNotificationSettings() {
           </CyDView>
           {/* )} */}
 
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
             <CyDView>
               <CyDText className='text-[16px] font-bold'>
                 {t<string>('EMAIL_NOTIFICATION')}
               </CyDText>
             </CyDView>
             {emailSwitchLoading ? (
-              <LottieView
+              <CyDLottieView
                 style={styles.loader}
                 autoPlay
                 loop
@@ -373,14 +365,14 @@ export default function CardNotificationSettings() {
             )}
           </CyDView>
           {currentCardProvider === CardProviders.PAYCADDY && (
-            <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
               <CyDView>
                 <CyDText className='text-[16px] font-bold'>
                   {t<string>('SMS_NOTIFICATION')}
                 </CyDText>
               </CyDView>
               {smsSwitchLoading ? (
-                <LottieView
+                <CyDLottieView
                   style={styles.loader}
                   autoPlay
                   loop
@@ -396,14 +388,14 @@ export default function CardNotificationSettings() {
               )}
             </CyDView>
           )}
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
             <CyDView>
               <CyDText className='text-[16px] font-bold'>
                 {t<string>('FCM_NOTIFICATION')}
               </CyDText>
             </CyDView>
             {fcmSwitchLoading ? (
-              <LottieView
+              <CyDLottieView
                 style={styles.loader}
                 autoPlay
                 loop
@@ -445,7 +437,7 @@ export default function CardNotificationSettings() {
               {t<string>('RESEND_CODE_INIT_CAPS')}
             </CyDText>
             {sendingOTP && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop

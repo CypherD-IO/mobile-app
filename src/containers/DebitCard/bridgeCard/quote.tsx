@@ -5,7 +5,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { CyDFastImage, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDLottieView,
+  CyDText,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import {
   ActivityContext,
@@ -27,7 +32,6 @@ import {
   PURE_COSMOS_CHAINS,
 } from '../../../constants/server';
 import { useTranslation } from 'react-i18next';
-import LottieView from 'lottie-react-native';
 import { PayTokenModalParams } from '../../../models/card.model';
 import {
   ActivityReducerAction,
@@ -478,10 +482,10 @@ export default function CardQuote({
   return (
     <CyDView
       className={
-        'flex-1 w-full bg-white pb-[30px] flex flex-col justify-between'
+        'flex-1 w-full bg-n20 pb-[30px] flex flex-col justify-between'
       }>
       <CyDView className={'mx-[22px]'}>
-        <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-sepratorColor'>
+        <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-n40'>
           <CyDText className='text-[52px] text-mandarin font-bold'>
             {'$' + limitDecimalPlaces(amountInFiat, 4)}
           </CyDText>
@@ -540,7 +544,7 @@ export default function CardQuote({
             <CyDText className={'font-bold text-[14px]'}>
               {t('ESTIMATED_TIME')}
             </CyDText>
-            <LottieView
+            <CyDLottieView
               source={AppImages.ESTIMATED_TIME}
               resizeMode={'contain'}
               autoPlay
@@ -550,7 +554,7 @@ export default function CardQuote({
           </CyDView>
 
           <CyDView className={'flex flex-row justify-between items-center'}>
-            <CyDText className={' font-[16px] text-black font-bold ml-[12px]'}>
+            <CyDText className={' text-[14px] font-medium ml-[12px]'}>
               ~ 4 mins
             </CyDText>
           </CyDView>
@@ -571,13 +575,13 @@ export default function CardQuote({
         )}
       </CyDView>
       {!hasSufficientBalanceAndGasFee ? (
-        <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-warningRedBg'>
+        <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-red20 mx-[12px]'>
           <CyDFastImage
             source={AppImages.CYPHER_WARNING_RED}
             className='h-[20px] w-[20px] ml-[13px] mr-[13px]'
             resizeMode='contain'
           />
-          <CyDText className='text-red-500 font-medium text-[14px] px-[10px] w-[80%]'>
+          <CyDText className='text-red300 font-medium text-[14px] px-[10px] w-[80%]'>
             {t<string>('INSUFFICIENT_BALANCE_CARD')}
           </CyDText>
         </CyDView>

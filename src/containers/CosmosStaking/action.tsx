@@ -7,6 +7,8 @@ import {
   CyDView,
   CyDTouchView,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
+  CyDLottieView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { BackHandler, StyleSheet } from 'react-native';
@@ -16,7 +18,6 @@ import {
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
-import LottieView from 'lottie-react-native';
 import {
   CosmosActionType,
   CosmosStakingContext,
@@ -37,6 +38,8 @@ import { useRoute } from '@react-navigation/native';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import { random } from 'lodash';
 import Toast from 'react-native-toast-message';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 export default function CosmosAction({
   route,
@@ -45,6 +48,7 @@ export default function CosmosAction({
   route: any;
   navigation: any;
 }) {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { tokenData, from, validatorData } = route.params;
   const cosmosStaking = useContext<any>(CosmosStakingContext);
@@ -65,10 +69,6 @@ export default function CosmosAction({
   };
 
   useEffect(() => {
-    navigation.setOptions({
-      title: from,
-    });
-
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
 
     return () => {
@@ -198,7 +198,7 @@ export default function CosmosAction({
     }
   };
   return (
-    <CyDScrollView className={'bg-white h-full w-full px-[20px]'}>
+    <CyDScrollView className={'bg-n20 h-full w-full px-[20px]'}>
       <CyDKeyboardAwareScrollView>
         <CyDModalLayout
           setModalVisible={setSignModalVisible}
@@ -207,15 +207,14 @@ export default function CosmosAction({
           animationIn={'slideInUp'}
           animationOut={'slideOutDown'}>
           <CyDView
-            className={
-              'bg-white  px-[25px] pb-[30px] rounded-t-[20px] relative'
-            }>
+            className={'bg-n0  px-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView
               onPress={() => setSignModalVisible(false)}
               className={'w-full flex-1 flex-row py-[20px] justify-end z-[50]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={' w-[18px] h-[18px]'}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
@@ -240,9 +239,10 @@ export default function CosmosAction({
             </CyDView>
 
             <CyDView className={'flex flex-row mt-[20px]'}>
-              <CyDImage
-                source={AppImages.GAS_FEES}
-                className={'w-[16px] h-[16px] mt-[3px]'}
+              <CydMaterialDesignIcons
+                name='gas-station'
+                size={16}
+                className='text-base400 mt-[3px]'
               />
               <CyDView className={' flex flex-row'}>
                 <CyDText className={' font-medium text-[16px] ml-[10px] '}>
@@ -274,10 +274,27 @@ export default function CosmosAction({
           </CyDView>
         </CyDModalLayout>
 
-        <CyDText
-          className={
-            'text-[24px] mt-[24px]  text-secondaryTextColor font-extrabold text-start'
-          }>
+        <CyDView
+          className='flex-row justify-between'
+          style={{ paddingTop: insets.top }}>
+          <CyDTouchView
+            className='px-[12px]'
+            onPress={() => {
+              navigation.goBack();
+            }}>
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
+              className='text-base400'
+            />
+          </CyDTouchView>
+          <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+            {from}
+          </CyDText>
+          <CyDView className='' />
+        </CyDView>
+
+        <CyDText className={'text-[24px] mt-[24px] font-extrabold text-start'}>
           {validatorData.name}
         </CyDText>
         <CyDView
@@ -292,7 +309,7 @@ export default function CosmosAction({
           </CyDText>
           <CyDText
             className={
-              'ml-[4px] text-[14px]  text-secondaryTextColor font-bold text-center'
+              'ml-[4px] text-[14px] font-bold text-center'
             }>{`${parseFloat(validatorData.commissionRate) * 100}% `}</CyDText>
         </CyDView>
         <CyDView
@@ -311,7 +328,7 @@ export default function CosmosAction({
           </CyDText>
           <CyDText
             className={
-              'ml-[4px] text-[14px]  ttext-secondaryTextColor font-bold text-center'
+              'ml-[4px] text-[14px] font-bold text-center'
             }>{`${convertNumberToShortHandNotation(
             convertFromUnitAmount(
               validatorData.tokens,
@@ -322,9 +339,9 @@ export default function CosmosAction({
 
         <CyDView
           className={
-            'bg-[#FFE3DB4D] my-[32px] py-[16px] px-[20px] rounded-[8px] flex flex-row'
+            'bg-base200 my-[32px] py-[16px] px-[20px] rounded-[8px] flex flex-row'
           }>
-          <LottieView
+          <CyDLottieView
             source={AppImages.INSIGHT_BULB}
             autoPlay
             loop
@@ -342,9 +359,7 @@ export default function CosmosAction({
         <CyDView className={'flex flex-row justify-between items-center'}>
           <CyDText className={' text-[16px] '}>{'My delegation'}</CyDText>
           <CyDText
-            className={
-              ' text-[18px] font-bold text-secondaryTextColor'
-            }>{`${convertFromUnitAmount(
+            className={' text-[18px] font-bold'}>{`${convertFromUnitAmount(
             validatorData.balance.toString(),
             tokenData.contractDecimals,
           )} ${tokenData.name}`}</CyDText>
@@ -359,9 +374,7 @@ export default function CosmosAction({
               {t('Available balance')}
             </CyDText>
             <CyDText
-              className={
-                ' text-[18px] font-bold text-secondaryTextColor'
-              }>{`${convertFromUnitAmount(
+              className={' text-[18px] font-bold'}>{`${convertFromUnitAmount(
               cosmosStaking.cosmosStakingState.balance.toString(),
               tokenData.contractDecimals,
             )} ${tokenData.name}`}</CyDText>
@@ -378,7 +391,7 @@ export default function CosmosAction({
             </CyDText>
             <CyDTouchView
               className={
-                'bg-inputBackgroundColor p-[8px] rounded-[8px] h-[60px] flex flex-row items-center'
+                'bg-n0 p-[8px] rounded-[8px] h-[60px] flex flex-row items-center'
               }
               onPress={() => {
                 navigation.navigate(screenTitle.COSMOS_REVALIDATOR, {
@@ -388,12 +401,13 @@ export default function CosmosAction({
                   from: CosmosActionType.REDELEGATE,
                 });
               }}>
-              <CyDText className={'ml-[4px] bg-[#F6F6F6] text-[16px] w-11/12 '}>
+              <CyDText className={'ml-[4px]  text-[16px] w-11/12 '}>
                 {reValidator.name}
               </CyDText>
-              <CyDImage
-                source={AppImages.RIGHT_ARROW}
-                className={'w-[16px] h-[16px]'}
+              <CydMaterialDesignIcons
+                name='chevron-right'
+                size={20}
+                className='text-base400'
               />
             </CyDTouchView>
           </>
@@ -405,10 +419,10 @@ export default function CosmosAction({
 
         <CyDView
           className={
-            'bg-inputBackgroundColor p-[8px] mt-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
+            'bg-n0 p-[8px] mt-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
           }>
           <CyDTextInput
-            className={'ml-[4px] bg-inputBackgroundColor text-[16px] w-[63%]  '}
+            className={'ml-[4px] text-[16px] w-[63%]  '}
             keyboardType={'numeric'}
             onChangeText={text => {
               setAmount(text);
@@ -455,7 +469,7 @@ export default function CosmosAction({
             }}
             title={t('MAX')}
             type={'primary'}
-            style={'p-[3%] mr-[2px] text-[12px] bg-inputBorderColor'}
+            style={'p-[3%] mr-[2px] text-[12px] bg-n40'}
             titleStyle={'text-[14px]'}
           />
         </CyDView>
@@ -464,16 +478,16 @@ export default function CosmosAction({
           <CyDText
             className={
               'mt-[4px]  text-[12px] font-medium '
-            }>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
+            }>{`${t('0.2')} ${tokenData?.name}${t(' reserved on MAX')}`}</CyDText>
         )}
 
         <CyDText className={' text-[16px] my-[10px] '}>{t('Memo')}</CyDText>
         <CyDView
           className={
-            'bg-inputBackgroundColor p-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
+            'bg-n0 p-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
           }>
           <CyDTextInput
-            className={'ml-[4px] bg-inputBackgroundColor text-[16px] w-7/12 '}
+            className={'ml-[4px] text-[16px] w-7/12 '}
             onChangeText={text => {
               setMemo(text);
             }}

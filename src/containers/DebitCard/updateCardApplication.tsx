@@ -14,6 +14,8 @@ import {
   CyDTextInput,
   CyDScrollView,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import { GlobalContext } from '../../core/globalContext';
 import { useIsFocused } from '@react-navigation/native';
@@ -347,7 +349,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
             selectedCountryStates={selectedCountryStates}
             selectedStateState={[selectedState, setSelectedState]}
           />
-          <CyDView className={'h-full bg-white'}>
+          <CyDView className={'h-full bg-n0'}>
             <CyDView className={'h-full flex grow-1'}>
               <CyDScrollView className='my-[24px]'>
                 <CyDKeyboardAwareScrollView>
@@ -391,7 +393,11 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                                   {userInfo.country}
                                 </CyDText>
                               </CyDView>
-                              <CyDImage source={AppImages.DOWN_ARROW} />
+                              <CydMaterialDesignIcons
+                                name={'chevron-down'}
+                                size={16}
+                                className={'text-base400'}
+                              />
                             </CyDView>
                           </CyDView>
                         </CyDTouchView>
@@ -415,7 +421,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           )}>
                           <CyDView
                             className={
-                              'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
+                              'w-4/12 border-r-[1px] border-[#EBEBEB] bg-n0 py-[13px] rounded-l-[16px] flex items-center'
                             }>
                             <CyDView className={'mt-[-4px] ml-[-55px]'}>
                               <CyDText className={'text-[33px] mt-[-6px]'}>
@@ -539,7 +545,11 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                               )}
                             </CyDView>
 
-                            <CyDImage source={AppImages.CALENDAR} />
+                            <CydMaterialDesignIcons
+                              name='calendar-blank'
+                              size={20}
+                              className='text-base400 self-center items-center'
+                            />
                           </CyDView>
                         </CyDTouchView>
                         {formProps.touched.dateOfBirth &&
@@ -753,10 +763,10 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                                   onPress={() => {
                                     setPepToolTip(true);
                                   }}>
-                                  <CyDImage
-                                    source={AppImages.INFO_ICON}
-                                    resizeMode='contain'
-                                    className={'w-[14px] h-[14px] ml-[4px]'}
+                                  <CyDIcons
+                                    name='information'
+                                    size={16}
+                                    className='text-base400 ml-[4px]'
                                   />
                                 </CyDTouchView>
                               </Tooltip>

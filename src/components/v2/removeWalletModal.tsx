@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -41,17 +42,20 @@ export default function RemoveWalletModal(store: {
         {connectionType !== ConnectionTypes.WALLET_CONNECT && (
           <CyDView className='flex flex-row items-center mt-[54px]'>
             <CyDTouchView
-              className={clsx('h-[20px] w-[20px] border-[1px] rounded-[4px]', {
-                'bg-black': hasConsent,
-              })}
+              className={clsx(
+                'h-[20px] w-[20px] border-base400 border-[1px] rounded-[4px]',
+                {
+                  'bg-n0': hasConsent,
+                },
+              )}
               onPress={() => {
                 setHasConsent(!hasConsent);
               }}>
               {hasConsent && (
-                <CyDImage
-                  source={AppImages.CORRECT}
-                  className='h-[15px] w-[15px] ml-[2px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name='check'
+                  size={18}
+                  className='text-base400'
                 />
               )}
             </CyDTouchView>
@@ -76,11 +80,12 @@ export default function RemoveWalletModal(store: {
       isModalVisible={isModalVisible}
       disableBackDropPress={true}>
       <CyDView
-        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-        <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={' w-[22px] h-[22px] z-[50] absolute right-[0px]'}
+        className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+        <CyDTouchView onPress={() => onFailure()} className={'z-[50] self-end'}>
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
         {

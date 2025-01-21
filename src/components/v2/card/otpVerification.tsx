@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
-  CyDImage,
-  CyDSafeAreaView,
+  CyDLottieView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -12,10 +12,10 @@ import Loading from '../loading';
 import { useTranslation } from 'react-i18next';
 import useAxios from '../../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import CyDModalLayout from '../modal';
 import StateModal from '../StateModal';
 import { PinInput } from '../pinInput';
+import { CyDIconsPack } from '../../../customFonts/generator';
 
 export default function OtpVerificationModal({
   isModalVisible,
@@ -115,7 +115,7 @@ export default function OtpVerificationModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDSafeAreaView className={'h-full bg-white p-[12px] pt-[10px]'}>
+      <CyDView className={'h-full bg-n0 p-[12px] pt-[10px]'}>
         <StateModal
           isModalVisible={error !== ''}
           type={'error'}
@@ -134,9 +134,10 @@ export default function OtpVerificationModal({
               setIsModalVisible(false);
             }}
             className='w-[36px] h-[36px]'>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[36px] h-[36px]'
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
@@ -164,7 +165,7 @@ export default function OtpVerificationModal({
                   {t<string>('RESEND_CODE_INIT_CAPS')}
                 </CyDText>
                 {sendingOTP && (
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop
@@ -186,7 +187,7 @@ export default function OtpVerificationModal({
             </CyDView>
           )}
         </CyDView>
-      </CyDSafeAreaView>
+      </CyDView>
     </CyDModalLayout>
   );
 }

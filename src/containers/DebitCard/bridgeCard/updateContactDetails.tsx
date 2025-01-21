@@ -4,6 +4,7 @@ import { GlobalContextType } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import {
   CyDKeyboardAwareScrollView,
+  CyDLottieView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -27,7 +28,6 @@ import OtpInput from '../../../components/v2/OTPInput';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { StyleSheet } from 'react-native';
-import LottieView from 'lottie-react-native';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function UpdateCardContactDetails({
@@ -39,7 +39,6 @@ export default function UpdateCardContactDetails({
   const [isOTPTriggered, setIsOTPTriggered] = useState<boolean>(false);
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile.provider;
   const [userBasicDetails, setUserBasicDetails] = useState({
     phoneNumber: '',
     email: '',
@@ -248,7 +247,7 @@ export default function UpdateCardContactDetails({
   };
 
   return (
-    <CyDSafeAreaView className={'h-full bg-white'}>
+    <CyDSafeAreaView className={'h-full bg-n20'}>
       <CyDScrollView>
         <CyDKeyboardAwareScrollView>
           <ChooseCountryModal
@@ -282,7 +281,7 @@ export default function UpdateCardContactDetails({
                     <CyDTouchView
                       onPress={() => onDialCodeModalOpen(formProps.values)}
                       className={
-                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
+                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-n0 py-[13px] rounded-l-[16px] flex items-center'
                       }>
                       <CyDView className={'mt-[-4px] ml-[-55px]'}>
                         <CyDText className={'text-[33px] mt-[-6px]'}>
@@ -300,7 +299,7 @@ export default function UpdateCardContactDetails({
                       <CyDView className={'flex flex-row items-center'}>
                         <CyDTextInput
                           className={clsx(
-                            'text-black  text-[16px] ml-[8px] w-[100%]',
+                            'text-base400  text-[16px] ml-[8px] w-[90%]',
                             { 'mt-[-8px]': isAndroid() },
                           )}
                           value={formProps.values.phoneNumber}
@@ -356,7 +355,7 @@ export default function UpdateCardContactDetails({
                     </CyDText>
                   </CyDView>
                 )}
-                <CyDView className={'bg-white pt-[10px]'}>
+                <CyDView className={'bg-n0 pt-[10px]'}>
                   <CyDView>
                     {isOTPTriggered && (
                       <CyDView className={'mt-[20px]'}>
@@ -383,7 +382,7 @@ export default function UpdateCardContactDetails({
                             {t<string>('RESEND_CODE_INIT_CAPS')}
                           </CyDText>
                           {sendingOTP && (
-                            <LottieView
+                            <CyDLottieView
                               source={AppImages.LOADER_TRANSPARENT}
                               autoPlay
                               loop

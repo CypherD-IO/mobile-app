@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing, ViewStyle } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { CyDAnimatedView, CyDView } from '../../styles/tailwindStyles';
+import { Theme, useTheme } from '../../reducers/themeReducer';
 
 interface SkeletonLoaderProps {
   height: number | string;
@@ -23,6 +24,7 @@ const CyDSkeleton: React.FC<SkeletonLoaderProps> = ({
   className,
 }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const { theme } = useTheme();
 
   useEffect(() => {
     Animated.loop(
@@ -54,12 +56,8 @@ const CyDSkeleton: React.FC<SkeletonLoaderProps> = ({
 
   return (
     <CyDView
-      style={[
-        styles.container,
-        { height, width, borderRadius: rounded },
-        style,
-      ]}
-      className={className}>
+      style={[{ height, width, borderRadius: rounded }, style]}
+      className={`bg-n40 overflow-hidden ${className}`}>
       <CyDView style={StyleSheet.absoluteFillObject}>
         <Animated.View style={{ transform: [{ translateX }] }}>
           <LinearGradient
@@ -73,12 +71,5 @@ const CyDSkeleton: React.FC<SkeletonLoaderProps> = ({
     </CyDView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#E0E0E0',
-    overflow: 'hidden',
-  },
-});
 
 export default CyDSkeleton;

@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/indent */
 import * as React from 'react';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useState, useContext } from 'react';
 import bip39 from 'react-native-bip39';
 import ReadOnlySeedPhraseBlock from '../../components/v2/readOnlySeedPhraseBlock';
-import AppImages from '../../../assets/images/appImages';
 import CyDModalLayout from '../../components/v2/modal';
 import { BackHandler, NativeModules, StyleSheet } from 'react-native';
 import { generateWalletFromMnemonic } from '../../core/Address';
@@ -28,6 +27,7 @@ import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
 import { ButtonType, SECRET_TYPES, SeedPhraseType } from '../../constants/enum';
 import { setSkipSeedConfirmation } from '../../core/asyncStorage';
+import { CyDIconsPack } from '../../customFonts';
 
 function CreateSeedPhrase({ route, navigation }) {
   const { t } = useTranslation();
@@ -99,10 +99,7 @@ function CreateSeedPhrase({ route, navigation }) {
           onPress={() => {
             handleBackButton();
           }}>
-          <CyDImage
-            className={'h-[20px] w-[20px]'}
-            source={AppImages.BACK_ARROW_GRAY}
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
       ),
     });
@@ -154,7 +151,7 @@ function CreateSeedPhrase({ route, navigation }) {
 
   const RenderCreateSeedphrase = () => {
     return (
-      <CyDSafeAreaView className={'bg-white h-full flex-col justify-between'}>
+      <CyDSafeAreaView className={'bg-n0 h-full flex-col justify-between'}>
         <CyDScrollView>
           <CyDView>
             <CyDView
@@ -180,9 +177,10 @@ function CreateSeedPhrase({ route, navigation }) {
                     onPress={() => {
                       toggleSeedPhraseVisibility();
                     }}>
-                    <CyDImage
-                      source={AppImages.EYE_OPEN}
-                      className={'w-[27px] h-[18px] mr-[12px]'}
+                    <CydMaterialDesignIcons
+                      name={'eye-outline'}
+                      size={27}
+                      className='text-base400 mr-[12px]'
                     />
                   </CyDTouchView>
                 )}
@@ -191,9 +189,10 @@ function CreateSeedPhrase({ route, navigation }) {
                     onPress={() => {
                       toggleSeedPhraseVisibility();
                     }}>
-                    <CyDImage
-                      source={AppImages.EYE_CLOSE}
-                      className={'w-[27px] h-[24px] mr-[12px]'}
+                    <CydMaterialDesignIcons
+                      name={'eye-off-outline'}
+                      size={27}
+                      className='text-base400 mr-[12px]'
                     />
                   </CyDTouchView>
                 )}
@@ -211,7 +210,8 @@ function CreateSeedPhrase({ route, navigation }) {
                           content={word}
                           index={++index}
                           onBlockTouch={undefined}
-                          clickEvent={undefined}></ReadOnlySeedPhraseBlock>
+                          clickEvent={undefined}
+                        />
                       );
                     })}
                   </CyDView>
@@ -230,7 +230,8 @@ function CreateSeedPhrase({ route, navigation }) {
                           content={word}
                           index={++index}
                           onBlockTouch={undefined}
-                          clickEvent={undefined}></ReadOnlySeedPhraseBlock>
+                          clickEvent={undefined}
+                        />
                       );
                     })}
                   </CyDView>
@@ -243,9 +244,11 @@ function CreateSeedPhrase({ route, navigation }) {
               setTipsVisible(true);
             }}
             className={'m-[22px] flex flex-row justify-end'}>
-            <CyDImage
-              className={'mt-[1px] w-[17px] h-[17px] mr-[6px]'}
-              source={AppImages.INFO_CIRCLE}></CyDImage>
+            <CydMaterialDesignIcons
+              name='information-outline'
+              size={16}
+              className='text-base400 mr-[6px] mt[2px]'
+            />
             <CyDText className={'text-[14px] font-bold'}>
               {t('HOW_TO_SECURE_SEED_PHRASE')}
             </CyDText>
@@ -361,7 +364,7 @@ function CreateSeedPhrase({ route, navigation }) {
 
   const RenderConfirmSeedphrase = () => {
     return (
-      <CyDSafeAreaView className={'bg-white h-full flex-col justify-between'}>
+      <CyDSafeAreaView className={'bg-n0 h-full flex-col justify-between'}>
         <CyDScrollView>
           <CyDView
             className={'flex items-center justify-center py-[20px] px-[30px]'}>
@@ -384,7 +387,8 @@ function CreateSeedPhrase({ route, navigation }) {
                       disabled={true}
                       backgroundColor={word === '' ? 'white' : 'appColor'}
                       onBlockTouch={undefined}
-                      clickEvent={undefined}></ReadOnlySeedPhraseBlock>
+                      clickEvent={undefined}
+                    />
                   );
                 })}
               </CyDView>
@@ -392,7 +396,7 @@ function CreateSeedPhrase({ route, navigation }) {
             {maximumRetryCount < 3 && (
               <CyDView
                 className={
-                  'mb-[-12px] z-10 shadow-lg absolute bottom-[-8px] left-[31%] py-[7px] rounded-full bg-white text-center'
+                  'mb-[-12px] z-10 shadow-lg absolute bottom-[-8px] left-[31%] py-[7px] rounded-full bg-n0 text-center'
                 }>
                 <CyDText
                   className={'font-semibold text-center text-[15px] px-[20px]'}>
@@ -415,7 +419,8 @@ function CreateSeedPhrase({ route, navigation }) {
                     disabled={false}
                     backgroundColor={word === '' ? 'white' : 'appColor'}
                     onBlockTouch={onBlockInvoked}
-                    clickEvent={index}></ReadOnlySeedPhraseBlock>
+                    clickEvent={index}
+                  />
                 );
               })}
             </CyDView>
@@ -442,15 +447,16 @@ function CreateSeedPhrase({ route, navigation }) {
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setTipsVisible(false);
             }}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            className={'z-[50] self-end'}>
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
@@ -460,9 +466,10 @@ function CreateSeedPhrase({ route, navigation }) {
             {waysToSecureSeedPhrase.map(item => {
               return (
                 <CyDView className={'flex flex-row my-[4px]'} key={item}>
-                  <CyDImage
-                    className={'mt-[6px]'}
-                    source={AppImages.RIGHT_ARROW_BULLET}
+                  <CydMaterialDesignIcons
+                    name={'triangle'}
+                    size={14}
+                    className='text-p150 rotate-90 mt-[6px]'
                   />
                   <CyDText className={'ml-[10px] leading-[25px] font-semibold'}>
                     {item}
@@ -475,7 +482,7 @@ function CreateSeedPhrase({ route, navigation }) {
       </CyDModalLayout>
 
       {loading ? (
-        <Loading></Loading>
+        <Loading />
       ) : (
         <CyDView>
           {index === 0 && <RenderCreateSeedphrase />}

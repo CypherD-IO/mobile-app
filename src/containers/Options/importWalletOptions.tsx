@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import {
   CyDImage,
   CyDImageBackground,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -21,7 +22,7 @@ export default function ImportWalletOptions({
     <CyDImageBackground
       source={AppImages.BG_SETTINGS}
       resizeMode='cover'
-      className='flex-1 bg-white'>
+      className='flex-1 bg-n20'>
       <CyDScrollView className='px-[12px] py-[20px]'>
         <CyDTouchView
           onPress={() => {
@@ -31,20 +32,12 @@ export default function ImportWalletOptions({
           <CyDView>
             <CyDText className='text-[16px] font-semibold'>Seed Phrase</CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.OPTIONS_ARROW}
-            className='h-[22px] w-[12px]'
+          <CydMaterialDesignIcons
+            name='chevron-right'
+            size={20}
+            className='text-base400'
           />
         </CyDTouchView>
-        {/* <CyDTouchView className='flex flex-row justify-between items-center border-b-[0.2px] py-[22px]'>
-          <CyDView>
-            <CyDText className='text-[16px] font-semibold'>Private Key</CyDText>
-          </CyDView>
-          <CyDImage
-            source={AppImages.OPTIONS_ARROW}
-            className='h-[22px] w-[12px]'
-          />
-        </CyDTouchView> */}
         <CyDTouchView
           onPress={() => {
             void openWalletConnectModal();
@@ -56,9 +49,10 @@ export default function ImportWalletOptions({
               Wallet Connect
             </CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.OPTIONS_ARROW}
-            className='h-[22px] w-[12px]'
+          <CydMaterialDesignIcons
+            name='chevron-right'
+            size={20}
+            className='text-base400'
           />
         </CyDTouchView>
       </CyDScrollView>

@@ -30,7 +30,6 @@ import {
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
-  CyDImage,
   CyDSafeAreaView,
   CyDScrollView,
   CyDTouchView,
@@ -46,6 +45,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 interface RouteParams {
   indexValue: number;
@@ -83,16 +83,17 @@ export function AddressBook() {
 
   return (
     <>
-      <CyDSafeAreaView className={'h-full bg-white pt-[10px]'}>
+      <CyDSafeAreaView className={'h-full bg-n20 pt-[10px]'}>
         <CyDView
           className={'flex flex-row w-full pl-[10px] items-center mb-[8%]'}>
           <CyDTouchView
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className={'w-[32px] h-[32px] mt-[10px]'}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDView className='flex-1 items-center mr-[20px]'>
@@ -112,7 +113,7 @@ export function AddressBook() {
               <AddressBookContainer
                 chain={CHAIN_ETH.name}
                 wallet={ethereum}
-                logo={AppImages.ETHEREUM_NEW}
+                logo={AppImages.ETHEREUM}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.EVM}
                 bGC={'#f6f6f9'}
@@ -148,7 +149,7 @@ export function AddressBook() {
               <AddressBookContainer
                 chain={CHAIN_JUNO.name}
                 wallet={juno.wallets[juno.currentIndex]}
-                logo={AppImages.JUNO_PNG}
+                logo={AppImages.JUNO_LOGO}
                 bGC={'#ebebeb'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.JUNO}
@@ -211,7 +212,7 @@ export function AddressBook() {
               <AddressBookContainer
                 chain={CHAIN_BSC.name}
                 wallet={ethereum}
-                logo={AppImages.BIANCE}
+                logo={AppImages.BINANCE}
                 bGC={'#fff7e3'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.BSC}
@@ -309,7 +310,7 @@ export function AddressBook() {
             </CyDView>
           </CyDScrollView>
         )}
-        {index === 1 && <Contacts route={route} navigation={navigation} />}
+        {index === 1 && <Contacts />}
       </CyDSafeAreaView>
     </>
   );

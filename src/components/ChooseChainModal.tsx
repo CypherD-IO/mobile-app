@@ -4,16 +4,16 @@ import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
 import { HdWalletContext, getAvailableChains } from '../core/util';
 import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
-import { Colors } from '../constants/theme';
 import {
-  CyDImage,
+  CyDFastImage,
+  CyDLottieView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
 import clsx from 'clsx';
-import LottieView from 'lottie-react-native';
 
 export const WHERE_BROWSER = 'BROWSER';
 export const WHERE_PORTFOLIO = 'PORTFOLIO';
@@ -48,30 +48,30 @@ export function ChooseChainModal(props: {
     const isSelected = item.id === selectedChainId;
     return (
       <CyDTouchView
-        className={clsx('px-[12px] rounded-[8px] w-full', {
-          'bg-selectedOption': isSelected,
+        className={clsx('px-[12px] rounded-[8px] w-full bg-n20', {
+          'bg-p10': isSelected,
         })}
         onPress={() => {
           onChainSelection(item);
         }}>
-        <CyDView className='flex flex-row justify-between w-full items-center my-[8px]'>
-          <CyDView className='flex flex-row items-center w-full'>
-            <CyDImage
+        <CyDView className='flex flex-row justify-between items-center my-[8px]'>
+          <CyDView className='flex flex-row items-center flex-1'>
+            <CyDFastImage
               source={logoUrl}
-              className='h-[28px] w-[28px]'
+              className='h-[28px] w-[28px] flex-shrink-0'
               resizeMode='contain'
             />
-            <CyDView className='flex flex-row w-full justify-between'>
+            <CyDView className='flex flex-row flex-1 justify-between'>
               <CyDView>
-                <CyDText className='ml-[8px] font-bold text-[16px] text-secondaryTextColor'>
+                <CyDText className='ml-[8px] font-bold text-[16px] text-base400'>
                   {name}
                 </CyDText>
-                <CyDText className='ml-[8px] mt-[2px] font-bold text-[12px] text-subTextColor'>
+                <CyDText className='ml-[8px] mt-[2px] font-bold text-[12px] text-n90'>
                   {symbol}
                 </CyDText>
               </CyDView>
               {item.backendName === ChainBackendNames.SOLANA && (
-                <LottieView
+                <CyDLottieView
                   source={AppImages.NEW}
                   autoPlay
                   loop
@@ -81,11 +81,10 @@ export function ChooseChainModal(props: {
             </CyDView>
           </CyDView>
           {isSelected && (
-            <CyDImage
-              style={styles.imageTint}
-              source={AppImages.CORRECT}
-              className='h-[16px] w-[16px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='check-outline'
+              size={16}
+              className='text-base400'
             />
           )}
         </CyDView>
@@ -102,18 +101,17 @@ export function ChooseChainModal(props: {
       animationOut={'slideOutDown'}>
       <CyDView
         className={
-          'bg-white pt-[12px] px-[12px] pb-[30px] rounded-t-[24px] relative'
+          'bg-n20 pt-[12px] px-[12px] pb-[30px] rounded-t-[24px] relative'
         }>
         <CyDTouchView
           onPress={() => {
             onPress();
           }}
-          className={'z-[50]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={
-              ' w-[22px] h-[22px] z-[50] absolute right-[4px] top-[4px] '
-            }
+          className={'z-[50] self-end'}>
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400 '
           />
         </CyDTouchView>
         <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
@@ -143,9 +141,6 @@ const styles = StyleSheet.create({
   chainList: {
     height: '50%',
     marginTop: '10%',
-  },
-  imageTint: {
-    tintColor: Colors.black,
   },
   lottieViewWidth: {
     width: 34,

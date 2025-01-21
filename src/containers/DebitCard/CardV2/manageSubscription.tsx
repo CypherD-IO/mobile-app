@@ -1,12 +1,6 @@
 import React, { useContext } from 'react';
-import {
-  CyDFastImage,
-  CyDText,
-  CyDTouchView,
-  CyDView,
-} from '../../../styles/tailwindStyles';
+import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppImages from '../../../../assets/images/appImages';
 import { t } from 'i18next';
 import {
   NavigationProp,
@@ -23,6 +17,7 @@ import { sendFirebaseEvent } from '../../utilities/analyticsUtility';
 import { HdWalletContext } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import * as Sentry from '@sentry/react-native';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   planInfo: {
@@ -50,10 +45,7 @@ export default function ManageSubscription() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            source={AppImages.LEFT_ARROW_LONG}
-            className='w-[20px] h-[16px]'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-[16px] font-bold text-base400'>
           {t('MANAGE_PREMIUM')}

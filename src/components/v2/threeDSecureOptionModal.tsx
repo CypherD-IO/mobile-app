@@ -1,21 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 import { StyleSheet } from 'react-native';
-import { get } from 'lodash';
 import Button from './button';
-import { ButtonType } from '../../constants/enum';
+import { ButtonType, CardProviders } from '../../constants/enum';
 import useAxios from '../../core/HttpRequest';
-import { t } from 'i18next';
-import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
-import { useIsFocused } from '@react-navigation/native';
 import { showToast } from '../../containers/utilities/toastUtility';
+import { Card } from '../../models/card.model';
 
 export default function ThreeDSecureOptionModal({
   isModalVisible,
@@ -24,6 +22,13 @@ export default function ThreeDSecureOptionModal({
   currentCardProvider,
   isTelegramEnabled,
   setIsTelegramEnabled,
+}: {
+  isModalVisible: boolean;
+  setModalVisible: (value: boolean) => void;
+  card: Card;
+  currentCardProvider: CardProviders;
+  isTelegramEnabled: boolean;
+  setIsTelegramEnabled: (value: boolean) => void;
 }) {
   const [isTelegramSelected, setIsTelegramSelected] =
     useState<boolean>(isTelegramEnabled);
@@ -62,7 +67,7 @@ export default function ThreeDSecureOptionModal({
       disableBackDropPress={true}>
       <CyDView
         className={
-          'bg-cardBgTo px-[16px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'
+          'bg-n20 px-[16px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'
         }>
         <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
           <CyDView className='flex-1 justify-center items-center'>
@@ -75,15 +80,15 @@ export default function ThreeDSecureOptionModal({
               setIsTelegramSelected(isTelegramEnabled);
               setModalVisible(false);
             }}>
-            <CyDImage
-              source={AppImages.CLOSE_CIRCLE}
-              className='h-[28px] w-[28px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
         <CyDTouchView
-          className='bg-white px-[12px] py-[14px] mb-[8px] rounded-[10px] flex flex-row justify-between items-center'
+          className='bg-n0 px-[12px] py-[14px] mb-[8px] rounded-[10px] flex flex-row justify-between items-center'
           onPress={() => {
             setIsTelegramSelected(false);
           }}>
@@ -100,7 +105,7 @@ export default function ThreeDSecureOptionModal({
           </CyDView>
         </CyDTouchView>
         <CyDTouchView
-          className='bg-white px-[12px] py-[14px] mb-[16px] rounded-[10px] flex flex-row justify-between items-center'
+          className='bg-n0 px-[12px] py-[14px] mb-[16px] rounded-[10px] flex flex-row justify-between items-center'
           onPress={() => {
             setIsTelegramSelected(true);
           }}>

@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import moment from 'moment';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -69,12 +70,12 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
   }, [lastRefreshed, isRefreshing]);
 
   return (
-    <CyDView className='flex flex-row justify-between mx-[12px] py-[10px] border-t-[0.5px] border-n30'>
+    <CyDView className='flex flex-row justify-between mx-[12px] py-[10px] border-t-[0.5px] border-n40'>
       <CyDView className='flex flex-row items-center'>
-        <CyDFastImage
-          source={AppImages.CLOCK}
-          className='h-[16px] w-[16px]'
-          resizeMode='contain'
+        <CydMaterialDesignIcons
+          name='clock-time-four'
+          size={20}
+          className='text-base400'
         />
         <CyDText className='ml-[10px]'>{time}</CyDText>
       </CyDView>
@@ -82,10 +83,10 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
         onPress={() => {
           props.setFilterVisible(true);
         }}>
-        <CyDFastImage
-          className='w-[48px] h-[26px]'
-          source={AppImages.FILTER}
-          resizeMode='contain'
+        <CydMaterialDesignIcons
+          name='filter-variant'
+          size={24}
+          className='text-base400'
         />
       </CyDTouchView>
     </CyDView>

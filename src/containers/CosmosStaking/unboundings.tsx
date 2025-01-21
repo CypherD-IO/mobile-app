@@ -1,5 +1,11 @@
 import React, { useContext, useState } from 'react';
-import { CyDView, CyDText, CyDFlatList } from '../../styles/tailwindStyles';
+import {
+  CyDView,
+  CyDText,
+  CyDFlatList,
+  CydMaterialDesignIcons,
+  CyDTouchView,
+} from '../../styles/tailwindStyles';
 import Empty from '../../components/v2/empty';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
@@ -10,8 +16,10 @@ import {
 } from '../../reducers/cosmosStakingReducer';
 import * as Progress from 'react-native-progress';
 import { convertFromUnitAmount } from '../../core/util';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CosmosUnboundings({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { tokenData } = route.params;
   const cosmosStaking =
     useContext<cosmosStakingContextDef>(CosmosStakingContext);
@@ -24,10 +32,6 @@ export default function CosmosUnboundings({ route, navigation }) {
   };
 
   React.useEffect(() => {
-    navigation.setOptions({
-      title: 'Unboundings',
-    });
-
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
 
     const allData: IUnboundings = [];
@@ -78,8 +82,8 @@ export default function CosmosUnboundings({ route, navigation }) {
 
   const Item = ({ item }) => {
     return (
-      <CyDView>
-        <CyDView className={'mx-[20px] mt-[20px]'}>
+      <CyDView className=' mx-4 p-[10px] bg-n0 rounded-lg'>
+        <CyDView className={''}>
           <CyDView className={'flex flex-row justify-between'}>
             <CyDText
               className={
@@ -97,7 +101,7 @@ export default function CosmosUnboundings({ route, navigation }) {
               }>{`${daysRemaining(item.completionTime)}${t(' days remaining')}`}</CyDText>
           </CyDView>
         </CyDView>
-        <CyDView className={'mx-[20px]'}>
+        <CyDView className={'flex-1'}>
           <Progress.Bar
             progress={progressPercentage(item.completionTime)}
             width={350}
@@ -110,11 +114,33 @@ export default function CosmosUnboundings({ route, navigation }) {
       </CyDView>
     );
   };
-  const renderItem = ({ item, index }) => <Item item={item} />;
+  const renderItem = ({ item, index }: { item: any; index: number }) => (
+    <Item item={item} />
+  );
 
   return (
-    <CyDView className={'bg-white h-full w-full'}>
+    <CyDView className={'bg-n20 h-full w-full'}>
+      {/* <CyDView
+        className='flex-row justify-between'
+        style={{ paddingTop: insets.top }}>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CydMaterialDesignIcons
+            name={'arrow-left-thin'}
+            size={32}
+            className='text-base400'
+          />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {'Unboundings'}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView> */}
       <CyDFlatList
+        className='flex-1 mt-2'
         data={unboundings}
         renderItem={renderItem}
         ListEmptyComponent={Empty}

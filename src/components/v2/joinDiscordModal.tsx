@@ -1,9 +1,9 @@
-/* eslint-disable react-native/no-raw-text */
 import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet } from 'react-native';
 import {
   CyDImage,
+  CyDLottieView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -11,10 +11,8 @@ import {
 import CyDModalLayout from './modal';
 import useAxios from '../../core/HttpRequest';
 import AppImages from '../../../assets/images/appImages';
-import LottieView from 'lottie-react-native';
 import clsx from 'clsx';
 import { JoinDiscordStatus } from '../../constants/enum';
-import { useNavigation } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -97,18 +95,20 @@ export default function JoinDiscordModal(props: {
                 onPress={() => {
                   setIsModalVisible(false);
                 }}>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className='w-[24px] h-[24px]'
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>
             <CyDView className='flex flex-col items-center px-[32px]'>
               {isJoinDiscordStatus === JoinDiscordStatus.ERROR ? (
                 <CyDView className='flex flex-col items-center'>
-                  <CyDImage
-                    source={AppImages.RED_CROSS_IMG}
-                    className='h-[60px] w-[60px] mt-[100px]'
+                  <CydMaterialDesignIcons
+                    name='close'
+                    size={60}
+                    className='text-red400'
                   />
                   <CyDText className='text-center text-[16px] font-semibold mt-[24px]'>
                     {'Access limited to Premium users only.'}
@@ -142,7 +142,7 @@ export default function JoinDiscordModal(props: {
             {isJoinDiscordStatus !== JoinDiscordStatus.ERROR && (
               <CyDView className='flex flex-row bg-n0 rounded-[12px] p-[16px] items-center'>
                 {isJoinDiscordLoading ? (
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop

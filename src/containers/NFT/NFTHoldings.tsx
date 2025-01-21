@@ -19,12 +19,15 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   nftHoldings: NFTHolding[];
 }
 
 export function NFTHoldingsScreen() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { nftHoldings } = route.params;
@@ -56,7 +59,24 @@ export function NFTHoldingsScreen() {
   };
 
   return (
-    <CyDScrollView className={'h-full bg-whiteColor'}>
+    <CyDScrollView className={'h-full bg-n20'}>
+      <CyDView
+        className='flex-row justify-between'
+        style={{ paddingTop: insets.top }}>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {nftHoldings[0].collectionName !== ''
+            ? nftHoldings[0].collectionName
+            : nftHoldings[0].contractAddress}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView>
       <CyDView className={'flex flex-row flex-wrap flex-1 justify-around'}>
         {nftHoldings.map((holding, index) => {
           return (
@@ -66,18 +86,18 @@ export function NFTHoldingsScreen() {
                   nftHolding: holding,
                 })
               }
-              className={'my-[8px] bg-[#f2f2f2] p-[8px]'}
+              className={'my-[8px] bg-n30 p-[8px]'}
               key={index}>
               <CyDFastImage
                 defaultSource={AppImages.DEFAULT_NFT}
                 source={{ uri: holding.imageUrl }}
                 className={
-                  'h-[150px] w-[150px] rounded-[12px] border-[1px] border-sepratorColor'
+                  'h-[150px] w-[150px] rounded-[12px] border-[1px] border-n40'
                 }
               />
               <CyDFastImage
                 className={
-                  'absolute w-[30px] h-[30px] right-[16px] bottom-[40px] bg-white rounded-[50px]'
+                  'absolute w-[30px] h-[30px] right-[16px] bottom-[40px] rounded-[50px]'
                 }
                 source={renderChainImage(holding.blockchain)}
               />

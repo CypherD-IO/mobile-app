@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-raw-text */
 /* eslint-disable react-native/no-inline-styles */
 
 /**
@@ -16,13 +15,7 @@ import { min, round } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  BackHandler,
-  Keyboard,
-  Platform,
-  View,
-} from 'react-native';
+import { ActivityIndicator, BackHandler, Keyboard } from 'react-native';
 import { URL } from 'react-native-url-polyfill';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import AppImages from '../../../assets/images/appImages';
@@ -34,8 +27,6 @@ import MoreViewModal from '../../components/MoreViewModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { gasFeeReservation, INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
-import * as C from '../../constants/index';
-import { screenTitle } from '../../constants/index';
 import {
   Chain,
   CHAIN_ETH,
@@ -51,7 +42,16 @@ import { HdWalletContext } from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
 import useWeb3 from '../../hooks/useWeb3';
 import { isIOS } from '../../misc/checkers';
-import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CydMaterialDesignIcons,
+  CyDSafeAreaView,
+  CyDScrollView,
+  CyDText,
+  CyDTextInput,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import { DynamicScrollView } from '../../styles/viewStyle';
 import {
   BrowserHistoryEntry,
@@ -60,15 +60,6 @@ import {
   WebsiteInfo,
 } from '../../types/Browser';
 import Loading from '../../components/v2/loading';
-
-const {
-  CText,
-  DynamicView,
-  DynamicImage,
-  DynamicTouchView,
-  WebsiteInput,
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-} = require('../../styles');
 
 enum BROWSER_ERROR {
   SSL = 'ssl',
@@ -91,7 +82,6 @@ const webviewErrorCodesMapping: Record<string, { error: string; image: any }> =
   };
 
 export default function Browser({ route, navigation }: any) {
-  // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { params } = route;
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [moreView, setMoreview] = useState<boolean>(false);
@@ -100,8 +90,6 @@ export default function Browser({ route, navigation }: any) {
   const [fetchingInjection, setFetchingInjection] = useState<boolean>(false);
   const [inputText, setInputText] = useState('');
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
-  const [canGoForward, setCanGoForward] = useState<boolean>(false);
-  const [isKeyboardVisible, setKeyboardVisible] = useState<boolean>(false);
   const [currentUrl, setCurrentUrl] = useState('');
   const { t } = useTranslation();
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -275,26 +263,6 @@ export default function Browser({ route, navigation }: any) {
   }, [hdWalletContext.state.selectedChain]);
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      () => {
-        setKeyboardVisible(true); // or some other action
-      },
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setKeyboardVisible(false);
-      },
-    );
-
-    return () => {
-      keyboardDidHideListener.remove();
-      keyboardDidShowListener.remove();
-    };
-  }, []);
-
-  useEffect(() => {
     const {
       selectedChain: { chain_id },
       selectedChain,
@@ -447,7 +415,7 @@ export default function Browser({ route, navigation }: any) {
   // https://amanhimself.dev/blog/handle-navigation-in-webviews-react-native/
   const handleBackButton = () => {
     if (!canGoBack) {
-      navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
+      setInbuiltPage('webview');
     } else if (webviewRef.current) {
       webviewRef.current.goBack();
       setIsSslSecure(true);
@@ -533,7 +501,7 @@ export default function Browser({ route, navigation }: any) {
   if (fetchingInjection) return <Loading />;
 
   return (
-    <CyDSafeAreaView className='bg-white flex-1'>
+    <CyDSafeAreaView className='bg-n20 flex-1'>
       <ChooseChainModal
         isModalVisible={chooseChain}
         onPress={() => {
@@ -558,154 +526,84 @@ export default function Browser({ route, navigation }: any) {
           setInbuiltPage('bookmarks');
         }}
       />
-      <DynamicView
-        dynamic
-        dynamicHeightFix
-        dynamicWidth
-        width={94}
-        jC={'center'}
-        aLIT={'center'}
-        height={45}
-        bGC='white'
-        fD={'row'}
-        mH={10}
-        mT={Platform.OS === 'android' ? 5 : 0}>
-        {!onFocus && (
-          <DynamicTouchView
-            sentry-label='browser-back-button'
-            dynamic
-            dynamicWidth
-            dynamicHeightFix
-            mL={30}
-            height={10}
-            width={8}
-            jC={'center'}
-            onPress={() => {
-              handleBackButton();
-            }}>
-            <DynamicImage
-              dynamic
-              dynamicWidth
-              height={28}
-              width={28}
-              resizemode='contain'
-              source={AppImages.BACK}
-              style={{ tintColor: canGoBack ? 'black' : 'gray' }}
-            />
-          </DynamicTouchView>
-        )}
-        {!onFocus && (
-          <DynamicTouchView
-            sentry-label='browser-forward-button'
-            dynamic
-            dynamicWidth
-            dynamicHeightFix
-            height={10}
-            width={8}
-            jC={'center'}
-            onPress={() => {
-              handleForwardButton();
-            }}>
-            <DynamicImage
-              dynamic
-              dynamicWidth
-              height={28}
-              width={28}
-              resizemode='contain'
-              source={AppImages.BACK}
-              style={{
-                tintColor: canGoForward ? 'black' : 'gray',
-                transform: [{ rotate: '180deg' }],
-              }}
-            />
-          </DynamicTouchView>
-        )}
+      <CyDView className='bg-n0 h-[45px] mt-1 flex flex-row justify-between items-center p-3'>
+        <CyDView className='flex flex-row items-center'>
+          {!onFocus && (
+            <CyDTouchView
+              className='ml-3'
+              onPress={() => {
+                handleBackButton();
+              }}>
+              <CydMaterialDesignIcons
+                name='chevron-left'
+                size={24}
+                className='text-base400'
+              />
+            </CyDTouchView>
+          )}
+          {!onFocus && (
+            <CyDTouchView
+              className=''
+              onPress={() => {
+                handleForwardButton();
+              }}>
+              <CydMaterialDesignIcons
+                name='chevron-right'
+                size={24}
+                className='text-base400'
+              />
+            </CyDTouchView>
+          )}
 
-        {!onFocus && (
-          <DynamicTouchView
-            sentry-label='browser-forward-button'
-            dynamic
-            dynamicWidth
-            dynamicHeightFix
-            height={10}
-            mL={-5}
-            width={8}
-            jC={'center'}
-            onPress={() => {
-              handleReload();
-            }}>
-            <DynamicImage
-              dynamic
-              dynamicWidth
-              height={100}
-              width={100}
-              resizemode='contain'
-              source={AppImages.REFRESH_BROWSER}
-              style={{ tintColor: '#555' }}
-            />
-          </DynamicTouchView>
-        )}
+          {!onFocus && (
+            <CyDTouchView
+              className=''
+              onPress={() => {
+                handleReload();
+              }}>
+              <CydMaterialDesignIcons
+                name='refresh'
+                size={24}
+                className='text-base400'
+              />
+            </CyDTouchView>
+          )}
+        </CyDView>
 
-        <DynamicView
-          dynamic
-          dynamicWidth
-          dynamicHeightFix
-          height={30}
-          bO={Platform.OS === 'android' ? 0.9 : 0.6}
-          mL={onFocus ? 10 : 5}
-          width={onFocus ? 80 : 63}
-          bR={8}
-          bGC={onFocus ? '#F5F7FF' : '#EDEDED'}
-          aLIT={'center'}
-          jC={'center'}
-          fD={'row'}
-          style={{ borderColor: onFocus ? '#222222' : '#FFFFFF' }}>
+        <CyDView
+          className={clsx('h-[30px] flex flex-row items-center', {
+            'w-[80%]': onFocus,
+            'w-[63%]': !onFocus,
+          })}>
           {!onFocus &&
             (inbuildPage === 'webview' || inbuildPage === 'webviewError') && (
-              <DynamicTouchView
-                dynamic
-                mL={2}
-                sentry-label='browser-search-erase'>
+              <CyDView className='ml-[2px]' sentry-label='browser-search-erase'>
                 {isSslSecure && (
-                  <DynamicImage
-                    style={{ tintColor: '#32cd32' }}
-                    dynamic
-                    dynamicWidthFix
-                    height={15}
-                    width={15}
-                    mL={5}
-                    resizemode='contain'
-                    source={AppImages.LOCK_BROWSER}
+                  <CydMaterialDesignIcons
+                    name='lock'
+                    size={20}
+                    className='text-base400 ml-[5px]'
                   />
                 )}
                 {!isSslSecure && (
-                  <DynamicImage
-                    dynamic
-                    dynamicWidthFix
-                    height={15}
-                    width={15}
-                    mL={5}
-                    resizemode='contain'
+                  <CyDFastImage
+                    className='ml-[5px] h-4 w-4'
+                    resizeMode='contain'
                     source={AppImages.BROWSER_SSL}
                   />
                 )}
-              </DynamicTouchView>
+              </CyDView>
             )}
           {onFocus && (
-            <DynamicTouchView sentry-label='browser-search-erase'>
-              <DynamicImage
-                style={{ tintColor: 'black' }}
-                dynamic
-                dynamicWidthFix
-                height={18}
-                width={18}
-                mL={0}
-                resizemode='contain'
-                source={AppImages.SEARCH_BROWSER}
+            <CyDTouchView sentry-label='browser-search-erase'>
+              <CydMaterialDesignIcons
+                name='magnify'
+                size={20}
+                className='text-base400 mr-1'
               />
-            </DynamicTouchView>
+            </CyDTouchView>
           )}
-          <WebsiteInput
+          <CyDTextInput
             returnKeyType='go'
             autoCapitalize='none'
             onSubmitEditing={(e: any) => {
@@ -735,208 +633,111 @@ export default function Browser({ route, navigation }: any) {
             onBlur={() => setFocus(false)}
             value={getValueForWebsiteInput()}
             autoCorrect={false}
-            style={{
-              width: onFocus || isKeyboardVisible ? '83%' : '90%',
-              textAlign: onFocus ? 'left' : 'center',
-              color: onFocus ? '#000000' : '#555555',
-            }}
+            className={clsx('flex-1 text-base400 bg-n20 mx-2 p-2', {
+              'text-left': onFocus,
+              'text-center': !onFocus,
+              'w-[80%]': onFocus,
+              'w-[63%]': !onFocus,
+            })}
             selectTextOnFocus={true}
           />
-          <DynamicTouchView
+          <CyDTouchView
             sentry-label='browser-search-erase'
             onPress={() => {
               setCurrentUrl('');
               setInputText('');
             }}>
             {onFocus && (
-              <DynamicImage
-                style={{ tintColor: 'gray' }}
-                dynamic
-                dynamicWidthFix
-                height={12}
-                width={12}
-                resizemode='contain'
-                source={AppImages.CANCEL}
+              <CydMaterialDesignIcons
+                name='close-circle'
+                size={20}
+                className='text-base400'
               />
             )}
-          </DynamicTouchView>
-        </DynamicView>
+          </CyDTouchView>
+        </CyDView>
 
         {onFocus && (
-          <DynamicTouchView
-            sentry-label='browser-search-cancel'
-            dynamic
-            mL={10}
+          <CyDTouchView
+            className=''
             onPress={() => {
               Keyboard.dismiss();
               setFocus(false);
             }}>
-            <CText
-              dynamic
-              fF={C.fontsName.FONT_REGULAR}
-              fS={16}
-              color={Colors.primaryTextColor}>
-              Cancel
-            </CText>
-          </DynamicTouchView>
+            <CyDText>Cancel</CyDText>
+          </CyDTouchView>
         )}
 
         {!onFocus && (
-          <DynamicTouchView
+          <CyDTouchView
             sentry-label='browser-chain-choose'
-            dynamic
-            dynamicTintColor
-            tC={'#767BA1'}
-            dynamicWidth
-            dynamicHeightFix
-            height={30}
-            width={10}
-            bR={15}
-            pH={5}
-            mL={5}
-            pV={5}
-            fD={'row'}
             onPress={() => {
               setChooseChain(true);
             }}>
-            <DynamicImage
-              dynamic
-              dynamicWidth
-              height={95}
-              width={95}
-              resizemode='contain'
+            <CyDFastImage
+              resizeMode='contain'
+              className='h-[24px] w-[24px]'
               source={hdWalletContext.state.selectedChain.logo_url}
             />
-          </DynamicTouchView>
+          </CyDTouchView>
         )}
         {!onFocus && (
-          <DynamicTouchView
+          <CyDTouchView
             sentry-label='browser-more-button'
-            dynamic
-            dynamicTintColor
-            tC={'#767BA1'}
-            dynamicWidth
-            width={10}
-            bR={15}
-            pH={4}
-            pV={0}
-            fD={'row'}
             onPress={() => {
               setMoreview(true);
             }}>
-            <DynamicImage
-              dynamic
-              dynamicWidth
-              marginHorizontal={0}
-              height={60}
-              width={60}
-              resizemode='contain'
-              source={AppImages.MORE}
+            <CydMaterialDesignIcons
+              name={'dots-vertical'}
+              size={24}
+              className={'text-base400'}
             />
-          </DynamicTouchView>
+          </CyDTouchView>
         )}
-      </DynamicView>
+      </CyDView>
       {onFocus &&
         !websiteInfo.origin.includes('cypherd.io') &&
         websiteInfo.origin !== '' && (
-          <DynamicTouchView
-            dynamic
-            sentry-label='browser-current-url-bookmark'
-            fD={'row'}
-            heigth={100}
-            width={100}
-            aLIT={'center'}
-            jC={'flex-start'}
-            mT={10}>
-            <DynamicImage
-              dynamic
-              dynamicWidth
-              height={18}
-              width={18}
-              resizemode='contain'
-              source={{
-                uri: `https://www.google.com/s2/favicons?domain=${websiteInfo.host}&sz=32`,
-              }}
-            />
-            <DynamicView dynamic dynamicWidth width={60}>
-              <CText
-                dynamic
-                dynamicWidth
-                width={100}
-                numberOfLines={1}
-                fF={C.fontsName.FONT_REGULAR}
-                tA={'left'}
-                mL={-15}
-                fS={14}
-                style={{ color: Colors.primaryTextColor }}>
-                {websiteInfo.title}
-              </CText>
-              <CText
-                dynamic
-                dynamicWidth
-                width={100}
-                numberOfLines={1}
-                fF={C.fontsName.FONT_REGULAR}
-                tA={'left'}
-                mL={-15}
-                fS={10}
-                style={{ color: Colors.primaryTextColor }}>
-                {websiteInfo.origin}
-              </CText>
-            </DynamicView>
-            <DynamicTouchView
-              dynamic
-              dynamicWidth
-              width={12}
-              onPress={onBookMark}
-              fD='row'
-              jC='flex-end'>
-              <DynamicImage
-                dynamic
-                dynamicWidth
-                height={20}
-                width={50}
-                mL={-10}
-                mT={-5}
-                resizemode='contain'
-                source={
+          <CyDView
+            className='flex flex-row items-center mt-2 mx-3 justify-between'
+            sentry-label='browser-current-url-bookmark'>
+            <CyDView className='flex flex-row items-center'>
+              <CyDView className='w-[20px] h-[20px]'>
+                <CyDFastImage
+                  className='h-[18px] w-[18px]'
+                  source={{
+                    uri: `https://www.google.com/s2/favicons?domain=${websiteInfo.host}&sz=32`,
+                  }}
+                />
+              </CyDView>
+              <CyDView>
+                <CyDText className=' text-[14px]'>{websiteInfo.title}</CyDText>
+                <CyDText className='text-[10px]'>{websiteInfo.origin}</CyDText>
+              </CyDView>
+            </CyDView>
+            <CyDTouchView onPress={onBookMark} className=''>
+              <CydMaterialDesignIcons
+                name={
                   isBookmarkedAlready(websiteInfo.url)
-                    ? AppImages.BOOKMARK_FILLED
-                    : AppImages.BOOKMARK_BROWSER
+                    ? 'bookmark'
+                    : 'bookmark-outline'
                 }
-                style={{ tintColor: '#333333' }}
+                size={20}
+                className='text-base400'
               />
-            </DynamicTouchView>
-          </DynamicTouchView>
+            </CyDTouchView>
+          </CyDView>
         )}
       {onFocus && searchData.length > 0 && (
-        <CText
-          dynamic
-          dynamicWidthFix
-          width={170}
-          numberOfLines={1}
-          fF={C.fontsName.FONT_REGULAR}
-          tA={'left'}
-          mT={10}
-          mL={20}
-          fS={13}
-          style={{ color: Colors.primaryTextColor }}>
-          Recent Searches
-        </CText>
+        <CyDText className='text-base ml-2 mt-2'>Recent Searches</CyDText>
       )}
       {onFocus && (
-        <DynamicView dynamic dynamicHeight height={100} jC='flex-start'>
+        <CyDView className='h-full'>
           {searchData.map(item => (
-            <DynamicTouchView
+            <CyDTouchView
               key={item.url}
-              dynamic
-              sentry-label='browser-recent-search-url'
-              fD={'row'}
-              heigth={100}
-              width={100}
-              aLIT={'center'}
-              jC={'flex-start'}
-              mT={10}
+              sentry-label='browser-recent-search-url '
+              className='mt-2 flex flex-row items-center justify-start mx-3'
               onPress={() => {
                 setInputText(item.url);
                 setCurrentUrl(item.url);
@@ -951,52 +752,22 @@ export default function Browser({ route, navigation }: any) {
                   })
                   .catch(Sentry.captureException);
               }}>
-              <DynamicImage
-                dynamic
-                dynamicWidth
-                height={18}
-                width={18}
-                resizemode='contain'
+              <CyDFastImage
+                className='h-[18px] w-[18px]'
                 source={{ uri: item.image }}
               />
-              <DynamicView dynamic dynamicWidth width={80}>
-                <CText
-                  dynamic
-                  dynamicWidth
-                  width={100}
-                  numberOfLines={1}
-                  fF={C.fontsName.FONT_REGULAR}
-                  tA={'left'}
-                  mL={-15}
-                  fS={14}
-                  style={{ color: Colors.primaryTextColor }}>
-                  {item.name}
-                </CText>
-                <CText
-                  dynamic
-                  dynamicWidth
-                  width={100}
-                  numberOfLines={1}
-                  fF={C.fontsName.FONT_REGULAR}
-                  tA={'left'}
-                  mL={-15}
-                  fS={10}
-                  style={{ color: Colors.primaryTextColor }}>
-                  {item.origin}
-                </CText>
-              </DynamicView>
-            </DynamicTouchView>
+              <CyDView>
+                <CyDText className='text-[14px]'>{item.name}</CyDText>
+                <CyDText className='text-[10px]'>{item.origin}</CyDText>
+              </CyDView>
+            </CyDTouchView>
           ))}
-        </DynamicView>
+        </CyDView>
       )}
 
       {inbuildPage === 'history' && !onFocus ? (
-        <DynamicScrollView
-          dynamic
-          dynamicHeight
-          height={100}
-          style={{ innerHeight: '100%', outerHeight: '100%' }}>
-          <DynamicTouchView
+        <CyDScrollView className='h-full'>
+          <CyDTouchView
             onPress={() => {
               clearHistory();
               analytics()
@@ -1005,77 +776,29 @@ export default function Browser({ route, navigation }: any) {
                 })
                 .catch(Sentry.captureException);
             }}>
-            <CText
-              dynamic
-              dynamicWidth
-              width={90}
-              numberOfLines={1}
-              fF={C.fontsName.FONT_REGULAR}
-              tA={'left'}
-              mL={20}
-              mT={10}
-              fS={12}
-              style={{ color: Colors.primaryTextColor }}>
+            <CyDText className='text-[14px] p-3 text-center'>
               Clear browsing history
-            </CText>
-          </DynamicTouchView>
+            </CyDText>
+          </CyDTouchView>
 
-          <View
-            style={{
-              borderBottomColor: '#d1d1e0',
-              borderBottomWidth: 1,
-              marginBottom: 5,
-              marginTop: 10,
-            }}
-          />
+          <CyDView className='border-b border-n40 mb-5' />
           {browserHistory.length === 0 ? (
-            <DynamicView
-              dynamic
-              dynamicWidth
-              dynamicHeight
-              height={100}
-              width={100}
-              alIT={'center'}
-              jC={'center'}>
-              <CText
-                dynamic
-                dynamicWidth
-                width={90}
-                numberOfLines={1}
-                fF={C.fontsName.FONT_REGULAR}
-                tA={'center'}
-                mT={200}
-                fS={12}
-                style={{ color: Colors.primaryTextColor }}>
+            <CyDView>
+              <CyDText className='text-[22px]'>
                 Start using the browser to view history here
-              </CText>
-            </DynamicView>
+              </CyDText>
+            </CyDView>
           ) : (
             spliceHistoryByTime().map(historybt => (
-              <View key={historybt.dateString}>
-                <CText
-                  dynamic
-                  dynamicWidth
-                  width={90}
-                  numberOfLines={1}
-                  fF={C.fontsName.FONT_REGULAR}
-                  tA={'left'}
-                  mT={10}
-                  mL={20}
-                  fS={12}
-                  style={{ color: Colors.primaryTextColor }}>
+              <CyDView key={historybt.dateString} className='mx-3'>
+                <CyDText className='text-[12px]'>
                   {historybt.dateString}
-                </CText>
+                </CyDText>
                 {historybt.entry.map(item => (
-                  <DynamicTouchView
+                  <CyDTouchView
                     key={item.url}
                     sentry-label='browser-history-url'
-                    dynamic
-                    fD={'row'}
-                    width={100}
-                    aLIT={'center'}
-                    jC={'flex-start'}
-                    mT={10}
+                    className='flex flex-row items-center justify-between mt-4 w-full'
                     onPress={() => {
                       setInputText(item.url);
                       setCurrentUrl(item.url);
@@ -1089,41 +812,17 @@ export default function Browser({ route, navigation }: any) {
                         })
                         .catch(e => Sentry.captureException(e));
                     }}>
-                    <DynamicImage
-                      dynamic
-                      dynamicWidth
-                      height={18}
-                      width={18}
-                      resizemode='contain'
-                      source={{ uri: item.image }}
-                    />
-                    <DynamicView dynamic dynamicWidth width={80}>
-                      <CText
-                        dynamic
-                        dynamicWidth
-                        width={100}
-                        numberOfLines={1}
-                        fF={C.fontsName.FONT_REGULAR}
-                        tA={'left'}
-                        mL={-15}
-                        fS={14}
-                        style={{ color: Colors.primaryTextColor }}>
-                        {item.name}
-                      </CText>
-                      <CText
-                        dynamic
-                        dynamicWidth
-                        width={100}
-                        numberOfLines={1}
-                        fF={C.fontsName.FONT_REGULAR}
-                        tA={'left'}
-                        mL={-15}
-                        fS={10}
-                        style={{ color: Colors.primaryTextColor }}>
-                        {item.origin}
-                      </CText>
-                    </DynamicView>
-                    <DynamicTouchView
+                    <CyDView className='flex flex-row items-center'>
+                      <CyDFastImage
+                        className='h-[18px] w-[18px]'
+                        source={{ uri: item.image }}
+                      />
+                      <CyDView className='flex flex-col ml-[8px]'>
+                        <CyDText className='text-[14px]'>{item.name}</CyDText>
+                        <CyDText className='text-[10px]'>{item.origin}</CyDText>
+                      </CyDView>
+                    </CyDView>
+                    <CyDTouchView
                       sentry-label='browser_history_url_clear'
                       onPress={() => {
                         deleteHistory(item);
@@ -1134,127 +833,66 @@ export default function Browser({ route, navigation }: any) {
                           })
                           .catch(e => Sentry.captureException(e));
                       }}>
-                      <DynamicImage
-                        style={{ tintColor: 'gray' }}
-                        dynamic
-                        dynamicWidthFix
-                        height={15}
-                        width={15}
-                        resizemode='contain'
-                        mL={-20}
-                        source={AppImages.CANCEL}
+                      <CydMaterialDesignIcons
+                        name='close-circle'
+                        size={20}
+                        className='text-base400 '
                       />
-                    </DynamicTouchView>
-                  </DynamicTouchView>
+                    </CyDTouchView>
+                  </CyDTouchView>
                 ))}
-              </View>
+              </CyDView>
             ))
           )}
-        </DynamicScrollView>
+        </CyDScrollView>
       ) : null}
       {inbuildPage === 'webviewError' && (
-        <DynamicView
-          dynamic
-          dynamicWidth
-          dynamicHeight
-          height={100}
-          width={100}
-          aLIT={'center'}
-          jC={'flex-start'}>
-          <DynamicImage
-            dynamic
-            dynamicWidthFix
-            dynamicHeightFix
-            height={160}
-            width={160}
-            mT={150}
-            resizemode='contain'
+        <CyDView className='flex flex-col items-center justify-center h-[95px] w-full'>
+          <CyDFastImage
+            className='mt-[100px] h-[1]'
             source={webviewErrorCodesMapping[browserErrorCode].image}
           />
-          <CText
-            dynamic
-            dynamicWidth
-            width={80}
-            numberOfLines={2}
-            fF={C.fontsName.FONT_REGULAR}
-            tA={'center'}
-            fS={12}
-            style={{
-              color: Colors.primaryTextColor,
-            }}>{`Error: ${browserError}`}</CText>
-        </DynamicView>
+          <CyDText className='text-[12px]'>{`Error: ${browserError}`}</CyDText>
+        </CyDView>
       )}
 
       {inbuildPage === 'bookmarks' && (
-        <DynamicScrollView
-          dynamic
-          dynamicHeight
-          height={100}
+        <CyDScrollView
+          className='h-full'
           onTouchEnd={(e: any) => {
             if (e.target === e.currentTarget) {
               setRemoveBookmarkMode(false);
               setInbuiltPage('webview');
             }
           }}>
-          <DynamicView>
-            <CText
-              dynamic
-              dynamicWidth
-              width={58}
-              numberOfLines={1}
-              fF={C.fontsName.FONT_BOLD}
-              tA={'left'}
-              mL={22}
-              mT={10}
-              fS={15}
-              style={{ color: Colors.primaryTextColor }}>
-              {'bookmarks'.toLocaleUpperCase()}
-            </CText>
+          <CyDView className='p-4'>
+            <CyDText className=''>{'bookmarks'.toLocaleUpperCase()}</CyDText>
             {browserFavourites.length === 0 && (
-              <CText
-                dynamic
-                dynamicWidth
-                width={100}
-                numberOfLines={1}
-                tA={'center'}
-                mL={0}
-                mT={10}
-                fS={12}
-                style={{ color: Colors.primaryTextColor }}>
+              <CyDText className='text-[12px] '>
                 Your bookmarks will be shown here
-              </CText>
+              </CyDText>
             )}
-            <DynamicView
-              dynamic
-              fD={'row'}
-              dynamicWidth
-              width={90}
-              aLIT={'center'}
-              jC={'flex-start'}
-              mL={10}
-              style={{ flexWrap: 'wrap', marginBotton: '30px' }}>
+            <CyDView className='flex flex-row flex-wrap mb-[30px] items-center justify-start m-[10px]'>
               {browserFavourites.map(favourite => (
-                <DynamicView
-                  key={favourite.url}
-                  dynamic
-                  style={{ flexBasis: '20%' }}>
-                  <DynamicTouchView
-                    dynamic
-                    dynamicWidthFix
-                    dynamicHeightFix
-                    height={48}
-                    width={48}
-                    alIT={'center'}
-                    jC={'center'}
-                    mL={10}
-                    mT={10}
-                    bGC={Colors.browserBookmarkBackground}
-                    style={{
-                      color: Colors.primaryTextColor,
-                      borderWidth: 1,
-                      borderColor: 'gray',
-                      borderRadius: 22,
-                    }}
+                <CyDTouchView key={favourite.url} className=''>
+                  <CyDTouchView
+                    className='flex items-center justify-center bg-n0 border border-n40  w-[48px] h-[48px] rounded-md'
+                    // dynamic
+                    // dynamicWidthFix
+                    // dynamicHeightFix
+                    // height={48}
+                    // width={48}
+                    // alIT={'center'}
+                    // jC={'center'}
+                    // mL={10}
+                    // mT={10}
+                    // bGC={Colors.browserBookmarkBackground}
+                    // style={{
+                    //   color: Colors.primaryTextColor,
+                    //   borderWidth: 1,
+                    //   borderColor: 'gray',
+                    //   borderRadius: 22,
+                    // }}
                     onPress={(e: any) => {
                       setInputText(favourite.url);
                       setCurrentUrl(favourite.url);
@@ -1272,118 +910,72 @@ export default function Browser({ route, navigation }: any) {
                     onLongPress={() => {
                       setRemoveBookmarkMode(true);
                     }}>
-                    <DynamicView>
-                      <DynamicImage
-                        dynamic
-                        dynamicWidthFix
-                        dynamicHeightFix
-                        height={38}
-                        width={38}
-                        resizemode='contain'
-                        source={{ uri: favourite.image }}
-                      />
-                    </DynamicView>
-                  </DynamicTouchView>
+                    <CyDFastImage
+                      className='h-[38px] w-[38px]'
+                      source={{ uri: favourite.image }}
+                    />
+                  </CyDTouchView>
 
                   {removeBookmarkMode && (
-                    <DynamicTouchView
+                    <CyDTouchView
                       sentry-label='browser-search-erase'
-                      style={{
-                        position: 'absolute',
-                        tintColor: '#444444',
-                        left: 52,
-                        top: 5,
-                        backgroundColor: 'white',
-                        borderRadius: 50,
-                      }}
+                      className='absolute right-[0px] top-[0px] rounded-full'
+                      // style={{
+                      //   position: 'absolute',
+                      //   tintColor: '#444444',
+                      //   left: 52,
+                      //   top: 5,
+                      //   backgroundColor: 'white',
+                      //   borderRadius: 50,
+                      // }}
                       onPress={() => {
                         deleteBookmark(favourite);
                       }}>
-                      <DynamicImage
-                        dynamic
-                        dynamicWidthFix
-                        height={14}
-                        width={14}
-                        resizemode='contain'
-                        source={AppImages.CANCEL}
-                        style={{ tintColor: '#444444' }}
+                      <CydMaterialDesignIcons
+                        name='close-circle'
+                        size={20}
+                        className='text-base400 ml-[-20px]'
                       />
-                    </DynamicTouchView>
+                    </CyDTouchView>
                   )}
 
-                  <CText
-                    dynamic
-                    dynamicWidthFix
-                    width={58}
-                    numberOfLines={1}
-                    fF={C.fontsName.FONT_REGULAR}
-                    mL={11}
-                    mT={3}
-                    fS={12}
-                    style={{ color: Colors.primaryTextColor }}>
-                    {favourite.name}
-                  </CText>
-                </DynamicView>
+                  <CyDView className='w-[60px] overflow-hidden mt-1'>
+                    <CyDText
+                      className='text-center text-[10px] truncate'
+                      numberOfLines={1}>
+                      {favourite.name}
+                    </CyDText>
+                  </CyDView>
+                </CyDTouchView>
               ))}
-            </DynamicView>
-          </DynamicView>
-        </DynamicScrollView>
+            </CyDView>
+          </CyDView>
+        </CyDScrollView>
       )}
 
       {!onFocus && inbuildPage === 'home' && (
         <DynamicScrollView dynamic dynamicHeight height={100}>
           {browserHistory.length === 0 ? (
-            <DynamicView
-              dynamic
-              dynamicWidth
-              dynamicHeight
-              height={100}
-              width={100}
-              alIT={'center'}
-              jC={'center'}>
-              <CText
-                dynamic
-                dynamicWidth
-                width={90}
-                numberOfLines={1}
-                fF={C.fontsName.FONT_REGULAR}
-                tA={'center'}
-                mT={200}
-                fS={12}
-                style={{ color: Colors.primaryTextColor }}>
+            <CyDView className='flex flex-row items-center justify-center'>
+              <CyDText className='text-[12px]'>
                 Start using the browser to view history here
-              </CText>
-            </DynamicView>
+              </CyDText>
+            </CyDView>
           ) : (
             <>
-              <CyDText className=' text-left ml-[22px] mt-[10px] text-[15px]  font-bold'>
+              <CyDText className=' text-left ml-3 mt-[10px] text-[15px] font-bold'>
                 {'history'.toLocaleUpperCase()}
               </CyDText>
               {spliceHistoryByTime().map(historybt => (
-                <View key={historybt.dateString}>
-                  <CText
-                    dynamic
-                    dynamicWidth
-                    width={90}
-                    numberOfLines={1}
-                    fF={C.fontsName.FONT_REGULAR}
-                    tA={'left'}
-                    mT={10}
-                    mL={20}
-                    fS={12}
-                    style={{ color: Colors.primaryTextColor }}>
+                <CyDView key={historybt.dateString} className='mx-3'>
+                  <CyDText className='text-[12px] '>
                     {historybt.dateString}
-                  </CText>
+                  </CyDText>
                   {historybt.entry.map(item => (
-                    <DynamicTouchView
+                    <CyDTouchView
                       key={item.url}
                       sentry-label='browser-history-url'
-                      dynamic
-                      fD={'row'}
-                      width={100}
-                      aLIT={'center'}
-                      jC={'flex-start'}
-                      mT={10}
+                      className='flex flex-row items-center mt-4 w-full'
                       onPress={() => {
                         setInputText(item.url);
                         setCurrentUrl(item.url);
@@ -1399,41 +991,20 @@ export default function Browser({ route, navigation }: any) {
                             Sentry.captureException(e);
                           });
                       }}>
-                      <DynamicImage
-                        dynamic
-                        dynamicWidth
-                        height={18}
-                        width={18}
-                        resizemode='contain'
-                        source={{ uri: item.image }}
-                      />
-                      <DynamicView dynamic dynamicWidth width={80}>
-                        <CText
-                          dynamic
-                          dynamicWidth
-                          width={100}
-                          numberOfLines={1}
-                          fF={C.fontsName.FONT_REGULAR}
-                          tA={'left'}
-                          mL={-15}
-                          fS={14}
-                          style={{ color: Colors.primaryTextColor }}>
-                          {item.name}
-                        </CText>
-                        <CText
-                          dynamic
-                          dynamicWidth
-                          width={100}
-                          numberOfLines={1}
-                          fF={C.fontsName.FONT_REGULAR}
-                          tA={'left'}
-                          mL={-15}
-                          fS={10}
-                          style={{ color: Colors.primaryTextColor }}>
-                          {item.origin}
-                        </CText>
-                      </DynamicView>
-                      <DynamicTouchView
+                      <CyDView className='flex flex-row items-center flex-1'>
+                        <CyDFastImage
+                          className='h-[18px] w-[18px] mr-2'
+                          resizeMode='contain'
+                          source={{ uri: item.image }}
+                        />
+                        <CyDView>
+                          <CyDText className='text-[14px]'>{item.name}</CyDText>
+                          <CyDText className='text-[10px]'>
+                            {item.origin}
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                      <CyDTouchView
                         sentry-label='browser_history_url_clear'
                         onPress={() => {
                           deleteHistory(item);
@@ -1446,35 +1017,24 @@ export default function Browser({ route, navigation }: any) {
                               Sentry.captureException(e);
                             });
                         }}>
-                        <DynamicImage
-                          style={{ tintColor: 'gray' }}
-                          dynamic
-                          dynamicWidthFix
-                          height={15}
-                          width={15}
-                          resizemode='contain'
-                          mL={-20}
-                          source={AppImages.CANCEL}
+                        <CydMaterialDesignIcons
+                          name='close-circle'
+                          size={20}
+                          className='text-base400 ml-3'
                         />
-                      </DynamicTouchView>
-                    </DynamicTouchView>
+                      </CyDTouchView>
+                    </CyDTouchView>
                   ))}
-                </View>
+                </CyDView>
               ))}
             </>
           )}
         </DynamicScrollView>
       )}
       {loader && inbuildPage === 'webview' && (
-        <DynamicView
-          dynamic
-          dynamicWidth
-          dynamicHeight
-          height={95}
-          width={100}
-          jC='center'>
+        <CyDView className='flex flex-row items-center justify-center h-full w-full'>
           <ActivityIndicator size='large' color={Colors.black} />
-        </DynamicView>
+        </CyDView>
       )}
       <CyDView className={clsx('flex-1 pb-[50px]', { 'pb-[75px]': !isIOS() })}>
         <WebView
@@ -1492,7 +1052,6 @@ export default function Browser({ route, navigation }: any) {
           style={{ marginTop: 0 }}
           onNavigationStateChange={navState => {
             setCanGoBack(navState.canGoBack);
-            setCanGoForward(navState.canGoForward);
             setCurrentUrl(navState.url);
           }}
           onLoad={syntheticEvent => {

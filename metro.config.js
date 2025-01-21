@@ -1,4 +1,6 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
+const { withNativeWind } = require("nativewind/metro");
+
 
 /**
  * Metro configuration
@@ -6,15 +8,16 @@ const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = {
-  resolver: {
+
+const config = mergeConfig(getDefaultConfig(__dirname), {
+    resolver: {
     extraNodeModules: {
       path: require.resolve('path-browserify'),
       fs: require.resolve('react-native-level-fs'),
       '@walletconnect/react-native-compat': require.resolve('@walletconnect/react-native-compat'),
     },
   },
-};
+  
+});
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
-
+module.exports = withNativeWind(config, { input: "./global.css" });  

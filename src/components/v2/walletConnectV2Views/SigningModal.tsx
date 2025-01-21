@@ -445,7 +445,7 @@ export default function SigningModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDView className='rounded-t-[24px] bg-white max-h-[90%]'>
+      <CyDView className='rounded-t-[24px] bg-n20 max-h-[90%]'>
         {chain && method ? (
           <CyDView className='flex flex-col justify-between'>
             <RenderTitle

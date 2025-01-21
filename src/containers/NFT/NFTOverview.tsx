@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -23,12 +24,15 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   nftHolding: NFTHolding;
 }
 
 export function NFTOverviewScreen() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
@@ -39,15 +43,27 @@ export function NFTOverviewScreen() {
 
   useEffect(() => {
     void analytics().logEvent('visited_nft_overview_screen');
-    navigation.setOptions({
-      title: nftHolding.name,
-    });
   }, []);
 
   const holdingChain = getChain(nftHolding.blockchain);
 
   return (
-    <CyDView className={'h-full bg-whiteColor'}>
+    <CyDView className={'h-full bg-n20'}>
+      <CyDView
+        className='flex-row justify-between'
+        style={{ paddingTop: insets.top }}>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {nftHolding.name}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView>
       <CyDModalLayout
         setModalVisible={setImageZoomIn}
         isModalVisible={imageZoomIn}
@@ -59,12 +75,11 @@ export function NFTOverviewScreen() {
         <CyDView className={'rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setImageZoomIn(false)}
-            className={'z-[50] bg-white'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={
-                ' w-[22px] h-[22px] z-[50] absolute mt-[10px] right-[10px] '
-              }
+            className={'z-[50] self-end'}>
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDTouchView onPress={() => setImageZoomIn(false)}>
@@ -80,11 +95,10 @@ export function NFTOverviewScreen() {
           setImageZoomIn(true);
         }}
         className={'z-10'}>
-        <CyDImage
-          className={
-            'absolute w-[36px] h-[36px] right-[10px] top-[10px] bg-black rounded-[40px]'
-          }
-          source={AppImages.EXPAND_ICON}
+        <CydMaterialDesignIcons
+          name='arrow-expand'
+          size={32}
+          className='text-base400 absolute right-[10px] top-[10px] rounded-[40px]'
         />
       </CyDTouchView>
       <CyDFastImage
@@ -92,19 +106,18 @@ export function NFTOverviewScreen() {
         className={'h-[50%] w-[100%]'}
         source={{ uri: nftHolding.imageUrl }}
       />
-      <CyDScrollView
-        className={'bg-white rounded-t-[32px] mt-[-32px] p-[20px] z-10'}>
+      <CyDScrollView className={'rounded-t-[32px] mt-[-32px] p-[20px] z-10'}>
         <CyDText className={'text-[22px] font-extrabold'}>
           {nftHolding.name}
         </CyDText>
         <CyDView
           className={
-            'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-lightGrey'
+            'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
           }>
-          <CyDImage
-            resizeMode={'contain'}
-            className={'h-[20px] w-[20px] mr-[6px]'}
-            source={AppImages.DETAILS_ICON}
+          <CydMaterialDesignIcons
+            name='list-box-outline'
+            size={20}
+            className='text-base400 mr-[6px]'
           />
           <CyDText className={'text-[18px] font-bold'}>
             {t<string>('DETAILS_INIT_CAPS')}
@@ -112,7 +125,7 @@ export function NFTOverviewScreen() {
         </CyDView>
         <CyDView
           className={
-            'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]'
+            'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]'
           }>
           <CyDText className={'text-[18px]'}>
             {t<string>('COLLECTION_NAME_PASCAL_CASE')}
@@ -123,7 +136,7 @@ export function NFTOverviewScreen() {
         </CyDView>
         <CyDView
           className={
-            'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]'
+            'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]'
           }>
           <CyDText className={'text-[18px]'}>{t<string>('TOKEN_ID')}</CyDText>
           <CyDText className={'text-[16px] font-bold w-[50%] text-right'}>
@@ -133,7 +146,7 @@ export function NFTOverviewScreen() {
         {holdingChain && (
           <CyDView
             className={
-              'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]'
+              'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]'
             }>
             <CyDText className={'text-[18px]'}>
               {t<string>('NETWORK_INIT_CAPS')}
@@ -152,7 +165,7 @@ export function NFTOverviewScreen() {
         )}
         <CyDView
           className={clsx(
-            'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]',
+            'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]',
             {
               'mb-[50px]': !(
                 nftHolding.description && nftHolding.description !== ''
@@ -190,12 +203,12 @@ export function NFTOverviewScreen() {
           <CyDView>
             <CyDView
               className={
-                'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-lightGrey'
+                'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
               }>
-              <CyDImage
-                resizeMode={'contain'}
-                className={'h-[20px] w-[20px] mr-[6px]'}
-                source={AppImages.DESCRIPTION_ICON}
+              <CydMaterialDesignIcons
+                name='invoice-list'
+                size={20}
+                className='text-base400 mr-[6px]'
               />
               <CyDText className={'text-[18px] font-bold'}>
                 {t<string>('DESCRIPTION_INIT_CAPS')}

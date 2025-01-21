@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { t } from 'i18next';
 import WebView from 'react-native-webview';
-import EmptyView from '../../components/EmptyView';
 import Loading from '../../components/v2/loading';
 import { ChainBackendNames, ChainNames } from '../../constants/server';
 import {
@@ -173,13 +172,11 @@ export function TokenTransactions({
     return (
       <CyDView
         className={
-          'h-[140px] bg-whiteColor flex flex-row items-center justify-center mt-[100px]'
+          'h-[140px] flex flex-row items-center justify-center mt-[100px]'
         }>
-        <EmptyView
-          text={t('EMPTY_TRANSCATION_DETAIL_MSG')}
-          image={AppImages.EMPTY}
-          buyVisible={false}
-          marginTop={0}
+        <CyDFastImage
+          source={AppImages.EMPTY}
+          className='w-[150px] h-[150px]'
         />
       </CyDView>
     );
@@ -200,7 +197,7 @@ export function TokenTransactions({
       <>
         <CyDTouchView
           sentry-label='txn-detail-explorer'
-          className={'flex flex-row py-[8px] justify-between'}
+          className={'flex flex-row py-[8px] justify-between bg-n20'}
           onPress={() => {
             navigation.navigate(screenTitle.TRANS_DETAIL, {
               url: getExplorerUrl(
@@ -273,7 +270,7 @@ export function TokenTransactions({
             </CyDView>
           </CyDView>
         </CyDTouchView>
-        <CyDView className={'h-[1px] w-100 bg-portfolioBorderColor my-[5px]'} />
+        <CyDView className={'h-[0.5px] w-100 bg-n40 my-[5px]'} />
       </>
     );
   };
@@ -291,7 +288,7 @@ export function TokenTransactions({
   };
 
   return (
-    <CyDView className={'bg-whiteColor h-full'}>
+    <CyDView className={'h-full'}>
       <CyDView className={'flex-1 px-[15px] mt-[6px]'}>
         {isCosmosChain(tokenData.chainDetails.backendName) ||
         (tokenData.chainDetails.backendName === ChainBackendNames.OPTIMISM &&
