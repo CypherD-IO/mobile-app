@@ -220,7 +220,7 @@ function TabStack(props: TabStackProps) {
           },
           tabBarStyle,
           tabBarBackground: () => (
-            <CyDView className='bg-n0 h-full rounded-[20px] shadow-xl shadow-n40' />
+            <CyDView className='bg-n0 h-full rounded-t-[20px] shadow-xl shadow-n40' />
           ),
         })}
         initialRouteName={screenTitle.PORTFOLIO}>

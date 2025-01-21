@@ -285,11 +285,7 @@ export default function PrivateKey(props) {
           {data.map(item => (
             <RenderQRCode key={item.id} item={item} />
           ))}
-          <CyDView
-            className={
-              'w-[85%] border-[0.5px] border-portfolioBorderColor mt-[20px]'
-            }
-          />
+          <CyDView className={'w-[85%] border-[0.5px] border-n40 mt-[20px]'} />
           <CyDTouchView
             className={'mt-[30px]'}
             onPress={() => togglePrivateKey()}>
@@ -329,7 +325,7 @@ export default function PrivateKey(props) {
           {showPrivateKey && (
             <CyDView
               className={
-                'flex justify-center items-center mt-[15px] w-11/12 border-[1px] border-portfolioBorderColor px-[10px] py-[5px] rounded-[4px]'
+                'flex justify-center items-center mt-[15px] w-11/12 border-[1px] border-n40 px-[10px] py-[5px] rounded-[4px]'
               }>
               <CyDText
                 className={
@@ -342,7 +338,7 @@ export default function PrivateKey(props) {
         </CyDView>
         <CyDTouchView
           className={
-            'flex flex-row items-center justify-center mt-[30px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px]'
+            'flex flex-row items-center justify-center mt-[30px] h-[60px] w-3/4 border-[1px] border-n40 rounded-[12px]'
           }
           onPress={() => {
             copyToClipboard(privateKey);

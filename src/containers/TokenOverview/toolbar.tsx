@@ -55,10 +55,6 @@ export default function TokenOverviewToolBar({
     }
   };
 
-  const canShowFundCard =
-    globalStateContext.globalState.cardProfile?.solid?.cards?.length > 0 &&
-    Number(userBalance()) >= 10;
-
   return (
     <CyDView
       className={`flex flex-row w-[100%] justify-evenly items-center mt-[7px] pb-[${isIOS() ? 15 : 0}px]`}>
@@ -85,7 +81,7 @@ export default function TokenOverviewToolBar({
         <CyDView className='flex items-center'>
           <CyDTouchView
             className={
-              'bg-appColor rounded-full w-[35px] h-[35px] flex items-center justify-center'
+              'bg-p40 rounded-full w-[35px] h-[35px] flex items-center justify-center'
             }
             onPress={() => {
               navigation.navigate(screenTitle.IBC_SCREEN, {

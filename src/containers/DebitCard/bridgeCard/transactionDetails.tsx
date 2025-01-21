@@ -24,7 +24,6 @@ import {
   CyDFastImage,
   CyDImage,
   CydMaterialDesignIcons,
-  CyDSafeAreaView,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -65,17 +64,11 @@ import Toast from 'react-native-toast-message';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-  Edge,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions, StyleSheet, Linking, Platform } from 'react-native';
 import CyDModalLayout from '../../../components/v2/modal';
 import Button from '../../../components/v2/button';
 import ViewShot, { captureRef } from 'react-native-view-shot';
-import { SHARE_TRANSACTION_TIMEOUT } from '../../../core/Http';
-import { isAndroid } from '../../../misc/checkers';
 import Share from 'react-native-share';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 
@@ -871,8 +864,6 @@ const TransactionDetail = ({
               )}
             </>
           )}
-
-          {}
         </CyDView>
       </CyDView>
     </>

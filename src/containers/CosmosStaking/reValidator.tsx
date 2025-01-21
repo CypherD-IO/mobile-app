@@ -125,7 +125,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
               </CyDText>
             </CyDView>
           </CyDView>
-          <CyDView className={'w-full h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+          <CyDView className={'w-full h-[1px] bg-n40 mx-[30px]'} />
         </CyDTouchView>
       )}
     </>

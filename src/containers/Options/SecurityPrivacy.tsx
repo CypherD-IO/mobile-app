@@ -116,7 +116,7 @@ export default function SecurityPrivacy(props) {
             </CyDText>
           </CyDView>
         </CyDTouchView>
-        <CyDView className={'h-[01px] bg-portfolioBorderColor'} />
+        <CyDView className={'h-[01px] bg-n40'} />
       </CyDView>
     );
   };

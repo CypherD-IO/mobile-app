@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler } from 'react-native';
+import { BackHandler, Switch } from 'react-native';
 import { screenTitle } from '../../constants';
-import { getIBC } from '../../core/asyncStorage';
+import { getIBC, setIBC } from '../../core/asyncStorage';
 import { GlobalContext } from '../../core/globalContext';
 import {
   CyDScrollView,
@@ -10,6 +10,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
+import { GlobalContextType } from '../../constants/enum';
 export interface IAdvancedSettingsData {
   ibc: boolean;
 }
@@ -49,7 +50,7 @@ export default function AdvancedSettings({ navigation }) {
     <CyDScrollView className={'bg-n20 h-full px-[24px] pt-[40px]'}>
       {/* commenting IBC on 07-01-2025 */}
 
-      {/* <CyDView className={'flex flex-row justify-between items-center'}>
+      <CyDView className={'flex flex-row justify-between items-center'}>
         <CyDView>
           <CyDText className={'font-bold text-[18px]'}>
             {t<string>('IBC')}
@@ -72,8 +73,8 @@ export default function AdvancedSettings({ navigation }) {
           }}
           value={IBCStatus}
         />
-      </CyDView> */}
-      <CyDView className={'h-[01px] my-[14px] bg-portfolioBorderColor'} />
+      </CyDView>
+      <CyDView className={'h-[01px] my-[14px] bg-n40'} />
       <CyDTouchView
         onPress={() => {
           navigation.navigate(screenTitle.HOSTS_AND_RPC_SCREEN);

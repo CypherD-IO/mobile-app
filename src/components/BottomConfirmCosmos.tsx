@@ -63,7 +63,7 @@ export default function BottomConfirmCosmos(props: {
 
         <CyDScrollView
           className={
-            'bg-backLight border-2 border-portfolioBorderColor h-[35%] w-[90%] py-[10px] px-[10px] rounded-[10px]'
+            'bg-backLight border-2 border-n40 h-[35%] w-[90%] py-[10px] px-[10px] rounded-[10px]'
           }>
           <CyDText className='text-left text-[13px] font-regular  '>
             {JSON.stringify(payload, undefined, 8)}

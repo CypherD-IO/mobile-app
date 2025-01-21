@@ -95,8 +95,7 @@ export default function CosmosValidators({ route, navigation }) {
             ' w-[90%] flex flex-row my-[24px] justify-between  items-center'
           }>
           <CyDView className='w-[70%]'>
-            <CyDText
-              className={'text-[16px] font-bold text-secondaryTextColor '}>
+            <CyDText className={'text-[16px] font-bold text-base400 '}>
               {item.name}
             </CyDText>
             {item.balance.toString() !== '0' && (
@@ -160,7 +159,7 @@ export default function CosmosValidators({ route, navigation }) {
             style={'max-h-[60px] px-[4%] py-[10px]'}
           />
         </CyDView>
-        <CyDView className={'w-[90%] h-[1px] bg-[#F4F4F4] '} />
+        <CyDView className={'w-[90%] h-[1px] bg-n40 '} />
       </CyDView>
     );
   };

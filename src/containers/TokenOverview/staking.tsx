@@ -719,7 +719,7 @@ export default function TokenStaking({
                   style={'w-4/12 p-[4%]'}
                 />
               </CyDView>
-              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+              <CyDView className={'w-10/12 h-[1px] bg-n40 mx-[30px]'} />
             </CyDView>
           )}
 
@@ -759,7 +759,7 @@ export default function TokenStaking({
                     style={'w-4/12 p-[4%]'}
                   />
                 </CyDView>
-                <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+                <CyDView className={'w-10/12 h-[1px] bg-n40 mx-[30px]'} />
               </CyDView>
             )}
 
@@ -795,7 +795,7 @@ export default function TokenStaking({
                   type={'ternary'}
                 />
               </CyDView>
-              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+              <CyDView className={'w-10/12 h-[1px] bg-n40 mx-[30px]'} />
             </CyDView>
           )}
 
@@ -831,7 +831,7 @@ export default function TokenStaking({
                   style={'w-4/12 p-[4%]'}
                 />
               </CyDView>
-              <CyDView className={'w-full h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+              <CyDView className={'w-full h-[1px] bg-n40 mx-[30px]'} />
             </CyDView>
           )}
 
