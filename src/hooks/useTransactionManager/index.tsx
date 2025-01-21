@@ -62,6 +62,7 @@ import {
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { TransferAuthorization } from 'cosmjs-types/ibc/applications/transfer/v1/authz';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -921,7 +922,10 @@ export default function useTransactionManager() {
           if (gasPrice > 1) {
             gasPrice = Math.floor(gasPrice);
           } else {
-            gasPrice = web3.utils.toWei(String(gasPrice.toFixed(9)), 'gwei');
+            gasPrice = web3.utils.toWei(
+              limitDecimalPlaces(gasPrice, 9),
+              'gwei',
+            );
           }
           const tx = {
             from: ethereum.address,
@@ -1192,13 +1196,13 @@ export default function useTransactionManager() {
             [grantMsg],
             'Cypher',
           );
-          const gasFee = simulation * 2.5 * gasPrice;
+          const gasFee = DecimalHelper.multiply(simulation, [2.5, gasPrice]);
           const fee = {
             gas: Math.floor(simulation * 2.5).toString(),
             amount: [
               {
                 denom,
-                amount: Math.floor(gasFee).toString(),
+                amount: gasFee.floor().toString(),
               },
             ],
           };
@@ -1298,13 +1302,13 @@ export default function useTransactionManager() {
             [revokeMsg],
             'Cypher',
           );
-          const gasFee = simulation * 2.5 * gasPrice;
+          const gasFee = DecimalHelper.multiply(simulation, [2.5, gasPrice]);
           const fee = {
             gas: Math.floor(simulation * 2.5).toString(),
             amount: [
               {
                 denom,
-                amount: Math.floor(gasFee).toString(),
+                amount: gasFee.floor().toString(),
               },
             ],
           };
@@ -1341,18 +1345,50 @@ export default function useTransactionManager() {
         try {
           const isNative = fromToken?.isNative;
 
+          console.log('gasLimit : ', gasLimit);
+          console.log(
+            'gasLimit * 2 : ',
+            DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
+            typeof DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
+          );
+          const adjustedGasLimit = web3.utils.toHex(
+            Math.floor(
+              DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
+            ),
+          );
+          console.log('Adjusted gas limit hex:', adjustedGasLimit);
+
+          console.log('gasFeeResponse : ', gasFeeResponse);
+          console.log(
+            'gasPrice : ',
+            web3.utils.toWei(
+              String(gasFeeResponse.gasPrice.toFixed(9)),
+              'gwei',
+            ),
+          );
+
           const tx = {
             from: hdWallet.state.wallet.ethereum.address,
             chainId: fromToken?.chainId,
             value: isNative ? contractData?.value : '0x0',
             to: routerAddress,
             data: contractData.data,
-            gas: web3.utils.toHex(2 * Number(gasLimit)),
+            gas: adjustedGasLimit,
             gasPrice: web3.utils.toWei(
               String(gasFeeResponse.gasPrice.toFixed(9)),
               'gwei',
             ),
           };
+
+          try {
+            await web3.eth.call(tx);
+          } catch (simulationError: any) {
+            console.log('Simulation failed:', simulationError);
+            throw new Error(
+              `Transaction would fail: ${simulationError.message}`,
+            );
+          }
+
           const hash = await signEthTransaction({
             web3,
             sendChain: chainDetails.backendName,
@@ -1360,6 +1396,7 @@ export default function useTransactionManager() {
           });
           resolve({ isError: false, receipt: hash });
         } catch (e: any) {
+          console.log('error in swapTokens : ', e);
           reject(e);
         }
       })();

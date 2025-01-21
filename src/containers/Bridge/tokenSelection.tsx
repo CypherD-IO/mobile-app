@@ -19,6 +19,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -479,7 +480,12 @@ export default function TokenSelectionV2({
               onPress={onClickMax}
               className='flex flex-row items-center'>
               <CyDText className='text-[14px] font-normal'>
-                {get(selectedFromToken, 'balance', 0)?.toFixed(6)}
+                {DecimalHelper.toString(
+                  DecimalHelper.fromString(
+                    get(selectedFromToken, 'balance', 0),
+                  ),
+                  6,
+                )}
               </CyDText>
               <CyDView className='bg-n40 py-[4px] px-[9px] rounded-[4px] ml-[12px]'>
                 <CyDText className='text-[10px] font-bold'>{t('MAX')}</CyDText>
@@ -497,7 +503,10 @@ export default function TokenSelectionV2({
                 onChangeText={text => {
                   setCryptoAmount(text);
                   setUsdAmount(
-                    String(Number(text) * Number(selectedFromToken?.price)),
+                    DecimalHelper.multiply(
+                      text,
+                      selectedFromToken?.price,
+                    ).toString(),
                   );
                 }}
                 returnKeyType='done'
@@ -513,7 +522,10 @@ export default function TokenSelectionV2({
                 className={clsx(
                   'font-semibold text-center  font-nunito text-[12px]',
                 )}>
-                {`$${Number(usdAmount).toFixed(6)}`}
+                {`$${DecimalHelper.toString(
+                  DecimalHelper.fromString(usdAmount),
+                  6,
+                )}`}
               </CyDText>
             </CyDView>
             <CyDTouchView
@@ -598,7 +610,10 @@ export default function TokenSelectionV2({
                   className={clsx(
                     'font-semibold text-center font-nunito text-[30px]',
                   )}>
-                  {Number(amountOut).toFixed(6)}
+                  {DecimalHelper.toString(
+                    DecimalHelper.fromString(amountOut),
+                    6,
+                  )}
                 </CyDText>
               </CyDSkeleton>
               <CyDSkeleton
@@ -610,7 +625,10 @@ export default function TokenSelectionV2({
                   className={clsx(
                     'font-semibold text-center font-nunito text-[12px]',
                   )}>
-                  {`$${Number(usdAmountOut).toFixed(6)}`}
+                  {`$${DecimalHelper.toString(
+                    DecimalHelper.fromString(usdAmountOut),
+                    6,
+                  )}`}
                 </CyDText>
               </CyDSkeleton>
             </CyDView>

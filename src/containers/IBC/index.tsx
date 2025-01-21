@@ -21,13 +21,13 @@ import {
 } from '../../core/util';
 import clsx from 'clsx';
 import { Chain, ChainBackendNames, IBC_CHAINS } from '../../constants/server';
-import { gasFeeReservation } from '../../constants/data';
+import { GAS_BUFFER_FACTOR_FOR_LOAD_MAX } from '../../constants/data';
 import * as Sentry from '@sentry/react-native';
 import SignatureModal from '../../components/v2/signatureModal';
 import { screenTitle } from '../../constants';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { useTranslation } from 'react-i18next';
-import { BackHandler } from 'react-native';
+import { BackHandler, ActivityIndicator } from 'react-native';
 import Button from '../../components/v2/button';
 import {
   ActivityReducerAction,
@@ -46,6 +46,8 @@ import useTransactionManager from '../../hooks/useTransactionManager';
 import { Holding } from '../../core/portfolio';
 import usePortfolio from '../../hooks/usePortfolio';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import useCosmosSigner from '../../hooks/useCosmosSigner';
+import useGasService from '../../hooks/useGasService';
 
 export default function IBC({
   route,
@@ -55,6 +57,7 @@ export default function IBC({
   navigation: any;
 }) {
   const { tokenData } = route.params;
+  // console.log('tokenData ::: ', tokenData);
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -94,6 +97,10 @@ export default function IBC({
   const { showModal, hideModal } = useGlobalModalContext();
   const { interCosmosIBC } = useTransactionManager();
   const { getNativeToken } = usePortfolio();
+  const { getCosmosSignerClient } = useCosmosSigner();
+  const { estimateGasForCosmos } = useGasService();
+  const [maxLoading, setMaxLoading] = useState<boolean>(false);
+
   const handleBackButton = () => {
     navigation.goBack();
     return true;
@@ -185,21 +192,20 @@ export default function IBC({
   };
 
   const ibcTransfer = async (type = 'simulation'): Promise<void> => {
-    try {
-      const activityData: IBCTransaction = {
-        id: genId(),
-        status: ActivityStatus.PENDING,
-        type: ActivityType.IBC,
-        transactionHash: '',
-        token: tokenData.name,
-        fromChain: tokenData.chainDetails.name,
-        toChain: chain.name,
-        symbol: tokenData.symbol,
-        tokenLogoUrl: tokenData.logoUrl,
-        amount: parseFloat(amount).toFixed(3),
-        datetime: new Date(),
-        receiverAddress,
-      };
+    const activityData: IBCTransaction = {
+      id: genId(),
+      status: ActivityStatus.PENDING,
+      type: ActivityType.IBC,
+      transactionHash: '',
+      token: tokenData.name,
+      fromChain: tokenData.chainDetails.name,
+      toChain: chain.name,
+      symbol: tokenData.symbol,
+      tokenLogoUrl: tokenData.logoUrl,
+      amount: limitDecimalPlaces(amount, 3),
+      datetime: new Date(),
+      receiverAddress,
+    };
 
       if (type === 'txn') {
         activityRef.current = activityData;
@@ -331,6 +337,59 @@ export default function IBC({
     });
   };
 
+  const handleMaxPress = async () => {
+    try {
+      setMaxLoading(true);
+      let gasReserved = '0';
+      if (tokenData?.chainDetails?.symbol === tokenData?.symbol) {
+        const cosmosSigner = await getCosmosSignerClient(
+          tokenData?.chainDetails?.chainName,
+        );
+        console.log('comsos obj : ', {
+          chain: tokenData?.chainDetails,
+          denom: tokenData?.denom,
+          amount: tokenData?.balanceDecimal,
+          fromAddress: get(cosmosAddresses, tokenData.chainDetails.chainName),
+          toAddress: get(cosmosAddresses, tokenData.chainDetails.chainName),
+          signer: cosmosSigner,
+        });
+        const gasDetails = await estimateGasForCosmos({
+          chain: tokenData?.chainDetails,
+          denom: tokenData?.denom,
+          amount: tokenData?.balanceDecimal,
+          fromAddress: get(cosmosAddresses, tokenData.chainDetails.chainName),
+          toAddress: get(cosmosAddresses, tokenData.chainDetails.chainName),
+          signer: cosmosSigner,
+        });
+
+        console.log('gasDetails ::: ', gasDetails);
+
+        gasReserved = DecimalHelper.toString(
+          DecimalHelper.multiply(
+            gasDetails.gasFeeInCrypto,
+            GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+          ),
+        );
+      }
+
+      console.log('gasReserved ::: ', gasReserved);
+
+      const maxAmount = DecimalHelper.subtract(
+        tokenData.balanceDecimal,
+        gasReserved,
+      );
+      const textAmount = DecimalHelper.isLessThan(maxAmount, 0)
+        ? '0.00'
+        : limitDecimalPlaces(maxAmount.toString(), 6);
+      setAmount(textAmount);
+    } catch (error) {
+      console.error('Error calculating max amount:', error);
+      // Handle error appropriately
+    } finally {
+      setMaxLoading(false);
+    }
+  };
+
   return (
     <CyDScrollView className={'w-full h-full bg-n20'}>
       <CyDKeyboardAwareScrollView>
@@ -438,11 +497,14 @@ export default function IBC({
                 {t('SENT_AMOUNT')}
               </CyDText>
               <CyDView className={'mr-[6%] flex flex-col items-end'}>
-                <CyDText className={' text-[16px font-bold'}>
-                  {`${parseFloat(amount).toFixed(3)} ${tokenData?.name}`}
+                <CyDText className={' text-[16px] font-bold'}>
+                  {`${limitDecimalPlaces(amount, 3)} ${tokenData?.name}`}
                 </CyDText>
                 <CyDText className={' text-[12px] text-[#929292] font-bold'}>
-                  {(tokenData.price * parseFloat(amount)).toFixed(3) + ' USD'}
+                  {limitDecimalPlaces(
+                    DecimalHelper.multiply(amount, tokenData.price),
+                    3,
+                  ) + ' USD'}
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -459,7 +521,9 @@ export default function IBC({
                 </CyDText>
                 <CyDText className={' text-[12px] text-base100 font-bold'}>
                   {String(
-                    formatAmount(Number(nativeToken?.price) * Number(gasFee)),
+                    formatAmount(
+                      DecimalHelper.multiply(nativeToken?.price, gasFee),
+                    ),
                   ) + ' USD'}
                 </CyDText>
               </CyDView>
@@ -768,7 +832,7 @@ export default function IBC({
             {!showMerged && (
               <CyDText
                 className={clsx('font-bold text-[70px] h-[80px] text-justify')}>
-                {parseFloat(amount).toFixed(2)}
+                {limitDecimalPlaces(amount, 2)}
               </CyDText>
             )}
             {showMerged && (
@@ -777,26 +841,16 @@ export default function IBC({
                   'flex flex-row items-center justify-center relative'
                 }>
                 <CyDTouchView
-                  onPress={() => {
-                    const gasReserved =
-                      tokenData?.chainDetails?.symbol === tokenData?.symbol
-                        ? gasFeeReservation[tokenData.chainDetails.backendName]
-                        : 0;
-
-                    const maxAmount = DecimalHelper.subtract(
-                      tokenData.decimalBalance,
-                      gasReserved,
-                    );
-                    const textAmount = DecimalHelper.isLessThan(maxAmount, 0)
-                      ? '0.00'
-                      : limitDecimalPlaces(maxAmount.toString(), 6);
-                    setAmount(textAmount);
-                  }}
+                  onPress={() => void handleMaxPress()}
                   className={clsx(
                     'absolute bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center ' +
                       'p-[4px] left-[-14%]',
                   )}>
-                  <CyDText className={''}>{'MAX'}</CyDText>
+                  {maxLoading ? (
+                    <ActivityIndicator size='small' color='#000000' />
+                  ) : (
+                    <CyDText className={''}>{'MAX'}</CyDText>
+                  )}
                 </CyDTouchView>
                 <CyDTextInput
                   className={clsx(
@@ -833,9 +887,9 @@ export default function IBC({
             loading={loading}
             disabled={
               loading ||
-              parseFloat(amount) <= 0 ||
+              DecimalHelper.isLessThanOrEqualTo(amount, 0) ||
               receiverAddress === '' ||
-              parseFloat(amount) > parseFloat(tokenData.actualBalance)
+              DecimalHelper.isGreaterThan(amount, tokenData.balanceDecimal)
             }
             onPress={() => {
               onIBCSubmit();

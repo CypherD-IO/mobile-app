@@ -39,6 +39,7 @@ import { useRoute } from '@react-navigation/native';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import { random } from 'lodash';
 import Toast from 'react-native-toast-message';
+import { DecimalHelper } from '../../utils/decimalHelper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CyDIconsPack } from '../../customFonts/generator';
 
@@ -233,9 +234,10 @@ export default function CosmosAction({
                 <CyDText
                   className={
                     ' font-bold text-[16px] ml-[5px] '
-                  }>{`${parseFloat(amount).toFixed(2)} ${
-                  tokenData.name
-                }`}</CyDText>
+                  }>{`${DecimalHelper.toString(
+                  DecimalHelper.fromString(amount),
+                  2,
+                )} ${tokenData.name}`}</CyDText>
               </CyDView>
             </CyDView>
 
@@ -437,31 +439,48 @@ export default function CosmosAction({
             onPress={() => {
               if (
                 CosmosActionType.DELEGATE === from &&
-                parseFloat(cosmosStaking.cosmosStakingState.balance) *
-                  10 ** -tokenData.contractDecimals -
-                  0.2 >
-                  0
+                DecimalHelper.isGreaterThan(
+                  DecimalHelper.subtract(
+                    DecimalHelper.removeDecimals(
+                      cosmosStaking.cosmosStakingState.balance,
+                      tokenData.contractDecimals,
+                    ),
+                    0.2,
+                  ),
+                  0,
+                )
               )
                 setAmount(
-                  (
-                    parseFloat(cosmosStaking.cosmosStakingState.balance) *
-                      10 ** -tokenData.contractDecimals -
-                    0.2
-                  ).toFixed(6),
+                  DecimalHelper.toString(
+                    DecimalHelper.subtract(
+                      DecimalHelper.removeDecimals(
+                        cosmosStaking.cosmosStakingState.balance,
+                        tokenData.contractDecimals,
+                      ),
+                      0.2,
+                    ),
+                    6,
+                  ),
                 );
               else if (CosmosActionType.UNDELEGATE === from)
                 setAmount(
-                  (
-                    parseFloat(validatorData.balance) *
-                    10 ** -tokenData.contractDecimals
-                  ).toFixed(6),
+                  DecimalHelper.toString(
+                    DecimalHelper.removeDecimals(
+                      validatorData.balance,
+                      tokenData.contractDecimals,
+                    ),
+                    6,
+                  ),
                 );
               else if (CosmosActionType.REDELEGATE === from)
                 setAmount(
-                  (
-                    parseFloat(validatorData.balance) *
-                    10 ** -tokenData.contractDecimals
-                  ).toFixed(6),
+                  DecimalHelper.toString(
+                    DecimalHelper.removeDecimals(
+                      validatorData.balance,
+                      tokenData.contractDecimals,
+                    ),
+                    6,
+                  ),
                 );
             }}
             title={t('MAX')}
@@ -499,17 +518,23 @@ export default function CosmosAction({
             disabled={
               amount === '' ||
               (from === CosmosActionType.DELEGATE &&
-                parseFloat(amount) >
-                  parseInt(cosmosStaking.cosmosStakingState.balance) *
-                    10 ** -tokenData.contractDecimals) ||
+                DecimalHelper.isGreaterThan(
+                  amount,
+                  DecimalHelper.removeDecimals(
+                    cosmosStaking.cosmosStakingState.balance,
+                    tokenData.contractDecimals,
+                  ),
+                )) ||
               (from === CosmosActionType.UNDELEGATE &&
-                parseFloat(amount) >
-                  parseFloat(
-                    convertFromUnitAmount(
-                      validatorData.balance.toString(),
+                DecimalHelper.isGreaterThan(
+                  amount,
+                  DecimalHelper.toString(
+                    DecimalHelper.removeDecimals(
+                      validatorData.balance,
                       tokenData.contractDecimals,
                     ),
-                  ))
+                  ),
+                ))
             }
             onPress={async () => {
               await onAction(CosmosActionType.SIMULATION);

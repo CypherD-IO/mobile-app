@@ -24,7 +24,6 @@ import {
   CardFeePercentage,
   CYPHER_PLAN_ID_NAME_MAPPING,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
-  gasFeeReservation,
   MINIMUM_TRANSFER_AMOUNT_ETH,
   SlippageFactor,
 } from '../../../constants/data';
@@ -41,6 +40,7 @@ import {
   ChainNames,
   COSMOS_CHAINS,
   GASLESS_CHAINS,
+  NativeTokenMapping,
 } from '../../../constants/server';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
@@ -73,6 +73,7 @@ import {
 } from '../../../styles/tailwindStyles';
 import Loading from '../../../components/v2/loading';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import useCosmosSigner from '../../../hooks/useCosmosSigner';
 import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
@@ -93,7 +94,9 @@ export default function FirstLoadCard() {
   const { patchWithAuth, postWithAuth } = useAxios();
   const { getWalletProfile } = useCardUtilities();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { estimateGasForEvm, estimateGasForSolana } = useGasService();
+  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmos } =
+    useGasService();
+  const { getCosmosSignerClient } = useCosmosSigner();
 
   const ethereum = hdWallet.state.wallet.ethereum;
   const solana = hdWallet.state.wallet.solana;
@@ -129,6 +132,7 @@ export default function FirstLoadCard() {
   const [planPageVisible, setPlanPageVisible] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
+  const [warningMessage, setWarningMessage] = useState<string>('');
 
   useEffect(() => {
     if (amount) {
@@ -139,34 +143,18 @@ export default function FirstLoadCard() {
   const onEnterAmount = (amt: string) => {
     setAmount(amt);
     if (isCryptoInput) {
-      const usdText =
-        parseFloat(amt) *
-        (selectedToken?.isZeroFeeCardFunding
-          ? 1
-          : Number(selectedToken?.price));
+      const usdText = DecimalHelper.multiply(
+        amt,
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
+      );
       setCryptoAmount(amt);
-      setUsdAmount(
-        (Number.isNaN(usdText)
-          ? '0.00'
-          : selectedToken?.isZeroFeeCardFunding
-            ? usdText
-            : usdText / 1.02
-        ).toString(),
-      );
+      setUsdAmount(usdText.toString());
     } else {
-      const cryptoText =
-        parseFloat(amt) /
-        (selectedToken?.isZeroFeeCardFunding
-          ? 1
-          : Number(selectedToken?.price));
-      setCryptoAmount(
-        (Number.isNaN(cryptoText)
-          ? '0.00'
-          : selectedToken?.isZeroFeeCardFunding
-            ? cryptoText
-            : cryptoText * 1.02
-        ).toString(),
+      const cryptoText = DecimalHelper.divide(
+        amt,
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
       );
+      setCryptoAmount(cryptoText.toString());
       setUsdAmount(amt);
     }
   };
@@ -176,6 +164,37 @@ export default function FirstLoadCard() {
     if (length > 7) return 'text-[24px]';
     if (length > 5) return 'text-[32px]';
     return 'text-[44px]';
+  };
+
+  const isLoadCardDisabled = () => {
+    if (selectedToken) {
+      const { symbol, backendName } = selectedToken.chainDetails;
+      // const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+      // const hasInSufficientGas =
+      //   (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+      //     nativeTokenBalance <=
+      //       get(gasFeeReservation, backendName as ChainBackendNames)) ||
+      //   (selectedToken?.symbol === nativeTokenSymbol &&
+      //     Number(cryptoAmount) >
+      //       Number(
+      //         (
+      //           nativeTokenBalance -
+      //           get(gasFeeReservation, backendName as ChainBackendNames)
+      //         ).toFixed(6),
+      //       ));
+      return (
+        DecimalHelper.isLessThan(usdAmount, minTokenValueLimit) ||
+        !selectedToken ||
+        DecimalHelper.isGreaterThan(
+          cryptoAmount,
+          selectedToken.balanceDecimal,
+        ) ||
+        // hasInSufficientGas ||
+        (backendName === CHAIN_ETH.backendName &&
+          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH))
+      );
+    }
+    return true;
   };
 
   const onSelectingToken = async (item: Holding) => {
@@ -233,6 +252,7 @@ export default function FirstLoadCard() {
   };
 
   const getPercentageAmounts = () => {
+    console.log('selectedToken ::: ', selectedToken);
     if (!selectedToken?.totalValue) return { p25: '0', p50: '0', p75: '0' };
 
     const total = selectedToken.totalValue;
@@ -244,94 +264,104 @@ export default function FirstLoadCard() {
     };
   };
 
+  const RenderWarningMessage = useCallback(() => {
+    if (selectedToken) {
+      const { symbol, backendName } = selectedToken.chainDetails;
+      if (symbol && backendName) {
+        const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+        let errorMessage = '';
+        if (
+          DecimalHelper.isGreaterThan(
+            cryptoAmount,
+            selectedToken?.actualBalance,
+          )
+        ) {
+          errorMessage = t('INSUFFICIENT_FUNDS');
+        } else if (
+          usdAmount &&
+          backendName === CHAIN_ETH.backendName &&
+          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH)
+        ) {
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
+        } else if (
+          !usdAmount ||
+          DecimalHelper.isLessThan(usdAmount, minTokenValueLimit)
+        ) {
+          if (backendName === CHAIN_ETH.backendName) {
+            errorMessage = t('MINIMUM_AMOUNT_ETH');
+          } else {
+            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
+          }
+        }
+
+        return (
+          <CyDView className='my-[8px]'>
+            <CyDText className='text-center text-redColor font-medium text-wrap'>
+              {errorMessage}
+            </CyDText>
+          </CyDView>
+        );
+      }
+    }
+    return null;
+  }, [selectedToken, cryptoAmount, nativeToken?.balance]);
+
   const onPressToggle = () => {
     const tempIsCryproInput = !isCryptoInput;
     setIsCryptoInput(!isCryptoInput);
-    const multiplier =
-      1 +
-      divide(
+    const multiplier = DecimalHelper.add(1, [
+      DecimalHelper.divide(
         get(
           CardFeePercentage,
           selectedToken?.chainDetails.backendName as string,
           0.5,
         ),
         100,
-      ) +
+      ),
       get(
         SlippageFactor,
         selectedToken?.chainDetails.backendName as string,
         0.003,
-      );
+      ),
+    ]);
 
     if (tempIsCryproInput) {
-      const usdAmt =
-        parseFloat(amount) *
-        (selectedToken?.isZeroFeeCardFunding
-          ? 1
-          : Number(selectedToken?.price));
+      const usdAmt = DecimalHelper.multiply(
+        amount,
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
+      );
       setCryptoAmount(amount);
       setUsdAmount(
-        (Number.isNaN(usdAmt)
-          ? '0.00'
-          : selectedToken?.isZeroFeeCardFunding
-            ? usdAmt
-            : usdAmt * multiplier
-        ).toString(),
+        selectedToken?.isZeroFeeCardFunding
+          ? usdAmt.toString()
+          : DecimalHelper.toString(DecimalHelper.multiply(usdAmt, multiplier)),
       );
     } else {
-      const cryptoAmt =
-        parseFloat(
-          String(
-            Number(amount) *
-              (selectedToken?.isZeroFeeCardFunding ? 1 : multiplier),
-          ),
-        ) /
-        (selectedToken?.isZeroFeeCardFunding
-          ? 1
-          : Number(selectedToken?.price));
-      setCryptoAmount(
-        (Number.isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
+      const cryptoAmt = DecimalHelper.divide(
+        DecimalHelper.multiply(
+          amount,
+          selectedToken?.isZeroFeeCardFunding ? 1 : multiplier,
+        ),
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
       );
+      setCryptoAmount(cryptoAmt.toString());
       setUsdAmount(amount);
     }
-  };
-
-  const isLoadCardDisabled = () => {
-    if (selectedToken) {
-      const { backendName } = selectedToken.chainDetails;
-      const hasInSufficientGas =
-        (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
-          Number(nativeToken?.actualBalance) <=
-            get(gasFeeReservation, backendName as ChainBackendNames)) ||
-        (selectedToken?.symbol === nativeToken?.symbol &&
-          Number(cryptoAmount) >
-            Number(
-              (
-                Number(nativeToken?.actualBalance) -
-                get(gasFeeReservation, backendName as ChainBackendNames)
-              ).toFixed(6),
-            ));
-      return (
-        Number(usdAmount) < minTokenValueLimit ||
-        !selectedToken ||
-        Number(cryptoAmount) > Number(selectedToken.actualBalance) ||
-        hasInSufficientGas ||
-        (backendName === CHAIN_ETH.backendName &&
-          Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH)
-      );
-    }
-    return true;
   };
 
   const onMax = async () => {
     const {
       contractAddress,
       coinGeckoId,
+      denom,
       contractDecimals,
       chainDetails,
       balanceDecimal,
       symbol: selectedTokenSymbol,
     } = selectedToken as Holding;
+
+    const nativeTokenSymbol =
+      get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
 
     if (chainDetails.chainName === ChainNames.ETH) {
       const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
@@ -450,20 +480,21 @@ export default function FirstLoadCard() {
       }
     } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
       let amountInCrypto = balanceDecimal;
-      // Reserving gas for the txn if the selected token is a native token.
       setIsMaxLoading(true);
+
       if (
-        selectedTokenSymbol === nativeToken?.symbol &&
+        selectedTokenSymbol === nativeTokenSymbol &&
         !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
       ) {
         try {
-          const gasDetails = {
-            gasFeeInCrypto: get(
-              gasFeeReservation,
-              [chainDetails.chainName, 'backendName'],
-              0.1,
-            ),
-          };
+          const gasDetails = await estimateGasForCosmos({
+            chain: chainDetails,
+            denom,
+            amount: amountInCrypto,
+            fromAddress: wallet[chainDetails.chainName].address,
+            toAddress: wallet[chainDetails.chainName].address,
+            signer: await getCosmosSignerClient(chainDetails.chainName),
+          });
 
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
@@ -503,6 +534,7 @@ export default function FirstLoadCard() {
           return;
         }
       }
+
       try {
         const payload = {
           ecosystem: 'cosmos',
@@ -820,23 +852,44 @@ export default function FirstLoadCard() {
       symbol: selectedTokenSymbol,
       contractAddress,
       contractDecimals,
+      balanceDecimal,
     } = selectedToken as Holding;
 
-    const actualTokensRequired = parseFloat(
-      limitDecimalPlaces(quote.tokensRequired, contractDecimals),
+    const actualTokensRequired = limitDecimalPlaces(
+      quote.tokensRequired,
+      contractDecimals,
     );
+    console.log('actualTokensRequired ::: ', actualTokensRequired);
+    console.log('actualBalance ::: ', balanceDecimal);
+    if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
+      setLoading(false);
+      setIsMaxLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: t('INSUFFICIENT_FUNDS'),
+        description: t('INSUFFICIENT_FUNDS_DESCRIPTION'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
+    }
     let gasDetails;
     const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
     try {
       if (chainDetails.chainName === ChainNames.ETH) {
         const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
-        if (actualTokensRequired <= actualBalance) {
+        if (
+          DecimalHelper.isLessThanOrEqualTo(
+            actualTokensRequired,
+            balanceDecimal,
+          )
+        ) {
           gasDetails = await estimateGasForEvm({
             web3,
             chain: chainDetails.backendName as ChainBackendNames,
             fromAddress: ethereum.address ?? '',
             toAddress: targetWalletAddress,
-            amountToSend: String(actualTokensRequired),
+            amountToSend: actualTokensRequired,
             contractAddress,
             contractDecimals,
           });
@@ -850,7 +903,7 @@ export default function FirstLoadCard() {
             planCost,
             tokenSendParams: {
               chain: chainDetails.backendName,
-              amountInCrypto: String(actualTokensRequired),
+              amountInCrypto: actualTokensRequired,
               amountInFiat: String(quote.amount - Number(planCost)),
               symbol: selectedTokenSymbol,
               toAddress: targetWalletAddress,
@@ -866,11 +919,14 @@ export default function FirstLoadCard() {
         COSMOS_CHAINS.includes(chainDetails.chainName) &&
         chainDetails.chainName !== ChainNames.OSMOSIS
       ) {
-        gasDetails = {
-          gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
-            4,
-          ),
-        };
+        gasDetails = await estimateGasForCosmos({
+          chain: chainDetails,
+          denom: selectedToken?.denom,
+          amount: actualTokensRequired,
+          fromAddress: wallet[chainDetails.chainName].address,
+          toAddress: targetWalletAddress,
+          signer: await getCosmosSignerClient(chainDetails.chainName),
+        });
       } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
         gasDetails = {
           gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
@@ -881,7 +937,7 @@ export default function FirstLoadCard() {
         gasDetails = await estimateGasForSolana({
           fromAddress: solana.address ?? '',
           toAddress: targetWalletAddress,
-          amountToSend: String(actualTokensRequired),
+          amountToSend: actualTokensRequired,
           contractAddress,
           contractDecimals,
         });
@@ -891,10 +947,10 @@ export default function FirstLoadCard() {
       if (gasDetails) {
         const hasSufficient = hasSufficientBalanceAndGasFee(
           selectedTokenSymbol === chainDetails.symbol,
-          parseFloat(String(gasDetails.gasFeeInCrypto)),
-          Number(nativeToken?.actualBalance),
+          String(gasDetails.gasFeeInCrypto),
+          nativeToken?.balanceDecimal ?? '0',
           actualTokensRequired,
-          actualBalance,
+          balanceDecimal,
         );
         navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
           hasSufficientBalanceAndGasFee: hasSufficient,
@@ -902,7 +958,7 @@ export default function FirstLoadCard() {
           cardId,
           tokenSendParams: {
             chain: chainDetails.backendName,
-            amountInCrypto: String(actualTokensRequired),
+            amountInCrypto: actualTokensRequired,
             amountInFiat: String(quote.amount),
             symbol: selectedTokenSymbol,
             toAddress: targetWalletAddress,
@@ -1164,12 +1220,15 @@ export default function FirstLoadCard() {
                     </CyDView>
                     {!isCryptoInput && (
                       <CyDText className='mt-[8px] text-[12px] font-bold'>
-                        {`${round(Number(cryptoAmount) ?? 0, 3)} ${String(selectedToken?.symbol ?? '')}`}
+                        {`${limitDecimalPlaces(
+                          cryptoAmount ?? '0',
+                          3,
+                        )} ${String(selectedToken?.symbol ?? '')}`}
                       </CyDText>
                     )}
                     {isCryptoInput && (
                       <CyDText className='mt-[8px] text-[12px] font-bold'>
-                        {`$${round(Number(usdAmount) ?? 0, 3)}`}
+                        {`$${limitDecimalPlaces(usdAmount ?? '0', 2)}`}
                       </CyDText>
                     )}
                   </CyDView>
@@ -1296,12 +1355,15 @@ export default function FirstLoadCard() {
                     </CyDText>
                     {usdAmount && Number(usdAmount) < planCost && (
                       <CyDText className='font-bold text-[14px]'>
-                        {`$${round(Number(usdAmount), 2)}`}
+                        {`$${limitDecimalPlaces(usdAmount, 2)}`}
                       </CyDText>
                     )}
                     {usdAmount && Number(usdAmount) > planCost && (
                       <CyDText className='font-bold text-[14px]'>
-                        {`$${round(Number(usdAmount) - planCost, 2)}`}
+                        {`$${limitDecimalPlaces(
+                          DecimalHelper.subtract(usdAmount, planCost),
+                          2,
+                        )}`}
                       </CyDText>
                     )}
                     {(!usdAmount || !cryptoAmount) && (
@@ -1326,7 +1388,7 @@ export default function FirstLoadCard() {
                     </CyDText>
                     {usdAmount && (
                       <CyDText className='font-bold text-[14px]'>
-                        {`$${round(Number(usdAmount), 2)}`}
+                        {`$${limitDecimalPlaces(usdAmount, 2)}`}
                       </CyDText>
                     )}
                     {!usdAmount && (

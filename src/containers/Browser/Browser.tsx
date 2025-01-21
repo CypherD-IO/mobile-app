@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
 import clsx from 'clsx';
 import CryptoJS from 'crypto-js';
-import { min, round } from 'lodash';
+import { get, min, round } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,8 +29,12 @@ import { gasFeeReservation, INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
 import {
   Chain,
+  CHAIN_COSMOS,
   CHAIN_ETH,
+  CHAIN_SOLANA,
   ChainBackendNames,
+  ChainNames,
+  COSMOS_CHAINS,
   PURE_COSMOS_CHAINS,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
@@ -38,7 +42,7 @@ import { MODAL_SHOW_TIMEOUT } from '../../constants/timeOuts';
 import { CommunicationEvents } from '../../constants/web3';
 import { showToast } from '../../containers/utilities/toastUtility';
 import useAxios from '../../core/HttpRequest';
-import { HdWalletContext } from '../../core/util';
+import { getWeb3Endpoint, HdWalletContext } from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
 import useWeb3 from '../../hooks/useWeb3';
 import { isIOS } from '../../misc/checkers';
@@ -61,6 +65,10 @@ import {
 } from '../../types/Browser';
 import Loading from '../../components/v2/loading';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import useGasService from '../../hooks/useGasService';
+import useCosmosSigner from '../../hooks/useCosmosSigner';
+import Web3 from 'web3';
+import { GlobalContext } from '../../core/globalContext';
 
 enum BROWSER_ERROR {
   SSL = 'ssl',
@@ -97,6 +105,9 @@ export default function Browser({ route, navigation }: any) {
   const [injectedCode, setInjectedCode] = useState('');
   const { getWithAuth } = useAxios();
   const { getNativeToken } = usePortfolio();
+  const { estimateGasForEvm, estimateGasForCosmos, estimateGasForSolana } =
+    useGasService();
+  const { getCosmosSignerClient } = useCosmosSigner();
 
   const urlMappings: Record<string, string> = {
     home: '',
@@ -135,6 +146,7 @@ export default function Browser({ route, navigation }: any) {
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { showModal, hideModal } = useGlobalModalContext();
   const [selectedDappChain, setSelectedDappChain] = useState<Chain>(CHAIN_ETH);
+  const globalContext = useContext(GlobalContext);
 
   const spliceHistoryByTime = (): Array<{
     entry: BrowserHistoryEntry[];
@@ -268,6 +280,8 @@ export default function Browser({ route, navigation }: any) {
       selectedChain: { chain_id },
       selectedChain,
     } = hdWalletContext.state;
+    console.log('selectedChain in Browser ::: ', selectedChain);
+    console.log('selectedDappChain in Browser ::: ', selectedDappChain);
     if (selectedDappChain && selectedDappChain !== selectedChain) {
       setSelectedDappChain(selectedChain);
       if (isFocused) {
@@ -285,13 +299,53 @@ export default function Browser({ route, navigation }: any) {
   }, [hdWalletContext.state.selectedChain, isFocused]);
 
   const checkNativeTokenBalance = async (selectedChain: Chain) => {
+    console.log('selectedChain in checkNativeTokenBalance ::: ', selectedChain);
     const nativeToken = await getNativeToken(
       selectedChain.backendName as ChainBackendNames,
     );
+    let gasDetails;
+    if (COSMOS_CHAINS.includes(selectedChain.chainName)) {
+      console.log('cosmos chains gas fee calculation');
+      const cosmosWallet = hdWalletContext.state.wallet;
+      const cosmosSigner = await getCosmosSignerClient(selectedChain.chainName);
+      console.log('cosmosSigner ::: ', cosmosSigner);
+      gasDetails = await estimateGasForCosmos({
+        chain: selectedChain,
+        denom: nativeToken.denom,
+        amount: nativeToken.balanceDecimal,
+        fromAddress: get(cosmosWallet, selectedChain.chainName, null)?.address,
+        toAddress: get(cosmosWallet, selectedChain.chainName, null)?.address,
+        signer: cosmosSigner,
+      });
+      console.log('gasDetails ::: ', gasDetails);
+    } else if (selectedChain.backendName === CHAIN_SOLANA.backendName) {
+      const solana = hdWalletContext.state.wallet.solana;
+      gasDetails = await estimateGasForSolana({
+        fromAddress: solana.address,
+        toAddress: solana.address,
+        amountToSend: String(nativeToken.balanceDecimal),
+        contractAddress: nativeToken.contractAddress,
+        contractDecimals: nativeToken.contractDecimals,
+      });
+    } else if (selectedChain.chainName === ChainNames.ETH) {
+      const web3 = new Web3(getWeb3Endpoint(selectedChain, globalContext));
+      gasDetails = await estimateGasForEvm({
+        web3,
+        chain: selectedChain.backendName as ChainBackendNames,
+        fromAddress: ethereum.address,
+        toAddress: ethereum.address,
+        amountToSend: String(nativeToken.balanceDecimal),
+        contractAddress: nativeToken.contractAddress,
+        contractDecimals: nativeToken.contractDecimals,
+      });
+    }
+    console.log('gasDetails ::: ', gasDetails);
     const balanceAfterGasReservation = DecimalHelper.subtract(
       nativeToken.balanceDecimal,
-      gasFeeReservation[selectedChain.backendName],
+      gasDetails?.gasFeeInCrypto ??
+        gasFeeReservation[selectedChain.backendName],
     );
+    console.log('balanceAfterGasReservation ::: ', balanceAfterGasReservation);
     const isGasEnough = DecimalHelper.isGreaterThanOrEqualTo(
       balanceAfterGasReservation,
       0,

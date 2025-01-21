@@ -1467,6 +1467,8 @@ const resources = {
         'Crypto withdrawals are processed in 3-5 business days. Note that you will receive the funds in USDC on BASE chain.',
       LEGACY_CARD_TRANSACTIONS: 'Legacy Card Transactions',
       OTHERS: 'Others',
+      MAXIMUM_AMOUNT_POSSIBLE: 'Enter amount less than ',
+      INSUFFICIENT_FUNDS_DESCRIPTION: `Your balance isn't sufficient to cover both the amount and the load fee. Use the 'Max' option to load the maximum amount possible`,
       RE_VALIDATE_TO: 'Re-Validate to',
       TERMS_CONDITIONS: 'Terms and Conditions',
       TERMS_CONDITIONS_DESC:

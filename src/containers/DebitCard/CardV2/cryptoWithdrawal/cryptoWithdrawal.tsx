@@ -27,6 +27,7 @@ import { ceil, isEmpty } from 'lodash';
 import Loading from '../../../../components/v2/loading';
 import { screenTitle } from '../../../../constants';
 import WithdrawalReasonsModal from '../../../../components/v2/withdrawalReasonsModal';
+import { DecimalHelper } from '../../../../utils/decimalHelper';
 import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
@@ -156,10 +157,12 @@ export default function CryptoWithdrawal() {
                     className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
                     onPress={() => {
                       setAmount(
-                        ceil(
-                          Number(availableAmount) * percentage,
-                          2,
-                        ).toString(),
+                        DecimalHelper.toString(
+                          DecimalHelper.roundUp(
+                            DecimalHelper.multiply(availableAmount, percentage),
+                            2,
+                          ),
+                        ),
                       );
                     }}>
                     <CyDText className='text-[14px] font-bold text-base400'>

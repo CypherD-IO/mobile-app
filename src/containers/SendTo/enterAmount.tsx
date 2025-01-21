@@ -5,24 +5,36 @@
 import { useIsFocused } from '@react-navigation/native';
 import clsx from 'clsx';
 import { get } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler } from 'react-native';
+import { BackHandler, ActivityIndicator } from 'react-native';
 import Button from '../../components/v2/button';
 import ChooseTokenModal from '../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
-import { gasFeeReservation } from '../../constants/data';
+import {
+  GAS_BUFFER_FACTOR,
+  GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+  gasFeeReservation,
+} from '../../constants/data';
 import { ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
   ChainBackendNames,
+  ChainNames,
+  COSMOS_CHAINS,
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../constants/server';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
-import { formatAmount, limitDecimalPlaces } from '../../core/util';
+import {
+  convertFromUnitAmount,
+  formatAmount,
+  getWeb3Endpoint,
+  HdWalletContext,
+  limitDecimalPlaces,
+} from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
@@ -34,7 +46,12 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
+import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import useCosmosSigner from '../../hooks/useCosmosSigner';
+import useGasService from '../../hooks/useGasService';
+import Web3 from 'web3';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -53,13 +70,27 @@ export default function EnterAmount(props: any) {
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(false);
   const isFocused = useIsFocused();
+  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmos } =
+    useGasService();
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const { getCosmosSignerClient } = useCosmosSigner();
+  const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
 
   const { showModal, hideModal } = useGlobalModalContext();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMaxLoading, setIsMaxLoading] = useState(false);
 
   const handleBackButton = () => {
     navigation.goBack();
     return true;
   };
+
+  // const [gasFeeEstimate, setGasFeeEstimate] = useState<string>(
+  //   String(gasFeeReservation[tokenData.chainDetails.backendName]),
+  // );
+
+  // const cosmos = hdWallet.state.wallet.cosmos;
+  // console.log('cosmos : ', cosmos);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
@@ -71,6 +102,26 @@ export default function EnterAmount(props: any) {
   useEffect(() => {
     if (isFocused) {
       if (props.route.params?.tokenData) {
+        console.log(
+          'props.route.params.tokenData :::::::::: ',
+          props.route.params.tokenData,
+        );
+        console.log(
+          'convertFromUnitAmount : ',
+          convertFromUnitAmount(
+            tokenData.balanceDecimal,
+            tokenData.contractDecimals,
+            6,
+          ),
+        );
+        console.log(
+          'floor ',
+          Math.floor(tokenData.balanceDecimal),
+          parseFloat(tokenData.balanceDecimal).toFixed(
+            tokenData.contractDecimals,
+          ),
+          limitDecimalPlaces(tokenData.balanceDecimal, 0),
+        );
         setTokenData(props.route.params.tokenData);
       } else {
         setTimeout(() => {
@@ -80,18 +131,92 @@ export default function EnterAmount(props: any) {
     }
   }, [isFocused]);
 
-  const isGasReservedForNative = (cryptoValue: string) => {
+  const getGasFee = async (chainName: string) => {
+    let gasFee;
+    console.log('in getGasFee : ', chainName);
+    const web3 = new Web3(
+      getWeb3Endpoint(tokenData.chainDetails, globalContext),
+    );
+    if (chainName === ChainNames.ETH) {
+      const ethereum = hdWallet.state.wallet.ethereum;
+      const gasEstimate = await estimateGasForEvm({
+        web3,
+        chain: tokenData.chainDetails.backendName as ChainBackendNames,
+        fromAddress: ethereum.address ?? '',
+        toAddress: ethereum.address ?? '',
+        amountToSend: tokenData.balanceDecimal,
+        contractAddress: tokenData.contractAddress,
+        contractDecimals: tokenData.contractDecimals,
+      });
+      console.log('gasEstimate in eth : ', gasEstimate);
+      gasFee = gasEstimate?.gasFeeInCrypto;
+    } else if (chainName === ChainNames.SOLANA) {
+      const solana = hdWallet.state.wallet.solana;
+      const gasEstimate = await estimateGasForSolana({
+        fromAddress: solana.address ?? '',
+        toAddress: solana.address ?? '',
+        amountToSend: tokenData.balanceDecimal,
+        contractAddress: tokenData.contractAddress,
+        contractDecimals: tokenData.contractDecimals,
+      });
+      console.log('gasEstimate in solana : ', gasEstimate);
+      gasFee = gasEstimate?.gasFeeInCrypto;
+    } else if (COSMOS_CHAINS.includes(tokenData.chainDetails.chainName)) {
+      const cosmosWallet = get(hdWallet.state.wallet, chainName, null);
+      console.log('cosmosWallet : ', cosmosWallet);
+      console.log('payload : ', {
+        chain: tokenData.chainDetails,
+        denom: tokenData.denom,
+        amount: tokenData.balanceDecimal,
+        fromAddress: cosmosWallet?.address ?? '',
+        toAddress: cosmosWallet?.address ?? '',
+        signer: await getCosmosSignerClient(tokenData.chainDetails.chainName),
+      });
+      const gasEstimate = await estimateGasForCosmos({
+        chain: tokenData.chainDetails,
+        denom: tokenData.denom,
+        amount: tokenData.balanceDecimal,
+        fromAddress: cosmosWallet?.address ?? '',
+        toAddress: cosmosWallet?.address ?? '',
+        signer: await getCosmosSignerClient(tokenData.chainDetails.chainName),
+      });
+      console.log('********** gasEstimate in cosmos : ', gasEstimate);
+      gasFee = gasEstimate?.gasFeeInCrypto;
+    }
+    return DecimalHelper.toString(
+      DecimalHelper.multiply(gasFee ?? 0, GAS_BUFFER_FACTOR),
+    );
+  };
+
+  const isGasReservedForNative = async (cryptoValue: string) => {
     const nativeTokenSymbol =
       get(NativeTokenMapping, tokenData.chainDetails.symbol) ||
       tokenData.chainDetails.symbol;
     const isNative = tokenData.symbol === nativeTokenSymbol;
     if (!isNative) return true;
     const gasReserved = isNative
-      ? gasFeeReservation[tokenData.chainDetails?.backendName]
+      ? ((await getGasFee(tokenData.chainDetails?.chainName)) ??
+        gasFeeReservation[tokenData.chainDetails?.backendName])
       : 0;
     const balanceAfterGasReservation = DecimalHelper.subtract(
       tokenData.balanceDecimal,
       gasReserved,
+    );
+    console.log('gasReserved in isGasReservedForNative : ', gasReserved);
+    console.log(
+      '--- balanceAfterGasReservation : ',
+      tokenData.balanceDecimal,
+      gasReserved,
+      balanceAfterGasReservation,
+    );
+    console.log(
+      'isGasReservedForNative : ',
+      balanceAfterGasReservation,
+      cryptoValue,
+      DecimalHelper.isGreaterThanOrEqualTo(
+        balanceAfterGasReservation,
+        cryptoValue,
+      ),
     );
     return DecimalHelper.isGreaterThanOrEqualTo(
       balanceAfterGasReservation,
@@ -109,7 +234,17 @@ export default function EnterAmount(props: any) {
       nativeBackendName as ChainBackendNames,
     );
     const nativeTokenBalance = nativeToken.actualBalance;
-    const gasReserved = gasFeeReservation[backendName];
+    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName);
+    console.log(
+      '&&&&&&& gasReserved in haveEnoughNativeBalance : ',
+      gasReserved,
+    );
+    // setGasFeeEstimate(
+    //   String(
+    //     gasReserved ?? gasFeeReservation[tokenData.chainDetails?.backendName],
+    //   ),
+    // );
+    console.log('gasReserved in haveEnoughNativeBalance : ', gasReserved);
     return DecimalHelper.isGreaterThanOrEqualTo(
       nativeTokenBalance,
       gasReserved,
@@ -117,6 +252,7 @@ export default function EnterAmount(props: any) {
   };
 
   const _validateValueForUsd = async () => {
+    setIsLoading(true);
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
@@ -136,10 +272,13 @@ export default function EnterAmount(props: any) {
         onSuccess: hideModal,
         onFailure: hideModal,
       });
-    } else if (!isGasReservedForNative(cryptoValue)) {
+    } else if (!(await isGasReservedForNative(cryptoValue))) {
+      const gasReserved =
+        (await getGasFee(tokenData.chainDetails?.chainName)) ??
+        gasFeeReservation[tokenData.chainDetails?.backendName];
       const cryVal = DecimalHelper.subtract(
         tokenData.actualBalance,
-        gasFeeReservation[tokenData.chainDetails.backendName],
+        gasReserved,
       );
       const reqAmount = enterCryptoAmount
         ? `${DecimalHelper.toString(cryVal)} ${tokenData.symbol}`
@@ -159,6 +298,59 @@ export default function EnterAmount(props: any) {
         tokenData,
         sendAddress,
       });
+    }
+    setIsLoading(false);
+  };
+
+  const onMaxPress = async () => {
+    setIsMaxLoading(true);
+    try {
+      const gasReservedEstimate =
+        (NativeTokenMapping[tokenData?.chainDetails?.symbol] ||
+          tokenData?.chainDetails?.symbol) === tokenData?.symbol
+          ? ((await getGasFee(tokenData.chainDetails?.chainName)) ??
+            gasFeeReservation[tokenData.chainDetails?.backendName])
+          : 0;
+      const gasReserved = DecimalHelper.multiply(
+        gasReservedEstimate,
+        GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+      );
+
+      console.log('gasReserved in onMaxPress : ', gasReserved);
+
+      const maxAmountDecimal = DecimalHelper.subtract(
+        tokenData.balanceDecimal,
+        gasReserved,
+      );
+      console.log(
+        '--- maxAmountDecimal in onMaxPress : ',
+        tokenData.balanceDecimal,
+        gasReserved,
+        maxAmountDecimal,
+      );
+      const textAmount = DecimalHelper.isLessThan(maxAmountDecimal, 0)
+        ? '0.00'
+        : DecimalHelper.toString(maxAmountDecimal);
+      console.log('------- textAmount in onMaxPress : ', textAmount);
+      setValueForUsd(textAmount);
+
+      if (enterCryptoAmount) {
+        setCryptoValue(textAmount);
+        setUsdValue(
+          DecimalHelper.toString(
+            DecimalHelper.multiply(textAmount, tokenData.price),
+          ),
+        );
+      } else {
+        setCryptoValue(
+          DecimalHelper.toString(
+            DecimalHelper.divide(textAmount, tokenData.price),
+          ),
+        );
+        setUsdValue(textAmount);
+      }
+    } finally {
+      setIsMaxLoading(false);
     }
   };
 
@@ -187,44 +379,13 @@ export default function EnterAmount(props: any) {
                 className={'flex items-center justify-center w-full relative'}>
                 <CyDTouchView
                   onPress={() => {
-                    const gasReserved =
-                      (NativeTokenMapping[tokenData?.chainDetails?.symbol] ||
-                        tokenData?.chainDetails?.symbol) === tokenData?.symbol
-                        ? gasFeeReservation[tokenData.chainDetails.backendName]
-                        : 0;
-
-                    const maxAmountDecimal = DecimalHelper.subtract(
-                      tokenData.balanceDecimal,
-                      gasReserved,
-                    );
-                    const textAmount = DecimalHelper.isLessThan(
-                      maxAmountDecimal,
-                      DecimalHelper.fromString('0'),
-                    )
-                      ? '0.00'
-                      : DecimalHelper.toString(maxAmountDecimal);
-                    setValueForUsd(textAmount);
-
-                    if (enterCryptoAmount) {
-                      setCryptoValue(textAmount);
-                      setUsdValue(
-                        DecimalHelper.toString(
-                          DecimalHelper.multiply(textAmount, tokenData.price),
-                        ),
-                      );
-                    } else {
-                      setCryptoValue(
-                        DecimalHelper.toString(
-                          DecimalHelper.divide(textAmount, tokenData.price),
-                        ),
-                      );
-                      setUsdValue(textAmount);
-                    }
+                    void onMaxPress();
                   }}
                   className={clsx(
-                    'absolute left-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
-                  )}>
-                  <CyDText className={' text-[10px]  font-bold'}>
+                    'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                  )}
+                  style={styles.roundButtonContainer}>
+                  <CyDText className={' text-black '}>
                     {t<string>('MAX')}
                   </CyDText>
                 </CyDTouchView>
@@ -267,13 +428,17 @@ export default function EnterAmount(props: any) {
                     onChangeText={text => {
                       setValueForUsd(text);
                       if (enterCryptoAmount) {
-                        setCryptoValue(text);
+                        setCryptoValue(Number.isNaN(text) ? '0' : text);
                         setUsdValue(
-                          (parseFloat(text) * tokenData.price).toString(),
+                          DecimalHelper.toString(
+                            DecimalHelper.multiply(text, tokenData.price),
+                          ),
                         );
                       } else {
                         setCryptoValue(
-                          (parseFloat(text) / tokenData.price).toString(),
+                          DecimalHelper.toString(
+                            DecimalHelper.divide(text, tokenData.price),
+                          ),
                         );
                         setUsdValue(text);
                       }
@@ -295,7 +460,7 @@ export default function EnterAmount(props: any) {
                     : (!isNaN(parseFloat(cryptoValue))
                         ? formatAmount(cryptoValue)
                         : '0.00') + ` ${tokenData.name}`}
-                </CyDText>
+                </CText>
 
                 <CyDView className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-n0'>
                   <CyDView>
@@ -352,12 +517,16 @@ export default function EnterAmount(props: any) {
       <CyDView className={'w-full items-center top-[-30px]'}>
         <Button
           title={t('CONTINUE')}
-          disabled={parseFloat(valueForUsd) <= 0 || valueForUsd === ''}
+          disabled={
+            DecimalHelper.isLessThanOrEqualTo(valueForUsd, 0) ||
+            valueForUsd === ''
+          }
           onPress={() => {
             if (valueForUsd.length > 0) {
               void _validateValueForUsd();
             }
           }}
+          loading={isLoading}
           type={ButtonType.PRIMARY}
           style='h-[60px] w-3/4'
         />

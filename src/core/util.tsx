@@ -81,6 +81,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { ICountry } from '../models/cardApplication.model';
 import { currencySymbolMap } from '../../assets/datasets/currencySymbolMap';
 import { isAddress } from 'web3-validator';
+import Decimal from 'decimal.js';
+import { DecimalHelper } from '../utils/decimalHelper';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -357,11 +359,14 @@ export const validateAmount = (amount: string): boolean => {
 };
 
 export const convertFromUnitAmount = (
-  amount: string,
+  amount: string | number | Decimal,
   decimal: number,
   decimalPlaces = 3,
-) => {
-  return (parseFloat(amount) * 10 ** -decimal).toFixed(decimalPlaces);
+): string => {
+  return DecimalHelper.toString(
+    DecimalHelper.divide(amount, DecimalHelper.pow(10, decimal)),
+    decimalPlaces,
+  );
 };
 
 export const convertNumberToShortHandNotation = n => {
@@ -670,11 +675,17 @@ export function isEthereumAddress(address: string) {
     : isAddress(address);
 }
 
-export function limitDecimalPlaces(num: string | number, decimalPlaces = 18) {
-  num = String(num);
-  return num.includes('.')
-    ? num.slice(0, num.indexOf('.') + (decimalPlaces + 1))
-    : num;
+export function limitDecimalPlaces(
+  num: string | number | Decimal,
+  decimalPlaces = 18,
+): string {
+  // Convert to string, handling Decimal type
+  const numStr =
+    typeof num === 'object' && 'toString' in num ? num.toString() : String(num);
+
+  return numStr.includes('.')
+    ? numStr.slice(0, numStr.indexOf('.') + (decimalPlaces + 1))
+    : numStr;
 }
 
 export const isBasicCosmosChain = (backendName: string) =>
@@ -731,16 +742,22 @@ export const calculateTime = function time(ttime: string) {
 
 export const beautifyPriceWithUSDDenom = (price: number): string => {
   if (price > 1000000000000) {
-    return `${Math.floor(price / 1000000000000)} Trillion`;
+    return `${DecimalHelper.toString(
+      DecimalHelper.divide(price, 1000000000000),
+    )} Trillion`;
   }
   if (price > 1000000000) {
-    return `${Math.floor(price / 1000000000)} Billion`;
+    return `${DecimalHelper.toString(
+      DecimalHelper.divide(price, 1000000000),
+    )} Billion`;
   }
   if (price > 1000000) {
-    return `${Math.floor(price / 1000000)} Million`;
+    return `${DecimalHelper.toString(
+      DecimalHelper.divide(price, 1000000),
+    )} Million`;
   }
   if (price > 1000) {
-    return `${Math.floor(price / 1000)} K`;
+    return `${DecimalHelper.toString(DecimalHelper.divide(price, 1000))} K`;
   }
   return `${price}`;
 };
@@ -816,14 +833,19 @@ export const generateRandomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-export const formatAmount = (amount: string | number, precision = 4) => {
-  if (Number(amount) < 1) {
-    return new Intl.NumberFormat('en-US', {
-      maximumSignificantDigits: precision,
-    }).format(Number(amount));
+export const formatAmount = (
+  amount: string | number | Decimal,
+  precision = 4,
+): string => {
+  const decimalAmount = new Decimal(amount);
+  if (decimalAmount.lessThan(1)) {
+    // For numbers less than 1, maintain significant digits
+    return decimalAmount.toSignificantDigits(precision).toString();
   } else {
-    const factor = Math.pow(10, precision);
-    return Math.floor(Number(amount) * factor) / factor;
+    // For numbers >= 1, use fixed decimal places
+    return decimalAmount
+      .toDecimalPlaces(precision, Decimal.ROUND_DOWN)
+      .toString();
   }
 };
 
@@ -1020,15 +1042,21 @@ export function getTimeOutTime() {
 
 export const hasSufficientBalanceAndGasFee = (
   isNativeToken: boolean,
-  gasFeeEstimation: number,
-  nativeTokenBalance: number,
-  sentAmount: number,
-  sendingTokenBalance: number,
-) => {
-  const hasSufficientGasFee = gasFeeEstimation <= nativeTokenBalance;
+  gasFeeEstimation: string,
+  nativeTokenBalance: string,
+  sentAmount: string,
+  sendingTokenBalance: string,
+): boolean => {
+  const hasSufficientGasFee = DecimalHelper.isLessThanOrEqualTo(
+    DecimalHelper.fromString(gasFeeEstimation),
+    DecimalHelper.fromString(nativeTokenBalance),
+  );
   const hasSufficientBalance = isNativeToken
-    ? sentAmount + gasFeeEstimation <= sendingTokenBalance
-    : sentAmount <= sendingTokenBalance;
+    ? DecimalHelper.isLessThanOrEqualTo(
+        DecimalHelper.add(sentAmount, gasFeeEstimation),
+        sendingTokenBalance,
+      )
+    : DecimalHelper.isLessThan(sentAmount, sendingTokenBalance);
   return hasSufficientBalance && hasSufficientGasFee;
 };
 

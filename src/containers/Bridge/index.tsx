@@ -21,19 +21,24 @@ import {
   floor,
   get,
   isEmpty,
+  isError,
   isNil,
   min,
   round,
 } from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
-import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
+import {
+  ChainIdNameMapping,
+  GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+} from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
 import {
   ActivityContext,
   formatAmount,
   getWeb3Endpoint,
   HdWalletContext,
+  limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
   setTimeOutNSec,
@@ -443,8 +448,10 @@ const Bridge: React.FC = () => {
       }
 
       setUsdAmount(
-        parseFloat(cryptoAmount) > 0
-          ? String(Number(cryptoAmount) * Number(_selectedFromToken?.price))
+        DecimalHelper.isGreaterThan(cryptoAmount, 0)
+          ? DecimalHelper.toString(
+              DecimalHelper.multiply(cryptoAmount, _selectedFromToken?.price),
+            )
           : '0',
       );
     } else if (toggle) {
@@ -532,6 +539,16 @@ const Bridge: React.FC = () => {
   const fetchQuote = async (amount: string): Promise<void> => {
     setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
 
+    console.log('selectedToToken chain id:', selectedToToken?.chainId);
+    console.log('selectedFromToken chain id:', selectedFromToken?.chainId);
+    console.log('selectedToChain chain name:', selectedToChain?.chainName);
+    console.log('selectedFromChain chain name:', selectedFromChain?.chainName);
+    console.log('fromChainDetails isOdos:', selectedFromChain?.isOdos);
+    console.log('toChain isOdos:', selectedToChain?.isOdos);
+    console.log('toToken isOdos:', selectedToToken?.isOdos);
+    console.log('fromToken isOdos:', selectedFromToken?.isOdos);
+    console.log('isOdosSwap:', isOdosSwap());
+
     try {
       if (isOdosSwap()) {
         await getSwapQuote(amount);
@@ -549,7 +566,7 @@ const Bridge: React.FC = () => {
   const debouncedFetchQuote = useCallback(
     debounce((amount: string) => {
       if (
-        Number(amount) > 0 &&
+        DecimalHelper.isGreaterThan(amount, 0) &&
         selectedFromChain &&
         selectedToChain &&
         selectedFromToken &&
@@ -562,7 +579,7 @@ const Bridge: React.FC = () => {
   );
 
   const manualRefreshQuote = useCallback(async () => {
-    if (Number(cryptoAmount) > 0) {
+    if (DecimalHelper.isGreaterThan(cryptoAmount, 0)) {
       if (quoteRefreshInterval.current) {
         clearInterval(quoteRefreshInterval.current);
         quoteRefreshInterval.current = null;
@@ -578,10 +595,13 @@ const Bridge: React.FC = () => {
 
   useEffect(() => {
     const fetchAndUpdateQuote = () => {
-      if (Number(cryptoAmount) > 0) {
+      if (DecimalHelper.isGreaterThan(cryptoAmount, 0)) {
         resetValues();
         setUsdAmount(
-          (Number(cryptoAmount) * Number(selectedFromToken?.price)).toFixed(6),
+          limitDecimalPlaces(
+            DecimalHelper.multiply(cryptoAmount, selectedFromToken?.price),
+            6,
+          ),
         );
         setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
         debouncedFetchQuote(cryptoAmount);
@@ -592,7 +612,7 @@ const Bridge: React.FC = () => {
 
     fetchAndUpdateQuote();
 
-    if (Number(cryptoAmount) > 0) {
+    if (DecimalHelper.isGreaterThan(cryptoAmount, 0)) {
       if (quoteRefreshInterval.current) {
         clearInterval(quoteRefreshInterval.current);
       }
@@ -640,15 +660,59 @@ const Bridge: React.FC = () => {
     };
   }, []);
 
-  const onClickMax = () => {
+  const onClickMax = async () => {
+    // setQuoteData(null);
+    // setAmountOut('');
+    // setUsdAmountOut('');
+    // setSignaturesRequired(0);
+    // setCryptoAmount('');
+    // setUsdAmount('');
+    // setError('');
+    setLoading(prev => ({ ...prev, quoteLoading: true }));
+    console.log(' >>> set quote loading <<< ');
+
     const isNativeToken = selectedFromToken?.isNative ?? false;
+
+    // console.log('payload : ', payload);
+
+    let response;
+    if (isOdosSwap()) {
+      response = await getSwapQuoteFromApi(selectedFromToken?.balanceDecimal);
+    } else {
+      response = await getBridgeQuoteFromApi(selectedFromToken?.balanceDecimal);
+    }
+
+    console.log(' >>> response in onClickMax : ', response);
+
+    if (response.isError) {
+      handleQuoteError(response.error);
+      return;
+    }
+
+    const gasFeeRequired = DecimalHelper.removeDecimals(
+      DecimalHelper.multiply(get(response, ['data', 'data', 'gas']), [
+        GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+        get(response, ['data', 'data', 'gasPrice']),
+      ]),
+      get(selectedFromToken, 'decimals', 0),
+    );
+
+    console.log('gas fee required : ', gasFeeRequired);
+
+    console.log(
+      'balance in decimal : ',
+      get(selectedFromToken, 'balanceDecimal', 0),
+    );
+    console.log('decimals : ', get(selectedFromToken, 'decimals', 0));
 
     const bal = isNativeToken
       ? DecimalHelper.subtract(
           get(selectedFromToken, 'balanceDecimal', 0),
-          get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0),
+          gasFeeRequired,
         )
       : DecimalHelper.fromString(get(selectedFromToken, 'balanceDecimal', 0));
+
+    console.log('balance after reservation : ', bal);
 
     if (DecimalHelper.isGreaterThan(bal, 0)) {
       setCryptoAmount(DecimalHelper.toString(bal));
@@ -660,6 +724,8 @@ const Bridge: React.FC = () => {
     } else {
       setError('Insufficient balance for gas fee');
     }
+
+    // setLoading(prev => ({ ...prev, quoteLoading: false }));
   };
 
   const handleApprove = () => {
@@ -703,6 +769,104 @@ const Bridge: React.FC = () => {
     return addressList;
   };
 
+  const getBridgeQuoteFromApi = async (amount: string) => {
+    const routeBody = {
+      amountIn: limitDecimalPlaces(amount, selectedFromToken.decimals),
+      sourceAssetDenom: selectedFromToken.denom,
+      sourceAssetChainId: selectedFromToken.chainId,
+      destAssetDenom: selectedToToken.denom,
+      destAssetChainId: selectedToToken.chainId,
+    };
+    console.log('routeBody : ', routeBody);
+
+    return await postWithAuth(
+      '/v1/swap/bridge/quote',
+      routeBody,
+      DEFAULT_AXIOS_TIMEOUT,
+    );
+  };
+
+  const handleQuoteError = (quoteError: any) => {
+    console.log('in handle quote error : ', quoteError);
+    setQuoteData(null);
+    setAmountOut('');
+    setUsdAmountOut('');
+    setSignaturesRequired(0);
+    setLoading(prev => ({ ...prev, quoteLoading: false }));
+
+    if (isOdosSwap()) {
+      if (quoteError instanceof Error && quoteError.name !== 'AbortError') {
+        setQuoteData(null);
+        showModal('state', {
+          type: 'error',
+          title: t('QUOTE_ERROR'),
+          description: parseErrorMessage(quoteError) ?? t('UNEXPECTED_ERROR'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        void analytics().logEvent('SWAP_QUOTE_ERROR', {
+          error: quoteError,
+        });
+        Sentry.captureException(quoteError);
+      }
+    } else {
+      if (
+        quoteError?.message.includes('no routes') ||
+        quoteError?.message.includes('transfer across') ||
+        quoteError?.message.includes('bridge relay')
+      ) {
+        // Handle routing-specific errors
+        if (quoteError?.message.includes('no routes')) {
+          console.log(' >>> no routes <<< ');
+          const fromIsUSDC = selectedFromToken?.symbol.toLowerCase() === 'usdc';
+          const toIsUSDC = selectedToToken?.symbol.toLowerCase() === 'usdc';
+
+          if (fromIsUSDC && !toIsUSDC) {
+            setError(
+              `Try bridging to USDC token instead of ${selectedToToken?.name}`,
+            );
+          } else if (!fromIsUSDC && toIsUSDC) {
+            setError(
+              `Try bridging from USDC token instead of ${selectedFromToken?.name}`,
+            );
+          } else if (!fromIsUSDC && !toIsUSDC) {
+            setError(
+              `Try bridging from USDC token in ${selectedFromChain?.chainName} to USDC token in ${selectedToChain?.chainName}`,
+            );
+          } else {
+            setError(quoteError?.message);
+          }
+        } else {
+          console.log(' >>> quoteError?.message : ', quoteError?.message);
+          setError(quoteError?.message);
+        }
+      } else {
+        // Handle other errors
+        console.log(' >>> quoteError?.message : ', quoteError?.message);
+
+        setError(quoteError?.message);
+        void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+          error: quoteError,
+        });
+        Sentry.captureException(quoteError);
+        showModal('state', {
+          type: 'error',
+          title: t('QUOTE_ERROR'),
+          description:
+            parseErrorMessage(quoteError) ?? t('QUOTE_ERROR_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: selectedFromChain?.chainName ?? '',
+          message: `Bridge Quote error: ${parseErrorMessage(quoteError) ?? String(quoteError)}`,
+          screen: route.name,
+        });
+      }
+    }
+  };
+
   const getBridgeQuote = async (amount: string) => {
     try {
       if (
@@ -710,31 +874,17 @@ const Bridge: React.FC = () => {
         selectedToToken &&
         selectedToChain &&
         selectedFromChain &&
-        parseFloat(amount) > 0 &&
+        DecimalHelper.isGreaterThan(amount, 0) &&
         !isOdosSwap()
       ) {
-        const routeBody = {
-          amountIn: ethers
-            .parseUnits(
-              round(Number(amount), selectedFromToken.decimals).toString(),
-              min([10, selectedFromToken.decimals]),
-            )
-            .toString(),
-          sourceAssetDenom: selectedFromToken.denom,
-          sourceAssetChainId: selectedFromToken.chainId,
-          destAssetDenom: selectedToToken.denom,
-          destAssetChainId: selectedToToken.chainId,
-        };
-
         const {
           isError,
           error: quoteError,
           data,
-        } = await postWithAuth(
-          '/v1/swap/bridge/quote',
-          routeBody,
-          DEFAULT_AXIOS_TIMEOUT,
-        );
+        } = await getBridgeQuoteFromApi(amount);
+
+        console.log('quote error : ', quoteError);
+        console.log('data in getBridgeQuote : ', data);
 
         if (!isError) {
           const responseQuoteData = data as SkipApiRouteResponse;
@@ -751,68 +901,11 @@ const Bridge: React.FC = () => {
           setError('');
           setLoading({ ...loading, quoteLoading: false });
         } else {
-          setQuoteData(null);
-          setAmountOut('');
-          setUsdAmountOut('');
-          setSignaturesRequired(0);
-          setLoading({ ...loading, quoteLoading: false });
-          if (
-            quoteError?.message.includes('no routes') ||
-            quoteError?.message.includes('transfer across') ||
-            quoteError?.message.includes('bridge relay')
-          ) {
-            setQuoteData(null);
-            if (
-              quoteError?.message.includes('no routes') &&
-              selectedFromToken.symbol.toLowerCase() === 'usdc' &&
-              selectedToToken.symbol.toLowerCase() !== 'usdc'
-            ) {
-              setError(
-                `Try bridging to USDC token instead of ${selectedToToken.name}`,
-              );
-            } else if (
-              quoteError?.message.includes('no routes') &&
-              selectedToToken.symbol.toLowerCase() === 'usdc' &&
-              selectedFromToken.symbol.toLowerCase() !== 'usdc'
-            ) {
-              setError(
-                `Try bridging from USDC token instead of ${selectedFromToken.name}`,
-              );
-            } else if (
-              quoteError?.message.includes('no routes') &&
-              selectedFromToken.symbol.toLowerCase() !== 'usdc' &&
-              selectedToToken.symbol.toLowerCase() !== 'usdc'
-            ) {
-              setError(
-                `Try bridging from USDC token in ${selectedFromChain.chainName} to USDC token in ${selectedToChain.chainName}`,
-              );
-            } else {
-              setError(quoteError?.message);
-            }
-          } else {
-            setError(quoteError?.message);
-            void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
-              error: quoteError,
-            });
-            Sentry.captureException(quoteError);
-            showModal('state', {
-              type: 'error',
-              title: t('QUOTE_ERROR'),
-              description:
-                parseErrorMessage(quoteError) ?? t('QUOTE_ERROR_DESCRIPTION'),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: selectedFromChain?.chainName ?? '',
-              message: `Bridge Quote error: ${parseErrorMessage(quoteError) ?? String(quoteError)}`,
-              screen: route.name,
-            });
-          }
+          handleQuoteError(quoteError);
         }
       }
     } catch (e: unknown) {
+      console.log('quoteeee error : ', e);
       if (e instanceof Error && e.name !== 'AbortError') {
         showModal('state', {
           type: 'error',
@@ -1282,8 +1375,10 @@ const Bridge: React.FC = () => {
       selectedFromToken?.isOdos &&
       selectedToToken?.isOdos
     ) {
+      // console.log('>>>>>> is odos swap');
       return true;
     }
+    // console.log('!!!!! not odos swap');
     return false;
   };
 
@@ -1321,8 +1416,46 @@ const Bridge: React.FC = () => {
     }
   };
 
+  const getSwapQuoteFromApi = async (amount: string) => {
+    const payload = {
+      fromTokenList: [
+        {
+          address: selectedFromToken?.isNative
+            ? '0x0000000000000000000000000000000000000000'
+            : selectedFromToken?.tokenContract,
+          amount: limitDecimalPlaces(amount, selectedFromToken.decimals),
+        },
+      ],
+      toToken: selectedToToken.isNative
+        ? '0x0000000000000000000000000000000000000000'
+        : selectedToToken.tokenContract,
+      slippage,
+      walletAddress: ethereum.address,
+    };
+
+    const response = await postWithAuth(
+      `/v1/swap/evm/chains/${selectedFromChain?.chainId ?? ''}/quote`,
+      payload,
+      DEFAULT_AXIOS_TIMEOUT,
+    );
+
+    return response;
+  };
+
   const getSwapQuote = async (amount: string) => {
     try {
+      console.log('selectedToToken chain id:', selectedToToken?.chainId);
+      console.log('selectedFromToken chain id:', selectedFromToken?.chainId);
+      console.log('selectedToChain chain name:', selectedToChain?.chainName);
+      console.log(
+        'selectedFromChain chain name:',
+        selectedFromChain?.chainName,
+      );
+      console.log('fromChainDetails isOdos:', selectedFromChain?.isOdos);
+      console.log('toChain isOdos:', selectedToChain?.isOdos);
+      console.log('toToken isOdos:', selectedToToken?.isOdos);
+      console.log('fromToken isOdos:', selectedFromToken?.isOdos);
+      console.log('isOdosSwap:', isOdosSwap());
       if (
         selectedToToken &&
         selectedFromToken &&
@@ -1330,30 +1463,8 @@ const Bridge: React.FC = () => {
         selectedFromChain &&
         isOdosSwap()
       ) {
-        const payload = {
-          fromTokenList: [
-            {
-              address: selectedFromToken?.isNative
-                ? '0x0000000000000000000000000000000000000000'
-                : selectedFromToken?.tokenContract,
-              amount: round(
-                Number(amount),
-                min([10, selectedFromToken.decimals]),
-              ).toString(),
-            },
-          ],
-          toToken: selectedToToken.isNative
-            ? '0x0000000000000000000000000000000000000000'
-            : selectedToToken.tokenContract,
-          slippage,
-          walletAddress: ethereum.address,
-        };
-
-        const response = await postWithAuth(
-          `/v1/swap/evm/chains/${selectedFromChain?.chainId ?? ''}/quote`,
-          payload,
-          DEFAULT_AXIOS_TIMEOUT,
-        );
+        const response = await getSwapQuoteFromApi(amount);
+        console.log('res L : ', response);
 
         if (!response.isError) {
           const responseQuoteData = response.data as OdosSwapQuoteResponse;
@@ -1370,6 +1481,7 @@ const Bridge: React.FC = () => {
           setLoading({ ...loading, quoteLoading: false });
         } else {
           setQuoteData(null);
+          console.log(' >>> setting error response.error : ', response.error);
           setError(response.error);
         }
       }
@@ -1431,6 +1543,7 @@ const Bridge: React.FC = () => {
                 setApproveModalVisible,
               );
               if (approveGranted) {
+                console.log('getApproval');
                 const approvalResp = await getApproval({
                   web3,
                   fromTokenContractAddress: selectedFromToken.tokenContract,
@@ -1444,6 +1557,7 @@ const Bridge: React.FC = () => {
                     toAddress: selectedToToken.tokenContract,
                   },
                 });
+                console.log('aproval response : ', approvalResp);
 
                 if (approvalResp.isError) {
                   setLoading({ ...loading, acceptSwapLoading: false });
@@ -1454,9 +1568,9 @@ const Bridge: React.FC = () => {
           }
           let gasFeeETH = '';
           let gasFeeDollar = '';
-          const gasLimit = floor(
-            get(response, ['gasEstimate']) *
-              ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
+          const gasLimit = DecimalHelper.multiply(
+            get(response, ['gasEstimate']),
+            ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
           );
 
           let finalGasPrice;
@@ -1466,16 +1580,29 @@ const Bridge: React.FC = () => {
 
             if (finalGasPrice) {
               gasFeeETH = web3.utils.fromWei(
-                web3.utils.toWei((finalGasPrice * gasLimit).toFixed(9), 'gwei'),
+                web3.utils.toWei(
+                  limitDecimalPlaces(
+                    DecimalHelper.multiply(finalGasPrice, gasLimit),
+                    9,
+                  ),
+                  'gwei',
+                ),
                 'ether',
               );
             }
 
             if (gasFeeResponse.tokenPrice > 0) {
               const ethPrice = gasFeeResponse.tokenPrice;
-              gasFeeDollar = (parseFloat(gasFeeETH) * ethPrice).toFixed(2);
+              gasFeeDollar = limitDecimalPlaces(
+                DecimalHelper.multiply(gasFeeETH, ethPrice),
+                2,
+              );
             }
           }
+
+          console.log('gasFeeETH : ', gasFeeETH);
+          console.log('gasFeeDollar : ', gasFeeDollar);
+          console.log('gasFeeResponse : ', gasFeeResponse);
 
           setSwapParams({
             gasFeeETH,
@@ -1530,22 +1657,24 @@ const Bridge: React.FC = () => {
           toTokenLogoUrl: selectedToToken?.logoUrl,
           fromChainLogoUrl: selectedFromChain?.logoUrl,
           toChainLogoUrl: selectedToChain?.logoUrl,
-          fromTokenAmount: parseFloat(cryptoAmount).toFixed(3),
+          fromTokenAmount: limitDecimalPlaces(cryptoAmount, 3),
           toTokenAmount: _quoteData?.toToken?.amount.toString(),
           datetime: new Date(),
           transactionHash: '',
           quoteData: {
-            fromAmountUsd:
-              Number(cryptoAmount) * Number(selectedFromToken?.price),
+            fromAmountUsd: DecimalHelper.toNumber(
+              DecimalHelper.multiply(cryptoAmount, selectedFromToken?.price),
+            ),
             toAmountUsd: _quoteData?.value,
             gasFee: _quoteData?.gasEstimateValue,
           },
         };
         activityId.current = id;
-        const gasLimit = floor(
-          get(quoteData, ['gasEstimate']) *
-            ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
+        const gasLimit = DecimalHelper.multiply(
+          get(quoteData, ['gasEstimate']),
+          ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
         );
+
         const gasFeeResponse = _quoteData?.gasInfo;
         const web3 = new Web3(
           getWeb3Endpoint(fromChainDetails, globalStateContext),
@@ -1567,6 +1696,8 @@ const Bridge: React.FC = () => {
           gasFeeResponse,
           chainDetails: fromChainDetails,
         });
+
+        console.log('response in onConfirmSwap : ', response);
 
         if (!response.isError) {
           resetAndSetIndex();
@@ -1627,6 +1758,7 @@ const Bridge: React.FC = () => {
         throw new Error('Chain details not found');
       }
     } catch (err: unknown) {
+      console.log('error in onConfirmSwap : ', err);
       setLoading({ ...loading, swapLoading: false });
       showModal('state', {
         type: 'error',
@@ -2091,12 +2223,14 @@ const Bridge: React.FC = () => {
                       className={
                         'font-nunito text-[12px] text-base100 font-bold'
                       }>
-                      {(
-                        Number(
+                      {limitDecimalPlaces(
+                        DecimalHelper.multiply(
                           (quoteData as OdosSwapQuoteResponse)?.fromToken?.[0]
                             ?.amount,
-                        ) * Number(selectedFromToken?.price)
-                      ).toFixed(4) + ' USD'}
+                          selectedFromToken?.price,
+                        ),
+                        4,
+                      ) + ' USD'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2127,11 +2261,13 @@ const Bridge: React.FC = () => {
                       className={
                         'font-nunito text-[12px] text-base100 font-bold'
                       }>
-                      {(
-                        Number(
+                      {limitDecimalPlaces(
+                        DecimalHelper.multiply(
                           (quoteData as OdosSwapQuoteResponse)?.toToken?.amount,
-                        ) * Number(selectedToToken?.price)
-                      ).toFixed(4) + ' USD'}
+                          selectedToToken?.price,
+                        ),
+                        4,
+                      ) + ' USD'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2222,7 +2358,11 @@ const Bridge: React.FC = () => {
         )}
         {index === 0 &&
           (!isEmpty(error) ||
-            parseFloat(cryptoAmount) > (selectedFromToken?.balance ?? 0)) &&
+            (cryptoAmount &&
+              DecimalHelper.isGreaterThan(
+                cryptoAmount,
+                selectedFromToken?.balanceDecimal ?? 0,
+              ))) &&
           !loading.quoteLoading && (
             <CyDView className=' bg-red20 rounded-[8px] p-[12px] flex flex-row mx-[16px] mt-[16px] justify-between items-center'>
               <CyDFastImage
@@ -2236,18 +2376,21 @@ const Bridge: React.FC = () => {
                     <CyDText className='w-[90%]'>{error}</CyDText>
                   </CyDView>
                 )}
-                {parseFloat(cryptoAmount) >
-                  (selectedFromToken?.balance ?? 0) && (
-                  <CyDView className='flex flex-row gap-x-[8px]'>
-                    <CyDText>{'\u2022'}</CyDText>
-                    {!isOdosSwap() && !isSkipSwap() && (
-                      <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
-                    )}
-                    {(isOdosSwap() || isSkipSwap()) && (
-                      <CyDText>{t('INSUFFICIENT_BALANCE_SWAP')}</CyDText>
-                    )}
-                  </CyDView>
-                )}
+                {cryptoAmount &&
+                  DecimalHelper.isGreaterThan(
+                    cryptoAmount,
+                    selectedFromToken?.balanceDecimal ?? 0,
+                  ) && (
+                    <CyDView className='flex flex-row gap-x-[8px]'>
+                      <CyDText>{'\u2022'}</CyDText>
+                      {!isOdosSwap() && !isSkipSwap() && (
+                        <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                      )}
+                      {(isOdosSwap() || isSkipSwap()) && (
+                        <CyDText>{t('INSUFFICIENT_BALANCE_SWAP')}</CyDText>
+                      )}
+                    </CyDView>
+                  )}
               </CyDView>
             </CyDView>
           )}

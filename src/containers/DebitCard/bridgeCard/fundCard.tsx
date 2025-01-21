@@ -10,6 +10,7 @@ import {
   CHAIN_ETH,
   GASLESS_CHAINS,
   ChainBackendNames,
+  CHAIN_COSMOS,
 } from '../../../constants/server';
 import {
   getWeb3Endpoint,
@@ -40,7 +41,6 @@ import {
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   MINIMUM_TRANSFER_AMOUNT_ETH,
   SlippageFactor,
-  gasFeeReservation,
 } from '../../../constants/data';
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
@@ -56,6 +56,7 @@ import CyDTokenValue from '../../../components/v2/tokenValue';
 import Loading from '../../../components/v2/loading';
 import usePortfolio from '../../../hooks/usePortfolio';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import useCosmosSigner from '../../../hooks/useCosmosSigner';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -67,6 +68,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     currentCardProvider: CardProviders;
     currentCardIndex: number;
   } = route.params;
+  console.log('route.params.tokenData ::: ', route.params.tokenData);
+
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const ethereum = hdWallet.state.wallet.ethereum;
@@ -88,16 +91,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const minTokenValueLimit = 10;
   const minTokenValueEth = 50;
   const [selectedToken, setSelectedToken] = useState<Holding>();
-  const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
+  const [nativeTokenBalance, setNativeTokenBalance] = useState<string>('0');
   const { getNativeToken } = usePortfolio();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForSolana } = useGasService();
+  const { estimateGasForEvm, estimateGasForCosmos, estimateGasForSolana } =
+    useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
+  const { getCosmosSignerClient } = useCosmosSigner();
 
   const { height } = useWindowDimensions();
   const isSmallScreenMobile = height <= 750;
@@ -120,6 +125,127 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     onEnterAmount(amount);
   }, [selectedToken]);
 
+  // useEffect(() => {
+  //   const updateWarningMessage = async () => {
+  //     if (selectedToken) {
+  //       const { symbol, backendName } = selectedToken.chainDetails;
+  //       const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+  //       let errorMessage = '';
+
+  //       try {
+  //         const gasDetails = await getGasDetails(backendName);
+
+  //         if (
+  //           DecimalHelper.isGreaterThan(
+  //             cryptoAmount,
+  //             selectedToken?.balanceDecimal,
+  //           )
+  //         ) {
+  //           errorMessage = t('INSUFFICIENT_FUNDS');
+  //         } else if (
+  //           !GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+  //           DecimalHelper.isLessThanOrEqualTo(
+  //             nativeTokenBalance,
+  //             get(gasDetails, ['gasFeeInCrypto'], 0),
+  //           )
+  //         ) {
+  //           errorMessage = `Insufficient ${nativeTokenSymbol} to pay gas fee`;
+  //         } else if (
+  //           selectedToken?.symbol === nativeTokenSymbol &&
+  //           DecimalHelper.isGreaterThan(
+  //             cryptoAmount,
+  //             DecimalHelper.subtract(
+  //               nativeTokenBalance,
+  //               get(gasDetails, ['gasFeeInCrypto'], 0),
+  //             ),
+  //           )
+  //         ) {
+  //           errorMessage = t('INSUFFICIENT_GAS_FEE');
+  //         } else if (
+  //           usdAmount &&
+  //           backendName === CHAIN_ETH.backendName &&
+  //           DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH)
+  //         ) {
+  //           errorMessage = `${t('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
+  //         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
+  //           errorMessage =
+  //             backendName === CHAIN_ETH.backendName
+  //               ? t('MINIMUM_AMOUNT_ETH')
+  //               : `${t('CARD_LOAD_MIN_AMOUNT')} $${minTokenValueLimit}`;
+  //         }
+
+  //         setWarningMessage(errorMessage);
+  //       } catch (error) {
+  //         console.error('Error calculating warning message:', error);
+  //         setWarningMessage('');
+  //       }
+  //     } else {
+  //       setWarningMessage('');
+  //     }
+  //   };
+
+  //   void updateWarningMessage();
+  // }, [selectedToken, cryptoAmount, nativeTokenBalance, usdAmount]);
+
+  // useEffect(() => {
+  //   const checkDisabled = async () => {
+  //     if (selectedToken) {
+  //       const { symbol, backendName } = selectedToken.chainDetails;
+  //       const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+  //       try {
+  //         const gasDetails = await getGasDetails(backendName);
+
+  //         const validUsdAmount = usdAmount || '0';
+  //         const validCryptoAmount = cryptoAmount || '0';
+
+  //         const hasInSufficientGas =
+  //           (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+  //             DecimalHelper.isLessThanOrEqualTo(
+  //               nativeTokenBalance,
+  //               get(gasDetails, ['gasFeeInCrypto'], 0),
+  //             )) ||
+  //           (selectedToken?.symbol === nativeTokenSymbol &&
+  //             DecimalHelper.isGreaterThan(
+  //               validCryptoAmount,
+  //               DecimalHelper.subtract(
+  //                 nativeTokenBalance,
+  //                 get(gasDetails, ['gasFeeInCrypto'], 0),
+  //               ),
+  //             ));
+
+  //         const isQuoteDisabled =
+  //           DecimalHelper.isLessThan(validUsdAmount, minTokenValueLimit) ||
+  //           !selectedToken ||
+  //           DecimalHelper.isGreaterThan(
+  //             validCryptoAmount,
+  //             selectedToken.balanceDecimal || 0,
+  //           ) ||
+  //           hasInSufficientGas ||
+  //           (backendName === CHAIN_ETH.backendName &&
+  //             DecimalHelper.isLessThan(
+  //               validUsdAmount,
+  //               MINIMUM_TRANSFER_AMOUNT_ETH,
+  //             ));
+
+  //         setIsDisabled(isQuoteDisabled);
+  //       } catch (error) {
+  //         console.error('Error checking disabled state:', error);
+  //         setIsDisabled(true);
+  //       }
+  //     } else {
+  //       setIsDisabled(true);
+  //     }
+  //   };
+
+  //   void checkDisabled();
+  // }, [
+  //   selectedToken,
+  //   usdAmount,
+  //   cryptoAmount,
+  //   nativeTokenBalance,
+  //   minTokenValueLimit,
+  // ]);
+
   const showQuoteModal = async (
     quote: CardQuoteResponse,
     isMaxQuote: boolean,
@@ -130,28 +256,50 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       symbol: selectedTokenSymbol,
       contractAddress,
       contractDecimals,
+      balanceDecimal,
     } = selectedToken as Holding;
     const nativeToken = await getNativeToken(
       chainDetails.backendName as ChainBackendNames,
     );
-    const actualTokensRequired = parseFloat(
-      limitDecimalPlaces(quote.tokensRequired, contractDecimals),
+    const actualTokensRequired = limitDecimalPlaces(
+      quote.tokensRequired,
+      contractDecimals,
     );
+    console.log('actualTokensRequired ::: ', actualTokensRequired);
+    console.log('actualBalance ::: ', balanceDecimal);
+    if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
+      setLoading(false);
+      setIsMaxLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: t('INSUFFICIENT_FUNDS'),
+        description: t('INSUFFICIENT_FUNDS_DESCRIPTION'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
+    }
     let gasDetails;
     const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
     try {
       if (chainDetails.chainName === ChainNames.ETH) {
         const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
-        if (actualTokensRequired <= actualBalance) {
+        if (
+          DecimalHelper.isLessThanOrEqualTo(
+            actualTokensRequired,
+            balanceDecimal,
+          )
+        ) {
           gasDetails = await estimateGasForEvm({
             web3,
             chain: chainDetails.backendName as ChainBackendNames,
             fromAddress: ethereum.address,
             toAddress: targetWalletAddress,
-            amountToSend: String(actualTokensRequired),
+            amountToSend: actualTokensRequired,
             contractAddress,
             contractDecimals,
           });
+          console.log('gasDetails in estimate ::: ', gasDetails);
         } else {
           setLoading(false);
           setIsMaxLoading(false);
@@ -161,7 +309,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             cardId,
             tokenSendParams: {
               chain: chainDetails.backendName,
-              amountInCrypto: String(actualTokensRequired),
+              amountInCrypto: actualTokensRequired,
               symbol: selectedTokenSymbol,
               toAddress: targetWalletAddress,
               gasFeeInCrypto: '0',
@@ -191,20 +339,21 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         gasDetails = await estimateGasForSolana({
           fromAddress: solana.address,
           toAddress: targetWalletAddress,
-          amountToSend: String(actualTokensRequired),
+          amountToSend: actualTokensRequired,
           contractAddress,
           contractDecimals,
         });
       }
       setLoading(false);
       setIsMaxLoading(false);
+      console.log('gasDetails :::::::::: ', gasDetails);
       if (gasDetails) {
         const hasSufficient = hasSufficientBalanceAndGasFee(
           selectedTokenSymbol === chainDetails.symbol,
-          parseFloat(String(gasDetails.gasFeeInCrypto)),
+          String(gasDetails.gasFeeInCrypto),
           nativeTokenBalance,
           actualTokensRequired,
-          actualBalance,
+          balanceDecimal,
         );
         navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
           hasSufficientBalanceAndGasFee: hasSufficient,
@@ -212,7 +361,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           cardId,
           tokenSendParams: {
             chain: chainDetails.backendName,
-            amountInCrypto: String(actualTokensRequired),
+            amountInCrypto: actualTokensRequired,
             amountInFiat: String(quote.amount),
             symbol: selectedTokenSymbol,
             toAddress: targetWalletAddress,
@@ -240,6 +389,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         });
       }
     } catch (e) {
+      console.log('e : ', e);
       const errorObject = {
         e,
         message: 'Error when estimating gasFee for the transaction for EVM',
@@ -451,30 +601,63 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const isLoadCardDisabled = () => {
     if (selectedToken) {
       const { symbol, backendName } = selectedToken.chainDetails;
-      const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
-      const hasInSufficientGas =
-        (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
-          nativeTokenBalance <=
-            get(gasFeeReservation, backendName as ChainBackendNames)) ||
-        (selectedToken?.symbol === nativeTokenSymbol &&
-          Number(cryptoAmount) >
-            Number(
-              (
-                nativeTokenBalance -
-                get(gasFeeReservation, backendName as ChainBackendNames)
-              ).toFixed(6),
-            ));
+      // const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+      // const hasInSufficientGas =
+      //   (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+      //     nativeTokenBalance <=
+      //       get(gasFeeReservation, backendName as ChainBackendNames)) ||
+      //   (selectedToken?.symbol === nativeTokenSymbol &&
+      //     Number(cryptoAmount) >
+      //       Number(
+      //         (
+      //           nativeTokenBalance -
+      //           get(gasFeeReservation, backendName as ChainBackendNames)
+      //         ).toFixed(6),
+      //       ));
       return (
-        Number(usdAmount) < minTokenValueLimit ||
+        DecimalHelper.isLessThan(usdAmount, minTokenValueLimit) ||
         !selectedToken ||
-        Number(cryptoAmount) > Number(selectedToken.actualBalance) ||
-        hasInSufficientGas ||
+        DecimalHelper.isGreaterThan(
+          cryptoAmount,
+          selectedToken.balanceDecimal,
+        ) ||
+        // hasInSufficientGas ||
         (backendName === CHAIN_ETH.backendName &&
-          Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH)
+          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH))
       );
     }
     return true;
   };
+
+  // const getGasDetails = async (backendName: ChainBackendNames) => {
+  //   if (COSMOS_CHAINS.includes(backendName)) {
+  //     const gasDetails = await estimateGasForCosmos({
+  //       chain: selectedToken?.chainDetails,
+  //       denom: selectedToken?.denom,
+  //       amount: selectedToken?.balanceDecimal,
+  //       fromAddress: wallet[selectedToken?.chainDetails.chainName].address,
+  //       toAddress: wallet[selectedToken?.chainDetails.chainName].address,
+  //       signer: await getCosmosSignerClient(
+  //         selectedToken?.chainDetails.chainName,
+  //       ),
+  //     });
+  //     return gasDetails;
+  //   } else {
+  //     const web3 = new Web3(
+  //       getWeb3Endpoint(selectedToken?.chainDetails, globalContext),
+  //     );
+  //     const gasDetails = await estimateGasForEvm({
+  //       web3,
+  //       chain: selectedToken?.chainDetails.backendName as ChainBackendNames,
+  //       fromAddress: ethereum.address,
+  //       toAddress: ethereum.address,
+  //       amountToSend: selectedToken?.balanceDecimal,
+  //       contractAddress: selectedToken?.contractAddress,
+  //       contractDecimals: selectedToken?.contractDecimals,
+  //     });
+  //     return gasDetails;
+  //   }
+  // };
 
   const onSelectingToken = async (item: Holding) => {
     setSelectedToken(item);
@@ -482,7 +665,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     const nativeToken = await getNativeToken(
       item.chainDetails.backendName as ChainBackendNames,
     );
-    setNativeTokenBalance(nativeToken.actualBalance);
+    setNativeTokenBalance(nativeToken.balanceDecimal);
     setIsCryptoInput(false);
     const tempMinTokenValue =
       item.chainDetails.backendName === CHAIN_ETH.backendName
@@ -514,6 +697,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       balanceDecimal,
       symbol: selectedTokenSymbol,
     } = selectedToken as Holding;
+
+    console.log(' >>> selectedToken in fundcard : ', selectedToken);
 
     const nativeTokenSymbol =
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
@@ -593,6 +778,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
         );
+        console.log(' >>> response in fundcard : ', response);
         if (!response.isError) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
@@ -642,13 +828,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
       ) {
         try {
-          const gasDetails = {
-            gasFeeInCrypto: get(
-              gasFeeReservation,
-              [chainDetails.chainName, 'backendName'],
-              0.1,
-            ),
-          };
+          const cosmosSigner = await getCosmosSignerClient(
+            chainDetails.chainName,
+          );
+          const gasDetails = await estimateGasForCosmos({
+            chain: chainDetails,
+            denom,
+            amount: amountInCrypto,
+            fromAddress: wallet[chainDetails.chainName].address,
+            toAddress: wallet[chainDetails.chainName].address,
+            signer: cosmosSigner,
+          });
+          console.log(' >>> gasDetails in cosmos fundcard : ', gasDetails);
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
@@ -697,10 +888,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amountInCrypto: true,
           tokenAddress: denom,
         };
+        console.log(' >>> payload in fundcard cosmos : ', payload);
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
         );
+        console.log(' >>> response in fundcard cosmos : ', response);
         if (!response.isError) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
@@ -711,7 +904,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             title: response?.error?.message?.includes('minimum amount')
               ? t('INSUFFICIENT_FUNDS')
               : '',
-            description: response.error.message ?? t('UNABLE_TO_TRANSFER'),
+            description: response?.error?.message?.includes(
+              'amount is lower than 10 USD',
+            )
+              ? response.error.message +
+                '. Please ensure you have enough balance for gas fees.'
+              : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -829,34 +1027,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       if (symbol && backendName) {
         const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
         let errorMessage = '';
-        if (Number(cryptoAmount) > Number(selectedToken?.actualBalance)) {
+        if (
+          DecimalHelper.isGreaterThan(
+            cryptoAmount,
+            selectedToken?.actualBalance,
+          )
+        ) {
           errorMessage = t('INSUFFICIENT_FUNDS');
-        } else if (
-          !GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
-          nativeTokenBalance <=
-            get(gasFeeReservation, backendName as ChainBackendNames)
-        ) {
-          errorMessage = String(
-            `Insufficient ${String(nativeTokenSymbol)} to pay gas fee`,
-          );
-        } else if (
-          selectedToken?.symbol === nativeTokenSymbol &&
-          Number(cryptoAmount) >
-            Number(
-              (
-                nativeTokenBalance -
-                get(gasFeeReservation, backendName as ChainBackendNames)
-              ).toFixed(6),
-            )
-        ) {
-          errorMessage = t('INSUFFICIENT_GAS_FEE');
         } else if (
           usdAmount &&
           backendName === CHAIN_ETH.backendName &&
-          Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
+          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH)
         ) {
           errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
-        } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
+        } else if (
+          !usdAmount ||
+          DecimalHelper.isLessThan(usdAmount, minTokenValueLimit)
+        ) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
           } else {
@@ -879,86 +1066,72 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const onPressToggle = () => {
     const tempIsCryproInput = !isCrpytoInput;
     setIsCryptoInput(!isCrpytoInput);
-    const multiplier =
-      1 +
-      divide(
+
+    const multiplier = DecimalHelper.add(1, [
+      DecimalHelper.divide(
         get(
           CardFeePercentage,
           selectedToken?.chainDetails.backendName as string,
           0.5,
         ),
         100,
-      ) +
+      ),
       get(
         SlippageFactor,
         selectedToken?.chainDetails.backendName as string,
         0.003,
-      );
+      ),
+    ]);
 
     if (tempIsCryproInput) {
-      const usdAmt =
-        parseFloat(amount) *
-        (selectedToken?.isZeroFeeCardFunding
-          ? 1
-          : Number(selectedToken?.price));
+      const usdAmt = DecimalHelper.multiply(
+        amount,
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
+      );
       setCryptoAmount(amount);
       setUsdAmount(
-        (Number.isNaN(usdAmt)
-          ? '0.00'
-          : selectedToken?.isZeroFeeCardFunding
-            ? usdAmt
-            : usdAmt * multiplier
-        ).toString(),
+        selectedToken?.isZeroFeeCardFunding
+          ? usdAmt.toString()
+          : DecimalHelper.toString(DecimalHelper.multiply(usdAmt, multiplier)),
       );
     } else {
-      const cryptoAmt =
-        parseFloat(
-          String(
-            Number(amount) *
-              (selectedToken?.isZeroFeeCardFunding ? 1 : multiplier),
-          ),
-        ) /
-        (selectedToken?.isZeroFeeCardFunding
-          ? 1
-          : Number(selectedToken?.price));
-      setCryptoAmount(
-        (Number.isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
+      const cryptoAmt = DecimalHelper.divide(
+        DecimalHelper.multiply(
+          amount,
+          selectedToken?.isZeroFeeCardFunding ? 1 : multiplier,
+        ),
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
       );
+      setCryptoAmount(cryptoAmt.toString());
       setUsdAmount(amount);
     }
   };
 
   const onEnterAmount = (amt: string) => {
     setAmount(amt);
+    console.log(' >>> amt : ', amt);
     if (isCrpytoInput) {
       const usdText =
         parseFloat(amt) *
         (selectedToken?.isZeroFeeCardFunding
           ? 1
           : Number(selectedToken?.price));
+      console.log(' >>> selected token : ', selectedToken);
+      console.log(' >>> selected token price : ', selectedToken?.price);
+      console.log(' >>> usdText : ', usdText);
       setCryptoAmount(amt);
-      setUsdAmount(
-        (Number.isNaN(usdText)
-          ? '0.00'
-          : selectedToken?.isZeroFeeCardFunding
-            ? usdText
-            : usdText / 1.02
-        ).toString(),
-      );
+      setUsdAmount((Number.isNaN(usdText) ? '0.00' : usdText).toString());
     } else {
       const cryptoText =
         parseFloat(amt) /
         (selectedToken?.isZeroFeeCardFunding
           ? 1
           : Number(selectedToken?.price));
+      console.log(' >>> cryptoText : ', cryptoText);
       setCryptoAmount(
-        (Number.isNaN(cryptoText)
-          ? '0.00'
-          : selectedToken?.isZeroFeeCardFunding
-            ? cryptoText
-            : cryptoText * 1.02
-        ).toString(),
+        (Number.isNaN(cryptoText) ? '0.00' : cryptoText).toString(),
       );
+      console.log(' >>> cryptoAmount * 1.02 : ', cryptoText * 1.02);
       setUsdAmount(amt);
     }
   };
@@ -1080,6 +1253,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     ' ' +
                     (selectedToken?.symbol ?? ' '))}
             </CyDText>
+
             <RenderWarningMessage />
             {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
                 <CyDView className='mb-[2px]'>

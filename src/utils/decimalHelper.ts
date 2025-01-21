@@ -1,29 +1,88 @@
 import Decimal from 'decimal.js';
 
 export const DecimalHelper = {
-  fromString(value: string | number | Decimal): Decimal {
-    return value instanceof Decimal ? value : new Decimal(value.toString());
+  fromString(value?: string | number | Decimal | bigint | null): Decimal {
+    if (value === null || value === undefined) return new Decimal(0);
+    if (value instanceof Decimal) return value;
+    try {
+      if (typeof value === 'bigint') {
+        return new Decimal(value.toString());
+      }
+      return new Decimal(value.toString());
+    } catch {
+      return new Decimal(0);
+    }
   },
 
   subtract(
-    a: string | number | Decimal,
-    b: string | number | Decimal,
+    a: string | number | Decimal | bigint,
+    b:
+      | string
+      | number
+      | Decimal
+      | bigint
+      | Array<string | number | Decimal | bigint>,
   ): Decimal {
+    if (Array.isArray(b)) {
+      return b.reduce<Decimal>(
+        (result, value) => this.fromString(result).sub(this.fromString(value)),
+        this.fromString(a),
+      );
+    }
     return this.fromString(a).sub(this.fromString(b));
   },
 
-  add(a: string | number | Decimal, b: string | number | Decimal): Decimal {
+  add(
+    a: string | number | Decimal | bigint,
+    b:
+      | string
+      | number
+      | Decimal
+      | bigint
+      | Array<string | number | Decimal | bigint>,
+  ): Decimal {
+    if (Array.isArray(b)) {
+      return b.reduce<Decimal>(
+        (result, value) => this.fromString(result).add(this.fromString(value)),
+        this.fromString(a),
+      );
+    }
     return this.fromString(a).add(this.fromString(b));
   },
 
   multiply(
-    a: string | number | Decimal,
-    b: string | number | Decimal,
+    a: string | number | Decimal | bigint,
+    b:
+      | string
+      | number
+      | Decimal
+      | bigint
+      | Array<string | number | Decimal | bigint>,
   ): Decimal {
+    if (Array.isArray(b)) {
+      return b.reduce<Decimal>(
+        (result, value) => this.fromString(result).mul(this.fromString(value)),
+        this.fromString(a),
+      );
+    }
     return this.fromString(a).mul(this.fromString(b));
   },
 
-  divide(a: string | number | Decimal, b: string | number | Decimal): Decimal {
+  divide(
+    a: string | number | Decimal | bigint,
+    b:
+      | string
+      | number
+      | Decimal
+      | bigint
+      | Array<string | number | Decimal | bigint>,
+  ): Decimal {
+    if (Array.isArray(b)) {
+      return b.reduce<Decimal>(
+        (result, value) => this.fromString(result).div(this.fromString(value)),
+        this.fromString(a),
+      );
+    }
     return this.fromString(a).div(this.fromString(b));
   },
 
@@ -68,5 +127,21 @@ export const DecimalHelper = {
 
   toNumber(value: string | number | Decimal): number {
     return this.fromString(value).toNumber();
+  },
+
+  pow(base: number, exponent: number): Decimal {
+    return new Decimal(Math.pow(base, exponent));
+  },
+
+  applyDecimals(value: string | number | Decimal, decimals: number): Decimal {
+    return this.multiply(value, this.pow(10, decimals));
+  },
+
+  removeDecimals(value: string | number | Decimal, decimals: number): Decimal {
+    return this.divide(value, this.pow(10, decimals));
+  },
+
+  roundUp(value: string | number | Decimal, precision: number): Decimal {
+    return this.fromString(value).toDecimalPlaces(precision, Decimal.ROUND_UP);
   },
 };

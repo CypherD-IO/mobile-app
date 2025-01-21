@@ -20,6 +20,7 @@ import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { Holding } from '../../core/portfolio';
 import { limitDecimalPlaces } from '../../core/util';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 interface PortfolioTokenItemProps {
   item: Holding;
@@ -273,9 +274,10 @@ const PortfolioTokenItem = ({
               {item.isVerified && (
                 <CyDTokenValue className='text-[18px] font-bold'>
                   {item.actualUnbondingBalance !== undefined
-                    ? item.totalValue +
-                      item.actualStakedBalance +
-                      item.actualUnbondingBalance
+                    ? DecimalHelper.add(item.totalValue, [
+                        item.actualStakedBalance,
+                        item.actualUnbondingBalance,
+                      ]).toString()
                     : '...'}
                 </CyDTokenValue>
               )}
@@ -283,9 +285,10 @@ const PortfolioTokenItem = ({
                 <CyDTokenAmount className='text-[14px]'>
                   {item.stakedBalanceTotalValue !== undefined &&
                   item.unbondingBalanceTotalValue !== undefined
-                    ? item.actualBalance +
-                      item.stakedBalanceTotalValue +
-                      item.unbondingBalanceTotalValue
+                    ? DecimalHelper.add(item.actualBalance, [
+                        item.stakedBalanceTotalValue,
+                        item.unbondingBalanceTotalValue,
+                      ]).toString()
                     : '...'}
                 </CyDTokenAmount>
                 <CyDText className='font-semibold'>{item.symbol}</CyDText>
