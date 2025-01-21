@@ -23,7 +23,6 @@ import {
 import useAxios from '../../../../core/HttpRequest';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -31,6 +30,7 @@ import {
 } from '../../../../styles/tailwindStyles';
 import SelectPlanModal from '../../../../components/selectPlanModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../../../customFonts';
 interface RouteParams {
   deductAmountNow?: boolean;
   toPage?: string;
@@ -138,9 +138,9 @@ const IHaveReferralCodeScreen = () => {
                 });
               }}
               className='w-[36px] h-[36px]'>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

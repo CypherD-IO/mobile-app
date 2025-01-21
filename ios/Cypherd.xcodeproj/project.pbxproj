@@ -11,9 +11,9 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1D3892A61EB94989BC30F554 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F4A78A959A4846E4BFE54A47 /* CydFont.ttf */; };
 		2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */; };
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
+		5131E0D7326E4E49904C7649 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4E3E845361D64C5EAFE1F89F /* CydFont.ttf */; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
 		63948B4D9075475B8A0C2CE4 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */; };
@@ -59,6 +59,7 @@
 		3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CC408C1228D48B28D032D9C /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
+		4E3E845361D64C5EAFE1F89F /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		5C433F5928E49B2100FA84F8 /* Cypherd-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Cypherd-Bridging-Header.h"; sourceTree = "<group>"; };
 		5C433F5A28E49B2100FA84F8 /* Dynamic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dynamic.swift; sourceTree = "<group>"; };
 		5C433F6428E585ED00FA84F8 /* splash.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = splash.json; sourceTree = "<group>"; };
@@ -84,7 +85,6 @@
 		DFE95E5ECA9945E989B08078 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		E98C8950ECC14CBFB7B00508 /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F4A78A959A4846E4BFE54A47 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		F805352840AE4EE2B8EDA9FA /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -151,7 +151,7 @@
 				D85EC71D87BE43D8BF1C0222 /* Manrope-Medium.ttf */,
 				3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */,
 				29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */,
-				F4A78A959A4846E4BFE54A47 /* CydFont.ttf */,
+				4E3E845361D64C5EAFE1F89F /* CydFont.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -336,7 +336,7 @@
 				7A10E59221E64F2881B4F8EC /* Manrope-Medium.ttf in Resources */,
 				9051DFCC29A24E86A3C678EE /* Manrope-Regular.ttf in Resources */,
 				EC8AF5C1EF1942ADBFC836D3 /* Manrope-SemiBold.ttf in Resources */,
-				1D3892A61EB94989BC30F554 /* CydFont.ttf in Resources */,
+				5131E0D7326E4E49904C7649 /* CydFont.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

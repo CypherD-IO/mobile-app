@@ -38,6 +38,7 @@ import { StyleSheet } from 'react-native';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { useTheme } from '../../../reducers/themeReducer';
 import clsx from 'clsx';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   cardProvider: string;
@@ -278,9 +279,9 @@ export default function GlobalOptions() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

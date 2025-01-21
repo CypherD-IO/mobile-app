@@ -7,6 +7,7 @@ export type IconNames =
   | 'airplane'
   | 'apple'
   | 'arrow-down-left'
+  | 'arrow-left'
   | 'arrow-up-right'
   | 'atm-cash'
   | 'bar-graph'

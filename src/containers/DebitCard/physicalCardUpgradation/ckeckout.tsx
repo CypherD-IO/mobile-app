@@ -40,6 +40,7 @@ import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -341,9 +342,9 @@ export default function ShippingCheckout() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

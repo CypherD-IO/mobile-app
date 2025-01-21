@@ -10,7 +10,7 @@ import CyDModalLayout from './modal';
 import { StyleSheet } from 'react-native';
 import * as React from 'react';
 import clsx from 'clsx';
-import AppImages from '../../../assets/images/appImages';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 enum typeOfChain {
   CHAIN = 'chain',
@@ -128,9 +128,9 @@ export default function ChooseChainModal({
           <CyDTouchView
             onPress={onPressBack}
             className={'absolute z-[50] top-[20px] left-[24px]'}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

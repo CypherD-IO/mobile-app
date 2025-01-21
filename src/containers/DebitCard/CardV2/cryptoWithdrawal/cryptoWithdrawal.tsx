@@ -16,7 +16,6 @@ import {
   useRoute,
   useFocusEffect,
 } from '@react-navigation/native';
-import AppImages from '../../../../../assets/images/appImages';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
@@ -27,6 +26,7 @@ import { ceil, isEmpty } from 'lodash';
 import Loading from '../../../../components/v2/loading';
 import { screenTitle } from '../../../../constants';
 import WithdrawalReasonsModal from '../../../../components/v2/withdrawalReasonsModal';
+import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: string;
@@ -95,9 +95,9 @@ export default function CryptoWithdrawal() {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

@@ -36,6 +36,7 @@ import { showToast } from '../../../utilities/toastUtility';
 import { screenTitle } from '../../../../constants';
 import Loading from '../../../../components/v2/loading';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
+import { CyDIconsPack } from '../../../../customFonts';
 
 export default function OTPVerification(): JSX.Element {
   const { t } = useTranslation();
@@ -246,9 +247,9 @@ export default function OTPVerification(): JSX.Element {
         {/* remove the CardProviderSwitch after sunsetting PC */}
         <CyDView className='flex-row justify-between items-center'>
           <CyDTouchView className='' onPress={handleBackPress}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

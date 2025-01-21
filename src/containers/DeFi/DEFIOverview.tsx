@@ -42,7 +42,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   protocol: defiProtocolData;
@@ -265,11 +265,7 @@ export function DEFIOverviewScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
           {protocol.protocolName}

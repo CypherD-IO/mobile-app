@@ -23,6 +23,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { CyDIconsPack } from '../../customFonts';
 
 const copyToClipboard = (text: string) => {
   Clipboard.setString(text);
@@ -403,11 +404,7 @@ export default function Referrals() {
             navigation.goBack();
           }}
           className='w-[36px] h-[36px]'>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDView className='flex-1 '>
           <CyDText className='text-[16px] font-bold -ml-[16px] text-center'>

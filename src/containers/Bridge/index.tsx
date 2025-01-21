@@ -101,6 +101,7 @@ import {
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
 import CyDSkeleton from '../../components/v2/skeleton';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -1699,9 +1700,9 @@ const Bridge: React.FC = () => {
                   ? navigation.goBack()
                   : resetAndSetIndex();
               }}>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

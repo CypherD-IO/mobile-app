@@ -30,6 +30,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { screenTitle } from '../../../constants';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: string;
@@ -134,9 +135,9 @@ export default function LockdownMode() {
                 onPress={() => {
                   navigation.goBack();
                 }}>
-                <CydMaterialDesignIcons
-                  name={'arrow-left-thin'}
-                  size={32}
+                <CyDIconsPack
+                  name='arrow-left'
+                  size={24}
                   className='text-base400'
                 />
               </CyDTouchView>

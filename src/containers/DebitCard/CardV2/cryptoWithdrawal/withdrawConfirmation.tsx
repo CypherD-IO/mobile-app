@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import {
   CyDFastImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -29,6 +28,7 @@ import { ChainBackendNames } from '../../../../constants/server';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import { StyleSheet } from 'react-native';
 import { Card } from '../../../../models/card.model';
+import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   amount: string;
@@ -107,11 +107,7 @@ export default function WithdrawConfirmation() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
 
         <CyDKeyboardAwareScrollView className='flex-1 bg-n30 mt-[12px]'>

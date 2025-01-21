@@ -5,14 +5,10 @@ import {
   CyDText,
   CyDSafeAreaView,
   CyDTouchView,
-  CyDImage,
   CyDTextInput,
-  CyDScrollView,
-  CyDFastImage,
   CyDKeyboardAwareScrollView,
   CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
-import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -34,6 +30,7 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import clsx from 'clsx';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -154,9 +151,9 @@ export default function AddDeliveryAddress() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

@@ -61,16 +61,15 @@ import { CardQuoteResponse } from '../../../models/card.model';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
-  CyDImage,
   CyDKeyboardAwareScrollView,
   CydMaterialDesignIcons,
-  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import Loading from '../../../components/v2/loading';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -1036,11 +1035,12 @@ export default function FirstLoadCard() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
+
             <CyDText className='font-bold text-[28px]'>
               {'Lets Fund your Card'}
             </CyDText>

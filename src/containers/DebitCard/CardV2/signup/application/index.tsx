@@ -27,7 +27,6 @@ import {
   GlobalContextType,
 } from '../../../../../constants/enum';
 import { t } from 'i18next';
-import AppImages from '../../../../../../assets/images/appImages';
 import useCardUtilities from '../../../../../hooks/useCardUtilities';
 import {
   GlobalContext,
@@ -39,6 +38,7 @@ import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import { getReferralCode } from '../../../../../core/asyncStorage';
+import { CyDIconsPack } from '../../../../../customFonts';
 
 // Add this type definition
 interface SupportedCountry {
@@ -300,11 +300,7 @@ export default function CardApplicationV2() {
             navigation.goBack();
           } else setIndex(0);
         }}>
-        <CydMaterialDesignIcons
-          name={'arrow-left-thin'}
-          size={32}
-          className='text-base400'
-        />
+        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
 
       <Formik

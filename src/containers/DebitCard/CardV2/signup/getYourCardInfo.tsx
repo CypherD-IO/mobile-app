@@ -29,6 +29,7 @@ import {
   GlobalContextDef,
 } from '../../../../core/globalContext';
 import SelectPlanModal from '../../../../components/selectPlanModal';
+import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   deductAmountNow: boolean;
@@ -106,9 +107,9 @@ export default function GetYourCardInfo() {
                     : navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
                 }}
                 className='w-[36px] h-[36px] my-[16px]'>
-                <CydMaterialDesignIcons
-                  name={'arrow-left-thin'}
-                  size={32}
+                <CyDIconsPack
+                  name='arrow-left'
+                  size={24}
                   className='text-base400'
                 />
               </CyDTouchView>

@@ -71,6 +71,7 @@ import Button from '../../../components/v2/button';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import { CyDIconsPack } from '../../../customFonts';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -832,10 +833,10 @@ const TransactionDetail = ({
                   <CyDText className='text-[12px]'>
                     {t('VIEW_TRANSACTION')}
                   </CyDText>
-                  <CydMaterialDesignIcons
-                    name={'arrow-left-thin'}
+                  <CyDIconsPack
+                    name='arrow-left'
                     size={16}
-                    className=''
+                    className='text-base400'
                   />
                 </CyDTouchView>
               </CyDView>
@@ -1177,9 +1178,9 @@ export default function TransactionDetails() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
+          <CyDIconsPack
+            name='arrow-left'
+            size={24}
             className='text-base400 ml-[16px]'
           />
         </CyDTouchView>

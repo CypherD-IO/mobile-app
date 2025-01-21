@@ -39,6 +39,7 @@ import useTransactionManager from '../../hooks/useTransactionManager';
 import { random } from 'lodash';
 import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 export default function CosmosAction({
   route,
@@ -281,9 +282,9 @@ export default function CosmosAction({
             onPress={() => {
               navigation.goBack();
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

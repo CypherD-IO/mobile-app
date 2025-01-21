@@ -3,7 +3,6 @@ import { SafeAreaView, ScrollView, StatusBar } from 'react-native';
 import {
   CyDImage,
   CyDLottieView,
-  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -16,6 +15,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { CyDIconsPack } from '../../customFonts';
 
 export default function Rewards() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -92,9 +92,9 @@ export default function Rewards() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400 ml-[16px] mb-[12px]'
             />
           </CyDTouchView>

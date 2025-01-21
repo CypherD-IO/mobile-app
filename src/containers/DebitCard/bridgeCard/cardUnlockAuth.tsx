@@ -29,6 +29,7 @@ import {
 import { Card } from '../../../models/card.model';
 import { t } from 'i18next';
 import { PinInput } from '../../../components/v2/pinInput';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   onSuccess: () => void;
@@ -52,11 +53,7 @@ const OTPHeader = ({
         onPress={() => {
           navigation.goBack();
         }}>
-        <CydMaterialDesignIcons
-          name={'arrow-left-thin'}
-          size={32}
-          className='text-base400'
-        />
+        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
 
       <CydMaterialDesignIcons

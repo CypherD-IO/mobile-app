@@ -41,6 +41,7 @@ import {
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
 import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   cardId: string;
@@ -303,11 +304,7 @@ export default function CardControlsMenu() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
           <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card?.last4 ?? ''}`}</CyDText>
         </CyDTouchView>
         {loading ? (

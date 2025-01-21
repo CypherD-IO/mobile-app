@@ -28,6 +28,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { StyleSheet } from 'react-native';
 import Loading from '../../../components/v2/loading';
 import Slider from '../../../components/v2/slider';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -209,11 +210,7 @@ export default function EditLimits() {
         onPress={() => {
           navigation.goBack();
         }}>
-        <CydMaterialDesignIcons
-          name={'arrow-left-thin'}
-          size={32}
-          className='text-base400'
-        />
+        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         <CyDText className='text-[18px] font-bol ml-[8px]'>
           {t('Usage Limit Setting')}
         </CyDText>

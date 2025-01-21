@@ -31,6 +31,7 @@ import CyDModalLayout from '../../components/v2/modal';
 import { screenTitle } from '../../constants';
 import { BackHandler, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts';
 
 export default function CosmosValidators({ route, navigation }) {
   const insets = useSafeAreaInsets();
@@ -198,11 +199,7 @@ export default function CosmosValidators({ route, navigation }) {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDView className={'-mt-[10px] bg-n0'}>
           {from === CosmosActionType.STAKE && (

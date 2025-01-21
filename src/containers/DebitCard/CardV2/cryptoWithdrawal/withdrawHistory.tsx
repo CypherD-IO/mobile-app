@@ -29,6 +29,7 @@ import moment from 'moment';
 import { screenTitle } from '../../../../constants';
 import { CHAIN_BASE } from '../../../../constants/server';
 import { Card } from '../../../../models/card.model';
+import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   amount: string;
@@ -110,9 +111,9 @@ export default function WithdrawHistory() {
                 currentCardProvider,
               });
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from 'react-native';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
   CyDTouchView,
-  CyDImage,
   CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
-import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -26,12 +23,10 @@ import {
 import { screenTitle } from '../../../constants';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
-import useAxios from '../../../core/HttpRequest';
-import { capitalize } from 'lodash';
 import PreferredNameModal from './preferredNameModal';
-import { isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -88,9 +83,9 @@ export default function NameOnCard() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

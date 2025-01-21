@@ -6,7 +6,6 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import WebView from 'react-native-webview';
-import AppImages from '../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -14,12 +13,8 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import {
-  CydMaterialDesignIcons,
-  CyDSafeAreaView,
-  CyDTouchView,
-} from '../../styles/tailwindStyles';
-const { DynamicImage } = require('../../styles');
+import { CyDSafeAreaView, CyDTouchView } from '../../styles/tailwindStyles';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   url: string;
@@ -58,11 +53,7 @@ export default function OpenLegalScreen() {
         sentry-label='legal-back'
         className='absolute top-[50px] left-[30px]'
         onPress={() => navigation.goBack()}>
-        <CydMaterialDesignIcons
-          name={'arrow-left-thin'}
-          size={32}
-          className='text-base400'
-        />
+        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
     </CyDSafeAreaView>
   );

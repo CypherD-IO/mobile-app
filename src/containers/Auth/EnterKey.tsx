@@ -48,17 +48,16 @@ import { HdWalletContext, sleepFor } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
-  CyDImage,
   CyDKeyboardAvoidingView,
   CyDKeyboardAwareScrollView,
   CydMaterialDesignIcons,
-  CyDSafeAreaView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -269,9 +268,9 @@ export default function Login(props) {
                     onPress={() => {
                       props.navigation.goBack();
                     }}>
-                    <CydMaterialDesignIcons
-                      name={'arrow-left-thin'}
-                      size={32}
+                    <CyDIconsPack
+                      name='arrow-left'
+                      size={24}
                       className='text-base400'
                     />
                   </CyDTouchView>

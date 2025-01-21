@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useState, useContext } from 'react';
 import bip39 from 'react-native-bip39';
 import ReadOnlySeedPhraseBlock from '../../components/v2/readOnlySeedPhraseBlock';
-import AppImages from '../../../assets/images/appImages';
 import CyDModalLayout from '../../components/v2/modal';
 import { BackHandler, NativeModules, StyleSheet } from 'react-native';
 import { generateWalletFromMnemonic } from '../../core/Address';
@@ -28,6 +27,7 @@ import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
 import { ButtonType, SECRET_TYPES, SeedPhraseType } from '../../constants/enum';
 import { setSkipSeedConfirmation } from '../../core/asyncStorage';
+import { CyDIconsPack } from '../../customFonts';
 
 function CreateSeedPhrase({ route, navigation }) {
   const { t } = useTranslation();
@@ -99,11 +99,7 @@ function CreateSeedPhrase({ route, navigation }) {
           onPress={() => {
             handleBackButton();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
       ),
     });

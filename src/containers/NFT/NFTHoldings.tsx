@@ -3,7 +3,6 @@ import AppImages from '../../../assets/images/appImages';
 import { NFTHolding } from '../../models/NFTHolding.interface';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -21,6 +20,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   nftHoldings: NFTHolding[];
@@ -68,11 +68,7 @@ export function NFTHoldingsScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
           {nftHoldings[0].collectionName !== ''

@@ -9,7 +9,6 @@ import { PromptImportWalletDef } from '../../models/globalModal.interface';
 import {
   CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -18,6 +17,7 @@ import {
 import Button from './button';
 import Loading from './loading';
 import CyDModalLayout from './modal';
+import { CyDIconsPack } from '../../customFonts';
 
 const PromptImportWallet: React.FC<PromptImportWalletDef> = (
   store: PromptImportWalletDef,
@@ -117,9 +117,9 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
               onPress={() => {
                 store.onCancel();
               }}>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

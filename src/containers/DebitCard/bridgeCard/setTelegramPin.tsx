@@ -9,7 +9,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import * as yup from 'yup';
-import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { PinInput } from '../../../components/v2/pinInput';
@@ -18,7 +17,6 @@ import { ButtonType, CardProviders } from '../../../constants/enum';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import {
-  CyDImage,
   CyDKeyboardAwareScrollView,
   CydMaterialDesignIcons,
   CyDSafeAreaView,
@@ -26,6 +24,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
+import { CyDIconsPack } from '../../../customFonts';
 
 export default function SetTelegramPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -219,9 +218,9 @@ export default function SetTelegramPin() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

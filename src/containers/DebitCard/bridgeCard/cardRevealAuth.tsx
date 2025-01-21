@@ -26,6 +26,7 @@ import {
 import { t } from 'i18next';
 import { Card } from '../../../models/card.model';
 import { capitalize } from 'lodash';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   onSuccess: (data: unknown, provider: CardProviders) => void;
@@ -259,11 +260,8 @@ export default function CardRevealAuthScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+
           <CyDText className='ml-[12px] font-regular text-[18px]'>
             {capitalize(card?.type)} {' card ** '} {card?.last4}
           </CyDText>

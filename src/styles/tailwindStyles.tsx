@@ -31,7 +31,7 @@ import {
   Swipeable,
 } from 'react-native-gesture-handler';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
-import { IconNames, CydIconsPack } from '../customFonts';
+import { IconNames, CyDIconsPack } from '../customFonts';
 import { Theme, useTheme } from '../reducers/themeReducer';
 import { get } from 'lodash';
 import AppImages, { AppImagesMap } from '../../assets/images/appImages';
@@ -175,7 +175,7 @@ export const CydMaterialDesignIcons = cssInterop(MaterialDesignIcons, {
   },
 });
 
-export const CyDIcons = cssInterop(CydIconsPack, {
+export const CyDIcons = cssInterop(CyDIconsPack, {
   className: {
     target: 'style',
     nativeStyleToProp: {

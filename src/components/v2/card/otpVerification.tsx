@@ -15,6 +15,7 @@ import * as Sentry from '@sentry/react-native';
 import CyDModalLayout from '../modal';
 import StateModal from '../StateModal';
 import { PinInput } from '../pinInput';
+import { CyDIconsPack } from '../../../customFonts/generator';
 
 export default function OtpVerificationModal({
   isModalVisible,
@@ -133,9 +134,9 @@ export default function OtpVerificationModal({
               setIsModalVisible(false);
             }}
             className='w-[36px] h-[36px]'>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

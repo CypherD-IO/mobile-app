@@ -38,6 +38,7 @@ import {
 import { Linking, StyleSheet } from 'react-native';
 import Loading from '../../../../components/v2/loading';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
+import { CyDIconsPack } from '../../../../customFonts';
 
 export default function KYCVerficicationV2() {
   const insets = useSafeAreaInsets();
@@ -288,9 +289,9 @@ export default function KYCVerficicationV2() {
                 screen: screenTitle.PORTFOLIO_SCREEN,
               })
             }>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

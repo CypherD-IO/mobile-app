@@ -5,7 +5,7 @@ import { IconNames } from './type';
 export const iconNames = icoMoonConfig.icons.map(icon => icon.properties.name);
 
 // Create the icon component with type-safe name prop
-export const CydIconsPack = createIconSet(
+export const CyDIconsPack = createIconSet(
   icoMoonConfig,
   'CydFont',
   'CydFont.ttf',

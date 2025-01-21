@@ -41,7 +41,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
-import clsx from 'clsx';
+import { CyDIconsPack } from '../../customFonts';
 
 interface IShortcutsData {
   index: number;
@@ -686,9 +686,9 @@ export default function ShortcutsModal() {
                 setTimeout(() => setBuyModalVisible(true), 250);
               }}
               className={''}>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>
@@ -737,9 +737,9 @@ export default function ShortcutsModal() {
                 setTimeout(() => setSellModalVisible(true), 250);
               }}
               className={''}>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

@@ -24,6 +24,7 @@ import { ButtonType, CardProviders } from '../../../constants/enum';
 import Button from '../../../components/v2/button';
 import { Card } from '../../../models/card.model';
 import { screenTitle } from '../../../constants';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -141,9 +142,9 @@ export default function CardActivationConsent() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

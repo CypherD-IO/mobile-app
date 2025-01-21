@@ -6,12 +6,9 @@ import {
   CyDView,
   CyDText,
   CyDSafeAreaView,
-  CyDImage,
   CyDTouchView,
-  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import OtpInput from '../../components/v2/OTPInput';
-import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import Toast from 'react-native-toast-message';
 import { BackHandler } from 'react-native';
@@ -22,6 +19,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   setPinAuthentication: (value: any) => {};
@@ -62,9 +60,9 @@ export default function ConfirmPin() {
             onPress={() => {
               navigation.navigate(screenTitle.SET_PIN);
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

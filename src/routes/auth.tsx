@@ -81,7 +81,6 @@ import Onmeta from '../containers/FundCardScreen/onmeta';
 import IBC from '../containers/IBC';
 import OpenLegalScreen from '../containers/InfoScreen/openLegalDoc';
 import { NFTHoldingsScreen, NFTOverviewScreen } from '../containers/NFT';
-import ImportAnotherWallet from '../containers/Options/ImportAnotherWallet';
 import ManageWallet from '../containers/Options/ManageWallet';
 import NotificationSettings from '../containers/Options/NotificationSettings';
 import PrivateKey from '../containers/Options/PrivateKey';
@@ -110,19 +109,14 @@ import TokenOverviewV2 from '../containers/TokenOverview';
 import LegalScreen from '../containers/legalDocs/legal';
 import TransFiScreen from '../containers/ramp/transFi';
 import { useKeyboard } from '../hooks/useKeyboard';
-import {
-  CydMaterialDesignIcons,
-  CyDText,
-  CyDTouchView,
-  CyDView,
-} from '../styles/tailwindStyles';
+import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import { CyDIconsPack } from '../customFonts/generator';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
 const SwapStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
-// const ActivityStack = createNativeStackNavigator();
 
 const defaultHeaderLeft = (
   navigation: NavigationProp<ParamListBase>,
@@ -141,11 +135,7 @@ const defaultHeaderLeft = (
           navigation.goBack();
         }
       }}>
-      <CydMaterialDesignIcons
-        name={'arrow-left-thin'}
-        size={32}
-        className='text-base400'
-      />
+      <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
     </CyDTouchView>
   );
 };
@@ -176,11 +166,7 @@ const CustomHeader = ({
             navigation.goBack();
           }
         }}>
-        <CydMaterialDesignIcons
-          name={'arrow-left-thin'}
-          size={32}
-          className='text-base400'
-        />
+        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
       <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
         {title}

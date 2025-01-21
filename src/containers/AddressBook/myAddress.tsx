@@ -30,7 +30,6 @@ import {
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
-  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDTouchView,
@@ -46,6 +45,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 interface RouteParams {
   indexValue: number;
@@ -90,9 +90,9 @@ export function AddressBook() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CydMaterialDesignIcons
-              name={'arrow-left-thin'}
-              size={32}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
               className='text-base400'
             />
           </CyDTouchView>

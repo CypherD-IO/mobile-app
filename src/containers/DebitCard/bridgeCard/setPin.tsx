@@ -26,6 +26,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { Card } from '../../../models/card.model';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -155,11 +156,7 @@ export default function SetPin() {
         <CyDTouchView
           className='flex-row items-center px-[16px]'
           onPress={() => navigation.goBack()}>
-          <CydMaterialDesignIcons
-            name={'arrow-left-thin'}
-            size={32}
-            className='text-base400'
-          />
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
           <CyDText className='ml-[12px] text-[18px] font-normal'>
             {capitalize(card.type)} {'card **'}
             {card.last4}

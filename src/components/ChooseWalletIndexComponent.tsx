@@ -22,6 +22,7 @@ import {
   CyDView,
 } from '../styles/tailwindStyles';
 import Button from './v2/button';
+import { CyDIconsPack } from '../customFonts';
 
 const randomIcons = [
   'robot-happy-outline',
@@ -103,9 +104,9 @@ export default function ChooseWalletIndexComponent({
               onPress={() => {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>

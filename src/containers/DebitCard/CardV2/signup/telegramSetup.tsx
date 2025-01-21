@@ -34,6 +34,7 @@ import {
   CyDView,
 } from '../../../../styles/tailwindStyles';
 import { showToast } from '../../../utilities/toastUtility';
+import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   showSetupLaterOption?: boolean;
@@ -117,9 +118,9 @@ export default function TelegramSetup() {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <CydMaterialDesignIcons
-                name={'arrow-left-thin'}
-                size={32}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
                 className='text-base400'
               />
             </CyDTouchView>
@@ -221,8 +222,8 @@ export default function TelegramSetup() {
                 </CyDTouchView>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CyDText className='text-[14px] '>Just press send</CyDText>
-                  <CydMaterialDesignIcons
-                    name={'arrow-left-thin'}
+                  <CyDIconsPack
+                    name='arrow-left'
                     size={20}
                     className='text-base400 rotate-90 ml-[4px]'
                   />

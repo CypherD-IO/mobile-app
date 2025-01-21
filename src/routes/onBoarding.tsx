@@ -4,24 +4,15 @@ import { screenTitle } from '../constants/index';
 import OnBoarding from '../containers/OnBoarding';
 import EnterKeyScreen from '../containers/Auth/EnterKey';
 import QRScanner from '../containers/Qrcode/QRScanner';
-import { Colors } from '../constants/theme';
-import * as C from '../constants';
 import CreateSeedPhrase from '../containers/OnBoarding/createSeedPhrase';
 import TrackWallet from '../containers/OnBoarding/trackWallet';
 import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import {
-  CyDText,
-  CyDFastImage,
-  CyDTouchView,
-  CyDView,
-  CydMaterialDesignIcons,
-} from '../styles/tailwindStyles';
-import { Keyboard } from 'react-native';
+import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppImages from '../../assets/images/appImages';
+import { CyDIconsPack } from '../customFonts';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,11 +33,7 @@ const CustomHeader = ({
         onPress={() => {
           navigation.goBack();
         }}>
-        <CydMaterialDesignIcons
-          name={'arrow-left-thin'}
-          size={32}
-          className='text-base400'
-        />
+        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
       <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
         {title}
