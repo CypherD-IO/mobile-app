@@ -724,12 +724,18 @@ const TransactionDetail = ({
                   </CyDTouchView>
                   <CyDText className='text-[12px] font-semibold text-n200'>
                     {[
-                      transaction.metadata.merchant.merchantCity &&
+                      transaction.metadata?.merchant?.merchantCity &&
+                        transaction.metadata.merchant.merchantCity !== 'null' &&
                         startCase(
                           transaction.metadata.merchant.merchantCity.toLowerCase(),
                         ),
-                      transaction.metadata.merchant.merchantState,
-                      transaction.metadata.merchant.merchantCountry &&
+                      transaction.metadata?.merchant?.merchantState &&
+                        transaction.metadata.merchant.merchantState !==
+                          'null' &&
+                        transaction.metadata.merchant.merchantState,
+                      transaction.metadata?.merchant?.merchantCountry &&
+                        transaction.metadata.merchant.merchantCountry !==
+                          'null' &&
                         startCase(
                           getCountryNameById(
                             transaction.metadata.merchant.merchantCountry,

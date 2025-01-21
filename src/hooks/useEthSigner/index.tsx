@@ -4,15 +4,7 @@ import {
   getChainId,
   switchChain,
   waitForTransactionReceipt,
-  estimateGas,
-  getGasPrice,
-  getWalletClient,
   getBlockNumber,
-  getBlock,
-  getPublicClient,
-  watchPendingTransactions,
-  getTransaction,
-  watchBlocks,
 } from '@wagmi/core';
 import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import { get } from 'lodash';
@@ -41,7 +33,6 @@ import {
   EthTransaction,
   RawTransaction,
 } from '../../models/ethSigner.interface';
-import { TransactionResponse } from 'ethers';
 import { Hash } from 'viem';
 import { ChainIdToBackendNameMapping } from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
@@ -50,7 +41,7 @@ export default function useEthSigner() {
   const wagmiConfig = useContext(WagmiContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
-  const { sendTransactionAsync, sendTransaction } = useSendTransaction();
+  const { sendTransactionAsync } = useSendTransaction();
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -125,12 +116,25 @@ export default function useEthSigner() {
     transactionToBeSigned: EthTransaction;
     chainId: number;
   }) {
+    // Send transaction with estimated values
     const hash = await sendTransactionAsync({
       account: transactionToBeSigned.from as `0x${string}`,
       to: transactionToBeSigned.to as `0x${string}`,
       chainId,
       value: BigInt(transactionToBeSigned.value),
       data: transactionToBeSigned?.data ?? '0x',
+      gas: transactionToBeSigned.gas
+        ? BigInt(transactionToBeSigned.gas)
+        : undefined,
+      gasPrice: transactionToBeSigned.gasPrice
+        ? BigInt(transactionToBeSigned.gasPrice)
+        : undefined,
+      maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas
+        ? BigInt(transactionToBeSigned.maxPriorityFeePerGas)
+        : undefined,
+      maxFeePerGas: transactionToBeSigned.maxFeePerGas
+        ? BigInt(transactionToBeSigned.maxFeePerGas)
+        : undefined,
     });
 
     return hash;
@@ -172,6 +176,18 @@ export default function useEthSigner() {
         BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
       ],
       chainId,
+      gas: transactionToBeSigned.gas
+        ? BigInt(transactionToBeSigned.gas)
+        : undefined,
+      gasPrice: transactionToBeSigned.gasPrice
+        ? BigInt(transactionToBeSigned.gasPrice)
+        : undefined,
+      maxFeePerGas: transactionToBeSigned.maxFeePerGas
+        ? BigInt(transactionToBeSigned.maxFeePerGas)
+        : undefined,
+      maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas
+        ? BigInt(transactionToBeSigned.maxPriorityFeePerGas)
+        : undefined,
     });
 
     return hash;
@@ -343,9 +359,7 @@ export default function useEthSigner() {
           return hash;
         }
       } catch (findError) {}
-      throw new Error(
-        'Your transaction has been submitted but is yet to be confirmed. Please check your transaction history after some time.',
-      );
+      throw directError;
     }
   }
 

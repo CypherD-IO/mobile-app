@@ -845,8 +845,15 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
       break;
     }
     case AnalyticsType.ERROR: {
-      const { chain, message, screen, address, contractData } =
-        params as ErrorAnalytics;
+      const {
+        chain,
+        message,
+        screen,
+        address,
+        contractData,
+        quoteId,
+        connectionType,
+      } = params as ErrorAnalytics;
       const data = {
         chain,
         message,
@@ -855,6 +862,8 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
         other: {
           ...(address ? { address } : {}),
           ...(contractData ? { contractData } : {}),
+          ...(quoteId ? { quoteId } : {}),
+          ...(connectionType ? { connectionType } : {}),
         },
       };
       void axios.post(ANALYTICS_ERROR_URL, data);
@@ -938,8 +947,22 @@ export function isValidPrivateKey(privateKey: string): boolean {
     return !!wallet;
   } catch (e) {
     return false;
+    return false;
   }
 }
+
+export const validateAndFormatPrivateKey = (privateKey: string): string => {
+  // Remove '0x' prefix if present
+  const cleanKey = privateKey.replace('0x', '');
+
+  // Check if it's a valid 64-character hex string
+  if (!/^[0-9a-fA-F]{64}$/.test(cleanKey)) {
+    throw new Error('Invalid private key format');
+  }
+
+  // Ensure '0x' prefix for Web3 v4
+  return '0x' + cleanKey;
+};
 
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   const {
