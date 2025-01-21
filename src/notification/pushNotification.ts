@@ -369,43 +369,47 @@ export async function RouteNotificationAction({
 
       break;
     case NOTIFE_ACTIONS.INCREASE_DOMESTIC_LIMIT:
-      navigation.navigate(screenTitle.DOMESTIC_CARD_CONTROLS, {
-        cardId: data?.cardId,
-        currentCardProvider: data?.provider,
-        cardControlType: CardControlTypes.DOMESTIC,
+      navigation?.navigate(screenTitle.CARD, {
+        screen: screenTitle.DOMESTIC_CARD_CONTROLS,
+        params: {
+          cardId: data?.cardId,
+          currentCardProvider: data?.provider,
+          cardControlType: CardControlTypes.DOMESTIC,
+        },
       });
+
       break;
     case NOTIFE_ACTIONS.INCREASE_INTERNATIONAL_LIMIT:
-      navigation.navigate(screenTitle.INTERNATIONAL_CARD_CONTROLS, {
-        cardId: data?.cardId,
-        currentCardProvider: data?.provider,
-        cardControlType: CardControlTypes.INTERNATIONAL,
+      navigation?.navigate(screenTitle.CARD, {
+        screen: screenTitle.INTERNATIONAL_CARD_CONTROLS,
+        params: {
+          cardId: data?.cardId,
+          currentCardProvider: data?.provider,
+          cardControlType: CardControlTypes.INTERNATIONAL,
+        },
       });
       break;
     case NOTIFE_ACTIONS.INCREASE_DAILY_LIMIT:
-      navigation.navigate(screenTitle.EDIT_USAGE_LIMITS, {
-        card: {
-          cardId: data?.cardId,
-          type: data?.cardType,
-          last4: data?.last4,
-        },
-        currentCardProvider: data?.provider,
-      });
-      break;
     case NOTIFE_ACTIONS.INCREASE_MONTHLY_LIMIT:
-      navigation.navigate(screenTitle.EDIT_USAGE_LIMITS, {
-        card: {
-          cardId: data?.cardId,
-          type: data?.cardType,
-          last4: data?.cardLast4,
+      navigation?.navigate(screenTitle.CARD, {
+        screen: screenTitle.EDIT_USAGE_LIMITS,
+        params: {
+          card: {
+            cardId: data?.cardId,
+            type: data?.cardType,
+            last4: data?.last4,
+          },
+          currentCardProvider: data?.provider,
         },
-        currentCardProvider: data?.provider,
       });
       break;
     case NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE:
-      navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
-        cardId: data?.cardId,
-        currentCardProvider: data?.provider,
+      navigation?.navigate(screenTitle.CARD, {
+        screen: screenTitle.CARD_CONTROLS_MENU,
+        params: {
+          cardId: data?.cardId,
+          currentCardProvider: data?.provider,
+        },
       });
       break;
   }

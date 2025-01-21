@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   CyDFastImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -28,6 +29,7 @@ import moment from 'moment';
 import { screenTitle } from '../../../../constants';
 import { CHAIN_BASE } from '../../../../constants/server';
 import { Card } from '../../../../models/card.model';
+import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   amount: string;
@@ -109,9 +111,10 @@ export default function WithdrawHistory() {
                 currentCardProvider,
               });
             }}>
-            <CyDFastImage
-              source={AppImages.LEFT_ARROW_LONG}
-              className='w-[20px] h-[16px]'
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[16px] font-bold text-base400'>
@@ -162,9 +165,10 @@ export default function WithdrawHistory() {
                         }}>
                         {transaction.transactionHash}
                       </CyDText>
-                      <CyDFastImage
-                        source={AppImages.LINK}
-                        className='w-[12px] h-[12px]'
+                      <CydMaterialDesignIcons
+                        name='open-in-new'
+                        size={14}
+                        className='text-base400'
                       />
                     </CyDView>
                   )}

@@ -1,3 +1,6 @@
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import clsx from 'clsx';
+import { t } from 'i18next';
 import React, {
   Dispatch,
   SetStateAction,
@@ -5,26 +8,31 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import {
-  CyDView,
-  CyDTouchView,
-  CyDImage,
-  CyDText,
-  CyDFlatList,
-} from '../styles/tailwindStyles';
-import Button from './v2/button';
 import AppImages from '../../assets/images/appImages';
+import { screenTitle } from '../constants';
+import { ButtonType } from '../constants/enum';
 import { HdWalletContext } from '../core/util';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { t } from 'i18next';
-import { ButtonType } from '../constants/enum';
-import { generateMultipleWalletAddressesFromSeedPhrase } from '../core/Address';
-import { screenTitle } from '../constants';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import { title } from 'process';
-import clsx from 'clsx';
-import { isIOS } from '../misc/checkers';
+import {
+  CyDFlatList,
+  CyDLottieView,
+  CydMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../styles/tailwindStyles';
+import Button from './v2/button';
+import { CyDIconsPack } from '../customFonts';
+
+const randomIcons = [
+  'robot-happy-outline',
+  'rabbit-variant-outline',
+  'robot',
+  'penguin',
+  'cat',
+  'bird',
+  'ladybug',
+];
 
 const RadioButton = (props: { selected: boolean }) => {
   const { selected } = props;
@@ -48,16 +56,17 @@ const RenderWalletAddresses = (
   return (
     <CyDTouchView
       className={
-        'flex flex-row justify-evenly bg-white items-center self-center border-[1px] border-sepratorColor w-[353px] h-[60px] rounded-[10px] px-[20px] mb-[10px]'
+        'flex flex-row justify-evenly bg-n0 items-center self-center border-[1px] border-n40 h-[60px] rounded-[10px] px-[20px] mb-[10px]'
       }
       onPress={() => {
+        // n40;
         setSelectedIndex(item.index);
       }}>
       <CyDText className='ml-[10px] mr-[20px]'>{item.index}</CyDText>
-      <CyDImage
-        source={AppImages[`ADDRESS_PROFILE_${(item.index % 4) + 1}`]}
-        className='h-[30px] w-[30px]'
-        resizeMode='contain'
+      <CydMaterialDesignIcons
+        name={randomIcons[item.index % randomIcons.length]}
+        size={24}
+        className='text-base400'
       />
       <CyDText className='grow text-center'>
         {item.address.substring(0, 8) +
@@ -95,14 +104,15 @@ export default function ChooseWalletIndexComponent({
               onPress={() => {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[32px] h-[32px]'
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           )}
           <CyDView className='w-[calc(100% - 40px)] mx-auto'>
-            <CyDText className='font-semibold text-black text-center -ml-[24px] text-[20px]'>
+            <CyDText className='font-semibold text-center -ml-[24px] text-[20px]'>
               {t('WALLETS')}
             </CyDText>
           </CyDView>
@@ -124,7 +134,7 @@ export default function ChooseWalletIndexComponent({
               {t('SHOW_MORE_WALLET_ADDRESS_TEXT')}
             </CyDText>
             <CyDTouchView
-              className='rounded-[6px] w-[100px] bg-white py-[6px] px-[12px] border-[1px] border-[#D0D5DD] mt-[8px] items-center'
+              className='rounded-[6px] w-[100px] bg-n0 py-[6px] px-[12px] border-[1px] border-[#D0D5DD] mt-[8px] items-center'
               onPress={() => {
                 setShowMoreLoading(true);
                 setTimeout(() => {
@@ -134,7 +144,7 @@ export default function ChooseWalletIndexComponent({
               {!showMoreLoading ? (
                 <CyDText>{t('SHOW_MORE')}</CyDText>
               ) : (
-                <LottieView
+                <CyDLottieView
                   source={AppImages.LOADER_TRANSPARENT}
                   autoPlay
                   loop
@@ -147,10 +157,7 @@ export default function ChooseWalletIndexComponent({
       </CyDView>
       <CyDView
         className={clsx(
-          'absolute w-full bottom-[0px] bg-white pt-[10px] pb-[32px] px-[16px]',
-          {
-            'bottom-[-32px]': isIOS(),
-          },
+          'absolute w-full bottom-[0px] bg-n0 pt-[10px] pb-[32px] px-[16px] shadow-md shadow-n40',
         )}>
         <Button
           type={ButtonType.PRIMARY}
@@ -169,9 +176,10 @@ export default function ChooseWalletIndexComponent({
           loaderStyle={{ height: 25, width: 25 }}
         />
         <CyDView className='flex flex-row mt-[8px] justify-center'>
-          <CyDImage
-            className='h-[16px] w-[16px]'
-            source={AppImages.AUDIT_ICON}
+          <CydMaterialDesignIcons
+            name='shield-lock'
+            size={18}
+            className='text-base400'
           />
           <CyDText className='text-[10px] font-medium ml-[6px]'>
             {t('CYPHER_AUDIT_TEXT')}

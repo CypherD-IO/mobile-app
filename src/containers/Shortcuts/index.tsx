@@ -6,6 +6,8 @@ import {
   CyDTouchView,
   CyDView,
   CyDFlatList,
+  CydMaterialDesignIcons,
+  CyDLottieView,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
 import * as React from 'react';
@@ -28,7 +30,6 @@ import {
   getAvailableChains,
   sortJSONArrayByKey,
 } from '../../core/util';
-import LottieView from 'lottie-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
@@ -40,7 +41,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
-import clsx from 'clsx';
+import { CyDIconsPack } from '../../customFonts';
 
 interface IShortcutsData {
   index: number;
@@ -293,7 +294,7 @@ export default function ShortcutsModal() {
             </CyDText>
           </CyDView>
         </CyDView>
-        <CyDView className={'h-[1px] w-full bg-[#F5F5F5]'} />
+        <CyDView className={'h-[0.5px] w-full bg-n40'} />
       </CyDTouchView>
     );
   };
@@ -309,18 +310,18 @@ export default function ShortcutsModal() {
             setBuyModalVisible(false);
             setTimeout(() => setBuyChooseChainModalVisible(true), 250);
           }}>
-          <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
+          <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
             <CyDView className={'flex flex-row justify-between'}>
               <CyDView className={'flex flex-row items-center'}>
                 <CyDImage
                   source={item.logo}
                   className={'w-[22px] h-[22px] mr-[6px]'}
                 />
-                <CyDText className={'font-bold text-[18px] text-versionColor'}>
+                <CyDText className={'font-bold text-[18px]'}>
                   {item.displayTitle}
                 </CyDText>
               </CyDView>
-              {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
+              {/* <CyDText className={'font-bold text-[18px] '}>{item.currencyType}</CyDText> */}
             </CyDView>
             <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
               {item.supportedChains.map(chain => (
@@ -338,7 +339,7 @@ export default function ShortcutsModal() {
                 </CyDView>
               ))}
             </CyDView>
-            <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'} />
+            <CyDView className={'w-full h-[1px] bg-n40 my-[16px]'} />
             {item.title !== BuyOptions.COINBASE &&
               item.title !== BuyOptions.TRANSFI && (
                 <CyDView className='pl-[2px]'>
@@ -367,18 +368,18 @@ export default function ShortcutsModal() {
             setSellModalVisible(false);
             setTimeout(() => setSellChooseChainModalVisible(true), 250);
           }}>
-          <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
+          <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
             <CyDView className={'flex flex-row justify-between'}>
               <CyDView className={'flex flex-row items-center'}>
                 <CyDImage
                   source={item.logo}
                   className={'w-[22px] h-[22px] mr-[6px]'}
                 />
-                <CyDText className={'font-bold text-[18px] text-versionColor'}>
+                <CyDText className={'font-bold text-[18px] '}>
                   {item.displayTitle}
                 </CyDText>
               </CyDView>
-              {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
+              {/* <CyDText className={'font-bold text-[18px] '}>{item.currencyType}</CyDText> */}
             </CyDView>
             <CyDView className={'flex flex-row flex-wrap mt-[16px]'}>
               {item.supportedChains.map(chain => (
@@ -398,7 +399,7 @@ export default function ShortcutsModal() {
                 </CyDView>
               ))}
             </CyDView>
-            <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'} />
+            <CyDView className={'w-full h-[1px] bg-base20 my-[16px]'} />
             {item.title !== SellOptions.COINBASE && (
               <CyDView className='pl-[2px]'>
                 <CyDText className={'text-subTextColor'}>
@@ -418,7 +419,7 @@ export default function ShortcutsModal() {
   const renderChainItem = (item: Chain, navigation: any) => {
     return (
       <CyDTouchView
-        className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
+        className={'p-[20px] bg-n0 rounded-[18px] mb-[10px]'}
         onPress={() => {
           setBuyChooseChainModalVisible(false);
           navigation.navigate(buyType.screenTitle, {
@@ -432,13 +433,14 @@ export default function ShortcutsModal() {
               source={item.logo_url}
               className={'w-[18px] h-[18px] mr-[10px]'}
             />
-            <CyDText className={'font-medium text-[17px] text-versionColor'}>
+            <CyDText className={'font-medium text-[17px] '}>
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.BROWSER_REDIRECT}
-            className={'w-[18px] h-[18px] ml-[10px]'}
+          <CydMaterialDesignIcons
+            name='open-in-new'
+            size={18}
+            className='text-base400 ml-[10px]'
           />
         </CyDView>
       </CyDTouchView>
@@ -448,7 +450,7 @@ export default function ShortcutsModal() {
   const renderSellChainItem = (item: Chain, navigation: any) => {
     return (
       <CyDTouchView
-        className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
+        className={'p-[20px] bg-n0 rounded-[18px] mb-[10px]'}
         onPress={() => {
           setSellChooseChainModalVisible(false);
           navigation.navigate(sellType.screenTitle, {
@@ -462,13 +464,14 @@ export default function ShortcutsModal() {
               source={item.logo_url}
               className={'w-[18px] h-[18px] mr-[10px]'}
             />
-            <CyDText className={'font-medium text-[17px] text-versionColor'}>
+            <CyDText className={'font-medium text-[17px] '}>
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.BROWSER_REDIRECT}
-            className={'w-[18px] h-[18px] ml-[10px]'}
+          <CydMaterialDesignIcons
+            name='open-in-new'
+            size={18}
+            className='text-base400 ml-[10px]'
           />
         </CyDView>
       </CyDTouchView>
@@ -572,6 +575,7 @@ export default function ShortcutsModal() {
 
   return (
     <CyDTouchView
+      className={'bg-transparent'}
       onPress={async () => {
         setShortcutsModalVisible(true);
         await analytics().logEvent('shortcuts_button_click');
@@ -584,13 +588,14 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[32px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n0 p-[32px] rounded-t-[36px] pb-[40px]'}>
           <CyDTouchView
             onPress={() => setShortcutsModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px]'}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDFlatList
@@ -612,14 +617,15 @@ export default function ShortcutsModal() {
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
           className={
-            'relative bg-white p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
+            'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
           }>
           <CyDTouchView
             onPress={() => setBuyModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px]'}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>
@@ -642,13 +648,14 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDTouchView
             onPress={() => setSellModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px]'}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>
@@ -671,7 +678,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
             <CyDTouchView
               onPress={() => {
@@ -679,9 +686,10 @@ export default function ShortcutsModal() {
                 setTimeout(() => setBuyModalVisible(true), 250);
               }}
               className={''}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className={'w-[32px] h-[32px]'}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
@@ -693,9 +701,10 @@ export default function ShortcutsModal() {
             <CyDTouchView
               onPress={() => setBuyChooseChainModalVisible(false)}
               className={''}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px]'}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -720,7 +729,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
             <CyDTouchView
               onPress={() => {
@@ -728,9 +737,10 @@ export default function ShortcutsModal() {
                 setTimeout(() => setSellModalVisible(true), 250);
               }}
               className={''}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className={'w-[32px] h-[32px]'}
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
@@ -745,9 +755,10 @@ export default function ShortcutsModal() {
             <CyDTouchView
               onPress={() => setSellChooseChainModalVisible(false)}
               className={''}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px]'}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -779,10 +790,15 @@ export default function ShortcutsModal() {
         animationIn={'slideInUp'}
       />
 
-      <CyDView className={isIOS() ? 'mx-[12px]' : 'mx-[12px] mt-[4px]'}>
-        <LottieView
+      <CyDView
+        className={
+          isIOS()
+            ? 'mx-[12px] bg-transparent'
+            : 'mx-[12px] mt-[4px] bg-transparent'
+        }>
+        <CyDLottieView
           source={AppImages.SHORTCUTS}
-          ref={ref => setAnimation(ref)}
+          // ref={ref => setAnimation(ref)}
           autoPlay
           loop
           resizeMode={'contain'}

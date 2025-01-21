@@ -11,6 +11,7 @@ import {
 import {
   CyDFastImage,
   CyDImage,
+  CyDSwipeable,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -41,10 +42,7 @@ interface PortfolioTokenItemProps {
 const RenderRightActions = (navigation: any, tokenData: any) => {
   const { isBridgeable, isSwapable } = tokenData;
   return (
-    <CyDView
-      className={
-        'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor'
-      }>
+    <CyDView className={'flex flex-row justify-evenly items-center bg-n40'}>
       <CyDView>
         <CyDTouchView
           className={'flex items-center justify-center mx-[15px]'}
@@ -63,75 +61,17 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
         </CyDText>
       </CyDView>
 
-      {/* {canShowIBC(tokenData) && (
-          <CyDView>
-            <CyDTouchView
-              className={
-                ' bg-appColor rounded-full flex items-center justify-center mx-[15px] p-[11px]'
-              }
-              onPress={() => {
-                navigation.navigate(screenTitle.IBC_SCREEN, {
-                  tokenData,
-                });
-              }}
-            >
-              <CyDImage
-                source={AppImages.IBC}
-                className={'w-[12px] h-[12px]'}
-                resizeMode='contain'
-              />
-            </CyDTouchView>
-            <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-              {t<string>('IBC')}
-            </CyDText>
-          </CyDView>
-        )} */}
-
-      {/* {canShowFundCard(tokenData) && <CyDView>
-          <CyDTouchView className={'flex items-center justify-center'}
-            onPress={() => {
-              props.navigation.navigate(screenTitle.DEBIT_CARD, {
-                screen: screenTitle.SOLID_FUND_CARD_SCREEN, params: { tokenData, navigation: props.navigation }, initial: false
-              });
-            }}
-          >
-              <CyDImage source={AppImages.FUND_CARD_SHORTCUT} className={'w-[35px] h-[35px]'} />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
-      </CyDView>} */}
-
-      {/* disabled bridge - Feb 10th 2024 */}
-
-      {/* {isBridgeable && (
-        <CyDView>
-          <CyDTouchView
-            className={'flex items-center justify-center mx-[15px]'}
-            onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                fromChainData: tokenData,
-                title: t('BRIDGE'),
-                renderPage: 'bridgePage',
-              });
-            }}>
-            <CyDImage
-              source={AppImages.BRIDGE_SHORTCUT}
-              className={'w-[30px] h-[30px]'}
-            />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('BRIDGE')}
-          </CyDText>
-        </CyDView>
-      )} */}
-
       {(isSwapable || isBridgeable) && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
-                tokenData,
-                backVisible: true,
+              navigation?.navigate(screenTitle.SWAP, {
+                screen: screenTitle.SWAP_SCREEN,
+                params: {
+                  tokenData,
+                  backVisible: true,
+                },
               });
             }}>
             <CyDImage
@@ -264,15 +204,15 @@ const PortfolioTokenItem = ({
   if ((isVerifyCoinChecked && item?.isVerified) || !isVerifyCoinChecked) {
     return (
       <CyDTouchView
-        className='flex flex-row items-center border-b-[0.5px] border-x border-sepratorColor'
+        className='flex flex-row items-center border-b-[0.5px] border-x border-n40 bg-n0'
         onPress={() => {
           navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
             tokenData: item,
           });
         }}>
-        <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[10px] pr-[10px]'>
+        <CyDView className='flex flex-row h-full items-center rounded-r-[20px] self-center pl-[10px] pr-[10px] bg-transparent'>
           <CyDFastImage
-            className={'h-[36px] w-[36px] rounded-[50px]'}
+            className={'h-[32px] w-[32px] rounded-full'}
             source={
               item?.logoUrl
                 ? {
@@ -282,10 +222,10 @@ const PortfolioTokenItem = ({
             }
             resizeMode='contain'
           />
-          <CyDView className='absolute top-[54%] right-[5px]'>
+          <CyDView className='absolute top-[54%] right-[5px] bg-transparent'>
             <CyDFastImage
               className={
-                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                'h-[20px] w-[20px] rounded-full border-[1px] border-n40 bg-n0'
               }
               source={
                 item?.chainDetails?.logo_url ??
@@ -295,7 +235,7 @@ const PortfolioTokenItem = ({
             />
           </CyDView>
         </CyDView>
-        <Swipeable
+        <CyDSwipeable
           key={index}
           friction={1}
           rightThreshold={0}
@@ -304,21 +244,24 @@ const PortfolioTokenItem = ({
             onSwipe(index);
           }}
           containerStyle={styles.swipeable}
+          className='bg-n0'
           ref={ref => {
             setSwipeableRefs(index, ref);
           }}>
-          <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-white'>
+          <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-n0'>
             <CyDView className='ml-[10px] max-w-[65%]'>
               <CyDView className={'flex flex-row items-center align-center'}>
-                <CyDText className={'font-extrabold text-[16px]'}>
+                <CyDText className={'font-bold text-[16px]'}>
                   {item.name}
                 </CyDText>
                 {item.isStakeable && (
                   <CyDView
                     className={
-                      ' bg-appColor px-[5px] ml-[10px] text-[12px] rounded-[4px]'
+                      ' bg-p100 px-[5px] ml-[10px] text-[12px] rounded-[4px]'
                     }>
-                    <CyDText className='font-bold'>{t('STAKE')}</CyDText>
+                    <CyDText className='font-semibold text-black'>
+                      {t('STAKE')}
+                    </CyDText>
                   </CyDView>
                 )}
               </CyDView>
@@ -349,7 +292,7 @@ const PortfolioTokenItem = ({
               </CyDView>
             </CyDView>
           </CyDView>
-        </Swipeable>
+        </CyDSwipeable>
       </CyDTouchView>
     );
   }

@@ -90,7 +90,7 @@ export default function TransFiScreen({
   };
 
   return (
-    // <CyDView className={'h-full w-full bg-white'}>
+    // <CyDView className={'h-full w-full bg-n0'}>
     //   {state.loading && <Loading />}
     //   {!state.isError && state.transFiApiKey !== '' && <CyDView className={'h-[100%] w-[100%] overflow-scroll'}>
     //     <WebView

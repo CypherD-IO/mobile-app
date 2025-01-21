@@ -60,7 +60,7 @@ static void InitializeFlipper(UIApplication *application) {
 
   Dynamic *t = [Dynamic new];
   UIView *animationUIView = (UIView *)[t createAnimationViewWithRootView:rootView lottieName:@"splash"];
-  animationUIView.backgroundColor = [UIColor whiteColor];
+  animationUIView.backgroundColor = [UIColor blackColor];
 
   [RNSplashScreen showLottieSplash:animationUIView inRootView:rootView];
 

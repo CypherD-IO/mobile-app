@@ -53,12 +53,10 @@ export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
   });
 
   return (
-    <CyDView className='w-full bg-white'>
+    <CyDView className='w-full bg-n0'>
       <CyDView className='flex flex-row mx-[20px] pb-[8px] pt-[12px]'>
         <CyDAnimatedView
-          className={
-            'absolute top-[12px] bg-privacyMessageBackgroundColor h-full rounded-[8px]'
-          }
+          className={'absolute top-[12px] bg-n40 h-full rounded-[8px]'}
           style={[animatedStyle, { width: tabWidth }]}
         />
         {tabs}
@@ -117,7 +115,7 @@ const TabBarButton = ({
         className={'px-[5px] py-[5px] rounded-[8px] w-[70px]'}
         ref={handleRef}>
         <CyDText
-          className={clsx('text-[14px]w-full text-center', {
+          className={clsx('text-[14px] w-full text-center', {
             'font-bold': active,
           })}>
           {title}

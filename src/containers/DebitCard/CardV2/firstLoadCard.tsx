@@ -61,15 +61,15 @@ import { CardQuoteResponse } from '../../../models/card.model';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
-  CyDImage,
   CyDKeyboardAwareScrollView,
-  CyDScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import Loading from '../../../components/v2/loading';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -949,7 +949,7 @@ export default function FirstLoadCard() {
   };
 
   return (
-    <CyDKeyboardAwareScrollView className='' style={{ paddingTop: insect.top }}>
+    <CyDView className='bg-n20' style={{ paddingTop: insect.top }}>
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
@@ -976,10 +976,10 @@ export default function FirstLoadCard() {
               resizeMode='contain'
             />
             <CyDTouchView onPress={() => setPlanChangeModalVisible(false)}>
-              <CyDFastImage
-                source={AppImages.CLOSE_CIRCLE}
-                className='h-[24px] w-[24px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -1035,16 +1035,18 @@ export default function FirstLoadCard() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[32px] h-[32px]'
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
+              className='text-base400'
             />
+
             <CyDText className='font-bold text-[28px]'>
               {'Lets Fund your Card'}
             </CyDText>
           </CyDTouchView>
 
-          <CyDScrollView className=''>
+          <CyDKeyboardAwareScrollView className=''>
             <CyDView className='mt-[24px] bg-n0 rounded-[16px] p-[12px] flex-row justify-between items-center'>
               <CyDView>
                 <CyDText className='font-medium text-[14px] text-base100'>
@@ -1055,7 +1057,7 @@ export default function FirstLoadCard() {
                 </CyDText>
               </CyDView>
               <CyDTouchView
-                className='bg-n30 rounded-[6px] p-[6px]'
+                className=' rounded-[6px] p-[6px]'
                 onPress={() => {
                   if (optedPlanId === CypherPlanId.BASIC_PLAN) {
                     setPlanPageVisible(true);
@@ -1099,9 +1101,10 @@ export default function FirstLoadCard() {
                       {`${round(selectedToken?.actualBalance ?? 0, 8)} ${String(selectedToken?.symbol ?? '')}`}
                     </CyDText>
                   )}
-                  <CyDFastImage
-                    source={AppImages.RIGHT_ARROW}
-                    className='w-[24px] h-[24px] rotate-90'
+                  <CydMaterialDesignIcons
+                    name='chevron-down'
+                    size={24}
+                    className='text-base400'
                   />
                 </CyDView>
               </CyDTouchView>
@@ -1144,9 +1147,9 @@ export default function FirstLoadCard() {
                         }}
                         value={amount}
                         placeholder='0.00'
-                        placeholderTextColor={'#000000'}
+                        placeholderTextColor={'#999999'}
                         className={clsx(
-                          'font-bold w-[90%] p-[0px]',
+                          'font-bold w-[90%] p-[0px] bg-n20',
                           getFontClass(amount),
                         )}
                         editable={!!selectedToken}
@@ -1169,9 +1172,10 @@ export default function FirstLoadCard() {
                       onPressToggle();
                     }}
                     disabled={!selectedToken}>
-                    <CyDFastImage
-                      source={AppImages.TOGGLE_ICON}
-                      className='w-[20px] h-[20px] self-center items-center'
+                    <CydMaterialDesignIcons
+                      name='swap-vertical'
+                      size={20}
+                      className='text-base400 self-center items-center'
                     />
                   </CyDTouchView>
                 </CyDView>
@@ -1327,7 +1331,7 @@ export default function FirstLoadCard() {
                 </CyDView>
               </CyDView>
             </CyDView>
-          </CyDScrollView>
+          </CyDKeyboardAwareScrollView>
         </CyDView>
 
         <CyDView className='bg-n0 px-[16px] pt-[16px] rounded-t-[12px] pb-[32px]'>
@@ -1344,7 +1348,7 @@ export default function FirstLoadCard() {
           />
         </CyDView>
       </CyDView>
-    </CyDKeyboardAwareScrollView>
+    </CyDView>
   );
 }
 

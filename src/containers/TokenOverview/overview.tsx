@@ -1,14 +1,51 @@
 /* eslint-disable react-native/no-inline-styles */
-import { t } from 'i18next';
 import {
-  CyDFastImage,
-  CyDImage,
-  CyDScrollView,
-  CyDText,
-  CyDTouchView,
-  CyDView,
-} from '../../styles/tailwindStyles';
-import { TokenMeta } from '../../models/tokenMetaData.model';
+  ChartDot,
+  ChartPath,
+  ChartPathProvider,
+  ChartXLabel,
+  ChartYLabel,
+  monotoneCubicInterpolation,
+  simplifyData,
+} from '@cypherd-io/animated-charts';
+import Intercom from '@intercom/intercom-react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+} from '@react-navigation/native';
+import clsx from 'clsx';
+import { t } from 'i18next';
+import { has } from 'lodash';
+import { cssInterop } from 'nativewind';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
+import FastImage from 'react-native-fast-image';
+import {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import HTML from 'react-native-render-html';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import AppImages from '../../../assets/images/appImages';
+import Loading from '../../components/v2/loading';
+import CyDTokenAmount from '../../components/v2/tokenAmount';
+import CyDTokenValue from '../../components/v2/tokenValue';
+import { screenTitle } from '../../constants';
+import { Colors } from '../../constants/theme';
+import { getCosmosStakingData } from '../../core/cosmosStaking';
+import { GlobalContext } from '../../core/globalContext';
+import useAxios from '../../core/HttpRequest';
+import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
 import {
   beautifyPriceWithUSDDenom,
   convertFromUnitAmount,
@@ -17,61 +54,24 @@ import {
   isABasicCosmosStakingToken,
   isNativeToken,
 } from '../../core/util';
+import { isAndroid } from '../../misc/checkers';
+import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   COSMOS_STAKING_LOADING,
   CosmosStakingContext,
 } from '../../reducers/cosmosStakingReducer';
-import React, { useContext, useEffect, useState, useRef, useMemo } from 'react';
 import {
-  useIsFocused,
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import {
-  Dimensions,
-  RefreshControl,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  ActivityIndicator,
-  FlatList,
-  ScrollView,
-} from 'react-native';
-import {
-  ChartDot,
-  ChartPath,
-  ChartPathProvider,
-  monotoneCubicInterpolation,
-  simplifyData,
-  ChartYLabel,
-  ChartXLabel,
-} from '@cypherd-io/animated-charts';
-import AppImages from '../../../assets/images/appImages';
-import FastImage from 'react-native-fast-image';
-import { Colors } from '../../constants/theme';
-import HTML from 'react-native-render-html';
-import { screenTitle } from '../../constants';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-import clsx from 'clsx';
-import { isAndroid } from '../../misc/checkers';
-import CyDTokenAmount from '../../components/v2/tokenAmount';
-import CyDTokenValue from '../../components/v2/tokenValue';
-import useAxios from '../../core/HttpRequest';
-import Intercom from '@intercom/intercom-react-native';
+  CyDAnimatedView,
+  CyDFastImage,
+  CyDIcons,
+  CyDImage,
+  CydMaterialDesignIcons,
+  CyDScrollView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
-import Loading from '../../components/v2/loading';
-import { has } from 'lodash';
-import Tooltip from 'react-native-walkthrough-tooltip';
-import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
-import { getCosmosStakingData } from '../../core/cosmosStaking';
-import { GlobalContext } from '../../core/globalContext';
 import { showToast } from '../utilities/toastUtility';
 
 const { width } = Dimensions.get('window');
@@ -104,7 +104,6 @@ export const graphs = [
   },
 ] as const;
 
-const SELECTION_WIDTH = width - 32;
 const BUTTON_WIDTH = (width - 32) / graphs.length;
 
 export default function Overview({
@@ -173,6 +172,19 @@ export default function Overview({
     }`,
   );
   const [chartVisible, setChartVisible] = useState(false);
+
+  const CyDChartYLabel = cssInterop(ChartYLabel, {
+    className: 'style',
+  });
+
+  const CyDChartXLabel = cssInterop(ChartXLabel, {
+    className: 'style',
+  });
+
+  const CyDChartDot = cssInterop(ChartDot, {
+    className: 'style',
+  });
+
   useEffect(() => {
     setChartVisible(true);
   }, [data, chartData]);
@@ -401,7 +413,7 @@ export default function Overview({
 
   const TokenSummary = () => {
     return (
-      <CyDView className='flex flex-row items-center mt-[12px] mx-[12px] border-[1px] rounded-[8px] border-fadedGrey'>
+      <CyDView className='flex flex-row items-center mt-[12px] mx-[12px] border-[1px] rounded-[8px] border-n40'>
         <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -411,7 +423,7 @@ export default function Overview({
           <CyDView className='absolute top-[54%] right-[5px]'>
             <CyDFastImage
               className={
-                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-n40'
               }
               source={
                 tokenData.chainDetails.logo_url ??
@@ -428,20 +440,19 @@ export default function Overview({
                 <CyDText className={'font-extrabold text-[16px]'}>
                   {tokenData.name}{' '}
                 </CyDText>
-                <CyDView className='bg-gray-200 rounded-[5px] px-[4px]'>
+                <CyDView className='bg-n40 rounded-[5px] px-[4px]'>
                   <CyDText className={'text-[12px]'}>
                     {tokenData.symbol}
                   </CyDText>
                 </CyDView>
-                <CyDText>
-                  {' '}
-                  {tokenData?.isVerified && (
-                    <CyDImage
-                      source={AppImages.VERIFIED_ICON}
-                      className={'w-[16px] h-[16px] mt-[-1px]'}
-                    />
-                  )}
-                </CyDText>
+
+                {tokenData?.isVerified && (
+                  <CydMaterialDesignIcons
+                    name='check-decagram'
+                    size={16}
+                    className='text-blue100 mt-[-1px] ml-[4px]'
+                  />
+                )}
               </CyDView>
               {tokenData.contractAddress && !isNativeToken(tokenData) && (
                 <CyDView className='flex flex-row items-center'>
@@ -453,10 +464,10 @@ export default function Overview({
                       copyToClipboard(tokenData.contractAddress);
                       showToast(`${t('CONTRACT_ADDRESS_COPY_ALL_SMALL')}`);
                     }}>
-                    <CyDImage
-                      source={AppImages.COPY}
-                      className='h-[10px] w-[10px] ml-[3px]'
-                      resizeMode='contain'
+                    <CydMaterialDesignIcons
+                      name={'content-copy'}
+                      size={10}
+                      className='text-base400 ml-[3px]'
                     />
                   </CyDTouchView>
                 </CyDView>
@@ -465,12 +476,14 @@ export default function Overview({
             <CyDView className='flex self-center items-end'>
               <CyDView>
                 {tokenData?.isVerified && tokenData.price ? (
-                  <ChartYLabel
-                    style={styles.chartYLabel}
+                  <CyDChartYLabel
+                    className='text-base400 text-[20px] font-semibold text-right'
                     format={formatPriceValue}
                   />
                 ) : (
-                  <CyDText style={styles.chartYLabel}>$0.00</CyDText>
+                  <CyDText className='text-base400 text-[20px] font-semibold text-right'>
+                    $0.00
+                  </CyDText>
                 )}
               </CyDView>
               {selectedTrend !== 0 && (
@@ -478,14 +491,12 @@ export default function Overview({
                   className={clsx('flex flex-row justify-end items-center', {
                     'mt-[-12px]': isAndroid(),
                   })}>
-                  <CyDImage
-                    source={
-                      selectedTrend > 0
-                        ? AppImages.TREND_UP
-                        : AppImages.TREND_DOWN
-                    }
-                    className='h-[18px] w-[18px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name={selectedTrend > 0 ? 'trending-up' : 'trending-down'}
+                    size={20}
+                    className={clsx('text-green400 ml-[3px]', {
+                      'text-red400': selectedTrend < 0,
+                    })}
                   />
                   <CyDText
                     className={clsx('text-[14px] font-bold ml-[3px]', {
@@ -505,7 +516,7 @@ export default function Overview({
 
   const UserBalance = useMemo(() => {
     return (
-      <CyDView className={'m-[12px] border rounded-[8px] border-fadedGrey'}>
+      <CyDView className={'m-[12px] border rounded-[8px] border-n40'}>
         {/* {balanceloading && <CyDView style={styles.balanceLoadingContainer}>
           <ActivityIndicator size="small" color={Colors.appColor} />
         </CyDView>} */}
@@ -550,7 +561,7 @@ export default function Overview({
             baseStyle={{
               fontSize: '14px',
               fontFamily: 'Manrope',
-              color: Colors.primaryTextColor,
+              color: '#999999',
               lineHeight: 22,
             }}
             contentWidth={width}
@@ -570,7 +581,7 @@ export default function Overview({
               }}>
               <CyDText
                 className={
-                  'font-bold text-[14px] text-toastColor text-center underline'
+                  'font-bold text-[14px] text-base100 text-center underline'
                 }>
                 {t<string>('VIEW_MORE')}
               </CyDText>
@@ -624,7 +635,7 @@ export default function Overview({
                     });
                     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                   }}
-                  className='rounded-[8px] flex flex-row justify-center items-center bg-privacyMessageBackgroundColor mr-[10px] p-[5px]'>
+                  className='rounded-[8px] flex flex-row justify-center items-center bg-blue20 mr-[10px] p-[5px]'>
                   <CyDFastImage
                     className='h-[30px] w-[30px] mx-[10px]'
                     source={item.chainDetails.logo_url}
@@ -656,10 +667,10 @@ export default function Overview({
       <CyDView className={'mx-[12px] mt-[12px] mb-[20px]'}>
         <CyDView className={'flex flex-row justify-between mb-[10px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.MARKET_CAP_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CyDIcons
+              name='trend-up'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('MARKET_CAP_INIT_CAPS')}
@@ -669,7 +680,7 @@ export default function Overview({
                 isVisible={showMarketCapTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('MARKET_CAP_FORMULA')}
@@ -683,10 +694,10 @@ export default function Overview({
                 onClose={() => setMarketCapTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setMarketCapTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CyDIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -700,10 +711,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.BAR_GRAPH_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CyDIcons
+              name='bar-graph'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('VOLUME_INIT_CAPS')}
@@ -713,7 +724,7 @@ export default function Overview({
                 isVisible={showVolumeTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('VOLUME_TOOLTIP')}
@@ -724,10 +735,10 @@ export default function Overview({
                 onClose={() => setVolumeTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setVolumeTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CyDIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -742,10 +753,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.CIRCULAR_ARROWS_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CydMaterialDesignIcons
+              name='sync'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('CURRENT_SUPPLY_INIT_CAPS')}
@@ -755,7 +766,7 @@ export default function Overview({
                 isVisible={showCirculatingSupplyTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('CIRCULATING_SUPPLY_TOOLTIP')}
@@ -766,10 +777,10 @@ export default function Overview({
                 onClose={() => setCirculatingSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setCirculatingSupplyTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CyDIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -784,10 +795,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.TOTAL_SUPPLY_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CyDIcons
+              name='connected'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('TOTAL_SUPPLY_INIT_CAPS')}
@@ -797,7 +808,7 @@ export default function Overview({
                 isVisible={showTotalSupplyTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('TOTAL_SUPPLY_FORMULA')}
@@ -811,10 +822,10 @@ export default function Overview({
                 onClose={() => setTotalSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setTotalSupplyTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CyDIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -829,10 +840,10 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={AppImages.METER_MAX_ICON}
-              resizeMode='contain'
-              className={'w-[14px] h-[14px]'}
+            <CyDIcons
+              name='meter'
+              size={16}
+              className='text-base400 ml-[4px]'
             />
             <CyDText className={'ml-[10px] text-[14px] font-semibold'}>
               {t<string>('MAXIMUM_SUPPLY_INIT_CAPS')}
@@ -842,7 +853,7 @@ export default function Overview({
                 isVisible={showMaxSupplyTip}
                 disableShadow={true}
                 content={
-                  <CyDView className={'p-[5px]'}>
+                  <CyDView className={'p-[5px] bg-n20'}>
                     <CyDView>
                       <CyDText className={'mb-[5px] font-bold text-[15px]'}>
                         {t<string>('MAX_SUPPLY_FORMULA')}
@@ -856,10 +867,10 @@ export default function Overview({
                 onClose={() => setMaxSupplyTip(false)}
                 placement='top'>
                 <CyDTouchView onPress={() => setMaxSupplyTip(true)}>
-                  <CyDImage
-                    source={AppImages.INFO_ICON}
-                    resizeMode='contain'
-                    className={'w-[14px] h-[14px] ml-[8px]'}
+                  <CyDIcons
+                    name='information'
+                    size={20}
+                    className='text-base400 ml-[8px]'
                   />
                 </CyDTouchView>
               </Tooltip>
@@ -886,7 +897,7 @@ export default function Overview({
           }}>
           <CyDText
             className={
-              'text-blue-700 font-bold underline underline-offset-2 text-center'
+              'text-blue300 font-bold underline underline-offset-2 text-center'
             }>
             {t<string>(
               tokenData?.isVerified
@@ -904,22 +915,21 @@ export default function Overview({
   ) : (
     <CyDScrollView
       ref={scrollViewRef}
-      className={'bg-white'}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
       <ChartPathProvider data={data}>
         <TokenSummary />
         {chartloading && (
-          <CyDView style={styles.chartLoadingContainer}>
+          <CyDView className='flex flex-1 justify-center items-center h-[100px]'>
             <ActivityIndicator size='small' color={Colors.appColor} />
           </CyDView>
         )}
         {!chartloading && chartData && chartVisible && (
           <CyDView>
             <CyDView className={'flex flex-row justify-center'}>
-              <ChartXLabel
-                style={styles.chartXLabel}
+              <CyDChartXLabel
+                className='text-base400 text-[10px] font-normal text-right mt-[15px] mb-[5px] ml-[5px]'
                 format={formatTimestamp}
               />
             </CyDView>
@@ -936,16 +946,19 @@ export default function Overview({
                 backgroundGradientTo={Colors.white}
                 fill='none'
               />
-              <ChartDot size={12} style={styles.chartDot} />
+              <CyDChartDot
+                size={12}
+                className='bg-n20 border-[2px] border-p100 h-[14px] w-[14px] rounded-[14px] mb-[1px]'
+              />
             </CyDView>
-            <CyDView style={styles.selection}>
-              <CyDView style={StyleSheet.absoluteFill}>
-                <Animated.View style={[styles.backgroundSelection, style]} />
-              </CyDView>
-              <CyDView className={'flex flex-row'}>
+            <CyDView
+              className={`flex flex-row mt-[20px] justify-center items-center`}>
+              <CyDView className={'flex flex-row flex-1 justify-around'}>
                 {graphs.map((graph, index) => {
+                  const isSelected = graph.dataSource === dataSource;
+
                   return (
-                    <TouchableWithoutFeedback
+                    <CyDTouchView
                       key={graph.label}
                       onPress={() => {
                         setDataSource(graph.dataSource);
@@ -954,10 +967,16 @@ export default function Overview({
                         current.value = index as GraphIndex;
                         transition.value = withTiming(1);
                       }}>
-                      <Animated.View style={styles.labelContainer}>
-                        <CyDText style={styles.label}>{graph.label}</CyDText>
-                      </Animated.View>
-                    </TouchableWithoutFeedback>
+                      <CyDAnimatedView
+                        className={clsx(
+                          'p-[10px] rounded-[8px]',
+                          isSelected ? 'bg-blue20' : 'bg-transparent',
+                        )}>
+                        <CyDText className='text-[14px] font-bold text-center'>
+                          {graph.label}
+                        </CyDText>
+                      </CyDAnimatedView>
+                    </CyDTouchView>
                   );
                 })}
               </CyDView>
@@ -971,7 +990,7 @@ export default function Overview({
           <MarketDistribution />
         )}
         {marketDistributionLoading && (
-          <CyDView style={styles.chartLoadingContainer}>
+          <CyDView className='font-bold text-center text-base400 text-[14px]'>
             <ActivityIndicator size='small' color={Colors.appColor} />
           </CyDView>
         )}
@@ -984,56 +1003,10 @@ export default function Overview({
 }
 
 const styles = StyleSheet.create({
-  chartDot: {
-    backgroundColor: Colors.white,
-    borderWidth: 2,
-    height: 14,
-    width: 14,
-    borderRadius: 14,
-    marginBottom: 1,
-    borderColor: Colors.buttonColor,
-  },
   backgroundSelection: {
     backgroundColor: Colors.buttonColor,
     ...StyleSheet.absoluteFillObject,
     width: BUTTON_WIDTH,
     borderRadius: 8,
-  },
-  selection: {
-    marginTop: 20,
-    flexDirection: 'row',
-    width: SELECTION_WIDTH,
-    alignSelf: 'center',
-  },
-  labelContainer: {
-    padding: 10,
-    width: BUTTON_WIDTH,
-  },
-  label: {
-    fontSize: 14,
-    color: Colors.secondaryTextColor,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  chartYLabel: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.secondaryTextColor,
-    textAlign: 'right',
-  },
-  chartXLabel: {
-    fontSize: 10,
-    fontWeight: '400',
-    color: Colors.secondaryTextColor,
-    textAlign: 'right',
-    marginTop: 15,
-    marginBottom: 5,
-    marginLeft: 5,
-  },
-  chartLoadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 100,
   },
 });

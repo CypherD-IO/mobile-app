@@ -8,6 +8,7 @@ import {
   CyDView,
   CyDTouchView,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
@@ -170,7 +171,7 @@ const StateModal: React.FC<State> = (store: State) => {
       style={styles.modalContainer}>
       <CyDView
         className={
-          'bg-white w-[100%] px-[40px] flex items-center rounded-t-[24px]'
+          'bg-n20 w-[100%] px-[40px] flex items-center rounded-t-[24px]'
         }>
         <RenderImage />
         <CyDText className={'mt-[10px] font-bold text-[20px] text-center'}>
@@ -206,7 +207,7 @@ export const SuccessTransaction = ({
     copyToClipboard(url);
   };
   return (
-    <CyDView className='px-[12px] my-[15px]'>
+    <CyDView className='bg-n20 px-[12px] my-[15px]'>
       <CyDView className='flex flex-row items-center justify-evenly'>
         <CyDView className='flex flex-row justify-center items-center mt-[5px]'>
           <CyDText className={'text-center text-[14px] font-extrabold'}>
@@ -215,10 +216,10 @@ export const SuccessTransaction = ({
         </CyDView>
         <CyDTouchView
           onPress={() => copyHash(String(getExplorerUrl(symbol, name, hash)))}>
-          <CyDImage
-            source={AppImages.COPY}
-            className='h-[20px] w-[20px]'
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={20}
+            className='text-base400'
           />
         </CyDTouchView>
       </CyDView>
@@ -283,7 +284,7 @@ export const BuyOrBridge = ({
             onPress={() => {
               hideModal();
               setTimeout(() => {
-                navigation.navigate(screenTitle.BRIDGE_SCREEN);
+                navigation.navigate(screenTitle.SWAP);
               }, MODAL_HIDE_TIMEOUT);
             }}>
             <CyDView

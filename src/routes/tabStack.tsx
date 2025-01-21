@@ -5,17 +5,19 @@ import {
 } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
-import AppImages from '../../assets/images/appImages';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
-import { CyDFastImage, CyDView } from '../styles/tailwindStyles';
+import { CyDIcons, CyDView } from '../styles/tailwindStyles';
 import {
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
   SwapStackScreen,
 } from './auth';
+import { Theme, useTheme } from '../reducers/themeReducer';
+import clsx from 'clsx';
+import { useColorScheme } from 'nativewind';
 
 const Tab = createBottomTabNavigator();
 
@@ -32,20 +34,18 @@ interface TabStackProps {
 
 const screensToHaveNavBar = [
   screenTitle.PORTFOLIO,
-  screenTitle.OPTIONS,
   screenTitle.PORTFOLIO_SCREEN,
   screenTitle.DEBIT_CARD_SCREEN,
   screenTitle.OPTIONS_SCREEN,
-  screenTitle.SWAP,
-  screenTitle.BRIDGE_SKIP_API_SCREEN,
-  screenTitle.DEBIT_CARD_SCREEN,
-  screenTitle.BRIDGE_CARD_SCREEN,
-
+  screenTitle.SWAP_SCREEN,
+  screenTitle.CARD_SCREEN,
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,
 ];
 
 function TabStack(props: TabStackProps) {
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
   const { deepLinkData, setDeepLinkData } = props;
   const [showTabBar, setShowTabBar] = useState(true);
   const tabBarAnimation = useState(new Animated.Value(1))[0];
@@ -83,13 +83,13 @@ function TabStack(props: TabStackProps) {
       let navigationParams: any;
       switch (deepLinkData.screenToNavigate) {
         case screenTitle.I_HAVE_REFERRAL_CODE_SCREEN:
-          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          tabName = screenTitle.CARD;
           break;
         case screenTitle.TELEGRAM_PIN_SETUP:
-          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          tabName = screenTitle.CARD;
           break;
         case screenTitle.TELEGRAM_SETUP:
-          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          tabName = screenTitle.CARD;
           navigationParams = {
             screen: deepLinkData.screenToNavigate,
             params: {
@@ -136,7 +136,7 @@ function TabStack(props: TabStackProps) {
         },
       ],
       opacity: tabBarAnimation,
-      backgroundColor: 'white',
+      borderTopWidth: 0,
       position: 'absolute',
       bottom: 0,
       left: 0,
@@ -176,6 +176,13 @@ function TabStack(props: TabStackProps) {
     };
   }, [getCurrentRouteName]);
 
+  const getTabBarTextColor = useCallback(() => {
+    if (theme === Theme.SYSTEM) {
+      return colorScheme === 'dark' ? '#FFFFFF' : '#000000';
+    }
+    return theme === 'dark' ? '#FFFFFF' : '#000000';
+  }, [theme, colorScheme]);
+
   return (
     <NavigationContainer independent={true} ref={navigationRef}>
       <Tab.Navigator
@@ -184,36 +191,36 @@ function TabStack(props: TabStackProps) {
           tabBarIcon: ({ focused }) => {
             let iconSource;
             if (route.name === screenTitle.PORTFOLIO) {
-              iconSource = focused
-                ? AppImages.PORTFOLIO_SEL
-                : AppImages.PORTFOLIO_UNSEL;
-            } else if (route.name === screenTitle.DEBIT_CARD_SCREEN) {
-              iconSource = focused ? AppImages.CARD_SEL : AppImages.CARD_UNSEL;
+              iconSource = 'home-filled';
+            } else if (route.name === screenTitle.CARD) {
+              iconSource = 'card-filled';
             } else if (route.name === screenTitle.SWAP) {
-              iconSource = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
+              iconSource = 'swap-horizontal';
             } else if (route.name === screenTitle.OPTIONS) {
-              iconSource = focused
-                ? AppImages.OPTION_SEL
-                : AppImages.OPTION_UNSEL;
+              iconSource = 'tools-wrench-screwdriver';
             }
             return (
-              <CyDFastImage
-                source={iconSource}
-                className={'w-[32px] h-[32px]'}
+              <CyDIcons
+                name={iconSource}
+                size={32}
+                className={clsx('', {
+                  'text-base400': focused,
+                  'text-n200': !focused,
+                })}
               />
             );
           },
           tabBarHideOnKeyboard: true,
           tabBarInactiveTintColor: '#7A8699',
-          tabBarActiveTintColor: '#000000',
+          tabBarActiveTintColor: getTabBarTextColor(),
           tabBarLabelStyle: {
             fontSize: 12,
-            fontWeight: '400' as const,
+            fontWeight: '700' as const,
             fontFamily: 'Manrope',
           },
           tabBarStyle,
           tabBarBackground: () => (
-            <CyDView className='absolute inset-0 bg-n0 rounded-t-[22px] shadow-xl shadow-gray-400' />
+            <CyDView className='bg-n0 h-full rounded-t-[20px] shadow-xl shadow-n40' />
           ),
         })}
         initialRouteName={screenTitle.PORTFOLIO}>
@@ -225,7 +232,7 @@ function TabStack(props: TabStackProps) {
           }}
         />
         <Tab.Screen
-          name={screenTitle.DEBIT_CARD_SCREEN}
+          name={screenTitle.CARD}
           component={DebitCardStackScreen}
           options={{
             lazy: true,
@@ -237,7 +244,7 @@ function TabStack(props: TabStackProps) {
           component={PortfolioStackScreen}
           options={({ route }) => ({
             tabBarButton: () => (
-              <CyDView className={'scale-110 shadow shadow-yellow-200'}>
+              <CyDView className={'scale-105'}>
                 <ShortcutsModal />
               </CyDView>
             ),
@@ -272,8 +279,8 @@ const styles = StyleSheet.create({
     paddingBottom: isIOS() ? 26 : 14,
     paddingTop: 10,
     paddingHorizontal: 21,
-    borderWidth: 1,
-    borderColor: '#EBEDF0',
+    // borderWidth: 1,
+    // borderColor: '#EBEDF0',
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     elevation: 24, // For Android

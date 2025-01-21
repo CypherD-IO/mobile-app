@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDFastImage,
+  CyDIcons,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -34,6 +36,9 @@ import { showToast } from '../../utilities/toastUtility';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { StyleSheet } from 'react-native';
 import SelectPlanModal from '../../../components/selectPlanModal';
+import { useTheme } from '../../../reducers/themeReducer';
+import clsx from 'clsx';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   cardProvider: string;
@@ -42,6 +47,7 @@ interface RouteParams {
 
 export default function GlobalOptions() {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
@@ -127,7 +133,7 @@ export default function GlobalOptions() {
           {
             title: 'Lockdown Mode',
             description: 'Secure account by blocking all Card Functionalities',
-            image: AppImages.LOCKDOWN_MODE_ICON,
+            image: 'left-hand-pamp' as const,
             action: () => {
               navigation.navigate(screenTitle.LOCKDOWN_MODE, {
                 currentCardProvider: cardProvider,
@@ -139,7 +145,7 @@ export default function GlobalOptions() {
     {
       title: 'Auto Load',
       description: 'Manage auto load',
-      image: AppImages.AUTOLOAD,
+      image: 'card-load' as const,
       action: () => {
         isAutoloadConfigured
           ? setIsAutoLoadOptionsVisible(true)
@@ -151,7 +157,7 @@ export default function GlobalOptions() {
           {
             title: 'Withdraw Crypto',
             description: 'Convert your card balance to crypto',
-            image: AppImages.CRYPTO_WITHDRAWAL,
+            image: 'withdraw' as const,
             action: () => {
               navigation.navigate(screenTitle.CRYPTO_WITHDRAWAL, {
                 currentCardProvider: cardProvider,
@@ -164,7 +170,7 @@ export default function GlobalOptions() {
     {
       title: 'Linked Wallets',
       description: 'Link another wallet to card',
-      image: AppImages.WALLETS,
+      image: 'wallet-multiple' as const,
       action: () => {
         navigation.navigate(screenTitle.LINKED_WALLETS, {
           currentCardProvider: cardProvider,
@@ -177,7 +183,7 @@ export default function GlobalOptions() {
           {
             title: 'Manage Premium',
             description: '',
-            image: AppImages.BOOKMARK,
+            image: 'bookmark' as const,
             action: () => {
               navigation.navigate(screenTitle.MANAGE_SUBSCRIPTION, {
                 currentCardProvider: cardProvider,
@@ -196,7 +202,7 @@ export default function GlobalOptions() {
           {
             title: 'Telegram Bot',
             description: 'Manage your account with telegram',
-            image: AppImages.TELEGRAM_OUTLINE_ICON,
+            image: 'telegram' as const,
             action: () => {
               navigation.navigate(screenTitle.TELEGRAM_SETUP, {
                 navigateTo: screenTitle.TELEGRAM_PIN_SETUP,
@@ -210,7 +216,7 @@ export default function GlobalOptions() {
     {
       title: 'Notification Settings',
       description: 'Set how you want to get notified',
-      image: AppImages.NOTIFICATION_BELL,
+      image: 'notification' as const,
       action: () => {
         navigation.navigate(screenTitle.CARD_NOTIFICATION_SETTINGS, {
           currentCardProvider: cardProvider,
@@ -220,7 +226,7 @@ export default function GlobalOptions() {
     {
       title: 'Personal Information',
       description: 'Update personal information for your account',
-      image: AppImages.PERSON,
+      image: 'account' as const,
       action: () => {
         navigation.navigate(screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN);
       },
@@ -231,11 +237,14 @@ export default function GlobalOptions() {
     {
       title: 'Frequently Asked Questions',
       description: 'Clear your doubts',
-      image: AppImages.DOCUMENT,
+      image: 'message-outline',
       action: () => {
-        navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
-          title: 'Card FAQ',
-          uri: 'https://cypherhq.io/card#faq',
+        navigation.navigate(screenTitle.OPTIONS, {
+          screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+          params: {
+            title: 'Card FAQ',
+            uri: 'https://cypherhq.io/card#faq',
+          },
         });
       },
     },
@@ -270,9 +279,10 @@ export default function GlobalOptions() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDFastImage
-              source={AppImages.LEFT_ARROW_LONG}
-              className='w-[20px] h-[16px]'
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[16px] font-bold text-base400'>
@@ -282,7 +292,10 @@ export default function GlobalOptions() {
         <CyDScrollView className='flex-1 bg-n20 px-[16px]'>
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView
-              className='bg-p0 rounded-[16px] p-[16px] mt-[30px]'
+              className={clsx('rounded-[16px] p-[16px] mt-[30px]', {
+                'bg-n0': theme === 'dark',
+                'bg-p0': theme === 'light',
+              })}
               style={styles.shadow}>
               <CyDView className='p-[12px]'>
                 <CyDText className='text-[12px] font-medium text-center'>
@@ -296,7 +309,7 @@ export default function GlobalOptions() {
                 <CyDView className='mt-[12px] flex flex-row justify-center items-center'>
                   <CyDTouchView
                     style={styles.buttonShadow}
-                    className='flex flex-row items-center bg-n0 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
+                    className='flex flex-row items-center bg-n40 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
                     onPress={() => {
                       setOpenComparePlans(false);
                       setPlanChangeModalVisible(true);
@@ -311,13 +324,13 @@ export default function GlobalOptions() {
                   </CyDTouchView>
                   <CyDTouchView
                     style={styles.buttonShadow}
-                    className=' bg-n0 px-[10px] py-[6px] rounded-full'
+                    className=' bg-n40 px-[10px] py-[6px] rounded-full'
                     onPress={() => {
                       setOpenComparePlans(true);
                       setPlanChangeModalVisible(true);
                     }}>
-                    <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
-                      {'Compare plans'}
+                    <CyDText className=' text-center text-[14px] font-semibold text-n100 mr-[2px]'>
+                      {t('COMPARE_PLANS')}
                     </CyDText>
                   </CyDTouchView>
                 </CyDView>
@@ -337,11 +350,16 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CyDFastImage
+                    <CyDIcons
+                      name={image}
+                      size={20}
+                      className='text-base400 mr-[8px] pb-[16px]'
+                    />
+                    {/* <CyDFastImage
                       source={image}
                       className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
                       resizeMode={'contain'}
-                    />
+                    /> */}
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                       <CyDText className='text-[16px] font-regular text-base400'>
                         {title}
@@ -351,10 +369,10 @@ export default function GlobalOptions() {
                           {'Enable'}
                         </CyDText>
                       ) : (
-                        <CyDFastImage
-                          source={AppImages.RIGHT_ARROW}
-                          className='h-[20px] w-[20px]'
-                          resizeMode={'contain'}
+                        <CydMaterialDesignIcons
+                          name='chevron-right'
+                          size={20}
+                          className='text-base400'
                         />
                       )}
                     </CyDView>
@@ -382,10 +400,10 @@ export default function GlobalOptions() {
                           }
                         }}
                         className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                        <CyDFastImage
-                          source={image}
-                          className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
-                          resizeMode={'contain'}
+                        <CyDIcons
+                          name={image}
+                          size={24}
+                          className='text-base400 mr-[8px] pb-[16px]'
                         />
                         <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                           <CyDText className='text-[16px] font-regular text-base400'>
@@ -414,10 +432,10 @@ export default function GlobalOptions() {
                               <CyDText className='text-[16px] font-regular text-base400'>
                                 {'Reset Telegram Pin'}
                               </CyDText>
-                              <CyDFastImage
-                                source={AppImages.RIGHT_ARROW}
-                                className='h-[20px] w-[20px]'
-                                resizeMode={'contain'}
+                              <CydMaterialDesignIcons
+                                name='chevron-right'
+                                size={20}
+                                className='text-base400'
                               />
                             </CyDView>
                           </CyDTouchView>
@@ -445,10 +463,10 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CyDFastImage
-                      source={image}
-                      className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
-                      resizeMode={'contain'}
+                    <CyDIcons
+                      name={image}
+                      size={24}
+                      className='text-base400 mr-[8px] pb-[16px]'
                     />
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                       <CyDText className='text-[16px] font-regular text-base400'>
@@ -459,10 +477,10 @@ export default function GlobalOptions() {
                           {'Enable'}
                         </CyDText>
                       ) : (
-                        <CyDFastImage
-                          source={AppImages.RIGHT_ARROW}
-                          className='h-[20px] w-[20px]'
-                          resizeMode={'contain'}
+                        <CydMaterialDesignIcons
+                          name='chevron-right'
+                          size={20}
+                          className='text-base400'
                         />
                       )}
                     </CyDView>
@@ -484,19 +502,19 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CyDFastImage
-                      source={image}
-                      className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
-                      resizeMode={'contain'}
+                    <CydMaterialDesignIcons
+                      name={image}
+                      size={20}
+                      className='text-base400 mr-[8px] pb-[16px]'
                     />
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                       <CyDText className='text-[16px] font-regular text-base400'>
                         {title}
                       </CyDText>
-                      <CyDFastImage
-                        source={AppImages.RIGHT_ARROW}
-                        className='h-[20px] w-[20px]'
-                        resizeMode={'contain'}
+                      <CydMaterialDesignIcons
+                        name='chevron-right'
+                        size={20}
+                        className='text-base400'
                       />
                     </CyDView>
                   </CyDTouchView>

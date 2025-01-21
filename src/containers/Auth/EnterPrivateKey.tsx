@@ -9,6 +9,7 @@ import {
   CyDSafeAreaView,
   CyDTextInput,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
@@ -119,10 +120,10 @@ export default function Login(props) {
                 onSuccess,
               });
             }}>
-            <CyDImage
-              source={AppImages.QR_CODE_SCANNER_BLACK}
-              className='h-[22px] w-[22px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='qrcode-scan'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         ),
@@ -131,13 +132,12 @@ export default function Login(props) {
   }, []);
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       <CyDScrollView className='flex-1 px-[20px]'>
         {createWalletLoading && <Loading />}
         <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <CyDView>
-            <CyDText
-              className={'text-[#434343] text-[16px] mt-[30px] text-center'}>
+            <CyDText className={'text-[16px] mt-[30px] text-center'}>
               {t('PRIVATE_KEY_IMPORT_SUB_MSG')}
             </CyDText>
             <CyDView className={'flex flex-row justify-center'}>
@@ -169,12 +169,12 @@ export default function Login(props) {
                 onPress={() => {
                   void fetchCopiedText();
                 }}>
-                <CyDImage
-                  source={AppImages.COPY}
-                  className={'w-[16px] h-[18px] mr-[10px]'}
+                <CydMaterialDesignIcons
+                  name={'content-copy'}
+                  size={16}
+                  className='text-base400'
                 />
-                <CyDText
-                  className={'text-[#434343] text-[14px] font-extrabold'}>
+                <CyDText className={'text-[14px] font-extrabold'}>
                   {t('PASTE_CLIPBOARD')}
                 </CyDText>
               </CyDTouchView>

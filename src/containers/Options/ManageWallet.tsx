@@ -8,22 +8,29 @@ import {
   CyDView,
   CyDTouchView,
   CyDText,
-  CyDImage,
   CyDFlatList,
   CyDImageBackground,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
-import { screenTitle } from '../../constants';
+
 import { HDWallet } from '../../reducers/hdwallet_reducer';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
+import { IconNames } from '../../customFonts';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
 interface IManageWalletData {
   index: number;
   title: string;
-  logo: number;
+  logo: IconNames;
   navigateTo: string;
   navigationProps: { [key: string]: boolean };
   firebaseEvent: string;
+  callback?: () => void;
 }
 
 const renderSettingsData = (
@@ -36,7 +43,7 @@ const renderSettingsData = (
       <CyDTouchView
         className={'flex flex-row justify-between pl-[15px] py-[24px]'}
         onPress={() => {
-          item.callback();
+          item.callback?.();
           sendFirebaseEvent(hdWalletContext, item.firebaseEvent);
         }}>
         <CyDView className={'flex flex-row items-center'}>
@@ -44,24 +51,21 @@ const renderSettingsData = (
             className={
               'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
             }>
-            <CyDImage
-              source={item.logo}
-              className={'w-[15px] h-[15px]'}
-              resizeMode={'contain'}
-            />
+            <CyDIcons name={item.logo} size={24} className='text-base400' />
           </CyDView>
-          <CyDText className={'font-semibold text-[16px] text-[#434343]'}>
+          <CyDText className={'font-semibold text-[16px]'}>
             {item.title}
           </CyDText>
         </CyDView>
       </CyDTouchView>
-      <CyDView className={'h-[01px] bg-portfolioBorderColor'} />
+      <CyDView className={'h-[01px] bg-n40'} />
     </CyDView>
   );
 };
 
-export default function ManageWallet({ navigation }) {
+export default function ManageWallet() {
   const { t } = useTranslation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { connectionType, deleteWallet } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
@@ -77,7 +81,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 0,
             title: t('CONNECT_ANOTHER_WALLET'),
-            logo: AppImages.WALLET_CONNECT_LOGO,
+            logo: 'wallet' as const,
             callback: () => {
               void deleteWallet({ navigation });
             },
@@ -86,7 +90,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 1,
             title: t('DISCONNECT_WALLET'),
-            logo: AppImages.DISCONNECT,
+            logo: 'delete' as const,
             callback: () => {
               void deleteWallet({ navigation });
             },
@@ -97,7 +101,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 0,
             title: t('IMPORT_WALLET_MSG'),
-            logo: AppImages.IMPORT_WALLET_ICON,
+            logo: 'wallet' as const,
             callback: () => {
               void deleteWallet({ navigation, importNewWallet: true });
             },
@@ -106,7 +110,7 @@ export default function ManageWallet({ navigation }) {
           {
             index: 1,
             title: t('DELTE_WALLET'),
-            logo: AppImages.DELETE,
+            logo: 'delete' as const,
             callback: () => {
               void deleteWallet({ navigation });
             },
@@ -127,7 +131,7 @@ export default function ManageWallet({ navigation }) {
   }, []);
 
   return (
-    <CyDView className={'bg-white h-full '}>
+    <CyDView className={'bg-n20 h-full '}>
       <CyDImageBackground
         className={'h-[50%] pt-[30px]'}
         source={AppImages.BG_SETTINGS}

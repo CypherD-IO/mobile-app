@@ -5,13 +5,10 @@ import {
   CyDText,
   CyDSafeAreaView,
   CyDTouchView,
-  CyDImage,
   CyDTextInput,
-  CyDScrollView,
-  CyDFastImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
-import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -33,6 +30,7 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import clsx from 'clsx';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -153,9 +151,10 @@ export default function AddDeliveryAddress() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -177,7 +176,7 @@ export default function AddDeliveryAddress() {
                   </CyDText>
                   <CyDTouchView
                     className={
-                      'bg-white h-[60px] py-[4px] px-[10px] mt-[2px]  rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px] py-[4px] px-[10px] mt-[2px]  rounded-[8px] flex flex-row justify-between items-center'
                     }
                     onPress={() => setSelectCountryModalVisible(true)}>
                     <CyDView
@@ -200,10 +199,10 @@ export default function AddDeliveryAddress() {
                         </CyDText>
                       )}
                     </CyDView>
-                    <CyDFastImage
-                      className='h-[12px] w-[12px]'
-                      source={AppImages.DOWN_ARROW}
-                      resizeMode='contain'
+                    <CydMaterialDesignIcons
+                      name={'chevron-down'}
+                      size={16}
+                      className={'text-base400'}
                     />
                   </CyDTouchView>
                   <CyDView className=' mt-[20px] flex flex-row items-center'>
@@ -216,7 +215,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView
                       className={clsx(
@@ -231,10 +230,10 @@ export default function AddDeliveryAddress() {
                         <CyDText className={'text-center text-[16px] mx-[4px]'}>
                           {selectedCountryForDialCode.dialCode}
                         </CyDText>
-                        <CyDFastImage
-                          className='h-[12px] w-[12px]'
-                          source={AppImages.DOWN_ARROW}
-                          resizeMode='contain'
+                        <CydMaterialDesignIcons
+                          name={'chevron-down'}
+                          size={16}
+                          className={'text-base400'}
                         />
                       </CyDTouchView>
                       <CyDTextInput
@@ -257,7 +256,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -281,7 +280,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -305,7 +304,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -329,7 +328,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -353,7 +352,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput

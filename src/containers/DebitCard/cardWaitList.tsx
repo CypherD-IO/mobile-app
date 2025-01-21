@@ -6,6 +6,7 @@ import axios from '../../core/Http';
 import { isAndroid } from '../../misc/checkers';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -140,10 +141,10 @@ export default function CardWailtList({ navigation }: Props) {
 
   return (
     <CyDView
-      className={clsx('flex-1 bg-white mt-[32px]', {
+      className={clsx('flex-1 bg-n0 mt-[32px]', {
         'pb-[75px]': isAndroid(),
       })}>
-      <CyDScrollView className='bg-white py-[12px]'>
+      <CyDScrollView className='bg-n0 py-[12px]'>
         <ChooseCountryModal
           isModalVisible={isModalVisible}
           setModalVisible={setModalVisible}
@@ -165,7 +166,7 @@ export default function CardWailtList({ navigation }: Props) {
               }>
               <CyDView
                 className={
-                  'w-[85%] bg-white px-[50px] pt-[100px] pb-[30px] rounded-[18px] shadow-lg'
+                  'w-[85%] bg-n0 px-[50px] pt-[100px] pb-[30px] rounded-[18px] shadow-lg'
                 }>
                 <CyDView>
                   {provider === CardProviders.PAYCADDY && (
@@ -188,7 +189,11 @@ export default function CardWailtList({ navigation }: Props) {
                               {selectedCountry.name}
                             </CyDText>
                           </CyDView>
-                          <CyDImage source={AppImages.DOWN_ARROW} />
+                          <CydMaterialDesignIcons
+                            name={'chevron-down'}
+                            size={16}
+                            className={'text-base400'}
+                          />
                         </CyDView>
                       </CyDTouchView>
                       <CyDTextInput
@@ -276,9 +281,10 @@ export default function CardWailtList({ navigation }: Props) {
           {cardBenefits.map(item => {
             return (
               <CyDView className={'flex flex-row my-[4px]'} key={item}>
-                <CyDImage
-                  className={'mt-[6px]'}
-                  source={AppImages.RIGHT_ARROW_BULLET}
+                <CydMaterialDesignIcons
+                  name={'triangle'}
+                  size={14}
+                  className='text-p150 rotate-90 mt-[6px]'
                 />
                 <CyDText className={'ml-[10px] leading-[25px]'}>{item}</CyDText>
               </CyDView>

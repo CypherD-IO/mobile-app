@@ -1,9 +1,6 @@
-/* eslint-disable react-native/no-raw-text */
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
-import { Colors } from '../../constants/theme';
-import { ButtonWithOutImage } from '../../containers/Auth/Share';
 import { CyDText, CyDView } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { removeCredentialsFromKeychain } from '../../core/Keychain';
@@ -12,6 +9,7 @@ import RNRestart from 'react-native-restart';
 import RNExitApp from 'react-native-exit-app';
 import useAxios from '../../core/HttpRequest';
 import Button from './button';
+import { ButtonType } from '../../constants/enum';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -49,7 +47,7 @@ export default function DefaultAuthRemoveModal(props: {
       }}>
       <CyDView
         className={
-          'bg-white flex flex-col items-center rounded-t-[20px] pt-[15px] pb-[30px]'
+          'bg-n0 flex flex-col items-center rounded-t-[20px] pt-[15px] pb-[30px]'
         }>
         <CyDText className='text-center  text-[19px] font-bold  '>
           {t('DEFAULT_AUTH_REMOVE_TITLE')}
@@ -62,13 +60,13 @@ export default function DefaultAuthRemoveModal(props: {
         <CyDView className='flex w-[90%] px-[10px] mt-[45px]'>
           <Button
             style='py-[15px]'
-            type='red'
+            type={ButtonType.RED}
             title={t('PROCEED')}
             onPress={() => void onProceedPress()}
           />
           <Button
             style='mt-[10px]'
-            type='secondary'
+            type={ButtonType.SECONDARY}
             title={t('CANCEL')}
             onPress={onCancelPress}
           />

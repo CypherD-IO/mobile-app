@@ -10,22 +10,22 @@ export const DynamicImage = styled.Image`
       margin-top: ${verticalScale(props.mT ? props.mT : 0)}px;
       margin-left: ${verticalScale(props.mL ? props.mL : 0)}px;
       margin-right: ${verticalScale(props.mR ? props.mR : 0)}px;
-      resizeMode: ${props.resizemode ? props.resizemode : 'contain'};
-      `}
-      ${(props) =>
-        props.dynamicHeight &&
-        css`
-          height: ${props.height ? props.height : 0}%;
-          background-color: ${props.bGC ? props.bGC : 'transparent'};
-        `}
-      ${(props) =>
-        props.dynamicWidth &&
-        css`
-          width: ${props.width ? props.width : 50}%;
-        `}
-        ${(props) =>
-          props.dynamicTintColor &&
-          css`
-            tint-color: ${props.tC ? props.tC : 'black'};
-          `}
-      `;
+      resizemode: ${props.resizemode ? props.resizemode : 'contain'};
+    `}
+  ${props =>
+    props.dynamicHeight &&
+    css`
+      height: ${props.height ? props.height : 0}%;
+      background-color: ${props.bGC ? props.bGC : 'transparent'};
+    `}
+      ${props =>
+    props.dynamicWidth &&
+    css`
+      width: ${props.width ? props.width : 50}%;
+    `}
+        ${props =>
+    props.dynamicTintColor &&
+    css`
+      tint-color: ${props.tC ? props.tC : 'black'};
+    `}
+`;

@@ -14,6 +14,8 @@ import {
   CyDTextInput,
   CyDScrollView,
   CyDKeyboardAvoidingView,
+  CydMaterialDesignIcons,
+  CyDLottieView,
 } from '../../../../styles/tailwindStyles';
 import AppImages from '../../../../../assets/images/appImages';
 import OTPInput from '../../../../components/v2/otpBox';
@@ -31,10 +33,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CyDModalLayout from '../../../../components/v2/modal';
 import { Keyboard, Platform, StyleSheet } from 'react-native';
 import { showToast } from '../../../utilities/toastUtility';
-import LottieView from 'lottie-react-native';
 import { screenTitle } from '../../../../constants';
 import Loading from '../../../../components/v2/loading';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
+import { CyDIconsPack } from '../../../../customFonts';
 
 export default function OTPVerification(): JSX.Element {
   const { t } = useTranslation();
@@ -184,7 +186,7 @@ export default function OTPVerification(): JSX.Element {
 
   return (
     <CyDView
-      className='flex-1 flex flex-col justify-between bg-[#F1F0F5]'
+      className='flex-1 flex flex-col justify-between bg-n20'
       style={{ paddingTop: insets.top }}>
       <CyDModalLayout
         setModalVisible={() => {
@@ -197,16 +199,16 @@ export default function OTPVerification(): JSX.Element {
         <CyDKeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}>
-          <CyDView
-            className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          <CyDView className={'p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView
               onPress={() => {
                 setIsEditEmailModalVisible(false);
               }}
-              className={'z-[50]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[22px] h-[22px] z-[50] absolute right-[0px]'}
+              className={'z-[50] self-end'}>
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDText
@@ -245,10 +247,10 @@ export default function OTPVerification(): JSX.Element {
         {/* remove the CardProviderSwitch after sunsetting PC */}
         <CyDView className='flex-row justify-between items-center'>
           <CyDTouchView className='' onPress={handleBackPress}>
-            <CyDFastImage
-              className={'w-[32px] h-[32px]'}
-              resizeMode='cover'
-              source={AppImages.BACK_ARROW_GRAY}
+            <CyDIconsPack
+              name='arrow-left'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CardProviderSwitch />
@@ -300,7 +302,7 @@ export default function OTPVerification(): JSX.Element {
               )}
             </CyDText>
             {sendingOTP && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop
@@ -311,7 +313,7 @@ export default function OTPVerification(): JSX.Element {
         </CyDScrollView>
       </CyDView>
 
-      <CyDView className='px-[16px] pb-[48px] bg-white rounded-t-[16px]'>
+      <CyDView className='px-[16px] pb-[48px] bg-n0 rounded-t-[16px]'>
         {/* <CyDText className='mt-[14px] text-[12px] font-bold font-manrope'>
           {'Verify Email'}
         </CyDText> */}

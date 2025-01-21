@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDTouchView,
   CyDView,
@@ -26,7 +27,6 @@ import {
   GlobalContextType,
 } from '../../../../../constants/enum';
 import { t } from 'i18next';
-import AppImages from '../../../../../../assets/images/appImages';
 import useCardUtilities from '../../../../../hooks/useCardUtilities';
 import {
   GlobalContext,
@@ -38,6 +38,7 @@ import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import { getReferralCode } from '../../../../../core/asyncStorage';
+import { CyDIconsPack } from '../../../../../customFonts';
 
 // Add this type definition
 interface SupportedCountry {
@@ -261,7 +262,8 @@ export default function CardApplicationV2() {
           showModal('state', {
             type: 'error',
             title: t('INVALID_USER_DETAILS'),
-            description: error ?? 'Error in submitting your application',
+            description:
+              error?.message ?? 'Error in submitting your application',
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -285,7 +287,7 @@ export default function CardApplicationV2() {
   if (loading) return <Loading />;
 
   return (
-    <CyDSafeAreaView className='my-[40px] '>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       {/* remove the CardProviderSwitch after sunsetting PC */}
       <CyDTouchView
         className='w-[60px] ml-[16px] mb-[10px]'
@@ -298,11 +300,7 @@ export default function CardApplicationV2() {
             navigation.goBack();
           } else setIndex(0);
         }}>
-        <CyDFastImage
-          className={'w-[32px] h-[32px]'}
-          resizeMode='cover'
-          source={AppImages.BACK_ARROW_GRAY}
-        />
+        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
 
       <Formik
@@ -333,7 +331,7 @@ export default function CardApplicationV2() {
           values,
           isSubmitting,
         }) => (
-          <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
+          <CyDView className='bg-n20 flex flex-col justify-between h-full'>
             {index === 0 && <BasicDetails setIndex={setIndex} />}
             {index === 1 && (
               <BillingAddress
@@ -343,7 +341,7 @@ export default function CardApplicationV2() {
               />
             )}
             {index === 0 && (
-              <CyDView className='bg-white px-[16px] w-full pt-[16px] pb-[60px] '>
+              <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[60px] '>
                 <Button
                   title={t('NEXT')}
                   onPress={() => {
@@ -367,7 +365,7 @@ export default function CardApplicationV2() {
               </CyDView>
             )}
             {index === 1 && (
-              <CyDView className='bg-white px-[16px] w-full pt-[16px] pb-[60px]'>
+              <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[60px]'>
                 <Button
                   title={t('CONTINUE')}
                   onPress={handleSubmit}

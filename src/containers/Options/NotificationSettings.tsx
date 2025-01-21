@@ -1,19 +1,13 @@
-import * as C from '../../constants';
 import React, { useState, useEffect, useContext } from 'react';
 import { Switch, FlatList, BackHandler } from 'react-native';
-import { Colors } from '../../constants/theme';
 import { useTranslation } from 'react-i18next';
 import axios from '../../core/Http';
 import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from '../../core/util';
-import AppImages from '../../../assets/images/appImages';
-import EmptyView from '../../components/EmptyView';
 import { hostWorker } from '../../global';
 import { GlobalContext } from '../../core/globalContext';
-import useAxios from '../../core/HttpRequest';
-import { CyDText } from '../../styles/tailwindStyles';
-
-const { CText, SafeAreaView, DynamicView } = require('../../styles');
+import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
+import Loading from '../../components/v2/loading';
 
 export interface NotificationList {
   id: string;
@@ -30,7 +24,7 @@ export default function NotificationSettings(props) {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const [ethAddress, setEthAddress] = useState<String>(
+  const [ethAddress, setEthAddress] = useState<string>(
     hdWalletContext.state.wallet.ethereum.address,
   );
   const [notificationList, setNotificationList] = useState<NotificationList[]>(
@@ -110,24 +104,7 @@ export default function NotificationSettings(props) {
   }, []);
 
   const emptyView = () => {
-    return (
-      <DynamicView
-        dynamic
-        dynamicWidth
-        dynamicHeight
-        height={100}
-        width={100}
-        jC='flex-start'
-        bGC={Colors.whiteColor}>
-        <EmptyView
-          text={'Loading...'}
-          image={AppImages.LOADING_IMAGE}
-          buyVisible={false}
-          marginTop={50}
-          isLottie={true}
-        />
-      </DynamicView>
-    );
+    return <Loading />;
   };
 
   const Item = ({ item }) => {
@@ -150,47 +127,26 @@ export default function NotificationSettings(props) {
     };
 
     return (
-      <DynamicView dynamic dynamicWidth width={100} fD={'row'} pV={16} pH={15}>
-        <DynamicView dynamic dynamicWidth width={100} fD={'row'} pT={32}>
-          <DynamicView dynamic dynamicHeightFix height={40} fD={'row'} bR={20}>
-            <DynamicView
-              dynamic
-              dynamicWidthFix
-              width={230}
-              dynamicHeightFix
-              height={40}
-              aLIT='flex-start'
-              fD={'column'}
-              jC='center'>
-              <CyDText className='text-left font-bold text-[16px] '>
+      <CyDView className='flex-row p-4'>
+        <CyDView className='flex-row pt-8'>
+          <CyDView className='flex-row h-10 rounded-2xl'>
+            <CyDView className='w-[230px] h-10 justify-center'>
+              <CyDText className='text-left font-bold text-[16px]'>
                 {t(item.id)}
               </CyDText>
               <CyDText className='text-left font-semibold text-[12px] text-subTextColor'>
                 {item.info}
               </CyDText>
-            </DynamicView>
-          </DynamicView>
+            </CyDView>
+          </CyDView>
 
-          <DynamicView
-            dynamic
-            dynamicHeightFix
-            height={40}
-            fD={'row'}
-            jC='center'>
-            <DynamicView
-              dynamic
-              dynamicWidthFix
-              width={30}
-              dynamicHeightFix
-              height={40}
-              aLIT='flex-end'
-              fD={'column'}
-              jC='center'>
+          <CyDView className='h-10 flex-row justify-center'>
+            <CyDView className='w-[30px] h-10 items-end justify-center'>
               <Switch onValueChange={toggleSwitch} value={isEnabled} />
-            </DynamicView>
-          </DynamicView>
-        </DynamicView>
-      </DynamicView>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDView>
     );
   };
 
@@ -198,41 +154,21 @@ export default function NotificationSettings(props) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <SafeAreaView dynamic>
-      <DynamicView
-        dynamic
-        dynamicWidth
-        dynamicHeight
-        height={100}
-        width={100}
-        jC='flex-start'
-        bGC={Colors.whiteColor}>
-        <DynamicView
-          dynamic
-          dynamicWidth
-          width={100}
-          fD={'column'}
-          jC='center'
-          aLIT='center'
-          pT={20}
-          pH={6}>
-          <CText
-            tA={'left'}
-            dynamic
-            fF={C.fontsName.FONT_SEMI_BOLD}
-            fS={13}
-            color={Colors.subTextColor}>
+    <CyDSafeAreaView className='bg-n20 flex-1'>
+      <CyDView className='h-full w-full justify-start'>
+        <CyDView className='w-full justify-center items-center pt-5 px-1.5'>
+          <CyDText className='text-left font-semibold text-[13px] text-subTextColor'>
             Stay up to date! Enable to receive various notifications for
             incoming and outgoing transactions.
-          </CText>
-        </DynamicView>
+          </CyDText>
+        </CyDView>
         <FlatList
           data={notificationList}
           renderItem={renderItem}
           keyExtractor={item => item.id}
           ListEmptyComponent={emptyView()}
         />
-      </DynamicView>
-    </SafeAreaView>
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

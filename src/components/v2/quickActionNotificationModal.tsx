@@ -7,6 +7,7 @@ import useAxios from '../../core/HttpRequest';
 import { parseErrorMessage } from '../../core/util';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -65,7 +66,11 @@ function RenderHeader({
         <CyDText className='font-bold text-[20px]'>{title}</CyDText>
       </CyDView>
       <CyDTouchView onPress={closeModal}>
-        <CyDImage source={AppImages.CLOSE} className='w-[24px] h-[24px]' />
+        <CydMaterialDesignIcons
+          name={'close'}
+          size={24}
+          className='text-base400'
+        />
       </CyDTouchView>
     </CyDView>
   );
@@ -141,14 +146,14 @@ function RenderCountryDecline({
                 onPress={() => {
                   closeModal();
                   if (data?.navigation)
-                    data?.navigation?.navigate(
-                      screenTitle.INTERNATIONAL_CARD_CONTROLS,
-                      {
+                    data?.navigation?.navigate(screenTitle.CARD, {
+                      screen: screenTitle.INTERNATIONAL_CARD_CONTROLS,
+                      params: {
                         cardId: data?.cardId,
                         currentCardProvider: data?.provider,
                         cardControlType: CardControlTypes.INTERNATIONAL,
                       },
-                    );
+                    });
                 }}
                 style={'p-[15px] w-[48%]'}
               />
@@ -197,9 +202,10 @@ function RenderCountryDecline({
         <CyDView className='flex-1 flex-col justify-between'>
           <CyDView />
           <CyDView>
-            <CyDImage
-              source={AppImages.ERROR_EXCLAMATION_RED_BG_ROUNDED}
-              className='w-[60px] h-[60px] self-center'
+            <CydMaterialDesignIcons
+              name='alert-circle'
+              size={60}
+              className='text-red400 self-center'
             />
 
             <CyDText className='text-[18px] text-center font-medium mt-[12px]'>
@@ -253,24 +259,30 @@ function RenderCardNotActivatedOrBlocked({
   const pressButton = () => {
     closeModal();
     if (data?.navigation && !isBlocked)
-      data?.navigation?.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
-        currentCardProvider: data?.provider,
-        card: { cardId: data?.cardId },
+      data?.navigation?.navigate(screenTitle.CARD, {
+        screen: screenTitle.CARD_ACTIAVTION_SCREEN,
+        params: {
+          currentCardProvider: data?.provider,
+          card: { cardId: data?.cardId },
+        },
       });
     if (data?.navigation && isBlocked)
-      data?.navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
-        onSuccess: () => {
-          showModal('state', {
-            type: 'success',
-            title: t('CHANGE_CARD_STATUS_SUCCESS'),
-            description: `Successfully unlocked your card!`,
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
+      data?.navigation?.navigate(screenTitle.CARD, {
+        screen: screenTitle.CARD_UNLOCK_AUTH,
+        params: {
+          onSuccess: () => {
+            showModal('state', {
+              type: 'success',
+              title: t('CHANGE_CARD_STATUS_SUCCESS'),
+              description: `Successfully unlocked your card!`,
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          },
+          currentCardProvider: data?.provider,
+          card: { cardId: data?.cardId },
+          authType: CardOperationsAuthType.UNBLOCK,
         },
-        currentCardProvider: data?.provider,
-        card: { cardId: data?.cardId },
-        authType: CardOperationsAuthType.UNBLOCK,
       });
   };
   return (

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -29,6 +30,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { screenTitle } from '../../../constants';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: string;
@@ -69,6 +71,7 @@ export default function LockdownMode() {
   useEffect(() => {
     if (isFocused) {
       void onRefresh();
+      setLoading(false);
     }
   }, [isFocused]);
 
@@ -111,7 +114,10 @@ export default function LockdownMode() {
             setLoading(false);
             void onRefresh();
           },
-          onFailure: hideModal,
+          onFailure: () => {
+            hideModal();
+            setLoading(false);
+          },
         });
       },
       currentCardProvider,
@@ -121,31 +127,36 @@ export default function LockdownMode() {
 
   return (
     <>
-      <SafeAreaView style={styles.topSafeArea}>
+      <SafeAreaView className='bg-n20 flex-1'>
         <CyDView className='flex flex-col h-full justify-between'>
-          <CyDView className='bg-cardBg pb-[16px]'>
-            <CyDView className='flex flex-row mx-[20px]'>
+          <CyDView className='pb-[16px]'>
+            <CyDView className='flex flex-row mx-[20px] bg-n20'>
               <CyDTouchView
                 onPress={() => {
                   navigation.goBack();
                 }}>
-                <CyDImage
-                  source={AppImages.BACK_ARROW_GRAY}
-                  className='w-[32px] h-[32px]'
+                <CyDIconsPack
+                  name='arrow-left'
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
               <CyDView className='w-[calc(100% - 40px)] mx-auto'>
-                <CyDText className='font-semibold text-black text-center -ml-[24px] text-[20px]'>
+                <CyDText className='font-semibold text-base400 text-center -ml-[24px] text-[20px]'>
                   {t('LOCKDOWN_MODE')}
                 </CyDText>
               </CyDView>
             </CyDView>
 
-            <CyDView className='mt-[28px] rounded-[16px] bg-white items-center mx-[16px] py-[24px] px-[24px]'>
-              <CyDImage
-                source={AppImages.LOCKDOWN_MODE_IMAGE}
-                className='h-[112px] w-[112px] my-[24px]'
-              />
+            <CyDView className='mt-[28px] rounded-[16px] bg-n0 items-center mx-[16px] py-[24px] px-[24px]'>
+              <CyDView className='rounded-lg h-[112px] w-[112px] my-[24px] bg-n20 flex flex-row items-center justify-center'>
+                <CydMaterialDesignIcons
+                  name='hand-front-right'
+                  size={70}
+                  className='text-p100 self-center'
+                />
+              </CyDView>
+
               <CyDText className='text-[16px] text-center'>
                 {t('LOCKDOWN_MODE_DESC_TEXT_1')}
               </CyDText>
@@ -200,10 +211,3 @@ export default function LockdownMode() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  topSafeArea: {
-    flex: 0,
-    backgroundColor: '#EBEDF0',
-  },
-});

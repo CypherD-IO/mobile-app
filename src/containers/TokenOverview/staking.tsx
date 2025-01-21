@@ -9,7 +9,6 @@ import * as Sentry from '@sentry/react-native';
 import { ethers } from 'ethers';
 import { t } from 'i18next';
 import { random } from 'lodash';
-import LottieView from 'lottie-react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { RefreshControl, StyleSheet } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -43,6 +42,8 @@ import {
 } from '../../reducers/cosmosStakingReducer';
 import {
   CyDImage,
+  CyDLottieView,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -460,17 +461,18 @@ export default function TokenStaking({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setClaimModal(false)}
             className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDView>
-            <LottieView
+            <CyDLottieView
               source={AppImages.NEW}
               autoPlay
               loop
@@ -528,15 +530,16 @@ export default function TokenStaking({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setSignModalVisible(false);
             }}
             className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
@@ -558,10 +561,10 @@ export default function TokenStaking({
           </CyDView>
 
           <CyDView className={'flex flex-row mt-[20px]'}>
-            <CyDImage
-              source={AppImages.GAS_FEES}
-              className='h-[16px] w-[16px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='gas-station'
+              size={20}
+              className='text-base400'
             />
             <CyDView className={' flex flex-row mt-[3px]'}>
               <CyDText className={' font-medium text-[16px] ml-[10px] '}>
@@ -603,17 +606,16 @@ export default function TokenStaking({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setReStakeModalVisible(false);
             }}
             className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={
-                ' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '
-              }
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
@@ -633,10 +635,10 @@ export default function TokenStaking({
           </CyDView>
 
           <CyDView className={'flex flex-row mt-[20px]'}>
-            <CyDImage
-              source={AppImages.GAS_FEES}
-              className={'w-[16px] h-[16px] mt-[3px]'}
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='gas-station'
+              size={20}
+              className='text-base400 mt-[3px]'
             />
             <CyDView className={' flex flex-row mt-[3px]'}>
               <CyDText className={' font-medium text-[16px] ml-[10px] '}>
@@ -717,7 +719,7 @@ export default function TokenStaking({
                   style={'w-4/12 p-[4%]'}
                 />
               </CyDView>
-              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+              <CyDView className={'w-10/12 h-[1px] bg-n40 mx-[30px]'} />
             </CyDView>
           )}
 
@@ -757,7 +759,7 @@ export default function TokenStaking({
                     style={'w-4/12 p-[4%]'}
                   />
                 </CyDView>
-                <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+                <CyDView className={'w-10/12 h-[1px] bg-n40 mx-[30px]'} />
               </CyDView>
             )}
 
@@ -793,7 +795,7 @@ export default function TokenStaking({
                   type={'ternary'}
                 />
               </CyDView>
-              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+              <CyDView className={'w-10/12 h-[1px] bg-n40 mx-[30px]'} />
             </CyDView>
           )}
 
@@ -829,7 +831,7 @@ export default function TokenStaking({
                   style={'w-4/12 p-[4%]'}
                 />
               </CyDView>
-              <CyDView className={'w-full h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+              <CyDView className={'w-full h-[1px] bg-n40 mx-[30px]'} />
             </CyDView>
           )}
 
@@ -845,7 +847,7 @@ export default function TokenStaking({
                 />
                 <CyDText
                   className={
-                    'text-center w-3/4  text-[20px] font-semibold text-secondaryTextColor'
+                    'text-center w-3/4  text-[20px] font-semibold'
                   }>{`${t<string>(
                   'STAKE_YOUR_TEXT',
                 )} ${tokenData.name.toLowerCase()} ${t<string>(
@@ -883,7 +885,7 @@ export default function TokenStaking({
             stakingVariables.totalUnboundings !== '0') && (
             <CyDView
               className={
-                'bg-[#F6F7FF] rounded-[8px] px-[46px] py-[16px] mx-[16px] my-[18px] flex flex-col items-center'
+                'bg-n30 rounded-[8px] px-[46px] py-[16px] mx-[16px] my-[18px] flex flex-col items-center'
               }>
               <CyDView className={'flex flex-row items-center justify-center'}>
                 <CyDImage
@@ -892,7 +894,7 @@ export default function TokenStaking({
                 />
                 <CyDText
                   className={
-                    'text-center w-3/4  text-[14px] font-bold text-secondaryTextColor'
+                    'text-center w-3/4 text-[14px] font-bold text-base400'
                   }>{`${t<string>(
                   'STAKE_YOUR_TEXT',
                 )} ${tokenData.name.toLowerCase()} ${t<string>(
@@ -906,12 +908,10 @@ export default function TokenStaking({
 
               <CyDView className={'flex flex-row mt-[12px] '}>
                 <CyDText
-                  className={
-                    'mr-[6px] font-[14px] text-subTextColor font-semibold '
-                  }>
+                  className={'mr-[6px] text-[14px] text-n100 font-semibold '}>
                   {t<string>('UNBOUNDING_PERIOD_IS')}
                 </CyDText>
-                <CyDText className={'font-[16px]  font-bold '}>
+                <CyDText className={'text-[16px]  font-bold '}>
                   {unboundingPeriodInDays} {t('DAYS')}
                 </CyDText>
               </CyDView>

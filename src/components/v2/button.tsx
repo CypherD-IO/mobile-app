@@ -4,17 +4,17 @@ import {
   CyDView,
   CyDTouchView,
   CyDImage,
+  CyDLottieView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
-import LottieView from 'lottie-react-native';
 import AppImages from '../../../assets/images/appImages';
 import { AppState, Keyboard, StyleSheet } from 'react-native';
-import { ButtonType, ImagePosition } from '../../constants/enum';
+import { ButtonType, IconPosition, ImagePosition } from '../../constants/enum';
 import { HdWalletContext } from '../../core/util';
 interface IButton {
   onPress: () => void;
   loading?: boolean;
-  type?: string;
+  type?: ButtonType;
   disabled?: boolean;
   title: string;
   style?: string;
@@ -26,11 +26,13 @@ interface IButton {
   imagePosition?: string;
   isPrivateKeyDependent?: boolean;
   paddingY?: number;
+  icon?: React.ReactNode;
+  iconPosition?: IconPosition;
 }
 export default function Button({
   onPress,
   loading = false,
-  type = 'primary',
+  type = ButtonType.PRIMARY,
   disabled = false,
   title,
   style = 'p-[3%]',
@@ -42,6 +44,8 @@ export default function Button({
   imagePosition = ImagePosition.LEFT,
   isPrivateKeyDependent = false,
   paddingY,
+  icon,
+  iconPosition = IconPosition.LEFT,
 }: IButton) {
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState();
@@ -80,22 +84,21 @@ export default function Button({
         `rounded-[12px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
-          'bg-white border-[1px]  border-greyButtonBackgroundColor':
+          'bg-n0 border-[1px]  border-greyButtonBackgroundColor':
             ButtonType.SECONDARY === type,
-          'bg-white border-[1px] border-buttonColor':
-            ButtonType.TERNARY === type,
-          'bg-white border-[1px] border-greyButtonBackgroundColor':
+          'bg-n0 border-[1px] border-buttonColor': ButtonType.TERNARY === type,
+          'bg-n0 border-[1px] border-greyButtonBackgroundColor':
             ButtonType.GREY === type,
           'bg-n20': ButtonType.GREY_FILL === type,
           'bg-red300': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
           'bg-n40': disabled,
-          'bg-white': ButtonType.WHITE_FILL === type,
+          'bg-n0': ButtonType.WHITE_FILL === type,
         },
       )}>
       {loading && (
         <CyDView className={'flex items-center justify-between'}>
-          <LottieView
+          <CyDLottieView
             source={AppImages.LOADER_TRANSPARENT}
             autoPlay
             loop
@@ -106,6 +109,7 @@ export default function Button({
       {!loading &&
         image &&
         !isLottie &&
+        !icon &&
         imagePosition === ImagePosition.LEFT && (
           <CyDImage
             source={image}
@@ -113,8 +117,15 @@ export default function Button({
             resizeMode='contain'
           />
         )}
+      {!loading &&
+        !image &&
+        !isLottie &&
+        icon &&
+        iconPosition === IconPosition.LEFT && (
+          <CyDView className=''>{icon}</CyDView>
+        )}
       {!loading && image && isLottie && (
-        <LottieView
+        <CyDLottieView
           source={image}
           ref={ref => setAnimation(ref)}
           resizeMode={'contain'}
@@ -125,16 +136,31 @@ export default function Button({
       )}
       {!loading && (
         <CyDText
-          className={clsx(
-            `text-[#525252]  font-extrabold text-center ${titleStyle}`,
-            { 'ml-[5px]': isLocked },
-          )}>
+          className={clsx(`font-extrabold text-center ${titleStyle}`, {
+            'ml-[5px]': isLocked,
+            'text-white': [ButtonType.RED, ButtonType.DARK].includes(type),
+            'text-base400': [
+              ButtonType.SECONDARY,
+              ButtonType.TERNARY,
+              ButtonType.WHITE_FILL,
+              ButtonType.GREY_FILL,
+            ].includes(type),
+            'text-black': ![
+              ButtonType.RED,
+              ButtonType.DARK,
+              ButtonType.TERNARY,
+              ButtonType.SECONDARY,
+              ButtonType.WHITE_FILL,
+              ButtonType.GREY_FILL,
+            ].includes(type),
+          })}>
           {title}
         </CyDText>
       )}
       {!loading &&
         image &&
         !isLottie &&
+        !icon &&
         imagePosition === ImagePosition.RIGHT && (
           <CyDImage
             source={image}
@@ -142,6 +168,11 @@ export default function Button({
             resizeMode='contain'
           />
         )}
+      {!loading &&
+        !image &&
+        !isLottie &&
+        icon &&
+        iconPosition === IconPosition.RIGHT && <>{icon}</>}
     </CyDTouchView>
   );
 }

@@ -3,10 +3,10 @@ import { StatusBar } from 'react-native';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
   CyDTouchView,
   CyDImage,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -31,15 +31,16 @@ import useAxios from '../../../core/HttpRequest';
 import { capitalize, get } from 'lodash';
 import { CardProfile } from '../../../models/cardProfile.model';
 import CyDSkeleton from '../../../components/v2/skeleton';
-import { getCountryNameFromISO2 } from '../../../core/locale';
 import OtpVerificationModal from '../../../components/v2/card/otpVerification';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
 import { screenTitle } from '../../../constants';
-import { isAndroid, isIOS } from '../../../misc/checkers';
+import { isAndroid } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -49,6 +50,7 @@ interface RouteParams {
   physicalCardType?: PhysicalCardType;
 }
 export default function ShippingCheckout() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const {
@@ -179,13 +181,13 @@ export default function ShippingCheckout() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('DELIVERING_TO')}</CyDText>
-        <CyDView className='flex flex-col gap-y-[16px] bg-white rounded-[12px] px-[16px] pb-[16px] mt-[4px]'>
+        <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] my-[4px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='flex flex-row items-center gap-x-[12px]'>
-              <CyDImage
-                source={AppImages.WALLET}
-                className='w-[24px] h-[24px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name='wallet-bifold-outline'
+                size={28}
+                className='text-base400'
               />
               <CyDText className='text-[16px] font-bold'>
                 {t('SHIPPING_ADDRESS')}
@@ -221,13 +223,13 @@ export default function ShippingCheckout() {
 
   const RenderShippingCharges = useCallback(() => {
     return (
-      <CyDView className='flex flex-col bg-white rounded-[12px]'>
+      <CyDView className='flex flex-col bg-n0 rounded-[12px]'>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
-            <CyDImage
-              source={AppImages.MANAGE_CARD}
-              className='w-[24px] h-[24px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='credit-card-outline'
+              size={24}
+              className='text-base400'
             />
             <CyDText>
               {physicalCardType === PhysicalCardType.METAL
@@ -243,10 +245,10 @@ export default function ShippingCheckout() {
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
-            <CyDImage
-              source={AppImages.ENVELOPE}
-              className='w-[24px] h-[24px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='truck'
+              size={24}
+              className='text-base400'
             />
             <CyDText>{t('SHIPPING_CHARGES')}</CyDText>
           </CyDView>
@@ -283,7 +285,7 @@ export default function ShippingCheckout() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('NAME_ON_CARD')}</CyDText>
-        <CyDView className='flex flex-row justify-between bg-white rounded-[12px] p-[16px] mt-[4px]'>
+        <CyDView className='flex flex-row justify-between bg-n0 rounded-[12px] p-[16px] mt-[4px]'>
           <CyDText className='text-[16px]'>{preferredName}</CyDText>
         </CyDView>
       </CyDView>
@@ -294,7 +296,7 @@ export default function ShippingCheckout() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('PAYING_FROM')}</CyDText>
-        <CyDView className='bg-white rounded-[12px] p-[4px] mt-[4px]'>
+        <CyDView className='bg-n0 rounded-[12px] p-[4px] mt-[4px]'>
           <CyDView className='flex flex-row justify-between items-center px-[16px] py-[4px]'>
             <CyDView className='flex flex-row gap-x-[12px] items-center'>
               <CyDView className='p-[6px] bg-n20 rounded-[12px]'>
@@ -321,7 +323,7 @@ export default function ShippingCheckout() {
   }, [balance]);
 
   return (
-    <CyDSafeAreaView className='bg-n20 h-full'>
+    <CyDView className='bg-n20 h-full' style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <OtpVerificationModal
         isModalVisible={isOTPModalVisible}
@@ -332,17 +334,18 @@ export default function ShippingCheckout() {
           void onConfirm(otp);
         }}
       />
-      <CyDView className='flex flex-1 flex-col justify-between h-full bg-transparent'>
-        <CyDView className='mx-[16px] flex-1 pb-[92px]'>
+      <CyDView className='flex flex-1 flex-col justify-between h-full'>
+        <CyDView className='mx-[16px] flex-1'>
           <CyDView className='flex-row items-center justify-between'>
             <CyDTouchView
               onPress={() => {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
+              <CyDIconsPack
+                name='arrow-left'
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -359,6 +362,9 @@ export default function ShippingCheckout() {
                 {t('PHYSICAL_CARD_CONFIRMATION_SUB')}
               </CyDText>
             </CyDView>
+            <CyDView className='mb-[24px]'>
+              <RenderPaymentMethod />
+            </CyDView>
             <RenderShippingCharges />
             <CyDView className='mt-[24px]'>
               <RenderNameOnCard />
@@ -366,19 +372,10 @@ export default function ShippingCheckout() {
             <CyDView className='mt-[24px]'>
               <RenderShippingAddress />
             </CyDView>
-            <CyDView className='mt-[24px] mb-[32px]'>
-              <RenderPaymentMethod />
-            </CyDView>
           </CyDScrollView>
         </CyDView>
 
-        <CyDView
-          className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
-            {
-              'bottom-[-32px]': isIOS(),
-            },
-          )}>
+        <CyDView className={clsx('w-full bg-n0 py-[32px] px-[16px]')}>
           <Button
             onPress={() => {
               setIsOTPModalVisible(true);
@@ -390,6 +387,6 @@ export default function ShippingCheckout() {
           />
         </CyDView>
       </CyDView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

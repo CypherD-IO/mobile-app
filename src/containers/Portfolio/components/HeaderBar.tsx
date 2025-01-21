@@ -1,13 +1,12 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
-  CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { Chain, QRScannerScreens } from '../../../constants/server';
-import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { ConnectionTypes } from '../../../constants/enum';
@@ -15,6 +14,7 @@ import useConnectionManager from '../../../hooks/useConnectionManager';
 import { HdWalletContext } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import { t } from 'i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderBarProps {
   navigation: any;
@@ -31,6 +31,7 @@ export const HeaderBar = ({
   onWCSuccess,
   renderTitleComponent,
 }: HeaderBarProps) => {
+  const insets = useSafeAreaInsets();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { connectionType } = useConnectionManager();
@@ -50,20 +51,24 @@ export const HeaderBar = ({
           setChooseChain(true);
         }}
         className={
-          'h-[40px] w-[54px] bg-chainColor px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border border-sepratorColor'
+          'h-[40px] w-[54px] bg-blue20 px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border-[0.5px] border-n40'
         }>
         <CyDFastImage
           className={'h-[22px] w-[22px]'}
           source={selectedChain.logo_url}
         />
-        <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
+        <CydMaterialDesignIcons
+          name='menu-down'
+          size={26}
+          className='text-base400 mr-2'
+        />
       </CyDTouchView>
       {isReadOnlyWallet && (
         <CyDView className='flex flex-row items-center p-[6px] bg-p20 rounded-[8px]'>
-          <CyDFastImage
-            source={AppImages.LOCK_BROWSER}
-            className={'h-[14px] w-[14px] mr-[5px] '}
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name='lock'
+            size={20}
+            className='text-base400 mr-[5px]'
           />
           <CyDText className='text-[14px] font-medium'>
             {t('READ_ONLY_MODE')}
@@ -80,10 +85,10 @@ export const HeaderBar = ({
               onSuccess,
             });
           }}>
-          <CyDFastImage
-            source={AppImages.QR_CODE_SCANNER_BLACK}
-            className={'h-[23px] w-[23px] mt-[5px]'}
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name='qrcode-scan'
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
       )}

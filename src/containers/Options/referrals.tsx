@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  Linking,
-  Share,
-  Clipboard,
-  StatusBar,
-} from 'react-native';
+import { ScrollView, Linking, Share, Clipboard } from 'react-native';
 import {
   CyDImage,
+  CyDLottieView,
+  CydMaterialDesignIcons,
+  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import useAxios from '../../core/HttpRequest';
-import LottieView from 'lottie-react-native';
 import { t } from 'i18next';
 import Button from '../../components/v2/button';
 import { ButtonType, CardApplicationStatus } from '../../constants/enum';
@@ -28,6 +23,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { CyDIconsPack } from '../../customFonts';
 
 const copyToClipboard = (text: string) => {
   Clipboard.setString(text);
@@ -129,33 +125,36 @@ const ReferralInfo = ({
   referralLink: string;
   referralCode: string;
 }) => (
-  <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[12px]'>
+  <CyDView className='flex flex-col bg-n0 rounded-[8px] mt-[12px]'>
     <CyDView className='flex flex-row items-center justify-between p-[16px]'>
       <CyDText className='font-[500]'>{t('LINK')}</CyDText>
       <CyDView className='flex flex-row items-center'>
         <CyDText className='text-[12px]'>{referralLink}</CyDText>
         <CyDTouchView onPress={() => copyToClipboard(referralLink)}>
-          <CyDImage
-            source={AppImages.COPY_DARK}
-            className='w-[24px] h-[24px] ml-[8px]'
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={16}
+            className='text-base400'
           />
         </CyDTouchView>
       </CyDView>
     </CyDView>
-    <CyDView className='h-[1px] bg-cardBg' />
+
+    <CyDView className='h-[1px] bg-n40' />
     <CyDView className='flex flex-row items-center justify-between p-[16px]'>
       <CyDText className='font-[500]'>{t('CODE')}</CyDText>
       <CyDView className='flex flex-row items-center'>
         <CyDText className='font-bold'>{referralCode}</CyDText>
         <CyDTouchView onPress={() => copyToClipboard(referralCode)}>
-          <CyDImage
-            source={AppImages.COPY_DARK}
-            className='w-[24px] h-[24px] ml-[8px]'
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={20}
+            className='text-base400 ml-[8px]'
           />
         </CyDTouchView>
       </CyDView>
     </CyDView>
-    <CyDView className='h-[1px] bg-cardBg' />
+    <CyDView className='h-[1px] bg-n40' />
     <ShareVia referralLink={referralLink} />
   </CyDView>
 );
@@ -193,15 +192,14 @@ const PointsInfo = ({
       <CyDView className='flex flex-row items-center justify-between p-[16px]'>
         <CyDView>
           <CyDView className='flex-row items-center'>
-            <CyDText className='font-[500] font-[500]'>
-              {trimmedAddress}
-            </CyDText>
+            <CyDText className='font-medium'>{trimmedAddress}</CyDText>
             <CyDTouchView
               onPress={() => copyToClipboard(masterAddress)}
               className='ml-[8px]'>
-              <CyDImage
-                source={AppImages.COPY_DARK}
-                className='w-[16px] h-[16px]'
+              <CydMaterialDesignIcons
+                name={'content-copy'}
+                size={20}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -231,7 +229,7 @@ const PointsInfo = ({
           </CyDView>
         )}
       </CyDView>
-      <CyDView className='h-[1px] bg-cardBg' />
+      <CyDView className='h-[1px] bg-n20' />
     </>
   );
 };
@@ -261,10 +259,8 @@ const getReferralStatus = (applicationStatus: string) => {
 const HowItWorks = () => {
   return (
     <CyDView className='mt-[24px]'>
-      <CyDText className='text-[16px] font-[500] text-black'>
-        {t('HOW_IT_WORKS')}
-      </CyDText>
-      <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px] p-[24px]'>
+      <CyDText className='text-[16px] font-[500'>{t('HOW_IT_WORKS')}</CyDText>
+      <CyDView className='flex flex-col bg-n0 rounded-[8px] mt-[6px] p-[24px]'>
         <CyDView className='flex flex-row items-center justify-between'>
           <CyDImage
             className='h-[78px] w-[70px] mr-[20px]'
@@ -394,113 +390,112 @@ export default function Referrals() {
   };
 
   return (
-    <>
-      <SafeAreaView className='flex bg-cardBg h-full'>
-        <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
-        <NewReferralCodeModal
-          isModalVisible={isModalVisible}
-          setIsModalVisible={setIsModalVisible}
-          createReferralCode={createReferralCode}
-          code={code}
-          setCode={setCode}
-        />
-        <CyDView className='flex-row items-center justify-between mx-[16px]'>
-          <CyDTouchView
-            onPress={() => {
-              navigation.goBack();
-            }}
-            className='w-[36px] h-[36px]'>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[36px] h-[36px]'
-            />
-          </CyDTouchView>
-          <CyDView className='flex-1 '>
-            <CyDText className='text-[16px] font-bold -ml-[16px] text-center'>
-              {t('REFERRALS')}
-            </CyDText>
-          </CyDView>
+    <CyDSafeAreaView className='flex bg-n20 h-full'>
+      <NewReferralCodeModal
+        isModalVisible={isModalVisible}
+        setIsModalVisible={setIsModalVisible}
+        createReferralCode={createReferralCode}
+        code={code}
+        setCode={setCode}
+      />
+      <CyDView className='flex-row items-center justify-between mx-[16px]'>
+        <CyDTouchView
+          onPress={() => {
+            navigation.goBack();
+          }}
+          className='w-[36px] h-[36px]'>
+          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        </CyDTouchView>
+        <CyDView className='flex-1 '>
+          <CyDText className='text-[16px] font-bold -ml-[16px] text-center'>
+            {t('REFERRALS')}
+          </CyDText>
         </CyDView>
-        <ScrollView className='mt-[16px]'>
-          <CyDView className='flex flex-col px-[16px] mb-[24px]'>
-            <CyDText className='text-[22px] font-bold'>
-              Bring a <CyDText className='text-mandarin'>friend along</CyDText>{' '}
-              and unlock rewards when they shop with us
-            </CyDText>
-            <CyDText className='text-[14px] font-[500] text-n200 mt-[6px]'>
-              because good things are better shared!
-            </CyDText>
-            <CyDView className='mt-[32px] items-center'>
-              <CyDImage
-                source={AppImages.REFERRALS_HERO_IMG}
-                className='w-[234px] h-[216px]'
-              />
-            </CyDView>
-            <CyDView className='flex flex-row items-center justify-between'>
-              <CyDText className='text-[16px] font-[500] text-black'>
-                {t('REFER_VIA')}
-              </CyDText>
-              <Button
-                type={ButtonType.SECONDARY}
-                title={t('NEW_CODE')}
-                image={AppImages.CIRCULAR_PLUS}
-                imageStyle='w-[16px] h-[16px] mr-[4px]'
-                onPress={() => {
-                  setIsModalVisible(true);
-                }}
-                style='p-[8px] w-[113px]'
-                titleStyle='text-black'
-                loading={createReferralCodeLoading}
-                loaderStyle={{
-                  height: 22,
-                  width: 22,
-                }}
-              />
-            </CyDView>
-            {!referralDataLoading &&
-              referralData?.referralCodes.map((code, index) => (
-                <ReferralInfo
-                  key={index}
-                  referralLink={`https://app.cypherhq.io/card/referral/${code}`}
-                  referralCode={code}
-                />
-              ))}
-            {referralDataLoading && (
-              <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px] p-[8px] items-center justify-center'>
-                <LottieView
-                  source={AppImages.LOADER_TRANSPARENT}
-                  autoPlay
-                  loop
-                  style={{
-                    width: 30,
-                    height: 30,
-                  }}
-                />
-              </CyDView>
-            )}
-            {!referralDataLoading && (
-              <CyDView className='mt-[24px]'>
-                <CyDText className='text-[16px] font-[500] text-black'>
-                  {t('POINTS_EARNED')}
-                </CyDText>
-
-                <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px]'>
-                  {referralData?.referrals.length > 0 ? (
-                    referralData?.referrals.map((referral, key) => (
-                      <PointsInfo key={key} referral={referral} />
-                    ))
-                  ) : (
-                    <CyDText className='text-[14px] font-[500] m-[16px] text-center'>
-                      {t('NO_REFERRALS_YET_MESSAGE')}
-                    </CyDText>
-                  )}
-                </CyDView>
-              </CyDView>
-            )}
-            <HowItWorks />
+      </CyDView>
+      <ScrollView className='mt-[16px]'>
+        <CyDView className='flex flex-col px-[16px] mb-[24px]'>
+          <CyDText className='text-[22px] font-bold'>
+            Bring a <CyDText className='text-mandarin'>friend along</CyDText>{' '}
+            and unlock rewards when they shop with us
+          </CyDText>
+          <CyDText className='text-[14px] font-[500] text-n200 mt-[6px]'>
+            because good things are better shared!
+          </CyDText>
+          <CyDView className='mt-[32px] items-center'>
+            <CyDImage
+              source={AppImages.REFERRALS_HERO_IMG}
+              className='w-[234px] h-[216px]'
+            />
           </CyDView>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+          <CyDView className='flex flex-row items-center justify-between'>
+            <CyDText className='text-[16px] font-[500]'>
+              {t('REFER_VIA')}
+            </CyDText>
+            <Button
+              type={ButtonType.SECONDARY}
+              title={t('NEW_CODE')}
+              icon={
+                <CydMaterialDesignIcons
+                  name='plus-circle'
+                  size={20}
+                  className='text-base400 mr-[4px]'
+                />
+              }
+              onPress={() => {
+                setIsModalVisible(true);
+              }}
+              style='p-[8px] w-[113px]'
+              titleStyle=''
+              loading={createReferralCodeLoading}
+              loaderStyle={{
+                height: 22,
+                width: 22,
+              }}
+            />
+          </CyDView>
+          {!referralDataLoading &&
+            referralData?.referralCodes.map((code, index) => (
+              <ReferralInfo
+                key={index}
+                referralLink={`https://app.cypherhq.io/card/referral/${code}`}
+                referralCode={code}
+              />
+            ))}
+          {referralDataLoading && (
+            <CyDView className='flex flex-col bg-n0 rounded-[8px] mt-[6px] p-[8px] items-center justify-center'>
+              <CyDLottieView
+                source={AppImages.LOADER_TRANSPARENT}
+                autoPlay
+                loop
+                style={{
+                  width: 30,
+                  height: 30,
+                }}
+              />
+            </CyDView>
+          )}
+          {!referralDataLoading && (
+            <CyDView className='mt-[24px]'>
+              <CyDText className='text-[16px] font-medium'>
+                {t('POINTS_EARNED')}
+              </CyDText>
+
+              <CyDView className='flex flex-col bg-n0 rounded-[8px] mt-[6px]'>
+                {referralData?.referrals.length > 0 ? (
+                  referralData?.referrals.map((referral, key) => (
+                    <PointsInfo key={key} referral={referral} />
+                  ))
+                ) : (
+                  <CyDText className='text-[14px] font-[500] m-[16px] text-center'>
+                    {t('NO_REFERRALS_YET_MESSAGE')}
+                  </CyDText>
+                )}
+              </CyDView>
+            </CyDView>
+          )}
+          <HowItWorks />
+        </CyDView>
+      </ScrollView>
+    </CyDSafeAreaView>
   );
 }
