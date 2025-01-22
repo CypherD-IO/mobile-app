@@ -13,7 +13,8 @@ import {
   CyDTouchView,
   CyDTextInput,
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import { useTranslation } from 'react-i18next';
@@ -199,7 +200,7 @@ export default function CosmosValidators({ route, navigation }) {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDView className={'-mt-[10px] bg-n0'}>
           {from === CosmosActionType.STAKE && (
@@ -225,7 +226,7 @@ export default function CosmosValidators({ route, navigation }) {
           <CyDTouchView
             onPress={() => setShowManage(false)}
             className={'z-[50]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400 z-[50] absolute right-[0px] '
@@ -317,7 +318,7 @@ export default function CosmosValidators({ route, navigation }) {
       </CyDModalLayout>
 
       <CyDView className='drop-shadow-md flex-row items-center border border-n40 rounded-[20px] m-[10px]'>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='magnify'
           size={20}
           className='text-base400 p-[10px] m-1'

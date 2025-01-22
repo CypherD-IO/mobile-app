@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -111,11 +112,7 @@ export default function WithdrawHistory() {
                 currentCardProvider,
               });
             }}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
           <CyDText className='text-[16px] font-bold text-base400'>
             {t('WITHDRAW_HISTORY')}
@@ -165,7 +162,7 @@ export default function WithdrawHistory() {
                         }}>
                         {transaction.transactionHash}
                       </CyDText>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='open-in-new'
                         size={14}
                         className='text-base400'

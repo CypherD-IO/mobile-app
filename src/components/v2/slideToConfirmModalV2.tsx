@@ -14,7 +14,7 @@ import Animated, {
 import clsx from 'clsx';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
@@ -123,7 +123,7 @@ const SlideToConfirmV2 = ({
                   {acceptLoading ? (
                     <ActivityIndicator color='white' />
                   ) : (
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={
                         confirmed
                           ? isError

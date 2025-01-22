@@ -7,7 +7,7 @@ import { DynamicTouchView } from '../styles/viewStyle';
 import { PayModalParams } from '../types/Browser';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDView,
 } from '../styles/tailwindStyles';
 import Button from './v2/button';
@@ -61,7 +61,7 @@ export default function BottomConfirm(props: {
             onPress={() => {
               onCancelPress();
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'

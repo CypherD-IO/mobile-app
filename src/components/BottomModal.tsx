@@ -7,7 +7,7 @@ import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicScrollView, DynamicTouchView } from '../styles/viewStyle';
-import { CydMaterialDesignIcons } from '../styles/tailwindStyles';
+import { CyDMaterialDesignIcons } from '../styles/tailwindStyles';
 
 const { CText, DynamicView } = require('../styles');
 
@@ -59,7 +59,7 @@ export default function BottomModal(props: any) {
               onPress={() => {
                 onCancelPress();
               }}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'

@@ -30,6 +30,8 @@ import {
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
+  CyDIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDTouchView,
@@ -90,11 +92,7 @@ export function AddressBook() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
           <CyDView className='flex-1 items-center mr-[20px]'>
             <SwitchView

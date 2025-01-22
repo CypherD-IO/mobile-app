@@ -1,7 +1,8 @@
 import {
   CyDFlatList,
+  CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -10,7 +11,6 @@ import CyDModalLayout from './modal';
 import { StyleSheet } from 'react-native';
 import * as React from 'react';
 import clsx from 'clsx';
-import { CyDIconsPack } from '../../customFonts/generator';
 
 enum typeOfChain {
   CHAIN = 'chain',
@@ -67,7 +67,7 @@ export default function ChooseChainModal({
           </CyDView>
 
           {item.item.name === selectedItem && type === typeOfChain.CHAIN && (
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='check-bold'
               size={16}
               className='text-base400 self-end'
@@ -113,7 +113,7 @@ export default function ChooseChainModal({
             setModalVisible(false);
           }}
           className={'self-end'}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400'
@@ -128,11 +128,7 @@ export default function ChooseChainModal({
           <CyDTouchView
             onPress={onPressBack}
             className={'absolute z-[50] top-[20px] left-[24px]'}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
         )}
         <CyDFlatList

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDSwitch,
   CyDText,
@@ -193,7 +193,7 @@ export default function AutoLoad() {
                 />
               </CyDView>
               <CyDView className='bg-n40 p-[4px] rounded-[25px]'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='pencil-outline'
                   size={18}
                   className='text-base400'
@@ -221,7 +221,7 @@ export default function AutoLoad() {
                   />
                 </CyDView>
                 <CyDView className='bg-n40 p-[4px] rounded-[25px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='pencil-outline'
                     size={18}
                     className='text-base400'
@@ -251,7 +251,7 @@ export default function AutoLoad() {
                     {capitalize(selectedToken?.chainDetails?.name) ?? 'Change'}
                   </CyDText>
 
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'chevron-down'}
                     size={16}
                     className={'text-base400 ml-2'}
@@ -288,7 +288,7 @@ export default function AutoLoad() {
                     </CyDText>
                   </CyDView>
                   <CyDView className='bg-n20 p-[4px] rounded-[25px] ml-[12px]'>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='pencil-outline'
                       size={18}
                       className='text-base400'
@@ -312,7 +312,7 @@ export default function AutoLoad() {
                     />
                   </CyDView>
                   <CyDView className='bg-n20 p-[4px] rounded-[25px]'>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='pencil-outline'
                       size={18}
                       className='text-base400'

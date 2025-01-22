@@ -7,6 +7,8 @@ import {
   CyDText,
   CyDSafeAreaView,
   CyDTouchView,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import OtpInput from '../../components/v2/OTPInput';
 import { screenTitle } from '../../constants';
@@ -60,11 +62,7 @@ export default function ConfirmPin() {
             onPress={() => {
               navigation.navigate(screenTitle.SET_PIN);
             }}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
         )}
         <CyDView>

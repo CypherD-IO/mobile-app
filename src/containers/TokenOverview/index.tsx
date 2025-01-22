@@ -3,7 +3,8 @@ import { StyleSheet, BackHandler } from 'react-native';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDAnimatedView,
-  CydMaterialDesignIcons,
+  CyDIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -117,7 +118,7 @@ function TokenOverviewV2() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
           {tokenData.name}

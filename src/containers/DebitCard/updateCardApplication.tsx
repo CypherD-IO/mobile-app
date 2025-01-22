@@ -14,7 +14,7 @@ import {
   CyDTextInput,
   CyDScrollView,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDIcons,
 } from '../../styles/tailwindStyles';
 import { GlobalContext } from '../../core/globalContext';
@@ -393,7 +393,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                                   {userInfo.country}
                                 </CyDText>
                               </CyDView>
-                              <CydMaterialDesignIcons
+                              <CyDMaterialDesignIcons
                                 name={'chevron-down'}
                                 size={16}
                                 className={'text-base400'}
@@ -545,7 +545,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                               )}
                             </CyDView>
 
-                            <CydMaterialDesignIcons
+                            <CyDMaterialDesignIcons
                               name='calendar-blank'
                               size={20}
                               className='text-base400 self-center items-center'

@@ -18,7 +18,7 @@ import axios from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDSwitch,
@@ -406,7 +406,7 @@ export default function CardControlsSettings() {
                     style='w-[84.5px] h-[30px]'
                     type={ButtonType.GREY_FILL}
                     icon={
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='circle-edit-outline'
                         size={16}
                         className='text-base400 mr-2'
@@ -422,7 +422,7 @@ export default function CardControlsSettings() {
               <>
                 <CyDView className='bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
                   <CyDView className='flex flex-row justify-between items-center'>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='airplane'
                       size={32}
                       className='text-base400'
@@ -460,7 +460,7 @@ export default function CardControlsSettings() {
                   <CyDView
                     className={`bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
                     <CyDView className='flex flex-row items-center'>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='earth'
                         size={24}
                         className='text-base400 mr-[8px]'
@@ -484,7 +484,7 @@ export default function CardControlsSettings() {
                       <CyDView>
                         <CyDText>{getAllowedCountiesText()}</CyDText>
                       </CyDView>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name={'chevron-down'}
                         size={24}
                         className={'text-base400 mr-3'}
@@ -560,7 +560,7 @@ export default function CardControlsSettings() {
                         }}
                         paddingY={6}
                         icon={
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='circle-edit-outline'
                             size={16}
                             className='text-base400 mr-2'
@@ -621,7 +621,7 @@ export default function CardControlsSettings() {
                           }}
                           paddingY={6}
                           icon={
-                            <CydMaterialDesignIcons
+                            <CyDMaterialDesignIcons
                               name='circle-edit-outline'
                               size={16}
                               className='text-base400 mr-2'
@@ -679,7 +679,7 @@ export default function CardControlsSettings() {
                         }}
                         paddingY={6}
                         icon={
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='circle-edit-outline'
                             size={16}
                             className='text-base400 mr-2'
@@ -723,7 +723,7 @@ export default function CardControlsSettings() {
                     {'Mobile Wallets'}
                   </CyDText>
                   <CyDView className='flex flex-row mt-[12px]'>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='information-outline'
                       size={14}
                       className='text-base400 mr-[6px]'
@@ -752,7 +752,7 @@ export default function CardControlsSettings() {
                         }}
                         paddingY={6}
                         icon={
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='circle-edit-outline'
                             size={16}
                             className='text-base400 mr-2'

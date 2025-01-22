@@ -6,7 +6,8 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -184,7 +185,7 @@ export default function ShippingCheckout() {
         <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] my-[4px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='flex flex-row items-center gap-x-[12px]'>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='wallet-bifold-outline'
                 size={28}
                 className='text-base400'
@@ -226,7 +227,7 @@ export default function ShippingCheckout() {
       <CyDView className='flex flex-col bg-n0 rounded-[12px]'>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='credit-card-outline'
               size={24}
               className='text-base400'
@@ -245,7 +246,7 @@ export default function ShippingCheckout() {
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='truck'
               size={24}
               className='text-base400'
@@ -342,11 +343,7 @@ export default function ShippingCheckout() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDScrollView

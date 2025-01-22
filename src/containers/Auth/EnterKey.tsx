@@ -48,9 +48,12 @@ import { HdWalletContext, sleepFor } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
+  CyDIcons,
+  CyDImage,
   CyDKeyboardAvoidingView,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDSafeAreaView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -194,7 +197,7 @@ export default function Login(props) {
                 onSuccess,
               });
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='qrcode-scan'
               size={24}
               className='text-base400'
@@ -247,7 +250,6 @@ export default function Login(props) {
 
   return (
     <CyDView className='flex-1 bg-n20' style={{ paddingTop: insets.top }}>
-      <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       {firstIndexAddress ? (
         <ChooseWalletIndexComponent
           walletAddresses={[{ address: firstIndexAddress, index: 0 }]}
@@ -258,9 +260,7 @@ export default function Login(props) {
           className='flex-1 h-full'
           keyboardShouldPersistTaps='handled'>
           {createWalletLoading && <Loading />}
-          <CyDKeyboardAvoidingView
-            keyboardVerticalOffset={56}
-            behavior={isAndroid() ? 'height' : 'padding'}>
+          <CyDView>
             <CyDView className='flex flex-col h-full justify-between'>
               <CyDView className=' pb-[16px]'>
                 <CyDView className='flex flex-row justify-around -mx-[20px]'>
@@ -268,7 +268,7 @@ export default function Login(props) {
                     onPress={() => {
                       props.navigation.goBack();
                     }}>
-                    <CyDIconsPack
+                    <CyDIcons
                       name='arrow-left'
                       size={24}
                       className='text-base400'
@@ -284,7 +284,7 @@ export default function Login(props) {
                         onSuccess,
                       });
                     }}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='qrcode-scan'
                       size={24}
                       className='text-base400'
@@ -314,7 +314,7 @@ export default function Login(props) {
                   />
                   {badKeyError && (
                     <CyDView className='flex flex-row items-center justify-center mt-[12px]'>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='cancel'
                         size={16}
                         className='text-red400'
@@ -334,7 +334,7 @@ export default function Login(props) {
                   titleStyle={'text-[14px] ml-[4px] font-medium text-n900'}
                   paddingY={6}
                   icon={
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='clipboard-text'
                       size={14}
                       className='text-n900'
@@ -359,7 +359,7 @@ export default function Login(props) {
                   loaderStyle={{ height: 25, width: 25 }}
                 />
                 <CyDView className='flex flex-row mt-[8px] justify-center'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='shield-lock'
                     size={16}
                     className='text-base400'
@@ -390,7 +390,7 @@ export default function Login(props) {
                 )}
               </CyDView>
             </CyDView>
-          </CyDKeyboardAvoidingView>
+          </CyDView>
         </CyDKeyboardAwareScrollView>
       )}
     </CyDView>

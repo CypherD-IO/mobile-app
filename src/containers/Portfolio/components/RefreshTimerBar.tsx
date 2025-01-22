@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -63,7 +63,7 @@ export const RefreshTimerBar = (props: {
   return (
     <CyDView className='bg-n0 flex flex-row justify-between rounded-t-[24px] border border-n40 py-[10px] px-[10px] mx-[10px]'>
       <CyDView className='flex flex-row items-center'>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='clock-time-four'
           size={20}
           className='text-base400'
@@ -85,7 +85,7 @@ export const RefreshTimerBar = (props: {
             'h-[15px] w-[15px] justify-center items-center rounded-[4px] border-[1px] border-base400',
           )}>
           {isVerifyCoinChecked && (
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='check-bold'
               size={12}
               className='text-base400'

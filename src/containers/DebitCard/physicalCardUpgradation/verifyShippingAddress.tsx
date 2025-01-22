@@ -6,7 +6,8 @@ import {
   CyDSafeAreaView,
   CyDTouchView,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -100,11 +101,7 @@ export default function VerifyShippingAddress() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDView className='my-[12px]'>
@@ -120,7 +117,7 @@ export default function VerifyShippingAddress() {
           <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] mt-[12px]'>
             <CyDView className='flex flex-row items-center justify-between'>
               <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='wallet-bifold-outline'
                   size={28}
                   className='text-base400'
@@ -203,7 +200,7 @@ export default function VerifyShippingAddress() {
               <CyDText className='text-[16px]'>
                 {t('ENTER_NEW_DELIVERY_ADDRESS')}
               </CyDText>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'arrow-right-thin'}
                 size={16}
                 className=''

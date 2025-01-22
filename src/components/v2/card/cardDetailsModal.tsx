@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -128,7 +128,7 @@ export default function CardDetailsModal({
             </CyDText>
           </CyDView>
           <CyDTouchView onPress={() => setShowModal(false)}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -153,7 +153,7 @@ export default function CardDetailsModal({
             </CyDText>
             <CyDView className='flex flex-row items-center gap-[12px]'>
               <CyDTouchView onPress={() => toggleCardDetail('cardNumber')}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={
                     showDetails.cardNumber ? 'eye-off-outline' : 'eye-outline'
                   }
@@ -162,7 +162,7 @@ export default function CardDetailsModal({
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('cardNumber')}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'content-copy'}
                   size={18}
                   className='text-base400'
@@ -184,14 +184,14 @@ export default function CardDetailsModal({
             </CyDText>
             <CyDView className='flex flex-row items-center gap-[12px]'>
               <CyDTouchView onPress={() => toggleCardDetail('expiry')}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={showDetails.expiry ? 'eye-off-outline' : 'eye-outline'}
                   size={24}
                   className='text-base400'
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('expiry')}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'content-copy'}
                   size={18}
                   className='text-base400'
@@ -211,14 +211,14 @@ export default function CardDetailsModal({
             </CyDText>
             <CyDView className='flex flex-row items-center gap-[12px]'>
               <CyDTouchView onPress={() => toggleCardDetail('cvv')}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={showDetails.cvv ? 'eye-off-outline' : 'eye-outline'}
                   size={24}
                   className='text-base400'
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('cvv')}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'content-copy'}
                   size={18}
                   className='text-base400'

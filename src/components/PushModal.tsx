@@ -6,7 +6,7 @@ import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
-import { CyDFastImage, CydMaterialDesignIcons } from '../styles/tailwindStyles';
+import { CyDFastImage, CyDMaterialDesignIcons } from '../styles/tailwindStyles';
 const { CText, DynamicView, DynamicImage } = require('../styles');
 
 export default function PushModal(props) {
@@ -51,7 +51,7 @@ export default function PushModal(props) {
             onPress={() => {
               onDenyPress();
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'

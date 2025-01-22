@@ -6,7 +6,7 @@ import React, {
   useRef,
 } from 'react';
 import * as C from '../../constants/index';
-import AppImages from '../../../assets/images/appImages';
+import AppImages from './../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
 import analytics from '@react-native-firebase/analytics';
@@ -19,7 +19,8 @@ import {
   CyDImage,
   CyDTouchView,
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import {
   WalletConnectContext,
@@ -156,25 +157,25 @@ export default function WalletConnectCamera(props: {
     }
   };
 
-  useLayoutEffect(() => {
-    props.navigation.setOptions({
-      headerRight: () => (
-        <CyDTouchView
-          onPress={() => {
-            props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
-              fromPage: QRScannerScreens.WALLET_CONNECT,
-              onSuccess,
-            });
-          }}>
-          <CydMaterialDesignIcons
-            name='qrcode-scan'
-            size={24}
-            className='text-base400'
-          />
-        </CyDTouchView>
-      ),
-    });
-  }, [props.navigation]);
+  // useLayoutEffect(() => {
+  //   props.navigation.setOptions({
+  //     headerRight: () => (
+  //       <CyDTouchView
+  //         onPress={() => {
+  //           props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+  //             fromPage: QRScannerScreens.WALLET_CONNECT,
+  //             onSuccess,
+  //           });
+  //         }}>
+  //         <CydMaterialDesignIcons
+  //           name='qrcode-scan'
+  //           size={24}
+  //           className='text-base400'
+  //         />
+  //       </CyDTouchView>
+  //     ),
+  //   });
+  // }, [props.navigation]);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
@@ -527,7 +528,7 @@ export default function WalletConnectCamera(props: {
                     onPress={() => {
                       void endSession(key);
                     }}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='link-variant-off'
                       size={24}
                       className='text-red400'
@@ -539,7 +540,7 @@ export default function WalletConnectCamera(props: {
                     onPress={() => {
                       setSelectedPairingTopic(element.topic);
                     }}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='cog-outline'
                       size={20}
                       className='text-base400'
@@ -556,6 +557,31 @@ export default function WalletConnectCamera(props: {
 
   return (
     <CyDSafeAreaView className={'bg-n20 h-full w-full'}>
+      <CyDView className='flex flex-row items-center py-[16px] px-[16px] justify-between'>
+        <CyDTouchView
+          className=''
+          onPress={() => {
+            props.navigation.goBack();
+          }}>
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
+        </CyDTouchView>
+        <CyDText className='text-[20px] font-bold text-base400'>
+          {t('WALLET_CONNECT_SMALL')}
+        </CyDText>
+        <CyDTouchView
+          onPress={() => {
+            props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+              fromPage: QRScannerScreens.WALLET_CONNECT,
+              onSuccess,
+            });
+          }}>
+          <CyDMaterialDesignIcons
+            name='qrcode-scan'
+            size={24}
+            className='text-base400'
+          />
+        </CyDTouchView>
+      </CyDView>
       <FlatList
         className='mb-[20px]'
         data={walletConnectState.dAppInfo}

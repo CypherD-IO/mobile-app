@@ -1,8 +1,9 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import {
+  CyDIcons,
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -76,7 +77,7 @@ const ImpactModal = ({
             onPress={() => {
               setIsModalVisible(false);
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -210,7 +211,7 @@ export default function EditLimits() {
         onPress={() => {
           navigation.goBack();
         }}>
-        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
         <CyDText className='text-[18px] font-bol ml-[8px]'>
           {t('Usage Limit Setting')}
         </CyDText>
@@ -263,7 +264,7 @@ export default function EditLimits() {
           </CyDView>
 
           <CyDView className='mt-[24px] flex flex-row'>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='information-outline'
               size={18}
               className='text-base100'
@@ -315,7 +316,7 @@ export default function EditLimits() {
           </CyDView>
 
           <CyDView className='mt-[24px] flex flex-row'>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='information-outline'
               size={18}
               className='text-base100'

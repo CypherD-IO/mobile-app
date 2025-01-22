@@ -5,7 +5,7 @@ import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { screenTitle } from '../../constants';
 import {
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDTextInput,
   CyDTouchView,
@@ -163,7 +163,7 @@ export function Contacts() {
             onPress={() => {
               navigation.navigate(screenTitle.CREATE_CONTACT, { contactBook });
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'account-plus'}
               size={24}
               className='text-base400'

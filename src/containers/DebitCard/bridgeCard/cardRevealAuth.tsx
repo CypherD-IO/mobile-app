@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
+  CyDIcons,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -260,14 +261,13 @@ export default function CardRevealAuthScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
-
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
           <CyDText className='ml-[12px] font-regular text-[18px]'>
             {capitalize(card?.type)} {' card ** '} {card?.last4}
           </CyDText>
         </CyDTouchView>
 
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='shield-check'
           size={32}
           className='text-base400 mt-4'

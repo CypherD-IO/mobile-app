@@ -4,7 +4,7 @@ import {
   CyDText,
   CyDImage,
   CyDTouchView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { t } from 'i18next';
 import AppImages from '../../../assets/images/appImages';
@@ -171,7 +171,7 @@ export default function ThreeDSecureApprovalModal({
                   }
                   closeModal();
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='close'
                   size={24}
                   className='text-white'
@@ -182,7 +182,7 @@ export default function ThreeDSecureApprovalModal({
           <CyDView className='mt-[50px]'>
             <CyDView className='flex flex-col text-white items-center'>
               <CyDView className='flex flex-row items-center justify-center'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='credit-card'
                   size={20}
                   className='text-white mr-1'

@@ -9,7 +9,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
@@ -275,7 +275,7 @@ export default function PrivateKey(props) {
             </CyDView>
             <CyDText className={'text-[18px]'}>{selectedChain.name}</CyDText>
           </CyDView>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'menu-down'}
             size={28}
             className={'text-base400'}
@@ -294,7 +294,7 @@ export default function PrivateKey(props) {
                 <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
                   {t('HIDE_PRIVATE_KEY')}
                 </CyDText>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='eye-outline'
                   size={27}
                   className='text-base400 ml-[7px]'
@@ -306,7 +306,7 @@ export default function PrivateKey(props) {
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
 
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'eye-off-outline'}
                   size={27}
                   className='text-base400 ml-[7px] mt-[5px]'
@@ -344,7 +344,7 @@ export default function PrivateKey(props) {
             copyToClipboard(privateKey);
             showToast(t('PRIVATE_KEY_COPY'));
           }}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'content-copy'}
             size={16}
             className='text-base400 absolute left-[20]'

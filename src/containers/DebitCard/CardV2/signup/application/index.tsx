@@ -1,7 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDTouchView,
   CyDView,
@@ -300,7 +301,7 @@ export default function CardApplicationV2() {
             navigation.goBack();
           } else setIndex(0);
         }}>
-        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
 
       <Formik

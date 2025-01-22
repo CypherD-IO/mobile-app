@@ -3,7 +3,7 @@ import { Linking, StyleSheet } from 'react-native';
 import {
   CyDImage,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -95,7 +95,7 @@ export default function JoinDiscordModal(props: {
                 onPress={() => {
                   setIsModalVisible(false);
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'
@@ -105,7 +105,7 @@ export default function JoinDiscordModal(props: {
             <CyDView className='flex flex-col items-center px-[32px]'>
               {isJoinDiscordStatus === JoinDiscordStatus.ERROR ? (
                 <CyDView className='flex flex-col items-center'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='close'
                     size={60}
                     className='text-red400'

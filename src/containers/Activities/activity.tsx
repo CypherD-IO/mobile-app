@@ -42,7 +42,7 @@ import {
 } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -939,7 +939,7 @@ export default function Activites() {
       headerRight: () => (
         <CyDTouchView
           onPress={() => navigation.navigate(C.screenTitle.ACTIVITYFILTER)}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='filter-variant'
             size={24}
             className='text-base400'

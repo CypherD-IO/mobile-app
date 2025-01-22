@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -52,7 +52,7 @@ export default function RemoveWalletModal(store: {
                 setHasConsent(!hasConsent);
               }}>
               {hasConsent && (
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='check'
                   size={18}
                   className='text-base400'
@@ -82,7 +82,7 @@ export default function RemoveWalletModal(store: {
       <CyDView
         className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onFailure()} className={'z-[50] self-end'}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400'

@@ -2,7 +2,7 @@ import React from 'react';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
@@ -37,7 +37,7 @@ export default function SignatureModal({
             }
           }}
           className={'flex flex-row justify-end z-10'}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400 top-[20px] right-[20px]'

@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import moment from 'moment';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -72,7 +72,7 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
   return (
     <CyDView className='flex flex-row justify-between mx-[12px] py-[10px] border-t-[0.5px] border-n40'>
       <CyDView className='flex flex-row items-center'>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='clock-time-four'
           size={20}
           className='text-base400'
@@ -83,7 +83,7 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
         onPress={() => {
           props.setFilterVisible(true);
         }}>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='filter-variant'
           size={24}
           className='text-base400'

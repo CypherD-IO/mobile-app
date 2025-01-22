@@ -27,7 +27,7 @@ import usePortfolio from '../../hooks/usePortfolio';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTextInput,
@@ -229,7 +229,7 @@ export default function EnterAmount(props: any) {
                   className={clsx(
                     'absolute right-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
                   )}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='swap-vertical'
                     size={16}
                     className='text-base400 self-center items-center'

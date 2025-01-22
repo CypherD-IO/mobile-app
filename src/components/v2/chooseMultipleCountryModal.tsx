@@ -6,7 +6,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDKeyboardAvoidingView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -146,7 +146,7 @@ const ChooseMultipleCountryModal = ({
                   setModalVisible(false);
                 }}
                 className={'ml-[18px]'}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400 '
@@ -195,7 +195,7 @@ const ChooseMultipleCountryModal = ({
                               'bg-appColor': allCountriesSelected,
                             },
                           )}>
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='check-bold'
                             size={18}
                             className='text-n20'
@@ -252,7 +252,7 @@ const ChooseMultipleCountryModal = ({
                         <CyDView className={'flex flex-row justify-end'}>
                           <CyDView
                             className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center`}>
-                            <CydMaterialDesignIcons
+                            <CyDMaterialDesignIcons
                               name='check-bold'
                               size={18}
                               className='text-n20'

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -164,7 +164,7 @@ export default function MigratePCFunds() {
                 setShowConsentModal(false);
               }}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'
@@ -198,7 +198,7 @@ export default function MigratePCFunds() {
                     setGaveConsent(!gaveConsent);
                   }}>
                   {gaveConsent && (
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='check-bold'
                       size={16}
                       className='text-base400 ml-[2px]'
@@ -271,7 +271,7 @@ export default function MigratePCFunds() {
                 </CyDText>
               </CyDView>
               <CyDView className='flex flex-row items-start mt-[12px]'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='credit-card-outline'
                   size={24}
                   className='text-base400 mr-3'

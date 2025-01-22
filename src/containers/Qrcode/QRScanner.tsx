@@ -86,7 +86,7 @@ export default function QRScanner() {
                   'flex items-center justify-center h-1/2 w-10/12 pt-[10px]'
                 }>
                 <CyDText
-                  className={' text-center text-[20px] color-white mt-[24%]'}>
+                  className={' text-center text-[20px] text-white mt-[24%]'}>
                   {renderText()}
                 </CyDText>
                 {fromPage === QRScannerScreens.WALLET_CONNECT && (
@@ -98,7 +98,9 @@ export default function QRScanner() {
                       navigation.navigate(C.screenTitle.WALLET_CONNECT)
                     }>
                     <CyDText
-                      className={'text-base400 text-[15px] font-extrabold'}>
+                      className={
+                        'text-base400 text-[15px] font-extrabold text-white'
+                      }>
                       {t('Manage Connections')}
                     </CyDText>
                   </CyDTouchView>

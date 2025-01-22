@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import {
   CyDImage,
   CyDImageBackground,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -32,7 +32,7 @@ export default function ImportWalletOptions({
           <CyDView>
             <CyDText className='text-[16px] font-semibold'>Seed Phrase</CyDText>
           </CyDView>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='chevron-right'
             size={20}
             className='text-base400'
@@ -49,7 +49,7 @@ export default function ImportWalletOptions({
               Wallet Connect
             </CyDText>
           </CyDView>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='chevron-right'
             size={20}
             className='text-base400'

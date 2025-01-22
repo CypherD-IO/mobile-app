@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDFastImage,
   CyDIcons,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -279,24 +279,24 @@ export default function GlobalOptions() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
           <CyDText className='text-[16px] font-bold text-base400'>
             {t('ACCOUNT_OPTIONS')}
           </CyDText>
         </CyDView>
-        <CyDScrollView className='flex-1 bg-n20 px-[16px]'>
+        <CyDScrollView className='flex-1 bg-n20 '>
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView
-              className={clsx('rounded-[16px] p-[16px] mt-[30px]', {
-                'bg-n0': theme === 'dark',
-                'bg-p0': theme === 'light',
-              })}
-              style={styles.shadow}>
+              className={clsx(
+                'rounded-[16px] p-[16px] mt-[30px] shadow-xl mx-[16px]',
+                {
+                  'bg-n0': theme === 'dark',
+                  'bg-p0': theme === 'light',
+                },
+              )}
+              // style={styles.shadow}
+            >
               <CyDView className='p-[12px]'>
                 <CyDText className='text-[12px] font-medium text-center'>
                   {'Go premium for just'}
@@ -308,8 +308,7 @@ export default function GlobalOptions() {
                 </CyDText>
                 <CyDView className='mt-[12px] flex flex-row justify-center items-center'>
                   <CyDTouchView
-                    style={styles.buttonShadow}
-                    className='flex flex-row items-center bg-n40 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
+                    className='flex flex-row items-center bg-n40 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px] drop-shadow-lg'
                     onPress={() => {
                       setOpenComparePlans(false);
                       setPlanChangeModalVisible(true);
@@ -323,8 +322,7 @@ export default function GlobalOptions() {
                     />
                   </CyDTouchView>
                   <CyDTouchView
-                    style={styles.buttonShadow}
-                    className=' bg-n40 px-[10px] py-[6px] rounded-full'
+                    className=' bg-n40 px-[10px] py-[6px] rounded-full shadow-lg'
                     onPress={() => {
                       setOpenComparePlans(true);
                       setPlanChangeModalVisible(true);
@@ -338,7 +336,7 @@ export default function GlobalOptions() {
             </CyDView>
           )}
 
-          <CyDView className='mt-[16px]'>
+          <CyDView className='mt-[16px] mx-[16px]'>
             <CyDText className='text-n200 font-medium text-[12px]'>
               Account & Security
             </CyDText>
@@ -369,7 +367,7 @@ export default function GlobalOptions() {
                           {'Enable'}
                         </CyDText>
                       ) : (
-                        <CydMaterialDesignIcons
+                        <CyDMaterialDesignIcons
                           name='chevron-right'
                           size={20}
                           className='text-base400'
@@ -382,7 +380,7 @@ export default function GlobalOptions() {
             </CyDView>
           </CyDView>
 
-          <CyDView className='mt-[16px]'>
+          <CyDView className='mt-[16px] mx-[16px]'>
             <CyDText className='text-n200 font-medium text-[12px]'>
               Notification & Personal Information
             </CyDText>
@@ -432,7 +430,7 @@ export default function GlobalOptions() {
                               <CyDText className='text-[16px] font-regular text-base400'>
                                 {'Reset Telegram Pin'}
                               </CyDText>
-                              <CydMaterialDesignIcons
+                              <CyDMaterialDesignIcons
                                 name='chevron-right'
                                 size={20}
                                 className='text-base400'
@@ -477,7 +475,7 @@ export default function GlobalOptions() {
                           {'Enable'}
                         </CyDText>
                       ) : (
-                        <CydMaterialDesignIcons
+                        <CyDMaterialDesignIcons
                           name='chevron-right'
                           size={20}
                           className='text-base400'
@@ -490,7 +488,7 @@ export default function GlobalOptions() {
             </CyDView>
           </CyDView>
 
-          <CyDView className='mt-[16px] mb-[44px]'>
+          <CyDView className='mt-[16px] mb-[44px] mx-[16px]'>
             <CyDText className='text-n200 font-medium text-[12px]'>
               Others
             </CyDText>
@@ -502,7 +500,7 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={image}
                       size={20}
                       className='text-base400 mr-[8px] pb-[16px]'
@@ -511,7 +509,7 @@ export default function GlobalOptions() {
                       <CyDText className='text-[16px] font-regular text-base400'>
                         {title}
                       </CyDText>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='chevron-right'
                         size={20}
                         className='text-base400'
@@ -529,13 +527,6 @@ export default function GlobalOptions() {
 }
 
 const styles = StyleSheet.create({
-  shadow: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
-  },
   buttonShadow: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },

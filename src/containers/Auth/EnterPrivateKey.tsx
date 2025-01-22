@@ -9,7 +9,7 @@ import {
   CyDSafeAreaView,
   CyDTextInput,
   CyDScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
@@ -120,7 +120,7 @@ export default function Login(props) {
                 onSuccess,
               });
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='qrcode-scan'
               size={24}
               className='text-base400'
@@ -169,7 +169,7 @@ export default function Login(props) {
                 onPress={() => {
                   void fetchCopiedText();
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'content-copy'}
                   size={16}
                   className='text-base400'

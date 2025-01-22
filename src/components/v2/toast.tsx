@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDView,
 } from '../../styles/tailwindStyles';
@@ -8,7 +8,7 @@ import {
 export const toastConfig = {
   simpleToast: ({ text1, props }: { text1: string; props: any }) => (
     <CyDView className='h-[36px] w-[80px] flex flex-row justify-center items-center'>
-      <CydMaterialDesignIcons
+      <CyDMaterialDesignIcons
         name='check-bold'
         size={16}
         className='text-base400'

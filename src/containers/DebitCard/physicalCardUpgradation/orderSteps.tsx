@@ -5,7 +5,8 @@ import {
   CyDText,
   CyDSafeAreaView,
   CyDTouchView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
 import {
   NavigationProp,
@@ -64,11 +65,7 @@ export default function OrderSteps() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDView className='my-[12px]'>
@@ -86,7 +83,7 @@ export default function OrderSteps() {
               <CyDView
                 key={index}
                 className='flex flex-row gap-x-[16px] items-center'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={step.icon}
                   size={28}
                   className='text-base400'

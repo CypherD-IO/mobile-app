@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {
+  CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -99,7 +100,7 @@ function CreateSeedPhrase({ route, navigation }) {
           onPress={() => {
             handleBackButton();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
       ),
     });
@@ -177,7 +178,7 @@ function CreateSeedPhrase({ route, navigation }) {
                     onPress={() => {
                       toggleSeedPhraseVisibility();
                     }}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={'eye-outline'}
                       size={27}
                       className='text-base400 mr-[12px]'
@@ -189,7 +190,7 @@ function CreateSeedPhrase({ route, navigation }) {
                     onPress={() => {
                       toggleSeedPhraseVisibility();
                     }}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={'eye-off-outline'}
                       size={27}
                       className='text-base400 mr-[12px]'
@@ -244,7 +245,7 @@ function CreateSeedPhrase({ route, navigation }) {
               setTipsVisible(true);
             }}
             className={'m-[22px] flex flex-row justify-end'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='information-outline'
               size={16}
               className='text-base400 mr-[6px] mt[2px]'
@@ -453,7 +454,7 @@ function CreateSeedPhrase({ route, navigation }) {
               setTipsVisible(false);
             }}
             className={'z-[50] self-end'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -466,7 +467,7 @@ function CreateSeedPhrase({ route, navigation }) {
             {waysToSecureSeedPhrase.map(item => {
               return (
                 <CyDView className={'flex flex-row my-[4px]'} key={item}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'triangle'}
                     size={14}
                     className='text-p150 rotate-90 mt-[6px]'

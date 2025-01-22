@@ -7,7 +7,7 @@ import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
 import {
   CyDFastImage,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -81,7 +81,7 @@ export function ChooseChainModal(props: {
             </CyDView>
           </CyDView>
           {isSelected && (
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='check-outline'
               size={16}
               className='text-base400'
@@ -108,7 +108,7 @@ export function ChooseChainModal(props: {
             onPress();
           }}
           className={'z-[50] self-end'}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400 '

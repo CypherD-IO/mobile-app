@@ -3,7 +3,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDImage,
   CyDKeyboardAvoidingView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -47,7 +47,7 @@ export default function PreferredNameModal({
               </CyDText>
             </CyDView>
             <CyDTouchView onPress={() => setShowModal(false)}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'

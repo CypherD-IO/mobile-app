@@ -17,8 +17,10 @@ import { ButtonType, CardProviders } from '../../../constants/enum';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import {
+  CyDIcons,
+  CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -218,11 +220,7 @@ export default function SetTelegramPin() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
           <CyDText className='text-base400 ml-[12px] text-[18px]'>
             {t('SET_TELEGRAM_PIN')}
@@ -232,7 +230,7 @@ export default function SetTelegramPin() {
           contentContainerStyle={styles.contentContainerStyle}>
           <CyDView>
             <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='lock'
                 size={32}
                 className='text-base400'

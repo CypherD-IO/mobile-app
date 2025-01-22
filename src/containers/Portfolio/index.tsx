@@ -640,8 +640,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const onWCSuccess = (e: BarCodeReadEvent) => {
     const link = e.data;
     navigation.navigate(C.screenTitle.OPTIONS, {
-      params: { url: link },
-      screen: C.screenTitle.BROWSER_SCREEN,
+      params: { walletConnectURI: link },
+      screen: C.screenTitle.WALLET_CONNECT,
     });
   };
 

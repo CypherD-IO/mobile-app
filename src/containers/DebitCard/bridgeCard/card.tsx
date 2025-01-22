@@ -52,7 +52,7 @@ import {
   CyDImage,
   CyDImageBackground,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -577,7 +577,7 @@ const RenderCardActions = ({
                 </CyDText>
                 <CyDTouchView
                   onPress={() => copyTrackingNumber(trackingNumber)}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'content-copy'}
                     size={14}
                     className='text-base400'
@@ -985,7 +985,7 @@ const RenderCardActions = ({
           style={styles.modalLayout}>
           <CyDView className='bg-n30 py-[8px] mb-[12px] h-[412px] w-[90%] rounded-[16px]'>
             <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400 ml-[90%] mb-[5px]'
@@ -1184,7 +1184,7 @@ const RenderCardActions = ({
             {cardProvider === CardProviders.REAP_CARD ? (
               <CyDIcons name='settings' className='text-black text-[28px]' />
             ) : (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'dots-vertical'}
                 size={32}
                 className={'text-black'}

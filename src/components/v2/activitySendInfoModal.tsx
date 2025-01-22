@@ -4,7 +4,7 @@ import CyDModalLayout from './modal';
 import {
   CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -124,7 +124,7 @@ export default function ActivitySendInfoModal({
               setModalVisible(false);
             }}>
             {!isCapturingDetails && (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400 top-[20px] right-[20px] '

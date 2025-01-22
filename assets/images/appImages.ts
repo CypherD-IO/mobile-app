@@ -10,7 +10,6 @@ const S3_BUCKET_URL_DAPPS = 'https://public.cypherd.io/assets/dapps';
 // need dm image
 const EMPTY = require('./emptyImg.png');
 const CYPHERD = require('./cypherD.png');
-const CYPHER_TEXT = require('./Cypher-text.png');
 const POLYGON = require('./polygon.png');
 const SHARDEUM = require('./shardeum.png');
 const AVALANCHE = require('./avalanche.png');
@@ -20,7 +19,7 @@ const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
 const APP_LOGO = require('./appLogo.png');
 const CARD = require('./card.png');
-const ETHEREUM = require('./ethereum_eth_logo.png');
+const ETHEREUM = require('./ethereum_logo.png');
 const BINANCE = require('./binance_coin_bnb_logo.png');
 // need dm image
 const SENDTO_EMPTY = require('./sento_Empty.png');
@@ -609,7 +608,6 @@ export const AppImagesMap = {
     CYPHER_TELEGRAM_BOT_LOGO,
     EMPTY,
     CYPHERD,
-    CYPHER_TEXT,
     PORTFOLIO_BG_S3,
     POLYGON,
     SHARDEUM,
@@ -865,7 +863,6 @@ enum AppImages {
   CYPHER_TELEGRAM_BOT_LOGO = 'CYPHER_TELEGRAM_BOT_LOGO',
   EMPTY = 'EMPTY',
   CYPHERD = 'CYPHERD',
-  CYPHER_TEXT = 'CYPHER_TEXT',
   PORTFOLIO_BG_S3 = 'PORTFOLIO_BG_S3',
   POLYGON = 'POLYGON',
   SHARDEUM = 'SHARDEUM',

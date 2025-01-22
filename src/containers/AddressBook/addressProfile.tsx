@@ -7,7 +7,7 @@ import Accordion from 'react-native-collapsible/Accordion';
 import { verticalScale } from 'react-native-size-matters';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -20,7 +20,6 @@ import {
   EVM_CHAINS_BACKEND_NAMES,
   EVM_CHAINS_FOR_ADDRESS_DIR,
 } from '../../constants/server';
-import Loading from '../Loading';
 import clsx from 'clsx';
 import { screenTitle } from '../../constants/index';
 import { showToast } from '../utilities/toastUtility';
@@ -31,6 +30,7 @@ import getTransactionType from '../utilities/transactionTypeUtility';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { getContactBookWithMultipleAddress } from '../utilities/contactBookUtility';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
+import Loading from '../../components/v2/loading';
 
 const AddressProfile = props => {
   const {
@@ -234,7 +234,7 @@ const AddressProfile = props => {
         )}
         key={index}>
         <CyDView className='flex flex-row justify-between items-center'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='dog'
             size={24}
             className='text-base400 font-light'
@@ -254,7 +254,7 @@ const AddressProfile = props => {
                     contactBook,
                   });
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'pencil'}
                   size={20}
                   className={'text-base400 mr-4'}
@@ -264,7 +264,7 @@ const AddressProfile = props => {
                 onPress={() => {
                   deleteContact(name);
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'delete'}
                   size={20}
                   className={'text-base400 mr-4'}
@@ -277,7 +277,7 @@ const AddressProfile = props => {
               <RenderIcon contact={contactBook[name]} />
             </CyDView>
           ) : null}
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'chevron-up'}
             size={20}
             className={clsx('text-base400', {
@@ -391,7 +391,7 @@ const AddressProfile = props => {
                             setChooseTokenModal(true);
                             setSendAddress(address);
                           }}>
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='send-outline'
                             size={16}
                             className='text-base400 -rotate-45'
@@ -405,7 +405,7 @@ const AddressProfile = props => {
                               `${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`,
                             );
                           }}>
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name={'content-copy'}
                             size={16}
                             className='text-base400'
@@ -515,9 +515,5 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 10,
     marginVertical: 10,
-  },
-  inactiveArrowStyle: {
-    height: verticalScale(12),
-    width: 14,
   },
 });

@@ -43,7 +43,7 @@ import {
 import {
   CyDImage,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -465,7 +465,7 @@ export default function TokenStaking({
           <CyDTouchView
             onPress={() => setClaimModal(false)}
             className={'z-[50]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -536,7 +536,7 @@ export default function TokenStaking({
               setSignModalVisible(false);
             }}
             className={'z-[50]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -561,7 +561,7 @@ export default function TokenStaking({
           </CyDView>
 
           <CyDView className={'flex flex-row mt-[20px]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='gas-station'
               size={20}
               className='text-base400'
@@ -612,7 +612,7 @@ export default function TokenStaking({
               setReStakeModalVisible(false);
             }}
             className={'z-[50]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -635,7 +635,7 @@ export default function TokenStaking({
           </CyDView>
 
           <CyDView className={'flex flex-row mt-[20px]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='gas-station'
               size={20}
               className='text-base400 mt-[3px]'

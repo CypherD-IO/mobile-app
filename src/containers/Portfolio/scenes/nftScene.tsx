@@ -10,7 +10,7 @@ import {
 import {
   CyDAnimatedView,
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -175,7 +175,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
           <CyDView className='flex items-end w-[10%]'>
             {isActive && (
               <CyDAnimatedView style={animatedStyle}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='chevron-right'
                   size={20}
                   className='text-base400'
@@ -183,7 +183,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
               </CyDAnimatedView>
             )}
             {!isActive && (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={20}
                 className='text-base400 opacity-70'
@@ -447,7 +447,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                             viewType === RenderViewType.GRID_VIEW,
                         })}
                         onPress={() => setViewType(RenderViewType.GRID_VIEW)}>
-                        <CydMaterialDesignIcons
+                        <CyDMaterialDesignIcons
                           name='view-grid-outline'
                           size={20}
                           className='text-base400'
@@ -459,7 +459,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                             viewType === RenderViewType.LIST_VIEW,
                         })}
                         onPress={() => setViewType(RenderViewType.LIST_VIEW)}>
-                        <CydMaterialDesignIcons
+                        <CyDMaterialDesignIcons
                           name='format-list-bulleted'
                           size={20}
                           className='text-base400'

@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -75,7 +75,7 @@ export default function ActivityInfoModal({
             onPress={() => {
               setModalVisible(false);
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400 top-[20px] right-[20px]'
@@ -135,7 +135,7 @@ export default function ActivityInfoModal({
                 {txnHash
                   ? `${txnHash.substring(0, 8)}...${txnHash.substring(txnHash.length - 6, txnHash.length)}\t`
                   : 'TBD\t'}
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'content-copy'}
                   size={16}
                   className='text-base400'
@@ -154,7 +154,7 @@ export default function ActivityInfoModal({
                 </CyDText>
                 <CyDText className='text-center  text-[14px] mt-[5px] font-bold mt-[3px]  '>
                   {`${quoteId.substring(0, 8)}...${quoteId.substring(quoteId.length - 6, quoteId.length)}      `}
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'content-copy'}
                     size={16}
                     className='text-base400'

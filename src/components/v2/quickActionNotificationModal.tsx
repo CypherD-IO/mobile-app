@@ -7,7 +7,7 @@ import useAxios from '../../core/HttpRequest';
 import { parseErrorMessage } from '../../core/util';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -66,7 +66,7 @@ function RenderHeader({
         <CyDText className='font-bold text-[20px]'>{title}</CyDText>
       </CyDView>
       <CyDTouchView onPress={closeModal}>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name={'close'}
           size={24}
           className='text-base400'
@@ -202,7 +202,7 @@ function RenderCountryDecline({
         <CyDView className='flex-1 flex-col justify-between'>
           <CyDView />
           <CyDView>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='alert-circle'
               size={60}
               className='text-red400 self-center'

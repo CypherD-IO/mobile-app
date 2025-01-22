@@ -65,7 +65,7 @@ import {
   CyDFastImage,
   CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -447,7 +447,7 @@ export default function Overview({
                 </CyDView>
 
                 {tokenData?.isVerified && (
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='check-decagram'
                     size={16}
                     className='text-blue100 mt-[-1px] ml-[4px]'
@@ -464,7 +464,7 @@ export default function Overview({
                       copyToClipboard(tokenData.contractAddress);
                       showToast(`${t('CONTRACT_ADDRESS_COPY_ALL_SMALL')}`);
                     }}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={'content-copy'}
                       size={10}
                       className='text-base400 ml-[3px]'
@@ -491,7 +491,7 @@ export default function Overview({
                   className={clsx('flex flex-row justify-end items-center', {
                     'mt-[-12px]': isAndroid(),
                   })}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={selectedTrend > 0 ? 'trending-up' : 'trending-down'}
                     size={20}
                     className={clsx('text-green400 ml-[3px]', {
@@ -753,7 +753,7 @@ export default function Overview({
         </CyDView>
         <CyDView className={'flex flex-row justify-between mb-[12px]'}>
           <CyDView className={'flex flex-row items-center'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='sync'
               size={16}
               className='text-base400 ml-[4px]'

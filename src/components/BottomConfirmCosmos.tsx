@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import {
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -43,7 +43,7 @@ export default function BottomConfirmCosmos(props: {
         <CyDTouchView
           className={'flex flex-row pl-[95%] justify-end z-10'}
           onPress={onCancelPress}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400 top-[20px] right-[20px] '

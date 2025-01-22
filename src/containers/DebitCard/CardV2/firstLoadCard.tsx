@@ -61,8 +61,11 @@ import { CardQuoteResponse } from '../../../models/card.model';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
+  CyDIcons,
+  CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -976,7 +979,7 @@ export default function FirstLoadCard() {
               resizeMode='contain'
             />
             <CyDTouchView onPress={() => setPlanChangeModalVisible(false)}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'
@@ -1035,12 +1038,7 @@ export default function FirstLoadCard() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
-
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
             <CyDText className='font-bold text-[28px]'>
               {'Lets Fund your Card'}
             </CyDText>
@@ -1101,7 +1099,7 @@ export default function FirstLoadCard() {
                       {`${round(selectedToken?.actualBalance ?? 0, 8)} ${String(selectedToken?.symbol ?? '')}`}
                     </CyDText>
                   )}
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='chevron-down'
                     size={24}
                     className='text-base400'
@@ -1134,7 +1132,7 @@ export default function FirstLoadCard() {
                       {isCryptoInput && (
                         <CyDView className='h-[38px] w-[38px] rounded-full border border-n50 flex-row justify-center items-center mr-[8px]'>
                           <CyDFastImage
-                            source={{ uri: selectedToken?.logoUrl }}
+                            source={{ uri: selectedToken?.logoUrl ?? '' }}
                             className='w-[24px] h-[24px]'
                           />
                         </CyDView>
@@ -1172,7 +1170,7 @@ export default function FirstLoadCard() {
                       onPressToggle();
                     }}
                     disabled={!selectedToken}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='swap-vertical'
                       size={20}
                       className='text-base400 self-center items-center'

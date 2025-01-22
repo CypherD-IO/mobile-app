@@ -5,7 +5,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { BackHandler, NativeModules } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -130,7 +130,7 @@ export default function SeedPhrase() {
                 <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
                   {t('HIDE_SEED_PHRASE')}
                 </CyDText>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'eye-outline'}
                   size={27}
                   className='text-base400 ml-[7px]'
@@ -141,7 +141,7 @@ export default function SeedPhrase() {
                 <CyDText className={'text-[15px] font-semibold'}>
                   {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
                 </CyDText>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'eye-off-outline'}
                   size={27}
                   className='text-base400 ml-[7px] mt-[5px]'
@@ -176,7 +176,7 @@ export default function SeedPhrase() {
               'flex flex-row items-center justify-center mt-[40px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px] mb-[50px]'
             }
             onPress={() => onPressSeedPharse()}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'content-copy'}
               size={20}
               className='text-base400 absolute left-[20]'

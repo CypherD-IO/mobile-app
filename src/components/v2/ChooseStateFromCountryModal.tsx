@@ -3,7 +3,7 @@ import CyDModalLayout from './modal';
 import {
   CyDFastImage,
   CyDKeyboardAvoidingView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -82,7 +82,7 @@ const ChooseStateFromCountryModal = ({
                 setModalVisible(false);
               }}
               className={'ml-[18px]'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'

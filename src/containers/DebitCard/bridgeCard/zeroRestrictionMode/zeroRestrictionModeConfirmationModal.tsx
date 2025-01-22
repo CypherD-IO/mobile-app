@@ -2,12 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Add thi
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppImages from '../../../../../assets/images/appImages';
 import ZrmIntro from './zrmIntro';
-import Loading from '../../../Loading';
 import {
-  CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -16,6 +13,7 @@ import Button from '../../../../components/v2/button';
 import CyDModalLayout from '../../../../components/v2/modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import CyDPicker from '../../../../components/picker';
+import Loading from '../../../../components/v2/loading';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -93,7 +91,7 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                     setLoader(false);
                     setIsModalVisible(false);
                   }}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'close'}
                     size={24}
                     className='text-base400'
@@ -174,7 +172,7 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                   className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                   <CyDView
                     className={`${isChecked ? 'bg-base400' : ''} h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='check-bold'
                       size={18}
                       className='text-n0'
