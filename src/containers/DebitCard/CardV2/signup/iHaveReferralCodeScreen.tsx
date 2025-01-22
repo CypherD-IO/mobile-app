@@ -22,7 +22,9 @@ import {
 } from '../../../../core/asyncStorage';
 import useAxios from '../../../../core/HttpRequest';
 import {
+  CyDIcons,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -138,11 +140,7 @@ const IHaveReferralCodeScreen = () => {
                 });
               }}
               className='w-[36px] h-[36px]'>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDText className='text-[28px] font-bold mt-[12px]'>

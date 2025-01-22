@@ -3,7 +3,7 @@ import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDFastImage,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
@@ -40,7 +40,7 @@ export default function HowReferralWorksModal({
             {t('HOW_REFERRAL_WORKS')}
           </CyDText>
           <CyDTouchView onPress={() => setIsModalVisible(false)}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'

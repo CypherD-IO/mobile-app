@@ -4,7 +4,7 @@ import { ScrollView, View, StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -52,7 +52,7 @@ export default function WithdrawalReasonsModal(props: {
                 onPress={() => {
                   setIsModalVisible(false);
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'

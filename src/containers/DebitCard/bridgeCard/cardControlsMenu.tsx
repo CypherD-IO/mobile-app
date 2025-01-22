@@ -32,9 +32,10 @@ import { Card } from '../../../models/card.model';
 import { ICountry } from '../../../models/cardApplication.model';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDImage,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -304,7 +305,7 @@ export default function CardControlsMenu() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
           <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card?.last4 ?? ''}`}</CyDText>
         </CyDTouchView>
         {loading ? (
@@ -374,7 +375,7 @@ export default function CardControlsMenu() {
                     <CyDText className='text-[16px] font-semibold text-base400'>
                       {t('SET_USAGE_LIMIT')}
                     </CyDText>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='chevron-right'
                       size={20}
                       className='text-base400'
@@ -424,7 +425,7 @@ export default function CardControlsMenu() {
               <CyDView className='p-[16px] bg-n0 rounded-[10px] mt-[8px]'>
                 <CyDView className='flex flex-row items-center justify-between'>
                   <CyDView>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='shield-check-outline'
                       size={24}
                       className='text-base400'
@@ -455,7 +456,7 @@ export default function CardControlsMenu() {
                               void handleZeroRestionModeToggle();
                             }}
                             className='bg-n20 rounded-full p-[10px] w-[44px] h-[44px] shadow-sm'>
-                            <CydMaterialDesignIcons
+                            <CyDMaterialDesignIcons
                               name='power'
                               size={26}
                               className='text-base400'
@@ -533,7 +534,7 @@ export default function CardControlsMenu() {
                 }}>
                 <CyDView className='flex flex-row items-center'>
                   {!domesticCountry.unicode_flag ? (
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='home-outline'
                       size={24}
                       className='text-base400 mr-2'
@@ -551,7 +552,7 @@ export default function CardControlsMenu() {
                   <CyDText className='text-[14px] text-b150'>
                     {'Enabled'}
                   </CyDText>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='chevron-right'
                     size={16}
                     className='text-base400 ml-2'
@@ -580,7 +581,7 @@ export default function CardControlsMenu() {
                   }
                 }}>
                 <CyDView className='flex-1 flex-row items-center'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='airplane'
                     size={24}
                     className='text-base400 mr-3 mt-0.5'
@@ -595,7 +596,7 @@ export default function CardControlsMenu() {
                   <CyDText className='text-[14px] text-b150'>
                     {isInternationalTransactionEnabled ? 'Enabled' : 'Disabled'}
                   </CyDText>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='chevron-right'
                     size={16}
                     className='text-base400 ml-2'
@@ -617,7 +618,7 @@ export default function CardControlsMenu() {
                   'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
                 }>
                 <CyDView className='flex flex-row flex-1 items-center'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='dots-horizontal-circle-outline'
                     size={24}
                     className='text-base400 mr-3'
@@ -629,7 +630,7 @@ export default function CardControlsMenu() {
                   </CyDView>
                 </CyDView>
                 <CyDView className='flex flex-row items-center'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='chevron-right'
                     size={16}
                     className='text-base400 ml-2'
@@ -644,7 +645,7 @@ export default function CardControlsMenu() {
                   'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
                 }>
                 <CyDView className='flex flex-row flex-1 items-center'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='shield-check-outline'
                     size={24}
                     className='text-base400 mr-3'
@@ -659,7 +660,7 @@ export default function CardControlsMenu() {
                   <CyDText className='text-[14px] text-b150'>
                     {isTelegramEnabled ? 'Telegram & Email' : 'SMS'}
                   </CyDText>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='chevron-right'
                     size={16}
                     className='text-base400 ml-2'

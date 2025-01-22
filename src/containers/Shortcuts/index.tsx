@@ -6,8 +6,9 @@ import {
   CyDTouchView,
   CyDView,
   CyDFlatList,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDLottieView,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
 import * as React from 'react';
@@ -437,7 +438,7 @@ export default function ShortcutsModal() {
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='open-in-new'
             size={18}
             className='text-base400 ml-[10px]'
@@ -468,7 +469,7 @@ export default function ShortcutsModal() {
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='open-in-new'
             size={18}
             className='text-base400 ml-[10px]'
@@ -592,7 +593,7 @@ export default function ShortcutsModal() {
           <CyDTouchView
             onPress={() => setShortcutsModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -622,7 +623,7 @@ export default function ShortcutsModal() {
           <CyDTouchView
             onPress={() => setBuyModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -652,7 +653,7 @@ export default function ShortcutsModal() {
           <CyDTouchView
             onPress={() => setSellModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -686,11 +687,7 @@ export default function ShortcutsModal() {
                 setTimeout(() => setBuyModalVisible(true), 250);
               }}
               className={''}>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
               <CyDImage source={buyType.logo} className={'w-[20px] h-[20px]'} />
@@ -701,7 +698,7 @@ export default function ShortcutsModal() {
             <CyDTouchView
               onPress={() => setBuyChooseChainModalVisible(false)}
               className={''}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'
@@ -737,11 +734,7 @@ export default function ShortcutsModal() {
                 setTimeout(() => setSellModalVisible(true), 250);
               }}
               className={''}>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
               <CyDImage
@@ -755,7 +748,7 @@ export default function ShortcutsModal() {
             <CyDTouchView
               onPress={() => setSellChooseChainModalVisible(false)}
               className={''}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'

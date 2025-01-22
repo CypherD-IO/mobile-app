@@ -4,7 +4,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDFastImage,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -375,7 +375,7 @@ export default function TransactionInfoModal({
             onPress={() => {
               setModalVisible(false);
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -444,7 +444,7 @@ export default function TransactionInfoModal({
                         String(`${chainExplorerMapping[blockchain]}${hash}`),
                       )
                     }>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={'content-copy'}
                       size={20}
                       className='text-base400'

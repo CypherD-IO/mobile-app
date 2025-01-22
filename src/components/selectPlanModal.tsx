@@ -8,7 +8,7 @@ import React, {
 import {
   CyDFastImage,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -366,7 +366,7 @@ export default function SelectPlanModal({
                 }}
                 className={''}>
                 <CyDView className='w-[24px] h-[24px] z-[50]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'close'}
                     size={24}
                     className='text-base400'
@@ -388,7 +388,7 @@ export default function SelectPlanModal({
                   </CyDView>
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='credit-card-outline'
                         size={24}
                         className='text-base400'
@@ -628,7 +628,7 @@ export default function SelectPlanModal({
                 <CyDView className='w-[58%] flex flex-col bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='credit-card-outline'
                         size={24}
                         className='text-base400'
@@ -776,7 +776,7 @@ export default function SelectPlanModal({
                 onPress={() => {
                   setConsentModalVisible(false);
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'
@@ -801,7 +801,7 @@ export default function SelectPlanModal({
                   },
                 )}>
                 {consent && (
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='check-bold'
                     size={14}
                     className='text-base400 '
@@ -855,7 +855,7 @@ export default function SelectPlanModal({
                   setIsModalVisible(false);
                   onClose?.();
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'
@@ -866,7 +866,7 @@ export default function SelectPlanModal({
             <CyDScrollView className='flex-1'>
               <CyDView className='mt-[16px] px-[16px]'>
                 <CyDView className='flex-row items-center mt-[8px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='check'
                     size={24}
                     className='text-base400'
@@ -876,7 +876,7 @@ export default function SelectPlanModal({
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex-row items-center mt-[8px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='check'
                     size={24}
                     className='text-base400'
@@ -1115,7 +1115,7 @@ export default function SelectPlanModal({
                               'bg-p150 border-p150': isChecked.physicalCard,
                             },
                           )}>
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='check-bold'
                             size={18}
                             className='text-n0'
@@ -1142,7 +1142,7 @@ export default function SelectPlanModal({
                               'bg-p150 border-p150': isChecked.metalCard,
                             },
                           )}>
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='check-bold'
                             size={18}
                             className='text-n0'
@@ -1169,7 +1169,7 @@ export default function SelectPlanModal({
                               'bg-p150 border-p150': isChecked.addonCard,
                             },
                           )}>
-                          <CydMaterialDesignIcons
+                          <CyDMaterialDesignIcons
                             name='check-bold'
                             size={18}
                             className='text-n0'

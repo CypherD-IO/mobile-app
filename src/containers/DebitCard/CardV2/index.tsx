@@ -4,7 +4,7 @@ import {
   CyDImage,
   CyDLottieView,
   CydLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -315,7 +315,7 @@ export default function CypherCardScreen() {
               card: get(cardProfile, [cardProvider, 'cards', 0]),
             });
           }}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'hammer-screwdriver'}
             size={16}
             className='text-base400'
@@ -360,7 +360,7 @@ export default function CypherCardScreen() {
                       <CyDText className={'font-bold text-[28px]'}>
                         {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
                       </CyDText>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='refresh'
                         size={20}
                         className='text-base400'
@@ -380,7 +380,7 @@ export default function CypherCardScreen() {
             <CyDView className={'h-[36px] w-[42%]'}>
               <Button
                 icon={
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='plus'
                     size={20}
                     className='text-black mr-[4px]'
@@ -411,7 +411,7 @@ export default function CypherCardScreen() {
             <CyDView className={'h-[36px] w-[42%]'}>
               <Button
                 icon={
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='plus'
                     size={20}
                     className='text-black mr-[4px]'
@@ -541,7 +541,7 @@ export default function CypherCardScreen() {
                   <CyDText className='text-[14px] font-bold'>
                     {t<string>('VIEW_ALL_TRANSACTIONS')}
                   </CyDText>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='arrow-right-thin'
                     size={24}
                     className='text-base400'
@@ -575,7 +575,7 @@ export default function CypherCardScreen() {
                 <CyDText className='text-[14px] font-bold'>
                   {t<string>('LEGACY_CARD_TRANSACTIONS')}
                 </CyDText>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='arrow-right-thin'
                   size={24}
                   className='text-base400'

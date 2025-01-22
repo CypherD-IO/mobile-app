@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
+  CyDIcons,
   CyDLottieView,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -53,10 +54,10 @@ const OTPHeader = ({
         onPress={() => {
           navigation.goBack();
         }}>
-        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
 
-      <CydMaterialDesignIcons
+      <CyDMaterialDesignIcons
         name='shield-check'
         size={32}
         className='text-base400 mt-4'

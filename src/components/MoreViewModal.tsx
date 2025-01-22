@@ -3,7 +3,7 @@ import AppImages from '../../assets/images/appImages';
 import CyDModalLayout from './v2/modal';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -28,7 +28,7 @@ export default function MoreViewModal(props: any) {
               onHome();
               onPress();
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='home'
               size={20}
               className='text-base400'
@@ -42,7 +42,7 @@ export default function MoreViewModal(props: any) {
               onHistory();
               onPress();
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='history'
               size={20}
               className='text-base400'
@@ -58,7 +58,7 @@ export default function MoreViewModal(props: any) {
               onBookmark();
               onPress();
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='bookmark-outline'
               size={20}
               className='text-base400'

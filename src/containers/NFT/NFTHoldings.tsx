@@ -3,6 +3,8 @@ import AppImages from '../../../assets/images/appImages';
 import { NFTHolding } from '../../models/NFTHolding.interface';
 import {
   CyDFastImage,
+  CyDIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -68,7 +70,7 @@ export function NFTHoldingsScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
           {nftHoldings[0].collectionName !== ''

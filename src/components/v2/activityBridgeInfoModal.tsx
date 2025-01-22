@@ -19,7 +19,7 @@ import {
   CyDFastImage,
   CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -130,7 +130,7 @@ export default function ActivityBridgeInfoModal({
               setModalVisible(false);
             }}>
             {!isCapturingDetails && (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400 top-[20px] right-[20px]'

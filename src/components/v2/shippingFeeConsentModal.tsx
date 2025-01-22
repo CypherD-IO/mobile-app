@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -35,7 +35,7 @@ export default function ShippingFeeConsentModal({
           Please Note:
         </CyDText>
         <CyDView className={'flex flex-row mt-[18px]'}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'triangle'}
             size={14}
             className='text-p150 rotate-90 mr-[4px]'
@@ -58,7 +58,7 @@ export default function ShippingFeeConsentModal({
               },
             )}>
             {hasConsent && (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='check-bold'
                 size={16}
                 className='text-base400'
@@ -86,7 +86,7 @@ export default function ShippingFeeConsentModal({
       <CyDView
         className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onFailure()} className={'z-[50] self-end'}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400'

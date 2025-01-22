@@ -165,7 +165,7 @@ export const CyDSwipeable = cssInterop(Swipeable, {
   className: 'containerStyle',
 });
 
-export const CydMaterialDesignIcons = cssInterop(MaterialDesignIcons, {
+export const CyDMaterialDesignIcons = cssInterop(MaterialDesignIcons, {
   className: {
     target: 'style',
     nativeStyleToProp: {

@@ -24,7 +24,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -292,7 +292,7 @@ export default function CardTransactions() {
           <CyDTouchView
             onPress={() => setExportOptionOpen(false)}
             className={'z-[50] self-end'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -338,7 +338,7 @@ export default function CardTransactions() {
             onPress={() => {
               setFilterModalVisible(true);
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='filter-variant'
               size={24}
               className='text-base400'
@@ -351,7 +351,7 @@ export default function CardTransactions() {
               setExportOptionOpen(true);
               // void exportCardTransactions();
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='export-variant'
               size={20}
               className='text-base400'

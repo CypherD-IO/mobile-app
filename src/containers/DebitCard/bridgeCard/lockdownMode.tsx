@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import {
+  CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -135,7 +136,7 @@ export default function LockdownMode() {
                 onPress={() => {
                   navigation.goBack();
                 }}>
-                <CyDIconsPack
+                <CyDIcons
                   name='arrow-left'
                   size={24}
                   className='text-base400'
@@ -150,7 +151,7 @@ export default function LockdownMode() {
 
             <CyDView className='mt-[28px] rounded-[16px] bg-n0 items-center mx-[16px] py-[24px] px-[24px]'>
               <CyDView className='rounded-lg h-[112px] w-[112px] my-[24px] bg-n20 flex flex-row items-center justify-center'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='hand-front-right'
                   size={70}
                   className='text-p100 self-center'

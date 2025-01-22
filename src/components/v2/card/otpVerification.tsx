@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
+  CyDIcons,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -134,11 +135,7 @@ export default function OtpVerificationModal({
               setIsModalVisible(false);
             }}
             className='w-[36px] h-[36px]'>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
         </CyDView>
         <OTPHeader />

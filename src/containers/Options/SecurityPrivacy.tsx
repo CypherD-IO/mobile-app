@@ -17,7 +17,7 @@ import {
   CyDImage,
   CyDImageBackground,
   CyDFlatList,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
@@ -105,7 +105,7 @@ export default function SecurityPrivacy(props) {
               className={
                 'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
               }>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={isSecurityOptionDisabled ? 'shield-lock' : item.logo}
                 size={24}
                 className='text-base400'

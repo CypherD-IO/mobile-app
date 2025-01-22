@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
+  CyDIcons,
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -107,7 +108,7 @@ export default function GetYourCardInfo() {
                     : navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
                 }}
                 className='w-[36px] h-[36px] my-[16px]'>
-                <CyDIconsPack
+                <CyDIcons
                   name='arrow-left'
                   size={24}
                   className='text-base400'
@@ -123,7 +124,7 @@ export default function GetYourCardInfo() {
 
               <CyDView className='mt-[24px]'>
                 <CyDView className='flex flex-row '>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='earth'
                     size={24}
                     className='text-base400 mr-[8px]'
@@ -146,7 +147,7 @@ export default function GetYourCardInfo() {
                   </CyDView>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='account-outline'
                     size={24}
                     className='text-base400 mr-[8px]'
@@ -156,7 +157,7 @@ export default function GetYourCardInfo() {
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='home-outline'
                     size={24}
                     className='text-base400 mr-[8px]'
@@ -166,7 +167,7 @@ export default function GetYourCardInfo() {
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='at'
                     size={24}
                     className='text-base400 mr-[8px]'
@@ -176,7 +177,7 @@ export default function GetYourCardInfo() {
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='send-outline'
                     size={24}
                     className='text-base400 mr-[8px]'
@@ -186,7 +187,7 @@ export default function GetYourCardInfo() {
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-start mt-[24px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='card-account-details-outline'
                     size={24}
                     className='text-base400 mr-[8px]'
@@ -201,7 +202,7 @@ export default function GetYourCardInfo() {
                   </CyDView>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[24px]'>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='cash'
                     size={24}
                     className='text-base400 mr-[8px]'

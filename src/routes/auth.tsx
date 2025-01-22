@@ -109,8 +109,12 @@ import TokenOverviewV2 from '../containers/TokenOverview';
 import LegalScreen from '../containers/legalDocs/legal';
 import TransFiScreen from '../containers/ramp/transFi';
 import { useKeyboard } from '../hooks/useKeyboard';
-import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
-import { CyDIconsPack } from '../customFonts/generator';
+import {
+  CyDIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../styles/tailwindStyles';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -135,7 +139,7 @@ const defaultHeaderLeft = (
           navigation.goBack();
         }
       }}>
-      <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+      <CyDIcons name='arrow-left' size={24} className='text-base400' />
     </CyDTouchView>
   );
 };
@@ -166,7 +170,7 @@ const CustomHeader = ({
             navigation.goBack();
           }
         }}>
-        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
       <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
         {title}
@@ -212,14 +216,12 @@ export function PortfolioStackScreen() {
 
   return (
     <PortfolioStack.Navigator initialRouteName={screenTitle.PORTFOLIO_SCREEN}>
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.PORTFOLIO_SCREEN}
         component={PortfolioScreen}
         options={{ headerShown: false }}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN}
         component={DEFIOverviewScreen}
@@ -228,7 +230,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
         component={NFTOverviewScreen}
@@ -237,7 +238,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.NFT_HOLDINGS_SCREEN}
         component={NFTHoldingsScreen}
@@ -246,7 +246,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.TRANSFI_SCREEN}
         component={TransFiScreen}
@@ -261,7 +260,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.TOKEN_OVERVIEW}
         component={TokenOverviewV2}
@@ -270,7 +268,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.COSMOS_VALIDATORS}
         component={CosmosValidators}
@@ -279,7 +276,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.COSMOS_UNBOUNDINGS}
         component={CosmosUnboundings}
@@ -294,7 +290,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.COSMOS_ACTION}
         component={CosmosAction}
@@ -303,7 +298,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.COSMOS_REVALIDATOR}
         component={CosmosSelectReValidator}
@@ -318,7 +312,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
@@ -333,7 +326,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.NFTS_DETAIL}
         component={TransDetail}
@@ -348,7 +340,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.GEN_WEBVIEW}
         component={TransDetail}
@@ -363,7 +354,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.CB_PAY}
         component={CoinbasePay}
@@ -378,7 +368,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.ON_META}
         component={Onmeta}
@@ -393,7 +382,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.ENTER_AMOUNT}
         component={EnterAmount}
@@ -408,7 +396,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.SEND_TO}
         component={SendTo}
@@ -423,7 +410,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
@@ -452,7 +438,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       {/* used in two stacks */}
       <PortfolioStack.Screen
         name={screenTitle.QRCODE}
@@ -498,7 +483,6 @@ export function PortfolioStackScreen() {
         })}
       />
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
@@ -507,7 +491,6 @@ export function PortfolioStackScreen() {
         })} 
       /> */}
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.LOCKDOWN_MODE_AUTH}
         component={LockdownModeAuth}
@@ -523,7 +506,6 @@ export function PortfolioStackScreen() {
         })}
       /> */}
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
         component={CardControlsSettings}
@@ -538,7 +520,6 @@ export function PortfolioStackScreen() {
         })}
       /> */}
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.CARD_CONTROLS_MENU}
         component={CardControlsMenu}
@@ -547,7 +528,6 @@ export function PortfolioStackScreen() {
         })}
       /> */}
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.DOMESTIC_CARD_CONTROLS}
         component={CardControlsSettings}
@@ -562,7 +542,6 @@ export function PortfolioStackScreen() {
         })}
       /> */}
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.EDIT_USAGE_LIMITS}
         component={EditLimits}
@@ -571,7 +550,6 @@ export function PortfolioStackScreen() {
         })}
       /> */}
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.CARD_UNLOCK_AUTH}
         component={CardUnlockAuth}
@@ -587,7 +565,6 @@ export function PortfolioStackScreen() {
         })}
       /> */}
 
-      {/* darkmode done */}
       {/* <PortfolioStack.Screen
         name={screenTitle.CARD_ACTIAVTION_SCREEN}
         component={ActivateCardScreen}
@@ -623,13 +600,11 @@ export function DebitCardStackScreen({ route }) {
 
   return (
     <FundCardStack.Navigator initialRouteName={initialRouteName}>
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
         options={{ headerShown: false }}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_CONTROLS_MENU}
         component={CardControlsMenu}
@@ -637,7 +612,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
@@ -645,7 +619,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.TELEGRAM_PIN_SETUP}
         component={SetTelegramPin}
@@ -653,7 +626,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LOCKDOWN_MODE_AUTH}
         component={LockdownModeAuth}
@@ -667,7 +639,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_UNLOCK_AUTH}
         component={CardUnlockAuth}
@@ -675,7 +646,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.THREE_D_SECURE}
         component={ThreeDSecure}
@@ -689,7 +659,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.DOMESTIC_CARD_CONTROLS}
         component={CardControlsSettings}
@@ -703,7 +672,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
         component={CardControlsSettings}
@@ -717,7 +685,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.EDIT_USAGE_LIMITS}
         component={EditLimits}
@@ -730,7 +697,6 @@ export function DebitCardStackScreen({ route }) {
         component={KYCVerficicationV2}
         options={() => ({ headerShown: false })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_SCREEN}
         component={CypherCardScreen}
@@ -738,7 +704,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         }}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_TRANSACTIONS_SCREEN}
         component={CardTransactions}
@@ -753,7 +718,6 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_TRANSACTION_DETAILS_SCREEN}
         component={TransactionDetails}
@@ -761,7 +725,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_FUND_CARD_SCREEN}
         component={BridgeFundCardScreen}
@@ -775,7 +738,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_QUOTE_SCREEN}
         component={CardQuote}
@@ -789,7 +751,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.AUTO_LOAD_SCREEN}
         component={AutoLoad}
@@ -803,7 +764,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.PREVIEW_AUTO_LOAD_SCREEN}
         component={PreviewAutoLoad}
@@ -817,7 +777,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_REVEAL_AUTH_SCREEN}
         component={CardRevealAuthScreen}
@@ -833,7 +792,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_ACTIAVTION_SCREEN}
         component={ActivateCardScreen}
@@ -847,7 +805,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_SET_PIN_SCREEN}
         component={SetPinScreen}
@@ -855,7 +812,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LINK_ANOTHER_WALLET}
         component={LinkAnotherWallet}
@@ -869,7 +825,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LINKED_WALLETS}
         component={LinkedWallets}
@@ -883,7 +838,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LINK_WALLET_AUTH}
         component={LinkWalletAuth}
@@ -897,7 +851,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_NOTIFICATION_SETTINGS}
         component={CardNotificationSettings}
@@ -911,7 +864,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN}
         component={UpdateCardContactDetails}
@@ -925,7 +877,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
@@ -944,7 +895,6 @@ export function DebitCardStackScreen({ route }) {
         component={OpenLegalScreen}
         options={{ headerShown: false }}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
@@ -958,7 +908,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.ORDER_STEPS_SCREEN}
         component={OrderSteps}
@@ -966,7 +915,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN}
         component={VerifyShippingAddress}
@@ -981,7 +929,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.ADD_DELIVERY_ADDRESS_SCREEN}
         component={AddDeliveryAddress}
@@ -989,7 +936,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.SHIPPING_CHECKOUT_SCREEN}
         component={ShippingCheckout}
@@ -997,7 +943,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.SHIPPING_CONFIRMATION_SCREEN}
         component={ShippingConfirmation}
@@ -1005,7 +950,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_WELCOME_SCREEN}
         component={WelcomeSceens}
@@ -1013,7 +957,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         }}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION}
         component={OTPVerification}
@@ -1021,7 +964,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.TELEGRAM_SETUP}
         component={TelegramSetup}
@@ -1029,7 +971,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.GET_YOUR_CARD}
         component={GetYourCardInfo}
@@ -1037,7 +978,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_APPLICATION}
         component={CardApplicationV2}
@@ -1045,7 +985,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
         component={IHaveReferralCodeScreen}
@@ -1053,7 +992,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         }}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.MIGRATE_FUNDS}
         component={MigratePCFunds}
@@ -1067,7 +1005,6 @@ export function DebitCardStackScreen({ route }) {
           ),
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CRYPTO_WITHDRAWAL}
         component={CryptoWithdrawal}
@@ -1075,7 +1012,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.WITHDRAW_CONFIRMATION}
         component={WithdrawConfirmation}
@@ -1083,7 +1019,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.WITHDRAW_SUCCESS}
         component={WithDrawSuccess}
@@ -1098,7 +1033,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.GLOBAL_CARD_OPTIONS}
         component={GlobalOptions}
@@ -1106,7 +1040,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.MANAGE_SUBSCRIPTION}
         component={ManageSubscription}
@@ -1114,7 +1047,6 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.FIRST_LOAD_CARD}
         component={FirstLoadCard}
@@ -1162,11 +1094,6 @@ export function BrowserStackScreen({
         component={BrowserScreen}
         options={{ headerShown: false }}
       />
-      {/* <BrowserStack.Screen
-        name={screenTitle.IMPORT_ANOTHER_WALLET}
-        component={ImportAnotherWallet}
-        options={{ headerShown: false }}
-      /> */}
 
       <BrowserStack.Screen
         name={screenTitle.TRANS_DETAIL}
@@ -1215,7 +1142,6 @@ export function SwapStackScreen({
   }, []);
   return (
     <SwapStack.Navigator initialRouteName={screenTitle.SWAP_SCREEN}>
-      {/* darkmode done */}
       <SwapStack.Screen
         name={screenTitle.SWAP_SCREEN}
         component={Bridge}
@@ -1258,14 +1184,12 @@ export function OptionsStackScreen({
 
   return (
     <OptionsStack.Navigator initialRouteName={screenTitle.OPTIONS_SCREEN}>
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.OPTIONS_SCREEN}
         component={OptionsScreen}
         options={{ headerShown: false }}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ACTIVITIES}
         component={ActivityScreen}
@@ -1280,7 +1204,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.REWARDS}
         component={Rewards}
@@ -1289,7 +1212,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.REFERRALS}
         component={Referrals}
@@ -1298,7 +1220,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.PIN}
         component={PinValidation}
@@ -1307,7 +1228,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SET_PIN}
         component={SetPin}
@@ -1316,7 +1236,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CONFIRM_PIN}
         component={ConfirmPin}
@@ -1331,7 +1250,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ACTIVITYFILTER}
         component={ActivityFilter}
@@ -1346,7 +1264,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.MANAGE_WALLET}
         component={ManageWallet}
@@ -1361,7 +1278,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SECURITY_PRIVACY}
         component={SecurityPrivacy}
@@ -1376,7 +1292,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SEED_PHRASE}
         component={SeedPhrase}
@@ -1391,7 +1306,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.PRIVATE_KEY}
         component={PrivateKey}
@@ -1406,7 +1320,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.NOTIFICATION_SETTINGS}
         component={NotificationSettings}
@@ -1421,7 +1334,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ADVANCED_SETTINGS}
         component={AdvancedSettings}
@@ -1436,7 +1348,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CHANGE_PIN}
         component={ChangePin}
@@ -1451,7 +1362,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CONFIRM_CHANGE_PIN}
         component={ConfirmPin}
@@ -1466,7 +1376,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SET_CHANGE_PIN}
         component={SetPin}
@@ -1481,14 +1390,12 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.MY_ADDRESS}
         component={AddressBook}
         options={{ headerShown: false }}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CREATE_CONTACT}
         component={CreateContact}
@@ -1503,7 +1410,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.HOSTS_AND_RPC_SCREEN}
         component={HostsAndRPCScreen}
@@ -1518,7 +1424,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
@@ -1533,7 +1438,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.APP_SETTINGS}
         component={AppSettings}
@@ -1548,14 +1452,12 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       {/* <OptionsStack.Screen
         name={screenTitle.IMPORT_ANOTHER_WALLET}
         component={ImportAnotherWallet}
         options={{ headerShown: false }}
       /> */}
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
@@ -1570,7 +1472,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
@@ -1585,7 +1486,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.IMPORT_WALLET_OPTIONS}
         component={ImportWalletOptions}
@@ -1600,7 +1500,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ENTER_KEY}
         component={EnterKeyScreen}
@@ -1615,7 +1514,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CHOOSE_WALLET_INDEX}
         component={ChooseWalletIndex}
@@ -1624,7 +1522,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ENTER_PRIVATE_KEY}
         component={EnterPrivateKey}
@@ -1642,13 +1539,7 @@ export function OptionsStackScreen({
         name={screenTitle.WALLET_CONNECT}
         component={WalletConnectCamera}
         options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={'Wallet Connect'}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
+          headerShown: false,
         })}
       />
 
@@ -1666,14 +1557,12 @@ export function OptionsStackScreen({
         })}
       /> */}
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.OPEN_LEGAL_SCREEN}
         component={OpenLegalScreen}
         options={{ headerShown: false }}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
@@ -1688,7 +1577,6 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.BROWSER}
         component={BrowserStackScreen}

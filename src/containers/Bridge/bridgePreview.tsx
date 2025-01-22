@@ -14,7 +14,7 @@ import {
 import { ethers } from 'ethers';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDView,
 } from '../../styles/tailwindStyles';
@@ -129,7 +129,7 @@ export default function BridgeRoutePreview({
 
       {true && (
         <CyDView className='flex flex-row items-center bg-red20 rounded-[8px] p-[8px] mb-[12px]'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='alert'
             size={20}
             className='text-red400 mr-[10px]'

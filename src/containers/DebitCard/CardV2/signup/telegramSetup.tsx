@@ -25,9 +25,10 @@ import useAxios from '../../../../core/HttpRequest';
 import { copyToClipboard } from '../../../../core/util';
 import useCardUtilities from '../../../../hooks/useCardUtilities';
 import {
+  CyDIcons,
   CyDImage,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -118,11 +119,7 @@ export default function TelegramSetup() {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           )}
           <CyDText className='text-[28px] font-bold'>
@@ -152,7 +149,7 @@ export default function TelegramSetup() {
                   <CyDText className='text-center '>
                     Click the below button to connect
                   </CyDText>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'arrow-down-thin'}
                     size={20}
                     className='text-base400 ml-[4px]'
@@ -214,7 +211,7 @@ export default function TelegramSetup() {
                   <CyDText className=' text-base400 text-[14px] font-bold'>
                     {'/link ' + telegramConnectionId}
                   </CyDText>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'content-copy'}
                     size={16}
                     className='text-base400 ml-1.5'
@@ -222,7 +219,7 @@ export default function TelegramSetup() {
                 </CyDTouchView>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CyDText className='text-[14px] '>Just press send</CyDText>
-                  <CyDIconsPack
+                  <CyDIcons
                     name='arrow-left'
                     size={20}
                     className='text-base400 rotate-90 ml-[4px]'
@@ -252,7 +249,7 @@ export default function TelegramSetup() {
               void refreshProfile();
             }}>
             {!isLoading && (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='refresh'
                 size={18}
                 className='text-base400'

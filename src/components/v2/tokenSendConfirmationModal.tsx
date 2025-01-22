@@ -5,7 +5,7 @@ import { StyleSheet } from 'react-native';
 import Button from './button';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -50,7 +50,7 @@ export default function TokenSendConfirmationModal(
       <CyDView
         className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onCancel()} className={'z-[50]'}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400 z-[50] absolute right-[0px] '

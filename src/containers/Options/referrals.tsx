@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, Linking, Share, Clipboard } from 'react-native';
 import {
+  CyDIcons,
   CyDImage,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -131,7 +132,7 @@ const ReferralInfo = ({
       <CyDView className='flex flex-row items-center'>
         <CyDText className='text-[12px]'>{referralLink}</CyDText>
         <CyDTouchView onPress={() => copyToClipboard(referralLink)}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'content-copy'}
             size={16}
             className='text-base400'
@@ -146,7 +147,7 @@ const ReferralInfo = ({
       <CyDView className='flex flex-row items-center'>
         <CyDText className='font-bold'>{referralCode}</CyDText>
         <CyDTouchView onPress={() => copyToClipboard(referralCode)}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'content-copy'}
             size={20}
             className='text-base400 ml-[8px]'
@@ -196,7 +197,7 @@ const PointsInfo = ({
             <CyDTouchView
               onPress={() => copyToClipboard(masterAddress)}
               className='ml-[8px]'>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'content-copy'}
                 size={20}
                 className='text-base400'
@@ -404,7 +405,7 @@ export default function Referrals() {
             navigation.goBack();
           }}
           className='w-[36px] h-[36px]'>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDView className='flex-1 '>
           <CyDText className='text-[16px] font-bold -ml-[16px] text-center'>
@@ -435,7 +436,7 @@ export default function Referrals() {
               type={ButtonType.SECONDARY}
               title={t('NEW_CODE')}
               icon={
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='plus-circle'
                   size={20}
                   className='text-base400 mr-[4px]'

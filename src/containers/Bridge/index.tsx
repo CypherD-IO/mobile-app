@@ -46,7 +46,7 @@ import {
   CyDIcons,
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -1700,11 +1700,7 @@ const Bridge: React.FC = () => {
                   ? navigation.goBack()
                   : resetAndSetIndex();
               }}>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           )}
           <CyDText className='text-base400 font-extrabold text-[28px] font-manrope'>
@@ -2278,7 +2274,7 @@ const Bridge: React.FC = () => {
                     void manualRefreshQuote();
                   }}
                   disabled={loading.quoteLoading}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='autorenew'
                     size={14}
                     className={clsx('mr-[4px] text-base400', {
@@ -2313,7 +2309,7 @@ const Bridge: React.FC = () => {
                     <CyDText>{`${signaturesRequired} signature required`}</CyDText>
                   </CyDSkeleton>
                   <CyDView className='flex flex-row items-center w-[50%] justify-end'>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={'clock-time-five'}
                       size={20}
                       className='text-base400 mr-[4px]'

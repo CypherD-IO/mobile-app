@@ -5,7 +5,7 @@ import {
   CyDView,
   CyDText,
   CyDScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import {
@@ -116,13 +116,14 @@ export default function OnBoarding({ navigation }) {
                 },
               )}>
               {!loading && (
-                <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
+                <CyDText
+                  className={'text-[16px] font-extrabold w-[80%] text-black'}>
                   {t('CREATE_WALLET').toString()}
                 </CyDText>
               )}
               {/* {loading && <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />} */}
               {!loading && (
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='chevron-right'
                   size={16}
                   className=''
@@ -139,7 +140,7 @@ export default function OnBoarding({ navigation }) {
               <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET').toString()}
               </CyDText>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={16}
                 className='text-base400'
@@ -155,7 +156,7 @@ export default function OnBoarding({ navigation }) {
               <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET_USING_PRIVATE_KEY').toString()}
               </CyDText>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={16}
                 className='text-base400'
@@ -191,7 +192,7 @@ export default function OnBoarding({ navigation }) {
             <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
               {t('TRACK_ANY_WALLET')}
             </CyDText>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='chevron-right'
               size={16}
               className='text-base400'

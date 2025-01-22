@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -55,7 +55,7 @@ export default function ThreeDSecure() {
               <CyDText className='text-[14px] text-b150'>
                 {isTelegramEnabled ? 'Telegram' : 'SMS'}
               </CyDText>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={16}
                 className='text-base400 ml-2'

@@ -12,7 +12,7 @@ import { HdWalletContext } from '../../core/util';
 import {
   CyDText,
   CyDTouchView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDView,
   CyDFastImage,
   CyDIcons,
@@ -147,7 +147,7 @@ export const AddressBookContainer = ({
                   showToast(`${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`);
                   sendFirebaseEvent(hdWalletContext, 'copy_address');
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'content-copy'}
                   size={20}
                   className='text-base400'
@@ -193,7 +193,7 @@ export const OptionsContainer = ({
         )}
       </CyDView>
       <CyDView>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name={'chevron-right'}
           size={24}
           className='text-base400'

@@ -15,8 +15,9 @@ import { HdWalletContext } from '../core/util';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import {
   CyDFlatList,
+  CyDIcons,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -63,7 +64,7 @@ const RenderWalletAddresses = (
         setSelectedIndex(item.index);
       }}>
       <CyDText className='ml-[10px] mr-[20px]'>{item.index}</CyDText>
-      <CydMaterialDesignIcons
+      <CyDMaterialDesignIcons
         name={randomIcons[item.index % randomIcons.length]}
         size={24}
         className='text-base400'
@@ -104,11 +105,7 @@ export default function ChooseWalletIndexComponent({
               onPress={() => {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           )}
           <CyDView className='w-[calc(100% - 40px)] mx-auto'>
@@ -176,7 +173,7 @@ export default function ChooseWalletIndexComponent({
           loaderStyle={{ height: 25, width: 25 }}
         />
         <CyDView className='flex flex-row mt-[8px] justify-center'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='shield-lock'
             size={18}
             className='text-base400'

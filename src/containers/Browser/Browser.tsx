@@ -44,7 +44,7 @@ import useWeb3 from '../../hooks/useWeb3';
 import { isIOS } from '../../misc/checkers';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -534,7 +534,7 @@ export default function Browser({ route, navigation }: any) {
               onPress={() => {
                 handleBackButton();
               }}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='chevron-left'
                 size={24}
                 className='text-base400'
@@ -547,7 +547,7 @@ export default function Browser({ route, navigation }: any) {
               onPress={() => {
                 handleForwardButton();
               }}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={24}
                 className='text-base400'
@@ -561,7 +561,7 @@ export default function Browser({ route, navigation }: any) {
               onPress={() => {
                 handleReload();
               }}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='refresh'
                 size={24}
                 className='text-base400'
@@ -579,7 +579,7 @@ export default function Browser({ route, navigation }: any) {
             (inbuildPage === 'webview' || inbuildPage === 'webviewError') && (
               <CyDView className='ml-[2px]' sentry-label='browser-search-erase'>
                 {isSslSecure && (
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='lock'
                     size={20}
                     className='text-base400 ml-[5px]'
@@ -596,7 +596,7 @@ export default function Browser({ route, navigation }: any) {
             )}
           {onFocus && (
             <CyDTouchView sentry-label='browser-search-erase'>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='magnify'
                 size={20}
                 className='text-base400 mr-1'
@@ -648,7 +648,7 @@ export default function Browser({ route, navigation }: any) {
               setInputText('');
             }}>
             {onFocus && (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='close-circle'
                 size={20}
                 className='text-base400'
@@ -687,7 +687,7 @@ export default function Browser({ route, navigation }: any) {
             onPress={() => {
               setMoreview(true);
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'dots-vertical'}
               size={24}
               className={'text-base400'}
@@ -716,7 +716,7 @@ export default function Browser({ route, navigation }: any) {
               </CyDView>
             </CyDView>
             <CyDTouchView onPress={onBookMark} className=''>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={
                   isBookmarkedAlready(websiteInfo.url)
                     ? 'bookmark'
@@ -833,7 +833,7 @@ export default function Browser({ route, navigation }: any) {
                           })
                           .catch(e => Sentry.captureException(e));
                       }}>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='close-circle'
                         size={20}
                         className='text-base400 '
@@ -931,7 +931,7 @@ export default function Browser({ route, navigation }: any) {
                       onPress={() => {
                         deleteBookmark(favourite);
                       }}>
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name='close-circle'
                         size={20}
                         className='text-base400 ml-[-20px]'
@@ -1017,7 +1017,7 @@ export default function Browser({ route, navigation }: any) {
                               Sentry.captureException(e);
                             });
                         }}>
-                        <CydMaterialDesignIcons
+                        <CyDMaterialDesignIcons
                           name='close-circle'
                           size={20}
                           className='text-base400 ml-3'

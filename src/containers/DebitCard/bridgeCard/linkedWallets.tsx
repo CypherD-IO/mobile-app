@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { GlobalContext } from '../../../core/globalContext';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -91,7 +91,7 @@ export function LinkedWallets({
                                 'copy_address',
                               );
                             }}>
-                            <CydMaterialDesignIcons
+                            <CyDMaterialDesignIcons
                               name={'content-copy'}
                               size={18}
                               className='text-base400'
@@ -118,7 +118,7 @@ export function LinkedWallets({
                                 },
                               );
                             }}>
-                            <CydMaterialDesignIcons
+                            <CyDMaterialDesignIcons
                               name='trash-can-outline'
                               size={20}
                               className='text-base400'

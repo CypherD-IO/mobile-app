@@ -19,7 +19,7 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
   CyDKeyboardAwareScrollView,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -244,7 +244,7 @@ export default function LinkAnotherWallet() {
                             onPress={() => {
                               formProps.setFieldValue(`${field}`, '');
                             }}>
-                            <CydMaterialDesignIcons
+                            <CyDMaterialDesignIcons
                               name={'close'}
                               size={24}
                               className='text-base400'

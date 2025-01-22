@@ -3,7 +3,7 @@ import {
   CyDView,
   CyDText,
   CyDFlatList,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDTouchView,
 } from '../../styles/tailwindStyles';
 import Empty from '../../components/v2/empty';

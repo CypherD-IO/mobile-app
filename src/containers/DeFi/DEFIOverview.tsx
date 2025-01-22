@@ -8,8 +8,9 @@ import analytics from '@react-native-firebase/analytics';
 import {
   CyDAnimatedView,
   CyDFastImage,
+  CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -244,7 +245,7 @@ export function DEFIOverviewScreen() {
           <CyDTouchView
             onPress={() => setImageZoomIn(false)}
             className={'z-[50] bg-n0 self-end'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -265,7 +266,7 @@ export function DEFIOverviewScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
           {protocol.protocolName}
@@ -403,7 +404,7 @@ export function DEFIOverviewScreen() {
               <CyDText className='underline text-[12px] text-appColor pr-[4px]'>
                 {protocol.protocolURL}
               </CyDText>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='open-in-new'
                 size={14}
                 className='text-base400'

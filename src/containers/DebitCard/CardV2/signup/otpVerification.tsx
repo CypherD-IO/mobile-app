@@ -14,8 +14,9 @@ import {
   CyDTextInput,
   CyDScrollView,
   CyDKeyboardAvoidingView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDLottieView,
+  CyDIcons,
 } from '../../../../styles/tailwindStyles';
 import AppImages from '../../../../../assets/images/appImages';
 import OTPInput from '../../../../components/v2/otpBox';
@@ -205,7 +206,7 @@ export default function OTPVerification(): JSX.Element {
                 setIsEditEmailModalVisible(false);
               }}
               className={'z-[50] self-end'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'
@@ -247,11 +248,7 @@ export default function OTPVerification(): JSX.Element {
         {/* remove the CardProviderSwitch after sunsetting PC */}
         <CyDView className='flex-row justify-between items-center'>
           <CyDTouchView className='' onPress={handleBackPress}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
           <CardProviderSwitch />
           <CyDView />

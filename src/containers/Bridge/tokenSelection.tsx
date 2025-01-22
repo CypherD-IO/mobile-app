@@ -14,7 +14,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -187,7 +187,7 @@ function ChooseTokenModal({
                 setModalVisible(false);
               }}
               className={'absolute z-[50] top-[20px] right-[24px]'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'
@@ -323,7 +323,7 @@ function ChainSelectionModal({
         <CyDTouchView
           onPress={() => setModalVisible(false)}
           className='absolute z-[50] top-[20px] right-[24px]'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400'
@@ -568,7 +568,7 @@ export default function TokenSelectionV2({
                     </CyDView>
                   </CyDView>
                 </CyDView>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'chevron-down'}
                   size={24}
                   className={'text-base400'}
@@ -580,7 +580,7 @@ export default function TokenSelectionV2({
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='bg-n40 h-[1px] w-[45%] my-[24px]' />
             <CyDTouchView onPress={onToggle}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='swap-vertical'
                 size={32}
                 className='text-base400 p-[3px]'
@@ -663,7 +663,7 @@ export default function TokenSelectionV2({
                     )}
                   </CyDView>
                 </CyDView>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'chevron-down'}
                   size={24}
                   className={'text-base400'}

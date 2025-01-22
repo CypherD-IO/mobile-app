@@ -22,8 +22,9 @@ import {
 } from '../../../core/util';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -138,7 +139,7 @@ const CopyButton = ({
 
   return (
     <CyDTouchView onPress={handleCopy}>
-      <CydMaterialDesignIcons
+      <CyDMaterialDesignIcons
         name={'content-copy'}
         size={16}
         className='text-base400'
@@ -189,7 +190,7 @@ const InfoMessage: React.FC<InfoMessageProps> = ({ message, condition }) => {
   return (
     <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
       <CyDView className='flex-row items-center'>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='information-outline'
           size={24}
           className='text-base400'
@@ -226,7 +227,7 @@ const MerchantDetailsModal = ({
             {t('MERCHANT_DETAILS')}
           </CyDText>
           <CyDTouchView onPress={() => setShowModal(false)}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -301,7 +302,7 @@ const MerchantDetailsModal = ({
           }}
           style='py-[15px]'
           type={ButtonType.GREY_FILL}
-          icon={<CydMaterialDesignIcons name='map-marker-radius' size={24} />}
+          icon={<CyDMaterialDesignIcons name='map-marker-radius' size={24} />}
         />
       </CyDView>
     </CyDModalLayout>
@@ -346,7 +347,7 @@ const DeclinedTransactionActionItem = ({
     return (
       <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-start'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='information-outline'
             size={24}
             className='text-base400 mr-[6px]'
@@ -418,7 +419,7 @@ const DeclinedTransactionActionItem = ({
             }
             className='w-[24px] h-[24px]'
           /> */}
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={fundsAvailable ? 'check-circle' : 'information-outline'}
             size={20}
             className={clsx('mr-[2px]', {
@@ -457,7 +458,7 @@ const DeclinedTransactionActionItem = ({
     return (
       <CyDView className='rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-center'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='information-outline'
             size={24}
             className='text-base400 mr-[6px]'
@@ -833,7 +834,7 @@ const TransactionDetail = ({
                   <CyDText className='text-[12px]'>
                     {t('VIEW_TRANSACTION')}
                   </CyDText>
-                  <CyDIconsPack
+                  <CyDIcons
                     name='arrow-left'
                     size={16}
                     className='text-base400'
@@ -1178,7 +1179,7 @@ export default function TransactionDetails() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack
+          <CyDIcons
             name='arrow-left'
             size={24}
             className='text-base400 ml-[16px]'
@@ -1353,7 +1354,7 @@ export default function TransactionDetails() {
                     }}
                     type={ButtonType.GREY_FILL}
                     icon={
-                      <CydMaterialDesignIcons
+                      <CyDMaterialDesignIcons
                         name={'share'}
                         size={16}
                         className='text-base400'
