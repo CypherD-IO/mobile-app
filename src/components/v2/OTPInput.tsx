@@ -5,7 +5,7 @@ import { isAndroid } from '../../misc/checkers';
 import { t } from 'i18next';
 import {
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDTextInput,
   CyDTouchView,
   CyDView,
@@ -81,7 +81,7 @@ function OtpInput({
         {showSecuredEntryToggle && (
           <CyDView className={'items-end'}>
             <CyDTouchView onPress={toggleSecuredEntry}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={securedEntry ? 'eye-outline' : 'eye-off-outline'}
                 size={27}
                 className='text-base400 mr-[12px]'

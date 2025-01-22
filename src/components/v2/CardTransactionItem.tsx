@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import {
   CyDFastImage,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -120,7 +120,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                 resizeMode={'contain'}
               />
             ) : (
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={getTransactionIndicator(type)}
                 size={16}
                 className={clsx('text-base400', {
@@ -160,7 +160,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         <CyDView className='flex justify-center items-end'>
           {tStatus === ReapTxnStatus.DECLINED ? (
             <CyDView className='flex flex-row items-center'>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='alert-circle'
                 size={20}
                 className='text-n200 mr-[2px]'

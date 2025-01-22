@@ -91,6 +91,7 @@ const resources = {
       ADDRESS: 'Address',
       COPY_ADDRESS: 'COPY ADDRESS',
       WALLET_CONNECT: 'WALLET CONNECT',
+      WALLET_CONNECT_SMALL: 'Wallet Connect',
       REVEAL_SEED_PHARSE: 'Reveal Seed Phrase',
       REVEAL_PRIVATE_KEY: 'Reveal Private Key',
       IMPORT_ANOTHER_WALLET: 'IMPORT WALLET',

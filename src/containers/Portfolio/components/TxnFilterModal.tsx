@@ -2,7 +2,7 @@ import React, { memo, useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, StyleSheet } from 'react-native';
 import {
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -115,7 +115,7 @@ const TxnFilterModal = ({
               setModalVisible(false);
             }}
             className='p-[5px]'>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'

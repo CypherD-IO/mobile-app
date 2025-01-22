@@ -8,7 +8,7 @@ import {
   CyDFlatList,
   CyDImage,
   CyDImageBackground,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -131,7 +131,7 @@ export default function TrackWallet({
   const RenderTrackWalletInfo = ({ item }) => {
     return (
       <CyDView className={'flex flex-row my-[18px]'} key={item}>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name={'triangle'}
           size={14}
           className='text-p150 rotate-90 mt-[6px]'
@@ -170,7 +170,7 @@ export default function TrackWallet({
                   })
                 : setAddress('');
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={address === '' ? 'qrcode-scan' : 'close'}
               size={24}
               className='text-base400'
@@ -178,7 +178,7 @@ export default function TrackWallet({
           </CyDTouchView>
         </CyDView>
         <CyDView className='flex flex-row items-center self-start mt-[15px] ml-[5px]'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='information-outline'
             size={16}
             className='text-base400 mr-[6px]'
@@ -190,7 +190,7 @@ export default function TrackWallet({
         <Button
           title={t('TRACK')}
           icon={
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='target'
               size={24}
               className='text-base400'

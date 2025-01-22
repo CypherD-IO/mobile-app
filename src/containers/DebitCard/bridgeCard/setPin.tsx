@@ -17,9 +17,10 @@ import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { ButtonType, CardProviders } from '../../../constants/enum';
 import {
+  CyDIcons,
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -156,7 +157,7 @@ export default function SetPin() {
         <CyDTouchView
           className='flex-row items-center px-[16px]'
           onPress={() => navigation.goBack()}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
           <CyDText className='ml-[12px] text-[18px] font-normal'>
             {capitalize(card.type)} {'card **'}
             {card.last4}
@@ -167,7 +168,7 @@ export default function SetPin() {
       <CyDKeyboardAwareScrollView className='flex-1 mt-[24px] px-[16px]'>
         {!pinSetSuccess && (
           <CyDView>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name='credit-card-lock-outline'
               size={36}
               className='text-base400'
@@ -321,7 +322,7 @@ export default function SetPin() {
             </CyDText>
 
             <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[16px] flex-row items-center'>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='information-outline'
                 size={24}
                 className='text-base400 flex-shrink-0'

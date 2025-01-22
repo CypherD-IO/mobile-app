@@ -7,7 +7,7 @@ import AppImages from '../../../assets/images/appImages';
 import {
   CyDFlatList,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -193,7 +193,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
             clearSearch();
             onCancel();
           }}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name={'close'}
             size={24}
             className='text-base400 top-[20px] right-[20px]'
@@ -226,7 +226,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
                 onPress={() => {
                   clearSearch();
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'

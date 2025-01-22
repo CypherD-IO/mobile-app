@@ -1,5 +1,12 @@
 import React, { useContext } from 'react';
-import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDIcons,
+  CyDMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { t } from 'i18next';
 import {
@@ -45,7 +52,7 @@ export default function ManageSubscription() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-[16px] font-bold text-base400'>
           {t('MANAGE_PREMIUM')}

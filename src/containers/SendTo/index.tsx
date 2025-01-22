@@ -67,7 +67,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTextInput,
@@ -1137,7 +1137,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                     })
                   : setAddressText('');
               }}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={addressText === '' ? 'qrcode-scan' : 'close'}
                 size={20}
                 className='text-base400'
@@ -1153,7 +1153,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                   onPress={() => {
                     void (async () => await fetchCopiedText())();
                   }}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'content-copy'}
                     size={14}
                     className='text-base400 mr-[8px]'
@@ -1189,7 +1189,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                         onPress={() => {
                           setMemo('');
                         }}>
-                        <CydMaterialDesignIcons
+                        <CyDMaterialDesignIcons
                           name={'close'}
                           size={24}
                           className='text-base400'

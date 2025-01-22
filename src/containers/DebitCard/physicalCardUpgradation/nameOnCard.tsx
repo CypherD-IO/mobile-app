@@ -4,7 +4,9 @@ import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CydMaterialDesignIcons,
+  CyDImage,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
 import {
   NavigationProp,
@@ -83,11 +85,7 @@ export default function NameOnCard() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDView className='my-[12px]'>
@@ -125,7 +123,7 @@ export default function NameOnCard() {
                 setIsPreferredNameModalVisible(true);
               }}>
               <CyDText className='text-[16px]'>{t('PREFERRED_NAME')}</CyDText>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'arrow-right-thin'}
                 size={16}
                 className=''

@@ -5,7 +5,7 @@ import { screenTitle } from '../../constants';
 import {
   CyDFlatList,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -51,7 +51,7 @@ const renderSettingsData = (item: IAppSettingsData, navigation: any) => {
             className={
               'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
             }>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={item.logo}
               size={24}
               className='text-base400'
@@ -60,7 +60,7 @@ const renderSettingsData = (item: IAppSettingsData, navigation: any) => {
           <CyDText className={' text-[16px]'}>{item.title}</CyDText>
         </CyDView>
 
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name={'chevron-right'}
           size={24}
           className='text-base400'

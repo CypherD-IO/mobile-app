@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StatusBar } from 'react-native';
 import {
+  CyDIcons,
   CyDImage,
   CyDLottieView,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -92,7 +94,7 @@ export default function Rewards() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDIconsPack
+            <CyDIcons
               name='arrow-left'
               size={24}
               className='text-base400 ml-[16px] mb-[12px]'

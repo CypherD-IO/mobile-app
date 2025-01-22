@@ -11,7 +11,7 @@ import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
 export default function Loading({ loadingText }: { loadingText?: string }) {
   const { t } = useTranslation();
   return (
-    <CyDSafeAreaView className='h-full'>
+    <CyDSafeAreaView className='h-full bg-n20'>
       <CyDView className='flex flex-1 flex-col h-full w-[70%] justify-center self-center'>
         <ActivityIndicator size='large' color={Colors.appColor} />
         <CyDText className='text-center  text-[14px] mt-[10px]'>

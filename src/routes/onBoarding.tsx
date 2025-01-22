@@ -10,9 +10,13 @@ import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import {
+  CyDIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../styles/tailwindStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../customFonts';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,7 +37,7 @@ const CustomHeader = ({
         onPress={() => {
           navigation.goBack();
         }}>
-        <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
       <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
         {title}
@@ -47,7 +51,6 @@ function OnBoardingStack(props: any) {
   const initialScreen = props.initialScreen ?? screenTitle.ONBOARDING;
   return (
     <Stack.Navigator initialRouteName={initialScreen}>
-      {/* darkmode done */}
       <Stack.Screen
         name={screenTitle.ONBOARDING}
         component={OnBoarding}
@@ -55,7 +58,6 @@ function OnBoardingStack(props: any) {
           headerShown: false,
         }}
       />
-      {/* darkmode done */}
       <Stack.Screen
         name={screenTitle.ENTER_KEY}
         component={EnterKeyScreen}
@@ -63,7 +65,6 @@ function OnBoardingStack(props: any) {
           headerShown: false,
         }}
       />
-      {/* darkmode done */}
       <Stack.Screen
         name={screenTitle.CHOOSE_WALLET_INDEX}
         component={ChooseWalletIndex}
@@ -71,7 +72,6 @@ function OnBoardingStack(props: any) {
           headerShown: false,
         })}
       />
-      {/* darkmode done */}
       <Stack.Screen
         name={screenTitle.ENTER_PRIVATE_KEY}
         component={EnterPrivateKey}
@@ -81,7 +81,6 @@ function OnBoardingStack(props: any) {
           ),
         }}
       />
-      {/* darkmode done */}
       <Stack.Screen
         name={screenTitle.IMPORT_WALLET_OPTIONS}
         component={ImportWalletOptions}

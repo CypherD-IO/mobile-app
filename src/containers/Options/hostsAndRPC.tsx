@@ -9,7 +9,7 @@ import {
   CyDImage,
   CyDSwitch,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { copyToClipboard } from '../../core/util';
 import { GlobalContext } from '../../core/globalContext';
@@ -236,7 +236,7 @@ export default function HostsAndRPCScreen({ navigation }) {
                   placeholder=''
                 />
                 <CyDTouchView onPress={() => onPressSeedPharse()}>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'content-copy'}
                     size={20}
                     className='text-base400'

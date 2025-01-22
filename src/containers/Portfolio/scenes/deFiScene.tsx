@@ -34,7 +34,7 @@ import {
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -293,7 +293,7 @@ const DeFiScene = ({
                   <CyDText className='underline font-bold text-[20px]'>
                     {protocol.protocolName}
                   </CyDText>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name='open-in-new'
                     size={14}
                     className='text-base400'

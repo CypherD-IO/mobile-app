@@ -6,7 +6,7 @@ import AppImages from '../../../../assets/images/appImages';
 import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -174,7 +174,7 @@ export default function AutoLoadOptionsModal({
             Auto Load
           </CyDText>
           <CyDTouchView onPress={() => setShowModal(false)}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -198,7 +198,7 @@ export default function AutoLoadOptionsModal({
                   />
                 </CyDView>
               ) : (
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={image}
                   size={24}
                   className={clsx('text-base400 mx-[12px]', {

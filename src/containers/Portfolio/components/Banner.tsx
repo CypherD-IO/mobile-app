@@ -5,7 +5,7 @@ import { showToast } from '../../utilities/toastUtility';
 import { setHideBalanceStatus } from '../../../core/asyncStorage';
 import {
   CyDImageBackground,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -60,7 +60,7 @@ export const Banner = ({ portfolioBalance }: BannerProps) => {
                 className={clsx(
                   'h-[32px] flex flex-row items-center pl-[10px] gap-[5px]',
                 )}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={hideBalance ? 'eye-off-outline' : 'eye-outline'}
                   size={16}
                   className='text-base400 self-center items-center'

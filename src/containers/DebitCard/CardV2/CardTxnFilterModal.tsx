@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler, StyleSheet } from 'react-native';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -120,7 +120,7 @@ const CardTxnFilterModal = ({
               setModalVisible(false);
             }}
             className='p-[5px]'>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'

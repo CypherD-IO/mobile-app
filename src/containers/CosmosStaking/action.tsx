@@ -7,8 +7,9 @@ import {
   CyDView,
   CyDTouchView,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDLottieView,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { BackHandler, StyleSheet } from 'react-native';
@@ -211,7 +212,7 @@ export default function CosmosAction({
             <CyDTouchView
               onPress={() => setSignModalVisible(false)}
               className={'w-full flex-1 flex-row py-[20px] justify-end z-[50]'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400'
@@ -239,7 +240,7 @@ export default function CosmosAction({
             </CyDView>
 
             <CyDView className={'flex flex-row mt-[20px]'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='gas-station'
                 size={16}
                 className='text-base400 mt-[3px]'
@@ -282,11 +283,7 @@ export default function CosmosAction({
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
           <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
             {from}
@@ -404,7 +401,7 @@ export default function CosmosAction({
               <CyDText className={'ml-[4px]  text-[16px] w-11/12 '}>
                 {reValidator.name}
               </CyDText>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={20}
                 className='text-base400'

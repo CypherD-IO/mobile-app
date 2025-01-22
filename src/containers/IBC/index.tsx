@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -380,7 +380,7 @@ export default function IBC({
               </CyDView>
 
               <CyDView className={'flex justify-center'}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'arrow-right-thin'}
                   size={16}
                   className=''
@@ -587,7 +587,7 @@ export default function IBC({
                       {chain?.name}
                     </CyDText>
                   </CyDView>
-                  <CydMaterialDesignIcons
+                  <CyDMaterialDesignIcons
                     name={'chevron-down'}
                     size={20}
                     className={'text-base400'}
@@ -617,7 +617,7 @@ export default function IBC({
                 onPress={() => {
                   setReceiverAddress('');
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'
@@ -659,7 +659,7 @@ export default function IBC({
                 onPress={() => {
                   setMemo('');
                 }}>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'
@@ -703,7 +703,7 @@ export default function IBC({
             </CyDView>
 
             <CyDView className={'flex justify-center'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'arrow-right-thin'}
                 size={16}
                 className=''

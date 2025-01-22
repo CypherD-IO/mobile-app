@@ -1,7 +1,7 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -14,7 +14,6 @@ import useConnectionManager from '../../../hooks/useConnectionManager';
 import { HdWalletContext } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import { t } from 'i18next';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderBarProps {
   navigation: any;
@@ -31,7 +30,6 @@ export const HeaderBar = ({
   onWCSuccess,
   renderTitleComponent,
 }: HeaderBarProps) => {
-  const insets = useSafeAreaInsets();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { connectionType } = useConnectionManager();
@@ -57,7 +55,7 @@ export const HeaderBar = ({
           className={'h-[22px] w-[22px]'}
           source={selectedChain.logo_url}
         />
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='menu-down'
           size={26}
           className='text-base400 mr-2'
@@ -65,7 +63,7 @@ export const HeaderBar = ({
       </CyDTouchView>
       {isReadOnlyWallet && (
         <CyDView className='flex flex-row items-center p-[6px] bg-p20 rounded-[8px]'>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='lock'
             size={20}
             className='text-base400 mr-[5px]'
@@ -85,7 +83,7 @@ export const HeaderBar = ({
               onSuccess,
             });
           }}>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='qrcode-scan'
             size={24}
             className='text-base400'

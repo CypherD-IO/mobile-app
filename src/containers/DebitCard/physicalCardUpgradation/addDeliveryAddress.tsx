@@ -7,7 +7,8 @@ import {
   CyDTouchView,
   CyDTextInput,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
 import {
   NavigationProp,
@@ -151,11 +152,7 @@ export default function AddDeliveryAddress() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDText className='text-[26px] font-bold mx-[16px]'>
@@ -199,7 +196,7 @@ export default function AddDeliveryAddress() {
                         </CyDText>
                       )}
                     </CyDView>
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name={'chevron-down'}
                       size={16}
                       className={'text-base400'}
@@ -230,7 +227,7 @@ export default function AddDeliveryAddress() {
                         <CyDText className={'text-center text-[16px] mx-[4px]'}>
                           {selectedCountryForDialCode.dialCode}
                         </CyDText>
-                        <CydMaterialDesignIcons
+                        <CyDMaterialDesignIcons
                           name={'chevron-down'}
                           size={16}
                           className={'text-base400'}

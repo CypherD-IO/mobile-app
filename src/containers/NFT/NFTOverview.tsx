@@ -7,8 +7,9 @@ import { NFTHolding } from '../../models/NFTHolding.interface';
 import { StyleSheet } from 'react-native';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -57,7 +58,7 @@ export function NFTOverviewScreen() {
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDIconsPack name='arrow-left' size={24} className='text-base400' />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
           {nftHolding.name}
@@ -76,7 +77,7 @@ export function NFTOverviewScreen() {
           <CyDTouchView
             onPress={() => setImageZoomIn(false)}
             className={'z-[50] self-end'}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={24}
               className='text-base400'
@@ -95,7 +96,7 @@ export function NFTOverviewScreen() {
           setImageZoomIn(true);
         }}
         className={'z-10'}>
-        <CydMaterialDesignIcons
+        <CyDMaterialDesignIcons
           name='arrow-expand'
           size={32}
           className='text-base400 absolute right-[10px] top-[10px] rounded-[40px]'
@@ -114,7 +115,7 @@ export function NFTOverviewScreen() {
           className={
             'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
           }>
-          <CydMaterialDesignIcons
+          <CyDMaterialDesignIcons
             name='list-box-outline'
             size={20}
             className='text-base400 mr-[6px]'
@@ -205,7 +206,7 @@ export function NFTOverviewScreen() {
               className={
                 'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
               }>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name='invoice-list'
                 size={20}
                 className='text-base400 mr-[6px]'

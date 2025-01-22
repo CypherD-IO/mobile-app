@@ -6,7 +6,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDKeyboardAvoidingView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -202,7 +202,7 @@ const ChooseCountryModal = ({
                 setModalVisible(false);
               }}
               className={'ml-[18px]'}>
-              <CydMaterialDesignIcons
+              <CyDMaterialDesignIcons
                 name={'close'}
                 size={24}
                 className='text-base400 z-[50] right-[0px]'

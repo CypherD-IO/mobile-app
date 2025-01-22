@@ -16,7 +16,7 @@ import {
   CyDTouchView,
   CyDFastImage,
   CyDIcons,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { Formik } from 'formik';
@@ -774,7 +774,7 @@ export const CreateContact = () => {
                               onPress={() => {
                                 formProps.setFieldValue(`${detail}`, '');
                               }}>
-                              <CydMaterialDesignIcons
+                              <CyDMaterialDesignIcons
                                 name={'close'}
                                 size={24}
                                 className='text-base400'
@@ -903,7 +903,7 @@ export const CreateContact = () => {
                                     addressIndex
                                   ] = '';
                                 }}>
-                                <CydMaterialDesignIcons
+                                <CyDMaterialDesignIcons
                                   name={'close'}
                                   size={24}
                                   className='text-base400'

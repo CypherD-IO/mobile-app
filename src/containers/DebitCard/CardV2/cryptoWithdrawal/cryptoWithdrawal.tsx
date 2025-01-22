@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -95,11 +96,7 @@ export default function CryptoWithdrawal() {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <CyDIconsPack
-                name='arrow-left'
-                size={24}
-                className='text-base400'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
             <CyDText className='text-[16px] font-bold text-base400'>
               {t('WITHDRAW_CRYPTO')}
@@ -113,7 +110,7 @@ export default function CryptoWithdrawal() {
                 currentCardProvider,
               });
             }}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'history'}
               size={32}
               className='text-base400'

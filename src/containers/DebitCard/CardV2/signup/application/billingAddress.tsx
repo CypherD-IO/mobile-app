@@ -4,7 +4,7 @@ import FormikTextInput from '../../../../../components/v2/formikInput';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -85,7 +85,7 @@ export default function BillingAddress({
               }}
               className={''}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'
@@ -154,7 +154,7 @@ export default function BillingAddress({
               }}
               className={''}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name={'close'}
                   size={24}
                   className='text-base400'

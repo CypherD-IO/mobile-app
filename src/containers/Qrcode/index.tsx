@@ -8,7 +8,7 @@ import {
   CyDText,
   CyDScrollView,
   CyDFastImage,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
@@ -351,7 +351,7 @@ export default function QRCodeGenerator() {
                     showToast(t('ADDRESS_COPY'));
                   }}
                   icon={
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='content-copy'
                       size={20}
                       className='text-base400'
@@ -364,7 +364,7 @@ export default function QRCodeGenerator() {
                 />
                 <Button
                   icon={
-                    <CydMaterialDesignIcons
+                    <CyDMaterialDesignIcons
                       name='share-variant'
                       size={24}
                       className='text-base400'

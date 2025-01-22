@@ -4,7 +4,7 @@ import {
   CyDText,
   CyDImage,
   CyDTouchView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { t } from 'i18next';
@@ -42,7 +42,7 @@ export default function NewReferralCodeModal({
             {t('REFERRAL_CODE')}
           </CyDText>
           <CyDTouchView onPress={() => setIsModalVisible(false)}>
-            <CydMaterialDesignIcons
+            <CyDMaterialDesignIcons
               name={'close'}
               size={16}
               className='text-base400'

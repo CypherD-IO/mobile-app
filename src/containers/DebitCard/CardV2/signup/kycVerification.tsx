@@ -3,7 +3,7 @@ import {
   CyDFastImage,
   CyDIcons,
   CyDLottieView,
-  CydMaterialDesignIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -289,11 +289,7 @@ export default function KYCVerficicationV2() {
                 screen: screenTitle.PORTFOLIO_SCREEN,
               })
             }>
-            <CyDIconsPack
-              name='arrow-left'
-              size={24}
-              className='text-base400'
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
           <CardProviderSwitch />
           <CyDView className='bg-n20 w-[32px] h-[32px]' />
@@ -338,7 +334,7 @@ export default function KYCVerficicationV2() {
                 <CyDText className=' text-[18px] font-bold font-manrope '>
                   {t('EDIT_APPLICATION')}
                 </CyDText>
-                <CydMaterialDesignIcons
+                <CyDMaterialDesignIcons
                   name='pencil-outline'
                   size={24}
                   className='text-base400 ml-1'
