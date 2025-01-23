@@ -3,7 +3,6 @@ import { StyleSheet } from 'react-native';
 import {
   CyDIcons,
   CyDLottieView,
-  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
