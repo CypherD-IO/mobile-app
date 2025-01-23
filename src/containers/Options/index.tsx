@@ -172,9 +172,9 @@ export default function Options() {
       <CyDScrollView className='flex-1'>
         <CyDView className='flex-1 mb-[120px]'>
           <CyDFastImage
-            className='h-[90px] w-[70px] m-[15px] self-center'
+            className='h-[100px] w-[100px] m-3 self-center'
             source={AppImages.APP_LOGO}
-            resizeMode='center'
+            resizeMode='contain'
           />
 
           <CyDView className='flex flex-row justify-center items-center pb-[25px]'>
