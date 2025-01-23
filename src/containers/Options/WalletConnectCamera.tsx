@@ -561,7 +561,8 @@ export default function WalletConnectCamera(props: {
         <CyDTouchView
           className=''
           onPress={() => {
-            props.navigation.goBack();
+            console.log('back');
+            props.navigation.navigate(C.screenTitle.OPTIONS);
           }}>
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>

@@ -10,18 +10,9 @@ import useWeb3 from '../../../hooks/useWeb3';
 import { ButtonType, Web3Origin } from '../../../constants/enum';
 import { Chain, chainIdNumberMapping } from '../../../constants/server';
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
-import {
-  CyDFastImage,
-  CyDScrollView,
-  CyDText,
-  CyDView,
-} from '../../../styles/tailwindStyles';
+import { CyDFastImage, CyDText, CyDView } from '../../../styles/tailwindStyles';
 import { t } from 'i18next';
 import Button from '../button';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { CText } from '../../../styles/textStyle';
-import { DynamicView } from '../../../styles/viewStyle';
-import * as C from '../../../constants/index';
 
 interface CosmosSigningModalProps {
   requestEvent: SignClientTypes.EventArguments['session_request'] | undefined;
@@ -95,7 +86,7 @@ export default function CosmosSigningModal({
 
   const RenderDAPPInfo = () => {
     return (
-      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[8px] border-fadedGrey'>
+      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[8px] border-n40'>
         <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}

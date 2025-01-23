@@ -707,7 +707,7 @@ export default function HostsAndRPCScreen({ navigation }) {
               value={maskString(rpcEndpoints.injective)}
               editable={devMode}
               autoCapitalize='none'
-              key='moonriver'
+              key='injective'
               onChangeText={value => {
                 setRPCEndpoints({ ...rpcEndpoints, injective: value });
               }}
@@ -731,7 +731,7 @@ export default function HostsAndRPCScreen({ navigation }) {
               value={maskString(rpcEndpoints.kujira)}
               editable={devMode}
               autoCapitalize='none'
-              key='moonriver'
+              key='kujira'
               onChangeText={value => {
                 setRPCEndpoints({ ...rpcEndpoints, kujira: value });
               }}
@@ -748,9 +748,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           {devMode && (
             <CyDTouchView
               onPress={async () => promptReset()}
-              className={
-                'bg-appColor py-[10px] rounded-[12px] w-[48%] mr-[10px]'
-              }>
+              className={'bg-p100 py-[10px] rounded-[12px] w-[48%] mr-[10px]'}>
               <CyDText className={'text-center font-semibold'}>
                 {t<string>('RESTORE_DEFAULTS')}
               </CyDText>
@@ -759,7 +757,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           {devMode && (
             <CyDTouchView
               onPress={async () => promptUpdate()}
-              className={'bg-appColor py-[10px] rounded-[12px] w-[48%]'}>
+              className={'bg-p100 py-[10px] rounded-[12px] w-[48%]'}>
               <CyDText className={'text-center font-semibold'}>
                 {t<string>('UPDATE')}
               </CyDText>

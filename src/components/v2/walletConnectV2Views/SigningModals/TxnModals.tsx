@@ -309,9 +309,7 @@ const RenderDefaultSignModal = ({
         </CyDView>
         <CyDView>
           <CyDView
-            className={
-              'my-[5px] border-[1px] border-n40 bg-infoTextBackground rounded-[8px]'
-            }>
+            className={'my-[5px] border-[1px] border-n40 bg-n0 rounded-[8px]'}>
             <CyDView className='p-[10px]'>
               <CyDText className={'text-[16px] ml-[6px]'}>
                 {JSON.stringify(data, null, '\t')}
@@ -359,7 +357,7 @@ const RenderSendTransactionSignModal = ({
                 <CyDView className='absolute top-[60%] right-[3px]'>
                   <CyDFastImage
                     className={
-                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-n0'
+                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-n40 bg-n0'
                     }
                     source={chainLogo}
                     resizeMode='contain'
@@ -393,7 +391,7 @@ const RenderSendTransactionSignModal = ({
                   {getMaskedAddress(toAddress, 10)}
                 </CyDText>
               </CyDView>
-              <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'} />
+              <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />
               <CyDView className='flex flex-row justify-between'>
                 <CyDText className={'text-[16px] ml-[6px] font-bold'}>
                   {t('FROM')}
@@ -418,7 +416,7 @@ const RenderSendTransactionSignModal = ({
                   {gasAndUSDAppx}
                 </CyDText>
               </CyDView>
-              <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'} />
+              <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />
               <CyDView className='flex flex-row justify-between'>
                 <CyDText className={'font-bold text-[16px]'}>
                   {t('AVAILABLE_BALANCE')}
@@ -613,7 +611,7 @@ const RenderApproveTokenModal = ({
               <CyDView className='absolute top-[60%] right-[3px]'>
                 <CyDFastImage
                   className={
-                    'h-[26px] w-[26px] rounded-[50px] border-[1px] border-white bg-n0'
+                    'h-[26px] w-[26px] rounded-[50px] border-[1px] border-n40 bg-n0'
                   }
                   source={chainLogo}
                   resizeMode='contain'
