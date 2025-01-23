@@ -289,14 +289,12 @@ export default function GlobalOptions() {
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView
               className={clsx(
-                'rounded-[16px] p-[16px] mt-[30px] shadow-xl mx-[16px]',
+                'rounded-[16px] p-[16px] mt-[30px] shadow-lg mx-[16px]',
                 {
                   'bg-n0': theme === 'dark',
                   'bg-p0': theme === 'light',
                 },
-              )}
-              // style={styles.shadow}
-            >
+              )}>
               <CyDView className='p-[12px]'>
                 <CyDText className='text-[12px] font-medium text-center'>
                   {'Go premium for just'}
@@ -308,7 +306,7 @@ export default function GlobalOptions() {
                 </CyDText>
                 <CyDView className='mt-[12px] flex flex-row justify-center items-center'>
                   <CyDTouchView
-                    className='flex flex-row items-center bg-n40 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px] drop-shadow-lg'
+                    className='flex flex-row items-center bg-n40 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px] shadow-sm'
                     onPress={() => {
                       setOpenComparePlans(false);
                       setPlanChangeModalVisible(true);
@@ -322,7 +320,7 @@ export default function GlobalOptions() {
                     />
                   </CyDTouchView>
                   <CyDTouchView
-                    className=' bg-n40 px-[10px] py-[6px] rounded-full shadow-lg'
+                    className=' bg-n40 px-[10px] py-[6px] rounded-full shadow-sm'
                     onPress={() => {
                       setOpenComparePlans(true);
                       setPlanChangeModalVisible(true);
