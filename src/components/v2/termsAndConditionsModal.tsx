@@ -52,7 +52,7 @@ export default function TermsAndConditionsModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDView className={'h-[64%] w-full bg-n0 p-[24px] rounded-[22px]'}>
+      <CyDView className={'w-full bg-n0 p-[24px] pb-[48px] rounded-[22px]'}>
         <CyDView className='flex flex-row items-center'>
           <CyDView className='flex w-full justify-center items-center'>
             <CyDText className={'font-bold text-center text-[22px]'}>
@@ -107,7 +107,7 @@ export default function TermsAndConditionsModal({
         </CyDView>
 
         <CyDTouchView
-          className='flex flex-row items-center mt-[32px]'
+          className='flex flex-row items-center my-[32px]'
           onPress={() => {
             setHasConsent(!hasConsent);
           }}>
@@ -131,7 +131,7 @@ export default function TermsAndConditionsModal({
 
         <CyDView className={'w-[100%]'}>
           <Button
-            style='h-[54px] mt-[12px]'
+            style='h-[54px]'
             title={t('AGGREE_CONTINUE')}
             disabled={!hasConsent}
             loading={isLoading}
@@ -139,14 +139,6 @@ export default function TermsAndConditionsModal({
               void onClickAgree();
             }}
           />
-          {/* <Button
-            style='h-[54px] mt-[15px]'
-            title={t('CANCEL')}
-            onPress={() => {
-              onFailure();
-            }}
-            type={ButtonType.SECONDARY}
-          /> */}
         </CyDView>
       </CyDView>
     </CyDModalLayout>
@@ -154,9 +146,6 @@ export default function TermsAndConditionsModal({
 }
 
 const styles = StyleSheet.create({
-  lottie: {
-    height: 25,
-  },
   modalLayout: {
     margin: 0,
     zIndex: 999,
