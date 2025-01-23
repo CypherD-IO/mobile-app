@@ -365,7 +365,7 @@ export default function CardControlsMenu() {
                     </CyDView>
                   </CyDView>
                   <CyDTouchView
-                    className='p-[12px] border-t border-[#EBEDF0] flex flex-row justify-between items-center'
+                    className='p-[12px] border-t border-n40 flex flex-row justify-between items-center'
                     onPress={() => {
                       navigation.navigate(screenTitle.EDIT_USAGE_LIMITS, {
                         currentCardProvider,
