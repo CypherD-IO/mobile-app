@@ -1,9 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
-  CyDImage,
   CyDLottieView,
-  CydLottieView,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
@@ -52,7 +50,7 @@ import {
   TYPES,
   initialCardTxnDateRange,
 } from '../../../constants/cardPageV2';
-import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
+import { MODAL_HIDE_TIMEOUT, MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
@@ -61,6 +59,7 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
 import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
 import { cardDesign } from '../../../models/cardDesign.interface';
+import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -83,6 +82,10 @@ export default function CypherCardScreen() {
   const [
     isShippingFeeConsentModalVisible,
     setIsShippingFeeConsentModalVisible,
+  ] = useState(false);
+  const [
+    isTermsAndConditionsModalVisible,
+    setIsTermsAndConditionsModalVisible,
   ] = useState(false);
   const [cardDesignData, setCardDesignData] = useState<cardDesign | undefined>(
     undefined,
@@ -144,6 +147,9 @@ export default function CypherCardScreen() {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
+    setIsTermsAndConditionsModalVisible(
+      !get(data, [cardProvider, 'termsAgreedOn'], 0),
+    );
     globalContext.globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
@@ -303,6 +309,19 @@ export default function CypherCardScreen() {
 
   return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-n20'>
+      <TermsAndConditionsModal
+        isModalVisible={isTermsAndConditionsModalVisible}
+        setIsModalVisible={setIsTermsAndConditionsModalVisible}
+        onAgree={() => {
+          void refreshProfile();
+        }}
+        onCancel={() => {
+          setIsTermsAndConditionsModalVisible(false);
+          setTimeout(() => {
+            navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
+          }, MODAL_HIDE_TIMEOUT_250);
+        }}
+      />
       <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
         <CyDView>
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>

@@ -8,7 +8,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 
-const uri = 'https://cypherhq.io/legal/';
+const uri = 'https://cypherhq.io/legal?redirect=true';
 
 export default function LegalScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();

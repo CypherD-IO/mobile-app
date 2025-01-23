@@ -1467,6 +1467,13 @@ const resources = {
       LEGACY_CARD_TRANSACTIONS: 'Legacy Card Transactions',
       OTHERS: 'Others',
       RE_VALIDATE_TO: 'Re-Validate to',
+      TERMS_CONDITIONS: 'Terms and Conditions',
+      TERMS_CONDITIONS_DESC:
+        'We have updated our terms and conditions. Please review and agree to our revised terms and conditions to proceed',
+      AGGREE_CONTINUE: 'Agree & Continue',
+      VIEW_TERMS_CONDITIONS: 'View Terms and Conditions',
+      'AGREE_T&C':
+        'I hereby confirm that I have read, understood, and fully agree to the terms and conditions outlined above.',
     },
   },
 };
