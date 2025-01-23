@@ -2,15 +2,14 @@ import React from 'react';
 import {
   CyDView,
   CyDText,
-  CyDImage,
   CyDTouchView,
   CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { t } from 'i18next';
-import AppImages from '../../../assets/images/appImages';
 import { QRCode } from 'react-native-custom-qr-codes';
 import { StyleSheet } from 'react-native';
+import { AppImagesMap } from '../../../assets/images/appImages';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -55,7 +54,7 @@ export default function NewReferralCodeModal({
         <QRCode
           content={referralUrl}
           codeStyle='dot'
-          logo={AppImages.QR_LOGO}
+          logo={AppImagesMap.common.QR_LOGO}
           logoSize={60}
         />
       </CyDView>

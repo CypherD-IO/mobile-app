@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PORTFOLIO_EMPTY } from '../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import {
   advancedSettingsInitialState,

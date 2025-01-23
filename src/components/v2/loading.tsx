@@ -1,5 +1,5 @@
 import React from 'react';
-import { CyDView, CyDText, CyDLottieView } from '../../styles/tailwindStyles';
+import { CyDView, CyDLottieView } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
@@ -29,21 +29,17 @@ export default function Loading({
         />
       )}
       <CyDLottieView
-        source={AppImages.LOADING_IMAGE}
+        source={AppImages.LOADING_SPINNER}
         autoPlay
         loop
         style={styles.loader}
       />
-      <CyDText
-        className={clsx('text-[16px] font-semibold z-50 text-base400', {})}>
-        {'Loading . . .'}
-      </CyDText>
     </CyDView>
   );
 }
 
 const styles = StyleSheet.create({
-  loader: { height: 150, width: 150, zIndex: 20 },
+  loader: { height: 50, width: 50, zIndex: 20 },
   absolute: {
     position: 'absolute',
     top: 0,

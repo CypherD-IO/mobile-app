@@ -171,13 +171,7 @@ export default function Options() {
     <CyDView className={'flex-1 bg-n20'} style={{ paddingTop: insets.top }}>
       <CyDScrollView className='flex-1'>
         <CyDView className='flex-1 mb-[120px]'>
-          <CyDFastImage
-            className='h-[100px] w-[100px] m-3 self-center'
-            source={AppImages.APP_LOGO}
-            resizeMode='contain'
-          />
-
-          <CyDView className='flex flex-row justify-center items-center pb-[25px]'>
+          <CyDView className='flex flex-row justify-center items-center '>
             {isReadOnlyWallet && (
               <CyDMaterialDesignIcons
                 name='lock'
@@ -185,12 +179,10 @@ export default function Options() {
                 className='text-base400 mr-[5px] self-center'
               />
             )}
-            <CyDText className='text-[18px] text-center font-bold'>
-              {title}
-            </CyDText>
+
             {ens && (
-              <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px]'>
-                ens
+              <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px] pb-[25px]'>
+                {ens}
               </CyDText>
             )}
           </CyDView>

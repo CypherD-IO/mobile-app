@@ -9,6 +9,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import Loading from '../../components/v2/loading';
 
 interface RouteParams {
   uri: string;
@@ -33,7 +34,12 @@ export default function SocialMediaScreen() {
 
   return (
     <CyDView className={'h-full w-full bg-n20'}>
-      <WebView source={{ uri }} />
+      <WebView
+        source={{ uri }}
+        renderLoading={() => {
+          return <Loading />;
+        }}
+      />
     </CyDView>
   );
 }

@@ -270,7 +270,7 @@ export default function CardRevealAuthScreen() {
         <CyDMaterialDesignIcons
           name='shield-check'
           size={32}
-          className='text-base400 mt-4'
+          className='text-base400 mt-[44px]'
         />
 
         <CyDText className='mt-[6px] text-[28px] font-bold'>
@@ -285,17 +285,18 @@ export default function CardRevealAuthScreen() {
           )}
         </CyDText>
 
-        <CyDText className='text-[10px] mt-[6px] text-n200'>
+        <CyDText className='text-[10px] mt-[6px] text-n200 '>
           {t<string>('CHECK_SPAM_FOLDER')}
         </CyDText>
 
-        <CyDView className={'mt-[24px]'}>
+        <CyDView className={'mt-[44px]'}>
           <PinInput
             value={otpValue}
             onChange={handleOtpChange}
             error={otpError}
             onBlur={handleOtpBlur}
             length={4}
+            className='flex-row justify-start'
           />
           <CyDTouchView
             className={'flex flex-row items-center mt-[8px]'}

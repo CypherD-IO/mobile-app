@@ -15,11 +15,10 @@ import {
 } from '@react-navigation/native';
 import {
   CyDIcons,
-  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDTouchView,
 } from '../../styles/tailwindStyles';
-const { DynamicImage } = require('../../styles');
+import Loading from '../../components/v2/loading';
 
 interface RouteParams {
   url: string;
@@ -46,6 +45,9 @@ export default function OpenLegalScreen() {
   return (
     <CyDSafeAreaView className='bg-n20'>
       <WebView
+        renderLoading={() => {
+          return <Loading />;
+        }}
         source={{
           uri: route.params.url,
           headers: {

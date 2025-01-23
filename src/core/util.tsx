@@ -947,7 +947,6 @@ export function isValidPrivateKey(privateKey: string): boolean {
     return !!wallet;
   } catch (e) {
     return false;
-    return false;
   }
 }
 

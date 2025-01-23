@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDImage,
   CyDMaterialDesignIcons,
   CyDScrollView,
@@ -387,9 +388,9 @@ export default function SelectPlanModal({
                     </CyDText>
                   </CyDView>
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDMaterialDesignIcons
-                        name='credit-card-outline'
+                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px] '>
+                      <CyDIcons
+                        name='card'
                         size={24}
                         className='text-base400'
                       />
@@ -424,7 +425,7 @@ export default function SelectPlanModal({
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
                       <CyDImage
                         source={AppImages.CRYPTO_COINS}
-                        className='w-[24px] h-[24px]'
+                        className='w-[24px] h-[24px] rounded-full'
                       />
                     </CyDView>
                     <CyDText className='font-bold text-[12px]'>
@@ -442,7 +443,7 @@ export default function SelectPlanModal({
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
                       <CyDImage
                         source={AppImages.FOREX_FEE}
-                        className='w-[24px] h-[24px]'
+                        className='w-[24px] h-[24px] rounded-full'
                       />
                     </CyDView>
                     <CyDText className='font-bold text-[12px]'>
@@ -460,7 +461,7 @@ export default function SelectPlanModal({
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
                       <CyDImage
                         source={AppImages.ATM_FEE}
-                        className='w-[24px] h-[24px]'
+                        className='w-[24px] h-[24px] rounded-full'
                       />
                     </CyDView>
                     <CyDText className='font-bold text-[12px]'>
@@ -472,7 +473,7 @@ export default function SelectPlanModal({
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
                       <CyDImage
                         source={AppImages.CHARGE_BACK}
-                        className='w-[24px] h-[24px]'
+                        className='w-[24px] h-[24px] rounded-full'
                       />
                     </CyDView>
                     <CyDText className='font-bold text-[12px]'>
@@ -628,8 +629,8 @@ export default function SelectPlanModal({
                 <CyDView className='w-[58%] flex flex-col bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDMaterialDesignIcons
-                        name='credit-card-outline'
+                      <CyDIcons
+                        name='card'
                         size={24}
                         className='text-base400'
                       />
@@ -942,7 +943,7 @@ export default function SelectPlanModal({
               </CyDView>
 
               <CyDView className='bg-n30 p-[16px]'>
-                <CyDView className='border border-n50 rounded-[16px] bg-n0 '>
+                <CyDView className='border border-n40 rounded-[16px] bg-n0 '>
                   <CyDView className='px-[16px] pt-[16px]'>
                     <CyDText className='text-[20px] font-semibold'>
                       Savings Calculator
@@ -952,7 +953,7 @@ export default function SelectPlanModal({
                     </CyDText>
                   </CyDView>
 
-                  <CyDView className='h-[0.5px] w-full border border-n50 border-dashed my-[13px]' />
+                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
 
                   <CyDView className='px-[16px] pb-[13px]'>
                     <CyDView className='flex-row justify-between items-center'>
@@ -998,7 +999,7 @@ export default function SelectPlanModal({
                     </CyDView>
                   </CyDView>
 
-                  <CyDView className='h-[0.5px] w-full border border-n50 border-dashed my-[13px]' />
+                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
 
                   <CyDView className='px-[16px] pb-[13px]'>
                     <CyDView className='flex-row justify-between items-center'>
@@ -1044,7 +1045,7 @@ export default function SelectPlanModal({
                     </CyDView>
                   </CyDView>
 
-                  <CyDView className='h-[0.5px] w-full border border-n50 border-dashed my-[13px]' />
+                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
 
                   <CyDView className='px-[16px] pb-[13px]'>
                     <CyDView className='flex-row justify-between items-center'>
@@ -1090,7 +1091,7 @@ export default function SelectPlanModal({
                     </CyDView>
                   </CyDView>
 
-                  <CyDView className='h-[0.5px] w-full border border-n50 border-dashed my-[13px]' />
+                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
 
                   <CyDView className='px-[16px]'>
                     <CyDText className='text-[14px] font-bold'>
@@ -1179,7 +1180,7 @@ export default function SelectPlanModal({
                     </CyDView>
                   </CyDView>
 
-                  <CyDView className='h-[0.5px] w-full border border-n50 border-dashed my-[13px]' />
+                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
 
                   <CyDView className='mt-[3px] px-[16px] my-[16px] '>
                     <CyDText className='text-[10px] font-medium'>

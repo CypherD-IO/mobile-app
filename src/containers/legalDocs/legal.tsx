@@ -25,7 +25,7 @@ export default function LegalScreen() {
   }, []);
   return (
     <CyDView className={'h-full w-full bg-n20'}>
-      <WebView source={{ uri }} />
+      <WebView source={{ uri }} backgroundColor={'transparent'} />
     </CyDView>
   );
 }

@@ -123,16 +123,11 @@ export default function SecurityPrivacy(props) {
 
   return (
     <CyDView className={'bg-n20 h-full'}>
-      <CyDImageBackground
-        className={'h-[50%] pt-[30px]'}
-        source={AppImages.BG_SETTINGS}
-        resizeMode={'cover'}>
-        <CyDFlatList
-          data={securityPrivacyData}
-          renderItem={({ item }) => renderSecurityPrivacyData(item)}
-          keyExtractor={item => item.index}
-        />
-      </CyDImageBackground>
+      <CyDFlatList
+        data={securityPrivacyData}
+        renderItem={({ item }) => renderSecurityPrivacyData(item)}
+        keyExtractor={item => item.index}
+      />
     </CyDView>
   );
 }
