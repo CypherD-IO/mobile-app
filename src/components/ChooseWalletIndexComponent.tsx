@@ -27,6 +27,7 @@ import Button from './v2/button';
 const randomIcons = [
   'robot-happy-outline',
   'rabbit-variant-outline',
+  'dog',
   'robot',
   'penguin',
   'cat',
