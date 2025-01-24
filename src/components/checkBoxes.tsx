@@ -35,7 +35,7 @@ export default function CheckBoxes(props: any) {
           }}
           className='flex flex-row mb-[23px]'>
           <CyDView
-            className={`h-[21px] w-[21px] ${current.includes(data) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
+            className={`h-[21px] w-[21px] ${current.includes(data) ? 'bg-p50' : ''} rounded-[4px] border-[1.5px] border-base100 flex flex-row justify-center items-center`}
           />
           <CyDText
             className={'text-center ml-[10px] text-[16px] font-semibold'}>

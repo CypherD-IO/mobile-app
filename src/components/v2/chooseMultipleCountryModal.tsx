@@ -192,7 +192,7 @@ const ChooseMultipleCountryModal = ({
                           className={clsx(
                             'h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center',
                             {
-                              'bg-appColor': allCountriesSelected,
+                              'bg-p50': allCountriesSelected,
                             },
                           )}>
                           <CyDMaterialDesignIcons
@@ -251,7 +251,7 @@ const ChooseMultipleCountryModal = ({
                         </CyDView>
                         <CyDView className={'flex flex-row justify-end'}>
                           <CyDView
-                            className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center`}>
+                            className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-p50' : ''} rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center`}>
                             <CyDMaterialDesignIcons
                               name='check-bold'
                               size={18}

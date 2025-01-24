@@ -83,16 +83,14 @@ export default function CosmosSelectReValidator({ route, navigation }) {
           <CyDView className={'my-[24px] mx-[20px]'}>
             <CyDView className={'flex flex-row justify-between'}>
               <CyDText
-                className={
-                  'text-[16px] font-bold text-secondaryTextColor  w-1/2'
-                }
+                className={'text-[16px] font-bold  w-1/2'}
                 numberOfLines={2}>
                 {item.name}
               </CyDText>
               {item.balance.toString() !== '0' && (
                 <CyDText
                   className={
-                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor '
+                    'ml-[10px] text-[16px] font-bold '
                   }>{`${convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)} ${tokenData.name}`}</CyDText>
               )}
             </CyDView>

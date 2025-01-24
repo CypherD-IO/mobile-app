@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/quotes */
 import * as React from 'react';
 import { CyDText, CyDTouchView } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
@@ -9,7 +8,7 @@ export default function ReadOnlySeedPhraseBlock({
   onBlockTouch,
   clickEvent,
   index = 0,
-  backgroundColor = 'white',
+  backgroundColor = 'n0',
   disabled = true,
 }) {
   return (
@@ -17,11 +16,11 @@ export default function ReadOnlySeedPhraseBlock({
       disabled={disabled}
       onPress={() => onBlockTouch(clickEvent)}
       className={clsx(
-        `w-[30%] flex flex-row items-center align-sub p-[12px] border-[1px] m-[5px] border-dashed border-inputBorderColor rounded-[4px] bg-${backgroundColor}`,
+        `w-[30%] flex flex-row items-center align-sub p-[12px] border-[1px] m-[5px] border-dashed border-n40 rounded-[4px] bg-${backgroundColor}`,
         { 'justify-center': index === 0 },
       )}>
       {index !== 0 && (
-        <CyDText className={'text-[12px]  font-semibold'}>{index}.</CyDText>
+        <CyDText className={'text-[12px] font-semibold'}>{index}.</CyDText>
       )}
       <CyDText
         className={clsx('text-[14px]  ml-[5px] font-bold h-[21px]', {

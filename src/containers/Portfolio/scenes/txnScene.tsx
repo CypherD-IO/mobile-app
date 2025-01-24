@@ -535,7 +535,7 @@ const NoTxnsFound = () => {
       <CyDView className='h-full flex flex-col items-center justify-start'>
         <CyDFastImage
           className='h-[100px] w-[100px]'
-          source={AppImages.NO_TRANSACTIONS}
+          source={AppImages.NO_ACTIVITIES}
           resizeMode='contain'
         />
         <CyDText className='mt-2 '>{t('EMPTY_TRANSCATION_DETAIL_MSG')}</CyDText>

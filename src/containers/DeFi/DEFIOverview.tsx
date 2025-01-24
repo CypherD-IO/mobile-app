@@ -401,7 +401,7 @@ export function DEFIOverviewScreen() {
               {t('MANAGE_POSITIONS')}
             </CyDText>
             <CyDView className='flex flex-row justify-center items-center'>
-              <CyDText className='underline text-[12px] text-appColor pr-[4px]'>
+              <CyDText className='underline text-[12px] text-p50 pr-[4px]'>
                 {protocol.protocolURL}
               </CyDText>
               <CyDMaterialDesignIcons

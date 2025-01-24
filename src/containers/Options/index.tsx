@@ -181,7 +181,7 @@ export default function Options() {
             )}
 
             {ens && (
-              <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px] pb-[25px]'>
+              <CyDText className='text-[10px] font-semibold  bg-p50 px-[2px] mt-[3px] ml-[4px] pb-[25px]'>
                 {ens}
               </CyDText>
             )}

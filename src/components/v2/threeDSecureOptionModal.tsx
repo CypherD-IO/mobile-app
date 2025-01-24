@@ -95,12 +95,10 @@ export default function ThreeDSecureOptionModal({
           <CyDText className='text-[18px] font-[500]'>SMS</CyDText>
           <CyDView
             className={
-              'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'
+              'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-base100 flex flex-row justify-center items-center'
             }>
             {!isTelegramSelected ? (
-              <CyDView
-                className={'h-[10px] w-[10px] rounded-[5px] bg-appColor'}
-              />
+              <CyDView className={'h-[10px] w-[10px] rounded-[5px] bg-p50'} />
             ) : null}
           </CyDView>
         </CyDTouchView>
@@ -112,12 +110,10 @@ export default function ThreeDSecureOptionModal({
           <CyDText className='text-[18px] font-[500]'>Telegram & Email</CyDText>
           <CyDView
             className={
-              'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'
+              'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-base100 flex flex-row justify-center items-center'
             }>
             {isTelegramSelected ? (
-              <CyDView
-                className={'h-[10px] w-[10px] rounded-[5px] bg-appColor'}
-              />
+              <CyDView className={'h-[10px] w-[10px] rounded-[5px] bg-p50'} />
             ) : null}
           </CyDView>
         </CyDTouchView>

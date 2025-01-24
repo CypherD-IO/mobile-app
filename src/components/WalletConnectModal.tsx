@@ -134,7 +134,7 @@ export default function WalletConnectModal(props) {
             fF={C.fontsName.FONT_BOLD}
             mL={8}
             fS={16}
-            color={Colors.secondaryTextColor}>
+            color={Colors.primaryTextColor}>
             {item.name}
           </CText>
           <CText
@@ -413,7 +413,7 @@ export default function WalletConnectModal(props) {
                         setChooseChain(true);
                       }}
                       className={
-                        'h-[40px] w-[60%] bg-chainColor rounded-[18px] flex flex-row items-center justify-center'
+                        'h-[40px] w-[60%] bg-green20 rounded-[18px] flex flex-row items-center justify-center'
                       }>
                       <CyDFastImage
                         className={'h-[20px] w-[20px] mr-[6px]'}

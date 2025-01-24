@@ -58,7 +58,7 @@ function OtpInput({
     <CyDView>
       <CyDView
         className={
-          'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-inputBorderColor bg-n0'
+          'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-base80 bg-n0'
         }>
         <CyDTextInput
           ref={inputRef}
@@ -102,7 +102,7 @@ function OtpInput({
             loading={isLoading}
             isLottie={false}
             style={
-              'bg-appColor py-[20px] flex flex-row justify-center items-center rounded-[12px] w-[70%] mx-auto mt-[60px]'
+              'bg-p50 py-[20px] flex flex-row justify-center items-center rounded-[12px] w-[70%] mx-auto mt-[60px]'
             }
             loaderStyle={styles.buttonLoader}
           />

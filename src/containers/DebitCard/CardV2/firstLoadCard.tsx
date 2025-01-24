@@ -606,7 +606,7 @@ export default function FirstLoadCard() {
 
         return (
           <CyDView className='mb-[10px]'>
-            <CyDText className=' text-redColor font-normal text-[12px] text-wrap'>
+            <CyDText className=' text-red300 font-normal text-[12px] text-wrap'>
               {`${errorMessage}`}
             </CyDText>
           </CyDView>

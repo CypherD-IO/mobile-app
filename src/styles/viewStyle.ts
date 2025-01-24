@@ -146,7 +146,7 @@ export const SepraterView = styled.View`
       flex-direction: ${props.fD ? props.fD : 'column'};
       align-items: ${props.aLIT ? props.aLIT : 'center'};
       border-radius: ${scale(props.bR ? props.bR : 0)}px;
-      background-color: ${props.bGC ? props.bGC : Colors.sepratorColor};
+      background-color: ${props.bGC ? props.bGC : '#F4F4F4'};
       border-color: ${props.bC ? props.bC : 'transparent'};
       height: ${props.hE ? props.hE : 1}px;
       width: ${props.width ? props.width : 85}%;

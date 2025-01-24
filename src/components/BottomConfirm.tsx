@@ -188,7 +188,7 @@ export default function BottomConfirm(props: {
             mT={10}
             height={1}
             width={80}
-            bGC={Colors.portfolioBorderColor}
+            bGC={'#E5E5E5'}
           />
 
           <DynamicView dynamic dynamicWidth width={100} fD={'row'} pH={30}>

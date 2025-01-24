@@ -111,10 +111,7 @@ export default function CosmosValidators({ route, navigation }) {
                 <CyDText className={'ml-[10px] text-[16px] font-medium  '}>
                   {'Staked'}
                 </CyDText>
-                <CyDText
-                  className={
-                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor '
-                  }>
+                <CyDText className={'ml-[10px] text-[16px] font-bold '}>
                   {convertFromUnitAmount(
                     item.balance.toString(),
                     tokenData.contractDecimals,

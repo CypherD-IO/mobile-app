@@ -225,7 +225,7 @@ export default function ShippingCheckout() {
   const RenderShippingCharges = useCallback(() => {
     return (
       <CyDView className='flex flex-col bg-n0 rounded-[12px]'>
-        <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
+        <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-base80'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
             <CyDMaterialDesignIcons
               name='credit-card-outline'
@@ -244,7 +244,7 @@ export default function ShippingCheckout() {
             </CyDText>
           </CyDView>
         </CyDView>
-        <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
+        <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-base80'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
             <CyDMaterialDesignIcons
               name='truck'

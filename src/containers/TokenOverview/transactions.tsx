@@ -216,11 +216,7 @@ export function TokenTransactions({
             }>
             <CyDView
               className={clsx(
-                'flex flex-row h-[25px] w-[32px] items-center justify-center bg-paleGrey rounded-[20px]',
-                {
-                  'bg-paleGrey': item?.status,
-                  'bg-babyPink': !item?.status,
-                },
+                'flex flex-row h-[25px] w-[32px] items-center justify-center rounded-full',
               )}>
               <CyDFastImage
                 className={'h-[32px] w-[32px]'}

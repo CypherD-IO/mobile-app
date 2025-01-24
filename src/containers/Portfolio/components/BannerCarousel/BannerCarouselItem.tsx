@@ -367,8 +367,8 @@ const BannerCarouselItem = ({
                 'h-[25%] flex flex-row w-full bg-blue20 justify-start items-center px-[30px]',
                 {
                   'bg-toastColor': item.status === ActivityStatus.SUCCESS,
-                  'bg-redColor': item.status === ActivityStatus.FAILED,
-                  'bg-darkYellow': item.status === ActivityStatus.DELAYED,
+                  'bg-red300': item.status === ActivityStatus.FAILED,
+                  'bg-p50': item.status === ActivityStatus.DELAYED,
                 },
               )}>
               <CyDText className='font-bold text-[12px] pr-[2px]'>

@@ -501,7 +501,7 @@ export default function Overview({
                   <CyDText
                     className={clsx('text-[14px] font-bold ml-[3px]', {
                       'text-lightGreen': selectedTrend > 0,
-                      'text-redColor': selectedTrend < 0,
+                      'text-red300': selectedTrend < 0,
                     })}>
                     {Math.abs(selectedTrend).toFixed(2)}%
                   </CyDText>

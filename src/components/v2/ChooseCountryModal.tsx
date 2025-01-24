@@ -160,7 +160,7 @@ const ChooseCountryModal = ({
           {showRadioButton && (
             <CyDView
               className={
-                'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'
+                'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-base100 flex flex-row justify-center items-center'
               }>
               {country.name === selectedCountry?.name ? (
                 <CyDView className={'h-[10px] w-[10px] rounded-[5px] bg-p50'} />
@@ -188,7 +188,7 @@ const ChooseCountryModal = ({
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[80%]'
+                'border-[1px] border-base80 rounded-[8px] p-[10px] text-[14px] w-[80%]'
               }
               value={countryFilterText}
               autoCapitalize='none'
@@ -282,12 +282,12 @@ const ChooseCountryModal = ({
                     {showRadioButton && (
                       <CyDView
                         className={
-                          'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'
+                          'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-base100 flex flex-row justify-center items-center'
                         }>
                         {country.name === selectedCountry?.name ? (
                           <CyDView
                             className={
-                              'h-[10px] w-[10px] rounded-[5px] bg-appColor'
+                              'h-[10px] w-[10px] rounded-[5px] bg-p50'
                             }
                           />
                         ) : null}

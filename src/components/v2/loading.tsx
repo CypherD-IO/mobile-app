@@ -39,7 +39,7 @@ export default function Loading({
 }
 
 const styles = StyleSheet.create({
-  loader: { height: 50, width: 50, zIndex: 20 },
+  loader: { height: 30, width: 30, zIndex: 20 },
   absolute: {
     position: 'absolute',
     top: 0,

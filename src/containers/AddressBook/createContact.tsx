@@ -739,7 +739,7 @@ export const CreateContact = () => {
                         <CyDView className='flex flex-row justify-between items-center w-[100%]'>
                           <CyDTextInput
                             className={clsx(
-                              'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
+                              'mt-[5px] w-[100%] border-[1px] border-base80 rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
                               {
                                 'border-redOffColor':
                                   formProps.touched[
@@ -819,7 +819,7 @@ export const CreateContact = () => {
                           <CyDView className='flex flex-row justify-between items-center w-[100%]'>
                             <CyDTextInput
                               className={clsx(
-                                'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]',
+                                'mt-[5px] w-[100%] border-[1px] border-base80 rounded-[10px] p-[12px] pr-[38px] text-[16px]',
                                 {
                                   'border-redOffColor':
                                     formProps.touched[

@@ -226,7 +226,7 @@ export default function ChooseTokenModal(props: TokenModal) {
             )}
           </CyDView>
           <CyDView className={'mt-[10px]'}>
-            <CyDText className='text-center  text-[12px] font-semibold text-redColor'>
+            <CyDText className='text-center  text-[12px] font-semibold text-red300'>
               {renderPage === 'fundCardPage' &&
                 t<string>('SUPPORTED_TOKENS_TEXT') + `$${minTokenValueLimit}`}
               {renderPage === 'autoLoad' &&

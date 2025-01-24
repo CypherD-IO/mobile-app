@@ -48,6 +48,7 @@ import { HdWalletContext, sleepFor } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
+  CyDFlatList,
   CyDIcons,
   CyDImage,
   CyDKeyboardAvoidingView,
@@ -307,7 +308,7 @@ export default function Login(props) {
                     textAlignVertical={'top'}
                     secureTextEntry={true}
                     className={clsx(
-                      'border-[1px] border-inputBorderColor bg-n0 rounded-[8px] p-[10px] mt-[12px] h-[160px] text-[16px] w-[100%]',
+                      'border-[1px] border-base80 bg-n0 rounded-[8px] p-[10px] mt-[12px] h-[160px] text-[16px] w-[100%]',
                       { 'border-errorRed': badKeyError },
                       { 'h-[110px]': height < 700 },
                     )}
@@ -369,8 +370,8 @@ export default function Login(props) {
                   </CyDText>
                 </CyDView>
                 {filteredSuggestions.length > 0 && isKeyboardVisible && (
-                  <CyDView className='h-[56px] mt-[10px]'>
-                    <FlatList
+                  <CyDView className='h-[46px] mt-[10px] bg-n0 p-2'>
+                    <CyDFlatList
                       data={filteredSuggestions}
                       keyboardShouldPersistTaps='handled'
                       horizontal={true}
@@ -383,7 +384,7 @@ export default function Login(props) {
                           </CyDText>
                         </CyDTouchView>
                       )}
-                      style={styles.suggestionList}
+                      // style={styles.suggestionList}
                       showsHorizontalScrollIndicator={false}
                     />
                   </CyDView>
@@ -399,10 +400,10 @@ export default function Login(props) {
 
 const { height } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  suggestionList: {
-    backgroundColor: '#EBEDF0',
-    paddingVertical: 12,
-    height: 56,
-  },
-});
+// const styles = StyleSheet.create({
+//   suggestionList: {
+//     backgroundColor: '#EBEDF0',
+//     paddingVertical: 12,
+//     height: 56,
+//   },
+// });

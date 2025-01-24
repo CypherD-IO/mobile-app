@@ -21,7 +21,7 @@ export default function BottomTracker(props) {
       fD={'row'}
       bGC={'white'}
       style={{
-        shadowColor: Colors.borderColor,
+        shadowColor: '#8E8E8E',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.9,
         shadowRadius: 4,
