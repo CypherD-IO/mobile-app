@@ -221,7 +221,7 @@ export default function OTPVerification(): JSX.Element {
             <CyDView className={'mt-[20px]'}>
               <CyDTextInput
                 className={
-                  'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[16px] w-full font-manrope'
+                  'border-[1px] border-base80 rounded-[5px] p-[12px] text-[16px] w-full font-manrope'
                 }
                 value={newEmail}
                 onChangeText={setNewEmail}

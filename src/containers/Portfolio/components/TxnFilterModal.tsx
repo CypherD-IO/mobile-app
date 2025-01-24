@@ -138,7 +138,7 @@ const TxnFilterModal = ({
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-appColor' : 'bg-n20 flex'
+                  index === idx ? 'bg-p50' : 'bg-n20 flex'
                 } justify-center py-[20px]`}>
                 <CyDText
                   className={'text-left pl-[12px] text-[16px] font-bold'}>

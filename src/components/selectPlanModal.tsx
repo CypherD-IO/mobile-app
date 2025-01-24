@@ -1111,7 +1111,7 @@ export default function SelectPlanModal({
                         className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                         <CyDView
                           className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center',
+                            ' h-[18px] w-[18px] rounded-[4px] border border-base100 flex flex-row justify-center items-center',
                             {
                               'bg-p150 border-p150': isChecked.physicalCard,
                             },
@@ -1138,7 +1138,7 @@ export default function SelectPlanModal({
                         className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                         <CyDView
                           className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center',
+                            ' h-[18px] w-[18px] rounded-[4px] border border-base100 flex flex-row justify-center items-center',
                             {
                               'bg-p150 border-p150': isChecked.metalCard,
                             },
@@ -1165,7 +1165,7 @@ export default function SelectPlanModal({
                         className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                         <CyDView
                           className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-borderColor flex flex-row justify-center items-center',
+                            ' h-[18px] w-[18px] rounded-[4px] border border-base100 flex flex-row justify-center items-center',
                             {
                               'bg-p150 border-p150': isChecked.addonCard,
                             },

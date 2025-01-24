@@ -431,6 +431,20 @@ const DeFiScene = ({
                   key={item.protocolName}
                 />
               ))}
+          {_.isEmpty(deFiData.filteredData) && (
+            <CyDView className={'mt-[20%] mb-5 flex items-center'}>
+              <CyDFastImage
+                className={'h-[120px] w-[240px]'}
+                source={AppImages.NO_ACTIVITIES}
+              />
+              <CyDText className={'text-center text-[18px] mt-[20px]'}>
+                {t<string>('NO_DEFI_YET')}
+              </CyDText>
+              <CyDText className={'text-center'}>
+                {t<string>('SWIPE_DOWN_TO_REFRESH_PASCAL_CASE')}
+              </CyDText>
+            </CyDView>
+          )}
         </CyDScrollView>
       </>
     </CyDView>

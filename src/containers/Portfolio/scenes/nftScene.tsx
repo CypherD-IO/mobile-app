@@ -414,23 +414,23 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
-            <CyDView className='border border-n40 rounded-t-[24px]'>
-              {isEmpty(NFTHoldings) && (
-                <CyDView className={'mt-[50%] flex items-center'}>
+            <CyDView className=''>
+              {(isEmpty(NFTHoldings) || isEmpty(origNFTHoldings)) && (
+                <CyDView className={'mt-[30%] mb-5 flex items-center'}>
                   <CyDFastImage
                     className={'h-[120px] w-[240px]'}
-                    source={AppImages.NFT_EMPTY_ILLUSTATION}
+                    source={AppImages.NO_ACTIVITIES}
                   />
                   <CyDText className={'text-center text-[24px] mt-[20px]'}>
                     {t<string>('NO_NFTS_YET')}
                   </CyDText>
-                  <CyDText className={'text-center'}>
-                    {t<string>('PULL_DOWN_TO_REFRESH_PASCAL_CASE')}
+                  <CyDText className={'text-center text-[12px]'}>
+                    {t<string>('SWIPE_DOWN_TO_REFRESH_PASCAL_CASE')}
                   </CyDText>
                 </CyDView>
               )}
-              {!isEmpty(NFTHoldings) && (
-                <CyDView>
+              {!isEmpty(NFTHoldings) && !isEmpty(origNFTHoldings) && (
+                <CyDView className='border border-n40 rounded-t-[24px]'>
                   <CyDView
                     className={
                       'flex flex-row my-[12px] justify-between items-center mx-[20px] w-[90%]'

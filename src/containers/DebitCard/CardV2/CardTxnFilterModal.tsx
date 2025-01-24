@@ -136,14 +136,13 @@ const CardTxnFilterModal = ({
           </CyDTouchView>
         </CyDView>
         <CyDView className={'h-full flex flex-row'}>
-          <CyDView
-            className={'border-r border-activityFilterBorderLine w-[30%]'}>
+          <CyDView className={'border-r border-n40 w-[30%]'}>
             {CARD_TXN_FILTERS.map((filterItem, idx) => (
               <CyDTouchView
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-appColor' : 'bg-n20 flex'
+                  index === idx ? 'bg-p50' : 'bg-n20 flex'
                 } justify-center py-[20px]`}>
                 {idx === 0 ? (
                   <CyDText
