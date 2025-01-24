@@ -227,56 +227,6 @@ export default function EditLimits() {
           </CyDText>
         </CyDView>
 
-        <CyDView className='mt-[24px]'>
-          <CyDView className=' bg-n0 rounded-[10px] p-[16px]'>
-            <CyDText className='text-[14px] font-bold text-center'>
-              {t('Daily Usage Limit')}
-            </CyDText>
-            <CyDTextInput
-              className='bg-n0 border-none text-[44px] font-bold text-base400 mx-auto font-manrope'
-              placeholder='$0'
-              keyboardType='numeric'
-              returnKeyType='done'
-              onChangeText={text => {
-                const numericText = text.replace(/[^0-9]/g, '');
-                const parsedValue = parseInt(numericText, 10);
-                setDailyUsageLimit(isNaN(parsedValue) ? 0 : round(parsedValue));
-              }}
-              value={`$${dailyUsageLimit}`}
-            />
-
-            <CyDView className='mt-[4px] mb-[8px]'>
-              <Slider
-                minValue={0}
-                maxValue={
-                  get(limitsData, ['cydL', 'd']) ??
-                  limitsData?.maxLimit?.d ??
-                  1000
-                }
-                steps={4}
-                onSlidingComplete={value => {
-                  setDailyUsageLimit(value);
-                }}
-                value={dailyUsageLimit}
-                showValues={true}
-              />
-            </CyDView>
-          </CyDView>
-
-          <CyDView className='mt-[24px] flex flex-row'>
-            <CyDMaterialDesignIcons
-              name='information-outline'
-              size={18}
-              className='text-base100'
-            />
-            <CyDText className='text-[12px] text-n200 ml-[8px]'>
-              {
-                'Total daily usage limit for this Cypher card, covering multiple transactions.'
-              }
-            </CyDText>
-          </CyDView>
-        </CyDView>
-
         <CyDView className='mt-[16px]'>
           <CyDView className=' bg-n0 rounded-[10px] p-[16px]'>
             <CyDText className='text-[14px] font-bold text-center'>
@@ -324,6 +274,56 @@ export default function EditLimits() {
             <CyDText className='text-[12px] text-n200 pl-[8px]'>
               {
                 'Total monthly usage limit for this Cypher card, applicable \n across multiple transactions.'
+              }
+            </CyDText>
+          </CyDView>
+        </CyDView>
+
+        <CyDView className='mt-[24px]'>
+          <CyDView className=' bg-n0 rounded-[10px] p-[16px]'>
+            <CyDText className='text-[14px] font-bold text-center'>
+              {t('Daily Usage Limit')}
+            </CyDText>
+            <CyDTextInput
+              className='bg-n0 border-none text-[44px] font-bold text-base400 mx-auto font-manrope'
+              placeholder='$0'
+              keyboardType='numeric'
+              returnKeyType='done'
+              onChangeText={text => {
+                const numericText = text.replace(/[^0-9]/g, '');
+                const parsedValue = parseInt(numericText, 10);
+                setDailyUsageLimit(isNaN(parsedValue) ? 0 : round(parsedValue));
+              }}
+              value={`$${dailyUsageLimit}`}
+            />
+
+            <CyDView className='mt-[4px] mb-[8px]'>
+              <Slider
+                minValue={0}
+                maxValue={
+                  get(limitsData, ['cydL', 'd']) ??
+                  limitsData?.maxLimit?.d ??
+                  1000
+                }
+                steps={4}
+                onSlidingComplete={value => {
+                  setDailyUsageLimit(value);
+                }}
+                value={dailyUsageLimit}
+                showValues={true}
+              />
+            </CyDView>
+          </CyDView>
+
+          <CyDView className='mt-[24px] flex flex-row'>
+            <CyDMaterialDesignIcons
+              name='information-outline'
+              size={18}
+              className='text-base100'
+            />
+            <CyDText className='text-[12px] text-n200 ml-[8px]'>
+              {
+                'Total daily usage limit for this Cypher card, covering multiple transactions.'
               }
             </CyDText>
           </CyDView>

@@ -147,17 +147,6 @@ const AddressProfile = props => {
     outputRange: ['0deg', '180deg'],
   });
 
-  const animatedStyle = {
-    transform: [
-      {
-        rotate: interpolateRotating,
-      },
-    ],
-    height: verticalScale(18),
-    width: 14,
-    resizeMode: 'contain',
-  };
-
   const handleAnimation = (toValue: number) => {
     Animated.timing(rotateAnimation, {
       toValue,
@@ -473,47 +462,23 @@ const AddressProfile = props => {
         </CyDView>
       ) : null}
       <CyDScrollView>
-        <Accordion
-          align='bottom'
-          activeSections={activeSections}
-          sections={contactNames}
-          touchableComponent={TouchableOpacity}
-          expandMultiple={true}
-          renderHeader={renderHeader}
-          renderContent={renderContent}
-          duration={400}
-          onChange={setSections}
-          renderAsFlatList={false}
-          sectionContainerStyle={
-            chainChoosen
-              ? styles.sectionContainerSendTo
-              : styles.sectionContainer
-          }
-        />
+        <CyDView className='bg-n0 border border-n40 rounded-lg my-[10px] px-4'>
+          <Accordion
+            align='bottom'
+            activeSections={activeSections}
+            sections={contactNames}
+            touchableComponent={TouchableOpacity}
+            expandMultiple={true}
+            renderHeader={renderHeader}
+            renderContent={renderContent}
+            duration={400}
+            onChange={setSections}
+            renderAsFlatList={false}
+          />
+        </CyDView>
       </CyDScrollView>
     </CyDView>
   );
 };
 
 export default AddressProfile;
-
-const styles = StyleSheet.create({
-  sectionContainerSendTo: {
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: Colors.n40,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    marginVertical: 10,
-    width: '95%',
-    marginLeft: '2.5%',
-  },
-  sectionContainer: {
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: Colors.n40,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    marginVertical: 10,
-  },
-});

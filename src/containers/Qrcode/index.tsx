@@ -11,7 +11,7 @@ import {
   CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../../assets/images/appImages';
+import AppImages, { AppImagesMap } from '../../../assets/images/appImages';
 import { HdWalletContext, getMaskedAddress } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -266,7 +266,7 @@ export default function QRCodeGenerator() {
       <QRCode
         content={chain.item.address}
         codeStyle='dot'
-        logo={AppImages.QR_LOGO}
+        logo={AppImagesMap.common.QR_LOGO}
         logoSize={60}
       />
     ) : null;

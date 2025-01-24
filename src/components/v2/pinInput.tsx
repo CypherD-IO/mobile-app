@@ -9,6 +9,7 @@ export const PinInput = ({
   onBlur,
   length,
   isSecureTextEntry = false,
+  className = 'flex-row justify-center',
 }: {
   value: string[];
   onChange: (value: string[]) => void;
@@ -16,6 +17,7 @@ export const PinInput = ({
   onBlur: () => void;
   length: number;
   isSecureTextEntry?: boolean;
+  className?: string;
 }) => {
   const inputRefs = useRef([]);
 
@@ -55,13 +57,13 @@ export const PinInput = ({
   };
 
   return (
-    <CyDView className='flex-row justify-center'>
+    <CyDView className={className}>
       {Array.from({ length }, (_, index) => (
         <CyDTextInput
           key={index}
           ref={el => (inputRefs.current[index] = el)}
           className={clsx(
-            'h-[64px] w-[50px] text-[22px] font-bold text-center rounded-[8px] border-[1px] border-n40 bg-n0 font-manrope text-base400',
+            'h-[64px] w-[50px] text-[22px] font-bold text-center rounded-[8px] border-[1px] border-base200 bg-n0 font-manrope text-base400',
             'mx-[4px]',
             {
               'border-redCyD': error,

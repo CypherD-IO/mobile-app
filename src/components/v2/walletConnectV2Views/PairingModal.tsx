@@ -230,7 +230,7 @@ export default function PairingModal({
 
   const RenderDAPPInfo = () => {
     return (
-      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[8px] border-fadedGrey p-[8px]'>
+      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[8px] border-n40 p-[8px]'>
         <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}

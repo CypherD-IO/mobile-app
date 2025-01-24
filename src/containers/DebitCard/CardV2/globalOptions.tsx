@@ -289,7 +289,7 @@ export default function GlobalOptions() {
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView
               className={clsx(
-                'rounded-[16px] p-[16px] mt-[30px] shadow-lg mx-[16px]',
+                'rounded-[16px] p-[16px] mt-[30px] shadow-lg mx-[16px] bg-n0',
                 {
                   'bg-n0': theme === 'dark',
                   'bg-p0': theme === 'light',

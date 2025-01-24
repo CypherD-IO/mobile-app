@@ -21,33 +21,33 @@ export type SupportedBlockchains =
 
 export interface DestinationWallet {
   /* Destination address where the purchased assets will be sent. */
-  address: string
+  address: string;
   /** List of networks enabled for the associated address. All assets available per network are displayed to the user. */
-  blockchains?: string[]
+  blockchains?: string[];
   /** List of assets enabled for the associated address. They are appended to the available list of assets. */
-  assets?: string[]
+  assets?: string[];
   /** Restrict the networks available for the associated assets. */
-  supportedNetworks?: string[]
+  supportedNetworks?: string[];
 }
 
 export interface OnRampAppParams {
   /** The destination wallets supported by your application (BTC, ETH, etc). */
-  destinationWallets: DestinationWallet[]
+  destinationWallets: DestinationWallet[];
   /** The preset input amount as a crypto value. i.e. 0.1 ETH. This will be the initial default for all cryptocurrencies. */
-  presetCryptoAmount?: number
+  presetCryptoAmount?: number;
   /**
    * The preset input amount as a fiat value. i.e. 15 USD.
    * This will be the initial default for all cryptocurrencies. Ignored if presetCryptoAmount is also set.
    * Also note this only works for a subset of fiat currencies: USD, CAD, GBP, EUR
    * */
-  presetFiatAmount?: number
+  presetFiatAmount?: number;
   /** The default network that should be selected when multiple networks are present. */
-  defaultNetwork?: string
+  defaultNetwork?: string;
 }
 
 export type GenerateOnRampURLOptions = {
-  appId: string
-  host?: string
+  appId: string;
+  host?: string;
 } & OnRampAppParams;
 
 export const generateOnRampURL = ({
@@ -58,9 +58,12 @@ export const generateOnRampURL = ({
   const url = new URL(host);
   url.pathname = '/buy/select-asset';
 
-  url.searchParams.append('destinationWallets', JSON.stringify(destinationWallets));
+  url.searchParams.append(
+    'destinationWallets',
+    JSON.stringify(destinationWallets),
+  );
 
-  (Object.keys(otherParams) as Array<keyof typeof otherParams>).forEach((key) => {
+  (Object.keys(otherParams) as Array<keyof typeof otherParams>).forEach(key => {
     const value = otherParams[key];
     if (value !== undefined) {
       url.searchParams.append(String(key), value.toString());
@@ -71,12 +74,15 @@ export const generateOnRampURL = ({
 
 // previous types and interfaces from https://github.com/coinbase/cbpay-js
 
-export default function CoinbasePay ({ route, navigation }) {
+export default function CoinbasePay({ route, navigation }) {
   const hdWallet = useContext<any>(HdWalletContext);
   const ethereum = hdWallet.state.wallet.ethereum;
   const cosmos = hdWallet.state.wallet.cosmos;
   const chain = route.params.url;
-  const addr = chain === ChainBackendNames.COSMOS ? cosmos.wallets[cosmos.currentIndex].address : ethereum.address;
+  const addr =
+    chain === ChainBackendNames.COSMOS
+      ? cosmos.wallets[cosmos.currentIndex].address
+      : ethereum.address;
   const { showModal, hideModal } = useGlobalModalContext();
   const [onRampURL, setOnRampURL] = useState<string>('');
   const { getWithAuth } = useAxios();
@@ -105,17 +111,29 @@ export default function CoinbasePay ({ route, navigation }) {
     }
     case 'ALL': {
       blockchain = ['polygon', 'ethereum', 'avalanche-c-chain'];
-      showModal('state', { type: 'info', title: '\'polygon\', \'ethereum\', \'avalanche\' only supported.', description: 'For COSMOS change the chain to COMSOS and try', onSuccess: hideModal, onFailure: hideModal });
+      showModal('state', {
+        type: 'info',
+        title: "'polygon', 'ethereum', 'avalanche' only supported.",
+        description: 'For COSMOS change the chain to COMSOS and try',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
       break;
     }
     default: {
       blockchain = chain;
-      showModal('state', { type: 'error', title: '\'polygon\', \'ethereum\', \'avalanche\', \'cosmos\' only supported.', description: 'Support for other chains coming up!', onSuccess: hideModal, onFailure: hideModal });
+      showModal('state', {
+        type: 'error',
+        title: "'polygon', 'ethereum', 'avalanche', 'cosmos' only supported.",
+        description: 'Support for other chains coming up!',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
       break;
     }
   }
 
-  function onModalHide (type = '') {
+  function onModalHide(type = '') {
     hideModal();
     setTimeout(() => {
       navigation.goBack();
@@ -133,14 +151,20 @@ export default function CoinbasePay ({ route, navigation }) {
           destinationWallets: [
             {
               address: addr,
-              blockchains: blockchain
-            }
-          ]
+              blockchains: blockchain,
+            },
+          ],
         });
         setOnRampURL(rampURL);
       }
     } catch (e) {
-      showModal('state', { type: 'error', title: t('COINBASE_LINK_ERROR'), description: t('CONTACT_CYPHERD_SUPPORT'), onSuccess: onModalHide, onFailure: hideModal });
+      showModal('state', {
+        type: 'error',
+        title: t('COINBASE_LINK_ERROR'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: onModalHide,
+        onFailure: hideModal,
+      });
       Sentry.captureException('coinbase_pay_generate_url_error');
     }
   };
@@ -150,14 +174,17 @@ export default function CoinbasePay ({ route, navigation }) {
   return (
     <CyDView className={'h-full w-full'}>
       {onRampURL === '' && <Loading />}
-      {onRampURL !== '' && <WebView
-        startInLoadingState={true}
-        renderLoading={() => {
-          return (<Loading></Loading>);
-        }}
-        source={{ uri: onRampURL }}
-        style={{ marginTop: 0 }}
-        allowsBackForwardNavigationGestures
-      />}
-    </CyDView>);
-};
+      {onRampURL !== '' && (
+        <WebView
+          startInLoadingState={true}
+          renderLoading={() => {
+            return <Loading />;
+          }}
+          source={{ uri: onRampURL }}
+          style={{ marginTop: 0 }}
+          allowsBackForwardNavigationGestures
+        />
+      )}
+    </CyDView>
+  );
+}

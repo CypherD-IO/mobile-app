@@ -132,18 +132,13 @@ export default function ManageWallet() {
 
   return (
     <CyDView className={'bg-n20 h-full '}>
-      <CyDImageBackground
-        className={'h-[50%] pt-[30px]'}
-        source={AppImages.BG_SETTINGS}
-        resizeMode={'cover'}>
-        <CyDFlatList
-          data={manageWalletData}
-          renderItem={({ item }) =>
-            renderSettingsData(item, navigation, hdWalletContext)
-          }
-          keyExtractor={item => item.index}
-        />
-      </CyDImageBackground>
+      <CyDFlatList
+        data={manageWalletData}
+        renderItem={({ item }) =>
+          renderSettingsData(item, navigation, hdWalletContext)
+        }
+        keyExtractor={item => item.index}
+      />
     </CyDView>
   );
 }

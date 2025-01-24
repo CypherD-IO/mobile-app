@@ -61,6 +61,9 @@ import { showToast } from '../../utilities/toastUtility';
 import { cardDesign } from '../../../models/cardDesign.interface';
 import Carousel from 'react-native-reanimated-carousel';
 import { isAndroid } from '../../../misc/checkers';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
+import Loading from '../../../components/v2/loading';
 interface CardSecrets {
   cvv: string;
   expiryMonth: string;
@@ -442,6 +445,8 @@ const RenderCardActions = ({
   cardDesignData: cardDesign;
 }) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
   const { postWithAuth, patchWithAuth } = useAxios();
   const [cardDetails, setCardDetails] =
     useState<CardSecrets>(initialCardDetails);
@@ -591,6 +596,40 @@ const RenderCardActions = ({
     );
   }, [trackingDetails, cardId]);
 
+  const getThemeToInject = (): Exclude<Theme, Theme.SYSTEM> => {
+    if (theme === Theme.SYSTEM) {
+      return colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT;
+    }
+    return theme;
+  };
+
+  const getThemeColor = (): {
+    bg: string;
+    color: string;
+    border: string;
+  } => {
+    let themeColor = '';
+    if (theme === Theme.SYSTEM) {
+      themeColor = colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT;
+    } else {
+      themeColor = theme;
+    }
+
+    if (themeColor === Theme.DARK) {
+      return {
+        bg: '#0d0d0d',
+        color: '#ffffff',
+        border: '#24292e',
+      };
+    } else {
+      return {
+        bg: '#ffffff',
+        color: '#000000',
+        border: '#dfe2e6',
+      };
+    }
+  };
+
   const validateReuseToken = async () => {
     if (
       cardProvider === CardProviders.REAP_CARD ||
@@ -604,7 +643,7 @@ const RenderCardActions = ({
         )}/verify/reuse-token`;
         const payload = {
           reuseToken: cardRevealReuseToken,
-          stylesheetUrl: 'https://public.cypherd.io/css/cardRevealMobile.css',
+          stylesheetUrl: `https://public.cypherd.io/css/cardRevealMobile_${getThemeToInject()}.css`,
         };
         try {
           const response = await postWithAuth(verifyReuseTokenUrl, payload);
@@ -983,7 +1022,7 @@ const RenderCardActions = ({
           animationInTiming={300}
           animationOutTiming={300}
           style={styles.modalLayout}>
-          <CyDView className='bg-n30 py-[8px] mb-[12px] h-[412px] w-[90%] rounded-[16px]'>
+          <CyDView className='bg-n20 py-[8px] mb-[12px] h-[440px] w-[90%] rounded-[16px]'>
             <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
               <CyDMaterialDesignIcons
                 name={'close'}
@@ -992,11 +1031,14 @@ const RenderCardActions = ({
               />
             </CyDTouchView>
             <CyDView className='flex flex-row justify-between items-center w-full mb-[12px]'>
-              <CyDText className='text-center text-[14px] text-lightThemeGrayText w-full'>
+              <CyDText className='text-center text-[14px] w-full'>
                 Details will be hidden in {hideTimer} sec
               </CyDText>
             </CyDView>
             <WebView
+              renderLoading={() => {
+                return <Loading />;
+              }}
               source={{
                 html: `
                 <!DOCTYPE html>
@@ -1006,14 +1048,21 @@ const RenderCardActions = ({
                     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
                     <link href='https://fonts.googleapis.com/css?family=Manrope' rel='stylesheet'>
                     <style>
+                      body {
+                        background-color: transparent !important;
+                        margin: 0;
+                        padding: 0;
+                      }
                       #nameDiv {
                         display: none;
-                        background-color: white;
+                        background-color: ${getThemeColor().bg};
                         border-radius: 8px;
                         font-family: 'Manrope';
                         margin: 6px;
                         padding: 12px;
                         margin-bottom: 12px;
+                        color: ${getThemeColor().color};
+                        border: 0.5px solid ${getThemeColor().border};
                       }
                       #nameTitle {
                         font-weight: 900;
@@ -1026,7 +1075,7 @@ const RenderCardActions = ({
                       }
                     </style>
                   </head>
-                  <body style="background:#EBEDF0;overflow:hidden">
+                  <body style="background:transparent;overflow:hidden;padding:12px">
                     <div id="nameDiv">
                       <div id="nameTitle">Name:</div>
                       <div id="nameValue">${userName}</div>
@@ -1036,7 +1085,7 @@ const RenderCardActions = ({
                       scrolling="no" 
                       src="${webviewUrl}" 
                       allow="clipboard-read; clipboard-write" 
-                      style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;background:#EBEDF0;border-radius:16px"
+                      style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;"
                       onload="document.getElementById('nameDiv').style.display = 'block';"
                     ></iframe>
                     <script>
@@ -1053,11 +1102,12 @@ const RenderCardActions = ({
               style={{
                 height: '100%',
                 width: '100%',
-                background: '#EBEDF0',
-                padding: 0,
+                backgroundColor: 'transparent',
+                padding: 12,
                 margin: 0,
                 borderRadius: 16,
               }}
+              androidLayerType='software'
               javaScriptEnabled={true}
               domStorageEnabled={true}
               startInLoadingState={true}

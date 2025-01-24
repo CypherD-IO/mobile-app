@@ -271,7 +271,7 @@ export default function UpdateCardContactDetails({
                   </CyDText>
                   <CyDView
                     className={clsx(
-                      'h-[50px] mt-[8px] border-[1px] border-inputBorderColor rounded-[5px] flex flex-row',
+                      'h-[50px] mt-[8px] border-[1px] border-n40 flex flex-row rounded-md',
                       {
                         'border-redOffColor':
                           formProps.touched.phoneNumber &&
@@ -281,7 +281,7 @@ export default function UpdateCardContactDetails({
                     <CyDTouchView
                       onPress={() => onDialCodeModalOpen(formProps.values)}
                       className={
-                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-n0 py-[13px] rounded-l-[16px] flex items-center'
+                        'w-4/12 border-r-[1px] border-n40 bg-n0 py-[13px] flex items-center rounded-l-md'
                       }>
                       <CyDView className={'mt-[-4px] ml-[-55px]'}>
                         <CyDText className={'text-[33px] mt-[-6px]'}>
@@ -295,7 +295,10 @@ export default function UpdateCardContactDetails({
                         </CyDText>
                       </CyDView>
                     </CyDTouchView>
-                    <CyDView className={'flex flex-row items-center w-8/12'}>
+                    <CyDView
+                      className={
+                        'flex flex-row items-center w-8/12 rounded-r-md bg-n0'
+                      }>
                       <CyDView className={'flex flex-row items-center'}>
                         <CyDTextInput
                           className={clsx(
@@ -325,13 +328,13 @@ export default function UpdateCardContactDetails({
                     )}
                 </CyDView>
 
-                <CyDView className={'mt-[24px]'}>
+                <CyDView className={'mt-[24px] '}>
                   <CyDText className='text-[16px] font-bold mt-[20px]'>
                     {t('EMAIL_ADDRESS')}
                   </CyDText>
                   <CyDTextInput
                     className={clsx(
-                      ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px]  ',
+                      ' border-[1px] border-n40 mt-[8px] p-[12px] text-[18px] rounded-md',
                       {
                         'border-redOffColor':
                           formProps.touched.email && formProps.errors.email,
@@ -355,10 +358,10 @@ export default function UpdateCardContactDetails({
                     </CyDText>
                   </CyDView>
                 )}
-                <CyDView className={'bg-n0 pt-[10px]'}>
+                <CyDView className={'bg-n0 '}>
                   <CyDView>
                     {isOTPTriggered && (
-                      <CyDView className={'mt-[20px]'}>
+                      <CyDView className={'mt-[20px] pt-[10px]'}>
                         <CyDText className={'text-[15px] mb-[12px] font-bold'}>
                           {t<string>('UPDATE_CARD_DETAILS_OTP')}
                         </CyDText>

@@ -10,6 +10,7 @@ import { Web3Origin } from '../constants/enum';
 import { CommunicationEvents } from '../constants/web3';
 import useWeb3 from '../hooks/useWeb3';
 import { WebsiteInfo } from '../types/Browser';
+import Loading from './v2/loading';
 
 interface WebScreenProps {
   websiteInfo: WebsiteInfo;
@@ -67,6 +68,9 @@ export default function WebScreen({
       source={{ uri: url }}
       style={webviewStyles}
       onMessage={onWebviewMessage}
+      renderLoading={() => {
+        return <Loading />;
+      }}
     />
   );
 }

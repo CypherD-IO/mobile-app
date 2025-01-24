@@ -429,6 +429,7 @@ export default function Onmeta({ route }) {
             source={{
               uri: clientDetails.uri,
             }}
+            backgroundColor={'transparent'}
             startInLoadingState
             ref={webviewRef}
             renderLoading={() => {

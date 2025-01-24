@@ -156,8 +156,11 @@ export function TokenTransactions({
         break;
     }
     return (
-      <CyDView className={'w-[100%]'} style={{ height: height - 230 }}>
+      <CyDView className={'w-[100%] bg-n20'} style={{ height: height - 230 }}>
         <WebView
+          renderLoading={() => {
+            return <Loading />;
+          }}
           nestedScrollEnabled
           originWhitelist={['*']}
           source={{ uri }}

@@ -3,7 +3,6 @@ import { StatusBar } from 'react-native';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
   CyDTouchView,
   CyDMaterialDesignIcons,
   CyDIcons,
@@ -25,7 +24,6 @@ import {
 import { screenTitle } from '../../../constants';
 import clsx from 'clsx';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;

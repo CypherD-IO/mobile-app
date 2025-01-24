@@ -435,8 +435,8 @@ const TxnScene = ({
           className={clsx(
             'flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-n40 pl-[10px] pr-[30px] bg-n0',
             {
-              'rounded-t-[24px] border-t-[0.5px]': shouldRenderDate,
-              'rounded-b-[24px]': nextTransactionFormatedDay !== formatedDay,
+              'rounded-t-lg border-t-[0.5px]': shouldRenderDate,
+              'rounded-b-lg': nextTransactionFormatedDay !== formatedDay,
             },
           )}
           onPress={() => {
