@@ -279,8 +279,6 @@ const styles = StyleSheet.create({
     paddingBottom: isIOS() ? 26 : 14,
     paddingTop: 10,
     paddingHorizontal: 21,
-    // borderWidth: 1,
-    // borderColor: '#EBEDF0',
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     elevation: 24, // For Android

@@ -38,7 +38,6 @@ import { StyleSheet } from 'react-native';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { useTheme } from '../../../reducers/themeReducer';
 import clsx from 'clsx';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   cardProvider: string;
@@ -523,13 +522,3 @@ export default function GlobalOptions() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  buttonShadow: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-});

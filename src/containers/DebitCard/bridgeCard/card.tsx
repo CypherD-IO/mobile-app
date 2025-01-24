@@ -905,11 +905,10 @@ const RenderCardActions = ({
                 className={clsx(
                   'absolute bg-toastColor h-full rounded-[8px] my-[5px]',
                   {
-                    'bg-appColor':
-                      parseFloat(physicalCardEligibilityProgress) <= 60,
+                    'bg-p50': parseFloat(physicalCardEligibilityProgress) <= 60,
                   },
                   {
-                    'bg-redColor':
+                    'bg-red300':
                       parseFloat(physicalCardEligibilityProgress) <= 30,
                   },
                 )}
@@ -929,13 +928,13 @@ const RenderCardActions = ({
             {lifetimeLoadUSD < physicalCardEligibilityLimit && (
               <CyDView className='flex flex-row my-[5px] mt-[12px]'>
                 <CyDText className='mb-[4px]'>{`Load `}</CyDText>
-                <CyDText className='mb-[4px] font-extrabold text-appColor'>
+                <CyDText className='mb-[4px] font-extrabold text-p50'>
                   {limitDecimalPlaces(
                     physicalCardEligibilityLimit - lifetimeLoadUSD,
                     2,
                   )}
                 </CyDText>
-                <CyDText className='mb-[4px] font-extrabold text-appColor'>{` USD`}</CyDText>
+                <CyDText className='mb-[4px] font-extrabold text-p50'>{` USD`}</CyDText>
                 <CyDText className='mb-[4px]'>{` more to upgrade`}</CyDText>
               </CyDView>
             )}

@@ -105,9 +105,9 @@ export default function NameOnCard() {
                 }}
                 className='flex flex-row items-center justify-between bg-n0 rounded-[12px] p-[16px] mb-[12px]'>
                 <CyDText className='text-[16px] font-semibold'>{name}</CyDText>
-                <CyDView className='w-[20px] h-[20px] border-[2px] border-inputBorderColor rounded-full flex items-center justify-center'>
+                <CyDView className='w-[20px] h-[20px] border-[2px] border-base80 rounded-full flex items-center justify-center'>
                   {selectedName === name && (
-                    <CyDView className='w-[12px] h-[12px] bg-appColor rounded-full' />
+                    <CyDView className='w-[12px] h-[12px] bg-p50 rounded-full' />
                   )}
                 </CyDView>
               </CyDTouchView>

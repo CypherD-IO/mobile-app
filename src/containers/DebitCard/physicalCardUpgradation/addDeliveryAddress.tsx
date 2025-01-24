@@ -234,7 +234,7 @@ export default function AddDeliveryAddress() {
                         />
                       </CyDTouchView>
                       <CyDTextInput
-                        className='h-full w-[80%] text-[16px] border-l px-[20px] border-inputBorderColor'
+                        className='h-full w-[80%] text-[16px] border-l px-[20px] border-base80'
                         inputMode='tel'
                         placeholderTextColor={'#ccc'}
                         onChangeText={handleChange('phoneNumber')}

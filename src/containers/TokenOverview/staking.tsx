@@ -461,10 +461,10 @@ export default function TokenStaking({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setClaimModal(false)}
-            className={'z-[50]'}>
+            className={' self-end'}>
             <CyDMaterialDesignIcons
               name={'close'}
               size={24}
@@ -530,12 +530,12 @@ export default function TokenStaking({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setSignModalVisible(false);
             }}
-            className={'z-[50]'}>
+            className={'z-[50] self-end'}>
             <CyDMaterialDesignIcons
               name={'close'}
               size={24}
@@ -552,9 +552,7 @@ export default function TokenStaking({
                 {t<string>('CLAIMABLE_REWARD')}
               </CyDText>
               <CyDText
-                className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }>
+                className={' font-bold ml-[5px] text-[18px] text-center'}>
                 {stakingVariables.totalClaimableRewards}
               </CyDText>
             </CyDView>
@@ -572,7 +570,7 @@ export default function TokenStaking({
               </CyDText>
               <CyDText
                 className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
+                  ' font-bold ml-[5px] text-[18px] text-center'
                 }>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
             </CyDView>
           </CyDView>
@@ -606,12 +604,12 @@ export default function TokenStaking({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setReStakeModalVisible(false);
             }}
-            className={'z-[50]'}>
+            className={'z-[50] self-end'}>
             <CyDMaterialDesignIcons
               name={'close'}
               size={24}
@@ -629,7 +627,7 @@ export default function TokenStaking({
             <CyDView className={' flex flex-row'}>
               <CyDText
                 className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
+                  ' font-bold ml-[5px] text-[18px] text-center '
                 }>{`${stakingVariables.totalClaimableRewards}`}</CyDText>
             </CyDView>
           </CyDView>
@@ -646,7 +644,7 @@ export default function TokenStaking({
               </CyDText>
               <CyDText
                 className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
+                  ' font-bold ml-[5px] text-[18px] text-center'
                 }>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
             </CyDView>
           </CyDView>

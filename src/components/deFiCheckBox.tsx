@@ -48,9 +48,9 @@ export default function DeFiCheckBox(props: any) {
           className='flex flex-row mb-[23px]'>
           <CyDView
             className={clsx(
-              'h-[21px] w-[21px]  rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center',
+              'h-[21px] w-[21px]  rounded-[4px] border-[1.5px] border-base100 flex flex-row justify-center items-center',
               {
-                'bg-appColor': current.includes(data.value),
+                'bg-p50': current.includes(data.value),
               },
             )}
           />

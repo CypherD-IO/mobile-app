@@ -173,7 +173,7 @@ export default function CardWailtList({ navigation }: Props) {
                     <>
                       <CyDTouchView
                         className={
-                          'mt-[5px] mb-[5px] border-[1px] border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
+                          'mt-[5px] mb-[5px] border-[1px] border-base80 py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
                         }
                         onPress={() => setModalVisible(true)}>
                         <CyDView
