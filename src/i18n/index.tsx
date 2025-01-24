@@ -1474,6 +1474,7 @@ const resources = {
       VIEW_TERMS_CONDITIONS: 'View Terms and Conditions',
       'AGREE_T&C':
         'I hereby confirm that I have read, understood, and fully agree to the terms and conditions outlined above.',
+      OPTIONS: 'Options',
     },
   },
 };

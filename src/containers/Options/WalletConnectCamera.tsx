@@ -1,16 +1,10 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useLayoutEffect,
-  useRef,
-} from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import * as C from '../../constants/index';
 import AppImages from './../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
 import analytics from '@react-native-firebase/analytics';
-import { BackHandler, FlatList } from 'react-native';
+import { FlatList } from 'react-native';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDText,
@@ -42,12 +36,23 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function WalletConnectCamera(props: {
-  route: { params: { walletConnectURI: string } };
-  navigation: any;
-}) {
-  const { route } = props;
+interface RouteParams {
+  walletConnectURI: string;
+}
+
+export default function WalletConnectCamera() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { walletConnectState, walletConnectDispatch } =
     useContext<walletConnectContextDef>(WalletConnectContext);
 
@@ -113,18 +118,6 @@ export default function WalletConnectCamera(props: {
         });
       }
     }
-    // else {
-    //   const connector = new WalletConnect({ uri });
-    //   walletConnectDispatch({
-    //     type: WalletConnectActions.ADD_CONNECTOR,
-    //     value: connector,
-    //   });
-    // }
-  };
-
-  const handleBackButton = () => {
-    props?.navigation?.goBack();
-    return true;
   };
 
   const endSession = async (key: number) => {
@@ -156,45 +149,6 @@ export default function WalletConnectCamera(props: {
       });
     }
   };
-
-  // useLayoutEffect(() => {
-  //   props.navigation.setOptions({
-  //     headerRight: () => (
-  //       <CyDTouchView
-  //         onPress={() => {
-  //           props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
-  //             fromPage: QRScannerScreens.WALLET_CONNECT,
-  //             onSuccess,
-  //           });
-  //         }}>
-  //         <CydMaterialDesignIcons
-  //           name='qrcode-scan'
-  //           size={24}
-  //           className='text-base400'
-  //         />
-  //       </CyDTouchView>
-  //     ),
-  //   });
-  // }, [props.navigation]);
-
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-    return () => {
-      setWalletConnectURI('');
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
-    };
-  }, []);
-
-  // useEffect(() => {
-  //   const link = walletConnectURI;
-  //   if (link.startsWith('wc')) {
-  //     loading.current = true;
-  //     void connectWallet(link);
-  //     void analytics().logEvent('wallet_connect_url_scan', {
-  //       fromEthAddress: ethereum.address,
-  //     });
-  //   }
-  // }, [portfolioState.statePortfolio.walletConnectURI]);
 
   const buildWalletConnectDataFromAsync = async () => {
     let data;
@@ -561,7 +515,8 @@ export default function WalletConnectCamera(props: {
         <CyDTouchView
           className=''
           onPress={() => {
-            props.navigation.goBack();
+            console.log('back');
+            navigation.goBack();
           }}>
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
@@ -570,7 +525,7 @@ export default function WalletConnectCamera(props: {
         </CyDText>
         <CyDTouchView
           onPress={() => {
-            props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+            navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
               fromPage: QRScannerScreens.WALLET_CONNECT,
               onSuccess,
             });

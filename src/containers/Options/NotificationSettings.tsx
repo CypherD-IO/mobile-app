@@ -127,23 +127,21 @@ export default function NotificationSettings(props) {
     };
 
     return (
-      <CyDView className='flex-row p-4'>
-        <CyDView className='flex-row pt-8'>
-          <CyDView className='flex-row h-10 rounded-2xl'>
-            <CyDView className='w-[230px] h-10 justify-center'>
-              <CyDText className='text-left font-bold text-[16px]'>
-                {t(item.id)}
-              </CyDText>
-              <CyDText className='text-left font-semibold text-[12px] text-subTextColor'>
-                {item.info}
-              </CyDText>
-            </CyDView>
+      <CyDView className='flex flex-row justify-between pt-8 p-4'>
+        <CyDView className='flex-row h-10 rounded-2xl'>
+          <CyDView className='w-[230px] h-10 justify-center'>
+            <CyDText className='text-left font-bold text-[16px]'>
+              {t(item.id)}
+            </CyDText>
+            <CyDText className='text-left font-semibold text-[12px] text-subTextColor'>
+              {item.info}
+            </CyDText>
           </CyDView>
+        </CyDView>
 
-          <CyDView className='h-10 flex-row justify-center'>
-            <CyDView className='w-[30px] h-10 items-end justify-center'>
-              <Switch onValueChange={toggleSwitch} value={isEnabled} />
-            </CyDView>
+        <CyDView className='h-10 flex-row justify-center'>
+          <CyDView className='w-[30px] h-10 items-end justify-center'>
+            <Switch onValueChange={toggleSwitch} value={isEnabled} />
           </CyDView>
         </CyDView>
       </CyDView>

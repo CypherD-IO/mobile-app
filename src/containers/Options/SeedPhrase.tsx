@@ -3,7 +3,6 @@ import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CyDImage,
   CyDScrollView,
   CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
@@ -14,7 +13,7 @@ import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
-import AppImages from '../../../assets/images/appImages';
+import { AppImagesMap } from '../../../assets/images/appImages';
 import { QRCode } from 'react-native-custom-qr-codes';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
@@ -26,6 +25,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { loadRecoveryPhraseFromKeyChain } from '../../core/Keychain';
+import Loading from '../../components/v2/loading';
 
 const renderSeedPhrase = (text: string, index: number) => {
   return (
@@ -101,7 +101,7 @@ export default function SeedPhrase() {
     };
   }, [isFocused]);
 
-  // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
+  if (isFetchingSeedPhrase) return <Loading />;
   return (
     !isFetchingSeedPhrase && (
       <CyDScrollView className={'bg-n20 h-full w-full relative '}>
@@ -118,7 +118,7 @@ export default function SeedPhrase() {
             <QRCode
               content={seedPhrase}
               codeStyle='dot'
-              logo={AppImages.QR_LOGO}
+              logo={AppImagesMap.common.QR_LOGO}
               logoSize={60}
             />
           </CyDView>

@@ -12,7 +12,7 @@ import {
   CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../../assets/images/appImages';
+import AppImages, { AppImagesMap } from '../../../assets/images/appImages';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
@@ -190,7 +190,7 @@ export default function PrivateKey(props) {
       <QRCode
         content={privateKey}
         codeStyle='dot'
-        logo={AppImages.QR_LOGO}
+        logo={AppImagesMap.common.QR_LOGO}
         logoSize={60}
       />
     ) : null;

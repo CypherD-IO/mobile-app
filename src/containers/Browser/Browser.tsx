@@ -1036,7 +1036,8 @@ export default function Browser({ route, navigation }: any) {
           <ActivityIndicator size='large' color={Colors.black} />
         </CyDView>
       )}
-      <CyDView className={clsx('flex-1 pb-[50px]', { 'pb-[75px]': !isIOS() })}>
+      <CyDView
+        className={clsx('flex-1 pb-[50px] bg-n20', { 'pb-[75px]': !isIOS() })}>
         <WebView
           key={webviewKey}
           webviewDebuggingEnabled={true}
@@ -1049,6 +1050,9 @@ export default function Browser({ route, navigation }: any) {
           mediaPlaybackRequiresUserAction={true}
           javaScriptEnabled={true}
           domStorageEnabled={true}
+          renderLoading={() => {
+            return <Loading />;
+          }}
           style={{ marginTop: 0 }}
           onNavigationStateChange={navState => {
             setCanGoBack(navState.canGoBack);

@@ -147,9 +147,11 @@ export default function CypherCardScreen() {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
-    setIsTermsAndConditionsModalVisible(
-      !get(data, [cardProvider, 'termsAgreedOn'], 0),
-    );
+    if (cardProvider !== CardProviders.PAYCADDY) {
+      setIsTermsAndConditionsModalVisible(
+        !get(data, [cardProvider, 'termsAgreedOn'], 0),
+      );
+    }
     globalContext.globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
