@@ -3,7 +3,6 @@ import Fuse from 'fuse.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dimensions, Keyboard, StyleSheet } from 'react-native';
-import AppImages from '../../../assets/images/appImages';
 import { TokenModalType } from '../../constants/enum';
 import {
   CyDFastImage,
@@ -132,6 +131,8 @@ export default function ChooseTokenModal(props: TokenModal) {
       return totalValue < minTokenValueLimit || !isFundable;
     } else if (renderPage === 'bridgePage') {
       return !isSwapable;
+    } else if (type === TokenModalType.PORTFOLIO) {
+      return false;
     }
     return totalValue < minTokenValueLimit;
   };
@@ -198,12 +199,7 @@ export default function ChooseTokenModal(props: TokenModal) {
               },
             )}>
             <CyDTextInput
-              className={clsx(
-                'self-center py-[15px] w-[95%] text-textInputBackground',
-                {
-                  'text-textInputFocussedBackground': hasText,
-                },
-              )}
+              className={clsx('self-center py-[15px] w-[95%] text-base400')}
               value={searchText}
               autoCapitalize='none'
               autoCorrect={false}
@@ -236,7 +232,7 @@ export default function ChooseTokenModal(props: TokenModal) {
 
           {totalHoldings.originalHoldings.length ? (
             <CyDFlatList
-              className={'mt-[10px]'}
+              className={'mt-[10px] mb-[80px]'}
               data={totalHoldings.filteredHoldings}
               renderItem={(item: any) =>
                 TokenItem({
@@ -313,11 +309,11 @@ const TokenItem = ({
           onSelectingToken(item);
         }}
         className={clsx(
-          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-n40 mx-[15px]',
+          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-n40 mx-[15px] px-[10px]',
           { 'opacity-25': isTokenDisabled(totalValue, isFundable, isSwapable) },
         )}>
         <CyDView className={'flex flex-row w-full justify-start items-center'}>
-          <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center px-[10px]'>
+          <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pr-[10px]'>
             <CyDFastImage
               className={'h-[35px] w-[35px] rounded-[50px]'}
               source={{ uri: logoUrl }}
