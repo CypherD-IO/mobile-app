@@ -215,6 +215,16 @@ const AddressProfile = props => {
   };
 
   const renderHeader = (name: string, index: number, isActive: boolean) => {
+    const randomIcons = [
+      'dog',
+      'robot-happy-outline',
+      'rabbit-variant-outline',
+      'robot',
+      'penguin',
+      'cat',
+      'bird',
+      'ladybug',
+    ];
     return (
       <CyDView
         className={clsx(
@@ -224,7 +234,7 @@ const AddressProfile = props => {
         key={index}>
         <CyDView className='flex flex-row justify-between items-center'>
           <CyDMaterialDesignIcons
-            name='dog'
+            name={randomIcons[index % randomIcons.length] as any}
             size={24}
             className='text-base400 font-light'
           />
