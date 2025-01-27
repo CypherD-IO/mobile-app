@@ -20,6 +20,7 @@ import {
   ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
+  EVM_CHAINS_BACKEND_NAMES,
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../constants/server';
@@ -234,7 +235,10 @@ export default function EnterAmount(props: any) {
       // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
       // remove this gasFeeReservation once we have gas estimation for eip1599 chains
       let gasReservedForNativeToken;
-      if (isEIP1599Chain(tokenData.chainDetails.backendName)) {
+      if (
+        EVM_CHAINS_BACKEND_NAMES.includes(tokenData.chainDetails.backendName) &&
+        isEIP1599Chain(tokenData.chainDetails.backendName)
+      ) {
         gasReservedForNativeToken = String(
           gasFeeReservation[tokenData.chainDetails.backendName],
         );
@@ -308,11 +312,14 @@ export default function EnterAmount(props: any) {
                   }}
                   className={clsx(
                     'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                  )}>
+                  {isMaxLoading ? (
+                    <ActivityIndicator size='small' color='#000000' />
+                  ) : (
+                    <CyDText className={' text-black '}>
+                      {t<string>('MAX')}
+                    </CyDText>
                   )}
-                  style={styles.roundButtonContainer}>
-                  <CyDText className={' text-black '}>
-                    {t<string>('MAX')}
-                  </CyDText>
                 </CyDTouchView>
                 <CyDTouchView
                   onPress={() => {
@@ -385,7 +392,7 @@ export default function EnterAmount(props: any) {
                     : (!isNaN(parseFloat(cryptoValue))
                         ? formatAmount(cryptoValue)
                         : '0.00') + ` ${tokenData.name}`}
-                </CText>
+                </CyDText>
 
                 <CyDView className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-n0'>
                   <CyDView>

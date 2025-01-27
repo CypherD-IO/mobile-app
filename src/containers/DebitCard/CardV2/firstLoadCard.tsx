@@ -264,48 +264,6 @@ export default function FirstLoadCard() {
     };
   };
 
-  const RenderWarningMessage = useCallback(() => {
-    if (selectedToken) {
-      const { symbol, backendName } = selectedToken.chainDetails;
-      if (symbol && backendName) {
-        const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
-        let errorMessage = '';
-        if (
-          DecimalHelper.isGreaterThan(
-            cryptoAmount,
-            selectedToken?.actualBalance,
-          )
-        ) {
-          errorMessage = t('INSUFFICIENT_FUNDS');
-        } else if (
-          usdAmount &&
-          backendName === CHAIN_ETH.backendName &&
-          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH)
-        ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
-        } else if (
-          !usdAmount ||
-          DecimalHelper.isLessThan(usdAmount, minTokenValueLimit)
-        ) {
-          if (backendName === CHAIN_ETH.backendName) {
-            errorMessage = t('MINIMUM_AMOUNT_ETH');
-          } else {
-            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
-          }
-        }
-
-        return (
-          <CyDView className='my-[8px]'>
-            <CyDText className='text-center text-redColor font-medium text-wrap'>
-              {errorMessage}
-            </CyDText>
-          </CyDView>
-        );
-      }
-    }
-    return null;
-  }, [selectedToken, cryptoAmount, nativeToken?.balance]);
-
   const onPressToggle = () => {
     const tempIsCryproInput = !isCryptoInput;
     setIsCryptoInput(!isCryptoInput);
@@ -736,27 +694,13 @@ export default function FirstLoadCard() {
       const { symbol, backendName } = selectedToken.chainDetails;
       if (symbol && backendName) {
         let errorMessage = '';
-        if (Number(cryptoAmount) > Number(selectedToken?.actualBalance)) {
+        if (
+          DecimalHelper.isGreaterThan(
+            cryptoAmount,
+            selectedToken?.actualBalance,
+          )
+        ) {
           errorMessage = '*You do not have enough balance to load the card';
-        } else if (
-          !GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
-          Number(nativeToken?.actualBalance) <=
-            get(gasFeeReservation, backendName as ChainBackendNames)
-        ) {
-          errorMessage = String(
-            `*Insufficient ${String(nativeToken?.name)} to pay gas fee`,
-          );
-        } else if (
-          selectedToken?.symbol === nativeToken?.symbol &&
-          Number(cryptoAmount) >
-            Number(
-              (
-                Number(nativeToken?.actualBalance) -
-                get(gasFeeReservation, backendName as ChainBackendNames)
-              ).toFixed(6),
-            )
-        ) {
-          errorMessage = '*Insufficient funds to pay gas fee';
         } else if (
           usdAmount &&
           backendName === CHAIN_ETH.backendName &&
@@ -781,7 +725,7 @@ export default function FirstLoadCard() {
       }
     }
     return null;
-  }, [selectedToken, cryptoAmount, nativeToken]);
+  }, [selectedToken, cryptoAmount, nativeToken?.balance]);
 
   const fundCard = async () => {
     const {
