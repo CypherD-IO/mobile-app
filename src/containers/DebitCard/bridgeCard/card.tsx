@@ -270,8 +270,10 @@ export default function CardScreen({
             <CyDView className='absolute bottom-[14px] left-[14px]'>
               <CyDText
                 className={clsx('font-semibold text-[14px]', {
-                  'text-n0':
+                  'text-white':
                     card.designId === 'dd6a68ce-bfc2-45b0-8ae8-06cc5220d5a1',
+                  'text-black': card.type === CardType.PHYSICAL,
+                  'text-n0': card.type === CardType.VIRTUAL,
                 })}>
                 {' xxxx ' + card.last4}
               </CyDText>
