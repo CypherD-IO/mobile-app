@@ -317,7 +317,7 @@ function ChainSelectionModal({
       setModalVisible={setModalVisible}
       isModalVisible={isModalVisible}
       style={styles.chainModalLayout}>
-      <CyDView className='bg-base40 border-1 rounded-[16px] h-[72%] pb-[20px]'>
+      <CyDView className='bg-n20 border-1 rounded-[16px] h-[72%] pb-[20px]'>
         <CyDTouchView
           onPress={() => setModalVisible(false)}
           className='absolute z-[50] top-[20px] right-[24px]'>
@@ -347,9 +347,9 @@ function ChainSelectionModal({
                 }}
                 key={index}
                 className={clsx(
-                  'border-[1px] border-n40 rounded-[6px] flex flex-col items-center justify-center bg-n0 h-[74px] w-[90px] mb-[12px]',
+                  'border-[1px] border-n40 rounded-[6px] flex flex-col items-center justify-center bg-n30 h-[74px] w-[90px] mb-[12px]',
                   {
-                    'bg-20': selectedChain?.chainId === item.chainId,
+                    'bg-p10': selectedChain?.chainId === item.chainId,
                   },
                 )}>
                 <CyDView className='flex flex-col items-center h-[50px] w-[46px]'>
