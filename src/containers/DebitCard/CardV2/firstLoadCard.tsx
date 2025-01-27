@@ -951,8 +951,12 @@ export default function FirstLoadCard() {
     return 'h-[60px]';
   };
 
+  if (isMaxLoading) {
+    return <Loading blurBg={true} />;
+  }
+
   return (
-    <CyDView className='bg-n20' style={{ paddingTop: insect.top }}>
+    <CyDView className='bg-n20 flex-1' style={{ paddingTop: insect.top }}>
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
@@ -1030,9 +1034,8 @@ export default function FirstLoadCard() {
         deductAmountNow={false}
       />
 
-      <CyDView className='flex-col justify-between h-full'>
-        {isMaxLoading && <Loading blurBg={true} />}
-        <CyDView className='px-[16px]'>
+      <CyDView className='flex flex-col justify-between flex-1'>
+        <CyDView className='px-[16px] flex-1'>
           <CyDTouchView
             className='flex-row items-center gap-[16px] '
             onPress={() => {

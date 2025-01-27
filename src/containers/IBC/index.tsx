@@ -184,123 +184,129 @@ export default function IBC({
   };
 
   const ibcTransfer = async (type = 'simulation'): Promise<void> => {
-    const activityData: IBCTransaction = {
-      id: genId(),
-      status: ActivityStatus.PENDING,
-      type: ActivityType.IBC,
-      transactionHash: '',
-      token: tokenData.name,
-      fromChain: tokenData.chainDetails.name,
-      toChain: chain.name,
-      symbol: tokenData.symbol,
-      tokenLogoUrl: tokenData.logoUrl,
-      amount: parseFloat(amount).toFixed(3),
-      datetime: new Date(),
-      receiverAddress,
-    };
+    try {
+      const activityData: IBCTransaction = {
+        id: genId(),
+        status: ActivityStatus.PENDING,
+        type: ActivityType.IBC,
+        transactionHash: '',
+        token: tokenData.name,
+        fromChain: tokenData.chainDetails.name,
+        toChain: chain.name,
+        symbol: tokenData.symbol,
+        tokenLogoUrl: tokenData.logoUrl,
+        amount: parseFloat(amount).toFixed(3),
+        datetime: new Date(),
+        receiverAddress,
+      };
 
-    if (type === 'txn') {
-      activityRef.current = activityData;
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: activityRef.current,
-      });
-    }
-
-    if (
-      [
-        ChainBackendNames.COSMOS,
-        ChainBackendNames.OSMOSIS,
-        ChainBackendNames.JUNO,
-        ChainBackendNames.STARGAZE,
-        ChainBackendNames.NOBLE,
-        ChainBackendNames.COREUM,
-        ChainBackendNames.INJECTIVE,
-        ChainBackendNames.KUJIRA,
-      ].includes(tokenData.chainDetails.backendName)
-    ) {
-      setLoading(true);
-      const fromAddress = get(
-        cosmosAddresses,
-        tokenData.chainDetails.chainName,
-      );
-      if (type === 'simulation') {
-        const gasDetails = {
-          gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
-            4,
-          ),
-        };
-        setGasFee(gasDetails?.gasFeeInCrypto);
-        setSignModalVisible(true);
-      } else if (type === 'txn') {
-        const transaction = await interCosmosIBC({
-          fromChain: tokenData.chainDetails,
-          toChain: chain,
-          denom: tokenData.denom,
-          amount,
-          fromAddress,
-          toAddress: receiverAddress,
-          contractDecimals: tokenData.contractDecimals,
+      if (type === 'txn') {
+        activityRef.current = activityData;
+        activityContext.dispatch({
+          type: ActivityReducerAction.POST,
+          value: activityRef.current,
         });
-        if (!transaction.isError) {
-          setSignModalVisible(false);
-          setTimeout(
-            () =>
-              showModal('state', {
-                type: t<string>('TOAST_TYPE_SUCCESS'),
-                title: t<string>('IBC_SUCCESS'),
-                description: renderSuccessTransaction(transaction.hash),
-                onSuccess: onModalHide,
-                onFailure: onModalHide,
-              }),
-            MODAL_HIDE_TIMEOUT_250,
-          );
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.SUCCESS,
-                transactionHash: transaction.hash,
-              },
-            });
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.SUCCESS,
-            txnHash: transaction.hash,
-            chain: tokenData.chainDetails?.backendName ?? '',
-          });
-        } else {
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.FAILED,
-              },
-            });
-          void logAnalytics({
-            type: AnalyticsType.ERROR,
-            chain: tokenData.chainDetails?.chainName ?? '',
-            message: parseErrorMessage(transaction.error),
-            screen: route.name,
-          });
-          Sentry.captureException(transaction.error);
-          setSignModalVisible(false);
-          setTimeout(
-            () =>
-              showModal('state', {
-                type: t<string>('TOAST_TYPE_ERROR'),
-                title: 'Transaction failed',
-                description: parseErrorMessage(transaction.error) ?? '',
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              }),
-            MODAL_HIDE_TIMEOUT_250,
-          );
-        }
       }
 
+      if (
+        [
+          ChainBackendNames.COSMOS,
+          ChainBackendNames.OSMOSIS,
+          ChainBackendNames.JUNO,
+          ChainBackendNames.STARGAZE,
+          ChainBackendNames.NOBLE,
+          ChainBackendNames.COREUM,
+          ChainBackendNames.INJECTIVE,
+          ChainBackendNames.KUJIRA,
+        ].includes(tokenData.chainDetails.backendName)
+      ) {
+        setLoading(true);
+        const fromAddress = get(
+          cosmosAddresses,
+          tokenData.chainDetails.chainName,
+        );
+        if (type === 'simulation') {
+          const gasDetails = {
+            gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
+              4,
+            ),
+          };
+          setGasFee(gasDetails?.gasFeeInCrypto);
+          setTimeout(() => {
+            setSignModalVisible(true);
+          }, 500);
+        } else if (type === 'txn') {
+          const transaction = await interCosmosIBC({
+            fromChain: tokenData.chainDetails,
+            toChain: chain,
+            denom: tokenData.denom,
+            amount,
+            fromAddress,
+            toAddress: receiverAddress,
+            contractDecimals: tokenData.contractDecimals,
+          });
+          if (!transaction.isError) {
+            setSignModalVisible(false);
+            setTimeout(
+              () =>
+                showModal('state', {
+                  type: t<string>('TOAST_TYPE_SUCCESS'),
+                  title: t<string>('IBC_SUCCESS'),
+                  description: renderSuccessTransaction(transaction.hash),
+                  onSuccess: onModalHide,
+                  onFailure: onModalHide,
+                }),
+              MODAL_HIDE_TIMEOUT_250,
+            );
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityRef.current.id,
+                  status: ActivityStatus.SUCCESS,
+                  transactionHash: transaction.hash,
+                },
+              });
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: transaction.hash,
+              chain: tokenData.chainDetails?.backendName ?? '',
+            });
+          } else {
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityRef.current.id,
+                  status: ActivityStatus.FAILED,
+                },
+              });
+            void logAnalytics({
+              type: AnalyticsType.ERROR,
+              chain: tokenData.chainDetails?.chainName ?? '',
+              message: parseErrorMessage(transaction.error),
+              screen: route.name,
+            });
+            Sentry.captureException(transaction.error);
+            setSignModalVisible(false);
+            setTimeout(
+              () =>
+                showModal('state', {
+                  type: t<string>('TOAST_TYPE_ERROR'),
+                  title: 'Transaction failed',
+                  description: parseErrorMessage(transaction.error) ?? '',
+                  onSuccess: hideModal,
+                  onFailure: hideModal,
+                }),
+              MODAL_HIDE_TIMEOUT_250,
+            );
+          }
+        }
+
+        setLoading(false);
+      }
+    } catch (error) {
       setLoading(false);
     }
   };

@@ -145,7 +145,7 @@ export default function BridgeRoutePreview({
             source={AppImages.SUCCESS_TICK_GREEN_BG}
             className='w-[20px] h-[20px] mr-[10px]'
           />
-          <CyDText className='text-[12px] font-medium w-[88%]'>{`Your funds will be transferred to your ${ChainIdToBackendNameMapping[routeResponse?.dest_asset_chain_id as keyof typeof ChainIdToBackendNameMapping]} chain in sometime, please stay on the page till your transaction is complete`}</CyDText>
+          <CyDText className='text-[12px] font-medium w-[88%] text-n0'>{`Your funds will be transferred to your ${ChainIdToBackendNameMapping[routeResponse?.dest_asset_chain_id as keyof typeof ChainIdToBackendNameMapping]} chain in sometime, please stay on the page till your transaction is complete`}</CyDText>
         </CyDView>
       )}
       <CyDView

@@ -3,17 +3,15 @@ import Fuse from 'fuse.js';
 import { t } from 'i18next';
 import { capitalize, endsWith, get, isString } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { Dimensions, Keyboard, StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
-import AppImages from '../../../assets/images/appImages';
 import Loading from '../../components/v2/loading';
 import CyDModalLayout from '../../components/v2/modal';
 import CyDSkeleton from '../../components/v2/skeleton';
 import {
   CyDFastImage,
   CyDFlatList,
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -258,7 +256,7 @@ function ChooseTokenModal({
           <CyDView className='bg-n0 p-[12px] flex-1'>
             <CyDView
               className={clsx(
-                'my-[16px] flex flex-row justify-between items-center self-center border-[1px] w-full rounded-[8px] px-[12px] py-[0px] border-n50',
+                'my-[16px] flex flex-row justify-between items-center self-center border-[1px] w-full rounded-[8px] px-[12px] py-[0px] border-n40',
               )}>
               <CyDTextInput
                 className={clsx('self-center py-[12px] w-[95%] text-base400')}
@@ -319,7 +317,7 @@ function ChainSelectionModal({
       setModalVisible={setModalVisible}
       isModalVisible={isModalVisible}
       style={styles.chainModalLayout}>
-      <CyDView className='bg-base40 border-1 rounded-[16px] h-[72%] pb-[20px]'>
+      <CyDView className='bg-n20 border-1 rounded-[16px] h-[72%] pb-[20px]'>
         <CyDTouchView
           onPress={() => setModalVisible(false)}
           className='absolute z-[50] top-[20px] right-[24px]'>
@@ -349,9 +347,9 @@ function ChainSelectionModal({
                 }}
                 key={index}
                 className={clsx(
-                  'border-[1px] border-[#E6E6E6] rounded-[6px] flex flex-col items-center justify-center bg-n0 h-[74px] w-[90px] mb-[12px]',
+                  'border-[1px] border-n40 rounded-[6px] flex flex-col items-center justify-center bg-n30 h-[74px] w-[90px] mb-[12px]',
                   {
-                    'bg-20': selectedChain?.chainId === item.chainId,
+                    'bg-p10': selectedChain?.chainId === item.chainId,
                   },
                 )}>
                 <CyDView className='flex flex-col items-center h-[50px] w-[46px]'>

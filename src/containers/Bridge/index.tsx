@@ -362,8 +362,6 @@ const Bridge: React.FC = () => {
     }
   }, [selectedFromChain, tokenData, selectedToChain]);
 
-  const setUpdataTemp = filteredTokens => {};
-
   const setFromTokenAndTokenData = async () => {
     const currentChain = ALL_CHAINS.find(
       chain =>
@@ -1437,7 +1435,10 @@ const Bridge: React.FC = () => {
                   gasFeeResponse: allowanceResp.gasFeeResponse,
                   contractData: allowanceResp.contractData,
                   chainDetails: fromChainDetails,
-                  contractParams: allowanceResp.contractData,
+                  contractParams: {
+                    numberOfTokens: allowanceResp.tokens,
+                    toAddress: selectedToToken.tokenContract,
+                  },
                 });
 
                 if (approvalResp.isError) {
