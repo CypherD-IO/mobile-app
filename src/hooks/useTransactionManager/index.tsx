@@ -138,18 +138,6 @@ export default function useTransactionManager() {
           contractDecimals,
         });
 
-      console.log('GAS SET WHILE SENDING NATIVE TOKEN');
-      console.log({
-        gasLimit,
-        gasPrice,
-        priorityFee,
-        isEIP1599Supported,
-        maxFee,
-      });
-
-      console.log('GAS SET WHILE SENDING NATIVE TOKEN 2');
-      console.log({ gasLimit });
-
       const tx = {
         from: ethereum.address,
         to: toAddress,
@@ -168,8 +156,6 @@ export default function useTransactionManager() {
         set(tx, 'gasPrice', undefined);
       }
 
-      console.log(' +++++++++++ tx : ', tx);
-
       const hash = await signEthTransaction({
         web3,
         sendChain: chain,
@@ -177,7 +163,6 @@ export default function useTransactionManager() {
       });
       return hash;
     } catch (err: any) {
-      console.log('@@@@@@@@@ error in sendNativeToken', err);
       throw new Error(err);
     }
   };
@@ -489,7 +474,6 @@ export default function useTransactionManager() {
             timeoutTimestamp: timeOut,
           }) as any,
         };
-        console.log('ibc transferMsg : ', transferMsg);
         const ibcResponse = await signingClient.signAndBroadcast(
           fromAddress,
           [transferMsg],
@@ -505,7 +489,6 @@ export default function useTransactionManager() {
         return { hash: '', isError: true, error: 'Unable to create a singer' };
       }
     } catch (e) {
-      console.log('error in interCosmosIBC : ', e);
       return { hash: '', isError: true, error: e };
     }
   };
@@ -1325,28 +1308,6 @@ export default function useTransactionManager() {
         try {
           const isNative = fromToken?.isNative;
 
-          console.log('gasLimit : ', gasLimit);
-          // console.log(
-          //   'gasLimit * 2 : ',
-          //   DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
-          //   typeof DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
-          // );
-          // const adjustedGasLimit = web3.utils.toHex(
-          //   Math.floor(
-          //     DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
-          //   ),
-          // );
-          // console.log('Adjusted gas limit hex:', adjustedGasLimit);
-
-          console.log('gasFeeResponse : ', gasFeeResponse);
-          console.log(
-            'gasPrice : ',
-            web3.utils.toWei(
-              String(gasFeeResponse.gasPrice.toFixed(9)),
-              'gwei',
-            ),
-          );
-
           const tx = {
             from: hdWallet.state.wallet.ethereum.address,
             chainId: fromToken?.chainId,
@@ -1362,9 +1323,7 @@ export default function useTransactionManager() {
 
           try {
             await web3.eth.call(tx);
-            console.log('S I M U L A T I O N  S U C C E S S');
           } catch (simulationError: any) {
-            console.log('Simulation failed:', simulationError);
             throw new Error(
               `Transaction would fail: ${simulationError.message}`,
             );
@@ -1377,7 +1336,6 @@ export default function useTransactionManager() {
           });
           resolve({ isError: false, receipt: hash });
         } catch (e: any) {
-          console.log('error in swapTokens : ', e);
           reject(e);
         }
       })();

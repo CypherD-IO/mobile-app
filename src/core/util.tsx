@@ -835,16 +835,12 @@ export const formatAmount = (
   amount: string | number | Decimal,
   precision = 4,
 ): string => {
-  // console.log('amount in formatAmount : ', amount, typeof amount, !amount);
   const decimalAmount = DecimalHelper.fromString(amount ?? 0);
-  // console.log('decimalAmount in formatAmount : ', decimalAmount);
   if (DecimalHelper.isLessThan(decimalAmount, 1)) {
     // For numbers less than 1, maintain significant digits
-    // console.log('decimalAMount less than 1 : ');
     return decimalAmount.toSignificantDigits(precision).toString();
   } else {
     // For numbers >= 1, use fixed decimal places
-    // console.log('decimalAMount greater than 1 : ');
     return decimalAmount
       .toDecimalPlaces(precision, Decimal.ROUND_DOWN)
       .toString();
@@ -1056,24 +1052,12 @@ export const hasSufficientBalanceAndGasFee = (
   if (DecimalHelper.isLessThan(sentAmount, 0)) {
     return false;
   }
-  console.log(
-    '1029 hasSufficientGasFee : ',
-    gasFeeEstimation,
-    nativeTokenBalance,
-    hasSufficientGasFee,
-  );
   const hasSufficientBalance = isNativeToken
     ? DecimalHelper.isLessThanOrEqualTo(
         DecimalHelper.add(sentAmount, gasFeeEstimation),
         sendingTokenBalance,
       )
     : DecimalHelper.isLessThanOrEqualTo(sentAmount, sendingTokenBalance);
-  console.log(
-    '1032 hasSufficientBalance : ',
-    sentAmount,
-    sendingTokenBalance,
-    hasSufficientBalance,
-  );
   return hasSufficientBalance && hasSufficientGasFee;
 };
 

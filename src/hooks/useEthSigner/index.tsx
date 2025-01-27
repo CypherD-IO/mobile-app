@@ -470,7 +470,6 @@ export default function useEthSigner() {
                 // expression expected
               })
               .on('error', function (error: any) {
-                console.log('error in signEthTransaction : ', error);
                 if (!txHash) {
                   reject(error);
                 } else {
@@ -516,7 +515,6 @@ export default function useEthSigner() {
         }
       }
     } catch (e: any) {
-      console.log('error in signEthTransaction at catch : ', e);
       throw new Error(e);
     }
   };

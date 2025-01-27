@@ -56,7 +56,6 @@ export default function IBC({
   navigation: any;
 }) {
   const { tokenData } = route.params;
-  // console.log('tokenData ::: ', tokenData);
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -232,7 +231,6 @@ export default function IBC({
         tokenData.chainDetails.chainName,
       );
       if (type === 'simulation') {
-        console.log('in ibc simulation');
         const gasDetails = await estimateGasForCosmosIBCRest({
           fromChain: tokenData?.chainDetails,
           toChain: chain,
@@ -242,23 +240,11 @@ export default function IBC({
           toAddress: receiverAddress,
         });
         setGasFee(gasDetails?.gasFeeInCrypto);
-        console.log(
-          'gasDetails?.gasFeeInCrypto : ',
-          gasDetails?.gasFeeInCrypto,
-        );
-        console.log(
-          'nativeToken?.balanceDecimal : ',
-          nativeToken?.balanceDecimal,
-        );
         const hasEnoughNAtiveBalanceForGas =
           DecimalHelper.isGreaterThanOrEqualTo(
             DecimalHelper.fromString(nativeToken?.balanceDecimal),
             DecimalHelper.fromString(gasDetails?.gasFeeInCrypto),
           );
-        console.log(
-          'hasEnoughNAtiveBalanceForGas : ',
-          hasEnoughNAtiveBalanceForGas,
-        );
         if (hasEnoughNAtiveBalanceForGas) {
           setTimeout(() => {
             setSignModalVisible(true);
@@ -282,7 +268,6 @@ export default function IBC({
           toAddress: receiverAddress,
           contractDecimals: tokenData.contractDecimals,
         });
-        console.log('transaction : ', transaction);
         if (!transaction.isError) {
           setSignModalVisible(false);
           setTimeout(
@@ -320,7 +305,6 @@ export default function IBC({
                 status: ActivityStatus.FAILED,
               },
             });
-          console.log('transaction error : ', transaction.error);
           void logAnalytics({
             type: AnalyticsType.ERROR,
             chain: tokenData.chainDetails?.chainName ?? '',
@@ -469,12 +453,6 @@ export default function IBC({
     try {
       setMaxLoading(true);
       let gasReserved = '0';
-      console.log(
-        'tokenData?.chainDetails?.symbol ::: ',
-        tokenData?.chainDetails?.symbol,
-      );
-      console.log('tokenData?.symbol ::: ', tokenData?.symbol);
-      console.log('token data ::: ', tokenData);
       if (tokenData?.isNativeToken) {
         const gasDetails = await estimateGasForCosmosIBCRest({
           fromChain: tokenData?.chainDetails,
@@ -485,12 +463,8 @@ export default function IBC({
           toAddress: receiverAddress,
         });
 
-        console.log('gasDetails ::: ', gasDetails);
-
         gasReserved = gasDetails?.gasFeeInCrypto;
       }
-
-      console.log('gasReserved ::: ', gasReserved);
 
       const maxAmount = DecimalHelper.subtract(
         tokenData.balanceDecimal,

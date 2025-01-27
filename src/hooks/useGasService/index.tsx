@@ -175,7 +175,6 @@ export default function useGasService() {
 
   async function getGasPrice(chain: ChainBackendNames, web3RPCEndpoint: Web3) {
     const response = await getWithoutAuth(`/v1/prices/gas/${chain}`);
-    console.log('response from getGasPrice : ', response);
     if (!response.isError) {
       return response.data;
     } else {
@@ -240,7 +239,6 @@ export default function useGasService() {
       .encodeABI();
     try {
       const gasPriceDetail = await getGasPrice(chain, web3);
-      console.log('@@@@@@@@@ gasPriceDetail : ', gasPriceDetail);
       let gasLimit: bigint | number = await web3.eth.estimateGas({
         from: fromAddress,
         // For Optimism the ETH token has different contract address
@@ -252,9 +250,7 @@ export default function useGasService() {
         data: contractDataUser ?? contractData,
       });
       const code = await web3.eth.getCode(contractAddress);
-      console.log('C O D E : ', code);
 
-      console.log('I N I T I A L  G A S  L I M I T : ', gasLimit);
       gasLimit = decideGasLimitBasedOnTypeOfToAddress(
         code,
         Number(gasLimit),
@@ -262,48 +258,14 @@ export default function useGasService() {
         contractAddress,
       );
 
-      console.log('F I N A L G A S L I M I T : ', gasLimit);
-
       if (gasLimit) {
         // Determine final gas price based on EIP-1559 support
         const finalGasPrice = gasPriceDetail.isEIP1599Supported
           ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
           : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
 
-        console.log('usign EIP 1599 : ', gasPriceDetail.maxFee);
-        console.log('using legacy : ', gasPriceDetail.gasPrice);
-
         let gasFeeInCrypto = '0';
 
-        console.log(
-          '@@@@@@@@@@ using decimal : ',
-          web3.utils.fromWei(
-            web3.utils.toWei(
-              DecimalHelper.toString(
-                DecimalHelper.multiply(finalGasPrice, gasLimit),
-                9,
-              ),
-              'gwei',
-            ),
-            'ether',
-          ),
-        );
-
-        console.log(
-          '################ conversion : ',
-          DecimalHelper.divide(
-            DecimalHelper.multiply(finalGasPrice, gasLimit),
-            1e9,
-          ).toString(),
-        );
-
-        console.log(
-          '@@@@@@@@@ using old : ',
-          web3.utils.fromWei(
-            web3.utils.toWei((finalGasPrice * gasLimit).toFixed(9), 'gwei'),
-            'ether',
-          ),
-        );
         if (finalGasPrice) {
           gasFeeInCrypto = web3.utils.fromWei(
             web3.utils.toWei(
@@ -505,7 +467,6 @@ export default function useGasService() {
       );
 
       const result = await response.json();
-      console.log('REST API Response:', result);
 
       // Extract gas used from either successful response or error message
 
@@ -635,7 +596,6 @@ export default function useGasService() {
         [sendMsg],
         '',
       );
-      console.log('********** gas limit simulation in cosmos : ', simulation);
       const nativeToken = await getNativeToken(
         backendName as ChainBackendNames,
       );
@@ -775,7 +735,6 @@ export default function useGasService() {
     fromAddress: string;
     toAddress: string;
   }): Promise<GasServiceResult | undefined> => {
-    console.log('********** fromChain in cosmosIBCRest : ', fromChain);
     const { chainName, backendName } = fromChain;
 
     const restEndpoint = cosmosConfig[chainName].rest;
@@ -783,18 +742,12 @@ export default function useGasService() {
 
     const nativeToken = await getNativeToken(backendName as ChainBackendNames);
     try {
-      console.log(
-        'fetch account details : ',
-        `${restEndpoint}/cosmos/auth/v1beta1/accounts/${fromAddress}`,
-      );
       // Get account details for sequence
       const accountResponse = await fetch(
         `${restEndpoint}/cosmos/auth/v1beta1/accounts/${fromAddress}`,
       );
       const accountData = await accountResponse.json();
       const sequence = accountData.account?.sequence || '0';
-
-      console.log('((((( account data )))))) : ', accountData);
 
       const amountToSend = ethers
         .parseUnits(amount, contractDecimal)
@@ -820,11 +773,6 @@ export default function useGasService() {
         },
         timeout_timestamp: timeOut,
       };
-
-      console.log(
-        'Attempting gas simulation for IBC transfer with message:',
-        transferMsg,
-      );
 
       const response = await fetch(
         `${restEndpoint}/cosmos/tx/v1beta1/simulate`,
@@ -869,7 +817,6 @@ export default function useGasService() {
       );
 
       const result = await response.json();
-      console.log('REST API Response:', result);
 
       if (result.code) {
         throw new Error(result.message || 'Simulation failed');
@@ -880,7 +827,6 @@ export default function useGasService() {
         throw new Error('No gas estimate in response');
       }
 
-      console.log('nativeToken ::: ', nativeToken);
       const gasPrice = cosmosConfig[chainName].gasPrice;
       const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
       const gasFeeInCrypto = DecimalHelper.toString(
@@ -1320,15 +1266,12 @@ export default function useGasService() {
     const nativeToken = await getNativeToken(backendName as ChainBackendNames);
 
     try {
-      console.log('before fetching account sequence');
       // First, fetch the account sequence
       const accountResponse = await fetch(
         `${restEndpoint}/cosmos/auth/v1beta1/accounts/${cosmosData.signer_address}`,
       );
       const accountData = await accountResponse.json();
       const sequence = accountData.account?.sequence || '0';
-
-      console.log('Sequence:', sequence);
 
       // Convert messages to the required format without double encoding
       const messages = cosmosData.msgs.map(msgData => {
@@ -1382,7 +1325,6 @@ export default function useGasService() {
       );
 
       const result = await response.json();
-      console.log('REST API Response:', result);
 
       if (result.code) {
         throw new Error(result.message || 'Simulation failed');
@@ -1463,8 +1405,6 @@ export default function useGasService() {
     try {
       const { chain_id, data, signer_address, to, value } = contractData;
 
-      console.log('>>>>>>>>>>>>>> contractData : ', contractData);
-
       // Format data with 0x prefix
       const formattedData = data.startsWith('0x') ? data : `0x${data}`;
 
@@ -1485,9 +1425,7 @@ export default function useGasService() {
       );
 
       const code = formattedData;
-      console.log('C O D E : ', code);
 
-      console.log('I N I T I A L  G A S  L I M I T : ', gasLimit);
       gasLimit = decideGasLimitBasedOnTypeOfToAddress(
         code,
         Number(gasLimit),
@@ -1495,24 +1433,15 @@ export default function useGasService() {
         to,
       );
 
-      console.log('F I N A L G A S L I M I T : ', gasLimit);
-
-      console.log('gasLimit response from evm custom contract', gasLimit);
-
       const gasPriceDetail = await getGasPrice(chain.backendName, web3);
-      console.log(
-        'gasPriceDetail response from evm custom contract',
-        gasPriceDetail,
-      );
+
       const finalGasPrice = gasPriceDetail.isEIP1599Supported
         ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
         : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
 
       const gasPriceWei = web3.utils.toWei(finalGasPrice.toString(), 'gwei');
-      console.log('>>>>>>>>>>>>>> gasPriceWei : ', finalGasPrice, gasPriceWei);
 
       const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
-      console.log('>>>>>>>>>>>>>> totalWei : ', totalWei);
 
       const gasFeeInCrypto = web3.utils.fromWei(totalWei.toString(), 'ether');
 

@@ -397,10 +397,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     totalUnbondingBalance += chainUnbondingBalance;
 
     chainHoldings.totalHoldings.sort(sortDesc);
-    console.log(
-      'chainHoldings.totalHoldings SORTED',
-      chainHoldings.totalHoldings,
-    );
 
     switch (allholdings[i]?.chain) {
       case CHAIN_ETH.backendName:

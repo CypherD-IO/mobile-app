@@ -280,8 +280,6 @@ export default function Browser({ route, navigation }: any) {
       selectedChain: { chain_id },
       selectedChain,
     } = hdWalletContext.state;
-    console.log('selectedChain in Browser ::: ', selectedChain);
-    console.log('selectedDappChain in Browser ::: ', selectedDappChain);
     if (selectedDappChain && selectedDappChain !== selectedChain) {
       setSelectedDappChain(selectedChain);
       if (isFocused) {
@@ -299,13 +297,11 @@ export default function Browser({ route, navigation }: any) {
   }, [hdWalletContext.state.selectedChain, isFocused]);
 
   const checkNativeTokenBalance = async (selectedChain: Chain) => {
-    console.log('selectedChain in checkNativeTokenBalance ::: ', selectedChain);
     const nativeToken = await getNativeToken(
       selectedChain.backendName as ChainBackendNames,
     );
     let gasDetails;
     if (COSMOS_CHAINS.includes(selectedChain.chainName)) {
-      console.log('cosmos chains gas fee calculation');
       const cosmosWallet = hdWalletContext.state.wallet;
       gasDetails = await estimateGasForCosmosRest({
         chain: selectedChain,
@@ -314,7 +310,6 @@ export default function Browser({ route, navigation }: any) {
         fromAddress: get(cosmosWallet, selectedChain.chainName, null)?.address,
         toAddress: get(cosmosWallet, selectedChain.chainName, null)?.address,
       });
-      console.log('gasDetails ::: ', gasDetails);
     } else if (selectedChain.backendName === CHAIN_SOLANA.backendName) {
       const solana = hdWalletContext.state.wallet.solana;
       gasDetails = await estimateGasForSolana({
@@ -336,12 +331,10 @@ export default function Browser({ route, navigation }: any) {
         contractDecimals: nativeToken.contractDecimals,
       });
     }
-    console.log('gasDetails ::: ', gasDetails);
     const balanceAfterGasReservation = DecimalHelper.subtract(
       nativeToken.balanceDecimal,
       gasDetails?.gasFeeInCrypto,
     );
-    console.log('balanceAfterGasReservation ::: ', balanceAfterGasReservation);
     const isGasEnough = DecimalHelper.isGreaterThanOrEqualTo(
       balanceAfterGasReservation,
       0,

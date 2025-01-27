@@ -253,7 +253,6 @@ export default function FirstLoadCard() {
   };
 
   const getPercentageAmounts = () => {
-    console.log('selectedToken ::: ', selectedToken);
     if (!selectedToken?.totalValue) return { p25: '0', p50: '0', p75: '0' };
 
     const total = selectedToken.totalValue;
@@ -379,12 +378,10 @@ export default function FirstLoadCard() {
           // remove this gasFeeReservation once we have gas estimation for eip1599 chains
           // Estimate the gasFee for the transaction
           if (isEIP1599Chain(chainDetails.backendName)) {
-            console.log(' >>> E I P 1 5 9 9 gasFeeReservation in fundcard : ');
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
               gasFeeReservation[chainDetails.backendName],
             ).toString();
-            console.log(' >>> amountInCrypto in fundcard : ', amountInCrypto);
           } else {
             const gasDetails = await estimateGasForEvm({
               web3,
@@ -493,7 +490,6 @@ export default function FirstLoadCard() {
       }
     } else if (chainDetails.chainName === ChainNames.SOLANA) {
       let amountInCrypto = balanceDecimal;
-      console.log('*** amountInCrypto : ', amountInCrypto);
       // Reserving gas for the txn if the selected token is a native token.
       setIsMaxLoading(true);
       if (
@@ -519,21 +515,12 @@ export default function FirstLoadCard() {
             contractAddress,
             contractDecimals,
           });
-          // console.log(' **** gasDetails in cosmos fundcard : ', gasDetails);
-          // console.log(
-          //   ' **** gasDetailsRest in cosmos fundcard : ',
-          //   gasDetailsRest,
-          // );
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
               gasFeeEstimationForTxn,
             ).toString();
-            console.log(
-              '*** amountInCrypto in cosmos fundcard : ',
-              amountInCrypto,
-            );
           } else {
             setIsMaxLoading(false);
             showModal('state', {
@@ -573,12 +560,10 @@ export default function FirstLoadCard() {
           amountInCrypto: true,
           tokenAddress: denom,
         };
-        console.log(' >>> payload in fundcard cosmos : ', payload);
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
         );
-        console.log(' >>> response in fundcard cosmos : ', response);
         if (!response.isError) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
@@ -1004,8 +989,6 @@ export default function FirstLoadCard() {
       quote.tokensRequired,
       contractDecimals,
     );
-    console.log('actualTokensRequired ::: ', actualTokensRequired);
-    console.log('actualBalance ::: ', balanceDecimal);
     if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
       setLoading(false);
       setIsMaxLoading(false);
@@ -1074,9 +1057,7 @@ export default function FirstLoadCard() {
             fromAddress: wallet[chainDetails.chainName].address,
             toAddress: wallet[chainDetails.chainName].address,
           });
-          console.log('gasDetails in estimate ::: ', gasDetails);
         } else {
-          console.log('309 in else');
           setLoading(false);
           setIsMaxLoading(false);
           navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
@@ -1110,9 +1091,7 @@ export default function FirstLoadCard() {
             contractAddress,
             contractDecimals,
           });
-          console.log('gasDetails in estimate ::: ', gasDetails);
         } else {
-          console.log('309 in else');
           setLoading(false);
           setIsMaxLoading(false);
           navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {

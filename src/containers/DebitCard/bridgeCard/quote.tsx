@@ -68,7 +68,6 @@ export default function CardQuote({
     cardId,
     planCost,
   } = route.params;
-  // console.log('126 route.params : ', route.params);
   const {
     chain,
     amountInCrypto,
@@ -80,7 +79,6 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
-  // console.log('tokenSendParams :::::::::: ', tokenSendParams);
   const quoteExpiry = 60;
   const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
@@ -128,7 +126,6 @@ export default function CardQuote({
   useEffect(() => {
     let tempIsPayDisabled = false;
     tempIsPayDisabled = !hasSufficientBalanceAndGasFee;
-    console.log('126 tempIsPayDisabled : ', tempIsPayDisabled);
     setIsPayDisabled(tempIsPayDisabled);
     if (quoteExpiry && !tempIsPayDisabled) {
       let tempTokenExpiryTime = quoteExpiry;
@@ -149,44 +146,6 @@ export default function CardQuote({
       setIsPayDisabled(true);
     }
   }, [tokenExpiryTime]);
-
-  // useEffect(() => {
-  //   // console.log('params : ', route.params);
-  //   // console.log(' gas fee in crypto : ', gasFeeInCrypto);
-  //   // console.log(' fees : ', tokenQuote.fees);
-  //   // console.log('balance decimal : ', selectedToken?.balanceDecimal);
-  //   // console.log('amount in fiat : ', amountInFiat);
-  //   // console.log('price : ', selectedToken?.price);
-  //   // const feeInCrypto = DecimalHelper.divide(
-  //   //   tokenQuote.fees.actualFee,
-  //   //   selectedToken?.price,
-  //   // );
-  //   // console.log('feeInCrypto : ', feeInCrypto);
-  //   if (selectedToken?.isNativeToken) {
-  //     const balanceAfterGasFeeDeduction = DecimalHelper.subtract(
-  //       selectedToken?.balanceDecimal,
-  //       gasFeeInCrypto,
-  //     );
-  //     console.log(
-  //       'balanceAfterGasFeeDeduction : ',
-  //       balanceAfterGasFeeDeduction,
-  //     );
-  //     console.log('tokenQuote.tokensRequired : ', tokenQuote.tokensRequired);
-  //     if (
-  //       !DecimalHelper.isLessThanOrEqualTo(
-  //         tokenQuote.tokensRequired,
-  //         balanceAfterGasFeeDeduction,
-  //       )
-  //     ) {
-  //       setIsPayDisabled(true);
-  //       setHasInsufficientBalance(true);
-  //       setMaximumAmountPossible(balanceAfterGasFeeDeduction.toString());
-  //     }
-  //   } else {
-  //     setHasInsufficientBalance(!hasSufficientBalanceAndGasFee);
-  //     setMaximumAmountPossible(tokenQuote.tokensRequired.toString());
-  //   }
-  // }, []);
 
   const onCancel = () => {
     void intercomAnalyticsLog('cancel_transfer_token', {
