@@ -1,11 +1,17 @@
-export const microOsmoToOsmo = (amount: string): string => {
-  return (parseFloat(amount) * 10 ** -6).toFixed(6).toString();
+import { DecimalHelper } from '../../utils/decimalHelper';
+
+export const microOsmoToOsmo = (amount: string, decimals = 6): string => {
+  return DecimalHelper.toString(
+    DecimalHelper.removeDecimals(amount, decimals),
+    6,
+  );
 };
 
 export const microOsmoToUsd = (amount: string, tokenPrice: string): string => {
-  return (parseFloat(amount) * 10 ** -6 * parseFloat(tokenPrice))
-    .toFixed(6)
-    .toString();
+  return DecimalHelper.toString(
+    DecimalHelper.multiply(DecimalHelper.removeDecimals(amount, 6), tokenPrice),
+    6,
+  );
 };
 
 export const isOsmosisAddress = (address: string): boolean => {

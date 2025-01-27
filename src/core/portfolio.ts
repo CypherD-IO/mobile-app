@@ -28,6 +28,7 @@ import {
 import axios from './Http';
 import { hostWorker } from '../global';
 import { get, has } from 'lodash';
+import { DecimalHelper } from '../utils/decimalHelper';
 
 export interface Holding {
   name: string;
@@ -197,15 +198,18 @@ export function getCurrentChainHoldings(
 }
 
 export function sortDesc(a: Holding, b: Holding) {
-  const first =
-    parseFloat(String(get(a, 'totalValue', 0))) +
-    parseFloat(String(get(a, 'actualStakedBalance', 0)));
-  const second =
-    parseFloat(String(get(b, 'totalValue', 0))) +
-    parseFloat(String(get(b, 'actualStakedBalance', 0)));
-  if (first < second) {
+  const first = DecimalHelper.add(
+    get(a, 'totalValue', 0),
+    get(a, 'actualStakedBalance', 0),
+  );
+  const second = DecimalHelper.add(
+    get(b, 'totalValue', 0),
+    get(b, 'actualStakedBalance', 0),
+  );
+
+  if (DecimalHelper.isLessThan(first, second)) {
     return 1;
-  } else if (first > second) {
+  } else if (DecimalHelper.isGreaterThan(first, second)) {
     return -1;
   }
   return 0;
@@ -393,6 +397,10 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     totalUnbondingBalance += chainUnbondingBalance;
 
     chainHoldings.totalHoldings.sort(sortDesc);
+    console.log(
+      'chainHoldings.totalHoldings SORTED',
+      chainHoldings.totalHoldings,
+    );
 
     switch (allholdings[i]?.chain) {
       case CHAIN_ETH.backendName:

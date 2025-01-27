@@ -1469,6 +1469,9 @@ const resources = {
       OTHERS: 'Others',
       MAXIMUM_AMOUNT_POSSIBLE: 'Enter amount less than ',
       INSUFFICIENT_FUNDS_DESCRIPTION: `Your balance isn't sufficient to cover both the amount and the load fee. Use the 'Max' option to load the maximum amount possible`,
+      GAS_FEE_ERROR: 'Gas Fee Estimation Failed',
+      GAS_FEE_ERROR_DESCRIPTION:
+        'Gas fee estimation failed. Please try again later. Contact support if the issue persists.',
       RE_VALIDATE_TO: 'Re-Validate to',
       TERMS_CONDITIONS: 'Terms and Conditions',
       TERMS_CONDITIONS_DESC:

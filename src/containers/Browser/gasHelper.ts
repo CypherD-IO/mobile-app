@@ -16,6 +16,7 @@ import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../../global';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { limitDecimalPlaces } from '../../core/util';
 
 const minimumGasFee = '20';
 
@@ -169,10 +170,10 @@ export async function getPayloadParams(
     ),
     networkName: chain.name,
     networkCurrency: chain.symbol,
-    valueETH: DecimalHelper.toString(DecimalHelper.fromString(valueETH), 6),
+    valueETH: limitDecimalPlaces(valueETH, 6),
     valueDollar,
     totalDollar,
-    totalETH: DecimalHelper.toString(DecimalHelper.fromString(totalEth), 6),
+    totalETH: limitDecimalPlaces(totalEth, 6),
     appImage: chain.logo_url,
     finalGasPrice: finalGasPriceInHex,
     gasLimit,
@@ -245,10 +246,7 @@ export function estimateGas(
           'ether',
         );
         finalGasPriceInHex = Web3.utils.toHex(
-          Web3.utils.toWei(
-            DecimalHelper.toString(DecimalHelper.fromString(finalGasPrice), 9),
-            'Gwei',
-          ),
+          Web3.utils.toWei(limitDecimalPlaces(finalGasPrice, 9), 'Gwei'),
         );
       }
 
@@ -289,10 +287,10 @@ export function estimateGas(
         ),
         networkName: selectedChain.name,
         networkCurrency: selectedChain.symbol,
-        valueETH: DecimalHelper.toString(DecimalHelper.fromString(valueETH), 6),
+        valueETH: limitDecimalPlaces(valueETH, 6),
         valueDollar,
         totalDollar,
-        totalETH: DecimalHelper.toString(DecimalHelper.fromString(totalEth), 6),
+        totalETH: limitDecimalPlaces(totalEth, 6),
         appImage: selectedChain.logo_url,
         finalGasPrice: finalGasPriceInHex,
         gasLimit,

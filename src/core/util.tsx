@@ -32,6 +32,7 @@ import {
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
   CHAIN_SOLANA,
+  NON_EIP1599_CHAINS,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -679,13 +680,10 @@ export function limitDecimalPlaces(
   num: string | number | Decimal,
   decimalPlaces = 18,
 ): string {
-  // Convert to string, handling Decimal type
-  const numStr =
-    typeof num === 'object' && 'toString' in num ? num.toString() : String(num);
-
-  return numStr.includes('.')
-    ? numStr.slice(0, numStr.indexOf('.') + (decimalPlaces + 1))
-    : numStr;
+  return DecimalHelper.floor(
+    DecimalHelper.fromString(num),
+    decimalPlaces,
+  ).toString();
 }
 
 export const isBasicCosmosChain = (backendName: string) =>
@@ -743,21 +741,21 @@ export const calculateTime = function time(ttime: string) {
 export const beautifyPriceWithUSDDenom = (price: number): string => {
   if (price > 1000000000000) {
     return `${DecimalHelper.toString(
-      DecimalHelper.divide(price, 1000000000000),
+      DecimalHelper.divide(price, 1000000000000).floor(),
     )} Trillion`;
   }
   if (price > 1000000000) {
     return `${DecimalHelper.toString(
-      DecimalHelper.divide(price, 1000000000),
+      DecimalHelper.divide(price, 1000000000).floor(),
     )} Billion`;
   }
   if (price > 1000000) {
     return `${DecimalHelper.toString(
-      DecimalHelper.divide(price, 1000000),
+      DecimalHelper.divide(price, 1000000).floor(),
     )} Million`;
   }
   if (price > 1000) {
-    return `${DecimalHelper.toString(DecimalHelper.divide(price, 1000))} K`;
+    return `${DecimalHelper.toString(DecimalHelper.divide(price, 1000).floor())} K`;
   }
   return `${price}`;
 };
@@ -837,12 +835,16 @@ export const formatAmount = (
   amount: string | number | Decimal,
   precision = 4,
 ): string => {
-  const decimalAmount = new Decimal(amount);
-  if (decimalAmount.lessThan(1)) {
+  // console.log('amount in formatAmount : ', amount, typeof amount, !amount);
+  const decimalAmount = DecimalHelper.fromString(amount ?? 0);
+  // console.log('decimalAmount in formatAmount : ', decimalAmount);
+  if (DecimalHelper.isLessThan(decimalAmount, 1)) {
     // For numbers less than 1, maintain significant digits
+    // console.log('decimalAMount less than 1 : ');
     return decimalAmount.toSignificantDigits(precision).toString();
   } else {
     // For numbers >= 1, use fixed decimal places
+    // console.log('decimalAMount greater than 1 : ');
     return decimalAmount
       .toDecimalPlaces(precision, Decimal.ROUND_DOWN)
       .toString();
@@ -1048,15 +1050,30 @@ export const hasSufficientBalanceAndGasFee = (
   sendingTokenBalance: string,
 ): boolean => {
   const hasSufficientGasFee = DecimalHelper.isLessThanOrEqualTo(
-    DecimalHelper.fromString(gasFeeEstimation),
-    DecimalHelper.fromString(nativeTokenBalance),
+    gasFeeEstimation,
+    nativeTokenBalance,
+  );
+  if (DecimalHelper.isLessThan(sentAmount, 0)) {
+    return false;
+  }
+  console.log(
+    '1029 hasSufficientGasFee : ',
+    gasFeeEstimation,
+    nativeTokenBalance,
+    hasSufficientGasFee,
   );
   const hasSufficientBalance = isNativeToken
     ? DecimalHelper.isLessThanOrEqualTo(
         DecimalHelper.add(sentAmount, gasFeeEstimation),
         sendingTokenBalance,
       )
-    : DecimalHelper.isLessThan(sentAmount, sendingTokenBalance);
+    : DecimalHelper.isLessThanOrEqualTo(sentAmount, sendingTokenBalance);
+  console.log(
+    '1032 hasSufficientBalance : ',
+    sentAmount,
+    sendingTokenBalance,
+    hasSufficientBalance,
+  );
   return hasSufficientBalance && hasSufficientGasFee;
 };
 
@@ -1212,3 +1229,7 @@ export function getSymbolFromCurrency(currencyCode: string) {
 export function getChainIconFromChainName(chainName: ChainBackendNames) {
   return ChainNameToChainMapping[chainName].logo_url;
 }
+
+export const isEIP1599Chain = (chainName: ChainBackendNames) => {
+  return !NON_EIP1599_CHAINS.includes(chainName);
+};

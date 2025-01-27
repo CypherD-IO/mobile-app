@@ -13,11 +13,7 @@ import ChooseTokenModal from '../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
-import {
-  GAS_BUFFER_FACTOR,
-  GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
-  gasFeeReservation,
-} from '../../constants/data';
+import { gasFeeReservation } from '../../constants/data';
 import { ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
@@ -33,6 +29,7 @@ import {
   formatAmount,
   getWeb3Endpoint,
   HdWalletContext,
+  isEIP1599Chain,
   limitDecimalPlaces,
 } from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
@@ -70,7 +67,7 @@ export default function EnterAmount(props: any) {
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(false);
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmos } =
+  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmosRest } =
     useGasService();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { getCosmosSignerClient } = useCosmosSigner();
@@ -107,12 +104,19 @@ export default function EnterAmount(props: any) {
           props.route.params.tokenData,
         );
         console.log(
-          'convertFromUnitAmount : ',
+          '@@@@@@@@ convertFromUnitAmount : ',
           convertFromUnitAmount(
             tokenData.balanceDecimal,
             tokenData.contractDecimals,
             6,
           ),
+        );
+        console.log(
+          'convertFrom unit amount old method : ',
+          (
+            parseFloat(tokenData.balanceDecimal) *
+            10 ** -tokenData.contractDecimals
+          ).toFixed(6),
         );
         console.log(
           'floor ',
@@ -163,41 +167,27 @@ export default function EnterAmount(props: any) {
       gasFee = gasEstimate?.gasFeeInCrypto;
     } else if (COSMOS_CHAINS.includes(tokenData.chainDetails.chainName)) {
       const cosmosWallet = get(hdWallet.state.wallet, chainName, null);
-      console.log('cosmosWallet : ', cosmosWallet);
-      console.log('payload : ', {
+      const gasEstimate = await estimateGasForCosmosRest({
         chain: tokenData.chainDetails,
         denom: tokenData.denom,
         amount: tokenData.balanceDecimal,
         fromAddress: cosmosWallet?.address ?? '',
         toAddress: cosmosWallet?.address ?? '',
-        signer: await getCosmosSignerClient(tokenData.chainDetails.chainName),
       });
-      const gasEstimate = await estimateGasForCosmos({
-        chain: tokenData.chainDetails,
-        denom: tokenData.denom,
-        amount: tokenData.balanceDecimal,
-        fromAddress: cosmosWallet?.address ?? '',
-        toAddress: cosmosWallet?.address ?? '',
-        signer: await getCosmosSignerClient(tokenData.chainDetails.chainName),
-      });
-      console.log('********** gasEstimate in cosmos : ', gasEstimate);
       gasFee = gasEstimate?.gasFeeInCrypto;
     }
-    return DecimalHelper.toString(
-      DecimalHelper.multiply(gasFee ?? 0, GAS_BUFFER_FACTOR),
-    );
+    return gasFee;
   };
 
-  const isGasReservedForNative = async (cryptoValue: string) => {
+  const isGasReservedForNative = async (
+    cryptoValue: string,
+    gasReserved: number,
+  ) => {
     const nativeTokenSymbol =
       get(NativeTokenMapping, tokenData.chainDetails.symbol) ||
       tokenData.chainDetails.symbol;
     const isNative = tokenData.symbol === nativeTokenSymbol;
     if (!isNative) return true;
-    const gasReserved = isNative
-      ? ((await getGasFee(tokenData.chainDetails?.chainName)) ??
-        gasFeeReservation[tokenData.chainDetails?.backendName])
-      : 0;
     const balanceAfterGasReservation = DecimalHelper.subtract(
       tokenData.balanceDecimal,
       gasReserved,
@@ -224,7 +214,10 @@ export default function EnterAmount(props: any) {
     );
   };
 
-  const haveEnoughNativeBalance = async (cryptoValue: string) => {
+  const haveEnoughNativeBalance = async (
+    cryptoValue: string,
+    gasReserved: number,
+  ) => {
     const { backendName, symbol } = tokenData.chainDetails;
     if (GASLESS_CHAINS.includes(backendName as ChainBackendNames)) {
       return true;
@@ -234,7 +227,6 @@ export default function EnterAmount(props: any) {
       nativeBackendName as ChainBackendNames,
     );
     const nativeTokenBalance = nativeToken.actualBalance;
-    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName);
     console.log(
       '&&&&&&& gasReserved in haveEnoughNativeBalance : ',
       gasReserved,
@@ -256,6 +248,11 @@ export default function EnterAmount(props: any) {
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
+    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName);
+    console.log(
+      '@#$%^&*() gasReserved in _validateValueForUsd : ',
+      gasReserved,
+    );
     if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {
       showModal('state', {
         type: 'error',
@@ -264,7 +261,7 @@ export default function EnterAmount(props: any) {
         onSuccess: hideModal,
         onFailure: hideModal,
       });
-    } else if (!(await haveEnoughNativeBalance(cryptoValue))) {
+    } else if (!(await haveEnoughNativeBalance(cryptoValue, gasReserved))) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
@@ -272,10 +269,7 @@ export default function EnterAmount(props: any) {
         onSuccess: hideModal,
         onFailure: hideModal,
       });
-    } else if (!(await isGasReservedForNative(cryptoValue))) {
-      const gasReserved =
-        (await getGasFee(tokenData.chainDetails?.chainName)) ??
-        gasFeeReservation[tokenData.chainDetails?.backendName];
+    } else if (!(await isGasReservedForNative(cryptoValue, gasReserved))) {
       const cryVal = DecimalHelper.subtract(
         tokenData.actualBalance,
         gasReserved,
@@ -305,16 +299,28 @@ export default function EnterAmount(props: any) {
   const onMaxPress = async () => {
     setIsMaxLoading(true);
     try {
-      const gasReservedEstimate =
+      // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
+      // remove this gasFeeReservation once we have gas estimation for eip1599 chains
+      let gasReservedForNativeToken;
+      if (isEIP1599Chain(tokenData.chainDetails.backendName)) {
+        console.log(' >>> E I P 1 5 9 9 gasFeeReservation in fundcard : ');
+        gasReservedForNativeToken = String(
+          gasFeeReservation[tokenData.chainDetails.backendName],
+        );
+      } else {
+        gasReservedForNativeToken = await getGasFee(
+          tokenData.chainDetails?.chainName,
+        );
+      }
+      console.log(
+        '\n\n\n @#$%^&*() gasReservedForNativeToken in onMaxPress : ',
+        gasReservedForNativeToken,
+      );
+      const gasReserved =
         (NativeTokenMapping[tokenData?.chainDetails?.symbol] ||
           tokenData?.chainDetails?.symbol) === tokenData?.symbol
-          ? ((await getGasFee(tokenData.chainDetails?.chainName)) ??
-            gasFeeReservation[tokenData.chainDetails?.backendName])
+          ? DecimalHelper.multiply(gasReservedForNativeToken, 1.1)
           : 0;
-      const gasReserved = DecimalHelper.multiply(
-        gasReservedEstimate,
-        GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
-      );
 
       console.log('gasReserved in onMaxPress : ', gasReserved);
 

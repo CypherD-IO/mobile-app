@@ -37,6 +37,7 @@ import {
 import { Hash } from 'viem';
 import { ChainIdToBackendNameMapping } from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 export default function useEthSigner() {
   const wagmiConfig = useContext(WagmiContext);

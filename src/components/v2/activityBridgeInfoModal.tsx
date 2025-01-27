@@ -12,6 +12,7 @@ import {
   copyToClipboard,
   getExplorerUrlFromChainId,
   getMaskedAddress,
+  limitDecimalPlaces,
 } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
@@ -207,8 +208,8 @@ export default function ActivityBridgeInfoModal({
                 {t<string>('SENT')}
               </CyDText>
               <CyDView className='flex items-start'>
-                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${DecimalHelper.toString(DecimalHelper.fromString(fromTokenAmount), 3)} ${String(fromSymbol)} (${capitalize(fromChain)})`}</CyDText>
-                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${DecimalHelper.toString(DecimalHelper.fromString(quoteData.fromAmountUsd), 3)} USD`}</CyDText>
+                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${limitDecimalPlaces(fromTokenAmount, 3)} ${String(fromSymbol)} (${capitalize(fromChain)})`}</CyDText>
+                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${limitDecimalPlaces(quoteData.fromAmountUsd, 3)} USD`}</CyDText>
               </CyDView>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
@@ -216,8 +217,8 @@ export default function ActivityBridgeInfoModal({
                 {t<string>('RECEIVED')}
               </CyDText>
               <CyDView className='flex items-start'>
-                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${DecimalHelper.toString(DecimalHelper.fromString(toTokenAmount), 3)} ${String(toSymbol)} (${capitalize(toChain)})`}</CyDText>
-                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${DecimalHelper.toString(DecimalHelper.fromString(quoteData.toAmountUsd), 3)} USD`}</CyDText>
+                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${limitDecimalPlaces(toTokenAmount, 3)} ${String(toSymbol)} (${capitalize(toChain)})`}</CyDText>
+                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${limitDecimalPlaces(quoteData.toAmountUsd, 3)} USD`}</CyDText>
               </CyDView>
             </CyDView>
             {quoteData.gasFee && (
@@ -227,7 +228,7 @@ export default function ActivityBridgeInfoModal({
                 </CyDText>
                 <CyDText className='text-center  text-[14px] font-bold mt-[3px] font-primaryTextColor'>
                   {quoteData.gasFee
-                    ? `${DecimalHelper.toString(DecimalHelper.fromString(quoteData.gasFee), 6)} USD`
+                    ? `${limitDecimalPlaces(quoteData.gasFee, 6)} USD`
                     : ''}
                 </CyDText>
               </CyDView>

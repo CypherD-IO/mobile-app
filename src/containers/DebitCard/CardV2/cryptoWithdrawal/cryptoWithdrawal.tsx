@@ -158,7 +158,7 @@ export default function CryptoWithdrawal() {
                     onPress={() => {
                       setAmount(
                         DecimalHelper.toString(
-                          DecimalHelper.roundUp(
+                          DecimalHelper.ceil(
                             DecimalHelper.multiply(availableAmount, percentage),
                             2,
                           ),
@@ -195,7 +195,12 @@ export default function CryptoWithdrawal() {
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${ceil(parseFloat(amount || '0') * 0.005, 2)}`}
+                  {`$ ${DecimalHelper.toString(
+                    DecimalHelper.ceil(
+                      DecimalHelper.multiply(amount || '0', 0.005),
+                      2,
+                    ),
+                  )}`}
                 </CyDText>
               </CyDView>
               <CyDText className='text-[12px] font-medium text-base400'>
@@ -210,7 +215,18 @@ export default function CryptoWithdrawal() {
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${ceil(ceil(parseFloat(amount || '0'), 2) - ceil(parseFloat(amount || '0') * 0.005, 2), 2)}`}
+                  {`$ ${DecimalHelper.toString(
+                    DecimalHelper.ceil(
+                      DecimalHelper.subtract(
+                        DecimalHelper.ceil(amount || '0', 2),
+                        DecimalHelper.ceil(
+                          DecimalHelper.multiply(amount || '0', 0.005),
+                          2,
+                        ),
+                      ),
+                      2,
+                    ),
+                  )}`}
                 </CyDText>
               </CyDView>
               <CyDText className='text-[12px] font-medium text-base400'>
@@ -225,7 +241,8 @@ export default function CryptoWithdrawal() {
         <Button
           title={t('CONTINUE')}
           disabled={
-            isEmpty(amount) || parseFloat(amount) > parseFloat(availableAmount)
+            isEmpty(amount) ||
+            DecimalHelper.isGreaterThan(amount, availableAmount)
           }
           onPress={() => {
             navigation.navigate(screenTitle.WITHDRAW_CONFIRMATION, {

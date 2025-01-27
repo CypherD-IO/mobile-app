@@ -869,6 +869,10 @@ export const deFiPositionTypes = [
 
 export const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
 
+export const BASE_GAS_LIMIT = 21000;
+export const OPTIMISM_GAS_MULTIPLIER = 1.3;
+export const CONTRACT_GAS_MULTIPLIER = 1.5;
+
 export interface NetworkInterface {
   [key: string]: any;
 }
@@ -1360,3 +1364,11 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
     ],
   ],
 ]);
+
+export const NON_EIP1599_CHAINS: ChainBackendNames[] = [
+  ChainBackendNames.BSC,
+  ChainBackendNames.POLYGON_ZKEVM,
+  ChainBackendNames.AURORA,
+  ChainBackendNames.ZKSYNC_ERA,
+  ChainBackendNames.SHARDEUM_SPHINX,
+];

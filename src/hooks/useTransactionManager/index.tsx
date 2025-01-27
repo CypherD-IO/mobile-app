@@ -75,9 +75,7 @@ export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
-  const BASE_GAS_LIMIT = 21000;
-  const OPTIMISM_GAS_MULTIPLIER = 1.3;
-  const CONTRACT_GAS_MULTIPLIER = 2;
+
   const {
     estimateGasForEvm,
     estimateGasForCosmos,
@@ -91,27 +89,6 @@ export default function useTransactionManager() {
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const { getSolanWallet, getSolanaRpc } = useSolanaSigner();
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
-
-  const decideGasLimitBasedOnTypeOfToAddress = (
-    code: string,
-    gasLimit: number,
-    chain: string,
-    contractAddress: string,
-  ): number => {
-    if (gasLimit > BASE_GAS_LIMIT) {
-      if (code !== '0x') {
-        return CONTRACT_GAS_MULTIPLIER * gasLimit;
-      }
-      return gasLimit;
-    } else if (
-      contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
-      chain === CHAIN_OPTIMISM.backendName
-    ) {
-      return BASE_GAS_LIMIT * OPTIMISM_GAS_MULTIPLIER;
-    } else {
-      return BASE_GAS_LIMIT;
-    }
-  };
 
   async function getCosmosSigningClient(
     chain: Chain,
@@ -150,8 +127,7 @@ export default function useTransactionManager() {
     const ethereum = hdWalletContext.state.wallet.ethereum;
     const fromAddress = ethereum.address;
     try {
-      const code = await web3.eth.getCode(toAddress);
-      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported, maxFee } =
+      const { gasLimit, gasPrice, priorityFee, isEIP1599Supported, maxFee } =
         await estimateGasForEvm({
           web3,
           chain,
@@ -162,12 +138,18 @@ export default function useTransactionManager() {
           contractDecimals,
         });
 
-      gasLimit = decideGasLimitBasedOnTypeOfToAddress(
-        code,
+      console.log('GAS SET WHILE SENDING NATIVE TOKEN');
+      console.log({
         gasLimit,
-        chain,
-        contractAddress,
-      );
+        gasPrice,
+        priorityFee,
+        isEIP1599Supported,
+        maxFee,
+      });
+
+      console.log('GAS SET WHILE SENDING NATIVE TOKEN 2');
+      console.log({ gasLimit });
+
       const tx = {
         from: ethereum.address,
         to: toAddress,
@@ -183,7 +165,10 @@ export default function useTransactionManager() {
           priorityFee ? web3.utils.toWei(priorityFee.toFixed(9), 'gwei') : '0',
         );
         set(tx, 'maxFeePerGas', web3.utils.toWei(maxFee.toFixed(9), 'gwei'));
+        set(tx, 'gasPrice', undefined);
       }
+
+      console.log(' +++++++++++ tx : ', tx);
 
       const hash = await signEthTransaction({
         web3,
@@ -192,6 +177,7 @@ export default function useTransactionManager() {
       });
       return hash;
     } catch (err: any) {
+      console.log('@@@@@@@@@ error in sendNativeToken', err);
       throw new Error(err);
     }
   };
@@ -241,9 +227,7 @@ export default function useTransactionManager() {
         .transfer(toAddress, numberOfTokens)
         .encodeABI();
 
-      const code = await web3.eth.getCode(toAddress);
-
-      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported, maxFee } =
+      const { gasLimit, gasPrice, priorityFee, isEIP1599Supported, maxFee } =
         await estimateGasForEvm({
           web3,
           chain,
@@ -254,13 +238,6 @@ export default function useTransactionManager() {
           contractDecimals,
           contractData: contractDataUser,
         });
-
-      gasLimit = decideGasLimitBasedOnTypeOfToAddress(
-        code,
-        gasLimit,
-        chain,
-        contractAddress,
-      );
 
       const tx = {
         from: ethereum.address,
@@ -512,7 +489,7 @@ export default function useTransactionManager() {
             timeoutTimestamp: timeOut,
           }) as any,
         };
-
+        console.log('ibc transferMsg : ', transferMsg);
         const ibcResponse = await signingClient.signAndBroadcast(
           fromAddress,
           [transferMsg],
@@ -528,6 +505,7 @@ export default function useTransactionManager() {
         return { hash: '', isError: true, error: 'Unable to create a singer' };
       }
     } catch (e) {
+      console.log('error in interCosmosIBC : ', e);
       return { hash: '', isError: true, error: e };
     }
   };
@@ -920,7 +898,9 @@ export default function useTransactionManager() {
             gasFeeResponse;
 
           if (gasPrice > 1) {
-            gasPrice = Math.floor(gasPrice);
+            gasPrice = DecimalHelper.toNumber(
+              DecimalHelper.fromString(gasPrice).floor(),
+            );
           } else {
             gasPrice = web3.utils.toWei(
               limitDecimalPlaces(gasPrice, 9),
@@ -986,12 +966,12 @@ export default function useTransactionManager() {
           const response = await contract.methods
             .allowance(ethereum.address, routerAddress)
             .call();
-          const tokenAmount = Number(ceil(amount));
+          const tokenAmount = DecimalHelper.fromString(amount).ceil();
           const allowance = response;
 
           if (
             overrideAllowanceCheck ||
-            Number(tokenAmount) > Number(allowance)
+            DecimalHelper.isGreaterThan(tokenAmount, allowance)
           ) {
             const tokens = Number(ceil(amount));
             const resp = contract.methods
@@ -1346,17 +1326,17 @@ export default function useTransactionManager() {
           const isNative = fromToken?.isNative;
 
           console.log('gasLimit : ', gasLimit);
-          console.log(
-            'gasLimit * 2 : ',
-            DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
-            typeof DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
-          );
-          const adjustedGasLimit = web3.utils.toHex(
-            Math.floor(
-              DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
-            ),
-          );
-          console.log('Adjusted gas limit hex:', adjustedGasLimit);
+          // console.log(
+          //   'gasLimit * 2 : ',
+          //   DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
+          //   typeof DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
+          // );
+          // const adjustedGasLimit = web3.utils.toHex(
+          //   Math.floor(
+          //     DecimalHelper.toNumber(DecimalHelper.multiply(gasLimit, 2)),
+          //   ),
+          // );
+          // console.log('Adjusted gas limit hex:', adjustedGasLimit);
 
           console.log('gasFeeResponse : ', gasFeeResponse);
           console.log(
@@ -1373,7 +1353,7 @@ export default function useTransactionManager() {
             value: isNative ? contractData?.value : '0x0',
             to: routerAddress,
             data: contractData.data,
-            gas: adjustedGasLimit,
+            gas: gasLimit,
             gasPrice: web3.utils.toWei(
               String(gasFeeResponse.gasPrice.toFixed(9)),
               'gwei',
@@ -1382,6 +1362,7 @@ export default function useTransactionManager() {
 
           try {
             await web3.eth.call(tx);
+            console.log('S I M U L A T I O N  S U C C E S S');
           } catch (simulationError: any) {
             console.log('Simulation failed:', simulationError);
             throw new Error(

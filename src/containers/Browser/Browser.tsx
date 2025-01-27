@@ -105,7 +105,7 @@ export default function Browser({ route, navigation }: any) {
   const [injectedCode, setInjectedCode] = useState('');
   const { getWithAuth } = useAxios();
   const { getNativeToken } = usePortfolio();
-  const { estimateGasForEvm, estimateGasForCosmos, estimateGasForSolana } =
+  const { estimateGasForEvm, estimateGasForCosmosRest, estimateGasForSolana } =
     useGasService();
   const { getCosmosSignerClient } = useCosmosSigner();
 
@@ -307,15 +307,12 @@ export default function Browser({ route, navigation }: any) {
     if (COSMOS_CHAINS.includes(selectedChain.chainName)) {
       console.log('cosmos chains gas fee calculation');
       const cosmosWallet = hdWalletContext.state.wallet;
-      const cosmosSigner = await getCosmosSignerClient(selectedChain.chainName);
-      console.log('cosmosSigner ::: ', cosmosSigner);
-      gasDetails = await estimateGasForCosmos({
+      gasDetails = await estimateGasForCosmosRest({
         chain: selectedChain,
         denom: nativeToken.denom,
         amount: nativeToken.balanceDecimal,
         fromAddress: get(cosmosWallet, selectedChain.chainName, null)?.address,
         toAddress: get(cosmosWallet, selectedChain.chainName, null)?.address,
-        signer: cosmosSigner,
       });
       console.log('gasDetails ::: ', gasDetails);
     } else if (selectedChain.backendName === CHAIN_SOLANA.backendName) {
@@ -342,8 +339,7 @@ export default function Browser({ route, navigation }: any) {
     console.log('gasDetails ::: ', gasDetails);
     const balanceAfterGasReservation = DecimalHelper.subtract(
       nativeToken.balanceDecimal,
-      gasDetails?.gasFeeInCrypto ??
-        gasFeeReservation[selectedChain.backendName],
+      gasDetails?.gasFeeInCrypto,
     );
     console.log('balanceAfterGasReservation ::: ', balanceAfterGasReservation);
     const isGasEnough = DecimalHelper.isGreaterThanOrEqualTo(

@@ -26,6 +26,12 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 });
 
+interface LoadingInterface {
+  quoteLoading: boolean;
+  maxAmountLoading: boolean;
+  // ... any other loading states
+}
+
 function RenderToken({
   item,
   selected,
@@ -427,7 +433,7 @@ export default function TokenSelectionV2({
   usdAmountOut: string;
   onClickMax: () => void;
   onToggle: () => void;
-  loading: boolean;
+  loading: LoadingInterface;
 }) {
   const [fromTokenModalVisible, setFromTokenModalVisible] =
     useState<boolean>(false);
@@ -495,38 +501,49 @@ export default function TokenSelectionV2({
 
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDView className='flex flex-col items-start w-[60%]'>
-              <CyDTextInput
-                className={clsx(
-                  'font-semibold text-start font-nunito text-[30px] w-[100%] p-[4px] ',
-                )}
-                keyboardType='numeric'
-                onChangeText={text => {
-                  setCryptoAmount(text);
-                  setUsdAmount(
-                    DecimalHelper.multiply(
-                      text,
-                      selectedFromToken?.price,
-                    ).toString(),
-                  );
-                }}
-                returnKeyType='done'
-                placeholder='0.0'
-                value={cryptoAmount}
-                autoFocus={true}
-                onSubmitEditing={() => {
-                  Keyboard.dismiss();
-                }}
-              />
+              <CyDSkeleton
+                width={100}
+                height={30}
+                value={!loading.maxAmountLoading}>
+                <CyDTextInput
+                  className={clsx(
+                    'font-semibold text-start font-nunito text-[30px] w-[200px] p-[4px] ',
+                  )}
+                  keyboardType='numeric'
+                  onChangeText={text => {
+                    setCryptoAmount(text);
+                    setUsdAmount(
+                      DecimalHelper.multiply(
+                        text,
+                        selectedFromToken?.price,
+                      ).toString(),
+                    );
+                  }}
+                  returnKeyType='done'
+                  placeholder='0.0'
+                  value={cryptoAmount}
+                  autoFocus={true}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
+                />
+              </CyDSkeleton>
 
-              <CyDText
-                className={clsx(
-                  'font-semibold text-center  font-nunito text-[12px]',
-                )}>
-                {`$${DecimalHelper.toString(
-                  DecimalHelper.fromString(usdAmount),
-                  6,
-                )}`}
-              </CyDText>
+              <CyDSkeleton
+                width={100}
+                height={20}
+                value={!loading?.maxAmountLoading}
+                className='mt-[4px]'>
+                <CyDText
+                  className={clsx(
+                    'font-semibold text-center font-nunito text-[12px]',
+                  )}>
+                  {`$${DecimalHelper.toString(
+                    DecimalHelper.fromString(usdAmount),
+                    6,
+                  )}`}
+                </CyDText>
+              </CyDSkeleton>
             </CyDView>
             <CyDTouchView
               className='w-[40%]'
@@ -605,7 +622,10 @@ export default function TokenSelectionV2({
 
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDView className='flex flex-col items-start'>
-              <CyDSkeleton width={100} height={30} value={!loading}>
+              <CyDSkeleton
+                width={100}
+                height={30}
+                value={!loading.quoteLoading}>
                 <CyDText
                   className={clsx(
                     'font-semibold text-center font-nunito text-[30px]',
@@ -619,7 +639,7 @@ export default function TokenSelectionV2({
               <CyDSkeleton
                 width={100}
                 height={20}
-                value={!loading}
+                value={!loading.quoteLoading}
                 className='mt-[8px]'>
                 <CyDText
                   className={clsx(

@@ -394,7 +394,7 @@ const RenderSendTransactionSignModal = ({
             </CyDView>
             <CyDView>
               <CyDText className='text-[24px] text-subTextColor font-semibold'>
-                {formatAmount(token.valueInUSD).toString() + ' USD'}
+                {formatAmount(token.valueInUSD) + ' USD'}
               </CyDText>
             </CyDView>
           </CyDView>

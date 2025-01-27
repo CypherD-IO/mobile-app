@@ -1,8 +1,7 @@
 import Decimal from 'decimal.js';
 
 export const DecimalHelper = {
-  fromString(value?: string | number | Decimal | bigint | null): Decimal {
-    if (value === null || value === undefined) return new Decimal(0);
+  fromString(value: string | number | Decimal | bigint): Decimal {
     if (value instanceof Decimal) return value;
     try {
       if (typeof value === 'bigint') {
@@ -87,7 +86,9 @@ export const DecimalHelper = {
   },
 
   toString(decimal: Decimal, precision?: number): string {
-    return precision ? decimal.toFixed(precision) : decimal.toString();
+    return precision
+      ? this.floor(decimal, precision).toString()
+      : decimal.toString();
   },
 
   isGreaterThan(
@@ -125,6 +126,13 @@ export const DecimalHelper = {
     return this.fromString(a).equals(this.fromString(b));
   },
 
+  notEqual(
+    a: string | number | Decimal,
+    b: string | number | Decimal,
+  ): boolean {
+    return !this.fromString(a).equals(this.fromString(b));
+  },
+
   toNumber(value: string | number | Decimal): number {
     return this.fromString(value).toNumber();
   },
@@ -141,7 +149,21 @@ export const DecimalHelper = {
     return this.divide(value, this.pow(10, decimals));
   },
 
-  roundUp(value: string | number | Decimal, precision: number): Decimal {
+  ceil(value: string | number | Decimal, precision: number): Decimal {
     return this.fromString(value).toDecimalPlaces(precision, Decimal.ROUND_UP);
+  },
+
+  floor(value: string | number | Decimal, precision: number): Decimal {
+    return this.fromString(value).toDecimalPlaces(
+      precision,
+      Decimal.ROUND_DOWN,
+    );
+  },
+
+  round(value: string | number | Decimal, precision: number): Decimal {
+    return this.fromString(value).toDecimalPlaces(
+      precision,
+      Decimal.ROUND_HALF_UP,
+    );
   },
 };

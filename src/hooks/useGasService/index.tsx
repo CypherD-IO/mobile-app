@@ -16,19 +16,30 @@ import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { EvmGasInterface } from '../../models/evmGas.interface';
 import { cosmosConfig } from '../../constants/cosmosConfig';
-import { getTimeOutTime } from '../../core/util';
+import {
+  getTimeOutTime,
+  logAnalytics,
+  parseErrorMessage,
+} from '../../core/util';
 import useCosmosSigner from '../useCosmosSigner';
 import {
   Coin,
   MsgSendEncodeObject,
   MsgTransferEncodeObject,
   SigningStargateClient,
+  defaultRegistryTypes,
+  StargateClient,
 } from '@cosmjs/stargate';
 import { ceil, get, max } from 'lodash';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
 import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing';
+import {
+  DirectSecp256k1HdWallet,
+  GeneratedType,
+  OfflineDirectSigner,
+  Registry,
+} from '@cosmjs/proto-signing';
 import { IReward } from '../../reducers/cosmosStakingReducer';
 import {
   Connection,
@@ -45,6 +56,11 @@ import {
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import usePortfolio from '../usePortfolio';
+import { DecimalHelper } from '../../utils/decimalHelper';
+import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
+import { AnalyticsType } from '../../constants/enum';
+import { gasFeeReservation } from '../../constants/data';
+import { decideGasLimitBasedOnTypeOfToAddress } from '../useWeb3/util';
 
 export interface GasServiceResult {
   gasFeeInCrypto: string;
@@ -57,6 +73,25 @@ export interface GasServiceResult {
       amount: string;
     }>;
   };
+}
+
+const wasmTypes: Array<[string, GeneratedType]> = [
+  ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
+];
+
+const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
+
+interface EvmContractData {
+  chain_id: string;
+  data: string;
+  required_erc20_approvals: Array<{
+    amount: string;
+    spender: string;
+    token_contract: string;
+  }>;
+  signer_address: string;
+  to: string;
+  value: string;
 }
 
 export default function useGasService() {
@@ -140,6 +175,7 @@ export default function useGasService() {
 
   async function getGasPrice(chain: ChainBackendNames, web3RPCEndpoint: Web3) {
     const response = await getWithoutAuth(`/v1/prices/gas/${chain}`);
+    console.log('response from getGasPrice : ', response);
     if (!response.isError) {
       return response.data;
     } else {
@@ -204,6 +240,7 @@ export default function useGasService() {
       .encodeABI();
     try {
       const gasPriceDetail = await getGasPrice(chain, web3);
+      console.log('@@@@@@@@@ gasPriceDetail : ', gasPriceDetail);
       let gasLimit: bigint | number = await web3.eth.estimateGas({
         from: fromAddress,
         // For Optimism the ETH token has different contract address
@@ -214,40 +251,345 @@ export default function useGasService() {
         value: '0x0',
         data: contractDataUser ?? contractData,
       });
-      gasLimit = ceil(Number(gasLimit) * 1.3);
+      const code = await web3.eth.getCode(contractAddress);
+      console.log('C O D E : ', code);
+
+      console.log('I N I T I A L  G A S  L I M I T : ', gasLimit);
+      gasLimit = decideGasLimitBasedOnTypeOfToAddress(
+        code,
+        Number(gasLimit),
+        chain,
+        contractAddress,
+      );
+
+      console.log('F I N A L G A S L I M I T : ', gasLimit);
+
       if (gasLimit) {
-        let finalGasPrice;
-        if (gasPriceDetail.gasPrice > 0) {
-          finalGasPrice = gasPriceDetail.gasPrice;
-        }
+        // Determine final gas price based on EIP-1559 support
+        const finalGasPrice = gasPriceDetail.isEIP1599Supported
+          ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
+          : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
+
+        console.log('usign EIP 1599 : ', gasPriceDetail.maxFee);
+        console.log('using legacy : ', gasPriceDetail.gasPrice);
 
         let gasFeeInCrypto = '0';
-        if (finalGasPrice) {
-          gasFeeInCrypto = web3.utils.fromWei(
+
+        console.log(
+          '@@@@@@@@@@ using decimal : ',
+          web3.utils.fromWei(
+            web3.utils.toWei(
+              DecimalHelper.toString(
+                DecimalHelper.multiply(finalGasPrice, gasLimit),
+                9,
+              ),
+              'gwei',
+            ),
+            'ether',
+          ),
+        );
+
+        console.log(
+          '################ conversion : ',
+          DecimalHelper.divide(
+            DecimalHelper.multiply(finalGasPrice, gasLimit),
+            1e9,
+          ).toString(),
+        );
+
+        console.log(
+          '@@@@@@@@@ using old : ',
+          web3.utils.fromWei(
             web3.utils.toWei((finalGasPrice * gasLimit).toFixed(9), 'gwei'),
             'ether',
+          ),
+        );
+        if (finalGasPrice) {
+          gasFeeInCrypto = web3.utils.fromWei(
+            web3.utils.toWei(
+              DecimalHelper.toString(
+                DecimalHelper.multiply(finalGasPrice, gasLimit),
+                9,
+              ),
+              'gwei',
+            ),
+            'ether',
           );
-          finalGasPrice = web3.utils.toHex(
+
+          const hexGasPrice = web3.utils.toHex(
             web3.utils.toBigInt(
-              web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei'),
+              web3.utils.toWei(
+                DecimalHelper.toString(finalGasPrice, 9),
+                'gwei',
+              ),
             ),
           );
-        }
 
-        return {
-          gasFeeInCrypto,
-          gasLimit,
-          gasPrice: finalGasPrice,
-          isEIP1599Supported: get(gasPriceDetail, 'isEIP1599Supported', false),
-          priorityFee: get(gasPriceDetail, 'priorityFee', 0),
-          baseFee: get(gasPriceDetail, 'baseFee', 0),
-          maxFee: get(gasPriceDetail, 'maxFee', 0),
-        };
+          return {
+            gasFeeInCrypto,
+            gasLimit,
+            gasPrice: hexGasPrice,
+            isEIP1599Supported: get(
+              gasPriceDetail,
+              'isEIP1599Supported',
+              false,
+            ),
+            priorityFee: get(gasPriceDetail, 'priorityFee', 0),
+            baseFee: get(gasPriceDetail, 'baseFee', 0),
+            maxFee: get(gasPriceDetail, 'maxFee', 0),
+          };
+        }
       }
     } catch (error) {
       Sentry.captureException(error);
     }
     return { gasFeeInCrypto: 0, gasLimit: 0, gasPrice: 0 }; // fallback
+  };
+
+  const estimateGasForCosmosCustomContract = async (
+    chain: Chain,
+    signer: OfflineDirectSigner,
+    cosmosData: {
+      chain_id: string;
+      msgs: Array<{
+        msg: string;
+        msg_type_url: string;
+      }>;
+      path: string[];
+      signer_address: string;
+    },
+    signerAddress: string,
+  ) => {
+    const { chainName, backendName } = chain;
+    if (signer) {
+      const rpc = getCosmosRpc(backendName as ChainBackendNames);
+
+      // Create signing client with the custom registry
+      const signingClient = await SigningStargateClient.connectWithSigner(
+        rpc,
+        signer,
+        { registry },
+      );
+
+      // Parse the message string into an object
+      const messages = cosmosData.msgs.map(msgData => {
+        const parsedMsg = JSON.parse(msgData.msg);
+        return {
+          typeUrl: msgData.msg_type_url,
+          value: {
+            sender: parsedMsg.sender,
+            contract: parsedMsg.contract,
+            msg: Buffer.from(JSON.stringify(parsedMsg.msg)).toString('base64'),
+            funds: parsedMsg.funds,
+          },
+        };
+      });
+
+      const simulation = await signingClient.simulate(
+        signerAddress,
+        messages,
+        '',
+      );
+
+      const nativeToken = await getNativeToken(
+        backendName as ChainBackendNames,
+      );
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = DecimalHelper.multiply(simulation, [1.8, gasPrice]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
+        6,
+      );
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom,
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
+              ? '0'
+              : gasFee.floor().toString(),
+          },
+        ],
+      };
+      return {
+        gasFeeInCrypto,
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
+  };
+
+  const estimateGasForCosmosRest = async ({
+    chain,
+    denom,
+    amount,
+    fromAddress,
+    toAddress,
+  }: {
+    chain: Chain;
+    denom: string;
+    amount: string;
+    fromAddress: string;
+    toAddress: string;
+  }): Promise<GasServiceResult | undefined> => {
+    const { chainName, backendName } = chain;
+    const restEndpoint = cosmosConfig[chainName].rest;
+    const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+    const nativeToken = await getNativeToken(backendName as ChainBackendNames);
+    try {
+      // First, fetch the account sequence
+      const accountResponse = await fetch(
+        `${restEndpoint}/cosmos/auth/v1beta1/accounts/${fromAddress}`,
+      );
+      const accountData = await accountResponse.json();
+      const sequence = accountData.account?.sequence || '0';
+
+      const amountToSend = ethers
+        .parseUnits(amount, contractDecimal)
+        .toString();
+
+      const response = await fetch(
+        `${restEndpoint}/cosmos/tx/v1beta1/simulate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tx: {
+              body: {
+                messages: [
+                  {
+                    '@type': '/cosmos.bank.v1beta1.MsgSend',
+                    from_address: fromAddress,
+                    to_address: toAddress,
+                    amount: [
+                      {
+                        denom,
+                        amount: amountToSend,
+                      },
+                    ],
+                  },
+                ],
+                memo: '',
+                timeout_height: '0',
+                extension_options: [],
+                non_critical_extension_options: [],
+              },
+              auth_info: {
+                signer_infos: [
+                  {
+                    public_key: {
+                      '@type': '/cosmos.crypto.secp256k1.PubKey',
+                      key: 'A' + '0'.repeat(43),
+                    },
+                    mode_info: {
+                      single: {
+                        mode: 'SIGN_MODE_DIRECT',
+                      },
+                    },
+                    sequence: sequence, // Use the fetched sequence
+                  },
+                ],
+                fee: {
+                  amount: [],
+                  gas_limit: '200000',
+                },
+              },
+              signatures: ['A' + '0'.repeat(127)],
+            },
+          }),
+        },
+      );
+
+      const result = await response.json();
+      console.log('REST API Response:', result);
+
+      // Extract gas used from either successful response or error message
+
+      // if (result.code) {
+      //   // Try to extract gas used from error message
+      //   const gasMatch = result.message.match(/gas used: '(\d+)'/);
+      //   if (gasMatch && gasMatch[1]) {
+      //     gasEstimate = parseInt(gasMatch[1]);
+      //   } else {
+      //     throw new Error('Could not extract gas estimate from response');
+      //   }
+      // } else {
+      //   if (!result.gas_info?.gas_used) {
+      //     throw new Error('No gas estimate in response');
+      //   }
+      //   gasEstimate = parseInt(result.gas_info.gas_used);
+      // }
+
+      if (!result.gas_info?.gas_used) {
+        throw new Error('No gas estimate in response');
+      }
+      const gasEstimate = result.gas_info.gas_used;
+
+      // const gasEstimate = parseInt(result.gas_info.gas_used);
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
+        6,
+      );
+
+      const fee = {
+        gas: Math.floor(gasEstimate * 1.8).toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
+              ? '0'
+              : gasFee.floor().toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto,
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    } catch (error) {
+      console.error('Gas estimation error:', error);
+      logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: backendName,
+        message:
+          parseErrorMessage(error) +
+          `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
+        screen: 'estimateGasForCosmosRest',
+      });
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = '200000';
+      const gasFeeInCrypto = gasFeeReservation[backendName].toString();
+
+      const fee = {
+        gas: gasFee.toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
+              ? '0'
+              : gasFee.toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto,
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
   };
 
   const estimateGasForCosmos = async ({
@@ -293,13 +635,17 @@ export default function useGasService() {
         [sendMsg],
         '',
       );
-
+      console.log('********** gas limit simulation in cosmos : ', simulation);
       const nativeToken = await getNativeToken(
         backendName as ChainBackendNames,
       );
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
-      const gasFee = simulation * 1.8 * gasPrice;
+      const gasFee = DecimalHelper.multiply(simulation, [1.8, gasPrice]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
+        6,
+      );
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
         amount: [
@@ -307,14 +653,12 @@ export default function useGasService() {
             denom: nativeToken?.denom ?? denom,
             amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
               ? '0'
-              : Math.floor(gasFee).toString(),
+              : gasFee.floor().toString(),
           },
         ],
       };
       return {
-        gasFeeInCrypto: parseFloat(
-          String(gasFee * 10 ** -nativeToken.contractDecimals),
-        ).toFixed(6),
+        gasFeeInCrypto,
         gasLimit: fee.gas,
         gasPrice,
         fee,
@@ -390,7 +734,11 @@ export default function useGasService() {
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
 
-      const gasFee = simulation * Number(gasPrice) * 1.8;
+      const gasFee = DecimalHelper.multiply(simulation, [gasPrice, 1.8]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
+        6,
+      );
 
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
@@ -404,9 +752,190 @@ export default function useGasService() {
         ],
       };
       return {
-        gasFeeInCrypto: parseFloat(
-          String(gasFee * 10 ** -nativeToken.contractDecimals),
-        ).toFixed(6),
+        gasFeeInCrypto,
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
+  };
+
+  const estimateGasForCosmosIBCRest = async ({
+    fromChain,
+    toChain,
+    denom,
+    amount,
+    fromAddress,
+    toAddress,
+  }: {
+    fromChain: Chain;
+    toChain: Chain;
+    denom: string;
+    amount: string;
+    fromAddress: string;
+    toAddress: string;
+  }): Promise<GasServiceResult | undefined> => {
+    console.log('********** fromChain in cosmosIBCRest : ', fromChain);
+    const { chainName, backendName } = fromChain;
+
+    const restEndpoint = cosmosConfig[chainName].rest;
+    const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+
+    const nativeToken = await getNativeToken(backendName as ChainBackendNames);
+    try {
+      console.log(
+        'fetch account details : ',
+        `${restEndpoint}/cosmos/auth/v1beta1/accounts/${fromAddress}`,
+      );
+      // Get account details for sequence
+      const accountResponse = await fetch(
+        `${restEndpoint}/cosmos/auth/v1beta1/accounts/${fromAddress}`,
+      );
+      const accountData = await accountResponse.json();
+      const sequence = accountData.account?.sequence || '0';
+
+      console.log('((((( account data )))))) : ', accountData);
+
+      const amountToSend = ethers
+        .parseUnits(amount, contractDecimal)
+        .toString();
+
+      const sourceChannel =
+        cosmosConfig[chainName].channel[toChain.chainName.toLowerCase()];
+      const timeOut = getTimeOutTime().toString();
+
+      const transferMsg = {
+        '@type': '/ibc.applications.transfer.v1.MsgTransfer',
+        source_port: 'transfer',
+        source_channel: sourceChannel,
+        token: {
+          denom,
+          amount: amountToSend,
+        },
+        sender: fromAddress,
+        receiver: toAddress,
+        timeout_height: {
+          revision_number: '123',
+          revision_height: '456',
+        },
+        timeout_timestamp: timeOut,
+      };
+
+      console.log(
+        'Attempting gas simulation for IBC transfer with message:',
+        transferMsg,
+      );
+
+      const response = await fetch(
+        `${restEndpoint}/cosmos/tx/v1beta1/simulate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tx: {
+              body: {
+                messages: [transferMsg],
+                memo: '',
+                timeout_height: '0',
+                extension_options: [],
+                non_critical_extension_options: [],
+              },
+              auth_info: {
+                signer_infos: [
+                  {
+                    public_key: {
+                      '@type': '/cosmos.crypto.secp256k1.PubKey',
+                      key: 'A' + '0'.repeat(43),
+                    },
+                    mode_info: {
+                      single: {
+                        mode: 'SIGN_MODE_DIRECT',
+                      },
+                    },
+                    sequence,
+                  },
+                ],
+                fee: {
+                  amount: [],
+                  gas_limit: '200000',
+                },
+              },
+              signatures: ['A' + '0'.repeat(127)],
+            },
+          }),
+        },
+      );
+
+      const result = await response.json();
+      console.log('REST API Response:', result);
+
+      if (result.code) {
+        throw new Error(result.message || 'Simulation failed');
+      }
+
+      const gasEstimate = result.gas_info?.gas_used;
+      if (!gasEstimate) {
+        throw new Error('No gas estimate in response');
+      }
+
+      console.log('nativeToken ::: ', nativeToken);
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
+        6,
+      );
+
+      const fee = {
+        gas: gasFee.floor().toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
+              ? '0'
+              : gasFee.floor().toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto,
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    } catch (error) {
+      console.error('Gas estimation error in cosmosIBCRest:', error);
+      console.error('Gas estimation error:', error);
+      logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: backendName,
+        message:
+          parseErrorMessage(error) +
+          `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
+        screen: 'estimateGasForCosmosIBCRest',
+      });
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = '200000';
+      const gasFeeInCrypto = gasFeeReservation[backendName].toString();
+
+      const fee = {
+        gas: gasFee.toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
+              ? '0'
+              : gasFee.toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto,
         gasLimit: fee.gas,
         gasPrice,
         fee,
@@ -457,7 +986,11 @@ export default function useGasService() {
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
 
-      const gasFee = simulation * Number(gasPrice) * 1.8;
+      const gasFee = DecimalHelper.multiply(simulation, [gasPrice, 1.8]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, contractDecimal),
+        6,
+      );
 
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
@@ -470,9 +1003,7 @@ export default function useGasService() {
       };
 
       return {
-        gasFeeInCrypto: parseFloat(
-          String(gasFee * 10 ** -contractDecimal),
-        ).toFixed(6),
+        gasFeeInCrypto,
         gasLimit: fee.gas,
         gasPrice,
         fee,
@@ -526,7 +1057,11 @@ export default function useGasService() {
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
 
-      const gasFee = simulation * Number(gasPrice) * 1.8;
+      const gasFee = DecimalHelper.multiply(simulation, [gasPrice, 1.8]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, contractDecimal),
+        6,
+      );
 
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
@@ -539,9 +1074,7 @@ export default function useGasService() {
       };
 
       return {
-        gasFeeInCrypto: parseFloat(
-          String(gasFee * 10 ** -contractDecimal),
-        ).toFixed(6),
+        gasFeeInCrypto,
         gasLimit: fee.gas,
         gasPrice,
         fee,
@@ -596,7 +1129,11 @@ export default function useGasService() {
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
 
-      const gasFee = simulation * Number(gasPrice) * 1.8;
+      const gasFee = DecimalHelper.multiply(simulation, [gasPrice, 1.8]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, contractDecimal),
+        6,
+      );
 
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
@@ -609,9 +1146,7 @@ export default function useGasService() {
       };
 
       return {
-        gasFeeInCrypto: parseFloat(
-          String(gasFee * 10 ** -contractDecimal),
-        ).toFixed(6),
+        gasFeeInCrypto,
         gasLimit: fee.gas,
         gasPrice,
         fee,
@@ -668,7 +1203,11 @@ export default function useGasService() {
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
 
-      const gasFee = simulation * Number(gasPrice) * 1.8;
+      const gasFee = DecimalHelper.multiply(simulation, [gasPrice, 1.8]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, contractDecimal),
+        6,
+      );
 
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
@@ -681,9 +1220,7 @@ export default function useGasService() {
       };
 
       return {
-        gasFeeInCrypto: parseFloat(
-          String(gasFee * 10 ** -contractDecimal),
-        ).toFixed(6),
+        gasFeeInCrypto,
         gasLimit: fee.gas,
         gasPrice,
         fee,
@@ -760,9 +1297,253 @@ export default function useGasService() {
 
     return {
       gasFeeInCrypto: estimatedFee,
-      gasLimit: unitsConsumed * 1.3,
+      gasLimit: unitsConsumed * 1.8,
       gasPrice: 0.000005,
     };
+  };
+
+  const estimateGasForCosmosCustomContractRest = async (
+    chain: Chain,
+    cosmosData: {
+      chain_id: string;
+      msgs: Array<{
+        msg: string;
+        msg_type_url: string;
+      }>;
+      path: string[];
+      signer_address: string;
+    },
+  ): Promise<GasServiceResult | undefined> => {
+    const { chainName, backendName } = chain;
+    const restEndpoint = cosmosConfig[chainName].rest;
+
+    const nativeToken = await getNativeToken(backendName as ChainBackendNames);
+
+    try {
+      console.log('before fetching account sequence');
+      // First, fetch the account sequence
+      const accountResponse = await fetch(
+        `${restEndpoint}/cosmos/auth/v1beta1/accounts/${cosmosData.signer_address}`,
+      );
+      const accountData = await accountResponse.json();
+      const sequence = accountData.account?.sequence || '0';
+
+      console.log('Sequence:', sequence);
+
+      // Convert messages to the required format without double encoding
+      const messages = cosmosData.msgs.map(msgData => {
+        const parsedMsg = JSON.parse(msgData.msg);
+        return {
+          '@type': msgData.msg_type_url,
+          ...parsedMsg, // Spread the parsed message directly instead of re-encoding
+        };
+      });
+
+      const response = await fetch(
+        `${restEndpoint}/cosmos/tx/v1beta1/simulate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tx: {
+              body: {
+                messages,
+                memo: '',
+                timeout_height: '0',
+                extension_options: [],
+                non_critical_extension_options: [],
+              },
+              auth_info: {
+                signer_infos: [
+                  {
+                    public_key: {
+                      '@type': '/cosmos.crypto.secp256k1.PubKey',
+                      key: 'A' + '0'.repeat(43),
+                    },
+                    mode_info: {
+                      single: {
+                        mode: 'SIGN_MODE_DIRECT',
+                      },
+                    },
+                    sequence,
+                  },
+                ],
+                fee: {
+                  amount: [],
+                  gas_limit: '200000',
+                },
+              },
+              signatures: ['A' + '0'.repeat(127)],
+            },
+          }),
+        },
+      );
+
+      const result = await response.json();
+      console.log('REST API Response:', result);
+
+      if (result.code) {
+        throw new Error(result.message || 'Simulation failed');
+      }
+
+      if (!result.gas_info?.gas_used) {
+        throw new Error('No gas estimate in response');
+      }
+
+      const gasEstimate = parseInt(result.gas_info.gas_used);
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFeeInCrypto = DecimalHelper.toString(
+        DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
+        6,
+      );
+
+      const fee = {
+        gas: Math.floor(gasEstimate * 1.8).toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom,
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
+              ? '0'
+              : gasFee.floor().toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto,
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    } catch (error) {
+      console.error('Gas estimation error:', error);
+      logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: backendName,
+        message:
+          parseErrorMessage(error) +
+          `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
+        screen: 'estimateGasForCosmosCustomContractRest',
+      });
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = '200000';
+      const gasFeeInCrypto = gasFeeReservation[backendName].toString();
+
+      const fee = {
+        gas: gasFee.toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom,
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
+              ? '0'
+              : gasFee.toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto,
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
+  };
+
+  const estimateGasForEvmCustomContract = async (
+    chain: Chain,
+    contractData: EvmContractData,
+    web3: Web3,
+  ) => {
+    try {
+      const { chain_id, data, signer_address, to, value } = contractData;
+
+      console.log('>>>>>>>>>>>>>> contractData : ', contractData);
+
+      // Format data with 0x prefix
+      const formattedData = data.startsWith('0x') ? data : `0x${data}`;
+
+      // Create a fork of the blockchain state for estimation
+      // const blockNumber = await web3.eth.getBlockNumber();
+
+      // Estimate gas using eth_createAccessList which doesn't require actual allowance
+      let gasLimit = await web3.eth.estimateGas(
+        {
+          from: signer_address,
+          to: to,
+          value: '0x0',
+          data: formattedData,
+          // Add state override to simulate having enough allowance
+          // accessList: [],
+        },
+        // blockNumber,
+      );
+
+      const code = formattedData;
+      console.log('C O D E : ', code);
+
+      console.log('I N I T I A L  G A S  L I M I T : ', gasLimit);
+      gasLimit = decideGasLimitBasedOnTypeOfToAddress(
+        code,
+        Number(gasLimit),
+        chain.backendName,
+        to,
+      );
+
+      console.log('F I N A L G A S L I M I T : ', gasLimit);
+
+      console.log('gasLimit response from evm custom contract', gasLimit);
+
+      const gasPriceDetail = await getGasPrice(chain.backendName, web3);
+      console.log(
+        'gasPriceDetail response from evm custom contract',
+        gasPriceDetail,
+      );
+      const finalGasPrice = gasPriceDetail.isEIP1599Supported
+        ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
+        : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
+
+      const gasPriceWei = web3.utils.toWei(finalGasPrice.toString(), 'gwei');
+      console.log('>>>>>>>>>>>>>> gasPriceWei : ', finalGasPrice, gasPriceWei);
+
+      const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
+      console.log('>>>>>>>>>>>>>> totalWei : ', totalWei);
+
+      const gasFeeInCrypto = web3.utils.fromWei(totalWei.toString(), 'ether');
+
+      return {
+        gasFeeInCrypto,
+        gasLimit,
+        gasPrice: web3.utils.toHex(
+          web3.utils.toWei(finalGasPrice.toString(), 'gwei'),
+        ),
+        fee: {
+          gas: gasLimit,
+          amount: [
+            {
+              denom: 'wei',
+              amount: totalWei.toString(),
+            },
+          ],
+        },
+      };
+    } catch (error) {
+      console.error('Gas estimation error:', error);
+      logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: chain.backendName,
+        message:
+          parseErrorMessage(error) +
+          `.Error in Gas fee estimation for custom contract`,
+        screen: 'estimateGasForEvmCustomContract',
+      });
+      throw error;
+    }
   };
 
   return {
@@ -774,5 +1555,11 @@ export default function useGasService() {
     estimateGasForUndelegate,
     estimateGasForRedelgate,
     estimateGasForSolana,
+    estimateGasForCosmosCustomContract,
+    estimateGasForCosmosRest,
+    estimateGasForCosmosCustomContractRest,
+    estimateGasForEvmCustomContract,
+    estimateGasForCosmosIBCRest,
+    getGasPrice,
   };
 }

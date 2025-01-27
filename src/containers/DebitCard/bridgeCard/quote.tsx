@@ -68,6 +68,7 @@ export default function CardQuote({
     cardId,
     planCost,
   } = route.params;
+  // console.log('126 route.params : ', route.params);
   const {
     chain,
     amountInCrypto,
@@ -79,7 +80,7 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
-  console.log('tokenSendParams :::::::::: ', tokenSendParams);
+  // console.log('tokenSendParams :::::::::: ', tokenSendParams);
   const quoteExpiry = 60;
   const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
@@ -127,6 +128,7 @@ export default function CardQuote({
   useEffect(() => {
     let tempIsPayDisabled = false;
     tempIsPayDisabled = !hasSufficientBalanceAndGasFee;
+    console.log('126 tempIsPayDisabled : ', tempIsPayDisabled);
     setIsPayDisabled(tempIsPayDisabled);
     if (quoteExpiry && !tempIsPayDisabled) {
       let tempTokenExpiryTime = quoteExpiry;
@@ -596,7 +598,7 @@ export default function CardQuote({
               {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
             </CyDText>
             <CyDText className={'font-medium text-[14px]'}>
-              {'$' + String(formatAmount(gasFeeInFiat))}
+              {'$' + formatAmount(gasFeeInFiat)}
             </CyDText>
           </CyDView>
         </CyDView>
