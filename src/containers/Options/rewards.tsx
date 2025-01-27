@@ -123,7 +123,7 @@ export default function Rewards() {
                     {'Total Reward Balance'}
                   </CyDText>
                 </CyDView>
-                <CyDView className='flex-row items-center mt-[16px] space-x-[16px]'>
+                <CyDView className='flex flex-row items-center mt-[16px] gap-x-6'>
                   <CyDView>
                     <CyDText className='text-[14px] font-bold text-n300'>
                       <LoaderWithText
@@ -143,7 +143,7 @@ export default function Rewards() {
                       />
                     </CyDText>
                     <CyDText className='text-[12px] text-n200'>
-                      {'Rewards From Referal'}
+                      {'Rewards From Referral'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
