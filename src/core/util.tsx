@@ -1047,17 +1047,6 @@ export const hasSufficientBalanceAndGasFee = (
   sentAmount: string,
   sendingTokenBalance: string,
 ): boolean => {
-  console.log('gasFeeEstimation : ', gasFeeEstimation);
-  console.log('nativeTokenBalance : ', nativeTokenBalance);
-  console.log('sentAmount : ', sentAmount);
-  console.log('sendingTokenBalance : ', sendingTokenBalance);
-  console.log(
-    ' check + ',
-    DecimalHelper.isLessThanOrEqualTo(
-      DecimalHelper.add(sentAmount, gasFeeEstimation),
-      sendingTokenBalance,
-    ),
-  );
   const hasSufficientGasFee = DecimalHelper.isLessThanOrEqualTo(
     gasFeeEstimation,
     nativeTokenBalance,

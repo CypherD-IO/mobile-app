@@ -1502,18 +1502,6 @@ export default function useGasService() {
       if (OP_STACK_ENUMS.includes(chain.backendName)) {
         return await opStackL1FeeEstimate(txParams, web3Endpoint);
       } else {
-        console.log(
-          'txn.gasPrice : ',
-          DecimalHelper.fromString(txParams.gasPrice),
-          DecimalHelper.removeDecimals(txParams.gasPrice, 18),
-        );
-        console.log(
-          'tokens required : ',
-          DecimalHelper.multiply(
-            txParams.gas,
-            DecimalHelper.removeDecimals(txParams.gasPrice, 18),
-          ),
-        );
         return DecimalHelper.multiply(txParams.gas, txParams.gasPrice);
       }
     } catch (error) {
@@ -1549,8 +1537,6 @@ export default function useGasService() {
           contractDecimals: tokenData.contractDecimals,
         });
 
-        console.log('gasDetails : ', gasDetails);
-
         const l1GasFee = await fetchEstimatedL1Fee(
           {
             chainId: tokenData.chainDetails.chain_id,
@@ -1575,17 +1561,10 @@ export default function useGasService() {
           1.1,
         );
 
-        console.log(
-          'gasTokenAmountRequiredForL1Fee : ',
-          gasTokenAmountRequiredForL1Fee,
-        );
-
         const gasTokenAmount = DecimalHelper.add(
           gasTokenAmountRequiredForL1Fee,
           gasDetails.gasFeeInCrypto,
         );
-
-        console.log('gasTokenAmount : ', gasTokenAmount);
 
         return gasTokenAmount;
       } else {
@@ -1635,18 +1614,6 @@ export default function useGasService() {
       if (
         CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
       ) {
-        // const gasDetails = await estimateGasForEvm({
-        //   web3,
-        //   chain: tokenData.chainDetails.backendName as ChainBackendNames,
-        //   fromAddress: fromAddress,
-        //   toAddress: sendAddress,
-        //   amountToSend: tokenData.balanceDecimal,
-        //   contractAddress: tokenData.contractAddress,
-        //   contractDecimals: tokenData.contractDecimals,
-        // });
-
-        // console.log('gasDetails : ', gasDetails);
-
         const l1GasFee = await fetchEstimatedL1Fee(
           {
             chainId: tokenData.chainDetails.chain_id,
@@ -1668,19 +1635,10 @@ export default function useGasService() {
           1.1,
         );
 
-        console.log(
-          'gasTokenAmountRequiredForL1Fee : ',
-          gasTokenAmountRequiredForL1Fee,
-        );
-
-        console.log('gasFeeInCrypto : ', gasFeeInCrypto);
-
         const gasTokenAmount = DecimalHelper.add(
           gasTokenAmountRequiredForL1Fee,
           gasFeeInCrypto,
         );
-
-        console.log('gasTokenAmount : ', gasTokenAmount);
 
         return gasTokenAmount;
       } else {
@@ -1703,7 +1661,6 @@ export default function useGasService() {
           sendAddress,
         },
       });
-      console.log('E R R O R : ', e);
       return gasFeeReservation[tokenData.chainDetails.backendName];
     }
   };

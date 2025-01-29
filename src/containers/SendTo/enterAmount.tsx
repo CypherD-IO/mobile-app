@@ -121,7 +121,6 @@ export default function EnterAmount(props: any) {
         contractAddress: tokenData.contractAddress,
         contractDecimals: tokenData.contractDecimals,
       });
-      console.log('gasEstimate : ', gasEstimate);
     } else if (chainName === ChainNames.SOLANA) {
       const solana = hdWallet.state.wallet.solana;
       gasEstimate = await estimateGasForSolana({
@@ -237,17 +236,11 @@ export default function EnterAmount(props: any) {
     try {
       // remove this gasFeeReservation once we have gas estimation for eip1599 chains
       let gasReservedForNativeToken;
-      console.log(
-        EVM_CHAINS_BACKEND_NAMES.includes(tokenData.chainDetails.backendName),
-        isNativeToken(tokenData),
-        CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName),
-      );
       if (
         EVM_CHAINS_BACKEND_NAMES.includes(tokenData.chainDetails.backendName) &&
         isNativeToken(tokenData) &&
         CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
       ) {
-        console.log('++++++++ gasReservedForNativeToken ++++++++');
         gasReservedForNativeToken = await estimateReserveFee({
           tokenData,
           fromAddress: hdWallet.state.wallet.ethereum.address,
@@ -259,7 +252,6 @@ export default function EnterAmount(props: any) {
           web3Endpoint: getWeb3Endpoint(tokenData.chainDetails, globalContext),
         });
       } else {
-        console.log('------ gasEstimationForNativeToken -------');
         const gasFeeDetails = await getGasFee(
           tokenData.chainDetails?.chainName,
         );
@@ -271,22 +263,16 @@ export default function EnterAmount(props: any) {
         );
       }
 
-      console.log('gasReservedForNativeToken : ', gasReservedForNativeToken);
-
       const gasReserved =
         (NativeTokenMapping[tokenData?.chainDetails?.symbol] ||
           tokenData?.chainDetails?.symbol) === tokenData?.symbol
           ? gasReservedForNativeToken
           : 0;
 
-      console.log('gasReserved : ', gasReserved);
-
       const maxAmountDecimal = DecimalHelper.subtract(
         tokenData.balanceDecimal,
         gasReserved,
       );
-
-      console.log('maxAmountDecimal : ', maxAmountDecimal);
 
       const textAmount = DecimalHelper.isLessThan(maxAmountDecimal, 0)
         ? '0.00'
@@ -312,67 +298,6 @@ export default function EnterAmount(props: any) {
       setIsMaxLoading(false);
     }
   };
-
-  // const estimateReserveFee = async () => {
-  //   try {
-  //     if (
-  //       CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
-  //     ) {
-  //       const gasDetails = await getGasFee(tokenData.chainDetails?.chainName);
-
-  //       const l1GasFee = await fetchEstimatedL1Fee(
-  //         {
-  //           chainId: tokenData.chainDetails.chain_id,
-  //           from: hdWallet.state.wallet.ethereum.address,
-  //           to:
-  //             sendAddress !== ''
-  //               ? sendAddress
-  //               : hdWallet.state.wallet.ethereum.address,
-  //           value: web3.utils.toHex(
-  //             DecimalHelper.applyDecimals(tokenData.balanceDecimal, 18),
-  //           ),
-  //           gas: web3.utils.toHex(Number(gasDetails?.gasLimit)),
-  //           gasPrice: DecimalHelper.applyDecimals(
-  //             gasDetails?.maxFee,
-  //             18,
-  //           ).toHex(),
-  //           data: '0x',
-  //         },
-  //         tokenData.chainDetails,
-  //         getWeb3Endpoint(tokenData.chainDetails, globalContext),
-  //       );
-
-  //       const gasTokenAmount = DecimalHelper.multiply(
-  //         DecimalHelper.divide(l1GasFee, 1e18),
-  //         1.1,
-  //       );
-
-  //       console.log('gasTokenAmount : ', gasTokenAmount);
-
-  //       return gasTokenAmount;
-  //     } else {
-  //       return 0;
-  //     }
-  //   } catch (e) {
-  //     Sentry.captureException(e, {
-  //       extra: {
-  //         context: 'estimateReserveFee',
-  //         chainDetails: {
-  //           backendName: tokenData.chainDetails.backendName,
-  //           chainId: tokenData.chainDetails.chain_id,
-  //           name: tokenData.chainDetails.name,
-  //         },
-  //         token: {
-  //           symbol: tokenData.symbol,
-  //           balance: tokenData.balanceDecimal,
-  //         },
-  //         walletAddress: hdWallet.state.wallet.ethereum.address,
-  //         sendAddress,
-  //       },
-  //     });
-  //     return gasFeeReservation[tokenData.chainDetails.backendName];
-  //   }
-  // };
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (

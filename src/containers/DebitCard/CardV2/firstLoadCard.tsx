@@ -353,11 +353,6 @@ export default function FirstLoadCard() {
               web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
             });
 
-            console.log(
-              'gasReservedForNativeToken OPSTACK : ',
-              gasReservedForNativeToken,
-            );
-
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
               gasFeeReservation[chainDetails.backendName],

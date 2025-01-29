@@ -126,7 +126,6 @@ export default function CardQuote({
   useEffect(() => {
     let tempIsPayDisabled = false;
     tempIsPayDisabled = !hasSufficientBalanceAndGasFee;
-    console.log('tempIsPayDisabled : ', tempIsPayDisabled);
     setIsPayDisabled(tempIsPayDisabled);
     if (quoteExpiry && !tempIsPayDisabled) {
       let tempTokenExpiryTime = quoteExpiry;

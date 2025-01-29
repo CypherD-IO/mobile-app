@@ -577,7 +577,6 @@ const Bridge: React.FC = () => {
   }, [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken]);
 
   const onClickMax = async () => {
-    console.log('onClickMax : ');
     setLoading(prev => ({
       ...prev,
       quoteLoading: true,
@@ -592,18 +591,11 @@ const Bridge: React.FC = () => {
         throw new Error('Invalid amount');
       }
 
-      console.log(
-        'get(ChainIdToBackendNameMapping, selectedFromChain?.chainId) : ',
-        get(ChainIdToBackendNameMapping, selectedFromChain?.chainId),
-      );
-
       // Calculate final balance first
       const selectedChainDetails = get(
         ChainNameToChainMapping,
         get(ChainIdToBackendNameMapping, selectedFromChain?.chainId),
       );
-
-      console.log('selectedChainDetails : ', selectedChainDetails);
 
       // Get quote from API
       const response = isOdosSwap()
@@ -627,14 +619,6 @@ const Bridge: React.FC = () => {
         const gasLimit = get(response, ['data', 'gasEstimate']);
         const gasPriceWei = web3.utils.toWei(gasPriceDetail.toString(), 'gwei');
         const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
-
-        console.log('O DO S SWAP : ', isOdosSwap());
-        console.log('selectedChainDetails : ', selectedChainDetails);
-        console.log(
-          'selectedChainDetails.backendName : ',
-          selectedChainDetails.backendName,
-        );
-        console.log('isNativeToken : ', isNativeToken);
         if (
           CAN_ESTIMATE_L1_FEE_CHAINS.includes(
             selectedChainDetails.backendName,
@@ -655,7 +639,6 @@ const Bridge: React.FC = () => {
               gasPrice: gasPriceDetail,
               gasFeeInCrypto: DecimalHelper.removeDecimals(totalWei, 18),
             });
-          console.log('gasFeeRequiredToReserve : ', gasFeeRequiredToReserve);
           gasFeeRequired = DecimalHelper.add(
             DecimalHelper.multiply(
               web3.utils.fromWei(totalWei.toString(), 'ether'),
@@ -663,7 +646,6 @@ const Bridge: React.FC = () => {
             ),
             gasFeeRequiredToReserve,
           );
-          console.log('gasFeeRequired : ', gasFeeRequired);
         } else {
           gasFeeRequired = DecimalHelper.multiply(
             web3.utils.fromWei(totalWei.toString(), 'ether'),
@@ -1894,8 +1876,6 @@ const Bridge: React.FC = () => {
           chainDetails: fromChainDetails,
         });
 
-        console.log('response : ', response);
-
         if (!response.isError) {
           resetAndSetIndex();
           setLoading({ ...loading, swapLoading: false });
@@ -2013,7 +1993,6 @@ const Bridge: React.FC = () => {
 
   // Modify the preview button click handler
   const handlePreviewClick = async () => {
-    console.log('handlePreviewClick : ');
     try {
       setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
 
