@@ -17,6 +17,7 @@ import { gasFeeReservation } from '../../constants/data';
 import { ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
+  CAN_ESTIMATE_L1_FEE_CHAINS,
   ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
@@ -31,6 +32,7 @@ import {
   getWeb3Endpoint,
   HdWalletContext,
   isEIP1599Chain,
+  isNativeToken,
   limitDecimalPlaces,
 } from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
@@ -46,10 +48,10 @@ import {
 } from '../../styles/tailwindStyles';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DecimalHelper } from '../../utils/decimalHelper';
-import useCosmosSigner from '../../hooks/useCosmosSigner';
 import useGasService from '../../hooks/useGasService';
 import Web3 from 'web3';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import * as Sentry from '@sentry/react-native';
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -68,14 +70,19 @@ export default function EnterAmount(props: any) {
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(false);
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmosRest } =
-    useGasService();
+  const {
+    estimateGasForEvm,
+    estimateGasForSolana,
+    estimateGasForCosmosRest,
+    estimateReserveFee,
+  } = useGasService();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
 
   const { showModal, hideModal } = useGlobalModalContext();
   const [isLoading, setIsLoading] = useState(false);
   const [isMaxLoading, setIsMaxLoading] = useState(false);
+  const web3 = new Web3(getWeb3Endpoint(tokenData.chainDetails, globalContext));
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -102,13 +109,10 @@ export default function EnterAmount(props: any) {
   }, [isFocused]);
 
   const getGasFee = async (chainName: string) => {
-    let gasFee;
-    const web3 = new Web3(
-      getWeb3Endpoint(tokenData.chainDetails, globalContext),
-    );
+    let gasEstimate;
     if (chainName === ChainNames.ETH) {
       const ethereum = hdWallet.state.wallet.ethereum;
-      const gasEstimate = await estimateGasForEvm({
+      gasEstimate = await estimateGasForEvm({
         web3,
         chain: tokenData.chainDetails.backendName as ChainBackendNames,
         fromAddress: ethereum.address ?? '',
@@ -117,29 +121,27 @@ export default function EnterAmount(props: any) {
         contractAddress: tokenData.contractAddress,
         contractDecimals: tokenData.contractDecimals,
       });
-      gasFee = gasEstimate?.gasFeeInCrypto;
+      console.log('gasEstimate : ', gasEstimate);
     } else if (chainName === ChainNames.SOLANA) {
       const solana = hdWallet.state.wallet.solana;
-      const gasEstimate = await estimateGasForSolana({
+      gasEstimate = await estimateGasForSolana({
         fromAddress: solana.address ?? '',
         toAddress: solana.address ?? '',
         amountToSend: tokenData.balanceDecimal,
         contractAddress: tokenData.contractAddress,
         contractDecimals: tokenData.contractDecimals,
       });
-      gasFee = gasEstimate?.gasFeeInCrypto;
     } else if (COSMOS_CHAINS.includes(tokenData.chainDetails.chainName)) {
       const cosmosWallet = get(hdWallet.state.wallet, chainName, null);
-      const gasEstimate = await estimateGasForCosmosRest({
+      gasEstimate = await estimateGasForCosmosRest({
         chain: tokenData.chainDetails,
         denom: tokenData.denom,
         amount: tokenData.balanceDecimal,
         fromAddress: cosmosWallet?.address ?? '',
         toAddress: cosmosWallet?.address ?? '',
       });
-      gasFee = gasEstimate?.gasFeeInCrypto;
     }
-    return gasFee;
+    return gasEstimate;
   };
 
   const isGasReservedForNative = async (
@@ -185,7 +187,8 @@ export default function EnterAmount(props: any) {
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
-    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName);
+    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName)
+      ?.gasFeeInCrypto;
     if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {
       showModal('state', {
         type: 'error',
@@ -232,31 +235,58 @@ export default function EnterAmount(props: any) {
   const onMaxPress = async () => {
     setIsMaxLoading(true);
     try {
-      // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
       // remove this gasFeeReservation once we have gas estimation for eip1599 chains
       let gasReservedForNativeToken;
+      console.log(
+        EVM_CHAINS_BACKEND_NAMES.includes(tokenData.chainDetails.backendName),
+        isNativeToken(tokenData),
+        CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName),
+      );
       if (
         EVM_CHAINS_BACKEND_NAMES.includes(tokenData.chainDetails.backendName) &&
-        isEIP1599Chain(tokenData.chainDetails.backendName)
+        isNativeToken(tokenData) &&
+        CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
       ) {
-        gasReservedForNativeToken = String(
-          gasFeeReservation[tokenData.chainDetails.backendName],
-        );
+        console.log('++++++++ gasReservedForNativeToken ++++++++');
+        gasReservedForNativeToken = await estimateReserveFee({
+          tokenData,
+          fromAddress: hdWallet.state.wallet.ethereum.address,
+          sendAddress:
+            sendAddress !== ''
+              ? sendAddress
+              : hdWallet.state.wallet.ethereum.address,
+          web3,
+          web3Endpoint: getWeb3Endpoint(tokenData.chainDetails, globalContext),
+        });
       } else {
-        gasReservedForNativeToken = await getGasFee(
+        console.log('------ gasEstimationForNativeToken -------');
+        const gasFeeDetails = await getGasFee(
           tokenData.chainDetails?.chainName,
         );
+        gasReservedForNativeToken = gasFeeDetails?.gasFeeInCrypto;
+        // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
+        gasReservedForNativeToken = DecimalHelper.multiply(
+          gasReservedForNativeToken,
+          1.1,
+        );
       }
+
+      console.log('gasReservedForNativeToken : ', gasReservedForNativeToken);
+
       const gasReserved =
         (NativeTokenMapping[tokenData?.chainDetails?.symbol] ||
           tokenData?.chainDetails?.symbol) === tokenData?.symbol
-          ? DecimalHelper.multiply(gasReservedForNativeToken, 1.1)
+          ? gasReservedForNativeToken
           : 0;
+
+      console.log('gasReserved : ', gasReserved);
 
       const maxAmountDecimal = DecimalHelper.subtract(
         tokenData.balanceDecimal,
         gasReserved,
       );
+
+      console.log('maxAmountDecimal : ', maxAmountDecimal);
 
       const textAmount = DecimalHelper.isLessThan(maxAmountDecimal, 0)
         ? '0.00'
@@ -282,6 +312,67 @@ export default function EnterAmount(props: any) {
       setIsMaxLoading(false);
     }
   };
+
+  // const estimateReserveFee = async () => {
+  //   try {
+  //     if (
+  //       CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
+  //     ) {
+  //       const gasDetails = await getGasFee(tokenData.chainDetails?.chainName);
+
+  //       const l1GasFee = await fetchEstimatedL1Fee(
+  //         {
+  //           chainId: tokenData.chainDetails.chain_id,
+  //           from: hdWallet.state.wallet.ethereum.address,
+  //           to:
+  //             sendAddress !== ''
+  //               ? sendAddress
+  //               : hdWallet.state.wallet.ethereum.address,
+  //           value: web3.utils.toHex(
+  //             DecimalHelper.applyDecimals(tokenData.balanceDecimal, 18),
+  //           ),
+  //           gas: web3.utils.toHex(Number(gasDetails?.gasLimit)),
+  //           gasPrice: DecimalHelper.applyDecimals(
+  //             gasDetails?.maxFee,
+  //             18,
+  //           ).toHex(),
+  //           data: '0x',
+  //         },
+  //         tokenData.chainDetails,
+  //         getWeb3Endpoint(tokenData.chainDetails, globalContext),
+  //       );
+
+  //       const gasTokenAmount = DecimalHelper.multiply(
+  //         DecimalHelper.divide(l1GasFee, 1e18),
+  //         1.1,
+  //       );
+
+  //       console.log('gasTokenAmount : ', gasTokenAmount);
+
+  //       return gasTokenAmount;
+  //     } else {
+  //       return 0;
+  //     }
+  //   } catch (e) {
+  //     Sentry.captureException(e, {
+  //       extra: {
+  //         context: 'estimateReserveFee',
+  //         chainDetails: {
+  //           backendName: tokenData.chainDetails.backendName,
+  //           chainId: tokenData.chainDetails.chain_id,
+  //           name: tokenData.chainDetails.name,
+  //         },
+  //         token: {
+  //           symbol: tokenData.symbol,
+  //           balance: tokenData.balanceDecimal,
+  //         },
+  //         walletAddress: hdWallet.state.wallet.ethereum.address,
+  //         sendAddress,
+  //       },
+  //     });
+  //     return gasFeeReservation[tokenData.chainDetails.backendName];
+  //   }
+  // };
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
@@ -347,7 +438,7 @@ export default function EnterAmount(props: any) {
                 <CyDText className=' text-[15px] font-bold '>
                   {enterCryptoAmount ? tokenData.symbol : 'USD'}
                 </CyDText>
-                <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
+                <CyDView className={'flex-col w-6/12 mx-[6px] items-center'}>
                   <CyDTextInput
                     className={clsx(
                       'font-bold text-center text-base400 h-[85px] bg-n20',

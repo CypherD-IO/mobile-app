@@ -44,7 +44,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get } from 'lodash';
+import { find, get, omit } from 'lodash';
 import Web3 from 'web3';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
@@ -84,6 +84,8 @@ import { currencySymbolMap } from '../../assets/datasets/currencySymbolMap';
 import { isAddress } from 'web3-validator';
 import Decimal from 'decimal.js';
 import { DecimalHelper } from '../utils/decimalHelper';
+import { Common, Hardfork } from '@ethereumjs/common';
+import { TransactionFactory } from '@ethereumjs/tx';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1045,6 +1047,17 @@ export const hasSufficientBalanceAndGasFee = (
   sentAmount: string,
   sendingTokenBalance: string,
 ): boolean => {
+  console.log('gasFeeEstimation : ', gasFeeEstimation);
+  console.log('nativeTokenBalance : ', nativeTokenBalance);
+  console.log('sentAmount : ', sentAmount);
+  console.log('sendingTokenBalance : ', sendingTokenBalance);
+  console.log(
+    ' check + ',
+    DecimalHelper.isLessThanOrEqualTo(
+      DecimalHelper.add(sentAmount, gasFeeEstimation),
+      sendingTokenBalance,
+    ),
+  );
   const hasSufficientGasFee = DecimalHelper.isLessThanOrEqualTo(
     gasFeeEstimation,
     nativeTokenBalance,
@@ -1217,3 +1230,31 @@ export function getChainIconFromChainName(chainName: ChainBackendNames) {
 export const isEIP1599Chain = (chainName: ChainBackendNames) => {
   return !NON_EIP1599_CHAINS.includes(chainName);
 };
+
+function buildTxParams(txParams) {
+  return {
+    ...omit(txParams, 'gas'),
+    gasLimit: txParams.gas,
+  };
+}
+
+function buildTransactionCommon(txMeta) {
+  // This produces a transaction whose information does not completely match an
+  // Optimism transaction — for instance, DEFAULT_CHAIN is still 'mainnet' and
+  // genesis points to the mainnet genesis, not the Optimism genesis — but
+  // considering that all we want to do is serialize a transaction, this works
+  // fine for our use case.
+  return Common.custom({
+    chainId: Number(txMeta.chainId),
+    // Optimism only supports type-0 transactions; it does not support any of
+    // the newer EIPs since EIP-155. Source:
+    // <https://github.com/ethereum-optimism/optimism/blob/develop/specs/l2geth/transaction-types.md>
+    defaultHardfork: Hardfork.SpuriousDragon,
+  });
+}
+
+export default function buildUnserializedTransaction(txMeta) {
+  const txParams = buildTxParams(txMeta);
+  const common = buildTransactionCommon(txMeta);
+  return TransactionFactory.fromTxData(txParams, { common });
+}

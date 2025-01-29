@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import {
+  CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_BSC,
   CHAIN_ETH,
   CHAIN_OPTIMISM,
@@ -7,6 +8,7 @@ import {
   ChainBackendNames,
   GASLESS_CHAINS,
   OP_ETH_ADDRESS,
+  OP_STACK_ENUMS,
 } from '../../constants/server';
 import useAxios from '../../core/HttpRequest';
 import Web3 from 'web3';
@@ -16,7 +18,7 @@ import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { EvmGasInterface } from '../../models/evmGas.interface';
 import { cosmosConfig } from '../../constants/cosmosConfig';
-import {
+import buildUnserializedTransaction, {
   getTimeOutTime,
   logAnalytics,
   parseErrorMessage,
@@ -25,7 +27,6 @@ import useCosmosSigner from '../useCosmosSigner';
 import {
   Coin,
   MsgSendEncodeObject,
-  MsgTransferEncodeObject,
   SigningStargateClient,
   defaultRegistryTypes,
   StargateClient,
@@ -61,6 +62,9 @@ import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { AnalyticsType } from '../../constants/enum';
 import { gasFeeReservation } from '../../constants/data';
 import { decideGasLimitBasedOnTypeOfToAddress } from '../useWeb3/util';
+import { addresses, abis } from '@eth-optimism/contracts-ts';
+import { bytesToHex } from 'viem';
+import { TokenMeta } from '../../models/tokenMetaData.model';
 
 export interface GasServiceResult {
   gasFeeInCrypto: string;
@@ -1408,9 +1412,6 @@ export default function useGasService() {
       // Format data with 0x prefix
       const formattedData = data.startsWith('0x') ? data : `0x${data}`;
 
-      // Create a fork of the blockchain state for estimation
-      // const blockNumber = await web3.eth.getBlockNumber();
-
       // Estimate gas using eth_createAccessList which doesn't require actual allowance
       let gasLimit = await web3.eth.estimateGas(
         {
@@ -1475,6 +1476,238 @@ export default function useGasService() {
     }
   };
 
+  const opStackL1FeeEstimate = async (txParams: any, web3Endpoint: string) => {
+    // fetching the contract address of gaspriceestimator on l1
+    const address = addresses.GasPriceOracle[420];
+    const abi = abis.GasPriceOracle;
+    const serializedTransaction =
+      buildUnserializedTransaction(txParams).serialize();
+    const provider = new ethers.JsonRpcProvider(web3Endpoint);
+    // Create contract instance
+    const gasPriceOracle = new ethers.Contract(address, abi, provider);
+    // Call getL1Fee directly on the contract
+    const l1Fee = await gasPriceOracle.getL1Fee.staticCall(
+      bytesToHex(serializedTransaction),
+    );
+
+    return `0x${l1Fee.toString(16)}`;
+  };
+
+  const fetchEstimatedL1Fee = async (
+    txParams,
+    chain: Chain,
+    web3Endpoint: string,
+  ) => {
+    try {
+      if (OP_STACK_ENUMS.includes(chain.backendName)) {
+        return await opStackL1FeeEstimate(txParams, web3Endpoint);
+      } else {
+        console.log(
+          'txn.gasPrice : ',
+          DecimalHelper.fromString(txParams.gasPrice),
+          DecimalHelper.removeDecimals(txParams.gasPrice, 18),
+        );
+        console.log(
+          'tokens required : ',
+          DecimalHelper.multiply(
+            txParams.gas,
+            DecimalHelper.removeDecimals(txParams.gasPrice, 18),
+          ),
+        );
+        return DecimalHelper.multiply(txParams.gas, txParams.gasPrice);
+      }
+    } catch (error) {
+      console.error('L1 fee estimation error:', error);
+      throw error;
+    }
+  };
+
+  const estimateReserveFee = async ({
+    tokenData,
+    fromAddress,
+    sendAddress,
+    web3,
+    web3Endpoint,
+  }: {
+    tokenData: TokenMeta;
+    fromAddress: string;
+    sendAddress: string;
+    web3: Web3;
+    web3Endpoint: string;
+  }) => {
+    try {
+      if (
+        CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
+      ) {
+        const gasDetails = await estimateGasForEvm({
+          web3,
+          chain: tokenData.chainDetails.backendName as ChainBackendNames,
+          fromAddress: fromAddress,
+          toAddress: sendAddress,
+          amountToSend: tokenData.balanceDecimal,
+          contractAddress: tokenData.contractAddress,
+          contractDecimals: tokenData.contractDecimals,
+        });
+
+        console.log('gasDetails : ', gasDetails);
+
+        const l1GasFee = await fetchEstimatedL1Fee(
+          {
+            chainId: tokenData.chainDetails.chain_id,
+            from: fromAddress,
+            to: sendAddress,
+            value: web3.utils.toHex(
+              DecimalHelper.applyDecimals(tokenData.balanceDecimal, 18),
+            ),
+            gas: web3.utils.toHex(Number(gasDetails?.gasLimit)),
+            gasPrice: DecimalHelper.applyDecimals(
+              gasDetails?.maxFee,
+              9,
+            ).toHex(),
+            data: '0x',
+          },
+          tokenData.chainDetails,
+          web3Endpoint,
+        );
+
+        const gasTokenAmountRequiredForL1Fee = DecimalHelper.multiply(
+          DecimalHelper.divide(l1GasFee, 1e18),
+          1.1,
+        );
+
+        console.log(
+          'gasTokenAmountRequiredForL1Fee : ',
+          gasTokenAmountRequiredForL1Fee,
+        );
+
+        const gasTokenAmount = DecimalHelper.add(
+          gasTokenAmountRequiredForL1Fee,
+          gasDetails.gasFeeInCrypto,
+        );
+
+        console.log('gasTokenAmount : ', gasTokenAmount);
+
+        return gasTokenAmount;
+      } else {
+        return gasFeeReservation[tokenData.chainDetails.backendName];
+      }
+    } catch (e) {
+      Sentry.captureException(e, {
+        extra: {
+          context: 'estimateReserveFee',
+          chainDetails: {
+            backendName: tokenData.chainDetails.backendName,
+            chainId: tokenData.chainDetails.chain_id,
+            name: tokenData.chainDetails.name,
+          },
+          token: {
+            symbol: tokenData.symbol,
+            balance: tokenData.balanceDecimal,
+          },
+          walletAddress: fromAddress,
+          sendAddress,
+        },
+      });
+      return gasFeeReservation[tokenData.chainDetails.backendName];
+    }
+  };
+
+  const estimateReserveFeeForCustomContract = async ({
+    tokenData,
+    fromAddress,
+    sendAddress,
+    web3,
+    web3Endpoint,
+    gas,
+    gasPrice,
+    gasFeeInCrypto,
+  }: {
+    tokenData: TokenMeta;
+    fromAddress: string;
+    sendAddress: string;
+    web3: Web3;
+    web3Endpoint: string;
+    gas: string;
+    gasPrice: string;
+    gasFeeInCrypto: string;
+  }) => {
+    try {
+      if (
+        CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
+      ) {
+        // const gasDetails = await estimateGasForEvm({
+        //   web3,
+        //   chain: tokenData.chainDetails.backendName as ChainBackendNames,
+        //   fromAddress: fromAddress,
+        //   toAddress: sendAddress,
+        //   amountToSend: tokenData.balanceDecimal,
+        //   contractAddress: tokenData.contractAddress,
+        //   contractDecimals: tokenData.contractDecimals,
+        // });
+
+        // console.log('gasDetails : ', gasDetails);
+
+        const l1GasFee = await fetchEstimatedL1Fee(
+          {
+            chainId: tokenData.chainDetails.chain_id,
+            from: fromAddress,
+            to: sendAddress,
+            value: web3.utils.toHex(
+              DecimalHelper.applyDecimals(tokenData.balanceDecimal, 18),
+            ),
+            gas: web3.utils.toHex(Number(gas)),
+            gasPrice: DecimalHelper.applyDecimals(gasPrice, 9).toHex(),
+            data: '0x',
+          },
+          tokenData.chainDetails,
+          web3Endpoint,
+        );
+
+        const gasTokenAmountRequiredForL1Fee = DecimalHelper.multiply(
+          DecimalHelper.divide(l1GasFee, 1e18),
+          1.1,
+        );
+
+        console.log(
+          'gasTokenAmountRequiredForL1Fee : ',
+          gasTokenAmountRequiredForL1Fee,
+        );
+
+        console.log('gasFeeInCrypto : ', gasFeeInCrypto);
+
+        const gasTokenAmount = DecimalHelper.add(
+          gasTokenAmountRequiredForL1Fee,
+          gasFeeInCrypto,
+        );
+
+        console.log('gasTokenAmount : ', gasTokenAmount);
+
+        return gasTokenAmount;
+      } else {
+        return gasFeeReservation[tokenData.chainDetails.backendName];
+      }
+    } catch (e) {
+      Sentry.captureException(e, {
+        extra: {
+          context: 'estimateReserveFee',
+          chainDetails: {
+            backendName: tokenData.chainDetails.backendName,
+            chainId: tokenData.chainDetails.chain_id,
+            name: tokenData.chainDetails.name,
+          },
+          token: {
+            symbol: tokenData.symbol,
+            balance: tokenData.balanceDecimal,
+          },
+          walletAddress: fromAddress,
+          sendAddress,
+        },
+      });
+      console.log('E R R O R : ', e);
+      return gasFeeReservation[tokenData.chainDetails.backendName];
+    }
+  };
+
   return {
     estimateGasForEvm,
     estimateGasForCosmos,
@@ -1490,5 +1723,8 @@ export default function useGasService() {
     estimateGasForEvmCustomContract,
     estimateGasForCosmosIBCRest,
     getGasPrice,
+    fetchEstimatedL1Fee,
+    estimateReserveFee,
+    estimateReserveFeeForCustomContract,
   };
 }

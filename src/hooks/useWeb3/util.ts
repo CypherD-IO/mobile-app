@@ -244,6 +244,7 @@ export const decideGasLimitBasedOnTypeOfToAddress = (
         .floor()
         .toNumber();
     }
+    return Number(gasLimit);
   } else if (
     contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
     chain === CHAIN_OPTIMISM.backendName

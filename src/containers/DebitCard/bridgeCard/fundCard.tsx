@@ -11,6 +11,7 @@ import {
   GASLESS_CHAINS,
   ChainBackendNames,
   CHAIN_COSMOS,
+  CAN_ESTIMATE_L1_FEE_CHAINS,
 } from '../../../constants/server';
 import {
   getWeb3Endpoint,
@@ -20,6 +21,7 @@ import {
   limitDecimalPlaces,
   hasSufficientBalanceAndGasFee,
   isEIP1599Chain,
+  isNativeToken,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -88,7 +90,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  const minTokenValueLimit = 10;
+  const minTokenValueLimit = 0.1;
   const minTokenValueEth = 50;
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>('0');
@@ -97,8 +99,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmosRest } =
-    useGasService();
+  const {
+    estimateGasForEvm,
+    estimateGasForSolana,
+    estimateGasForCosmosRest,
+    estimateReserveFee,
+  } = useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
@@ -146,6 +152,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       contractDecimals,
     );
     if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
+      console.log('in failure');
       setLoading(false);
       setIsMaxLoading(false);
       showModal('state', {
@@ -204,7 +211,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             balanceDecimal,
           )
         ) {
-          const gasDetails = await estimateGasForCosmosRest({
+          gasDetails = await estimateGasForCosmosRest({
             chain: chainDetails,
             denom,
             amount: actualTokensRequired,
@@ -276,6 +283,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           actualTokensRequired,
           balanceDecimal,
         );
+        console.log('hasSufficient : ', hasSufficient);
         navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
           hasSufficientBalanceAndGasFee: hasSufficient,
           cardProvider: currentCardProvider,
@@ -519,6 +527,16 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const isLoadCardDisabled = () => {
     if (selectedToken) {
       const { symbol, backendName } = selectedToken.chainDetails;
+
+      console.log(
+        'isLoadCardDisabled : ',
+        DecimalHelper.isLessThan(usdAmount, minTokenValueLimit),
+        !selectedToken,
+        DecimalHelper.isGreaterThan(cryptoAmount, selectedToken.balanceDecimal),
+        backendName === CHAIN_ETH.backendName &&
+          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH),
+      );
+
       return (
         DecimalHelper.isLessThan(usdAmount, minTokenValueLimit) ||
         !selectedToken ||
@@ -619,10 +637,26 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         ) {
           // remove this gasFeeReservation once we have gas estimation for eip1599 chains
           // Estimate the gasFee for the transaction
-          if (isEIP1599Chain(chainDetails.backendName)) {
+          if (
+            CAN_ESTIMATE_L1_FEE_CHAINS.includes(chainDetails.backendName) &&
+            isNativeToken(selectedToken)
+          ) {
+            const gasReservedForNativeToken = await estimateReserveFee({
+              tokenData: selectedToken,
+              fromAddress: hdWallet.state.wallet.ethereum.address,
+              sendAddress: hdWallet.state.wallet.ethereum.address,
+              web3,
+              web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
+            });
+
+            console.log(
+              'gasReservedForNativeToken OPSTACK : ',
+              gasReservedForNativeToken,
+            );
+
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              gasFeeReservation[chainDetails.backendName],
+              gasReservedForNativeToken,
             ).toString();
           } else {
             const gasDetails = await estimateGasForEvm({
@@ -636,9 +670,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
             if (gasDetails) {
               // Adjust the amountInCrypto with the estimated gas fee
+              // 10% buffer is added as there will be another gasEstimation in the quote modal
               amountInCrypto = DecimalHelper.subtract(
                 balanceDecimal,
-                gasDetails.gasFeeInCrypto,
+                DecimalHelper.multiply(gasDetails.gasFeeInCrypto, 1.1),
               ).toString();
             } else {
               setIsMaxLoading(false);
@@ -680,10 +715,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           tokenAddress: contractAddress,
           amountInCrypto: true,
         };
+        console.log('payload : ', payload);
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
         );
+        console.log('response : ', response);
         if (!response.isError) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
@@ -749,7 +786,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              gasFeeEstimationForTxn,
+              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
             ).toString();
           } else {
             setIsMaxLoading(false);
@@ -843,6 +880,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       }
     } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
       let amountInCrypto = balanceDecimal;
+      console.log('amountInCrypto balanceDecimal : ', amountInCrypto);
       // Reserving gas for the txn if the selected token is a native token.
       setIsMaxLoading(true);
       if (
@@ -857,11 +895,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             fromAddress: wallet[chainDetails.chainName].address,
             toAddress: wallet[chainDetails.chainName].address,
           });
+          console.log('gasDetails : ', gasDetails);
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              gasFeeEstimationForTxn,
+              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
             ).toString();
           } else {
             setIsMaxLoading(false);
@@ -902,12 +941,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amountInCrypto: true,
           tokenAddress: denom,
         };
+        console.log('payload : ', payload);
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
         );
+        console.log('response : ', response);
         if (!response.isError) {
           const quote: CardQuoteResponse = response.data;
+          console.log(' show quote modal quote : ', quote);
           void showQuoteModal(quote, true);
         } else {
           setIsMaxLoading(false);

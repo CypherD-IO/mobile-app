@@ -1372,3 +1372,15 @@ export const NON_EIP1599_CHAINS: ChainBackendNames[] = [
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.SHARDEUM_SPHINX,
 ];
+
+export const OP_STACK_ENUMS = [
+  ChainBackendNames.OPTIMISM,
+  ChainBackendNames.BASE,
+];
+
+export const CAN_ESTIMATE_L1_FEE_CHAINS = [
+  ChainBackendNames.OPTIMISM,
+  ChainBackendNames.BASE,
+  ChainBackendNames.ARBITRUM,
+  ChainBackendNames.AURORA,
+];

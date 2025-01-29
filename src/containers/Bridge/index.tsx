@@ -31,6 +31,8 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
 import {
   ChainIdNameMapping,
+  ChainIdToBackendNameMapping,
+  ChainNameToChainMapping,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   gasFeeReservation,
 } from '../../constants/data';
@@ -82,6 +84,7 @@ import { screenTitle } from '../../constants';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
 import {
   ALL_CHAINS,
+  CAN_ESTIMATE_L1_FEE_CHAINS,
   Chain,
   ChainBackendNames,
   ChainConfigMapping,
@@ -274,7 +277,8 @@ const Bridge: React.FC = () => {
   const {
     estimateGasForCosmosCustomContractRest,
     estimateGasForEvmCustomContract,
-    getGasPrice,
+    estimateReserveFee,
+    estimateReserveFeeForCustomContract,
   } = useGasService();
   const { getCosmosSignerClient } = useCosmosSigner();
   const [nativeToken, setNativeToken] = useState<Holding | null>(null);
@@ -573,6 +577,7 @@ const Bridge: React.FC = () => {
   }, [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken]);
 
   const onClickMax = async () => {
+    console.log('onClickMax : ');
     setLoading(prev => ({
       ...prev,
       quoteLoading: true,
@@ -587,11 +592,18 @@ const Bridge: React.FC = () => {
         throw new Error('Invalid amount');
       }
 
+      console.log(
+        'get(ChainIdToBackendNameMapping, selectedFromChain?.chainId) : ',
+        get(ChainIdToBackendNameMapping, selectedFromChain?.chainId),
+      );
+
       // Calculate final balance first
       const selectedChainDetails = get(
-        ChainConfigMapping,
-        get(ChainIdNameMapping, selectedFromChain?.chainId),
+        ChainNameToChainMapping,
+        get(ChainIdToBackendNameMapping, selectedFromChain?.chainId),
       );
+
+      console.log('selectedChainDetails : ', selectedChainDetails);
 
       // Get quote from API
       const response = isOdosSwap()
@@ -616,10 +628,48 @@ const Bridge: React.FC = () => {
         const gasPriceWei = web3.utils.toWei(gasPriceDetail.toString(), 'gwei');
         const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
 
-        gasFeeRequired = DecimalHelper.multiply(
-          web3.utils.fromWei(totalWei.toString(), 'ether'),
-          GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
-        ).toString();
+        console.log('O DO S SWAP : ', isOdosSwap());
+        console.log('selectedChainDetails : ', selectedChainDetails);
+        console.log(
+          'selectedChainDetails.backendName : ',
+          selectedChainDetails.backendName,
+        );
+        console.log('isNativeToken : ', isNativeToken);
+        if (
+          CAN_ESTIMATE_L1_FEE_CHAINS.includes(
+            selectedChainDetails.backendName,
+          ) &&
+          isNativeToken
+        ) {
+          const gasFeeRequiredToReserve =
+            await estimateReserveFeeForCustomContract({
+              tokenData: nativeToken,
+              fromAddress: hdWallet.state.wallet.ethereum.address,
+              sendAddress: hdWallet.state.wallet.ethereum.address,
+              web3,
+              web3Endpoint: getWeb3Endpoint(
+                selectedChainDetails,
+                globalContext,
+              ),
+              gas: gasLimit,
+              gasPrice: gasPriceDetail,
+              gasFeeInCrypto: DecimalHelper.removeDecimals(totalWei, 18),
+            });
+          console.log('gasFeeRequiredToReserve : ', gasFeeRequiredToReserve);
+          gasFeeRequired = DecimalHelper.add(
+            DecimalHelper.multiply(
+              web3.utils.fromWei(totalWei.toString(), 'ether'),
+              GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+            ),
+            gasFeeRequiredToReserve,
+          );
+          console.log('gasFeeRequired : ', gasFeeRequired);
+        } else {
+          gasFeeRequired = DecimalHelper.multiply(
+            web3.utils.fromWei(totalWei.toString(), 'ether'),
+            GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+          ).toString();
+        }
       } else {
         // Handle Skip API gas calculation
         const routeResponse = response.data as SkipApiRouteResponse;
@@ -657,17 +707,32 @@ const Bridge: React.FC = () => {
           );
 
           // remove this gasFeeReservation once we have gas estimation for eip1599 chains
-          if (isEIP1599Chain(selectedChainDetails.backendName)) {
-            gasFeeRequired = String(
-              gasFeeReservation[selectedChainDetails.backendName],
-            );
+          if (
+            CAN_ESTIMATE_L1_FEE_CHAINS.includes(
+              selectedChainDetails.backendName,
+            ) &&
+            isNativeToken
+          ) {
+            gasFeeRequired = await estimateReserveFee({
+              tokenData: nativeToken,
+              fromAddress: hdWallet.state.wallet.ethereum.address,
+              sendAddress: hdWallet.state.wallet.ethereum.address,
+              web3,
+              web3Endpoint: getWeb3Endpoint(
+                selectedChainDetails,
+                globalContext,
+              ),
+            });
           } else {
             const gasDetails = await estimateGasForEvmCustomContract(
               selectedChainDetails,
               evmContractData,
               web3,
             );
-            gasFeeRequired = gasDetails?.gasFeeInCrypto;
+            gasFeeRequired = DecimalHelper.multiply(
+              gasDetails?.gasFeeInCrypto,
+              1.1,
+            );
           }
         }
       }
@@ -1829,6 +1894,8 @@ const Bridge: React.FC = () => {
           chainDetails: fromChainDetails,
         });
 
+        console.log('response : ', response);
+
         if (!response.isError) {
           resetAndSetIndex();
           setLoading({ ...loading, swapLoading: false });
@@ -1946,6 +2013,7 @@ const Bridge: React.FC = () => {
 
   // Modify the preview button click handler
   const handlePreviewClick = async () => {
+    console.log('handlePreviewClick : ');
     try {
       setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
 

@@ -42,6 +42,8 @@ export default function Login(props) {
   const [createWalletLoading, setCreateWalletLoading] =
     useState<boolean>(false);
 
+  console.log('props : ', props);
+
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { deleteWithAuth } = useAxios();
 

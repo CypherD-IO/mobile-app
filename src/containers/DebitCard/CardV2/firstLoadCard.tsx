@@ -35,6 +35,7 @@ import {
   GlobalContextType,
 } from '../../../constants/enum';
 import {
+  CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
   ChainBackendNames,
   ChainNames,
@@ -51,6 +52,7 @@ import {
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
   isEIP1599Chain,
+  isNativeToken,
   limitDecimalPlaces,
   parseErrorMessage,
   validateAmount,
@@ -95,8 +97,12 @@ export default function FirstLoadCard() {
   const { patchWithAuth, postWithAuth } = useAxios();
   const { getWalletProfile } = useCardUtilities();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmosRest } =
-    useGasService();
+  const {
+    estimateGasForEvm,
+    estimateGasForSolana,
+    estimateGasForCosmosRest,
+    estimateReserveFee,
+  } = useGasService();
   const { getCosmosSignerClient } = useCosmosSigner();
 
   const ethereum = hdWallet.state.wallet.ethereum;
@@ -335,7 +341,23 @@ export default function FirstLoadCard() {
         ) {
           // remove this gasFeeReservation once we have gas estimation for eip1599 chains
           // Estimate the gasFee for the transaction
-          if (isEIP1599Chain(chainDetails.backendName)) {
+          if (
+            CAN_ESTIMATE_L1_FEE_CHAINS.includes(chainDetails.backendName) &&
+            isNativeToken(selectedToken)
+          ) {
+            const gasReservedForNativeToken = await estimateReserveFee({
+              tokenData: selectedToken,
+              fromAddress: hdWallet.state.wallet.ethereum.address,
+              sendAddress: hdWallet.state.wallet.ethereum.address,
+              web3,
+              web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
+            });
+
+            console.log(
+              'gasReservedForNativeToken OPSTACK : ',
+              gasReservedForNativeToken,
+            );
+
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
               gasFeeReservation[chainDetails.backendName],
@@ -352,9 +374,10 @@ export default function FirstLoadCard() {
             });
             if (gasDetails) {
               // Adjust the amountInCrypto with the estimated gas fee
+              // 10% buffer is added as there will be another gasEstimation in the quote modal
               amountInCrypto = DecimalHelper.subtract(
                 balanceDecimal,
-                gasDetails.gasFeeInCrypto,
+                DecimalHelper.multiply(gasDetails.gasFeeInCrypto, 1.1),
               ).toString();
             } else {
               setIsMaxLoading(false);
@@ -477,7 +500,7 @@ export default function FirstLoadCard() {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              gasFeeEstimationForTxn,
+              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
             ).toString();
           } else {
             setIsMaxLoading(false);
@@ -590,7 +613,7 @@ export default function FirstLoadCard() {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              gasFeeEstimationForTxn,
+              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
             ).toString();
           } else {
             setIsMaxLoading(false);
