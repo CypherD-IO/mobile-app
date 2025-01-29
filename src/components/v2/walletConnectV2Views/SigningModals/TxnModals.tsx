@@ -12,6 +12,7 @@ import {
 import { formatAmount, getMaskedAddress } from '../../../../core/util';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDText,
   CyDView,
 } from '../../../../styles/tailwindStyles';
@@ -308,9 +309,7 @@ const RenderDefaultSignModal = ({
         </CyDView>
         <CyDView>
           <CyDView
-            className={
-              'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[8px]'
-            }>
+            className={'my-[5px] border-[1px] border-n40 bg-n0 rounded-[8px]'}>
             <CyDView className='p-[10px]'>
               <CyDText className={'text-[16px] ml-[6px]'}>
                 {JSON.stringify(data, null, '\t')}
@@ -358,7 +357,7 @@ const RenderSendTransactionSignModal = ({
                 <CyDView className='absolute top-[60%] right-[3px]'>
                   <CyDFastImage
                     className={
-                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-n40 bg-n0'
                     }
                     source={chainLogo}
                     resizeMode='contain'
@@ -383,8 +382,7 @@ const RenderSendTransactionSignModal = ({
             </CyDView>
           </CyDView>
           <CyDView className='my-[10px]'>
-            <CyDView
-              className={'bg-sepratorColor rounded-[8px] py-[20px] px-[10px]'}>
+            <CyDView className={'bg-n40 rounded-[8px] py-[20px] px-[10px]'}>
               <CyDView className='flex flex-row justify-between'>
                 <CyDText className={'text-[16px] ml-[6px] font-bold'}>
                   {t('TO')}
@@ -393,7 +391,7 @@ const RenderSendTransactionSignModal = ({
                   {getMaskedAddress(toAddress, 10)}
                 </CyDText>
               </CyDView>
-              <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'} />
+              <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />
               <CyDView className='flex flex-row justify-between'>
                 <CyDText className={'text-[16px] ml-[6px] font-bold'}>
                   {t('FROM')}
@@ -418,7 +416,7 @@ const RenderSendTransactionSignModal = ({
                   {gasAndUSDAppx}
                 </CyDText>
               </CyDView>
-              <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'} />
+              <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />
               <CyDView className='flex flex-row justify-between'>
                 <CyDText className={'font-bold text-[16px]'}>
                   {t('AVAILABLE_BALANCE')}
@@ -473,7 +471,7 @@ const RenderSwapTransactionSignModal = ({
                   </CyDText>
                   <CyDView
                     className={
-                      'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
+                      'bg-n0 rounded-[8px] flex flex-row items-center p-[4px]'
                     }>
                     <CyDFastImage
                       source={chain.logo}
@@ -489,11 +487,7 @@ const RenderSwapTransactionSignModal = ({
                 </CyDView>
               </CyDView>
               <CyDView className={'flex h-[16px] w-[16px] justify-center'}>
-                <CyDFastImage
-                  source={AppImages.SWAP}
-                  className='h-full w-full'
-                  resizeMode='contain'
-                />
+                <CyDIcons name='refresh' size={40} className='text-base400' />
               </CyDView>
               <CyDView
                 className={
@@ -512,7 +506,7 @@ const RenderSwapTransactionSignModal = ({
                   </CyDText>
                   <CyDView
                     className={
-                      'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
+                      'bg-n0 rounded-[8px] flex flex-row items-center p-[4px]'
                     }>
                     <CyDFastImage
                       source={chain.logo}
@@ -600,7 +594,7 @@ const RenderApproveTokenModal = ({
         </>
       ) : null}
       <CyDView className='my-[10px]'>
-        <CyDView className='flex flex-col items-center rounded-[8px] bg-sepratorColor'>
+        <CyDView className='flex flex-col items-center rounded-[8px] bg-n40'>
           <CyDView className='px-[10px] my-[10px]'>
             <CyDText className='font-bold text-[16px]'>
               {t('APPROVAL_TOKEN')}
@@ -617,7 +611,7 @@ const RenderApproveTokenModal = ({
               <CyDView className='absolute top-[60%] right-[3px]'>
                 <CyDFastImage
                   className={
-                    'h-[26px] w-[26px] rounded-[50px] border-[1px] border-white bg-white'
+                    'h-[26px] w-[26px] rounded-[50px] border-[1px] border-n40 bg-n0'
                   }
                   source={chainLogo}
                   resizeMode='contain'
@@ -627,8 +621,7 @@ const RenderApproveTokenModal = ({
           </CyDView>
         </CyDView>
         <CyDView className='my-[10px]'>
-          <CyDView
-            className={'bg-sepratorColor rounded-[8px] py-[20px] px-[10px]'}>
+          <CyDView className={'bg-n40 rounded-[8px] py-[20px] px-[10px]'}>
             <CyDView className='flex flex-row justify-between'>
               <CyDText className={'text-[14px] ml-[6px] font-bold'}>
                 {t('SPENDER')}

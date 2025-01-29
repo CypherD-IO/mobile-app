@@ -20,16 +20,14 @@ export default function CyDContainer({
     return (
       <CyDImageBackground
         source={backgroundImage}
-        className='flex-1'
+        className='flex-1 bg-n20'
         style={{ backgroundColor: accentColor ?? Colors.white }}>
         <CyDSafeAreaView>{children}</CyDSafeAreaView>
       </CyDImageBackground>
     );
   }
   return (
-    <CyDView
-      className='flex-1'
-      style={{ backgroundColor: accentColor ?? Colors.white }}>
+    <CyDView className='flex-1 bg-n20'>
       <CyDSafeAreaView>{children}</CyDSafeAreaView>
     </CyDView>
   );

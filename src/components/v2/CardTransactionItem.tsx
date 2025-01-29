@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import {
   CyDFastImage,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -36,13 +37,13 @@ interface CardTransactionItemProps {
 const getTransactionIndicator = (type: string) => {
   switch (type.toUpperCase()) {
     case TransactionFilterTypes.CREDIT:
-      return AppImages.ICON_DOWN;
+      return 'arrow-down-circle';
     case TransactionFilterTypes.DEBIT:
-      return AppImages.ICON_UP;
+      return 'arrow-up-circle';
     case TransactionFilterTypes.REFUND:
-      return AppImages.ICON_DOWN;
+      return 'arrow-down-circle';
     default:
-      return AppImages.MOVE_FUNDS;
+      return 'transfer';
   }
 };
 
@@ -95,33 +96,41 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   } = item;
   return (
     <>
-      {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x border-sepratorColor' /> */}
+      {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-n0 border-x n40' /> */}
       <CyDTouchView
         key={item.id}
         className={clsx(
-          'h-[70px] flex flex-row justify-between items-center bg-white p-[16px] border-b border-sepratorColor',
+          'h-[70px] flex flex-row justify-between items-center p-[16px] border-b border-n40 rounded-[22px]',
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');
-          navigation.navigate(
-            screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN,
-            { transaction: item },
-          );
+          navigation.navigate(screenTitle.CARD_TRANSACTION_DETAILS_SCREEN, {
+            transaction: item,
+          });
         }}>
         <CyDView
           className={
             'flex flex-row justify-start align-center items-center w-[65%]'
           }>
           <CyDView className='w-[28px] h-[28px] rounded-tl-[8px] rounded-br-[8px] items-center justify-center bg-n30'>
-            <CyDFastImage
-              source={
-                iconUrl && iconUrl !== ''
-                  ? { uri: iconUrl }
-                  : getTransactionIndicator(type)
-              }
-              className={clsx('h-[14px] w-[14px]', {})}
-              resizeMode={'contain'}
-            />
+            {iconUrl && iconUrl !== '' ? (
+              <CyDFastImage
+                source={{ uri: iconUrl }}
+                className={clsx('h-[14px] w-[14px]', {})}
+                resizeMode={'contain'}
+              />
+            ) : (
+              <CyDMaterialDesignIcons
+                name={getTransactionIndicator(type)}
+                size={16}
+                className={clsx('text-base400', {
+                  invert:
+                    type === CardTransactionTypes.CREDIT ||
+                    type === CardTransactionTypes.REFUND ||
+                    type === CardTransactionTypes.DEBIT,
+                })}
+              />
+            )}
           </CyDView>
           <CyDView className={'ml-[12px]'}>
             <CyDText
@@ -151,9 +160,10 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         <CyDView className='flex justify-center items-end'>
           {tStatus === ReapTxnStatus.DECLINED ? (
             <CyDView className='flex flex-row items-center'>
-              <CyDImage
-                source={AppImages.GREY_EXCLAMATION_ICON}
-                className='mr-[2px] h-[20px] w-[20px]'
+              <CyDMaterialDesignIcons
+                name='alert-circle'
+                size={20}
+                className='text-n200 mr-[2px]'
               />
               <CyDText className='text-[14px] font-weight-500 mr-[5px] text-n200'>
                 {t('DECLINED')}

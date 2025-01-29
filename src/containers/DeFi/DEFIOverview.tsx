@@ -8,7 +8,9 @@ import analytics from '@react-native-firebase/analytics';
 import {
   CyDAnimatedView,
   CyDFastImage,
+  CyDIcons,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -41,6 +43,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   protocol: defiProtocolData;
@@ -106,7 +109,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
         />
         <CyDText className='font-bold text-[18px]'>{type.type}</CyDText>
       </CyDView>
-      <CyDView className='w-full border border-sepratorColor rounded-[10px] flex pb-[12px]'>
+      <CyDView className='w-full border border-n40 rounded-[10px] flex pb-[12px]'>
         {holdings.sort(sortDefiPositionDesc).map((holding, index) => {
           const pool: string[] = [];
           const details = [];
@@ -139,7 +142,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                   </CyDView>
                 )}
               </CyDView>
-              <CyDView className='p-[10px] rounded-[10px] border border-sepratorColor'>
+              <CyDView className='p-[10px] rounded-[10px] border border-n40 bg-n0'>
                 <CyDView className='flex flex-row justify-between items-start mb-[8px]'>
                   <CyDText className='font-bold text-[14px] max-w-[50%]'>
                     {pool.join(' + ')}
@@ -159,7 +162,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                 {holding.details.borrow &&
                   holding.details.borrow.length > 0 && (
                     <>
-                      <CyDView className='w-full my-[10px] h-[1px] border-t border-sepratorColor rounded-[10px]' />
+                      <CyDView className='w-full my-[10px] h-[1px] border-t border-n40 rounded-[10px]' />
                       <RenderDetail
                         detail={holding.details.borrow}
                         type={t('DEFI_BORROW')}
@@ -169,7 +172,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                 {holding.details.rewards &&
                   holding.details.rewards.length > 0 && (
                     <>
-                      <CyDView className='w-full my-[10px] h-[1px] border-t border-sepratorColor rounded-[10px]' />
+                      <CyDView className='w-full my-[10px] h-[1px] border-t border-n40 rounded-[10px]' />
                       <RenderDetail
                         detail={holding.details.rewards}
                         type={t('DEFI_REWARD')}
@@ -199,9 +202,9 @@ export function DEFIOverviewScreen() {
   const moreChainsCount = protocol.chains.length - MAX_CHAIN_COUNT;
   useEffect(() => {
     void analytics().logEvent('visited_defi_overview_screen');
-    navigation.setOptions({
-      title: protocol.protocolName,
-    });
+    // navigation.setOptions({
+    //   title: protocol.protocolName,
+    // });
   }, [navigation, protocol.protocolName]);
 
   const handleScroll = useAnimatedScrollHandler({
@@ -229,7 +232,7 @@ export function DEFIOverviewScreen() {
   });
 
   return (
-    <CyDSafeAreaView className='h-full bg-whiteColor'>
+    <CyDSafeAreaView className='h-full bg-n20'>
       <CyDModalLayout
         setModalVisible={setImageZoomIn}
         isModalVisible={imageZoomIn}
@@ -241,12 +244,11 @@ export function DEFIOverviewScreen() {
         <CyDView className={'rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setImageZoomIn(false)}
-            className={'z-[50] bg-white'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={
-                ' w-[22px] h-[22px] z-[50] absolute mt-[10px] right-[10px] '
-              }
+            className={'z-[50] bg-n0 self-end'}>
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDTouchView onPress={() => setImageZoomIn(false)}>
@@ -257,6 +259,21 @@ export function DEFIOverviewScreen() {
           </CyDTouchView>
         </CyDView>
       </CyDModalLayout>
+
+      <CyDView className='flex-row justify-between'>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {protocol.protocolName}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView>
+
       <Animated.ScrollView
         bounces={false}
         scrollEventThrottle={16}
@@ -274,7 +291,7 @@ export function DEFIOverviewScreen() {
                 className='flex-1 flex-row gap-[4px] justify-start items-center'
                 onPress={() => {
                   if (!isReadOnlyWallet) {
-                    navigation.navigate(screenTitle.BROWSER, {
+                    navigation.navigate(screenTitle.OPTIONS, {
                       screen: screenTitle.BROWSER_SCREEN,
                       params: {
                         url: protocol.protocolURL,
@@ -347,13 +364,13 @@ export function DEFIOverviewScreen() {
         })}
       </Animated.ScrollView>
       <CyDAnimatedView
-        className={'absolute w-full bottom-[10px]'}
+        className={'absolute w-full bottom-[10px] mb-4'}
         style={animatedStyles}>
         <CyDTouchView
-          className='w-[70%] h-[55px] flex flex-row my-[10px] mx-[60px] bg-black justify-center items-center rounded-[8px] border border-borderColor px-[20px] py-[10px]'
+          className='w-[70%] h-[55px] flex flex-row my-[10px] mx-[60px] bg-n0 justify-center items-center rounded-[8px] border border-n40 px-[20px] py-[10px]'
           onPress={() => {
             if (!isReadOnlyWallet) {
-              navigation.navigate(screenTitle.BROWSER, {
+              navigation.navigate(screenTitle.OPTIONS, {
                 screen: screenTitle.BROWSER_SCREEN,
                 params: {
                   url: protocol.protocolURL,
@@ -380,17 +397,17 @@ export function DEFIOverviewScreen() {
             }
           }}>
           <CyDView className='flex flex-col justify-center items-center'>
-            <CyDText className='font-bold text-[16px] pr-[4px] text-white'>
+            <CyDText className='font-bold text-[16px] pr-[4px] text-base400'>
               {t('MANAGE_POSITIONS')}
             </CyDText>
             <CyDView className='flex flex-row justify-center items-center'>
-              <CyDText className='underline text-[12px] text-appColor pr-[4px]'>
+              <CyDText className='underline text-[12px] text-p50 pr-[4px]'>
                 {protocol.protocolURL}
               </CyDText>
-              <CyDFastImage
-                source={AppImages.LINK_WHITE}
-                className='h-[10px] w-[10px]'
-                resizeMode='contain'
+              <CyDMaterialDesignIcons
+                name='open-in-new'
+                size={14}
+                className='text-base400'
               />
             </CyDView>
           </CyDView>

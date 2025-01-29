@@ -5,6 +5,7 @@ import { isAndroid } from '../../misc/checkers';
 import { t } from 'i18next';
 import {
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDTextInput,
   CyDTouchView,
   CyDView,
@@ -43,7 +44,7 @@ function OtpInput({
         getOtp(otp);
       }, OTP_CALLBACK_TIMEOUT);
     }
-  }, [otp, pinCount, showButton, getOtp]);
+  }, [otp, pinCount, showButton]);
 
   const toggleSecuredEntry = () => {
     setSecuredEntry(!securedEntry);
@@ -57,15 +58,18 @@ function OtpInput({
     <CyDView>
       <CyDView
         className={
-          'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-inputBorderColor'
+          'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-base80 bg-n0'
         }>
         <CyDTextInput
           ref={inputRef}
-          className={clsx('h-[55px] text-center w-[100%] tracking-[5px]', {
-            'pl-[1px] pt-[2px]': isAndroid(),
-            'tracking-[15px]': otp !== '',
-            'w-[90%] pl-[35px]': showSecuredEntryToggle,
-          })}
+          className={clsx(
+            'h-[55px] text-center w-[100%] tracking-[5px] rounded-[5px]',
+            {
+              'pl-[1px] pt-[2px]': isAndroid(),
+              'tracking-[15px]': otp !== '',
+              'w-[90%] pl-[35px]': showSecuredEntryToggle,
+            },
+          )}
           keyboardType='numeric'
           placeholder={placeholder}
           placeholderTextColor={'#C5C5C5'}
@@ -77,9 +81,10 @@ function OtpInput({
         {showSecuredEntryToggle && (
           <CyDView className={'items-end'}>
             <CyDTouchView onPress={toggleSecuredEntry}>
-              <CyDImage
-                source={securedEntry ? AppImages.EYE_OPEN : AppImages.EYE_CLOSE}
-                className={'w-[27px] h-[18px] mr-[12px]'}
+              <CyDMaterialDesignIcons
+                name={securedEntry ? 'eye-outline' : 'eye-off-outline'}
+                size={27}
+                className='text-base400 mr-[12px]'
               />
             </CyDTouchView>
           </CyDView>
@@ -97,7 +102,7 @@ function OtpInput({
             loading={isLoading}
             isLottie={false}
             style={
-              'bg-appColor py-[20px] flex flex-row justify-center items-center rounded-[12px] w-[70%] mx-auto mt-[60px]'
+              'bg-p50 py-[20px] flex flex-row justify-center items-center rounded-[12px] w-[70%] mx-auto mt-[60px]'
             }
             loaderStyle={styles.buttonLoader}
           />

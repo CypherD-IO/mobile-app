@@ -6,7 +6,6 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import WebView from 'react-native-webview';
-import AppImages from '../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -14,8 +13,12 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { CyDSafeAreaView, CyDTouchView } from '../../styles/tailwindStyles';
-const { DynamicImage } = require('../../styles');
+import {
+  CyDIcons,
+  CyDSafeAreaView,
+  CyDTouchView,
+} from '../../styles/tailwindStyles';
+import Loading from '../../components/v2/loading';
 
 interface RouteParams {
   url: string;
@@ -40,8 +43,11 @@ export default function OpenLegalScreen() {
   }, []);
   // set a cookie
   return (
-    <CyDSafeAreaView>
+    <CyDSafeAreaView className='bg-n20'>
       <WebView
+        renderLoading={() => {
+          return <Loading />;
+        }}
         source={{
           uri: route.params.url,
           headers: {
@@ -54,16 +60,7 @@ export default function OpenLegalScreen() {
         sentry-label='legal-back'
         className='absolute top-[50px] left-[30px]'
         onPress={() => navigation.goBack()}>
-        <DynamicImage
-          dynamic
-          dynamicWidthFix
-          mT={5}
-          height={20}
-          width={20}
-          resizemode='contain'
-          source={AppImages.BACK_ARROW_GRAY}
-          style={{ tintColor: 'black' }}
-        />
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
     </CyDSafeAreaView>
   );

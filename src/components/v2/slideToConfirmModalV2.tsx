@@ -12,7 +12,11 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import clsx from 'clsx';
-import { CyDImage, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDImage,
+  CyDMaterialDesignIcons,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
@@ -119,15 +123,18 @@ const SlideToConfirmV2 = ({
                   {acceptLoading ? (
                     <ActivityIndicator color='white' />
                   ) : (
-                    <CyDImage
-                      source={
+                    <CyDMaterialDesignIcons
+                      name={
                         confirmed
                           ? isError
-                            ? AppImages.WHITE_CLOSE_ICON
-                            : AppImages.CORRECT
-                          : AppImages.RIGHT_ARROW
+                            ? 'close'
+                            : 'check'
+                          : 'chevron-right'
                       }
-                      className='w-[20px] h-[20px]'
+                      size={20}
+                      className={clsx('text-base400', {
+                        'text-white': isError,
+                      })}
                     />
                   )}
                 </CyDView>

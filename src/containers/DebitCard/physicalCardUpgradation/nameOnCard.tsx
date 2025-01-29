@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from 'react-native';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
   CyDTouchView,
   CyDImage,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
-import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -25,11 +25,10 @@ import {
 import { screenTitle } from '../../../constants';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
-import useAxios from '../../../core/HttpRequest';
-import { capitalize } from 'lodash';
 import PreferredNameModal from './preferredNameModal';
-import { isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -38,6 +37,7 @@ interface RouteParams {
   physicalCardType?: PhysicalCardType;
 }
 export default function NameOnCard() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const MAX_NAME_LENGTH = 27;
@@ -59,7 +59,9 @@ export default function NameOnCard() {
   const { t } = useTranslation();
 
   return (
-    <CyDSafeAreaView className='flex flex-1 bg-n20 h-full'>
+    <CyDView
+      className='flex flex-1 bg-n20 h-full'
+      style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <PreferredNameModal
         isModalVisible={isPreferredNameModalVisible}
@@ -83,10 +85,7 @@ export default function NameOnCard() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDView className='my-[12px]'>
@@ -104,11 +103,11 @@ export default function NameOnCard() {
                 onPress={() => {
                   setSelectedName(name);
                 }}
-                className='flex flex-row items-center justify-between bg-white rounded-[12px] p-[16px] mb-[12px]'>
+                className='flex flex-row items-center justify-between bg-n0 rounded-[12px] p-[16px] mb-[12px]'>
                 <CyDText className='text-[16px] font-semibold'>{name}</CyDText>
-                <CyDView className='w-[20px] h-[20px] border-[2px] border-inputBorderColor rounded-full flex items-center justify-center'>
+                <CyDView className='w-[20px] h-[20px] border-[2px] border-base80 rounded-full flex items-center justify-center'>
                   {selectedName === name && (
-                    <CyDView className='w-[12px] h-[12px] bg-appColor rounded-full' />
+                    <CyDView className='w-[12px] h-[12px] bg-p50 rounded-full' />
                   )}
                 </CyDView>
               </CyDTouchView>
@@ -119,26 +118,20 @@ export default function NameOnCard() {
               {t('WANT_DIFFERENT_NAME_ON_CARD')}
             </CyDText>
             <CyDTouchView
-              className='flex flex-row justify-between bg-white rounded-[12px] p-[16px] mt-[4px]'
+              className='flex flex-row justify-between bg-n0 rounded-[12px] p-[16px] mt-[4px]'
               onPress={() => {
                 setIsPreferredNameModalVisible(true);
               }}>
               <CyDText className='text-[16px]'>{t('PREFERRED_NAME')}</CyDText>
-              <CyDImage
-                source={AppImages.RIGHT_ARROW_LONG}
-                className='w-[16px] h-[16px]'
-                resizeMode='contain'
+              <CyDMaterialDesignIcons
+                name={'arrow-right-thin'}
+                size={16}
+                className=''
               />
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView
-          className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
-            {
-              'bottom-[-32px]': isIOS(),
-            },
-          )}>
+        <CyDView className={clsx('bg-n0 py-[32px] px-[16px]')}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.SHIPPING_CHECKOUT_SCREEN, {
@@ -156,6 +149,6 @@ export default function NameOnCard() {
           />
         </CyDView>
       </CyDView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

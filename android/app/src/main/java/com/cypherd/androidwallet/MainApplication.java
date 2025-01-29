@@ -10,9 +10,7 @@ import com.zoontek.rnpermissions.RNPermissionsPackage;
 import org.reactnative.camera.RNCameraPackage;
 import io.sentry.react.RNSentryPackage;
 import com.bitgo.randombytes.RandomBytesPackage;
-import com.bitgo.randombytes.RandomBytesPackage;
 import com.intercom.reactnative.IntercomPackage;
-import com.bitgo.randombytes.RandomBytesPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
@@ -65,6 +63,8 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
+    ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope);
+    ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont);
     ReactFontManager fontManager = ReactFontManager.getInstance();
     fontManager.addCustomFont(this, "Manrope-Light", R.font.manrope_light);
     fontManager.addCustomFont(this, "Manrope-Regular", R.font.manrope_regular);

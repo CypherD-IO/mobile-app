@@ -2,11 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Add thi
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppImages from '../../../../../assets/images/appImages';
 import ZrmIntro from './zrmIntro';
-import Loading from '../../../Loading';
 import {
-  CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -15,6 +13,7 @@ import Button from '../../../../components/v2/button';
 import CyDModalLayout from '../../../../components/v2/modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import CyDPicker from '../../../../components/picker';
+import Loading from '../../../../components/v2/loading';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -92,9 +91,10 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                     setLoader(false);
                     setIsModalVisible(false);
                   }}>
-                  <CyDImage
-                    source={AppImages.CLOSE}
-                    className='w-[24px] h-[24px]'
+                  <CyDMaterialDesignIcons
+                    name={'close'}
+                    size={24}
+                    className='text-base400'
                   />
                 </CyDTouchView>
               </CyDView>
@@ -171,10 +171,11 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                   }}
                   className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                   <CyDView
-                    className={`${isChecked ? 'bg-base400' : ''} h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
-                    <CyDImage
-                      source={AppImages.WHITE_CHECK_MARK}
-                      className='h-[20px] w-[20px]'
+                    className={`${isChecked ? 'bg-base400' : ''} h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-base100 flex flex-row justify-center items-center`}>
+                    <CyDMaterialDesignIcons
+                      name='check-bold'
+                      size={18}
+                      className='text-n0'
                     />
                   </CyDView>
                 </CyDTouchView>

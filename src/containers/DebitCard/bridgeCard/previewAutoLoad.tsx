@@ -132,10 +132,10 @@ export default function PreviewAutoLoad() {
   return (
     <CyDView
       className={
-        'flex-1 w-full bg-white pb-[30px] flex flex-col justify-between'
+        'flex-1 w-full bg-n20 pb-[30px] flex flex-col justify-between'
       }>
       <CyDView className={'mx-[16px]'}>
-        <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-sepratorColor'>
+        <CyDView className='bg-n0 rounded-2xl flex flex-col justify-center items-center pb-[45px] pt-[32px]'>
           <CyDText className='text-[52px] font-bold text-mandarin'>
             {'$' + amountToLoad}
           </CyDText>

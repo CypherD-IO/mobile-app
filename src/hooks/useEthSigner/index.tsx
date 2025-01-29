@@ -210,31 +210,26 @@ export default function useEthSigner() {
           try {
             showModal('state', {
               type: 'warning',
-              title: `Switch to ${chainConfig.name} chain`,
+              title: `Switch to ${chainConfig?.name} chain`,
               description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
               onSuccess: hideModal,
             });
-            const response = await switchChain(wagmiConfig, {
+            await switchChainAsync({
               chainId: chainConfig.id,
             });
             hideModal();
             await sleepFor(1000);
           } catch (e) {}
         }
-        const numberOfTokensInWei = web3?.utils.toWei(
-          String(
-            Number(transactionToBeSigned.contractParams.numberOfTokens).toFixed(
-              9,
-            ),
-          ),
-        );
+        const numberOfTokensWithDecimals =
+          transactionToBeSigned?.contractParams?.numberOfTokens;
         const response = await writeContractAsync({
           abi: allowanceApprovalContractABI,
           address: transactionToBeSigned.to as `0x${string}`,
           functionName: 'approve',
           args: [
             transactionToBeSigned.contractParams?.toAddress,
-            numberOfTokensInWei,
+            numberOfTokensWithDecimals,
           ],
           chainId: chainConfig.id,
         });
@@ -400,7 +395,7 @@ export default function useEthSigner() {
                 });
               }
             }, 2000);
-            const response = await switchChainAsync({
+            await switchChainAsync({
               chainId: chainConfig.id,
             });
             await sleepFor(1000);

@@ -3,7 +3,11 @@ import { StyleSheet, BackHandler } from 'react-native';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDAnimatedView,
+  CyDIcons,
+  CyDMaterialDesignIcons,
   CyDScrollView,
+  CyDText,
+  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
@@ -27,12 +31,13 @@ import TokenOverviewToolBar from './toolbar';
 import TokenStaking from './staking';
 import analytics from '@react-native-firebase/analytics';
 import clsx from 'clsx';
-import { isAndroid, isIOS } from '../../misc/checkers';
+import { isAndroid } from '../../misc/checkers';
 import { Layout } from 'react-native-reanimated';
-import { Colors } from '../../constants/theme';
 import usePortfolio from '../../hooks/usePortfolio';
 import { Holding } from '../../core/portfolio';
 import { get, groupBy } from 'lodash';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   tokenData: TokenMeta;
@@ -40,6 +45,7 @@ interface RouteParams {
 }
 
 function TokenOverviewV2() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { getLocalPortfolio } = usePortfolio();
 
@@ -103,7 +109,22 @@ function TokenOverviewV2() {
   return loading ? (
     <Loading />
   ) : (
-    <CyDView className={'bg-white flex-1 flex-col justify-between'}>
+    <CyDView className={'bg-n20 flex-1 flex-col justify-between'}>
+      <CyDView
+        className='flex-row justify-between'
+        style={{ paddingTop: insets.top }}>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {tokenData.name}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView>
       <CyDView className={'flex flex-row justify-center'}>
         <SwitchView
           titles={tokenTabs}
@@ -144,7 +165,7 @@ function TokenOverviewV2() {
       <CyDAnimatedView
         layout={Layout.springify()}
         className={clsx(
-          'h-[110px] self-end bg-white pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
+          'h-[110px] self-end bg-n20 pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
           { 'pt-[16px]': isAndroid() },
         )}
         style={styles.elevatedBackground}>
@@ -157,7 +178,7 @@ function TokenOverviewV2() {
 const styles = StyleSheet.create({
   elevatedBackground: {
     elevation: 3,
-    backgroundColor: isIOS() ? Colors.white : Colors.transparent,
+    // backgroundColor: isIOS() ? Colors.white : Colors.transparent,
   },
 });
 

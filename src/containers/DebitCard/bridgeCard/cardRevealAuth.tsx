@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  CyDImage,
+  CyDIcons,
+  CyDLottieView,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -10,7 +12,6 @@ import { PinInput } from '../../../components/v2/pinInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -26,6 +27,7 @@ import {
 import { t } from 'i18next';
 import { Card } from '../../../models/card.model';
 import { capitalize } from 'lodash';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   onSuccess: (data: unknown, provider: CardProviders) => void;
@@ -252,25 +254,23 @@ export default function CardRevealAuthScreen() {
   }
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className='bg-n20'>
+      <CyDView className={'h-full px-[20px] pt-[10px]'}>
         <CyDTouchView
           className='flex-row items-center'
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDImage
-            source={AppImages.BACK_ARROW_GRAY}
-            className='w-[32px] h-[32px]'
-          />
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
           <CyDText className='ml-[12px] font-regular text-[18px]'>
             {capitalize(card?.type)} {' card ** '} {card?.last4}
           </CyDText>
         </CyDTouchView>
 
-        <CyDImage
-          source={AppImages.SHIELD_FILLED}
-          className='mt-[24px] w-[32px] h-[32px]'
+        <CyDMaterialDesignIcons
+          name='shield-check'
+          size={32}
+          className='text-base400 mt-[44px]'
         />
 
         <CyDText className='mt-[6px] text-[28px] font-bold'>
@@ -285,17 +285,18 @@ export default function CardRevealAuthScreen() {
           )}
         </CyDText>
 
-        <CyDText className='text-[10px] mt-[6px] text-n200'>
+        <CyDText className='text-[10px] mt-[6px] text-n200 '>
           {t<string>('CHECK_SPAM_FOLDER')}
         </CyDText>
 
-        <CyDView className={'mt-[24px]'}>
+        <CyDView className={'mt-[44px]'}>
           <PinInput
             value={otpValue}
             onChange={handleOtpChange}
             error={otpError}
             onBlur={handleOtpBlur}
             length={4}
+            className='flex-row justify-start'
           />
           <CyDTouchView
             className={'flex flex-row items-center mt-[8px]'}
@@ -310,7 +311,7 @@ export default function CardRevealAuthScreen() {
               </CyDText>
             </CyDText>
             {sendingOTP && (
-              <LottieView
+              <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
                 autoPlay
                 loop

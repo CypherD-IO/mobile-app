@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BackHandler } from 'react-native';
 import { CyDView } from '../../styles/tailwindStyles';
 import WebView from 'react-native-webview';
@@ -9,6 +9,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import Loading from '../../components/v2/loading';
 
 interface RouteParams {
   uri: string;
@@ -17,7 +18,7 @@ interface RouteParams {
 export default function SocialMediaScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { uri, title } = route.params;
+  const { uri } = route.params;
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -31,15 +32,14 @@ export default function SocialMediaScreen() {
     };
   }, []);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title,
-    });
-  }, []);
-
   return (
-    <CyDView className={'h-full w-full'}>
-      <WebView source={{ uri }} />
+    <CyDView className={'h-full w-full bg-n20'}>
+      <WebView
+        source={{ uri }}
+        renderLoading={() => {
+          return <Loading />;
+        }}
+      />
     </CyDView>
   );
 }

@@ -1,6 +1,10 @@
 {
-  "migIndex": 1,
+  "migIndex": 2,
   "data": [
+    {
+      "path": "assets/fonts/CydFont.ttf",
+      "sha1": "fea032c75117579b7cde7dc4f6a0408d0d27c333"
+    },
     {
       "path": "assets/fonts/Manrope-Bold.ttf",
       "sha1": "a6b63c832d12337efb3123f47863f54472c81bf5"
@@ -28,70 +32,6 @@
     {
       "path": "assets/fonts/Manrope-SemiBold.ttf",
       "sha1": "e423e112f4832916b05308934c10aa84fd14c607"
-    },
-    {
-      "path": "assets/fonts/Nunito-Black.ttf",
-      "sha1": "e338cd0fa9399ea96cd13aa051ee065ecc9d88ed"
-    },
-    {
-      "path": "assets/fonts/Nunito-BlackItalic.ttf",
-      "sha1": "fc0bae6adc63443387991d23f21f684a78d1ecc6"
-    },
-    {
-      "path": "assets/fonts/Nunito-Bold.ttf",
-      "sha1": "a3c1198b825daa393cd0e7ead864b09fc80c62b9"
-    },
-    {
-      "path": "assets/fonts/Nunito-BoldItalic.ttf",
-      "sha1": "b85eeafe3475d2dd8746ca479239ab61058b3492"
-    },
-    {
-      "path": "assets/fonts/Nunito-ExtraBold.ttf",
-      "sha1": "04dd58effd6d51b5937fad55bb7bc7775a45acf7"
-    },
-    {
-      "path": "assets/fonts/Nunito-ExtraBoldItalic.ttf",
-      "sha1": "14dd5b1519ce23ee4e3f1a93193752f0169d96c0"
-    },
-    {
-      "path": "assets/fonts/Nunito-ExtraLight.ttf",
-      "sha1": "4d8cd54c03cc517141f18300def74618b93cde23"
-    },
-    {
-      "path": "assets/fonts/Nunito-ExtraLightItalic.ttf",
-      "sha1": "db05a2a490f71c8f07153c63b8c75cde4a23e53c"
-    },
-    {
-      "path": "assets/fonts/Nunito-Italic.ttf",
-      "sha1": "937fa72223c5b9df98c2ac95aee081af142b7232"
-    },
-    {
-      "path": "assets/fonts/Nunito-Light.ttf",
-      "sha1": "7f3b871f6f3252cf2b38c63a2652d825b834482c"
-    },
-    {
-      "path": "assets/fonts/Nunito-LightItalic.ttf",
-      "sha1": "04283a2587ade2c7c4ec674424445af109bc0ea6"
-    },
-    {
-      "path": "assets/fonts/Nunito-Medium.ttf",
-      "sha1": "5850ed5926826023a2746a53fbd4362719e01a35"
-    },
-    {
-      "path": "assets/fonts/Nunito-MediumItalic.ttf",
-      "sha1": "fece4443ac4608dbc5000185cdbfacf49067d669"
-    },
-    {
-      "path": "assets/fonts/Nunito-Regular.ttf",
-      "sha1": "165fe3cfd90f70da3fee1dff24c777f66af8639b"
-    },
-    {
-      "path": "assets/fonts/Nunito-SemiBold.ttf",
-      "sha1": "c79495c2e7f76b2bfdbc9253857a8365034268bd"
-    },
-    {
-      "path": "assets/fonts/Nunito-SemiBoldItalic.ttf",
-      "sha1": "a415b766b995e41a8eb4b3adef28cdaad7e3aa0e"
     }
   ]
 }

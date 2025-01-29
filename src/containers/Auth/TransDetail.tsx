@@ -12,6 +12,8 @@ import { Web3Origin } from '../../constants/enum';
 import { CommunicationEvents } from '../../constants/web3';
 import useWeb3 from '../../hooks/useWeb3';
 import { WebsiteInfo } from '../../types/Browser';
+import { CyDSafeAreaView, CyDView } from '../../styles/tailwindStyles';
+import Loading from '../../components/v2/loading';
 const { SafeAreaView, DynamicView } = require('../../styles');
 
 interface TransactionDetailProps {
@@ -85,16 +87,19 @@ export default function TransDetail({
   }, []);
 
   return (
-    <SafeAreaView dynamic>
-      <DynamicView dynamic dynamicHeight height={100} fD={'row'} mH={15}>
+    <CyDSafeAreaView className='bg-n20 flex-1'>
+      <CyDView className='flex-row items-center justify-center m-[10px] flex-1 bg-n20'>
         <WebView
           injectedJavaScriptBeforeContentLoaded={injectedCode}
           ref={webviewRef}
           source={{ uri: url }}
           style={{ marginTop: 0 }}
           onMessage={onWebviewMessage}
+          renderLoading={() => {
+            return <Loading />;
+          }}
         />
-      </DynamicView>
-    </SafeAreaView>
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

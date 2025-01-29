@@ -10,7 +10,7 @@ import {
 import {
   CyDAnimatedView,
   CyDFastImage,
-  CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -142,7 +142,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
     return (
       <CyDView
         className={clsx('py-[15px]', {
-          'border-b-[1px] border-sepratorColor': !isActive,
+          'border-b-[1px] border-n40': !isActive,
         })}>
         <CyDView
           className={'flex flex-row justify-between items-center w-full'}>
@@ -152,13 +152,13 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                 defaultSource={AppImages.DEFAULT_NFT}
                 source={{ uri: firstNFTInCollection.imageUrl }}
                 className={
-                  'h-[50px] w-[50px] rounded-[50px] border-[1px] border-sepratorColor'
+                  'h-[50px] w-[50px] rounded-[50px] border-[1px] border-n40'
                 }
                 resizeMode='contain'
               />
               <CyDFastImage
                 className={
-                  'absolute w-[18px] h-[18px] right-0 bottom-0 bg-white rounded-[50px]'
+                  'absolute w-[18px] h-[18px] right-0 bottom-0 bg-n0 rounded-[50px]'
                 }
                 source={renderChainImage(firstNFTInCollection.blockchain)}
               />
@@ -175,17 +175,18 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
           <CyDView className='flex items-end w-[10%]'>
             {isActive && (
               <CyDAnimatedView style={animatedStyle}>
-                <CyDFastImage
-                  className='h-[12px] w-[12px]'
-                  source={AppImages.OPTIONS_ARROW}
-                  resizeMode='contain'
+                <CyDMaterialDesignIcons
+                  name='chevron-right'
+                  size={20}
+                  className='text-base400'
                 />
               </CyDAnimatedView>
             )}
             {!isActive && (
-              <CyDFastImage
-                className={'h-[12px] w-[12px] opacity-70'}
-                source={AppImages.OPTIONS_ARROW}
+              <CyDMaterialDesignIcons
+                name='chevron-right'
+                size={20}
+                className='text-base400 opacity-70'
               />
             )}
           </CyDView>
@@ -202,7 +203,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
     return (
       <CyDView
         className={clsx('flex flex-row flex-wrap py-[25px] w-full', {
-          'border-b-[1px] border-sepratorColor': isActive,
+          'border-b-[1px] border-n40': isActive,
           'justify-around': section.content.length > 1,
         })}>
         {section.content.map((holding: NFTHolding, index) => {
@@ -219,12 +220,12 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                 defaultSource={AppImages.DEFAULT_NFT}
                 source={{ uri: holding.imageUrl }}
                 className={
-                  'h-[150px] w-[150px] border-[1px] border-sepratorColor rounded-[12px]'
+                  'h-[150px] w-[150px] border-[1px] border-n40 rounded-[12px]'
                 }
               />
               <CyDFastImage
                 className={
-                  'absolute w-[30px] h-[30px] right-[8px] bottom-[30px] bg-white rounded-[50px]'
+                  'absolute w-[30px] h-[30px] right-[8px] bottom-[30px] bg-n0 rounded-[50px]'
                 }
                 source={renderChainImage(holding.blockchain)}
               />
@@ -365,9 +366,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                 const [firstNFTInSection] = section.content;
                 return (
                   <CyDView
-                    className={
-                      'my-[8px] bg-privacyMessageBackgroundColor rounded-[8px] p-[8px]'
-                    }
+                    className={'my-[8px] bg-blue20 rounded-[8px] p-[8px]'}
                     key={index}>
                     <CyDTouchView
                       onPress={() =>
@@ -379,18 +378,18 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                         defaultSource={AppImages.DEFAULT_NFT}
                         source={{ uri: firstNFTInSection?.imageUrl }}
                         className={
-                          'h-[140px] w-[140px] rounded-[8px] border-[1px] border-sepratorColor'
+                          'h-[140px] w-[140px] rounded-[8px] border-[1px] border-n40'
                         }
                       />
                       <CyDFastImage
                         className={
-                          'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-white rounded-[50px]'
+                          'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-n0 rounded-[50px]'
                         }
                         source={renderChainImage(firstNFTInSection?.blockchain)}
                       />
                     </CyDTouchView>
                     <CyDView>
-                      <CyDText className={'font-bold text-center mt-[6px]'}>
+                      <CyDText className={'font-bold text-center mt-[6px] '}>
                         {renderCollectionName(firstNFTInSection)}
                       </CyDText>
                     </CyDView>
@@ -415,23 +414,23 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
-            <CyDView className='border border-sepratorColor rounded-t-[24px]'>
-              {isEmpty(NFTHoldings) && (
-                <CyDView className={'mt-[50%] flex items-center'}>
-                  <CyDImage
+            <CyDView className=''>
+              {(isEmpty(NFTHoldings) || isEmpty(origNFTHoldings)) && (
+                <CyDView className={'mt-[30%] mb-5 flex items-center'}>
+                  <CyDFastImage
                     className={'h-[120px] w-[240px]'}
-                    source={AppImages.NFT_EMPTY_ILLUSTATION}
+                    source={AppImages.NO_ACTIVITIES}
                   />
                   <CyDText className={'text-center text-[24px] mt-[20px]'}>
                     {t<string>('NO_NFTS_YET')}
                   </CyDText>
-                  <CyDText className={'text-center'}>
-                    {t<string>('PULL_DOWN_TO_REFRESH_PASCAL_CASE')}
+                  <CyDText className={'text-center text-[12px]'}>
+                    {t<string>('SWIPE_DOWN_TO_REFRESH_PASCAL_CASE')}
                   </CyDText>
                 </CyDView>
               )}
-              {!isEmpty(NFTHoldings) && (
-                <CyDView>
+              {!isEmpty(NFTHoldings) && !isEmpty(origNFTHoldings) && (
+                <CyDView className='border border-n40 rounded-t-[24px]'>
                   <CyDView
                     className={
                       'flex flex-row my-[12px] justify-between items-center mx-[20px] w-[90%]'
@@ -448,20 +447,22 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                             viewType === RenderViewType.GRID_VIEW,
                         })}
                         onPress={() => setViewType(RenderViewType.GRID_VIEW)}>
-                        <CyDFastImage
-                          className={'h-[15px] w-[15px]'}
-                          source={AppImages.GRID_ICON}
+                        <CyDMaterialDesignIcons
+                          name='view-grid-outline'
+                          size={20}
+                          className='text-base400'
                         />
                       </CyDTouchView>
                       <CyDTouchView
                         className={clsx('p-[10px]', {
-                          'border-[1px] border-gray-500 rounded-[6px]':
+                          'border-[1px] border-n40 rounded-[6px]':
                             viewType === RenderViewType.LIST_VIEW,
                         })}
                         onPress={() => setViewType(RenderViewType.LIST_VIEW)}>
-                        <CyDFastImage
-                          className={'h-[15px] w-[15px]'}
-                          source={AppImages.LIST_ICON}
+                        <CyDMaterialDesignIcons
+                          name='format-list-bulleted'
+                          size={20}
+                          className='text-base400'
                         />
                       </CyDTouchView>
                     </CyDView>

@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   CyDFastImage,
+  CyDLottieView,
   CyDScrollView,
   CyDText,
   CyDView,
@@ -10,12 +11,11 @@ import { EIP155_SIGNING_METHODS } from '../../../../constants/EIP155Data';
 import Web3 from 'web3';
 import { t } from 'i18next';
 import { IDAppInfo } from '../../../../models/signingModalData.interface';
-import EmptyView from '../../../EmptyView';
 import AppImages from '../../../../../assets/images/appImages';
 import { DecodedResponseTypes } from '../../../../constants/enum';
 const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo }) => {
   return (
-    <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-fadedGrey p-[8px]'>
+    <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-n40 p-[8px]'>
       <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
         <CyDFastImage
           className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -105,9 +105,7 @@ const RenderMessage = ({
         </CyDText>
       </CyDView>
       <CyDScrollView
-        className={
-          'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'
-        }>
+        className={'my-[5px] border-[1px] border-n40 bg-n0 rounded-[6px]'}>
         <CyDView className={'p-[10px]'}>
           <CyDText className={'text-[14px] ml-[6px]'}>{message}</CyDText>
         </CyDView>
@@ -117,18 +115,14 @@ const RenderMessage = ({
 };
 
 const Divider = () => {
-  return <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'} />;
+  return <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />;
 };
 
 const Loader = () => {
   return (
-    <CyDView className='flex justify-center items-center'>
-      <EmptyView
-        text={`${t('LOADING_DATA')}...`}
-        image={AppImages.LOADING_IMAGE}
-        buyVisible={false}
-        isLottie={true}
-      />
+    <CyDView className='flex justify-center items-center bg-n20'>
+      <CyDLottieView source={AppImages.LOADING_IMAGE} autoPlay loop />
+      <CyDText className='mt-[15px] text-[14px]'>{`${t('LOADING_DATA')}...`}</CyDText>
     </CyDView>
   );
 };

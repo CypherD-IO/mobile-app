@@ -2,7 +2,6 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
-
 import { GlobalModalType, PinPresentStates } from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';

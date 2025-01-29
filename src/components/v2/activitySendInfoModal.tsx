@@ -2,12 +2,14 @@ import React, { useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
+  CyDIcons,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import moment from 'moment';
 import {
@@ -115,18 +117,17 @@ export default function ActivitySendInfoModal({
         }
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white pb-[30px] rounded-t-[20px]'}
-          ref={viewRef}>
+        <CyDView className={'bg-n20 pb-[30px] rounded-t-[20px]'} ref={viewRef}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10'}
             onPress={() => {
               setModalVisible(false);
             }}>
             {!isCapturingDetails && (
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+              <CyDMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 top-[20px] right-[20px] '
               />
             )}
           </CyDTouchView>
@@ -200,7 +201,7 @@ export default function ActivitySendInfoModal({
             </CyDView>
             <CyDView
               className={
-                'flex flex-row mt-[10%] justify-start items-center pb-[12px] border-b-[1px] border-sepratorColor'
+                'flex flex-row mt-[10%] justify-start items-center pb-[12px] border-b-[1px] border-n40'
               }>
               <CyDText className=' text-[16px] mt-[1px] w-[30%] text-activityFontColor'>
                 {t<string>('DATE')}
@@ -209,7 +210,7 @@ export default function ActivitySendInfoModal({
                 {moment(datetime).format('MMM DD, h:mm a')}
               </CyDText>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('VALUE')}
               </CyDText>
@@ -217,7 +218,7 @@ export default function ActivitySendInfoModal({
                 numberOfLines={1}
                 className='w-[70%]  text-[14px] font-bold text-activityFontColor'>{`${amount} ${tokenName}`}</CyDText>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('HASH')}
               </CyDText>
@@ -237,10 +238,10 @@ export default function ActivitySendInfoModal({
                     String(getExplorerUrl(symbol, chainName, transactionHash)),
                   )
                 }>
-                <CyDImage source={AppImages.COPY} />
+                <CyDIcons name={'copy'} size={16} className='text-base400' />
               </CyDTouchView>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('SENDER')}
               </CyDText>
@@ -248,7 +249,7 @@ export default function ActivitySendInfoModal({
                 {getMaskedAddress(fromAddress)}
               </CyDText>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('RECEIVER')}
               </CyDText>
@@ -269,8 +270,13 @@ export default function ActivitySendInfoModal({
                     void referFriend();
                   }}
                   style={'py-[5%] mx-[0px]'}
-                  image={AppImages.SHARE}
-                  imageStyle='h-[18px] w-[18px] mt-[3px] mr-[10px]'
+                  icon={
+                    <CyDIcons
+                      name='share'
+                      size={24}
+                      className='text-black mt-[3px] mr-[10px]'
+                    />
+                  }
                   title={t('SHARE_DETAILS')}
                   titleStyle='text-[14px]'
                 />

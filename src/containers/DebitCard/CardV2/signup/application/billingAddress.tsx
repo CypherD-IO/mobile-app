@@ -4,6 +4,7 @@ import FormikTextInput from '../../../../../components/v2/formikInput';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -73,7 +74,7 @@ export default function BillingAddress({
         style={styles.modalLayout}
         isModalVisible={showCountries}
         setModalVisible={setShowCountries}>
-        <CyDView className={'bg-white h-[70%] rounded-t-[20px] p-[16px]'}>
+        <CyDView className={'bg-n0 h-[70%] rounded-t-[20px] p-[16px]'}>
           <CyDView className={'flex flex-row justify-between items-center'}>
             <CyDText className='text-[18px] font-bold'>
               {t('SELECT_COUNTRY')}
@@ -82,11 +83,12 @@ export default function BillingAddress({
               onPress={() => {
                 setShowCountries(false);
               }}
-              className={'text-black'}>
+              className={''}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className={'w-[16px] h-[16px]'}
+                <CyDMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDView>
             </CyDTouchView>
@@ -95,7 +97,7 @@ export default function BillingAddress({
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito text-primaryTextColor'
+                'border-[1px] border-n40 rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito'
               }
               value={countryFilterText}
               autoCapitalize='none'
@@ -141,7 +143,7 @@ export default function BillingAddress({
         style={styles.modalLayout}
         isModalVisible={showDialCodeCountry}
         setModalVisible={setShowDialCodeCountry}>
-        <CyDView className={'bg-white h-[70%] rounded-t-[20px] p-[16px]'}>
+        <CyDView className={'bg-n0 h-[70%] rounded-t-[20px] p-[16px]'}>
           <CyDView className={'flex flex-row justify-between items-center'}>
             <CyDText className='text-[18px] font-bold'>
               {t('SELECT_COUNTRY')}
@@ -150,11 +152,12 @@ export default function BillingAddress({
               onPress={() => {
                 setShowDialCodeCountry(false);
               }}
-              className={'text-black'}>
+              className={''}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className={'w-[16px] h-[16px]'}
+                <CyDMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDView>
             </CyDTouchView>
@@ -163,7 +166,7 @@ export default function BillingAddress({
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito text-primaryTextColor'
+                'border-[1px] border-base80 rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito'
               }
               value={dialCodeFilterText}
               autoCapitalize='none'

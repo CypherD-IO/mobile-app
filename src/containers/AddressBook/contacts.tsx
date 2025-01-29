@@ -5,12 +5,19 @@ import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { screenTitle } from '../../constants';
 import {
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDTextInput,
+  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 
-import { useIsFocused } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import AddressProfile from './addressProfile';
 import { setContactBookData } from '../../core/asyncStorage';
 import Loading from '../../components/v2/loading';
@@ -23,7 +30,8 @@ import {
   getContactBookWithMultipleAddress,
 } from '../utilities/contactBookUtility';
 
-export function Contacts({ route, navigation }) {
+export function Contacts() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
   const [name, setName] = useState('');
@@ -56,7 +64,7 @@ export function Contacts({ route, navigation }) {
       setFilteredContactBook(tempContactBook);
       const tempAddressDirectory: Record<string, string[]> = {};
       for (const contact in tempContactBook) {
-        for (const [chainName, listOfAddresses] of Object.entries(
+        for (const [listOfAddresses] of Object.entries(
           tempContactBook[contact].addresses,
         )) {
           for (const address of listOfAddresses) {
@@ -136,7 +144,7 @@ export function Contacts({ route, navigation }) {
         <CyDView className={'flex flex-row justify-around mx-[15px]'}>
           <CyDTextInput
             className={clsx(
-              ' w-[80%] border-[1px] border-inputBorderColor rounded-[8px] p-[12px] pr-[38px] text-[16px]',
+              ' w-[80%] border-[1px] border-n40 rounded-[8px] p-[12px] pr-[38px] text-[16px] bg-n0',
               { 'border-redOffColor': false },
             )}
             value={name}
@@ -149,17 +157,18 @@ export function Contacts({ route, navigation }) {
             placeholderTextColor={Colors.placeHolderColor}
             placeholder={t('Search Name')}
           />
-          <Button
-            style={'rounded-[8px] w-[55px] h-[60px]'}
-            type={'grey'}
-            image={AppImages.CREATE_CONTACT}
+
+          <CyDTouchView
+            className='rounded-[8px] w-[55px] h-[60px] bg-n0 flex items-center justify-center border-[1px] border-n40 '
             onPress={() => {
               navigation.navigate(screenTitle.CREATE_CONTACT, { contactBook });
-            }}
-            title={t('')}
-            titleStyle={'text-[12px]'}
-            imageStyle={'h-[18px] w-[18px]'}
-          />
+            }}>
+            <CyDMaterialDesignIcons
+              name={'account-plus'}
+              size={24}
+              className='text-base400'
+            />
+          </CyDTouchView>
         </CyDView>
 
         <CyDView className='items-center mx-[20px] mt-[-28px]'>

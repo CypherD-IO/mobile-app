@@ -24,7 +24,6 @@ import {
   HdWalletContext,
   getTimeOutTime,
   getWeb3Endpoint,
-  limitDecimalPlaces,
   parseErrorMessage,
 } from '../../core/util';
 import {
@@ -63,7 +62,6 @@ import {
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { TransferAuthorization } from 'cosmjs-types/ibc/applications/transfer/v1/authz';
-import { AllChainsEnum } from '../../constants/enum';
 
 export interface TransactionServiceResult {
   isError: boolean;

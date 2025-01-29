@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler, StyleSheet } from 'react-native';
 import {
   CyDFastImage,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -112,17 +113,17 @@ const CardTxnFilterModal = ({
       style={styles.modalLayout}
       animationIn='slideInUp'
       animationOut='slideOutDown'>
-      <CyDSafeAreaView className='bg-white flex-1'>
-        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-sepratorColor'>
+      <CyDSafeAreaView className='bg-n20 flex-1'>
+        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
           <CyDTouchView
             onPress={() => {
               setModalVisible(false);
             }}
             className='p-[5px]'>
-            <CyDFastImage
-              className='h-[16px] w-[16px]'
-              source={AppImages.CLOSE}
-              resizeMode='cover'
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[20px] font-bold'>
@@ -135,14 +136,13 @@ const CardTxnFilterModal = ({
           </CyDTouchView>
         </CyDView>
         <CyDView className={'h-full flex flex-row'}>
-          <CyDView
-            className={'border-r border-activityFilterBorderLine w-[30%]'}>
+          <CyDView className={'border-r border-n40 w-[30%]'}>
             {CARD_TXN_FILTERS.map((filterItem, idx) => (
               <CyDTouchView
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-appColor' : 'bg-whiteflex'
+                  index === idx ? 'bg-p50' : 'bg-n20 flex'
                 } justify-center py-[20px]`}>
                 {idx === 0 ? (
                   <CyDText
@@ -168,7 +168,7 @@ const CardTxnFilterModal = ({
               </CyDTouchView>
             ))}
           </CyDView>
-          <CyDView className={'bg-white w-[70%]'}>
+          <CyDView className={'bg-n20 w-[70%]'}>
             {index === 0 && (
               <CheckBoxes
                 radioButtonsData={TYPES}

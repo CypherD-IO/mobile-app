@@ -43,8 +43,10 @@ import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -99,6 +101,7 @@ import {
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
 import CyDSkeleton from '../../components/v2/skeleton';
+import { CyDIconsPack } from '../../customFonts/generator';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -358,8 +361,6 @@ const Bridge: React.FC = () => {
       void setFromTokenAndTokenData();
     }
   }, [selectedFromChain, tokenData, selectedToChain]);
-
-  const setUpdataTemp = filteredTokens => {};
 
   const setFromTokenAndTokenData = async () => {
     const currentChain = ALL_CHAINS.find(
@@ -1434,7 +1435,10 @@ const Bridge: React.FC = () => {
                   gasFeeResponse: allowanceResp.gasFeeResponse,
                   contractData: allowanceResp.contractData,
                   chainDetails: fromChainDetails,
-                  contractParams: allowanceResp.contractData,
+                  contractParams: {
+                    numberOfTokens: allowanceResp.tokens,
+                    toAddress: selectedToToken.tokenContract,
+                  },
                 });
 
                 if (approvalResp.isError) {
@@ -1680,7 +1684,7 @@ const Bridge: React.FC = () => {
   }
 
   return (
-    <CyDSafeAreaView className='mb-[45px]'>
+    <CyDSafeAreaView className='mb-[45px] bg-n20 flex-1'>
       <CyDKeyboardAwareScrollView>
         <CyDView
           className={clsx(
@@ -1697,13 +1701,10 @@ const Bridge: React.FC = () => {
                   ? navigation.goBack()
                   : resetAndSetIndex();
               }}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[32px] h-[32px]'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           )}
-          <CyDText className='text-black font-extrabold text-[28px] font-manrope'>
+          <CyDText className='text-base400 font-extrabold text-[28px] font-manrope'>
             {index === 1 ? 'Preview' : 'Bridge'}
           </CyDText>
           <CyDView />
@@ -1940,7 +1941,6 @@ const Bridge: React.FC = () => {
           setModalVisible={setSignModalVisible}
           onCancel={() => {
             setSignModalVisible(false);
-            // void setQuoteCancelReasons(dontAskAgain);
           }}
           avoidKeyboard={true}>
           {isOdosSwap() ? (
@@ -1952,7 +1952,7 @@ const Bridge: React.FC = () => {
                 </CyDText>
                 <CyDView
                   className={
-                    'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
+                    'flex flex-row justify-between items-center w-[100%] my-[20px] rounded-[20px] px-[15px] py-[20px] '
                   }>
                   <CyDView
                     className={'flex w-[40%] items-center justify-center'}>
@@ -1973,13 +1973,13 @@ const Bridge: React.FC = () => {
 
                       <CyDText
                         className={
-                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                          'my-[6px] mx-[2px] text-base400 text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
                         }>
                         {selectedFromToken?.name}
                       </CyDText>
                       <CyDView
                         className={
-                          'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                          'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                         }>
                         {endsWith(selectedFromChain?.logoUrl, '.svg') ? (
                           <SvgUri
@@ -1996,7 +1996,7 @@ const Bridge: React.FC = () => {
                         )}
                         <CyDText
                           className={
-                            'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                            'ml-[6px] font-nunito font-normal text-base400  text-[12px]'
                           }>
                           {selectedFromChain?.chainName}
                         </CyDText>
@@ -2005,10 +2005,10 @@ const Bridge: React.FC = () => {
                   </CyDView>
 
                   <CyDView className={'flex justify-center h-[30px] w-[30px]'}>
-                    <CyDFastImage
-                      source={AppImages.SWAP}
-                      className='h-[22px] w-[22px]'
-                      resizeMode='contain'
+                    <CyDIcons
+                      name='refresh'
+                      size={32}
+                      className='text-base400'
                     />
                   </CyDView>
 
@@ -2032,13 +2032,13 @@ const Bridge: React.FC = () => {
                       )}
                       <CyDText
                         className={
-                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                          'my-[6px] mx-[2px] text-base400 text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
                         }>
                         {selectedToToken?.name}
                       </CyDText>
                       <CyDView
                         className={
-                          'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                          'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                         }>
                         {endsWith(selectedToChain?.logoUrl, '.svg') ? (
                           <SvgUri
@@ -2055,7 +2055,7 @@ const Bridge: React.FC = () => {
                         )}
                         <CyDText
                           className={
-                            'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                            'ml-[6px] font-nunito text-base400 font-normal text-[12px]'
                           }>
                           {selectedToChain?.chainName}
                         </CyDText>
@@ -2066,14 +2066,14 @@ const Bridge: React.FC = () => {
                 <CyDView className={'flex flex-row justify-between'}>
                   <CyDText
                     className={
-                      'text-[#434343] font-nunito text-[16px] font-medium'
+                      'text-base200 font-nunito text-[16px] font-medium'
                     }>
                     {t<string>('SENT_AMOUNT')}
                   </CyDText>
                   <CyDView className={'mr-[10px] flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                        'font-nunito text-[16px] text-base400 font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {formatAmount(
@@ -2085,7 +2085,7 @@ const Bridge: React.FC = () => {
                     </CyDText>
                     <CyDText
                       className={
-                        'font-nunito font-[12px] text-[#929292] font-bold'
+                        'font-nunito text-[12px] text-base100 font-bold'
                       }>
                       {(
                         Number(
@@ -2103,14 +2103,14 @@ const Bridge: React.FC = () => {
                   }>
                   <CyDText
                     className={
-                      'text-[#434343] font-nunito text-[16px] font-medium'
+                      'text-base200 font-nunito text-[16px] font-medium'
                     }>
                     {t<string>('TOTAL_RECEIVED')}
                   </CyDText>
                   <CyDView className={'flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                        'font-nunito text-[16px] text-base400 font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {formatAmount(
@@ -2121,7 +2121,7 @@ const Bridge: React.FC = () => {
                     </CyDText>
                     <CyDText
                       className={
-                        'font-nunito font-[12px] text-[#929292] font-bold'
+                        'font-nunito text-[12px] text-base100 font-bold'
                       }>
                       {(
                         Number(
@@ -2220,7 +2220,7 @@ const Bridge: React.FC = () => {
           (!isEmpty(error) ||
             parseFloat(cryptoAmount) > (selectedFromToken?.balance ?? 0)) &&
           !loading.quoteLoading && (
-            <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row mx-[16px] mt-[16px] justify-between items-center'>
+            <CyDView className=' bg-red20 rounded-[8px] p-[12px] flex flex-row mx-[16px] mt-[16px] justify-between items-center'>
               <CyDFastImage
                 source={AppImages.CYPHER_WARNING_RED}
                 className='w-[32px] h-[32px]'
@@ -2248,11 +2248,7 @@ const Bridge: React.FC = () => {
             </CyDView>
           )}
         {index === 0 && (
-          <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] flex flex-row items-start '>
-            <CyDImage
-              className='w-[20px] h-[20px] mr-[4px]'
-              source={AppImages.CURRENCY_DETAILS}
-            />
+          <CyDView className='mx-[16px] mt-[16px] bg-n0 rounded-[8px] p-[12px] flex flex-row items-start '>
             <CyDView className='flex-1'>
               <CyDView className='flex flex-row justify-between'>
                 <CyDView>
@@ -2274,14 +2270,15 @@ const Bridge: React.FC = () => {
                   )}
                 </CyDView>
                 <CyDTouchView
-                  className='flex flex-row items-center bg-[#EBEDF0] rounded-[4px] py-[4px] px-[4px]'
+                  className='flex flex-row items-center bg-n40 rounded-[4px] py-[4px] px-[4px]'
                   onPress={() => {
                     void manualRefreshQuote();
                   }}
                   disabled={loading.quoteLoading}>
-                  <CyDImage
-                    source={AppImages.REFRESH}
-                    className={clsx('w-[12px] h-[12px] mr-[4px]', {
+                  <CyDMaterialDesignIcons
+                    name='autorenew'
+                    size={14}
+                    className={clsx('mr-[4px] text-base400', {
                       'opacity-50': loading.quoteLoading,
                     })}
                   />
@@ -2313,9 +2310,10 @@ const Bridge: React.FC = () => {
                     <CyDText>{`${signaturesRequired} signature required`}</CyDText>
                   </CyDSkeleton>
                   <CyDView className='flex flex-row items-center w-[50%] justify-end'>
-                    <CyDImage
-                      className='w-[20px] h-[20px] mr-[4px]'
-                      source={AppImages.CLOCK}
+                    <CyDMaterialDesignIcons
+                      name={'clock-time-five'}
+                      size={20}
+                      className='text-base400 mr-[4px]'
                     />
                     <CyDSkeleton
                       width={50}

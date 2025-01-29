@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDKeyboardAwareScrollView,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -15,7 +17,6 @@ import {
   useRoute,
   useFocusEffect,
 } from '@react-navigation/native';
-import AppImages from '../../../../../assets/images/appImages';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
@@ -26,6 +27,7 @@ import { ceil, isEmpty } from 'lodash';
 import Loading from '../../../../components/v2/loading';
 import { screenTitle } from '../../../../constants';
 import WithdrawalReasonsModal from '../../../../components/v2/withdrawalReasonsModal';
+import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: string;
@@ -86,18 +88,15 @@ export default function CryptoWithdrawal() {
         setIsModalVisible={setIsModalVisible}
         reason={reason}
       />
-      <CyDView className='flex-1'>
-        <CyDView className='flex flex-row items-center justify-between py-[16px] px-[16px] '>
+      <CyDView className='flex-1 bg-n20'>
+        <CyDView className='flex flex-row items-center justify-between py-[16px] px-[16px] bg-n0'>
           <CyDView className='flex flex-row items-center justify-start'>
             <CyDTouchView
               className='pr-[16px]'
               onPress={() => {
                 navigation.goBack();
               }}>
-              <CyDFastImage
-                source={AppImages.LEFT_ARROW_LONG}
-                className='w-[20px] h-[16px]'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
             <CyDText className='text-[16px] font-bold text-base400'>
               {t('WITHDRAW_CRYPTO')}
@@ -111,13 +110,14 @@ export default function CryptoWithdrawal() {
                 currentCardProvider,
               });
             }}>
-            <CyDFastImage
-              source={AppImages.LIST_HAMBURGER}
-              className='w-[32px] h-[32px]'
+            <CyDMaterialDesignIcons
+              name={'history'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
-        <CyDKeyboardAwareScrollView className='flex-1 bg-n30 px-[16px]'>
+        <CyDKeyboardAwareScrollView className='flex-1 bg-20 px-[16px]'>
           <CyDView className='mt-[18px]'>
             <CyDText className='font-bold text-[12px] text-base400'>
               {t('AMOUNT_TO_BE_WITHDRAWN')}

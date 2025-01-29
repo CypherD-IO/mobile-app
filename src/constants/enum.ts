@@ -229,6 +229,11 @@ export enum ImagePosition {
   RIGHT = 'RIGHT',
 }
 
+export enum IconPosition {
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+}
+
 export enum RenderViewType {
   LIST_VIEW = 'LIST_VIEW',
   GRID_VIEW = 'GRID_VIEW',

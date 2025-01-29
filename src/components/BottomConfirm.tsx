@@ -1,22 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Modal from 'react-native-modal';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../assets/images/appImages';
 import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
-import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
 import { PayModalParams } from '../types/Browser';
-import { CyDView } from '../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDMaterialDesignIcons,
+  CyDView,
+} from '../styles/tailwindStyles';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
-const {
-  CText,
-  SafeAreaView,
-  DynamicView,
-  DynamicImage,
-  ModalView,
-} = require('../styles');
+const { CText, DynamicView } = require('../styles');
 
 export default function BottomConfirm(props: {
   isModalVisible: boolean;
@@ -65,16 +61,10 @@ export default function BottomConfirm(props: {
             onPress={() => {
               onCancelPress();
             }}>
-            <DynamicImage
-              dynamic
-              dynamicWidthFix
-              aLIT={'flex-end'}
-              mT={10}
-              marginHorizontal={6}
-              height={20}
-              width={20}
-              resizemode='contain'
-              source={AppImages.CLOSE}
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </DynamicTouchView>
           <DynamicView dynamic dynamicWidth width={95} fD={'row'} jC={'center'}>
@@ -135,16 +125,9 @@ export default function BottomConfirm(props: {
             width={100}
             jC={'center'}
             fD={'row'}>
-            <DynamicImage
-              dynamic
-              dynamicWidthFix
-              aLIT={'flex-end'}
-              mT={10}
-              marginHorizontal={6}
-              height={20}
-              width={20}
-              resizemode='contain'
-              source={modalParams.appImage}
+            <CyDFastImage
+              className='h-[20px] w-[20px] mx-[6px]'
+              source={{ uri: modalParams.appImage }}
             />
             <CText
               dynamic
@@ -205,7 +188,7 @@ export default function BottomConfirm(props: {
             mT={10}
             height={1}
             width={80}
-            bGC={Colors.portfolioBorderColor}
+            bGC={'#E5E5E5'}
           />
 
           <DynamicView dynamic dynamicWidth width={100} fD={'row'} pH={30}>

@@ -10,7 +10,13 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDAnimatedView,
+  CyDGestureHandlerRootView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import React from 'react';
 import clsx from 'clsx';
 import { round } from 'lodash';
@@ -229,18 +235,20 @@ const Slider = ({
   };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <View style={styles.sliderTrack} onLayout={onTrackLayout}>
+    <CyDGestureHandlerRootView style={styles.container}>
+      <CyDView style={styles.sliderTrack} onLayout={onTrackLayout}>
         {renderSteps()}
         <GestureDetector gesture={pan}>
-          <Animated.View style={[styles.sliderHandle, sliderStyle]}>
-            <View style={styles.handleRing}>
-              <View style={styles.handleDot} />
-            </View>
-          </Animated.View>
+          <CyDAnimatedView
+            className='w-[24px] h-[24px] z-[1000] bg-white absolute shadow-md flex-row justify-center items-center rounded-full'
+            style={sliderStyle}>
+            <CyDView className='w-[8px] h-[8px] bg-p50 rounded-full justify-center items-center'>
+              <CyDView className='bg-white w-[3px] h-[3px] rounded-full' />
+            </CyDView>
+          </CyDAnimatedView>
         </GestureDetector>
-      </View>
-    </GestureHandlerRootView>
+      </CyDView>
+    </CyDGestureHandlerRootView>
   );
 };
 
@@ -260,38 +268,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginTop: 20,
     marginBottom: 32,
-  },
-  sliderHandle: {
-    width: 24,
-    height: 24,
-    zIndex: 1000,
-    backgroundColor: 'white',
-    borderRadius: 999,
-    position: 'absolute',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  handleRing: {
-    width: 8,
-    height: 8,
-    backgroundColor: '#F7C645',
-    borderRadius: 999,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  handleDot: {
-    width: 3,
-    height: 3,
-    backgroundColor: 'white',
-    borderRadius: 999,
   },
 });
 

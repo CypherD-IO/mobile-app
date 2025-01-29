@@ -18,6 +18,7 @@ import axios from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import {
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDSwitch,
@@ -27,6 +28,7 @@ import {
 } from '../../../styles/tailwindStyles';
 import EditLimitModal from './editLimitModal';
 import { ICountry } from '../../../models/cardApplication.model';
+import Loading from '../../../components/v2/loading';
 
 interface RouteParams {
   cardControlType: string;
@@ -328,10 +330,10 @@ export default function CardControlsSettings() {
   }, [editedLimits, selectedDomesticCountry, selectedAllowedCountries]);
 
   return loading ? (
-    <Loader />
+    <Loading />
   ) : (
     <>
-      <CyDSafeAreaView className={'h-full bg-cardBgFrom pt-[10px]'}>
+      <CyDView className={'h-full bg-n20'}>
         <ChooseMultipleCountryModal
           isModalVisible={countryModalVisible}
           setModalVisible={setCountryModalVisible}
@@ -374,11 +376,11 @@ export default function CardControlsSettings() {
           }}
         />
 
-        <CyDScrollView className='flex-1'>
+        <CyDScrollView className='flex-1 bg-n20'>
           <CyDView className='mx-[16px] mt-[16px]'>
             {cardControlType === CardControlTypes.DOMESTIC && (
               <CyDView
-                className={`bg-white flex-1 flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
+                className={`bg-n0 flex-1 flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
                 <CyDText className='text-[16px] font-semibold mt-[4px]'>
                   {'Country'}
                 </CyDText>
@@ -396,16 +398,20 @@ export default function CardControlsSettings() {
                     onPress={() => {
                       setIsChooseDomesticCountryModalVisible(true);
                     }}
-                    imagePosition={ImagePosition.LEFT}
                     paddingY={6}
                     loaderStyle={{
                       height: 15,
                       width: 15,
                     }}
                     style='w-[84.5px] h-[30px]'
-                    image={AppImages.CHANGE_ICON}
                     type={ButtonType.GREY_FILL}
-                    imageStyle={'h-[16px] w-[16px] mr-[6px]'}
+                    icon={
+                      <CyDMaterialDesignIcons
+                        name='circle-edit-outline'
+                        size={16}
+                        className='text-base400 mr-2'
+                      />
+                    }
                     titleStyle={'text-[12px]'}
                     disabled={disableOptions}
                   />
@@ -414,11 +420,12 @@ export default function CardControlsSettings() {
             )}
             {cardControlType === CardControlTypes.INTERNATIONAL && (
               <>
-                <CyDView className='bg-white flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
+                <CyDView className='bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
                   <CyDView className='flex flex-row justify-between items-center'>
-                    <CyDImage
-                      source={AppImages.INTERNATIONAL_ICON}
-                      className='h-[32px] w-[32px]'
+                    <CyDMaterialDesignIcons
+                      name='airplane'
+                      size={32}
+                      className='text-base400'
                     />
                     <CyDSwitch
                       id='disabled'
@@ -451,13 +458,14 @@ export default function CardControlsSettings() {
               <>
                 {cardControlType === CardControlTypes.INTERNATIONAL && (
                   <CyDView
-                    className={`bg-white flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
+                    className={`bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
                     <CyDView className='flex flex-row items-center'>
-                      <CyDImage
-                        source={AppImages.COUNTRIES}
-                        className='h-[32px] w-[32px] mr-[8px]'
+                      <CyDMaterialDesignIcons
+                        name='earth'
+                        size={24}
+                        className='text-base400 mr-[8px]'
                       />
-                      <CyDText className='text-[16px] font-semibold mt-[4px]'>
+                      <CyDText className='text-[16px] font-semibold'>
                         {'Countries'}
                       </CyDText>
                     </CyDView>
@@ -476,15 +484,16 @@ export default function CardControlsSettings() {
                       <CyDView>
                         <CyDText>{getAllowedCountiesText()}</CyDText>
                       </CyDView>
-                      <CyDImage
-                        source={AppImages.DOWN_ARROW}
-                        className='w-[12px] h-[6px] mr-[12px]'
+                      <CyDMaterialDesignIcons
+                        name={'chevron-down'}
+                        size={24}
+                        className={'text-base400 mr-3'}
                       />
                     </CyDTouchView>
                   </CyDView>
                 )}
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -510,7 +519,7 @@ export default function CardControlsSettings() {
                   </CyDText>
                 </CyDTouchView>
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -549,11 +558,15 @@ export default function CardControlsSettings() {
                         onPress={() => {
                           openEditLimitModal(CARD_LIMIT_TYPE.ONLINE);
                         }}
-                        imagePosition={ImagePosition.LEFT}
                         paddingY={6}
-                        image={AppImages.CHANGE_ICON}
+                        icon={
+                          <CyDMaterialDesignIcons
+                            name='circle-edit-outline'
+                            size={16}
+                            className='text-base400 mr-2'
+                          />
+                        }
                         type={ButtonType.GREY_FILL}
-                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                         titleStyle={'text-[12px]'}
                         disabled={disableOptions}
                       />
@@ -561,7 +574,7 @@ export default function CardControlsSettings() {
                   )}
                 </CyDTouchView>
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -606,11 +619,15 @@ export default function CardControlsSettings() {
                           onPress={() => {
                             openEditLimitModal(CARD_LIMIT_TYPE.CONTACTLESS);
                           }}
-                          imagePosition={ImagePosition.LEFT}
                           paddingY={6}
-                          image={AppImages.CHANGE_ICON}
+                          icon={
+                            <CyDMaterialDesignIcons
+                              name='circle-edit-outline'
+                              size={16}
+                              className='text-base400 mr-2'
+                            />
+                          }
                           type={ButtonType.GREY_FILL}
-                          imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                           titleStyle={'text-[12px]'}
                           disabled={disableOptions}
                         />
@@ -619,7 +636,7 @@ export default function CardControlsSettings() {
                   )}
                 </CyDTouchView>
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -660,11 +677,15 @@ export default function CardControlsSettings() {
                         onPress={() => {
                           openEditLimitModal(CARD_LIMIT_TYPE.CARD_PIN);
                         }}
-                        imagePosition={ImagePosition.LEFT}
                         paddingY={6}
-                        image={AppImages.CHANGE_ICON}
+                        icon={
+                          <CyDMaterialDesignIcons
+                            name='circle-edit-outline'
+                            size={16}
+                            className='text-base400 mr-2'
+                          />
+                        }
                         type={ButtonType.GREY_FILL}
-                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                         titleStyle={'text-[12px]'}
                         disabled={disableOptions}
                       />
@@ -673,7 +694,7 @@ export default function CardControlsSettings() {
                 </CyDTouchView>
 
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -702,9 +723,10 @@ export default function CardControlsSettings() {
                     {'Mobile Wallets'}
                   </CyDText>
                   <CyDView className='flex flex-row mt-[12px]'>
-                    <CyDImage
-                      source={AppImages.INFO_CIRCLE}
-                      className='h-[14px] w-[14px] mr-[6px]'
+                    <CyDMaterialDesignIcons
+                      name='information-outline'
+                      size={14}
+                      className='text-base400 mr-[6px]'
                     />
                     <CyDText className='text-[10px] text-n200'>
                       {
@@ -728,11 +750,15 @@ export default function CardControlsSettings() {
                         onPress={() => {
                           openEditLimitModal(CARD_LIMIT_TYPE.MOBILE_WALLET);
                         }}
-                        imagePosition={ImagePosition.LEFT}
                         paddingY={6}
-                        image={AppImages.CHANGE_ICON}
+                        icon={
+                          <CyDMaterialDesignIcons
+                            name='circle-edit-outline'
+                            size={16}
+                            className='text-base400 mr-2'
+                          />
+                        }
                         type={ButtonType.GREY_FILL}
-                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
                         titleStyle={'text-[12px]'}
                         disabled={disableOptions}
                       />
@@ -743,21 +769,23 @@ export default function CardControlsSettings() {
             }
           </CyDView>
         </CyDScrollView>
-        <Button
-          type={ButtonType.PRIMARY}
-          title={t('SAVE_CHANGES')}
-          onPress={() => {
-            setLoading(true);
-            void saveLimits();
-          }}
-          paddingY={12}
-          style='mx-[26px] rounded-[12px] mt-[10px] mb-[20px]'
-          titleStyle='text-[18px]'
-          loading={loading}
-          disabled={!isDetailsChanged}
-          loaderStyle={{ height: 25, width: 25 }}
-        />
-      </CyDSafeAreaView>
+        <CyDView className='bg-n0 pt-[14px] pb-[10px]'>
+          <Button
+            type={ButtonType.PRIMARY}
+            title={t('SAVE_CHANGES')}
+            onPress={() => {
+              setLoading(true);
+              void saveLimits();
+            }}
+            paddingY={12}
+            style='mx-[26px] rounded-[12px] mt-[10px] mb-[20px]'
+            titleStyle='text-[18px]'
+            loading={loading}
+            disabled={!isDetailsChanged}
+            loaderStyle={{ height: 25, width: 25 }}
+          />
+        </CyDView>
+      </CyDView>
     </>
   );
 }

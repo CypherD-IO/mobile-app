@@ -3,11 +3,10 @@ import { StatusBar } from 'react-native';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
   CyDTouchView,
-  CyDImage,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
-import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -23,8 +22,8 @@ import {
   PhysicalCardType,
 } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
-import { isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -32,28 +31,31 @@ interface RouteParams {
 }
 
 export default function OrderSteps() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const { physicalCardType, currentCardProvider } = route.params;
   const { t } = useTranslation();
   const steps = [
     {
-      icon: AppImages.HOMEICON,
+      icon: 'home-outline' as const,
       title: 'Verify your delivery address',
     },
     {
-      icon: AppImages.MANAGE_CARD,
+      icon: 'card-account-details-outline' as const,
       title: 'Name on card',
     },
     {
-      icon: AppImages.CASH_OUTLINE_ICON,
+      icon: 'cash-multiple' as const,
       title: 'Checkout',
     },
   ];
   return (
-    <CyDSafeAreaView className='flex flex-1 bg-n20 h-full'>
+    <CyDView
+      className='flex flex-1 bg-n20 h-full'
+      style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
-      <CyDView className='flex flex-col justify-between h-full bg-transparent'>
+      <CyDView className='flex-1 flex-col justify-between h-full bg-transparent'>
         <CyDView className='mx-[16px]'>
           <CyDView className='flex-row items-center justify-between'>
             <CyDTouchView
@@ -61,10 +63,7 @@ export default function OrderSteps() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDView className='my-[12px]'>
@@ -77,15 +76,15 @@ export default function OrderSteps() {
               {t('HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT')}
             </CyDText>
           </CyDView>
-          <CyDView className='flex flex-col gap-y-[16px] bg-white rounded-[12px] px-[16px] pb-[16px] mt-[12px]'>
+          <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] mt-[12px]'>
             {steps.map((step, index) => (
               <CyDView
                 key={index}
                 className='flex flex-row gap-x-[16px] items-center'>
-                <CyDImage
-                  source={step.icon}
-                  className='w-[24px] h-[24px]'
-                  resizeMode='contain'
+                <CyDMaterialDesignIcons
+                  name={step.icon}
+                  size={28}
+                  className='text-base400'
                 />
                 <CyDText className='text-[16px] font-medium'>
                   {step.title}
@@ -94,13 +93,7 @@ export default function OrderSteps() {
             ))}
           </CyDView>
         </CyDView>
-        <CyDView
-          className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
-            {
-              'bottom-[-32px]': isIOS(),
-            },
-          )}>
+        <CyDView className={clsx('w-full bg-n0 py-[32px] px-[16px]')}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN, {
@@ -114,6 +107,6 @@ export default function OrderSteps() {
           />
         </CyDView>
       </CyDView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

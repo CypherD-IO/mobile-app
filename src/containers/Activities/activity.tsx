@@ -42,6 +42,7 @@ import {
 } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -303,7 +304,7 @@ function BridgeItem(props: any) {
           <CyDText className='flex self-end items-end'>{formatDate}</CyDText>
         </CyDView>
       </CyDView>
-      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-ternaryBackgroundColor border-[1px] rounded-[15px] border-sepratorColor'>
+      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-n0 border-[1px] rounded-[15px] border-n40'>
         <CyDView className='flex flex-column justify-center items-center px-[10px]'>
           <CyDView>
             <CyDText className='text-red-500 font-extrabold'>
@@ -328,7 +329,7 @@ function BridgeItem(props: any) {
                 ) : (
                   <CyDFastImage
                     className={
-                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-n0'
                     }
                     source={{ uri: fromChainLogoUrl }}
                     resizeMode={FastImage.resizeMode.contain}
@@ -384,7 +385,7 @@ function BridgeItem(props: any) {
                 ) : (
                   <CyDFastImage
                     className={
-                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-n0'
                     }
                     source={{ uri: toChainLogoUrl }}
                     resizeMode={FastImage.resizeMode.contain}
@@ -459,7 +460,7 @@ function IBCItem(props: any) {
           <CyDText className='flex self-end items-end'>{formatDate}</CyDText>
         </CyDView>
       </CyDView>
-      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-ternaryBackgroundColor border-[1px] rounded-[15px] border-sepratorColor'>
+      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-n0 border-[1px] border-n40 rounded-[15px] n40'>
         <CyDView className='flex flex-column justify-center items-center px-[10px]'>
           <CyDView>
             <CyDText className='text-red-500 font-extrabold'>
@@ -477,7 +478,7 @@ function IBCItem(props: any) {
               <CyDView className='absolute top-[20px] right-[-7px]'>
                 <CyDFastImage
                   className={
-                    'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                    'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-n0'
                   }
                   source={fromChainlogo}
                   resizeMode={FastImage.resizeMode.contain}
@@ -516,7 +517,7 @@ function IBCItem(props: any) {
               <CyDView className='absolute top-[20px] right-[-7px]'>
                 <CyDFastImage
                   className={
-                    'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                    'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-n0'
                   }
                   source={toChainlogo}
                   resizeMode={FastImage.resizeMode.contain}
@@ -938,10 +939,10 @@ export default function Activites() {
       headerRight: () => (
         <CyDTouchView
           onPress={() => navigation.navigate(C.screenTitle.ACTIVITYFILTER)}>
-          <CyDFastImage
-            className='w-[48px] h-[26px]'
-            source={AppImages.FILTER}
-            resizeMode='contain'
+          <CyDMaterialDesignIcons
+            name='filter-variant'
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
       ),
@@ -1142,7 +1143,7 @@ export default function Activites() {
     activities.length === 0
   ) {
     return (
-      <CyDView className='h-full w-full bg-white justify-center items-center'>
+      <CyDView className='h-full w-full bg-n20 justify-center items-center'>
         <CyDFastImage
           className='h-[150px] w-[150px]'
           resizeMode='contain'
@@ -1214,7 +1215,7 @@ export default function Activites() {
   };
 
   return (
-    <CyDScrollView className='bg-white'>
+    <CyDScrollView className='bg-n20'>
       <CyDView>
         <ActivityInfoModal
           setModalVisible={setShowCardInfo}

@@ -5,7 +5,8 @@ import { CardProfile } from '../../../models/cardProfile.model';
 import AppImages from '../../../../assets/images/appImages';
 import CyDModalLayout from '../../../components/v2/modal';
 import {
-  CyDImage,
+  CyDLottieView,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -14,7 +15,6 @@ import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { IAutoLoadConfig } from '../../../models/autoLoad.interface';
 import Toast from 'react-native-toast-message';
-import LottieView from 'lottie-react-native';
 import useTransactionManager from '../../../hooks/useTransactionManager';
 import { getChain } from '../../../core/util';
 import {
@@ -23,6 +23,7 @@ import {
 } from '../../../constants/server';
 import { get } from 'lodash';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import clsx from 'clsx';
 
 export default function AutoLoadOptionsModal({
   isModalVisible,
@@ -134,7 +135,7 @@ export default function AutoLoadOptionsModal({
       {
         title: 'Update Auto Load',
         description: 'Update auto load configuration',
-        image: AppImages.CIRCLE_WITH_DOTS,
+        image: 'update',
         action: () => {
           onPressUpdateAutoLoad();
         },
@@ -142,7 +143,7 @@ export default function AutoLoadOptionsModal({
       {
         title: (autoLoadConfig?.isPaused ? 'Resume' : 'Pause') + ' Auto Load',
         description: 'Pause/Resume Auto load',
-        image: autoLoadConfig?.isPaused ? AppImages.RESUME : AppImages.PAUSE,
+        image: autoLoadConfig?.isPaused ? 'play' : 'pause',
         action: () => {
           void toggleAutoLoad();
         },
@@ -150,7 +151,7 @@ export default function AutoLoadOptionsModal({
       {
         title: 'Cancel Auto Load',
         description: 'Permanently cancel auto load',
-        image: AppImages.ICON_CANCEL,
+        image: 'cancel',
         action: () => {
           void cancelAutoLoad();
         },
@@ -167,16 +168,16 @@ export default function AutoLoadOptionsModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-cardBgTo mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
-        <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-white px-[16px] pb-[16px] pt-[32px]'>
+      <CyDView className='bg-n20 mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
+        <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-n0 px-[16px] pb-[16px] pt-[32px]'>
           <CyDText className='text-[16px] font-semibold font-manrope'>
             Auto Load
           </CyDText>
           <CyDTouchView onPress={() => setShowModal(false)}>
-            <CyDImage
-              source={AppImages.CLOSE_CIRCLE}
-              className='h-[28px] w-[28px]'
-              resizeMode='contain'
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
@@ -186,10 +187,10 @@ export default function AutoLoadOptionsModal({
             <CyDTouchView
               key={index}
               onPress={action}
-              className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-white rounded-[6px] mx-[12px]'>
+              className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-n0 rounded-[6px] mx-[12px]'>
               {(index === 1 && isToggling) || (index === 2 && isCancelling) ? (
                 <CyDView className='relative w-[48px]'>
-                  <LottieView
+                  <CyDLottieView
                     source={AppImages.LOADER_TRANSPARENT}
                     autoPlay
                     loop
@@ -197,10 +198,12 @@ export default function AutoLoadOptionsModal({
                   />
                 </CyDView>
               ) : (
-                <CyDImage
-                  source={image}
-                  className={'h-[24px] w-[24px] mx-[12px]'}
-                  resizeMode={'contain'}
+                <CyDMaterialDesignIcons
+                  name={image}
+                  size={24}
+                  className={clsx('text-base400 mx-[12px]', {
+                    'text-red400': index === 2,
+                  })}
                 />
               )}
 

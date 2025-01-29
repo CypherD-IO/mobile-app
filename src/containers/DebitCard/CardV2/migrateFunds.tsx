@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -144,14 +145,14 @@ export default function MigratePCFunds() {
   return (
     <CyDView
       style={{ paddingTop: insets.top + 50 }}
-      className={clsx('h-full flex flex-col justify-between', {
+      className={clsx('h-full flex flex-col justify-between bg-n20', {
         'justify-center': showSuccess,
       })}>
       <CyDModalLayout
         isModalVisible={showConsentModal}
         style={styles.modalLayout}
         setModalVisible={setShowConsentModal}>
-        <CyDView className={'bg-white rounded-t-[20px] p-[16px] pb-[40px]'}>
+        <CyDView className={'rounded-t-[20px] p-[16px] pb-[40px]'}>
           <CyDView className={'flex flex-row items-center'}>
             <CyDView className='flex-1'>
               <CyDText className='text-[24px] pl-[16px] font-bold text-center'>
@@ -161,12 +162,12 @@ export default function MigratePCFunds() {
             <CyDTouchView
               onPress={() => {
                 setShowConsentModal(false);
-              }}
-              className={'text-black'}>
+              }}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className={'w-[16px] h-[16px]'}
+                <CyDMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDView>
             </CyDTouchView>
@@ -197,10 +198,10 @@ export default function MigratePCFunds() {
                     setGaveConsent(!gaveConsent);
                   }}>
                   {gaveConsent && (
-                    <CyDImage
-                      source={AppImages.CORRECT}
-                      className='h-[15px] w-[15px] ml-[2px]'
-                      resizeMode='contain'
+                    <CyDMaterialDesignIcons
+                      name='check-bold'
+                      size={16}
+                      className='text-base400 ml-[2px]'
                     />
                   )}
                 </CyDTouchView>
@@ -236,7 +237,7 @@ export default function MigratePCFunds() {
               {'Choose your preferred option'}
             </CyDText>
             <CyDTouchView
-              className={clsx('bg-white rounded-[16px] p-[16px] mt-[16px]', {
+              className={clsx('bg-n0 rounded-[16px] p-[16px] mt-[16px]', {
                 'border-[1px] border-[#FFBF15]': !moveCustomAmount,
                 'border-[1px] border-white': moveCustomAmount,
               })}
@@ -244,7 +245,7 @@ export default function MigratePCFunds() {
                 setMoveCustomAmount(false);
               }}>
               <CyDView className='flex flex-row items-start justify-between'>
-                <CyDText className='font-bold text-[18px] text-black w-[300px] font-manrope'>
+                <CyDText className='font-bold text-[18px] w-[300px] font-manrope'>
                   {'Move all the funds to new VISA® card account'}
                 </CyDText>
                 <CyDImage
@@ -270,9 +271,10 @@ export default function MigratePCFunds() {
                 </CyDText>
               </CyDView>
               <CyDView className='flex flex-row items-start mt-[12px]'>
-                <CyDImage
-                  source={AppImages.MANAGE_CARD}
-                  className='w-[24px] h-[24px] mr-[12px]'
+                <CyDMaterialDesignIcons
+                  name='credit-card-outline'
+                  size={24}
+                  className='text-base400 mr-3'
                 />
                 <CyDView className='w-[90%]'>
                   <CyDText className='font-semibold text-[14px] text-base200 w-[90%]'>
@@ -287,7 +289,7 @@ export default function MigratePCFunds() {
               </CyDView>
             </CyDTouchView>
             <CyDTouchView
-              className={clsx('bg-white rounded-[16px] p-[16px] mt-[16px]', {
+              className={clsx('bg-n0 rounded-[16px] p-[16px] mt-[16px]', {
                 'border-[1px] border-[#FFBF15]': moveCustomAmount,
                 'border-[1px] border-white': !moveCustomAmount,
               })}
@@ -295,7 +297,7 @@ export default function MigratePCFunds() {
                 setMoveCustomAmount(true);
               }}>
               <CyDView className='flex flex-row items-start justify-between'>
-                <CyDText className='font-bold text-[18px] text-black w-[85%]'>
+                <CyDText className='font-bold text-[18px] w-[85%]'>
                   {'Move Custom Amount'}
                 </CyDText>
                 <CyDImage
@@ -322,13 +324,13 @@ export default function MigratePCFunds() {
               </CyDView>
               <CyDView className='mt-[10px] flex flex-row justify-between items-center'>
                 <CyDText
-                  className={clsx('text-[12px] font-bold text-black', {
+                  className={clsx('text-[12px] font-bold', {
                     'opacity-50': !moveCustomAmount,
                   })}>
                   {'Funds to move'}
                 </CyDText>
                 <CyDText
-                  className={clsx('text-[12px] font-semibold text-black', {
+                  className={clsx('text-[12px] font-semibold', {
                     'opacity-50': !moveCustomAmount,
                   })}>
                   {`BAL: $${cardBalance}`}
@@ -337,7 +339,7 @@ export default function MigratePCFunds() {
               <CyDView className='flex flex-row items-center border-[1px] border-n40 rounded-[8px] mt-[4px]'>
                 <CyDText
                   className={clsx(
-                    'text-[16px] text-black font-semibold ml-[12px] mr-[8px]',
+                    'text-[16px] font-semibold ml-[12px] mr-[8px]',
                     {
                       'opacity-50': !moveCustomAmount,
                     },
@@ -345,7 +347,7 @@ export default function MigratePCFunds() {
                   {'$'}
                 </CyDText>
                 <CyDTextInput
-                  className='text-[16px] text-black w-[85%] font-semibold py-[12px] pr-[12px]'
+                  className='text-[16px] w-[85%] font-semibold py-[12px] pr-[12px]'
                   keyboardType='numeric'
                   value={inputValue}
                   onChangeText={text => {
@@ -374,16 +376,16 @@ export default function MigratePCFunds() {
               )}
               {migrationData.map(item => (
                 <CyDView
-                  className='mt-[12px] flex flex-row justify-between items-center bg-white rounded-[8px] p-[12px]'
+                  className='mt-[12px] flex flex-row justify-between items-center bg-n0 rounded-[8px] p-[12px]'
                   key={item.requestId}>
-                  <CyDText className='text-black font-semibold text-[14px]'>
+                  <CyDText className='font-semibold text-[14px]'>
                     {`$${item.amount.toLocaleString()}`}
                   </CyDText>
-                  <CyDText className='text-black font-medium text-[10px]'>
+                  <CyDText className='font-medium text-[10px]'>
                     {moment.unix(item.createdAt).format('DD/MM/YYYY HH:mm')}
                   </CyDText>
                   <CyDText
-                    className={clsx('text-black font-regular text-[12px]', {
+                    className={clsx('font-regular text-[12px]', {
                       'text-orange-400':
                         item.status === 'IN_PROGRESS' ||
                         item.status === 'PENDING',
@@ -414,7 +416,7 @@ export default function MigratePCFunds() {
         </CyDView>
       )}
       {!showSuccess && (
-        <CyDView className='flex flex-row justify-between items-center bg-white rounded-t-[16px] px-[16px] py-[32px] w-full'>
+        <CyDView className='flex flex-row justify-between items-center bg-n0 rounded-t-[16px] px-[16px] py-[32px] w-full'>
           <Button
             title={t('CONTINUE')}
             onPress={() => {

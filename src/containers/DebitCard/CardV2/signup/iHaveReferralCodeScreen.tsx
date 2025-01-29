@@ -9,7 +9,7 @@ import {
 import { t } from 'i18next';
 import { isEmpty } from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import AppImages from '../../../../../assets/images/appImages';
 import Button from '../../../../components/v2/button';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
@@ -22,13 +22,17 @@ import {
 } from '../../../../core/asyncStorage';
 import useAxios from '../../../../core/HttpRequest';
 import {
+  CyDIcons,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../../styles/tailwindStyles';
 import SelectPlanModal from '../../../../components/selectPlanModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CyDIconsPack } from '../../../../customFonts';
 interface RouteParams {
   deductAmountNow?: boolean;
   toPage?: string;
@@ -36,6 +40,7 @@ interface RouteParams {
 }
 
 const IHaveReferralCodeScreen = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
@@ -111,7 +116,7 @@ const IHaveReferralCodeScreen = () => {
   };
 
   return (
-    <SafeAreaView className='flex bg-cardBg h-full'>
+    <CyDView className='flex bg-n20 h-full' style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <HowReferralWorksModal
         isModalVisible={isModalVisible}
@@ -135,29 +140,27 @@ const IHaveReferralCodeScreen = () => {
                 });
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDText className='text-[28px] font-bold mt-[12px]'>
-            Do you have any referral code?
+            Do you have a referral code?
           </CyDText>
           <CyDText className='text-[14px] font-[500] text-n200 mt-[6px]'>
             Get special rewards! if you are being invited by someone to cypher
           </CyDText>
 
           <CyDView className='mt-[24px]'>
-            <CyDText className='text-[12px] font-[500] text-black mb-[8px]'>
+            <CyDText className='text-[12px] font-[500] mb-[8px]'>
               {t('REFERRAL_CODE')}
             </CyDText>
             <CyDView className='flex-row items-center'>
               <CyDTextInput
-                className='bg-white rounded-[8px] px-[12.5px] py-[14px] flex-1 mr-[12px]'
+                className='bg-n0 rounded-[8px] px-[12.5px] py-[14px] flex-1 mr-[12px]'
                 placeholder={t('ENTER_REFERRAL_CODE')}
                 value={referralCode}
                 onChangeText={setReferralCode}
+                placeholderTextColor={'#999999'}
               />
               <Button
                 title={t('APPLY')}
@@ -176,7 +179,7 @@ const IHaveReferralCodeScreen = () => {
         </CyDView>
 
         <CyDView>
-          <CyDView className='mt-[24px] relative bg-white rounded-[8px] mx-[16px] p-[16px]'>
+          <CyDView className='mt-[24px] relative bg-n0 rounded-[8px] mx-[16px] p-[16px]'>
             <CyDView className='flex-row items-center'>
               <CyDImage
                 source={AppImages.GIFT_IN_HANDS}
@@ -195,7 +198,7 @@ const IHaveReferralCodeScreen = () => {
             </CyDView>
           </CyDView>
 
-          <CyDView className='mt-[24px] bg-white px-[16px] w-full items-center'>
+          <CyDView className='mt-[24px] bg-n0 px-[16px] w-full items-center'>
             <CyDTouchView
               className='mt-[24px]'
               onPress={() => {
@@ -222,7 +225,7 @@ const IHaveReferralCodeScreen = () => {
         </CyDView>
       </CyDView>
       {/* </ScrollView> */}
-    </SafeAreaView>
+    </CyDView>
   );
 };
 

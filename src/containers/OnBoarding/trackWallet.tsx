@@ -8,6 +8,7 @@ import {
   CyDFlatList,
   CyDImage,
   CyDImageBackground,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -130,10 +131,10 @@ export default function TrackWallet({
   const RenderTrackWalletInfo = ({ item }) => {
     return (
       <CyDView className={'flex flex-row my-[18px]'} key={item}>
-        <CyDImage
-          className={'mt-[6px] h-[12px] w-[12px]'}
-          source={AppImages.RIGHT_ARROW_BULLET}
-          resizeMode='contain'
+        <CyDMaterialDesignIcons
+          name={'triangle'}
+          size={14}
+          className='text-p150 rotate-90 mt-[6px]'
         />
         <CyDText className={'ml-[10px] text-[16px] font-semibold'}>
           {item}
@@ -143,7 +144,7 @@ export default function TrackWallet({
   };
 
   return (
-    <CyDView className='flex-1 h-[100%] flex-col justify-between bg-white'>
+    <CyDView className='flex-1 h-[100%] flex-col justify-between bg-n0'>
       <CyDView className='px-[20px] flex flex-col items-center'>
         <CyDView
           className={
@@ -169,20 +170,18 @@ export default function TrackWallet({
                   })
                 : setAddress('');
             }}>
-            <CyDImage
-              className={'h-[25px] w-[25px]'}
-              source={
-                address === ''
-                  ? AppImages.QR_CODE_SCANNER
-                  : AppImages.CLOSE_CIRCLE
-              }
+            <CyDMaterialDesignIcons
+              name={address === '' ? 'qrcode-scan' : 'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
         <CyDView className='flex flex-row items-center self-start mt-[15px] ml-[5px]'>
-          <CyDImage
-            source={AppImages.INFO_CIRCLE}
-            className='h-[16px] w-[16px]'
+          <CyDMaterialDesignIcons
+            name='information-outline'
+            size={16}
+            className='text-base400 mr-[6px]'
           />
           <CyDText className='ml-[7px]'>
             {t<string>('ONLY_ETHEREUM_SUPPORTED')}
@@ -190,7 +189,13 @@ export default function TrackWallet({
         </CyDView>
         <Button
           title={t('TRACK')}
-          image={AppImages.TRACK}
+          icon={
+            <CyDMaterialDesignIcons
+              name='target'
+              size={24}
+              className='text-base400'
+            />
+          }
           onPress={() => {
             void registerObserver(address);
           }}

@@ -1,6 +1,8 @@
 import {
   CyDFlatList,
+  CyDIcons,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -9,7 +11,6 @@ import CyDModalLayout from './modal';
 import { StyleSheet } from 'react-native';
 import * as React from 'react';
 import clsx from 'clsx';
-import AppImages from './../../../assets/images/appImages';
 
 enum typeOfChain {
   CHAIN = 'chain',
@@ -44,7 +45,7 @@ export default function ChooseChainModal({
           className={clsx(
             'flex flex-row py-[12px] px-[24px] items-center justify-between',
             {
-              'bg-[#58ADAB17] rounded-[18px]': item.item.name === selectedItem,
+              'bg-n0 rounded-[18px]': item.item.name === selectedItem,
             },
           )}
           onPress={() => {
@@ -60,16 +61,16 @@ export default function ChooseChainModal({
               }
               className={'w-[28px] h-[28px] mr-[18px]'}
             />
-            <CyDText className={'text-black text-[18px]  font-regular'}>
+            <CyDText className={' text-[18px]  font-regular'}>
               {item.item.name}
             </CyDText>
           </CyDView>
 
           {item.item.name === selectedItem && type === typeOfChain.CHAIN && (
-            <CyDImage
-              source={AppImages.CORRECT}
-              className={'w-[16px] h-[12px]'}
-              style={{ tintColor: '#58ADAB' }}
+            <CyDMaterialDesignIcons
+              name='check-bold'
+              size={16}
+              className='text-base400 self-end'
             />
           )}
 
@@ -105,16 +106,17 @@ export default function ChooseChainModal({
       style={styles.modalLayout}>
       <CyDView
         className={
-          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[60%] relative'
+          'bg-n20 border-1 rounded-t-[36px] border-n40 p-[12px] pb-[22px] h-[60%] relative'
         }>
         <CyDTouchView
           onPress={() => {
             setModalVisible(false);
           }}
-          className={'absolute z-[50] top-[20px] right-[24px]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={' w-[20px] h-[20px] '}
+          className={'self-end'}>
+          <CyDMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
         <CyDText
@@ -126,10 +128,7 @@ export default function ChooseChainModal({
           <CyDTouchView
             onPress={onPressBack}
             className={'absolute z-[50] top-[20px] left-[24px]'}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className={'w-[32px] h-[32px]'}
-            />
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
           </CyDTouchView>
         )}
         <CyDFlatList

@@ -12,7 +12,12 @@ import {
   round,
 } from 'lodash';
 import { ethers } from 'ethers';
-import { CyDFastImage, CyDText, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDMaterialDesignIcons,
+  CyDText,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';
@@ -110,7 +115,7 @@ export default function BridgeRoutePreview({
   return (
     <CyDView className={'px-[20px] font-nunito mb-[55px]'}>
       {isNumber(routeResponse?.estimated_route_duration_seconds) && (
-        <CyDView className='bg-white p-[12px] rounded-[8px] flex flex-row justify-between items-center mb-[12px]'>
+        <CyDView className='bg-n0 p-[12px] rounded-[8px] flex flex-row justify-between items-center mb-[12px]'>
           <CyDText>{t('ESTIMATED_TIME')}</CyDText>
           <CyDText>
             {countdown !== null && countdown > 0
@@ -122,11 +127,12 @@ export default function BridgeRoutePreview({
         </CyDView>
       )}
 
-      {(loading || !isEmpty(statusResponse)) && signaturesRequired > 0 && (
-        <CyDView className='flex flex-row items-center bg-orange-100 rounded-[8px] p-[8px] mb-[12px]'>
-          <CyDFastImage
-            source={AppImages.WARNING}
-            className='w-[20px] h-[20px] mr-[10px]'
+      {true && (
+        <CyDView className='flex flex-row items-center bg-red20 rounded-[8px] p-[8px] mb-[12px]'>
+          <CyDMaterialDesignIcons
+            name='alert'
+            size={20}
+            className='text-red400 mr-[10px]'
           />
           <CyDText className='text-[12px] font-medium w-[85%]'>
             {`Please do not move out of this page or go back as ${signaturesRequired} more ${signaturesRequired > 1 ? 'signatures are' : 'signature is'}  required to complete your bridge`}
@@ -139,12 +145,12 @@ export default function BridgeRoutePreview({
             source={AppImages.SUCCESS_TICK_GREEN_BG}
             className='w-[20px] h-[20px] mr-[10px]'
           />
-          <CyDText className='text-[12px] font-medium w-[88%]'>{`Your funds will be transferred to your ${ChainIdToBackendNameMapping[routeResponse?.dest_asset_chain_id as keyof typeof ChainIdToBackendNameMapping]} chain in sometime, please stay on the page till your transaction is complete`}</CyDText>
+          <CyDText className='text-[12px] font-medium w-[88%] text-n0'>{`Your funds will be transferred to your ${ChainIdToBackendNameMapping[routeResponse?.dest_asset_chain_id as keyof typeof ChainIdToBackendNameMapping]} chain in sometime, please stay on the page till your transaction is complete`}</CyDText>
         </CyDView>
       )}
       <CyDView
         className={
-          'bg-white py-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
+          'bg-n0 py-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
         }>
         <CyDView className=''>
           {routeResponse?.chain_ids.map((item: any, index: number) => {

@@ -1,17 +1,10 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useLayoutEffect,
-  useRef,
-} from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import * as C from '../../constants/index';
 import AppImages from './../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
 import analytics from '@react-native-firebase/analytics';
-import { BackHandler, FlatList } from 'react-native';
+import { FlatList } from 'react-native';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDText,
@@ -20,6 +13,8 @@ import {
   CyDImage,
   CyDTouchView,
   CyDFastImage,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../styles/tailwindStyles';
 import {
   WalletConnectContext,
@@ -41,12 +36,23 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function WalletConnectCamera(props: {
-  route: { params: { walletConnectURI: string } };
-  navigation: any;
-}) {
-  const { route } = props;
+interface RouteParams {
+  walletConnectURI: string;
+}
+
+export default function WalletConnectCamera() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { walletConnectState, walletConnectDispatch } =
     useContext<walletConnectContextDef>(WalletConnectContext);
 
@@ -112,18 +118,6 @@ export default function WalletConnectCamera(props: {
         });
       }
     }
-    // else {
-    //   const connector = new WalletConnect({ uri });
-    //   walletConnectDispatch({
-    //     type: WalletConnectActions.ADD_CONNECTOR,
-    //     value: connector,
-    //   });
-    // }
-  };
-
-  const handleBackButton = () => {
-    props?.navigation?.goBack();
-    return true;
   };
 
   const endSession = async (key: number) => {
@@ -155,45 +149,6 @@ export default function WalletConnectCamera(props: {
       });
     }
   };
-
-  useLayoutEffect(() => {
-    props.navigation.setOptions({
-      headerRight: () => (
-        <CyDTouchView
-          onPress={() => {
-            props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
-              fromPage: QRScannerScreens.WALLET_CONNECT,
-              onSuccess,
-            });
-          }}>
-          <CyDFastImage
-            source={AppImages.QR_CODE_SCANNER_BLACK}
-            className='h-[25px] w-[25px]'
-            resizeMode='contain'
-          />
-        </CyDTouchView>
-      ),
-    });
-  }, [props.navigation]);
-
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-    return () => {
-      setWalletConnectURI('');
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
-    };
-  }, []);
-
-  // useEffect(() => {
-  //   const link = walletConnectURI;
-  //   if (link.startsWith('wc')) {
-  //     loading.current = true;
-  //     void connectWallet(link);
-  //     void analytics().logEvent('wallet_connect_url_scan', {
-  //       fromEthAddress: ethereum.address,
-  //     });
-  //   }
-  // }, [portfolioState.statePortfolio.walletConnectURI]);
 
   const buildWalletConnectDataFromAsync = async () => {
     let data;
@@ -339,7 +294,7 @@ export default function WalletConnectCamera(props: {
     return (
       <CyDView>
         <CyDView className={'flex items-center'}>
-          <CyDView className='mt-[12px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+          <CyDView className='mt-[12px] w-11/12 border-[1px] rounded-[8px] border-n40'>
             <CyDView className={'flex-row'}>
               <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
                 <CyDFastImage
@@ -369,11 +324,6 @@ export default function WalletConnectCamera(props: {
                   </CyDView>
                 </CyDView>
               </CyDView>
-              {/* <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
-                  <CyDTouchView onPress ={() => { void disconnectSession(session.item.topic); }}>
-                    <CyDImage source={AppImages.DISCONNECT} />
-                  </CyDTouchView>
-                </CyDView> */}
             </CyDView>
             <CyDView className={'flex flex-row justify-center'}>
               <Button
@@ -401,9 +351,7 @@ export default function WalletConnectCamera(props: {
             {t<string>('MANAGE_CONNECTION')}
           </CyDText>
         </CyDView>
-        {/* <CyDTouchView onPress={() => { setPairingSessionsModalVisible(false); }} className={'z-[50]'}>
-          <CyDImage source={AppImages.CLOSE} className={' w-[18px] h-[18px] z-[50] absolute right-[20px] top-[-30px]'} />
-         </CyDTouchView> */}
+
         {sessionsForAPairing.length === 0 && (
           <CyDView>
             <CyDView className={'flex flex-row justify-center'}>
@@ -487,7 +435,7 @@ export default function WalletConnectCamera(props: {
           setSelectedPairingTopic(element.topic);
         }}>
         <CyDView className={'flex items-center'}>
-          <CyDView className='flex flex-row items-center mt-[6px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+          <CyDView className='flex flex-row items-center mt-[6px] w-11/12 border-[1px] rounded-[8px] border-n40'>
             <CyDView className={'flex-row'}>
               <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
                 <CyDFastImage
@@ -497,7 +445,7 @@ export default function WalletConnectCamera(props: {
                 />
               </CyDView>
               {isV2 && (
-                <CyDView className='rounded-[60px] h-[16px] p-[4px] absolute mt-[43px] ml-[22px] bg-appColor'>
+                <CyDView className='rounded-[60px] h-[16px] p-[4px] absolute mt-[43px] ml-[22px] bg-p100'>
                   <CyDText className={'font-extrabold text-[8px]'}>V2</CyDText>
                 </CyDView>
               )}
@@ -534,7 +482,11 @@ export default function WalletConnectCamera(props: {
                     onPress={() => {
                       void endSession(key);
                     }}>
-                    <CyDImage source={AppImages.DISCONNECT} />
+                    <CyDMaterialDesignIcons
+                      name='link-variant-off'
+                      size={24}
+                      className='text-red400'
+                    />
                   </CyDTouchView>
                 )}
                 {isV2 && (
@@ -542,9 +494,10 @@ export default function WalletConnectCamera(props: {
                     onPress={() => {
                       setSelectedPairingTopic(element.topic);
                     }}>
-                    <CyDImage
-                      className={'h-[16px] w-[16px]'}
-                      source={AppImages.SETTINGS}
+                    <CyDMaterialDesignIcons
+                      name='cog-outline'
+                      size={20}
+                      className='text-base400'
                     />
                   </CyDTouchView>
                 )}
@@ -557,7 +510,32 @@ export default function WalletConnectCamera(props: {
   };
 
   return (
-    <CyDSafeAreaView className={'bg-white h-full w-full'}>
+    <CyDSafeAreaView className={'bg-n20 h-full w-full'}>
+      <CyDView className='flex flex-row items-center py-[16px] px-[16px] justify-between'>
+        <CyDTouchView
+          className=''
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDIcons name='arrow-left' size={24} className='text-base400' />
+        </CyDTouchView>
+        <CyDText className='text-[20px] font-bold text-base400'>
+          {t('WALLET_CONNECT_SMALL')}
+        </CyDText>
+        <CyDTouchView
+          onPress={() => {
+            navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+              fromPage: QRScannerScreens.WALLET_CONNECT,
+              onSuccess,
+            });
+          }}>
+          <CyDMaterialDesignIcons
+            name='qrcode-scan'
+            size={24}
+            className='text-base400'
+          />
+        </CyDTouchView>
+      </CyDView>
       <FlatList
         className='mb-[20px]'
         data={walletConnectState.dAppInfo}

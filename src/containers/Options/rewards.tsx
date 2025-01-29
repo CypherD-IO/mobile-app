@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StatusBar } from 'react-native';
 import {
+  CyDIcons,
   CyDImage,
+  CyDLottieView,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -9,12 +12,12 @@ import {
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import useAxios from '../../core/HttpRequest';
-import LottieView from 'lottie-react-native';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { CyDIconsPack } from '../../customFonts';
 
 export default function Rewards() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -64,7 +67,7 @@ export default function Rewards() {
     return (
       <>
         {loading ? (
-          <LottieView
+          <CyDLottieView
             source={AppImages.LOADER_TRANSPARENT}
             autoPlay
             loop
@@ -84,16 +87,17 @@ export default function Rewards() {
 
   return (
     <>
-      <SafeAreaView className='flex bg-cardBg h-full'>
+      <SafeAreaView className='flex bg-n20 h-full'>
         <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
         <CyDView>
           <CyDTouchView
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className='w-[36px] h-[36px] ml-[16px] mb-[12px]'
+            <CyDIcons
+              name='arrow-left'
+              size={24}
+              className='text-base400 ml-[16px] mb-[12px]'
             />
           </CyDTouchView>
         </CyDView>
@@ -103,7 +107,7 @@ export default function Rewards() {
               <CyDText className='text-[28px] font-bold'>
                 Cypher Rewards
               </CyDText>
-              <CyDView className='flex flex-col mt-[12px] rounded-[16px] bg-white p-[16px]'>
+              <CyDView className='flex flex-col mt-[12px] rounded-[16px] bg-n0 p-[16px]'>
                 <CyDImage
                   source={AppImages.REWARDS_YELLOW_STAR}
                   className='w-[60px] h-[60px]'
@@ -119,7 +123,7 @@ export default function Rewards() {
                     {'Total Reward Balance'}
                   </CyDText>
                 </CyDView>
-                <CyDView className='flex-row items-center mt-[16px] space-x-[16px]'>
+                <CyDView className='flex flex-row items-center mt-[16px] gap-x-6'>
                   <CyDView>
                     <CyDText className='text-[14px] font-bold text-n300'>
                       <LoaderWithText
@@ -139,7 +143,7 @@ export default function Rewards() {
                       />
                     </CyDText>
                     <CyDText className='text-[12px] text-n200'>
-                      {'Rewards From Referal'}
+                      {'Rewards From Referral'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -149,7 +153,7 @@ export default function Rewards() {
               <CyDText className='text-[14px] font-bold'>
                 {'How to earn rewards'}
               </CyDText>
-              <CyDView className='flex flex-row w-full space-x-[6px] mt-[12px]'>
+              <CyDView className='flex flex-row w-full mt-[12px] gap-x-2'>
                 <CyDView className='w-1/2 flex-shrink-0 flex-col h-[228px] p-[12px] bg-rewardsBlue rounded-[16px]'>
                   <CyDView className='flex flex-col items-end'>
                     <CyDImage
@@ -192,7 +196,7 @@ export default function Rewards() {
               <CyDText className='text-[14px] font-bold'>
                 {'What can you do with your rewards'}
               </CyDText>
-              <CyDView className='bg-white flex flex-row relative rounded-[16px] p-[24px] mt-[28px]'>
+              <CyDView className='bg-n0 flex flex-row relative rounded-[16px] p-[24px] mt-[28px]'>
                 <CyDImage
                   source={AppImages.COMING_SOON}
                   className='absolute bottom-[20px] left-[20px] h-[88px] w-[52px]'

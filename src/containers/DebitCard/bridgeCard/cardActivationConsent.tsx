@@ -6,6 +6,8 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
+  CyDMaterialDesignIcons,
+  CyDIcons,
 } from '../../../styles/tailwindStyles';
 import { StyleSheet, StatusBar } from 'react-native';
 import {
@@ -23,6 +25,7 @@ import { ButtonType, CardProviders } from '../../../constants/enum';
 import Button from '../../../components/v2/button';
 import { Card } from '../../../models/card.model';
 import { screenTitle } from '../../../constants';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -53,7 +56,7 @@ export default function CardActivationConsent() {
 
   const RenderContent = useCallback(() => {
     return (
-      <CyDView className='flex flex-col bg-white px-[16px] pb-[16px] pt-[2px] gap-y-[14px] rounded-[12px]'>
+      <CyDView className='flex flex-col bg-n0 px-[16px] pb-[16px] pt-[2px] gap-y-[14px] rounded-[12px]'>
         {virtualCardReplacementInfo.map((item, index) => (
           <CyDView key={index} className='flex flex-col'>
             <CyDText className='text-[14px] font-bold'>{item.title}</CyDText>
@@ -68,7 +71,7 @@ export default function CardActivationConsent() {
 
   const RenderPremiumPrompt = useCallback(() => {
     return (
-      <CyDView className='flex flex-col bg-white px-[16px] pb-[22px] pt-[2px] gap-y-[14px] rounded-[12px]'>
+      <CyDView className='flex flex-col bg-n20 px-[16px] pb-[22px] pt-[2px] gap-y-[14px] rounded-[12px]'>
         <CyDView className='flex flex-row justify-center items-center '>
           <CyDImage
             source={AppImages.MULTIPLE_CARDS}
@@ -101,19 +104,19 @@ export default function CardActivationConsent() {
   const RenderConsent = useCallback(() => {
     return (
       <CyDTouchView
-        className='flex flex-row items-start bg-white rounded-[12px] p-[16px]'
+        className='flex flex-row items-start bg-n20 rounded-[12px] p-[16px]'
         onPress={() => {
           setHasConsent(!hasConsent);
         }}>
         <CyDView
           className={clsx('h-[20px] w-[20px] border-[1px] rounded-[4px]', {
-            'bg-black': hasConsent,
+            'bg-n0': hasConsent,
           })}>
           {hasConsent && (
-            <CyDImage
-              source={AppImages.CORRECT}
-              className='h-[15px] w-[15px] ml-[2px]'
-              resizeMode='contain'
+            <CyDMaterialDesignIcons
+              name='check-bold'
+              size={16}
+              className='text-base400 ml-[2px]'
             />
           )}
         </CyDView>
@@ -130,7 +133,7 @@ export default function CardActivationConsent() {
   }, [hasConsent]);
 
   return (
-    <CyDSafeAreaView className='flex flex-1 bg-n20 h-full'>
+    <CyDSafeAreaView className='flex flex-1 bg-n20 h-full bg-n20'>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <CyDView className='flex flex-1 flex-col justify-between h-full bg-transparent'>
         <CyDView className='flex-1 mx-[16px] pb-[92px]'>
@@ -140,10 +143,7 @@ export default function CardActivationConsent() {
                 navigation.goBack();
               }}
               className='w-[36px] h-[36px]'>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[36px] h-[36px]'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           <CyDScrollView
@@ -180,7 +180,7 @@ export default function CardActivationConsent() {
         </CyDView>
         <CyDView
           className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
             {
               'bottom-[-32px]': isIOS(),
             },

@@ -7,6 +7,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDScrollView,
+  CyDImageBackground,
 } from '../../styles/tailwindStyles';
 import { QRScannerScreens } from '../../constants/server';
 import { BarCodeReadEvent } from 'react-native-camera';
@@ -61,7 +62,7 @@ export default function QRScanner() {
   }, []);
 
   return (
-    <CyDScrollView>
+    <CyDScrollView className='bg-n20'>
       <QRCodeScanner
         showMarker
         fadeIn={false}
@@ -71,7 +72,7 @@ export default function QRScanner() {
         }}
         cameraStyle={{ height: SCREEN_HEIGHT }}
         customMarker={
-          <ImageBackground
+          <CyDImageBackground
             source={AppImages.SCANNER_BG}
             resizeMode='cover'
             style={{ height: '100%', width: '100%', marginTop: '-30%' }}
@@ -85,26 +86,28 @@ export default function QRScanner() {
                   'flex items-center justify-center h-1/2 w-10/12 pt-[10px]'
                 }>
                 <CyDText
-                  className={' text-center text-[20px] color-white mt-[24%]'}>
+                  className={' text-center text-[20px] text-white mt-[24%]'}>
                   {renderText()}
                 </CyDText>
                 {fromPage === QRScannerScreens.WALLET_CONNECT && (
                   <CyDTouchView
                     className={
-                      'flex items-center justify-center mt-[40px] h-[60px] w-2/3 border-[1px] border-[#8E8E8E] rounded-[12px]'
+                      'flex items-center justify-center mt-[40px] h-[60px] w-2/3 border-[1px] border-n40 rounded-[12px]'
                     }
                     onPress={() =>
                       navigation.navigate(C.screenTitle.WALLET_CONNECT)
                     }>
                     <CyDText
-                      className={'text-white text-[15px] font-extrabold'}>
+                      className={
+                        'text-base400 text-[15px] font-extrabold text-white'
+                      }>
                       {t('Manage Connections')}
                     </CyDText>
                   </CyDTouchView>
                 )}
               </CyDView>
             </CyDView>
-          </ImageBackground>
+          </CyDImageBackground>
         }
       />
     </CyDScrollView>

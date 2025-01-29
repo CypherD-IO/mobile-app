@@ -4,6 +4,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDFastImage,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -368,17 +369,16 @@ export default function TransactionInfoModal({
         style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white pb-[30px] rounded-t-[20px]'}
-          ref={viewRef}>
+        <CyDView className={'bg-n20 pb-[30px] rounded-t-[20px]'} ref={viewRef}>
           <CyDTouchView
-            className={'flex flex-row justify-end z-10'}
+            className={'flex flex-row justify-end z-10 self-end m-4'}
             onPress={() => {
               setModalVisible(false);
             }}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDView className='flex mt-[5%] justify-center items-center '>
@@ -386,12 +386,12 @@ export default function TransactionInfoModal({
           </CyDView>
           <CyDView className='flex flex-col px-[20px]'>
             <CyDView className='flex flex-row justify-start align-center'>
-              <CyDView className='w-[100%] justify-between items-center bg-secondaryBackgroundColor rounded-[8px] my-[8px] py-[8px]'>
+              <CyDView className='w-[100%] justify-between items-center bg-n0 rounded-[8px] my-[8px] py-[8px]'>
                 <RenderTransactionInfo />
               </CyDView>
             </CyDView>
-            <CyDView className='flex flex-col bg-secondaryBackgroundColor rounded-[8px] mt-[5px]'>
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+            <CyDView className='flex flex-col bg-n0 rounded-[8px] mt-[5px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {destination}
                 </CyDText>
@@ -401,7 +401,7 @@ export default function TransactionInfoModal({
               </CyDView>
               <CyDView>
                 {type === 'swap' && (
-                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40 ml-[20px]'>
                     <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                       {t('VALUE')}
                     </CyDText>
@@ -414,7 +414,7 @@ export default function TransactionInfoModal({
                   </CyDView>
                 )}
               </CyDView>
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {t<string>('GAS')}
                 </CyDText>
@@ -423,7 +423,7 @@ export default function TransactionInfoModal({
                 </CyDText>
               </CyDView>
 
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {t<string>('HASH')}
                 </CyDText>
@@ -444,12 +444,16 @@ export default function TransactionInfoModal({
                         String(`${chainExplorerMapping[blockchain]}${hash}`),
                       )
                     }>
-                    <CyDImage source={AppImages.COPY} />
+                    <CyDMaterialDesignIcons
+                      name={'content-copy'}
+                      size={20}
+                      className='text-base400'
+                    />
                   </CyDTouchView>
                 </CyDView>
               </CyDView>
 
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {t<string>('STATUS')}
                 </CyDText>

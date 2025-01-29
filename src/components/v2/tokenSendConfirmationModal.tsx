@@ -1,11 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
-import { SepraterView } from '../../styles/viewStyle';
 import { StyleSheet } from 'react-native';
 import Button from './button';
 import {
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -48,11 +48,12 @@ export default function TokenSendConfirmationModal(
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
       <CyDView
-        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+        className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onCancel()} className={'z-[50]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+          <CyDMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400 z-[50] absolute right-[0px] '
           />
         </CyDTouchView>
         <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
@@ -73,7 +74,7 @@ export default function TokenSendConfirmationModal(
               </CyDText>
             </CyDView>
           </CyDView>
-          <SepraterView className={'w-[100%]'} dynamic />
+          <CyDView className='w-[100%] h-[1px] bg-n40' />
           <CyDView className={'flex flex-row mt-[20px] w-[95%] pb-[15px]'}>
             <CyDText className={' font-bold text-[16px] ml-[5px] '}>
               {t('VALUE')}
@@ -90,7 +91,7 @@ export default function TokenSendConfirmationModal(
               </CyDText>
             </CyDView>
           </CyDView>
-          <SepraterView className={'w-[100%]'} dynamic />
+          <CyDView className='w-[100%] h-[1px] bg-n40' />
           <CyDView className={'flex flex-row mt-[20px] pb-[15px]'}>
             <CyDText className={' font-bold text-[16px] ml-[5px] '}>
               {t('SEND_TO')}
@@ -104,7 +105,7 @@ export default function TokenSendConfirmationModal(
               </CyDText>
             </CyDView>
           </CyDView>
-          <SepraterView className={'w-[100%]'} dynamic />
+          <CyDView className='w-[100%] h-[1px] bg-n40' />
 
           <CyDView className={'flex flex-row mt-[20px] w-[95%] pb-[15px]'}>
             <CyDText className={' font-bold text-[16px] ml-[5px] '}>

@@ -4,6 +4,7 @@ import { ScrollView, View, StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -39,7 +40,7 @@ export default function WithdrawalReasonsModal(props: {
       }}>
       <View style={styles.modalContainer}>
         <ScrollView bounces={false}>
-          <CyDView className='bg-white px-[16px] py-[24px] rounded-t-[16px]'>
+          <CyDView className='bg-n0 px-[16px] py-[24px] rounded-t-[16px]'>
             <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
               <CyDView className='flex-1 justify-center items-center'>
                 <CyDText className='text-[18px] font-[600] ml-[24px]'>
@@ -51,10 +52,10 @@ export default function WithdrawalReasonsModal(props: {
                 onPress={() => {
                   setIsModalVisible(false);
                 }}>
-                <CyDImage
-                  source={AppImages.CLOSE_CIRCLE}
-                  className='h-[28px] w-[28px]'
-                  resizeMode='contain'
+                <CyDMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>

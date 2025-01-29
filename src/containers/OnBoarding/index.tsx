@@ -5,6 +5,7 @@ import {
   CyDView,
   CyDText,
   CyDScrollView,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import {
@@ -49,9 +50,7 @@ export default function OnBoarding({ navigation }) {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
-          className={
-            'text-versionColor font-bold mt-[12px] text-left mx-[44px]'
-          }
+          className={'font-bold mt-[12px] text-left mx-[44px]'}
           numberOfLines={4}
           style={{ fontSize: height * 0.03 }}>
           {t('ON_BOARDING_PAGE_1_CONTENT').toString()}
@@ -70,9 +69,7 @@ export default function OnBoarding({ navigation }) {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
-          className={
-            'text-versionColor text-[30px] font-bold mt-[12px] text-left mx-[44px]'
-          }
+          className={' text-[30px] font-bold mt-[12px] text-left mx-[44px]'}
           numberOfLines={4}
           style={{ fontSize: height * 0.03 }}>
           {t('ON_BOARDING_PAGE_2_CONTENT').toString()}
@@ -90,7 +87,7 @@ export default function OnBoarding({ navigation }) {
   const Screen3 = useCallback((): JSX.Element => {
     return (
       <CyDScrollView className={''} style={{ width }}>
-        <CyDView className='bg-secondaryBackgroundColor py-[20px] rounded-[25px] m-[12px] px-[20px]'>
+        <CyDView className=' py-[20px] rounded-[25px] m-[12px] px-[20px]'>
           {/* <CyDImage
             source={AppImages.ON_BOARDING_3}
             className={clsx('mt-[20px] w-screen ')}
@@ -113,23 +110,23 @@ export default function OnBoarding({ navigation }) {
                 setIsModalVisible(true);
               }}
               className={clsx(
-                'bg-buttonColor py-[14px] items-center rounded-[8px] mt-[20px] flex-row justify-around w-[98%]',
+                'bg-p150 py-[14px] items-center rounded-[8px] mt-[20px] flex-row justify-around w-[98%]',
                 {
                   'py-[30px]': loading,
                 },
               )}>
               {!loading && (
-                <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
+                <CyDText
+                  className={'text-[16px] font-extrabold w-[80%] text-black'}>
                   {t('CREATE_WALLET').toString()}
                 </CyDText>
               )}
               {/* {loading && <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />} */}
               {!loading && (
-                <CyDImage
-                  source={AppImages.RIGHT_ARROW}
-                  resizeMode={'contain'}
-                  className={'w-[9px] h-[17px]'}
-                  style={{ tintColor: '#434343' }}
+                <CyDMaterialDesignIcons
+                  name='chevron-right'
+                  size={16}
+                  className=''
                 />
               )}
             </CyDTouchView>
@@ -138,16 +135,15 @@ export default function OnBoarding({ navigation }) {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}
               className={
-                'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+                'bg-n0 border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
               }>
               <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET').toString()}
               </CyDText>
-              <CyDImage
-                source={AppImages.RIGHT_ARROW}
-                resizeMode={'contain'}
-                className={'w-[9px] h-[17px]'}
-                style={{ tintColor: '#434343' }}
+              <CyDMaterialDesignIcons
+                name='chevron-right'
+                size={16}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDTouchView
@@ -155,16 +151,15 @@ export default function OnBoarding({ navigation }) {
                 navigation.navigate(screenTitle.ENTER_PRIVATE_KEY);
               }}
               className={
-                'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+                'bg-n0 border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
               }>
               <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET_USING_PRIVATE_KEY').toString()}
               </CyDText>
-              <CyDImage
-                source={AppImages.RIGHT_ARROW}
-                resizeMode={'contain'}
-                className={'w-[9px] h-[17px]'}
-                style={{ tintColor: '#434343' }}
+              <CyDMaterialDesignIcons
+                name='chevron-right'
+                size={16}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDTouchView
@@ -173,7 +168,7 @@ export default function OnBoarding({ navigation }) {
                 void analytics().logEvent('connect_using_wallet_connect', {});
               }}
               className={
-                'bg-white border-[0.3px] border-[#525252] mt-[20px] px-[12px] items-center rounded-[8px] flex flex-row justify-between w-[98%]'
+                'bg-n0 border-[0.3px] border-[#525252] mt-[20px] px-[12px] items-center rounded-[8px] flex flex-row justify-between w-[98%]'
               }>
               <CyDView>
                 <CyDText className={'text-[16px] font-extrabold'}>
@@ -192,16 +187,15 @@ export default function OnBoarding({ navigation }) {
               navigation.navigate(screenTitle.TRACK_WALLET_SCREEN);
             }}
             className={
-              'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+              'bg-n0 border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
             }>
             <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
               {t('TRACK_ANY_WALLET')}
             </CyDText>
-            <CyDImage
-              source={AppImages.RIGHT_ARROW}
-              resizeMode={'contain'}
-              className={'w-[9px] h-[17px]'}
-              style={{ tintColor: '#434343' }}
+            <CyDMaterialDesignIcons
+              name='chevron-right'
+              size={16}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
@@ -304,7 +298,7 @@ export default function OnBoarding({ navigation }) {
         animationOut={'slideOutDown'}
         setModalVisible={setIsModalVisible}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDText className={'my-[14px] font-black text-center text-[22px]'}>
             {t<string>('CREATE_SEED_PHRASE_TYPE_TITLE')}
           </CyDText>

@@ -83,16 +83,14 @@ export default function CosmosSelectReValidator({ route, navigation }) {
           <CyDView className={'my-[24px] mx-[20px]'}>
             <CyDView className={'flex flex-row justify-between'}>
               <CyDText
-                className={
-                  'text-[16px] font-bold text-secondaryTextColor  w-1/2'
-                }
+                className={'text-[16px] font-bold  w-1/2'}
                 numberOfLines={2}>
                 {item.name}
               </CyDText>
               {item.balance.toString() !== '0' && (
                 <CyDText
                   className={
-                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor '
+                    'ml-[10px] text-[16px] font-bold '
                   }>{`${convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)} ${tokenData.name}`}</CyDText>
               )}
             </CyDView>
@@ -125,7 +123,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
               </CyDText>
             </CyDView>
           </CyDView>
-          <CyDView className={'w-full h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+          <CyDView className={'w-full h-[1px] bg-n40 mx-[30px]'} />
         </CyDTouchView>
       )}
     </>
@@ -135,7 +133,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
   const memoizedValue = useMemo(() => renderItem, []);
 
   return (
-    <CyDView className={'bg-white h-full w-full'}>
+    <CyDView className={'bg-n0 h-full w-full'}>
       <CyDView
         className={
           'bg-[#F6F6F6] p-[8px] mt-[10px] mx-[20px] rounded-[8px] flex flex-row items-center'

@@ -22,8 +22,9 @@ import {
 } from '../../../core/util';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDImage,
-  CyDSafeAreaView,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -64,18 +65,14 @@ import Toast from 'react-native-toast-message';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions, StyleSheet, Linking, Platform } from 'react-native';
 import CyDModalLayout from '../../../components/v2/modal';
 import Button from '../../../components/v2/button';
 import ViewShot, { captureRef } from 'react-native-view-shot';
-import { SHARE_TRANSACTION_TIMEOUT } from '../../../core/Http';
-import { isAndroid } from '../../../misc/checkers';
 import Share from 'react-native-share';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import { CyDIconsPack } from '../../../customFonts';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -142,10 +139,10 @@ const CopyButton = ({
 
   return (
     <CyDTouchView onPress={handleCopy}>
-      <CyDImage
-        source={AppImages.COPY}
-        className='h-[16px] w-[16px] ml-[8px]'
-        resizeMode='contain'
+      <CyDMaterialDesignIcons
+        name={'content-copy'}
+        size={16}
+        className='text-base400'
       />
     </CyDTouchView>
   );
@@ -191,11 +188,12 @@ const InfoMessage: React.FC<InfoMessageProps> = ({ message, condition }) => {
   if (!condition) return null;
 
   return (
-    <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+    <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
       <CyDView className='flex-row items-center'>
-        <CyDImage
-          source={AppImages.INFO_CIRCLE}
-          className='w-[24px] h-[24px]'
+        <CyDMaterialDesignIcons
+          name='information-outline'
+          size={24}
+          className='text-base400'
         />
         <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
           {t(message)}
@@ -223,13 +221,17 @@ const MerchantDetailsModal = ({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-white px-[16px] pt-[24px] pb-[50px] rounded-[16px]'>
+      <CyDView className='bg-n0 px-[16px] pt-[24px] pb-[50px] rounded-[16px]'>
         <CyDView className='flex flex-row justify-between items-center'>
           <CyDText className='text-[20px] font-medium'>
             {t('MERCHANT_DETAILS')}
           </CyDText>
           <CyDTouchView onPress={() => setShowModal(false)}>
-            <CyDImage source={AppImages.CLOSE} className='h-[24px] w-[24px]' />
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
+            />
           </CyDTouchView>
         </CyDView>
         <CyDView className='bg-n20 p-[16px] rounded-[12px] mt-[24px]'>
@@ -300,7 +302,7 @@ const MerchantDetailsModal = ({
           }}
           style='py-[15px]'
           type={ButtonType.GREY_FILL}
-          image={AppImages.LOCATION_PIN_BLACK}
+          icon={<CyDMaterialDesignIcons name='map-marker-radius' size={24} />}
         />
       </CyDView>
     </CyDModalLayout>
@@ -343,11 +345,12 @@ const DeclinedTransactionActionItem = ({
   if (isCountryDisabled && metadata?.merchantCountry && isCountryDisabled) {
     // Show existing UI for country disabled scenario
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-start'>
-          <CyDImage
-            source={AppImages.INFO_CIRCLE}
-            className='w-[24px] h-[24px]'
+          <CyDMaterialDesignIcons
+            name='information-outline'
+            size={24}
+            className='text-base400 mr-[6px]'
           />
           <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
             {!countryAlreadyAllowed
@@ -384,7 +387,7 @@ const DeclinedTransactionActionItem = ({
                   className='w-[16px] h-[16px] mr-[4px]'
                 />
               )}
-              <CyDText className='text-center text-[14px] font-semibold text-wrap'>
+              <CyDText className='text-center text-[14px] font-semibold text-wrap text-black'>
                 {countryAlreadyAllowed
                   ? `Added ${
                       (getCountryNameById(metadata?.merchantCountry)?.length ??
@@ -406,17 +409,25 @@ const DeclinedTransactionActionItem = ({
     );
   } else if (isInsufficientFunds) {
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-center'>
-          <CyDFastImage
+          {/* <CyDFastImage
             source={
               fundsAvailable
                 ? AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
                 : AppImages.INFO_CIRCLE
             }
             className='w-[24px] h-[24px]'
+          /> */}
+          <CyDMaterialDesignIcons
+            name={fundsAvailable ? 'check-circle' : 'information-outline'}
+            size={20}
+            className={clsx('mr-[2px]', {
+              'text-green400': fundsAvailable,
+              'text-base150': !fundsAvailable,
+            })}
           />
-          <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+          <CyDText className='text-[12px] font-medium ml-1 flex-1'>
             {fundsAvailable
               ? t('FUNDS_AVAILABLE_MESSAGE')
               : t('INSUFFICIENT_FUNDS_MESSAGE')}
@@ -435,7 +446,7 @@ const DeclinedTransactionActionItem = ({
                   currentCardProvider: provider,
                 });
               }}>
-              <CyDText className='text-center text-[14px] font-semibold'>
+              <CyDText className='text-center text-[14px] font-semibold text-black'>
                 {t('ADD_FUNDS')}
               </CyDText>
             </CyDTouchView>
@@ -445,11 +456,12 @@ const DeclinedTransactionActionItem = ({
     );
   } else if (isLimitExceeded) {
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+      <CyDView className='rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-center'>
-          <CyDImage
-            source={AppImages.INFO_CIRCLE}
-            className='w-[24px] h-[24px]'
+          <CyDMaterialDesignIcons
+            name='information-outline'
+            size={24}
+            className='text-base400 mr-[6px]'
           />
           <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
             {t('REVIEW_SETTINGS_MESSAGE')}
@@ -464,7 +476,7 @@ const DeclinedTransactionActionItem = ({
                 currentCardProvider: provider,
               });
             }}>
-            <CyDText className='text-center text-[14px] font-semibold'>
+            <CyDText className='text-center text-[14px] font-semibold text-black'>
               {t('REVIEW_SETTINGS')}
             </CyDText>
           </CyDTouchView>
@@ -474,7 +486,7 @@ const DeclinedTransactionActionItem = ({
   } else if (isCardInactive) {
     return (
       <>
-        <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+        <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
           <CyDView className='flex-row items-center'>
             <CyDFastImage
               source={
@@ -822,9 +834,10 @@ const TransactionDetail = ({
                   <CyDText className='text-[12px]'>
                     {t('VIEW_TRANSACTION')}
                   </CyDText>
-                  <CyDFastImage
-                    source={AppImages.RIGHT_ARROW_LONG}
-                    className='w-[12px] h-[6px] ml-[2px]'
+                  <CyDIcons
+                    name='arrow-left'
+                    size={16}
+                    className='text-base400'
                   />
                 </CyDTouchView>
               </CyDView>
@@ -853,8 +866,6 @@ const TransactionDetail = ({
               )}
             </>
           )}
-
-          {}
         </CyDView>
       </CyDView>
     </>
@@ -881,7 +892,7 @@ const getTransactionDisplayProps = (
   ) {
     return {
       image: AppImages.GREY_EXCLAMATION_ICON,
-      textColor: 'text-n600',
+      textColor: 'text-base400',
       imageText: 'Declined',
     };
   } else if (
@@ -1162,26 +1173,26 @@ export default function TransactionDetails() {
           metadata={transaction?.metadata?.merchant}
         />
       )}
-      <CyDSafeAreaView className='flex-1 bg-cardBg' edges={['top']}>
+      <CyDView className='flex-1 bg-n20' style={{ paddingTop: insets.top }}>
         <CyDTouchView
           className='w-full'
           onPress={() => {
             navigation.goBack();
           }}>
-          <CyDFastImage
-            className={'w-[32px] h-[32px] ml-[16px]'}
-            resizeMode='cover'
-            source={AppImages.BACK_ARROW_GRAY}
+          <CyDIcons
+            name='arrow-left'
+            size={24}
+            className='text-base400 ml-[16px]'
           />
         </CyDTouchView>
         <ViewShot ref={viewRef}>
-          <CyDScrollView className='h-full bg-cardBg'>
+          <CyDScrollView className='h-full bg-n20'>
             <CyDView className='min-h-full'>
               <CyDView
                 className={
                   'flex flex-col justify-center items-center mt-[24px]'
                 }>
-                <CyDView className='h-[36px] w-[36px] rounded-full bg-[#DFE2E6] flex items-center justify-center'>
+                <CyDView className='h-[36px] w-[36px] rounded-full bg-n40 flex items-center justify-center'>
                   <CyDFastImage
                     source={displayProps.image}
                     className='h-[20px] w-[20px]'
@@ -1281,7 +1292,7 @@ export default function TransactionDetails() {
                   </CyDView>
                 )}
                 {transaction.type !== CardTransactionTypes.CREDIT && (
-                  <CyDView className='flex flex-row justify-center items-center p-[5px] bg-white rounded-tl-[12px] rounded-br-[12px] mt-[24px]'>
+                  <CyDView className='flex flex-row justify-center items-center p-[5px] bg-n0 rounded-tl-[12px] rounded-br-[12px] mt-[24px]'>
                     <CyDView className='bg-n20 rounded-tl-[4px] rounded-br-[4px] h-[20px] w-[20px] p-[4px]'>
                       <CyDFastImage
                         source={{ uri: transaction.iconUrl }}
@@ -1289,7 +1300,7 @@ export default function TransactionDetails() {
                         resizeMode='contain'
                       />
                     </CyDView>
-                    <CyDText className='ml-[4px] text-[12px] font-bold text-n500'>
+                    <CyDText className='ml-[4px] text-[12px] font-bold text-n100'>
                       {capitalize(
                         truncate(transaction.category, { length: 20 }),
                       )}{' '}
@@ -1306,7 +1317,7 @@ export default function TransactionDetails() {
                 style={{
                   minHeight: screenHeight - insets.top - 250, // 200 is approximate header height
                 }}
-                className='w-full bg-n0 px-[25px] mt-[24px]'>
+                className='w-full flex-1 bg-n0 px-[25px] mt-[24px]'>
                 <TransactionDetail
                   isSettled={transaction?.isSettled ?? false}
                   isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
@@ -1342,9 +1353,14 @@ export default function TransactionDetails() {
                       void shareTransaction();
                     }}
                     type={ButtonType.GREY_FILL}
+                    icon={
+                      <CyDMaterialDesignIcons
+                        name={'share'}
+                        size={16}
+                        className='text-base400'
+                      />
+                    }
                     style='bg-n10 border-[1px] border-n40 py-[8px] px-[8px] text-black mx-[4px]'
-                    image={AppImages.SHARE}
-                    imageStyle='w-[14px] h-[14px] mr-[4px] ml-[2px]'
                     titleStyle='text-[14px] font-medium'
                   />
                   <Button
@@ -1362,8 +1378,7 @@ export default function TransactionDetails() {
             </CyDView>
           </CyDScrollView>
         </ViewShot>
-      </CyDSafeAreaView>
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'white' }} />
+      </CyDView>
     </>
   );
 }

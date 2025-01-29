@@ -91,6 +91,7 @@ const resources = {
       ADDRESS: 'Address',
       COPY_ADDRESS: 'COPY ADDRESS',
       WALLET_CONNECT: 'WALLET CONNECT',
+      WALLET_CONNECT_SMALL: 'Wallet Connect',
       REVEAL_SEED_PHARSE: 'Reveal Seed Phrase',
       REVEAL_PRIVATE_KEY: 'Reveal Private Key',
       IMPORT_ANOTHER_WALLET: 'IMPORT WALLET',
@@ -683,7 +684,8 @@ const resources = {
       CONTRACT_ADDRESS_PASCAL_CASE: 'Contract Address',
       DESCRIPTION_INIT_CAPS: 'Description',
       NO_NFTS_YET: 'No NFTs yet !',
-      PULL_DOWN_TO_REFRESH_PASCAL_CASE: 'Pull Down To Refresh',
+      NO_DEFI_YET: 'You have no defi interactions yet !',
+      SWIPE_DOWN_TO_REFRESH_PASCAL_CASE: 'Swipe Down To Refresh',
       CREATE_NEW_CONTACT: 'Create New Contact',
       ADD_TO_EXISTING_CONTACT: 'ADD TO EXISTING CONTACT',
       CONTACT_TEXT: 'CONTACT',
@@ -1465,6 +1467,15 @@ const resources = {
         'Crypto withdrawals are processed in 3-5 business days. Note that you will receive the funds in USDC on BASE chain.',
       LEGACY_CARD_TRANSACTIONS: 'Legacy Card Transactions',
       OTHERS: 'Others',
+      RE_VALIDATE_TO: 'Re-Validate to',
+      TERMS_CONDITIONS: 'Terms and Conditions',
+      TERMS_CONDITIONS_DESC:
+        'We have updated our terms and conditions. Please review and agree to our revised terms and conditions to proceed',
+      AGGREE_CONTINUE: 'Agree & Continue',
+      VIEW_TERMS_CONDITIONS: 'View Terms and Conditions',
+      'AGREE_T&C':
+        'I hereby confirm that I have read, understood, and fully agree to the terms and conditions outlined above.',
+      OPTIONS: 'Options',
     },
   },
 };

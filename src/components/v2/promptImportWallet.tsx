@@ -7,7 +7,9 @@ import Login from '../../containers/Auth/EnterKey';
 import { HdWalletContext } from '../../core/util';
 import { PromptImportWalletDef } from '../../models/globalModal.interface';
 import {
+  CyDIcons,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -16,6 +18,7 @@ import {
 import Button from './button';
 import Loading from './loading';
 import CyDModalLayout from './modal';
+import { CyDIconsPack } from '../../customFonts';
 
 const PromptImportWallet: React.FC<PromptImportWalletDef> = (
   store: PromptImportWalletDef,
@@ -109,17 +112,13 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
         <Loading />
       ) : (
         <CyDSafeAreaView
-          className={'flex-1 bg-white w-[100%] px-[40px] flex items-center'}>
+          className={'flex-1 bg-n0 w-[100%] px-[40px] flex items-center'}>
           <CyDView className='flex-row justify-center items-center w-[100%] px-[10px]'>
             <CyDTouchView
               onPress={() => {
                 store.onCancel();
               }}>
-              <CyDImage
-                source={AppImages.BACK_ARROW_GRAY}
-                className='w-[32px] h-[32px]'
-                resizeMode='contain'
-              />
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
             </CyDTouchView>
             <CyDView className='flex flex-1 items-center'>
               <CyDText className='font-extrabold text-[20px] ml-[-25px]'>
@@ -128,10 +127,10 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
             </CyDView>
           </CyDView>
           <CyDView className='flex flex-row items-center mt-[20px]'>
-            <CyDImage
-              source={AppImages.CYPHER_LOCKED}
-              className='h-[20px] w-[20px] mr-[10px]'
-              resizeMode='contain'
+            <CyDIcons
+              name='lock'
+              size={20}
+              className='text-base400 mr-[10px]'
             />
             <CyDText className='font-extrabold text-center text-[20px]'>
               {t('ACTION_REQUIRED')}

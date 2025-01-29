@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -48,10 +49,10 @@ export default function CardActivationConsentModal({
               'bg-black': hasConsent,
             })}>
             {hasConsent && (
-              <CyDImage
-                source={AppImages.CORRECT}
-                className='h-[15px] w-[15px] ml-[2px]'
-                resizeMode='contain'
+              <CyDMaterialDesignIcons
+                name='check-bold'
+                size={14}
+                className='text-base400 ml-[2px]'
               />
             )}
           </CyDView>
@@ -73,14 +74,12 @@ export default function CardActivationConsentModal({
       animationOutTiming={300}
       style={styles.modalLayout}
       isModalVisible={isModalVisible}>
-      <CyDView
-        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+      <CyDView className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={
-              ' w-[22px] h-[22px] z-[50] absolute right-[-5px] top-[-5px]'
-            }
+          <CyDMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400 z-[50] absolute right-[-5px] top-[-5px]'
           />
         </CyDTouchView>
         {

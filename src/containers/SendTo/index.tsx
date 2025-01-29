@@ -20,7 +20,6 @@ import { BackHandler } from 'react-native';
 import { BarCodeReadEvent } from 'react-native-camera';
 import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
-import EmptyView from '../../components/EmptyView';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { SuccessTransaction } from '../../components/v2/StateModal';
@@ -65,8 +64,10 @@ import {
   SendTransactionActivity,
 } from '../../reducers/activity_reducer';
 import {
+  CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTextInput,
@@ -374,13 +375,15 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const emptyView = () => {
     return (
       <CyDView className='h-full w-full justify-center items-center'>
-        <EmptyView
-          text={t('NO_SEND_HISTORY')}
-          image={AppImages.SENDTO_EMPTY}
-          buyVisible={false}
-          marginTop={10}
-          width={200}
-        />
+        <CyDView className='flex flex-col justify-center items-center w-[200px] mt-3'>
+          <CyDFastImage
+            source={AppImages.SENDTO_EMPTY}
+            className='w-[150px] h-[150px] '
+          />
+          <CyDText className='mt-[15px] text-[14px]'>
+            {t('NO_SEND_HISTORY')}
+          </CyDText>
+        </CyDView>
       </CyDView>
     );
   };
@@ -424,9 +427,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           </CyDView>
           <CyDView className='flex flex-row justify-between items-center' />
         </CyDTouchView>
-        <CyDView
-          style={{ width: '100%', height: 1, backgroundColor: '#C5C5C5' }}
-        />
+        <CyDView className='h-[1px] bg-n40' />
       </CyDView>
     );
   };
@@ -1087,7 +1088,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       <CyDView>
         <TokenSendConfirmationModal
           isModalVisible={tokenSendConfirmationParams.isModalVisible}
@@ -1099,14 +1100,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           </CyDText>
           <CyDView
             className={clsx(
-              'flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-greyButtonBackgroundColor rounded-[5px] pl-[15px] pr-[10px] py-[5px]',
+              'flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-n40 rounded-[5px] px-[15px] py-[5px]',
               {
-                'border-errorTextRed': !isAddressValid,
-                'border-greyButtonBackgroundColor': addressText === '',
+                'border-red80': !isAddressValid,
+                'border-n40': addressText === '',
               },
             )}>
             <CyDTextInput
-              className={clsx('max-w-[90%] pr-[0px]', {
+              className={clsx('w-[90%] pr-[0px] bg-n20', {
                 'py-[12px]': !(chainDetails?.chainName === ChainNames.ETH),
               })}
               value={addressText}
@@ -1127,7 +1128,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
               )}
             />
             <CyDTouchView
-              className='w-[5%]'
+              className=''
               onPress={() => {
                 addressText === ''
                   ? props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
@@ -1136,13 +1137,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                     })
                   : setAddressText('');
               }}>
-              <CyDImage
-                className={'h-[22px] w-[22px]'}
-                source={
-                  addressText === ''
-                    ? AppImages.QR_CODE_SCANNER
-                    : AppImages.CLOSE_CIRCLE
-                }
+              <CyDMaterialDesignIcons
+                name={addressText === '' ? 'qrcode-scan' : 'close'}
+                size={20}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -1155,11 +1153,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                   onPress={() => {
                     void (async () => await fetchCopiedText())();
                   }}>
-                  <CyDImage
-                    source={AppImages.COPY}
-                    className={'w-[14px] h-[16px] mr-[7px]'}
+                  <CyDMaterialDesignIcons
+                    name={'content-copy'}
+                    size={14}
+                    className='text-base400 mr-[8px]'
                   />
-                  <CyDText className={'text-[#434343] text-[12px] font-bold'}>
+                  <CyDText className={'text-[12px] font-bold'}>
                     {t<string>('PASTE_CLIPBOARD')}
                   </CyDText>
                 </CyDTouchView>
@@ -1171,7 +1170,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                   </CyDText>
                   <CyDView
                     className={
-                      'flex flex-row justify-between items-center mt-[7px] bg-secondaryBackgroundColor border-[0.5px] border-black rounded-[9px] pl-[15px] pr-[10px] py-[1px]'
+                      'flex flex-row justify-between items-center mt-[7px] bg-n10 border-[0.5px] border-n40 rounded-[9px] pl-[15px] pr-[10px] py-[1px]'
                     }>
                     <CyDTextInput
                       className={'self-center py-[12px] w-[90%] pr-[10px]'}
@@ -1190,10 +1189,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                         onPress={() => {
                           setMemo('');
                         }}>
-                        <CyDImage
-                          className={'h-[22px] w-[22px]'}
-                          source={AppImages.CLOSE_CIRCLE}
-                          resizeMode='contain'
+                        <CyDMaterialDesignIcons
+                          name={'close'}
+                          size={24}
+                          className='text-base400'
                         />
                       </CyDTouchView>
                     )}
@@ -1225,7 +1224,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             </CyDView>
           )}
           <CyDView
-            className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-white'
+            className='h-[80px] pb-[10px] w-full absolute justify-center items-center'
             style={
               keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }
             }>

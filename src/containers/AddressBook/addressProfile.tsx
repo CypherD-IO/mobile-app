@@ -6,7 +6,8 @@ import { copyToClipboard } from '../../core/util';
 import Accordion from 'react-native-collapsible/Accordion';
 import { verticalScale } from 'react-native-size-matters';
 import {
-  CyDImage,
+  CyDFastImage,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -19,7 +20,6 @@ import {
   EVM_CHAINS_BACKEND_NAMES,
   EVM_CHAINS_FOR_ADDRESS_DIR,
 } from '../../constants/server';
-import Loading from '../Loading';
 import clsx from 'clsx';
 import { screenTitle } from '../../constants/index';
 import { showToast } from '../utilities/toastUtility';
@@ -30,6 +30,7 @@ import getTransactionType from '../utilities/transactionTypeUtility';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { getContactBookWithMultipleAddress } from '../utilities/contactBookUtility';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
+import Loading from '../../components/v2/loading';
 
 const AddressProfile = props => {
   const {
@@ -146,17 +147,6 @@ const AddressProfile = props => {
     outputRange: ['0deg', '180deg'],
   });
 
-  const animatedStyle = {
-    transform: [
-      {
-        rotate: interpolateRotating,
-      },
-    ],
-    height: verticalScale(18),
-    width: 14,
-    resizeMode: 'contain',
-  };
-
   const handleAnimation = (toValue: number) => {
     Animated.timing(rotateAnimation, {
       toValue,
@@ -204,7 +194,7 @@ const AddressProfile = props => {
                 <CyDView
                   className={`p-[5px] rounded-[30px] bg-${chain} ml-[-7px]`}
                   key={index}>
-                  <CyDImage
+                  <CyDFastImage
                     source={ChainConfigMapping[chain].logo_url}
                     className={'h-[20px] w-[20px]'}
                     resizeMode='contain'
@@ -225,20 +215,28 @@ const AddressProfile = props => {
   };
 
   const renderHeader = (name: string, index: number, isActive: boolean) => {
+    const randomIcons = [
+      'dog',
+      'robot-happy-outline',
+      'rabbit-variant-outline',
+      'robot',
+      'penguin',
+      'cat',
+      'bird',
+      'ladybug',
+    ];
     return (
       <CyDView
         className={clsx(
           'flex flex-row justify-between items-center w-[100%] py-[12px]',
-          { 'border-b-[1px] border-sepratorColor': isActive },
+          { 'border-b-[1px] border-n40': isActive },
         )}
         key={index}>
         <CyDView className='flex flex-row justify-between items-center'>
-          <CyDImage
-            source={
-              AppImages[`ADDRESS_PROFILE_${contactBook[name]?.imageProfile}`]
-            }
-            className='h-[30px] w-[30px]'
-            resizeMode='contain'
+          <CyDMaterialDesignIcons
+            name={randomIcons[index % randomIcons.length] as any}
+            size={24}
+            className='text-base400 font-light'
           />
           <CyDText className='ml-[10px] text-[16px] font-bold'>
             {formatName(contactBook[name]?.name).join('\n')}
@@ -255,20 +253,20 @@ const AddressProfile = props => {
                     contactBook,
                   });
                 }}>
-                <CyDImage
-                  source={AppImages.EDIT}
-                  className={'w-[20px] h-[20px] mr-[15px]'}
-                  resizeMode='contain'
+                <CyDMaterialDesignIcons
+                  name={'pencil'}
+                  size={20}
+                  className={'text-base400 mr-4'}
                 />
               </CyDTouchView>
               <CyDTouchView
                 onPress={() => {
                   deleteContact(name);
                 }}>
-                <CyDImage
-                  source={AppImages.DELETE}
-                  className={'w-[18px] h-[18px] mr-[15px]'}
-                  resizeMode='contain'
+                <CyDMaterialDesignIcons
+                  name={'delete'}
+                  size={20}
+                  className={'text-base400 mr-4'}
                 />
               </CyDTouchView>
             </CyDView>
@@ -278,9 +276,12 @@ const AddressProfile = props => {
               <RenderIcon contact={contactBook[name]} />
             </CyDView>
           ) : null}
-          <Animated.Image
-            style={isActive ? animatedStyle : styles.inactiveArrowStyle}
-            source={AppImages.UP_ARROW}
+          <CyDMaterialDesignIcons
+            name={'chevron-up'}
+            size={20}
+            className={clsx('text-base400', {
+              'rotate-180': !isActive,
+            })}
           />
         </CyDView>
       </CyDView>
@@ -357,18 +358,18 @@ const AddressProfile = props => {
               addressIsEOA = true;
             }
             return (
-              <CyDView key={`${index}-${address}`}>
+              <CyDView key={`${index}-${address}`} className=''>
                 {address ? (
                   !chainChoosen ? (
                     <CyDView
                       className='flex flex-row justify-between items-center py-[10px]'
                       key={`${index}-${address}`}>
-                      <CyDView className='flex flex-row flex-wrap justify-start items-center w-[80%]'>
+                      <CyDView className='flex flex-row flex-wrap justify-start items-center'>
                         <CyDView
                           className={`p-[5px] rounded-[30px] bg-${chain} ${
                             addressIsEOA ? '' : 'border border-blue-500'
                           }`}>
-                          <CyDImage
+                          <CyDFastImage
                             source={logoUrl}
                             className='h-[20px] w-[20px]'
                             resizeMode='contain'
@@ -381,30 +382,32 @@ const AddressProfile = props => {
                           {formatAddress(address)}
                         </CyDText>
                       </CyDView>
-                      <CyDView className='flex flex-row justify-between items-center'>
+                      <CyDView className='flex flex-row justify-between items-center gap-x-2'>
                         <CyDTouchView
+                          className='p-2 rounded-md border border-n40 bg-n0'
                           onPress={() => {
                             setSelectedChain(ChainConfigMapping[chain]);
                             setChooseTokenModal(true);
                             setSendAddress(address);
                           }}>
-                          <CyDImage
-                            source={AppImages.SEND}
-                            className='h-[25px] w-[25px] mr-[15px]'
-                            resizeMode='contain'
+                          <CyDMaterialDesignIcons
+                            name='send-outline'
+                            size={16}
+                            className='text-base400 -rotate-45'
                           />
                         </CyDTouchView>
                         <CyDTouchView
+                          className='p-2 rounded-md border border-n40 bg-n0'
                           onPress={() => {
                             copyToClipboard(address);
                             showToast(
                               `${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`,
                             );
                           }}>
-                          <CyDImage
-                            source={AppImages.COPY}
-                            className='h-[15px] w-[15px] mr-[10px]'
-                            resizeMode='contain'
+                          <CyDMaterialDesignIcons
+                            name={'content-copy'}
+                            size={16}
+                            className='text-base400'
                           />
                         </CyDTouchView>
                       </CyDView>
@@ -424,7 +427,7 @@ const AddressProfile = props => {
                           className={`p-[5px] rounded-[30px] bg-${chain} ${
                             addressIsEOA ? '' : 'border border-blue-500'
                           }`}>
-                          <CyDImage
+                          <CyDFastImage
                             source={logoUrl}
                             className='h-[20px] w-[20px]'
                             resizeMode='contain'
@@ -437,11 +440,11 @@ const AddressProfile = props => {
                           {formatAddress(address)}
                         </CyDText>
                       </CyDView>
-                      <CyDImage
+                      <CyDFastImage
                         source={
                           isRadioButtonPressed === name.concat(backendName)
-                            ? AppImages.RADIO_BUTTON_SELECTED
-                            : AppImages.RADIO_BUTTON_UNSELECTED
+                            ? AppImages.RADIO_CHECK
+                            : AppImages.RADIO_UNCHECK
                         }
                         className={'w-[24px] h-[24px] mr-[10px]'}
                         resizeMode='contain'
@@ -469,51 +472,23 @@ const AddressProfile = props => {
         </CyDView>
       ) : null}
       <CyDScrollView>
-        <Accordion
-          align='bottom'
-          activeSections={activeSections}
-          sections={contactNames}
-          touchableComponent={TouchableOpacity}
-          expandMultiple={true}
-          renderHeader={renderHeader}
-          renderContent={renderContent}
-          duration={400}
-          onChange={setSections}
-          renderAsFlatList={false}
-          sectionContainerStyle={
-            chainChoosen
-              ? styles.sectionContainerSendTo
-              : styles.sectionContainer
-          }
-        />
+        <CyDView className='bg-n0 border border-n40 rounded-lg my-[10px] px-4'>
+          <Accordion
+            align='bottom'
+            activeSections={activeSections}
+            sections={contactNames}
+            touchableComponent={TouchableOpacity}
+            expandMultiple={true}
+            renderHeader={renderHeader}
+            renderContent={renderContent}
+            duration={400}
+            onChange={setSections}
+            renderAsFlatList={false}
+          />
+        </CyDView>
       </CyDScrollView>
     </CyDView>
   );
 };
 
 export default AddressProfile;
-
-const styles = StyleSheet.create({
-  sectionContainerSendTo: {
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: Colors.sepratorColor,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    marginVertical: 10,
-    width: '95%',
-    marginLeft: '2.5%',
-  },
-  sectionContainer: {
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: Colors.sepratorColor,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    marginVertical: 10,
-  },
-  inactiveArrowStyle: {
-    height: verticalScale(12),
-    width: 14,
-  },
-});

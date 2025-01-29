@@ -1,6 +1,5 @@
-import { CyDView, CyDText } from '../../styles/tailwindStyles';
-import LottieView from 'lottie-react-native';
 import React from 'react';
+import { CyDView, CyDLottieView } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
@@ -16,7 +15,7 @@ export default function Loading({
   return (
     <CyDView
       className={clsx(
-        'flex justify-center bg-white items-center h-full w-full z-10',
+        'flex justify-center bg-n20 items-center h-full w-full z-10',
         {
           'absolute bg-transparent': isTransparent || blurBg,
         },
@@ -29,24 +28,18 @@ export default function Loading({
           reducedTransparencyFallbackColor='white'
         />
       )}
-      <LottieView
-        source={AppImages.LOADING_IMAGE}
+      <CyDLottieView
+        source={AppImages.LOADING_SPINNER}
         autoPlay
         loop
         style={styles.loader}
       />
-      <CyDText
-        className={clsx('text-[16px] font-semibold z-50', {
-          'text-white': blurBg,
-        })}>
-        {'Loading . . .'}
-      </CyDText>
     </CyDView>
   );
 }
 
 const styles = StyleSheet.create({
-  loader: { height: 150, width: 150, zIndex: 20 },
+  loader: { height: 30, width: 30, zIndex: 20 },
   absolute: {
     position: 'absolute',
     top: 0,

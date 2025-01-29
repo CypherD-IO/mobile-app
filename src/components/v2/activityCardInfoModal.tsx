@@ -1,15 +1,15 @@
-/* eslint-disable react-native/no-raw-text */
 import React, { useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import moment from 'moment';
 import { onShare } from '../../containers/utilities/socialShareUtility';
@@ -69,15 +69,16 @@ export default function ActivityInfoModal({
         style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView className={'bg-white pb-[30px] rounded-[20px] max-h-[90%]'}>
+        <CyDView className={'bg-n20 pb-[30px] rounded-[20px] max-h-[90%]'}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10'}
             onPress={() => {
               setModalVisible(false);
             }}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400 top-[20px] right-[20px]'
             />
           </CyDTouchView>
           <CyDView className='flex mt-[5%] flex-row justify-center items-center '>
@@ -134,9 +135,10 @@ export default function ActivityInfoModal({
                 {txnHash
                   ? `${txnHash.substring(0, 8)}...${txnHash.substring(txnHash.length - 6, txnHash.length)}\t`
                   : 'TBD\t'}
-                <CyDImage
-                  source={AppImages.COPY}
-                  className={'relative left-[20px] w-[16px] h-[18px]'}
+                <CyDMaterialDesignIcons
+                  name={'content-copy'}
+                  size={16}
+                  className='text-base400'
                 />
               </CyDText>
             </CyDTouchView>
@@ -152,9 +154,10 @@ export default function ActivityInfoModal({
                 </CyDText>
                 <CyDText className='text-center  text-[14px] mt-[5px] font-bold mt-[3px]  '>
                   {`${quoteId.substring(0, 8)}...${quoteId.substring(quoteId.length - 6, quoteId.length)}      `}
-                  <CyDImage
-                    source={AppImages.COPY}
-                    className={'relative left-[20px] w-[16px] h-[18px]'}
+                  <CyDMaterialDesignIcons
+                    name={'content-copy'}
+                    size={16}
+                    className='text-base400'
                   />
                 </CyDText>
               </CyDTouchView>

@@ -6,6 +6,7 @@ import {
   CyDTouchView,
   CyDKeyboardAvoidingView,
   CyDTextInput,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { t } from 'i18next';
@@ -67,15 +68,16 @@ export default function NewReferralCodeModal({
       <CyDKeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}>
-        <CyDView className='bg-cardBg px-[16px] py-[24px] rounded-t-[16px]'>
+        <CyDView className='bg-n20 px-[16px] py-[24px] rounded-t-[16px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDText className='font-semibold text-[18px]'>
               {t('CREATE_REFERRAL_CODE')}
             </CyDText>
             <CyDTouchView onPress={() => setIsModalVisible(false)}>
-              <CyDImage
-                source={AppImages.BLACK_CLOSE}
-                className='h-[12px] w-[12px]'
+              <CyDMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -87,7 +89,7 @@ export default function NewReferralCodeModal({
           </CyDText>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDTextInput
-              className='bg-white rounded-[8px] px-[12px] py-[15px] mt-[4px] flex-1 mr-[12px]'
+              className='bg-n0 rounded-[8px] px-[12px] py-[15px] mt-[4px] flex-1 mr-[12px]'
               placeholder={t('NEWCODE10')}
               value={code}
               onChangeText={handleCodeChange}
@@ -95,13 +97,19 @@ export default function NewReferralCodeModal({
             />
             <Button
               title={''}
-              image={AppImages.RIGHT_ARROW_LONG}
               imageStyle={'my-[5px]'}
               onPress={() => {
                 setIsModalVisible(false);
                 void createReferralCode();
               }}
               disabled={!isCodeValid}
+              icon={
+                <CyDMaterialDesignIcons
+                  name={'chevron-right'}
+                  size={16}
+                  className=''
+                />
+              }
             />
           </CyDView>
           {!isCodeValid && (

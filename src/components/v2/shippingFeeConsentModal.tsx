@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -34,10 +35,10 @@ export default function ShippingFeeConsentModal({
           Please Note:
         </CyDText>
         <CyDView className={'flex flex-row mt-[18px]'}>
-          <CyDImage
-            className={'mt-[6px] h-[12px] w-[12px]'}
-            source={AppImages.RIGHT_ARROW_BULLET}
-            resizeMode='contain'
+          <CyDMaterialDesignIcons
+            name={'triangle'}
+            size={14}
+            className='text-p150 rotate-90 mr-[4px]'
           />
           <CyDText className={'ml-[10px] font-semibold'}>
             {t('SHIPPING_FEE_SUB1') + '$' + feeAmount + t('SHIPPING_FEE_SUB2')}
@@ -50,14 +51,17 @@ export default function ShippingFeeConsentModal({
             setHasConsent(!hasConsent);
           }}>
           <CyDView
-            className={clsx('h-[20px] w-[20px] border-[1px] rounded-[4px]', {
-              'bg-black': hasConsent,
-            })}>
+            className={clsx(
+              'h-[20px] w-[20px] border-[1px] border-base400 rounded-[4px]',
+              {
+                'bg-black': hasConsent,
+              },
+            )}>
             {hasConsent && (
-              <CyDImage
-                source={AppImages.CORRECT}
-                className='h-[15px] w-[15px] ml-[2px]'
-                resizeMode='contain'
+              <CyDMaterialDesignIcons
+                name='check-bold'
+                size={16}
+                className='text-base400'
               />
             )}
           </CyDView>
@@ -80,13 +84,12 @@ export default function ShippingFeeConsentModal({
       style={styles.modalLayout}
       isModalVisible={isModalVisible}>
       <CyDView
-        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-        <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={
-              ' w-[22px] h-[22px] z-[50] absolute right-[-5px] top-[-5px]'
-            }
+        className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+        <CyDTouchView onPress={() => onFailure()} className={'z-[50] self-end'}>
+          <CyDMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
         {

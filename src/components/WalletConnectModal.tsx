@@ -3,6 +3,7 @@ import SignatureModal from '../components/v2/signatureModal';
 import {
   CyDFastImage,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -133,7 +134,7 @@ export default function WalletConnectModal(props) {
             fF={C.fontsName.FONT_BOLD}
             mL={8}
             fS={16}
-            color={Colors.secondaryTextColor}>
+            color={Colors.primaryTextColor}>
             {item.name}
           </CText>
           <CText
@@ -164,7 +165,7 @@ export default function WalletConnectModal(props) {
           </CyDText>
           <CyDScrollView
             className={
-              'max-h-[180px] bg-backLight p-[8px] mt-[10px] pb-[18px] rounded-[6px]'
+              'max-h-[180px] bg-p50 p-[8px] mt-[10px] pb-[18px] rounded-[6px]'
             }>
             <CyDText className={'mt-[10px] text-[14px]'}>
               {message ?? ''}
@@ -266,15 +267,16 @@ export default function WalletConnectModal(props) {
           animationIn={'slideInUp'}
           animationOut={'slideOutDown'}>
           <CyDView
-            className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+            className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView
               onPress={() => {
                 setChooseChain(false);
               }}
               className={'z-[50]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+              <CyDMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 z-[50] absolute right-[0px'
               />
             </CyDTouchView>
             <CyDText
@@ -322,13 +324,7 @@ export default function WalletConnectModal(props) {
               </CText>
             </DynamicView>
             <DynamicView dynamic jC={'center'} width={'100%'}>
-              <DynamicImage
-                dynamic
-                source={AppImages.LINE}
-                width={308}
-                height={10}
-                mT={10}
-              />
+              <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
             </DynamicView>
             <DynamicView dynamic width={250} mL={41} mT={10} fD={'row'}>
               <CText
@@ -359,13 +355,7 @@ export default function WalletConnectModal(props) {
             </DynamicView>
 
             <DynamicView dynamic jC={'center'} width={'100%'} mB={10}>
-              <DynamicImage
-                dynamic
-                source={AppImages.LINE}
-                width={308}
-                height={10}
-                mT={10}
-              />
+              <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
             </DynamicView>
 
             <RenderData />
@@ -404,13 +394,7 @@ export default function WalletConnectModal(props) {
               params.payload.params[0].chainId !== 0 && (
                 <>
                   <DynamicView dynamic jC={'center'} width={'100%'} mB={10}>
-                    <DynamicImage
-                      dynamic
-                      source={AppImages.LINE}
-                      width={308}
-                      height={10}
-                      mT={10}
-                    />
+                    <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
                   </DynamicView>
                   <CyDView
                     className={
@@ -429,7 +413,7 @@ export default function WalletConnectModal(props) {
                         setChooseChain(true);
                       }}
                       className={
-                        'h-[40px] w-[60%] bg-chainColor rounded-[18px] flex flex-row items-center justify-center'
+                        'h-[40px] w-[60%] bg-green20 rounded-[18px] flex flex-row items-center justify-center'
                       }>
                       <CyDFastImage
                         className={'h-[20px] w-[20px] mr-[6px]'}
@@ -438,20 +422,16 @@ export default function WalletConnectModal(props) {
                       <CyDText className={'text-center'}>
                         {currentChain.name}
                       </CyDText>
-                      <CyDFastImage
-                        className={'h-[8px] w-[8px] ml-[8px]'}
-                        source={AppImages.DOWN}
+
+                      <CyDMaterialDesignIcons
+                        name={'menu-down'}
+                        size={16}
+                        className={'text-base400 ml-[8px]'}
                       />
                     </CyDTouchView>
                   </CyDView>
                   <DynamicView dynamic jC={'center'} width={'100%'} mB={10}>
-                    <DynamicImage
-                      dynamic
-                      source={AppImages.LINE}
-                      width={308}
-                      height={10}
-                      mT={10}
-                    />
+                    <CyDView className='w-[310px] h-[10px] bg-base100 mt-[1px]' />
                   </DynamicView>
                 </>
               )}

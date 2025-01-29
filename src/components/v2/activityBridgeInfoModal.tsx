@@ -10,7 +10,6 @@ import { captureRef } from 'react-native-view-shot';
 import { SHARE_TRANSACTION_TIMEOUT } from '../../core/Http';
 import {
   copyToClipboard,
-  getExplorerUrl,
   getExplorerUrlFromChainId,
   getMaskedAddress,
 } from '../../core/util';
@@ -18,12 +17,14 @@ import { isAndroid } from '../../misc/checkers';
 import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
+  CyDIcons,
   CyDImage,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
+import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import CyDModalLayout from './modal';
 import { screenTitle } from '../../constants';
@@ -122,18 +123,17 @@ export default function ActivityBridgeInfoModal({
         style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white pb-[30px] rounded-t-[20px]'}
-          ref={viewRef}>
+        <CyDView className={'bg-n20 pb-[30px] rounded-t-[20px]'} ref={viewRef}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10'}
             onPress={() => {
               setModalVisible(false);
             }}>
             {!isCapturingDetails && (
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+              <CyDMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 top-[20px] right-[20px]'
               />
             )}
           </CyDTouchView>
@@ -257,7 +257,7 @@ export default function ActivityBridgeInfoModal({
                       ),
                     )
                   }>
-                  <CyDImage source={AppImages.COPY} />
+                  <CyDIcons name={'copy'} size={16} className='text-base400' />
                 </CyDTouchView>
               </CyDView>
             )}
@@ -279,8 +279,13 @@ export default function ActivityBridgeInfoModal({
                     void referFriend();
                   }}
                   style={'py-[5%] mx-[0px]'}
-                  image={AppImages.SHARE}
-                  imageStyle='h-[18px] w-[18px] mt-[3px] mr-[10px]'
+                  icon={
+                    <CyDIcons
+                      name='share'
+                      size={24}
+                      className='text-black mt-[3px] mr-[10px]'
+                    />
+                  }
                   title={t('SHARE_DETAILS')}
                   titleStyle='text-[14px]'
                 />

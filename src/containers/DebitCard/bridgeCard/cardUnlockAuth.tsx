@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
+  CyDIcons,
+  CyDLottieView,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
-  CyDImage,
+  CyDMaterialDesignIcons,
 } from '../../../styles/tailwindStyles';
-import OtpInput from '../../../components/v2/OTPInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -29,8 +29,8 @@ import {
 } from '../../../constants/enum';
 import { Card } from '../../../models/card.model';
 import { t } from 'i18next';
-import { capitalize } from 'lodash';
 import { PinInput } from '../../../components/v2/pinInput';
+import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   onSuccess: () => void;
@@ -54,15 +54,13 @@ const OTPHeader = ({
         onPress={() => {
           navigation.goBack();
         }}>
-        <CyDImage
-          source={AppImages.BACK_ARROW_GRAY}
-          className='w-[32px] h-[32px]'
-        />
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
 
-      <CyDImage
-        source={AppImages.SHIELD_FILLED}
-        className='mt-[24px] w-[32px] h-[32px]'
+      <CyDMaterialDesignIcons
+        name='shield-check'
+        size={32}
+        className='text-base400 mt-4'
       />
 
       <CyDText className='mt-[6px] text-[28px] font-bold'>
@@ -201,8 +199,8 @@ export default function CardUnlockAuth() {
   }
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className=' bg-n20'>
+      <CyDView className={'h-full px-[20px] pt-[10px]'}>
         <OTPHeader navigation={navigation} card={card} />
         <CyDView>
           <CyDView className={'mt-[24px]'}>
@@ -226,7 +224,7 @@ export default function CardUnlockAuth() {
                 </CyDText>
               </CyDText>
               {sendingOTP && (
-                <LottieView
+                <CyDLottieView
                   source={AppImages.LOADER_TRANSPARENT}
                   autoPlay
                   loop

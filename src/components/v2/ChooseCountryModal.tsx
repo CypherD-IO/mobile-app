@@ -6,6 +6,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDKeyboardAvoidingView,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -87,9 +88,9 @@ const ChooseCountryModal = ({
   };
 
   useEffect(() => {
-    //if (isModalVisible) {
+    // if (isModalVisible) {
     void getCountryData();
-    //}
+    // }
   }, [isModalVisible]);
 
   useEffect(() => {
@@ -126,7 +127,7 @@ const ChooseCountryModal = ({
           className={clsx(
             'flex flex-row items-center justify-between px-[16px] py-[6px] mx-[12px] rounded-[8px]',
             {
-              'bg-paleBlue': country.name === selectedCountry?.name,
+              'bg-blue20': country.name === selectedCountry?.name,
             },
           )}
           key={country?.name}>
@@ -159,12 +160,10 @@ const ChooseCountryModal = ({
           {showRadioButton && (
             <CyDView
               className={
-                'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'
+                'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-base100 flex flex-row justify-center items-center'
               }>
               {country.name === selectedCountry?.name ? (
-                <CyDView
-                  className={'h-[10px] w-[10px] rounded-[5px] bg-appColor'}
-                />
+                <CyDView className={'h-[10px] w-[10px] rounded-[5px] bg-p50'} />
               ) : null}
             </CyDView>
           )}
@@ -184,12 +183,12 @@ const ChooseCountryModal = ({
       <CyDKeyboardAvoidingView
         behavior={isAndroid() ? 'height' : 'padding'}
         className='flex flex-col justify-end h-full'>
-        <CyDView className={'bg-white h-[70%] rounded-t-[24px]'}>
+        <CyDView className={'bg-n20 h-[70%] rounded-t-[24px]'}>
           <CyDView
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[80%]'
+                'border-[1px] border-base80 rounded-[8px] p-[10px] text-[14px] w-[80%]'
               }
               value={countryFilterText}
               autoCapitalize='none'
@@ -203,9 +202,10 @@ const ChooseCountryModal = ({
                 setModalVisible(false);
               }}
               className={'ml-[18px]'}>
-              <CyDFastImage
-                source={AppImages.CLOSE}
-                className={' w-[22px] h-[22px] z-[50] right-[0px] '}
+              <CyDMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 z-[50] right-[0px]'
               />
             </CyDTouchView>
           </CyDView>
@@ -282,12 +282,12 @@ const ChooseCountryModal = ({
                     {showRadioButton && (
                       <CyDView
                         className={
-                          'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'
+                          'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-base100 flex flex-row justify-center items-center'
                         }>
                         {country.name === selectedCountry?.name ? (
                           <CyDView
                             className={
-                              'h-[10px] w-[10px] rounded-[5px] bg-appColor'
+                              'h-[10px] w-[10px] rounded-[5px] bg-p50'
                             }
                           />
                         ) : null}

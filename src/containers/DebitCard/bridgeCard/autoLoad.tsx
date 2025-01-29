@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDSwitch,
   CyDText,
@@ -30,8 +31,14 @@ import { CardProfile } from '../../../models/cardProfile.model';
 import { EVM_CHAINS_TYPE } from '../../../constants/type';
 import { capitalize, get, map } from 'lodash';
 import usePortfolio from '../../../hooks/usePortfolio';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function AutoLoad({ navigation }: { navigation: any }) {
+export default function AutoLoad() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [threshold, setThreshold] = useState('100');
   const [amountToLoad, setAmountToLoad] = useState('500');
   const [expiryDate, setExpiryDate] = useState<string>(
@@ -63,8 +70,8 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
 
   const getSupportedTokens = async () => {
     const localPortfolio = await getLocalPortfolio();
-    const totalHoldings = localPortfolio.totalHoldings;
-    const tempSupportedTokens = totalHoldings.filter(token => {
+    const totalHoldings = localPortfolio?.totalHoldings;
+    const tempSupportedTokens = totalHoldings?.filter(token => {
       const { backendName: chain } = token.chainDetails;
       const stableTokens = STABLE_TOKEN_CHAIN_MAP.get(chain as EVM_CHAINS_TYPE);
       if (
@@ -88,8 +95,14 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
   const getAutoLoadConfig = async () => {
     const response = await getWithAuth('/v1/cards/autoLoad');
     if (!response.isError) {
-      const { chain, assetId, threshold, amountToBeLoaded, expiry, repeatFor } =
-        response.data;
+      const {
+        chain,
+        assetId,
+        threshold: _threshold,
+        amountToBeLoaded,
+        expiry,
+        repeatFor: _repeatFor,
+      } = response.data;
       const tempSelectedToken = supportedTokens?.find(
         (token: Holding) =>
           token.chainDetails.backendName === chain &&
@@ -102,10 +115,10 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
       );
       if (tempSelectedToken) {
         setSelectedToken(tempSelectedToken);
-        setThreshold(String(threshold));
+        setThreshold(String(_threshold));
         setAmountToLoad(String(amountToBeLoaded));
         setExpiryDate(expiry);
-        setRepeatFor(repeatFor);
+        setRepeatFor(_repeatFor);
       }
     }
   };
@@ -117,7 +130,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
     setIsDatePickerVisible(false);
   };
   return (
-    <CyDScrollView className='flex-1'>
+    <CyDScrollView className='flex-1 bg-n20'>
       <CyDKeyboardAwareScrollView>
         <ChooseTokenModal
           isChooseTokenModalVisible={isChooseTokenVisible}
@@ -140,9 +153,9 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
           onConfirm={(date: Date) => onConfirmDate(date)}
           onCancel={() => setIsDatePickerVisible(false)}
         />
-        <CyDView className='bg-white py-[22px] px-[16px]'>
-          <CyDView className='flex flex-row justify-start border-[1px] border-sepratorColor rounded-[12px] py-[12px] px-[12px]'>
-            <CyDView className='self-end'>
+        <CyDView className='bg-n0 mx-[16px] rounded-2xl'>
+          <CyDView className='flex flex-row justify-start rounded-[12px] py-[12px] px-[12px]'>
+            <CyDView className='self-center'>
               <CyDImage
                 source={AppImages.CARD_SEL}
                 className='h-[45px] w-[45px]'
@@ -162,12 +175,12 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='flex flex-col bg-white my-[14px] mx-[16px] rounded-[12px]'>
+        <CyDView className='flex flex-col bg-n0 my-[14px] mx-[16px] rounded-[12px]'>
           <CyDView className='flex flex-col p-[16px]'>
             <CyDText>When the balance falls below:</CyDText>
             <CyDView className='flex flex-row justify-start items-center mt-[8px]'>
               <CyDView
-                className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'
+                className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
                 style={{ width: 65 + String(threshold).length * 18 }}>
                 <CyDText className='text-[26px] font-bold'>{'$'}</CyDText>
                 <CyDTextInput
@@ -179,27 +192,27 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   }}
                 />
               </CyDView>
-              <CyDView className='bg-cardBg p-[4px] rounded-[25px]'>
-                <CyDImage
-                  source={AppImages.EDIT}
-                  className='h-[18px] w-[18px]'
-                  resizeMode='contain'
+              <CyDView className='bg-n40 p-[4px] rounded-[25px]'>
+                <CyDMaterialDesignIcons
+                  name='pencil-outline'
+                  size={18}
+                  className='text-base400'
                 />
               </CyDView>
             </CyDView>
           </CyDView>
           <CyDView className='flex flex-col p-[16px]'>
-            <CyDView className='flex flex-col pb-[32px] border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-col pb-[32px] border-b-[1px] border-n40'>
               <CyDText>Automatically top up:</CyDText>
               <CyDView className='flex flex-row justify-start items-center mt-[8px]'>
                 <CyDView
-                  className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'
+                  className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
                   style={{ width: 65 + String(amountToLoad).length * 18 }}>
-                  <CyDText className='text-[36px] text-mandarin font-bold'>
+                  <CyDText className='text-[36px] text-p150 font-bold'>
                     {'$'}
                   </CyDText>
                   <CyDTextInput
-                    className='text-[36px] text-mandarin font-bold w-[90%]'
+                    className='text-[36px] text-p150 font-bold w-[90%]'
                     keyboardType={'number-pad'}
                     value={amountToLoad}
                     onChangeText={value => {
@@ -207,11 +220,11 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                     }}
                   />
                 </CyDView>
-                <CyDView className='bg-cardBg p-[4px] rounded-[25px]'>
-                  <CyDImage
-                    source={AppImages.EDIT}
-                    className='h-[18px] w-[18px]'
-                    resizeMode='contain'
+                <CyDView className='bg-n40 p-[4px] rounded-[25px]'>
+                  <CyDMaterialDesignIcons
+                    name='pencil-outline'
+                    size={18}
+                    className='text-base400'
                   />
                 </CyDView>
               </CyDView>
@@ -230,24 +243,25 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   </CyDText>
                 </CyDView>
                 <CyDTouchView
-                  className='flex flex-row items-center ml-[2px] bg-cardBg py-[6px] px-[16px] rounded-[14px]'
+                  className='flex flex-row items-center ml-[2px] bg-base40 py-[6px] px-[16px] rounded-[14px]'
                   onPress={() => {
                     setIsChooseTokenVisible(true);
                   }}>
                   <CyDText className='font-bold'>
                     {capitalize(selectedToken?.chainDetails?.name) ?? 'Change'}
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.DOWN_ARROW}
-                    className='h-[15px] w-[12px] ml-[4px]'
-                    resizeMode='contain'
+
+                  <CyDMaterialDesignIcons
+                    name={'chevron-down'}
+                    size={16}
+                    className={'text-base400 ml-2'}
                   />
                 </CyDTouchView>
               </CyDView>
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white py-[22px] px-[16px] rounded-[12px] mx-[16px]'>
+        <CyDView className='bg-n0 py-[22px] px-[16px] rounded-[12px] mx-[16px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText className='font-bold text-[16px]'>Set Expiry</CyDText>
             <CyDView>
@@ -260,7 +274,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
             </CyDView>
           </CyDView>
           {autoLoadExpiry && (
-            <CyDView className='flex flex-col pt-[12px] border-t-[1.5px] border-sepratorColor mt-[18px]'>
+            <CyDView className='flex flex-col pt-[12px] border-t-[1.5px] border-n40 mt-[18px]'>
               <CyDView>
                 <CyDText>Auto load until:</CyDText>
                 <CyDTouchView
@@ -268,16 +282,16 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   onPress={() => {
                     setIsDatePickerVisible(true);
                   }}>
-                  <CyDView className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'>
+                  <CyDView className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'>
                     <CyDText className='text-[18px] font-bold'>
                       {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
                     </CyDText>
                   </CyDView>
-                  <CyDView className='bg-cardBg p-[4px] rounded-[25px] ml-[12px]'>
-                    <CyDImage
-                      source={AppImages.EDIT}
-                      className='h-[18px] w-[18px]'
-                      resizeMode='contain'
+                  <CyDView className='bg-n20 p-[4px] rounded-[25px] ml-[12px]'>
+                    <CyDMaterialDesignIcons
+                      name='pencil-outline'
+                      size={18}
+                      className='text-base400'
                     />
                   </CyDView>
                 </CyDTouchView>
@@ -286,7 +300,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                 <CyDText>No.of times to auto load:</CyDText>
                 <CyDView className='flex flex-row justify-start items-center mt-[2px]'>
                   <CyDView
-                    className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'
+                    className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
                     style={{ width: 65 + String(repeatFor).length * 18 }}>
                     <CyDTextInput
                       className='text-[18px] font-bold w-[90%]'
@@ -297,11 +311,11 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                       }}
                     />
                   </CyDView>
-                  <CyDView className='bg-cardBg p-[4px] rounded-[25px]'>
-                    <CyDImage
-                      source={AppImages.EDIT}
-                      className='h-[18px] w-[18px]'
-                      resizeMode='contain'
+                  <CyDView className='bg-n20 p-[4px] rounded-[25px]'>
+                    <CyDMaterialDesignIcons
+                      name='pencil-outline'
+                      size={18}
+                      className='text-base400'
                     />
                   </CyDView>
                 </CyDView>
