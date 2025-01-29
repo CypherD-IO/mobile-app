@@ -68,14 +68,14 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.CHOOSE_WALLET_INDEX}
         component={ChooseWalletIndex}
-        options={({ navigation, route }) => ({
+        options={() => ({
           headerShown: false,
         })}
       />
       <Stack.Screen
         name={screenTitle.ENTER_PRIVATE_KEY}
         component={EnterPrivateKey}
-        options={({ navigation, route }) => ({
+        options={({ navigation }) => ({
           header: () => (
             <CustomHeader title='Import Wallet' navigation={navigation} />
           ),
@@ -84,7 +84,7 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.IMPORT_WALLET_OPTIONS}
         component={ImportWalletOptions}
-        options={({ navigation, route }) => ({
+        options={({ navigation }) => ({
           header: () => (
             <CustomHeader title='Import Wallet' navigation={navigation} />
           ),
@@ -93,7 +93,7 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
-        options={({ navigation, route }) => ({
+        options={({ navigation }) => ({
           header: () => (
             <CustomHeader title='SCAN QR CODE' navigation={navigation} />
           ),
@@ -102,14 +102,14 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.CREATE_SEED_PHRASE}
         component={CreateSeedPhrase}
-        options={({ navigation, route }) => ({
+        options={() => ({
           headerShown: false,
         })}
       />
       <Stack.Screen
         name={screenTitle.TRACK_WALLET_SCREEN}
         component={TrackWallet}
-        options={({ navigation, route }) => ({
+        options={({ navigation }) => ({
           header: () => (
             <CustomHeader title='Track Any Wallet' navigation={navigation} />
           ),
