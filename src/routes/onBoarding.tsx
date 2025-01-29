@@ -75,20 +75,20 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.ENTER_PRIVATE_KEY}
         component={EnterPrivateKey}
-        options={{
+        options={({ navigation, route }) => ({
           header: () => (
             <CustomHeader title='Import Wallet' navigation={navigation} />
           ),
-        }}
+        })}
       />
       <Stack.Screen
         name={screenTitle.IMPORT_WALLET_OPTIONS}
         component={ImportWalletOptions}
-        options={{
+        options={({ navigation, route }) => ({
           header: () => (
             <CustomHeader title='Import Wallet' navigation={navigation} />
           ),
-        }}
+        })}
       />
       <Stack.Screen
         name={screenTitle.QR_CODE_SCANNER}
