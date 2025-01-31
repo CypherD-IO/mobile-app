@@ -32,6 +32,7 @@ import {
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
   CHAIN_SOLANA,
+  NON_EIP1599_CHAINS,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -43,7 +44,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get } from 'lodash';
+import { find, get, omit } from 'lodash';
 import Web3 from 'web3';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
@@ -81,6 +82,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { ICountry } from '../models/cardApplication.model';
 import { currencySymbolMap } from '../../assets/datasets/currencySymbolMap';
 import { isAddress } from 'web3-validator';
+import Decimal from 'decimal.js';
+import { DecimalHelper } from '../utils/decimalHelper';
+import { Common, Hardfork } from '@ethereumjs/common';
+import { TransactionFactory } from '@ethereumjs/tx';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -357,11 +362,14 @@ export const validateAmount = (amount: string): boolean => {
 };
 
 export const convertFromUnitAmount = (
-  amount: string,
+  amount: string | number | Decimal,
   decimal: number,
   decimalPlaces = 3,
-) => {
-  return (parseFloat(amount) * 10 ** -decimal).toFixed(decimalPlaces);
+): string => {
+  return DecimalHelper.toString(
+    DecimalHelper.divide(amount, DecimalHelper.pow(10, decimal)),
+    decimalPlaces,
+  );
 };
 
 export const convertNumberToShortHandNotation = n => {
@@ -670,11 +678,14 @@ export function isEthereumAddress(address: string) {
     : isAddress(address);
 }
 
-export function limitDecimalPlaces(num: string | number, decimalPlaces = 18) {
-  num = String(num);
-  return num.includes('.')
-    ? num.slice(0, num.indexOf('.') + (decimalPlaces + 1))
-    : num;
+export function limitDecimalPlaces(
+  num: string | number | Decimal,
+  decimalPlaces = 18,
+): string {
+  return DecimalHelper.floor(
+    DecimalHelper.fromString(num),
+    decimalPlaces,
+  ).toString();
 }
 
 export const isBasicCosmosChain = (backendName: string) =>
@@ -731,16 +742,22 @@ export const calculateTime = function time(ttime: string) {
 
 export const beautifyPriceWithUSDDenom = (price: number): string => {
   if (price > 1000000000000) {
-    return `${Math.floor(price / 1000000000000)} Trillion`;
+    return `${DecimalHelper.toString(
+      DecimalHelper.divide(price, 1000000000000).floor(),
+    )} Trillion`;
   }
   if (price > 1000000000) {
-    return `${Math.floor(price / 1000000000)} Billion`;
+    return `${DecimalHelper.toString(
+      DecimalHelper.divide(price, 1000000000).floor(),
+    )} Billion`;
   }
   if (price > 1000000) {
-    return `${Math.floor(price / 1000000)} Million`;
+    return `${DecimalHelper.toString(
+      DecimalHelper.divide(price, 1000000).floor(),
+    )} Million`;
   }
   if (price > 1000) {
-    return `${Math.floor(price / 1000)} K`;
+    return `${DecimalHelper.toString(DecimalHelper.divide(price, 1000).floor())} K`;
   }
   return `${price}`;
 };
@@ -816,14 +833,19 @@ export const generateRandomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-export const formatAmount = (amount: string | number, precision = 4) => {
-  if (Number(amount) < 1) {
-    return new Intl.NumberFormat('en-US', {
-      maximumSignificantDigits: precision,
-    }).format(Number(amount));
+export const formatAmount = (
+  amount: string | number | Decimal,
+  precision = 4,
+): string => {
+  const decimalAmount = DecimalHelper.fromString(amount ?? 0);
+  if (DecimalHelper.isLessThan(decimalAmount, 1)) {
+    // For numbers less than 1, maintain significant digits
+    return decimalAmount.toSignificantDigits(precision).toString();
   } else {
-    const factor = Math.pow(10, precision);
-    return Math.floor(Number(amount) * factor) / factor;
+    // For numbers >= 1, use fixed decimal places
+    return decimalAmount
+      .toDecimalPlaces(precision, Decimal.ROUND_DOWN)
+      .toString();
   }
 };
 
@@ -1020,15 +1042,24 @@ export function getTimeOutTime() {
 
 export const hasSufficientBalanceAndGasFee = (
   isNativeToken: boolean,
-  gasFeeEstimation: number,
-  nativeTokenBalance: number,
-  sentAmount: number,
-  sendingTokenBalance: number,
-) => {
-  const hasSufficientGasFee = gasFeeEstimation <= nativeTokenBalance;
+  gasFeeEstimation: string,
+  nativeTokenBalance: string,
+  sentAmount: string,
+  sendingTokenBalance: string,
+): boolean => {
+  const hasSufficientGasFee = DecimalHelper.isLessThanOrEqualTo(
+    gasFeeEstimation,
+    nativeTokenBalance,
+  );
+  if (DecimalHelper.isLessThan(sentAmount, 0)) {
+    return false;
+  }
   const hasSufficientBalance = isNativeToken
-    ? sentAmount + gasFeeEstimation <= sendingTokenBalance
-    : sentAmount <= sendingTokenBalance;
+    ? DecimalHelper.isLessThanOrEqualTo(
+        DecimalHelper.add(sentAmount, gasFeeEstimation),
+        sendingTokenBalance,
+      )
+    : DecimalHelper.isLessThanOrEqualTo(sentAmount, sendingTokenBalance);
   return hasSufficientBalance && hasSufficientGasFee;
 };
 
@@ -1183,4 +1214,36 @@ export function getSymbolFromCurrency(currencyCode: string) {
 
 export function getChainIconFromChainName(chainName: ChainBackendNames) {
   return ChainNameToChainMapping[chainName].logo_url;
+}
+
+export const isEIP1599Chain = (chainName: ChainBackendNames) => {
+  return !NON_EIP1599_CHAINS.includes(chainName);
+};
+
+function buildTxParams(txParams) {
+  return {
+    ...omit(txParams, 'gas'),
+    gasLimit: txParams.gas,
+  };
+}
+
+function buildTransactionCommon(txMeta) {
+  // This produces a transaction whose information does not completely match an
+  // Optimism transaction — for instance, DEFAULT_CHAIN is still 'mainnet' and
+  // genesis points to the mainnet genesis, not the Optimism genesis — but
+  // considering that all we want to do is serialize a transaction, this works
+  // fine for our use case.
+  return Common.custom({
+    chainId: Number(txMeta.chainId),
+    // Optimism only supports type-0 transactions; it does not support any of
+    // the newer EIPs since EIP-155. Source:
+    // <https://github.com/ethereum-optimism/optimism/blob/develop/specs/l2geth/transaction-types.md>
+    defaultHardfork: Hardfork.SpuriousDragon,
+  });
+}
+
+export default function buildUnserializedTransaction(txMeta) {
+  const txParams = buildTxParams(txMeta);
+  const common = buildTransactionCommon(txMeta);
+  return TransactionFactory.fromTxData(txParams, { common });
 }

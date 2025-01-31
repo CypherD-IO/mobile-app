@@ -50,6 +50,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 const EmptyView = () => {
   return (
@@ -250,8 +251,10 @@ export default function TokenStaking({
   const onPressClaim = async (type: CosmosActionType): Promise<void> => {
     if (
       type === CosmosActionType.TRANSACTION &&
-      parseFloat(gasFee.toFixed(6)) >
-        parseFloat(stakingVariables.availableToStake)
+      DecimalHelper.isGreaterThan(
+        gasFee.toFixed(6),
+        stakingVariables.availableToStake,
+      )
     ) {
       setLoading(true);
       setSignModalVisible(false);
@@ -357,8 +360,10 @@ export default function TokenStaking({
     setLoading(true);
     if (
       type === CosmosActionType.TRANSACTION &&
-      parseFloat(gasFee.toFixed(6)) >
-        parseFloat(stakingVariables.availableToStake)
+      DecimalHelper.isGreaterThan(
+        gasFee.toFixed(6),
+        stakingVariables.availableToStake,
+      )
     ) {
       showNoGasFeeModal();
     } else {

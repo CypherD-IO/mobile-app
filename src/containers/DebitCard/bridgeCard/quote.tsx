@@ -50,6 +50,7 @@ import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import { getConnectionType } from '../../../core/asyncStorage';
+import { DecimalHelper } from '../../../utils/decimalHelper';
 
 export default function CardQuote({
   navigation,
@@ -84,6 +85,10 @@ export default function CardQuote({
   const [isPayDisabled, setIsPayDisabled] = useState<boolean>(
     hasSufficientBalanceAndGasFee,
   );
+  const [maximumAmountPossible, setMaximumAmountPossible] =
+    useState<string>('');
+  const [hasInsufficientBalance, setHasInsufficientBalance] =
+    useState<boolean>(false);
   const hdWallet = useContext<any>(HdWalletContext);
   const ethereum = hdWallet.state.wallet.ethereum;
   const activityContext = useContext<any>(ActivityContext);
@@ -515,10 +520,28 @@ export default function CardQuote({
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
             <CyDText className={' font-medium text-[16px] '}>
-              {String(formatAmount(amountInCrypto)) + ' ' + symbol}
+              {limitDecimalPlaces(
+                DecimalHelper.toString(
+                  DecimalHelper.divide(amountInFiat, selectedToken?.price),
+                ),
+                4,
+              ) +
+                ' ' +
+                symbol}
             </CyDText>
             <CyDText className={' font-medium text-[16px]'}>
-              {'$' + limitDecimalPlaces(amountInFiat, 4)}
+              {'$' + limitDecimalPlaces(amountInFiat, 2)}
+            </CyDText>
+          </CyDView>
+        </CyDView>
+
+        <CyDView
+          className={'flex flex-row justify-between items-center py-[16px]'}>
+          <CyDText className={'font-bold text-[14px]'}>{t('LOAD_FEE')}</CyDText>
+          <CyDView
+            className={'flex flex-col flex-wrap justify-between items-end'}>
+            <CyDText className={'font-medium text-[14px] '}>
+              {'$' + String(tokenQuote.fees.actualFee)}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -534,7 +557,7 @@ export default function CardQuote({
               {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
             </CyDText>
             <CyDText className={'font-medium text-[14px]'}>
-              {'$' + String(formatAmount(gasFeeInFiat))}
+              {'$' + formatAmount(gasFeeInFiat)}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -574,7 +597,7 @@ export default function CardQuote({
           </CyDView>
         )}
       </CyDView>
-      {!hasSufficientBalanceAndGasFee ? (
+      {hasInsufficientBalance ? (
         <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-red20 mx-[12px]'>
           <CyDFastImage
             source={AppImages.CYPHER_WARNING_RED}

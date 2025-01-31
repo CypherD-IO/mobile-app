@@ -61,6 +61,7 @@ import {
 import { TIME_GAPS } from '../../constants/data';
 import { endsWith, get, round } from 'lodash';
 import { SvgUri } from 'react-native-svg';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 const IN_PROGRESS = 'IN_PROGRESS';
 const PENDING = 'PENDING';
@@ -101,9 +102,7 @@ function SentItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${limitDecimalPlaces(activity.amount, 6)} ${
-    activity.tokenName
-  }`;
+  const formatAmount = `- ${limitDecimalPlaces(activity.amount, 6)} ${activity.tokenName}`;
   const showSendDetails = () => {
     if (
       [ActivityStatus.SUCCESS, ActivityStatus.INPROCESS].includes(
@@ -223,10 +222,8 @@ function BridgeItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatFromAmount = `- ${get(activity, ['fromTokenAmount'])} ${get(activity, 'fromSymbol')}`;
-  const formatToAmount = `+ ${round(parseFloat(get(activity, ['toTokenAmount'], '0')), 4)} ${
-    activity.toSymbol
-  }`;
+  const formatFromAmount = `- ${limitDecimalPlaces(get(activity, ['fromTokenAmount'], '0'), 4)} ${get(activity, 'fromSymbol')}`;
+  const formatToAmount = `+ ${limitDecimalPlaces(get(activity, ['toTokenAmount'], '0'), 4)} ${activity.toSymbol}`;
 
   const onPressBridgeItem = () => {
     if (
@@ -431,10 +428,8 @@ function IBCItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatFromAmount = `- ${round(parseFloat(activity.amount), 4)} ${
-    activity.symbol
-  }`;
-  const formatToAmount = `+ ${round(parseFloat(activity.amount), 4)} ${activity.symbol}`;
+  const formatFromAmount = `- ${limitDecimalPlaces(activity.amount, 4)} ${activity.symbol}`;
+  const formatToAmount = `+ ${limitDecimalPlaces(activity.amount, 4)} ${activity.symbol}`;
 
   return (
     <CyDTouchView className='mb-[20px] mt-[10px]'>
@@ -558,7 +553,7 @@ function WalletConnectItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${round(parseFloat(activity.amount), 8)} ${activity.symbol}`;
+  const formatAmount = `- ${limitDecimalPlaces(activity.amount, 8)} ${activity.symbol}`;
   const webIconUrl = `https://www.google.com/s2/favicons?domain=${activity.websiteInfo.host}&sz=32`;
 
   const onPressWCItem = () => {
@@ -656,7 +651,7 @@ function BrowserItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${round(parseFloat(activity.amount), 8)} ${activity.symbol}`;
+  const formatAmount = `- ${limitDecimalPlaces(activity.amount, 8)} ${activity.symbol}`;
   const webIconUrl = `https://www.google.com/s2/favicons?domain=${activity.websiteInfo.host}&sz=32`;
 
   return (
@@ -715,9 +710,7 @@ function CardItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${limitDecimalPlaces(activity.amount, 6)} ${
-    activity.tokenSymbol
-  }`;
+  const formatAmount = `- ${limitDecimalPlaces(activity.amount, 6)} ${activity.tokenSymbol}`;
   const formatAmountUsd =
     activity.status === ActivityStatus.SUCCESS
       ? `+ $${activity.amountInUsd}`
@@ -785,7 +778,7 @@ function OnmetaPayItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${round(parseFloat(activity.amount), 8)} ${activity.symbol}`;
+  const formatAmount = `- ${limitDecimalPlaces(activity.amount, 8)} ${activity.symbol}`;
   const operation = activity.onmetaType.toUpperCase();
 
   return (

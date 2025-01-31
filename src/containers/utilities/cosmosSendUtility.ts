@@ -1,5 +1,10 @@
+import { DecimalHelper } from '../../utils/decimalHelper';
+
 export const microAtomToAtom = (amount: string, decimals = 6): string => {
-  return (parseFloat(amount) * 10 ** -decimals).toFixed(6).toString();
+  return DecimalHelper.toString(
+    DecimalHelper.removeDecimals(amount, decimals),
+    6,
+  );
 };
 
 export const microAtomToUsd = (
@@ -7,9 +12,13 @@ export const microAtomToUsd = (
   tokenPrice: string,
   decimals = 6,
 ): string => {
-  return (parseFloat(amount) * 10 ** -decimals * parseFloat(tokenPrice))
-    .toFixed(6)
-    .toString();
+  return DecimalHelper.toString(
+    DecimalHelper.multiply(
+      DecimalHelper.removeDecimals(amount, decimals),
+      tokenPrice,
+    ),
+    6,
+  );
 };
 
 export const isCosmosAddress = (address: string): boolean => {

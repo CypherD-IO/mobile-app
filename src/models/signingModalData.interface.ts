@@ -64,8 +64,8 @@ export interface ISendTxnData {
   token: {
     logo: string;
     name: string;
-    amount: number;
-    valueInUSD: number;
+    amount: string;
+    valueInUSD: string;
   };
   toAddress: string;
   fromAddress: string;

@@ -16,27 +16,38 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import {
+  capitalize,
   debounce,
   endsWith,
   floor,
   get,
   isEmpty,
+  isError,
   isNil,
   min,
   round,
 } from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
-import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
+import {
+  ChainIdNameMapping,
+  ChainIdToBackendNameMapping,
+  ChainNameToChainMapping,
+  GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+  gasFeeReservation,
+} from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
 import {
   ActivityContext,
   formatAmount,
   getWeb3Endpoint,
   HdWalletContext,
+  limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
   setTimeOutNSec,
+  hasSufficientBalanceAndGasFee,
+  isEIP1599Chain,
 } from '../../core/util';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
@@ -71,7 +82,15 @@ import Button from '../../components/v2/button';
 import SignatureModal from '../../components/v2/signatureModal';
 import { screenTitle } from '../../constants';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
-import { ALL_CHAINS, Chain } from '../../constants/server';
+import {
+  ALL_CHAINS,
+  CAN_ESTIMATE_L1_FEE_CHAINS,
+  Chain,
+  ChainBackendNames,
+  ChainConfigMapping,
+  chainIdNumberMapping,
+  COSMOS_CHAINS,
+} from '../../constants/server';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 import useSkipApiBridge from '../../core/skipApi';
@@ -101,6 +120,10 @@ import {
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
 import CyDSkeleton from '../../components/v2/skeleton';
+import { DecimalHelper } from '../../utils/decimalHelper';
+import useGasService from '../../hooks/useGasService';
+import useCosmosSigner from '../../hooks/useCosmosSigner';
+import { Holding } from '../../core/portfolio';
 import { CyDIconsPack } from '../../customFonts/generator';
 
 export interface SwapBridgeChainData {
@@ -132,6 +155,7 @@ export interface SwapBridgeTokenData {
   price: number;
   balance: number;
   balanceInNumbers: number;
+  balanceDecimal: string;
 }
 
 enum TxnStatus {
@@ -158,6 +182,7 @@ const Bridge: React.FC = () => {
     swapLoading: false,
     bridgeGetMsg: false,
     approvalLoading: false,
+    maxAmountLoading: false,
   });
   const { getWithAuth, postToOtherSource, getFromOtherSource, postWithAuth } =
     useAxios();
@@ -181,6 +206,7 @@ const Bridge: React.FC = () => {
   const activityContext = useContext(ActivityContext) as ActivityContextDef;
   const activityId = useRef<string>('id');
   const [isSignableTransaction] = useIsSignable();
+  const { getNativeToken } = usePortfolio();
 
   const slippage = 0.4;
   const ethereum = hdWallet.state.wallet.ethereum;
@@ -248,6 +274,16 @@ const Bridge: React.FC = () => {
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
   const [toggle, setToggle] = useState<boolean>(false);
+  const {
+    estimateGasForCosmosCustomContractRest,
+    estimateGasForEvmCustomContract,
+    estimateReserveFee,
+    estimateReserveFeeForCustomContract,
+  } = useGasService();
+  const { getCosmosSignerClient } = useCosmosSigner();
+  const [nativeToken, setNativeToken] = useState<Holding | null>(null);
+  const globalContext = useContext(GlobalContext);
+  const [currentMaxAmount, setCurrentMaxAmount] = useState<string>('');
 
   // Add new ref to store the interval
   const quoteRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -370,6 +406,11 @@ const Bridge: React.FC = () => {
     );
     setFromChainDetails(currentChain as Chain);
 
+    const nativeToken = await getNativeToken(
+      currentChain?.backendName as ChainBackendNames,
+    );
+    setNativeToken(nativeToken);
+
     // Filter tokens based on totalHoldings
     const localPortfolio = await getLocalPortfolio();
     const totalHoldings = localPortfolio?.totalHoldings;
@@ -388,6 +429,7 @@ const Bridge: React.FC = () => {
             ...token,
             balance: matchingHolding?.actualBalance ?? 0,
             balanceInNumbers: matchingHolding?.totalValue ?? 0,
+            balanceDecimal: matchingHolding?.balanceDecimal ?? 0,
           };
         })
         .sort(
@@ -440,8 +482,10 @@ const Bridge: React.FC = () => {
       }
 
       setUsdAmount(
-        parseFloat(cryptoAmount) > 0
-          ? String(Number(cryptoAmount) * Number(_selectedFromToken?.price))
+        DecimalHelper.isGreaterThan(cryptoAmount, 0)
+          ? DecimalHelper.toString(
+              DecimalHelper.multiply(cryptoAmount, _selectedFromToken?.price),
+            )
           : '0',
       );
     } else if (toggle) {
@@ -526,6 +570,234 @@ const Bridge: React.FC = () => {
     setAmountOut('');
   };
 
+  useEffect(() => {
+    resetValues();
+    setCryptoAmount('');
+    setUsdAmount('');
+  }, [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken]);
+
+  const onClickMax = async () => {
+    setLoading(prev => ({
+      ...prev,
+      quoteLoading: true,
+      maxAmountLoading: true,
+    }));
+
+    try {
+      const isNativeToken = selectedFromToken?.isNative ?? false;
+      const amount = selectedFromToken?.balanceDecimal;
+
+      if (!amount) {
+        throw new Error('Invalid amount');
+      }
+
+      // Calculate final balance first
+      const selectedChainDetails = get(
+        ChainNameToChainMapping,
+        get(ChainIdToBackendNameMapping, selectedFromChain?.chainId),
+      );
+
+      // Get quote from API
+      const response = isOdosSwap()
+        ? await getSwapQuoteFromApi(amount)
+        : await getBridgeQuoteFromApi(amount);
+      const skipResponseQuoteData = response.data as SkipApiRouteResponse;
+      const odosResponseQuoteData = response.data as OdosSwapQuoteResponse;
+
+      if (response.isError) {
+        handleQuoteError(response.error);
+        return;
+      }
+
+      let gasFeeRequired;
+      if (isOdosSwap()) {
+        // Handle Odos swap gas calculation
+        const web3 = new Web3(
+          getWeb3Endpoint(selectedChainDetails, globalContext),
+        );
+        const gasPriceDetail = get(response, ['data', 'gasInfo', 'gasPrice']);
+        const gasLimit = get(response, ['data', 'gasEstimate']);
+        const gasPriceWei = web3.utils.toWei(gasPriceDetail.toString(), 'gwei');
+        const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
+        if (
+          CAN_ESTIMATE_L1_FEE_CHAINS.includes(
+            selectedChainDetails.backendName,
+          ) &&
+          isNativeToken
+        ) {
+          const gasFeeRequiredToReserve =
+            await estimateReserveFeeForCustomContract({
+              tokenData: nativeToken,
+              fromAddress: hdWallet.state.wallet.ethereum.address,
+              sendAddress: hdWallet.state.wallet.ethereum.address,
+              web3,
+              web3Endpoint: getWeb3Endpoint(
+                selectedChainDetails,
+                globalContext,
+              ),
+              gas: gasLimit,
+              gasPrice: gasPriceDetail,
+              gasFeeInCrypto: DecimalHelper.removeDecimals(totalWei, 18),
+            });
+          gasFeeRequired = DecimalHelper.add(
+            DecimalHelper.multiply(
+              web3.utils.fromWei(totalWei.toString(), 'ether'),
+              GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+            ),
+            gasFeeRequiredToReserve,
+          );
+        } else {
+          gasFeeRequired = DecimalHelper.multiply(
+            web3.utils.fromWei(totalWei.toString(), 'ether'),
+            GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+          ).toString();
+        }
+      } else {
+        // Handle Skip API gas calculation
+        const routeResponse = response.data as SkipApiRouteResponse;
+        const requiredAddresses = getAddress(
+          routeResponse?.required_chain_addresses,
+        );
+        const skipApiMessages = await fetchSkipApiMessages(
+          routeResponse,
+          requiredAddresses,
+        );
+
+        if (COSMOS_CHAINS.includes(selectedChainDetails.chainName)) {
+          // Handle Cosmos chain
+          const cosmosContractData = get(skipApiMessages, [
+            'data',
+            'txs',
+            0,
+            'cosmos_tx',
+          ]);
+          const gasDetails = await estimateGasForCosmosCustomContractRest(
+            selectedChainDetails,
+            cosmosContractData,
+          );
+          gasFeeRequired = gasDetails?.gasFeeInCrypto;
+        } else {
+          // Handle EVM chain
+          const evmContractData = get(skipApiMessages, [
+            'data',
+            'txs',
+            0,
+            'evm_tx',
+          ]);
+          const web3 = new Web3(
+            getWeb3Endpoint(selectedChainDetails, globalContext),
+          );
+
+          // remove this gasFeeReservation once we have gas estimation for eip1599 chains
+          if (
+            CAN_ESTIMATE_L1_FEE_CHAINS.includes(
+              selectedChainDetails.backendName,
+            ) &&
+            isNativeToken
+          ) {
+            gasFeeRequired = await estimateReserveFee({
+              tokenData: nativeToken,
+              fromAddress: hdWallet.state.wallet.ethereum.address,
+              sendAddress: hdWallet.state.wallet.ethereum.address,
+              web3,
+              web3Endpoint: getWeb3Endpoint(
+                selectedChainDetails,
+                globalContext,
+              ),
+            });
+          } else {
+            const gasDetails = await estimateGasForEvmCustomContract(
+              selectedChainDetails,
+              evmContractData,
+              web3,
+            );
+            gasFeeRequired = DecimalHelper.multiply(
+              gasDetails?.gasFeeInCrypto,
+              1.1,
+            );
+          }
+        }
+      }
+
+      if (!gasFeeRequired) {
+        showModal('state', {
+          type: 'error',
+          title: t('GAS_FEE_ERROR'),
+          description: t('GAS_FEE_ERROR_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+
+      // Calculate final balance
+      const bal = isNativeToken
+        ? DecimalHelper.subtract(amount, gasFeeRequired)
+        : DecimalHelper.fromString(amount);
+
+      const isBalanceAndGasFeeSufficient = hasSufficientBalanceAndGasFee(
+        isNativeToken,
+        gasFeeRequired,
+        nativeToken?.balanceDecimal,
+        bal,
+        selectedFromToken?.balanceDecimal,
+      );
+
+      if (isBalanceAndGasFeeSufficient) {
+        // Set a flag to prevent the useEffect from triggering another quote fetch
+        const finalAmount = DecimalHelper.isLessThan(bal, 0)
+          ? '0'
+          : DecimalHelper.toString(bal);
+
+        // Update the quote data directly here
+        setQuoteData(response.data);
+        if (isOdosSwap()) {
+          setUsdAmount(
+            DecimalHelper.toString(
+              DecimalHelper.multiply(
+                finalAmount,
+                selectedFromToken?.price ?? 0,
+              ),
+            ),
+          );
+          setAmountOut(odosResponseQuoteData?.toToken?.amount.toString());
+          setUsdAmountOut(odosResponseQuoteData?.value.toString());
+          setError('');
+        } else {
+          setUsdAmount(skipResponseQuoteData.usd_amount_in);
+          setAmountOut(
+            ethers.formatUnits(
+              skipResponseQuoteData?.amount_out,
+              selectedToToken?.decimals,
+            ),
+          );
+          setUsdAmountOut(skipResponseQuoteData?.usd_amount_out);
+          setSignaturesRequired(skipResponseQuoteData?.txs_required);
+          setError('');
+        }
+        setCurrentMaxAmount(finalAmount);
+
+        // Set the crypto amount last to avoid triggering another quote fetch
+        setCryptoAmount(finalAmount);
+      } else {
+        setError(
+          `Insufficient balance for gas fee. Load more ${nativeToken?.name} in ${capitalize(selectedFromChain?.chainName)} chain to bridge`,
+        );
+      }
+    } catch (error) {
+      console.error('Error in checkBalanceAndCalculateAmount:', error);
+      setError(error?.message ?? 'An unexpected error occurred');
+    } finally {
+      setTimeout(() => {
+        setLoading(prev => ({
+          ...prev,
+          quoteLoading: false,
+          maxAmountLoading: false,
+        }));
+      }, 2500);
+    }
+  };
+
   const fetchQuote = async (amount: string): Promise<void> => {
     setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
 
@@ -535,18 +807,23 @@ const Bridge: React.FC = () => {
       } else {
         await getBridgeQuote(amount);
       }
+
       setTimeUntilRefresh(30);
     } catch (e) {
       Sentry.captureException(e);
     } finally {
-      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
+      setLoading(prevLoading => ({
+        ...prevLoading,
+        quoteLoading: false,
+        maxAmountLoading: false,
+      }));
     }
   };
 
   const debouncedFetchQuote = useCallback(
     debounce((amount: string) => {
       if (
-        Number(amount) > 0 &&
+        DecimalHelper.isGreaterThan(amount, 0) &&
         selectedFromChain &&
         selectedToChain &&
         selectedFromToken &&
@@ -554,12 +831,12 @@ const Bridge: React.FC = () => {
       ) {
         void fetchQuote(amount);
       }
-    }, 2500),
+    }, 500),
     [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken],
   );
 
   const manualRefreshQuote = useCallback(async () => {
-    if (Number(cryptoAmount) > 0) {
+    if (DecimalHelper.isGreaterThan(cryptoAmount, 0)) {
       if (quoteRefreshInterval.current) {
         clearInterval(quoteRefreshInterval.current);
         quoteRefreshInterval.current = null;
@@ -575,13 +852,22 @@ const Bridge: React.FC = () => {
 
   useEffect(() => {
     const fetchAndUpdateQuote = () => {
-      if (Number(cryptoAmount) > 0) {
-        resetValues();
-        setUsdAmount(
-          (Number(cryptoAmount) * Number(selectedFromToken?.price)).toFixed(6),
-        );
-        setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
-        debouncedFetchQuote(cryptoAmount);
+      if (DecimalHelper.isGreaterThan(cryptoAmount, 0)) {
+        // Only fetch quote if we don't already have quote data this chcek is added to prevent another quote fetching when already quote fetching is done when max is clicked (the or condition is to allow for quote fetching when the entered amount changes after clicking on max)
+        if (
+          DecimalHelper.notEqual(currentMaxAmount, cryptoAmount) ||
+          !quoteData
+        ) {
+          resetValues();
+          setUsdAmount(
+            limitDecimalPlaces(
+              DecimalHelper.multiply(cryptoAmount, selectedFromToken?.price),
+              6,
+            ),
+          );
+
+          debouncedFetchQuote(cryptoAmount);
+        }
       } else {
         setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
       }
@@ -589,7 +875,7 @@ const Bridge: React.FC = () => {
 
     fetchAndUpdateQuote();
 
-    if (Number(cryptoAmount) > 0) {
+    if (DecimalHelper.isGreaterThan(cryptoAmount, 0)) {
       if (quoteRefreshInterval.current) {
         clearInterval(quoteRefreshInterval.current);
       }
@@ -637,27 +923,6 @@ const Bridge: React.FC = () => {
     };
   }, []);
 
-  const onClickMax = () => {
-    const isNativeToken = selectedFromToken?.isNative ?? false;
-
-    const bal = isNativeToken
-      ? round(
-          Number(get(selectedFromToken, 'balance', 0)) -
-            Number(
-              get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0),
-            ),
-          min([10, selectedFromToken?.decimals ?? 0]),
-        )?.toString()
-      : Number(get(selectedFromToken, 'balance', 0))?.toString();
-
-    if (Number(bal) > 0) {
-      setCryptoAmount(bal.toString());
-      setUsdAmount(String(Number(bal) * Number(selectedFromToken?.price)));
-    } else {
-      setError('Insufficient balance for gas fee');
-    }
-  };
-
   const handleApprove = () => {
     setApproveModalVisible(false);
     if (modalPromiseResolver) {
@@ -676,6 +941,7 @@ const Bridge: React.FC = () => {
       swapLoading: false,
       bridgeGetMsg: false,
       approvalLoading: false,
+      maxAmountLoading: false,
     });
     if (modalPromiseResolver) {
       modalPromiseResolver(false);
@@ -699,6 +965,104 @@ const Bridge: React.FC = () => {
     return addressList;
   };
 
+  const getBridgeQuoteFromApi = async (amount: string) => {
+    const routeBody = {
+      amountIn: DecimalHelper.toString(
+        DecimalHelper.applyDecimals(
+          DecimalHelper.round(amount, selectedFromToken.decimals),
+          min([10, selectedFromToken.decimals]),
+        ),
+      ),
+      sourceAssetDenom: selectedFromToken.denom,
+      sourceAssetChainId: selectedFromToken.chainId,
+      destAssetDenom: selectedToToken.denom,
+      destAssetChainId: selectedToToken.chainId,
+    };
+
+    return await postWithAuth(
+      '/v1/swap/bridge/quote',
+      routeBody,
+      DEFAULT_AXIOS_TIMEOUT,
+    );
+  };
+
+  const handleQuoteError = (quoteError: any) => {
+    setQuoteData(null);
+    setAmountOut('');
+    setUsdAmountOut('');
+    setSignaturesRequired(0);
+    setLoading(prev => ({ ...prev, quoteLoading: false }));
+
+    if (isOdosSwap()) {
+      if (quoteError instanceof Error && quoteError.name !== 'AbortError') {
+        setQuoteData(null);
+        showModal('state', {
+          type: 'error',
+          title: t('QUOTE_ERROR'),
+          description: parseErrorMessage(quoteError) ?? t('UNEXPECTED_ERROR'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        void analytics().logEvent('SWAP_QUOTE_ERROR', {
+          error: quoteError,
+        });
+        Sentry.captureException(quoteError);
+      }
+    } else {
+      if (
+        quoteError?.message.includes('no routes') ||
+        quoteError?.message.includes('transfer across') ||
+        quoteError?.message.includes('bridge relay')
+      ) {
+        // Handle routing-specific errors
+        if (quoteError?.message.includes('no routes')) {
+          const fromIsUSDC = selectedFromToken?.symbol.toLowerCase() === 'usdc';
+          const toIsUSDC = selectedToToken?.symbol.toLowerCase() === 'usdc';
+
+          if (fromIsUSDC && !toIsUSDC) {
+            setError(
+              `Try bridging to USDC token instead of ${selectedToToken?.name}`,
+            );
+          } else if (!fromIsUSDC && toIsUSDC) {
+            setError(
+              `Try bridging from USDC token instead of ${selectedFromToken?.name}`,
+            );
+          } else if (!fromIsUSDC && !toIsUSDC) {
+            setError(
+              `Try bridging from USDC token in ${selectedFromChain?.chainName} to USDC token in ${selectedToChain?.chainName}`,
+            );
+          } else {
+            setError(quoteError?.message);
+          }
+        } else {
+          setError(quoteError?.message);
+        }
+      } else {
+        // Handle other errors
+
+        setError(quoteError?.message);
+        void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+          error: quoteError,
+        });
+        Sentry.captureException(quoteError);
+        showModal('state', {
+          type: 'error',
+          title: t('QUOTE_ERROR'),
+          description:
+            parseErrorMessage(quoteError) ?? t('QUOTE_ERROR_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: selectedFromChain?.chainName ?? '',
+          message: `Bridge Quote error: ${parseErrorMessage(quoteError) ?? String(quoteError)}`,
+          screen: route.name,
+        });
+      }
+    }
+  };
+
   const getBridgeQuote = async (amount: string) => {
     try {
       if (
@@ -706,31 +1070,14 @@ const Bridge: React.FC = () => {
         selectedToToken &&
         selectedToChain &&
         selectedFromChain &&
-        parseFloat(amount) > 0 &&
+        DecimalHelper.isGreaterThan(amount, 0) &&
         !isOdosSwap()
       ) {
-        const routeBody = {
-          amountIn: ethers
-            .parseUnits(
-              round(Number(amount), selectedFromToken.decimals).toString(),
-              min([10, selectedFromToken.decimals]),
-            )
-            .toString(),
-          sourceAssetDenom: selectedFromToken.denom,
-          sourceAssetChainId: selectedFromToken.chainId,
-          destAssetDenom: selectedToToken.denom,
-          destAssetChainId: selectedToToken.chainId,
-        };
-
         const {
           isError,
           error: quoteError,
           data,
-        } = await postWithAuth(
-          '/v1/swap/bridge/quote',
-          routeBody,
-          DEFAULT_AXIOS_TIMEOUT,
-        );
+        } = await getBridgeQuoteFromApi(amount);
 
         if (!isError) {
           const responseQuoteData = data as SkipApiRouteResponse;
@@ -747,65 +1094,7 @@ const Bridge: React.FC = () => {
           setError('');
           setLoading({ ...loading, quoteLoading: false });
         } else {
-          setQuoteData(null);
-          setAmountOut('');
-          setUsdAmountOut('');
-          setSignaturesRequired(0);
-          setLoading({ ...loading, quoteLoading: false });
-          if (
-            quoteError?.message.includes('no routes') ||
-            quoteError?.message.includes('transfer across') ||
-            quoteError?.message.includes('bridge relay')
-          ) {
-            setQuoteData(null);
-            if (
-              quoteError?.message.includes('no routes') &&
-              selectedFromToken.symbol.toLowerCase() === 'usdc' &&
-              selectedToToken.symbol.toLowerCase() !== 'usdc'
-            ) {
-              setError(
-                `Try bridging to USDC token instead of ${selectedToToken.name}`,
-              );
-            } else if (
-              quoteError?.message.includes('no routes') &&
-              selectedToToken.symbol.toLowerCase() === 'usdc' &&
-              selectedFromToken.symbol.toLowerCase() !== 'usdc'
-            ) {
-              setError(
-                `Try bridging from USDC token instead of ${selectedFromToken.name}`,
-              );
-            } else if (
-              quoteError?.message.includes('no routes') &&
-              selectedFromToken.symbol.toLowerCase() !== 'usdc' &&
-              selectedToToken.symbol.toLowerCase() !== 'usdc'
-            ) {
-              setError(
-                `Try bridging from USDC token in ${selectedFromChain.chainName} to USDC token in ${selectedToChain.chainName}`,
-              );
-            } else {
-              setError(quoteError?.message);
-            }
-          } else {
-            setError(quoteError?.message);
-            void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
-              error: quoteError,
-            });
-            Sentry.captureException(quoteError);
-            showModal('state', {
-              type: 'error',
-              title: t('QUOTE_ERROR'),
-              description:
-                parseErrorMessage(quoteError) ?? t('QUOTE_ERROR_DESCRIPTION'),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: selectedFromChain?.chainName ?? '',
-              message: `Bridge Quote error: ${parseErrorMessage(quoteError) ?? String(quoteError)}`,
-              screen: route.name,
-            });
-          }
+          handleQuoteError(quoteError);
         }
       }
     } catch (e: unknown) {
@@ -823,6 +1112,28 @@ const Bridge: React.FC = () => {
         Sentry.captureException(e);
       }
     }
+  };
+
+  const fetchSkipApiMessages = async (
+    routeResponse: SkipApiRouteResponse,
+    requiredAddresses: string[],
+  ) => {
+    const body = {
+      source_asset_denom: routeResponse.source_asset_denom,
+      source_asset_chain_id: routeResponse.source_asset_chain_id,
+      dest_asset_denom: routeResponse.dest_asset_denom,
+      dest_asset_chain_id: routeResponse.dest_asset_chain_id,
+      amount_in: routeResponse.amount_in,
+      amount_out: routeResponse.amount_out,
+      address_list: requiredAddresses,
+      slippage_tolerance_percent: '1',
+      operations: routeResponse.operations,
+    };
+
+    return await postToOtherSource(
+      'https://api.skip.money/v2/fungible/msgs',
+      body,
+    );
   };
 
   const onGetMsg = async () => {
@@ -880,25 +1191,11 @@ const Bridge: React.FC = () => {
     let transactionHash = '';
 
     try {
-      const body = {
-        source_asset_denom: routeResponse.source_asset_denom,
-        source_asset_chain_id: routeResponse.source_asset_chain_id,
-        dest_asset_denom: routeResponse.dest_asset_denom,
-        dest_asset_chain_id: routeResponse.dest_asset_chain_id,
-        amount_in: routeResponse.amount_in,
-        amount_out: routeResponse.amount_out,
-        address_list: requiredAddresses,
-        slippage_tolerance_percent: '1',
-        operations: routeResponse.operations,
-      };
       const {
         isError,
         error: fetchError,
         data,
-      } = await postToOtherSource(
-        'https://api.skip.money/v2/fungible/msgs',
-        body,
-      );
+      } = await fetchSkipApiMessages(routeResponse, requiredAddresses);
 
       if (isError) {
         Sentry.captureException(fetchError);
@@ -1306,15 +1603,43 @@ const Bridge: React.FC = () => {
       selectedFromChain &&
       selectedToChain
     ) {
-      const temp =
-        parseFloat(cryptoAmount) > selectedFromToken.balance ||
+      return (
+        DecimalHelper.isGreaterThan(
+          cryptoAmount,
+          selectedFromToken.balanceDecimal,
+        ) ||
         isNil(quoteData) ||
-        !isEmpty(error);
-
-      return temp;
+        !isEmpty(error)
+      );
     } else {
       return true;
     }
+  };
+
+  const getSwapQuoteFromApi = async (amount: string) => {
+    const payload = {
+      fromTokenList: [
+        {
+          address: selectedFromToken?.isNative
+            ? '0x0000000000000000000000000000000000000000'
+            : selectedFromToken?.tokenContract,
+          amount: limitDecimalPlaces(amount, selectedFromToken.decimals),
+        },
+      ],
+      toToken: selectedToToken.isNative
+        ? '0x0000000000000000000000000000000000000000'
+        : selectedToToken.tokenContract,
+      slippage,
+      walletAddress: ethereum.address,
+    };
+
+    const response = await postWithAuth(
+      `/v1/swap/evm/chains/${selectedFromChain?.chainId ?? ''}/quote`,
+      payload,
+      DEFAULT_AXIOS_TIMEOUT,
+    );
+
+    return response;
   };
 
   const getSwapQuote = async (amount: string) => {
@@ -1326,37 +1651,14 @@ const Bridge: React.FC = () => {
         selectedFromChain &&
         isOdosSwap()
       ) {
-        const payload = {
-          fromTokenList: [
-            {
-              address: selectedFromToken?.isNative
-                ? '0x0000000000000000000000000000000000000000'
-                : selectedFromToken?.tokenContract,
-              amount: round(
-                Number(amount),
-                min([10, selectedFromToken.decimals]),
-              ).toString(),
-            },
-          ],
-          toToken: selectedToToken.isNative
-            ? '0x0000000000000000000000000000000000000000'
-            : selectedToToken.tokenContract,
-          slippage,
-          walletAddress: ethereum.address,
-        };
-
-        const response = await postWithAuth(
-          `/v1/swap/evm/chains/${selectedFromChain?.chainId ?? ''}/quote`,
-          payload,
-          DEFAULT_AXIOS_TIMEOUT,
-        );
+        const response = await getSwapQuoteFromApi(amount);
 
         if (!response.isError) {
           const responseQuoteData = response.data as OdosSwapQuoteResponse;
           setUsdAmount(
-            (
-              parseFloat(responseQuoteData?.fromToken?.[0].amount.toString()) *
-                selectedFromToken?.price ?? 0
+            DecimalHelper.multiply(
+              responseQuoteData?.fromToken?.[0].amount.toString(),
+              selectedFromToken?.price ?? 0,
             ).toString(),
           );
           setAmountOut(responseQuoteData?.toToken?.amount.toString());
@@ -1366,7 +1668,7 @@ const Bridge: React.FC = () => {
           setLoading({ ...loading, quoteLoading: false });
         } else {
           setQuoteData(null);
-          setError(response.error);
+          setError(response?.error?.error?.message);
         }
       }
     } catch (err: unknown) {
@@ -1450,9 +1752,9 @@ const Bridge: React.FC = () => {
           }
           let gasFeeETH = '';
           let gasFeeDollar = '';
-          const gasLimit = floor(
-            get(response, ['gasEstimate']) *
-              ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
+          const gasLimit = DecimalHelper.multiply(
+            get(response, ['gasEstimate']),
+            ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
           );
 
           let finalGasPrice;
@@ -1462,14 +1764,23 @@ const Bridge: React.FC = () => {
 
             if (finalGasPrice) {
               gasFeeETH = web3.utils.fromWei(
-                web3.utils.toWei((finalGasPrice * gasLimit).toFixed(9), 'gwei'),
+                web3.utils.toWei(
+                  limitDecimalPlaces(
+                    DecimalHelper.multiply(finalGasPrice, gasLimit),
+                    9,
+                  ),
+                  'gwei',
+                ),
                 'ether',
               );
             }
 
             if (gasFeeResponse.tokenPrice > 0) {
               const ethPrice = gasFeeResponse.tokenPrice;
-              gasFeeDollar = (parseFloat(gasFeeETH) * ethPrice).toFixed(2);
+              gasFeeDollar = limitDecimalPlaces(
+                DecimalHelper.multiply(gasFeeETH, ethPrice),
+                2,
+              );
             }
           }
 
@@ -1526,22 +1837,23 @@ const Bridge: React.FC = () => {
           toTokenLogoUrl: selectedToToken?.logoUrl,
           fromChainLogoUrl: selectedFromChain?.logoUrl,
           toChainLogoUrl: selectedToChain?.logoUrl,
-          fromTokenAmount: parseFloat(cryptoAmount).toFixed(3),
+          fromTokenAmount: limitDecimalPlaces(cryptoAmount, 3),
           toTokenAmount: _quoteData?.toToken?.amount.toString(),
           datetime: new Date(),
           transactionHash: '',
           quoteData: {
-            fromAmountUsd:
-              Number(cryptoAmount) * Number(selectedFromToken?.price),
+            fromAmountUsd: DecimalHelper.toNumber(
+              DecimalHelper.multiply(
+                cryptoAmount,
+                selectedFromToken?.price ?? 0,
+              ),
+            ),
             toAmountUsd: _quoteData?.value,
             gasFee: _quoteData?.gasEstimateValue,
           },
         };
         activityId.current = id;
-        const gasLimit = floor(
-          get(quoteData, ['gasEstimate']) *
-            ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
-        );
+
         const gasFeeResponse = _quoteData?.gasInfo;
         const web3 = new Web3(
           getWeb3Endpoint(fromChainDetails, globalStateContext),
@@ -1559,7 +1871,7 @@ const Bridge: React.FC = () => {
           contractData: _quoteData?.data,
           routerAddress: _quoteData?.router,
           hdWallet,
-          gasLimit,
+          gasLimit: get(quoteData, ['gasEstimate']),
           gasFeeResponse,
           chainDetails: fromChainDetails,
         });
@@ -1678,6 +1990,165 @@ const Bridge: React.FC = () => {
     setError('');
     setSignaturesRequired(0);
   };
+
+  // Modify the preview button click handler
+  const handlePreviewClick = async () => {
+    try {
+      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
+
+      // First get quote and store it
+      let quoteResponse;
+      if (isOdosSwap()) {
+        quoteResponse = await getSwapQuoteFromApi(cryptoAmount);
+      } else {
+        quoteResponse = await getBridgeQuoteFromApi(cryptoAmount);
+      }
+
+      if (quoteResponse.isError) {
+        handleQuoteError(quoteResponse.error);
+        return;
+      }
+
+      // Store quote data for later use
+      setQuoteData(quoteResponse.data);
+
+      // Now check balance and estimate gas using the quote data
+      try {
+        const isNativeToken = selectedFromToken?.isNative ?? false;
+
+        // Get chain details and calculate gas fee
+        const selectedChainDetails = get(
+          ChainConfigMapping,
+          get(ChainIdNameMapping, selectedFromChain?.chainId),
+        );
+
+        let gasFeeRequired;
+        if (isOdosSwap()) {
+          // Handle Odos swap gas calculation
+          const web3 = new Web3(
+            getWeb3Endpoint(selectedChainDetails, globalContext),
+          );
+          const gasPriceDetail = get(quoteResponse, [
+            'data',
+            'gasInfo',
+            'gasPrice',
+          ]);
+          const gasLimit = get(quoteResponse, ['data', 'gasEstimate']);
+          const gasPriceWei = web3.utils.toWei(
+            gasPriceDetail.toString(),
+            'gwei',
+          );
+          const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
+
+          gasFeeRequired = DecimalHelper.multiply(
+            web3.utils.fromWei(totalWei.toString(), 'ether'),
+            GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
+          ).toString();
+        } else {
+          // Handle Skip API gas calculation
+          const routeResponse = quoteResponse.data as SkipApiRouteResponse;
+          const requiredAddresses = getAddress(
+            routeResponse?.required_chain_addresses,
+          );
+          const skipApiMessages = await fetchSkipApiMessages(
+            routeResponse,
+            requiredAddresses,
+          );
+
+          if (COSMOS_CHAINS.includes(selectedChainDetails.chainName)) {
+            // Handle Cosmos chain
+            const cosmosContractData = get(skipApiMessages, [
+              'data',
+              'txs',
+              0,
+              'cosmos_tx',
+            ]);
+            const gasDetails = await estimateGasForCosmosCustomContractRest(
+              selectedChainDetails,
+              cosmosContractData,
+            );
+            gasFeeRequired = gasDetails?.gasFeeInCrypto;
+          } else {
+            // Handle EVM chain
+            const evmContractData = get(skipApiMessages, [
+              'data',
+              'txs',
+              0,
+              'evm_tx',
+            ]);
+            const web3 = new Web3(
+              getWeb3Endpoint(selectedChainDetails, globalContext),
+            );
+            const gasDetails = await estimateGasForEvmCustomContract(
+              selectedChainDetails,
+              evmContractData,
+              web3,
+            );
+            gasFeeRequired = gasDetails?.gasFeeInCrypto;
+          }
+        }
+
+        if (!gasFeeRequired) {
+          showModal('state', {
+            type: 'error',
+            title: t('GAS_FEE_ERROR'),
+            description: t('GAS_FEE_ERROR_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
+
+        // Calculate final balance and check if sufficient
+        const bal = isNativeToken
+          ? DecimalHelper.subtract(cryptoAmount, gasFeeRequired)
+          : DecimalHelper.fromString(cryptoAmount);
+
+        const isBalanceAndGasFeeSufficient = hasSufficientBalanceAndGasFee(
+          isNativeToken,
+          gasFeeRequired,
+          nativeToken?.balanceDecimal,
+          bal,
+          selectedFromToken?.balanceDecimal,
+        );
+
+        if (!isBalanceAndGasFeeSufficient) {
+          setError(
+            `Insufficient balance for gas fee. Load more ${nativeToken?.name} in ${capitalize(selectedFromChain?.chainName)} chain to bridge`,
+          );
+          return;
+        }
+
+        // If all checks pass, proceed with the transaction
+        if (isOdosSwap()) {
+          isSignableTransaction(ActivityType.SWAP, () => {
+            void onAcceptSwap();
+          });
+        } else {
+          setSkipApiStatusResponse([]);
+          setIndex(1);
+        }
+      } catch (error) {
+        console.error('Error in balance and gas check:', error);
+        setError(parseErrorMessage(error) || 'An unexpected error occurred');
+      }
+    } catch (error) {
+      setError(parseErrorMessage(error) || 'An unexpected error occurred');
+    } finally {
+      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
+    }
+  };
+
+  // Update the useEffect that was watching for input changes to just reset error state
+  useEffect(() => {
+    setError('');
+  }, [
+    cryptoAmount,
+    selectedFromToken,
+    selectedToToken,
+    selectedFromChain,
+    selectedToChain,
+  ]);
 
   if (loading.pageLoading || bridgeState.status === BridgeStatus.FETCHING) {
     return <Loading />;
@@ -2079,7 +2550,7 @@ const Bridge: React.FC = () => {
                       {formatAmount(
                         (quoteData as OdosSwapQuoteResponse)?.fromToken?.[0]
                           ?.amount,
-                      ).toString() +
+                      ) +
                         ' ' +
                         String(selectedFromToken?.name)}
                     </CyDText>
@@ -2087,12 +2558,14 @@ const Bridge: React.FC = () => {
                       className={
                         'font-nunito text-[12px] text-base100 font-bold'
                       }>
-                      {(
-                        Number(
+                      {limitDecimalPlaces(
+                        DecimalHelper.multiply(
                           (quoteData as OdosSwapQuoteResponse)?.fromToken?.[0]
-                            ?.amount,
-                        ) * Number(selectedFromToken?.price)
-                      ).toFixed(4) + ' USD'}
+                            ?.amount ?? 0,
+                          selectedFromToken?.price ?? 0,
+                        ),
+                        4,
+                      ) + ' USD'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2115,7 +2588,7 @@ const Bridge: React.FC = () => {
                       numberOfLines={1}>
                       {formatAmount(
                         (quoteData as OdosSwapQuoteResponse)?.toToken?.amount,
-                      ).toString() +
+                      ) +
                         ' ' +
                         String(selectedToToken?.name)}
                     </CyDText>
@@ -2123,11 +2596,13 @@ const Bridge: React.FC = () => {
                       className={
                         'font-nunito text-[12px] text-base100 font-bold'
                       }>
-                      {(
-                        Number(
+                      {limitDecimalPlaces(
+                        DecimalHelper.multiply(
                           (quoteData as OdosSwapQuoteResponse)?.toToken?.amount,
-                        ) * Number(selectedToToken?.price)
-                      ).toFixed(4) + ' USD'}
+                          selectedToToken?.price ?? 0,
+                        ),
+                        4,
+                      ) + ' USD'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2143,7 +2618,7 @@ const Bridge: React.FC = () => {
                       {' ' + String(fromChainDetails?.symbol)}
                     </CyDText>
                     <CyDText className='font-bold text-subTextColor'>
-                      {String(formatAmount(swapParams?.gasFeeDollar)) + ' USD'}
+                      {formatAmount(swapParams?.gasFeeDollar) + ' USD'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2202,7 +2677,7 @@ const Bridge: React.FC = () => {
             usdAmountOut={usdAmountOut}
             onClickMax={onClickMax}
             onToggle={onToggle}
-            loading={loading.quoteLoading || loading.pageLoading}
+            loading={loading}
           />
         )}
         {!isOdosSwap() && index === 1 && (
@@ -2218,7 +2693,11 @@ const Bridge: React.FC = () => {
         )}
         {index === 0 &&
           (!isEmpty(error) ||
-            parseFloat(cryptoAmount) > (selectedFromToken?.balance ?? 0)) &&
+            (cryptoAmount &&
+              DecimalHelper.isGreaterThan(
+                cryptoAmount,
+                selectedFromToken?.balanceDecimal ?? 0,
+              ))) &&
           !loading.quoteLoading && (
             <CyDView className=' bg-red20 rounded-[8px] p-[12px] flex flex-row mx-[16px] mt-[16px] justify-between items-center'>
               <CyDFastImage
@@ -2232,18 +2711,21 @@ const Bridge: React.FC = () => {
                     <CyDText className='w-[90%]'>{error}</CyDText>
                   </CyDView>
                 )}
-                {parseFloat(cryptoAmount) >
-                  (selectedFromToken?.balance ?? 0) && (
-                  <CyDView className='flex flex-row gap-x-[8px]'>
-                    <CyDText>{'\u2022'}</CyDText>
-                    {!isOdosSwap() && !isSkipSwap() && (
-                      <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
-                    )}
-                    {(isOdosSwap() || isSkipSwap()) && (
-                      <CyDText>{t('INSUFFICIENT_BALANCE_SWAP')}</CyDText>
-                    )}
-                  </CyDView>
-                )}
+                {cryptoAmount &&
+                  DecimalHelper.isGreaterThan(
+                    cryptoAmount,
+                    selectedFromToken?.balanceDecimal ?? 0,
+                  ) && (
+                    <CyDView className='flex flex-row gap-x-[8px]'>
+                      <CyDText>{'\u2022'}</CyDText>
+                      {!isOdosSwap() && !isSkipSwap() && (
+                        <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                      )}
+                      {(isOdosSwap() || isSkipSwap()) && (
+                        <CyDText>{t('INSUFFICIENT_BALANCE_SWAP')}</CyDText>
+                      )}
+                    </CyDView>
+                  )}
               </CyDView>
             </CyDView>
           )}
@@ -2349,16 +2831,7 @@ const Bridge: React.FC = () => {
         {index === 0 && (
           <CyDView className='mx-[16px] mt-[16px] mb-[80px]'>
             <Button
-              onPress={() => {
-                if (isOdosSwap()) {
-                  isSignableTransaction(ActivityType.SWAP, () => {
-                    void onAcceptSwap();
-                  });
-                } else {
-                  setSkipApiStatusResponse([]);
-                  setIndex(1);
-                }
-              }}
+              onPress={handlePreviewClick}
               title={'Preview'}
               disabled={isPreviewDisabled()}
               loading={

@@ -46,6 +46,7 @@ import {
 } from './SigningModals/TxnModals';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
 import Button from '../button';
+import { DecimalHelper } from '../../../utils/decimalHelper';
 
 const BASE_GAS_LIMIT = 21000;
 const CONTRACT_MULTIPLIER = 2;
@@ -250,39 +251,42 @@ export default function SigningModal({
           paramsForDecoding.chainId,
           paramsForDecoding.to,
         );
-        const adjustedTokenBalance =
-          parseFloat(walletTokenBalance) * 10 ** -tokenDecimals;
+        const adjustedTokenBalance = DecimalHelper.multiply(
+          walletTokenBalance,
+          DecimalHelper.pow(10, -tokenDecimals),
+        );
         if (paramsForDecoding?.value && chain?.nativeTokenLogoUrl) {
           const { gasPrice, tokenPrice } = await getGasPriceFor(
             chain,
             web3RPCEndpoint,
           );
-          const gasNative =
-            finalEstimatedGas * (gasPrice * 10 ** 9) * 10 ** -tokenDecimals;
+          const gasNative = DecimalHelper.multiply(finalEstimatedGas, [
+            gasPrice,
+            DecimalHelper.pow(10, 9),
+            DecimalHelper.pow(10, -tokenDecimals),
+          ]);
           const sendTxnData: ISendTxnData = {
             chainLogo: chain.logo_url,
             token: {
               logo: chain?.nativeTokenLogoUrl,
               name: chain.name,
-              amount: parseFloat(
+              amount: Web3.utils.fromWei(
+                Web3.utils.hexToNumberString(paramsForDecoding.value),
+                'ether',
+              ),
+              valueInUSD: DecimalHelper.multiply(
                 Web3.utils.fromWei(
                   Web3.utils.hexToNumberString(paramsForDecoding.value),
                   'ether',
                 ),
-              ),
-              valueInUSD:
-                parseFloat(
-                  Web3.utils.fromWei(
-                    Web3.utils.hexToNumberString(paramsForDecoding.value),
-                    'ether',
-                  ),
-                ) * tokenPrice,
+                tokenPrice,
+              ).toString(),
             },
             toAddress: paramsForDecoding.to,
             fromAddress: paramsForDecoding.from,
             gasAndUSDAppx: `${formatAmount(gasNative)} ${
               chain.symbol
-            } ≈ $${formatAmount(gasNative * tokenPrice)} USD`,
+            } ≈ $${formatAmount(DecimalHelper.multiply(gasNative, tokenPrice))} USD`,
             availableBalance: `${formatAmount(adjustedTokenBalance)} ${
               chain.symbol
             }`,

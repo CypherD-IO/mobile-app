@@ -84,7 +84,7 @@ export default function TokenSendConfirmationModal(
                 'flex flex-row flex-wrap justify-between w-[90%]  pl-[35px]'
               }>
               <CyDText className={' font-medium text-[15px] '}>
-                {String(formatAmount(amountInCrypto)) + ' ' + symbol}
+                {formatAmount(amountInCrypto) + ' ' + symbol}
               </CyDText>
               <CyDText className={' font-medium text-[14px] '}>
                 {'$' + amountInFiat}

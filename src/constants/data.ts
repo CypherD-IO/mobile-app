@@ -785,6 +785,7 @@ export const TIME_GAPS = [
   { id: 3, label: 'This Month', value: 'This Month' },
 ];
 
+export const GAS_BUFFER_FACTOR = 1.3;
 export const GAS_BUFFER_FACTOR_FOR_LOAD_MAX = 1.5;
 
 export const CardFeePercentage = {

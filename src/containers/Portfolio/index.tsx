@@ -91,6 +91,7 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
+import { DecimalHelper } from '../../utils/decimalHelper';
 import Loading from '../../components/v2/loading';
 
 export interface PortfolioProps {
@@ -258,17 +259,16 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       totalUnbondingBalance,
     } = getCurrentChainHoldings(portfolio, selectedChain) ?? {};
     if (isVerifyCoinChecked) {
-      return (
-        Number(totalBalance) +
-        Number(totalStakedBalance) +
-        Number(totalUnbondingBalance)
-      );
+      return DecimalHelper.add(totalBalance, [
+        totalStakedBalance,
+        totalUnbondingBalance,
+      ]).toString();
     } else {
-      return (
-        Number(totalUnverifiedBalance) +
-        Number(totalStakedBalance) +
-        Number(totalUnbondingBalance)
-      );
+      return DecimalHelper.add(totalBalance, [
+        totalStakedBalance,
+        totalUnbondingBalance,
+        totalUnverifiedBalance,
+      ]).toString();
     }
   };
 

@@ -21,6 +21,7 @@ export interface IIBCData {
   gasPrice: number;
   ibcDenoms: Record<string, string>;
   poolIds?: Record<string, Long>;
+  rest?: string;
 }
 export const cosmosConfig: Record<string, IIBCData> = {
   cosmos: {
@@ -55,6 +56,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       kujira:
         'ibc/4CC44260793F84006656DD868E017578F827A492978161DA31D7572BCB3F4289',
     },
+    rest: 'https://cosmoshub.lava.build:443',
   },
   osmosis: {
     prefix: 'osmo',
@@ -94,6 +96,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       stargaze: Long.fromNumber(604),
       noble: Long.fromNumber(605),
     },
+    rest: 'https://rest.lavenderfive.com:443/osmosis',
   },
   juno: {
     prefix: 'juno',
@@ -125,6 +128,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: '',
       kujira: '',
     },
+    rest: 'https://lcd-juno.itastakers.com',
   },
   stargaze: {
     prefix: 'stars',
@@ -155,6 +159,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: '',
       kujira: '',
     },
+    rest: 'https://rest.stargaze-apis.com/',
   },
   noble: {
     prefix: 'noble',
@@ -188,6 +193,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       kujira:
         'ibc/D78D2139CE19A59D2EB05B38B6E5BC9BAC6B31058291B3613F84529140A451CC',
     },
+    rest: 'https://rest.lavenderfive.com:443/noble',
   },
   coreum: {
     prefix: 'core',
@@ -219,6 +225,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       kujira:
         'ibc/AB305490F17ECCAE3F2B0398A572E0EFB3AF394B90C3A1663DA28C1F0869F624',
     },
+    rest: 'https://rest-coreum.ecostake.com',
   },
   injective: {
     prefix: 'inj',
@@ -250,6 +257,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       kujira:
         'ibc/9A115B56E769B92621FFF90567E2D60EFD146E86E867491DB69EEDA9ADC36204',
     },
+    rest: 'https://injective-api.polkachu.com',
   },
   kujira: {
     prefix: 'kujira',
@@ -283,5 +291,6 @@ export const cosmosConfig: Record<string, IIBCData> = {
         'ibc/5A3DCF59BC9EC5C0BB7AA0CA0279FC2BB126640CB8B8F704F7BC2DC42495041B',
       kujira: 'ukuji',
     },
+    rest: 'https://kujira-api.polkachu.com/',
   },
 };
