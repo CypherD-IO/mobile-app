@@ -456,7 +456,7 @@ export default function useGasService() {
                         mode: 'SIGN_MODE_DIRECT',
                       },
                     },
-                    sequence: sequence, // Use the fetched sequence
+                    sequence, // Use the fetched sequence
                   },
                 ],
                 fee: {
@@ -1234,20 +1234,23 @@ export default function useGasService() {
       recentBlockhash: blockhash,
       instructions: [transferInstruction],
     }).compileToV0Message();
-    const transaction = new VersionedTransaction(message);
-    const simulation = await connection.simulateTransaction(transaction, {
-      replaceRecentBlockhash: true,
-      commitment: 'finalized',
-    });
-    const unitsConsumed = simulation?.value?.unitsConsumed ?? 0;
-    const lamportsPerSignature = 5000;
-    const numSignatures = transaction.signatures.length;
-    const estimatedFee =
-      (lamportsPerSignature * numSignatures) / LAMPORTS_PER_SOL;
+    const feeCalculator = await connection.getFeeForMessage(message);
+    const fee = feeCalculator.value ?? 5000;
+    const feeInLamports = DecimalHelper.removeDecimals(fee, 9).toNumber();
+    // const transaction = new VersionedTransaction(message);
+    // const simulation = await connection.simulateTransaction(transaction, {
+    //   replaceRecentBlockhash: true,
+    //   commitment: 'finalized',
+    // });
+    // const unitsConsumed = simulation?.value?.unitsConsumed ?? 0;
+    // const lamportsPerSignature = 5000;
+    // const numSignatures = transaction.signatures.length;
+    // const estimatedFee =
+    //   (lamportsPerSignature * numSignatures) / LAMPORTS_PER_SOL;
 
     return {
-      gasFeeInCrypto: estimatedFee,
-      gasLimit: unitsConsumed * 1.8,
+      gasFeeInCrypto: feeInLamports,
+      // gasLimit: unitsConsumed * 1.8,
       gasPrice: 0.000005,
     };
   };
@@ -1416,7 +1419,7 @@ export default function useGasService() {
       let gasLimit = await web3.eth.estimateGas(
         {
           from: signer_address,
-          to: to,
+          to,
           value: '0x0',
           data: formattedData,
           // Add state override to simulate having enough allowance
@@ -1530,7 +1533,7 @@ export default function useGasService() {
         const gasDetails = await estimateGasForEvm({
           web3,
           chain: tokenData.chainDetails.backendName as ChainBackendNames,
-          fromAddress: fromAddress,
+          fromAddress,
           toAddress: sendAddress,
           amountToSend: tokenData.balanceDecimal,
           contractAddress: tokenData.contractAddress,

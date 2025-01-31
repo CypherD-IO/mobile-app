@@ -807,7 +807,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: DecimalHelper.toNumber(amountInCrypto),
           coinId: coinGeckoId,
           amountInCrypto: true,
-          tokenAddress: denom,
+          tokenAddress: contractAddress,
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
