@@ -3,7 +3,7 @@ import { Coin, MsgTransferEncodeObject } from '@cosmjs/stargate';
 import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as Sentry from '@sentry/react-native';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-import { ceil, get, map, set } from 'lodash';
+import { ceil, get, isNil, map, round, set } from 'lodash';
 import Long from 'long';
 import { useContext } from 'react';
 import Web3 from 'web3';
@@ -24,6 +24,7 @@ import {
   HdWalletContext,
   getTimeOutTime,
   getWeb3Endpoint,
+  logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
 import {
@@ -52,6 +53,8 @@ import {
   VersionedTransaction,
   ComputeBudgetProgram,
   Keypair,
+  TransactionInstruction,
+  TransactionSignature,
 } from '@solana/web3.js';
 import useSolanaSigner from '../useSolana';
 import {
@@ -63,6 +66,7 @@ import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { TransferAuthorization } from 'cosmjs-types/ibc/applications/transfer/v1/authz';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { AnalyticsType } from '../../constants/enum';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -1342,168 +1346,162 @@ export default function useTransactionManager() {
     });
   };
 
+  const checkBalance = async (
+    connection: Connection,
+    publicKey: PublicKey,
+    requiredLamports: number,
+  ) => {
+    const balance = await connection.getBalance(publicKey);
+    const readableRequiredLamports: number = DecimalHelper.removeDecimals(
+      requiredLamports,
+      9,
+    ).toNumber();
+
+    const readableBalance: number = DecimalHelper.removeDecimals(
+      balance,
+      9,
+    ).toNumber();
+
+    if (balance < requiredLamports) {
+      throw new Error(
+        `Insufficient balance. Required: ${readableRequiredLamports} SOL, Available: ${readableBalance} SOL.`,
+      );
+    }
+  };
+
+  async function fetchPriorityFees(connection: Connection) {
+    const fees = await connection.getRecentPrioritizationFees();
+    if (fees.length === 0) {
+      return 0;
+    }
+
+    // Sort fees in ascending order
+    const sortedFees = fees
+      .map(fee => fee.prioritizationFee)
+      .sort((a, b) => a - b);
+
+    // Calculate the index for 80th percentile
+    const index = Math.ceil(sortedFees.length * 0.8) - 1;
+
+    // Return the 80th percentile value using lodash get
+    return get(sortedFees, index, 0);
+  }
+
   const simulateSolanaTxn = async ({
     connection,
     fromKeypair,
-    toPublicKey,
-    amountToSend,
-    isSPL = false,
-    mintAddress = '',
+    instructions = [],
   }: {
     connection: Connection;
     fromKeypair: Keypair;
-    toPublicKey: PublicKey;
-    amountToSend: bigint;
-    mintAddress?: string;
-    isSPL?: boolean;
+    instructions?: TransactionInstruction[];
   }) => {
     try {
-      const { blockhash } = await connection.getLatestBlockhash();
-
-      const instructions = [];
-
-      if (isSPL) {
-        // Get or create associated token accounts for sender and receiver
-        const mintPublicKey = new PublicKey(mintAddress);
-        const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
-          connection,
-          fromKeypair,
-          mintPublicKey,
-          fromKeypair.publicKey,
-        );
-
-        const toTokenAccount = await getOrCreateAssociatedTokenAccount(
-          connection,
-          fromKeypair,
-          mintPublicKey,
-          toPublicKey,
-        );
-
-        // Add SPL transfer instruction
-        instructions.push(
-          createTransferInstruction(
-            fromTokenAccount.address,
-            toTokenAccount.address,
-            fromKeypair.publicKey,
-            amountToSend,
-          ),
-        );
-      } else {
-        // Regular SOL transfer
-        instructions.push(
-          SystemProgram.transfer({
-            fromPubkey: fromKeypair.publicKey,
-            toPubkey: toPublicKey,
-            lamports: amountToSend,
-          }),
-        );
-      }
-
-      const transactionMessage = new TransactionMessage({
+      const { blockhash } = await connection.getLatestBlockhash('finalized');
+      const messageV0 = new TransactionMessage({
         payerKey: fromKeypair.publicKey,
-        instructions,
         recentBlockhash: blockhash,
+        instructions,
       }).compileToV0Message();
 
-      const transferTransaction = new VersionedTransaction(transactionMessage);
+      const transaction = new VersionedTransaction(messageV0);
+      const simulation = await connection.simulateTransaction(transaction, {
+        replaceRecentBlockhash: true,
+        commitment: 'finalized',
+      });
 
-      const { value: simulationResult } = await connection.simulateTransaction(
-        transferTransaction,
-        {
-          replaceRecentBlockhash: true,
-          sigVerify: false,
-          commitment: 'confirmed',
-        },
-      );
-
-      // Check for simulation errors
-      if (simulationResult.err) {
+      if (simulation.value.err) {
         throw new Error(
-          `Simulation failed: ${JSON.stringify(simulationResult.err)}`,
+          `Simulation failed: ${JSON.stringify(simulation.value.err)}`,
         );
       }
-      const baseUnits = simulationResult.unitsConsumed ?? 0;
-      const unitsWithBuffer = Math.ceil(baseUnits * 1.1);
 
-      return unitsWithBuffer;
+      const baseUnits = simulation.value.unitsConsumed ?? 200000;
+      return Math.ceil(baseUnits * 1.2); // Add 20% buffer
     } catch (e: unknown) {
       throw new Error(`Simulation failed: ${JSON.stringify(e)}`);
     }
   };
 
-  const calculatePriorityFee = async (connection: Connection) => {
-    const fees = await connection.getRecentPrioritizationFees();
-    if (fees.length === 0) {
-      return 0;
-    }
-    const totalFees = fees.reduce((sum, fee) => sum + fee.prioritizationFee, 0);
-    return Math.ceil((totalFees / fees.length) * 1.5);
+  const sendTransactionWithPriorityFee = async (
+    connection: Connection,
+    transaction: Transaction,
+    fromKeypair: Keypair,
+    amountToSend?: bigint,
+  ) => {
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = fromKeypair.publicKey;
+
+    const priorityFee = await fetchPriorityFees(connection);
+
+    const estimatedComputeUnits = await simulateSolanaTxn({
+      connection,
+      instructions: transaction.instructions,
+      fromKeypair,
+    });
+
+    transaction.instructions.unshift(
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee }),
+    );
+
+    transaction.instructions.unshift(
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units: estimatedComputeUnits + 1000,
+      }),
+    );
+
+    const feeCalculator = await connection.getFeeForMessage(
+      transaction.compileMessage(),
+    );
+
+    const requiredFeeLamports = feeCalculator.value ?? 5000;
+
+    await checkBalance(connection, fromKeypair.publicKey, requiredFeeLamports);
+
+    transaction.sign(fromKeypair);
+
+    const signature = await connection.sendRawTransaction(
+      transaction.serialize(),
+    );
+
+    return signature;
   };
 
   const sendSOLTokens = async ({
     amountToSend,
     toAddress,
+    connection,
+    fromKeypair,
   }: {
     amountToSend: string;
     toAddress: string;
+    connection: Connection;
+    fromKeypair: Keypair;
   }) => {
-    const solanRpc = getSolanaRpc();
-    const fromKeypair = await getSolanWallet();
     const toPublicKey = new PublicKey(toAddress);
-    if (fromKeypair) {
-      const connection = new Connection(solanRpc, 'confirmed');
 
-      const lamportsToSend = ethers.parseUnits(amountToSend, 9);
+    const fromPublicKey = fromKeypair.publicKey;
+    const lamportsToSend = ethers.parseUnits(amountToSend, 9);
 
-      const avgPriorityFee = await calculatePriorityFee(connection);
+    const transaction = new Transaction();
 
-      const simulation = await simulateSolanaTxn({
-        connection,
-        fromKeypair,
-        toPublicKey,
-        amountToSend: lamportsToSend,
-      });
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: fromPublicKey,
+        toPubkey: toPublicKey,
+        lamports: lamportsToSend,
+      }),
+    );
 
-      const transaction = new Transaction();
+    const resp = await sendTransactionWithPriorityFee(
+      connection,
+      transaction,
+      fromKeypair,
+      lamportsToSend,
+    );
 
-      transaction.add(
-        ComputeBudgetProgram.setComputeUnitLimit({
-          units: (simulation ?? 0) + 1000,
-        }),
-      );
-
-      transaction.add(
-        ComputeBudgetProgram.setComputeUnitPrice({
-          microLamports: avgPriorityFee,
-        }),
-      );
-
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey: fromKeypair.publicKey,
-          toPubkey: toPublicKey,
-          lamports: lamportsToSend,
-        }),
-      );
-
-      const resp = await sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [fromKeypair],
-        {
-          commitment: 'finalized',
-          maxRetries: 15,
-        },
-      );
-
-      return { hash: String(resp), isError: false };
-    } else {
-      return {
-        isError: true,
-        error: 'Unable to create user wallet',
-        hash: '',
-      };
-    }
+    return resp;
   };
 
   const sendSPLTokens = async ({
@@ -1511,97 +1509,101 @@ export default function useTransactionManager() {
     toAddress,
     mintAddress,
     contractDecimals = 9,
+    connection,
+    fromKeypair,
   }: {
     amountToSend: string;
     toAddress: string;
     mintAddress: string;
     contractDecimals: number;
+    connection: Connection;
+    fromKeypair: Keypair;
   }) => {
-    const solanRpc = getSolanaRpc();
-    const fromKeypair = await getSolanWallet();
     const toPublicKey = new PublicKey(toAddress);
     const mintPublicKey = new PublicKey(mintAddress);
-    if (fromKeypair) {
-      const connection = new Connection(solanRpc, 'confirmed');
 
-      const lamportsToSend = ethers.parseUnits(amountToSend, contractDecimals);
+    const lamportsToSend = ethers.parseUnits(amountToSend, contractDecimals);
 
-      const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
-        connection,
-        fromKeypair,
-        mintPublicKey,
+    const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      fromKeypair,
+      mintPublicKey,
+      fromKeypair.publicKey,
+    );
+
+    const toTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      fromKeypair,
+      mintPublicKey,
+      toPublicKey,
+    );
+
+    const transaction = new Transaction();
+
+    transaction.add(
+      createTransferInstruction(
+        fromTokenAccount.address,
+        toTokenAccount.address,
         fromKeypair.publicKey,
-      );
+        lamportsToSend,
+        [],
+        TOKEN_PROGRAM_ID,
+      ),
+    );
 
-      const toTokenAccount = await getOrCreateAssociatedTokenAccount(
-        connection,
-        fromKeypair,
-        mintPublicKey,
-        toPublicKey,
-      );
+    const resp = await sendTransactionWithPriorityFee(
+      connection,
+      transaction,
+      fromKeypair,
+      lamportsToSend,
+    );
 
-      const avgPriorityFee = await calculatePriorityFee(connection);
-
-      const simulation = await simulateSolanaTxn({
-        connection,
-        fromKeypair,
-        toPublicKey,
-        amountToSend: lamportsToSend,
-        isSPL: true,
-        mintAddress,
-      });
-
-      const transaction = new Transaction();
-
-      if (avgPriorityFee) {
-        transaction.add(
-          ComputeBudgetProgram.setComputeUnitPrice({
-            microLamports: avgPriorityFee,
-          }),
-        );
-      }
-
-      if (simulation) {
-        transaction.add(
-          ComputeBudgetProgram.setComputeUnitLimit({
-            units: (simulation ?? 0) + 1000,
-          }),
-        );
-      }
-
-      transaction.add(
-        createTransferInstruction(
-          fromTokenAccount.address,
-          toTokenAccount.address,
-          fromKeypair.publicKey,
-          lamportsToSend,
-          [],
-          TOKEN_PROGRAM_ID,
-        ),
-      );
-
-      const resp = await sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [fromKeypair],
-        {
-          commitment: 'finalized',
-          maxRetries: 15,
-        },
-      );
-
-      return {
-        isError: false,
-        hash: resp,
-      };
-    } else {
-      return {
-        isError: true,
-        error: 'Unable to create user wallet',
-        hash: '',
-      };
-    }
+    return resp;
   };
+
+  async function confirmTransactionWithRetry({
+    connection,
+    signature,
+    maxRetries = 5,
+    initialBackoff = 1000,
+    backoffFactor = 1.5,
+  }: {
+    connection: Connection;
+    signature: TransactionSignature;
+    maxRetries?: number;
+    initialBackoff?: number;
+    backoffFactor?: number;
+  }) {
+    let currentBackoff = initialBackoff;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const { blockhash, lastValidBlockHeight } =
+          await connection.getLatestBlockhash();
+        const response = await connection.confirmTransaction(
+          {
+            signature,
+            blockhash,
+            lastValidBlockHeight,
+          },
+          'finalized',
+        );
+        if (response.value.err) {
+          throw new Error(
+            'Transaction confirmation error: ' +
+              JSON.stringify(response.value.err),
+          );
+        }
+        return response;
+      } catch (error: unknown) {
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, currentBackoff));
+          currentBackoff *= backoffFactor;
+        } else {
+          throw error;
+        }
+      }
+    }
+  }
 
   const sendSolanaTokens = async ({
     amountToSend,
@@ -1615,16 +1617,61 @@ export default function useTransactionManager() {
     contractDecimals: number;
   }) => {
     try {
+      let signature;
+      const solanRpc = getSolanaRpc();
+      const fromKeypair = await getSolanWallet();
+      if (!fromKeypair) {
+        return {
+          isError: true,
+          error: 'Unable to create user wallet',
+          hash: '',
+        };
+      }
+
+      const connection = new Connection(solanRpc, 'confirmed');
+
       if (contractAddress === 'solana-native') {
-        return await sendSOLTokens({ amountToSend, toAddress });
+        signature = await sendSOLTokens({
+          amountToSend,
+          toAddress,
+          connection,
+          fromKeypair,
+        });
       } else {
-        return await sendSPLTokens({
+        signature = await sendSPLTokens({
           amountToSend,
           toAddress,
           mintAddress: contractAddress,
           contractDecimals,
+          connection,
+          fromKeypair,
         });
       }
+      const response = await confirmTransactionWithRetry({
+        connection,
+        signature,
+        maxRetries: 15,
+      });
+
+      const result = get(response, ['value', 'err']);
+      if (isNil(result)) {
+        logAnalytics({
+          type: AnalyticsType.SUCCESS,
+          txnHash: signature,
+          chain: 'solana',
+          address: fromKeypair.publicKey.toBase58(),
+          message: 'Transaction sent successfully',
+        });
+        return { isError: false, hash: signature };
+      }
+      logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: 'solana',
+        message: JSON.stringify(result),
+        screen: location.pathname,
+        address: fromKeypair.publicKey.toBase58(),
+      });
+      return { isError: true, error: result };
     } catch (e) {
       return {
         isError: true,
