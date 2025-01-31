@@ -10,7 +10,7 @@ import clsx from 'clsx';
 import { t } from 'i18next';
 import { divide, get, random, round } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Web3 from 'web3';
 import AppImages from '../../../../assets/images/appImages';
@@ -355,7 +355,7 @@ export default function FirstLoadCard() {
 
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              gasFeeReservation[chainDetails.backendName],
+              gasReservedForNativeToken,
             ).toString();
           } else {
             const gasDetails = await estimateGasForEvm({
@@ -387,6 +387,7 @@ export default function FirstLoadCard() {
             }
           }
         }
+        setIsMaxLoading(false);
       } catch (e) {
         const errorObject = {
           e,
@@ -1012,7 +1013,7 @@ export default function FirstLoadCard() {
             balanceDecimal,
           )
         ) {
-          const gasDetails = await estimateGasForCosmosRest({
+          gasDetails = await estimateGasForCosmosRest({
             chain: chainDetails,
             denom,
             amount: actualTokensRequired,
@@ -1142,10 +1143,6 @@ export default function FirstLoadCard() {
     if (length > 5) return 'pb-[2px]';
     return 'h-[60px]';
   };
-
-  if (isMaxLoading) {
-    return <Loading blurBg={true} />;
-  }
 
   return (
     <CyDView className='bg-n20 flex-1' style={{ paddingTop: insect.top }}>
@@ -1436,18 +1433,22 @@ export default function FirstLoadCard() {
                   </CyDTouchView>
                   <CyDTouchView
                     className='bg-n30 rounded-[4px] px-[10px] py-[6px]'
-                    disabled={
-                      isMaxLoading ||
-                      !usdAmount ||
-                      !selectedToken ||
-                      minTokenValueLimit > Number(selectedToken?.totalValue) ||
-                      MINIMUM_TRANSFER_AMOUNT_ETH >
-                        Number(selectedToken?.totalValue)
-                    }
+                    disabled={isMaxLoading}
                     onPress={() => {
                       void onMax();
                     }}>
-                    <CyDText className='font-bold text-[14px]'>{'MAX'}</CyDText>
+                    {isMaxLoading ? (
+                      <CyDView className='w-[30px] items-center'>
+                        <ActivityIndicator
+                          size='small'
+                          color='var(--color-base400)'
+                        />
+                      </CyDView>
+                    ) : (
+                      <CyDText className='font-bold text-[14px]'>
+                        {'MAX'}
+                      </CyDText>
+                    )}
                   </CyDTouchView>
                 </CyDView>
               </CyDView>

@@ -1481,6 +1481,9 @@ const resources = {
       'AGREE_T&C':
         'I hereby confirm that I have read, understood, and fully agree to the terms and conditions outlined above.',
       OPTIONS: 'Options',
+      MCC_PADDING_MESSAGE:
+        'An extra ${{amount}} was charged to ensure a margin for transaction settlement. The unused amount will be refunded within {{days}} after settlement.',
+      REFUND_DAYS_RANGE: '4 to 5 Business days',
     },
   },
 };
