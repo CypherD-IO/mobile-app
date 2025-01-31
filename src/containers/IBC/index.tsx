@@ -24,7 +24,10 @@ import { Chain, ChainBackendNames, IBC_CHAINS } from '../../constants/server';
 import * as Sentry from '@sentry/react-native';
 import SignatureModal from '../../components/v2/signatureModal';
 import { screenTitle } from '../../constants';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
+import {
+  MODAL_HIDE_TIMEOUT_250,
+  MODAL_HIDE_TIMEOUT_600,
+} from '../../core/Http';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, ActivityIndicator } from 'react-native';
 import Button from '../../components/v2/button';
@@ -190,141 +193,28 @@ export default function IBC({
   };
 
   const ibcTransfer = async (type = 'simulation'): Promise<void> => {
-    const activityData: IBCTransaction = {
-      id: genId(),
-      status: ActivityStatus.PENDING,
-      type: ActivityType.IBC,
-      transactionHash: '',
-      token: tokenData.name,
-      fromChain: tokenData.chainDetails.name,
-      toChain: chain.name,
-      symbol: tokenData.symbol,
-      tokenLogoUrl: tokenData.logoUrl,
-      amount: limitDecimalPlaces(amount, 3),
-      datetime: new Date(),
-      receiverAddress,
-    };
+    try {
+      const activityData: IBCTransaction = {
+        id: genId(),
+        status: ActivityStatus.PENDING,
+        type: ActivityType.IBC,
+        transactionHash: '',
+        token: tokenData.name,
+        fromChain: tokenData.chainDetails.name,
+        toChain: chain.name,
+        symbol: tokenData.symbol,
+        tokenLogoUrl: tokenData.logoUrl,
+        amount: limitDecimalPlaces(amount, 3),
+        datetime: new Date(),
+        receiverAddress,
+      };
 
-    if (type === 'txn') {
-      activityRef.current = activityData;
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: activityRef.current,
-      });
-    }
-
-    if (
-      [
-        ChainBackendNames.COSMOS,
-        ChainBackendNames.OSMOSIS,
-        ChainBackendNames.JUNO,
-        ChainBackendNames.STARGAZE,
-        ChainBackendNames.NOBLE,
-        ChainBackendNames.COREUM,
-        ChainBackendNames.INJECTIVE,
-        ChainBackendNames.KUJIRA,
-      ].includes(tokenData.chainDetails.backendName)
-    ) {
-      setLoading(true);
-      const fromAddress = get(
-        cosmosAddresses,
-        tokenData.chainDetails.chainName,
-      );
-      if (type === 'simulation') {
-        const gasDetails = await estimateGasForCosmosIBCRest({
-          fromChain: tokenData?.chainDetails,
-          toChain: chain,
-          denom: tokenData?.denom,
-          amount,
-          fromAddress,
-          toAddress: receiverAddress,
+      if (type === 'txn') {
+        activityRef.current = activityData;
+        activityContext.dispatch({
+          type: ActivityReducerAction.POST,
+          value: activityRef.current,
         });
-        setGasFee(gasDetails?.gasFeeInCrypto);
-        const hasEnoughNAtiveBalanceForGas =
-          DecimalHelper.isGreaterThanOrEqualTo(
-            DecimalHelper.fromString(nativeToken?.balanceDecimal),
-            DecimalHelper.fromString(gasDetails?.gasFeeInCrypto),
-          );
-        if (hasEnoughNAtiveBalanceForGas) {
-          setTimeout(() => {
-            setSignModalVisible(true);
-          }, 500);
-        } else {
-          await showModal('state', {
-            type: 'error',
-            title: 'Insufficient balance for gas',
-            description: `You do not have enough balance in ${nativeToken?.name} to perform this action. Please load more ${nativeToken?.name} tokens in ${tokenData.chainDetails.name} chain to continue.`,
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }
-      } else if (type === 'txn') {
-        const transaction = await interCosmosIBC({
-          fromChain: tokenData.chainDetails,
-          toChain: chain,
-          denom: tokenData.denom,
-          amount,
-          fromAddress,
-          toAddress: receiverAddress,
-          contractDecimals: tokenData.contractDecimals,
-        });
-        if (!transaction.isError) {
-          setSignModalVisible(false);
-          setTimeout(
-            () =>
-              showModal('state', {
-                type: t<string>('TOAST_TYPE_SUCCESS'),
-                title: t<string>('IBC_SUCCESS'),
-                description: renderSuccessTransaction(transaction.hash),
-                onSuccess: onModalHide,
-                onFailure: onModalHide,
-              }),
-            MODAL_HIDE_TIMEOUT_250,
-          );
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.SUCCESS,
-                transactionHash: transaction.hash,
-              },
-            });
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.SUCCESS,
-            txnHash: transaction.hash,
-            chain: tokenData.chainDetails?.backendName ?? '',
-          });
-        } else {
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.FAILED,
-              },
-            });
-          void logAnalytics({
-            type: AnalyticsType.ERROR,
-            chain: tokenData.chainDetails?.chainName ?? '',
-            message: parseErrorMessage(transaction.error),
-            screen: route.name,
-          });
-          Sentry.captureException(transaction.error);
-          setSignModalVisible(false);
-          setTimeout(
-            () =>
-              showModal('state', {
-                type: t<string>('TOAST_TYPE_ERROR'),
-                title: 'Transaction failed',
-                description: parseErrorMessage(transaction.error) ?? '',
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              }),
-            MODAL_HIDE_TIMEOUT_250,
-          );
-        }
       }
 
       if (
@@ -345,15 +235,33 @@ export default function IBC({
           tokenData.chainDetails.chainName,
         );
         if (type === 'simulation') {
-          const gasDetails = {
-            gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
-              4,
-            ),
-          };
+          const gasDetails = await estimateGasForCosmosIBCRest({
+            fromChain: tokenData?.chainDetails,
+            toChain: chain,
+            denom: tokenData?.denom,
+            amount,
+            fromAddress,
+            toAddress: receiverAddress,
+          });
           setGasFee(gasDetails?.gasFeeInCrypto);
-          setTimeout(() => {
-            setSignModalVisible(true);
-          }, 500);
+          const hasEnoughNAtiveBalanceForGas =
+            DecimalHelper.isGreaterThanOrEqualTo(
+              DecimalHelper.fromString(nativeToken?.balanceDecimal),
+              DecimalHelper.fromString(gasDetails?.gasFeeInCrypto),
+            );
+          if (hasEnoughNAtiveBalanceForGas) {
+            setTimeout(() => {
+              setSignModalVisible(true);
+            }, 500);
+          } else {
+            await showModal('state', {
+              type: 'error',
+              title: 'Insufficient balance for gas',
+              description: `You do not have enough balance in ${nativeToken?.name} to perform this action. Please load more ${nativeToken?.name} tokens in ${tokenData.chainDetails.name} chain to continue.`,
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
         } else if (type === 'txn') {
           const transaction = await interCosmosIBC({
             fromChain: tokenData.chainDetails,
@@ -375,7 +283,7 @@ export default function IBC({
                   onSuccess: onModalHide,
                   onFailure: onModalHide,
                 }),
-              MODAL_HIDE_TIMEOUT_250,
+              MODAL_HIDE_TIMEOUT_600,
             );
             activityRef.current &&
               activityContext.dispatch({
@@ -425,7 +333,16 @@ export default function IBC({
 
         setLoading(false);
       }
-    } catch (error) {
+    } catch (e) {
+      Sentry.captureException(e, {
+        extra: {
+          action: 'ibcTransfer',
+          chain: tokenData.chainDetails?.chainName,
+          token: tokenData.name,
+          amount,
+          receiverAddress,
+        },
+      });
       setLoading(false);
     }
   };
