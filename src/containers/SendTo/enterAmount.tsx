@@ -141,7 +141,10 @@ export default function EnterAmount(props: any) {
         toAddress: cosmosWallet?.address ?? '',
       });
     }
-    return gasEstimate;
+    if (!gasEstimate) {
+      return { gasFeeInCrypto: 0 };
+    }
+    return { gasFeeInCrypto: Number(gasEstimate.gasFeeInCrypto) };
   };
 
   const isGasReservedForNative = async (
@@ -187,8 +190,9 @@ export default function EnterAmount(props: any) {
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
-    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName)
+    const gasReserved = (await getGasFee(tokenData.chainDetails?.chainName))
       ?.gasFeeInCrypto;
+
     if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {
       showModal('state', {
         type: 'error',
