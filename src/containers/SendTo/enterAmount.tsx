@@ -51,7 +51,6 @@ import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
 import Web3 from 'web3';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
-import * as Sentry from '@sentry/react-native';
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -108,7 +107,9 @@ export default function EnterAmount(props: any) {
     }
   }, [isFocused]);
 
-  const getGasFee = async (chainName: string) => {
+  const getGasFee = async (
+    chainName: string,
+  ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
     if (chainName === ChainNames.ETH) {
       const ethereum = hdWallet.state.wallet.ethereum;
@@ -256,11 +257,14 @@ export default function EnterAmount(props: any) {
           tokenData.chainDetails?.chainName,
         );
         gasReservedForNativeToken = gasFeeDetails?.gasFeeInCrypto;
-        // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
-        gasReservedForNativeToken = DecimalHelper.multiply(
-          gasReservedForNativeToken,
-          1.1,
-        );
+        // not including solana here because it on max if the native token value is not take to 0 we will get an error called no enough balance for rent excemption
+        if (tokenData.chainDetails.backendName !== ChainBackendNames.SOLANA) {
+          // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
+          gasReservedForNativeToken = DecimalHelper.multiply(
+            gasReservedForNativeToken,
+            1.1,
+          );
+        }
       }
 
       const gasReserved =
