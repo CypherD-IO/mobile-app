@@ -25,6 +25,7 @@ import {
 } from './SigningModalComponents';
 import { t } from 'i18next';
 import AppImages from '../../../../../assets/images/appImages';
+import { DecimalHelper } from '../../../../utils/decimalHelper';
 
 export const RenderTransactionSignModal = ({
   dAppInfo,
@@ -55,14 +56,19 @@ export const RenderTransactionSignModal = ({
       case DecodedResponseTypes.SEND: {
         void intercomAnalyticsLog('eth_sendTransaction_SEND');
         if (data?.gasPrice && data.native_token.amount && data.type_send) {
-          const gasPriceInWei = data?.gasPrice * 10 ** 9;
-          const gasInTokens =
-            data?.gas.gas_limit *
-            gasPriceInWei *
-            10 ** -data?.native_token.decimals;
+          const gasPriceInWei = DecimalHelper.multiply(
+            data?.gasPrice,
+            DecimalHelper.pow(10, 9),
+          );
+          const gasInTokens = DecimalHelper.multiply(data?.gas?.gas_limit, [
+            gasPriceInWei,
+            DecimalHelper.pow(10, -data?.native_token.decimals),
+          ]);
           const gasAndUSDAppx = `${formatAmount(gasInTokens)} ${
             data?.native_token.symbol
-          } ≈ $${formatAmount(gasInTokens * data?.native_token.price)} USD`;
+          } ≈ $${formatAmount(
+            DecimalHelper.multiply(gasInTokens, data?.native_token.price),
+          )} USD`;
           const availableBalance = `${formatAmount(data.native_token.amount)} ${
             data.native_token.symbol
           }`;
@@ -71,9 +77,11 @@ export const RenderTransactionSignModal = ({
             token: {
               logo: data.type_send.token.logo_url,
               name: data.type_send.token.name,
-              amount: data.type_send.token_amount,
-              valueInUSD:
-                data.type_send.token_amount * data?.type_send?.token.price,
+              amount: String(data.type_send.token_amount),
+              valueInUSD: DecimalHelper.multiply(
+                data.type_send.token_amount,
+                data?.type_send?.token.price,
+              ).toString(),
             },
             toAddress: data.type_send.to_addr,
             fromAddress: data.from_addr,
@@ -105,19 +113,23 @@ export const RenderTransactionSignModal = ({
           data.native_token.amount
         ) {
           const approvalToken = data?.type_token_approval?.token;
-          const gasPriceInWei = data?.gasPrice * 10 ** 9;
-          const gasInTokens =
-            data?.gas.gas_limit *
-            gasPriceInWei *
-            10 ** -data?.native_token.decimals;
+          const gasPriceInWei = DecimalHelper.multiply(
+            data?.gasPrice,
+            DecimalHelper.pow(10, 9),
+          );
+          const gasInTokens = DecimalHelper.multiply(data?.gas?.gas_limit, [
+            gasPriceInWei,
+            DecimalHelper.pow(10, -data?.native_token.decimals),
+          ]);
           const approveTokenData: IApproveTokenData = {
             approvalTokenLogo: approvalToken.logo_url,
             chainLogo: chain.logo_url,
             amount: {
               inTokensWithSymbol: `${data.type_token_approval.token_amount} ${data.type_token_approval.token_symbol}`,
-              inUSDWithSymbol: `$${(
-                data.type_token_approval.token_amount * approvalToken.price
-              ).toLocaleString()}`,
+              inUSDWithSymbol: `$${DecimalHelper.multiply(
+                data.type_token_approval.token_amount,
+                approvalToken.price,
+              ).toString()}`,
             },
             spender: {
               address: getMaskedAddress(data.type_token_approval.spender, 10),
@@ -128,7 +140,9 @@ export const RenderTransactionSignModal = ({
             },
             gasWithUSDAppx: `${formatAmount(gasInTokens)} ${
               data?.native_token.symbol
-            } ≈ $${formatAmount(gasInTokens * data?.native_token.price)} USD`,
+            } ≈ $${formatAmount(
+              DecimalHelper.multiply(gasInTokens, data?.native_token.price),
+            )} USD`,
             availableBalance: `${formatAmount(data.native_token.amount)} ${
               data.native_token.symbol
             }`,
@@ -163,11 +177,14 @@ export const RenderTransactionSignModal = ({
             receiveTokenList[0]?.amount &&
             receiveTokenList[0]?.usd_value
           ) {
-            const gasPriceInWei = data?.gasPrice * 10 ** 9;
-            const gasInTokens =
-              data?.gas.gas_limit *
-              gasPriceInWei *
-              10 ** -data?.native_token.decimals;
+            const gasPriceInWei = DecimalHelper.multiply(
+              data?.gasPrice,
+              DecimalHelper.pow(10, 9),
+            );
+            const gasInTokens = DecimalHelper.multiply(data?.gas?.gas_limit, [
+              gasPriceInWei,
+              DecimalHelper.pow(10, -data?.native_token.decimals),
+            ]);
             const swapTxnData: ISwapTxnData = {
               sendToken: {
                 name: sendTokenList[0].name,
@@ -202,7 +219,7 @@ export const RenderTransactionSignModal = ({
                   data?.native_token.symbol
                 }`,
                 inUSDWithSymbol: `${formatAmount(
-                  gasInTokens * data?.native_token.price,
+                  DecimalHelper.multiply(gasInTokens, data?.native_token.price),
                 )} USD`,
               },
             };
@@ -377,7 +394,7 @@ const RenderSendTransactionSignModal = ({
             </CyDView>
             <CyDView>
               <CyDText className='text-[24px] text-subTextColor font-semibold'>
-                {formatAmount(token.valueInUSD).toString() + ' USD'}
+                {formatAmount(token.valueInUSD) + ' USD'}
               </CyDText>
             </CyDView>
           </CyDView>

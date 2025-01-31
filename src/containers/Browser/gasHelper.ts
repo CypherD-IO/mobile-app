@@ -15,6 +15,8 @@ import Web3 from 'web3';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../../global';
+import { DecimalHelper } from '../../utils/decimalHelper';
+import { limitDecimalPlaces } from '../../core/util';
 
 const minimumGasFee = '20';
 
@@ -120,14 +122,15 @@ export async function getPayloadParams(
     params: [{ value }],
   } = payload;
 
-  const totalGasFeeInGwei = parseFloat(
-    Web3.utils.fromWei(
-      Web3.utils.toWei(
-        (parseFloat(gasDetail.gasPrice.toString()) * gasLimit).toFixed(9),
-        'gwei',
+  const totalGasFeeInGwei = Web3.utils.fromWei(
+    Web3.utils.toWei(
+      DecimalHelper.toString(
+        DecimalHelper.multiply(gasDetail.gasPrice, gasLimit),
+        9,
       ),
-      'ether',
+      'gwei',
     ),
+    'ether',
   );
 
   const finalGasPriceInHex = Web3.utils.toHex(
@@ -135,32 +138,42 @@ export async function getPayloadParams(
   );
 
   const valueETH = value
-    ? parseFloat(
-        Web3.utils.fromWei(Web3.utils.hexToNumberString(value), 'ether'),
-      )
-    : 0;
+    ? Web3.utils.fromWei(Web3.utils.hexToNumberString(value), 'ether')
+    : '0';
 
   let gasFeeDollar;
-  let valueDollar = 0;
-  let totalDollar = 0;
-  let totalEth = 0;
+  let valueDollar = '0';
+  let totalDollar = '0';
+  let totalEth = '0';
   if (gasDetail.tokenPrice > 0) {
     const nativeTokenPrice = gasDetail.tokenPrice;
-    gasFeeDollar = (totalGasFeeInGwei * nativeTokenPrice).toFixed(2);
-    valueDollar = parseFloat((valueETH * nativeTokenPrice).toFixed(2));
-    totalEth = valueETH + totalGasFeeInGwei;
-    totalDollar = parseFloat((totalEth * nativeTokenPrice).toFixed(2));
+    gasFeeDollar = DecimalHelper.toString(
+      DecimalHelper.multiply(totalGasFeeInGwei, nativeTokenPrice),
+      2,
+    );
+    valueDollar = DecimalHelper.toString(
+      DecimalHelper.multiply(valueETH, nativeTokenPrice),
+      2,
+    );
+    totalEth = DecimalHelper.add(valueETH, totalGasFeeInGwei).toString();
+    totalDollar = DecimalHelper.toString(
+      DecimalHelper.multiply(totalEth, nativeTokenPrice),
+      2,
+    );
   }
   const paymodalParams = {
     chainIdNumber: chain.chainIdNumber,
     gasFeeDollar,
-    gasFeeETH: totalGasFeeInGwei.toFixed(6),
+    gasFeeETH: DecimalHelper.toString(
+      DecimalHelper.fromString(totalGasFeeInGwei),
+      6,
+    ),
     networkName: chain.name,
     networkCurrency: chain.symbol,
-    valueETH: valueETH.toFixed(6),
+    valueETH: limitDecimalPlaces(valueETH, 6),
     valueDollar,
     totalDollar,
-    totalETH: totalEth.toFixed(6),
+    totalETH: limitDecimalPlaces(totalEth, 6),
     appImage: chain.logo_url,
     finalGasPrice: finalGasPriceInHex,
     gasLimit,
@@ -219,54 +232,65 @@ export function estimateGas(
         finalGasPrice = gasDetail.gasPrice;
       }
 
-      let totalGasFeeInGwei = 0; // gas limit * gas price in Gwei
+      let totalGasFeeInGwei = '0'; // gas limit * gas price in Gwei
       let finalGasPriceInHex;
       if (finalGasPrice) {
-        totalGasFeeInGwei = parseFloat(
-          Web3.utils.fromWei(
-            Web3.utils.toWei(
-              (parseFloat(String(finalGasPrice)) * Number(gasLimit)).toFixed(9),
-              'gwei',
+        totalGasFeeInGwei = Web3.utils.fromWei(
+          Web3.utils.toWei(
+            DecimalHelper.toString(
+              DecimalHelper.multiply(finalGasPrice, gasLimit),
+              9,
             ),
-            'ether',
+            'gwei',
           ),
+          'ether',
         );
         finalGasPriceInHex = Web3.utils.toHex(
-          Web3.utils.toWei(
-            parseFloat(String(finalGasPrice)).toFixed(9),
-            'Gwei',
-          ),
+          Web3.utils.toWei(limitDecimalPlaces(finalGasPrice, 9), 'Gwei'),
         );
       }
 
-      let valueETH = 0;
+      let valueETH = '0';
       if (value !== undefined) {
-        valueETH = parseFloat(
-          Web3.utils.fromWei(Web3.utils.hexToNumberString(value), 'ether'),
+        valueETH = Web3.utils.fromWei(
+          Web3.utils.hexToNumberString(value),
+          'ether',
         );
       }
 
       let gasFeeDollar;
-      let valueDollar = 0;
-      let totalDollar = 0;
-      let totalEth = 0;
+      let valueDollar = '0';
+      let totalDollar = '0';
+      let totalEth = '0';
       if (gasDetail.tokenPrice > 0) {
         const nativeTokenPrice = gasDetail.tokenPrice;
-        gasFeeDollar = (totalGasFeeInGwei * nativeTokenPrice).toFixed(2);
-        valueDollar = parseFloat((valueETH * nativeTokenPrice).toFixed(2));
-        totalEth = valueETH + totalGasFeeInGwei;
-        totalDollar = parseFloat((totalEth * nativeTokenPrice).toFixed(2));
+        gasFeeDollar = DecimalHelper.toString(
+          DecimalHelper.multiply(totalGasFeeInGwei, nativeTokenPrice),
+          2,
+        );
+        valueDollar = DecimalHelper.toString(
+          DecimalHelper.multiply(valueETH, nativeTokenPrice),
+          2,
+        );
+        totalEth = DecimalHelper.add(valueETH, totalGasFeeInGwei).toString();
+        totalDollar = DecimalHelper.toString(
+          DecimalHelper.multiply(totalEth, nativeTokenPrice),
+          2,
+        );
       }
       const paymodalParams = {
         chainIdNumber: selectedChain.chainIdNumber,
         gasFeeDollar,
-        gasFeeETH: totalGasFeeInGwei.toFixed(6),
+        gasFeeETH: DecimalHelper.toString(
+          DecimalHelper.fromString(totalGasFeeInGwei),
+          6,
+        ),
         networkName: selectedChain.name,
         networkCurrency: selectedChain.symbol,
-        valueETH: valueETH.toFixed(6),
+        valueETH: limitDecimalPlaces(valueETH, 6),
         valueDollar,
         totalDollar,
-        totalETH: totalEth.toFixed(6),
+        totalETH: limitDecimalPlaces(totalEth, 6),
         appImage: selectedChain.logo_url,
         finalGasPrice: finalGasPriceInHex,
         gasLimit,

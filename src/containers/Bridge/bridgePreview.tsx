@@ -29,6 +29,7 @@ import { ChainIdToBackendNameMapping } from '../../constants/data';
 import { ActivityType } from '../../reducers/activity_reducer';
 import useIsSignable from '../../hooks/useIsSignable';
 import BackgroundTimer from 'react-native-background-timer';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -290,12 +291,10 @@ export default function BridgeRoutePreview({
                     {currentOperation && token && (
                       <CyDView className='flex flex-row gap-x-[8px] items-center'>
                         <CyDText className='text-[18px] font-bold'>
-                          {round(
-                            Number(
-                              ethers.formatUnits(
-                                currentOperation.amount_in,
-                                token?.decimals,
-                              ),
+                          {DecimalHelper.toString(
+                            DecimalHelper.removeDecimals(
+                              currentOperation.amount_in,
+                              token?.decimals ?? 0,
                             ),
                             6,
                           )}
@@ -316,12 +315,13 @@ export default function BridgeRoutePreview({
                     {currentOperation && tokenOut && (
                       <CyDView className='flex flex-row gap-x-[8px] items-center'>
                         <CyDText className='text-[18px] font-bold'>
-                          {parseFloat(
-                            ethers.formatUnits(
+                          {DecimalHelper.toString(
+                            DecimalHelper.removeDecimals(
                               currentOperation.amount_out,
-                              tokenOut?.decimals,
+                              tokenOut?.decimals ?? 0,
                             ),
-                          ).toFixed(4)}
+                            4,
+                          )}
                         </CyDText>
                         {endsWith(tokenOut?.logoUrl, '.svg') ? (
                           <SvgUri

@@ -27,6 +27,7 @@ import { ceil, isEmpty } from 'lodash';
 import Loading from '../../../../components/v2/loading';
 import { screenTitle } from '../../../../constants';
 import WithdrawalReasonsModal from '../../../../components/v2/withdrawalReasonsModal';
+import { DecimalHelper } from '../../../../utils/decimalHelper';
 import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
@@ -156,10 +157,12 @@ export default function CryptoWithdrawal() {
                     className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
                     onPress={() => {
                       setAmount(
-                        ceil(
-                          Number(availableAmount) * percentage,
-                          2,
-                        ).toString(),
+                        DecimalHelper.toString(
+                          DecimalHelper.ceil(
+                            DecimalHelper.multiply(availableAmount, percentage),
+                            2,
+                          ),
+                        ),
                       );
                     }}>
                     <CyDText className='text-[14px] font-bold text-base400'>
@@ -192,7 +195,12 @@ export default function CryptoWithdrawal() {
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${ceil(parseFloat(amount || '0') * 0.005, 2)}`}
+                  {`$ ${DecimalHelper.toString(
+                    DecimalHelper.ceil(
+                      DecimalHelper.multiply(amount || '0', 0.005),
+                      2,
+                    ),
+                  )}`}
                 </CyDText>
               </CyDView>
               <CyDText className='text-[12px] font-medium text-base400'>
@@ -207,7 +215,18 @@ export default function CryptoWithdrawal() {
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${ceil(ceil(parseFloat(amount || '0'), 2) - ceil(parseFloat(amount || '0') * 0.005, 2), 2)}`}
+                  {`$ ${DecimalHelper.toString(
+                    DecimalHelper.ceil(
+                      DecimalHelper.subtract(
+                        DecimalHelper.ceil(amount || '0', 2),
+                        DecimalHelper.ceil(
+                          DecimalHelper.multiply(amount || '0', 0.005),
+                          2,
+                        ),
+                      ),
+                      2,
+                    ),
+                  )}`}
                 </CyDText>
               </CyDView>
               <CyDText className='text-[12px] font-medium text-base400'>
@@ -222,7 +241,8 @@ export default function CryptoWithdrawal() {
         <Button
           title={t('CONTINUE')}
           disabled={
-            isEmpty(amount) || parseFloat(amount) > parseFloat(availableAmount)
+            isEmpty(amount) ||
+            DecimalHelper.isGreaterThan(amount, availableAmount)
           }
           onPress={() => {
             navigation.navigate(screenTitle.WITHDRAW_CONFIRMATION, {

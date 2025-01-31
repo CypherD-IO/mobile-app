@@ -1,6 +1,14 @@
 import Long from 'long';
 import { StdSignDoc } from '@cosmjs/launchpad';
 import { EmbedChainInfos as ChainInfos } from '../../constants/config';
+import {
+  BASE_GAS_LIMIT,
+  CHAIN_OPTIMISM,
+  OPTIMISM_GAS_MULTIPLIER,
+  CONTRACT_GAS_MULTIPLIER,
+  OP_ETH_ADDRESS,
+} from '../../constants/server';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 export const getChainInfo = (chainId: string) => {
   const chainInfo = ChainInfos.find(info => info.chainId === chainId);
@@ -221,5 +229,30 @@ export const parseCosmosMessage = (msg: any) => {
     return [arg0, arg1, preparedSingDoc, arg3];
   } else {
     return [...JSONUint8Array.unwrap(message.args)];
+  }
+};
+
+export const decideGasLimitBasedOnTypeOfToAddress = (
+  code: string,
+  gasLimit: number | bigint,
+  chain: string,
+  contractAddress: string,
+): number => {
+  if (gasLimit > BASE_GAS_LIMIT) {
+    if (code !== '0x') {
+      return DecimalHelper.multiply(CONTRACT_GAS_MULTIPLIER, gasLimit)
+        .floor()
+        .toNumber();
+    }
+    return Number(gasLimit);
+  } else if (
+    contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
+    chain === CHAIN_OPTIMISM.backendName
+  ) {
+    return DecimalHelper.multiply(BASE_GAS_LIMIT, OPTIMISM_GAS_MULTIPLIER)
+      .floor()
+      .toNumber();
+  } else {
+    return BASE_GAS_LIMIT;
   }
 };

@@ -3,6 +3,9 @@ import { Chain } from '../constants/server';
 export interface TokenMeta {
   about: string;
   actualBalance: number;
+  balanceDecimal: string;
+  balanceInInteger: number;
+  balanceInteger: string;
   actualStakedBalance: number;
   balance: number;
   chainDetails: Chain;

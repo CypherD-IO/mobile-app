@@ -41,6 +41,7 @@ import {
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { toUtf8 } from '@cosmjs/encoding';
 import { parseErrorMessage } from './util';
+import { DecimalHelper } from '../utils/decimalHelper';
 
 // Contract ABI for allowance and approval
 const contractABI = [
@@ -440,13 +441,15 @@ export default function useSkipApiBridge() {
         );
         const { gasPrice, gasLimitMultiplier } =
           await getGasPrice(chainBackendName);
-        const gasFee = simulation * 3 * gasPrice;
+        const gasFee = DecimalHelper.multiply(simulation, [3, gasPrice]);
         const fee = {
-          gas: Math.floor(simulation * gasLimitMultiplier).toString(),
+          gas: DecimalHelper.multiply(simulation, gasLimitMultiplier)
+            .floor()
+            .toString(),
           amount: [
             {
               denom: get(cosmosConfig, chainName).denom,
-              amount: Math.floor(gasFee).toString(),
+              amount: gasFee.floor().toString(),
             },
           ],
         };
