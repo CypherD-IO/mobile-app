@@ -138,7 +138,7 @@ export const DecimalHelper = {
   },
 
   pow(base: number, exponent: number): Decimal {
-    return new Decimal(Math.pow(base, exponent));
+    return new Decimal(base).pow(exponent);
   },
 
   applyDecimals(value: string | number | Decimal, decimals: number): Decimal {

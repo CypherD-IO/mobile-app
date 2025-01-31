@@ -1269,10 +1269,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             <CyDText className={clsx('text-center  text-[16px]')}>
               {'~' +
                 (isCrpytoInput
-                  ? (!isNaN(parseFloat(usdAmount))
+                  ? (!Number.isNaN(parseFloat(usdAmount))
                       ? formatAmount(usdAmount)
                       : '0.00') + ' USD'
-                  : (!isNaN(parseFloat(cryptoAmount))
+                  : (!Number.isNaN(parseFloat(cryptoAmount))
                       ? formatAmount(cryptoAmount)
                       : '0.00') +
                     ' ' +

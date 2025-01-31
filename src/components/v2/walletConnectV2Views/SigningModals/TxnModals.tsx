@@ -60,7 +60,7 @@ export const RenderTransactionSignModal = ({
             data?.gasPrice,
             DecimalHelper.pow(10, 9),
           );
-          const gasInTokens = DecimalHelper.multiply(data?.gas.gas_limit, [
+          const gasInTokens = DecimalHelper.multiply(data?.gas?.gas_limit, [
             gasPriceInWei,
             DecimalHelper.pow(10, -data?.native_token.decimals),
           ]);
@@ -117,7 +117,7 @@ export const RenderTransactionSignModal = ({
             data?.gasPrice,
             DecimalHelper.pow(10, 9),
           );
-          const gasInTokens = DecimalHelper.multiply(data?.gas.gas_limit, [
+          const gasInTokens = DecimalHelper.multiply(data?.gas?.gas_limit, [
             gasPriceInWei,
             DecimalHelper.pow(10, -data?.native_token.decimals),
           ]);
@@ -181,7 +181,7 @@ export const RenderTransactionSignModal = ({
               data?.gasPrice,
               DecimalHelper.pow(10, 9),
             );
-            const gasInTokens = DecimalHelper.multiply(data?.gas.gas_limit, [
+            const gasInTokens = DecimalHelper.multiply(data?.gas?.gas_limit, [
               gasPriceInWei,
               DecimalHelper.pow(10, -data?.native_token.decimals),
             ]);
