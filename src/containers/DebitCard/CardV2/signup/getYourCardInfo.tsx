@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDIcons,
-  CyDImage,
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
   CyDText,
@@ -9,7 +8,6 @@ import {
   CyDView,
 } from '../../../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../../../../assets/images/appImages';
 import Button from '../../../../components/v2/button';
 import {
   NavigationProp,
@@ -29,8 +27,6 @@ import {
   GlobalContext,
   GlobalContextDef,
 } from '../../../../core/globalContext';
-import SelectPlanModal from '../../../../components/selectPlanModal';
-import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   deductAmountNow: boolean;
@@ -75,28 +71,17 @@ export default function GetYourCardInfo() {
     setLoading(false);
   }, []);
 
-  const handleNavigation = () => {
+  const onPressContinue = async () => {
+    await removeReferralCode();
     if (toPage) {
       navigation.navigate(toPage);
     }
-  };
-
-  const onPressContinue = async () => {
-    await removeReferralCode();
-    setPlanChangeModalVisible(true);
   };
 
   if (loading) return <Loading />;
 
   return (
     <CyDView style={{ paddingTop: insets.top }} className='bg-n20'>
-      <SelectPlanModal
-        isModalVisible={planChangeModalVisible}
-        setIsModalVisible={setPlanChangeModalVisible}
-        deductAmountNow={deductAmountNow}
-        onPlanChangeSuccess={handleNavigation}
-        onClose={handleNavigation}
-      />
       {!showOnboarding && (
         <CyDView className='bg-n20 flex flex-col justify-between h-full'>
           <CyDKeyboardAwareScrollView>

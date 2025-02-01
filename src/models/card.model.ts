@@ -66,6 +66,7 @@ export interface ICardTransaction {
   fxCurrencySymbol?: string;
   fxCurrencyValue?: number;
   fxConversionPrice?: number;
+  mccPaddingAmount?: string | number;
   cardId?: string;
   last4?: string;
   userId?: string;

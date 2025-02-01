@@ -1467,6 +1467,11 @@ const resources = {
         'Crypto withdrawals are processed in 3-5 business days. Note that you will receive the funds in USDC on BASE chain.',
       LEGACY_CARD_TRANSACTIONS: 'Legacy Card Transactions',
       OTHERS: 'Others',
+      MAXIMUM_AMOUNT_POSSIBLE: 'Enter amount less than ',
+      INSUFFICIENT_FUNDS_DESCRIPTION: `Your balance isn't sufficient to cover both the amount and the load fee. Use the 'Max' option to load the maximum amount possible`,
+      GAS_FEE_ERROR: 'Gas Fee Estimation Failed',
+      GAS_FEE_ERROR_DESCRIPTION:
+        'Gas fee estimation failed. Please try again later. Contact support if the issue persists.',
       RE_VALIDATE_TO: 'Re-Validate to',
       TERMS_CONDITIONS: 'Terms and Conditions',
       TERMS_CONDITIONS_DESC:
@@ -1476,6 +1481,9 @@ const resources = {
       'AGREE_T&C':
         'I hereby confirm that I have read, understood, and fully agree to the terms and conditions outlined above.',
       OPTIONS: 'Options',
+      MCC_PADDING_MESSAGE:
+        'An extra ${{amount}} was charged to ensure a margin for transaction settlement. The unused amount will be refunded within {{days}} after settlement.',
+      REFUND_DAYS_RANGE: '4 to 5 Business days',
     },
   },
 };

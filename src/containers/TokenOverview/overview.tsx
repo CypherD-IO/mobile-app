@@ -73,6 +73,7 @@ import {
 } from '../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
 import { showToast } from '../utilities/toastUtility';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -158,18 +159,16 @@ export default function Overview({
   const chartXValue = useSharedValue('');
   const [tokenDescription, setTokenDescription] = useState<string>('');
   const [totalValueInAmount, setTotalAmountInValue] = useState(
-    `${
-      +tokenData.totalValue +
-      +tokenData.actualStakedBalance +
-      +tokenData.actualUnbondingBalance
-    }`,
+    DecimalHelper.add(tokenData.totalValue, [
+      tokenData.actualStakedBalance,
+      tokenData.actualUnbondingBalance,
+    ]).toString(),
   );
   const [totalValue, setTotalValue] = useState(
-    `${
-      +tokenData.actualBalance +
-      +tokenData.stakedBalanceTotalValue +
-      +tokenData.unbondingBalanceTotalValue
-    }`,
+    DecimalHelper.add(tokenData.actualBalance, [
+      tokenData.stakedBalanceTotalValue,
+      tokenData.unbondingBalanceTotalValue,
+    ]).toString(),
   );
   const [chartVisible, setChartVisible] = useState(false);
 
@@ -317,7 +316,6 @@ export default function Overview({
     const dateTime = getDateFormatBasedOnLocaleForTimestamp(value);
     chartXValue.value = dateTime;
   };
-
   const formatPriceValue = (value: string) => {
     'worklet';
     if (value === '') {
@@ -367,13 +365,13 @@ export default function Overview({
   const getTotalTokens = () => {
     if (isABasicCosmosStakingToken(tokenData)) {
       setTotalValue(
-        `${convertFromUnitAmount(
-          (
-            Number(cosmosStaking.cosmosStakingState.balance) +
-            Number(cosmosStaking.cosmosStakingState.stakedBalance)
-          ).toString(),
+        convertFromUnitAmount(
+          DecimalHelper.add(
+            cosmosStaking.cosmosStakingState.balance,
+            cosmosStaking.cosmosStakingState.stakedBalance,
+          ),
           tokenData.contractDecimals,
-        )}`,
+        ).toString(),
       );
     } else {
       setTotalValue(`${tokenData.actualBalance}`);
@@ -383,16 +381,16 @@ export default function Overview({
   const getTotalValue = () => {
     if (isABasicCosmosStakingToken(tokenData)) {
       setTotalAmountInValue(
-        `${
-          Number(tokenData.price) *
-          +convertFromUnitAmount(
-            (
-              Number(cosmosStaking.cosmosStakingState.balance) +
-              Number(cosmosStaking.cosmosStakingState.stakedBalance)
-            ).toString(),
+        DecimalHelper.multiply(
+          tokenData.price,
+          convertFromUnitAmount(
+            DecimalHelper.add(
+              cosmosStaking.cosmosStakingState.balance,
+              cosmosStaking.cosmosStakingState.stakedBalance,
+            ),
             tokenData.contractDecimals,
-          )
-        }`,
+          ),
+        ).toString(),
       );
     } else {
       setTotalAmountInValue(`${tokenData.totalValue}`);

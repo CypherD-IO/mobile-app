@@ -91,6 +91,7 @@ import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isAddress } from 'web3-validator';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -508,14 +509,20 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         chain,
         amountInCrypto: amountToSend,
         amountInFiat: String(
-          formatAmount(Number(amountToSend) * Number(tokenData?.price ?? 0)),
+          formatAmount(
+            DecimalHelper.multiply(amountToSend, tokenData?.price ?? 0),
+          ),
         ),
         symbol: tokenData.symbol,
         toAddress: addressRef.current,
-        gasFeeInCrypto: parseFloat(String(randomGas)).toFixed(4),
-        gasFeeInFiat: parseFloat(
-          String(formatAmount(randomGas * Number(tokenData?.price ?? 0))),
-        ).toFixed(4),
+        gasFeeInCrypto: DecimalHelper.toString(
+          DecimalHelper.fromString(randomGas),
+          4,
+        ),
+        gasFeeInFiat: DecimalHelper.toString(
+          DecimalHelper.multiply(randomGas, tokenData?.price ?? 0),
+          4,
+        ),
         nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
       },
     });
@@ -752,11 +759,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         value: {
           ...activityRef.current,
           gasAmount: response.gasFeeInCrypto
-            ? parseFloat(
-                String(
-                  Number(response?.gasFeeInCrypto) * Number(tokenData.price),
+            ? DecimalHelper.toString(
+                DecimalHelper.multiply(
+                  response?.gasFeeInCrypto ?? 0,
+                  tokenData?.price ?? 0,
                 ),
-              ).toFixed(4)
+                4,
+              )
             : activityRef.current?.gasAmount,
           status: ActivityStatus.SUCCESS,
           transactionHash: response?.hash,
@@ -894,7 +903,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
       activityRef.current.gasAmount = String(
         formatAmount(
-          Number(gasDetails?.gasFeeInCrypto) * Number(tokenData?.price ?? 0),
+          DecimalHelper.multiply(
+            gasDetails?.gasFeeInCrypto,
+            tokenData?.price ?? 0,
+          ),
         ),
       );
       setTokenSendConfirmationParams({
@@ -908,18 +920,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           },
           chain: tokenData.chainDetails,
           amountInCrypto: amountToSend,
-          amountInFiat: String(
-            formatAmount(Number(amountToSend) * Number(tokenData?.price ?? 0)),
+          amountInFiat: formatAmount(
+            DecimalHelper.multiply(amountToSend, tokenData?.price ?? 0),
           ),
           symbol: tokenData.symbol,
           toAddress: addressRef.current,
-          gasFeeInCrypto: String(
-            formatAmount(Number(gasDetails?.gasFeeInCrypto)),
-          ),
-          gasFeeInFiat: String(
-            formatAmount(
-              Number(gasDetails?.gasFeeInCrypto) *
-                Number(tokenData?.price ?? 0),
+          gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
+          gasFeeInFiat: formatAmount(
+            DecimalHelper.multiply(
+              gasDetails?.gasFeeInCrypto ?? 0,
+              tokenData?.price ?? 0,
             ),
           ),
           nativeTokenSymbol: String(tokenData.chainDetails?.symbol),

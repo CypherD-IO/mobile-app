@@ -1337,15 +1337,22 @@ export default function TransactionDetails() {
                   fetchCardBalance={fetchCardBalance}
                 />
 
-                {!transaction.isSettled &&
-                  fxCurrencySymbol !== 'USD' &&
-                  !(provider === CardProviders.REAP_CARD) && (
-                    <CyDView className='bg-lightGrey'>
-                      <CyDText className='px-[12px] pb-[12px] mt-[-15px]'>
-                        {t('TRANSACTION_SETTLEMENT_AMOUNT')}
-                      </CyDText>
-                    </CyDView>
-                  )}
+                {Number(transaction?.mccPaddingAmount) > 0 && (
+                  <CyDView className='flex flex-row gap-[4px] bg-p0 rounded-[6px] border-[1px] border-p400 p-[12px] mt-[24px]'>
+                    <CyDMaterialDesignIcons
+                      name={'information-outline'}
+                      size={16}
+                      className={'text-p400 mt-[4px] flex-shrink-0'}
+                    />
+                    <CyDText className='text-p400 text-[12px] font-medium flex-1 flex-wrap'>
+                      {t('MCC_PADDING_MESSAGE', {
+                        amount: transaction?.mccPaddingAmount,
+                        days: t('REFUND_DAYS_RANGE'),
+                      })}
+                    </CyDText>
+                  </CyDView>
+                )}
+
                 <CyDView className='flex flex-row justify-center mt-[24px] mb-[20px]'>
                   <Button
                     title={capitalize(t('SHARE'))}

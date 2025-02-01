@@ -50,7 +50,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   OPTIMISM: 0.00001,
   ARBITRUM: 0.00001,
   COSMOS: 0.1,
-  OSMOSIS: 0.1,
+  OSMOSIS: 0.2,
   JUNO: 0.007,
   STARGAZE: 0.1,
   NOBLE: 0.1,
@@ -785,6 +785,7 @@ export const TIME_GAPS = [
   { id: 3, label: 'This Month', value: 'This Month' },
 ];
 
+export const GAS_BUFFER_FACTOR = 1.3;
 export const GAS_BUFFER_FACTOR_FOR_LOAD_MAX = 1.5;
 
 export const CardFeePercentage = {
