@@ -82,9 +82,7 @@ const IHaveReferralCodeScreen = () => {
           description: t('REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION'),
           onSuccess: () => {
             hideModal();
-            setTimeout(() => {
-              setPlanChangeModalVisible(true);
-            }, 500);
+            handleNavigation();
           },
           onFailure: hideModal,
         });
@@ -121,13 +119,6 @@ const IHaveReferralCodeScreen = () => {
       <HowReferralWorksModal
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
-      />
-      <SelectPlanModal
-        isModalVisible={planChangeModalVisible}
-        setIsModalVisible={setPlanChangeModalVisible}
-        deductAmountNow={deductAmountNow}
-        onPlanChangeSuccess={handleNavigation}
-        onClose={handleNavigation}
       />
       <CyDView className='flex flex-col justify-between h-full mb-[24px] '>
         <CyDView className='px-[16px]'>

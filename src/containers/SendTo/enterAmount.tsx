@@ -13,7 +13,6 @@ import ChooseTokenModal from '../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
-import { gasFeeReservation } from '../../constants/data';
 import { ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
@@ -27,11 +26,9 @@ import {
 } from '../../constants/server';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
 import {
-  convertFromUnitAmount,
   formatAmount,
   getWeb3Endpoint,
   HdWalletContext,
-  isEIP1599Chain,
   isNativeToken,
   limitDecimalPlaces,
 } from '../../core/util';
@@ -81,7 +78,6 @@ export default function EnterAmount(props: any) {
   const { showModal, hideModal } = useGlobalModalContext();
   const [isLoading, setIsLoading] = useState(false);
   const [isMaxLoading, setIsMaxLoading] = useState(false);
-  const web3 = new Web3(getWeb3Endpoint(tokenData.chainDetails, globalContext));
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -114,7 +110,7 @@ export default function EnterAmount(props: any) {
     if (chainName === ChainNames.ETH) {
       const ethereum = hdWallet.state.wallet.ethereum;
       gasEstimate = await estimateGasForEvm({
-        web3,
+        web3: new Web3(getWeb3Endpoint(tokenData.chainDetails, globalContext)),
         chain: tokenData.chainDetails.backendName as ChainBackendNames,
         fromAddress: ethereum.address ?? '',
         toAddress: ethereum.address ?? '',
@@ -190,7 +186,7 @@ export default function EnterAmount(props: any) {
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
-    const gasReserved = (await getGasFee(tokenData.chainDetails?.chainName))
+    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName)
       ?.gasFeeInCrypto;
 
     if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {
@@ -253,15 +249,16 @@ export default function EnterAmount(props: any) {
             sendAddress !== ''
               ? sendAddress
               : hdWallet.state.wallet.ethereum.address,
-          web3,
+          web3: new Web3(
+            getWeb3Endpoint(tokenData.chainDetails, globalContext),
+          ),
           web3Endpoint: getWeb3Endpoint(tokenData.chainDetails, globalContext),
         });
-      } else {
+      } else if (isNativeToken(tokenData)) {
         const gasFeeDetails = await getGasFee(
           tokenData.chainDetails?.chainName,
         );
         gasReservedForNativeToken = gasFeeDetails?.gasFeeInCrypto;
-        // not including solana here because it on max if the native token value is not take to 0 we will get an error called no enough balance for rent excemption
         if (tokenData.chainDetails.backendName !== ChainBackendNames.SOLANA) {
           // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
           gasReservedForNativeToken = DecimalHelper.multiply(
@@ -285,23 +282,19 @@ export default function EnterAmount(props: any) {
       const textAmount = DecimalHelper.isLessThan(maxAmountDecimal, 0)
         ? '0.00'
         : DecimalHelper.toString(maxAmountDecimal);
-      setValueForUsd(textAmount);
-
-      if (enterCryptoAmount) {
-        setCryptoValue(textAmount);
-        setUsdValue(
-          DecimalHelper.toString(
-            DecimalHelper.multiply(textAmount, tokenData.price),
-          ),
-        );
-      } else {
-        setCryptoValue(
-          DecimalHelper.toString(
-            DecimalHelper.divide(textAmount, tokenData.price),
-          ),
-        );
-        setUsdValue(textAmount);
-      }
+      setValueForUsd(
+        enterCryptoAmount
+          ? textAmount
+          : DecimalHelper.toString(
+              DecimalHelper.multiply(textAmount, tokenData.price),
+            ),
+      );
+      setCryptoValue(textAmount);
+      setUsdValue(
+        DecimalHelper.toString(
+          DecimalHelper.multiply(textAmount, tokenData.price),
+        ),
+      );
     } finally {
       setIsMaxLoading(false);
     }
@@ -338,7 +331,10 @@ export default function EnterAmount(props: any) {
                     'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}>
                   {isMaxLoading ? (
-                    <ActivityIndicator size='small' color='#000000' />
+                    <ActivityIndicator
+                      size='small'
+                      color='var(--color-base400)'
+                    />
                   ) : (
                     <CyDText className={' text-black '}>
                       {t<string>('MAX')}

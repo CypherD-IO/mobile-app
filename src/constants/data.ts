@@ -50,7 +50,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   OPTIMISM: 0.00001,
   ARBITRUM: 0.00001,
   COSMOS: 0.1,
-  OSMOSIS: 0.1,
+  OSMOSIS: 0.2,
   JUNO: 0.007,
   STARGAZE: 0.1,
   NOBLE: 0.1,
