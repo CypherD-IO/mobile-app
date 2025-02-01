@@ -1080,7 +1080,7 @@ export default function Browser({ route, navigation }: any) {
       )}
       {loader && inbuildPage === 'webview' && (
         <CyDView className='flex flex-row items-center justify-center h-full w-full'>
-          <ActivityIndicator size='large' color={Colors.black} />
+          <ActivityIndicator size='large' color='var(--color-base400)' />
         </CyDView>
       )}
       <CyDView

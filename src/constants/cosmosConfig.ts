@@ -159,7 +159,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: '',
       kujira: '',
     },
-    rest: 'https://rest.stargaze-apis.com/',
+    rest: 'https://api-stargaze.ezstaking.dev',
   },
   noble: {
     prefix: 'noble',
@@ -291,6 +291,6 @@ export const cosmosConfig: Record<string, IIBCData> = {
         'ibc/5A3DCF59BC9EC5C0BB7AA0CA0279FC2BB126640CB8B8F704F7BC2DC42495041B',
       kujira: 'ukuji',
     },
-    rest: 'https://kujira-api.polkachu.com/',
+    rest: 'https://rest.lavenderfive.com:443/kujira',
   },
 };
