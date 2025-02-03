@@ -1410,7 +1410,7 @@ export default function useGasService() {
     web3: Web3,
   ) => {
     try {
-      const { chain_id, data, signer_address, to, value } = contractData;
+      const { data, signer_address, to } = contractData;
 
       // Format data with 0x prefix
       const formattedData = data.startsWith('0x') ? data : `0x${data}`;
@@ -1474,6 +1474,10 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation for custom contract`,
         screen: 'estimateGasForEvmCustomContract',
+        other: {
+          contractData,
+          chain,
+        },
       });
       throw error;
     }

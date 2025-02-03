@@ -24,6 +24,7 @@ import {
   HdWalletContext,
   getTimeOutTime,
   getWeb3Endpoint,
+  limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
