@@ -1662,6 +1662,12 @@ export default function useTransactionManager() {
           chain: 'solana',
           address: fromKeypair.publicKey.toBase58(),
           message: 'Transaction sent successfully',
+          other: {
+            amount: amountToSend,
+            toAddress,
+            contractAddress,
+            contractDecimals,
+          },
         });
         return { isError: false, hash: signature };
       }
@@ -1671,6 +1677,12 @@ export default function useTransactionManager() {
         message: JSON.stringify(result),
         screen: location.pathname,
         address: fromKeypair.publicKey.toBase58(),
+        other: {
+          amount: amountToSend,
+          toAddress,
+          contractAddress,
+          contractDecimals,
+        },
       });
       return { isError: true, error: result };
     } catch (e) {

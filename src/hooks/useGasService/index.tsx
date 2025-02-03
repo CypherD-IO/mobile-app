@@ -530,6 +530,14 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
         screen: 'estimateGasForCosmosRest',
+        other: {
+          token: denom,
+          amount: amount,
+          fromAddress: fromAddress,
+          toAddress: toAddress,
+          nativeTokenBalance: nativeToken.balanceDecimal,
+          nativeTokenSymbol: nativeToken.symbol,
+        },
       });
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
@@ -866,6 +874,14 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
         screen: 'estimateGasForCosmosIBCRest',
+        other: {
+          token: denom,
+          amount: amount,
+          fromAddress: fromAddress,
+          toAddress: toAddress,
+          nativeTokenBalance: nativeToken.balanceDecimal,
+          nativeTokenSymbol: nativeToken.symbol,
+        },
       });
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
@@ -1377,6 +1393,12 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
         screen: 'estimateGasForCosmosCustomContractRest',
+        other: {
+          chain: backendName,
+          restEndpoint,
+          nativeTokenBalance: nativeToken.balanceDecimal,
+          nativeTokenSymbol: nativeToken.symbol,
+        },
       });
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
