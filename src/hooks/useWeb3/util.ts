@@ -7,6 +7,7 @@ import {
   OPTIMISM_GAS_MULTIPLIER,
   CONTRACT_GAS_MULTIPLIER,
   OP_ETH_ADDRESS,
+  CHAIN_BSC,
 } from '../../constants/server';
 import { DecimalHelper } from '../../utils/decimalHelper';
 
@@ -246,8 +247,11 @@ export const decideGasLimitBasedOnTypeOfToAddress = (
     }
     return Number(gasLimit);
   } else if (
-    contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
-    chain === CHAIN_OPTIMISM.backendName
+    (contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
+      chain === CHAIN_OPTIMISM.backendName) ||
+    (contractAddress.toLowerCase() ===
+      '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' &&
+      chain === CHAIN_BSC.backendName)
   ) {
     return DecimalHelper.multiply(BASE_GAS_LIMIT, OPTIMISM_GAS_MULTIPLIER)
       .floor()
