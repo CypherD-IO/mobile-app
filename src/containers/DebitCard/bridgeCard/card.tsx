@@ -1081,7 +1081,7 @@ const RenderCardActions = ({
   }
 
   return (
-    <CyDView className='w-full' pointerEvents='none'>
+    <CyDView className='w-full'>
       <CardDetailsModal
         isModalVisible={showCardDetailsModal}
         setShowModal={setShowCardDetailsModal}
