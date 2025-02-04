@@ -1413,14 +1413,16 @@ export default function useTransactionManager() {
 
       if (simulation.value.err) {
         throw new Error(
-          `Simulation failed: ${JSON.stringify(simulation.value.err)}`,
+          `Simulation failed from rpc after successfully simualting: ${parseErrorMessage(simulation.value.err)}`,
         );
       }
 
       const baseUnits = simulation.value.unitsConsumed ?? 200000;
       return Math.ceil(baseUnits * 1.2); // Add 20% buffer
     } catch (e: unknown) {
-      throw new Error(`Simulation failed: ${JSON.stringify(e)}`);
+      throw new Error(
+        `Simulation failed Unexpected error: ${parseErrorMessage(e)}`,
+      );
     }
   };
 

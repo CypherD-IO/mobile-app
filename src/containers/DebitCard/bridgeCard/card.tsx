@@ -30,6 +30,7 @@ import {
   CardStatus,
   CardType,
   GlobalContextType,
+  PhysicalCardType,
 } from '../../../constants/enum';
 import {
   getCardRevealReuseToken,
@@ -86,6 +87,7 @@ export default function CardScreen({
   onPressActivateCard,
   refreshProfile,
   cardDesignData,
+  blockAction = false,
 }: {
   navigation: any;
   currentCardProvider: CardProviders;
@@ -93,6 +95,7 @@ export default function CardScreen({
   onPressActivateCard: (card: any) => void;
   refreshProfile: () => void;
   cardDesignData: cardDesign;
+  blockAction: boolean;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -173,7 +176,18 @@ export default function CardScreen({
 
   const getCardImage = (card: Card) => {
     if (currentCardProvider === CardProviders.REAP_CARD) {
-      const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId}.png`;
+      if (blockAction) {
+        if (card.type === CardType.PHYSICAL) {
+          if (card?.physicalCardType === PhysicalCardType.METAL) {
+            return AppImages.RC_METAL_DISABLED;
+          }
+          return AppImages.RC_PHYSICAL_DISABLED;
+        } else if (card.type === CardType.VIRTUAL) {
+          return AppImages.RC_VIRTUAL_DISABLED;
+        }
+        return AppImages.RC_VIRTUAL_DISABLED;
+      }
+      const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`;
       return {
         uri: cardImage,
       };
@@ -190,18 +204,20 @@ export default function CardScreen({
 
   const renderItem = ({ item, index }: { item: Card; index: number }) => {
     const card = item;
+
     return (
       <CyDImageBackground
         key={index}
         className={clsx(
           'w-[300px] h-[190px] flex flex-col self-center shadow-md',
           {
-            'justify-center items-center': [
-              CardStatus.IN_ACTIVE,
-              CardStatus.HIDDEN,
-              CardStatus.BLOCKED,
-              CardStatus.RC_UPGRADABLE,
-            ].includes(card?.status),
+            'justify-center items-center':
+              [
+                CardStatus.IN_ACTIVE,
+                CardStatus.HIDDEN,
+                CardStatus.BLOCKED,
+                CardStatus.RC_UPGRADABLE,
+              ].includes(card?.status) || blockAction,
             'justify-end': ![
               CardStatus.IN_ACTIVE,
               CardStatus.HIDDEN,
@@ -250,6 +266,18 @@ export default function CardScreen({
             />
             <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
               {t('LOAD_TO_ACTIVATE')}
+            </CyDText>
+          </CyDView>
+        )}
+        {blockAction && (
+          <CyDView className='flex flex-row items-center bg-white px-[12px] py-[6px] rounded-[6px]'>
+            <CyDIcons
+              name='lock-1'
+              size={20}
+              className='text-red400 mr-[4px]'
+            />
+            <CyDText className='font-medium mt-[1px] text-red400 text-[12px]'>
+              {t('LOCKED')}
             </CyDText>
           </CyDView>
         )}
@@ -339,6 +367,7 @@ export default function CardScreen({
     <>
       <CyDView>
         <Carousel
+          enabled={!blockAction}
           loop={false}
           width={width}
           height={cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250}
@@ -369,6 +398,7 @@ export default function CardScreen({
             cardProfile={cardProfile}
             trackingDetails={trackingDetails}
             cardDesignData={cardDesignData}
+            blockAction={blockAction}
           />
         )}
       </CyDView>
@@ -436,6 +466,7 @@ const RenderCardActions = ({
   cardProfile,
   trackingDetails,
   cardDesignData,
+  blockAction,
 }: {
   card: Card;
   cardProvider: CardProviders;
@@ -446,6 +477,7 @@ const RenderCardActions = ({
   cardProfile: CardProfile;
   trackingDetails: any;
   cardDesignData: cardDesign;
+  blockAction: boolean;
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -515,16 +547,6 @@ const RenderCardActions = ({
     ['accountStatus'],
     ACCOUNT_STATUS.ACTIVE,
   );
-
-  const shouldBlockAction = () => {
-    if (
-      isLockdownModeEnabled === ACCOUNT_STATUS.LOCKED &&
-      cardProvider === CardProviders.REAP_CARD
-    ) {
-      return true;
-    }
-    return false;
-  };
 
   // physical card upgrade only shown for paycaddy pc cards
   const isUpgradeToPhysicalCardStatusShown =
@@ -1059,7 +1081,7 @@ const RenderCardActions = ({
   }
 
   return (
-    <CyDView className='w-full'>
+    <CyDView className='w-full' pointerEvents='none'>
       <CardDetailsModal
         isModalVisible={showCardDetailsModal}
         setShowModal={setShowCardDetailsModal}
@@ -1188,7 +1210,7 @@ const RenderCardActions = ({
       <CyDView className='flex flex-row justify-center items-center gap-x-[24px]'>
         <CyDTouchView
           className='flex flex-col justify-center items-center w-[72px]'
-          disabled={shouldBlockAction()}
+          disabled={blockAction}
           onPress={() => {
             if (status === CardStatus.IN_ACTIVE) {
               showModal('state', {
@@ -1202,7 +1224,7 @@ const RenderCardActions = ({
             }
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${blockAction ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {isFetchingCardDetails ? (
               <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
@@ -1221,7 +1243,7 @@ const RenderCardActions = ({
         </CyDTouchView>
         <CyDTouchView
           className='flex flex-col justify-center items-center w-[72px]  ml-[24px]'
-          disabled={shouldBlockAction()}
+          disabled={blockAction}
           onPress={() => {
             if (status === CardStatus.ACTIVE) {
               toggleCardStatus();
@@ -1232,8 +1254,8 @@ const RenderCardActions = ({
           <CyDView
             className={clsx(
               'h-[54px] w-[54px] items-center justify-center rounded-[50px]',
-              shouldBlockAction()
-                ? 'bg-n40'
+              blockAction
+                ? 'bg-n50'
                 : status !== CardStatus.ACTIVE
                   ? 'bg-base100'
                   : 'bg-p50',
@@ -1270,7 +1292,7 @@ const RenderCardActions = ({
         </CyDTouchView>
         <CyDTouchView
           className='flex flex-col justify-center items-center ml-[24px]'
-          disabled={shouldBlockAction()}
+          disabled={blockAction}
           onPress={() => {
             cardProvider === CardProviders.REAP_CARD
               ? navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
@@ -1283,7 +1305,7 @@ const RenderCardActions = ({
                 });
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${blockAction ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {cardProvider === CardProviders.REAP_CARD ? (
               <CyDIcons name='settings' className='text-black text-[28px]' />
             ) : (

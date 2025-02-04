@@ -19,13 +19,10 @@ import {
   capitalize,
   debounce,
   endsWith,
-  floor,
   get,
   isEmpty,
-  isError,
   isNil,
   min,
-  round,
 } from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
@@ -34,20 +31,18 @@ import {
   ChainIdToBackendNameMapping,
   ChainNameToChainMapping,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
-  gasFeeReservation,
 } from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
 import {
   ActivityContext,
   formatAmount,
   getWeb3Endpoint,
+  hasSufficientBalanceAndGasFee,
   HdWalletContext,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
   setTimeOutNSec,
-  hasSufficientBalanceAndGasFee,
-  isEIP1599Chain,
 } from '../../core/util';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
@@ -87,8 +82,6 @@ import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   Chain,
   ChainBackendNames,
-  ChainConfigMapping,
-  chainIdNumberMapping,
   COSMOS_CHAINS,
 } from '../../constants/server';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
@@ -122,9 +115,7 @@ import { genId } from '../utilities/activityUtilities';
 import CyDSkeleton from '../../components/v2/skeleton';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
-import useCosmosSigner from '../../hooks/useCosmosSigner';
 import { Holding } from '../../core/portfolio';
-import { CyDIconsPack } from '../../customFonts/generator';
 import { Decimal } from 'decimal.js';
 
 export interface SwapBridgeChainData {
@@ -272,8 +263,6 @@ const Bridge: React.FC = () => {
   const routeParamsBackVisible = route?.params?.backVisible;
   const { getLocalPortfolio } = usePortfolio();
   const [signaturesRequired, setSignaturesRequired] = useState<number>(0);
-  const [abortController, setAbortController] =
-    useState<AbortController | null>(null);
   const [toggle, setToggle] = useState<boolean>(false);
   const {
     estimateGasForCosmosCustomContractRest,
@@ -281,7 +270,6 @@ const Bridge: React.FC = () => {
     estimateReserveFee,
     estimateReserveFeeForCustomContract,
   } = useGasService();
-  const { getCosmosSignerClient } = useCosmosSigner();
   const [nativeToken, setNativeToken] = useState<Holding | null>(null);
   const globalContext = useContext(GlobalContext);
   const [currentMaxAmount, setCurrentMaxAmount] = useState<string>('');
@@ -305,7 +293,7 @@ const Bridge: React.FC = () => {
   };
 
   const fetchChainData = async () => {
-    const chainResult = await getWithAuth('/v1/swap/chains?newData=true');
+    const chainResult = await getWithAuth('/v1/swap/chains');
     setChainData(chainResult.data);
     setSelectedFromChain(chainResult.data[0]);
     bridgeDispatch({
@@ -317,7 +305,7 @@ const Bridge: React.FC = () => {
   };
 
   const fetchTokenData = async () => {
-    const tokenResult = await getWithAuth('/v1/swap/tokens?newData=true');
+    const tokenResult = await getWithAuth('/v1/swap/tokens');
     setTokenData(tokenResult.data);
     bridgeDispatch({
       type: BridgeReducerAction.SUCCESS,
@@ -921,9 +909,6 @@ const Bridge: React.FC = () => {
 
     return () => {
       debouncedFetchQuote.cancel();
-      if (abortController) {
-        abortController.abort();
-      }
     };
   }, [
     cryptoAmount,

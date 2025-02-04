@@ -268,12 +268,9 @@ const UPGRADE_CARD_TIMELINE = {
 // };
 const RC_PHYSICAL = require('./rcPhysicalCard.png');
 const RC_VIRTUAL = require('./rcVirtualCard.png');
-// const LOCKDOWN_MODE_ICON = {
-//   uri: `${S3_BUCKET_URL_ICONS}/lockdownModeIcon.png`,
-// };
-// const LOCKDOWN_MODE_IMAGE = {
-//   uri: `${S3_BUCKET_URL_ICONS}/lockdownModeImage.png`,
-// };
+const RC_VIRTUAL_DISABLED = require('./rcVirtualCardDisabled.png');
+const RC_PHYSICAL_DISABLED = require('./rcPhysicalCardDisabled.png');
+const RC_METAL_DISABLED = require('./rcMetalCardDisabled.png');
 const APPLE_AND_GOOGLE_PAY = {
   uri: `${S3_BUCKET_URL_ICONS}/appleAndGoogleIcons.png`,
 };
@@ -775,6 +772,7 @@ export const AppImagesMap = {
     UPGRADE_CARD_TIMELINE,
     RC_PHYSICAL,
     RC_VIRTUAL,
+    RC_VIRTUAL_DISABLED,
     RC_PLAIN_VIRTUAL_CARD,
     REWARDS_YELLOW_STAR,
     CARDS_AND_COINS,
@@ -816,6 +814,8 @@ export const AppImagesMap = {
     METAL_CARDS_STACK,
     FREEZE_ICON_BLACK,
     UNFREEZE_ICON_BLACK,
+    RC_PHYSICAL_DISABLED,
+    RC_METAL_DISABLED,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1031,6 +1031,9 @@ enum AppImages {
   UPGRADE_CARD_TIMELINE = 'UPGRADE_CARD_TIMELINE',
   RC_PHYSICAL = 'RC_PHYSICAL',
   RC_VIRTUAL = 'RC_VIRTUAL',
+  RC_VIRTUAL_DISABLED = 'RC_VIRTUAL_DISABLED',
+  RC_PHYSICAL_DISABLED = 'RC_PHYSICAL_DISABLED',
+  RC_METAL_DISABLED = 'RC_METAL_DISABLED',
   RC_PLAIN_VIRTUAL_CARD = 'RC_PLAIN_VIRTUAL_CARD',
   REWARDS_YELLOW_STAR = 'REWARDS_YELLOW_STAR',
   CARDS_AND_COINS = 'CARDS_AND_COINS',

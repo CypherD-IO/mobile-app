@@ -897,23 +897,84 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
 }
 
 export function parseErrorMessage(error: any): string {
+  // Case 1: Error instance
   if (error instanceof Error) {
     return error.message;
-  } else if (`${error}` !== '[object Object]') {
-    return `${error}`;
-  } else {
-    const errorString = JSON.stringify(error, (k, v) => {
-      if (typeof v === 'function' || typeof v === 'undefined') {
-        return 'Non-enumerable type';
-      }
-      return v;
-    });
-    if (errorString !== '{}') {
-      return errorString;
-    } else {
-      return 'Unknown Error';
+  }
+
+  if (error?.message) {
+    return error.message;
+  }
+
+  // Case 2: Axios/HTTP error response object
+  const errorObj = error;
+  if (errorObj?.response?.data) {
+    // Handle various API error response formats
+    const { data } = errorObj.response;
+
+    // Case 2a: { message: string }
+    if (typeof data.message === 'string') {
+      return data.message;
+    }
+
+    // Case 2b: { error: string }
+    if (typeof data.error === 'string') {
+      return data.error;
+    }
+
+    // Case 2c: { errors: string[] }
+    if (Array.isArray(data.errors)) {
+      return data.errors.join(', ');
+    }
+
+    // Case 2d: Nested error messages
+    if (data.error?.message) {
+      return data.error.message;
+    }
+
+    // Case 2e: If data itself is a string
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    // Case 2f: Try to stringify the data object
+    try {
+      return JSON.stringify(data);
+    } catch {
+      // If stringification fails, continue to other cases
     }
   }
+
+  // Case 3: Simple string conversion possible
+  if (`${error}` !== '[object Object]') {
+    return `${error}`;
+  }
+
+  // Case 4: Complex object that needs stringification
+  try {
+    const errorString = JSON.stringify(
+      error,
+      (key, value) => {
+        if (typeof value === 'function') {
+          return 'Function';
+        }
+        if (typeof value === 'undefined') {
+          return 'undefined';
+        }
+        return value;
+      },
+      2,
+    );
+
+    if (errorString !== '{}') {
+      return errorString;
+    }
+  } catch {
+    // If JSON.stringify fails, fall through to default
+  }
+
+  // Case 5: Default fallback
+  return 'Unknown Error';
 }
 
 export const isEnglish = (value: string) => {
