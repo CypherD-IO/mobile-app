@@ -25,6 +25,7 @@ import {
   CYPHER_PLAN_ID_NAME_MAPPING,
   gasFeeReservation,
   MINIMUM_TRANSFER_AMOUNT_ETH,
+  OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
 import {
@@ -37,6 +38,7 @@ import {
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
+  CHAIN_OSMOSIS,
   ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
@@ -101,6 +103,7 @@ export default function FirstLoadCard() {
     estimateGasForEvm,
     estimateGasForSolana,
     estimateGasForCosmosRest,
+    estimateGasForCosmosIBCRest,
     estimateReserveFee,
   } = useGasService();
   const { getCosmosSignerClient } = useCosmosSigner();
@@ -474,17 +477,6 @@ export default function FirstLoadCard() {
         !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
       ) {
         try {
-          // const cosmosSigner = await getCosmosSignerClient(
-          //   chainDetails.chainName,
-          // );
-          // const gasDetails = await estimateGasForCosmos({
-          //   chain: chainDetails,
-          //   denom,
-          //   amount: amountInCrypto,
-          //   fromAddress: wallet[chainDetails.chainName].address,
-          //   toAddress: wallet[chainDetails.chainName].address,
-          //   signer: cosmosSigner,
-          // });
           const gasDetails = await estimateGasForSolana({
             fromAddress: solana.address,
             toAddress: solana.address,
@@ -597,12 +589,14 @@ export default function FirstLoadCard() {
         !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
       ) {
         try {
-          const gasDetails = await estimateGasForCosmosRest({
-            chain: chainDetails,
+          // target address is osmosis address so doing IBC instead of send for estimation
+          const gasDetails = await estimateGasForCosmosIBCRest({
+            fromChain: chainDetails,
+            toChain: CHAIN_OSMOSIS,
             denom,
             amount: amountInCrypto,
             fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: wallet[chainDetails.chainName].address,
+            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
           });
 
           if (gasDetails) {
@@ -984,27 +978,6 @@ export default function FirstLoadCard() {
             contractAddress,
             contractDecimals,
           });
-        } else {
-          setLoading(false);
-          setIsMaxLoading(false);
-          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-            hasSufficientBalanceAndGasFee: false,
-            cardProvider: currentCardProvider,
-            cardId,
-            planCost,
-            tokenSendParams: {
-              chain: chainDetails.backendName,
-              amountInCrypto: actualTokensRequired,
-              amountInFiat: String(quote.amount - Number(planCost)),
-              symbol: selectedTokenSymbol,
-              toAddress: targetWalletAddress,
-              gasFeeInCrypto: '0',
-              gasFeeInFiat: '0',
-              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-              selectedToken,
-              tokenQuote: quote,
-            },
-          });
         }
       } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
         if (
@@ -1013,31 +986,13 @@ export default function FirstLoadCard() {
             balanceDecimal,
           )
         ) {
-          gasDetails = await estimateGasForCosmosRest({
-            chain: chainDetails,
+          gasDetails = await estimateGasForCosmosIBCRest({
+            fromChain: chainDetails,
+            toChain: CHAIN_OSMOSIS,
             denom,
             amount: actualTokensRequired,
             fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: wallet[chainDetails.chainName].address,
-          });
-        } else {
-          setLoading(false);
-          setIsMaxLoading(false);
-          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-            hasSufficientBalanceAndGasFee: false,
-            cardProvider: currentCardProvider,
-            cardId,
-            tokenSendParams: {
-              chain: chainDetails.backendName,
-              amountInCrypto: actualTokensRequired,
-              symbol: selectedTokenSymbol,
-              toAddress: targetWalletAddress,
-              gasFeeInCrypto: '0',
-              gasFeeInFiat: '0',
-              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-              selectedToken,
-              tokenQuote: quote,
-            },
+            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
           });
         }
       } else if (chainDetails.chainName === ChainNames.SOLANA) {
@@ -1053,25 +1008,6 @@ export default function FirstLoadCard() {
             amountToSend: actualTokensRequired,
             contractAddress,
             contractDecimals,
-          });
-        } else {
-          setLoading(false);
-          setIsMaxLoading(false);
-          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-            hasSufficientBalanceAndGasFee: false,
-            cardProvider: currentCardProvider,
-            cardId,
-            tokenSendParams: {
-              chain: chainDetails.backendName,
-              amountInCrypto: actualTokensRequired,
-              symbol: selectedTokenSymbol,
-              toAddress: targetWalletAddress,
-              gasFeeInCrypto: '0',
-              gasFeeInFiat: '0',
-              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-              selectedToken,
-              tokenQuote: quote,
-            },
           });
         }
       }
