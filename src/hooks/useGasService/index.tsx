@@ -497,14 +497,14 @@ export default function useGasService() {
       // const gasEstimate = parseInt(result.gas_info.gas_used);
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
-      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFee = DecimalHelper.multiply(gasEstimate, [2, gasPrice]);
       const gasFeeInCrypto = DecimalHelper.toString(
         DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
         6,
       );
 
       const fee = {
-        gas: Math.floor(gasEstimate * 1.8).toString(),
+        gas: Math.floor(gasEstimate * 2).toString(),
         amount: [
           {
             denom: nativeToken?.denom ?? denom,
@@ -530,6 +530,14 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
         screen: 'estimateGasForCosmosRest',
+        other: {
+          token: denom,
+          amount: amount,
+          fromAddress: fromAddress,
+          toAddress: toAddress,
+          nativeTokenBalance: nativeToken.balanceDecimal,
+          nativeTokenSymbol: nativeToken.symbol,
+        },
       });
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
@@ -832,7 +840,7 @@ export default function useGasService() {
       }
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
-      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFee = DecimalHelper.multiply(gasEstimate, [2, gasPrice]);
       const gasFeeInCrypto = DecimalHelper.toString(
         DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
         6,
@@ -866,6 +874,14 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
         screen: 'estimateGasForCosmosIBCRest',
+        other: {
+          token: denom,
+          amount: amount,
+          fromAddress: fromAddress,
+          toAddress: toAddress,
+          nativeTokenBalance: nativeToken.balanceDecimal,
+          nativeTokenSymbol: nativeToken.symbol,
+        },
       });
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
@@ -1344,14 +1360,14 @@ export default function useGasService() {
       const gasEstimate = parseInt(result.gas_info.gas_used);
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
-      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFee = DecimalHelper.multiply(gasEstimate, [2, gasPrice]);
       const gasFeeInCrypto = DecimalHelper.toString(
         DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
         6,
       );
 
       const fee = {
-        gas: Math.floor(gasEstimate * 1.8).toString(),
+        gas: Math.floor(gasEstimate * 2).toString(),
         amount: [
           {
             denom: nativeToken?.denom,
@@ -1377,6 +1393,12 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation using REST endpoint ${restEndpoint}. Falling back to use costant gas fee estimate`,
         screen: 'estimateGasForCosmosCustomContractRest',
+        other: {
+          chain: backendName,
+          restEndpoint,
+          nativeTokenBalance: nativeToken.balanceDecimal,
+          nativeTokenSymbol: nativeToken.symbol,
+        },
       });
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
@@ -1410,7 +1432,7 @@ export default function useGasService() {
     web3: Web3,
   ) => {
     try {
-      const { chain_id, data, signer_address, to, value } = contractData;
+      const { data, signer_address, to } = contractData;
 
       // Format data with 0x prefix
       const formattedData = data.startsWith('0x') ? data : `0x${data}`;
@@ -1474,6 +1496,10 @@ export default function useGasService() {
           parseErrorMessage(error) +
           `.Error in Gas fee estimation for custom contract`,
         screen: 'estimateGasForEvmCustomContract',
+        other: {
+          contractData,
+          chain,
+        },
       });
       throw error;
     }
