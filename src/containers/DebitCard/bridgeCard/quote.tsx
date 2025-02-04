@@ -25,6 +25,7 @@ import { AnalyticsType, ButtonType } from '../../../constants/enum';
 import { get } from 'lodash';
 import {
   CHAIN_OSMOSIS,
+  ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
   ChainNames,
@@ -70,7 +71,6 @@ export default function CardQuote({
   } = route.params;
   const {
     chain,
-    amountInCrypto,
     amountInFiat,
     symbol,
     gasFeeInCrypto,
@@ -85,12 +85,10 @@ export default function CardQuote({
   const [isPayDisabled, setIsPayDisabled] = useState<boolean>(
     hasSufficientBalanceAndGasFee,
   );
-  const [maximumAmountPossible, setMaximumAmountPossible] =
-    useState<string>('');
-  const [hasInsufficientBalance, setHasInsufficientBalance] =
-    useState<boolean>(false);
+
   const hdWallet = useContext<any>(HdWalletContext);
   const ethereum = hdWallet.state.wallet.ethereum;
+  const solana = hdWallet.state.wallet.solana;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
   const { sendEvmToken, sendCosmosToken, interCosmosIBC, sendSolanaTokens } =
@@ -409,7 +407,10 @@ export default function CardQuote({
                       selectedToken?.chainDetails?.chainName,
                       '',
                     )
-                  : get(ethereum, 'address', ''),
+                  : ChainBackendNames.SOLANA ===
+                      selectedToken?.chainDetails?.chainName
+                    ? get(solana, 'address', '')
+                    : get(ethereum, 'address', ''),
                 ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
                 ...(connectionType ? { connectionType } : {}),
               });
@@ -597,18 +598,6 @@ export default function CardQuote({
           </CyDView>
         )}
       </CyDView>
-      {hasInsufficientBalance ? (
-        <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-red20 mx-[12px]'>
-          <CyDFastImage
-            source={AppImages.CYPHER_WARNING_RED}
-            className='h-[20px] w-[20px] ml-[13px] mr-[13px]'
-            resizeMode='contain'
-          />
-          <CyDText className='text-red300 font-medium text-[14px] px-[10px] w-[80%]'>
-            {t<string>('INSUFFICIENT_BALANCE_CARD')}
-          </CyDText>
-        </CyDView>
-      ) : null}
       <CyDView
         className={'flex flex-row justify-between items-center px-[10px]'}>
         <Button

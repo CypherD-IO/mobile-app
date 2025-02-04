@@ -122,7 +122,8 @@ export default function MigratePCFunds() {
       showModal('state', {
         type: 'error',
         title: t('MIGRATION_ERROR'),
-        description: parseErrorMessage(error) ?? t('CONTACT_SUPPORT'),
+        description:
+          parseErrorMessage(error) ?? t('CONTACT_SUPPORT_MORE_DETAILS'),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
