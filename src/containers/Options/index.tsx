@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler, Linking } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
-import AppImages from '../../../assets/images/appImages';
 import { ConnectionTypes } from '../../constants/enum';
 import * as C from '../../constants/index';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
@@ -23,7 +22,6 @@ import useEns from '../../hooks/useEns';
 import { isAndroid } from '../../misc/checkers';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
-  CyDFastImage,
   CyDImage,
   CyDMaterialDesignIcons,
   CyDScrollView,

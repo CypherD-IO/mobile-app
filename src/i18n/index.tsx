@@ -1216,7 +1216,7 @@ const resources = {
       ADD_FUNDS: 'Add Funds',
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
       MIGRATION_ERROR: 'Migration Error.',
-      CONTACT_SUPPORT: 'Please contact support for more details.',
+      CONTACT_SUPPORT_MORE_DETAILS: 'Please contact support for more details.',
       MIGRATE_FUNDS: 'Migrate Funds',
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
@@ -1484,6 +1484,16 @@ const resources = {
       MCC_PADDING_MESSAGE:
         'An extra ${{amount}} was charged to ensure a margin for transaction settlement. The unused amount will be refunded within {{days}} after settlement.',
       REFUND_DAYS_RANGE: '4 to 5 Business days',
+      ACCOUNT_LOCKED: 'Account Locked',
+      ACCOUNT_LOCKED_DESCRIPTION:
+        'Your account has a negative balance. Add funds to restore card access.',
+      ACCOUNT_ACTION_NEEDED: 'Action Needed',
+      ACCOUNT_ACTION_NEEDED_DESCRIPTION:
+        'Your account has a negative balance. Add funds to prevent your account from being locked.',
+      ACCOUNT_INACTIVE_DESCRIPTION:
+        'Your account is inactive. Reach out to support for assistance.',
+      CONTACT_SUPPORT: 'Contact Support',
+      LOCKED: 'Locked',
     },
   },
 };
