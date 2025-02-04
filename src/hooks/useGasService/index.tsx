@@ -497,14 +497,14 @@ export default function useGasService() {
       // const gasEstimate = parseInt(result.gas_info.gas_used);
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
-      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFee = DecimalHelper.multiply(gasEstimate, [2, gasPrice]);
       const gasFeeInCrypto = DecimalHelper.toString(
         DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
         6,
       );
 
       const fee = {
-        gas: Math.floor(gasEstimate * 1.8).toString(),
+        gas: Math.floor(gasEstimate * 2).toString(),
         amount: [
           {
             denom: nativeToken?.denom ?? denom,
@@ -840,7 +840,7 @@ export default function useGasService() {
       }
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
-      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFee = DecimalHelper.multiply(gasEstimate, [2, gasPrice]);
       const gasFeeInCrypto = DecimalHelper.toString(
         DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
         6,
@@ -1360,14 +1360,14 @@ export default function useGasService() {
       const gasEstimate = parseInt(result.gas_info.gas_used);
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
-      const gasFee = DecimalHelper.multiply(gasEstimate, [1.8, gasPrice]);
+      const gasFee = DecimalHelper.multiply(gasEstimate, [2, gasPrice]);
       const gasFeeInCrypto = DecimalHelper.toString(
         DecimalHelper.removeDecimals(gasFee, nativeToken.contractDecimals),
         6,
       );
 
       const fee = {
-        gas: Math.floor(gasEstimate * 1.8).toString(),
+        gas: Math.floor(gasEstimate * 2).toString(),
         amount: [
           {
             denom: nativeToken?.denom,
