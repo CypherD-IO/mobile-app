@@ -175,9 +175,7 @@ export default function CypherCardScreen() {
     setBalanceLoading(false);
   };
   const fetchRecentTransactions = async () => {
-    const txnURL = `/v1/cards/${cardProvider}/card/${String(
-      cardId,
-    )}/transactions?newRoute=true&limit=5`;
+    const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=5`;
     const response = await getWithAuth(txnURL);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
