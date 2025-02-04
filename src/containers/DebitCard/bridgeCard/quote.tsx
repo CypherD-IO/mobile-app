@@ -542,7 +542,7 @@ export default function CardQuote({
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
             <CyDText className={'font-medium text-[14px] '}>
-              {'$' + String(tokenQuote.fees.actualFee)}
+              {'$' + String(tokenQuote.fees.fee)}
             </CyDText>
           </CyDView>
         </CyDView>
