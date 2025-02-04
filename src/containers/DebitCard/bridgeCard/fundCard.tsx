@@ -12,6 +12,7 @@ import {
   ChainBackendNames,
   CHAIN_COSMOS,
   CAN_ESTIMATE_L1_FEE_CHAINS,
+  CHAIN_OSMOSIS,
 } from '../../../constants/server';
 import {
   getWeb3Endpoint,
@@ -43,6 +44,7 @@ import {
   CardFeePercentage,
   gasFeeReservation,
   MINIMUM_TRANSFER_AMOUNT_ETH,
+  OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
@@ -104,6 +106,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     estimateGasForSolana,
     estimateGasForCosmosRest,
     estimateReserveFee,
+    estimateGasForCosmosIBCRest,
   } = useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
@@ -183,25 +186,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             contractAddress,
             contractDecimals,
           });
-        } else {
-          setLoading(false);
-          setIsMaxLoading(false);
-          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-            hasSufficientBalanceAndGasFee: false,
-            cardProvider: currentCardProvider,
-            cardId,
-            tokenSendParams: {
-              chain: chainDetails.backendName,
-              amountInCrypto: actualTokensRequired,
-              symbol: selectedTokenSymbol,
-              toAddress: targetWalletAddress,
-              gasFeeInCrypto: '0',
-              gasFeeInFiat: '0',
-              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-              selectedToken,
-              tokenQuote: quote,
-            },
-          });
         }
       } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
         if (
@@ -210,31 +194,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             balanceDecimal,
           )
         ) {
-          gasDetails = await estimateGasForCosmosRest({
-            chain: chainDetails,
+          gasDetails = await estimateGasForCosmosIBCRest({
+            fromChain: chainDetails,
+            toChain: CHAIN_OSMOSIS,
             denom,
             amount: actualTokensRequired,
             fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: wallet[chainDetails.chainName].address,
-          });
-        } else {
-          setLoading(false);
-          setIsMaxLoading(false);
-          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-            hasSufficientBalanceAndGasFee: false,
-            cardProvider: currentCardProvider,
-            cardId,
-            tokenSendParams: {
-              chain: chainDetails.backendName,
-              amountInCrypto: actualTokensRequired,
-              symbol: selectedTokenSymbol,
-              toAddress: targetWalletAddress,
-              gasFeeInCrypto: '0',
-              gasFeeInFiat: '0',
-              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-              selectedToken,
-              tokenQuote: quote,
-            },
+            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
           });
         }
       } else if (chainDetails.chainName === ChainNames.SOLANA) {
@@ -250,25 +216,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amountToSend: actualTokensRequired,
             contractAddress,
             contractDecimals,
-          });
-        } else {
-          setLoading(false);
-          setIsMaxLoading(false);
-          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-            hasSufficientBalanceAndGasFee: false,
-            cardProvider: currentCardProvider,
-            cardId,
-            tokenSendParams: {
-              chain: chainDetails.backendName,
-              amountInCrypto: actualTokensRequired,
-              symbol: selectedTokenSymbol,
-              toAddress: targetWalletAddress,
-              gasFeeInCrypto: '0',
-              gasFeeInFiat: '0',
-              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-              selectedToken,
-              tokenQuote: quote,
-            },
           });
         }
       }
@@ -869,12 +816,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
       ) {
         try {
-          const gasDetails = await estimateGasForCosmosRest({
-            chain: chainDetails,
+          // target address is osmosis address so doing IBC instead of send for estimation
+          const gasDetails = await estimateGasForCosmosIBCRest({
+            fromChain: chainDetails,
+            toChain: CHAIN_OSMOSIS,
             denom,
             amount: amountInCrypto,
             fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: wallet[chainDetails.chainName].address,
+            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
           });
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);

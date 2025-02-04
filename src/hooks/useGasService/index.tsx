@@ -472,23 +472,6 @@ export default function useGasService() {
 
       const result = await response.json();
 
-      // Extract gas used from either successful response or error message
-
-      // if (result.code) {
-      //   // Try to extract gas used from error message
-      //   const gasMatch = result.message.match(/gas used: '(\d+)'/);
-      //   if (gasMatch && gasMatch[1]) {
-      //     gasEstimate = parseInt(gasMatch[1]);
-      //   } else {
-      //     throw new Error('Could not extract gas estimate from response');
-      //   }
-      // } else {
-      //   if (!result.gas_info?.gas_used) {
-      //     throw new Error('No gas estimate in response');
-      //   }
-      //   gasEstimate = parseInt(result.gas_info.gas_used);
-      // }
-
       if (!result.gas_info?.gas_used) {
         throw new Error('No gas estimate in response');
       }
@@ -847,7 +830,7 @@ export default function useGasService() {
       );
 
       const fee = {
-        gas: gasFee.floor().toString(),
+        gas: Math.floor(gasEstimate * 2).toString(),
         amount: [
           {
             denom: nativeToken?.denom ?? denom,
