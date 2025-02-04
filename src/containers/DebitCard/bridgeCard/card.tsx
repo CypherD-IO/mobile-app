@@ -40,6 +40,7 @@ import axios from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import {
   copyToClipboard,
+  decryptWithSecretKey,
   limitDecimalPlaces,
   sleepFor,
 } from '../../../core/util';
@@ -640,7 +641,7 @@ const RenderCardActions = ({
       setIsFetchingCardDetails(true);
       const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
       if (cardProfile.provider && cardRevealReuseToken) {
-        const verifyReuseTokenUrl = `/v1/cards/${cardProvider}/card/${String(
+        const verifyReuseTokenUrl = `/v1/cards/${card.cardProvider}/card/${String(
           cardId,
         )}/verify/reuse-token`;
         const payload = {
@@ -651,7 +652,7 @@ const RenderCardActions = ({
           const response = await postWithAuth(verifyReuseTokenUrl, payload);
           setIsFetchingCardDetails(false);
           if (!response.isError) {
-            if (cardProvider === CardProviders.REAP_CARD) {
+            if (card.cardProvider === CardProviders.REAP_CARD) {
               setWebviewUrl(trim(response.data.token, '"'));
               setUserName(response.data.userName);
               setShowRCCardDetailsModal(true);
@@ -682,9 +683,11 @@ const RenderCardActions = ({
   const verifyWithOTP = () => {
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, cardProvider: CardProviders) => {
-        if (cardProvider === CardProviders.REAP_CARD) {
+        if (card.cardProvider === CardProviders.REAP_CARD) {
           void decryptMessage(data);
-        } else if (cardProvider === CardProviders.PAYCADDY) {
+        } else if (card.cardProvider === CardProviders.RAIN_CARD) {
+          void decryptSecretKey(data);
+        } else if (card.cardProvider === CardProviders.PAYCADDY) {
           void sendCardDetails(data);
         }
       },
@@ -723,6 +726,55 @@ const RenderCardActions = ({
       setIsFetchingCardDetails(false);
       return decryptedBuffer;
     } catch (error) {}
+  };
+
+  const decryptSecretKey = async ({
+    secretKey,
+    sessionId,
+    encryptedPan,
+    encryptedCvc,
+    expirationMonth,
+    expirationYear,
+  }: {
+    secretKey: string;
+    sessionId: string;
+    encryptedPan: { data: string; iv: string };
+    encryptedCvc: { data: string; iv: string };
+    expirationMonth: string;
+    expirationYear: string;
+  }) => {
+    try {
+      setIsFetchingCardDetails(true);
+      const decryptedPan = decryptWithSecretKey(
+        secretKey,
+        encryptedPan.data,
+        encryptedPan.iv,
+      );
+      const decryptedCvc = decryptWithSecretKey(
+        secretKey,
+        encryptedCvc.data,
+        encryptedCvc.iv,
+      );
+      const tempCardDetails = {
+        cvv: decryptedCvc,
+        expiryMonth: expirationMonth,
+        expiryYear: expirationYear,
+        cardNumber: decryptedPan,
+      };
+      setCardDetails(tempCardDetails);
+      setShowCardDetailsModal(true);
+    } catch (error) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      Sentry.captureException(error);
+    } finally {
+      setIsFetchingCardDetails(false);
+    }
   };
 
   const sendCardDetails = async ({

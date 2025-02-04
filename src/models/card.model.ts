@@ -14,6 +14,7 @@ export interface Card {
   network: string;
   status: string;
   type: string;
+  cardProvider: CardProviders;
   physicalCardType?: PhysicalCardType;
   designId?: string;
 }
