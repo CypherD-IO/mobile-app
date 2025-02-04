@@ -875,6 +875,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
         contractData,
         quoteId,
         connectionType,
+        other,
       } = params as ErrorAnalytics;
       const data = {
         chain,
@@ -886,6 +887,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
           ...(contractData ? { contractData } : {}),
           ...(quoteId ? { quoteId } : {}),
           ...(connectionType ? { connectionType } : {}),
+          ...(other ? { other } : {}),
         },
       };
       void axios.post(ANALYTICS_ERROR_URL, data);
@@ -893,6 +895,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
     }
   }
 }
+
 export function parseErrorMessage(error: any): string {
   if (error instanceof Error) {
     return error.message;

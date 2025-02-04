@@ -644,6 +644,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         chain: chainDetails?.backendName ?? '',
         message: parseErrorMessage(e),
         screen: route.name,
+        address: addressRef.current,
+        other: {
+          token: tokenData.symbol,
+          amount: valueForUsd,
+          balance: tokenData.balanceDecimal,
+        },
       });
       Sentry.captureException(e);
     }
@@ -781,6 +787,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           ? { contractData: response?.contractData }
           : ''),
         screen: route.name,
+        address: addressRef.current,
+        other: {
+          token: tokenData.symbol,
+          balance: tokenData.balanceDecimal,
+          amount: valueForUsd,
+        },
       });
       if (willPrompt) {
         showModal('state', {
@@ -812,6 +824,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         chain: chainDetails?.backendName ?? '',
         message: parseErrorMessage(response.error),
         screen: route.name,
+        address: addressRef.current,
+        other: {
+          token: tokenData.symbol,
+          amount: valueForUsd,
+          balance: tokenData.balanceDecimal,
+        },
       });
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
