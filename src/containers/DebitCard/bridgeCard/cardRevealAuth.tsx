@@ -31,7 +31,7 @@ import {
 import { t } from 'i18next';
 import { Card } from '../../../models/card.model';
 import { capitalize } from 'lodash';
-import { CyDIconsPack } from '../../../customFonts';
+import { Config } from 'react-native-config';
 
 interface RouteParams {
   onSuccess: (data: unknown, provider: CardProviders) => void;
@@ -188,8 +188,7 @@ export default function CardRevealAuthScreen() {
             navigation.goBack();
           }
         } else {
-          const pem =
-            '-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCeZ9uCoxi2XvOw1VmvVLo88TLk\nGE+OO1j3fa8HhYlJZZ7CCIAsaCorrU+ZpD5PUTnmME3DJk+JyY1BB3p8XI+C5uno\nQucrbxFbkM1lgR10ewz/LcuhleG0mrXL/bzUZbeJqI6v3c9bXvLPKlsordPanYBG\nFZkmBPxc8QEdRgH4awIDAQAB\n-----END PUBLIC KEY-----';
+          const pem = Config.RA_PUB_KEY;
           const data = await generateSessionId(pem);
           payload = {
             otp: num ? Number(num) : undefined,
