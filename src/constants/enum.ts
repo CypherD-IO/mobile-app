@@ -99,6 +99,7 @@ export enum CardProviders {
   BRIDGE_CARD = 'bc',
   PAYCADDY = 'pc',
   REAP_CARD = 'rc',
+  RAIN_CARD = 'ra',
 }
 
 export enum GlobalContextType {
