@@ -87,7 +87,7 @@ export default function CardScreen({
   onPressActivateCard,
   refreshProfile,
   cardDesignData,
-  blockAction = false,
+  isAccountLocked = false,
 }: {
   navigation: any;
   currentCardProvider: CardProviders;
@@ -95,7 +95,7 @@ export default function CardScreen({
   onPressActivateCard: (card: any) => void;
   refreshProfile: () => void;
   cardDesignData: cardDesign;
-  blockAction: boolean;
+  isAccountLocked: boolean;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -176,7 +176,7 @@ export default function CardScreen({
 
   const getCardImage = (card: Card) => {
     if (currentCardProvider === CardProviders.REAP_CARD) {
-      if (blockAction) {
+      if (isAccountLocked) {
         if (card.type === CardType.PHYSICAL) {
           if (card?.physicalCardType === PhysicalCardType.METAL) {
             return AppImages.RC_METAL_DISABLED;
@@ -217,7 +217,7 @@ export default function CardScreen({
                 CardStatus.HIDDEN,
                 CardStatus.BLOCKED,
                 CardStatus.RC_UPGRADABLE,
-              ].includes(card?.status) || blockAction,
+              ].includes(card?.status) || isAccountLocked,
             'justify-end': ![
               CardStatus.IN_ACTIVE,
               CardStatus.HIDDEN,
@@ -269,7 +269,7 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
-        {blockAction && (
+        {isAccountLocked && (
           <CyDView className='flex flex-row items-center bg-white px-[12px] py-[6px] rounded-[6px]'>
             <CyDIcons
               name='lock-1'
@@ -367,7 +367,7 @@ export default function CardScreen({
     <>
       <CyDView>
         <Carousel
-          enabled={!blockAction}
+          enabled={!isAccountLocked}
           loop={false}
           width={width}
           height={cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250}
@@ -398,7 +398,7 @@ export default function CardScreen({
             cardProfile={cardProfile}
             trackingDetails={trackingDetails}
             cardDesignData={cardDesignData}
-            blockAction={blockAction}
+            isAccountLocked={isAccountLocked}
           />
         )}
       </CyDView>
@@ -466,7 +466,7 @@ const RenderCardActions = ({
   cardProfile,
   trackingDetails,
   cardDesignData,
-  blockAction,
+  isAccountLocked,
 }: {
   card: Card;
   cardProvider: CardProviders;
@@ -477,7 +477,7 @@ const RenderCardActions = ({
   cardProfile: CardProfile;
   trackingDetails: any;
   cardDesignData: cardDesign;
-  blockAction: boolean;
+  isAccountLocked: boolean;
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -1210,7 +1210,7 @@ const RenderCardActions = ({
       <CyDView className='flex flex-row justify-center items-center gap-x-[24px]'>
         <CyDTouchView
           className='flex flex-col justify-center items-center w-[72px]'
-          disabled={blockAction}
+          disabled={isAccountLocked}
           onPress={() => {
             if (status === CardStatus.IN_ACTIVE) {
               showModal('state', {
@@ -1224,7 +1224,7 @@ const RenderCardActions = ({
             }
           }}>
           <CyDView
-            className={`${blockAction ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${isAccountLocked ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {isFetchingCardDetails ? (
               <CyDLottieView
                 source={AppImages.LOADER_TRANSPARENT}
@@ -1243,7 +1243,7 @@ const RenderCardActions = ({
         </CyDTouchView>
         <CyDTouchView
           className='flex flex-col justify-center items-center w-[72px]  ml-[24px]'
-          disabled={blockAction}
+          disabled={isAccountLocked}
           onPress={() => {
             if (status === CardStatus.ACTIVE) {
               toggleCardStatus();
@@ -1254,7 +1254,7 @@ const RenderCardActions = ({
           <CyDView
             className={clsx(
               'h-[54px] w-[54px] items-center justify-center rounded-[50px]',
-              blockAction
+              isAccountLocked
                 ? 'bg-n50'
                 : status !== CardStatus.ACTIVE
                   ? 'bg-base100'
@@ -1292,7 +1292,7 @@ const RenderCardActions = ({
         </CyDTouchView>
         <CyDTouchView
           className='flex flex-col justify-center items-center ml-[24px]'
-          disabled={blockAction}
+          disabled={isAccountLocked}
           onPress={() => {
             cardProvider === CardProviders.REAP_CARD
               ? navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
@@ -1305,7 +1305,7 @@ const RenderCardActions = ({
                 });
           }}>
           <CyDView
-            className={`${blockAction ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${isAccountLocked ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {cardProvider === CardProviders.REAP_CARD ? (
               <CyDIcons name='settings' className='text-black text-[28px]' />
             ) : (
