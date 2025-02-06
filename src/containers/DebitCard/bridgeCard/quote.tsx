@@ -21,7 +21,11 @@ import {
   parseErrorMessage,
 } from '../../../core/util';
 import Button from '../../../components/v2/button';
-import { AnalyticsType, ButtonType } from '../../../constants/enum';
+import {
+  AnalyticsType,
+  ButtonType,
+  CypherPlanId,
+} from '../../../constants/enum';
 import { get } from 'lodash';
 import {
   CHAIN_OSMOSIS,
@@ -52,6 +56,8 @@ import { StyleSheet } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import { getConnectionType } from '../../../core/asyncStorage';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import LinearGradient from 'react-native-linear-gradient';
 
 export default function CardQuote({
   navigation,
@@ -79,6 +85,7 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
+  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const quoteExpiry = 60;
   const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
@@ -95,6 +102,7 @@ export default function CardQuote({
     useTransactionManager();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
+  const planInfo = globalState?.cardProfile?.planInfo;
 
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
@@ -538,12 +546,44 @@ export default function CardQuote({
 
         <CyDView
           className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-bold text-[14px]'}>{t('LOAD_FEE')}</CyDText>
+          <CyDView className={'flex flex-col gap-[4px]'}>
+            {planInfo?.planId === CypherPlanId.PRO_PLAN && (
+              <CyDFastImage
+                className='h-[12px] w-[66px]'
+                source={AppImages.PREMIUM_TEXT_GRADIENT}
+              />
+            )}
+            <CyDText className={'font-bold text-[14px]'}>
+              {t('LOAD_FEE')}
+            </CyDText>
+          </CyDView>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={'font-medium text-[14px] '}>
-              {'$' + String(tokenQuote.fees.fee)}
-            </CyDText>
+            {planInfo?.planId === CypherPlanId.PRO_PLAN ? (
+              <CyDView className={'flex flex-row items-center gap-[6px]'}>
+                <CyDText
+                  className={
+                    'font-medium text-[12px] line-through text-[color:var(--color-base100)]'
+                  }>
+                  {'$' + String(tokenQuote.fees.actualFee)}
+                </CyDText>
+                <LinearGradient
+                  colors={['#FA9703', '#F7510A', '#F48F0F']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.linearGradient}>
+                  <CyDText className={'font-bold text-white'}>
+                    {Number(tokenQuote.fees.fee) === 0
+                      ? 'Free'
+                      : '$' + String(tokenQuote.fees.fee)}
+                  </CyDText>
+                </LinearGradient>
+              </CyDView>
+            ) : (
+              <CyDText className={'font-medium text-[14px] '}>
+                {'$' + String(tokenQuote.fees.fee)}
+              </CyDText>
+            )}
           </CyDView>
         </CyDView>
 
@@ -638,5 +678,10 @@ export default function CardQuote({
 const styles = StyleSheet.create({
   loaderStyle: {
     width: 20,
+  },
+  linearGradient: {
+    borderRadius: 24,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
 });
