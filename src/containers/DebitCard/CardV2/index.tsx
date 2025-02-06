@@ -644,10 +644,9 @@ export default function CypherCardScreen() {
               void refreshProfile();
             }}
             cardDesignData={cardDesignData}
-            blockAction={
+            isAccountLocked={
               shouldBlockAction() ||
               shouldShowLocked() ||
-              shouldShowActionNeeded() ||
               shouldShowContactSupport()
             }
           />
