@@ -87,4 +87,5 @@ export type IconNames =
   | 'web-filled'
   | 'wireless-left'
   | 'wireless-right'
-  | 'withdraw';
+  | 'withdraw'
+  | 'card-plus';

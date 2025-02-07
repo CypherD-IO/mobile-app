@@ -38,10 +38,13 @@ import { StyleSheet } from 'react-native';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { useTheme } from '../../../reducers/themeReducer';
 import clsx from 'clsx';
+import { cardDesign } from '../../../models/cardDesign.interface';
 
 interface RouteParams {
   cardProvider: string;
   card: Card;
+  cardDesignData: cardDesign;
+  onBuyAdditionalPhysicalCard: () => void;
 }
 
 export default function GlobalOptions() {
@@ -52,7 +55,8 @@ export default function GlobalOptions() {
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
 
-  const { cardProvider, card } = route.params;
+  const { cardProvider, card, cardDesignData, onBuyAdditionalPhysicalCard } =
+    route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile: CardProfile | undefined =
     globalContext?.globalState?.cardProfile;
@@ -127,6 +131,20 @@ export default function GlobalOptions() {
   };
 
   const accountSecurityOptions = [
+    ...(Number(cardDesignData?.allowedCount?.physical) > 0
+      ? [
+          {
+            title: 'Buy Additional Physical Card',
+            description:
+              'Shop in-store, online, and withdraw cash conveniently',
+            image: 'card-plus' as const,
+            action: () => {
+              onBuyAdditionalPhysicalCard();
+              navigation.goBack();
+            },
+          },
+        ]
+      : []),
     ...(cardProvider === CardProviders.REAP_CARD
       ? [
           {

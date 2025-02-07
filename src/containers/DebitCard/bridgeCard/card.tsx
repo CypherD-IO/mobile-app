@@ -99,8 +99,6 @@ export default function CardScreen({
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const upgradeToPhysicalAvailable =
-    get(cardDesignData, ['allowedCount', 'physical'], 0) > 0;
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
@@ -318,21 +316,6 @@ export default function CardScreen({
       .filter(card => card.cardId !== CARD_IDS.METAL_CARD)
       .map(card => card);
 
-    if (
-      upgradeToPhysicalAvailable &&
-      !isHiddenCard() &&
-      currentCardProvider === CardProviders.REAP_CARD
-    ) {
-      actualCards.push({
-        cardId: '',
-        bin: '',
-        last4: '',
-        network: 'rc',
-        status: 'upgradeAvailable',
-        type: CardType.PHYSICAL,
-        designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
-      });
-    }
     if (isRcUpgradableCardShown) {
       actualCards.unshift({
         cardId: '',
@@ -345,12 +328,7 @@ export default function CardScreen({
       });
     }
     return actualCards;
-  }, [
-    currentCardProvider,
-    upgradeToPhysicalAvailable,
-    userCardDetails.cards,
-    cardProfile,
-  ]);
+  }, [currentCardProvider, userCardDetails.cards, cardProfile]);
 
   const getTrackingDetails = async () => {
     const response = await getWithAuth(
@@ -496,22 +474,7 @@ const RenderCardActions = ({
   const [showRCCardDetailsModal, setShowRCCardDetailsModal] = useState(false);
   const [webviewUrl, setWebviewUrl] = useState('');
   const [userName, setUserName] = useState('');
-  const {
-    lifetimeAmountUsd: lifetimeLoadUSD = 0,
-    physicalCardEligibilityLimit = 0,
-  } = cardProfile;
-  const upgradeToPhysicalAvailable =
-    get(cardDesignData, ['allowedCount', 'physical'], 0) > 0;
-  const isPhysicalCardAlreadyAvailable = cardProfile[cardProvider]?.cards?.some(
-    card => card.type === CardType.PHYSICAL,
-  );
   const globalContext = useContext<any>(GlobalContext);
-  const physicalCardEligibilityProgress =
-    parseFloat(
-      ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2),
-    ) > 100
-      ? '100'
-      : ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2);
   const [hideTimer, setHideTimer] = useState(0);
   const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
   const detailsAutoCloseTime = 120;
@@ -547,14 +510,6 @@ const RenderCardActions = ({
     ['accountStatus'],
     ACCOUNT_STATUS.ACTIVE,
   );
-
-  // physical card upgrade only shown for paycaddy pc cards
-  const isUpgradeToPhysicalCardStatusShown =
-    cardProvider === CardProviders.PAYCADDY &&
-    lifetimeLoadUSD < physicalCardEligibilityLimit &&
-    !cardProfile[cardProvider]?.cards
-      ?.map(card => card.type)
-      .includes(CardType.PHYSICAL);
 
   useEffect(() => {
     const checkIsRcUpgradableCardShown = async () => {
@@ -947,77 +902,6 @@ const RenderCardActions = ({
 
   if (card.status === CardStatus.HIDDEN) {
     return <></>;
-  } else if (card.status === 'upgradeAvailable') {
-    if (upgradeToPhysicalAvailable) {
-      return (
-        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
-          <CyDText className='text-[14px] font-semibold text-center mb-[12px] mt-[6px] w-[90%]'>
-            {isPhysicalCardAlreadyAvailable
-              ? `Multiple Physical cards, endless possibilities. \n Order for your loved ones`
-              : 'Obtain a Physical card and enjoy the convenience of making purchases worldwide'}
-          </CyDText>
-          <Button
-            title={
-              isPhysicalCardAlreadyAvailable
-                ? 'Buy Additional Card'
-                : 'Get Physical Card'
-            }
-            style='px-[28px] w-[300px]'
-            onPress={onPressUpgradeNow}
-          />
-        </CyDView>
-      );
-    } else if (isUpgradeToPhysicalCardStatusShown) {
-      return (
-        <CyDView className='flex flex-col items-center justify-center mt-[-32px]'>
-          <CyDView className='flex flex-row'>
-            <CyDText className='bottom-[16px] text-[18px] font-extrabold rounded-[8px]'>
-              {t('UPGRADE_TO_PHYSICAL_CARD')}
-            </CyDText>
-          </CyDView>
-          <CyDView className='flex flex-col w-[90%] justify-center items-center pt-[12px] rounded-[12px]'>
-            <CyDView className='flex flex-row h-[8px] w-[90%] items-center border border-n40 mx-[4px] rounded-[8px]'>
-              <CyDView
-                className={clsx(
-                  'absolute bg-toastColor h-full rounded-[8px] my-[5px]',
-                  {
-                    'bg-p50': parseFloat(physicalCardEligibilityProgress) <= 60,
-                  },
-                  {
-                    'bg-red300':
-                      parseFloat(physicalCardEligibilityProgress) <= 30,
-                  },
-                )}
-                style={{
-                  width: `${physicalCardEligibilityProgress}%`,
-                }}
-              />
-            </CyDView>
-            <CyDView className='flex flex-row w-[90%] justify-between items-center mx-[30px] mt-[2px]'>
-              <CyDText className='text-[16px] font-semibold rounded-[8px]'>
-                {`$${lifetimeLoadUSD}`}
-              </CyDText>
-              <CyDText className='text-[18px] font-extrabold rounded-[8px]'>
-                {`$${physicalCardEligibilityLimit}`}
-              </CyDText>
-            </CyDView>
-            {lifetimeLoadUSD < physicalCardEligibilityLimit && (
-              <CyDView className='flex flex-row my-[5px] mt-[12px]'>
-                <CyDText className='mb-[4px]'>{`Load `}</CyDText>
-                <CyDText className='mb-[4px] font-extrabold text-p50'>
-                  {limitDecimalPlaces(
-                    physicalCardEligibilityLimit - lifetimeLoadUSD,
-                    2,
-                  )}
-                </CyDText>
-                <CyDText className='mb-[4px] font-extrabold text-p50'>{` USD`}</CyDText>
-                <CyDText className='mb-[4px]'>{` more to upgrade`}</CyDText>
-              </CyDView>
-            )}
-          </CyDView>
-        </CyDView>
-      );
-    }
   } else if (status === CardStatus.PENDING_ACTIVATION) {
     return (
       <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>

@@ -1494,6 +1494,15 @@ const resources = {
         'Your account is inactive. Reach out to support for assistance.',
       CONTACT_SUPPORT: 'Contact Support',
       LOCKED: 'Locked',
+      MARKET_FLUCTUATION_WARNING:
+        'Market fluctuations may affect your final amount, i.e network fees and volatility impact the final amount.',
+      LEARN_MORE: 'Learn More',
+      I_ACKNOWLEDGE_MARKET_FLUCTUATION: '"I acknowledge the implication."',
+      PRICE_FLUCTUATION_LEARN_MORE_TITLE: 'Funding High impact token',
+      PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_1:
+        'When loading your card, the transaction interacts with the blockchain network. If you fund with a highly volatile token and its value drops during processing, network fees and fluctuations may reduce the final amount. Otherwise, if the token value remains stable or increases, you will receive the full requested amount.',
+      PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_2:
+        'If multiple transactions are in the queue, the system may take up to 20 minutes to process your request. During this time, the token’s value may fluctuate. When the transaction is executed, your card will be loaded based on the token’s price at that moment, which may differ from your initial input.',
     },
   },
 };
