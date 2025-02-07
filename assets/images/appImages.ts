@@ -561,6 +561,9 @@ const FREEZE_ICON_BLACK = {
 const UNFREEZE_ICON_BLACK = {
   uri: `${S3_BUCKET_URL_ICONS}/unfreezeIconBlack.png`,
 };
+const GET_PHYSICAL_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/getPhysicalCard.svg`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -816,6 +819,7 @@ export const AppImagesMap = {
     UNFREEZE_ICON_BLACK,
     RC_PHYSICAL_DISABLED,
     RC_METAL_DISABLED,
+    GET_PHYSICAL_CARD,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1075,6 +1079,7 @@ enum AppImages {
   METAL_CARDS_STACK = 'METAL_CARDS_STACK',
   FREEZE_ICON_BLACK = 'FREEZE_ICON_BLACK',
   UNFREEZE_ICON_BLACK = 'UNFREEZE_ICON_BLACK',
+  GET_PHYSICAL_CARD = 'GET_PHYSICAL_CARD',
 }
 
 export default AppImages;
