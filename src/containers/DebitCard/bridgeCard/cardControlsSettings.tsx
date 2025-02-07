@@ -1,7 +1,7 @@
 import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native';
 import { t } from 'i18next';
-import { compact, get, isEqual, pick } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import { compact, find, get, isEqual, pick } from 'lodash';
+import React, { useContext, useEffect, useState } from 'react';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
@@ -12,14 +12,14 @@ import {
   ButtonType,
   CARD_LIMIT_TYPE,
   CardControlTypes,
-  ImagePosition,
+  CardProviders,
+  CardType,
 } from '../../../constants/enum';
 import axios from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import {
   CyDImage,
   CyDMaterialDesignIcons,
-  CyDSafeAreaView,
   CyDScrollView,
   CyDSwitch,
   CyDText,
@@ -29,6 +29,8 @@ import {
 import EditLimitModal from './editLimitModal';
 import { ICountry } from '../../../models/cardApplication.model';
 import Loading from '../../../components/v2/loading';
+import { GlobalContextDef, GlobalContext } from '../../../core/globalContext';
+import { Card } from '../../../models/card.model';
 
 interface RouteParams {
   cardControlType: string;
@@ -36,8 +38,17 @@ interface RouteParams {
   cardId: string;
 }
 
+interface CardOption {
+  id: string;
+  title: string;
+  icon: any;
+  limitType: CARD_LIMIT_TYPE;
+  description?: string;
+}
+
 export default function CardControlsSettings() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const { cardControlType, currentCardProvider, cardId } = route.params;
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [countries, setCountries] = useState<ICountry[]>([]);
@@ -76,6 +87,10 @@ export default function CardControlsSettings() {
   const isFocused = useIsFocused();
   const [isDetailsChanged, setIsDetailsChanged] = useState(false);
   const [disableOptions, setDisableOptions] = useState(true);
+  const activeCards =
+    get(globalState?.cardProfile, currentCardProvider)?.cards ?? [];
+
+  const card: Card | undefined = find(activeCards, { cardId });
 
   useEffect(() => {
     if (
@@ -329,6 +344,129 @@ export default function CardControlsSettings() {
     }
   }, [editedLimits, selectedDomesticCountry, selectedAllowedCountries]);
 
+  const cardOptions: CardOption[] = [
+    {
+      id: 'atm',
+      title: 'ATM withdrawals',
+      icon: AppImages.ATM_WITHDRAWALS,
+      limitType: CARD_LIMIT_TYPE.ATM,
+    },
+    {
+      id: 'online',
+      title: 'Online Payment',
+      icon: AppImages.ONLINE_TRANSACTIONS,
+      limitType: CARD_LIMIT_TYPE.ONLINE,
+    },
+    {
+      id: 'tap',
+      title: 'Tap and Pay',
+      icon: AppImages.CONTACTLESS_TRANSACTIONS,
+      limitType: CARD_LIMIT_TYPE.CONTACTLESS,
+    },
+    {
+      id: 'offline',
+      title: 'Offline Payments',
+      icon: AppImages.CARD_AND_PIN_TRANSACTIONS,
+      limitType: CARD_LIMIT_TYPE.CARD_PIN,
+    },
+    {
+      id: 'wallet',
+      title: 'Mobile Wallets',
+      icon: AppImages.MOBILE_WALLETS,
+      limitType: CARD_LIMIT_TYPE.MOBILE_WALLET,
+      description:
+        'Limit transactions through mobile wallets like Apple Pay, Google Pay, etc.',
+    },
+  ];
+
+  const getVisibleOptions = () => {
+    const isRainCard = card?.cardProvider === CardProviders.RAIN_CARD;
+    const isVirtualRainCard = isRainCard && card?.type === CardType.VIRTUAL;
+
+    if (isVirtualRainCard) {
+      return cardOptions.filter(option =>
+        ['online', 'wallet'].includes(option.id),
+      );
+    } else if (isRainCard && card?.type === CardType.PHYSICAL) {
+      return cardOptions.filter(option =>
+        ['atm', 'online', 'wallet'].includes(option.id),
+      );
+    }
+    return cardOptions.filter(option =>
+      ['atm', 'online', 'tap', 'offline', 'wallet'].includes(option.id),
+    );
+  };
+
+  const renderCardOption = (option: CardOption) => {
+    const limit = get(limitsByControlType, option.limitType, 0);
+    const isEnabled = Number(limit) > 0;
+
+    return (
+      <CyDTouchView
+        key={option.id}
+        className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+          disableOptions ? 'opacity-50' : ''
+        }`}
+        disabled={disableOptions}>
+        <CyDView className='flex flex-row justify-between items-center'>
+          <CyDImage source={option.icon} className='h-[32px] w-[32px]' />
+          <CyDSwitch
+            value={isEnabled}
+            onValueChange={() => {
+              !disableOptions && initiateEditLimit(option.limitType.toString());
+            }}
+            id={option.id}
+            disabled={disableOptions}
+          />
+        </CyDView>
+        <CyDText className='text-[16px] font-semibold mt-[4px]'>
+          {option.title}
+        </CyDText>
+
+        {option.description && (
+          <CyDView className='flex flex-row mt-[12px]'>
+            <CyDMaterialDesignIcons
+              name='information-outline'
+              size={14}
+              className='text-base400 mr-[6px]'
+            />
+            <CyDText className='text-[10px] text-n200'>
+              {option.description}
+            </CyDText>
+          </CyDView>
+        )}
+
+        {isEnabled && (
+          <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
+            <CyDView>
+              <CyDText className='text-[10px] font-normal'>
+                {'Limit per transactions'}
+              </CyDText>
+              <CyDText className='text-[16px] font-bold'>{`$${Number(limit)}`}</CyDText>
+            </CyDView>
+            <Button
+              title={'Change'}
+              onPress={() => {
+                openEditLimitModal(option.limitType);
+              }}
+              paddingY={6}
+              icon={
+                <CyDMaterialDesignIcons
+                  name='circle-edit-outline'
+                  size={16}
+                  className='text-base400 mr-2'
+                />
+              }
+              type={ButtonType.GREY_FILL}
+              titleStyle={'text-[12px]'}
+              disabled={disableOptions}
+            />
+          </CyDView>
+        )}
+      </CyDTouchView>
+    );
+  };
+
   return loading ? (
     <Loading />
   ) : (
@@ -372,7 +510,7 @@ export default function CardControlsSettings() {
               ...editModalData,
               isEditLimitModalVisible: false,
             });
-            void editLimit(editModalData.limitType, newLimit);
+            void editLimit(editModalData.limitType.toString(), newLimit);
           }}
         />
 
@@ -438,7 +576,7 @@ export default function CardControlsSettings() {
                       }
                       onValueChange={() => {
                         void editLimit(
-                          CARD_LIMIT_TYPE.DISABLED,
+                          CARD_LIMIT_TYPE.DISABLED.toString(),
                           !get(
                             limitsByControlType,
                             CARD_LIMIT_TYPE.DISABLED,
@@ -454,319 +592,43 @@ export default function CardControlsSettings() {
                 </CyDView>
               </>
             )}
-            {
-              <>
-                {cardControlType === CardControlTypes.INTERNATIONAL && (
-                  <CyDView
-                    className={`bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
-                    <CyDView className='flex flex-row items-center'>
-                      <CyDMaterialDesignIcons
-                        name='earth'
-                        size={24}
-                        className='text-base400 mr-[8px]'
-                      />
-                      <CyDText className='text-[16px] font-semibold'>
-                        {'Countries'}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='felx flex-row items-center justify-between mt-[12px]'>
-                      <CyDText className='text-[12px] text-n200'>
-                        {'Allowed Countries'}
-                      </CyDText>
-                      <CyDText className='text-[12px] text-n200'>{`Total Countries: ${countries.length}`}</CyDText>
-                    </CyDView>
-                    <CyDTouchView
-                      className='flex flex-row justify-between items-center rounded-[8px] border-[1px] border-base400 p-[12px] mt-[6px]'
-                      onPress={() => {
-                        !disableOptions && setCountryModalVisible(true);
-                      }}
-                      disabled={disableOptions}>
-                      <CyDView>
-                        <CyDText>{getAllowedCountiesText()}</CyDText>
-                      </CyDView>
-                      <CyDMaterialDesignIcons
-                        name={'chevron-down'}
-                        size={24}
-                        className={'text-base400 mr-3'}
-                      />
-                    </CyDTouchView>
-                  </CyDView>
-                )}
-                <CyDTouchView
-                  className={`bg-n0 flex flex-col px-[12px] py-[12px] rounded-[8px] ${
-                    disableOptions ? 'opacity-50' : ''
-                  }`}
-                  disabled={disableOptions}>
-                  <CyDView className='flex flex-row justify-between items-center'>
-                    <CyDImage
-                      source={AppImages.ATM_WITHDRAWALS}
-                      className='h-[32px] w-[32px]'
-                    />
-                    <CyDSwitch
-                      id='withdrawal'
-                      value={
-                        get(limitsByControlType, CARD_LIMIT_TYPE.ATM, 0) > 0
-                      }
-                      onValueChange={() => {
-                        !disableOptions &&
-                          initiateEditLimit(CARD_LIMIT_TYPE.ATM);
-                      }}
-                      disabled={disableOptions}
-                    />
-                  </CyDView>
-                  <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'ATM withdrawals'}
+            {cardControlType === CardControlTypes.INTERNATIONAL && (
+              <CyDView
+                className={`bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
+                <CyDView className='flex flex-row items-center'>
+                  <CyDMaterialDesignIcons
+                    name='earth'
+                    size={24}
+                    className='text-base400 mr-[8px]'
+                  />
+                  <CyDText className='text-[16px] font-semibold'>
+                    {'Countries'}
                   </CyDText>
-                </CyDTouchView>
-                <CyDTouchView
-                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
-                    disableOptions ? 'opacity-50' : ''
-                  }`}
-                  disabled={disableOptions}>
-                  <CyDView className='flex flex-row justify-between items-center'>
-                    <CyDImage
-                      source={AppImages.ONLINE_TRANSACTIONS}
-                      className='h-[32px] w-[32px]'
-                    />
-                    <CyDSwitch
-                      value={
-                        get(limitsByControlType, CARD_LIMIT_TYPE.ONLINE, 0) > 0
-                      }
-                      onValueChange={() => {
-                        !disableOptions &&
-                          initiateEditLimit(CARD_LIMIT_TYPE.ONLINE);
-                      }}
-                      id={CARD_LIMIT_TYPE.ONLINE}
-                      disabled={disableOptions}
-                    />
-                  </CyDView>
-                  <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Online Payment'}
+                </CyDView>
+                <CyDView className='felx flex-row items-center justify-between mt-[12px]'>
+                  <CyDText className='text-[12px] text-n200'>
+                    {'Allowed Countries'}
                   </CyDText>
-                  {get(limitsByControlType, CARD_LIMIT_TYPE.ONLINE, 0) > 0 && (
-                    <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
-                      <CyDView>
-                        <CyDText className='text-[10px] font-normal'>
-                          {'Limit per transactions'}
-                        </CyDText>
-                        <CyDText className='text-[16px] font-bold'>
-                          {`$${get(limitsByControlType, CARD_LIMIT_TYPE.ONLINE, 0)}`}
-                        </CyDText>
-                      </CyDView>
-                      <Button
-                        title={'Change'}
-                        onPress={() => {
-                          openEditLimitModal(CARD_LIMIT_TYPE.ONLINE);
-                        }}
-                        paddingY={6}
-                        icon={
-                          <CyDMaterialDesignIcons
-                            name='circle-edit-outline'
-                            size={16}
-                            className='text-base400 mr-2'
-                          />
-                        }
-                        type={ButtonType.GREY_FILL}
-                        titleStyle={'text-[12px]'}
-                        disabled={disableOptions}
-                      />
-                    </CyDView>
-                  )}
-                </CyDTouchView>
+                  <CyDText className='text-[12px] text-n200'>{`Total Countries: ${countries.length}`}</CyDText>
+                </CyDView>
                 <CyDTouchView
-                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
-                    disableOptions ? 'opacity-50' : ''
-                  }`}
+                  className='flex flex-row justify-between items-center rounded-[8px] border-[1px] border-base400 p-[12px] mt-[6px]'
+                  onPress={() => {
+                    !disableOptions && setCountryModalVisible(true);
+                  }}
                   disabled={disableOptions}>
-                  <CyDView className='flex flex-row justify-between items-center'>
-                    <CyDImage
-                      source={AppImages.CONTACTLESS_TRANSACTIONS}
-                      className='h-[32px] w-[32px]'
-                    />
-                    <CyDSwitch
-                      value={
-                        get(
-                          limitsByControlType,
-                          CARD_LIMIT_TYPE.CONTACTLESS,
-                          0,
-                        ) > 0
-                      }
-                      onValueChange={() => {
-                        !disableOptions &&
-                          initiateEditLimit(CARD_LIMIT_TYPE.CONTACTLESS);
-                      }}
-                      id={CARD_LIMIT_TYPE.CONTACTLESS}
-                      disabled={disableOptions}
-                    />
+                  <CyDView>
+                    <CyDText>{getAllowedCountiesText()}</CyDText>
                   </CyDView>
-                  <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Tap and Pay'}
-                  </CyDText>
-                  {get(limitsByControlType, CARD_LIMIT_TYPE.CONTACTLESS, 0) >
-                    0 && (
-                    <>
-                      <CyDView className='flex flex-row mt-[12px] justify-between items-center'>
-                        <CyDView>
-                          <CyDText className='text-[10px] font-normal'>
-                            {'Limit per transactions'}
-                          </CyDText>
-                          <CyDText className='text-[16px] font-bold'>
-                            {`$${get(limitsByControlType, CARD_LIMIT_TYPE.CONTACTLESS, 0)}`}
-                          </CyDText>
-                        </CyDView>
-                        <Button
-                          title={'Change'}
-                          onPress={() => {
-                            openEditLimitModal(CARD_LIMIT_TYPE.CONTACTLESS);
-                          }}
-                          paddingY={6}
-                          icon={
-                            <CyDMaterialDesignIcons
-                              name='circle-edit-outline'
-                              size={16}
-                              className='text-base400 mr-2'
-                            />
-                          }
-                          type={ButtonType.GREY_FILL}
-                          titleStyle={'text-[12px]'}
-                          disabled={disableOptions}
-                        />
-                      </CyDView>
-                    </>
-                  )}
+                  <CyDMaterialDesignIcons
+                    name={'chevron-down'}
+                    size={24}
+                    className={'text-base400 mr-3'}
+                  />
                 </CyDTouchView>
-                <CyDTouchView
-                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
-                    disableOptions ? 'opacity-50' : ''
-                  }`}
-                  disabled={disableOptions}>
-                  <CyDView className='flex flex-row justify-between items-center'>
-                    <CyDImage
-                      source={AppImages.CARD_AND_PIN_TRANSACTIONS}
-                      className='h-[32px] w-[32px]'
-                    />
-                    <CyDSwitch
-                      value={
-                        get(limitsByControlType, CARD_LIMIT_TYPE.CARD_PIN, 0) >
-                        0
-                      }
-                      onValueChange={() => {
-                        !disableOptions &&
-                          initiateEditLimit(CARD_LIMIT_TYPE.CARD_PIN);
-                      }}
-                      id={CARD_LIMIT_TYPE.CARD_PIN}
-                      disabled={disableOptions}
-                    />
-                  </CyDView>
-                  <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Offline Payments'}
-                  </CyDText>
-                  {get(limitsByControlType, CARD_LIMIT_TYPE.CARD_PIN, 0) >
-                    0 && (
-                    <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
-                      <CyDView>
-                        <CyDText className='text-[10px] font-normal'>
-                          {'Limit per transactions'}
-                        </CyDText>
-                        <CyDText className='text-[16px] font-bold'>
-                          {`$${get(limitsByControlType, CARD_LIMIT_TYPE.CARD_PIN, 0)}`}
-                        </CyDText>
-                      </CyDView>
-                      <Button
-                        title={'Change'}
-                        onPress={() => {
-                          openEditLimitModal(CARD_LIMIT_TYPE.CARD_PIN);
-                        }}
-                        paddingY={6}
-                        icon={
-                          <CyDMaterialDesignIcons
-                            name='circle-edit-outline'
-                            size={16}
-                            className='text-base400 mr-2'
-                          />
-                        }
-                        type={ButtonType.GREY_FILL}
-                        titleStyle={'text-[12px]'}
-                        disabled={disableOptions}
-                      />
-                    </CyDView>
-                  )}
-                </CyDTouchView>
-
-                <CyDTouchView
-                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
-                    disableOptions ? 'opacity-50' : ''
-                  }`}
-                  disabled={disableOptions}>
-                  <CyDView className='flex flex-row justify-between items-center'>
-                    <CyDImage
-                      source={AppImages.MOBILE_WALLETS}
-                      className='h-[32px] w-[32px]'
-                    />
-                    <CyDSwitch
-                      value={
-                        get(
-                          limitsByControlType,
-                          CARD_LIMIT_TYPE.MOBILE_WALLET,
-                          0,
-                        ) > 0
-                      }
-                      onValueChange={() => {
-                        !disableOptions &&
-                          initiateEditLimit(CARD_LIMIT_TYPE.MOBILE_WALLET);
-                      }}
-                      id={CARD_LIMIT_TYPE.MOBILE_WALLET}
-                      disabled={disableOptions}
-                    />
-                  </CyDView>
-                  <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Mobile Wallets'}
-                  </CyDText>
-                  <CyDView className='flex flex-row mt-[12px]'>
-                    <CyDMaterialDesignIcons
-                      name='information-outline'
-                      size={14}
-                      className='text-base400 mr-[6px]'
-                    />
-                    <CyDText className='text-[10px] text-n200'>
-                      {
-                        'Limit transactions through mobile wallets like Apple Pay, Google Pay, etc.'
-                      }
-                    </CyDText>
-                  </CyDView>
-                  {get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0) >
-                    0 && (
-                    <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
-                      <CyDView>
-                        <CyDText className='text-[10px] font-normal'>
-                          {'Limit per transactions'}
-                        </CyDText>
-                        <CyDText className='text-[16px] font-bold'>
-                          {`$${get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0)}`}
-                        </CyDText>
-                      </CyDView>
-                      <Button
-                        title={'Change'}
-                        onPress={() => {
-                          openEditLimitModal(CARD_LIMIT_TYPE.MOBILE_WALLET);
-                        }}
-                        paddingY={6}
-                        icon={
-                          <CyDMaterialDesignIcons
-                            name='circle-edit-outline'
-                            size={16}
-                            className='text-base400 mr-2'
-                          />
-                        }
-                        type={ButtonType.GREY_FILL}
-                        titleStyle={'text-[12px]'}
-                        disabled={disableOptions}
-                      />
-                    </CyDView>
-                  )}
-                </CyDTouchView>
-              </>
-            }
+              </CyDView>
+            )}
+            {getVisibleOptions().map(renderCardOption)}
           </CyDView>
         </CyDScrollView>
         <CyDView className='bg-n0 pt-[14px] pb-[10px]'>

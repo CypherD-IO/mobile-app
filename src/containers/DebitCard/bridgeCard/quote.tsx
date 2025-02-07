@@ -8,7 +8,9 @@ import React, {
 import {
   CyDFastImage,
   CyDLottieView,
+  CyDMaterialDesignIcons,
   CyDText,
+  CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
@@ -57,7 +59,9 @@ import analytics from '@react-native-firebase/analytics';
 import { getConnectionType } from '../../../core/asyncStorage';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import { clsx } from 'clsx';
 import LinearGradient from 'react-native-linear-gradient';
+import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
 
 export default function CardQuote({
   navigation,
@@ -92,7 +96,8 @@ export default function CardQuote({
   const [isPayDisabled, setIsPayDisabled] = useState<boolean>(
     hasSufficientBalanceAndGasFee,
   );
-
+  const [hasPriceFluctuationConsent, setHasPriceFluctuationConsent] =
+    useState<boolean>(false);
   const hdWallet = useContext<any>(HdWalletContext);
   const ethereum = hdWallet.state.wallet.ethereum;
   const solana = hdWallet.state.wallet.solana;
@@ -103,7 +108,10 @@ export default function CardQuote({
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const planInfo = globalState?.cardProfile?.planInfo;
-
+  const [
+    isPriceFluctuationLearnMoreModalVisible,
+    setIsPriceFluctuationLearnMoreModalVisible,
+  ] = useState<boolean>(false);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
   const juno = hdWallet.state.wallet.juno;
@@ -498,6 +506,11 @@ export default function CardQuote({
       className={
         'flex-1 w-full bg-n20 pb-[30px] flex flex-col justify-between'
       }>
+      <PriceFluctuationLearnMoreModal
+        isModalVisible={isPriceFluctuationLearnMoreModalVisible}
+        setModalVisible={setIsPriceFluctuationLearnMoreModalVisible}
+        style={styles.priceFluctuationLearnMoreModal}
+      />
       <CyDView className={'mx-[22px]'}>
         <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-n40'>
           <CyDText className='text-[52px] text-mandarin font-bold'>
@@ -529,14 +542,7 @@ export default function CardQuote({
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
             <CyDText className={' font-medium text-[16px] '}>
-              {limitDecimalPlaces(
-                DecimalHelper.toString(
-                  DecimalHelper.divide(amountInFiat, selectedToken?.price),
-                ),
-                4,
-              ) +
-                ' ' +
-                symbol}
+              {limitDecimalPlaces(tokenQuote.tokensRequired, 4) + ' ' + symbol}
             </CyDText>
             <CyDText className={' font-medium text-[16px]'}>
               {'$' + limitDecimalPlaces(amountInFiat, 2)}
@@ -638,6 +644,53 @@ export default function CardQuote({
           </CyDView>
         )}
       </CyDView>
+      {tokenQuote.isInstSwapEnabled && (
+        <>
+          <CyDView className='flex flex-col p-[12px] bg-n0 mx-4 rounded-[12px]'>
+            <CyDView className='flex flex-row items-start gap-[6px]'>
+              <CyDMaterialDesignIcons
+                name='alert'
+                size={18}
+                className='text-p150'
+              />
+              <CyDText className='text-[14px] font-medium flex-1'>
+                {t('MARKET_FLUCTUATION_WARNING')}{' '}
+                <CyDText
+                  className='text-[14px] underline text-blue-500 font-medium'
+                  onPress={() => {
+                    setIsPriceFluctuationLearnMoreModalVisible(true);
+                  }}>
+                  {t('LEARN_MORE')}
+                </CyDText>
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex flex-row mt-[10px] items-start gap-[6px]'>
+              <CyDTouchView
+                className={clsx(
+                  'h-[18px] w-[18px] border-base400 border-[1px] rounded-[4px]',
+                  {
+                    'bg-n0': hasPriceFluctuationConsent,
+                  },
+                )}
+                onPress={() => {
+                  setHasPriceFluctuationConsent(!hasPriceFluctuationConsent);
+                }}>
+                {hasPriceFluctuationConsent && (
+                  <CyDMaterialDesignIcons
+                    name='check'
+                    size={16}
+                    className='text-base400'
+                  />
+                )}
+              </CyDTouchView>
+
+              <CyDText className='text-[14px] font-medium'>
+                {t('I_ACKNOWLEDGE_MARKET_FLUCTUATION')}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+        </>
+      )}
       <CyDView
         className={'flex flex-row justify-between items-center px-[10px]'}>
         <Button
@@ -661,7 +714,10 @@ export default function CardQuote({
           }
           titleStyle='text-[14px]'
           loading={loading}
-          disabled={isPayDisabled}
+          disabled={
+            isPayDisabled ||
+            (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
+          }
           onPress={() => {
             if (!isPayDisabled) {
               void onLoadPress();
@@ -683,5 +739,11 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 10,
     paddingVertical: 6,
+  },
+  priceFluctuationLearnMoreModal: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });

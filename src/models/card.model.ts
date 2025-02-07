@@ -95,6 +95,7 @@ export interface CardQuoteResponse {
   tokenSymbol: string;
   expiry: number;
   estimatedTime: number;
+  isInstSwapEnabled: boolean;
   version: 2;
 }
 

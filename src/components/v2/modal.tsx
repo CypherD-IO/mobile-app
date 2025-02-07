@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import Modal from 'react-native-modal';
+import Modal, { Direction, OnSwipeCompleteParams } from 'react-native-modal';
 import * as animatable from 'react-native-animatable';
 import { useGlobalModalContext } from './GlobalModal';
 import { GlobalModalType } from '../../constants/enum';
@@ -160,6 +160,8 @@ interface CyDModalLayoutProps {
   onModalHide?: () => void;
   useNativeDriver?: boolean;
   propagateSwipe?: boolean;
+  swipeDirection?: Direction[];
+  onSwipeComplete?: (params: OnSwipeCompleteParams) => void;
 }
 
 export default function CyDModalLayout({
@@ -180,6 +182,8 @@ export default function CyDModalLayout({
   hideModalContentWhileAnimating = true,
   useNativeDriver = true,
   propagateSwipe = true,
+  swipeDirection = [],
+  onSwipeComplete = () => {},
 }: CyDModalLayoutProps) {
   const { store } = useGlobalModalContext();
 
@@ -215,6 +219,8 @@ export default function CyDModalLayout({
       animationOutTiming={animationOutTiming}
       onModalHide={onModalHide}
       useNativeDriver={useNativeDriver}
+      onSwipeComplete={onSwipeComplete}
+      swipeDirection={swipeDirection}
       style={style}>
       {children}
     </Modal>

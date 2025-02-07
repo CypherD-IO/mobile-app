@@ -24,6 +24,8 @@ import {
   CARD_LIMIT_TYPE,
   CardControlTypes,
   CardOperationsAuthType,
+  CardProviders,
+  CardType,
   CypherPlanId,
 } from '../../../constants/enum';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
@@ -48,6 +50,102 @@ interface RouteParams {
   cardId: string;
   currentCardProvider: string;
 }
+
+const SecuritySection = ({
+  card,
+  currentCardProvider,
+  navigation,
+  isTelegramEnabled,
+  setShow3DsModal,
+}: {
+  card: Card;
+  currentCardProvider: string;
+  navigation: any;
+  isTelegramEnabled: boolean;
+  setShow3DsModal: (show: boolean) => void;
+}) => {
+  const isRainCard = card?.cardProvider === CardProviders.RAIN_CARD;
+  const isVirtualRainCard = isRainCard && card?.type === CardType.VIRTUAL;
+
+  const renderSetPinOption = () => (
+    <CyDTouchView
+      onPress={() => {
+        navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
+          currentCardProvider,
+          card,
+        });
+      }}
+      className='flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'>
+      <CyDView className='flex flex-row flex-1 items-center'>
+        <CyDMaterialDesignIcons
+          name='dots-horizontal-circle-outline'
+          size={24}
+          className='text-base400 mr-3'
+        />
+        <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
+          <CyDText className='text-[16px] font-semibold flex-wrap'>
+            {'Set Pin'}
+          </CyDText>
+        </CyDView>
+      </CyDView>
+      <CyDView className='flex flex-row items-center'>
+        <CyDMaterialDesignIcons
+          name='chevron-right'
+          size={16}
+          className='text-base400 ml-2'
+        />
+      </CyDView>
+    </CyDTouchView>
+  );
+
+  const renderAuthenticationOption = () => (
+    <>
+      <CyDTouchView
+        onPress={() => setShow3DsModal(true)}
+        className='flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'>
+        <CyDView className='flex flex-row flex-1 items-center'>
+          <CyDMaterialDesignIcons
+            name='shield-check-outline'
+            size={24}
+            className='text-base400 mr-3'
+          />
+          <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
+            <CyDText className='text-[16px] font-semibold flex-wrap'>
+              {'Online Payment Authentication'}
+            </CyDText>
+          </CyDView>
+        </CyDView>
+        <CyDView className='flex flex-row items-center'>
+          <CyDText className='text-[14px] text-b150'>
+            {isTelegramEnabled ? 'Telegram & Email' : 'SMS'}
+          </CyDText>
+          <CyDMaterialDesignIcons
+            name='chevron-right'
+            size={16}
+            className='text-base400 ml-2'
+          />
+        </CyDView>
+      </CyDTouchView>
+      <CyDText className='text-n200 text-[12px] text-[500] mx-[20px] mt-[6px]'>
+        {"Choose where you'd like to receive the online payment verification"}
+      </CyDText>
+    </>
+  );
+
+  const renderSectiontitle = () => (
+    <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
+      Security
+    </CyDText>
+  );
+
+  return (
+    <>
+      {!isVirtualRainCard && renderSectiontitle()}
+      {!isVirtualRainCard && renderSetPinOption()}
+      {!isRainCard && renderAuthenticationOption()}
+    </>
+  );
+};
 
 export default function CardControlsMenu() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -604,74 +702,13 @@ export default function CardControlsMenu() {
                 </CyDView>
               </CyDTouchView>
 
-              <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
-                Security
-              </CyDText>
-              <CyDTouchView
-                onPress={() => {
-                  navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
-                    currentCardProvider,
-                    card,
-                  });
-                }}
-                className={
-                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
-                }>
-                <CyDView className='flex flex-row flex-1 items-center'>
-                  <CyDMaterialDesignIcons
-                    name='dots-horizontal-circle-outline'
-                    size={24}
-                    className='text-base400 mr-3'
-                  />
-                  <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
-                    <CyDText className='text-[16px] font-semibold flex-wrap'>
-                      {'Set Pin'}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <CyDView className='flex flex-row items-center'>
-                  <CyDMaterialDesignIcons
-                    name='chevron-right'
-                    size={16}
-                    className='text-base400 ml-2'
-                  />
-                </CyDView>
-              </CyDTouchView>
-              <CyDTouchView
-                onPress={() => {
-                  setShow3DsModal(true);
-                }}
-                className={
-                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
-                }>
-                <CyDView className='flex flex-row flex-1 items-center'>
-                  <CyDMaterialDesignIcons
-                    name='shield-check-outline'
-                    size={24}
-                    className='text-base400 mr-3'
-                  />
-                  <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
-                    <CyDText className='text-[16px] font-semibold flex-wrap'>
-                      {'Online Payment Authentication'}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <CyDView className='flex flex-row items-center'>
-                  <CyDText className='text-[14px] text-b150'>
-                    {isTelegramEnabled ? 'Telegram & Email' : 'SMS'}
-                  </CyDText>
-                  <CyDMaterialDesignIcons
-                    name='chevron-right'
-                    size={16}
-                    className='text-base400 ml-2'
-                  />
-                </CyDView>
-              </CyDTouchView>
-              <CyDText className='text-n200 text-[12px] text-[500] mx-[20px] mt-[6px]'>
-                {
-                  "Choose where you'd like to receive the online payment verification"
-                }
-              </CyDText>
+              <SecuritySection
+                card={card}
+                currentCardProvider={currentCardProvider}
+                navigation={navigation}
+                isTelegramEnabled={isTelegramEnabled}
+                setShow3DsModal={setShow3DsModal}
+              />
             </CyDView>
           </ScrollView>
         )}

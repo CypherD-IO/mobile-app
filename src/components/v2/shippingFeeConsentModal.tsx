@@ -34,13 +34,13 @@ export default function ShippingFeeConsentModal({
         <CyDText className='mt-[42px] text-[16px] font-bold'>
           Please Note:
         </CyDText>
-        <CyDView className={'flex flex-row mt-[18px]'}>
+        <CyDView className={'flex flex-row mt-[18px] items-start'}>
           <CyDMaterialDesignIcons
             name={'triangle'}
             size={14}
-            className='text-p150 rotate-90 mr-[4px]'
+            className='text-p150 rotate-90'
           />
-          <CyDText className={'ml-[10px] font-semibold'}>
+          <CyDText className={'ml-[8px] font-semibold'}>
             {t('SHIPPING_FEE_SUB1') + '$' + feeAmount + t('SHIPPING_FEE_SUB2')}
           </CyDText>
         </CyDView>

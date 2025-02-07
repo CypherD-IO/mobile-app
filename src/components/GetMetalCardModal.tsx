@@ -36,7 +36,7 @@ export const GetMetalCardModal = ({
         onPress={() => {
           onPressUpgradeNow(PhysicalCardType.METAL);
         }}>
-        <CyDText className='font-bold'>{t('CLAIM_NOW')}</CyDText>
+        <CyDText className='font-bold text-black'>{t('CLAIM_NOW')}</CyDText>
       </CyDTouchView>
     </CyDView>
   );

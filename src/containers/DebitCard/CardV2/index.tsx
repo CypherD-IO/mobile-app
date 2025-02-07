@@ -441,6 +441,8 @@ export default function CypherCardScreen() {
                 navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
                   cardProvider,
                   card: get(cardProfile, [cardProvider, 'cards', 0]),
+                  cardDesignData,
+                  onBuyAdditionalPhysicalCard: onPressUpgradeNow,
                 });
               }}>
               <CyDMaterialDesignIcons
