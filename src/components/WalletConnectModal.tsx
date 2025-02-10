@@ -14,7 +14,6 @@ import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { t } from 'i18next';
 import { CText } from '../styles/textStyle';
 import { DynamicImage } from '../styles/imageStyle';
-import AppImages from '../../assets/images/appImages';
 import { Colors } from '../constants/theme';
 import { GlobalContext } from '../core/globalContext';
 import useWeb3 from '../hooks/useWeb3';

@@ -1,31 +1,54 @@
+import { useIsFocused } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import clsx from 'clsx';
+import { floor, get } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, useWindowDimensions } from 'react-native';
-import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
+import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import Loading from '../../../components/v2/loading';
+import CyDNumberPad from '../../../components/v2/numberpad';
+import CyDTokenAmount from '../../../components/v2/tokenAmount';
+import CyDTokenValue from '../../../components/v2/tokenValue';
+import { screenTitle } from '../../../constants';
 import {
+  CardFeePercentage,
+  MINIMUM_TRANSFER_AMOUNT_ETH,
+  OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+  SlippageFactor,
+} from '../../../constants/data';
+import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  CAN_ESTIMATE_L1_FEE_CHAINS,
+  CHAIN_ETH,
+  CHAIN_OSMOSIS,
   ChainNames,
   COSMOS_CHAINS,
-  NativeTokenMapping,
-  CHAIN_ETH,
   GASLESS_CHAINS,
-  ChainBackendNames,
-  CHAIN_COSMOS,
-  CAN_ESTIMATE_L1_FEE_CHAINS,
-  CHAIN_OSMOSIS,
+  NativeTokenMapping,
 } from '../../../constants/server';
+import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import useAxios from '../../../core/HttpRequest';
+import { Holding } from '../../../core/portfolio';
 import {
-  getWeb3Endpoint,
-  HdWalletContext,
   formatAmount,
-  validateAmount,
-  limitDecimalPlaces,
+  getViemPublicClient,
+  getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
-  isEIP1599Chain,
+  HdWalletContext,
   isNativeToken,
+  limitDecimalPlaces,
+  parseErrorMessage,
+  validateAmount,
 } from '../../../core/util';
+import useCosmosSigner from '../../../hooks/useCosmosSigner';
+import useGasService from '../../../hooks/useGasService';
+import usePortfolio from '../../../hooks/usePortfolio';
+import { CardQuoteResponse } from '../../../models/card.model';
 import {
-  CyDFastImage,
   CyDImage,
   CyDMaterialDesignIcons,
   CyDText,
@@ -33,35 +56,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import * as Sentry from '@sentry/react-native';
-import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
-import Web3 from 'web3';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
-import { screenTitle } from '../../../constants';
-import { useIsFocused } from '@react-navigation/native';
-import {
-  CardFeePercentage,
-  gasFeeReservation,
-  MINIMUM_TRANSFER_AMOUNT_ETH,
-  OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
-  SlippageFactor,
-} from '../../../constants/data';
-import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
-import CyDTokenAmount from '../../../components/v2/tokenAmount';
-import useAxios from '../../../core/HttpRequest';
-import { divide, floor, get, random } from 'lodash';
-import { ButtonType, CardProviders } from '../../../constants/enum';
-import clsx from 'clsx';
-import { CardQuoteResponse } from '../../../models/card.model';
-import useGasService from '../../../hooks/useGasService';
-import { Holding } from '../../../core/portfolio';
-import CyDNumberPad from '../../../components/v2/numberpad';
-import CyDTokenValue from '../../../components/v2/tokenValue';
-import Loading from '../../../components/v2/loading';
-import usePortfolio from '../../../hooks/usePortfolio';
 import { DecimalHelper } from '../../../utils/decimalHelper';
-import useCosmosSigner from '../../../hooks/useCosmosSigner';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -147,9 +142,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       balanceDecimal,
       denom,
     } = selectedToken as Holding;
-    const nativeToken = await getNativeToken(
-      chainDetails.backendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(chainDetails.backendName);
     const actualTokensRequired = limitDecimalPlaces(
       quote.tokensRequired,
       contractDecimals,
@@ -170,20 +163,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
     try {
       if (chainDetails.chainName === ChainNames.ETH) {
-        const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
         if (
           DecimalHelper.isLessThanOrEqualTo(
             actualTokensRequired,
             balanceDecimal,
           )
         ) {
+          const publicClient = getViemPublicClient(
+            getWeb3Endpoint(chainDetails, globalContext),
+          );
+
           gasDetails = await estimateGasForEvm({
-            web3,
-            chain: chainDetails.backendName as ChainBackendNames,
+            publicClient,
+            chain: chainDetails.backendName,
             fromAddress: ethereum.address,
-            toAddress: targetWalletAddress,
+            toAddress: targetWalletAddress as `0x${string}`,
             amountToSend: actualTokensRequired,
-            contractAddress,
+            contractAddress: contractAddress as `0x${string}`,
             contractDecimals,
           });
         }
@@ -194,14 +190,24 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             balanceDecimal,
           )
         ) {
-          gasDetails = await estimateGasForCosmosIBCRest({
-            fromChain: chainDetails,
-            toChain: CHAIN_OSMOSIS,
-            denom,
-            amount: actualTokensRequired,
-            fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
-          });
+          if (chainDetails.chainName === ChainNames.OSMOSIS) {
+            gasDetails = await estimateGasForCosmosRest({
+              chain: chainDetails,
+              denom,
+              amount: actualTokensRequired,
+              fromAddress: wallet[chainDetails.chainName].address,
+              toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+            });
+          } else {
+            gasDetails = await estimateGasForCosmosIBCRest({
+              fromChain: chainDetails,
+              toChain: CHAIN_OSMOSIS,
+              denom,
+              amount: actualTokensRequired,
+              fromAddress: wallet[chainDetails.chainName].address,
+              toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+            });
+          }
         }
       } else if (chainDetails.chainName === ChainNames.SOLANA) {
         if (
@@ -221,7 +227,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       }
       setLoading(false);
       setIsMaxLoading(false);
-      if (gasDetails) {
+      if (!gasDetails?.isError) {
         const hasSufficient = hasSufficientBalanceAndGasFee(
           selectedTokenSymbol === chainDetails.symbol,
           String(gasDetails.gasFeeInCrypto),
@@ -274,7 +280,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       showModal('state', {
         type: 'error',
         title: t('GAS_ESTIMATION_FAILED'),
-        description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+        description: parseErrorMessage(e),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -471,7 +477,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const isLoadCardDisabled = () => {
     if (selectedToken) {
-      const { symbol, backendName } = selectedToken.chainDetails;
+      const { backendName } = selectedToken.chainDetails;
 
       return (
         DecimalHelper.isLessThan(usdAmount, minTokenValueLimit) ||
@@ -520,9 +526,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const onSelectingToken = async (item: Holding) => {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
-    const nativeToken = await getNativeToken(
-      item.chainDetails.backendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(item.chainDetails.backendName);
     setNativeTokenBalance(nativeToken.balanceDecimal);
     setIsCryptoInput(false);
     const tempMinTokenValue =
@@ -560,16 +564,16 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
 
     if (chainDetails.chainName === ChainNames.ETH) {
-      const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(chainDetails, globalContext),
+      );
       setIsMaxLoading(true);
       let amountInCrypto = balanceDecimal;
       try {
         // Reserving gas for the txn if the selected token is a native token.
         if (
           selectedTokenSymbol === nativeTokenSymbol &&
-          !GASLESS_CHAINS.includes(
-            chainDetails.backendName as ChainBackendNames,
-          )
+          !GASLESS_CHAINS.includes(chainDetails.backendName)
         ) {
           // remove this gasFeeReservation once we have gas estimation for eip1599 chains
           // Estimate the gasFee for the transaction
@@ -581,7 +585,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               tokenData: selectedToken,
               fromAddress: hdWallet.state.wallet.ethereum.address,
               sendAddress: hdWallet.state.wallet.ethereum.address,
-              web3,
+              estimateReserveFee,
               web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
             });
 
@@ -591,15 +595,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             ).toString();
           } else {
             const gasDetails = await estimateGasForEvm({
-              web3,
-              chain: chainDetails.backendName as ChainBackendNames,
+              publicClient,
+              chain: chainDetails.backendName,
               fromAddress: ethereum.address,
               toAddress: ethereum.address,
               amountToSend: amountInCrypto,
-              contractAddress,
+              contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
             });
-            if (gasDetails) {
+            if (!gasDetails.isError) {
               // Adjust the amountInCrypto with the estimated gas fee
               // 10% buffer is added as there will be another gasEstimation in the quote modal
               amountInCrypto = DecimalHelper.subtract(
@@ -701,7 +705,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       setIsMaxLoading(true);
       if (
         selectedTokenSymbol === nativeTokenSymbol &&
-        !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
+        !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
           const gasDetails = await estimateGasForSolana({
@@ -813,7 +817,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       setIsMaxLoading(true);
       if (
         selectedTokenSymbol === nativeTokenSymbol &&
-        !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
+        !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
           // target address is osmosis address so doing IBC instead of send for estimation

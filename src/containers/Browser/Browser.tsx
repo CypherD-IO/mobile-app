@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
 import clsx from 'clsx';
 import CryptoJS from 'crypto-js';
-import { get, min, round } from 'lodash';
+import { get } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,24 +25,29 @@ import {
 } from '../../components/ChooseChainModal';
 import MoreViewModal from '../../components/MoreViewModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { gasFeeReservation, INJECTED_WEB3_CDN } from '../../constants/data';
+import Loading from '../../components/v2/loading';
+import { INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
 import {
   Chain,
-  CHAIN_COSMOS,
   CHAIN_ETH,
   CHAIN_SOLANA,
-  ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
   PURE_COSMOS_CHAINS,
 } from '../../constants/server';
-import { Colors } from '../../constants/theme';
 import { MODAL_SHOW_TIMEOUT } from '../../constants/timeOuts';
 import { CommunicationEvents } from '../../constants/web3';
 import { showToast } from '../../containers/utilities/toastUtility';
+import { GlobalContext } from '../../core/globalContext';
 import useAxios from '../../core/HttpRequest';
-import { getWeb3Endpoint, HdWalletContext } from '../../core/util';
+import {
+  getViemPublicClient,
+  getWeb3Endpoint,
+  HdWalletContext,
+} from '../../core/util';
+import useCosmosSigner from '../../hooks/useCosmosSigner';
+import useGasService from '../../hooks/useGasService';
 import usePortfolio from '../../hooks/usePortfolio';
 import useWeb3 from '../../hooks/useWeb3';
 import { isIOS } from '../../misc/checkers';
@@ -63,12 +68,7 @@ import {
   SearchHistoryEntry,
   WebsiteInfo,
 } from '../../types/Browser';
-import Loading from '../../components/v2/loading';
 import { DecimalHelper } from '../../utils/decimalHelper';
-import useGasService from '../../hooks/useGasService';
-import useCosmosSigner from '../../hooks/useCosmosSigner';
-import Web3 from 'web3';
-import { GlobalContext } from '../../core/globalContext';
 
 enum BROWSER_ERROR {
   SSL = 'ssl',
@@ -297,9 +297,7 @@ export default function Browser({ route, navigation }: any) {
   }, [hdWalletContext.state.selectedChain, isFocused]);
 
   const checkNativeTokenBalance = async (selectedChain: Chain) => {
-    const nativeToken = await getNativeToken(
-      selectedChain.backendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(selectedChain.backendName);
     let gasDetails;
     if (COSMOS_CHAINS.includes(selectedChain.chainName)) {
       const cosmosWallet = hdWalletContext.state.wallet;
@@ -320,14 +318,17 @@ export default function Browser({ route, navigation }: any) {
         contractDecimals: nativeToken.contractDecimals,
       });
     } else if (selectedChain.chainName === ChainNames.ETH) {
-      const web3 = new Web3(getWeb3Endpoint(selectedChain, globalContext));
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(selectedChain, globalContext),
+      );
+
       gasDetails = await estimateGasForEvm({
-        web3,
-        chain: selectedChain.backendName as ChainBackendNames,
+        publicClient,
+        chain: selectedChain.backendName,
         fromAddress: ethereum.address,
         toAddress: ethereum.address,
         amountToSend: String(nativeToken.balanceDecimal),
-        contractAddress: nativeToken.contractAddress,
+        contractAddress: nativeToken.contractAddress as `0x${string}`,
         contractDecimals: nativeToken.contractDecimals,
       });
     }

@@ -86,6 +86,8 @@ import { DecimalHelper } from '../utils/decimalHelper';
 import { Common, Hardfork } from '@ethereumjs/common';
 import { TransactionFactory } from '@ethereumjs/tx';
 import crypto from 'crypto';
+import { mainnet } from 'viem/chains';
+import { createPublicClient, http } from 'viem';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -850,6 +852,9 @@ export const formatAmount = (
 };
 
 export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
+  if (DeviceInfo.isEmulatorSync()) {
+    return;
+  }
   const { type } = params;
   switch (type) {
     case AnalyticsType.SUCCESS: {
@@ -877,6 +882,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
         connectionType,
         other,
       } = params as ErrorAnalytics;
+
       const data = {
         chain,
         message,
@@ -897,16 +903,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
 }
 
 export function parseErrorMessage(error: any): string {
-  // Case 1: Error instance
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error?.message) {
-    return error.message;
-  }
-
-  // Case 2: Axios/HTTP error response object
+  // Case 1: Axios/HTTP error response object
   const errorObj = error;
   if (errorObj?.response?.data) {
     // Handle various API error response formats
@@ -943,6 +940,15 @@ export function parseErrorMessage(error: any): string {
     } catch {
       // If stringification fails, continue to other cases
     }
+  }
+
+  // Case 3: Error instance
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (error?.message) {
+    return error.message;
   }
 
   // Case 3: Simple string conversion possible
@@ -1364,3 +1370,13 @@ export default function buildUnserializedTransaction(txMeta) {
   const common = buildTransactionCommon(txMeta);
   return TransactionFactory.fromTxData(txParams, { common });
 }
+
+export const getViemChain = (chain: ChainBackendNames) => {
+  return mainnet;
+};
+
+export const getViemPublicClient = (rpc: string) => {
+  return createPublicClient({
+    transport: http(rpc),
+  });
+};

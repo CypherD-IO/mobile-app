@@ -4,7 +4,7 @@ import { Chain } from '../constants/server';
 import { SwapBridgeTokenData } from '../containers/Bridge';
 
 export interface SwapMetaData {
-  web3: Web3;
+  rpc: string;
   fromToken?: SwapBridgeTokenData;
   toToken?: SwapBridgeTokenData;
   amount?: string | number;

@@ -8,11 +8,10 @@ import {
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { t } from 'i18next';
-import { divide, get, random, round } from 'lodash';
+import { get, round } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { Keyboard, StyleSheet, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Keyboard, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Web3 from 'web3';
 import AppImages from '../../../../assets/images/appImages';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import Button from '../../../components/v2/button';
@@ -23,7 +22,6 @@ import { screenTitle } from '../../../constants';
 import {
   CardFeePercentage,
   CYPHER_PLAN_ID_NAME_MAPPING,
-  gasFeeReservation,
   MINIMUM_TRANSFER_AMOUNT_ETH,
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
@@ -39,7 +37,6 @@ import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
   CHAIN_OSMOSIS,
-  ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
   GASLESS_CHAINS,
@@ -50,16 +47,17 @@ import useAxios from '../../../core/HttpRequest';
 import { Holding } from '../../../core/portfolio';
 import {
   formatAmount,
+  getViemPublicClient,
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
-  isEIP1599Chain,
   isNativeToken,
   limitDecimalPlaces,
   parseErrorMessage,
   validateAmount,
 } from '../../../core/util';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import useCosmosSigner from '../../../hooks/useCosmosSigner';
 import useGasService from '../../../hooks/useGasService';
 import usePortfolio from '../../../hooks/usePortfolio';
 import { CardQuoteResponse } from '../../../models/card.model';
@@ -67,19 +65,14 @@ import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
   CyDIcons,
-  CyDImage,
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
-  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import Loading from '../../../components/v2/loading';
 import { DecimalHelper } from '../../../utils/decimalHelper';
-import useCosmosSigner from '../../../hooks/useCosmosSigner';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -210,9 +203,7 @@ export default function FirstLoadCard() {
   const onSelectingToken = async (item: Holding) => {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
-    const _nativeToken = await getNativeToken(
-      item.chainDetails.backendName as ChainBackendNames,
-    );
+    const _nativeToken = await getNativeToken(item.chainDetails.backendName);
     setNativeToken(_nativeToken);
     setIsCryptoInput(false);
   };
@@ -331,16 +322,16 @@ export default function FirstLoadCard() {
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
 
     if (chainDetails.chainName === ChainNames.ETH) {
-      const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(chainDetails, globalContext),
+      );
       setIsMaxLoading(true);
       let amountInCrypto = balanceDecimal;
       try {
         // Reserving gas for the txn if the selected token is a native token.
         if (
           selectedTokenSymbol === nativeToken?.symbol &&
-          !GASLESS_CHAINS.includes(
-            chainDetails.backendName as ChainBackendNames,
-          )
+          !GASLESS_CHAINS.includes(chainDetails.backendName)
         ) {
           // remove this gasFeeReservation once we have gas estimation for eip1599 chains
           // Estimate the gasFee for the transaction
@@ -350,9 +341,11 @@ export default function FirstLoadCard() {
           ) {
             const gasReservedForNativeToken = await estimateReserveFee({
               tokenData: selectedToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: hdWallet.state.wallet.ethereum.address,
-              web3,
+              fromAddress: hdWallet.state.wallet.ethereum
+                .address as `0x${string}`,
+              sendAddress: hdWallet.state.wallet.ethereum
+                .address as `0x${string}`,
+              publicClient,
               web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
             });
 
@@ -362,15 +355,15 @@ export default function FirstLoadCard() {
             ).toString();
           } else {
             const gasDetails = await estimateGasForEvm({
-              web3,
-              chain: chainDetails.backendName as ChainBackendNames,
-              fromAddress: ethereum.address ?? '',
-              toAddress: ethereum.address ?? '',
+              publicClient,
+              chain: chainDetails.backendName,
+              fromAddress: (ethereum.address ?? '') as `0x${string}`,
+              toAddress: (ethereum.address ?? '') as `0x${string}`,
               amountToSend: amountInCrypto,
-              contractAddress,
+              contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
             });
-            if (gasDetails) {
+            if (!gasDetails.isError) {
               // Adjust the amountInCrypto with the estimated gas fee
               // 10% buffer is added as there will be another gasEstimation in the quote modal
               amountInCrypto = DecimalHelper.subtract(
@@ -428,6 +421,7 @@ export default function FirstLoadCard() {
           void showQuoteModal(quote, true);
         } else {
           setIsMaxLoading(false);
+          const errorMessage = parseErrorMessage(response.error);
           showModal('state', {
             type: 'error',
             title: response?.error?.message?.includes('minimum amount')
@@ -436,9 +430,9 @@ export default function FirstLoadCard() {
             description: response?.error?.message?.includes(
               'amount is lower than 10 USD',
             )
-              ? response.error.message +
+              ? errorMessage +
                 `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-              : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
+              : (errorMessage ?? t('UNABLE_TO_TRANSFER')),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -474,12 +468,12 @@ export default function FirstLoadCard() {
       setIsMaxLoading(true);
       if (
         selectedTokenSymbol === nativeTokenSymbol &&
-        !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
+        !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
           const gasDetails = await estimateGasForSolana({
-            fromAddress: solana.address,
-            toAddress: solana.address,
+            fromAddress: solana.address ?? '',
+            toAddress: solana.address ?? '',
             amountToSend: String(amountInCrypto),
             contractAddress,
             contractDecimals,
@@ -586,18 +580,29 @@ export default function FirstLoadCard() {
 
       if (
         selectedTokenSymbol === nativeTokenSymbol &&
-        !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
+        !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
-          // target address is osmosis address so doing IBC instead of send for estimation
-          const gasDetails = await estimateGasForCosmosIBCRest({
-            fromChain: chainDetails,
-            toChain: CHAIN_OSMOSIS,
-            denom,
-            amount: amountInCrypto,
-            fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
-          });
+          let gasDetails;
+          if (chainDetails.chainName !== ChainNames.OSMOSIS) {
+            // target address is osmosis address so doing IBC instead of send for estimation
+            gasDetails = await estimateGasForCosmosIBCRest({
+              fromChain: chainDetails,
+              toChain: CHAIN_OSMOSIS,
+              denom,
+              amount: amountInCrypto,
+              fromAddress: wallet?.[chainDetails.chainName]?.address ?? '',
+              toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+            });
+          } else {
+            gasDetails = await estimateGasForCosmosRest({
+              chain: chainDetails,
+              denom,
+              amount: amountInCrypto,
+              fromAddress: wallet?.[chainDetails.chainName]?.address ?? '',
+              toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+            });
+          }
 
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
@@ -962,7 +967,9 @@ export default function FirstLoadCard() {
     const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
     try {
       if (chainDetails.chainName === ChainNames.ETH) {
-        const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
+        const publicClient = getViemPublicClient(
+          getWeb3Endpoint(chainDetails, globalContext),
+        );
         if (
           DecimalHelper.isLessThanOrEqualTo(
             actualTokensRequired,
@@ -970,12 +977,12 @@ export default function FirstLoadCard() {
           )
         ) {
           gasDetails = await estimateGasForEvm({
-            web3,
-            chain: chainDetails.backendName as ChainBackendNames,
-            fromAddress: ethereum.address ?? '',
-            toAddress: targetWalletAddress,
+            publicClient,
+            chain: chainDetails.backendName,
+            fromAddress: (ethereum.address ?? '') as `0x${string}`,
+            toAddress: (targetWalletAddress ?? '') as `0x${string}`,
             amountToSend: actualTokensRequired,
-            contractAddress,
+            contractAddress: contractAddress as `0x${string}`,
             contractDecimals,
           });
         }
@@ -986,14 +993,24 @@ export default function FirstLoadCard() {
             balanceDecimal,
           )
         ) {
-          gasDetails = await estimateGasForCosmosIBCRest({
-            fromChain: chainDetails,
-            toChain: CHAIN_OSMOSIS,
-            denom,
-            amount: actualTokensRequired,
-            fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
-          });
+          if (chainDetails.chainName !== ChainNames.OSMOSIS) {
+            gasDetails = await estimateGasForCosmosIBCRest({
+              fromChain: chainDetails,
+              toChain: CHAIN_OSMOSIS,
+              denom,
+              amount: actualTokensRequired,
+              fromAddress: wallet?.[chainDetails.chainName]?.address ?? '',
+              toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+            });
+          } else {
+            gasDetails = await estimateGasForCosmosRest({
+              chain: chainDetails,
+              denom,
+              amount: actualTokensRequired,
+              fromAddress: wallet?.[chainDetails.chainName]?.address ?? '',
+              toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+            });
+          }
         }
       } else if (chainDetails.chainName === ChainNames.SOLANA) {
         if (
@@ -1003,7 +1020,7 @@ export default function FirstLoadCard() {
           )
         ) {
           gasDetails = await estimateGasForSolana({
-            fromAddress: solana.address,
+            fromAddress: solana.address ?? '',
             toAddress: targetWalletAddress,
             amountToSend: actualTokensRequired,
             contractAddress,

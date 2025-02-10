@@ -27,6 +27,7 @@ import {
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
 import {
   formatAmount,
+  getViemPublicClient,
   getWeb3Endpoint,
   HdWalletContext,
   isNativeToken,
@@ -108,14 +109,17 @@ export default function EnterAmount(props: any) {
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
     if (chainName === ChainNames.ETH) {
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(tokenData.chainDetails, globalContext),
+      );
       const ethereum = hdWallet.state.wallet.ethereum;
       gasEstimate = await estimateGasForEvm({
-        web3: new Web3(getWeb3Endpoint(tokenData.chainDetails, globalContext)),
-        chain: tokenData.chainDetails.backendName as ChainBackendNames,
-        fromAddress: ethereum.address ?? '',
-        toAddress: ethereum.address ?? '',
+        publicClient,
+        chain: tokenData.chainDetails.backendName,
+        fromAddress: ethereum.address as `0x${string}`,
+        toAddress: ethereum.address as `0x${string}`,
         amountToSend: tokenData.balanceDecimal,
-        contractAddress: tokenData.contractAddress,
+        contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
       });
     } else if (chainName === ChainNames.SOLANA) {
@@ -167,13 +171,11 @@ export default function EnterAmount(props: any) {
     gasReserved: number,
   ) => {
     const { backendName, symbol } = tokenData.chainDetails;
-    if (GASLESS_CHAINS.includes(backendName as ChainBackendNames)) {
+    if (GASLESS_CHAINS.includes(backendName)) {
       return true;
     }
     const nativeBackendName = backendName;
-    const nativeToken = await getNativeToken(
-      nativeBackendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(nativeBackendName);
     const nativeTokenBalance = nativeToken.actualBalance;
     return DecimalHelper.isGreaterThanOrEqualTo(
       nativeTokenBalance,
@@ -186,7 +188,7 @@ export default function EnterAmount(props: any) {
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
-    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName)
+    const gasReserved = (await getGasFee(tokenData.chainDetails?.chainName))
       ?.gasFeeInCrypto;
 
     if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {

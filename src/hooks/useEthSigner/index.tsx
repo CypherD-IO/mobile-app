@@ -1,16 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
+import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import * as Sentry from '@sentry/react-native';
 import {
-  getChainId,
-  switchChain,
-  waitForTransactionReceipt,
   getBlockNumber,
+  getChainId,
+  waitForTransactionReceipt,
 } from '@wagmi/core';
-import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import { get } from 'lodash';
 import { useContext } from 'react';
 import { Linking, Platform } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { createWalletClient, Hash, Hex, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import {
   useSendTransaction,
   useSwitchChain,
@@ -18,26 +18,23 @@ import {
   WagmiContext,
 } from 'wagmi';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { ChainIdToBackendNameMapping } from '../../constants/data';
 import { ConnectionTypes } from '../../constants/enum';
 import { Chain, walletConnectChainData } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
+import useAxios from '../../core/HttpRequest';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import { allowanceApprovalContractABI } from '../../core/swap';
 import {
-  HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-  limitDecimalPlaces,
+  HdWalletContext,
   sleepFor,
 } from '../../core/util';
 import {
-  EthTransaction,
-  RawTransaction,
+  EthSingerParams,
+  EthTransactionPayload,
 } from '../../models/ethSigner.interface';
-import { Hash } from 'viem';
-import { ChainIdToBackendNameMapping } from '../../constants/data';
-import useAxios from '../../core/HttpRequest';
-import { DecimalHelper } from '../../utils/decimalHelper';
 
 export default function useEthSigner() {
   const wagmiConfig = useContext(WagmiContext);
@@ -115,7 +112,7 @@ export default function useEthSigner() {
     transactionToBeSigned,
     chainId,
   }: {
-    transactionToBeSigned: EthTransaction;
+    transactionToBeSigned: EthTransactionPayload;
     chainId: number;
   }) {
     let timer: NodeJS.Timeout;
@@ -134,9 +131,9 @@ export default function useEthSigner() {
     };
 
     // Send transaction with estimated values
-    const sendTransactionPromise = sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
-      to: transactionToBeSigned.to as `0x${string}`,
+    const hash = await sendTransactionAsync({
+      account: transactionToBeSigned.from,
+      to: transactionToBeSigned.to,
       chainId,
       value: BigInt(transactionToBeSigned.value),
       data: transactionToBeSigned?.data ?? '0x',
@@ -163,7 +160,7 @@ export default function useEthSigner() {
     transactionToBeSigned,
     chainId,
   }: {
-    transactionToBeSigned: EthTransaction;
+    transactionToBeSigned: EthTransactionPayload;
     chainId: number;
   }) {
     let timer: NodeJS.Timeout;
@@ -202,7 +199,7 @@ export default function useEthSigner() {
 
     const writeContractPromise = writeContractAsync({
       abi: contractAbiFragment,
-      address: transactionToBeSigned.to as `0x${string}`,
+      address: transactionToBeSigned.to,
       functionName: 'transfer',
       args: [
         transactionToBeSigned.contractParams?.toAddress,
@@ -229,123 +226,54 @@ export default function useEthSigner() {
   }
 
   const signApprovalEthereum = async ({
-    web3,
+    rpc,
     sendChain,
     transactionToBeSigned,
-  }: RawTransaction) => {
-    try {
-      const connectionType = await getConnectionType();
+    tokens,
+  }: EthSingerParams) => {
+    const connectionType = await getConnectionType();
+
+    if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       const connectedChain = getChainId(wagmiConfig);
-      if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-        const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
-        if (
-          walletInfo?.name === 'MetaMask Wallet' &&
-          connectedChain !== chainConfig.id
-        ) {
-          try {
-            showModal('state', {
-              type: 'warning',
-              title: `Switch to ${chainConfig?.name} chain`,
-              description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
-              onSuccess: hideModal,
-            });
-            await switchChainAsync({
-              chainId: chainConfig.id,
-            });
-            hideModal();
-            await sleepFor(1000);
-          } catch (e) {}
-        }
-        const numberOfTokensWithDecimals =
-          transactionToBeSigned?.contractParams?.numberOfTokens;
-        const response = await writeContractAsync({
-          abi: allowanceApprovalContractABI,
-          address: transactionToBeSigned.to as `0x${string}`,
-          functionName: 'approve',
-          args: [
-            transactionToBeSigned.contractParams?.toAddress,
-            numberOfTokensWithDecimals,
-          ],
-          chainId: chainConfig.id,
-        });
-        const receipt = await getTransactionReceipt(response, chainConfig.id);
-        return receipt;
-      } else {
-        const privateKey = await loadPrivateKeyFromKeyChain(
-          false,
-          hdWalletContext.state.pinValue,
-        );
-        if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-          const signedTransaction = await web3.eth.accounts.signTransaction(
-            transactionToBeSigned,
-            privateKey,
-          );
-          let txHash: string;
-          const hash = await new Promise((resolve, reject) => {
-            void web3.eth
-              .sendSignedTransaction(String(signedTransaction.rawTransaction))
-              .once('transactionHash', function (hash: string) {
-                txHash = hash;
-                Toast.show({
-                  type: 'info',
-                  text1: 'Transaction Hash',
-                  text2: hash,
-                  position: 'bottom',
-                });
-              })
-              .once('receipt', () => {
-                // expression expected
-              })
-              .on('confirmation', () => {
-                // expression expected
-              })
-              .on('error', async function (error: any) {
-                if (!txHash) {
-                  reject(error);
-                } else {
-                  await sleepFor(5000);
-                  const receipt = await web3.eth.getTransactionReceipt(txHash);
-                  if (receipt?.status) {
-                    Toast.show({
-                      type: 'success',
-                      text1: 'Transaction',
-                      text2: 'Transaction Receipt Received',
-                      position: 'bottom',
-                    });
-                    resolve(receipt.transactionHash);
-                  } else {
-                    Sentry.captureException(error);
-                    Toast.show({
-                      type: 'error',
-                      text1: 'Transaction Error',
-                      text2: error.message,
-                      position: 'bottom',
-                    });
-                  }
-                }
-              })
-              .then(async function (receipt: { transactionHash: string }) {
-                Toast.show({
-                  type: 'success',
-                  text1: 'Transaction',
-                  text2: 'Transaction Receipt Received',
-                  position: 'bottom',
-                });
-                resolve(receipt.transactionHash);
-              });
+      const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
+      if (
+        walletInfo?.name === 'MetaMask Wallet' &&
+        connectedChain !== chainConfig.id
+      ) {
+        try {
+          showModal('state', {
+            type: 'warning',
+            title: `Switch to ${chainConfig?.name} chain`,
+            description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
+            onSuccess: hideModal,
           });
-          return hash;
-        } else {
-          throw new Error('Authentication failed');
-        }
+          await switchChainAsync({
+            chainId: chainConfig.id,
+          });
+          hideModal();
+          await sleepFor(1000);
+        } catch (e) {}
       }
-    } catch (e: any) {
-      throw new Error(e);
+
+      const response = await writeContractAsync({
+        abi: allowanceApprovalContractABI,
+        address: transactionToBeSigned.to,
+        functionName: 'approve',
+        args: [transactionToBeSigned.to, tokens],
+        chainId: chainConfig.id,
+      });
+      const receipt = await getTransactionReceipt(response, chainConfig.id);
+      return receipt;
+    } else {
+      return await signAndSendEthTransaction({
+        rpc,
+        transactionToBeSigned,
+      });
     }
   };
 
   async function handleTransaction(
-    transactionToBeSigned: EthTransaction,
+    transactionToBeSigned: EthTransactionPayload,
     chainConfig: Chain,
   ) {
     // Get the current block number before starting
@@ -394,14 +322,15 @@ export default function useEthSigner() {
   }
 
   const signEthTransaction = async ({
-    web3,
+    rpc,
     sendChain,
     transactionToBeSigned,
-  }: RawTransaction) => {
+  }: EthSingerParams) => {
     try {
       const connectionType = await getConnectionType();
-      const connectedChain = getChainId(wagmiConfig);
+
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+        const connectedChain = getChainId(wagmiConfig);
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
         if (
           walletInfo?.name === 'MetaMask Wallet' &&
@@ -473,82 +402,113 @@ export default function useEthSigner() {
         }
         return hash;
       } else {
-        const privateKey = await loadPrivateKeyFromKeyChain(
-          false,
-          hdWalletContext.state.pinValue,
-        );
-        if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-          const signedTransaction = await web3.eth.accounts.signTransaction(
-            transactionToBeSigned,
-            privateKey,
-          );
-          let txHash: string;
-
-          const hash = await new Promise((resolve, reject) => {
-            void web3.eth
-              .sendSignedTransaction(String(signedTransaction.rawTransaction))
-              .once('transactionHash', function (_hash: string) {
-                txHash = _hash;
-                Toast.show({
-                  type: 'info',
-                  text1: 'Transaction Hash',
-                  text2: _hash,
-                  position: 'bottom',
-                });
-              })
-              .once('receipt', function (receipt: any) {
-                resolve(receipt.transactionHash);
-              })
-              .on('confirmation', () => {
-                // expression expected
-              })
-              .on('error', function (error: any) {
-                if (!txHash) {
-                  reject(error);
-                } else {
-                  setTimeout(() => {
-                    void (async () => {
-                      const receipt =
-                        await web3.eth.getTransactionReceipt(txHash);
-                      if (receipt?.status) {
-                        Toast.show({
-                          type: 'success',
-                          text1: 'Transaction',
-                          text2: 'Transaction Receipt Received',
-                          position: 'bottom',
-                        });
-                        resolve(receipt.transactionHash);
-                      } else {
-                        Sentry.captureException(error.message ?? error);
-                        Toast.show({
-                          type: 'error',
-                          text1: 'Transaction Error',
-                          text2: error.message,
-                          position: 'bottom',
-                        });
-                        reject(error);
-                      }
-                    })();
-                  }, 5000);
-                }
-              })
-              .then(async function (receipt: { transactionHash: string }) {
-                Toast.show({
-                  type: 'success',
-                  text1: 'Transaction',
-                  text2: 'Transaction Receipt Received',
-                  position: 'bottom',
-                });
-                resolve(receipt.transactionHash);
-              });
-          });
-          return hash;
-        } else {
-          throw new Error('Authentication failed');
-        }
+        return await signAndSendEthTransaction({
+          rpc,
+          transactionToBeSigned,
+        });
+        // const privateKey = await loadPrivateKeyFromKeyChain(
+        //   false,
+        //   hdWalletContext.state.pinValue,
+        // );
+        // if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        // const signedTransaction = await web3.eth.accounts.signTransaction(
+        //   transactionToBeSigned,
+        //   privateKey,
+        // );
+        // let txHash: string;
+        // const hash = await new Promise((resolve, reject) => {
+        //   void web3.eth
+        //     .sendSignedTransaction(String(signedTransaction.rawTransaction))
+        //     .once('transactionHash', function (_hash: string) {
+        //       txHash = _hash;
+        //       Toast.show({
+        //         type: 'info',
+        //         text1: 'Transaction Hash',
+        //         text2: _hash,
+        //         position: 'bottom',
+        //       });
+        //     })
+        //     .once('receipt', function (receipt: any) {
+        //       resolve(receipt.transactionHash);
+        //     })
+        //     .on('confirmation', () => {
+        //       // expression expected
+        //     })
+        //     .on('error', function (error: any) {
+        //       if (!txHash) {
+        //         reject(error);
+        //       } else {
+        //         setTimeout(() => {
+        //           void (async () => {
+        //             const receipt =
+        //               await web3.eth.getTransactionReceipt(txHash);
+        //             if (receipt?.status) {
+        //               Toast.show({
+        //                 type: 'success',
+        //                 text1: 'Transaction',
+        //                 text2: 'Transaction Receipt Received',
+        //                 position: 'bottom',
+        //               });
+        //               resolve(receipt.transactionHash);
+        //             } else {
+        //               Sentry.captureException(error.message ?? error);
+        //               Toast.show({
+        //                 type: 'error',
+        //                 text1: 'Transaction Error',
+        //                 text2: error.message,
+        //                 position: 'bottom',
+        //               });
+        //               reject(error);
+        //             }
+        //           })();
+        //         }, 5000);
+        //       }
+        //     })
+        //     .then(async function (receipt: { transactionHash: string }) {
+        //       Toast.show({
+        //         type: 'success',
+        //         text1: 'Transaction',
+        //         text2: 'Transaction Receipt Received',
+        //         position: 'bottom',
+        //       });
+        //       resolve(receipt.transactionHash);
+        //     });
+        // });
+        // return hash;
+        // } else {
+        //   throw new Error('Authentication failed');
+        // }
       }
     } catch (e: any) {
       throw new Error(e);
+    }
+  };
+
+  const signAndSendEthTransaction = async ({
+    rpc,
+    transactionToBeSigned,
+  }: {
+    rpc: string;
+    transactionToBeSigned: EthTransactionPayload;
+  }) => {
+    const client = createWalletClient({
+      transport: http(rpc),
+    });
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
+    );
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const account = privateKeyToAccount(privateKey as Hex);
+
+      const hash = await client.sendTransaction({
+        chain: null,
+        account,
+        ...transactionToBeSigned,
+      });
+      return hash;
+    } else {
+      throw new Error('Authentication failed, unable to retrieve private key');
     }
   };
 
