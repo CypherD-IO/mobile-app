@@ -1504,7 +1504,7 @@ const resources = {
       PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_2:
         'If multiple transactions are in the queue, the system may take up to 20 minutes to process your request. During this time, the token’s value may fluctuate. When the transaction is executed, your card will be loaded based on the token’s price at that moment, which may differ from your initial input.',
       GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE:
-        'Insufficient {{tokenName}} to pay for gas. Need atleast {{gasFeeRequired}} {{tokenName}} on {{chainName}} chain for transaction',
+        'Insufficient {{tokenName}} to pay for gas. Need atleast {{gasFeeRequired}} {{tokenName}} on {{chainName}} chain for this transaction',
     },
   },
 };
