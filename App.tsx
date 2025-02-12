@@ -70,7 +70,6 @@ import { screenTitle } from './src/constants';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
 import { ThemeProvider } from './src/reducers/themeReducer';
 import { CyDView } from './src/styles/tailwindStyles';
-import { PortfolioRefreshProvider } from './src/core/portfolioRefreshContext';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -277,68 +276,66 @@ function App() {
                 value={{ walletConnectState, walletConnectDispatch }}>
                 <GlobalContext.Provider value={{ globalState, globalDispatch }}>
                   <HdWalletContext.Provider value={{ state, dispatch }}>
-                    <PortfolioRefreshProvider>
-                      <CosmosStakingContext.Provider
-                        value={{ cosmosStakingState, cosmosStakingDispatch }}>
-                        <ActivityContext.Provider
+                    <CosmosStakingContext.Provider
+                      value={{ cosmosStakingState, cosmosStakingDispatch }}>
+                      <ActivityContext.Provider
+                        value={{
+                          state: stateActivity,
+                          dispatch: dispatchActivity,
+                        }}>
+                        <ModalContext.Provider
                           value={{
-                            state: stateActivity,
-                            dispatch: dispatchActivity,
+                            state: modalState,
+                            dispatch: modalDispatch,
                           }}>
-                          <ModalContext.Provider
+                          <BridgeContext.Provider
                             value={{
-                              state: modalState,
-                              dispatch: modalDispatch,
+                              state: bridgeState,
+                              dispatch: bridgeDispatch,
                             }}>
-                            <BridgeContext.Provider
-                              value={{
-                                state: bridgeState,
-                                dispatch: bridgeDispatch,
-                              }}>
-                              <GlobalModal>
-                                <ThreeDSecureProvider>
-                                  <InitializeAppProvider>
-                                    <TabStack
-                                      deepLinkData={deepLinkData}
-                                      setDeepLinkData={setDeepLinkData}
-                                    />
-                                    <Toast
-                                      config={toastConfig}
-                                      position={'bottom'}
-                                      bottomOffset={140}
-                                    />
-                                    {<ConfirmationModals />}
-                                    <WalletConnectModal
-                                      walletConnectModalVisible={
-                                        walletConnectModalData.displayWalletConnectModal
-                                      }
-                                      setWalletConnectModalVisible={
-                                        setWalletConnectModalVisible
-                                      }
-                                      renderContent={
-                                        walletConnectModalData.renderContent
-                                      }
-                                      walletConnectApproveRequest={
-                                        walletConnectApproveRequest
-                                      }
-                                      walletConnectRejectRequest={
-                                        walletConnectRejectRequest
-                                      }
-                                      dispatchActivity={dispatchActivity}
-                                      params={walletConnectModalData.params}
-                                      request={request}
-                                      walletConnectDispatch={
-                                        walletConnectDispatch
-                                      }
-                                    />
-                                  </InitializeAppProvider>
-                                </ThreeDSecureProvider>
-                              </GlobalModal>
-                            </BridgeContext.Provider>
-                          </ModalContext.Provider>
-                        </ActivityContext.Provider>
-                      </CosmosStakingContext.Provider>
-                    </PortfolioRefreshProvider>
+                            <GlobalModal>
+                              <ThreeDSecureProvider>
+                                <InitializeAppProvider>
+                                  <TabStack
+                                    deepLinkData={deepLinkData}
+                                    setDeepLinkData={setDeepLinkData}
+                                  />
+                                  <Toast
+                                    config={toastConfig}
+                                    position={'bottom'}
+                                    bottomOffset={140}
+                                  />
+                                  {<ConfirmationModals />}
+                                  <WalletConnectModal
+                                    walletConnectModalVisible={
+                                      walletConnectModalData.displayWalletConnectModal
+                                    }
+                                    setWalletConnectModalVisible={
+                                      setWalletConnectModalVisible
+                                    }
+                                    renderContent={
+                                      walletConnectModalData.renderContent
+                                    }
+                                    walletConnectApproveRequest={
+                                      walletConnectApproveRequest
+                                    }
+                                    walletConnectRejectRequest={
+                                      walletConnectRejectRequest
+                                    }
+                                    dispatchActivity={dispatchActivity}
+                                    params={walletConnectModalData.params}
+                                    request={request}
+                                    walletConnectDispatch={
+                                      walletConnectDispatch
+                                    }
+                                  />
+                                </InitializeAppProvider>
+                              </ThreeDSecureProvider>
+                            </GlobalModal>
+                          </BridgeContext.Provider>
+                        </ModalContext.Provider>
+                      </ActivityContext.Provider>
+                    </CosmosStakingContext.Provider>
                   </HdWalletContext.Provider>
                 </GlobalContext.Provider>
               </WalletConnectContext.Provider>

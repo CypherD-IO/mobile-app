@@ -117,7 +117,7 @@ import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
 import { Holding } from '../../core/portfolio';
 import { Decimal } from 'decimal.js';
-import { usePortfolioRefresh } from '../../core/portfolioRefreshContext';
+import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 
 export interface SwapBridgeChainData {
   chainName: string;

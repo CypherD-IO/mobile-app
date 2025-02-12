@@ -62,7 +62,7 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { clsx } from 'clsx';
 import LinearGradient from 'react-native-linear-gradient';
 import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
-import { usePortfolioRefresh } from '../../../core/portfolioRefreshContext';
+import { usePortfolioRefresh } from '../../../hooks/usePortfolioRefresh';
 
 export default function CardQuote({
   navigation,

@@ -160,9 +160,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
   const [nativeTokenDetails, setNativeTokenDetails] = useState<Holding>();
-  const { estimateGasForEvm } = useGasService();
-  const { sendEvmToken, sendCosmosToken, sendSolanaTokens } =
-    useTransactionManager();
   const { refreshPortfolio } = usePortfolioRefresh();
 
   let fuseByAddresses: Fuse<string>;

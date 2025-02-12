@@ -50,7 +50,7 @@ import usePortfolio from '../../hooks/usePortfolio';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import useCosmosSigner from '../../hooks/useCosmosSigner';
 import useGasService from '../../hooks/useGasService';
-import { usePortfolioRefresh } from '../../core/portfolioRefreshContext';
+import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 
 export default function IBC({
   route,
