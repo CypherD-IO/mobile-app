@@ -15,8 +15,12 @@ import * as Sentry from '@sentry/react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
-import { CardProviders } from '../../../constants/enum';
-import { generateKeys, parseErrorMessage } from '../../../core/util';
+import { CardProviders, PhysicalCardType } from '../../../constants/enum';
+import {
+  generateKeys,
+  generateSessionId,
+  parseErrorMessage,
+} from '../../../core/util';
 import {
   NavigationProp,
   ParamListBase,
@@ -27,7 +31,7 @@ import {
 import { t } from 'i18next';
 import { Card } from '../../../models/card.model';
 import { capitalize } from 'lodash';
-import { CyDIconsPack } from '../../../customFonts';
+import { Config } from 'react-native-config';
 
 interface RouteParams {
   onSuccess: (data: unknown, provider: CardProviders) => void;
@@ -107,7 +111,7 @@ export default function CardRevealAuthScreen() {
 
   const triggerOTP = async () => {
     const triggerOTPUrl = getTriggerOTPUrl(
-      currentCardProvider,
+      card?.cardProvider,
       card?.cardId,
       triggerOTPParam,
     );
@@ -149,7 +153,7 @@ export default function CardRevealAuthScreen() {
 
   const verifyOTP = async (num: number) => {
     const OTPVerificationUrl = getOTPVerificationUrl(
-      currentCardProvider,
+      card?.cardProvider,
       card?.cardId,
       triggerOTPParam,
     );
@@ -157,29 +161,62 @@ export default function CardRevealAuthScreen() {
       currentCardProvider === CardProviders.REAP_CARD &&
       triggerOTPParam === 'verify/show-token'
     ) {
-      const key = await generateKeys();
-      const payload = {
-        otp: +num,
-        stylesheetUrl: 'https://public.cypherd.io/css/cardRevealMobile.css',
-        publicKey: key?.publicKeyBase64,
-        ...(verifyOTPPayload || {}),
-      };
-      setVerifyingOTP(true);
       try {
-        const response = await postWithAuth(OTPVerificationUrl, payload);
-        if (!response.isError) {
-          setVerifyingOTP(false);
-          onSuccess(
-            {
-              base64Message: response.data.token,
-              privateKey: key?.privateKey,
-              reuseToken: response.data.reuseToken,
-              userNameValue: response.data.userName,
-            },
-            currentCardProvider,
-          );
-          navigation.goBack();
+        let payload;
+        let response;
+        setVerifyingOTP(true);
+        if (card.cardProvider === CardProviders.REAP_CARD) {
+          const key = await generateKeys();
+          payload = {
+            otp: +num,
+            stylesheetUrl: `https://public.cypherd.io/css/${card.physicalCardType === PhysicalCardType.METAL ? 'cardRevealMobileOnMetal.css' : 'cardRevealMobileOnCard.css'}`,
+            publicKey: key?.publicKeyBase64,
+            ...(verifyOTPPayload || {}),
+          };
+          response = await postWithAuth(OTPVerificationUrl, payload);
+          if (!response.isError) {
+            setVerifyingOTP(false);
+            onSuccess(
+              {
+                base64Message: response.data.token,
+                privateKey: key?.privateKey,
+                reuseToken: response.data.reuseToken,
+                userNameValue: response.data.userName,
+              },
+              card?.cardProvider,
+            );
+            navigation.goBack();
+          }
         } else {
+          const pem = Config.RA_PUB_KEY;
+          const data = await generateSessionId(pem);
+          payload = {
+            otp: num ? Number(num) : undefined,
+            stylesheetUrl:
+              'https://public.cypherd.io/css/reapDAppCardReveal.css',
+            sessionId: data?.sessionId,
+          };
+          response = await postWithAuth(OTPVerificationUrl, payload);
+          if (!response.isError) {
+            setVerifyingOTP(false);
+            onSuccess(
+              {
+                expirationMonth: response.data.expirationMonth,
+                expirationYear: response.data.expirationYear,
+                encryptedPan: response.data.encryptedPan,
+                encryptedCvc: response.data.encryptedCvc,
+                sessionId: data?.sessionId,
+                secretKey: data?.secretKey,
+                reuseToken: response.data.reuseToken,
+                userNameValue: response.data.userName,
+              },
+              card?.cardProvider,
+            );
+            navigation.goBack();
+          }
+        }
+
+        if (response.isError) {
           showModal('state', {
             type: 'error',
             title: t('VERIFICATION_FAILED'),

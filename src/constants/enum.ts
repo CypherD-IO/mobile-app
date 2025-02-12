@@ -99,6 +99,7 @@ export enum CardProviders {
   BRIDGE_CARD = 'bc',
   PAYCADDY = 'pc',
   REAP_CARD = 'rc',
+  RAIN_CARD = 'ra',
 }
 
 export enum GlobalContextType {
@@ -391,6 +392,7 @@ export enum CARD_LIMIT_TYPE {
 export enum ACCOUNT_STATUS {
   ACTIVE = 'active',
   LOCKED = 'locked',
+  INACTIVE = 'inactive',
 }
 
 export enum CypherPlanId {

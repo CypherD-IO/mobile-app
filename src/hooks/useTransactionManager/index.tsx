@@ -24,6 +24,7 @@ import {
   HdWalletContext,
   getTimeOutTime,
   getWeb3Endpoint,
+  limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
@@ -1412,14 +1413,16 @@ export default function useTransactionManager() {
 
       if (simulation.value.err) {
         throw new Error(
-          `Simulation failed: ${JSON.stringify(simulation.value.err)}`,
+          `Simulation failed from rpc after successfully simualting: ${parseErrorMessage(simulation.value.err)}`,
         );
       }
 
       const baseUnits = simulation.value.unitsConsumed ?? 200000;
       return Math.ceil(baseUnits * 1.2); // Add 20% buffer
     } catch (e: unknown) {
-      throw new Error(`Simulation failed: ${JSON.stringify(e)}`);
+      throw new Error(
+        `Simulation failed Unexpected error: ${parseErrorMessage(e)}`,
+      );
     }
   };
 
@@ -1661,6 +1664,12 @@ export default function useTransactionManager() {
           chain: 'solana',
           address: fromKeypair.publicKey.toBase58(),
           message: 'Transaction sent successfully',
+          other: {
+            amount: amountToSend,
+            toAddress,
+            contractAddress,
+            contractDecimals,
+          },
         });
         return { isError: false, hash: signature };
       }
@@ -1670,6 +1679,12 @@ export default function useTransactionManager() {
         message: JSON.stringify(result),
         screen: location.pathname,
         address: fromKeypair.publicKey.toBase58(),
+        other: {
+          amount: amountToSend,
+          toAddress,
+          contractAddress,
+          contractDecimals,
+        },
       });
       return { isError: true, error: result };
     } catch (e) {

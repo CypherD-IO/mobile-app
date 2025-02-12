@@ -298,6 +298,12 @@ export default function TokenStaking({
               type: AnalyticsType.SUCCESS,
               txnHash: resp?.hash,
               chain: tokenData?.chainDetails?.backendName ?? '',
+              other: {
+                action: 'press claim',
+                token: tokenData.symbol,
+                amount: rewardAmount,
+                balance: tokenData.balanceDecimal,
+              },
             });
             Toast.show({
               type: t('TOAST_TYPE_SUCCESS'),
@@ -341,6 +347,11 @@ export default function TokenStaking({
           chain: tokenData?.chainDetails?.backendName ?? '',
           message: parseErrorMessage(error),
           screen: route.name,
+          other: {
+            action: 'press claim',
+            token: tokenData.symbol,
+            balance: tokenData.balanceDecimal,
+          },
         });
         Sentry.captureException(error);
         Toast.show({
@@ -391,6 +402,15 @@ export default function TokenStaking({
               type: AnalyticsType.SUCCESS,
               txnHash: resp?.hash,
               chain: tokenData?.chainDetails?.backendName ?? '',
+              other: {
+                action: 'press restake',
+                token: tokenData.symbol,
+                amount: ethers.formatUnits(
+                  reward,
+                  tokenData.contractDecimals ?? 6,
+                ),
+                balance: tokenData.balanceDecimal,
+              },
             });
             Toast.show({
               type: t('TOAST_TYPE_SUCCESS'),
@@ -424,6 +444,11 @@ export default function TokenStaking({
           chain: tokenData?.chainDetails?.backendName ?? '',
           message: parseErrorMessage(error),
           screen: route.name,
+          other: {
+            action: 'press restake',
+            token: tokenData.symbol,
+            balance: tokenData.balanceDecimal,
+          },
         });
         Sentry.captureException(error);
         void analytics().logEvent(

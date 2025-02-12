@@ -85,7 +85,8 @@ export default function WithdrawConfirmation() {
       showModal('state', {
         type: 'error',
         title: t('WITHDRAW_ERROR'),
-        description: parseErrorMessage(error) ?? t('CONTACT_SUPPORT'),
+        description:
+          parseErrorMessage(error) ?? t('CONTACT_SUPPORT_MORE_DETAILS'),
         onSuccess: hideModal,
         onFailure: hideModal,
       });

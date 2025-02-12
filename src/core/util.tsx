@@ -45,7 +45,6 @@ import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { find, get, omit } from 'lodash';
-import Web3 from 'web3';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isJunoAddress } from '../containers/utilities/junoSendUtility';
@@ -86,6 +85,7 @@ import Decimal from 'decimal.js';
 import { DecimalHelper } from '../utils/decimalHelper';
 import { Common, Hardfork } from '@ethereumjs/common';
 import { TransactionFactory } from '@ethereumjs/tx';
+import crypto from 'crypto';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -875,6 +875,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
         contractData,
         quoteId,
         connectionType,
+        other,
       } = params as ErrorAnalytics;
       const data = {
         chain,
@@ -886,6 +887,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
           ...(contractData ? { contractData } : {}),
           ...(quoteId ? { quoteId } : {}),
           ...(connectionType ? { connectionType } : {}),
+          ...(other ? { other } : {}),
         },
       };
       void axios.post(ANALYTICS_ERROR_URL, data);
@@ -893,24 +895,86 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
     }
   }
 }
+
 export function parseErrorMessage(error: any): string {
+  // Case 1: Error instance
   if (error instanceof Error) {
     return error.message;
-  } else if (`${error}` !== '[object Object]') {
-    return `${error}`;
-  } else {
-    const errorString = JSON.stringify(error, (k, v) => {
-      if (typeof v === 'function' || typeof v === 'undefined') {
-        return 'Non-enumerable type';
-      }
-      return v;
-    });
-    if (errorString !== '{}') {
-      return errorString;
-    } else {
-      return 'Unknown Error';
+  }
+
+  if (error?.message) {
+    return error.message;
+  }
+
+  // Case 2: Axios/HTTP error response object
+  const errorObj = error;
+  if (errorObj?.response?.data) {
+    // Handle various API error response formats
+    const { data } = errorObj.response;
+
+    // Case 2a: { message: string }
+    if (typeof data.message === 'string') {
+      return data.message;
+    }
+
+    // Case 2b: { error: string }
+    if (typeof data.error === 'string') {
+      return data.error;
+    }
+
+    // Case 2c: { errors: string[] }
+    if (Array.isArray(data.errors)) {
+      return data.errors.join(', ');
+    }
+
+    // Case 2d: Nested error messages
+    if (data.error?.message) {
+      return data.error.message;
+    }
+
+    // Case 2e: If data itself is a string
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    // Case 2f: Try to stringify the data object
+    try {
+      return JSON.stringify(data);
+    } catch {
+      // If stringification fails, continue to other cases
     }
   }
+
+  // Case 3: Simple string conversion possible
+  if (`${error}` !== '[object Object]') {
+    return `${error}`;
+  }
+
+  // Case 4: Complex object that needs stringification
+  try {
+    const errorString = JSON.stringify(
+      error,
+      (key, value) => {
+        if (typeof value === 'function') {
+          return 'Function';
+        }
+        if (typeof value === 'undefined') {
+          return 'undefined';
+        }
+        return value;
+      },
+      2,
+    );
+
+    if (errorString !== '{}') {
+      return errorString;
+    }
+  } catch {
+    // If JSON.stringify fails, fall through to default
+  }
+
+  // Case 5: Default fallback
+  return 'Unknown Error';
 }
 
 export const isEnglish = (value: string) => {
@@ -1170,6 +1234,59 @@ export const generateKeys = async () => {
   } catch (error) {
     // error in genrating keys
   }
+};
+
+export const generateSessionId = async (pem: string, secret?: string) => {
+  if (!pem) throw new Error('pem is required');
+  if (secret && !/^[0-9A-Fa-f]+$/.test(secret)) {
+    throw new Error('secret must be a hex string');
+  }
+
+  const secretKey = secret ?? uuidv4().replace(/-/g, '');
+  const secretKeyBase64 = Buffer.from(secretKey, 'hex').toString('base64');
+  const secretKeyBase64Buffer = Buffer.from(secretKeyBase64, 'utf-8');
+  const secretKeyBase64BufferEncrypted = crypto.publicEncrypt(
+    {
+      key: pem,
+      padding: 4, // crypto.constants.RSA_PKCS1_OAEP_PADDING,
+    },
+    secretKeyBase64Buffer,
+  );
+
+  return {
+    secretKey,
+    sessionId: secretKeyBase64BufferEncrypted.toString('base64'),
+  };
+};
+
+export const decryptWithSecretKey = (
+  secretKey: string,
+  base64Secret: string,
+  base64Iv: string,
+) => {
+  if (!base64Secret) throw new Error('base64Secret is required');
+  if (!base64Iv) throw new Error('base64Iv is required');
+  if (!secretKey || !/^[0-9A-Fa-f]+$/.test(secretKey)) {
+    throw new Error('secretKey must be a hex string');
+  }
+
+  const secret = Buffer.from(base64Secret, 'base64');
+  const iv = Buffer.from(base64Iv, 'base64');
+  const secretKeyBuffer = Buffer.from(secretKey, 'hex');
+
+  const authTag = secret.slice(secret.length - 16); // Assuming the last 16 bytes are the auth tag
+  const encryptedData = secret.slice(0, secret.length - 16);
+
+  // Create decipher
+  const cryptoKey = crypto.createDecipheriv('aes-128-gcm', secretKeyBuffer, iv);
+  cryptoKey.setAuthTag(authTag); // Set the authentication tag
+
+  const decrypted = Buffer.concat([
+    cryptoKey.update(encryptedData),
+    cryptoKey.final(),
+  ]);
+
+  return decrypted.toString('utf-8');
 };
 
 export const referralLinkAnalytics = async (referralCode: string) => {

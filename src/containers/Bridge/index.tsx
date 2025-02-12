@@ -19,13 +19,10 @@ import {
   capitalize,
   debounce,
   endsWith,
-  floor,
   get,
   isEmpty,
-  isError,
   isNil,
   min,
-  round,
 } from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
@@ -34,20 +31,18 @@ import {
   ChainIdToBackendNameMapping,
   ChainNameToChainMapping,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
-  gasFeeReservation,
 } from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
 import {
   ActivityContext,
   formatAmount,
   getWeb3Endpoint,
+  hasSufficientBalanceAndGasFee,
   HdWalletContext,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
   setTimeOutNSec,
-  hasSufficientBalanceAndGasFee,
-  isEIP1599Chain,
 } from '../../core/util';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
@@ -87,8 +82,6 @@ import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   Chain,
   ChainBackendNames,
-  ChainConfigMapping,
-  chainIdNumberMapping,
   COSMOS_CHAINS,
 } from '../../constants/server';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
@@ -122,9 +115,9 @@ import { genId } from '../utilities/activityUtilities';
 import CyDSkeleton from '../../components/v2/skeleton';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
-import useCosmosSigner from '../../hooks/useCosmosSigner';
 import { Holding } from '../../core/portfolio';
-import { CyDIconsPack } from '../../customFonts/generator';
+import { Decimal } from 'decimal.js';
+import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -207,7 +200,7 @@ const Bridge: React.FC = () => {
   const activityId = useRef<string>('id');
   const [isSignableTransaction] = useIsSignable();
   const { getNativeToken } = usePortfolio();
-
+  const { refreshPortfolio } = usePortfolioRefresh();
   const slippage = 0.4;
   const ethereum = hdWallet.state.wallet.ethereum;
 
@@ -271,8 +264,6 @@ const Bridge: React.FC = () => {
   const routeParamsBackVisible = route?.params?.backVisible;
   const { getLocalPortfolio } = usePortfolio();
   const [signaturesRequired, setSignaturesRequired] = useState<number>(0);
-  const [abortController, setAbortController] =
-    useState<AbortController | null>(null);
   const [toggle, setToggle] = useState<boolean>(false);
   const {
     estimateGasForCosmosCustomContractRest,
@@ -280,7 +271,6 @@ const Bridge: React.FC = () => {
     estimateReserveFee,
     estimateReserveFeeForCustomContract,
   } = useGasService();
-  const { getCosmosSignerClient } = useCosmosSigner();
   const [nativeToken, setNativeToken] = useState<Holding | null>(null);
   const globalContext = useContext(GlobalContext);
   const [currentMaxAmount, setCurrentMaxAmount] = useState<string>('');
@@ -304,7 +294,7 @@ const Bridge: React.FC = () => {
   };
 
   const fetchChainData = async () => {
-    const chainResult = await getWithAuth('/v1/swap/chains?newData=true');
+    const chainResult = await getWithAuth('/v1/swap/chains');
     setChainData(chainResult.data);
     setSelectedFromChain(chainResult.data[0]);
     bridgeDispatch({
@@ -316,7 +306,7 @@ const Bridge: React.FC = () => {
   };
 
   const fetchTokenData = async () => {
-    const tokenResult = await getWithAuth('/v1/swap/tokens?newData=true');
+    const tokenResult = await getWithAuth('/v1/swap/tokens');
     setTokenData(tokenResult.data);
     bridgeDispatch({
       type: BridgeReducerAction.SUCCESS,
@@ -688,7 +678,26 @@ const Bridge: React.FC = () => {
             getWeb3Endpoint(selectedChainDetails, globalContext),
           );
 
-          // remove this gasFeeReservation once we have gas estimation for eip1599 chains
+          const requiredErc20Approvals = get(
+            evmContractData,
+            'required_erc20_approvals',
+            [],
+          );
+
+          // get Approval for EVM chains inorder to calculate the gas required
+          // approval check and approval granting is only required for non-native tokens
+          if (!isNativeToken) {
+            const approvalResult = await handleTokenApprovals({
+              web3,
+              selectedFromToken,
+              requiredErc20Approvals,
+              selectedChainDetails,
+              nativeToken,
+              hdWallet,
+              globalContext,
+            });
+          }
+
           if (
             CAN_ESTIMATE_L1_FEE_CHAINS.includes(
               selectedChainDetails.backendName,
@@ -781,7 +790,11 @@ const Bridge: React.FC = () => {
         setCryptoAmount(finalAmount);
       } else {
         setError(
-          `Insufficient balance for gas fee. Load more ${nativeToken?.name} in ${capitalize(selectedFromChain?.chainName)} chain to bridge`,
+          t('GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE', {
+            tokenName: nativeToken?.name,
+            chainName: selectedFromChain?.chainName,
+            gasFeeRequired: formatAmount(gasFeeRequired),
+          }),
         );
       }
     } catch (error) {
@@ -901,9 +914,6 @@ const Bridge: React.FC = () => {
 
     return () => {
       debouncedFetchQuote.cancel();
-      if (abortController) {
-        abortController.abort();
-      }
     };
   }, [
     cryptoAmount,
@@ -1250,6 +1260,7 @@ const Bridge: React.FC = () => {
       });
 
       void analytics().logEvent('BRIDGE_SUCCESS');
+      void refreshPortfolio();
     } catch (e: unknown) {
       const errMsg = parseErrorMessage(e);
       activityContext.dispatch({
@@ -1902,6 +1913,7 @@ const Bridge: React.FC = () => {
             chain: selectedFromChain.chainName,
           });
           void analytics().logEvent('SWAP_SUCCESS');
+          void refreshPortfolio();
         } else {
           activityContext.dispatch({
             type: ActivityReducerAction.PATCH,
@@ -2018,8 +2030,8 @@ const Bridge: React.FC = () => {
 
         // Get chain details and calculate gas fee
         const selectedChainDetails = get(
-          ChainConfigMapping,
-          get(ChainIdNameMapping, selectedFromChain?.chainId),
+          ChainNameToChainMapping,
+          get(ChainIdToBackendNameMapping, selectedFromChain?.chainId),
         );
 
         let gasFeeRequired;
@@ -2079,12 +2091,49 @@ const Bridge: React.FC = () => {
             const web3 = new Web3(
               getWeb3Endpoint(selectedChainDetails, globalContext),
             );
-            const gasDetails = await estimateGasForEvmCustomContract(
-              selectedChainDetails,
+
+            const requiredErc20Approvals = get(
               evmContractData,
-              web3,
+              'required_erc20_approvals',
+              [],
             );
-            gasFeeRequired = gasDetails?.gasFeeInCrypto;
+            // approval check and approval granting is only required for non-native tokens
+            if (!isNativeToken) {
+              const approvalResult = await handleTokenApprovals({
+                web3,
+                selectedFromToken,
+                requiredErc20Approvals,
+                selectedChainDetails,
+                nativeToken,
+                hdWallet,
+                globalContext,
+              });
+            }
+
+            if (
+              CAN_ESTIMATE_L1_FEE_CHAINS.includes(
+                selectedChainDetails.backendName,
+              ) &&
+              isNativeToken
+            ) {
+              gasFeeRequired = await estimateReserveFee({
+                tokenData: nativeToken,
+                fromAddress: hdWallet.state.wallet.ethereum.address,
+                sendAddress: hdWallet.state.wallet.ethereum.address,
+                web3,
+                web3Endpoint: getWeb3Endpoint(
+                  selectedChainDetails,
+                  globalContext,
+                ),
+              });
+            } else {
+              const gasDetails = await estimateGasForEvmCustomContract(
+                selectedChainDetails,
+                evmContractData,
+                web3,
+              );
+              gasFeeRequired = gasDetails?.gasFeeInCrypto;
+            }
           }
         }
 
@@ -2114,7 +2163,11 @@ const Bridge: React.FC = () => {
 
         if (!isBalanceAndGasFeeSufficient) {
           setError(
-            `Insufficient balance for gas fee. Load more ${nativeToken?.name} in ${capitalize(selectedFromChain?.chainName)} chain to bridge`,
+            t('GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE', {
+              tokenName: nativeToken?.name,
+              chainName: selectedFromChain?.chainName,
+              gasFeeRequired: formatAmount(gasFeeRequired),
+            }),
           );
           return;
         }
@@ -2137,6 +2190,129 @@ const Bridge: React.FC = () => {
     } finally {
       setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
     }
+  };
+
+  const handleTokenApprovals = async ({
+    web3,
+    selectedFromToken,
+    requiredErc20Approvals,
+    selectedChainDetails,
+    nativeToken,
+    hdWallet,
+    globalContext,
+  }: {
+    web3: Web3;
+    selectedFromToken: any;
+    requiredErc20Approvals: any[];
+    selectedChainDetails: any;
+    nativeToken: any;
+    hdWallet: any;
+    globalContext: any;
+  }) => {
+    for (const approval of requiredErc20Approvals) {
+      const allowanceResp = await checkAllowance({
+        web3,
+        fromToken: selectedFromToken,
+        routerAddress: get(approval, 'spender', ''),
+        amount: get(approval, 'amount', ''),
+        hdWallet,
+      });
+
+      if (!allowanceResp.isError) {
+        if (!allowanceResp.isAllowanceEnough) {
+          let gasFeeReserveRequired: number | Decimal = 0;
+          if (
+            CAN_ESTIMATE_L1_FEE_CHAINS.includes(
+              selectedChainDetails.backendName,
+            )
+          ) {
+            gasFeeReserveRequired = await estimateReserveFeeForCustomContract({
+              tokenData: nativeToken,
+              fromAddress: hdWallet.state.wallet.ethereum.address,
+              sendAddress: get(approval, 'spender', ''),
+              web3,
+              web3Endpoint: getWeb3Endpoint(
+                selectedChainDetails,
+                globalContext,
+              ),
+              gas: allowanceResp?.gasLimit,
+              gasPrice: allowanceResp?.gasFeeResponse?.gasPrice,
+              gasFeeInCrypto: DecimalHelper.removeDecimals(
+                DecimalHelper.multiply(
+                  allowanceResp?.gasLimit,
+                  allowanceResp?.gasFeeResponse?.gasPrice,
+                ),
+                9,
+              ).toString(),
+            });
+          }
+
+          const gasCostForApproval = DecimalHelper.removeDecimals(
+            DecimalHelper.multiply(allowanceResp?.gasLimit, [
+              allowanceResp?.gasFeeResponse?.gasPrice,
+              1.2,
+            ]),
+            9,
+          );
+
+          if (
+            DecimalHelper.isGreaterThan(
+              DecimalHelper.add(gasCostForApproval, gasFeeReserveRequired),
+              nativeToken?.balanceDecimal,
+            )
+          ) {
+            throw new Error(
+              `Insufficient ${nativeToken?.name} tokens in ${capitalize(selectedChainDetails.backendName)} chain for Bridge approval. Load more ${nativeToken?.name} tokens and try again.`,
+            );
+          }
+
+          setApproveParams({
+            tokens: allowanceResp.tokens,
+            gasLimit: allowanceResp.gasLimit,
+            gasFeeResponse: allowanceResp.gasFeeResponse,
+            contractAddress: get(approval, 'spender', ''),
+          });
+
+          const approveGranted = await showModalAndGetResponse(
+            setApproveModalVisible,
+          );
+
+          if (approveGranted) {
+            const approvalResp = await getApproval({
+              web3,
+              fromTokenContractAddress: get(approval, 'token_contract', ''),
+              hdWallet,
+              gasLimit: allowanceResp.gasLimit,
+              gasFeeResponse: allowanceResp.gasFeeResponse,
+              contractData: allowanceResp.contractData,
+              chainDetails: selectedChainDetails,
+              contractParams: {
+                toAddress: get(approval, 'spender', ''),
+                numberOfTokens: String(parseFloat(get(approval, 'amount', ''))),
+              },
+            });
+
+            if (approvalResp.isError) {
+              return {
+                isError: true,
+                error: 'Error approving allowance',
+              };
+            }
+          } else {
+            return {
+              isError: true,
+              error: 'Token approvel rejected by user',
+            };
+          }
+        }
+      } else {
+        return {
+          isError: true,
+          error: 'Error calculating allowance',
+        };
+      }
+    }
+    return { isError: false };
   };
 
   // Update the useEffect that was watching for input changes to just reset error state

@@ -14,6 +14,7 @@ export interface Card {
   network: string;
   status: string;
   type: string;
+  cardProvider: CardProviders;
   physicalCardType?: PhysicalCardType;
   designId?: string;
 }
@@ -94,6 +95,7 @@ export interface CardQuoteResponse {
   tokenSymbol: string;
   expiry: number;
   estimatedTime: number;
+  isInstSwapEnabled: boolean;
   version: 2;
 }
 

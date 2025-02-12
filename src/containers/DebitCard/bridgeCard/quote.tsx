@@ -8,7 +8,9 @@ import React, {
 import {
   CyDFastImage,
   CyDLottieView,
+  CyDMaterialDesignIcons,
   CyDText,
+  CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
@@ -21,10 +23,15 @@ import {
   parseErrorMessage,
 } from '../../../core/util';
 import Button from '../../../components/v2/button';
-import { AnalyticsType, ButtonType } from '../../../constants/enum';
+import {
+  AnalyticsType,
+  ButtonType,
+  CypherPlanId,
+} from '../../../constants/enum';
 import { get } from 'lodash';
 import {
   CHAIN_OSMOSIS,
+  ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
   ChainNames,
@@ -51,6 +58,11 @@ import { StyleSheet } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import { getConnectionType } from '../../../core/asyncStorage';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import { clsx } from 'clsx';
+import LinearGradient from 'react-native-linear-gradient';
+import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
+import { usePortfolioRefresh } from '../../../hooks/usePortfolioRefresh';
 
 export default function CardQuote({
   navigation,
@@ -70,7 +82,6 @@ export default function CardQuote({
   } = route.params;
   const {
     chain,
-    amountInCrypto,
     amountInFiat,
     symbol,
     gasFeeInCrypto,
@@ -79,25 +90,30 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
+  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const quoteExpiry = 60;
   const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
   const [isPayDisabled, setIsPayDisabled] = useState<boolean>(
     hasSufficientBalanceAndGasFee,
   );
-  const [maximumAmountPossible, setMaximumAmountPossible] =
-    useState<string>('');
-  const [hasInsufficientBalance, setHasInsufficientBalance] =
+  const [hasPriceFluctuationConsent, setHasPriceFluctuationConsent] =
     useState<boolean>(false);
   const hdWallet = useContext<any>(HdWalletContext);
   const ethereum = hdWallet.state.wallet.ethereum;
+  const solana = hdWallet.state.wallet.solana;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
   const { sendEvmToken, sendCosmosToken, interCosmosIBC, sendSolanaTokens } =
     useTransactionManager();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
-
+  const { refreshPortfolio } = usePortfolioRefresh();
+  const planInfo = globalState?.cardProfile?.planInfo;
+  const [
+    isPriceFluctuationLearnMoreModalVisible,
+    setIsPriceFluctuationLearnMoreModalVisible,
+  ] = useState<boolean>(false);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
   const juno = hdWallet.state.wallet.juno;
@@ -389,6 +405,7 @@ export default function CardQuote({
                     )
                   : get(ethereum, 'address', ''),
               });
+              void refreshPortfolio();
               void transferSentQuote(
                 tokenQuote.fromAddress,
                 tokenQuote.quoteId,
@@ -409,7 +426,10 @@ export default function CardQuote({
                       selectedToken?.chainDetails?.chainName,
                       '',
                     )
-                  : get(ethereum, 'address', ''),
+                  : ChainBackendNames.SOLANA ===
+                      selectedToken?.chainDetails?.chainName
+                    ? get(solana, 'address', '')
+                    : get(ethereum, 'address', ''),
                 ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
                 ...(connectionType ? { connectionType } : {}),
               });
@@ -489,6 +509,11 @@ export default function CardQuote({
       className={
         'flex-1 w-full bg-n20 pb-[30px] flex flex-col justify-between'
       }>
+      <PriceFluctuationLearnMoreModal
+        isModalVisible={isPriceFluctuationLearnMoreModalVisible}
+        setModalVisible={setIsPriceFluctuationLearnMoreModalVisible}
+        style={styles.priceFluctuationLearnMoreModal}
+      />
       <CyDView className={'mx-[22px]'}>
         <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-n40'>
           <CyDText className='text-[52px] text-mandarin font-bold'>
@@ -520,14 +545,7 @@ export default function CardQuote({
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
             <CyDText className={' font-medium text-[16px] '}>
-              {limitDecimalPlaces(
-                DecimalHelper.toString(
-                  DecimalHelper.divide(amountInFiat, selectedToken?.price),
-                ),
-                4,
-              ) +
-                ' ' +
-                symbol}
+              {limitDecimalPlaces(tokenQuote.tokensRequired, 4) + ' ' + symbol}
             </CyDText>
             <CyDText className={' font-medium text-[16px]'}>
               {'$' + limitDecimalPlaces(amountInFiat, 2)}
@@ -537,12 +555,44 @@ export default function CardQuote({
 
         <CyDView
           className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-bold text-[14px]'}>{t('LOAD_FEE')}</CyDText>
+          <CyDView className={'flex flex-col gap-[4px]'}>
+            {planInfo?.planId === CypherPlanId.PRO_PLAN && (
+              <CyDFastImage
+                className='h-[12px] w-[66px]'
+                source={AppImages.PREMIUM_TEXT_GRADIENT}
+              />
+            )}
+            <CyDText className={'font-bold text-[14px]'}>
+              {t('LOAD_FEE')}
+            </CyDText>
+          </CyDView>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={'font-medium text-[14px] '}>
-              {'$' + String(tokenQuote.fees.actualFee)}
-            </CyDText>
+            {planInfo?.planId === CypherPlanId.PRO_PLAN ? (
+              <CyDView className={'flex flex-row items-center gap-[6px]'}>
+                <CyDText
+                  className={
+                    'font-medium text-[12px] line-through text-[color:var(--color-base100)]'
+                  }>
+                  {'$' + String(tokenQuote.fees.actualFee)}
+                </CyDText>
+                <LinearGradient
+                  colors={['#FA9703', '#F7510A', '#F48F0F']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.linearGradient}>
+                  <CyDText className={'font-bold text-white'}>
+                    {Number(tokenQuote.fees.fee) === 0
+                      ? 'Free'
+                      : '$' + String(tokenQuote.fees.fee)}
+                  </CyDText>
+                </LinearGradient>
+              </CyDView>
+            ) : (
+              <CyDText className={'font-medium text-[14px] '}>
+                {'$' + String(tokenQuote.fees.fee)}
+              </CyDText>
+            )}
           </CyDView>
         </CyDView>
 
@@ -597,18 +647,53 @@ export default function CardQuote({
           </CyDView>
         )}
       </CyDView>
-      {hasInsufficientBalance ? (
-        <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-red20 mx-[12px]'>
-          <CyDFastImage
-            source={AppImages.CYPHER_WARNING_RED}
-            className='h-[20px] w-[20px] ml-[13px] mr-[13px]'
-            resizeMode='contain'
-          />
-          <CyDText className='text-red300 font-medium text-[14px] px-[10px] w-[80%]'>
-            {t<string>('INSUFFICIENT_BALANCE_CARD')}
-          </CyDText>
-        </CyDView>
-      ) : null}
+      {tokenQuote.isInstSwapEnabled && (
+        <>
+          <CyDView className='flex flex-col p-[12px] bg-n0 mx-4 rounded-[12px]'>
+            <CyDView className='flex flex-row items-start gap-[6px]'>
+              <CyDMaterialDesignIcons
+                name='alert'
+                size={18}
+                className='text-p150'
+              />
+              <CyDText className='text-[14px] font-medium flex-1'>
+                {t('MARKET_FLUCTUATION_WARNING')}{' '}
+                <CyDText
+                  className='text-[14px] underline text-blue-500 font-medium'
+                  onPress={() => {
+                    setIsPriceFluctuationLearnMoreModalVisible(true);
+                  }}>
+                  {t('LEARN_MORE')}
+                </CyDText>
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex flex-row mt-[10px] items-start gap-[6px]'>
+              <CyDTouchView
+                className={clsx(
+                  'h-[18px] w-[18px] border-base400 border-[1px] rounded-[4px]',
+                  {
+                    'bg-n0': hasPriceFluctuationConsent,
+                  },
+                )}
+                onPress={() => {
+                  setHasPriceFluctuationConsent(!hasPriceFluctuationConsent);
+                }}>
+                {hasPriceFluctuationConsent && (
+                  <CyDMaterialDesignIcons
+                    name='check'
+                    size={16}
+                    className='text-base400'
+                  />
+                )}
+              </CyDTouchView>
+
+              <CyDText className='text-[14px] font-medium'>
+                {t('I_ACKNOWLEDGE_MARKET_FLUCTUATION')}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+        </>
+      )}
       <CyDView
         className={'flex flex-row justify-between items-center px-[10px]'}>
         <Button
@@ -632,7 +717,10 @@ export default function CardQuote({
           }
           titleStyle='text-[14px]'
           loading={loading}
-          disabled={isPayDisabled}
+          disabled={
+            isPayDisabled ||
+            (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
+          }
           onPress={() => {
             if (!isPayDisabled) {
               void onLoadPress();
@@ -649,5 +737,16 @@ export default function CardQuote({
 const styles = StyleSheet.create({
   loaderStyle: {
     width: 20,
+  },
+  linearGradient: {
+    borderRadius: 24,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  priceFluctuationLearnMoreModal: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });

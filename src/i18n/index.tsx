@@ -1137,7 +1137,7 @@ const resources = {
       STANDARD: 'Standard',
       STANDARD_PLAN_SUB:
         "The essentials, perfected. Experience the industry's best with our free crypto card.",
-      APPLE_GOOGLE_PAY: 'Apple pay & Google Pay',
+      APPLE_GOOGLE_PAY: 'Apple Pay & Google Pay',
       FOREX_FEE: 'Forex Fee',
       CARD_LOAD_FEE_USDC: 'USDC Card loads',
       CARD_LOAD_FEE_NON_USDC: 'Non USDC Card loads',
@@ -1216,7 +1216,7 @@ const resources = {
       ADD_FUNDS: 'Add Funds',
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
       MIGRATION_ERROR: 'Migration Error.',
-      CONTACT_SUPPORT: 'Please contact support for more details.',
+      CONTACT_SUPPORT_MORE_DETAILS: 'Please contact support for more details.',
       MIGRATE_FUNDS: 'Migrate Funds',
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
@@ -1484,6 +1484,29 @@ const resources = {
       MCC_PADDING_MESSAGE:
         'An extra ${{amount}} was charged to ensure a margin for transaction settlement. The unused amount will be refunded within {{days}} after settlement.',
       REFUND_DAYS_RANGE: '4 to 5 Business days',
+      ACCOUNT_LOCKED: 'Account Locked',
+      ACCOUNT_LOCKED_DESCRIPTION:
+        'Your account has a negative balance. Add funds to restore card access.',
+      ACCOUNT_ACTION_NEEDED: 'Action Needed',
+      ACCOUNT_ACTION_NEEDED_DESCRIPTION:
+        'Your account has a negative balance. Add funds to prevent your account from being locked.',
+      ACCOUNT_INACTIVE_DESCRIPTION:
+        'Your account is inactive. Reach out to support for assistance.',
+      CONTACT_SUPPORT: 'Contact Support',
+      LOCKED: 'Locked',
+      MARKET_FLUCTUATION_WARNING:
+        'Market fluctuations may affect your final amount, i.e network fees and volatility impact the final amount.',
+      LEARN_MORE: 'Learn More',
+      I_ACKNOWLEDGE_MARKET_FLUCTUATION: '"I acknowledge the implication."',
+      PRICE_FLUCTUATION_LEARN_MORE_TITLE: 'Funding High impact token',
+      PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_1:
+        'When loading your card, the transaction interacts with the blockchain network. If you fund with a highly volatile token and its value drops during processing, network fees and fluctuations may reduce the final amount. Otherwise, if the token value remains stable or increases, you will receive the full requested amount.',
+      PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_2:
+        'If multiple transactions are in the queue, the system may take up to 20 minutes to process your request. During this time, the token’s value may fluctuate. When the transaction is executed, your card will be loaded based on the token’s price at that moment, which may differ from your initial input.',
+      GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE:
+        'Insufficient {{tokenName}} to pay for gas. Need atleast {{gasFeeRequired}} {{tokenName}} on {{chainName}} chain for this transaction',
+      MANUAL_ADD_APPLE_GOOGLE_PAY:
+        'You can manually add your card to Apple Pay & Google Pay to make contactless payments.',
     },
   },
 };

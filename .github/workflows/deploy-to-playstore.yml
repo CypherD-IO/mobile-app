@@ -54,6 +54,7 @@ jobs:
           echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
           echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
+          echo "RA_PUB_KEY=${{ secrets.RA_PUB_KEY }}" >> .env
 
       - name: Update version name and code (main)
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
