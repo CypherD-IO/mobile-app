@@ -34,6 +34,7 @@ import {
   encodeFunctionData,
   formatGwei,
   parseEther,
+  parseGwei,
   parseUnits,
   PublicClient,
   toHex,
@@ -246,6 +247,7 @@ export default function useGasService() {
     contractAddress,
     contractDecimals,
     contractData: contractDataUser,
+    isErc20 = true,
   }: EvmGasInterface): Promise<EvmGasEstimation> => {
     try {
       const numberOfTokens = parseUnits(amountToSend, contractDecimals);
@@ -290,8 +292,10 @@ export default function useGasService() {
             contractAddress?.toLowerCase() === OP_ETH_ADDRESS
               ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
               : contractAddress,
-          value: parseEther('0'),
-          data: contractData,
+          value: isErc20
+            ? parseEther('0')
+            : parseUnits(amountToSend, contractDecimals),
+          ...(isErc20 && { data: contractData }),
         }),
       );
       const code = await publicClient.getCode({
@@ -335,6 +339,7 @@ export default function useGasService() {
         };
       }
     } catch (error) {
+      console.log('🚀 ~ useGasService ~ error:', error);
       Sentry.captureException(error);
       return {
         isError: true,
@@ -1525,7 +1530,7 @@ export default function useGasService() {
         ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
         : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
 
-      // const gasPriceWei = web3.utils.toWei(finalGasPrice.toString(), 'gwei');
+      const gasPriceWei = parseGwei(gasPriceInGwei.toString());
 
       const totalWei = BigInt(
         DecimalHelper.multiply(gasLimit, gasPriceInGwei).toFixed(0),
@@ -1536,16 +1541,16 @@ export default function useGasService() {
       return {
         gasFeeInCrypto,
         gasLimit,
-        gasPrice: toHex(gasPriceInGwei),
-        fee: {
-          gas: gasLimit,
-          amount: [
-            {
-              denom: 'wei',
-              amount: totalWei.toString(),
-            },
-          ],
-        },
+        gasPrice: toHex(gasPriceWei),
+        // fee: {
+        //   gas: gasLimit,
+        //   amount: [
+        //     {
+        //       denom: 'wei',
+        //       amount: totalWei.toString(),
+        //     },
+        //   ],
+        // },
       };
     } catch (error) {
       logAnalytics({
@@ -1597,15 +1602,15 @@ export default function useGasService() {
   const estimateReserveFee = async ({
     tokenData,
     fromAddress,
-    sendAddress,
+    toAddress,
     publicClient,
-    web3Endpoint,
+    rpc,
   }: {
     tokenData: TokenMeta;
     fromAddress: Address;
-    sendAddress: Address;
+    toAddress: Address;
     publicClient: PublicClient;
-    web3Endpoint: string;
+    rpc: string;
   }) => {
     try {
       if (
@@ -1615,7 +1620,7 @@ export default function useGasService() {
           publicClient,
           chain: tokenData.chainDetails.backendName,
           fromAddress,
-          toAddress: sendAddress,
+          toAddress,
           amountToSend: tokenData.balanceDecimal,
           contractAddress: tokenData.contractAddress as Address,
           contractDecimals: tokenData.contractDecimals,
@@ -1630,7 +1635,7 @@ export default function useGasService() {
             {
               chainId: tokenData.chainDetails.chain_id,
               from: fromAddress,
-              to: sendAddress,
+              to: toAddress,
               value: toHex(
                 DecimalHelper.applyDecimals(
                   tokenData.balanceDecimal,
@@ -1645,7 +1650,7 @@ export default function useGasService() {
               data: '0x',
             },
             tokenData.chainDetails,
-            web3Endpoint,
+            rpc,
           );
 
           const gasTokenAmountRequiredForL1Fee = DecimalHelper.multiply(
@@ -1677,7 +1682,7 @@ export default function useGasService() {
             balance: tokenData.balanceDecimal,
           },
           walletAddress: fromAddress,
-          sendAddress,
+          toAddress,
         },
       });
       return gasFeeReservation[tokenData.chainDetails.backendName];
@@ -1687,16 +1692,16 @@ export default function useGasService() {
   const estimateReserveFeeForCustomContract = async ({
     tokenData,
     fromAddress,
-    sendAddress,
-    web3Endpoint,
+    toAddress,
+    rpc,
     gas,
     gasPrice,
     gasFeeInCrypto,
   }: {
     tokenData: TokenMeta;
     fromAddress: string;
-    sendAddress: string;
-    web3Endpoint: string;
+    toAddress: string;
+    rpc: string;
     gas: string;
     gasPrice: string;
     gasFeeInCrypto: string;
@@ -1709,19 +1714,19 @@ export default function useGasService() {
           {
             chainId: tokenData.chainDetails.chain_id,
             from: fromAddress,
-            to: sendAddress,
+            to: toAddress,
             value: toHex(
               DecimalHelper.applyDecimals(
                 tokenData.balanceDecimal,
-                18,
+                tokenData.contractDecimals,
               ).toNumber(),
             ),
             gas: toHex(Number(gas)),
             gasPrice: DecimalHelper.applyDecimals(gasPrice, 9).toHex(),
-            data: '0x',
+            data: '0x0',
           },
           tokenData.chainDetails,
-          web3Endpoint,
+          rpc,
         );
 
         const gasTokenAmountRequiredForL1Fee = DecimalHelper.multiply(
@@ -1752,7 +1757,7 @@ export default function useGasService() {
             balance: tokenData.balanceDecimal,
           },
           walletAddress: fromAddress,
-          sendAddress,
+          toAddress,
         },
       });
       return gasFeeReservation[tokenData.chainDetails.backendName];

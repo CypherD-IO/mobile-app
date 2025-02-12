@@ -9,10 +9,8 @@ import { AuthInfo } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import * as Sentry from '@sentry/react-native';
 import Axios from 'axios';
-import BigNumber from 'bignumber.js';
 import Long from 'long';
 import { useContext, useEffect, useRef } from 'react';
-import Web3 from 'web3';
 import { ConnectionTypes, Web3Origin } from '../../constants/enum';
 import { ALL_CHAINS, Chain, CHAIN_ETH } from '../../constants/server';
 import {
@@ -40,6 +38,7 @@ import axios from '../../core/Http';
 import { GasPriceDetail } from '../../core/types';
 import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  getViemPublicClient,
   getWeb3Endpoint,
   HdWalletContext,
 } from '../../core/util';
@@ -60,11 +59,28 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { useTranslation } from 'react-i18next';
 import { getConnectionType } from '../../core/asyncStorage';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
+import {
+  PublicClient,
+  formatUnits,
+  parseUnits,
+  hexToBigInt,
+  toHex,
+  fromHex,
+  hexToString,
+  createWalletClient,
+  http,
+  type EstimateGasParameters,
+  type SendTransactionParameters,
+  type GetFeeHistoryParameters,
+  type SignableMessage,
+} from 'viem';
+import useGasService from '../useGasService';
+import useTransactionManager from '../useTransactionManager';
+import { privateKeyToAccount } from 'viem/accounts';
 
-const bigNumberToHex = (val: string) =>
-  `0x${new BigNumber(val, 10).toString(16)}`;
+const bigNumberToHex = (val: string) => toHex(BigInt(val));
 
-const NumberToHex = (val: number) => `0x${val.toString(16)}`;
+const NumberToHex = (val: number) => toHex(BigInt(val));
 
 const invalidParams = () => ({
   error: {
@@ -106,8 +122,8 @@ export default function useWeb3(origin: Web3Origin) {
 
   const web3Callback = useWeb3Callbacks(origin);
 
-  const web3RPCEndpoint = useRef<Web3>(
-    new Web3(
+  const publicClient = useRef<PublicClient>(
+    getViemPublicClient(
       getWeb3Endpoint(hdWalletContext.state.selectedChain, globalContext),
     ),
   );
@@ -120,7 +136,7 @@ export default function useWeb3(origin: Web3Origin) {
   };
 
   useEffect(() => {
-    web3RPCEndpoint.current = new Web3(
+    publicClient.current = getViemPublicClient(
       getWeb3Endpoint(hdWalletContext.state.selectedChain, globalContext),
     );
   }, [hdWalletContext.state.selectedChain]);
@@ -474,13 +490,14 @@ export default function useWeb3(origin: Web3Origin) {
 
       const { params, method, id: payloadId } = payload;
       const selectedChain = chain ?? sChain;
-      web3RPCEndpoint.current = new Web3(
+      console.log('🚀 ~ useWeb3 ~ payload:', payload);
+      publicClient.current = getViemPublicClient(
         getWeb3Endpoint(selectedChain, globalContext),
       );
       switch (method) {
         case 'eth_cypherd_state': {
           const stateAaccounts = [address];
-          const stateChainId = await web3RPCEndpoint.current.eth.getChainId();
+          const stateChainId = await publicClient.current.getChainId();
           return {
             result: {
               accounts: stateAaccounts,
@@ -498,20 +515,17 @@ export default function useWeb3(origin: Web3Origin) {
 
           const gasPriceDetail: GasPriceDetail = await getGasPriceFor(
             selectedChain,
-            web3RPCEndpoint.current,
+            publicClient.current,
           );
           if (gasPriceFinal) {
             if (gasPriceFinal.startsWith('0x')) {
               gasPriceDetail.gasPrice = parseFloat(
-                Web3.utils.fromWei(
-                  Web3.utils.hexToNumberString(gasPriceFinal),
-                  'Gwei',
-                ),
+                formatUnits(hexToBigInt(gasPriceFinal), 9),
               );
             } else {
               // Finally this code path has a breaking test-case with KOGE when gasPrice is an integer
               gasPriceDetail.gasPrice = parseFloat(
-                Web3.utils.fromWei(gasPriceFinal, 'Gwei'),
+                formatUnits(BigInt(gasPriceFinal), 9),
               );
             }
           } else {
@@ -520,19 +534,19 @@ export default function useWeb3(origin: Web3Origin) {
             );
           }
 
-          const gasPriceInHex = Web3.utils.toHex(
-            Web3.utils.toBigInt(
-              Web3.utils.toWei(gasPriceDetail.gasPrice.toFixed(9), 'gwei'),
-            ),
+          const gasPriceInHex = toHex(
+            parseUnits(gasPriceDetail.gasPrice.toFixed(9), 9),
           );
 
           try {
-            const estimated = await web3RPCEndpoint.current.eth.estimateGas({
-              to,
-              data,
-              value,
-              from: address,
-            });
+            const estimateParams: EstimateGasParameters = {
+              account: address as `0x${string}`,
+              to: to as `0x${string}`,
+              data: data as `0x${string}`,
+              value: BigInt(parseInt(value || '0', 16)),
+            };
+            const estimated =
+              await publicClient.current.estimateGas(estimateParams);
             gas = gas ?? Number(estimated);
           } catch (e) {
             const estimatedGasException = {
@@ -575,47 +589,45 @@ export default function useWeb3(origin: Web3Origin) {
             amount: modalParams.totalETH,
           };
 
-          const txPayload = {
-            from,
-            to,
-            gasPrice: gasPriceInHex,
-            data,
-            value,
-            gas,
-          };
-
           const privateKey = await loadPrivateKeyFromKeyChain(
             false,
             hdWalletContext.state.pinValue,
           );
 
           if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-            const signedTx =
-              await web3RPCEndpoint.current.eth.accounts.signTransaction(
-                txPayload,
-                privateKey,
-              );
+            const account = privateKeyToAccount(privateKey as `0x${string}`);
+            const walletClient = createWalletClient({
+              account,
+              transport: http(getWeb3Endpoint(selectedChain, globalContext)),
+            });
 
             let receipt;
 
-            if (signedTx.rawTransaction && signedTx.transactionHash) {
-              activityData.transactionHash = signedTx.transactionHash;
-              try {
-                receipt =
-                  await web3RPCEndpoint.current.eth.sendSignedTransaction(
-                    signedTx.rawTransaction,
-                  );
-              } catch (e: any) {
-                Sentry.captureException(e);
-                activityData.status = ActivityStatus.FAILED;
-                return internalError(e);
-              }
+            try {
+              const txParams: SendTransactionParameters = {
+                account,
+                chain: null,
+                to: to as `0x${string}`,
+                value: BigInt(parseInt(value || '0', 16)),
+                data: data as `0x${string}`,
+                gas: BigInt(parseInt(gas || '0', 16)),
+                gasPrice: BigInt(parseInt(gasPriceInHex || '0', 16)),
+              };
+              const hash = await walletClient.sendTransaction(txParams);
+              activityData.transactionHash = hash;
+              receipt = await publicClient.current.waitForTransactionReceipt({
+                hash,
+              });
+            } catch (e: unknown) {
+              Sentry.captureException(e);
+              activityData.status = ActivityStatus.FAILED;
+              return internalError(e);
             }
 
             callbackData.activityData = activityData;
             callbackData.receipt = receipt?.transactionHash;
 
-            if (signedTx.rawTransaction && receipt) {
+            if (receipt && receipt.transactionHash) {
               return {
                 result: receipt.transactionHash,
                 callbackData,
@@ -633,20 +645,18 @@ export default function useWeb3(origin: Web3Origin) {
         }
         case Web3Method.GET_BALANCE: {
           const addressToFetch = params ? (params[0] ?? address) : address;
-          const balanceInHex = bigNumberToHex(
-            (
-              await web3RPCEndpoint.current.eth.getBalance(addressToFetch)
-            ).toString(),
-          );
+          const balance = await publicClient.current.getBalance({
+            address: addressToFetch as `0x${string}`,
+          });
+          const balanceInHex = bigNumberToHex(balance.toString());
           return {
             result: balanceInHex,
           };
         }
         case Web3Method.BLOCK_NUMBER: {
-          const blockNumber =
-            await web3RPCEndpoint.current.eth.getBlockNumber();
+          const blockNumber = await publicClient.current.getBlockNumber();
           return {
-            result: blockNumber,
+            result: toHex(blockNumber),
           };
         }
         case Web3Method.BLOCK_BY_NUMBER:
@@ -656,33 +666,32 @@ export default function useWeb3(origin: Web3Origin) {
           if (!blockNumber || !returnTransactionObject === undefined) {
             return invalidParams();
           }
-          const blockByNumber = await web3RPCEndpoint.current.eth.getBlock(
-            blockNumber,
-            returnTransactionObject,
-          );
+          const blockByNumber = await publicClient.current.getBlock({
+            blockNumber: fromHex(blockNumber, 'bigint'),
+            includeTransactions: returnTransactionObject,
+          });
 
           return {
             result: blockByNumber,
           };
         }
         case Web3Method.GAS_PRICE: {
-          const gasPrice = await web3RPCEndpoint.current.eth.getGasPrice();
-
+          const gasPrice = await publicClient.current.getGasPrice();
           return {
-            result: gasPrice,
+            result: toHex(gasPrice),
           };
         }
         case Web3Method.CHAINID:
         case Web3Method.CHAIN_ID: {
-          const chainId = await web3RPCEndpoint.current.eth.getChainId();
+          const chainId = await publicClient.current.getChainId();
           return {
             result: NumberToHex(Number(chainId)),
           };
         }
         case Web3Method.NET_VERSION: {
-          const chainId = await web3RPCEndpoint.current.eth.getChainId();
+          const chainId = await publicClient.current.getChainId();
           return {
-            result: chainId,
+            result: chainId.toString(),
           };
         }
         case Web3Method.GET_LOGS: {
@@ -690,8 +699,7 @@ export default function useWeb3(origin: Web3Origin) {
           if (!options) {
             return invalidParams();
           }
-          const logs = await web3RPCEndpoint.current.eth.getPastLogs(options);
-
+          const logs = await publicClient.current.getLogs(options);
           return {
             result: logs,
           };
@@ -702,11 +710,9 @@ export default function useWeb3(origin: Web3Origin) {
             return invalidParams();
           }
 
-          const callResult =
-            await web3RPCEndpoint.current.eth.call(transactionConfig);
-
+          const callResult = await publicClient.current.call(transactionConfig);
           return {
-            result: callResult,
+            result: callResult?.data,
           };
         }
         case Web3Method.GET_TRANSACTION_BY_HASH: {
@@ -714,8 +720,9 @@ export default function useWeb3(origin: Web3Origin) {
           if (!transactionHash) {
             return invalidParams();
           }
-          const rawTx =
-            await web3RPCEndpoint.current.eth.getTransaction(transactionHash);
+          const rawTx = await publicClient.current.getTransaction({
+            hash: transactionHash,
+          });
 
           return {
             result: rawTx,
@@ -726,8 +733,9 @@ export default function useWeb3(origin: Web3Origin) {
           if (!hash) {
             return invalidParams();
           }
-          const rawTx =
-            await web3RPCEndpoint.current.eth.getTransactionReceipt(hash);
+          const rawTx = await publicClient.current.getTransactionReceipt({
+            hash,
+          });
 
           if (rawTx) {
             return {
@@ -741,13 +749,12 @@ export default function useWeb3(origin: Web3Origin) {
           if (!addressToFetch) {
             return invalidParams();
           }
-          const txnCount =
-            await web3RPCEndpoint.current.eth.getTransactionCount(
-              addressToFetch,
-            );
+          const txnCount = await publicClient.current.getTransactionCount({
+            address: addressToFetch as `0x${string}`,
+          });
 
           return {
-            result: txnCount,
+            result: toHex(txnCount),
           };
         }
         case Web3Method.PERSONAL_SIGN:
@@ -764,7 +771,7 @@ export default function useWeb3(origin: Web3Origin) {
                 : personalSignData;
 
           try {
-            messageToSign = Web3.utils.hexToUtf8(messageToSign);
+            messageToSign = hexToString(messageToSign);
           } catch (e) {
             Sentry.captureMessage(
               'Nothing to bother. Just a mandatory catch block',
@@ -801,13 +808,18 @@ export default function useWeb3(origin: Web3Origin) {
           );
 
           if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-            const signature = web3RPCEndpoint.current.eth.accounts.sign(
-              messageToSign,
-              privateKey,
-            );
+            const account = privateKeyToAccount(privateKey as `0x${string}`);
+            const walletClient = createWalletClient({
+              account,
+              transport: http(getWeb3Endpoint(selectedChain, globalContext)),
+            });
+
+            const signature = await walletClient.signMessage({
+              message: messageToSign,
+            });
 
             return {
-              result: signature.signature,
+              result: signature,
             };
           }
           break;
@@ -817,11 +829,10 @@ export default function useWeb3(origin: Web3Origin) {
           if (!transactionConfig) {
             return invalidParams();
           }
-          const gas =
-            await web3RPCEndpoint.current.eth.estimateGas(transactionConfig);
+          const gas = await publicClient.current.estimateGas(transactionConfig);
 
           return {
-            result: Number(gas),
+            result: toHex(gas),
           };
         }
         case Web3Method.FEE_HISTORY: {
@@ -829,11 +840,12 @@ export default function useWeb3(origin: Web3Origin) {
           if (!blockCount || !lastBlock || !rewardPercentile) {
             return invalidParams();
           }
-          const feeHistory = await web3RPCEndpoint.current.eth.getFeeHistory(
-            blockCount,
-            lastBlock,
-            rewardPercentile,
-          );
+          const feeHistoryParams: GetFeeHistoryParameters = {
+            blockCount: Number(blockCount),
+            rewardPercentiles: rewardPercentile,
+          };
+          const feeHistory =
+            await publicClient.current.getFeeHistory(feeHistoryParams);
 
           return {
             result: feeHistory,
@@ -954,10 +966,11 @@ export default function useWeb3(origin: Web3Origin) {
         }
         case Web3Method.PERSONAL_ECRECOVER: {
           const [msg, signature] = params;
-          const recoverAddress = web3RPCEndpoint.current.eth.accounts.recover(
-            msg,
-            signature,
-          );
+          const recoverAddress = await publicClient.current.verifyMessage({
+            address: address as `0x${string}`,
+            message: msg as SignableMessage,
+            signature: signature as `0x${string}`,
+          });
           return {
             result: recoverAddress,
           };

@@ -1,4 +1,3 @@
-// import Web3 from 'web3';
 import { ChainBackendNames } from '../constants/server';
 import { PublicClient, Address } from 'viem';
 
@@ -11,4 +10,5 @@ export interface EvmGasInterface {
   contractAddress: Address;
   contractDecimals: number;
   contractData?: any;
+  isErc20?: boolean;
 }

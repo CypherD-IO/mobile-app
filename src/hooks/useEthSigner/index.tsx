@@ -230,7 +230,7 @@ export default function useEthSigner() {
     sendChain,
     transactionToBeSigned,
     tokens,
-  }: EthSingerParams) => {
+  }: EthSingerParams): Promise<`0x${string}`> => {
     const connectionType = await getConnectionType();
 
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
@@ -490,7 +490,7 @@ export default function useEthSigner() {
   }: {
     rpc: string;
     transactionToBeSigned: EthTransactionPayload;
-  }) => {
+  }): Promise<`0x${string}`> => {
     const client = createWalletClient({
       transport: http(rpc),
     });

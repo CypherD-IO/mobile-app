@@ -120,8 +120,10 @@ import { Decimal } from 'decimal.js';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import {
   encodeFunctionData,
+  formatEther,
   formatUnits,
   parseEther,
+  parseGwei,
   parseUnits,
   PublicClient,
   toHex,
@@ -199,7 +201,6 @@ const Bridge: React.FC = () => {
     skipApiApproveAndSignEvm,
     skipApiSignAndBroadcast,
     skipApiSignAndApproveSolana,
-    checkAllowance,
   } = useSkipApiBridge();
   const {
     executeApprovalRevokeContract,
@@ -259,8 +260,6 @@ const Bridge: React.FC = () => {
   >(null);
   const [approveParams, setApproveParams] = useState<{
     tokens: string;
-    gasFeeResponse: GasPriceDetail;
-    gasLimit: number;
     contractAddress: string;
   } | null>(null);
   const [swapParams, setSwapParams] = useState<{
@@ -633,8 +632,10 @@ const Bridge: React.FC = () => {
           const gasFeeRequiredToReserve =
             await estimateReserveFeeForCustomContract({
               tokenData: nativeToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: hdWallet.state.wallet.ethereum.address,
+              fromAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
+              sendAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
               publicClient,
               web3Endpoint: getWeb3Endpoint(
                 selectedChainDetails,
@@ -724,8 +725,10 @@ const Bridge: React.FC = () => {
           ) {
             gasFeeRequired = await estimateReserveFee({
               tokenData: nativeToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: hdWallet.state.wallet.ethereum.address,
+              fromAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
+              toAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
               publicClient,
               web3Endpoint: getWeb3Endpoint(
                 selectedChainDetails,
@@ -1332,7 +1335,7 @@ const Bridge: React.FC = () => {
               publicClient,
               evmTx,
               selectedFromToken,
-              hdWallet,
+              walletAddress: ethereum.address as `0x${string}`,
               setApproveModalVisible,
               showModalAndGetResponse,
               setApproveParams,
@@ -1756,22 +1759,8 @@ const Bridge: React.FC = () => {
                   args: [routerAddress as `0x${string}`, allowanceResp.tokens],
                 });
 
-                const gasFeeResponse = await getGasPrice(
-                  fromChainDetails?.backendName,
-                  publicClient,
-                );
-
-                const gasLimit = await publicClient.estimateGas({
-                  account: (ethereum.address ?? '') as `0x${string}`,
-                  to: selectedFromToken.tokenContract as `0x${string}`,
-                  value: parseEther('0'),
-                  data: contractData,
-                });
-
                 setApproveParams({
                   tokens: allowanceResp.tokens.toString(),
-                  gasLimit: Number(gasLimit),
-                  gasFeeResponse,
                   contractAddress: routerAddress,
                 });
 
@@ -1815,23 +1804,19 @@ const Bridge: React.FC = () => {
             finalGasPrice = gasFeeResponse.gasPrice;
 
             if (finalGasPrice) {
-              gasFeeETH = parseEther(
-                parseUnits(
-                  limitDecimalPlaces(
-                    DecimalHelper.multiply(finalGasPrice, gasLimit),
-                    9,
-                  ),
-                  9,
-                ).toString(9),
+              const gasPriceInWei = parseGwei(finalGasPrice.toString());
+              gasFeeETH = DecimalHelper.multiply(
+                formatEther(gasPriceInWei),
+                gasLimit,
               ).toString();
             }
 
             if (gasFeeResponse.tokenPrice > 0) {
               const ethPrice = gasFeeResponse.tokenPrice;
-              gasFeeDollar = limitDecimalPlaces(
-                DecimalHelper.multiply(gasFeeETH, ethPrice),
-                2,
-              );
+              gasFeeDollar = DecimalHelper.multiply(
+                gasFeeETH,
+                ethPrice,
+              ).toString();
             }
           }
 
@@ -1905,7 +1890,6 @@ const Bridge: React.FC = () => {
         };
         activityId.current = id;
 
-        const gasFeeResponse = _quoteData?.gasInfo;
         setSignModalVisible(false);
 
         activityContext.dispatch({
@@ -1913,14 +1897,8 @@ const Bridge: React.FC = () => {
           value: activityData,
         });
 
-        const response: any = await swapTokens({
-          rpc: getWeb3Endpoint(fromChainDetails, globalStateContext),
-          fromToken: selectedFromToken,
-          contractData: _quoteData?.data,
-          routerAddress: _quoteData?.router,
-          hdWallet,
-          gasLimit: get(quoteData, ['gasEstimate']),
-          gasFeeResponse,
+        const response = await swapTokens({
+          quoteData: _quoteData,
           chainDetails: fromChainDetails,
         });
 
@@ -2150,13 +2128,12 @@ const Bridge: React.FC = () => {
             ) {
               gasFeeRequired = await estimateReserveFee({
                 tokenData: nativeToken,
-                fromAddress: hdWallet.state.wallet.ethereum.address,
-                sendAddress: hdWallet.state.wallet.ethereum.address,
+                fromAddress: hdWallet.state.wallet.ethereum
+                  .address as `0x${string}`,
+                toAddress: hdWallet.state.wallet.ethereum
+                  .address as `0x${string}`,
                 publicClient,
-                web3Endpoint: getWeb3Endpoint(
-                  selectedChainDetails,
-                  globalContext,
-                ),
+                rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               });
             } else {
               const gasDetails = await estimateGasForEvmCustomContract(
@@ -2267,7 +2244,7 @@ const Bridge: React.FC = () => {
 
           const gasLimit = await publicClient.estimateGas({
             account: ethereum.address as `0x${string}`,
-            to: selectedFromToken.tokenContract as `0x${string}`,
+            to: approval.token_contract as `0x${string}`,
             value: parseEther('0'),
             data: contractData,
           });
@@ -2281,11 +2258,8 @@ const Bridge: React.FC = () => {
             gasFeeReserveRequired = await estimateReserveFeeForCustomContract({
               tokenData: nativeToken,
               fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: get(approval, 'spender', ''),
-              web3Endpoint: getWeb3Endpoint(
-                selectedChainDetails,
-                globalContext,
-              ),
+              toAddress: get(approval, 'spender', ''),
+              rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               gas: toHex(gasLimit),
               gasPrice: gasFeeResponse?.gasPrice,
               gasFeeInCrypto: DecimalHelper.removeDecimals(
@@ -2313,8 +2287,6 @@ const Bridge: React.FC = () => {
 
           setApproveParams({
             tokens: allowanceResp.tokens.toString(),
-            gasLimit: Number(gasLimit),
-            gasFeeResponse,
             contractAddress: get(approval, 'spender', ''),
           });
 
@@ -2414,14 +2386,14 @@ const Bridge: React.FC = () => {
                     <CyDText className=' pt-[10px] ml-[15px] font-medium text-left text-[12px]'>
                       {`You are granting permission to `}
                     </CyDText>
-                    <CyDText className=' ml-[15px] font-semibold text-left text-[14px]'>
+                    <CyDText className=' ml-[15px] font-bold text-left text-[12px]'>
                       {`${approveParams.contractAddress} `}
                     </CyDText>
                     <CyDText className=' pt-[10px] ml-[15px] font-medium text-left text-[12px]'>
                       {`to spend up to`}
                     </CyDText>
                     <CyDText className=' ml-[15px] font-bold text-left text-[14px]'>
-                      {`${ethers.formatUnits(approveParams.tokens, selectedFromToken?.decimals)} ${selectedFromChain?.chainName ?? ''} ${selectedFromToken?.symbol ?? ''} tokens`}
+                      {`${ethers.formatUnits(approveParams.tokens, selectedFromToken?.decimals)} ${selectedFromToken?.name ?? ''} tokens on ${selectedFromChain?.chainName ?? ''} chain`}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2821,6 +2793,7 @@ const Bridge: React.FC = () => {
                     </CyDText>
                   </CyDView>
                 </CyDView>
+
                 <CyDView className='flex flex-row justify-between items-center mt-[20px] mr-[10px]'>
                   <CyDView className='flex flex-row'>
                     <CyDText className=' py-[10px] w-[60%] font-semibold'>

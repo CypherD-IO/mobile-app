@@ -584,7 +584,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             const gasReservedForNativeToken = await estimateReserveFee({
               tokenData: selectedToken,
               fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: hdWallet.state.wallet.ethereum.address,
+              toAddress: hdWallet.state.wallet.ethereum.address,
               estimateReserveFee,
               web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
             });

@@ -1,4 +1,3 @@
-// import Web3 from 'web3';
 import { ChainBackendNames } from '../constants/server';
 import { Address, PublicClient } from 'viem';
 

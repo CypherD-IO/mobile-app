@@ -578,7 +578,6 @@ export default function Browser({ route, navigation }: any) {
         <CyDView className='flex flex-row items-center'>
           {!onFocus && (
             <CyDTouchView
-              className='ml-3'
               onPress={() => {
                 handleBackButton();
               }}>
@@ -611,7 +610,7 @@ export default function Browser({ route, navigation }: any) {
               }}>
               <CyDMaterialDesignIcons
                 name='refresh'
-                size={24}
+                size={20}
                 className='text-base400'
               />
             </CyDTouchView>
@@ -619,23 +618,26 @@ export default function Browser({ route, navigation }: any) {
         </CyDView>
 
         <CyDView
-          className={clsx('h-[30px] flex flex-row items-center', {
-            'w-[80%]': onFocus,
-            'w-[63%]': !onFocus,
-          })}>
+          className={clsx(
+            'h-[30px] flex flex-row items-center bg-n20 px-2 rounded-lg',
+            {
+              'w-[80%]': onFocus,
+              'w-[63%]': !onFocus,
+            },
+          )}>
           {!onFocus &&
             (inbuildPage === 'webview' || inbuildPage === 'webviewError') && (
               <CyDView className='ml-[2px]' sentry-label='browser-search-erase'>
                 {isSslSecure && (
                   <CyDMaterialDesignIcons
                     name='lock'
-                    size={20}
-                    className='text-base400 ml-[5px]'
+                    size={14}
+                    className='text-base400'
                   />
                 )}
                 {!isSslSecure && (
                   <CyDFastImage
-                    className='ml-[5px] h-4 w-4'
+                    className='h-4 w-4'
                     resizeMode='contain'
                     source={AppImages.BROWSER_SSL}
                   />

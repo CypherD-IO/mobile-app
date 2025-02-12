@@ -47,7 +47,6 @@ import {
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
-import Web3 from 'web3';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export default function EnterAmount(props: any) {
@@ -244,17 +243,18 @@ export default function EnterAmount(props: any) {
         isNativeToken(tokenData) &&
         CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
       ) {
+        const publicClient = getViemPublicClient(
+          getWeb3Endpoint(tokenData.chainDetails, globalContext),
+        );
         gasReservedForNativeToken = await estimateReserveFee({
           tokenData,
-          fromAddress: hdWallet.state.wallet.ethereum.address,
-          sendAddress:
+          fromAddress: hdWallet.state.wallet.ethereum.address as `0x${string}`,
+          toAddress:
             sendAddress !== ''
               ? sendAddress
               : hdWallet.state.wallet.ethereum.address,
-          web3: new Web3(
-            getWeb3Endpoint(tokenData.chainDetails, globalContext),
-          ),
-          web3Endpoint: getWeb3Endpoint(tokenData.chainDetails, globalContext),
+          publicClient,
+          rpc: getWeb3Endpoint(tokenData.chainDetails, globalContext),
         });
       } else if (isNativeToken(tokenData)) {
         const gasFeeDetails = await getGasFee(

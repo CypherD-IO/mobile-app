@@ -343,7 +343,7 @@ export default function FirstLoadCard() {
               tokenData: selectedToken,
               fromAddress: hdWallet.state.wallet.ethereum
                 .address as `0x${string}`,
-              sendAddress: hdWallet.state.wallet.ethereum
+              toAddress: hdWallet.state.wallet.ethereum
                 .address as `0x${string}`,
               publicClient,
               web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),

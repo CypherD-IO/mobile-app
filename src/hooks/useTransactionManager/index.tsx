@@ -31,6 +31,7 @@ import {
   encodeFunctionData,
   getContract,
   parseEther,
+  parseGwei,
   parseUnits,
   PublicClient,
 } from 'viem';
@@ -96,7 +97,6 @@ export default function useTransactionManager() {
     estiamteGasForDelgate,
     estimateGasForUndelegate,
     estimateGasForRedelgate,
-    getGasPrice,
   } = useGasService();
   const { signEthTransaction, signApprovalEthereum } = useEthSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
@@ -137,6 +137,7 @@ export default function useTransactionManager() {
     contractAddress,
     contractDecimals,
     contractData,
+    isErc20 = true,
   }: {
     publicClient: PublicClient;
     chain: Chain;
@@ -145,6 +146,7 @@ export default function useTransactionManager() {
     contractAddress: `0x${string}`;
     contractDecimals: number;
     contractData?: `0x${string}`;
+    isErc20?: boolean;
   }): Promise<TransactionResponse> => {
     try {
       const ethereum = hdWalletContext.state.wallet.ethereum;
@@ -159,53 +161,61 @@ export default function useTransactionManager() {
         contractAddress,
         contractDecimals,
         contractData,
+        isErc20,
       });
-      let txnPayload;
 
       if (gasEstimateResponse.isError) {
         return { isError: true, error: gasEstimateResponse.error };
-      } else if (gasEstimateResponse.isEIP1599Supported) {
-        txnPayload = {
-          from: ethereum.address,
-          to: toAddress,
-          gas: BigInt(gasEstimateResponse.gasLimit),
-          value: parseUnits(amountToSend, contractDecimals),
-          ...(contractData && { data: contractData }),
-          maxPriorityFeePerGas: BigInt(
-            DecimalHelper.applyDecimals(
-              gasEstimateResponse.priorityFee,
-              9,
-            ).toString(),
-          ),
-          maxFeePerGas: BigInt(
-            DecimalHelper.applyDecimals(
-              gasEstimateResponse.maxFee,
-              9,
-            ).toString(),
-          ),
-        };
-      } else {
-        txnPayload = {
-          from: ethereum.address,
-          to: toAddress,
-          gas: BigInt(gasEstimateResponse.gasLimit),
-          value: parseUnits(amountToSend, contractDecimals),
-          ...(contractData && { data: contractData }),
-          gasPrice: BigInt(
-            DecimalHelper.applyDecimals(
-              gasEstimateResponse.gasPrice,
-              9,
-            ).toString(),
-          ),
-        };
       }
+
+      const txnPayload = {
+        from: ethereum.address,
+        to: toAddress,
+        gas: BigInt(gasEstimateResponse.gasLimit),
+        value: isErc20
+          ? parseEther('0')
+          : parseUnits(amountToSend, contractDecimals),
+        ...(contractData && { data: contractData }),
+        ...(gasEstimateResponse.isEIP1599Supported
+          ? {
+              maxPriorityFeePerGas: BigInt(
+                DecimalHelper.applyDecimals(
+                  gasEstimateResponse.priorityFee,
+                  9,
+                ).toString(),
+              ),
+              maxFeePerGas: BigInt(
+                DecimalHelper.applyDecimals(
+                  gasEstimateResponse.maxFee,
+                  9,
+                ).toString(),
+              ),
+            }
+          : {
+              gasPrice: BigInt(
+                DecimalHelper.applyDecimals(
+                  gasEstimateResponse.gasPrice,
+                  9,
+                ).toString(),
+              ),
+            }),
+      };
 
       const hash = await signEthTransaction({
         rpc: getWeb3Endpoint(chain, globalContext),
         sendChain: chain.backendName,
         transactionToBeSigned: txnPayload,
       });
-      return { hash, isError: false };
+
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      });
+
+      return {
+        hash: receipt.transactionHash,
+        isError: false,
+        gasFeeInCrypto: gasEstimateResponse.gasFeeInCrypto,
+      };
     } catch (e) {
       return { isError: true, error: e };
     }
@@ -230,12 +240,13 @@ export default function useTransactionManager() {
       toAddress,
       contractAddress,
       contractDecimals,
+      isErc20: false,
     });
+
     if (!resp.isError) {
       return resp.hash;
-    } else {
-      throw resp.error;
     }
+    throw resp.error;
   };
 
   const sendERC20Token = async ({
@@ -291,9 +302,8 @@ export default function useTransactionManager() {
 
     if (!resp.isError) {
       return resp.hash;
-    } else {
-      throw resp.error;
     }
+    throw resp.error;
   };
 
   const sendEvmToken = async ({
@@ -914,39 +924,50 @@ export default function useTransactionManager() {
     tokens: bigint;
   }): Promise<TransactionResponse> => {
     try {
-      const { priorityFee, isEIP1599Supported, maxFee, gasPrice } =
-        await getGasPrice(chainDetails.backendName, publicClient);
-
-      const gasLimit = await publicClient.estimateGas({
-        account: walletAddress,
-        to: tokenContractAddress,
-        value: parseEther('0'),
-        data: contractData,
+      const gasEstimateResponse = await estimateGasForEvm({
+        publicClient,
+        chain: chainDetails.backendName,
+        fromAddress: walletAddress,
+        toAddress: tokenContractAddress,
+        amountToSend: '0',
+        contractAddress: tokenContractAddress,
+        contractDecimals: 18,
+        contractData,
       });
-      let transactionToBeSigned;
 
-      if (!isEIP1599Supported) {
-        transactionToBeSigned = {
-          to: tokenContractAddress,
-          gas: BigInt(gasLimit),
-          ...(contractData && { data: contractData }),
-          value: parseEther('0'),
-          gasPrice: BigInt(DecimalHelper.applyDecimals(gasPrice, 9).toString()),
-        };
-      } else {
-        transactionToBeSigned = {
-          to: tokenContractAddress,
-          gas: BigInt(gasLimit),
-          ...(contractData && { data: contractData }),
-          value: parseEther('0'),
-          maxPriorityFeePerGas: BigInt(
-            DecimalHelper.applyDecimals(priorityFee, 9).toString(),
-          ),
-          maxFeePerGas: BigInt(
-            DecimalHelper.applyDecimals(maxFee, 9).toString(),
-          ),
-        };
+      if (gasEstimateResponse.isError) {
+        return { isError: true, error: gasEstimateResponse.error };
       }
+
+      const transactionToBeSigned = {
+        to: tokenContractAddress,
+        gas: BigInt(gasEstimateResponse.gasLimit),
+        value: parseEther('0'),
+        ...(contractData && { data: contractData }),
+        ...(gasEstimateResponse.isEIP1599Supported
+          ? {
+              maxPriorityFeePerGas: BigInt(
+                DecimalHelper.applyDecimals(
+                  gasEstimateResponse.priorityFee,
+                  9,
+                ).toString(),
+              ),
+              maxFeePerGas: BigInt(
+                DecimalHelper.applyDecimals(
+                  gasEstimateResponse.maxFee,
+                  9,
+                ).toString(),
+              ),
+            }
+          : {
+              gasPrice: BigInt(
+                DecimalHelper.applyDecimals(
+                  gasEstimateResponse.gasPrice,
+                  9,
+                ).toString(),
+              ),
+            }),
+      };
 
       const hash = await signApprovalEthereum({
         rpc: getWeb3Endpoint(chainDetails, globalContext),
@@ -955,57 +976,15 @@ export default function useTransactionManager() {
         tokens,
       });
 
-      if (hash) {
-        return { isError: false, hash };
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      });
+
+      if (receipt) {
+        return { isError: false, hash: receipt.transactionHash };
       }
       return { isError: true, error: 'No hash returned' };
     } catch (e: unknown) {
-      return { isError: true, error: e };
-    }
-  };
-
-  const checkIfAllowanceIsEnough = async ({
-    publicClient,
-    tokenContractAddress,
-    routerAddress,
-    amount,
-  }: {
-    publicClient: PublicClient;
-    tokenContractAddress: Address;
-    routerAddress: Address;
-    amount: string;
-  }): Promise<CheckAllowanceResponse> => {
-    try {
-      const { ethereum } = get(hdWallet, ['state', 'wallet']);
-
-      const contract = getContract({
-        address: tokenContractAddress,
-        abi: allowanceApprovalContractABI,
-        client: { public: publicClient },
-      });
-
-      const allowance = await contract.read.allowance([
-        ethereum.address as Address,
-        routerAddress,
-      ]);
-
-      const tokenAmount = DecimalHelper.fromString(amount).ceil();
-
-      if (DecimalHelper.isGreaterThan(tokenAmount, allowance.toString())) {
-        const tokens = DecimalHelper.subtract(
-          tokenAmount,
-          allowance.toString(),
-        );
-
-        return {
-          isError: false,
-          hasEnoughAllowance: false,
-          tokens: BigInt(tokens.toFixed(0)),
-        };
-      } else {
-        return { isError: false, hasEnoughAllowance: true };
-      }
-    } catch (e) {
       return { isError: true, error: e };
     }
   };
@@ -1312,66 +1291,46 @@ export default function useTransactionManager() {
   }
 
   const swapTokens = async ({
-    rpc,
-    fromToken,
-    routerAddress,
-    contractData,
-    gasLimit,
-    gasFeeResponse,
+    quoteData,
     chainDetails,
-  }: SwapMetaData) => {
+  }: SwapMetaData): Promise<TransactionResponse> => {
     try {
-      // const chainConfig = get(
-      //   ChainConfigMapping,
-      //   String(get(ChainNameMapping, chain)),
-      // );
+      const ethereum = hdWalletContext.state.wallet.ethereum;
+      const fromAddress = ethereum.address;
 
-      const publicClient = getViemPublicClient(rpc);
-      const isNative = fromToken?.isNative;
+      const txnPayload = {
+        from: fromAddress,
+        to: quoteData?.data?.to as `0x${string}`,
+        gas: BigInt(quoteData?.data?.gas),
+        value: BigInt(quoteData?.data?.value),
+        data: quoteData?.data?.data,
+        ...(quoteData?.gasInfo?.isEIP1599Supported
+          ? {
+              maxPriorityFeePerGas: parseGwei(
+                String(quoteData?.gasInfo?.priorityFee),
+              ),
+              maxFeePerGas: parseGwei(String(quoteData?.gasInfo?.maxFee)),
+            }
+          : {
+              gasPrice: BigInt(quoteData?.gasInfo?.gasPrice ?? 0),
+            }),
+      };
 
-      const resp = await executeTransferContract({
-        publicClient,
-        chain: chainDetails,
-        amountToSend: isNative ? contractData?.value : '0x0',
-        toAddress: routerAddress as `0x${string}`,
-        contractAddress: fromToken?.tokenContract as Address,
-        contractDecimals: fromToken?.decimals ?? 18,
-        contractData: contractData as `0x${string}`,
+      const hash = await signEthTransaction({
+        rpc: getWeb3Endpoint(chainDetails, globalContext),
+        sendChain: chainDetails.backendName,
+        transactionToBeSigned: txnPayload,
       });
 
-      // const tx = {
-      //   from: hdWallet.state.wallet.ethereum.address,
-      //   chainId: fromToken?.chainId,
-      //   value: isNative ? contractData?.value : '0x0',
-      //   to: routerAddress,
-      //   data: contractData.data,
-      //   gas: gasLimit,
-      //   gasPrice: BigInt(
-      //     DecimalHelper.applyDecimals(
-      //       gasFeeResponse.gasPrice,
-      //       9,
-      //     ).toString(),
-      //   ),
-      // };
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(chainDetails, globalContext),
+      );
 
-      // try {
-      //   await web3.eth.call(tx);
-      // } catch (simulationError: any) {
-      //   throw new Error(
-      //     `Transaction would fail: ${simulationError.message}`,
-      //   );
-      // }
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      });
 
-      // const hash = await signEthTransaction({
-      //   web3,
-      //   sendChain: chainDetails.backendName,
-      //   transactionToBeSigned: tx,
-      // });
-      // resolve({ isError: false, receipt: hash });
-      if (!resp.isError) {
-        return { isError: false, hash: resp?.hash };
-      }
-      return { isError: true, error: resp?.error };
+      return { isError: false, hash: receipt.transactionHash };
     } catch (e) {
       return { isError: true, error: e };
     }
@@ -1706,7 +1665,7 @@ export default function useTransactionManager() {
         type: AnalyticsType.ERROR,
         chain: 'solana',
         message: JSON.stringify(result),
-        screen: location.pathname,
+        screen: 'sendSolanaTokens',
         address: fromKeypair.publicKey.toBase58(),
         other: {
           amount: amountToSend,
@@ -1721,6 +1680,47 @@ export default function useTransactionManager() {
         isError: true,
         error: e,
       };
+    }
+  };
+
+  const checkIfAllowanceIsEnough = async ({
+    publicClient,
+    tokenContractAddress,
+    routerAddress,
+    amount,
+  }: {
+    publicClient: PublicClient;
+    tokenContractAddress: Address;
+    routerAddress: Address;
+    amount: string;
+  }): Promise<CheckAllowanceResponse> => {
+    try {
+      const { ethereum } = get(hdWallet, ['state', 'wallet']);
+
+      const contract = getContract({
+        address: tokenContractAddress,
+        abi: allowanceApprovalContractABI,
+        client: { public: publicClient },
+      });
+
+      const allowance = await contract.read.allowance([
+        ethereum.address as Address,
+        routerAddress,
+      ]);
+
+      const tokenAmount = DecimalHelper.fromString(amount).ceil();
+
+      if (DecimalHelper.isGreaterThan(tokenAmount, allowance.toString())) {
+        return {
+          isError: false,
+          hasEnoughAllowance: false,
+          tokens: BigInt(tokenAmount.toFixed(0)),
+        };
+      } else {
+        return { isError: false, hasEnoughAllowance: true };
+      }
+    } catch (e) {
+      return { isError: true, error: e };
     }
   };
 

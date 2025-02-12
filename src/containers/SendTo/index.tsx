@@ -18,7 +18,6 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import { BarCodeReadEvent } from 'react-native-camera';
-import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -952,9 +951,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     // Check if multiple regEx occurences are matching like in case of scanning a coinbase QR
     if (regEx?.length === 1 || regEx === null) {
       const address = regEx && regEx.length === 1 ? regEx[0] : content;
-      const web3 = new Web3(
-        getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
-      );
       switch (chainDetails?.chainName) {
         case ChainNames.COSMOS:
           if (!isCosmosAddress(address)) {

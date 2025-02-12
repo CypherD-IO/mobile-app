@@ -6,22 +6,31 @@ import { estimateGas, getGasPriceFor } from './gasHelper';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import Toast from 'react-native-toast-message';
-import Web3 from 'web3';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import { ALL_CHAINS, CHAIN_ETH } from '../../constants/server';
 import axios from '../../core/Http';
-import BigNumber from 'bignumber.js';
 import {
   ActivityReducerAction,
   ActivityStatus,
 } from '../../reducers/activity_reducer';
 import { hostWorker } from '../../global';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
-import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
+import {
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  getViemPublicClient,
+} from '../../core/util';
 import { isHex } from 'web3-validator';
+import {
+  createWalletClient,
+  fromHex,
+  hexToString,
+  http,
+  SendTransactionParameters,
+} from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
-const chainIdToChain = chainId =>
-  ALL_CHAINS.find(chain => chain.chainIdNumber == chainId) ?? CHAIN_ETH;
+const chainIdToChain = (chainId: number) =>
+  ALL_CHAINS.find(chain => chain.chainIdNumber === chainId) ?? CHAIN_ETH;
 
 export function toJson<T>(
   me: T,
@@ -35,132 +44,80 @@ export function toJson<T>(
   );
 }
 
-const bigNumberToHex = (val: string) =>
-  `0x${new BigNumber(val, 10).toString(16)}`;
-
 export async function sendTransaction(
   hdWalletContext,
   payload,
   finalGasPrice,
   gasLimit,
   webviewRef,
-  web3RPCEndpoint: Web3,
   activityRef: any,
   activityContext: any,
+  rpc: string,
 ) {
-  // const {showModal, hideModal} = useGlobalModalContext();
-  const { ethereum } = hdWalletContext.state.wallet;
-  let isHashGenerated = false;
+  const isHashGenerated = false;
   try {
     const {
       params: [{ to, data, value }],
     } = payload;
-    const tx = {
-      from: ethereum.address,
-      to,
-      gasPrice: finalGasPrice,
-      data,
-      value,
-      gas: gasLimit,
-    };
-
     const privateKey = await loadPrivateKeyFromKeyChain(
       false,
       hdWalletContext.state.pinValue,
     );
 
     if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-      const signedTx = await web3RPCEndpoint.eth.accounts.signTransaction(
-        tx,
-        privateKey,
+      const publicClient = getViemPublicClient(rpc);
+      const account = privateKeyToAccount(privateKey as `0x${string}`);
+      const walletClient = createWalletClient({
+        account,
+        transport: http(rpc),
+      });
+
+      const txParams: SendTransactionParameters = {
+        account,
+        chain: null,
+        to: to as `0x${string}`,
+        value: BigInt(parseInt(value || '0', 16)),
+        data: data as `0x${string}`,
+        gas: BigInt(parseInt(gasLimit || '0', 16)),
+        gasPrice: BigInt(parseInt(finalGasPrice || '0', 16)),
+      };
+
+      const hash = await walletClient.sendTransaction(txParams);
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      });
+
+      webviewRef.current.injectJavaScript(
+        `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(receipt.transactionHash)})`,
       );
-      isHashGenerated = true;
-      if (signedTx) {
-        if (signedTx.rawTransaction) {
-          await web3RPCEndpoint.eth
-            .sendSignedTransaction(signedTx.rawTransaction)
-            .once('transactionHash', function (hash) {
-              webviewRef.current.injectJavaScript(
-                `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
-                  hash,
-                )})`,
-              );
-              // showModal('state', {type: 'info', title: 'Transaction Hash', description: hash, onSuccess: hideModal, onFailure: hideModal});
-              Toast.show({
-                type: 'info',
-                text1: 'Transaction Hash',
-                text2: hash,
-                position: 'bottom',
-              });
-              activityRef.current &&
-                activityContext.dispatch({
-                  type: ActivityReducerAction.PATCH,
-                  value: {
-                    id: activityRef.current.id,
-                    transactionHash: hash,
-                    status: ActivityStatus.SUCCESS,
-                  },
-                });
-              void analytics().logEvent('transaction_submit', {
-                from: ethereum.address,
-                to: payload.params[0].to,
-                gasPrice: finalGasPrice,
-                data: payload.params[0].data,
-                value: payload.params[0].value,
-                gas: gasLimit,
-                hash,
-                chain: hdWalletContext.state.selectedChain.name,
-              });
-            })
-            .once('receipt', function (receipt) {
-              // showModal('state', {type: 'success', title: '', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
-              Toast.show({
-                type: 'success',
-                text1: 'Transaction',
-                text2: 'Transaction Receipt Received',
-                position: 'bottom',
-              });
-            })
-            .on('confirmation', function (confNumber) {})
-            .on('error', function (error) {
-              activityRef.current &&
-                activityContext.dispatch({
-                  type: ActivityReducerAction.PATCH,
-                  value: {
-                    id: activityRef.current.id,
-                    status: ActivityStatus.FAILED,
-                    reason: error.message,
-                  },
-                });
-              // showModal('state', {type: 'error', title: 'Transaction Error', description: error.message, onSuccess: hideModal, onFailure: hideModal});
-              Toast.show({
-                type: 'error',
-                text1: 'Transaction Error',
-                text2: error.message,
-                position: 'bottom',
-              });
-            })
-            .then(function (receipt) {
-              // showModal('state', {type: 'success', title: '', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
-              Toast.show({
-                type: 'success',
-                text1: 'Transaction',
-                text2: 'Transaction Receipt Received',
-                position: 'bottom',
-              });
-              void analytics().logEvent('transaction_receipt', {
-                from: ethereum.address,
-                to: payload.params[0].to,
-                gasPrice: finalGasPrice,
-                data: payload.params[0].data,
-                value: payload.params[0].value,
-                gas: gasLimit,
-                receipt,
-                chain: hdWalletContext.state.selectedChain.name,
-              });
-            });
-        }
-      }
+
+      Toast.show({
+        type: 'success',
+        text1: 'Transaction Hash',
+        text2: receipt.transactionHash,
+        position: 'bottom',
+      });
+
+      activityRef.current &&
+        activityContext.dispatch({
+          type: ActivityReducerAction.PATCH,
+          value: {
+            id: activityRef.current.id,
+            transactionHash: receipt.transactionHash,
+            status: ActivityStatus.SUCCESS,
+          },
+        });
+
+      void analytics().logEvent('transaction_submit', {
+        from: hdWalletContext.state.wallet.ethereum.address,
+        to: payload.params[0].to,
+        gasPrice: finalGasPrice,
+        data: payload.params[0].data,
+        value: payload.params[0].value,
+        gas: gasLimit,
+        hash: receipt.transactionHash,
+        chain: hdWalletContext.state.selectedChain.name,
+      });
     }
   } catch (e: any) {
     if (!isHashGenerated) {
@@ -196,7 +153,7 @@ export async function signTypedDataCypherD(
   if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
     const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
     let eip712Data;
-    if (typeDataVersion == SignTypedDataVersion.V1) {
+    if (typeDataVersion === SignTypedDataVersion.V1) {
       eip712Data = payload.params[0];
     } else {
       eip712Data = JSON.parse(payload.params[1]);
@@ -213,18 +170,12 @@ export async function signTypedDataCypherD(
   }
 }
 
-export async function personal_sign(
-  hdWalletContext,
-  payload,
-  webviewRef,
-  web3RPCEndpoint,
-) {
-  // const {showModal, hideModal} = useGlobalModalContext();
+export async function personalSign(hdWalletContext, payload, webviewRef, rpc) {
   const ethereum = hdWalletContext.state.wallet.ethereum;
   let messageToSign = '';
-  if (payload.method == 'personal_sign') {
+  if (payload.method === 'personal_sign') {
     messageToSign = payload.params[0];
-  } else if (payload.method == 'eth_sign') {
+  } else if (payload.method === 'eth_sign') {
     messageToSign = payload.params[1];
   }
 
@@ -233,14 +184,17 @@ export async function personal_sign(
     hdWalletContext.state.pinValue,
   );
   if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-    const signature = web3RPCEndpoint.eth.accounts.sign(
-      messageToSign,
-      privateKey,
-    );
+    const account = privateKeyToAccount(privateKey as `0x${string}`);
+    const walletClient = createWalletClient({
+      account,
+      transport: http(rpc),
+    });
+    const signature = await walletClient.signMessage({
+      message: messageToSign,
+    });
     webviewRef.current.injectJavaScript(
-      `window.ethereum.sendResponse(${payload.id}, "${signature.signature}")`,
+      `window.ethereum.sendResponse(${payload.id}, "${signature}")`,
     );
-    // showModal('state', {type: 'success', title: 'Message Signed', description: 'Message Signed', onSuccess: hideModal, onFailure: hideModal});
     Toast.show({
       type: 'success',
       text1: 'Message Signed',
@@ -264,12 +218,12 @@ export function parseWebviewPayload(
   payModal,
   signModal,
   pushModal,
-  web3RPCEndpoint: Web3,
+  rpc,
 ) {
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
   const pushPermissionURL = `${PORTFOLIO_HOST}/v1/push/permissions`;
-  // const {showModal, hideModal} = useGlobalModalContext();
+  const publicClient = getViemPublicClient(rpc);
 
   if (payload.method === 'wallet_pushPermission') {
     const walletaddress = ethereum.address;
@@ -285,8 +239,8 @@ export function parseWebviewPayload(
       .then(res => {
         if (res.data.permission) {
           if (
-            res.data.permission == 'NO_DATA' ||
-            res.data.permission == 'DENY'
+            res.data.permission === 'NO_DATA' ||
+            res.data.permission === 'DENY'
           ) {
             pushModal({
               app_name: payload.params[0].app_name,
@@ -296,7 +250,7 @@ export function parseWebviewPayload(
               wallet_address: walletaddress,
               payload_id: payload.id,
             });
-          } else if (res.data.permission == 'ALLOW') {
+          } else if (res.data.permission === 'ALLOW') {
             webviewRef.current.injectJavaScript(
               `window.ethereum.sendResponse(${payload.id}, "${res.data.permission}")`,
             );
@@ -310,35 +264,33 @@ export function parseWebviewPayload(
         Sentry.captureException(error);
       });
   } else if (payload.method === 'eth_sendTransaction') {
-    getGasPriceFor(selectedChain, web3RPCEndpoint)
-      .then(gasFeeResponse => {
-        estimateGas(
+    getGasPriceFor(selectedChain, publicClient)
+      .then(async gasFeeResponse => {
+        await estimateGas(
           payload,
-          webviewRef,
-          hdWalletContext,
+          publicClient,
+          hdWalletContext?.state?.wallet?.ethereum?.address,
           selectedChain,
           gasFeeResponse,
           payModal,
-          web3RPCEndpoint,
         );
       })
-      .catch(gasFeeError => {
+      .catch(async gasFeeError => {
         Sentry.captureException(gasFeeError);
-        estimateGas(
+        await estimateGas(
           payload,
-          webviewRef,
-          hdWalletContext,
+          publicClient,
+          hdWalletContext?.state?.wallet?.ethereum?.address,
           selectedChain,
           { chainId: selectedChain.backendName, gasPrice: 0, tokenPrice: 0 },
           payModal,
-          web3RPCEndpoint,
         );
       });
   } else if (
-    payload.method == 'eth_accounts' ||
-    payload == 'eth_accounts' ||
-    payload == 'eth_requestAccounts' ||
-    payload.method == 'eth_requestAccounts'
+    payload.method === 'eth_accounts' ||
+    payload === 'eth_accounts' ||
+    payload === 'eth_requestAccounts' ||
+    payload.method === 'eth_requestAccounts'
   ) {
     webviewRef.current.injectJavaScript(
       `window.ethereum.sendResponse(${payload.id}, ["${ethereum.address}"])`,
@@ -350,13 +302,11 @@ export function parseWebviewPayload(
     } else {
       tmpAddress = ethereum.address;
     }
-    web3RPCEndpoint.eth
+    publicClient
       .getBalance(tmpAddress)
       .then(result => {
         webviewRef.current.injectJavaScript(
-          `window.ethereum.sendResponse(${payload.id}, "${bigNumberToHex(
-            result,
-          )}")`,
+          `window.ethereum.sendResponse(${payload.id}, "${result}")`,
         );
       })
       .catch(err => {
@@ -364,7 +314,7 @@ export function parseWebviewPayload(
         Sentry.captureException(err);
       });
   } else if (payload.method === 'eth_blockNumber') {
-    web3RPCEndpoint.eth
+    publicClient
       .getBlockNumber()
       .then(result => {
         webviewRef.current.injectJavaScript(
@@ -375,12 +325,29 @@ export function parseWebviewPayload(
         // TODO (user feedback): Give feedback to user.
         Sentry.captureException(err);
       });
-  } else if (
-    payload.method === 'eth_getBlockByNumber' ||
-    payload.method === 'eth_getBlockByHash'
-  ) {
-    web3RPCEndpoint.eth
-      .getBlock(payload.params[0], payload.params[1])
+  } else if (payload.method === 'eth_getBlockByHash') {
+    publicClient
+      .getBlock({
+        includeTransactions: payload.params[0],
+        blockHash: payload.params[0],
+      })
+      .then(result => {
+        webviewRef.current.injectJavaScript(
+          `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
+            result,
+          )})`,
+        );
+      })
+      .catch(err => {
+        // TODO (user feedback): Give feedback to user.
+        Sentry.captureException(err);
+      });
+  } else if (payload.method === 'eth_getBlockByNumber') {
+    publicClient
+      .getBlock({
+        includeTransactions: payload.params[0],
+        blockNumber: payload.params[0],
+      })
       .then(result => {
         webviewRef.current.injectJavaScript(
           `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
@@ -393,7 +360,7 @@ export function parseWebviewPayload(
         Sentry.captureException(err);
       });
   } else if (payload.method === 'eth_gasPrice') {
-    web3RPCEndpoint.eth
+    publicClient
       .getGasPrice()
       .then(result => {
         webviewRef.current.injectJavaScript(
@@ -406,9 +373,14 @@ export function parseWebviewPayload(
         // TODO (user feedback): Give feedback to user.
         Sentry.captureException(err);
       });
-  } else if (payload.method === 'net_version' || payload === 'net_version') {
-    web3RPCEndpoint.eth.net
-      .getId()
+  } else if (
+    payload.method === 'net_version' ||
+    payload === 'net_version' ||
+    payload.method === 'eth_chainId' ||
+    payload === 'eth_chainid'
+  ) {
+    publicClient
+      .getChainId()
       .then(result => {
         webviewRef.current.injectJavaScript(
           `window.ethereum.sendResponse(${payload.id}, ${result})`,
@@ -419,8 +391,10 @@ export function parseWebviewPayload(
         Sentry.captureException(err);
       });
   } else if (payload.method === 'eth_getLogs') {
-    web3RPCEndpoint.eth
-      .getPastLogs(payload.params[0])
+    publicClient
+      .getLogs({
+        address: payload?.params?.[0],
+      })
       .then(result => {
         webviewRef.current.injectJavaScript(
           `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
@@ -433,7 +407,7 @@ export function parseWebviewPayload(
         Sentry.captureException(err);
       });
   } else if (payload.method === 'eth_call') {
-    web3RPCEndpoint.eth
+    publicClient
       .call(payload.params[0])
       .then(result => {
         webviewRef.current.injectJavaScript(
@@ -447,7 +421,7 @@ export function parseWebviewPayload(
         Sentry.captureException(err);
       });
   } else if (payload.method === 'eth_getTransactionByHash') {
-    web3RPCEndpoint.eth
+    publicClient
       .getTransaction(payload.params[0])
       .then(result => {
         webviewRef.current.injectJavaScript(
@@ -461,7 +435,7 @@ export function parseWebviewPayload(
         Sentry.captureException(err);
       });
   } else if (payload.method === 'eth_getTransactionReceipt') {
-    web3RPCEndpoint.eth
+    publicClient
       .getTransactionReceipt(payload.params[0])
       .then(result => {
         let res: any = result;
@@ -477,7 +451,7 @@ export function parseWebviewPayload(
         Sentry.captureException(err);
       });
   } else if (payload.method === 'eth_getTransactionCount') {
-    web3RPCEndpoint.eth
+    publicClient
       .getTransactionCount(payload.params[0])
       .then(result => {
         webviewRef.current.injectJavaScript(
@@ -494,7 +468,7 @@ export function parseWebviewPayload(
     let signMsg = payload.params[0];
     if (isHex(payload.params[0])) {
       try {
-        signMsg = Web3.utils.hexToUtf8(payload.params[0]);
+        signMsg = hexToString(payload.params[0]);
       } catch (err) {
         signMsg = payload.params[0];
       }
@@ -511,7 +485,7 @@ export function parseWebviewPayload(
       'Message',
     );
   } else if (payload.method === 'eth_estimateGas') {
-    web3RPCEndpoint.eth
+    publicClient
       .estimateGas(payload.params[0])
       .then(result => {
         webviewRef.current.injectJavaScript(
@@ -531,9 +505,13 @@ export function parseWebviewPayload(
         });
         webviewRef.current.reload();
       });
-  } else if (payload.method == 'eth_feeHistory') {
-    web3RPCEndpoint.eth
-      .getFeeHistory(payload.params[0], payload.params[1], payload.params[2])
+  } else if (payload.method === 'eth_feeHistory') {
+    publicClient
+      .getFeeHistory({
+        blockCount: payload.params[0],
+        blockNumber: payload.params[1],
+        rewardPercentiles: payload.params[2],
+      })
       .then(result => {
         webviewRef.current.injectJavaScript(
           `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
@@ -545,15 +523,15 @@ export function parseWebviewPayload(
         // TODO (user feedback): Give feedback to user.
         Sentry.captureException(err);
       });
-  } else if (payload.method == 'eth_signTypedData') {
+  } else if (payload.method === 'eth_signTypedData') {
     signModal(JSON.stringify(payload.params[0]), payload, 'Message');
-  } else if (payload.method == 'eth_signTypedData_v3') {
+  } else if (payload.method === 'eth_signTypedData_v3') {
     signModal(payload.params[1], payload, 'Message');
-  } else if (payload.method == 'eth_signTypedData_v4') {
+  } else if (payload.method === 'eth_signTypedData_v4') {
     const eip712Object = JSON.parse(payload.params[1]);
     let payloadMessage = '';
     let signMessageTitleLocal = '';
-    if (eip712Object.primaryType == 'Permit') {
+    if (eip712Object.primaryType === 'Permit') {
       payloadMessage =
         'Approve ' +
         eip712Object.message.value +
@@ -569,7 +547,7 @@ export function parseWebviewPayload(
       signMessageTitleLocal = 'Message';
     }
     signModal(payloadMessage, payload, signMessageTitleLocal);
-    analytics().logEvent('eth_signtypeddata_v4', {
+    void analytics().logEvent('eth_signtypeddata_v4', {
       from: ethereum.address,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,
@@ -609,22 +587,10 @@ export function parseWebviewPayload(
     }
 
     updateSelectedChain(strChainName);
-  } else if (payload.method === 'eth_chainId' || payload === 'eth_chainid') {
-    web3RPCEndpoint.eth.net
-      .getId()
-      .then(result => {
-        webviewRef.current.injectJavaScript(
-          `window.ethereum.sendResponse(${payload.id}, ${result})`,
-        );
-      })
-      .catch(err => {
-        // TODO (user feedback): Give feedback to user.
-        Sentry.captureException(err);
-      });
   } else if (payload.method === 'eth_getCode') {
     // To be implementated
   } else {
-    analytics().logEvent('unknown_rpc_call', {
+    void analytics().logEvent('unknown_rpc_call', {
       from: ethereum.address,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,
