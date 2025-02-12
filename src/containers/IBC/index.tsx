@@ -50,6 +50,7 @@ import usePortfolio from '../../hooks/usePortfolio';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import useCosmosSigner from '../../hooks/useCosmosSigner';
 import useGasService from '../../hooks/useGasService';
+import { usePortfolioRefresh } from '../../core/portfolioRefreshContext';
 
 export default function IBC({
   route,
@@ -100,6 +101,7 @@ export default function IBC({
   const { getNativeToken } = usePortfolio();
   const { getCosmosSignerClient } = useCosmosSigner();
   const { estimateGasForCosmosIBCRest } = useGasService();
+  const { refreshPortfolio } = usePortfolioRefresh();
   const [maxLoading, setMaxLoading] = useState<boolean>(false);
 
   const handleBackButton = () => {
@@ -300,6 +302,7 @@ export default function IBC({
               txnHash: transaction.hash,
               chain: tokenData.chainDetails?.backendName ?? '',
             });
+            void refreshPortfolio();
           } else {
             activityRef.current &&
               activityContext.dispatch({

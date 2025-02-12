@@ -117,6 +117,7 @@ import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
 import { Holding } from '../../core/portfolio';
 import { Decimal } from 'decimal.js';
+import { usePortfolioRefresh } from '../../core/portfolioRefreshContext';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -199,7 +200,7 @@ const Bridge: React.FC = () => {
   const activityId = useRef<string>('id');
   const [isSignableTransaction] = useIsSignable();
   const { getNativeToken } = usePortfolio();
-
+  const { refreshPortfolio } = usePortfolioRefresh();
   const slippage = 0.4;
   const ethereum = hdWallet.state.wallet.ethereum;
 
@@ -1259,6 +1260,7 @@ const Bridge: React.FC = () => {
       });
 
       void analytics().logEvent('BRIDGE_SUCCESS');
+      void refreshPortfolio();
     } catch (e: unknown) {
       const errMsg = parseErrorMessage(e);
       activityContext.dispatch({
@@ -1911,6 +1913,7 @@ const Bridge: React.FC = () => {
             chain: selectedFromChain.chainName,
           });
           void analytics().logEvent('SWAP_SUCCESS');
+          void refreshPortfolio();
         } else {
           activityContext.dispatch({
             type: ActivityReducerAction.PATCH,
