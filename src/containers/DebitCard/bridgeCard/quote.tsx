@@ -62,6 +62,7 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { clsx } from 'clsx';
 import LinearGradient from 'react-native-linear-gradient';
 import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
+import { usePortfolioRefresh } from '../../../hooks/usePortfolioRefresh';
 
 export default function CardQuote({
   navigation,
@@ -107,6 +108,7 @@ export default function CardQuote({
     useTransactionManager();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
+  const { refreshPortfolio } = usePortfolioRefresh();
   const planInfo = globalState?.cardProfile?.planInfo;
   const [
     isPriceFluctuationLearnMoreModalVisible,
@@ -403,6 +405,7 @@ export default function CardQuote({
                     )
                   : get(ethereum, 'address', ''),
               });
+              void refreshPortfolio();
               void transferSentQuote(
                 tokenQuote.fromAddress,
                 tokenQuote.quoteId,
