@@ -1137,7 +1137,7 @@ const resources = {
       STANDARD: 'Standard',
       STANDARD_PLAN_SUB:
         "The essentials, perfected. Experience the industry's best with our free crypto card.",
-      APPLE_GOOGLE_PAY: 'Apple pay & Google Pay',
+      APPLE_GOOGLE_PAY: 'Apple Pay & Google Pay',
       FOREX_FEE: 'Forex Fee',
       CARD_LOAD_FEE_USDC: 'USDC Card loads',
       CARD_LOAD_FEE_NON_USDC: 'Non USDC Card loads',
@@ -1505,6 +1505,8 @@ const resources = {
         'If multiple transactions are in the queue, the system may take up to 20 minutes to process your request. During this time, the token’s value may fluctuate. When the transaction is executed, your card will be loaded based on the token’s price at that moment, which may differ from your initial input.',
       GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE:
         'Insufficient {{tokenName}} to pay for gas. Need atleast {{gasFeeRequired}} {{tokenName}} on {{chainName}} chain for this transaction',
+      MANUAL_ADD_APPLE_GOOGLE_PAY:
+        'You can manually add your card to Apple Pay & Google Pay to make contactless payments.',
     },
   },
 };
