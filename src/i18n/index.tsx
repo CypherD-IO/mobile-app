@@ -1503,6 +1503,8 @@ const resources = {
         'When loading your card, the transaction interacts with the blockchain network. If you fund with a highly volatile token and its value drops during processing, network fees and fluctuations may reduce the final amount. Otherwise, if the token value remains stable or increases, you will receive the full requested amount.',
       PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_2:
         'If multiple transactions are in the queue, the system may take up to 20 minutes to process your request. During this time, the token’s value may fluctuate. When the transaction is executed, your card will be loaded based on the token’s price at that moment, which may differ from your initial input.',
+      GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE:
+        'Insufficient {{tokenName}} to pay for gas. Need atleast {{gasFeeRequired}} {{tokenName}} on {{chainName}} chain for this transaction',
     },
   },
 };

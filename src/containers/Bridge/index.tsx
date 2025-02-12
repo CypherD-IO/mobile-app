@@ -789,7 +789,11 @@ const Bridge: React.FC = () => {
         setCryptoAmount(finalAmount);
       } else {
         setError(
-          `Insufficient balance of native token for Bridging. Load more ${nativeToken?.name} in ${capitalize(selectedFromChain?.chainName)} chain to bridge`,
+          t('GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE', {
+            tokenName: nativeToken?.name,
+            chainName: selectedFromChain?.chainName,
+            gasFeeRequired: formatAmount(gasFeeRequired),
+          }),
         );
       }
     } catch (error) {
@@ -2156,7 +2160,11 @@ const Bridge: React.FC = () => {
 
         if (!isBalanceAndGasFeeSufficient) {
           setError(
-            `Insufficient balance of native token for Bridging. Load more ${nativeToken?.name} in ${capitalize(selectedFromChain?.chainName)} chain to bridge`,
+            t('GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE', {
+              tokenName: nativeToken?.name,
+              chainName: selectedFromChain?.chainName,
+              gasFeeRequired: formatAmount(gasFeeRequired),
+            }),
           );
           return;
         }

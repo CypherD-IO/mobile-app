@@ -29,8 +29,10 @@ import * as C from '../../constants/index';
 import {
   Chain,
   CHAIN_ETH,
+  ChainBackendNames,
   ChainNames,
   ChainNameToContactsChainNameMapping,
+  COSMOS_CHAINS,
   EnsCoinTypes,
   EVM_CHAINS_FOR_ADDRESS_DIR,
   QRScannerScreens,
@@ -45,7 +47,9 @@ import {
   getMaskedAddress,
   getSendAddressFieldPlaceholder,
   getWeb3Endpoint,
+  hasSufficientBalanceAndGasFee,
   HdWalletContext,
+  isEthereumAddress,
   isValidEns,
   limitDecimalPlaces,
   logAnalytics,
@@ -92,6 +96,7 @@ import { isSolanaAddress } from '../utilities/solanaUtilities';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isAddress } from 'web3-validator';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import usePortfolio from '../../hooks/usePortfolio';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -121,6 +126,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const [addressDirectory, setAddressDirectory] = useState<
     Record<string, Record<string, string[]>>
   >({});
+  const { estimateGasForEvm, estimateGasForSolana, estimateGasForCosmosRest } =
+    useGasService();
+  const { sendEvmToken, sendCosmosToken, sendSolanaTokens } =
+    useTransactionManager();
+  const { getNativeToken } = usePortfolio();
   const isFocused = useIsFocused();
   const [filteredContactBook, setFilteredContactBook] = useState({});
   const { showModal, hideModal } = useGlobalModalContext();
@@ -149,9 +159,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     threshold: 0.1,
   };
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
-  const { estimateGasForEvm } = useGasService();
-  const { sendEvmToken, sendCosmosToken, sendSolanaTokens } =
-    useTransactionManager();
+  const [nativeTokenDetails, setNativeTokenDetails] = useState<Holding>();
 
   let fuseByAddresses: Fuse<string>;
   if (Object.keys(addressDirectory).length) {
@@ -257,6 +265,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     injective,
     kujira,
     solana,
+    ethereum,
   } = hdWalletContext.state.wallet;
   const senderAddress: Record<string, string> = {
     cosmos: cosmos.address,
@@ -267,6 +276,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     coreum: coreum.address,
     injective: injective.address,
     kujira: kujira.address,
+    ethereum: ethereum.address,
+    solana: solana.address,
   };
 
   const handleBackButton = () => {
@@ -297,8 +308,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   useEffect(() => {
     if (isFocused) {
       void buildAddressDirectory();
+      void fetchNativeTokenDetails();
     }
   }, [isFocused]);
+
+  const fetchNativeTokenDetails = async () => {
+    const nativeToken = await getNativeToken(
+      chainDetails.backendName as ChainBackendNames,
+    );
+    setNativeTokenDetails(nativeToken);
+  };
 
   const buildAddressDirectory = async () => {
     const tempContactBook: Record<string, Contact> =
@@ -487,49 +506,46 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     }, MODAL_HIDE_TIMEOUT_250);
   }
 
-  const cosmosTransaction = async (chain: Chain) => {
-    setLoading(true);
-
-    const amountToSend = limitDecimalPlaces(
-      valueForUsd,
-      tokenData.contractDecimals,
-    );
-
-    const randomGas = random(0.001, 0.01, true);
-
-    setTokenSendConfirmationParams({
-      isModalVisible: true,
-      tokenSendParams: {
-        onConfirm: () => {
-          void onConfirmConfirmationModal();
-        },
-        onCancel: () => {
-          onCancelConfirmationModal();
-        },
-        chain,
-        amountInCrypto: amountToSend,
-        amountInFiat: String(
-          formatAmount(
-            DecimalHelper.multiply(amountToSend, tokenData?.price ?? 0),
-          ),
-        ),
-        symbol: tokenData.symbol,
-        toAddress: addressRef.current,
-        gasFeeInCrypto: DecimalHelper.toString(
-          DecimalHelper.fromString(randomGas),
-          4,
-        ),
-        gasFeeInFiat: DecimalHelper.toString(
-          DecimalHelper.multiply(randomGas, tokenData?.price ?? 0),
-          4,
-        ),
-        nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
-      },
-    });
-    setLoading(false);
+  const getGasFee = async (
+    chainName: string,
+    address: string,
+  ): Promise<{ gasFeeInCrypto: number }> => {
+    let gasEstimate;
+    if (chainName === ChainNames.ETH) {
+      gasEstimate = await estimateGasForEvm({
+        web3: new Web3(getWeb3Endpoint(tokenData.chainDetails, globalContext)),
+        chain: tokenData.chainDetails.backendName as ChainBackendNames,
+        fromAddress: address ?? '',
+        toAddress: address ?? '',
+        amountToSend: tokenData.balanceDecimal,
+        contractAddress: tokenData.contractAddress,
+        contractDecimals: tokenData.contractDecimals,
+      });
+    } else if (chainName === ChainNames.SOLANA) {
+      gasEstimate = await estimateGasForSolana({
+        fromAddress: address ?? '',
+        toAddress: address ?? '',
+        amountToSend: tokenData.balanceDecimal,
+        contractAddress: tokenData.contractAddress,
+        contractDecimals: tokenData.contractDecimals,
+      });
+    } else if (COSMOS_CHAINS.includes(tokenData.chainDetails.chainName)) {
+      gasEstimate = await estimateGasForCosmosRest({
+        chain: tokenData.chainDetails,
+        denom: tokenData.denom,
+        amount: tokenData.balanceDecimal,
+        fromAddress: address ?? '',
+        toAddress: address ?? '',
+      });
+    }
+    if (!gasEstimate) {
+      throw new Error('Gas estimation failed');
+    }
+    return { gasFeeInCrypto: Number(gasEstimate.gasFeeInCrypto) };
   };
 
   const submitSendTransaction = async () => {
+    setLoading(true);
     const id = genId();
     const activityData: SendTransactionActivity = {
       id,
@@ -538,7 +554,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       transactionHash: '',
       fromAddress: '',
       toAddress: '',
-      amount: valueForUsd,
+      amount: formatAmount(valueForUsd, 6),
       chainName: chainDetails?.name ?? ChainNames.ETH,
       symbol: chainDetails?.symbol ?? ChainNames.ETH,
       logoUrl: chainDetails?.logo_url ?? '',
@@ -581,6 +597,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     try {
       activityData.toAddress = addressRef.current;
       if (
+        chainDetails?.chainName === ChainNames.ETH &&
+        isEthereumAddress(addressRef.current)
+      ) {
+        activityData.fromAddress = ethereum.address;
+      } else if (
+        chainDetails?.chainName === ChainNames.SOLANA &&
+        isSolanaAddress(addressRef.current)
+      ) {
+        activityData.fromAddress = solana.address;
+      } else if (
         chainDetails?.chainName === ChainNames.COSMOS &&
         isCosmosAddress(addressRef.current)
       ) {
@@ -620,11 +646,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         isKujiraAddress(addressRef.current)
       ) {
         activityData.fromAddress = kujira.address;
-      } else if (
-        chainDetails?.chainName === ChainNames.SOLANA &&
-        isSolanaAddress(addressRef.current)
-      ) {
-        activityData.fromAddress = solana.address;
       } else {
         error = true;
         showModal('state', {
@@ -635,7 +656,76 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           onFailure: hideModal,
         });
       }
-      await cosmosTransaction(chainDetails);
+
+      const gasFee = await getGasFee(
+        chainDetails.chainName,
+        activityData.fromAddress,
+      );
+
+      const amountToSend = limitDecimalPlaces(
+        valueForUsd,
+        tokenData.contractDecimals,
+      );
+
+      if (gasFee) {
+        const hasSufficient = hasSufficientBalanceAndGasFee(
+          tokenData.isNativeToken,
+          String(gasFee.gasFeeInCrypto),
+          nativeTokenDetails?.balanceDecimal,
+          amountToSend,
+          tokenData.balanceDecimal,
+        );
+        if (!hasSufficient) {
+          showModal('state', {
+            type: 'error',
+            title: t('GAS_ESTIMATION_FAILED'),
+            description: t('GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE', {
+              tokenName: nativeTokenDetails?.name,
+              chainName: chainDetails.name,
+              gasFeeRequired: formatAmount(gasFee.gasFeeInCrypto),
+            }),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      activityData.gasAmount = String(
+        formatAmount(
+          DecimalHelper.multiply(gasFee.gasFeeInCrypto, tokenData?.price ?? 0),
+        ),
+      );
+
+      setTokenSendConfirmationParams({
+        isModalVisible: true,
+        tokenSendParams: {
+          onConfirm: () => {
+            void onConfirmConfirmationModal();
+          },
+          onCancel: () => {
+            onCancelConfirmationModal();
+          },
+          chain: tokenData.chainDetails,
+          amountInCrypto: amountToSend,
+          amountInFiat: formatAmount(
+            DecimalHelper.multiply(amountToSend, tokenData?.price ?? 0),
+          ),
+          symbol: tokenData.symbol,
+          toAddress: addressRef.current,
+          gasFeeInCrypto: formatAmount(gasFee.gasFeeInCrypto),
+          gasFeeInFiat: formatAmount(
+            DecimalHelper.multiply(
+              gasFee.gasFeeInCrypto,
+              tokenData?.price ?? 0,
+            ),
+          ),
+          nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
+        },
+      });
+
+      setLoading(false);
     } catch (e) {
       error = true;
       // monitoring api
@@ -644,11 +734,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         chain: chainDetails?.backendName ?? '',
         message: parseErrorMessage(e),
         screen: route.name,
-        address: addressRef.current,
+        address: activityData.fromAddress,
         other: {
           token: tokenData.symbol,
           amount: valueForUsd,
           balance: tokenData.balanceDecimal,
+          toAddress: addressRef.current,
         },
       });
       Sentry.captureException(e);
@@ -787,11 +878,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           ? { contractData: response?.contractData }
           : ''),
         screen: route.name,
-        address: addressRef.current,
+        address: get(senderAddress, chainDetails.chainName, ''),
         other: {
           token: tokenData.symbol,
           balance: tokenData.balanceDecimal,
           amount: valueForUsd,
+          toAddress: addressRef.current,
         },
       });
       if (willPrompt) {
@@ -824,11 +916,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         chain: chainDetails?.backendName ?? '',
         message: parseErrorMessage(response.error),
         screen: route.name,
-        address: addressRef.current,
+        address: get(senderAddress, chainDetails.chainName, ''),
         other: {
           token: tokenData.symbol,
           amount: valueForUsd,
           balance: tokenData.balanceDecimal,
+          toAddress: addressRef.current,
         },
       });
       activityContext.dispatch({
@@ -846,115 +939,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         onSuccess: hideModal,
         onFailure: hideModal,
       });
-    }
-  };
-
-  const showGasQuote = async () => {
-    addressRef.current = addressText;
-    if (chainDetails?.chainName === ChainNames.ETH) {
-      if (
-        chainDetails?.chainName === ChainNames.ETH &&
-        Object.keys(EnsCoinTypes).includes(
-          tokenData.chainDetails.backendName,
-        ) &&
-        isValidEns(addressRef.current)
-      ) {
-        const ens = addressText;
-        const addr = await resolveAddress(
-          ens,
-          tokenData.chainDetails.backendName,
-        );
-        if (addr && isAddress(addr)) {
-          addressRef.current = addr;
-          ensRef.current = ens;
-        } else {
-          showModal('state', {
-            type: 'error',
-            title: t('NOT_VALID_ENS'),
-            description: `This ens domain is not mapped for ${tokenData.chainDetails.name.toLowerCase()} in ens.domains`,
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-          return;
-        }
-      }
-      const amountToSend = limitDecimalPlaces(
-        valueForUsd,
-        tokenData.contractDecimals,
-      );
-      setLoading(true);
-      const { ethereum } = hdWalletContext.state.wallet;
-      const { backendName: chainBackendName } = tokenData.chainDetails;
-      const web3 = new Web3(
-        getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
-      );
-      const id = genId();
-      const activityData: SendTransactionActivity = {
-        id,
-        status: ActivityStatus.PENDING,
-        type: ActivityType.SEND,
-        transactionHash: '',
-        fromAddress: ethereum.address,
-        toAddress: addressRef.current,
-        amount: amountToSend,
-        chainName: chainDetails?.name ?? ChainNames.ETH,
-        symbol: chainDetails?.symbol ?? ChainNames.ETH,
-        logoUrl: chainDetails?.logo_url ?? '',
-        datetime: new Date(),
-        gasAmount: '0',
-        tokenName: tokenData.name,
-        tokenLogo: tokenData.logoUrl,
-      };
-      activityRef.current = activityData;
-      let gasDetails;
-
-      gasDetails = await estimateGasForEvm({
-        web3,
-        chain: chainBackendName,
-        fromAddress: ethereum?.address,
-        toAddress: addressRef.current,
-        amountToSend,
-        contractAddress: tokenData.contractAddress,
-        contractDecimals: tokenData.contractDecimals,
-      });
-      setLoading(false);
-
-      activityRef.current.gasAmount = String(
-        formatAmount(
-          DecimalHelper.multiply(
-            gasDetails?.gasFeeInCrypto,
-            tokenData?.price ?? 0,
-          ),
-        ),
-      );
-      setTokenSendConfirmationParams({
-        isModalVisible: true,
-        tokenSendParams: {
-          onConfirm: () => {
-            void onConfirmConfirmationModal();
-          },
-          onCancel: () => {
-            onCancelConfirmationModal();
-          },
-          chain: tokenData.chainDetails,
-          amountInCrypto: amountToSend,
-          amountInFiat: formatAmount(
-            DecimalHelper.multiply(amountToSend, tokenData?.price ?? 0),
-          ),
-          symbol: tokenData.symbol,
-          toAddress: addressRef.current,
-          gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
-          gasFeeInFiat: formatAmount(
-            DecimalHelper.multiply(
-              gasDetails?.gasFeeInCrypto ?? 0,
-              tokenData?.price ?? 0,
-            ),
-          ),
-          nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
-        },
-      });
-    } else {
-      void submitSendTransaction();
     }
   };
 
@@ -1260,7 +1244,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
               title={t('SEND')}
               onPress={() => {
                 void (async () => {
-                  await showGasQuote();
+                  await submitSendTransaction();
                 })();
               }}
               type={ButtonType.PRIMARY}
