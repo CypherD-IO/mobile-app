@@ -682,6 +682,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             description: t('GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE', {
               tokenName: nativeTokenDetails?.name,
               chainName: chainDetails.name,
+              gasFeeRequired: formatAmount(gasFee.gasFeeInCrypto),
             }),
             onSuccess: hideModal,
             onFailure: hideModal,
