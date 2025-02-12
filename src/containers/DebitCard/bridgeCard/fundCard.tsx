@@ -263,7 +263,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     } catch (e) {
       const errorObject = {
         e,
-        message: 'Error when estimating gasFee for the transaction for EVM',
+        message: 'Error when estimating gasFee for the transaction',
         isMaxQuote,
         actualBalance,
         actualTokensRequired,
