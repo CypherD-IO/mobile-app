@@ -339,7 +339,6 @@ export default function useGasService() {
         };
       }
     } catch (error) {
-      console.log('🚀 ~ useGasService ~ error:', error);
       Sentry.captureException(error);
       return {
         isError: true,

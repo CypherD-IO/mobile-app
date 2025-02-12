@@ -490,7 +490,6 @@ export default function useWeb3(origin: Web3Origin) {
 
       const { params, method, id: payloadId } = payload;
       const selectedChain = chain ?? sChain;
-      console.log('🚀 ~ useWeb3 ~ payload:', payload);
       publicClient.current = getViemPublicClient(
         getWeb3Endpoint(selectedChain, globalContext),
       );
