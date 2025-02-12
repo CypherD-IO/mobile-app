@@ -118,8 +118,23 @@ export default function useEthSigner() {
     transactionToBeSigned: EthTransaction;
     chainId: number;
   }) {
+    let timer: NodeJS.Timeout;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        reject(
+          new Error(
+            "Signing transaction request timed out. User didn't sign / decline the transaction request",
+          ),
+        );
+      }, 45 * 1000);
+    });
+
+    const cleanup = () => {
+      clearTimeout(timer);
+    };
+
     // Send transaction with estimated values
-    const hash = await sendTransactionAsync({
+    const sendTransactionPromise = sendTransactionAsync({
       account: transactionToBeSigned.from as `0x${string}`,
       to: transactionToBeSigned.to as `0x${string}`,
       chainId,
@@ -138,6 +153,8 @@ export default function useEthSigner() {
         ? BigInt(transactionToBeSigned.maxFeePerGas)
         : undefined,
     });
+    const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
+    cleanup();
 
     return hash;
   }
@@ -149,6 +166,20 @@ export default function useEthSigner() {
     transactionToBeSigned: EthTransaction;
     chainId: number;
   }) {
+    let timer: NodeJS.Timeout;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        reject(
+          new Error(
+            "Signing transaction request timed out. User didn't sign / decline the transaction request",
+          ),
+        );
+      }, 45 * 1000);
+    });
+    const cleanup = () => {
+      clearTimeout(timer);
+    };
+
     const contractAbiFragment = [
       {
         name: 'transfer',
@@ -169,7 +200,7 @@ export default function useEthSigner() {
       },
     ];
 
-    const hash = await writeContractAsync({
+    const writeContractPromise = writeContractAsync({
       abi: contractAbiFragment,
       address: transactionToBeSigned.to as `0x${string}`,
       functionName: 'transfer',
@@ -191,6 +222,8 @@ export default function useEthSigner() {
         ? BigInt(transactionToBeSigned.maxPriorityFeePerGas)
         : undefined,
     });
+    const hash = await Promise.race([writeContractPromise, timeoutPromise]);
+    cleanup();
 
     return hash;
   }
