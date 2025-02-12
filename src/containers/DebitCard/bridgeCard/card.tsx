@@ -12,17 +12,14 @@ import crypto from 'crypto';
 import { get, has, isEmpty, isUndefined, orderBy, some, trim } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { PixelRatio, StyleSheet, useWindowDimensions } from 'react-native';
-import WebView from 'react-native-webview';
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import {
-  ACCOUNT_STATUS,
   ButtonType,
   CARD_IDS,
   CardOperationsAuthType,
@@ -42,7 +39,6 @@ import useAxios from '../../../core/HttpRequest';
 import {
   copyToClipboard,
   decryptWithSecretKey,
-  limitDecimalPlaces,
   sleepFor,
 } from '../../../core/util';
 import { Card } from '../../../models/card.model';
@@ -65,7 +61,6 @@ import Carousel from 'react-native-reanimated-carousel';
 import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
-import Loading from '../../../components/v2/loading';
 interface CardSecrets {
   cvv: string;
   expiryMonth: string;
@@ -322,6 +317,7 @@ export default function CardScreen({
         bin: '',
         last4: '',
         network: 'pc',
+        cardProvider: currentCardProvider,
         status: CardStatus.RC_UPGRADABLE,
         type: CardType.VIRTUAL,
         designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
@@ -471,45 +467,10 @@ const RenderCardActions = ({
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(false);
   const { type, last4, status, cardId } = card;
   const isFocused = useIsFocused();
-  const [showRCCardDetailsModal, setShowRCCardDetailsModal] = useState(false);
   const [webviewUrl, setWebviewUrl] = useState('');
   const [userName, setUserName] = useState('');
   const globalContext = useContext<any>(GlobalContext);
-  const [hideTimer, setHideTimer] = useState(0);
-  const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
-  const detailsAutoCloseTime = 120;
   const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
-
-  useEffect(() => {
-    if (showRCCardDetailsModal) {
-      let hideTime = detailsAutoCloseTime;
-      setHideInterval(
-        setInterval(() => {
-          hideTime--;
-          setHideTimer(hideTime);
-        }, 1000),
-      );
-    }
-    if (!showRCCardDetailsModal) {
-      clearInterval(hideInterval);
-    }
-    return () => {
-      clearInterval(hideInterval);
-    };
-  }, [showRCCardDetailsModal]);
-
-  useEffect(() => {
-    if (hideTimer === 0) {
-      clearInterval(hideInterval);
-      setShowRCCardDetailsModal(false);
-    }
-  }, [hideTimer]);
-
-  const isLockdownModeEnabled = get(
-    cardProfile,
-    ['accountStatus'],
-    ACCOUNT_STATUS.ACTIVE,
-  );
 
   useEffect(() => {
     const checkIsRcUpgradableCardShown = async () => {
@@ -623,7 +584,7 @@ const RenderCardActions = ({
         )}/verify/reuse-token`;
         const payload = {
           reuseToken: cardRevealReuseToken,
-          stylesheetUrl: `https://public.cypherd.io/css/cardRevealMobile_${getThemeToInject()}.css`,
+          stylesheetUrl: `https://public.cypherd.io/css/${card.physicalCardType === PhysicalCardType.METAL ? 'cardRevealMobileOnMetal.css' : 'cardRevealMobileOnCard.css'}`,
         };
         try {
           const response = await postWithAuth(verifyReuseTokenUrl, payload);
@@ -632,7 +593,7 @@ const RenderCardActions = ({
             if (card.cardProvider === CardProviders.REAP_CARD) {
               setWebviewUrl(trim(response.data.token, '"'));
               setUserName(response.data.userName);
-              setShowRCCardDetailsModal(true);
+              setShowCardDetailsModal(true);
             } else {
               void sendCardDetails(response.data);
             }
@@ -699,7 +660,7 @@ const RenderCardActions = ({
       const decryptedBuffer = decrypted.toString('utf8');
       setWebviewUrl(trim(decryptedBuffer, '"'));
       setUserName(userNameValue);
-      setShowRCCardDetailsModal(true);
+      setShowCardDetailsModal(true);
       setIsFetchingCardDetails(false);
       return decryptedBuffer;
     } catch (error) {}
@@ -969,114 +930,11 @@ const RenderCardActions = ({
       <CardDetailsModal
         isModalVisible={showCardDetailsModal}
         setShowModal={setShowCardDetailsModal}
+        card={card}
         cardDetails={cardDetails}
+        webviewUrl={webviewUrl}
+        userName={userName}
       />
-
-      {showRCCardDetailsModal && (
-        <CyDModalLayout
-          isModalVisible={showRCCardDetailsModal}
-          setModalVisible={setShowRCCardDetailsModal}
-          animationIn={'slideInUp'}
-          animationOut={'slideOutDown'}
-          animationInTiming={300}
-          animationOutTiming={300}
-          style={styles.modalLayout}>
-          <CyDView className='bg-n20 py-[8px] mb-[12px] h-[440px] w-[90%] rounded-[16px]'>
-            <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
-              <CyDMaterialDesignIcons
-                name={'close'}
-                size={24}
-                className='text-base400 ml-[90%] mb-[5px]'
-              />
-            </CyDTouchView>
-            <CyDView className='flex flex-row justify-between items-center w-full mb-[12px]'>
-              <CyDText className='text-center text-[14px] w-full'>
-                Details will be hidden in {hideTimer} sec
-              </CyDText>
-            </CyDView>
-            <WebView
-              renderLoading={() => {
-                return <Loading />;
-              }}
-              source={{
-                html: `
-                <!DOCTYPE html>
-                <html lang="en">
-                  <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-                    <link href='https://fonts.googleapis.com/css?family=Manrope' rel='stylesheet'>
-                    <style>
-                      body {
-                        background-color: transparent !important;
-                        margin: 0;
-                        padding: 0;
-                      }
-                      #nameDiv {
-                        display: none;
-                        background-color: ${getThemeColor().bg};
-                        border-radius: 8px;
-                        font-family: 'Manrope';
-                        margin: 6px;
-                        padding: 12px;
-                        margin-bottom: 12px;
-                        color: ${getThemeColor().color};
-                        border: 0.5px solid ${getThemeColor().border};
-                      }
-                      #nameTitle {
-                        font-weight: 900;
-                        font-size: 16px;
-                      }
-                      #nameValue {
-                        margin-top: 4px;
-                        font-weight: bold;
-                        font-size: 16px;
-                      }
-                    </style>
-                  </head>
-                  <body style="background:transparent;overflow:hidden;padding:12px">
-                    <div id="nameDiv">
-                      <div id="nameTitle">Name:</div>
-                      <div id="nameValue">${userName}</div>
-                    </div>
-                    <iframe 
-                      id="contentFrame"
-                      scrolling="no" 
-                      src="${webviewUrl}" 
-                      allow="clipboard-read; clipboard-write" 
-                      style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;"
-                      onload="document.getElementById('nameDiv').style.display = 'block';"
-                    ></iframe>
-                    <script>
-                      document.getElementById('contentFrame').onload = function() {
-                        document.getElementById('nameDiv').style.display = 'block';
-                      }
-                    </script>
-                  </body>
-                </html>
-              `,
-              }}
-              scalesPageToFit={true}
-              // eslint-disable-next-line react-native/no-inline-styles
-              style={{
-                height: '100%',
-                width: '100%',
-                backgroundColor: 'transparent',
-                padding: 12,
-                margin: 0,
-                borderRadius: 16,
-              }}
-              androidLayerType='software'
-              javaScriptEnabled={true}
-              domStorageEnabled={true}
-              startInLoadingState={true}
-              allowFileAccess={true}
-              allowFileAccessFromFileURLs={true}
-              allowUniversalAccessFromFileURLs={true}
-            />
-          </CyDView>
-        </CyDModalLayout>
-      )}
 
       {cardProfile.provider === CardProviders.PAYCADDY && (
         <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>

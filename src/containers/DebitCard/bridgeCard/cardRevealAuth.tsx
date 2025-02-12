@@ -15,7 +15,7 @@ import * as Sentry from '@sentry/react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
-import { CardProviders } from '../../../constants/enum';
+import { CardProviders, PhysicalCardType } from '../../../constants/enum';
 import {
   generateKeys,
   generateSessionId,
@@ -169,7 +169,7 @@ export default function CardRevealAuthScreen() {
           const key = await generateKeys();
           payload = {
             otp: +num,
-            stylesheetUrl: 'https://public.cypherd.io/css/cardRevealMobile.css',
+            stylesheetUrl: `https://public.cypherd.io/css/${card.physicalCardType === PhysicalCardType.METAL ? 'cardRevealMobileOnMetal.css' : 'cardRevealMobileOnCard.css'}`,
             publicKey: key?.publicKeyBase64,
             ...(verifyOTPPayload || {}),
           };
