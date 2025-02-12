@@ -38,6 +38,7 @@ import {
   requestUserPermission,
   showNotification,
 } from '../../notification/pushNotification';
+import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 
 export const InitializeAppProvider = ({
   children,
@@ -76,6 +77,7 @@ export const InitializeAppProvider = ({
     useState<boolean>(false);
   const { url: initialUrl, updateUrl } = useInitialIntentURL();
   const [discordToken, setDiscordToken] = useState<string>('');
+  usePortfolioRefresh();
 
   useEffect(() => {
     const initializeApp = async () => {
