@@ -615,7 +615,7 @@ const Bridge: React.FC = () => {
         // Handle Odos swap gas calculation
         const gasPrice = get(response, ['data', 'gasInfo', 'gasPrice']);
         const gasLimit = get(response, ['data', 'data', 'gas']);
-        const gasPriceInWei = parseGwei(gasPrice).toString();
+        const gasPriceInWei = parseGwei(gasPrice.toString()).toString();
         const totalGasFee = BigInt(gasLimit) * BigInt(gasPriceInWei);
         if (
           CAN_ESTIMATE_L1_FEE_CHAINS.includes(
@@ -633,7 +633,10 @@ const Bridge: React.FC = () => {
               rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               gas: gasLimit,
               gasPrice,
-              gasFeeInCrypto: formatUnits(totalGasFee, 18),
+              gasFeeInCrypto: DecimalHelper.toDecimal(
+                DecimalHelper.multiply(gasLimit, gasPrice),
+                9,
+              ).toString(),
             });
           gasFeeRequired = DecimalHelper.add(
             DecimalHelper.multiply(
@@ -681,7 +684,7 @@ const Bridge: React.FC = () => {
             'evm_tx',
           ]);
           const publicClient = getViemPublicClient(
-            selectedChainDetails.backendName,
+            getWeb3Endpoint(selectedChainDetails, globalContext),
           );
 
           const requiredErc20Approvals = get(
@@ -693,7 +696,7 @@ const Bridge: React.FC = () => {
           // get Approval for EVM chains inorder to calculate the gas required
           // approval check and approval granting is only required for non-native tokens
           if (!isNativeToken) {
-            await handleTokenApprovals({
+            const approvalResp = await handleTokenApprovals({
               publicClient,
               selectedFromToken,
               requiredErc20Approvals,
@@ -702,6 +705,10 @@ const Bridge: React.FC = () => {
               hdWallet,
               globalContext,
             });
+            if (approvalResp?.isError) {
+              setError(JSON.stringify(approvalResp?.error));
+              return;
+            }
           }
 
           if (
@@ -2097,7 +2104,7 @@ const Bridge: React.FC = () => {
             );
             // approval check and approval granting is only required for non-native tokens
             if (!isNativeToken) {
-              await handleTokenApprovals({
+              const approvalResp = await handleTokenApprovals({
                 publicClient,
                 selectedFromToken,
                 requiredErc20Approvals,
@@ -2106,6 +2113,10 @@ const Bridge: React.FC = () => {
                 hdWallet,
                 globalContext,
               });
+              if (approvalResp?.isError) {
+                setError(JSON.stringify(approvalResp?.error));
+                return;
+              }
             }
 
             if (
@@ -2208,9 +2219,13 @@ const Bridge: React.FC = () => {
     for (const approval of requiredErc20Approvals) {
       const allowanceResp = await checkIfAllowanceIsEnough({
         publicClient,
-        tokenContractAddress: selectedFromToken.tokenContract as `0x${string}`,
+        tokenContractAddress: get(
+          approval,
+          'token_contract',
+          '',
+        ) as `0x${string}`,
         routerAddress: get(approval, 'spender', '') as `0x${string}`,
-        amount: get(approval, 'amount', ''),
+        amount: get(approval, 'amount', '').toString(),
       });
 
       if (!allowanceResp.isError) {

@@ -165,7 +165,7 @@ export default function useTransactionManager() {
         isErc20,
       });
 
-      if (gasEstimateResponse.isError) {
+      if (gasEstimateResponse?.isError) {
         return { isError: true, error: gasEstimateResponse.error };
       }
 
@@ -179,26 +179,13 @@ export default function useTransactionManager() {
         ...(contractData && { data: contractData }),
         ...(gasEstimateResponse.isEIP1599Supported
           ? {
-              maxPriorityFeePerGas: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.priorityFee,
-                  9,
-                ).toString(),
+              maxPriorityFeePerGas: parseGwei(
+                String(gasEstimateResponse.priorityFee),
               ),
-              maxFeePerGas: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.maxFee,
-                  9,
-                ).toString(),
-              ),
+              maxFeePerGas: parseGwei(String(gasEstimateResponse.maxFee)),
             }
           : {
-              gasPrice: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.gasPrice,
-                  9,
-                ).toString(),
-              ),
+              gasPrice: parseGwei(String(gasEstimateResponse.gasPrice)),
             }),
       };
 
@@ -1696,8 +1683,15 @@ export default function useTransactionManager() {
     routerAddress: Address;
     amount: string;
   }): Promise<CheckAllowanceResponse> => {
+    console.log('🚀 ~ useTransactionManager ~ amount:', amount);
+    console.log('🚀 ~ useTransactionManager ~ routerAddress:', routerAddress);
+    console.log(
+      '🚀 ~ useTransactionManager ~ tokenContractAddress:',
+      tokenContractAddress,
+    );
     try {
       const { ethereum } = get(hdWallet, ['state', 'wallet']);
+      console.log('🚀 ~ useTransactionManager ~ ethereum:', ethereum);
 
       const contract = getContract({
         address: tokenContractAddress,
@@ -1709,6 +1703,8 @@ export default function useTransactionManager() {
         ethereum.address as Address,
         routerAddress,
       ]);
+
+      console.log('🚀 ~ allowance:', allowance);
 
       const tokenAmount = DecimalHelper.fromString(amount).ceil();
 

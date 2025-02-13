@@ -314,14 +314,11 @@ export default function useGasService() {
       const finalGasPrice = gasPriceDetail.isEIP1599Supported
         ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
         : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
-
       let gasFeeInCrypto = '0';
 
       const totalFeeInWei = DecimalHelper.multiply(finalGasPrice, gasLimit);
       const totalGasFeeInBigInt = BigInt(totalFeeInWei.toFixed(0));
       gasFeeInCrypto = formatGwei(totalGasFeeInBigInt);
-      const hexGasPrice = toHex(totalGasFeeInBigInt);
-
       if (gasPriceDetail.isEIP1599Supported) {
         return {
           gasFeeInCrypto,
@@ -335,7 +332,7 @@ export default function useGasService() {
         return {
           gasFeeInCrypto,
           gasLimit,
-          gasPrice: hexGasPrice,
+          gasPrice: finalGasPrice,
           isEIP1599Supported: false,
         };
       }
