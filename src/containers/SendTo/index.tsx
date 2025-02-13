@@ -13,7 +13,7 @@ import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import Fuse from 'fuse.js';
-import { get, random } from 'lodash';
+import { get } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
@@ -26,9 +26,7 @@ import TokenSendConfirmationModal from '../../components/v2/tokenSendConfirmatio
 import { AnalyticsType, ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
-  Chain,
   CHAIN_ETH,
-  ChainBackendNames,
   ChainNames,
   ChainNameToContactsChainNameMapping,
   COSMOS_CHAINS,
@@ -45,6 +43,7 @@ import {
   formatAmount,
   getMaskedAddress,
   getSendAddressFieldPlaceholder,
+  getViemPublicClient,
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
@@ -96,6 +95,7 @@ import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isAddress } from 'web3-validator';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import usePortfolio from '../../hooks/usePortfolio';
+import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -313,9 +313,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   }, [isFocused]);
 
   const fetchNativeTokenDetails = async () => {
-    const nativeToken = await getNativeToken(
-      chainDetails.backendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(chainDetails.backendName);
     setNativeTokenDetails(nativeToken);
   };
 
@@ -512,14 +510,18 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
     if (chainName === ChainNames.ETH) {
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(tokenData.chainDetails, globalContext),
+      );
       gasEstimate = await estimateGasForEvm({
-        web3: new Web3(getWeb3Endpoint(tokenData.chainDetails, globalContext)),
-        chain: tokenData.chainDetails.backendName as ChainBackendNames,
-        fromAddress: address ?? '',
-        toAddress: address ?? '',
+        publicClient,
+        chain: tokenData.chainDetails.backendName,
+        fromAddress: (address ?? '') as `0x${string}`,
+        toAddress: (address ?? '') as `0x${string}`,
         amountToSend: tokenData.balanceDecimal,
-        contractAddress: tokenData.contractAddress,
+        contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
+        isErc20: !tokenData.isNativeToken,
       });
     } else if (chainName === ChainNames.SOLANA) {
       gasEstimate = await estimateGasForSolana({
@@ -538,10 +540,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         toAddress: address ?? '',
       });
     }
-    if (!gasEstimate) {
+    if (gasEstimate?.isError) {
       throw new Error('Gas estimation failed');
     }
-    return { gasFeeInCrypto: Number(gasEstimate.gasFeeInCrypto) };
+    return { gasFeeInCrypto: Number(gasEstimate?.gasFeeInCrypto) };
   };
 
   const submitSendTransaction = async () => {
@@ -780,21 +782,15 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       isModalVisible: false,
     });
     setLoading(true);
-    let response: {
-      isError: boolean;
-      hash: string;
-      error?: string;
-      gasFeeInCrypto?: string | undefined;
-      contractData?: string;
-    };
+    let response;
     if (chainDetails?.chainName === ChainNames.ETH) {
       const ethereum = hdWalletContext.state.wallet.ethereum;
       fromAddress = ethereum.address;
       response = await sendEvmToken({
         chain: tokenData.chainDetails.backendName,
         amountToSend,
-        toAddress: addressRef.current,
-        contractAddress: tokenData.contractAddress,
+        toAddress: addressRef.current as `0x${string}`,
+        contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
         symbol: tokenData.symbol,
       });
@@ -874,9 +870,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         type: AnalyticsType.SUCCESS,
         txnHash: response?.hash,
         chain: chainDetails?.backendName ?? '',
-        ...(response?.contractData
-          ? { contractData: response?.contractData }
-          : ''),
         screen: route.name,
         address: get(senderAddress, chainDetails.chainName, ''),
         other: {

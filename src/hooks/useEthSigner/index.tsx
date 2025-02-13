@@ -131,8 +131,8 @@ export default function useEthSigner() {
     };
 
     // Send transaction with estimated values
-    const hash = await sendTransactionAsync({
-      account: transactionToBeSigned.from,
+    const sendTransactionPromise = sendTransactionAsync({
+      account: transactionToBeSigned.from as `0x${string}`,
       to: transactionToBeSigned.to,
       chainId,
       value: BigInt(transactionToBeSigned.value),
