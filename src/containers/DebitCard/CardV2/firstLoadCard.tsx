@@ -135,7 +135,6 @@ export default function FirstLoadCard() {
   const [planPageVisible, setPlanPageVisible] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  const [warningMessage, setWarningMessage] = useState<string>('');
 
   useEffect(() => {
     if (amount) {
@@ -362,6 +361,7 @@ export default function FirstLoadCard() {
               amountToSend: amountInCrypto,
               contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
+              isErc20: !selectedToken?.isNativeToken,
             });
             if (!gasDetails.isError) {
               // Adjust the amountInCrypto with the estimated gas fee
@@ -984,6 +984,7 @@ export default function FirstLoadCard() {
             amountToSend: actualTokensRequired,
             contractAddress: contractAddress as `0x${string}`,
             contractDecimals,
+            isErc20: !selectedToken?.isNativeToken,
           });
         }
       } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {

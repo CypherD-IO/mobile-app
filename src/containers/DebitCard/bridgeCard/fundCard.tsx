@@ -181,6 +181,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amountToSend: actualTokensRequired,
             contractAddress: contractAddress as `0x${string}`,
             contractDecimals,
+            isErc20: !selectedToken?.isNativeToken,
           });
         }
       } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
@@ -493,36 +494,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return true;
   };
 
-  // const getGasDetails = async (backendName: ChainBackendNames) => {
-  //   if (COSMOS_CHAINS.includes(backendName)) {
-  //     const gasDetails = await estimateGasForCosmos({
-  //       chain: selectedToken?.chainDetails,
-  //       denom: selectedToken?.denom,
-  //       amount: selectedToken?.balanceDecimal,
-  //       fromAddress: wallet[selectedToken?.chainDetails.chainName].address,
-  //       toAddress: wallet[selectedToken?.chainDetails.chainName].address,
-  //       signer: await getCosmosSignerClient(
-  //         selectedToken?.chainDetails.chainName,
-  //       ),
-  //     });
-  //     return gasDetails;
-  //   } else {
-  //     const web3 = new Web3(
-  //       getWeb3Endpoint(selectedToken?.chainDetails, globalContext),
-  //     );
-  //     const gasDetails = await estimateGasForEvm({
-  //       web3,
-  //       chain: selectedToken?.chainDetails.backendName as ChainBackendNames,
-  //       fromAddress: ethereum.address,
-  //       toAddress: ethereum.address,
-  //       amountToSend: selectedToken?.balanceDecimal,
-  //       contractAddress: selectedToken?.contractAddress,
-  //       contractDecimals: selectedToken?.contractDecimals,
-  //     });
-  //     return gasDetails;
-  //   }
-  // };
-
   const onSelectingToken = async (item: Holding) => {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
@@ -602,6 +573,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               amountToSend: amountInCrypto,
               contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
+              isErc20: !selectedToken?.isNativeToken,
             });
             if (!gasDetails.isError) {
               // Adjust the amountInCrypto with the estimated gas fee

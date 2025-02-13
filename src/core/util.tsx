@@ -234,7 +234,7 @@ export function getExplorerUrl(
       } else if (chainName === CHAIN_ZKSYNC_ERA.name) {
         return `https://explorer.zksync.io/tx/${hash}`;
       } else if (chainName === CHAIN_BASE.name) {
-        return `https://base.dex.guru/tx/${hash}`;
+        return `https://basescan.org/tx/${hash}`;
       } else if (chainName === CHAIN_POLYGON_ZKEVM.name) {
         return `https://zkevm.polygonscan.com/tx/${hash}`;
       } else if (chainName === CHAIN_AURORA.name) {

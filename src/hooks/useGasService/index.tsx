@@ -256,7 +256,7 @@ export default function useGasService() {
       let contractData;
       if (contractDataUser) {
         contractData = contractDataUser;
-      } else {
+      } else if (isErc20) {
         const abi = [
           {
             name: 'transfer',
@@ -296,7 +296,7 @@ export default function useGasService() {
           value: isErc20
             ? parseEther('0')
             : parseUnits(amountToSend, contractDecimals),
-          ...(isErc20 && { data: contractData }),
+          ...(isErc20 && contractData && { data: contractData }),
         }),
       );
       const code = await publicClient.getCode({

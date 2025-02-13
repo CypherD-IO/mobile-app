@@ -60,6 +60,7 @@ import {
   getViemPublicClient,
   getWeb3Endpoint,
   HdWalletContext,
+  isNativeToken,
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
@@ -170,7 +171,7 @@ export default function useTransactionManager() {
 
       const txnPayload = {
         from: ethereum.address,
-        to: toAddress,
+        to: isErc20 ? contractAddress : toAddress,
         gas: BigInt(gasEstimateResponse.gasLimit),
         value: isErc20
           ? parseEther('0')
@@ -294,7 +295,7 @@ export default function useTransactionManager() {
       publicClient,
       chain: chainConfig,
       amountToSend: '0',
-      toAddress: contractAddress,
+      toAddress,
       contractAddress,
       contractDecimals,
       contractData,
@@ -933,6 +934,7 @@ export default function useTransactionManager() {
         contractAddress: tokenContractAddress,
         contractDecimals: 18,
         contractData,
+        isErc20: !isNativeToken(tokenContractAddress),
       });
 
       if (gasEstimateResponse.isError) {

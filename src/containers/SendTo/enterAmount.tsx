@@ -120,6 +120,7 @@ export default function EnterAmount(props: any) {
         amountToSend: tokenData.balanceDecimal,
         contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
+        isErc20: !isNativeToken(tokenData),
       });
     } else if (chainName === ChainNames.SOLANA) {
       const solana = hdWallet.state.wallet.solana;

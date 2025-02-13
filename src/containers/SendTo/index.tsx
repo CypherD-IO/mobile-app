@@ -509,6 +509,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     address: string,
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
+    const amountToSend = limitDecimalPlaces(
+      valueForUsd,
+      tokenData.contractDecimals,
+    );
     if (chainName === ChainNames.ETH) {
       const publicClient = getViemPublicClient(
         getWeb3Endpoint(tokenData.chainDetails, globalContext),
@@ -518,7 +522,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         chain: tokenData.chainDetails.backendName,
         fromAddress: (address ?? '') as `0x${string}`,
         toAddress: (address ?? '') as `0x${string}`,
-        amountToSend: tokenData.balanceDecimal,
+        amountToSend,
         contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
         isErc20: !tokenData.isNativeToken,
@@ -527,7 +531,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       gasEstimate = await estimateGasForSolana({
         fromAddress: address ?? '',
         toAddress: address ?? '',
-        amountToSend: tokenData.balanceDecimal,
+        amountToSend,
         contractAddress: tokenData.contractAddress,
         contractDecimals: tokenData.contractDecimals,
       });
@@ -535,7 +539,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       gasEstimate = await estimateGasForCosmosRest({
         chain: tokenData.chainDetails,
         denom: tokenData.denom,
-        amount: tokenData.balanceDecimal,
+        amount: amountToSend,
         fromAddress: address ?? '',
         toAddress: address ?? '',
       });

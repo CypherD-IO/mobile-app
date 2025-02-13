@@ -3025,3 +3025,9 @@ const Bridge: React.FC = () => {
 };
 
 export default Bridge;
+
+const styles = StyleSheet.create({
+  loaderStyle: {
+    height: 22,
+  },
+});

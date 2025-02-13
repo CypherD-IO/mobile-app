@@ -133,22 +133,8 @@ export default function useEthSigner() {
     // Send transaction with estimated values
     const sendTransactionPromise = sendTransactionAsync({
       account: transactionToBeSigned.from as `0x${string}`,
-      to: transactionToBeSigned.to,
       chainId,
-      value: BigInt(transactionToBeSigned.value),
-      data: transactionToBeSigned?.data ?? '0x',
-      gas: transactionToBeSigned.gas
-        ? BigInt(transactionToBeSigned.gas)
-        : undefined,
-      gasPrice: transactionToBeSigned.gasPrice
-        ? BigInt(transactionToBeSigned.gasPrice)
-        : undefined,
-      maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas
-        ? BigInt(transactionToBeSigned.maxPriorityFeePerGas)
-        : undefined,
-      maxFeePerGas: transactionToBeSigned.maxFeePerGas
-        ? BigInt(transactionToBeSigned.maxFeePerGas)
-        : undefined,
+      ...transactionToBeSigned,
     });
     const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
     cleanup();
@@ -177,49 +163,12 @@ export default function useEthSigner() {
       clearTimeout(timer);
     };
 
-    const contractAbiFragment = [
-      {
-        name: 'transfer',
-        type: 'function',
-        inputs: [
-          {
-            name: '_to',
-            type: 'address',
-          },
-          {
-            type: 'uint256',
-            name: '_tokens',
-          },
-        ],
-        constant: false,
-        outputs: [],
-        payable: false,
-      },
-    ];
-
-    const writeContractPromise = writeContractAsync({
-      abi: contractAbiFragment,
-      address: transactionToBeSigned.to,
-      functionName: 'transfer',
-      args: [
-        transactionToBeSigned.contractParams?.toAddress,
-        BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
-      ],
+    const sendTransactionPromise = sendTransactionAsync({
+      account: transactionToBeSigned.from as `0x${string}`,
       chainId,
-      gas: transactionToBeSigned.gas
-        ? BigInt(transactionToBeSigned.gas)
-        : undefined,
-      gasPrice: transactionToBeSigned.gasPrice
-        ? BigInt(transactionToBeSigned.gasPrice)
-        : undefined,
-      maxFeePerGas: transactionToBeSigned.maxFeePerGas
-        ? BigInt(transactionToBeSigned.maxFeePerGas)
-        : undefined,
-      maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas
-        ? BigInt(transactionToBeSigned.maxPriorityFeePerGas)
-        : undefined,
+      ...transactionToBeSigned,
     });
-    const hash = await Promise.race([writeContractPromise, timeoutPromise]);
+    const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
     cleanup();
 
     return hash;
@@ -230,7 +179,7 @@ export default function useEthSigner() {
     sendChain,
     transactionToBeSigned,
     tokens,
-  }: EthSingerParams): Promise<`0x${string}`> => {
+  }: EthSingerParams): Promise<string> => {
     const connectionType = await getConnectionType();
 
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
@@ -259,7 +208,7 @@ export default function useEthSigner() {
         abi: allowanceApprovalContractABI,
         address: transactionToBeSigned.to,
         functionName: 'approve',
-        args: [transactionToBeSigned.to, tokens],
+        args: [transactionToBeSigned.to, BigInt(tokens ?? 0)],
         chainId: chainConfig.id,
       });
       const receipt = await getTransactionReceipt(response, chainConfig.id);
@@ -282,7 +231,7 @@ export default function useEthSigner() {
     // First attempt: Direct transaction
     try {
       let hash;
-      if (transactionToBeSigned.contractParams) {
+      if (transactionToBeSigned.data) {
         hash = await sendToken({
           transactionToBeSigned,
           chainId: chainConfig.id,
@@ -306,7 +255,7 @@ export default function useEthSigner() {
       // Second attempt: Find transaction
       try {
         const hash = await findTransaction(
-          transactionToBeSigned.from,
+          transactionToBeSigned.from as `0x${string}`,
           transactionToBeSigned.to,
           BigInt(transactionToBeSigned.value),
           chainConfig.id,
@@ -325,162 +274,88 @@ export default function useEthSigner() {
     rpc,
     sendChain,
     transactionToBeSigned,
-  }: EthSingerParams) => {
-    try {
-      const connectionType = await getConnectionType();
+  }: EthSingerParams): Promise<`0x${string}`> => {
+    const connectionType = await getConnectionType();
 
-      if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-        const connectedChain = getChainId(wagmiConfig);
-        const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
-        if (
-          walletInfo?.name === 'MetaMask Wallet' &&
-          connectedChain !== chainConfig.id
-        ) {
-          try {
-            setTimeout(() => {
-              const currentConnectedChain = getChainId(wagmiConfig);
-              if (
-                Platform.OS === 'android' &&
-                currentConnectedChain !== chainConfig.id
-              ) {
-                showModal('state', {
-                  type: 'warning',
-                  title: `Switch to ${chainConfig.name} chain`,
-                  description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain and try again.`,
-                  onSuccess: () => {
-                    hideModal();
-                    redirectToMetaMask();
-                    navigation.goBack();
-                  },
-                  onFailure: () => {
-                    hideModal();
-                    navigation.goBack();
-                  },
-                });
-              }
-            }, 2000);
-            await switchChainAsync({
-              chainId: chainConfig.id,
-            });
-            await sleepFor(1000);
-          } catch (e) {
-            Sentry.captureException(e);
-            setTimeout(() => {
+    if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+      const connectedChain = getChainId(wagmiConfig);
+      const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
+      if (
+        walletInfo?.name === 'MetaMask Wallet' &&
+        connectedChain !== chainConfig.id
+      ) {
+        try {
+          setTimeout(() => {
+            const currentConnectedChain = getChainId(wagmiConfig);
+            if (
+              Platform.OS === 'android' &&
+              currentConnectedChain !== chainConfig.id
+            ) {
               showModal('state', {
-                type: 'error',
-                title: "Couldn't Switch Chain",
-                description: e,
+                type: 'warning',
+                title: `Switch to ${chainConfig.name} chain`,
+                description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain and try again.`,
                 onSuccess: () => {
                   hideModal();
+                  redirectToMetaMask();
+                  navigation.goBack();
                 },
                 onFailure: () => {
                   hideModal();
+                  navigation.goBack();
                 },
               });
-            }, MODAL_HIDE_TIMEOUT_250);
-          }
-        }
-        let hash;
-        try {
-          hash = await handleTransaction(transactionToBeSigned, chainConfig);
-        } catch (error) {
-          Sentry.captureException(error);
-          showModal('state', {
-            type: 'error',
-            title: 'Transaction Failed',
-            description: error.message,
-            onSuccess: () => {
-              hideModal();
-              navigation.goBack();
-            },
-            onFailure: () => {
-              hideModal();
-              navigation.goBack();
-            },
+            }
+          }, 2000);
+          await switchChainAsync({
+            chainId: chainConfig.id,
           });
-          throw error;
+          await sleepFor(1000);
+        } catch (e) {
+          Sentry.captureException(e);
+          setTimeout(() => {
+            showModal('state', {
+              type: 'error',
+              title: "Couldn't Switch Chain",
+              description: e,
+              onSuccess: () => {
+                hideModal();
+              },
+              onFailure: () => {
+                hideModal();
+              },
+            });
+          }, MODAL_HIDE_TIMEOUT_250);
         }
-        return hash;
-      } else {
-        return await signAndSendEthTransaction({
-          rpc,
-          transactionToBeSigned,
-        });
-        // const privateKey = await loadPrivateKeyFromKeyChain(
-        //   false,
-        //   hdWalletContext.state.pinValue,
-        // );
-        // if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        // const signedTransaction = await web3.eth.accounts.signTransaction(
-        //   transactionToBeSigned,
-        //   privateKey,
-        // );
-        // let txHash: string;
-        // const hash = await new Promise((resolve, reject) => {
-        //   void web3.eth
-        //     .sendSignedTransaction(String(signedTransaction.rawTransaction))
-        //     .once('transactionHash', function (_hash: string) {
-        //       txHash = _hash;
-        //       Toast.show({
-        //         type: 'info',
-        //         text1: 'Transaction Hash',
-        //         text2: _hash,
-        //         position: 'bottom',
-        //       });
-        //     })
-        //     .once('receipt', function (receipt: any) {
-        //       resolve(receipt.transactionHash);
-        //     })
-        //     .on('confirmation', () => {
-        //       // expression expected
-        //     })
-        //     .on('error', function (error: any) {
-        //       if (!txHash) {
-        //         reject(error);
-        //       } else {
-        //         setTimeout(() => {
-        //           void (async () => {
-        //             const receipt =
-        //               await web3.eth.getTransactionReceipt(txHash);
-        //             if (receipt?.status) {
-        //               Toast.show({
-        //                 type: 'success',
-        //                 text1: 'Transaction',
-        //                 text2: 'Transaction Receipt Received',
-        //                 position: 'bottom',
-        //               });
-        //               resolve(receipt.transactionHash);
-        //             } else {
-        //               Sentry.captureException(error.message ?? error);
-        //               Toast.show({
-        //                 type: 'error',
-        //                 text1: 'Transaction Error',
-        //                 text2: error.message,
-        //                 position: 'bottom',
-        //               });
-        //               reject(error);
-        //             }
-        //           })();
-        //         }, 5000);
-        //       }
-        //     })
-        //     .then(async function (receipt: { transactionHash: string }) {
-        //       Toast.show({
-        //         type: 'success',
-        //         text1: 'Transaction',
-        //         text2: 'Transaction Receipt Received',
-        //         position: 'bottom',
-        //       });
-        //       resolve(receipt.transactionHash);
-        //     });
-        // });
-        // return hash;
-        // } else {
-        //   throw new Error('Authentication failed');
-        // }
       }
-    } catch (e: any) {
-      throw new Error(e);
+      try {
+        const hash = await handleTransaction(
+          transactionToBeSigned,
+          chainConfig,
+        );
+        return hash as `0x${string}`;
+      } catch (error: unknown) {
+        Sentry.captureException(error);
+        showModal('state', {
+          type: 'error',
+          title: 'Transaction Failed',
+          description: (error as Error).message,
+          onSuccess: () => {
+            hideModal();
+            navigation.goBack();
+          },
+          onFailure: () => {
+            hideModal();
+            navigation.goBack();
+          },
+        });
+        throw error;
+      }
+    } else {
+      return await signAndSendEthTransaction({
+        rpc,
+        transactionToBeSigned,
+      });
     }
   };
 
