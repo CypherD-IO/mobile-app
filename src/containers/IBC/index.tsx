@@ -395,7 +395,6 @@ export default function IBC({
         : limitDecimalPlaces(maxAmount.toString(), 6);
       setAmount(textAmount);
     } catch (error) {
-      console.error('Error calculating max amount:', error);
       // Handle error appropriately
     } finally {
       setMaxLoading(false);

@@ -806,7 +806,6 @@ const Bridge: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('Error in checkBalanceAndCalculateAmount:', error);
       setError(error?.message ?? 'An unexpected error occurred');
     } finally {
       setTimeout(() => {
@@ -2180,7 +2179,6 @@ const Bridge: React.FC = () => {
           setIndex(1);
         }
       } catch (error) {
-        console.error('Error in balance and gas check:', error);
         setError(parseErrorMessage(error) || 'An unexpected error occurred');
       }
     } catch (error) {
