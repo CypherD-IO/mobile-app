@@ -316,6 +316,19 @@ const Bridge: React.FC = () => {
     });
   };
 
+  const getSelectedChainAddress = () => {
+    return get(
+      hdWallet,
+      [
+        'state',
+        'wallet',
+        get(ChainIdNameMapping, selectedFromChain?.chainId, 'ethereum'),
+        'address',
+      ],
+      '',
+    );
+  };
+
   const fetchData = async () => {
     try {
       setLoading({ ...loading, pageLoading: true });
@@ -352,6 +365,17 @@ const Bridge: React.FC = () => {
         chain: 'Bridge data token fetch',
         message: parseErrorMessage(err),
         screen: route.name,
+        address: getSelectedChainAddress(),
+        other: {
+          selectedFromChain: selectedFromChain?.chainName,
+          selectedToChain: selectedToChain?.chainName,
+          selectedFromToken: selectedFromToken?.name,
+          selectedToToken: selectedToToken?.name,
+          selectedFromAmount: cryptoAmount,
+          selectedToAmount: amountOut,
+          selectedFromUsdAmount: usdAmount,
+          selectedToUsdAmount: usdAmountOut,
+        },
       });
     }
   };
@@ -1068,6 +1092,17 @@ const Bridge: React.FC = () => {
           chain: selectedFromChain?.chainName ?? '',
           message: `Bridge Quote error: ${parseErrorMessage(quoteError) ?? String(quoteError)}`,
           screen: route.name,
+          address: getSelectedChainAddress(),
+          other: {
+            selectedFromChain: selectedFromChain?.chainName,
+            selectedToChain: selectedToChain?.chainName,
+            selectedFromToken: selectedFromToken?.name,
+            selectedToToken: selectedToToken?.name,
+            selectedFromAmount: cryptoAmount,
+            selectedToAmount: amountOut,
+            selectedFromUsdAmount: usdAmount,
+            selectedToUsdAmount: usdAmountOut,
+          },
         });
       }
     }
@@ -1214,6 +1249,17 @@ const Bridge: React.FC = () => {
           chain: selectedFromChain.chainName,
           message: parseErrorMessage(fetchError),
           screen: route.name,
+          address: getSelectedChainAddress(),
+          other: {
+            selectedFromChain: selectedFromChain?.chainName,
+            selectedToChain: selectedToChain?.chainName,
+            selectedFromToken: selectedFromToken?.name,
+            selectedToToken: selectedToToken?.name,
+            selectedFromAmount: cryptoAmount,
+            selectedToAmount: amountOut,
+            selectedFromUsdAmount: usdAmount,
+            selectedToUsdAmount: usdAmountOut,
+          },
         });
         showModal('state', {
           type: 'error',
@@ -1291,6 +1337,17 @@ const Bridge: React.FC = () => {
           chain: selectedFromChain.chainName,
           message: parseErrorMessage(e),
           screen: route.name,
+          address: getSelectedChainAddress(),
+          other: {
+            selectedFromChain: selectedFromChain?.chainName,
+            selectedToChain: selectedToChain?.chainName,
+            selectedFromToken: selectedFromToken?.name,
+            selectedToToken: selectedToToken?.name,
+            selectedFromAmount: cryptoAmount,
+            selectedToAmount: amountOut,
+            selectedFromUsdAmount: usdAmount,
+            selectedToUsdAmount: usdAmountOut,
+          },
         });
       }
     }
@@ -1911,6 +1968,17 @@ const Bridge: React.FC = () => {
             type: AnalyticsType.SUCCESS,
             txnHash: response.receipt.transactionHash,
             chain: selectedFromChain.chainName,
+            address: getSelectedChainAddress(),
+            other: {
+              selectedFromChain: selectedFromChain?.chainName,
+              selectedToChain: selectedToChain?.chainName,
+              selectedFromToken: selectedFromToken?.name,
+              selectedToToken: selectedToToken?.name,
+              selectedFromAmount: cryptoAmount,
+              selectedToAmount: amountOut,
+              selectedFromUsdAmount: usdAmount,
+              selectedToUsdAmount: usdAmountOut,
+            },
           });
           void analytics().logEvent('SWAP_SUCCESS');
           void refreshPortfolio();
@@ -1937,6 +2005,17 @@ const Bridge: React.FC = () => {
             chain: selectedFromChain.chainName,
             message: parseErrorMessage(response.error),
             screen: route.name,
+            address: getSelectedChainAddress(),
+            other: {
+              selectedFromChain: selectedFromChain?.chainName,
+              selectedToChain: selectedToChain?.chainName,
+              selectedFromToken: selectedFromToken?.name,
+              selectedToToken: selectedToToken?.name,
+              selectedFromAmount: cryptoAmount,
+              selectedToAmount: amountOut,
+              selectedFromUsdAmount: usdAmount,
+              selectedToUsdAmount: usdAmountOut,
+            },
           });
           void analytics().logEvent('SWAP_ERROR', {
             error: response.error,
@@ -1961,6 +2040,17 @@ const Bridge: React.FC = () => {
         chain: selectedFromChain?.chainName ?? '',
         message: parseErrorMessage(err),
         screen: route.name,
+        address: getSelectedChainAddress(),
+        other: {
+          selectedFromChain: selectedFromChain?.chainName,
+          selectedToChain: selectedToChain?.chainName,
+          selectedFromToken: selectedFromToken?.name,
+          selectedToToken: selectedToToken?.name,
+          selectedFromAmount: cryptoAmount,
+          selectedToAmount: amountOut,
+          selectedFromUsdAmount: usdAmount,
+          selectedToUsdAmount: usdAmountOut,
+        },
       });
       void analytics().logEvent('SWAP_ERROR', {
         error: err,
