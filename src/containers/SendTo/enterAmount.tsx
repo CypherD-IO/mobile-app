@@ -243,6 +243,8 @@ export default function EnterAmount(props: any) {
         isNativeToken(tokenData) &&
         CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
       ) {
+        console.log('🚀 ~ onMaxPress ~  if');
+
         const publicClient = getViemPublicClient(
           getWeb3Endpoint(tokenData.chainDetails, globalContext),
         );
@@ -256,7 +258,12 @@ export default function EnterAmount(props: any) {
           publicClient,
           rpc: getWeb3Endpoint(tokenData.chainDetails, globalContext),
         });
+        console.log(
+          '🚀 ~ onMaxPress ~ gasReservedForNativeToken:',
+          gasReservedForNativeToken,
+        );
       } else if (isNativeToken(tokenData)) {
+        console.log('🚀 ~ onMaxPress ~ else if');
         const gasFeeDetails = await getGasFee(
           tokenData.chainDetails?.chainName,
         );

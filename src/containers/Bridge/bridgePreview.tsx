@@ -2,16 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import Loading from '../../components/v2/loading';
-import {
-  capitalize,
-  endsWith,
-  find,
-  get,
-  isEmpty,
-  isNumber,
-  round,
-} from 'lodash';
-import { ethers } from 'ethers';
+import { capitalize, endsWith, find, get, isEmpty, isNumber } from 'lodash';
 import {
   CyDFastImage,
   CyDMaterialDesignIcons,
@@ -30,6 +21,7 @@ import { ActivityType } from '../../reducers/activity_reducer';
 import useIsSignable from '../../hooks/useIsSignable';
 import BackgroundTimer from 'react-native-background-timer';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { formatUnits } from 'viem';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -292,7 +284,7 @@ export default function BridgeRoutePreview({
                       <CyDView className='flex flex-row gap-x-[8px] items-center'>
                         <CyDText className='text-[18px] font-bold'>
                           {DecimalHelper.toString(
-                            DecimalHelper.removeDecimals(
+                            DecimalHelper.toDecimal(
                               currentOperation.amount_in,
                               token?.decimals ?? 0,
                             ),
@@ -316,7 +308,7 @@ export default function BridgeRoutePreview({
                       <CyDView className='flex flex-row gap-x-[8px] items-center'>
                         <CyDText className='text-[18px] font-bold'>
                           {DecimalHelper.toString(
-                            DecimalHelper.removeDecimals(
+                            DecimalHelper.toDecimal(
                               currentOperation.amount_out,
                               tokenOut?.decimals ?? 0,
                             ),
@@ -344,7 +336,7 @@ export default function BridgeRoutePreview({
                       index === routeResponse?.chain_ids.length - 1 && (
                         <CyDView className='flex flex-row gap-x-[8px] items-center'>
                           <CyDText className='text-[18px] font-bold'>
-                            {ethers.formatUnits(routeResponse.amount_out, 6)}
+                            {formatUnits(routeResponse.amount_out, 6)}
                           </CyDText>
                           {endsWith(tokenOut?.logoUrl, '.svg') ? (
                             <SvgUri

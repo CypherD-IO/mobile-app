@@ -67,7 +67,6 @@ import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { Transaction } from '@solana/web3.js';
 import clsx from 'clsx';
-import { ethers } from 'ethers';
 import { StyleSheet } from 'react-native';
 import JSONTree from 'react-native-json-tree';
 import { SvgUri } from 'react-native-svg';
@@ -87,7 +86,6 @@ import {
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 import useSkipApiBridge from '../../core/skipApi';
-import { GasPriceDetail } from '../../core/types';
 import useIsSignable from '../../hooks/useIsSignable';
 import usePortfolio from '../../hooks/usePortfolio';
 import useTransactionManager from '../../hooks/useTransactionManager';
@@ -129,7 +127,6 @@ import {
   toHex,
 } from 'viem';
 import { allowanceApprovalContractABI } from '../../core/swap';
-import { getPublicClient } from '@wagmi/core';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -616,13 +613,10 @@ const Bridge: React.FC = () => {
       let gasFeeRequired;
       if (isOdosSwap()) {
         // Handle Odos swap gas calculation
-        const publicClient = getViemPublicClient(
-          selectedChainDetails.backendName,
-        );
-        const gasPriceDetail = get(response, ['data', 'gasInfo', 'gasPrice']);
-        const gasLimit = get(response, ['data', 'gasEstimate']);
-        const gasPriceWei = parseUnits(gasPriceDetail.toString(), 9);
-        const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
+        const gasPrice = get(response, ['data', 'gasInfo', 'gasPrice']);
+        const gasLimit = get(response, ['data', 'data', 'gas']);
+        const gasPriceInWei = parseGwei(gasPrice).toString();
+        const totalGasFee = BigInt(gasLimit) * BigInt(gasPriceInWei);
         if (
           CAN_ESTIMATE_L1_FEE_CHAINS.includes(
             selectedChainDetails.backendName,
@@ -631,33 +625,26 @@ const Bridge: React.FC = () => {
         ) {
           const gasFeeRequiredToReserve =
             await estimateReserveFeeForCustomContract({
-              tokenData: nativeToken,
+              tokenData: nativeToken as any,
               fromAddress: hdWallet?.state?.wallet?.ethereum
                 ?.address as `0x${string}`,
-              sendAddress: hdWallet?.state?.wallet?.ethereum
+              toAddress: hdWallet?.state?.wallet?.ethereum
                 ?.address as `0x${string}`,
-              publicClient,
-              web3Endpoint: getWeb3Endpoint(
-                selectedChainDetails,
-                globalContext,
-              ),
+              rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               gas: gasLimit,
-              gasPrice: gasPriceDetail,
-              gasFeeInCrypto: DecimalHelper.removeDecimals(
-                totalWei,
-                18,
-              ).toString(),
+              gasPrice,
+              gasFeeInCrypto: formatUnits(totalGasFee, 18),
             });
           gasFeeRequired = DecimalHelper.add(
             DecimalHelper.multiply(
-              formatUnits(BigInt(totalWei.toFixed(0)), 18),
+              formatUnits(totalGasFee, 18),
               GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
             ),
             gasFeeRequiredToReserve,
           );
         } else {
           gasFeeRequired = DecimalHelper.multiply(
-            formatUnits(BigInt(totalWei.toFixed(0)), 18),
+            formatUnits(totalGasFee, 18),
             GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
           ).toString();
         }
@@ -796,7 +783,7 @@ const Bridge: React.FC = () => {
         } else {
           setUsdAmount(skipResponseQuoteData.usd_amount_in);
           setAmountOut(
-            ethers.formatUnits(
+            formatUnits(
               skipResponseQuoteData?.amount_out,
               selectedToToken?.decimals,
             ),
@@ -999,7 +986,7 @@ const Bridge: React.FC = () => {
   const getBridgeQuoteFromApi = async (amount: string) => {
     const routeBody = {
       amountIn: DecimalHelper.toString(
-        DecimalHelper.applyDecimals(
+        DecimalHelper.toInteger(
           DecimalHelper.round(amount, selectedFromToken.decimals),
           min([10, selectedFromToken.decimals]),
         ),
@@ -1115,8 +1102,8 @@ const Bridge: React.FC = () => {
           setQuoteData(responseQuoteData);
           setUsdAmount(responseQuoteData?.usd_amount_in);
           setAmountOut(
-            ethers.formatUnits(
-              responseQuoteData?.amount_out,
+            formatUnits(
+              BigInt(responseQuoteData?.amount_out),
               selectedToToken?.decimals,
             ),
           );
@@ -1204,12 +1191,14 @@ const Bridge: React.FC = () => {
       toTokenLogoUrl: selectedToToken?.logoUrl,
       fromChainLogoUrl: selectedFromChain.logoUrl,
       toChainLogoUrl: selectedToChain.logoUrl,
-      fromTokenAmount: ethers
-        .formatUnits(_quoteData?.amount_in, selectedFromToken.decimals)
-        .toString(),
-      toTokenAmount: ethers
-        .formatUnits(_quoteData?.amount_out, selectedToToken.decimals)
-        .toString(),
+      fromTokenAmount: formatUnits(
+        BigInt(_quoteData?.amount_in),
+        selectedFromToken.decimals,
+      ).toString(),
+      toTokenAmount: formatUnits(
+        BigInt(_quoteData?.amount_out),
+        selectedToToken.decimals,
+      ).toString(),
       datetime: new Date(),
       transactionHash: '',
       quoteData: {
@@ -2262,14 +2251,14 @@ const Bridge: React.FC = () => {
               rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               gas: toHex(gasLimit),
               gasPrice: gasFeeResponse?.gasPrice,
-              gasFeeInCrypto: DecimalHelper.removeDecimals(
+              gasFeeInCrypto: DecimalHelper.toDecimal(
                 DecimalHelper.multiply(gasLimit, gasFeeResponse?.gasPrice),
                 9,
               ).toString(),
             });
           }
 
-          const gasCostForApproval = DecimalHelper.removeDecimals(
+          const gasCostForApproval = DecimalHelper.toDecimal(
             DecimalHelper.multiply(gasLimit, gasFeeResponse?.gasPrice),
             9,
           );
@@ -2393,7 +2382,7 @@ const Bridge: React.FC = () => {
                       {`to spend up to`}
                     </CyDText>
                     <CyDText className=' ml-[15px] font-bold text-left text-[14px]'>
-                      {`${ethers.formatUnits(approveParams.tokens, selectedFromToken?.decimals)} ${selectedFromToken?.name ?? ''} tokens on ${selectedFromChain?.chainName ?? ''} chain`}
+                      {`${formatUnits(BigInt(approveParams.tokens), selectedFromToken?.decimals)} ${selectedFromToken?.name ?? ''} tokens on ${selectedFromChain?.chainName ?? ''} chain`}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -3038,9 +3027,3 @@ const Bridge: React.FC = () => {
 };
 
 export default Bridge;
-
-const styles = StyleSheet.create({
-  loaderStyle: {
-    height: 22,
-  },
-});

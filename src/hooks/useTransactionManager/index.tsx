@@ -179,13 +179,13 @@ export default function useTransactionManager() {
         ...(gasEstimateResponse.isEIP1599Supported
           ? {
               maxPriorityFeePerGas: BigInt(
-                DecimalHelper.applyDecimals(
+                DecimalHelper.toInteger(
                   gasEstimateResponse.priorityFee,
                   9,
                 ).toString(),
               ),
               maxFeePerGas: BigInt(
-                DecimalHelper.applyDecimals(
+                DecimalHelper.toInteger(
                   gasEstimateResponse.maxFee,
                   9,
                 ).toString(),
@@ -193,7 +193,7 @@ export default function useTransactionManager() {
             }
           : {
               gasPrice: BigInt(
-                DecimalHelper.applyDecimals(
+                DecimalHelper.toInteger(
                   gasEstimateResponse.gasPrice,
                   9,
                 ).toString(),
@@ -947,13 +947,13 @@ export default function useTransactionManager() {
         ...(gasEstimateResponse.isEIP1599Supported
           ? {
               maxPriorityFeePerGas: BigInt(
-                DecimalHelper.applyDecimals(
+                DecimalHelper.toInteger(
                   gasEstimateResponse.priorityFee,
                   9,
                 ).toString(),
               ),
               maxFeePerGas: BigInt(
-                DecimalHelper.applyDecimals(
+                DecimalHelper.toInteger(
                   gasEstimateResponse.maxFee,
                   9,
                 ).toString(),
@@ -961,7 +961,7 @@ export default function useTransactionManager() {
             }
           : {
               gasPrice: BigInt(
-                DecimalHelper.applyDecimals(
+                DecimalHelper.toInteger(
                   gasEstimateResponse.gasPrice,
                   9,
                 ).toString(),
@@ -1342,12 +1342,12 @@ export default function useTransactionManager() {
     requiredLamports: number,
   ) => {
     const balance = await connection.getBalance(publicKey);
-    const readableRequiredLamports: number = DecimalHelper.removeDecimals(
+    const readableRequiredLamports: number = DecimalHelper.toDecimal(
       requiredLamports,
       9,
     ).toNumber();
 
-    const readableBalance: number = DecimalHelper.removeDecimals(
+    const readableBalance: number = DecimalHelper.toDecimal(
       balance,
       9,
     ).toNumber();

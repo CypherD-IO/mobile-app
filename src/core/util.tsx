@@ -68,8 +68,6 @@ import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './portfolio';
 import Long from 'long';
-
-import { Wallet } from 'ethers';
 import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
@@ -88,6 +86,7 @@ import { TransactionFactory } from '@ethereumjs/tx';
 import crypto from 'crypto';
 import { mainnet } from 'viem/chains';
 import { createPublicClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1026,16 +1025,16 @@ export function isNativeCurrency(
   return isNative;
 }
 
-export function addHexPrefix(value: string): string {
+export function addHexPrefix(value: string): `0x${string}` {
   if (!value.startsWith('0x')) {
-    return '0x' + value;
+    return `0x${value}`;
   }
-  return value;
+  return value as `0x${string}`;
 }
 
 export function isValidPrivateKey(privateKey: string): boolean {
   try {
-    const wallet = new Wallet(addHexPrefix(privateKey));
+    const wallet = privateKeyToAccount(addHexPrefix(privateKey));
     return !!wallet;
   } catch (e) {
     return false;

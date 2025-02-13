@@ -5,9 +5,8 @@
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useIsFocused } from '@react-navigation/native';
 import clsx from 'clsx';
-import { Mnemonic } from 'ethers';
 import { debounce } from 'lodash';
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -16,17 +15,8 @@ import React, {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  BackHandler,
-  Dimensions,
-  FlatList,
-  NativeModules,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Keyboard,
-} from 'react-native';
-import AppImages from '../../../assets/images/appImages';
+import { BackHandler, Dimensions, Keyboard, NativeModules } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChooseWalletIndexComponent from '../../components/ChooseWalletIndexComponent';
 import Button from '../../components/v2/button';
 import Loading from '../../components/v2/loading';
@@ -50,18 +40,14 @@ import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
   CyDFlatList,
   CyDIcons,
-  CyDImage,
-  CyDKeyboardAvoidingView,
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
-  CyDSafeAreaView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../customFonts/generator';
+import { mnemonicToAccount } from 'viem/accounts';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -128,6 +114,15 @@ export default function Login(props) {
     debouncedTextChange(text);
   };
 
+  function isValidMnemonic(mnemonic: string): boolean {
+    try {
+      mnemonicToAccount(mnemonic);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   useEffect(() => {
     if (hdWalletContext.state.choosenWalletIndex !== -1) {
       setTimeout(() => {
@@ -154,7 +149,7 @@ export default function Login(props) {
     const keyValue = textValue.trim().split(/\s+/);
     const { isReadOnlyWallet } = hdWalletContext.state;
     const { ethereum } = hdWalletContext.state.wallet;
-    if (keyValue.length >= 12 && Mnemonic.isValidMnemonic(keyValue.join(' '))) {
+    if (keyValue.length >= 12 && isValidMnemonic(keyValue.join(' '))) {
       if (isReadOnlyWallet) {
         const data = await getReadOnlyWalletData();
         if (data) {

@@ -61,15 +61,14 @@ import {
 import { Dispatch, SetStateAction } from 'react';
 import { hostWorker } from '../global';
 import axios from 'axios';
-import { Mnemonic, sha256 } from 'ethers';
+import { sha256, createWalletClient, Hex, http } from 'viem';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import { Keypair } from '@solana/web3.js';
-import { createWalletClient, Hex, http } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 10;
@@ -468,6 +467,14 @@ export async function getPrivateACLOptions(): Promise<Options> {
   return res;
 }
 
+function isValidMnemonic(mnemonic: string): boolean {
+  try {
+    mnemonicToAccount(mnemonic);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 export async function getSignerClient(
   hdWallet: any = initialHdWalletState,
 ): Promise<Map<string, OfflineDirectSigner>> {
@@ -487,7 +494,7 @@ export async function getSignerClient(
   ];
 
   const wallets: Map<string, OfflineDirectSigner> = new Map();
-  if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
+  if (seedPhrase && isValidMnemonic(seedPhrase)) {
     for (const wallet of accounts) {
       const chainConfig = cosmosConfig[wallet];
       const bip44HDPath = {
@@ -533,7 +540,7 @@ export const getSolanaWallet = async (hdWallet: any) => {
       hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
     );
 
-    if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
+    if (seedPhrase && isValidMnemonic(seedPhrase)) {
       const seed = bip39.mnemonicToSeedSync(seedPhrase);
       const path = `m/44'/501'/${String(
         hdWallet?.state?.choosenWalletIndex > 0
