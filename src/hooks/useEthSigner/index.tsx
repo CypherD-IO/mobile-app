@@ -126,7 +126,7 @@ export default function useEthSigner() {
             "Signing transaction request timed out. User didn't sign / decline the transaction request",
           ),
         );
-      }, 45 * 1000);
+      }, 60 * 1000);
     });
 
     const cleanup = () => {
@@ -174,7 +174,7 @@ export default function useEthSigner() {
             "Signing transaction request timed out. User didn't sign / decline the transaction request",
           ),
         );
-      }, 45 * 1000);
+      }, 60 * 1000);
     });
     const cleanup = () => {
       clearTimeout(timer);

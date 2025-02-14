@@ -1,6 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useContext } from 'react';
 import {
-  CyDFastImage,
   CyDIcons,
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
@@ -28,26 +27,41 @@ import Loading from '../../../../components/v2/loading';
 import { screenTitle } from '../../../../constants';
 import WithdrawalReasonsModal from '../../../../components/v2/withdrawalReasonsModal';
 import { DecimalHelper } from '../../../../utils/decimalHelper';
-import { CyDIconsPack } from '../../../../customFonts';
+import { parseErrorMessage, HdWalletContext } from '../../../../core/util';
+import { ChainBackendNames } from '../../../../constants/server';
+import { uuidv4 } from '@walletconnect/utils';
+import { HdWalletContextDef } from '../../../../reducers/hdwallet_reducer';
+import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 
 interface RouteParams {
   currentCardProvider: string;
   card: Card;
 }
 
+interface WithdrawPost {
+  idempotencyKey: string;
+  amount: number;
+  chain: ChainBackendNames;
+  toAddress: string;
+  isCharged: boolean;
+}
+
 export default function CryptoWithdrawal() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { currentCardProvider, card } = route.params ?? {};
-  const { getWithAuth } = useAxios();
+  const { getWithAuth, postWithAuth } = useAxios();
   const insets = useSafeAreaInsets();
+  const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
+  const ethereumAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
+  const { showModal, hideModal } = useGlobalModalContext();
 
   const [amount, setAmount] = useState('');
   const [availableAmountLoading, setAvailableAmountLoading] = useState(false);
   const [availableAmount, setAvailableAmount] = useState('');
   const [reason, setReason] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const getAvailableAmount = async () => {
     setAvailableAmountLoading(true);
     const url = `/v1/cards/crypto-withdrawal/eligibility`;
@@ -68,6 +82,41 @@ export default function CryptoWithdrawal() {
       setAvailableAmount('');
     }
     setAvailableAmountLoading(false);
+  };
+
+  const postWithdrawal = async () => {
+    setLoading(true);
+    const postBody: WithdrawPost = {
+      idempotencyKey: uuidv4(),
+      amount: ceil(parseFloat(amount || '0'), 2),
+      chain: ChainBackendNames.BASE,
+      toAddress: ethereumAddress,
+      isCharged: true,
+    };
+    const { isError, error, data } = await postWithAuth(
+      '/v1/cards/crypto-withdrawal',
+      postBody,
+    );
+    if (isError) {
+      showModal('state', {
+        type: 'error',
+        title: t('WITHDRAW_ERROR'),
+        description:
+          parseErrorMessage(error) ?? t('CONTACT_SUPPORT_MORE_DETAILS'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } else {
+      navigation.navigate(screenTitle.WITHDRAW_CONFIRMATION, {
+        amount,
+        card,
+        currentCardProvider,
+        withdrawalId: data?.requestId,
+        withdrawalFee: data?.feeAmount,
+        withdrawableAmount: data?.refundableAmount,
+      });
+    }
+    setLoading(false);
   };
 
   useFocusEffect(
@@ -172,67 +221,6 @@ export default function CryptoWithdrawal() {
                 ))}
               </CyDView>
             </CyDView>
-            <CyDView className='flex flex-row justify-between items-center mt-[24px]'>
-              <CyDView className='flex flex-row items-center '>
-                <CyDView className='bg-n0 rounded-full w-[20px] h-[20px] flex flex-col items-center justify-center mr-[8px]'>
-                  <CyDText className=' text-[14px] font-bold text-base400 text-center '>
-                    {'%'}
-                  </CyDText>
-                </CyDView>
-                <CyDText className='text-[14px] font-bold text-base400'>
-                  {t('0.5')}
-                </CyDText>
-              </CyDView>
-              <CyDText className='text-[12px] font-medium text-base400'>
-                {t('Conversion rate')}
-              </CyDText>
-            </CyDView>
-            <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
-              <CyDView className='flex flex-row items-center '>
-                <CyDView className='bg-n0 rounded-full w-[20px] h-[20px] flex flex-col items-center justify-center mr-[8px]'>
-                  <CyDText className=' text-[14px] font-bold text-base400 text-center '>
-                    {'-'}
-                  </CyDText>
-                </CyDView>
-                <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${DecimalHelper.toString(
-                    DecimalHelper.ceil(
-                      DecimalHelper.multiply(amount || '0', 0.005),
-                      2,
-                    ),
-                  )}`}
-                </CyDText>
-              </CyDView>
-              <CyDText className='text-[12px] font-medium text-base400'>
-                {t('Fee amount')}
-              </CyDText>
-            </CyDView>
-            <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
-              <CyDView className='flex flex-row items-center '>
-                <CyDView className='bg-n0 rounded-full w-[20px] h-[20px] flex flex-col items-center justify-center mr-[8px]'>
-                  <CyDText className=' text-[14px] font-bold text-base400 text-center '>
-                    {'='}
-                  </CyDText>
-                </CyDView>
-                <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${DecimalHelper.toString(
-                    DecimalHelper.ceil(
-                      DecimalHelper.subtract(
-                        DecimalHelper.ceil(amount || '0', 2),
-                        DecimalHelper.ceil(
-                          DecimalHelper.multiply(amount || '0', 0.005),
-                          2,
-                        ),
-                      ),
-                      2,
-                    ),
-                  )}`}
-                </CyDText>
-              </CyDView>
-              <CyDText className='text-[12px] font-medium text-base400'>
-                {t('Total crypto you will receive')}
-              </CyDText>
-            </CyDView>
           </CyDView>
         </CyDKeyboardAwareScrollView>
       </CyDView>
@@ -244,13 +232,9 @@ export default function CryptoWithdrawal() {
             isEmpty(amount) ||
             DecimalHelper.isGreaterThan(amount, availableAmount)
           }
+          loading={loading}
           onPress={() => {
-            navigation.navigate(screenTitle.WITHDRAW_CONFIRMATION, {
-              amount,
-              availableAmount,
-              currentCardProvider,
-              card,
-            });
+            void postWithdrawal();
           }}
         />
       </CyDView>

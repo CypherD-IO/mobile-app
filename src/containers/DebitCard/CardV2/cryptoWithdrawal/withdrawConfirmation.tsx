@@ -3,7 +3,6 @@ import {
   CyDFastImage,
   CyDIcons,
   CyDKeyboardAwareScrollView,
-  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -21,30 +20,22 @@ import AppImages from '../../../../../assets/images/appImages';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
 import { screenTitle } from '../../../../constants';
-import { capitalize, ceil, round } from 'lodash';
-import { toWords } from 'number-to-words';
+import { round } from 'lodash';
 import { HdWalletContext, parseErrorMessage } from '../../../../core/util';
 import { HdWalletContextDef } from '../../../../reducers/hdwallet_reducer';
-import { v4 as uuidv4 } from 'uuid';
-import { ChainBackendNames } from '../../../../constants/server';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import { StyleSheet } from 'react-native';
 import { Card } from '../../../../models/card.model';
-import { CyDIconsPack } from '../../../../customFonts';
+import Tooltip from 'react-native-walkthrough-tooltip';
 
 interface RouteParams {
   amount: string;
   currentCardProvider: string;
   card: Card;
   cardBalance: string;
-}
-
-interface WithdrawPost {
-  idempotencyKey: string;
-  amount: number;
-  chain: ChainBackendNames;
-  toAddress: string;
-  isCharged: boolean;
+  withdrawalId: string;
+  withdrawalFee: string;
+  withdrawableAmount: string;
 }
 
 export default function WithdrawConfirmation() {
@@ -55,30 +46,26 @@ export default function WithdrawConfirmation() {
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
   const { showModal, hideModal } = useGlobalModalContext();
 
-  const { amount, card, currentCardProvider } = route.params ?? {};
+  const {
+    amount,
+    card,
+    currentCardProvider,
+    withdrawalId,
+    withdrawalFee,
+    withdrawableAmount,
+  } = route.params ?? {};
   const ethereumAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
 
-  const finalAmount =
-    ceil(parseFloat(amount || '0'), 2) -
-    ceil(parseFloat(amount || '0') * 0.005, 2);
-  const cypherFee = ceil(parseFloat(amount || '0') * 0.005, 2);
-
-  const dollars = Math.floor(Number(amount));
-  const cents = Math.round((Number(amount) % 1) * 10000) / 100;
-
   const [loading, setLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const postWithdrawal = async () => {
     setLoading(true);
-    const postBody: WithdrawPost = {
-      idempotencyKey: uuidv4(),
-      amount: ceil(parseFloat(amount || '0'), 2),
-      chain: ChainBackendNames.BASE,
-      toAddress: ethereumAddress,
-      isCharged: true,
+    const postBody = {
+      requestId: withdrawalId,
     };
     const { isError, error } = await postWithAuth(
-      '/v1/cards/crypto-withdrawal',
+      '/v1/cards/crypto-withdrawal/confirm',
       postBody,
     );
     if (isError) {
@@ -117,50 +104,60 @@ export default function WithdrawConfirmation() {
           <CyDText className='font-bold text-[28px] text-base400 '>
             {'Does Everything look right ?'}
           </CyDText>
-          <CyDView className='mt-[24px]'>
-            <CyDText className='font-medium text-[12px] text-n100'>
-              {'Your are withdrawing '}
-            </CyDText>
-            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px]'>
-              <CyDText className='font-bold text-[20px] text-base400 flex flex-row items-end'>
-                {`$ ${amount}`}
+          <CyDView className='bg-n0 p-6 rounded-[16px] flex flex-col gap-y-6 mt-[24px]'>
+            <CyDView className='flex flex-col gap-1'>
+              <CyDText className='font-medium text-[12px] text-n100'>
+                {'To'}
               </CyDText>
-            </CyDView>
-            <CyDText className='font-medium text-[12px] text-n200 mt-[4px]'>
-              {cents > 0
-                ? `${String(capitalize(toWords(dollars)))} dollars and ${String(toWords(cents))} cents`
-                : `${String(capitalize(toWords(dollars)))} dollars`}
-            </CyDText>
-          </CyDView>
-          <CyDView className='mt-[24px]'>
-            <CyDText className='font-medium text-[12px] text-n100'>
-              {'Conversion Fee'}
-            </CyDText>
-            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px]'>
-              <CyDText className='font-bold text-[17px] text-n200'>
-                {`$ ${cypherFee}`}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-          <CyDView className='mt-[24px]'>
-            <CyDText className='font-medium text-[12px] text-n100'>
-              {'To'}
-            </CyDText>
-            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[16px]'>
               <CyDText className='font-medium text-[12px] text-n200'>
                 {ethereumAddress}
               </CyDText>
             </CyDView>
-          </CyDView>
-          <CyDView className='mt-[24px]'>
-            <CyDText className='font-medium text-[12px] text-n100'>
-              {'Crypto value you will receive'}
-            </CyDText>
-            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px] flex flex-row justify-between'>
-              <CyDText className='font-bold text-[16px] text-base400'>
-                {`$ ${round(finalAmount, 2)}`}
+            <CyDView className='flex flex-col gap-1'>
+              <CyDText className='font-medium text-[12px] text-n100'>
+                {'Your are withdrawing '}
               </CyDText>
+              <CyDText className='font-bold text-[20px] text-base400 flex flex-row items-end'>
+                {`$ ${amount}`}
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex flex-col gap-1'>
               <CyDView className='flex flex-row items-center'>
+                <CyDText className='font-medium text-[12px] text-n100'>
+                  {'Conversion Fee'}
+                </CyDText>
+                <Tooltip
+                  isVisible={showTooltip}
+                  disableShadow={true}
+                  content={
+                    <CyDView className='p-[5px]'>
+                      <CyDText className='text-[15px] font-bold text-base400'>
+                        {
+                          '$1 or 0.5% of the amount, whichever is higher is collected as withdrawal fee'
+                        }
+                      </CyDText>
+                    </CyDView>
+                  }
+                  onClose={() => setShowTooltip(false)}
+                  placement='top'>
+                  <CyDTouchView onPress={() => setShowTooltip(true)}>
+                    <CyDIcons
+                      name='information'
+                      size={24}
+                      className='text-n200'
+                    />
+                  </CyDTouchView>
+                </Tooltip>
+              </CyDView>
+              <CyDText className='font-bold text-[20px] text-base400'>
+                {`$ ${withdrawalFee}`}
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex flex-col gap-1'>
+              <CyDText className='font-medium text-[12px] text-n100'>
+                {'Crypto value you will receive'}
+              </CyDText>
+              <CyDView className='flex flex-row items-center gap-x-1'>
                 <CyDView className='relative mr-[2px]'>
                   <CyDFastImage
                     source={AppImages.USDC_TOKEN}
@@ -171,12 +168,25 @@ export default function WithdrawConfirmation() {
                     className='w-[8px] h-[8px] absolute bottom-[0px] right-[0px]'
                   />
                 </CyDView>
+                <CyDText className='font-bold text-[16px] text-base400'>
+                  {`${round(parseFloat(withdrawableAmount), 2)}`}
+                </CyDText>
                 <CyDText className='text-[14px] text-base400 font-bold'>
-                  {' BASE X USDC'}
+                  {'USDC'}
+                </CyDText>
+                <CyDText className='text-[12px] text-base400'>
+                  {'( BASE Chain )'}
                 </CyDText>
               </CyDView>
             </CyDView>
-            <CyDText className='font-medium text-[12px] text-n200 mt-[4px]'>
+          </CyDView>
+          <CyDView className='bg-n0 p-6 rounded-[16px] flex flex-row items-center mt-[24px]'>
+            <CyDIcons
+              name={'information'}
+              size={32}
+              className='text-n200 -ml-[12px]'
+            />
+            <CyDText className='font-medium text-[12px] text-n200 mt-[4px] flex-1'>
               {'It will take up to 2-3 business days to credit in your wallet '}
             </CyDText>
           </CyDView>
