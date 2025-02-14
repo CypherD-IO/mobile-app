@@ -792,10 +792,6 @@ export default function SelectPlanModal({
               </CyDTouchView>
             </CyDView>
 
-            <CyDText className='text-[14px] font-normal mt-[12px]'>
-              {`Upgrading to premium will cost you $${proPlanData?.cost}, which is will be deducted from your Cypher card balance immediately after the upgrade. Make sure you have enough balance in your card to cover the cost.`}
-            </CyDText>
-
             <CyDTouchView
               className='flex flex-row items-center mt-[16px]'
               onPress={() => {
@@ -816,16 +812,20 @@ export default function SelectPlanModal({
                   />
                 )}
               </CyDView>
-              <CyDText className='px-[12px] text-[10px]'>
-                {t('UPGRADE_PLAN_CONSENT')}
+              <CyDText className='px-[12px] text-[14px]'>
+                Upgrading to premium will cost you $${proPlanData?.cost}, which
+                is will be deducted from your Cypher card balance immediately
+                after the upgrade. I acknowledge and authorize the deduction of
+                the above mentioned amount from my card and agree to the
+                {/* {t('UPGRADE_PLAN_CONSENT')} */}
                 <CyDText
-                  className='font-bold text-[10px] underline'
+                  className='font-bold text-[14px] underline'
                   onPress={() => {
                     setConsentModalVisible(false);
                     setIsModalVisible(false);
                     navigation.navigate(screenTitle.LEGAL_SCREEN);
                   }}>
-                  {'terms and conditions'}
+                  {' terms and conditions'}
                 </CyDText>
               </CyDText>
             </CyDTouchView>

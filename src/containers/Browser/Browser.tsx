@@ -6,7 +6,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useRoute } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
 import clsx from 'clsx';
@@ -46,7 +46,6 @@ import {
   getWeb3Endpoint,
   HdWalletContext,
 } from '../../core/util';
-import useCosmosSigner from '../../hooks/useCosmosSigner';
 import useGasService from '../../hooks/useGasService';
 import usePortfolio from '../../hooks/usePortfolio';
 import useWeb3 from '../../hooks/useWeb3';
@@ -90,7 +89,8 @@ const webviewErrorCodesMapping: Record<string, { error: string; image: any }> =
     default: { error: BROWSER_ERROR.OTHER, image: AppImages.BROWSER_404 },
   };
 
-export default function Browser({ route, navigation }: any) {
+export default function Browser({ navigation }: any) {
+  const route = useRoute<any>();
   const { params } = route;
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [moreView, setMoreview] = useState<boolean>(false);
@@ -107,7 +107,6 @@ export default function Browser({ route, navigation }: any) {
   const { getNativeToken } = usePortfolio();
   const { estimateGasForEvm, estimateGasForCosmosRest, estimateGasForSolana } =
     useGasService();
-  const { getCosmosSignerClient } = useCosmosSigner();
 
   const urlMappings: Record<string, string> = {
     home: '',
