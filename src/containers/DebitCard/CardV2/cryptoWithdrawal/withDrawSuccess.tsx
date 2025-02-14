@@ -54,10 +54,7 @@ export default function WithDrawSuccess() {
         <Button
           title={t('DONE')}
           onPress={() => {
-            navigation.navigate(screenTitle.WITHDRAW_HISTORY, {
-              card,
-              currentCardProvider,
-            });
+            navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
           }}
         />
       </CyDView>
