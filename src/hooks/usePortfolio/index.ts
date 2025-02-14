@@ -36,7 +36,7 @@ export default function usePortfolio() {
       kujira,
       solana,
     } = hdWallet.state.wallet;
-    if (ethereum.address !== 'null') {
+    if (ethereum.address && ethereum.address !== 'null') {
       const addresses = [
         ethereum.address,
         cosmos?.wallets[cosmos?.currentIndex]?.address,
