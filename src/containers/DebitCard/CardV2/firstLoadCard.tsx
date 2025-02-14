@@ -10,14 +10,11 @@ import clsx from 'clsx';
 import { t } from 'i18next';
 import { get, round } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, Keyboard, StyleSheet } from 'react-native';
+import { ActivityIndicator, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppImages from '../../../../assets/images/appImages';
-import SelectPlanModal from '../../../components/selectPlanModal';
 import Button from '../../../components/v2/button';
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import {
   CardFeePercentage,
@@ -26,13 +23,7 @@ import {
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
-import {
-  ButtonType,
-  CARD_IDS,
-  CardProviders,
-  CypherPlanId,
-  GlobalContextType,
-} from '../../../constants/enum';
+import { CARD_IDS, CardProviders, CypherPlanId } from '../../../constants/enum';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
@@ -56,8 +47,6 @@ import {
   parseErrorMessage,
   validateAmount,
 } from '../../../core/util';
-import useCardUtilities from '../../../hooks/useCardUtilities';
-import useCosmosSigner from '../../../hooks/useCosmosSigner';
 import useGasService from '../../../hooks/useGasService';
 import usePortfolio from '../../../hooks/usePortfolio';
 import { CardQuoteResponse } from '../../../models/card.model';
@@ -84,13 +73,11 @@ const cardId = CARD_IDS.HIDDEN_CARD;
 export default function FirstLoadCard() {
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const globalDispatch = globalContext.globalDispatch;
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
   const { getNativeToken } = usePortfolio();
-  const { patchWithAuth, postWithAuth } = useAxios();
-  const { getWalletProfile } = useCardUtilities();
+  const { postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const {
     estimateGasForEvm,
@@ -99,7 +86,6 @@ export default function FirstLoadCard() {
     estimateGasForCosmosIBCRest,
     estimateReserveFee,
   } = useGasService();
-  const { getCosmosSignerClient } = useCosmosSigner();
 
   const ethereum = hdWallet.state.wallet.ethereum;
   const solana = hdWallet.state.wallet.solana;
@@ -131,8 +117,6 @@ export default function FirstLoadCard() {
   const [cryptoAmount, setCryptoAmount] = useState('');
 
   const [isCryptoInput, setIsCryptoInput] = useState<boolean>(true);
-  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
-  const [planPageVisible, setPlanPageVisible] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
 
@@ -170,7 +154,7 @@ export default function FirstLoadCard() {
 
   const isLoadCardDisabled = () => {
     if (selectedToken) {
-      const { symbol, backendName } = selectedToken.chainDetails;
+      const { backendName } = selectedToken.chainDetails;
       // const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
       // const hasInSufficientGas =
       //   (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
@@ -205,39 +189,6 @@ export default function FirstLoadCard() {
     const _nativeToken = await getNativeToken(item.chainDetails.backendName);
     setNativeToken(_nativeToken);
     setIsCryptoInput(false);
-  };
-
-  const onOptedPlanChange = async (optedPlan: CypherPlanId) => {
-    const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
-      optedPlanId: optedPlan,
-    });
-    if (!isError) {
-      const resp = await getWalletProfile(globalContext.globalState.token);
-      globalDispatch({
-        type: GlobalContextType.CARD_PROFILE,
-        cardProfile: resp,
-      });
-      setPlanChangeModalVisible(false);
-      setTimeout(() => {
-        showModal('state', {
-          type: 'success',
-          title: 'Plan changed successfully',
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }, 500);
-    } else {
-      setPlanChangeModalVisible(false);
-      setTimeout(() => {
-        showModal('state', {
-          type: 'error',
-          title: 'Error changing plan',
-          description: parseErrorMessage(error),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }, 500);
-    }
   };
 
   const getRoundedValue = (value: number) => {
@@ -1114,69 +1065,6 @@ export default function FirstLoadCard() {
         renderPage={'fundCardPage'}
       />
 
-      <CyDModalLayout
-        isModalVisible={planChangeModalVisible}
-        setModalVisible={setPlanChangeModalVisible}
-        style={styles.modalLayout}>
-        <CyDView className='bg-n20 rounded-t-[16px] px-[16px] pt-[16px] pb-[20px]'>
-          <CyDView className='flex-row justify-between items-center'>
-            <CyDFastImage
-              source={AppImages.CYPHER_WARNING_RED}
-              className='h-[32px] w-[32px]'
-              resizeMode='contain'
-            />
-            <CyDTouchView onPress={() => setPlanChangeModalVisible(false)}>
-              <CyDMaterialDesignIcons
-                name={'close'}
-                size={24}
-                className='text-base400'
-              />
-            </CyDTouchView>
-          </CyDView>
-
-          <CyDText className='mt-[4px] text-[20px] font-bold'>
-            Change Plan
-          </CyDText>
-          <CyDText className='mt-[16px] text-[14px] font-medium'>
-            {t('DOWNGRADE_PLAN_CONSENT')}
-            <CyDText
-              onPress={() => {
-                navigation.navigate(screenTitle.LEGAL_SCREEN);
-              }}
-              className='text-[12px] font-bold underline text-center'>
-              {'terms and conditions.'}
-            </CyDText>
-          </CyDText>
-
-          <Button
-            onPress={() => {
-              setPlanChangeModalVisible(false);
-              setTimeout(() => {
-                setPlanPageVisible(true);
-              }, 500);
-            }}
-            title='Compare plans'
-            type={ButtonType.GREY}
-            style='p-[3%] mt-[22px]'
-          />
-          <Button
-            onPress={() => {
-              void onOptedPlanChange(CypherPlanId.BASIC_PLAN);
-            }}
-            title={'Switch to Basic'}
-            type={ButtonType.PRIMARY}
-            style='p-[3%] mt-[12px] mb-[20px]'
-          />
-        </CyDView>
-      </CyDModalLayout>
-
-      <SelectPlanModal
-        isModalVisible={planPageVisible}
-        setIsModalVisible={setPlanPageVisible}
-        openComparePlans={false}
-        deductAmountNow={false}
-      />
-
       <CyDView className='flex flex-col justify-between flex-1'>
         <CyDView className='px-[16px] flex-1'>
           <CyDTouchView
@@ -1191,30 +1079,6 @@ export default function FirstLoadCard() {
           </CyDTouchView>
 
           <CyDKeyboardAwareScrollView className=''>
-            <CyDView className='mt-[24px] bg-n0 rounded-[16px] p-[12px] flex-row justify-between items-center'>
-              <CyDView>
-                <CyDText className='font-medium text-[14px] text-base100'>
-                  {'Plan selected'}
-                </CyDText>
-                <CyDText className='font-bold text-[18px] mt-[4px]'>
-                  {get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlanId, optedPlanId)}
-                </CyDText>
-              </CyDView>
-              <CyDTouchView
-                className=' rounded-[6px] p-[6px]'
-                onPress={() => {
-                  if (optedPlanId === CypherPlanId.BASIC_PLAN) {
-                    setPlanPageVisible(true);
-                  } else {
-                    setPlanChangeModalVisible(true);
-                  }
-                }}>
-                <CyDText className='font-bold text-[12px]'>
-                  {'Change Plan'}
-                </CyDText>
-              </CyDTouchView>
-            </CyDView>
-
             <CyDView className='mt-[16px]'>
               <CyDText className='font-medium text-[12px]'>
                 Select the Token & Chain
@@ -1505,10 +1369,3 @@ export default function FirstLoadCard() {
     </CyDView>
   );
 }
-
-const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
-});

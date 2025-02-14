@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
 export default function SelectPlanModal({
   isModalVisible,
   setIsModalVisible,
-  deductAmountNow = false,
   openComparePlans = false,
   cardProvider,
   cardId,
@@ -66,7 +65,6 @@ export default function SelectPlanModal({
 }: {
   isModalVisible: boolean;
   setIsModalVisible: Dispatch<SetStateAction<boolean>>;
-  deductAmountNow?: boolean;
   openComparePlans?: boolean;
   cardProvider?: string;
   cardId?: string;
@@ -198,10 +196,14 @@ export default function SelectPlanModal({
   };
 
   const onPlanUpgrade = async (
-    optedPlan: CypherPlanId = CypherPlanId.BASIC_PLAN,
+    newlyOptedPlan: CypherPlanId = CypherPlanId.PRO_PLAN,
   ) => {
     setLoading(true);
-    const planCost = get(planData, ['default', optedPlan ?? '', 'cost'], '');
+    const planCost = get(
+      planData,
+      ['default', newlyOptedPlan ?? '', 'cost'],
+      '',
+    );
 
     if (planCost !== '' && cardProvider && cardId) {
       const cardBalance = await fetchCardBalance();
@@ -221,7 +223,7 @@ export default function SelectPlanModal({
         const { isError, error } = await patchWithAuth(
           '/v1/cards/rc/plan/deduct',
           {
-            planId: optedPlan,
+            planId: newlyOptedPlan,
           },
         );
         const resp = await getWalletProfile(globalState.token);
@@ -236,7 +238,10 @@ export default function SelectPlanModal({
           setTimeout(() => {
             showModal('state', {
               type: 'success',
-              title: `Your plan has been changed to ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)} successfully`,
+              title: `Your plan has been changed to ${get(
+                CYPHER_PLAN_ID_NAME_MAPPING,
+                newlyOptedPlan,
+              )} successfully`,
               description: 'You can change your plan anytime in the future',
               onSuccess: () => {
                 hideModal();
@@ -274,72 +279,72 @@ export default function SelectPlanModal({
     }
   };
 
-  const onSelectPlan = async (
-    optedPlan: CypherPlanId = CypherPlanId.BASIC_PLAN,
-  ) => {
-    setLoading(true);
-    if (!deductAmountNow) {
-      try {
-        const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
-          optedPlanId: optedPlan,
-        });
+  // const onSelectPlan = async (
+  //   newlyOptedPlan: CypherPlanId = CypherPlanId.BASIC_PLAN,
+  // ) => {
+  //   setLoading(true);
+  //   if (!deductAmountNow) {
+  //     try {
+  //       const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
+  //         optedPlanId: newlyOptedPlan,
+  //       });
 
-        const resp = await getWalletProfile(globalState.token);
-        globalDispatch({
-          type: GlobalContextType.CARD_PROFILE,
-          cardProfile: resp,
-        });
+  //       const resp = await getWalletProfile(globalState.token);
+  //       globalDispatch({
+  //         type: GlobalContextType.CARD_PROFILE,
+  //         cardProfile: resp,
+  //       });
 
-        if (!isError) {
-          setIsModalVisible(false);
-          setTimeout(() => {
-            showModal('state', {
-              type: 'success',
-              title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)}`,
-              description: 'You can change your plan anytime in the future',
-              onSuccess: () => {
-                hideModal();
-                if (onPlanChangeSuccess) {
-                  setTimeout(() => {
-                    onPlanChangeSuccess();
-                  }, 500);
-                }
-              },
-              onFailure: hideModal,
-            });
-          }, 500);
-        } else {
-          setIsModalVisible(false);
-          setTimeout(() => {
-            showModal('state', {
-              type: 'error',
-              title: t('PLAN_UPDATE_FAILED'),
-              description: t('CONTACT_CYPHERD_SUPPORT'),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }, 500);
-          Sentry.captureException(error);
-        }
-      } catch (err: any) {
-        setIsModalVisible(false);
-        setTimeout(() => {
-          showModal('state', {
-            type: 'error',
-            title: t('PLAN_UPDATE_FAILED'),
-            description: JSON.stringify(err?.message),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }, 500);
+  //       if (!isError) {
+  //         setIsModalVisible(false);
+  //         setTimeout(() => {
+  //           showModal('state', {
+  //             type: 'success',
+  //             title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, newlyOptedPlan)}`,
+  //             description: 'You can change your plan anytime in the future',
+  //             onSuccess: () => {
+  //               hideModal();
+  //               if (onPlanChangeSuccess) {
+  //                 setTimeout(() => {
+  //                   onPlanChangeSuccess();
+  //                 }, 500);
+  //               }
+  //             },
+  //             onFailure: hideModal,
+  //           });
+  //         }, 500);
+  //       } else {
+  //         setIsModalVisible(false);
+  //         setTimeout(() => {
+  //           showModal('state', {
+  //             type: 'error',
+  //             title: t('PLAN_UPDATE_FAILED'),
+  //             description: t('CONTACT_CYPHERD_SUPPORT'),
+  //             onSuccess: hideModal,
+  //             onFailure: hideModal,
+  //           });
+  //         }, 500);
+  //         Sentry.captureException(error);
+  //       }
+  //     } catch (err: any) {
+  //       setIsModalVisible(false);
+  //       setTimeout(() => {
+  //         showModal('state', {
+  //           type: 'error',
+  //           title: t('PLAN_UPDATE_FAILED'),
+  //           description: JSON.stringify(err?.message),
+  //           onSuccess: hideModal,
+  //           onFailure: hideModal,
+  //         });
+  //       }, 500);
 
-        Sentry.captureException(err);
-      }
-    } else {
-      setConsentModalVisible(true);
-    }
-    setLoading(false);
-  };
+  //       Sentry.captureException(err);
+  //     }
+  //   } else {
+  //     setConsentModalVisible(true);
+  //   }
+  //   setLoading(false);
+  // };
 
   return (
     <CyDModalLayout
@@ -376,381 +381,383 @@ export default function SelectPlanModal({
               </CyDTouchView>
             </CyDView>
             <CyDScrollView className='h-[80%] my-[16px]'>
-              {/* title */}
-              <CyDView className='flex flex-row w-[100%]' />
-              <CyDView />
+              <CyDTouchView activeOpacity={1}>
+                {/* title */}
+                <CyDView className='flex flex-row w-[100%]' />
+                <CyDView />
 
-              <CyDView className='flex flex-row w-[100%] '>
-                <CyDView className='flex flex-col w-[58%] bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
-                  <CyDView className=' bg-n20 py-[16px] px-[12px] rounded-tl-[16px] h-[46px]'>
-                    <CyDText className='text-[12px] font-medium '>
-                      {t('PLAN_COMAPRISION')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px] '>
-                      <CyDIcons
-                        name='card'
-                        size={24}
-                        className='text-base400'
-                      />
+                <CyDView className='flex flex-row w-[100%] '>
+                  <CyDView className='flex flex-col w-[58%] bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
+                    <CyDView className=' bg-n20 py-[16px] px-[12px] rounded-tl-[16px] h-[46px]'>
+                      <CyDText className='text-[12px] font-medium '>
+                        {t('PLAN_COMAPRISION')}
+                      </CyDText>
                     </CyDView>
-                    <CyDText className='font-bold text-[12px]'>
-                      {t('CARD')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('VIRTUAL_CARD')}
-                  </CyDText>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('PHYSICAL_CARD')}
-                  </CyDText>
-                  <CyDText className='text-[12px] font-medium mt-[28px]  pl-[12px] h-[18px]'>
-                    {t('ADD_ON_CARDS')}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.APPLE_AND_GOOGLE_PAY}
-                        className='w-[24px] h-[24px]'
-                      />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px] '>
+                        <CyDIcons
+                          name='card'
+                          size={24}
+                          className='text-base400'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px]'>
+                        {t('CARD')}
+                      </CyDText>
                     </CyDView>
-                    <CyDText className='font-bold text-[12px]'>
-                      {t('APPLE_GOOGLE_PAY')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.CRYPTO_COINS}
-                        className='w-[24px] h-[24px] rounded-full'
-                      />
-                    </CyDView>
-                    <CyDText className='font-bold text-[12px]'>
-                      {t('CRYPTO_LOAD_FEE')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('USDC_TOKEN')}
-                  </CyDText>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('OTHER_TOKENS')}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.FOREX_FEE}
-                        className='w-[24px] h-[24px] rounded-full'
-                      />
-                    </CyDView>
-                    <CyDText className='font-bold text-[12px]'>
-                      {t('FOREX_FEE')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('NON_USDC_TXN')}
-                  </CyDText>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('USDC_TXN')}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.ATM_FEE}
-                        className='w-[24px] h-[24px] rounded-full'
-                      />
-                    </CyDView>
-                    <CyDText className='font-bold text-[12px]'>
-                      {t('ATM_FEE')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center my-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.CHARGE_BACK}
-                        className='w-[24px] h-[24px] rounded-full'
-                      />
-                    </CyDView>
-                    <CyDText className='font-bold text-[12px]'>
-                      {t('CHARGE_BACK_COVER')}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <CyDView className='flex flex-col w-[21%] bg-n0'>
-                  <CyDView className='bg-n20 py-[16px] px-[12px] h-[46px]'>
-                    <CyDText className='text-[12px] text-right font-bold '>
-                      {t('STANDARD')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
-                  {/* virtual card */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {'✅ Free'}
-                  </CyDText>
-                  {/* physical card */}
-                  <CyDView className='flex'>
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {'✅ Plastic'}
+                      {t('VIRTUAL_CARD')}
                     </CyDText>
-                    <CyDText className='text-[10px] font-medium  pl-[12px] h-[18px]'>
-                      {`${freePlanData?.physicalCardFee === 0 ? 'FREE' : `($${freePlanData?.physicalCardFee}`} fee)`}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('PHYSICAL_CARD')}
                     </CyDText>
+                    <CyDText className='text-[12px] font-medium mt-[28px]  pl-[12px] h-[18px]'>
+                      {t('ADD_ON_CARDS')}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDImage
+                          source={AppImages.APPLE_AND_GOOGLE_PAY}
+                          className='w-[24px] h-[24px]'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px]'>
+                        {t('APPLE_GOOGLE_PAY')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDImage
+                          source={AppImages.CRYPTO_COINS}
+                          className='w-[24px] h-[24px] rounded-full'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px]'>
+                        {t('CRYPTO_LOAD_FEE')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('USDC_TOKEN')}
+                    </CyDText>
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('OTHER_TOKENS')}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDImage
+                          source={AppImages.FOREX_FEE}
+                          className='w-[24px] h-[24px] rounded-full'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px]'>
+                        {t('FOREX_FEE')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('NON_USDC_TXN')}
+                    </CyDText>
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('USDC_TXN')}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDImage
+                          source={AppImages.ATM_FEE}
+                          className='w-[24px] h-[24px] rounded-full'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px]'>
+                        {t('ATM_FEE')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center my-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDImage
+                          source={AppImages.CHARGE_BACK}
+                          className='w-[24px] h-[24px] rounded-full'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px]'>
+                        {t('CHARGE_BACK_COVER')}
+                      </CyDText>
+                    </CyDView>
                   </CyDView>
-                  {/* add on cards */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {'🚫'}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* apple and gpay */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium '>
+                  <CyDView className='flex flex-col w-[21%] bg-n0'>
+                    <CyDView className='bg-n20 py-[16px] px-[12px] h-[46px]'>
+                      <CyDText className='text-[12px] text-right font-bold '>
+                        {t('STANDARD')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
+                    {/* virtual card */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {'✅ Free'}
                     </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='mt-[16px] h-[32px]' />
-                  {/* crypto load fee usdc */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {`${freePlanData?.usdcFee === 0 ? 'FREE' : `${freePlanData?.usdcFee}%`} `}
-                  </CyDText>
-                  {/* crypto load fee none usdc */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {`${freePlanData?.nonUsdcFee === 0 ? 'FREE' : `${freePlanData?.nonUsdcFee}%*`} `}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='mt-[16px] h-[32px]' />
-                  {/* fx fee non usd txn */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `}
-                  </CyDText>
-                  {/* fx fee usd txn */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {'✅ Free'}
-                  </CyDText>
-                  {/* ATM fee */}
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
-                    <CyDText className='text-[12px] font-medium  pl-[12px]'>
-                      {`${freePlanData?.atmFee}%`}
-                      {/* {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `} */}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* chargeback */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
-                    <CyDText className='text-[12px] font-medium  pl-[12px]'>
-                      {`${freePlanData?.chargeBackLimit === 0 ? '🚫' : `$${freePlanData?.chargeBackLimit}`} `}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <CyDView className='flex flex-col w-[21%] bg-p10 rounded-tr-[16px] rounded-br-[16px]'>
-                  <CyDView className=' bg-p10 py-[16px] px-[12px] rounded-tr-[16px] h-[46px]'>
-                    <CyDText className='text-center text-[12px] font-bold '>
-                      {t('PREMIUM')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
-                  {/* virtual card */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {'✅ Free'}
-                  </CyDText>
-                  {/* physical card */}
-                  <CyDView className='flex'>
+                    {/* physical card */}
+                    <CyDView className='flex'>
+                      <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                        {'✅ Plastic'}
+                      </CyDText>
+                      <CyDText className='text-[10px] font-medium  pl-[12px] h-[18px]'>
+                        {`${freePlanData?.physicalCardFee === 0 ? 'FREE' : `($${freePlanData?.physicalCardFee}`} fee)`}
+                      </CyDText>
+                    </CyDView>
+                    {/* add on cards */}
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {`✅ Metal`}
+                      {'🚫'}
                     </CyDText>
-                    <CyDText className='text-[10px] font-medium  pl-[12px] h-[18px]'>
-                      {`(🎉 Free)`}
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* apple and gpay */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium '>
+                        {'✅ Free'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='mt-[16px] h-[32px]' />
+                    {/* crypto load fee usdc */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {`${freePlanData?.usdcFee === 0 ? 'FREE' : `${freePlanData?.usdcFee}%`} `}
                     </CyDText>
-                  </CyDView>
-                  {/* metal card */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {'✅ 3 Cards'}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* gpay and apple pay */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium '>
+                    {/* crypto load fee none usdc */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {`${freePlanData?.nonUsdcFee === 0 ? 'FREE' : `${freePlanData?.nonUsdcFee}%*`} `}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='mt-[16px] h-[32px]' />
+                    {/* fx fee non usd txn */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `}
+                    </CyDText>
+                    {/* fx fee usd txn */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {'✅ Free'}
                     </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
-                  {/* usdc load */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {`${proPlanData?.usdcFee === 0 ? '✅ Free' : `${proPlanData?.usdcFee}%`} `}
-                  </CyDText>
-                  {/* non usdc load */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {`${proPlanData?.nonUsdcFee === 0 ? '✅ Free' : `${proPlanData?.nonUsdcFee}%`} `}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
-                  {/* non usd txn fx fee */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `}
-                  </CyDText>
-                  {/*  usd txn fx fee */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {`${proPlanData?.usdcFee === 0 ? '✅ Free' : `${proPlanData?.usdcFee}%`} `}
-                  </CyDText>
-
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* ------------------------------ todo ----------------------- */}
-                  {/* atm fee */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium  pl-[12px]'>
-                      {`${proPlanData?.atmFee}%`}
-                      {/* {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `} */}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* charge back  */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center items-center'>
-                    <CyDText className='text-[12px] font-medium  text-wrap'>
-                      {`${proPlanData?.chargeBackLimit === 0 ? '🚫' : `Upto $${proPlanData?.chargeBackLimit}`} `}
-                    </CyDText>
-                  </CyDView>
-
-                  {/* <CyDView className='w-full h-[1px] bg-n30 mt-[20px]' /> */}
-                </CyDView>
-              </CyDView>
-
-              {/* usage details */}
-              <CyDText className='mt-[16px] text-[12px] font-semibold  mb-[6px]'>
-                {t('USAGE_DETAILS')}
-              </CyDText>
-              <CyDView className='flex flex-row w-full'>
-                <CyDView className='w-[58%] flex flex-col bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDIcons
-                        name='card'
-                        size={24}
-                        className='text-base400'
-                      />
+                    {/* ATM fee */}
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
+                      <CyDText className='text-[12px] font-medium  pl-[12px]'>
+                        {`${freePlanData?.atmFee}%`}
+                        {/* {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `} */}
+                      </CyDText>
                     </CyDView>
-                    <CyDText className='font-bold text-[12px] h-[18px]'>
-                      {t('CARD_SPENDING_LIMIT')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('DAILY_LIMIT')}
-                  </CyDText>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('MONTHYL_LIMIT')}
-                  </CyDText>
-                  <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                    {t('HIGHER_LIMIT')}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.ONLINE_TRANSACTIONS}
-                        className='w-[24px] h-[24px]'
-                      />
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* chargeback */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
+                      <CyDText className='text-[12px] font-medium  pl-[12px]'>
+                        {`${freePlanData?.chargeBackLimit === 0 ? '🚫' : `$${freePlanData?.chargeBackLimit}`} `}
+                      </CyDText>
                     </CyDView>
-                    <CyDText className='font-bold text-[12px] h-[18px]'>
-                      {t('COUNTRIES_SUPPORTED')}
-                    </CyDText>
                   </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.CARD_AND_PIN_TRANSACTIONS}
-                        className='w-[24px] h-[24px]'
-                      />
+                  <CyDView className='flex flex-col w-[21%] bg-p10 rounded-tr-[16px] rounded-br-[16px]'>
+                    <CyDView className=' bg-p10 py-[16px] px-[12px] rounded-tr-[16px] h-[46px]'>
+                      <CyDText className='text-center text-[12px] font-bold '>
+                        {t('PREMIUM')}
+                      </CyDText>
                     </CyDView>
-                    <CyDText className='font-bold text-[12px] h-[18px]'>
-                      {t('MERCHANTS_SUPPORTED')}
+                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
+                    {/* virtual card */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {'✅ Free'}
                     </CyDText>
+                    {/* physical card */}
+                    <CyDView className='flex'>
+                      <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                        {`✅ Metal`}
+                      </CyDText>
+                      <CyDText className='text-[10px] font-medium  pl-[12px] h-[18px]'>
+                        {`(🎉 Free)`}
+                      </CyDText>
+                    </CyDView>
+                    {/* metal card */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {'✅ 3 Cards'}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* gpay and apple pay */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium '>
+                        {'✅ Free'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
+                    {/* usdc load */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {`${proPlanData?.usdcFee === 0 ? '✅ Free' : `${proPlanData?.usdcFee}%`} `}
+                    </CyDText>
+                    {/* non usdc load */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {`${proPlanData?.nonUsdcFee === 0 ? '✅ Free' : `${proPlanData?.nonUsdcFee}%`} `}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
+                    {/* non usd txn fx fee */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `}
+                    </CyDText>
+                    {/*  usd txn fx fee */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {`${proPlanData?.usdcFee === 0 ? '✅ Free' : `${proPlanData?.usdcFee}%`} `}
+                    </CyDText>
+
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* ------------------------------ todo ----------------------- */}
+                    {/* atm fee */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium  pl-[12px]'>
+                        {`${proPlanData?.atmFee}%`}
+                        {/* {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `} */}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* charge back  */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center items-center'>
+                      <CyDText className='text-[12px] font-medium  text-wrap'>
+                        {`${proPlanData?.chargeBackLimit === 0 ? '🚫' : `Upto $${proPlanData?.chargeBackLimit}`} `}
+                      </CyDText>
+                    </CyDView>
+
+                    {/* <CyDView className='w-full h-[1px] bg-n30 mt-[20px]' /> */}
                   </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                 </CyDView>
 
-                <CyDView className='w-[21%] flex flex-col bg-n0'>
-                  <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
-                  {/* daily limit */}
-                  <CyDText className='text-[12px] font-medium  text-center mt-[10px] h-[18px]'>
-                    {`$${freePlanData?.dailyLimit}`}
-                  </CyDText>
-                  {/* montly limit */}
-                  <CyDText className='text-[12px] font-medium  pl-[12px] text-center  mt-[10px] h-[18px]'>
-                    {`$${freePlanData?.monthlyLimit}`}
-                  </CyDText>
-                  {/* higher limit */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
-                    {'🚫'}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* countries supported */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
-                      {'195+'}
+                {/* usage details */}
+                <CyDText className='mt-[16px] text-[12px] font-semibold  mb-[6px]'>
+                  {t('USAGE_DETAILS')}
+                </CyDText>
+                <CyDView className='flex flex-row w-full'>
+                  <CyDView className='w-[58%] flex flex-col bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDIcons
+                          name='card'
+                          size={24}
+                          className='text-base400'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px] h-[18px]'>
+                        {t('CARD_SPENDING_LIMIT')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('DAILY_LIMIT')}
                     </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* merchants supported */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
-                      {'50M+'}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('MONTHYL_LIMIT')}
                     </CyDText>
+                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                      {t('HIGHER_LIMIT')}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDImage
+                          source={AppImages.ONLINE_TRANSACTIONS}
+                          className='w-[24px] h-[24px]'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px] h-[18px]'>
+                        {t('COUNTRIES_SUPPORTED')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                      <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
+                        <CyDImage
+                          source={AppImages.CARD_AND_PIN_TRANSACTIONS}
+                          className='w-[24px] h-[24px]'
+                        />
+                      </CyDView>
+                      <CyDText className='font-bold text-[12px] h-[18px]'>
+                        {t('MERCHANTS_SUPPORTED')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                   </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+
+                  <CyDView className='w-[21%] flex flex-col bg-n0'>
+                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
+                    {/* daily limit */}
+                    <CyDText className='text-[12px] font-medium  text-center mt-[10px] h-[18px]'>
+                      {`$${freePlanData?.dailyLimit}`}
+                    </CyDText>
+                    {/* montly limit */}
+                    <CyDText className='text-[12px] font-medium  pl-[12px] text-center  mt-[10px] h-[18px]'>
+                      {`$${freePlanData?.monthlyLimit}`}
+                    </CyDText>
+                    {/* higher limit */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
+                      {'🚫'}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* countries supported */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
+                        {'195+'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* merchants supported */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
+                        {'50M+'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                  </CyDView>
+
+                  <CyDView className='w-[21%] flex flex-col bg-n0  rounded-tr-[16px] rounded-br-[16px]'>
+                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
+                    {/* daily limit */}
+                    <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
+                      {`$${proPlanData?.dailyLimit}`}
+                    </CyDText>
+                    {/* montly limit */}
+                    <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
+                      {`$${proPlanData?.monthlyLimit}`}
+                    </CyDText>
+                    {/* higher limit */}
+                    <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
+                      {'✅ *'}
+                    </CyDText>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* countries supported */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
+                        {'195+'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    {/* merchants supported */}
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center items-start pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
+                        {'50M+'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                  </CyDView>
                 </CyDView>
 
-                <CyDView className='w-[21%] flex flex-col bg-n0  rounded-tr-[16px] rounded-br-[16px]'>
-                  <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
-                  {/* daily limit */}
-                  <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
-                    {`$${proPlanData?.dailyLimit}`}
-                  </CyDText>
-                  {/* montly limit */}
-                  <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
-                    {`$${proPlanData?.monthlyLimit}`}
-                  </CyDText>
-                  {/* higher limit */}
-                  <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
-                    {'✅ *'}
-                  </CyDText>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* countries supported */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
-                      {'195+'}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* merchants supported */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center items-start pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium  text-center pl-[12px]'>
-                      {'50M+'}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                </CyDView>
-              </CyDView>
-
-              {/* Note */}
-              <CyDText className='text-n200 text-[12px] font-normal mt-[7px]'>
-                {t('COMPARISION_NOTE_1')}
-              </CyDText>
-              <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                {t('COMPARISION_NOTE_2')}
-              </CyDText>
-              <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                {t('COMPARISION_NOTE_3')}
-              </CyDText>
-              <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                {t('COMPARISION_NOTE_4')}
-              </CyDText>
+                {/* Note */}
+                <CyDText className='text-n200 text-[12px] font-normal mt-[7px]'>
+                  {t('COMPARISION_NOTE_1')}
+                </CyDText>
+                <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
+                  {t('COMPARISION_NOTE_2')}
+                </CyDText>
+                <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
+                  {t('COMPARISION_NOTE_3')}
+                </CyDText>
+                <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
+                  {t('COMPARISION_NOTE_4')}
+                </CyDText>
+              </CyDTouchView>
             </CyDScrollView>
           </CyDView>
         </CyDModalLayout>
@@ -798,13 +805,13 @@ export default function SelectPlanModal({
                 className={clsx(
                   'h-[20px] w-[20px] border-[1px] rounded-[4px]',
                   {
-                    'bg-black': consent,
+                    'bg-n0': consent,
                   },
                 )}>
                 {consent && (
                   <CyDMaterialDesignIcons
                     name='check-bold'
-                    size={14}
+                    size={17}
                     className='text-base400 '
                   />
                 )}
@@ -838,7 +845,7 @@ export default function SelectPlanModal({
           </CyDView>
         </CyDModalLayout>
 
-        <CyDView className='h-[100%] mx-[2px] bg-n20'>
+        <CyDView className='h-full mx-[2px] bg-n20'>
           <CyDView className='bg-n0 flex-1' style={{ paddingTop: insets.top }}>
             <CyDView className='bg-n0 flex flex-row justify-between p-[16px] px-[16px]'>
               <CyDView>
@@ -865,7 +872,7 @@ export default function SelectPlanModal({
             </CyDView>
 
             <CyDScrollView className='flex-1'>
-              <CyDView className='mt-[16px] px-[16px]'>
+              <CyDTouchView className='mt-[16px] px-[16px]' activeOpacity={1}>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CyDMaterialDesignIcons
                     name='check'
@@ -932,7 +939,7 @@ export default function SelectPlanModal({
                   <Button
                     title={`Get Premium for $${proPlanData?.cost}`}
                     onPress={() => {
-                      void onSelectPlan(CypherPlanId.PRO_PLAN);
+                      setConsentModalVisible(true);
                     }}
                     loading={loading}
                     loaderStyle={styles.loaderStyle}
@@ -940,9 +947,9 @@ export default function SelectPlanModal({
                     style='p-[15px] mt-[12px]'
                   />
                 </CyDView>
-              </CyDView>
+              </CyDTouchView>
 
-              <CyDView className='bg-n30 p-[16px]'>
+              <CyDTouchView className='bg-n30 p-[16px]' activeOpacity={1}>
                 <CyDView className='border border-n40 rounded-[16px] bg-n0 '>
                   <CyDView className='px-[16px] pt-[16px]'>
                     <CyDText className='text-[20px] font-semibold'>
@@ -1332,7 +1339,7 @@ export default function SelectPlanModal({
                     />
                   </CyDView>
                 </CyDView>
-              </CyDView>
+              </CyDTouchView>
             </CyDScrollView>
           </CyDView>
         </CyDView>
