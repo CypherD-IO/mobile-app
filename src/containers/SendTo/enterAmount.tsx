@@ -331,7 +331,7 @@ export default function EnterAmount(props: any) {
                     void onMaxPress();
                   }}
                   className={clsx(
-                    'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                    'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
                   )}>
                   {isMaxLoading ? (
                     <ActivityIndicator
@@ -359,12 +359,12 @@ export default function EnterAmount(props: any) {
                     // }
                   }}
                   className={clsx(
-                    'absolute right-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
+                    'absolute right-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
                   )}>
                   <CyDMaterialDesignIcons
                     name='swap-vertical'
                     size={16}
-                    className='text-base400 self-center items-center'
+                    className='text-black self-center items-center'
                   />
                 </CyDTouchView>
                 <CyDText className=' text-[15px] font-bold '>
@@ -373,7 +373,7 @@ export default function EnterAmount(props: any) {
                 <CyDView className={'flex-col w-6/12 mx-[6px] items-center'}>
                   <CyDTextInput
                     className={clsx(
-                      'font-bold text-center text-base400 h-[85px] bg-n20',
+                      'font-bold text-center text-base400 bg-n20 min-h-[80px]',
                       {
                         'text-[70px]': valueForUsd.length <= 5,
                         'text-[40px]': valueForUsd.length > 5,
