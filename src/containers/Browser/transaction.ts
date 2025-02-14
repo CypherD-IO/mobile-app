@@ -54,7 +54,7 @@ export async function sendTransaction(
   activityContext: any,
   rpc: string,
 ) {
-  const isHashGenerated = false;
+  let isHashGenerated = false;
   try {
     const {
       params: [{ to, data, value }],
@@ -87,37 +87,40 @@ export async function sendTransaction(
         hash,
       });
 
-      webviewRef.current.injectJavaScript(
-        `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(receipt.transactionHash)})`,
-      );
+      if (receipt?.transactionHash) {
+        isHashGenerated = true;
+        webviewRef.current.injectJavaScript(
+          `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(receipt.transactionHash)})`,
+        );
 
-      Toast.show({
-        type: 'success',
-        text1: 'Transaction Hash',
-        text2: receipt.transactionHash,
-        position: 'bottom',
-      });
-
-      activityRef.current &&
-        activityContext.dispatch({
-          type: ActivityReducerAction.PATCH,
-          value: {
-            id: activityRef.current.id,
-            transactionHash: receipt.transactionHash,
-            status: ActivityStatus.SUCCESS,
-          },
+        Toast.show({
+          type: 'success',
+          text1: 'Transaction Hash',
+          text2: receipt.transactionHash,
+          position: 'bottom',
         });
 
-      void analytics().logEvent('transaction_submit', {
-        from: hdWalletContext.state.wallet.ethereum.address,
-        to: payload.params[0].to,
-        gasPrice: finalGasPrice,
-        data: payload.params[0].data,
-        value: payload.params[0].value,
-        gas: gasLimit,
-        hash: receipt.transactionHash,
-        chain: hdWalletContext.state.selectedChain.name,
-      });
+        activityRef.current &&
+          activityContext.dispatch({
+            type: ActivityReducerAction.PATCH,
+            value: {
+              id: activityRef.current.id,
+              transactionHash: receipt.transactionHash,
+              status: ActivityStatus.SUCCESS,
+            },
+          });
+
+        void analytics().logEvent('transaction_submit', {
+          from: hdWalletContext.state.wallet.ethereum.address,
+          to: payload.params[0].to,
+          gasPrice: finalGasPrice,
+          data: payload.params[0].data,
+          value: payload.params[0].value,
+          gas: gasLimit,
+          hash: receipt.transactionHash,
+          chain: hdWalletContext.state.selectedChain.name,
+        });
+      }
     }
   } catch (e: any) {
     if (!isHashGenerated) {

@@ -1683,15 +1683,12 @@ export default function useTransactionManager() {
     routerAddress: Address;
     amount: string;
   }): Promise<CheckAllowanceResponse> => {
-    console.log('🚀 ~ useTransactionManager ~ amount:', amount);
-    console.log('🚀 ~ useTransactionManager ~ routerAddress:', routerAddress);
-    console.log(
-      '🚀 ~ useTransactionManager ~ tokenContractAddress:',
-      tokenContractAddress,
-    );
     try {
       const { ethereum } = get(hdWallet, ['state', 'wallet']);
-      console.log('🚀 ~ useTransactionManager ~ ethereum:', ethereum);
+
+      if (!ethereum?.address) {
+        throw new Error('Ethereum wallet not initialized');
+      }
 
       const contract = getContract({
         address: tokenContractAddress,
@@ -1699,12 +1696,14 @@ export default function useTransactionManager() {
         client: { public: publicClient },
       });
 
+      if (!contract) {
+        throw new Error('Failed to initialize contract');
+      }
+
       const allowance = await contract.read.allowance([
         ethereum.address as Address,
         routerAddress,
       ]);
-
-      console.log('🚀 ~ allowance:', allowance);
 
       const tokenAmount = DecimalHelper.fromString(amount).ceil();
 

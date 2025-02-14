@@ -626,7 +626,7 @@ export default function useWeb3(origin: Web3Origin) {
             callbackData.activityData = activityData;
             callbackData.receipt = receipt?.transactionHash;
 
-            if (receipt && receipt.transactionHash) {
+            if (receipt?.transactionHash) {
               return {
                 result: receipt.transactionHash,
                 callbackData,

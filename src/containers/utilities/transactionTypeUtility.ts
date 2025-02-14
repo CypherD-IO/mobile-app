@@ -38,8 +38,8 @@ export default async function getTransactionType(address: `0x${string}`) {
           type = 'Contract';
         }
       }
-      return type;
     }
+    return type;
   } catch (e) {
     throw Error(JSON.stringify({ message: String(e), errorAddress: address }));
   }

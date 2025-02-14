@@ -1370,10 +1370,6 @@ export default function buildUnserializedTransaction(txMeta) {
   return TransactionFactory.fromTxData(txParams, { common });
 }
 
-export const getViemChain = (chain: ChainBackendNames) => {
-  return mainnet;
-};
-
 export const getViemPublicClient = (rpc: string) => {
   return createPublicClient({
     transport: http(rpc),
