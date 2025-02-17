@@ -49,6 +49,7 @@ import { CyDIconsPack } from '../../../customFonts';
 interface RouteParams {
   cardId: string;
   currentCardProvider: string;
+  isCardActivation?: boolean;
 }
 
 const SecuritySection = ({
@@ -156,7 +157,7 @@ export default function CardControlsMenu() {
   const { showModal, hideModal } = useGlobalModalContext();
   const insets = useSafeAreaInsets();
 
-  const { cardId, currentCardProvider } = route.params ?? {};
+  const { cardId, currentCardProvider, isCardActivation } = route.params ?? {};
   const planInfo = globalState?.cardProfile?.planInfo;
   const activeCards =
     get(globalState?.cardProfile, currentCardProvider)?.cards ?? [];
@@ -388,7 +389,6 @@ export default function CardControlsMenu() {
         isModalVisible={planChangeModalVisible}
         setIsModalVisible={setPlanChangeModalVisible}
         openComparePlans={openComparePlans}
-        deductAmountNow={true}
         cardProvider={currentCardProvider}
         cardId={cardId}
         onPlanChangeSuccess={() => {
@@ -401,7 +401,11 @@ export default function CardControlsMenu() {
         <CyDTouchView
           className='flex flex-row px-[16px] py-[13px] items-center'
           onPress={() => {
-            navigation.goBack();
+            if (isCardActivation) {
+              navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+            } else {
+              navigation.goBack();
+            }
           }}>
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
           <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card?.last4 ?? ''}`}</CyDText>

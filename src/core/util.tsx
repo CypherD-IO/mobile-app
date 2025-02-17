@@ -68,8 +68,6 @@ import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './portfolio';
 import Long from 'long';
-
-import { Wallet } from 'ethers';
 import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
@@ -86,6 +84,9 @@ import { DecimalHelper } from '../utils/decimalHelper';
 import { Common, Hardfork } from '@ethereumjs/common';
 import { TransactionFactory } from '@ethereumjs/tx';
 import crypto from 'crypto';
+import { mainnet } from 'viem/chains';
+import { createPublicClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -233,7 +234,7 @@ export function getExplorerUrl(
       } else if (chainName === CHAIN_ZKSYNC_ERA.name) {
         return `https://explorer.zksync.io/tx/${hash}`;
       } else if (chainName === CHAIN_BASE.name) {
-        return `https://base.dex.guru/tx/${hash}`;
+        return `https://basescan.org/tx/${hash}`;
       } else if (chainName === CHAIN_POLYGON_ZKEVM.name) {
         return `https://zkevm.polygonscan.com/tx/${hash}`;
       } else if (chainName === CHAIN_AURORA.name) {
@@ -850,6 +851,9 @@ export const formatAmount = (
 };
 
 export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
+  if (DeviceInfo.isEmulatorSync()) {
+    return;
+  }
   const { type } = params;
   switch (type) {
     case AnalyticsType.SUCCESS: {
@@ -877,6 +881,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
         connectionType,
         other,
       } = params as ErrorAnalytics;
+
       const data = {
         chain,
         message,
@@ -897,16 +902,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
 }
 
 export function parseErrorMessage(error: any): string {
-  // Case 1: Error instance
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error?.message) {
-    return error.message;
-  }
-
-  // Case 2: Axios/HTTP error response object
+  // Case 1: Axios/HTTP error response object
   const errorObj = error;
   if (errorObj?.response?.data) {
     // Handle various API error response formats
@@ -943,6 +939,15 @@ export function parseErrorMessage(error: any): string {
     } catch {
       // If stringification fails, continue to other cases
     }
+  }
+
+  // Case 3: Error instance
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (error?.message) {
+    return error.message;
   }
 
   // Case 3: Simple string conversion possible
@@ -1020,16 +1025,16 @@ export function isNativeCurrency(
   return isNative;
 }
 
-export function addHexPrefix(value: string): string {
+export function addHexPrefix(value: string): `0x${string}` {
   if (!value.startsWith('0x')) {
-    return '0x' + value;
+    return `0x${value}`;
   }
-  return value;
+  return value as `0x${string}`;
 }
 
 export function isValidPrivateKey(privateKey: string): boolean {
   try {
-    const wallet = new Wallet(addHexPrefix(privateKey));
+    const wallet = privateKeyToAccount(addHexPrefix(privateKey));
     return !!wallet;
   } catch (e) {
     return false;
@@ -1364,3 +1369,9 @@ export default function buildUnserializedTransaction(txMeta) {
   const common = buildTransactionCommon(txMeta);
   return TransactionFactory.fromTxData(txParams, { common });
 }
+
+export const getViemPublicClient = (rpc: string) => {
+  return createPublicClient({
+    transport: http(rpc),
+  });
+};

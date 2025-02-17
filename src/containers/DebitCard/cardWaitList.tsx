@@ -246,14 +246,6 @@ export default function CardWailtList({ navigation }: Props) {
                   <CyDView className={'flex flex-row justify-center'}>
                     <CyDTouchView
                       className={'mt-[20px]'}
-                      // onPress={() =>
-                      //   navigation.navigate(C.screenTitle.BROWSER, {
-                      //     screen: C.screenTitle.BROWSER_SCREEN,
-                      //     params: {
-                      //       url: 'https://app.cypherwallet.io/#/?cardSignup=true',
-                      //     },
-                      //   })
-                      // }
                       onPress={() =>
                         navigation.navigate(
                           C.screenTitle.CARD_SIGNUP_LANDING_SCREEN,

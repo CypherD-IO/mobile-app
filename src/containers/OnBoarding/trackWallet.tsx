@@ -1,39 +1,31 @@
+import firebase from '@react-native-firebase/app';
+import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import React, { useContext, useState } from 'react';
-import { TextInput } from 'react-native';
+import { BarCodeReadEvent } from 'react-native-camera';
+import { v4 as uuidv4 } from 'uuid';
+import { isAddress } from 'web3-validator';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { screenTitle } from '../../constants';
 import { ButtonType } from '../../constants/enum';
+import { ChainBackendNames, QRScannerScreens } from '../../constants/server';
+import { setReadOnlyWalletData } from '../../core/asyncStorage';
+import axios from '../../core/Http';
+import { HdWalletContext, isValidEns } from '../../core/util';
+import { hostWorker } from '../../global';
+import useEns from '../../hooks/useEns';
 import {
   CyDFlatList,
-  CyDImage,
   CyDImageBackground,
   CyDMaterialDesignIcons,
-  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import { v4 as uuidv4 } from 'uuid';
-import { hostWorker } from '../../global';
-import axios from '../../core/Http';
-import * as Sentry from '@sentry/react-native';
-import {
-  HdWalletContext,
-  isValidEns,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from '../../core/util';
-import { setReadOnlyWalletData } from '../../core/asyncStorage';
-import { ChainBackendNames, QRScannerScreens } from '../../constants/server';
-import { screenTitle } from '../../constants';
-import { BarCodeReadEvent } from 'react-native-camera';
-import Web3 from 'web3';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import useEns from '../../hooks/useEns';
-import firebase from '@react-native-firebase/app';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
-import { isAddress } from 'web3-validator';
 
 export default function TrackWallet({
   navigation,

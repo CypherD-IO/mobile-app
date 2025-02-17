@@ -6,7 +6,6 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { ethers } from 'ethers';
 import { t } from 'i18next';
 import { random } from 'lodash';
 import React, { useContext, useEffect, useState } from 'react';
@@ -51,6 +50,7 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { formatUnits } from 'viem';
 
 const EmptyView = () => {
   return (
@@ -391,7 +391,7 @@ export default function TokenStaking({
           const resp = await delegateCosmosToken({
             chain: tokenData.chainDetails,
             validatorAddress: validator.address,
-            amount: ethers.formatUnits(reward, tokenData.contractDecimals ?? 6),
+            amount: formatUnits(reward, tokenData.contractDecimals ?? 6),
             contractDecimals: tokenData.contractDecimals,
           });
 
@@ -405,10 +405,7 @@ export default function TokenStaking({
               other: {
                 action: 'press restake',
                 token: tokenData.symbol,
-                amount: ethers.formatUnits(
-                  reward,
-                  tokenData.contractDecimals ?? 6,
-                ),
+                amount: formatUnits(reward, tokenData.contractDecimals ?? 6),
                 balance: tokenData.balanceDecimal,
               },
             });

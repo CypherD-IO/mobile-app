@@ -141,11 +141,11 @@ export const DecimalHelper = {
     return new Decimal(base).pow(exponent);
   },
 
-  applyDecimals(value: string | number | Decimal, decimals: number): Decimal {
+  toInteger(value: string | number | Decimal, decimals: number): Decimal {
     return this.multiply(value, this.pow(10, decimals));
   },
 
-  removeDecimals(value: string | number | Decimal, decimals: number): Decimal {
+  toDecimal(value: string | number | Decimal, decimals: number): Decimal {
     return this.divide(value, this.pow(10, decimals));
   },
 

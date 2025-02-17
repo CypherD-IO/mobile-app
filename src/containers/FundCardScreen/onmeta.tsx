@@ -8,10 +8,9 @@ import WebView from 'react-native-webview';
 import { CyDImage, CyDView } from '../../styles/tailwindStyles';
 import { PayModalParams } from '../../types/Browser';
 import { GlobalContext } from '../../core/globalContext';
-import Web3 from 'web3';
 import {
   parseWebviewPayload,
-  personal_sign,
+  personalSign,
   sendTransaction,
   signTypedDataCypherD,
 } from '../Browser/transaction';
@@ -35,8 +34,6 @@ import { hostWorker } from '../../global';
 import { Linking } from 'react-native';
 import MetaWidget from '@onmeta/react-native-sdk';
 
-let web3RPCEndpoint: Web3;
-
 function parseRequest(
   payload: any,
   webviewRef: React.MutableRefObject<any>,
@@ -50,7 +47,6 @@ function parseRequest(
 ) {
   const rpc = getWeb3Endpoint(selectedChain, globalContext);
   // const rpc = 'https://rpc-mumbai.maticvigil.com/'; // onmeta staging hack
-  web3RPCEndpoint = new Web3(rpc);
   parseWebviewPayload(
     payload,
     webviewRef,
@@ -60,7 +56,7 @@ function parseRequest(
     payModal,
     signModal,
     pushModal,
-    web3RPCEndpoint,
+    rpc,
   );
 }
 
@@ -90,6 +86,7 @@ export default function Onmeta({ route }) {
     hdWallet.state.selectedChain.chain_id,
   );
   const [clientDetails, setClientDetails] = useState({});
+  const rpc = getWeb3Endpoint(hdWallet.state.selectedChain, globalContext);
 
   function processPushPermissionUserChoice(permission: any) {
     setPushModal(false);
@@ -269,11 +266,11 @@ export default function Onmeta({ route }) {
                 signModalParams.payload.method === WEB3METHODS.PERSONAL_SIGN ||
                 signModalParams.payload.method === WEB3METHODS.ETH_SIGN
               ) {
-                await personal_sign(
+                await personalSign(
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
-                  web3RPCEndpoint,
+                  rpc,
                 );
               } else if (
                 signModalParams.payload.method === WEB3METHODS.SIGN_TYPED_DATA
@@ -333,9 +330,9 @@ export default function Onmeta({ route }) {
                   payModalParams.finalGasPrice,
                   payModalParams.gasLimit,
                   webviewRef,
-                  web3RPCEndpoint,
                   activityRef,
                   activityContext,
+                  rpc,
                 );
               }
             }}
