@@ -8,11 +8,11 @@ import {
 } from '../../../../styles/tailwindStyles';
 import { Chain } from '../../../../constants/server';
 import { EIP155_SIGNING_METHODS } from '../../../../constants/EIP155Data';
-import Web3 from 'web3';
 import { t } from 'i18next';
 import { IDAppInfo } from '../../../../models/signingModalData.interface';
 import AppImages from '../../../../../assets/images/appImages';
 import { DecodedResponseTypes } from '../../../../constants/enum';
+import { hexToString } from 'viem';
 const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo }) => {
   return (
     <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-n40 p-[8px]'>
@@ -83,13 +83,13 @@ const RenderMessage = ({
   messageParams,
 }: {
   method: string;
-  messageParams: string;
+  messageParams: string[];
 }) => {
   let message = '';
   if (method === EIP155_SIGNING_METHODS.PERSONAL_SIGN) {
-    message = Web3.utils.hexToUtf8(messageParams[0]);
+    message = hexToString(messageParams[0] as `0x${string}`);
   } else if (method === EIP155_SIGNING_METHODS.ETH_SIGN) {
-    message = Web3.utils.hexToUtf8(messageParams[1]);
+    message = hexToString(messageParams[1] as `0x${string}`);
   } else if (
     method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA ||
     method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 ||

@@ -27,6 +27,7 @@ import {
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
 import {
   formatAmount,
+  getViemPublicClient,
   getWeb3Endpoint,
   HdWalletContext,
   isNativeToken,
@@ -46,7 +47,6 @@ import {
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
-import Web3 from 'web3';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export default function EnterAmount(props: any) {
@@ -108,15 +108,19 @@ export default function EnterAmount(props: any) {
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
     if (chainName === ChainNames.ETH) {
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(tokenData.chainDetails, globalContext),
+      );
       const ethereum = hdWallet.state.wallet.ethereum;
       gasEstimate = await estimateGasForEvm({
-        web3: new Web3(getWeb3Endpoint(tokenData.chainDetails, globalContext)),
-        chain: tokenData.chainDetails.backendName as ChainBackendNames,
-        fromAddress: ethereum.address ?? '',
-        toAddress: ethereum.address ?? '',
+        publicClient,
+        chain: tokenData.chainDetails.backendName,
+        fromAddress: ethereum.address as `0x${string}`,
+        toAddress: ethereum.address as `0x${string}`,
         amountToSend: tokenData.balanceDecimal,
-        contractAddress: tokenData.contractAddress,
+        contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
+        isErc20: !isNativeToken(tokenData),
       });
     } else if (chainName === ChainNames.SOLANA) {
       const solana = hdWallet.state.wallet.solana;
@@ -167,13 +171,11 @@ export default function EnterAmount(props: any) {
     gasReserved: number,
   ) => {
     const { backendName, symbol } = tokenData.chainDetails;
-    if (GASLESS_CHAINS.includes(backendName as ChainBackendNames)) {
+    if (GASLESS_CHAINS.includes(backendName)) {
       return true;
     }
     const nativeBackendName = backendName;
-    const nativeToken = await getNativeToken(
-      nativeBackendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(nativeBackendName);
     const nativeTokenBalance = nativeToken.actualBalance;
     return DecimalHelper.isGreaterThanOrEqualTo(
       nativeTokenBalance,
@@ -186,7 +188,7 @@ export default function EnterAmount(props: any) {
     const nativeTokenSymbol =
       NativeTokenMapping[tokenData.chainDetails.symbol] ||
       tokenData.chainDetails.symbol;
-    const gasReserved = await getGasFee(tokenData.chainDetails?.chainName)
+    const gasReserved = (await getGasFee(tokenData.chainDetails?.chainName))
       ?.gasFeeInCrypto;
 
     if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {
@@ -242,17 +244,18 @@ export default function EnterAmount(props: any) {
         isNativeToken(tokenData) &&
         CAN_ESTIMATE_L1_FEE_CHAINS.includes(tokenData.chainDetails.backendName)
       ) {
+        const publicClient = getViemPublicClient(
+          getWeb3Endpoint(tokenData.chainDetails, globalContext),
+        );
         gasReservedForNativeToken = await estimateReserveFee({
           tokenData,
-          fromAddress: hdWallet.state.wallet.ethereum.address,
-          sendAddress:
+          fromAddress: hdWallet.state.wallet.ethereum.address as `0x${string}`,
+          toAddress:
             sendAddress !== ''
               ? sendAddress
               : hdWallet.state.wallet.ethereum.address,
-          web3: new Web3(
-            getWeb3Endpoint(tokenData.chainDetails, globalContext),
-          ),
-          web3Endpoint: getWeb3Endpoint(tokenData.chainDetails, globalContext),
+          publicClient,
+          rpc: getWeb3Endpoint(tokenData.chainDetails, globalContext),
         });
       } else if (isNativeToken(tokenData)) {
         const gasFeeDetails = await getGasFee(
@@ -328,7 +331,7 @@ export default function EnterAmount(props: any) {
                     void onMaxPress();
                   }}
                   className={clsx(
-                    'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                    'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
                   )}>
                   {isMaxLoading ? (
                     <ActivityIndicator
@@ -356,12 +359,12 @@ export default function EnterAmount(props: any) {
                     // }
                   }}
                   className={clsx(
-                    'absolute right-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
+                    'absolute right-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px] shadow-md',
                   )}>
                   <CyDMaterialDesignIcons
                     name='swap-vertical'
                     size={16}
-                    className='text-base400 self-center items-center'
+                    className='text-black self-center items-center'
                   />
                 </CyDTouchView>
                 <CyDText className=' text-[15px] font-bold '>
@@ -370,7 +373,7 @@ export default function EnterAmount(props: any) {
                 <CyDView className={'flex-col w-6/12 mx-[6px] items-center'}>
                   <CyDTextInput
                     className={clsx(
-                      'font-bold text-center text-base400 h-[85px] bg-n20',
+                      'font-bold text-center text-base400 bg-n20 min-h-[80px]',
                       {
                         'text-[70px]': valueForUsd.length <= 5,
                         'text-[40px]': valueForUsd.length > 5,

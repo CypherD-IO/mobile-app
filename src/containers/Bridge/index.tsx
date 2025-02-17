@@ -36,6 +36,7 @@ import useAxios from '../../core/HttpRequest';
 import {
   ActivityContext,
   formatAmount,
+  getViemPublicClient,
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
@@ -66,12 +67,10 @@ import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { Transaction } from '@solana/web3.js';
 import clsx from 'clsx';
-import { ethers } from 'ethers';
 import { StyleSheet } from 'react-native';
 import JSONTree from 'react-native-json-tree';
 import { SvgUri } from 'react-native-svg';
 import { v4 as uuidv4 } from 'uuid';
-import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import SignatureModal from '../../components/v2/signatureModal';
@@ -87,7 +86,6 @@ import {
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 import useSkipApiBridge from '../../core/skipApi';
-import { GasPriceDetail } from '../../core/types';
 import useIsSignable from '../../hooks/useIsSignable';
 import usePortfolio from '../../hooks/usePortfolio';
 import useTransactionManager from '../../hooks/useTransactionManager';
@@ -118,6 +116,17 @@ import useGasService from '../../hooks/useGasService';
 import { Holding } from '../../core/portfolio';
 import { Decimal } from 'decimal.js';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
+import {
+  encodeFunctionData,
+  formatEther,
+  formatUnits,
+  parseEther,
+  parseGwei,
+  parseUnits,
+  PublicClient,
+  toHex,
+} from 'viem';
+import { allowanceApprovalContractABI } from '../../core/swap';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -189,9 +198,13 @@ const Bridge: React.FC = () => {
     skipApiApproveAndSignEvm,
     skipApiSignAndBroadcast,
     skipApiSignAndApproveSolana,
-    checkAllowance,
   } = useSkipApiBridge();
-  const { getApproval, swapTokens } = useTransactionManager();
+  const {
+    executeApprovalRevokeContract,
+    swapTokens,
+    checkIfAllowanceIsEnough,
+  } = useTransactionManager();
+  const { getGasPrice } = useGasService();
   const globalStateContext = useContext(GlobalContext) as GlobalContextDef;
   const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
     BridgeContext,
@@ -244,8 +257,6 @@ const Bridge: React.FC = () => {
   >(null);
   const [approveParams, setApproveParams] = useState<{
     tokens: string;
-    gasFeeResponse: GasPriceDetail;
-    gasLimit: number;
     contractAddress: string;
   } | null>(null);
   const [swapParams, setSwapParams] = useState<{
@@ -626,13 +637,10 @@ const Bridge: React.FC = () => {
       let gasFeeRequired;
       if (isOdosSwap()) {
         // Handle Odos swap gas calculation
-        const web3 = new Web3(
-          getWeb3Endpoint(selectedChainDetails, globalContext),
-        );
-        const gasPriceDetail = get(response, ['data', 'gasInfo', 'gasPrice']);
-        const gasLimit = get(response, ['data', 'gasEstimate']);
-        const gasPriceWei = web3.utils.toWei(gasPriceDetail.toString(), 'gwei');
-        const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
+        const gasPrice = get(response, ['data', 'gasInfo', 'gasPrice']);
+        const gasLimit = get(response, ['data', 'data', 'gas']);
+        const gasPriceInWei = parseGwei(gasPrice.toString()).toString();
+        const totalGasFee = BigInt(gasLimit) * BigInt(gasPriceInWei);
         if (
           CAN_ESTIMATE_L1_FEE_CHAINS.includes(
             selectedChainDetails.backendName,
@@ -641,28 +649,29 @@ const Bridge: React.FC = () => {
         ) {
           const gasFeeRequiredToReserve =
             await estimateReserveFeeForCustomContract({
-              tokenData: nativeToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: hdWallet.state.wallet.ethereum.address,
-              web3,
-              web3Endpoint: getWeb3Endpoint(
-                selectedChainDetails,
-                globalContext,
-              ),
+              tokenData: nativeToken as any,
+              fromAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
+              toAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
+              rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               gas: gasLimit,
-              gasPrice: gasPriceDetail,
-              gasFeeInCrypto: DecimalHelper.removeDecimals(totalWei, 18),
+              gasPrice,
+              gasFeeInCrypto: DecimalHelper.toDecimal(
+                DecimalHelper.multiply(gasLimit, gasPrice),
+                9,
+              ).toString(),
             });
           gasFeeRequired = DecimalHelper.add(
             DecimalHelper.multiply(
-              web3.utils.fromWei(totalWei.toString(), 'ether'),
+              formatUnits(totalGasFee, 18),
               GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
             ),
             gasFeeRequiredToReserve,
           );
         } else {
           gasFeeRequired = DecimalHelper.multiply(
-            web3.utils.fromWei(totalWei.toString(), 'ether'),
+            formatUnits(totalGasFee, 18),
             GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
           ).toString();
         }
@@ -698,7 +707,7 @@ const Bridge: React.FC = () => {
             0,
             'evm_tx',
           ]);
-          const web3 = new Web3(
+          const publicClient = getViemPublicClient(
             getWeb3Endpoint(selectedChainDetails, globalContext),
           );
 
@@ -711,8 +720,8 @@ const Bridge: React.FC = () => {
           // get Approval for EVM chains inorder to calculate the gas required
           // approval check and approval granting is only required for non-native tokens
           if (!isNativeToken) {
-            const approvalResult = await handleTokenApprovals({
-              web3,
+            const approvalResp = await handleTokenApprovals({
+              publicClient,
               selectedFromToken,
               requiredErc20Approvals,
               selectedChainDetails,
@@ -720,6 +729,10 @@ const Bridge: React.FC = () => {
               hdWallet,
               globalContext,
             });
+            if (approvalResp?.isError) {
+              setError(JSON.stringify(approvalResp?.error));
+              return;
+            }
           }
 
           if (
@@ -730,9 +743,11 @@ const Bridge: React.FC = () => {
           ) {
             gasFeeRequired = await estimateReserveFee({
               tokenData: nativeToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: hdWallet.state.wallet.ethereum.address,
-              web3,
+              fromAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
+              toAddress: hdWallet?.state?.wallet?.ethereum
+                ?.address as `0x${string}`,
+              publicClient,
               web3Endpoint: getWeb3Endpoint(
                 selectedChainDetails,
                 globalContext,
@@ -742,7 +757,7 @@ const Bridge: React.FC = () => {
             const gasDetails = await estimateGasForEvmCustomContract(
               selectedChainDetails,
               evmContractData,
-              web3,
+              publicClient,
             );
             gasFeeRequired = DecimalHelper.multiply(
               gasDetails?.gasFeeInCrypto,
@@ -799,7 +814,7 @@ const Bridge: React.FC = () => {
         } else {
           setUsdAmount(skipResponseQuoteData.usd_amount_in);
           setAmountOut(
-            ethers.formatUnits(
+            formatUnits(
               skipResponseQuoteData?.amount_out,
               selectedToToken?.decimals,
             ),
@@ -822,7 +837,6 @@ const Bridge: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('Error in checkBalanceAndCalculateAmount:', error);
       setError(error?.message ?? 'An unexpected error occurred');
     } finally {
       setTimeout(() => {
@@ -1002,7 +1016,7 @@ const Bridge: React.FC = () => {
   const getBridgeQuoteFromApi = async (amount: string) => {
     const routeBody = {
       amountIn: DecimalHelper.toString(
-        DecimalHelper.applyDecimals(
+        DecimalHelper.toInteger(
           DecimalHelper.round(amount, selectedFromToken.decimals),
           min([10, selectedFromToken.decimals]),
         ),
@@ -1129,8 +1143,8 @@ const Bridge: React.FC = () => {
           setQuoteData(responseQuoteData);
           setUsdAmount(responseQuoteData?.usd_amount_in);
           setAmountOut(
-            ethers.formatUnits(
-              responseQuoteData?.amount_out,
+            formatUnits(
+              BigInt(responseQuoteData?.amount_out),
               selectedToToken?.decimals,
             ),
           );
@@ -1218,12 +1232,14 @@ const Bridge: React.FC = () => {
       toTokenLogoUrl: selectedToToken?.logoUrl,
       fromChainLogoUrl: selectedFromChain.logoUrl,
       toChainLogoUrl: selectedToChain.logoUrl,
-      fromTokenAmount: ethers
-        .formatUnits(_quoteData?.amount_in, selectedFromToken.decimals)
-        .toString(),
-      toTokenAmount: ethers
-        .formatUnits(_quoteData?.amount_out, selectedToToken.decimals)
-        .toString(),
+      fromTokenAmount: formatUnits(
+        BigInt(_quoteData?.amount_in),
+        selectedFromToken.decimals,
+      ).toString(),
+      toTokenAmount: formatUnits(
+        BigInt(_quoteData?.amount_out),
+        selectedToToken.decimals,
+      ).toString(),
       datetime: new Date(),
       transactionHash: '',
       quoteData: {
@@ -1357,7 +1373,7 @@ const Bridge: React.FC = () => {
   const evmTxnMsg = async (data: SkipApiSignMsg) => {
     if (selectedFromToken && fromChainDetails) {
       try {
-        const web3 = new Web3(
+        const publicClient = getViemPublicClient(
           getWeb3Endpoint(fromChainDetails, globalStateContext),
         );
         const txs = data.txs;
@@ -1368,10 +1384,10 @@ const Bridge: React.FC = () => {
           if (evmTx) {
             setEvmTxnParams(evmTx);
             const evmResponse = await skipApiApproveAndSignEvm({
-              web3,
+              publicClient,
               evmTx,
               selectedFromToken,
-              hdWallet,
+              walletAddress: ethereum.address as `0x${string}`,
               setApproveModalVisible,
               showModalAndGetResponse,
               setApproveParams,
@@ -1771,51 +1787,60 @@ const Bridge: React.FC = () => {
         setLoading({ ...loading, acceptSwapLoading: true });
 
         if (fromChainDetails) {
-          const web3 = new Web3(
+          const publicClient = getViemPublicClient(
             getWeb3Endpoint(fromChainDetails, globalStateContext),
           );
 
           if (!selectedFromToken.isNative) {
-            const allowanceResp = await checkAllowance({
-              web3,
-              fromToken: selectedFromToken,
-              routerAddress,
-              amount: ethers
-                .parseUnits(cryptoAmount, selectedFromToken?.decimals)
-                .toString(),
-              hdWallet,
+            const allowanceResp = await checkIfAllowanceIsEnough({
+              publicClient,
+              tokenContractAddress:
+                selectedFromToken.tokenContract as `0x${string}`,
+              routerAddress: routerAddress as `0x${string}`,
+              amount: parseUnits(
+                cryptoAmount,
+                selectedFromToken?.decimals,
+              ).toString(),
             });
 
-            if (!allowanceResp.isAllowanceEnough) {
-              setApproveParams({
-                tokens: allowanceResp.tokens,
-                gasLimit: allowanceResp.gasLimit,
-                gasFeeResponse: allowanceResp.gasFeeResponse,
-                contractAddress: routerAddress,
-              });
-              const approveGranted = await showModalAndGetResponse(
-                setApproveModalVisible,
-              );
-              if (approveGranted) {
-                const approvalResp = await getApproval({
-                  web3,
-                  fromTokenContractAddress: selectedFromToken.tokenContract,
-                  hdWallet,
-                  gasLimit: allowanceResp.gasLimit,
-                  gasFeeResponse: allowanceResp.gasFeeResponse,
-                  contractData: allowanceResp.contractData,
-                  chainDetails: fromChainDetails,
-                  contractParams: {
-                    numberOfTokens: allowanceResp.tokens,
-                    toAddress: selectedToToken.tokenContract,
-                  },
+            if (!allowanceResp.isError) {
+              if (!allowanceResp.hasEnoughAllowance) {
+                const contractData = encodeFunctionData({
+                  abi: allowanceApprovalContractABI,
+                  functionName: 'approve',
+                  args: [routerAddress as `0x${string}`, allowanceResp.tokens],
                 });
 
-                if (approvalResp.isError) {
-                  setLoading({ ...loading, acceptSwapLoading: false });
-                  return { isError: true, error: 'Error approving allowance' };
+                setApproveParams({
+                  tokens: allowanceResp.tokens.toString(),
+                  contractAddress: routerAddress,
+                });
+
+                const approveGranted = await showModalAndGetResponse(
+                  setApproveModalVisible,
+                );
+                if (approveGranted) {
+                  const approvalResp = await executeApprovalRevokeContract({
+                    publicClient,
+                    tokenContractAddress:
+                      selectedFromToken.tokenContract as `0x${string}`,
+                    walletAddress: (ethereum.address ?? '') as `0x${string}`,
+                    contractData,
+                    chainDetails: fromChainDetails,
+                    tokens: allowanceResp.tokens,
+                  });
+
+                  if (approvalResp.isError) {
+                    setLoading({ ...loading, acceptSwapLoading: false });
+                    return {
+                      isError: true,
+                      error: 'Error approving allowance',
+                    };
+                  }
                 }
               }
+            } else {
+              return { isError: true, error: allowanceResp.error };
             }
           }
           let gasFeeETH = '';
@@ -1831,24 +1856,19 @@ const Bridge: React.FC = () => {
             finalGasPrice = gasFeeResponse.gasPrice;
 
             if (finalGasPrice) {
-              gasFeeETH = web3.utils.fromWei(
-                web3.utils.toWei(
-                  limitDecimalPlaces(
-                    DecimalHelper.multiply(finalGasPrice, gasLimit),
-                    9,
-                  ),
-                  'gwei',
-                ),
-                'ether',
-              );
+              const gasPriceInWei = parseGwei(finalGasPrice.toString());
+              gasFeeETH = DecimalHelper.multiply(
+                formatEther(gasPriceInWei),
+                gasLimit,
+              ).toString();
             }
 
             if (gasFeeResponse.tokenPrice > 0) {
               const ethPrice = gasFeeResponse.tokenPrice;
-              gasFeeDollar = limitDecimalPlaces(
-                DecimalHelper.multiply(gasFeeETH, ethPrice),
-                2,
-              );
+              gasFeeDollar = DecimalHelper.multiply(
+                gasFeeETH,
+                ethPrice,
+              ).toString();
             }
           }
 
@@ -1922,10 +1942,6 @@ const Bridge: React.FC = () => {
         };
         activityId.current = id;
 
-        const gasFeeResponse = _quoteData?.gasInfo;
-        const web3 = new Web3(
-          getWeb3Endpoint(fromChainDetails, globalStateContext),
-        );
         setSignModalVisible(false);
 
         activityContext.dispatch({
@@ -1933,14 +1949,8 @@ const Bridge: React.FC = () => {
           value: activityData,
         });
 
-        const response: any = await swapTokens({
-          web3,
-          fromToken: selectedFromToken,
-          contractData: _quoteData?.data,
-          routerAddress: _quoteData?.router,
-          hdWallet,
-          gasLimit: get(quoteData, ['gasEstimate']),
-          gasFeeResponse,
+        const response = await swapTokens({
+          quoteData: _quoteData,
           chainDetails: fromChainDetails,
         });
 
@@ -1956,7 +1966,7 @@ const Bridge: React.FC = () => {
                 type: ActivityReducerAction.PATCH,
                 value: {
                   id: activityData.id,
-                  transactionHash: response?.receipt ?? '',
+                  transactionHash: response?.hash ?? '',
                   status: ActivityStatus.SUCCESS,
                 },
               });
@@ -1966,7 +1976,7 @@ const Bridge: React.FC = () => {
           });
           void logAnalytics({
             type: AnalyticsType.SUCCESS,
-            txnHash: response.receipt.transactionHash,
+            txnHash: response.hash,
             chain: selectedFromChain.chainName,
             address: getSelectedChainAddress(),
             other: {
@@ -1995,7 +2005,7 @@ const Bridge: React.FC = () => {
             type: 'error',
             title: t('SWAP_ERROR'),
             description:
-              response?.error?.message ?? t('SWAP_ERROR_DESCRIPTION'),
+              parseErrorMessage(response.error) ?? t('SWAP_ERROR_DESCRIPTION'),
             onSuccess: navigateToPortfolio,
             onFailure: navigateToPortfolio,
           });
@@ -2127,23 +2137,18 @@ const Bridge: React.FC = () => {
         let gasFeeRequired;
         if (isOdosSwap()) {
           // Handle Odos swap gas calculation
-          const web3 = new Web3(
-            getWeb3Endpoint(selectedChainDetails, globalContext),
-          );
+
           const gasPriceDetail = get(quoteResponse, [
             'data',
             'gasInfo',
             'gasPrice',
           ]);
           const gasLimit = get(quoteResponse, ['data', 'gasEstimate']);
-          const gasPriceWei = web3.utils.toWei(
-            gasPriceDetail.toString(),
-            'gwei',
-          );
+          const gasPriceWei = parseUnits(gasPriceDetail.toString(), 9);
           const totalWei = DecimalHelper.multiply(gasLimit, gasPriceWei);
 
           gasFeeRequired = DecimalHelper.multiply(
-            web3.utils.fromWei(totalWei.toString(), 'ether'),
+            formatUnits(BigInt(totalWei.toFixed(0)), 18),
             GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
           ).toString();
         } else {
@@ -2178,7 +2183,7 @@ const Bridge: React.FC = () => {
               0,
               'evm_tx',
             ]);
-            const web3 = new Web3(
+            const publicClient = getViemPublicClient(
               getWeb3Endpoint(selectedChainDetails, globalContext),
             );
 
@@ -2189,8 +2194,8 @@ const Bridge: React.FC = () => {
             );
             // approval check and approval granting is only required for non-native tokens
             if (!isNativeToken) {
-              const approvalResult = await handleTokenApprovals({
-                web3,
+              const approvalResp = await handleTokenApprovals({
+                publicClient,
                 selectedFromToken,
                 requiredErc20Approvals,
                 selectedChainDetails,
@@ -2198,6 +2203,10 @@ const Bridge: React.FC = () => {
                 hdWallet,
                 globalContext,
               });
+              if (approvalResp?.isError) {
+                setError(JSON.stringify(approvalResp?.error));
+                return;
+              }
             }
 
             if (
@@ -2208,19 +2217,18 @@ const Bridge: React.FC = () => {
             ) {
               gasFeeRequired = await estimateReserveFee({
                 tokenData: nativeToken,
-                fromAddress: hdWallet.state.wallet.ethereum.address,
-                sendAddress: hdWallet.state.wallet.ethereum.address,
-                web3,
-                web3Endpoint: getWeb3Endpoint(
-                  selectedChainDetails,
-                  globalContext,
-                ),
+                fromAddress: hdWallet.state.wallet.ethereum
+                  .address as `0x${string}`,
+                toAddress: hdWallet.state.wallet.ethereum
+                  .address as `0x${string}`,
+                publicClient,
+                rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               });
             } else {
               const gasDetails = await estimateGasForEvmCustomContract(
                 selectedChainDetails,
                 evmContractData,
-                web3,
+                publicClient,
               );
               gasFeeRequired = gasDetails?.gasFeeInCrypto;
             }
@@ -2245,7 +2253,7 @@ const Bridge: React.FC = () => {
 
         const isBalanceAndGasFeeSufficient = hasSufficientBalanceAndGasFee(
           isNativeToken,
-          gasFeeRequired,
+          gasFeeRequired.toString(),
           nativeToken?.balanceDecimal,
           bal,
           selectedFromToken?.balanceDecimal,
@@ -2272,7 +2280,6 @@ const Bridge: React.FC = () => {
           setIndex(1);
         }
       } catch (error) {
-        console.error('Error in balance and gas check:', error);
         setError(parseErrorMessage(error) || 'An unexpected error occurred');
       }
     } catch (error) {
@@ -2283,7 +2290,7 @@ const Bridge: React.FC = () => {
   };
 
   const handleTokenApprovals = async ({
-    web3,
+    publicClient,
     selectedFromToken,
     requiredErc20Approvals,
     selectedChainDetails,
@@ -2291,7 +2298,7 @@ const Bridge: React.FC = () => {
     hdWallet,
     globalContext,
   }: {
-    web3: Web3;
+    publicClient: PublicClient;
     selectedFromToken: any;
     requiredErc20Approvals: any[];
     selectedChainDetails: any;
@@ -2300,16 +2307,40 @@ const Bridge: React.FC = () => {
     globalContext: any;
   }) => {
     for (const approval of requiredErc20Approvals) {
-      const allowanceResp = await checkAllowance({
-        web3,
-        fromToken: selectedFromToken,
-        routerAddress: get(approval, 'spender', ''),
-        amount: get(approval, 'amount', ''),
-        hdWallet,
+      const allowanceResp = await checkIfAllowanceIsEnough({
+        publicClient,
+        tokenContractAddress: get(
+          approval,
+          'token_contract',
+          '',
+        ) as `0x${string}`,
+        routerAddress: get(approval, 'spender', '') as `0x${string}`,
+        amount: get(approval, 'amount', '').toString(),
       });
 
       if (!allowanceResp.isError) {
-        if (!allowanceResp.isAllowanceEnough) {
+        if (!allowanceResp.hasEnoughAllowance) {
+          const contractData = encodeFunctionData({
+            abi: allowanceApprovalContractABI,
+            functionName: 'approve',
+            args: [
+              get(approval, 'spender', '') as `0x${string}`,
+              allowanceResp.tokens,
+            ],
+          });
+
+          const gasFeeResponse = await getGasPrice(
+            selectedChainDetails.backendName,
+            publicClient,
+          );
+
+          const gasLimit = await publicClient.estimateGas({
+            account: ethereum.address as `0x${string}`,
+            to: approval.token_contract as `0x${string}`,
+            value: parseEther('0'),
+            data: contractData,
+          });
+
           let gasFeeReserveRequired: number | Decimal = 0;
           if (
             CAN_ESTIMATE_L1_FEE_CHAINS.includes(
@@ -2319,29 +2350,19 @@ const Bridge: React.FC = () => {
             gasFeeReserveRequired = await estimateReserveFeeForCustomContract({
               tokenData: nativeToken,
               fromAddress: hdWallet.state.wallet.ethereum.address,
-              sendAddress: get(approval, 'spender', ''),
-              web3,
-              web3Endpoint: getWeb3Endpoint(
-                selectedChainDetails,
-                globalContext,
-              ),
-              gas: allowanceResp?.gasLimit,
-              gasPrice: allowanceResp?.gasFeeResponse?.gasPrice,
-              gasFeeInCrypto: DecimalHelper.removeDecimals(
-                DecimalHelper.multiply(
-                  allowanceResp?.gasLimit,
-                  allowanceResp?.gasFeeResponse?.gasPrice,
-                ),
+              toAddress: get(approval, 'spender', ''),
+              rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
+              gas: toHex(gasLimit),
+              gasPrice: gasFeeResponse?.gasPrice,
+              gasFeeInCrypto: DecimalHelper.toDecimal(
+                DecimalHelper.multiply(gasLimit, gasFeeResponse?.gasPrice),
                 9,
               ).toString(),
             });
           }
 
-          const gasCostForApproval = DecimalHelper.removeDecimals(
-            DecimalHelper.multiply(allowanceResp?.gasLimit, [
-              allowanceResp?.gasFeeResponse?.gasPrice,
-              1.2,
-            ]),
+          const gasCostForApproval = DecimalHelper.toDecimal(
+            DecimalHelper.multiply(gasLimit, gasFeeResponse?.gasPrice),
             9,
           );
 
@@ -2357,9 +2378,7 @@ const Bridge: React.FC = () => {
           }
 
           setApproveParams({
-            tokens: allowanceResp.tokens,
-            gasLimit: allowanceResp.gasLimit,
-            gasFeeResponse: allowanceResp.gasFeeResponse,
+            tokens: allowanceResp.tokens.toString(),
             contractAddress: get(approval, 'spender', ''),
           });
 
@@ -2368,18 +2387,13 @@ const Bridge: React.FC = () => {
           );
 
           if (approveGranted) {
-            const approvalResp = await getApproval({
-              web3,
-              fromTokenContractAddress: get(approval, 'token_contract', ''),
-              hdWallet,
-              gasLimit: allowanceResp.gasLimit,
-              gasFeeResponse: allowanceResp.gasFeeResponse,
-              contractData: allowanceResp.contractData,
+            const approvalResp = await executeApprovalRevokeContract({
+              publicClient,
+              tokenContractAddress: get(approval, 'token_contract', ''),
+              contractData,
               chainDetails: selectedChainDetails,
-              contractParams: {
-                toAddress: get(approval, 'spender', ''),
-                numberOfTokens: String(parseFloat(get(approval, 'amount', ''))),
-              },
+              tokens: allowanceResp.tokens,
+              walletAddress: ethereum.address as `0x${string}`,
             });
 
             if (approvalResp.isError) {
@@ -2398,11 +2412,10 @@ const Bridge: React.FC = () => {
       } else {
         return {
           isError: true,
-          error: 'Error calculating allowance',
+          error: allowanceResp.error,
         };
       }
     }
-    return { isError: false };
   };
 
   // Update the useEffect that was watching for input changes to just reset error state
@@ -2465,14 +2478,14 @@ const Bridge: React.FC = () => {
                     <CyDText className=' pt-[10px] ml-[15px] font-medium text-left text-[12px]'>
                       {`You are granting permission to `}
                     </CyDText>
-                    <CyDText className=' ml-[15px] font-semibold text-left text-[14px]'>
+                    <CyDText className=' ml-[15px] font-bold text-left text-[12px]'>
                       {`${approveParams.contractAddress} `}
                     </CyDText>
                     <CyDText className=' pt-[10px] ml-[15px] font-medium text-left text-[12px]'>
                       {`to spend up to`}
                     </CyDText>
                     <CyDText className=' ml-[15px] font-bold text-left text-[14px]'>
-                      {`${ethers.formatUnits(approveParams.tokens, selectedFromToken?.decimals)} ${selectedFromChain?.chainName ?? ''} ${selectedFromToken?.symbol ?? ''} tokens`}
+                      {`${formatUnits(BigInt(approveParams.tokens), selectedFromToken?.decimals)} ${selectedFromToken?.name ?? ''} tokens on ${selectedFromChain?.chainName ?? ''} chain`}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2872,6 +2885,7 @@ const Bridge: React.FC = () => {
                     </CyDText>
                   </CyDView>
                 </CyDView>
+
                 <CyDView className='flex flex-row justify-between items-center mt-[20px] mr-[10px]'>
                   <CyDView className='flex flex-row'>
                     <CyDText className=' py-[10px] w-[60%] font-semibold'>

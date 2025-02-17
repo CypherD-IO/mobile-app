@@ -283,11 +283,8 @@ const DeFiScene = ({
                 <CyDTouchView
                   className='flex-1 flex-row gap-[4px] justify-start items-center'
                   onPress={() => {
-                    navigation.navigate(screenTitle.OPTIONS, {
-                      screen: screenTitle.BROWSER,
-                      params: {
-                        url: protocol.protocolURL,
-                      },
+                    navigation.navigate(screenTitle.BROWSER, {
+                      url: protocol.protocolURL,
                     });
                   }}>
                   <CyDText className='underline font-bold text-[20px]'>

@@ -291,11 +291,8 @@ export function DEFIOverviewScreen() {
                 className='flex-1 flex-row gap-[4px] justify-start items-center'
                 onPress={() => {
                   if (!isReadOnlyWallet) {
-                    navigation.navigate(screenTitle.OPTIONS, {
-                      screen: screenTitle.BROWSER_SCREEN,
-                      params: {
-                        url: protocol.protocolURL,
-                      },
+                    navigation.navigate(screenTitle.BROWSER, {
+                      url: protocol.protocolURL,
                     });
                   } else {
                     showModal(GlobalModalType.PROMPT_IMPORT_WALLET, {
