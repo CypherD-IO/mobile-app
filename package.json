@@ -181,7 +181,7 @@
     "uuid": "^9.0.0",
     "viem": "^2.22.10",
     "vm-browserify": "^0.0.4",
-    "wagmi": "^2.13.2",
+    "wagmi": "^2.14.11",
     "web3-validator": "^2.0.6",
     "whatwg-fetch": "^3.6.20",
     "yup": "^0.32.11"
