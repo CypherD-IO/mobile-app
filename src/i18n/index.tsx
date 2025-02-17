@@ -531,11 +531,11 @@ const resources = {
       CHANGE_PIN_TITLE: 'Enter your Old PIN',
       PIN_SET_SUCCESSFUL: 'PIN SUCCESSFULLY SET',
       PIN_SET_SUCCESSFUL_DESCRIPTION: 'Your new PIN has been set successfully.',
-      CREATE_PIN_SUCCESSFUL: 'You’ve Created your PIN',
+      CREATE_PIN_SUCCESSFUL: 'Your PIN has been set',
       CREATE_PIN_SUCCESSFUL_DESCRIPTION:
-        "PIN Protection is all set. You'll use this PIN to Authorise offline transaction across offline stores and ATMs ",
+        'Your PIN protection is now set up. Use this PIN to authorize offline transactions at stores and ATMs.',
       KEEP_PIN_SAFE:
-        'Keep your PIN private. Cypher will never ask customers PIN.',
+        'Keep your PIN private. Cypher will never ask for your PIN.',
       VERIFY_PIN: 'VERIFY PIN',
       SET_CHANGE_PIN_TITLE: 'Enter your New PIN',
       CONFIRM_PIN: 'CONFIRM PIN',
@@ -817,7 +817,7 @@ const resources = {
         'This PIN will be used to authorise your offline transactions and ATM Withdrawals',
       INSUFFICIENT_BALANCE_CARD:
         'Amount that you are trying to load is higher than your actual balance or you might not have sufficient gas for it',
-      MAYBE_LATER: 'Maybe later',
+      MAYBE_LATER: 'Maybe Later',
       HOME: 'Home',
       HISTORY: 'History',
       BOOKMARKS: 'Bookmarks',
@@ -1507,6 +1507,13 @@ const resources = {
         'Insufficient {{tokenName}} to pay for gas. Need atleast {{gasFeeRequired}} {{tokenName}} on {{chainName}} chain for this transaction',
       MANUAL_ADD_APPLE_GOOGLE_PAY:
         'You can manually add your card to Apple Pay & Google Pay to make contactless payments.',
+      SET_LIMITS: 'Set Limits',
+      INTERNATIONAL_TXNS_DISABLED_DEFAULT:
+        'International transactions are disabled by deafult for your security. Review and adjust card limits to get started.',
+      INTERNATIONAL_TXNS_DISABLED_CARD:
+        'International transactions are disabled on your card. Review and adjust card limits as needed.',
+      SETUP_NOW: 'Setup Now',
+      MANAGE_LIMITS: 'Manage Limits',
     },
   },
 };
