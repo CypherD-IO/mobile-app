@@ -9,7 +9,7 @@ import clsx from 'clsx';
 import { useFormik } from 'formik';
 import { t } from 'i18next';
 import { capitalize, countBy } from 'lodash';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import AppImages from '../../../../assets/images/appImages';
@@ -27,11 +27,13 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { Card } from '../../../models/card.model';
-import { CyDIconsPack } from '../../../customFonts';
+import { Animated, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
   card: Card;
+  isCardActivation?: boolean;
 }
 
 interface PinValidationState {
@@ -46,7 +48,7 @@ export default function SetPin() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const insets = useSafeAreaInsets();
 
-  const { currentCardProvider, card } = route.params;
+  const { currentCardProvider, card, isCardActivation } = route.params;
   const [pinSetSuccess, setPinSetSuccess] = useState<boolean>(false);
 
   const [pinValidationState, setPinValidationState] =
@@ -56,6 +58,43 @@ export default function SetPin() {
       repeatedDigits: false,
       validLength: false,
     });
+
+  const scrollViewRef = useRef<KeyboardAwareScrollView>(null);
+  const setLimitsPromptsRef = useRef<View>(null);
+  const setLimitsButtonRef = useRef<View>(null);
+  useEffect(() => {
+    if (pinSetSuccess) {
+      setTimeout(() => {
+        if (setLimitsPromptsRef.current && scrollViewRef.current) {
+          setLimitsPromptsRef.current.measure(
+            (x, y, width, height, pageX, pageY) => {
+              scrollViewRef.current?.scrollToPosition(0, pageY - 60, true);
+            },
+          );
+          if (setLimitsButtonRef.current) {
+            setLimitsButtonRef.current.setNativeProps({
+              style: {
+                display: 'flex',
+                opacity: 0,
+              },
+            });
+            // Animate fade in
+            Animated.timing(new Animated.Value(0), {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: true,
+            }).start(({ finished }) => {
+              if (finished) {
+                setLimitsButtonRef.current?.setNativeProps({
+                  style: { opacity: 1 },
+                });
+              }
+            });
+          }
+        }
+      }, 2000);
+    }
+  }, [setLimitsPromptsRef.current, scrollViewRef.current, pinSetSuccess]);
 
   const verifyWithOTP = () => {
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
@@ -165,7 +204,9 @@ export default function SetPin() {
         </CyDTouchView>
       </CyDView>
 
-      <CyDKeyboardAwareScrollView className='flex-1 mt-[24px] px-[16px]'>
+      <CyDKeyboardAwareScrollView
+        className='flex-1 mt-[24px] px-[16px]'
+        ref={scrollViewRef}>
         {!pinSetSuccess && (
           <CyDView>
             <CyDMaterialDesignIcons
@@ -308,52 +349,94 @@ export default function SetPin() {
         )}
         {pinSetSuccess && (
           <CyDView className=''>
-            <CyDImage
-              source={AppImages.SUCCESS_TICK_GREEN_BG}
-              className='w-[85px] h-[85px] mt-[44px]'
-              resizeMode='contain'
-            />
-
-            <CyDText className='mt-[24px] text-[44px] font-extrabold'>
-              {t('CREATE_PIN_SUCCESSFUL')}
-            </CyDText>
-            <CyDText className='mt-[6px] text-[14px]'>
-              {t('CREATE_PIN_SUCCESSFUL_DESCRIPTION')}
-            </CyDText>
-
-            <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[16px] flex-row items-center'>
-              <CyDMaterialDesignIcons
-                name='information-outline'
-                size={24}
-                className='text-base400 flex-shrink-0'
+            <CyDView className='h-screen'>
+              <CyDImage
+                source={AppImages.SUCCESS_TICK_GREEN_BG}
+                className='w-[85px] h-[85px] mt-[44px]'
+                resizeMode='contain'
               />
-              <CyDText className='text-[12px] ml-[8px] w-[80%]'>
-                {t('KEEP_PIN_SAFE')}
+
+              <CyDText className='mt-[24px] text-[44px] font-extrabold'>
+                {t('CREATE_PIN_SUCCESSFUL')}
+              </CyDText>
+              <CyDText className='mt-[6px] text-[14px]'>
+                {t('CREATE_PIN_SUCCESSFUL_DESCRIPTION')}
+              </CyDText>
+
+              <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[16px] flex-row items-center'>
+                <CyDMaterialDesignIcons
+                  name='information-outline'
+                  size={24}
+                  className='text-base400 flex-shrink-0'
+                />
+                <CyDText className='text-[12px] ml-[8px] w-[80%]'>
+                  {t('KEEP_PIN_SAFE')}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+            <CyDView className='h-screen pt-[44px]' ref={setLimitsPromptsRef}>
+              <CyDImage
+                source={AppImages.MULTIPLE_CARDS}
+                className='w-[145px] h-[145px] mt-[44px]'
+                resizeMode='contain'
+              />
+
+              <CyDText className='mt-[14px] text-[44px] font-extrabold'>
+                {t('SET_LIMITS')}
+              </CyDText>
+              <CyDText className='mt-[14px] text-[14px] font-bold underline'>
+                {t('IMPORTANT') + ':'}
+              </CyDText>
+              <CyDText className='text-[14px]'>
+                {t('INTERNATIONAL_TXNS_DISABLED_DEFAULT')}
               </CyDText>
             </CyDView>
           </CyDView>
         )}
       </CyDKeyboardAwareScrollView>
 
-      <CyDView className='w-full px-[16px] pb-[24px] pt-[20px] rounded-t-[16px] bg-n0 '>
-        <Button
-          title={t('CONTINUE')}
-          disabled={
-            !pinSetSuccess &&
-            (!changePinFormik.isValid || !changePinFormik.dirty)
-          }
-          onPress={
-            pinSetSuccess
-              ? () => {
-                  setPinSetSuccess(false);
-                  navigation.goBack();
-                }
-              : changePinFormik.handleSubmit
-          }
-          type={ButtonType.PRIMARY}
-          style='h-[60px] w-full'
-        />
-      </CyDView>
+      {!pinSetSuccess && (
+        <CyDView className='w-full px-[16px] pb-[24px] pt-[20px] rounded-t-[16px] bg-n0 '>
+          <Button
+            title={t('CONTINUE')}
+            disabled={
+              !pinSetSuccess &&
+              (!changePinFormik.isValid || !changePinFormik.dirty)
+            }
+            onPress={changePinFormik.handleSubmit}
+            type={ButtonType.PRIMARY}
+            style='h-[60px] w-full'
+          />
+        </CyDView>
+      )}
+      {pinSetSuccess && isCardActivation && (
+        <CyDView
+          className='w-full px-[16px] pb-[24px] pt-[20px] rounded-t-[16px] bg-n0 hidden'
+          ref={setLimitsButtonRef}>
+          <Button
+            title={t('SETUP_NOW')}
+            onPress={() => {
+              setPinSetSuccess(false);
+              navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+                currentCardProvider,
+                cardId: card.cardId,
+                isCardActivation: true,
+              });
+            }}
+            type={ButtonType.PRIMARY}
+            style='h-[60px] w-full'
+          />
+          <Button
+            title={t('MAYBE_LATER')}
+            onPress={() => {
+              setPinSetSuccess(false);
+              navigation.goBack();
+            }}
+            type={ButtonType.SECONDARY}
+            style='h-[60px] w-full mt-[12px]'
+          />
+        </CyDView>
+      )}
     </CyDView>
   );
 }

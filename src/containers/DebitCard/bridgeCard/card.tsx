@@ -34,7 +34,7 @@ import {
   setCardRevealReuseToken,
 } from '../../../core/asyncStorage';
 import { GlobalContext } from '../../../core/globalContext';
-import axios from '../../../core/Http';
+import axios, { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import {
   copyToClipboard,
@@ -933,6 +933,15 @@ const RenderCardActions = ({
         card={card}
         cardDetails={cardDetails}
         webviewUrl={webviewUrl}
+        manageLimits={() => {
+          setShowCardDetailsModal(false);
+          setTimeout(() => {
+            navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+              currentCardProvider: cardProvider,
+              cardId: card.cardId,
+            });
+          }, MODAL_HIDE_TIMEOUT_250);
+        }}
         userName={userName}
       />
 

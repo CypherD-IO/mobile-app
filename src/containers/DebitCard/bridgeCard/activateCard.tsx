@@ -120,11 +120,9 @@ export default function ActivateCard() {
     if (type === 'success') {
       setTimeout(() => {
         navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
-          onSuccess: (data: any, cardProvider: CardProviders) => {
-            navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
-          },
           currentCardProvider,
           card,
+          isCardActivation: true,
         });
       }, MODAL_HIDE_TIMEOUT);
     }
@@ -205,10 +203,7 @@ export default function ActivateCard() {
       <CyDKeyboardAwareScrollView enableOnAndroid>
         <CyDView>
           <CyDView className='px-[20px]'>
-            <CyDText className={'text-[25px] font-bold'}>
-              {t<string>('CARD_ACTIVATION_HEADER')}
-            </CyDText>
-            <CyDText className={'text-[16px] text-subTextColor'}>
+            <CyDText className={'text-[16px] mt-[22px] text-subTextColor'}>
               {t<string>('CARD_ACTIVATION_DESCRIPTION')}
             </CyDText>
           </CyDView>
