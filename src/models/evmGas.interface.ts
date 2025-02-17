@@ -1,13 +1,14 @@
-import Web3 from 'web3';
 import { ChainBackendNames } from '../constants/server';
+import { PublicClient, Address } from 'viem';
 
 export interface EvmGasInterface {
-  web3: Web3;
+  publicClient: PublicClient;
   chain: ChainBackendNames;
-  fromAddress: string;
-  toAddress: string;
+  fromAddress: Address;
+  toAddress: Address;
   amountToSend: string;
-  contractAddress: string;
+  contractAddress: Address;
   contractDecimals: number;
   contractData?: any;
+  isErc20?: boolean;
 }

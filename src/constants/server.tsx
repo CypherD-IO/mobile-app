@@ -21,7 +21,7 @@ export interface Chain {
   symbol: string;
   id: number;
   logo_url: any;
-  backendName: ChainBackendNames | 'ALL';
+  backendName: ChainBackendNames;
   chain_id: string;
   native_token_address: string;
   secondaryAddress?: string;
@@ -153,7 +153,7 @@ export const CHAIN_COLLECTION: Chain = {
   symbol: 'ALL CHAINS',
   id: 4,
   logo_url: AppImages.ALL_CHAINS,
-  backendName: 'ALL',
+  backendName: ChainBackendNames.ALL,
   chain_id: '',
   native_token_address: '',
   chainIdNumber: 0,
@@ -478,6 +478,7 @@ export const PURE_COSMOS_CHAINS = [
   'coreum',
   'kujira',
 ];
+
 export const ALL_CHAINS: Chain[] = [
   CHAIN_ETH,
   CHAIN_POLYGON,
@@ -579,6 +580,17 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.AURORA,
   ChainBackendNames.MOONBEAM,
   ChainBackendNames.MOONRIVER,
+];
+
+export const COSMOS_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
+  ChainBackendNames.COSMOS,
+  ChainBackendNames.JUNO,
+  ChainBackendNames.NOBLE,
+  ChainBackendNames.COREUM,
+  ChainBackendNames.INJECTIVE,
+  ChainBackendNames.KUJIRA,
+  ChainBackendNames.OSMOSIS,
+  ChainBackendNames.STARGAZE,
 ];
 
 export const PORTFOLIO_CHAINS_BACKEND_NAMES = [

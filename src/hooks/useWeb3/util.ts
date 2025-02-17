@@ -11,6 +11,7 @@ import {
   GAS_MULTIPLIER_NATIVE_TOKENS,
 } from '../../constants/server';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { Address, GetCodeReturnType } from 'viem';
 
 export const getChainInfo = (chainId: string) => {
   const chainInfo = ChainInfos.find(info => info.chainId === chainId);
@@ -235,10 +236,10 @@ export const parseCosmosMessage = (msg: any) => {
 };
 
 export const decideGasLimitBasedOnTypeOfToAddress = (
-  code: string,
+  code: GetCodeReturnType,
   gasLimit: number | bigint,
   chain: string,
-  contractAddress: string,
+  contractAddress: Address,
 ): number => {
   if (gasLimit > BASE_GAS_LIMIT) {
     if (code !== '0x') {

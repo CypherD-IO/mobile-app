@@ -24,7 +24,15 @@ export interface OdosSwapQuoteResponse {
   chainId: number;
   router: string;
   executor: string;
-  data: any;
+  data: {
+    chainId: number;
+    data: `0x${string}`;
+    gas: number;
+    gasPrice: number;
+    nonce: number;
+    to: string;
+    value: string;
+  };
   value: string | number;
   blockNumber?: number;
   gasEstimate: number;

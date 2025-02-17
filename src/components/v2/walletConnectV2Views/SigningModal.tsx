@@ -19,13 +19,13 @@ import {
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
 import { CyDScrollView, CyDView } from '../../../styles/tailwindStyles';
 import { t } from 'i18next';
-import Web3 from 'web3';
 import { EIP155_SIGNING_METHODS } from '../../../constants/EIP155Data';
 import { useGlobalModalContext } from '../GlobalModal';
 import useAxios from '../../../core/HttpRequest';
 import {
   HdWalletContext,
   formatAmount,
+  getViemPublicClient,
   getWeb3Endpoint,
 } from '../../../core/util';
 import * as Sentry from '@sentry/react-native';
@@ -47,6 +47,7 @@ import {
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
 import Button from '../button';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import { formatUnits, PublicClient } from 'viem';
 
 const BASE_GAS_LIMIT = 21000;
 const CONTRACT_MULTIPLIER = 2;
@@ -87,7 +88,7 @@ export default function SigningModal({
     requestSession,
     dAppInfo: IDAppInfo | undefined,
     chain: Chain | undefined,
-    web3RPCEndpoint: Web3;
+    publicClient: PublicClient;
   const isMessageModalForSigningTypedData =
     modalPayload?.params && 'signMessageTitle' in modalPayload.params;
 
@@ -106,7 +107,7 @@ export default function SigningModal({
       ? chainIdNumberMapping[+chainId]
       : undefined;
     if (chain) {
-      web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
+      publicClient = getViemPublicClient(getWeb3Endpoint(chain, globalContext));
     } else {
       showModal('state', {
         type: 'error',
@@ -125,7 +126,9 @@ export default function SigningModal({
         ? chainIdNumberMapping[chainIdNumber]
         : undefined;
       if (chain) {
-        web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
+        publicClient = getViemPublicClient(
+          getWeb3Endpoint(chain, globalContext),
+        );
       } else {
         showModal('state', {
           type: 'error',
@@ -234,65 +237,66 @@ export default function SigningModal({
         paramsForDecoding = (paramsFromPayload as DecodeTxnRequestBody[])[0];
       }
       try {
-        const walletTokenBalance = await web3RPCEndpoint.eth.getBalance(
-          paramsForDecoding.from,
-        );
-        const tokenDecimals = 18;
-        const estimatedGas = await web3RPCEndpoint.eth.estimateGas({
-          from: paramsForDecoding.from,
-          to: paramsForDecoding.to,
-          gasPrice: paramsForDecoding.gasPrice,
-          value: paramsForDecoding.value,
+        const walletTokenBalance = await publicClient.getBalance({
+          address: paramsForDecoding.from as `0x${string}`,
         });
-        const code = await web3RPCEndpoint.eth.getCode(paramsForDecoding.to);
-        const finalEstimatedGas = decideGasLimitBasedOnTypeOfToAddress(
-          code,
-          Number(estimatedGas),
-          paramsForDecoding.chainId,
-          paramsForDecoding.to,
-        );
-        const adjustedTokenBalance = DecimalHelper.multiply(
-          walletTokenBalance,
-          DecimalHelper.pow(10, -tokenDecimals),
-        );
-        if (paramsForDecoding?.value && chain?.nativeTokenLogoUrl) {
-          const { gasPrice, tokenPrice } = await getGasPriceFor(
-            chain,
-            web3RPCEndpoint,
+        const tokenDecimals = 18;
+        const estimatedGas = await publicClient.estimateGas({
+          account: paramsForDecoding.from as `0x${string}`,
+          to: paramsForDecoding.to as `0x${string}`,
+          gasPrice: BigInt(paramsForDecoding?.gasPrice ?? 0),
+          value: BigInt(paramsForDecoding?.value ?? 0),
+        });
+        const code = await publicClient.getCode({
+          address: paramsForDecoding.to as `0x${string}`,
+        });
+        if (code) {
+          const finalEstimatedGas = decideGasLimitBasedOnTypeOfToAddress(
+            code,
+            Number(estimatedGas),
+            paramsForDecoding.chainId,
+            paramsForDecoding.to,
           );
-          const gasNative = DecimalHelper.multiply(finalEstimatedGas, [
-            gasPrice,
-            DecimalHelper.pow(10, 9),
+          const adjustedTokenBalance = DecimalHelper.multiply(
+            walletTokenBalance,
             DecimalHelper.pow(10, -tokenDecimals),
-          ]);
-          const sendTxnData: ISendTxnData = {
-            chainLogo: chain.logo_url,
-            token: {
-              logo: chain?.nativeTokenLogoUrl,
-              name: chain.name,
-              amount: Web3.utils.fromWei(
-                Web3.utils.hexToNumberString(paramsForDecoding.value),
-                'ether',
-              ),
-              valueInUSD: DecimalHelper.multiply(
-                Web3.utils.fromWei(
-                  Web3.utils.hexToNumberString(paramsForDecoding.value),
-                  'ether',
+          );
+          if (paramsForDecoding?.value && chain?.nativeTokenLogoUrl) {
+            const { gasPrice, tokenPrice } = await getGasPriceFor(
+              chain,
+              web3RPCEndpoint,
+            );
+            const gasNative = DecimalHelper.multiply(finalEstimatedGas, [
+              gasPrice,
+              DecimalHelper.pow(10, 9),
+              DecimalHelper.pow(10, -tokenDecimals),
+            ]);
+            const sendTxnData: ISendTxnData = {
+              chainLogo: chain.logo_url,
+              token: {
+                logo: chain?.nativeTokenLogoUrl,
+                name: chain.name,
+                amount: formatUnits(
+                  BigInt(paramsForDecoding.value),
+                  tokenDecimals,
                 ),
-                tokenPrice,
-              ).toString(),
-            },
-            toAddress: paramsForDecoding.to,
-            fromAddress: paramsForDecoding.from,
-            gasAndUSDAppx: `${formatAmount(gasNative)} ${
-              chain.symbol
-            } ≈ $${formatAmount(DecimalHelper.multiply(gasNative, tokenPrice))} USD`,
-            availableBalance: `${formatAmount(adjustedTokenBalance)} ${
-              chain.symbol
-            }`,
-          };
-          setNativeSendTxnData(sendTxnData);
-          setDataIsReady(true);
+                valueInUSD: DecimalHelper.multiply(
+                  formatUnits(BigInt(paramsForDecoding.value), tokenDecimals),
+                  tokenPrice,
+                ).toString(),
+              },
+              toAddress: paramsForDecoding.to,
+              fromAddress: paramsForDecoding.from,
+              gasAndUSDAppx: `${formatAmount(gasNative)} ${
+                chain.symbol
+              } ≈ $${formatAmount(DecimalHelper.multiply(gasNative, tokenPrice))} USD`,
+              availableBalance: `${formatAmount(adjustedTokenBalance)} ${
+                chain.symbol
+              }`,
+            };
+            setNativeSendTxnData(sendTxnData);
+            setDataIsReady(true);
+          }
         }
       } catch (e) {
         const errorObject = {

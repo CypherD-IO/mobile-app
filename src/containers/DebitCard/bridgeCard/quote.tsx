@@ -339,19 +339,13 @@ export default function CardQuote({
             },
           });
         if (chainName != null) {
-          let response: {
-            isError: boolean;
-            hash: string;
-            contractData?: string | undefined;
-            error?: any;
-            gasFeeInCrypto?: string | undefined;
-          };
+          let response;
           if (chainName === ChainNames.ETH) {
             response = await sendEvmToken({
               chain: selectedToken.chainDetails.backendName,
               amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress,
-              contractAddress,
+              toAddress: tokenQuote.targetAddress as `0x${string}`,
+              contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
               symbol: selectedToken.symbol,
             });
@@ -385,73 +379,67 @@ export default function CardQuote({
               contractAddress,
             });
           }
-          if (response) {
-            const { hash, isError, error } = response;
-            if (!isError) {
-              void logAnalytics({
-                type: AnalyticsType.SUCCESS,
-                txnHash: hash,
-                chain: selectedToken?.chainDetails?.backendName ?? '',
-                ...(response?.contractData
-                  ? { contractData: response?.contractData }
-                  : ''),
-                address: PURE_COSMOS_CHAINS.includes(
-                  selectedToken?.chainDetails?.chainName,
-                )
-                  ? get(
-                      cosmosAddresses,
-                      selectedToken?.chainDetails?.chainName,
-                      '',
-                    )
+          if (response && !response?.isError) {
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: response?.hash,
+              chain: selectedToken?.chainDetails?.backendName ?? '',
+              address: PURE_COSMOS_CHAINS.includes(
+                selectedToken?.chainDetails?.chainName,
+              )
+                ? get(
+                    cosmosAddresses,
+                    selectedToken?.chainDetails?.chainName,
+                    '',
+                  )
+                : get(ethereum, 'address', ''),
+            });
+            void refreshPortfolio();
+            void transferSentQuote(
+              tokenQuote.fromAddress,
+              tokenQuote.quoteId,
+              response.hash,
+            );
+          } else {
+            const connectionType = await getConnectionType();
+            void logAnalytics({
+              type: AnalyticsType.ERROR,
+              chain: selectedToken?.chainDetails?.backendName ?? '',
+              message: parseErrorMessage(response?.error),
+              screen: route.name,
+              address: PURE_COSMOS_CHAINS.includes(
+                selectedToken?.chainDetails?.chainName,
+              )
+                ? get(
+                    cosmosAddresses,
+                    selectedToken?.chainDetails?.chainName,
+                    '',
+                  )
+                : ChainBackendNames.SOLANA ===
+                    selectedToken?.chainDetails?.chainName
+                  ? get(solana, 'address', '')
                   : get(ethereum, 'address', ''),
+              ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
+              ...(connectionType ? { connectionType } : {}),
+            });
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityRef.current.id,
+                  status: ActivityStatus.FAILED,
+                  quoteId: tokenQuote.quoteId,
+                  reason: response?.error,
+                },
               });
-              void refreshPortfolio();
-              void transferSentQuote(
-                tokenQuote.fromAddress,
-                tokenQuote.quoteId,
-                hash,
-              );
-            } else {
-              const connectionType = await getConnectionType();
-              void logAnalytics({
-                type: AnalyticsType.ERROR,
-                chain: selectedToken?.chainDetails?.backendName ?? '',
-                message: parseErrorMessage(error),
-                screen: route.name,
-                address: PURE_COSMOS_CHAINS.includes(
-                  selectedToken?.chainDetails?.chainName,
-                )
-                  ? get(
-                      cosmosAddresses,
-                      selectedToken?.chainDetails?.chainName,
-                      '',
-                    )
-                  : ChainBackendNames.SOLANA ===
-                      selectedToken?.chainDetails?.chainName
-                    ? get(solana, 'address', '')
-                    : get(ethereum, 'address', ''),
-                ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
-                ...(connectionType ? { connectionType } : {}),
-              });
-              activityRef.current &&
-                activityContext.dispatch({
-                  type: ActivityReducerAction.PATCH,
-                  value: {
-                    id: activityRef.current.id,
-                    status: ActivityStatus.FAILED,
-                    quoteId: tokenQuote.quoteId,
-                    reason: error,
-                  },
-                });
-              setLoading(false);
-              showModal('state', {
-                type: 'error',
-                title: 'Transaction Failed',
-                description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              });
-            }
+            setLoading(false);
+            showModal('state', {
+              type: 'error',
+              title: 'Transaction Failed',
+              description: `${parseErrorMessage(response?.error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
           }
         }
       } else {

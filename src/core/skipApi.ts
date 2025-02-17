@@ -1,36 +1,13 @@
-import { camelCase, get, isArray, isObject, reduce, set } from 'lodash';
-import {
-  SkipAPiEvmTx,
-  SkipApiCosmosTxn,
-  SkipApiSolanaTxn,
-} from '../models/skipApiSingMsg.interface';
-import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { ethers } from 'ethers';
-import useTransactionManager from '../hooks/useTransactionManager';
-import useCosmosSigner from '../hooks/useCosmosSigner';
-import { defaultRegistryTypes as defaultStargateTypes } from '@cosmjs/stargate';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { toUtf8 } from '@cosmjs/encoding';
 import {
   GeneratedType,
   OfflineDirectSigner,
   Registry,
 } from '@cosmjs/proto-signing';
-import {
-  MsgDepositForBurn,
-  MsgDepositForBurnWithCaller,
-} from '../proto-generated/cctp';
-import { cosmosConfig } from '../constants/cosmosConfig';
-import useAxios from './HttpRequest';
-import Web3 from 'web3';
-import { getGasPriceFor } from '../containers/Browser/gasHelper';
-import { ALL_CHAINS, ChainBackendNames } from '../constants/server';
-import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
+import { defaultRegistryTypes as defaultStargateTypes } from '@cosmjs/stargate';
 import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
-import { Dispatch, SetStateAction } from 'react';
-import { GasPriceDetail } from './types';
-import useSolanaSigner from '../hooks/useSolana';
 import { Transaction } from '@solana/web3.js';
-import { SwapBridgeTokenData } from '../containers/Bridge';
 import {
   MsgClearAdmin,
   MsgExecuteContract,
@@ -39,8 +16,26 @@ import {
   MsgStoreCode,
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import { toUtf8 } from '@cosmjs/encoding';
-import { parseErrorMessage } from './util';
+import { camelCase, get, isArray, isObject, reduce, set } from 'lodash';
+import { Dispatch, SetStateAction } from 'react';
+import { parseUnits, PublicClient } from 'viem';
+import { cosmosConfig } from '../constants/cosmosConfig';
+import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
+import { ALL_CHAINS, ChainBackendNames } from '../constants/server';
+import { SwapBridgeTokenData } from '../containers/Bridge';
+import useCosmosSigner from '../hooks/useCosmosSigner';
+import useGasService from '../hooks/useGasService';
+import useSolanaSigner from '../hooks/useSolana';
+import useTransactionManager from '../hooks/useTransactionManager';
+import {
+  SkipApiCosmosTxn,
+  SkipAPiEvmTx,
+  SkipApiSolanaTxn,
+} from '../models/skipApiSingMsg.interface';
+import {
+  MsgDepositForBurn,
+  MsgDepositForBurnWithCaller,
+} from '../proto-generated/cctp';
 import { DecimalHelper } from '../utils/decimalHelper';
 
 // Contract ABI for allowance and approval
@@ -129,111 +124,32 @@ async function getCosmosSigningClient(
 }
 
 export default function useSkipApiBridge() {
-  const { getWithoutAuth } = useAxios();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
-  const { sendEvmToken, getApproval } = useTransactionManager();
+  const { executeTransferContract } = useTransactionManager();
+  const { getCosmosGasPrice } = useGasService();
   const { getSolanWallet } = useSolanaSigner();
 
-  const checkAllowance = async ({
-    web3,
-    fromToken,
-    routerAddress,
-    amount,
-    hdWallet,
-  }: {
-    web3: Web3;
-    fromToken: SwapBridgeTokenData;
-    routerAddress: string;
-    amount: string;
-    hdWallet: HdWalletContextDef;
-  }): Promise<{
-    isError: boolean;
-    error?: any;
-    isAllowanceEnough?: boolean;
-    contract?: any;
-    contractData?: any;
-    tokens?: any;
-    gasLimit?: any;
-    gasFeeResponse?: any;
-  }> => {
-    const { ethereum } = hdWallet?.state?.wallet ?? { ethereum: '' };
-    return await new Promise((resolve, reject) => {
-      void (async () => {
-        try {
-          const currentChain = ALL_CHAINS.find(
-            chain => chain.chainIdNumber === Number(fromToken.chainId),
-          );
-          if (currentChain) {
-            const contract = new web3.eth.Contract(
-              contractABI as any,
-              fromToken.tokenContract,
-            );
-
-            const response = await contract.methods
-              .allowance(ethereum.address, routerAddress)
-              .call();
-
-            const allowance = response;
-            if (Number(amount) > Number(allowance)) {
-              const tokens = amount;
-              const resp = contract.methods
-                .approve(routerAddress, tokens)
-                .encodeABI();
-              const gasLimit = await web3?.eth.estimateGas({
-                from: ethereum.address,
-                // For Optimism the ETH token has different contract address
-                to: fromToken.tokenContract,
-                value: '0x0',
-                data: resp,
-              });
-              const gasFeeResponse = await getGasPriceFor(currentChain, web3);
-              resolve({
-                isError: false,
-                isAllowanceEnough: false,
-                contract,
-                contractData: resp,
-                tokens,
-                gasLimit: Number(gasLimit),
-                gasFeeResponse,
-              });
-            } else {
-              resolve({ isError: false, isAllowanceEnough: true });
-            }
-          } else {
-            reject(new Error('Chain details not found'));
-          }
-        } catch (e: unknown) {
-          reject(new Error(parseErrorMessage(e)));
-        }
-      })();
-    });
-  };
-
   const skipApiApproveAndSignEvm = async ({
-    web3,
+    publicClient,
     evmTx,
     selectedFromToken,
-    hdWallet,
-    setApproveModalVisible,
     showModalAndGetResponse,
-    setApproveParams,
     setEvmModalVisible,
+    walletAddress,
   }: {
-    web3: Web3;
+    publicClient: PublicClient;
     evmTx: SkipAPiEvmTx;
     selectedFromToken: SwapBridgeTokenData;
-    hdWallet: HdWalletContextDef;
     setApproveModalVisible: Dispatch<SetStateAction<boolean>>;
     showModalAndGetResponse: (setter: any) => Promise<boolean | null>;
     setApproveParams: Dispatch<
       SetStateAction<{
         tokens: string;
-        gasFeeResponse: GasPriceDetail;
-        gasLimit: number;
         contractAddress: string;
       } | null>
     >;
     setEvmModalVisible: Dispatch<SetStateAction<boolean>>;
+    walletAddress: `0x${string}`;
   }): Promise<
     | {
         isError: boolean;
@@ -247,75 +163,92 @@ export default function useSkipApiBridge() {
       chain => chain.chainIdNumber === Number(selectedFromToken.chainId),
     );
     if (currentChain) {
-      const requiredErc20Approvals = get(evmTx, 'required_erc20_approvals', []);
-      for (const approval of requiredErc20Approvals) {
-        const allowanceResp = await checkAllowance({
-          web3,
-          fromToken: selectedFromToken,
-          routerAddress: get(approval, 'spender', ''),
-          amount: get(approval, 'amount', ''),
-          hdWallet,
-        });
+      // const requiredErc20Approvals = get(evmTx, 'required_erc20_approvals', []);
+      // for (const approval of requiredErc20Approvals) {
+      //   const allowanceResp = await checkIfAllowanceIsEnough({
+      //     publicClient,
+      //     tokenContractAddress:
+      //       selectedFromToken.tokenContract as `0x${string}`,
+      //     routerAddress: get(approval, 'spender', '') as `0x${string}`,
+      //     amount: get(approval, 'amount', ''),
+      //   });
 
-        if (!allowanceResp.isError) {
-          if (!allowanceResp.isAllowanceEnough) {
-            setApproveParams({
-              tokens: allowanceResp.tokens,
-              gasLimit: allowanceResp.gasLimit,
-              gasFeeResponse: allowanceResp.gasFeeResponse,
-              contractAddress: get(approval, 'spender', ''),
-            });
-            const approveGranted = await showModalAndGetResponse(
-              setApproveModalVisible,
-            );
+      //   if (!allowanceResp.isError) {
+      //     if (!allowanceResp.hasEnoughAllowance) {
+      //       const contractData = encodeFunctionData({
+      //         abi: allowanceApprovalContractABI,
+      //         functionName: 'approve',
+      //         args: [
+      //           get(approval, 'spender', '') as `0x${string}`,
+      //           allowanceResp.tokens,
+      //         ],
+      //       });
 
-            if (approveGranted) {
-              const approvalResp = await getApproval({
-                web3,
-                fromTokenContractAddress: get(approval, 'token_contract', ''),
-                hdWallet,
-                gasLimit: allowanceResp.gasLimit,
-                gasFeeResponse: allowanceResp.gasFeeResponse,
-                contractData: allowanceResp.contractData,
-                chainDetails: currentChain,
-                contractParams: {
-                  toAddress: get(approval, 'spender', ''),
-                  numberOfTokens: String(
-                    parseFloat(get(approval, 'amount', '')),
-                  ),
-                },
-              });
+      //       // const gasFeeResponse = await getGasPrice(
+      //       //   currentChain?.backendName,
+      //       //   publicClient,
+      //       // );
 
-              if (approvalResp.isError) {
-                return { isError: true, error: 'Error approving allowance' };
-              }
-            } else {
-              return {
-                isError: true,
-                error: 'Token approvel rejected by user',
-              };
-            }
-          }
-        } else {
-          return { isError: true, error: 'Error calculating allowance' };
-        }
-      }
+      //       // const gasLimit = await publicClient.estimateGas({
+      //       //   account: walletAddress,
+      //       //   to: selectedFromToken.tokenContract as `0x${string}`,
+      //       //   value: parseEther('0'),
+      //       //   data: contractData,
+      //       // });
+
+      //       setApproveParams({
+      //         tokens: allowanceResp.tokens.toString(),
+      //         // gasLimit: Number(gasLimit),
+      //         // gasFeeResponse,
+      //         contractAddress: get(approval, 'spender', ''),
+      //       });
+
+      //       const approveGranted = await showModalAndGetResponse(
+      //         setApproveModalVisible,
+      //       );
+
+      //       if (approveGranted) {
+      //         const approvalResp = await executeApprovalRevokeContract({
+      //           publicClient,
+      //           tokenContractAddress: get(
+      //             approval,
+      //             'token_contract',
+      //             '',
+      //           ) as `0x${string}`,
+      //           contractData,
+      //           chainDetails: currentChain,
+      //           tokens: allowanceResp.tokens,
+      //           walletAddress: get(approval, 'spender', '') as `0x${string}`,
+      //         });
+
+      //         if (approvalResp.isError) {
+      //           return { isError: true, error: 'Error approving allowance' };
+      //         }
+      //       } else {
+      //         return {
+      //           isError: true,
+      //           error: 'Token approvel rejected by user',
+      //         };
+      //       }
+      //     }
+      //   } else {
+      //     return { isError: true, error: allowanceResp.error };
+      //   }
+      // }
 
       const sendGranted = await showModalAndGetResponse(setEvmModalVisible);
       if (sendGranted) {
-        const hash = await sendEvmToken({
-          chain: currentChain.backendName as ChainBackendNames,
-          toAddress: get(evmTx, 'to', ''),
-          amountToSend: ethers
-            .parseUnits(
-              get(evmTx, 'value', 0).toString(),
-              selectedFromToken.decimals,
-            )
-            .toString(),
-          contractAddress: get(evmTx, 'to', ''),
+        const hash = await executeTransferContract({
+          publicClient,
+          chain: currentChain,
+          amountToSend: parseUnits(
+            get(evmTx, 'value', 0).toString(),
+            selectedFromToken.decimals,
+          ).toString(),
+          toAddress: get(evmTx, 'to', '') as `0x${string}`,
+          contractAddress: get(evmTx, 'to', '') as `0x${string}`,
           contractDecimals: selectedFromToken.decimals,
-          symbol: selectedFromToken.symbol,
-          contractData: '0x' + get(evmTx, 'data', ''),
+          contractData: ('0x' + get(evmTx, 'data', '')) as `0x${string}`,
         });
         if (hash.isError) {
           return { isError: true, error: hash.error };
@@ -369,31 +302,31 @@ export default function useSkipApiBridge() {
     return obj;
   }
 
-  async function getGasPrice(chain: string) {
-    try {
-      const defaultGasPrice = get(cosmosConfig, [
-        chain.toLowerCase(),
-        'gasPrice',
-      ]);
-      const { isError, data: gasPriceInfo } = await getWithoutAuth(
-        `/v1/prices/gas/cosmos/${chain}`,
-      );
+  // async function getGasPrice(chain: string) {
+  //   try {
+  //     const defaultGasPrice = get(cosmosConfig, [
+  //       chain.toLowerCase(),
+  //       'gasPrice',
+  //     ]);
+  //     const { isError, data: gasPriceInfo } = await getWithoutAuth(
+  //       `/v1/prices/gas/cosmos/${chain}`,
+  //     );
 
-      if (isError) throw new Error('Error fetching gasPrice');
-      return {
-        gasPrice: get<number>(gasPriceInfo, 'gasPrice', defaultGasPrice),
+  //     if (isError) throw new Error('Error fetching gasPrice');
+  //     return {
+  //       gasPrice: get<number>(gasPriceInfo, 'gasPrice', defaultGasPrice),
 
-        gasLimitMultiplier: get<number>(
-          gasPriceInfo,
-          'gasLimitMultiplier',
-          1.5,
-        ),
-      };
-    } catch (e) {
-      const gasPrice = get(cosmosConfig, [chain, 'gasPrice']);
-      return { gasPrice, gasLimitMultiplier: 1.5 };
-    }
-  }
+  //       gasLimitMultiplier: get<number>(
+  //         gasPriceInfo,
+  //         'gasLimitMultiplier',
+  //         1.5,
+  //       ),
+  //     };
+  //   } catch (e) {
+  //     const gasPrice = get(cosmosConfig, [chain, 'gasPrice']);
+  //     return { gasPrice, gasLimitMultiplier: 1.5 };
+  //   }
+  // }
 
   const skipApiSignAndBroadcast = async ({
     cosmosTx,
@@ -440,7 +373,7 @@ export default function useSkipApiBridge() {
           'cypher skip transfer',
         );
         const { gasPrice, gasLimitMultiplier } =
-          await getGasPrice(chainBackendName);
+          await getCosmosGasPrice(chainBackendName);
         const gasFee = DecimalHelper.multiply(simulation, [3, gasPrice]);
         const fee = {
           gas: DecimalHelper.multiply(simulation, gasLimitMultiplier)
@@ -520,6 +453,5 @@ export default function useSkipApiBridge() {
     skipApiApproveAndSignEvm,
     skipApiSignAndBroadcast,
     skipApiSignAndApproveSolana,
-    checkAllowance,
   };
 }

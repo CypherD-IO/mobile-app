@@ -1,10 +1,7 @@
 import { DecimalHelper } from '../../utils/decimalHelper';
 
 export const microAtomToAtom = (amount: string, decimals = 6): string => {
-  return DecimalHelper.toString(
-    DecimalHelper.removeDecimals(amount, decimals),
-    6,
-  );
+  return DecimalHelper.toString(DecimalHelper.toDecimal(amount, decimals), 6);
 };
 
 export const microAtomToUsd = (
@@ -14,7 +11,7 @@ export const microAtomToUsd = (
 ): string => {
   return DecimalHelper.toString(
     DecimalHelper.multiply(
-      DecimalHelper.removeDecimals(amount, decimals),
+      DecimalHelper.toDecimal(amount, decimals),
       tokenPrice,
     ),
     6,

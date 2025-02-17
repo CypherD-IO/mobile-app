@@ -34,7 +34,6 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
 import { showToast } from '../../utilities/toastUtility';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import { StyleSheet } from 'react-native';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { useTheme } from '../../../reducers/themeReducer';
 import clsx from 'clsx';
@@ -254,7 +253,7 @@ export default function GlobalOptions() {
     {
       title: 'Frequently Asked Questions',
       description: 'Clear your doubts',
-      image: 'message-outline',
+      image: 'message-outline' as const,
       action: () => {
         navigation.navigate(screenTitle.OPTIONS, {
           screen: screenTitle.SOCIAL_MEDIA_SCREEN,
@@ -283,7 +282,6 @@ export default function GlobalOptions() {
         isModalVisible={planChangeModalVisible}
         setIsModalVisible={setPlanChangeModalVisible}
         openComparePlans={openComparePlans}
-        deductAmountNow={true}
         cardProvider={cardProvider}
         cardId={card.cardId}
       />

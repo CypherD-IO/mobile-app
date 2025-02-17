@@ -22,7 +22,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { ethers } from 'ethers';
+import { parseUnits } from 'viem';
 
 export default function PreviewAutoLoad() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -61,7 +61,7 @@ export default function PreviewAutoLoad() {
     );
     if (!response.isError) {
       const granter = get(hdWallet.state.wallet, chain.chainName).address;
-      const amountWithContractDecimals = ethers.parseUnits(
+      const amountWithContractDecimals = parseUnits(
         limitDecimalPlaces(
           (Number(amountToLoad) * Number(repeatFor)) /
             Number(selectedToken.price),

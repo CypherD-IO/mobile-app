@@ -1,22 +1,22 @@
-import Web3 from 'web3';
 import { ChainBackendNames } from '../constants/server';
+import { Address, PublicClient } from 'viem';
 
 export interface SendInEvmInterface {
   chain: ChainBackendNames;
   amountToSend: string;
-  toAddress: string;
-  contractAddress: string;
+  toAddress: Address;
+  contractAddress: Address;
   contractDecimals: number;
   symbol: string;
-  contractData?: any;
+  // contractData?: `0x${string}`;
 }
 
 export interface SendNativeToken {
-  web3: Web3;
+  publicClient: PublicClient;
   chain: ChainBackendNames;
   amountToSend: string;
-  toAddress: string;
-  contractAddress: string;
+  toAddress: Address;
+  contractAddress: Address;
   contractDecimals: number;
-  contractData?: any;
+  // contractData?: `0x${string}`;
 }

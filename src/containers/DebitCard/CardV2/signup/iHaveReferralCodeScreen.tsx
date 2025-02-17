@@ -24,15 +24,12 @@ import useAxios from '../../../../core/HttpRequest';
 import {
   CyDIcons,
   CyDImage,
-  CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../../styles/tailwindStyles';
-import SelectPlanModal from '../../../../components/selectPlanModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../../../customFonts';
 interface RouteParams {
   deductAmountNow?: boolean;
   toPage?: string;
@@ -56,7 +53,6 @@ const IHaveReferralCodeScreen = () => {
   const { postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
-  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
 
   useEffect(() => {
     const setReferralCodeFromAsync = async () => {

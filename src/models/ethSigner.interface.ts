@@ -1,20 +1,28 @@
-import Web3 from 'web3';
 import { ChainBackendNames } from '../constants/server';
+import { Address } from 'viem';
 
-export interface EthTransaction {
-  from: string;
-  to: string;
-  gasPrice?: number;
-  value: string | number;
-  gas: string | number;
-  maxPriorityFeePerGas?: string | number;
-  maxFeePerGas?: string | number;
-  contractParams?: { toAddress: string; numberOfTokens: string };
+export type EthTransactionPayload = {
+  from?: Address;
+  to: Address;
+  value: bigint;
+  gas: bigint;
   data?: `0x${string}`;
-}
+} & (
+  | {
+      gasPrice: bigint;
+      maxPriorityFeePerGas?: never;
+      maxFeePerGas?: never;
+    }
+  | {
+      gasPrice?: never;
+      maxPriorityFeePerGas: bigint;
+      maxFeePerGas: bigint;
+    }
+);
 
-export interface RawTransaction {
-  web3: Web3;
+export interface EthSingerParams {
+  rpc: string;
   sendChain: ChainBackendNames;
-  transactionToBeSigned: EthTransaction;
+  transactionToBeSigned: EthTransactionPayload;
+  tokens?: bigint;
 }

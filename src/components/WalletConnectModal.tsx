@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import SignatureModal from '../components/v2/signatureModal';
 import {
   CyDFastImage,
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -14,7 +13,6 @@ import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { t } from 'i18next';
 import { CText } from '../styles/textStyle';
 import { DynamicImage } from '../styles/imageStyle';
-import AppImages from '../../assets/images/appImages';
 import { Colors } from '../constants/theme';
 import { GlobalContext } from '../core/globalContext';
 import useWeb3 from '../hooks/useWeb3';
@@ -23,7 +21,6 @@ import { useGlobalModalContext } from './v2/GlobalModal';
 import {
   ALL_CHAINS,
   Chain,
-  ChainBackendNames,
   chainIdNumberMapping,
   EVM_CHAINS,
 } from '../constants/server';
@@ -34,8 +31,8 @@ import { FlatList, StyleSheet } from 'react-native';
 import CyDModalLayout from './v2/modal';
 import * as C from '../constants/index';
 import { EIP155_SIGNING_METHODS } from '../constants/EIP155Data';
-import Web3 from 'web3';
 import usePortfolio from '../hooks/usePortfolio';
+import { hexToString } from 'viem';
 
 export default function WalletConnectModal(props) {
   const globalContext = useContext<any>(GlobalContext);
@@ -75,9 +72,7 @@ export default function WalletConnectModal(props) {
       // Quick fix for PERSONAL_SIGN broken in Wallet Connect Flow. Ideally we should detect and skip checkGasFee() for sign transactions like PERSONAL_SIGN and SIGN_TYPED_DATA
       return;
     }
-    const nativeToken = await getNativeToken(
-      item.backendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(item.backendName);
     if (
       nativeToken?.actualBalance &&
       renderContent?.dAppInfo?.name !== 'Cypher Wallet DApp'
@@ -154,7 +149,8 @@ export default function WalletConnectModal(props) {
     if (method === EIP155_SIGNING_METHODS.PERSONAL_SIGN) {
       let message = '';
       try {
-        message = Web3.utils.hexToUtf8(requestParams[0]);
+        // message = Web3.utils.hexToUtf8(requestParams[0]);
+        message = hexToString(requestParams[0]);
       } catch (e) {
         message = requestParams[0];
       }
@@ -176,7 +172,8 @@ export default function WalletConnectModal(props) {
     } else if (method === EIP155_SIGNING_METHODS.ETH_SIGN) {
       let message = '';
       try {
-        message = Web3.utils.hexToUtf8(requestParams[1]);
+        // message = Web3.utils.hexToUtf8(requestParams[1]);
+        message = hexToString(requestParams[1]);
       } catch (e) {
         message = requestParams[1];
       }

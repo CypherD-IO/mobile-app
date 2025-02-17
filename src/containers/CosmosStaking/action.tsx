@@ -441,7 +441,7 @@ export default function CosmosAction({
                 CosmosActionType.DELEGATE === from &&
                 DecimalHelper.isGreaterThan(
                   DecimalHelper.subtract(
-                    DecimalHelper.removeDecimals(
+                    DecimalHelper.toDecimal(
                       cosmosStaking.cosmosStakingState.balance,
                       tokenData.contractDecimals,
                     ),
@@ -453,7 +453,7 @@ export default function CosmosAction({
                 setAmount(
                   DecimalHelper.toString(
                     DecimalHelper.subtract(
-                      DecimalHelper.removeDecimals(
+                      DecimalHelper.toDecimal(
                         cosmosStaking.cosmosStakingState.balance,
                         tokenData.contractDecimals,
                       ),
@@ -465,7 +465,7 @@ export default function CosmosAction({
               else if (CosmosActionType.UNDELEGATE === from)
                 setAmount(
                   DecimalHelper.toString(
-                    DecimalHelper.removeDecimals(
+                    DecimalHelper.toDecimal(
                       validatorData.balance,
                       tokenData.contractDecimals,
                     ),
@@ -475,7 +475,7 @@ export default function CosmosAction({
               else if (CosmosActionType.REDELEGATE === from)
                 setAmount(
                   DecimalHelper.toString(
-                    DecimalHelper.removeDecimals(
+                    DecimalHelper.toDecimal(
                       validatorData.balance,
                       tokenData.contractDecimals,
                     ),
@@ -520,7 +520,7 @@ export default function CosmosAction({
               (from === CosmosActionType.DELEGATE &&
                 DecimalHelper.isGreaterThan(
                   amount,
-                  DecimalHelper.removeDecimals(
+                  DecimalHelper.toDecimal(
                     cosmosStaking.cosmosStakingState.balance,
                     tokenData.contractDecimals,
                   ),
@@ -529,7 +529,7 @@ export default function CosmosAction({
                 DecimalHelper.isGreaterThan(
                   amount,
                   DecimalHelper.toString(
-                    DecimalHelper.removeDecimals(
+                    DecimalHelper.toDecimal(
                       validatorData.balance,
                       tokenData.contractDecimals,
                     ),

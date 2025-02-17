@@ -92,7 +92,7 @@ export default function Button({
           'bg-n20': ButtonType.GREY_FILL === type,
           'bg-red300': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
-          'bg-n40': disabled,
+          'bg-n50': disabled,
           'bg-n0': ButtonType.WHITE_FILL === type,
         },
       )}>

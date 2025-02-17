@@ -483,6 +483,20 @@ export function PortfolioStackScreen() {
         })}
       />
 
+      <PortfolioStack.Screen
+        name={screenTitle.BROWSER}
+        component={BrowserScreen}
+        options={({ navigation }) => ({
+          header: () => (
+            <CustomHeader
+              title={'Browser'}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
+        })}
+      />
+
       {/* <PortfolioStack.Screen
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}

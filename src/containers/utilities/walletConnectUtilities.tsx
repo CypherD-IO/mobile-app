@@ -7,7 +7,6 @@ import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import { Dispatch } from 'react';
 import Toast from 'react-native-toast-message';
-import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
 import {
   CHAIN_ARBITRUM,
@@ -48,6 +47,7 @@ import { WebsiteInfo } from '../../types/Browser';
 import { SendTransactionCosmosFunc } from '../Browser/ConfirmationModalPromises';
 import { genId } from './activityUtilities';
 import { has } from 'lodash';
+import { formatUnits, fromHex, formatEther } from 'viem';
 
 const SUPPORTED_CHAIN_ID_MAP = {
   1: CHAIN_ETH,
@@ -430,9 +430,9 @@ export const walletConnectApproveRequest = async (
             symbol,
             datetime: new Date(),
             amount: parseFloat(
-              Web3.utils.fromWei(
-                Web3.utils.hexToNumberString(transactionValue),
-                'ether',
+              formatUnits(
+                fromHex(transactionValue as `0x${string}`, 'bigint'),
+                chainInfo.decimals,
               ),
             ).toString(),
           };
@@ -493,7 +493,7 @@ export const getRenderContent = (request, address, walletConnectState) => {
         chainInfo: {
           address: getMaskedAddress(address),
           image: SUPPORTED_CHAIN_ID_MAP[chainId].logo_url,
-          chainId: Web3.utils.hexToNumberString(chainId),
+          chainId: fromHex(chainId, 'number').toString(),
         },
         staticInfo: [
           {
@@ -533,9 +533,9 @@ export const getRenderContent = (request, address, walletConnectState) => {
           chainInfo: {
             address: getMaskedAddress(address),
             image:
-              SUPPORTED_CHAIN_ID_MAP[Web3.utils.hexToNumberString(chainId)]
+              SUPPORTED_CHAIN_ID_MAP[fromHex(chainId, 'number').toString()]
                 .logo_url,
-            chainId: Web3.utils.hexToNumberString(chainId),
+            chainId: fromHex(chainId, 'number').toString(),
           },
         };
       } else {
@@ -594,10 +594,7 @@ export const getRenderContent = (request, address, walletConnectState) => {
           if (value) {
             otherInfo.push({
               key: t('VALUE'),
-              value: `${Web3.utils.fromWei(
-                Web3.utils.hexToNumberString(value),
-                'ether',
-              )}  ${symbol}`,
+              value: `${formatEther(fromHex(value as `0x${string}`, 'bigint'))} ${symbol}`,
             });
           } else {
             otherInfo.push({
@@ -608,10 +605,7 @@ export const getRenderContent = (request, address, walletConnectState) => {
           if (gas) {
             otherInfo.push({
               key: t('NETWORK_FEE'),
-              value: `${Web3.utils.fromWei(
-                Web3.utils.hexToNumberString(gas),
-                'ether',
-              )}  ${symbol}`,
+              value: `${formatEther(fromHex(gas as `0x${string}`, 'bigint'))} ${symbol}`,
             });
           } else {
             otherInfo.push({

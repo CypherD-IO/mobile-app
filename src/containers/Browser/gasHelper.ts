@@ -11,12 +11,19 @@ import {
   CHAIN_OPTIMISM,
 } from '../../constants/server';
 import { removeOutliers } from '../../misc/outliers';
-import Web3 from 'web3';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../../global';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { limitDecimalPlaces } from '../../core/util';
+import {
+  formatGwei,
+  PublicClient,
+  parseGwei,
+  formatEther,
+  hexToBigInt,
+  toHex,
+} from 'viem';
 
 const minimumGasFee = '20';
 
@@ -32,7 +39,7 @@ async function getGasPriceFromBackend({
 
 async function getGasPriceLocallyUsingGasHistory(
   { backendName }: Chain,
-  web3RPCEndpoint: Web3,
+  publicClient: PublicClient,
 ): Promise<GasPriceDetail> {
   const lastNBlocks = 5;
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -40,20 +47,18 @@ async function getGasPriceLocallyUsingGasHistory(
     const tokenPrice = await axios.get(
       `${ARCH_HOST}/v1/prices/native/${backendName}`,
     );
-    const gasHistory = await web3RPCEndpoint.eth.getFeeHistory(
-      lastNBlocks,
-      'latest',
-      [70, 75, 80, 85, 90, 95, 98],
-    );
+    const gasHistory = await publicClient.getFeeHistory({
+      blockCount: lastNBlocks,
+      blockTag: 'latest',
+      rewardPercentiles: [70, 75, 80, 85, 90, 95, 98],
+    });
     // get the above percentiles and remove the outliers and take the max value.
     const { reward } = gasHistory;
     const percentileArr: number[] = [];
-    reward.forEach(element => {
+    reward?.forEach(element => {
       percentileArr.push(
         ...element.map(percentile =>
-          Number.parseFloat(
-            Web3.utils.fromWei(percentile, 'gwei') || minimumGasFee,
-          ),
+          Number.parseFloat(formatGwei(percentile) || minimumGasFee),
         ),
       );
     });
@@ -87,7 +92,7 @@ async function getGasPriceLocallyUsingGasHistory(
 
 export async function getGasPriceFor(
   chain: Chain,
-  web3RPCEndpoint: Web3,
+  publicClient: PublicClient,
 ): Promise<GasPriceDetail> {
   let gasPrice: GasPriceDetail;
   try {
@@ -99,10 +104,7 @@ export async function getGasPriceFor(
 
   if (![CHAIN_ETH, CHAIN_OPTIMISM, CHAIN_BSC].includes(chain)) {
     try {
-      gasPrice = await getGasPriceLocallyUsingGasHistory(
-        chain,
-        web3RPCEndpoint,
-      );
+      gasPrice = await getGasPriceLocallyUsingGasHistory(chain, publicClient);
       return gasPrice;
     } catch (e) {
       Sentry.captureException(e);
@@ -116,30 +118,24 @@ export async function getPayloadParams(
   payload: any,
   gasDetail: GasPriceDetail,
   chain: Chain,
-  gasLimit: any,
+  gasLimit: bigint,
 ): Promise<any> {
   const {
     params: [{ value }],
   } = payload;
 
-  const totalGasFeeInGwei = Web3.utils.fromWei(
-    Web3.utils.toWei(
+  const totalGasFeeInCrypto = formatEther(
+    parseGwei(
       DecimalHelper.toString(
-        DecimalHelper.multiply(gasDetail.gasPrice, gasLimit),
+        DecimalHelper.multiply(gasDetail.gasPrice, Number(gasLimit)),
         9,
       ),
-      'gwei',
     ),
-    'ether',
   );
 
-  const finalGasPriceInHex = Web3.utils.toHex(
-    Web3.utils.toWei(gasDetail.gasPrice.toFixed(9), 'Gwei'),
-  );
+  const finalGasPriceInHex = toHex(parseGwei(gasDetail.gasPrice.toFixed(9)));
 
-  const valueETH = value
-    ? Web3.utils.fromWei(Web3.utils.hexToNumberString(value), 'ether')
-    : '0';
+  const valueETH = value ? formatEther(hexToBigInt(value)) : '0';
 
   let gasFeeDollar;
   let valueDollar = '0';
@@ -148,14 +144,14 @@ export async function getPayloadParams(
   if (gasDetail.tokenPrice > 0) {
     const nativeTokenPrice = gasDetail.tokenPrice;
     gasFeeDollar = DecimalHelper.toString(
-      DecimalHelper.multiply(totalGasFeeInGwei, nativeTokenPrice),
+      DecimalHelper.multiply(totalGasFeeInCrypto, nativeTokenPrice),
       2,
     );
     valueDollar = DecimalHelper.toString(
       DecimalHelper.multiply(valueETH, nativeTokenPrice),
       2,
     );
-    totalEth = DecimalHelper.add(valueETH, totalGasFeeInGwei).toString();
+    totalEth = DecimalHelper.add(valueETH, totalGasFeeInCrypto).toString();
     totalDollar = DecimalHelper.toString(
       DecimalHelper.multiply(totalEth, nativeTokenPrice),
       2,
@@ -165,7 +161,7 @@ export async function getPayloadParams(
     chainIdNumber: chain.chainIdNumber,
     gasFeeDollar,
     gasFeeETH: DecimalHelper.toString(
-      DecimalHelper.fromString(totalGasFeeInGwei),
+      DecimalHelper.fromString(totalGasFeeInCrypto),
       6,
     ),
     networkName: chain.name,
@@ -184,124 +180,109 @@ export async function getPayloadParams(
   return paymodalParams;
 }
 
-export function estimateGas(
-  payload,
-  webviewRef,
-  hdWalletContext,
-  selectedChain,
+export async function estimateGas(
+  payload: any,
+  publicClient: PublicClient,
+  address: string,
+  selectedChain: Chain,
   gasDetail: GasPriceDetail,
-  payModal,
-  web3RPCEndpoint: Web3,
+  payModal: (params: any, to: string) => void,
 ) {
-  const ethereum = hdWalletContext.state.wallet.ethereum;
-  let strPaymentPrompt = 'Chain: ' + selectedChain;
+  let strPaymentPrompt = `Chain: ${selectedChain.name}`;
 
   const {
     params: [{ value, to, data, gasPrice }],
   } = payload;
   if (value) {
-    const valueFormatted = Web3.utils.fromWei(
-      Web3.utils.hexToNumberString(value),
-      'ether',
-    );
+    const valueFormatted = formatEther(hexToBigInt(value));
     strPaymentPrompt = `${strPaymentPrompt}\nValue: ${valueFormatted} ${
       selectedChain.symbol ?? 'ETH'
     }`;
   }
 
-  web3RPCEndpoint.eth
-    .estimateGas({
-      to,
-      data,
-      value,
-      from: ethereum.address,
-    })
-    .then(gasLimit => {
-      let finalGasPrice;
-      if (gasPrice) {
-        if (gasPrice.startsWith('0x')) {
-          finalGasPrice = Web3.utils.fromWei(
-            Web3.utils.hexToNumberString(gasPrice),
-            'Gwei',
-          );
-        } else {
-          // Finally this code path has a breaking test-case with KOGE when gasPrice is an integer
-          finalGasPrice = Web3.utils.fromWei(gasPrice, 'Gwei');
-        }
-      } else if (gasDetail.gasPrice > 0) {
-        finalGasPrice = gasDetail.gasPrice;
-      }
-
-      let totalGasFeeInGwei = '0'; // gas limit * gas price in Gwei
-      let finalGasPriceInHex;
-      if (finalGasPrice) {
-        totalGasFeeInGwei = Web3.utils.fromWei(
-          Web3.utils.toWei(
-            DecimalHelper.toString(
-              DecimalHelper.multiply(finalGasPrice, gasLimit),
-              9,
-            ),
-            'gwei',
-          ),
-          'ether',
-        );
-        finalGasPriceInHex = Web3.utils.toHex(
-          Web3.utils.toWei(limitDecimalPlaces(finalGasPrice, 9), 'Gwei'),
-        );
-      }
-
-      let valueETH = '0';
-      if (value !== undefined) {
-        valueETH = Web3.utils.fromWei(
-          Web3.utils.hexToNumberString(value),
-          'ether',
-        );
-      }
-
-      let gasFeeDollar;
-      let valueDollar = '0';
-      let totalDollar = '0';
-      let totalEth = '0';
-      if (gasDetail.tokenPrice > 0) {
-        const nativeTokenPrice = gasDetail.tokenPrice;
-        gasFeeDollar = DecimalHelper.toString(
-          DecimalHelper.multiply(totalGasFeeInGwei, nativeTokenPrice),
-          2,
-        );
-        valueDollar = DecimalHelper.toString(
-          DecimalHelper.multiply(valueETH, nativeTokenPrice),
-          2,
-        );
-        totalEth = DecimalHelper.add(valueETH, totalGasFeeInGwei).toString();
-        totalDollar = DecimalHelper.toString(
-          DecimalHelper.multiply(totalEth, nativeTokenPrice),
-          2,
-        );
-      }
-      const paymodalParams = {
-        chainIdNumber: selectedChain.chainIdNumber,
-        gasFeeDollar,
-        gasFeeETH: DecimalHelper.toString(
-          DecimalHelper.fromString(totalGasFeeInGwei),
-          6,
-        ),
-        networkName: selectedChain.name,
-        networkCurrency: selectedChain.symbol,
-        valueETH: limitDecimalPlaces(valueETH, 6),
-        valueDollar,
-        totalDollar,
-        totalETH: limitDecimalPlaces(totalEth, 6),
-        appImage: selectedChain.logo_url,
-        finalGasPrice: finalGasPriceInHex,
-        gasLimit,
-        gasPrice: gasDetail,
-        payload,
-      };
-
-      payModal(paymodalParams, to);
-    })
-    .catch(error => {
-      // TODO (user feedback): Give feedback to user.
-      Sentry.captureException(error);
+  try {
+    const gasLimit = await publicClient.estimateGas({
+      to: to as `0x${string}`,
+      data: data as `0x${string}`,
+      value: value ? hexToBigInt(value) : undefined,
+      account: address as `0x${string}`,
     });
+
+    let finalGasPrice;
+    if (gasPrice) {
+      if (gasPrice.startsWith('0x')) {
+        finalGasPrice = formatGwei(hexToBigInt(gasPrice));
+      } else {
+        finalGasPrice = formatGwei(BigInt(gasPrice));
+      }
+    } else if (gasDetail.gasPrice > 0) {
+      finalGasPrice = gasDetail.gasPrice;
+    }
+
+    let totalGasFeeInCrypto = '0'; // gas limit * gas price in Gwei
+    let finalGasPriceInHex;
+    if (finalGasPrice) {
+      totalGasFeeInCrypto = formatEther(
+        parseGwei(
+          DecimalHelper.toString(
+            DecimalHelper.multiply(finalGasPrice, Number(gasLimit)),
+            9,
+          ),
+        ),
+      );
+      finalGasPriceInHex = toHex(
+        parseGwei(limitDecimalPlaces(finalGasPrice, 9)),
+      );
+    }
+
+    let valueETH = '0';
+    if (value !== undefined) {
+      valueETH = formatEther(hexToBigInt(value));
+    }
+
+    let gasFeeDollar;
+    let valueDollar = '0';
+    let totalDollar = '0';
+    let totalEth = '0';
+    if (gasDetail.tokenPrice > 0) {
+      const nativeTokenPrice = gasDetail.tokenPrice;
+      gasFeeDollar = DecimalHelper.toString(
+        DecimalHelper.multiply(totalGasFeeInCrypto, nativeTokenPrice),
+        2,
+      );
+      valueDollar = DecimalHelper.toString(
+        DecimalHelper.multiply(valueETH, nativeTokenPrice),
+        2,
+      );
+      totalEth = DecimalHelper.add(valueETH, totalGasFeeInCrypto).toString();
+      totalDollar = DecimalHelper.toString(
+        DecimalHelper.multiply(totalEth, nativeTokenPrice),
+        2,
+      );
+    }
+    const paymodalParams = {
+      chainIdNumber: selectedChain.chainIdNumber,
+      gasFeeDollar,
+      gasFeeETH: DecimalHelper.toString(
+        DecimalHelper.fromString(totalGasFeeInCrypto),
+        6,
+      ),
+      networkName: selectedChain.name,
+      networkCurrency: selectedChain.symbol,
+      valueETH: limitDecimalPlaces(valueETH, 6),
+      valueDollar,
+      totalDollar,
+      totalETH: limitDecimalPlaces(totalEth, 6),
+      appImage: selectedChain.logo_url,
+      finalGasPrice: finalGasPriceInHex,
+      gasLimit,
+      gasPrice: gasDetail,
+      payload,
+    };
+
+    payModal(paymodalParams, to);
+  } catch (error) {
+    // TODO (user feedback): Give feedback to user.
+    Sentry.captureException(error);
+  }
 }

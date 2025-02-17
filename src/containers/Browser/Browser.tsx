@@ -6,12 +6,12 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useRoute } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
 import clsx from 'clsx';
 import CryptoJS from 'crypto-js';
-import { get, min, round } from 'lodash';
+import { get } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,24 +25,28 @@ import {
 } from '../../components/ChooseChainModal';
 import MoreViewModal from '../../components/MoreViewModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { gasFeeReservation, INJECTED_WEB3_CDN } from '../../constants/data';
+import Loading from '../../components/v2/loading';
+import { INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
 import {
   Chain,
-  CHAIN_COSMOS,
   CHAIN_ETH,
   CHAIN_SOLANA,
-  ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
   PURE_COSMOS_CHAINS,
 } from '../../constants/server';
-import { Colors } from '../../constants/theme';
 import { MODAL_SHOW_TIMEOUT } from '../../constants/timeOuts';
 import { CommunicationEvents } from '../../constants/web3';
 import { showToast } from '../../containers/utilities/toastUtility';
+import { GlobalContext } from '../../core/globalContext';
 import useAxios from '../../core/HttpRequest';
-import { getWeb3Endpoint, HdWalletContext } from '../../core/util';
+import {
+  getViemPublicClient,
+  getWeb3Endpoint,
+  HdWalletContext,
+} from '../../core/util';
+import useGasService from '../../hooks/useGasService';
 import usePortfolio from '../../hooks/usePortfolio';
 import useWeb3 from '../../hooks/useWeb3';
 import { isIOS } from '../../misc/checkers';
@@ -63,12 +67,7 @@ import {
   SearchHistoryEntry,
   WebsiteInfo,
 } from '../../types/Browser';
-import Loading from '../../components/v2/loading';
 import { DecimalHelper } from '../../utils/decimalHelper';
-import useGasService from '../../hooks/useGasService';
-import useCosmosSigner from '../../hooks/useCosmosSigner';
-import Web3 from 'web3';
-import { GlobalContext } from '../../core/globalContext';
 
 enum BROWSER_ERROR {
   SSL = 'ssl',
@@ -90,7 +89,8 @@ const webviewErrorCodesMapping: Record<string, { error: string; image: any }> =
     default: { error: BROWSER_ERROR.OTHER, image: AppImages.BROWSER_404 },
   };
 
-export default function Browser({ route, navigation }: any) {
+export default function Browser({ navigation }: any) {
+  const route = useRoute<any>();
   const { params } = route;
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [moreView, setMoreview] = useState<boolean>(false);
@@ -107,7 +107,6 @@ export default function Browser({ route, navigation }: any) {
   const { getNativeToken } = usePortfolio();
   const { estimateGasForEvm, estimateGasForCosmosRest, estimateGasForSolana } =
     useGasService();
-  const { getCosmosSignerClient } = useCosmosSigner();
 
   const urlMappings: Record<string, string> = {
     home: '',
@@ -297,9 +296,7 @@ export default function Browser({ route, navigation }: any) {
   }, [hdWalletContext.state.selectedChain, isFocused]);
 
   const checkNativeTokenBalance = async (selectedChain: Chain) => {
-    const nativeToken = await getNativeToken(
-      selectedChain.backendName as ChainBackendNames,
-    );
+    const nativeToken = await getNativeToken(selectedChain.backendName);
     let gasDetails;
     if (COSMOS_CHAINS.includes(selectedChain.chainName)) {
       const cosmosWallet = hdWalletContext.state.wallet;
@@ -320,14 +317,17 @@ export default function Browser({ route, navigation }: any) {
         contractDecimals: nativeToken.contractDecimals,
       });
     } else if (selectedChain.chainName === ChainNames.ETH) {
-      const web3 = new Web3(getWeb3Endpoint(selectedChain, globalContext));
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(selectedChain, globalContext),
+      );
+
       gasDetails = await estimateGasForEvm({
-        web3,
-        chain: selectedChain.backendName as ChainBackendNames,
+        publicClient,
+        chain: selectedChain.backendName,
         fromAddress: ethereum.address,
         toAddress: ethereum.address,
         amountToSend: String(nativeToken.balanceDecimal),
-        contractAddress: nativeToken.contractAddress,
+        contractAddress: nativeToken.contractAddress as `0x${string}`,
         contractDecimals: nativeToken.contractDecimals,
       });
     }
@@ -577,7 +577,6 @@ export default function Browser({ route, navigation }: any) {
         <CyDView className='flex flex-row items-center'>
           {!onFocus && (
             <CyDTouchView
-              className='ml-3'
               onPress={() => {
                 handleBackButton();
               }}>
@@ -610,7 +609,7 @@ export default function Browser({ route, navigation }: any) {
               }}>
               <CyDMaterialDesignIcons
                 name='refresh'
-                size={24}
+                size={20}
                 className='text-base400'
               />
             </CyDTouchView>
@@ -618,23 +617,26 @@ export default function Browser({ route, navigation }: any) {
         </CyDView>
 
         <CyDView
-          className={clsx('h-[30px] flex flex-row items-center', {
-            'w-[80%]': onFocus,
-            'w-[63%]': !onFocus,
-          })}>
+          className={clsx(
+            'h-[30px] flex flex-row items-center bg-n20 px-2 rounded-lg',
+            {
+              'w-[80%]': onFocus,
+              'w-[63%]': !onFocus,
+            },
+          )}>
           {!onFocus &&
             (inbuildPage === 'webview' || inbuildPage === 'webviewError') && (
               <CyDView className='ml-[2px]' sentry-label='browser-search-erase'>
                 {isSslSecure && (
                   <CyDMaterialDesignIcons
                     name='lock'
-                    size={20}
-                    className='text-base400 ml-[5px]'
+                    size={14}
+                    className='text-base400'
                   />
                 )}
                 {!isSslSecure && (
                   <CyDFastImage
-                    className='ml-[5px] h-4 w-4'
+                    className='h-4 w-4'
                     resizeMode='contain'
                     source={AppImages.BROWSER_SSL}
                   />

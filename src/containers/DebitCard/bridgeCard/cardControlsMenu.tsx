@@ -389,7 +389,6 @@ export default function CardControlsMenu() {
         isModalVisible={planChangeModalVisible}
         setIsModalVisible={setPlanChangeModalVisible}
         openComparePlans={openComparePlans}
-        deductAmountNow={true}
         cardProvider={currentCardProvider}
         cardId={cardId}
         onPlanChangeSuccess={() => {

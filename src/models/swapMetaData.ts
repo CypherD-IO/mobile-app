@@ -1,37 +1,44 @@
-import Web3 from 'web3';
-import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { Chain } from '../constants/server';
-import { SwapBridgeTokenData } from '../containers/Bridge';
+import { OdosSwapQuoteResponse } from './osdoQuote.interface';
 
 export interface SwapMetaData {
-  web3: Web3;
-  fromToken?: SwapBridgeTokenData;
-  toToken?: SwapBridgeTokenData;
-  amount?: string | number;
-  routerAddress?: string;
-  quoteData?: any;
-  hdWallet: HdWalletContextDef;
-  gasLimit?: number | string;
-  gasFeeResponse?: any;
-  fromTokenContractAddress?: string;
-  contractData?: any;
-  overrideAllowanceCheck?: boolean;
-  overrideAmountCheck?: boolean;
+  quoteData: OdosSwapQuoteResponse;
+  // {
+  //   blockNumber?: number | undefined;
+  //   chainId: number;
+  //   data: {
+  //     chainId: number;
+  //     data: string;
+  //     gas: number;
+  //     gasPrice: number;
+  //     nonce: number;
+  //     to: string;
+  //     value: string;
+  //   };
+  //   executor: string;
+  //   fromToken: Array<{
+  //     amount: string;
+  //     tokenAddress: string;
+  //   }>;
+  //   gasEstimate: number;
+  //   gasEstimateValue: number;
+  //   gasInfo: {
+  //     baseFee: number;
+  //     chainId: string;
+  //     enforceFactor: boolean;
+  //     factor: number;
+  //     gasPrice: number;
+  //     isEIP1599Supported: boolean;
+  //     maxFee: number;
+  //     priorityFee: number;
+  //     tokenPrice: number;
+  //   };
+  //   router: string;
+  //   toToken: {
+  //     amount: string;
+  //     tokenAddress: string;
+  //   };
+  //   value: string;
+  // };
   chainDetails: Chain;
-}
-
-export interface AllowanceParams {
-  web3: Web3;
-  fromTokenContractAddress: string;
-  ethereum: any;
-  routerAddress: string;
-  isNative: boolean;
-  quoteData: any;
-  gasFeeETH: number | string;
-  gasFeeDollar: number | string;
-  isApprovalModalVisible: boolean;
-  isAllowance: boolean;
-  gasLimit: string;
-  gasFeeResponse: any;
-  contractData: any;
 }

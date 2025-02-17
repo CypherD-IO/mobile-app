@@ -59,7 +59,6 @@ import {
   SignMessageValidationType,
 } from '../constants/enum';
 import { Dispatch, SetStateAction } from 'react';
-import Web3 from 'web3';
 import { hostWorker } from '../global';
 import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
@@ -69,6 +68,9 @@ import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cj
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import { Keypair } from '@solana/web3.js';
+import { createWalletClient, Hex, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { mainnet } from 'viem/chains';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 10;
@@ -652,7 +654,6 @@ export async function signIn(
   hdWallet: HdWalletContextDef,
   setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
 ) {
-  const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
     const { data } = await axios.get(
@@ -661,13 +662,22 @@ export async function signIn(
     const verifyMessage = data.message;
     const validationResponse = isValidMessage(ethereum.address, verifyMessage);
     if (validationResponse.message === SignMessageValidationType.VALID) {
+      const walletClient = createWalletClient({
+        chain: mainnet,
+        transport: http(),
+      });
       const privateKey = await loadPrivateKeyFromKeyChain(
         true,
         hdWallet.state.pinValue,
         () => setShowDefaultAuthRemoveModal(true),
       );
       if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
+        const account = privateKeyToAccount(privateKey as Hex);
+        const signature = await walletClient.signMessage({
+          account,
+          message: verifyMessage,
+        });
+
         const result = await axios.post(
           `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
           {
