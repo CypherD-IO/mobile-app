@@ -73,6 +73,7 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
           'text-base400 border-n40rixhy ': !meta.error,
           'text-red200 border-red200': meta.touched && meta.error,
         })}
+        placeholder={props.placeholder}
         keyboardType={keyboardType}
         placeholderTextColor={'#A6AEBB'}
         returnKeyType='done'
