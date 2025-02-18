@@ -70,7 +70,7 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
         onBlur={field.onBlur(name)}
         value={formatDisplayValue(value ?? field.value, keyboardType)}
         className={clsx(inputClassName, {
-          'text-base400 border-n40rixhy ': !meta.error,
+          'text-base400 border-n40 ': !meta.error,
           'text-red200 border-red200': meta.touched && meta.error,
         })}
         placeholder={props.placeholder}
