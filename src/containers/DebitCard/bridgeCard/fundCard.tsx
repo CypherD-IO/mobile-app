@@ -231,7 +231,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       if (!gasDetails?.isError) {
         const hasSufficient = hasSufficientBalanceAndGasFee(
           selectedTokenSymbol === chainDetails.symbol,
-          String(gasDetails.gasFeeInCrypto),
+          String(gasDetails?.gasFeeInCrypto),
           nativeTokenBalance,
           actualTokensRequired,
           balanceDecimal,
@@ -246,10 +246,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amountInFiat: String(quote.amount),
             symbol: selectedTokenSymbol,
             toAddress: targetWalletAddress,
-            gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
+            gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
             gasFeeInFiat: formatAmount(
               DecimalHelper.multiply(
-                gasDetails?.gasFeeInCrypto,
+                gasDetails?.gasFeeInCrypto ?? 0,
                 nativeToken?.price ?? 0,
               ),
             ),
@@ -313,6 +313,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
         );
+
         if (response?.data && !response.isError) {
           if (chainDetails.chainName != null) {
             const quote: CardQuoteResponse = response.data;
@@ -322,9 +323,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           Sentry.captureException(response.error);
           showModal('state', {
             type: 'error',
-            title: response?.error?.message?.includes('minimum amount')
+            title: parseErrorMessage(response.error)?.includes('minimum amount')
               ? t('INSUFFICIENT_FUNDS')
-              : '',
+              : t('ERROR_FETCHING_QUOTE'),
             description: response.error.message ?? t('UNABLE_TO_TRANSFER'),
             onSuccess: hideModal,
             onFailure: hideModal,
@@ -350,8 +351,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         setLoading(false);
         showModal('state', {
           type: 'error',
-          title: '',
-          description: t('UNABLE_TO_TRANSFER'),
+          title: t('ERROR_FETCHING_QUOTE'),
+          description: parseErrorMessage(e),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -687,11 +688,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             contractAddress,
             contractDecimals,
           });
-          if (gasDetails) {
+          if (!gasDetails?.isError) {
+            // not doing it or solana because if we are sending max amount, then there should be 0 SOL balance in the account, or there should SOL balance enough
+            // for handling the account rent, else we will get the error InsufficientFundsForRent, since we will not be having enough SOL
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
+              gasFeeEstimationForTxn,
             ).toString();
           } else {
             setIsMaxLoading(false);

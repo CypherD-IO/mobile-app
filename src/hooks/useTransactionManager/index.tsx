@@ -1386,7 +1386,7 @@ export default function useTransactionManager() {
 
       if (simulation.value.err) {
         throw new Error(
-          `Simulation failed from rpc after successfully simualting: ${parseErrorMessage(simulation.value.err)}`,
+          `Simulating from rpc failed, reason: ${parseErrorMessage(simulation.value.err)}`,
         );
       }
 

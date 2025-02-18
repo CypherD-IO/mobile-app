@@ -1,4 +1,4 @@
-import React, { SetStateAction, Dispatch } from 'react';
+import React from 'react';
 import {
   CyDKeyboardAwareScrollView,
   CyDText,
@@ -8,11 +8,7 @@ import { useTranslation } from 'react-i18next';
 import FormikTextInput from '../../../../../components/v2/formikInput';
 import FormikDateInput from '../../../../../components/v2/formikDatePicker';
 
-export default function BasicDetails({
-  setIndex,
-}: {
-  setIndex: Dispatch<SetStateAction<number>>;
-}) {
+export default function BasicDetails() {
   const { t } = useTranslation();
 
   return (
@@ -37,11 +33,23 @@ export default function BasicDetails({
         containerClassName='mb-[17px]'
       />
       <FormikTextInput name='email' label='Email' containerClassName='' />
-      <CyDText className='text-n200'>
+      <CyDText className='text-n200 mb-[17px]'>
         {t(
           'An email address is necessary for verification, updates and further communication',
         )}
       </CyDText>
+      <FormikTextInput
+        name='annualSalary'
+        label='Annual Salary'
+        containerClassName='mb-[17px]'
+        keyboardType='numeric'
+      />
+      <FormikTextInput
+        name='expectedMonthlyVolume'
+        label='Expected Monthly Volume'
+        containerClassName='mb-[17px]'
+        keyboardType='numeric'
+      />
     </CyDKeyboardAwareScrollView>
   );
 }

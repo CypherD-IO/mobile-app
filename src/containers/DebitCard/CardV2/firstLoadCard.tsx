@@ -1123,7 +1123,7 @@ export default function FirstLoadCard() {
                 'opacity-40 pointer-events-none': !selectedToken,
               })}>
               <CyDText className='font-bold text-[12px]'>
-                Amount to be loaded in the card
+                {t('AMOUNT_TO_BE_LOADED_IN_CARD')}
               </CyDText>
               <CyDView className='mt-[8px] rounded-[16px] p-[24px] bg-n0'>
                 <CyDView className='flex-row justify-between items-center'>

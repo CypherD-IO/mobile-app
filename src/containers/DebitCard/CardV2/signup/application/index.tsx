@@ -39,7 +39,6 @@ import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import { getReferralCode } from '../../../../../core/asyncStorage';
-import { CyDIconsPack } from '../../../../../customFonts';
 
 // Add this type definition
 interface SupportedCountry {
@@ -65,6 +64,8 @@ export interface FormInitalValues {
   state: string;
   phone: string;
   dialCode: string;
+  expectedMonthlyVolume: string;
+  annualSalary: string;
 }
 
 const validationSchema = Yup.object().shape({
@@ -106,6 +107,10 @@ const validationSchema = Yup.object().shape({
       return phoneNumber !== undefined ? /^\d+$/.test(phoneNumber) : false;
     }),
   dialCode: Yup.string().required(''),
+  expectedMonthlyVolume: Yup.string().required(
+    'Expected monthly volume is required',
+  ),
+  annualSalary: Yup.string().required('Annual salary is required'),
 });
 
 export default function CardApplicationV2() {
@@ -201,6 +206,8 @@ export default function CardApplicationV2() {
           state: data.state || '',
           phone: data.phone ? data.phone.replace(dialCode, '') : '',
           dialCode,
+          expectedMonthlyVolume: data.expectedMonthlyVolume || '',
+          annualSalary: data.annualSalary || '',
         });
       }
     }
@@ -319,6 +326,8 @@ export default function CardApplicationV2() {
             state: '',
             phone: '',
             dialCode: '',
+            expectedMonthlyVolume: '',
+            annualSalary: '',
           }
         }
         validationSchema={validationSchema}
@@ -333,7 +342,7 @@ export default function CardApplicationV2() {
           isSubmitting,
         }) => (
           <CyDView className='bg-n20 flex flex-col justify-between h-full'>
-            {index === 0 && <BasicDetails setIndex={setIndex} />}
+            {index === 0 && <BasicDetails />}
             {index === 1 && (
               <BillingAddress
                 supportedCountries={supportedCountries}

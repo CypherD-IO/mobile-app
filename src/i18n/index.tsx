@@ -300,6 +300,7 @@ const resources = {
       GAS_FEE_LABEL: 'Gas fees',
       NEXT_REWARD_DISTRIBUTION_AT: 'Next reward distribution at',
       SEND_ON: 'Send On',
+      NETWORK: 'Network',
       GAS: 'Gas',
       ESTIMATED_GAS: 'Estimated Gas',
       TEMP_SYSTEM_ERROR: 'Temp System Error',
@@ -1076,7 +1077,6 @@ const resources = {
       PHYSICAL_CARD: 'Physical Card',
       VIEW_ALL_TRANSACTIONS: 'View All Transactions',
       UPDATE_CONTACT_DETAILS: 'Update Contact Details',
-      AMOUNT_TO_BE_LOADED_CARD: 'Amount to be loaded in your card',
       CRYPTO_VALUE: 'Crypto Value',
       SETUP_AUTO_LOAD: 'Set Up Auto Load',
       SETUP_AUTO_LOAD_CAPS: 'SETUP AUTO LOAD',
@@ -1514,6 +1514,7 @@ const resources = {
         'International transactions are disabled on your card. Review and adjust card limits as needed.',
       SETUP_NOW: 'Setup Now',
       MANAGE_LIMITS: 'Manage Limits',
+      ERROR_FETCHING_QUOTE: 'Error fetching quote',
     },
   },
 };
