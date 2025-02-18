@@ -982,36 +982,53 @@ export default function FirstLoadCard() {
       }
       setLoading(false);
       setIsMaxLoading(false);
-      if (gasDetails) {
-        const hasSufficient = hasSufficientBalanceAndGasFee(
-          selectedTokenSymbol === chainDetails.symbol,
-          String(gasDetails.gasFeeInCrypto),
-          nativeToken?.balanceDecimal ?? '0',
-          actualTokensRequired,
-          balanceDecimal,
-        );
-        navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-          hasSufficientBalanceAndGasFee: hasSufficient,
-          cardProvider: currentCardProvider,
-          cardId,
-          tokenSendParams: {
-            chain: chainDetails.backendName,
-            amountInCrypto: actualTokensRequired,
-            amountInFiat: String(quote.amount),
-            symbol: selectedTokenSymbol,
-            toAddress: targetWalletAddress,
-            gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
-            gasFeeInFiat: formatAmount(
-              DecimalHelper.multiply(
-                gasDetails?.gasFeeInCrypto,
-                nativeToken?.price ?? 0,
+      if (!gasDetails?.isError) {
+        const { hasSufficientBalance, hasSufficientGasFee } =
+          hasSufficientBalanceAndGasFee(
+            selectedToken?.isNativeToken ?? false,
+            String(gasDetails?.gasFeeInCrypto ?? '0'),
+            nativeToken?.balanceDecimal ?? '0',
+            actualTokensRequired,
+            balanceDecimal,
+          );
+        if (!hasSufficientBalance) {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_FUNDS'),
+            description: t('INSUFFICIENT_FUNDS_DESCRIPTION'),
+          });
+        } else if (!hasSufficientGasFee) {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_GAS_FEE'),
+            description: t('INSUFFICIENT_GAS_FEE_DESCRIPTION'),
+          });
+        }
+        if (hasSufficientBalance && hasSufficientGasFee) {
+          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
+            hasSufficientBalanceAndGasFee:
+              hasSufficientBalance && hasSufficientGasFee,
+            cardProvider: currentCardProvider,
+            cardId,
+            tokenSendParams: {
+              chain: chainDetails.backendName,
+              amountInCrypto: actualTokensRequired,
+              amountInFiat: String(quote.amount),
+              symbol: selectedTokenSymbol,
+              toAddress: targetWalletAddress,
+              gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
+              gasFeeInFiat: formatAmount(
+                DecimalHelper.multiply(
+                  gasDetails?.gasFeeInCrypto,
+                  nativeToken?.price ?? 0,
+                ),
               ),
-            ),
-            nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-            selectedToken,
-            tokenQuote: quote,
-          },
-        });
+              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
+              selectedToken,
+              tokenQuote: quote,
+            },
+          });
+        }
       } else {
         showModal('state', {
           type: 'error',
