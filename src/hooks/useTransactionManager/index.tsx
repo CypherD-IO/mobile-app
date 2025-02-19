@@ -183,10 +183,10 @@ export default function useTransactionManager() {
               maxPriorityFeePerGas: parseGwei(
                 String(gasEstimateResponse.priorityFee),
               ),
-              maxFeePerGas: parseGwei(String(gasEstimateResponse.maxFee)),
+              maxFeePerGas: parseGwei(gasEstimateResponse.maxFee),
             }
           : {
-              gasPrice: parseGwei(String(gasEstimateResponse.gasPrice)),
+              gasPrice: parseGwei(gasEstimateResponse.gasPrice),
             }),
       };
 
@@ -904,6 +904,7 @@ export default function useTransactionManager() {
     contractData,
     chainDetails,
     tokens,
+    isErc20 = true,
   }: {
     publicClient: PublicClient;
     tokenContractAddress: Address;
@@ -911,6 +912,7 @@ export default function useTransactionManager() {
     contractData?: `0x${string}`;
     chainDetails: Chain;
     tokens: bigint;
+    isErc20: boolean;
   }): Promise<TransactionResponse> => {
     try {
       const gasEstimateResponse = await estimateGasForEvm({
@@ -922,7 +924,7 @@ export default function useTransactionManager() {
         contractAddress: tokenContractAddress,
         contractDecimals: 18,
         contractData,
-        isErc20: !isNativeToken(tokenContractAddress),
+        isErc20,
       });
 
       if (gasEstimateResponse.isError) {
@@ -936,26 +938,11 @@ export default function useTransactionManager() {
         ...(contractData && { data: contractData }),
         ...(gasEstimateResponse.isEIP1599Supported
           ? {
-              maxPriorityFeePerGas: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.priorityFee,
-                  9,
-                ).toString(),
-              ),
-              maxFeePerGas: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.maxFee,
-                  9,
-                ).toString(),
-              ),
+              maxPriorityFeePerGas: parseGwei(gasEstimateResponse.priorityFee),
+              maxFeePerGas: parseGwei(gasEstimateResponse.maxFee),
             }
           : {
-              gasPrice: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.gasPrice,
-                  9,
-                ).toString(),
-              ),
+              gasPrice: parseGwei(gasEstimateResponse.gasPrice),
             }),
       };
 
@@ -1095,6 +1082,7 @@ export default function useTransactionManager() {
           contractData,
           chainDetails: selectedToken.chainDetails,
           tokens: allowanceResp.tokens ?? 0n,
+          isErc20: !selectedToken.isNativeToken,
         });
 
         if (approvalResp?.isError) {
@@ -1209,6 +1197,7 @@ export default function useTransactionManager() {
           chainDetails,
           contractData,
           tokens: 0n,
+          isErc20: true,
         });
 
         if (approvalResp?.isError) {
