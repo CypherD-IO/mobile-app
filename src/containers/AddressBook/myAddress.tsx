@@ -16,7 +16,6 @@ import {
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
   FundWalletAddressType,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
@@ -31,7 +30,6 @@ import {
 import { HdWalletContext } from '../../core/util';
 import {
   CyDIcons,
-  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDTouchView,
@@ -295,15 +293,6 @@ export function AddressBook() {
                 bGC={'#f2fcfa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.MOONRIVER}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_SHARDEUM_SPHINX.name}
-                wallet={ethereum}
-                logo={AppImages.SHARDEUM}
-                bGC={'#fff0f0'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.SHARDEUM_SPHINX}
               />
             </CyDView>
           </CyDScrollView>

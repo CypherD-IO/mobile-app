@@ -145,12 +145,6 @@ export function TokenTransactions({
             ? `https://optimistic.etherscan.io/address/${ethereum.address}`
             : `https://optimistic.etherscan.io/address/${ethereum.address}#tokentxns`;
         break;
-      case ChainBackendNames.SHARDEUM:
-        uri = `https://explorer-liberty20.shardeum.org/account/${ethereum.address}`;
-        break;
-      case ChainBackendNames.SHARDEUM_SPHINX:
-        uri = `https://explorer-sphinx.shardeum.org/account/${ethereum.address}`;
-        break;
       case ChainBackendNames.SOLANA:
         uri = `https://solscan.io/account/${solana.address}`;
         break;
@@ -292,7 +286,6 @@ export function TokenTransactions({
         {isCosmosChain(tokenData.chainDetails.backendName) ||
         (tokenData.chainDetails.backendName === ChainBackendNames.OPTIMISM &&
           tokenData.name.includes('IBC')) ||
-        tokenData.chainDetails.backendName === ChainBackendNames.SHARDEUM ||
         tokenData.chainDetails.backendName === ChainBackendNames.SOLANA ? (
           <BrowserView chain={tokenData.chainDetails.backendName} />
         ) : loading ? (

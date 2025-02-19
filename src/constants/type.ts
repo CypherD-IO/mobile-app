@@ -7,9 +7,7 @@ export type EVM_ONLY_CHAINS_TYPE =
   | 'AVALANCHE'
   | 'ARBITRUM'
   | 'OPTIMISM'
-  | 'BSC'
-  | 'SHARDEUM'
-  | 'SHARDEUM_SPHINX';
+  | 'BSC';
 
 export type EVM_CHAINS_TYPE = EVM_ONLY_CHAINS_TYPE;
 

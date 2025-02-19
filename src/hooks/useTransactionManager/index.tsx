@@ -40,8 +40,6 @@ import { AnalyticsType } from '../../constants/enum';
 import {
   Chain,
   CHAIN_OPTIMISM,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
@@ -316,9 +314,7 @@ export default function useTransactionManager() {
       if (
         (contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
           chain === CHAIN_OPTIMISM.backendName) ||
-        ((chain === CHAIN_SHARDEUM.backendName ||
-          chain === CHAIN_SHARDEUM_SPHINX.backendName) &&
-          symbol === 'SHM') ||
+        symbol === 'SHM' ||
         isNativeCurrency(chainConfig, contractAddress)
       ) {
         const hash = await sendNativeToken({
