@@ -13,7 +13,6 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../../components/v2/button';
-import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { screenTitle } from '../../../constants';
 import {
@@ -62,6 +61,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -1068,8 +1068,9 @@ export default function FirstLoadCard() {
 
   return (
     <CyDView className='bg-n20 flex-1' style={{ paddingTop: insect.top }}>
-      <ChooseTokenModal
+      <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}
+        setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
@@ -1078,8 +1079,6 @@ export default function FirstLoadCard() {
         onCancel={() => {
           setIsChooseTokenVisible(false);
         }}
-        noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
-        renderPage={'fundCardPage'}
       />
 
       <CyDView className='flex flex-col justify-between flex-1'>
