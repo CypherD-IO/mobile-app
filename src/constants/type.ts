@@ -63,9 +63,9 @@ export type EvmGasEstimation =
       | { isEIP1599Supported: false; gasPrice: Hex }
       | {
           isEIP1599Supported: true;
-          priorityFee: number;
-          baseFee: number;
-          maxFee: number;
+          priorityFee: string;
+          baseFee: string;
+          maxFee: string;
         }
     ));
 
