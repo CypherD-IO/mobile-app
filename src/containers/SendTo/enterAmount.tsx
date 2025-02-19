@@ -107,6 +107,10 @@ export default function EnterAmount(props: any) {
     chainName: string,
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
+    const amountToSend = DecimalHelper.subtract(
+      tokenData.balanceDecimal,
+      DecimalHelper.divide(tokenData.balanceDecimal, 2),
+    ).toString();
     if (chainName === ChainNames.ETH) {
       const publicClient = getViemPublicClient(
         getWeb3Endpoint(tokenData.chainDetails, globalContext),
@@ -117,7 +121,7 @@ export default function EnterAmount(props: any) {
         chain: tokenData.chainDetails.backendName,
         fromAddress: ethereum.address as `0x${string}`,
         toAddress: ethereum.address as `0x${string}`,
-        amountToSend: tokenData.balanceDecimal,
+        amountToSend,
         contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
         isErc20: !isNativeToken(tokenData),
@@ -127,7 +131,7 @@ export default function EnterAmount(props: any) {
       gasEstimate = await estimateGasForSolana({
         fromAddress: solana.address ?? '',
         toAddress: solana.address ?? '',
-        amountToSend: tokenData.balanceDecimal,
+        amountToSend,
         contractAddress: tokenData.contractAddress,
         contractDecimals: tokenData.contractDecimals,
       });
@@ -136,7 +140,7 @@ export default function EnterAmount(props: any) {
       gasEstimate = await estimateGasForCosmosRest({
         chain: tokenData.chainDetails,
         denom: tokenData.denom,
-        amount: tokenData.balanceDecimal,
+        amount: amountToSend,
         fromAddress: cosmosWallet?.address ?? '',
         toAddress: cosmosWallet?.address ?? '',
       });
