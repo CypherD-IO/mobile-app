@@ -1516,6 +1516,10 @@ const resources = {
       SETUP_NOW: 'Setup Now',
       MANAGE_LIMITS: 'Manage Limits',
       ERROR_FETCHING_QUOTE: 'Error fetching quote',
+      NO_TOKENS_FOUND: 'No tokens found',
+      MINIMUM_TOKEN_VALUE_ERROR: 'Minimum token value should be {{value}}',
+      AUTO_LOAD_NO_TOKENS_AVAILABLE:
+        "You don't have any tokens in this chain or the selected chain is not supported for auto load. Supported Chains: {{supportedChains}}",
     },
   },
 };

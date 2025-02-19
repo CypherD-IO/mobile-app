@@ -24,7 +24,7 @@ import clsx from 'clsx';
 import { screenTitle } from '../../constants/index';
 import { showToast } from '../utilities/toastUtility';
 import { useTranslation } from 'react-i18next';
-import ChooseTokenModal from '../../components/v2/chooseTokenModal';
+import ChooseTokenModalV2 from '../../components/v2/chooseTokenModalV2';
 import _ from 'lodash';
 import getTransactionType from '../utilities/transactionTypeUtility';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -325,12 +325,13 @@ const AddressProfile = props => {
     }
     return (
       <CyDView className='py-[15px]' key={index}>
-        <ChooseTokenModal
+        <ChooseTokenModalV2
           isChooseTokenModalVisible={chooseTokenModal}
           onSelectingToken={token => {
             setChooseTokenModal(false);
             onChooseToken(token);
           }}
+          setIsChooseTokenModalVisible={setChooseTokenModal}
           onCancel={() => {
             setChooseTokenModal(false);
           }}

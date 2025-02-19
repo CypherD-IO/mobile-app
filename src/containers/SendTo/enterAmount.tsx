@@ -9,7 +9,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, ActivityIndicator } from 'react-native';
 import Button from '../../components/v2/button';
-import ChooseTokenModal from '../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
@@ -48,6 +47,7 @@ import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import ChooseTokenModalV2 from '../../components/v2/chooseTokenModalV2';
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -313,12 +313,13 @@ export default function EnterAmount(props: any) {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDSafeAreaView className='flex-1 bg-n0'>
-      <ChooseTokenModal
+      <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           setTokenData(token);
         }}
+        setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         onCancel={() => {
           setIsChooseTokenVisible(false);
           navigation.goBack();

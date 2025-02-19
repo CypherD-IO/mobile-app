@@ -6,7 +6,6 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, useWindowDimensions } from 'react-native';
 import Button from '../../../components/v2/button';
-import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
 import CyDNumberPad from '../../../components/v2/numberpad';
@@ -19,7 +18,11 @@ import {
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  TokenModalType,
+} from '../../../constants/enum';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
@@ -44,9 +47,6 @@ import {
   parseErrorMessage,
   validateAmount,
 } from '../../../core/util';
-import useGasService from '../../../hooks/useGasService';
-import usePortfolio from '../../../hooks/usePortfolio';
-import { CardQuoteResponse } from '../../../models/card.model';
 import {
   CyDImage,
   CyDMaterialDesignIcons,
@@ -56,6 +56,10 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import { CardQuoteResponse } from '../../../models/card.model';
+import useGasService from '../../../hooks/useGasService';
+import usePortfolio from '../../../hooks/usePortfolio';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -942,7 +946,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return (
       <CyDTouchView
         className={
-          'bg-n20 py-[6px] px-[16px] my-[16px] border-[1px] border-n40 rounded-[34px] self-center'
+          'bg-n0 py-[6px] px-[16px] my-[16px] border-[1px] border-n40 rounded-[34px] self-center'
         }
         onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView
@@ -953,9 +957,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 source={{ uri: selectedToken.logoUrl }}
                 className={'w-[26px] h-[26px] rounded-[20px]'}
               />
-              <CyDView className='flex flex-col justify-start items-start ml-[8px]'>
+              <CyDView className='flex flex-col justify-start items-start ml-[8px] max-w-[100px]'>
                 <CyDText
-                  className={clsx('font-extrabold text-[16px]', {
+                  numberOfLines={1}
+                  className={clsx('font-extrabold text-[16px] w-full', {
                     'text-[14px]': selectedToken.isZeroFeeCardFunding,
                   })}>
                   {selectedToken.name}
@@ -1120,21 +1125,22 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         '': loading,
       })}>
       {isMaxLoading && <Loading blurBg={true} />}
-      <ChooseTokenModal
+
+      <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}
+        setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);
         }}
+        type={TokenModalType.CARD_LOAD}
         onCancel={() => {
           setIsChooseTokenVisible(false);
           if (!selectedToken) {
             navigation.goBack();
           }
         }}
-        noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
-        renderPage={'fundCardPage'}
       />
 
       <CyDView>
