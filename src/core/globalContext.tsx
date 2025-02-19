@@ -20,6 +20,7 @@ export interface GlobalStateDef {
 export interface RPCDetail {
   primary: string;
   secondaryList?: string;
+  restEndpoint?: string;
   otherUrls?: Record<string, string>;
 }
 
@@ -51,6 +52,7 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-cosmoshub.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://cosmos-rpc.polkachu.com/',
+      restEndpoint: 'https://cosmos-lcd.quickapi.com:443',
     },
     ETH: {
       primary: 'https://rpc.ankr.com/eth',
@@ -69,6 +71,7 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-juno.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://rpc-juno-ia.cosmosia.notional.ventures/',
+      restEndpoint: 'https://rest-juno.ecostake.com',
     },
     OPTIMISM: {
       primary:
@@ -88,6 +91,7 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-osmosis.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://rpc-osmosis.ecostake.com',
+      restEndpoint: 'https://lcd.osmosis.zone/',
     },
     POLYGON: {
       primary: 'https://rpc.ankr.com/polygon',
@@ -130,6 +134,7 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-stargaze.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://rpc-stargaze-ia.cosmosia.notional.ventures/',
+      restEndpoint: 'https://lcd-stargaze.keplr.app',
     },
     NOBLE: {
       otherUrls: {
@@ -145,18 +150,23 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://noble-rpc.polkachu.com',
+      restEndpoint: 'https://noble-api.polkachu.com',
     },
     COREUM: {
       primary: 'https://coreum-rpc.publicnode.com:443',
       secondaryList: 'https://rpc.m.core.solonation.io',
+      restEndpoint: 'https://coreum-rest.publicnode.com',
     },
     INJECTIVE: {
       primary: 'https://rpc-injective.keplr.app',
       secondaryList: 'https://rpc-injective.keplr.app',
+      restEndpoint:
+        'https://injective-1-public-rest.mesa.ec1-prod.newmetric.xyz',
     },
     KUJIRA: {
       primary: 'https://rpc-kujira-ia.cosmosia.notional.ventures/',
       secondaryList: 'https://rpc-kujira.whispernode.com:443',
+      restEndpoint: 'https://lcd-kujira.whispernode.com:443',
     },
     SOLANA: {
       primary: 'https://api.mainnet-beta.solana.com',
