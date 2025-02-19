@@ -256,6 +256,7 @@ export enum GlobalModalType {
 
 export enum TokenModalType {
   PORTFOLIO = 'portfolio',
+  CARD_LOAD = 'cardLoad',
   SWAP = 'swap',
 }
 
