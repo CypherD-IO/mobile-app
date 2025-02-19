@@ -333,18 +333,26 @@ export const TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS =
 export const TARGET_BRIDGE_NOBLE_WALLET_ADDRESS =
   'noble1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
 
-export function getWeb3Endpoint(selectedChain: Chain, context): string {
+export function getWeb3Endpoint(
+  selectedChain: Chain,
+  context: GlobalContextDef,
+): string {
   try {
     if (context) {
       const globalStateCasted: GlobalStateDef = (
         context as unknown as GlobalContextDef
       ).globalState;
-      return globalStateCasted.rpcEndpoints[selectedChain.backendName].primary;
+      return (
+        globalStateCasted?.rpcEndpoints?.[selectedChain.backendName]?.primary ??
+        ''
+      );
     }
   } catch (e) {
     Sentry.captureException(e);
   }
-  return initialGlobalState.rpcEndpoints[selectedChain.backendName].primary;
+  return (
+    initialGlobalState?.rpcEndpoints?.[selectedChain.backendName]?.primary ?? ''
+  );
 }
 
 export const apiTimeout = 30000;
