@@ -285,14 +285,14 @@ export default function useGasService() {
       }
 
       const gasPriceDetail = await getGasPrice(chain, publicClient);
-
       let gasLimit = Number(
         await publicClient.estimateGas({
           account: fromAddress,
-          to:
-            contractAddress?.toLowerCase() === OP_ETH_ADDRESS
+          to: isErc20
+            ? contractAddress?.toLowerCase() === OP_ETH_ADDRESS
               ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-              : contractAddress,
+              : contractAddress
+            : toAddress,
           value: isErc20
             ? parseEther('0')
             : parseUnits(amountToSend, contractDecimals),
