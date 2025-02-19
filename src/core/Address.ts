@@ -18,7 +18,7 @@ import {
   ripemd160,
   sha256,
 } from 'ethers';
-import { IIBCData } from '../constants/cosmosConfig';
+import { CosmosChainConfig } from '../constants/cosmosConfig';
 import { AddressDerivationPath, Bech32Prefixes } from '../constants/data';
 import { ConnectionTypes } from '../constants/enum';
 import { setConnectionType } from './asyncStorage';
@@ -222,7 +222,7 @@ export const generateWalletFromMnemonic = async (
 };
 
 export const generateCosmosPrivateKey = async (
-  chainConfig: IIBCData,
+  chainConfig: CosmosChainConfig,
   mnemonic: string,
   bip44HDPath: {
     account: number;
@@ -252,7 +252,7 @@ export const generateSolanaPrivateKey = async (
 
 export const generateCosmosWallet = async (
   chainName: AddressChainNames,
-  chainConfig: IIBCData,
+  chainConfig: CosmosChainConfig,
   mnemonic: string,
   bip44HDPath: {
     account: number;
@@ -294,7 +294,7 @@ export const generateCosmosWallet = async (
 
 export const generateInjectiveWallet = (
   ethereumAddress: string,
-  chainConfig: IIBCData,
+  chainConfig: CosmosChainConfig,
   mnemonic: string,
   bip44HDPath: {
     account: number;

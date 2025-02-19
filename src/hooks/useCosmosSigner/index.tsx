@@ -37,5 +37,12 @@ export default function useCosmosSigner() {
       );
   };
 
-  return { getCosmosSignerClient, getCosmosRpc };
+  const getCosmosRest = (chainBackendName: ChainBackendNames) => {
+    return (
+      get(globalStateContext.globalState.rpcEndpoints, chainBackendName)
+        ?.restEndpoint ?? ''
+    );
+  };
+
+  return { getCosmosSignerClient, getCosmosRpc, getCosmosRest };
 }

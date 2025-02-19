@@ -179,7 +179,7 @@ export default function useEthSigner() {
     sendChain,
     transactionToBeSigned,
     tokens,
-  }: EthSingerParams): Promise<string> => {
+  }: EthSingerParams): Promise<`0x${string}`> => {
     const connectionType = await getConnectionType();
 
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {

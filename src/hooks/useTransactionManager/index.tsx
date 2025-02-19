@@ -98,6 +98,7 @@ export default function useTransactionManager() {
     estiamteGasForDelgate,
     estimateGasForUndelegate,
     estimateGasForRedelgate,
+    getCosmosGasPrice,
   } = useGasService();
   const { signEthTransaction, signApprovalEthereum } = useEthSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
@@ -388,7 +389,7 @@ export default function useTransactionManager() {
           signer,
         );
 
-        const tokenDenom = denom ?? cosmosConfig[backendName].denom;
+        const tokenDenom = denom ?? '';
 
         const amountToSend = parseUnits(amount, contractDecimals).toString();
 
@@ -983,13 +984,11 @@ export default function useTransactionManager() {
     allowList,
     denom,
     amount,
-    contractDecimals = 6,
   }: {
     chain: Chain;
     allowList: string[];
     denom: string;
     amount: string;
-    contractDecimals: number;
   }) {
     return {
       typeUrl: '/ibc.applications.transfer.v1.TransferAuthorization',
@@ -1006,7 +1005,7 @@ export default function useTransactionManager() {
               spendLimit: [
                 {
                   denom,
-                  amount: parseUnits(amount, contractDecimals).toString(),
+                  amount: amount.toString(),
                 },
               ],
               allowList,
@@ -1021,12 +1020,10 @@ export default function useTransactionManager() {
     allowList,
     denom,
     amount,
-    contractDecimals = 6,
   }: {
     allowList: string[];
     denom: string;
     amount: string;
-    contractDecimals: number;
   }) {
     return {
       typeUrl: '/cosmos.bank.v1beta1.SendAuthorization',
@@ -1035,7 +1032,7 @@ export default function useTransactionManager() {
           spendLimit: [
             {
               denom,
-              amount: parseUnits(amount, contractDecimals).toString(),
+              amount: amount.toString(),
             },
           ],
           allowList,
@@ -1109,7 +1106,7 @@ export default function useTransactionManager() {
           return { isError: false, hash: approvalResp?.hash };
         }
       } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
-        const { gasPrice, contractDecimal } = get(cosmosConfig, chainName);
+        const { gasPrice } = await getCosmosGasPrice(backendName);
         const isIbcAuthz = backendName !== ChainBackendNames.OSMOSIS;
         const authorizationMsg = isIbcAuthz
           ? getMsgValueForIbcTransfer({
@@ -1117,13 +1114,11 @@ export default function useTransactionManager() {
               allowList,
               denom,
               amount,
-              contractDecimals: contractDecimal,
             })
           : getAuthorizationMsgForSend({
               allowList,
               denom,
               amount,
-              contractDecimals: contractDecimal,
             });
         const grantMsg = {
           typeUrl: '/cosmos.authz.v1beta1.MsgGrant',
@@ -1222,8 +1217,8 @@ export default function useTransactionManager() {
           return { isError: false, hash: approvalResp?.hash };
         }
       } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
-        const { gasPrice, denom } = get(cosmosConfig, chainName);
-
+        const { denom } = get(cosmosConfig, chainName);
+        const { gasPrice } = await getCosmosGasPrice(backendName);
         const isIbcAuthz = backendName !== ChainBackendNames.OSMOSIS;
         const msgTypeUrl = isIbcAuthz
           ? '/ibc.applications.transfer.v1.MsgTransfer'
