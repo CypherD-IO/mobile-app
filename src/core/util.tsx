@@ -1123,13 +1123,13 @@ export const hasSufficientBalanceAndGasFee = (
   nativeTokenBalance: string,
   sentAmount: string,
   sendingTokenBalance: string,
-): boolean => {
+): { hasSufficientBalance: boolean; hasSufficientGasFee: boolean } => {
   const hasSufficientGasFee = DecimalHelper.isLessThanOrEqualTo(
     gasFeeEstimation,
     nativeTokenBalance,
   );
   if (DecimalHelper.isLessThan(sentAmount, 0)) {
-    return false;
+    return { hasSufficientBalance: false, hasSufficientGasFee: false };
   }
   const hasSufficientBalance = isNativeToken
     ? DecimalHelper.isLessThanOrEqualTo(
@@ -1137,7 +1137,7 @@ export const hasSufficientBalanceAndGasFee = (
         sendingTokenBalance,
       )
     : DecimalHelper.isLessThanOrEqualTo(sentAmount, sendingTokenBalance);
-  return hasSufficientBalance && hasSufficientGasFee;
+  return { hasSufficientBalance, hasSufficientGasFee };
 };
 
 export const isNativeToken = (tokenData: any) => {

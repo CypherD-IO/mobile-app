@@ -62,7 +62,7 @@ export default function TokenSendConfirmationModal(
         <CyDView className={'p-[10px]'}>
           <CyDView className={'flex flex-row mt-[40px] pb-[15px]'}>
             <CyDText className={'font-bold text-[16px] ml-[5px]'}>
-              {t('SEND_ON')}
+              {t('NETWORK')}
             </CyDText>
             <CyDView className={'flex flex-row pl-[15px]'}>
               <CyDImage

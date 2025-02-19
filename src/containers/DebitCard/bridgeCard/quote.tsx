@@ -57,12 +57,12 @@ import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import { getConnectionType } from '../../../core/asyncStorage';
-import { DecimalHelper } from '../../../utils/decimalHelper';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { clsx } from 'clsx';
 import LinearGradient from 'react-native-linear-gradient';
 import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
 import { usePortfolioRefresh } from '../../../hooks/usePortfolioRefresh';
+import { DecimalHelper } from '../../../utils/decimalHelper';
 
 export default function CardQuote({
   navigation,
@@ -508,14 +508,14 @@ export default function CardQuote({
             {'$' + limitDecimalPlaces(amountInFiat, 4)}
           </CyDText>
           <CyDText className='mt-[6px]'>
-            {t('AMOUNT_TO_BE_LOADED_CARD')}
+            {t('AMOUNT_TO_BE_LOADED_IN_CARD')}
           </CyDText>
         </CyDView>
         <CyDView
           className={
             'flex flex-row justify-between items-center mt-[40px] pb-[16px]'
           }>
-          <CyDText className={'font-bold text-[14px]'}>{t('SEND_ON')}</CyDText>
+          <CyDText className={'font-bold text-[14px]'}>{t('NETWORK')}</CyDText>
           <CyDView
             className={'flex flex-row justify-center items-center pl-[25px]'}>
             <CyDFastImage source={chainLogo} className={'w-[18px] h-[18px]'} />
@@ -535,8 +535,11 @@ export default function CardQuote({
             <CyDText className={' font-medium text-[16px] '}>
               {limitDecimalPlaces(tokenQuote.tokensRequired, 4) + ' ' + symbol}
             </CyDText>
-            <CyDText className={' font-medium text-[16px]'}>
-              {'$' + limitDecimalPlaces(amountInFiat, 2)}
+            <CyDText className={' font-medium text-[12px]'}>
+              {`$${DecimalHelper.multiply(
+                selectedToken.price,
+                tokenQuote.tokensRequired,
+              ).toFixed(2)}`}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -560,7 +563,7 @@ export default function CardQuote({
               <CyDView className={'flex flex-row items-center gap-[6px]'}>
                 <CyDText
                   className={
-                    'font-medium text-[12px] line-through text-[color:var(--color-base100)]'
+                    'font-medium text-[16px] line-through text-[color:var(--color-base100)]'
                   }>
                   {'$' + String(tokenQuote.fees.actualFee)}
                 </CyDText>
@@ -577,7 +580,7 @@ export default function CardQuote({
                 </LinearGradient>
               </CyDView>
             ) : (
-              <CyDText className={'font-medium text-[14px] '}>
+              <CyDText className={'font-medium text-[16px] '}>
                 {'$' + String(tokenQuote.fees.fee)}
               </CyDText>
             )}

@@ -13,7 +13,7 @@ import ChooseTokenModal from '../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
-import { ButtonType } from '../../constants/enum';
+import { AllChainsEnum, ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
@@ -107,6 +107,7 @@ export default function EnterAmount(props: any) {
     chainName: string,
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
+    // for gas estimation the amount we send is half of the balance, passing the entire amount might result in insufficient balance error
     const amountToSend = DecimalHelper.subtract(
       tokenData.balanceDecimal,
       DecimalHelper.divide(tokenData.balanceDecimal, 2),
@@ -145,10 +146,10 @@ export default function EnterAmount(props: any) {
         toAddress: cosmosWallet?.address ?? '',
       });
     }
-    if (!gasEstimate) {
+    if (gasEstimate?.isError) {
       return { gasFeeInCrypto: 0 };
     }
-    return { gasFeeInCrypto: Number(gasEstimate.gasFeeInCrypto) };
+    return { gasFeeInCrypto: Number(gasEstimate?.gasFeeInCrypto) };
   };
 
   const isGasReservedForNative = async (
@@ -268,6 +269,8 @@ export default function EnterAmount(props: any) {
         gasReservedForNativeToken = gasFeeDetails?.gasFeeInCrypto;
         if (tokenData.chainDetails.backendName !== ChainBackendNames.SOLANA) {
           // adding a 10% buffer to the gas fee calculated as ther will be another gas fee calculation subsequently when continuing
+          // not doing it or solana because if we are sending max amount, then there should be 0 SOL balance in the account, or there should SOL balance enough
+          // for handling the account rent, else we will get the error InsufficientFundsForRent, since we will not be having enough SOL
           gasReservedForNativeToken = DecimalHelper.multiply(
             gasReservedForNativeToken,
             1.1,
@@ -276,14 +279,14 @@ export default function EnterAmount(props: any) {
       }
 
       const gasReserved =
-        (NativeTokenMapping[tokenData?.chainDetails?.symbol] ||
+        (NativeTokenMapping[tokenData?.chainDetails?.symbol as AllChainsEnum] ||
           tokenData?.chainDetails?.symbol) === tokenData?.symbol
           ? gasReservedForNativeToken
           : 0;
 
       const maxAmountDecimal = DecimalHelper.subtract(
         tokenData.balanceDecimal,
-        gasReserved,
+        String(gasReserved),
       );
 
       const textAmount = DecimalHelper.isLessThan(maxAmountDecimal, 0)
@@ -458,7 +461,7 @@ export default function EnterAmount(props: any) {
                   </CyDView>
                 </CyDView>
                 <CyDView className='flex flex-row justify-center items-center mt-[20px] w-[80px]'>
-                  <CyDText className='text-[15px]'>{t('SEND_ON')}</CyDText>
+                  <CyDText className='text-[15px]'>{t('NETWORK')}</CyDText>
                   <CyDFastImage
                     className='h-[15px] w-[15px] mt-[2px] ml-[5px]'
                     source={tokenData.chainDetails?.logo_url}

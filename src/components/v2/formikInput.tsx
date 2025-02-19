@@ -25,6 +25,39 @@ interface FormikTextInputProps {
   pointerEvents?: 'none' | 'auto' | 'box-only' | 'box-none';
 }
 
+// Helper function to format the display value
+const formatDisplayValue = (
+  value: string | undefined,
+  keyboardType: string | undefined,
+) => {
+  if ((keyboardType === 'numeric' || keyboardType === 'decimal-pad') && value) {
+    return Number(value).toLocaleString();
+  }
+  return value;
+};
+
+// Helper function to parse the input value
+
+const parseInputValue = (text: string, keyboardType: string | undefined) => {
+  if (keyboardType === 'numeric' || keyboardType === 'decimal-pad') {
+    // Remove all non-numeric characters except decimal point and minus sign
+    const cleaned = text.replace(/[^\d.-]/g, '');
+
+    // Handle decimal points based on keyboard type
+    if (keyboardType === 'numeric') {
+      return cleaned.replace(/[.-]/g, '');
+    }
+
+    // For decimal-pad, ensure only one decimal point and handle negative numbers
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      return parts[0] + '.' + parts.slice(1).join('');
+    }
+    return cleaned;
+  }
+  return text;
+};
+
 const FormikTextInput: React.FC<FormikTextInputProps> = ({
   name,
   value,
@@ -33,6 +66,7 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
   inputClassName = 'p-[16px] rounded-[8px] bg-n0 font-semibold border-[1px] border-n40 mt-[2px]',
   errorClassName = 'text-red200 text-[12px] mt-[2px] text-end w-full',
   pointerEvents,
+  keyboardType,
   ...props
 }) => {
   const [field, meta] = useField(name);
@@ -43,13 +77,18 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
       <CyDTextInput
         {...props}
         pointerEvents={pointerEvents}
-        onChangeText={field.onChange(name)}
+        onChangeText={text => {
+          const formattedText = parseInputValue(text, keyboardType);
+          field.onChange(name)(formattedText);
+        }}
         onBlur={field.onBlur(name)}
-        value={value ?? field.value}
+        value={formatDisplayValue(value ?? field.value, keyboardType)}
         className={clsx(inputClassName, {
-          'text-base400 border-n40rixhy ': !meta.error,
+          'text-base400 border-n40 ': !meta.error,
           'text-red200 border-red200': meta.touched && meta.error,
         })}
+        placeholder={props.placeholder}
+        keyboardType={keyboardType}
         placeholderTextColor={'#A6AEBB'}
         returnKeyType='done'
       />
