@@ -37,9 +37,23 @@ const formatDisplayValue = (
 };
 
 // Helper function to parse the input value
+
 const parseInputValue = (text: string, keyboardType: string | undefined) => {
   if (keyboardType === 'numeric' || keyboardType === 'decimal-pad') {
-    return text.replace(/,/g, '');
+    // Remove all non-numeric characters except decimal point and minus sign
+    const cleaned = text.replace(/[^\d.-]/g, '');
+
+    // Handle decimal points based on keyboard type
+    if (keyboardType === 'numeric') {
+      return cleaned.replace(/[.-]/g, '');
+    }
+
+    // For decimal-pad, ensure only one decimal point and handle negative numbers
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      return parts[0] + '.' + parts.slice(1).join('');
+    }
+    return cleaned;
   }
   return text;
 };

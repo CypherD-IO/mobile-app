@@ -107,6 +107,7 @@ export default function EnterAmount(props: any) {
     chainName: string,
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
+    // for gas estimation the amount we send is half of the balance, passing the entire amount might result in insufficient balance error
     const amountToSend = DecimalHelper.subtract(
       tokenData.balanceDecimal,
       DecimalHelper.divide(tokenData.balanceDecimal, 2),
