@@ -72,7 +72,7 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-juno.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://rpc-juno-ia.cosmosia.notional.ventures/',
-      restEndpoint: 'https://rest-juno.ecostake.com"',
+      restEndpoint: 'https://rest-juno.ecostake.com',
     },
     OPTIMISM: {
       primary:
