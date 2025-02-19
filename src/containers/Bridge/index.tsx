@@ -40,6 +40,7 @@ import {
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
+  isNativeToken,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
@@ -1831,6 +1832,7 @@ const Bridge: React.FC = () => {
                     contractData,
                     chainDetails: fromChainDetails,
                     tokens: allowanceResp.tokens,
+                    isErc20: !selectedFromToken.isNative,
                   });
 
                   if (approvalResp.isError) {
@@ -2401,6 +2403,7 @@ const Bridge: React.FC = () => {
               chainDetails: selectedChainDetails,
               tokens: allowanceResp.tokens,
               walletAddress: ethereum.address as `0x${string}`,
+              isErc20: !selectedFromToken.isNative,
             });
 
             if (approvalResp.isError) {

@@ -331,25 +331,36 @@ export default function Browser({ navigation }: any) {
         contractDecimals: nativeToken.contractDecimals,
       });
     }
-    const balanceAfterGasReservation = DecimalHelper.subtract(
-      nativeToken.balanceDecimal,
-      gasDetails?.gasFeeInCrypto,
-    );
-    const isGasEnough = DecimalHelper.isGreaterThanOrEqualTo(
-      balanceAfterGasReservation,
-      0,
-    );
 
-    if (!isGasEnough && websiteInfo.url !== '') {
-      setTimeout(() => {
-        showModal('state', {
-          type: 'error',
-          title: t('INSUFFICIENT_FUNDS'),
-          description: `You don't have sufficient ${nativeToken.symbol} to pay gas fee`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }, MODAL_SHOW_TIMEOUT);
+    if (!gasDetails || gasDetails?.isError) {
+      showModal('state', {
+        type: 'error',
+        title: t('GAS_ESTIMATION_FAILED'),
+        description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } else {
+      const balanceAfterGasReservation = DecimalHelper.subtract(
+        nativeToken.balanceDecimal,
+        gasDetails.gasFeeInCrypto,
+      );
+      const isGasEnough = DecimalHelper.isGreaterThanOrEqualTo(
+        balanceAfterGasReservation,
+        0,
+      );
+
+      if (!isGasEnough && websiteInfo.url !== '') {
+        setTimeout(() => {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_FUNDS'),
+            description: `You don't have sufficient ${nativeToken.symbol} to pay gas fee`,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }, MODAL_SHOW_TIMEOUT);
+      }
     }
   };
 

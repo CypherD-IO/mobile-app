@@ -252,7 +252,6 @@ export default function useGasService() {
   }: EvmGasInterface): Promise<EvmGasEstimation> => {
     try {
       const numberOfTokens = parseUnits(amountToSend, contractDecimals);
-
       let contractData;
       if (contractDataUser) {
         contractData = contractDataUser;
@@ -324,9 +323,15 @@ export default function useGasService() {
           gasFeeInCrypto,
           gasLimit,
           isEIP1599Supported: true,
-          priorityFee: get(gasPriceDetail, 'priorityFee', 0),
-          baseFee: get(gasPriceDetail, 'baseFee', 0),
-          maxFee: get(gasPriceDetail, 'maxFee', 0),
+          priorityFee: DecimalHelper.scientificNotationToNumberString(
+            get(gasPriceDetail, 'priorityFee', 0),
+          ),
+          baseFee: DecimalHelper.scientificNotationToNumberString(
+            get(gasPriceDetail, 'baseFee', 0),
+          ),
+          maxFee: DecimalHelper.scientificNotationToNumberString(
+            get(gasPriceDetail, 'maxFee', 0),
+          ),
         };
       } else {
         return {
