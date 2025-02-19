@@ -39,6 +39,13 @@ export default function BasicDetails() {
         )}
       </CyDText>
       <FormikTextInput
+        name='occupation'
+        label='Occupation'
+        containerClassName='mb-[17px]'
+        placeholder='Occupation'
+        keyboardType='default'
+      />
+      <FormikTextInput
         name='annualSalary'
         label='Annual Salary'
         containerClassName='mb-[17px]'

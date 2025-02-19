@@ -66,6 +66,7 @@ export interface FormInitalValues {
   dialCode: string;
   expectedMonthlyVolume: string;
   annualSalary: string;
+  occupation: string;
 }
 
 const validationSchema = Yup.object().shape({
@@ -111,6 +112,7 @@ const validationSchema = Yup.object().shape({
     'Expected monthly volume is required',
   ),
   annualSalary: Yup.string().required('Annual salary is required'),
+  occupation: Yup.string().required('Occupation is required'),
 });
 
 export default function CardApplicationV2() {
@@ -208,6 +210,7 @@ export default function CardApplicationV2() {
           dialCode,
           expectedMonthlyVolume: data.expectedMonthlyVolume || '',
           annualSalary: data.annualSalary || '',
+          occupation: data.occupation || '',
         });
       }
     }
@@ -328,6 +331,7 @@ export default function CardApplicationV2() {
             dialCode: '',
             expectedMonthlyVolume: '',
             annualSalary: '',
+            occupation: '',
           }
         }
         validationSchema={validationSchema}
