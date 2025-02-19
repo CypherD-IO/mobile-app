@@ -22,7 +22,12 @@ import {
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
-import { CARD_IDS, CardProviders, CypherPlanId } from '../../../constants/enum';
+import {
+  CARD_IDS,
+  CardProviders,
+  CypherPlanId,
+  TokenModalType,
+} from '../../../constants/enum';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
@@ -1079,6 +1084,7 @@ export default function FirstLoadCard() {
         onCancel={() => {
           setIsChooseTokenVisible(false);
         }}
+        type={TokenModalType.CARD_LOAD}
       />
 
       <CyDView className='flex flex-col justify-between flex-1'>
