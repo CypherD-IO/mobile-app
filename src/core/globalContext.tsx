@@ -52,8 +52,7 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-cosmoshub.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://cosmos-rpc.polkachu.com/',
-      restEndpoint:
-        'https://cosmos-mainnet.g.allthatnode.com/full/rest/5dec4eebb7f343989cc966c7d6c12fcd',
+      restEndpoint: 'https://cosmos-lcd.quickapi.com:443',
     },
     ETH: {
       primary: 'https://rpc.ankr.com/eth',
@@ -92,8 +91,7 @@ export const initialGlobalState: GlobalStateDef = {
           'https://lcd-osmosis.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
       primary: 'https://rpc-osmosis.ecostake.com',
-      restEndpoint:
-        'https://osmosis-mainnet.g.allthatnode.com/full/rest/5dec4eebb7f343989cc966c7d6c12fcd',
+      restEndpoint: 'https://lcd.osmosis.zone/',
     },
     POLYGON: {
       primary: 'https://rpc.ankr.com/polygon',
