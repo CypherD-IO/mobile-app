@@ -1,3 +1,4 @@
+import { StdFee } from '@cosmjs/stargate';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { Hex } from 'viem';
 
@@ -76,10 +77,7 @@ export type CosmosGasEstimation =
       gasFeeInCrypto: string;
       gasLimit: string;
       gasPrice: number;
-      fee: {
-        gas: string;
-        amount: Array<{ denom: string; amount: string }>;
-      };
+      fee: StdFee;
     };
 
 export type SolanaGasEstimation =
