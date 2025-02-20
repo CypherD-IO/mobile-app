@@ -39,18 +39,6 @@ export const initialGlobalState: GlobalStateDef = {
       primary: 'https://rpc.ankr.com/bsc',
     },
     COSMOS: {
-      otherUrls: {
-        balance:
-          'https://lcd-cosmoshub.keplr.app/cosmos/bank/v1beta1/balances/address?pagination.limit=1000',
-        delegations:
-          'https://lcd-cosmoshub.keplr.app/cosmos/staking/v1beta1/delegations/address?pagination.limit=1000',
-        rewards:
-          'https://lcd-cosmoshub.keplr.app/cosmos/distribution/v1beta1/delegators/address/rewards',
-        unBoundings:
-          'https://lcd-cosmoshub.keplr.app/cosmos/staking/v1beta1/delegators/address/unbonding_delegations?pagination.limit=1000',
-        validators:
-          'https://lcd-cosmoshub.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
-      },
       primary: 'https://cosmos-rpc.polkachu.com/',
       restEndpoint: 'https://cosmos-lcd.quickapi.com:443',
     },
@@ -58,18 +46,6 @@ export const initialGlobalState: GlobalStateDef = {
       primary: 'https://rpc.ankr.com/eth',
     },
     JUNO: {
-      otherUrls: {
-        balance:
-          'https://lcd-juno.keplr.app/cosmos/bank/v1beta1/balances/address?pagination.limit=1000',
-        delegations:
-          'https://lcd-juno.keplr.app/cosmos/staking/v1beta1/delegations/address?pagination.limit=1000',
-        rewards:
-          'https://lcd-juno.keplr.app/cosmos/distribution/v1beta1/delegators/address/rewards',
-        unBoundings:
-          'https://lcd-juno.keplr.app/cosmos/staking/v1beta1/delegators/address/unbonding_delegations?pagination.limit=1000',
-        validators:
-          'https://lcd-juno.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
-      },
       primary: 'https://rpc-juno-ia.cosmosia.notional.ventures/',
       restEndpoint: 'https://rest-juno.ecostake.com',
     },
@@ -78,18 +54,6 @@ export const initialGlobalState: GlobalStateDef = {
         'https://opt-mainnet.g.alchemy.com/v2/_xYARKGN55iQpuX94lySfkcZ7GTW-a4C',
     },
     OSMOSIS: {
-      otherUrls: {
-        balance:
-          'https://lcd-osmosis.keplr.app/cosmos/bank/v1beta1/balances/address?pagination.limit=1000',
-        delegations:
-          'https://lcd-osmosis.keplr.app/cosmos/staking/v1beta1/delegations/address?pagination.limit=1000',
-        rewards:
-          'https://lcd-osmosis.keplr.app/cosmos/distribution/v1beta1/delegators/address/rewards',
-        unBoundings:
-          'https://lcd-osmosis.keplr.app/cosmos/staking/v1beta1/delegators/address/unbonding_delegations?pagination.limit=1000',
-        validators:
-          'https://lcd-osmosis.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
-      },
       primary: 'https://rpc-osmosis.ecostake.com',
       restEndpoint: 'https://lcd.osmosis.zone/',
     },
@@ -115,34 +79,10 @@ export const initialGlobalState: GlobalStateDef = {
       primary: 'https://moonriver.publicnode.com',
     },
     STARGAZE: {
-      otherUrls: {
-        balance:
-          'https://lcd-stargaze.keplr.app/cosmos/bank/v1beta1/balances/address?pagination.limit=1000',
-        delegations:
-          'https://lcd-stargaze.keplr.app/cosmos/staking/v1beta1/delegations/address?pagination.limit=1000',
-        rewards:
-          'https://lcd-stargaze.keplr.app/cosmos/distribution/v1beta1/delegators/address/rewards',
-        unBoundings:
-          'https://lcd-stargaze.keplr.app/cosmos/staking/v1beta1/delegators/address/unbonding_delegations?pagination.limit=1000',
-        validators:
-          'https://lcd-stargaze.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
-      },
       primary: 'https://rpc-stargaze-ia.cosmosia.notional.ventures/',
       restEndpoint: 'https://lcd-stargaze.keplr.app',
     },
     NOBLE: {
-      otherUrls: {
-        balance:
-          'https://lcd-noble.cosmostation.io/cosmos/bank/v1beta1/balances/address?pagination.limit=1000',
-        delegations:
-          'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/delegations/address?pagination.limit=1000',
-        rewards:
-          'https://lcd-noble.keplr.app/cosmos/distribution/v1beta1/delegators/address/rewards',
-        unBoundings:
-          'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/delegators/address/unbonding_delegations?pagination.limit=1000',
-        validators:
-          'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
-      },
       primary: 'https://noble-rpc.polkachu.com',
       restEndpoint: 'https://noble-api.polkachu.com',
     },

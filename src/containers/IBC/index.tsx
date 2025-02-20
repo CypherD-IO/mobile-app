@@ -413,7 +413,6 @@ export default function IBC({
           onPress={({ item }: { item: Chain }) => {
             setChain(item);
           }}
-          type={'chain'}
         />
 
         <SignatureModal
@@ -885,7 +884,7 @@ export default function IBC({
                 'font-semibold text-[14px] text-center text-base100 mt-[8px] mr-1'
               }>{`${tokenData.name} balance `}</CyDText>
             <CyDTokenAmount className='ml-[10px]' decimalPlaces={6}>
-              {tokenData.actualBalance}
+              {tokenData.balanceDecimal}
             </CyDTokenAmount>
           </CyDView>
         </CyDTouchView>

@@ -453,7 +453,7 @@ const Bridge: React.FC = () => {
           );
           return {
             ...token,
-            balance: matchingHolding?.actualBalance ?? 0,
+            balance: matchingHolding?.balanceDecimal ?? 0,
             balanceInNumbers: matchingHolding?.totalValue ?? 0,
             balanceDecimal: matchingHolding?.balanceDecimal ?? 0,
           };
@@ -2403,7 +2403,7 @@ const Bridge: React.FC = () => {
               chainDetails: selectedChainDetails,
               tokens: allowanceResp.tokens,
               walletAddress: ethereum.address as `0x${string}`,
-              isErc20: !selectedFromToken.isNative,
+              isErc20: !selectedFromToken.isNativeToken,
             });
 
             if (approvalResp.isError) {

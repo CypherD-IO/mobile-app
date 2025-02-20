@@ -41,7 +41,7 @@ import { ChainNameToChainMapping } from '../../constants/data';
 import AppImages from '../../../assets/images/appImages';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
-import { SafeAreaView, Edge } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
 
 interface TokenModal {
@@ -304,7 +304,7 @@ const RenderToken = React.memo(
               className={
                 'font-semibold text-subTextColor text-[12px] text-right'
               }>
-              {formatBalance(item.actualBalance)}
+              {formatBalance(item.balanceDecimal)}
             </CyDText>
             <CyDText
               className={
@@ -592,11 +592,11 @@ export default function ChooseTokenModalV2(props: TokenModal) {
             name: token.name,
             logoUrl: token.logo,
             decimals: token.decimals,
-            actualBalance: '0',
+            balanceDecimal: '0',
             balance: '0',
             totalValue: '0',
             isSupported: true,
-            chainDetails: chainDetails,
+            chainDetails,
             coingeckoId: token.coingeckoId,
           };
         });

@@ -7,13 +7,8 @@ import {
   FundWalletAddressType,
 } from '../../constants/server';
 import { GlobalContext } from '../../core/globalContext';
-import {
-  isBasicCosmosChain,
-  convertFromUnitAmount,
-  isABasicCosmosStakingToken,
-} from '../../core/util';
+import { isBasicCosmosChain } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
 import {
   CyDImage,
   CyDText,
@@ -21,39 +16,20 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import { isIOS } from '../../misc/checkers';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 
 export default function TokenOverviewToolBar({
   tokenData,
   navigation,
 }: {
   tokenData: TokenMeta;
-  navigation: { navigate: (screen: string, {}: any) => void };
+  navigation: NavigationProp<ParamListBase>;
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
-  const cosmosStaking = useContext<any>(CosmosStakingContext);
   const { isBridgeable, isSwapable } = tokenData;
   const canShowIBC =
     globalStateContext.globalState.ibc &&
     isBasicCosmosChain(tokenData.chainDetails.backendName);
-
-  const userBalance = () => {
-    if (isABasicCosmosStakingToken(tokenData)) {
-      return (
-        Number(tokenData.price) *
-        Number(
-          convertFromUnitAmount(
-            (
-              Number(cosmosStaking.cosmosStakingState.balance) +
-              Number(cosmosStaking.cosmosStakingState.stakedBalance)
-            ).toString(),
-            tokenData.contractDecimals,
-          ),
-        )
-      );
-    } else {
-      return tokenData.totalValue;
-    }
-  };
 
   return (
     <CyDView

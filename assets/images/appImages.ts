@@ -116,7 +116,6 @@ const NO_TRANSACTIONS_YET = require('./noTransactions.png');
 const STARGAZE_PNG = require('./stargaze.png');
 const NOBLE_PNG = require('./noble.png');
 const APR_ICON = require('./apr.png');
-const STAKING_EMPTY_ILLUSTRATION = require('./stakingEmptyIllustration.png');
 const CELEBRATE = require('./celebrate.png');
 const READ_ONLY_CARD_BACKGROUND = require('./readOnlyCardBackground.png');
 const NFT_EMPTY_ILLUSTATION = require('./emptyNFTIllustration.png');
@@ -708,7 +707,6 @@ export const AppImagesMap = {
     STARGAZE_PNG,
     NOBLE_PNG,
     APR_ICON,
-    STAKING_EMPTY_ILLUSTRATION,
     CELEBRATE,
     READ_ONLY_CARD_BACKGROUND,
     NFT_EMPTY_ILLUSTATION,
@@ -967,7 +965,6 @@ enum AppImages {
   STARGAZE_PNG = 'STARGAZE_PNG',
   NOBLE_PNG = 'NOBLE_PNG',
   APR_ICON = 'APR_ICON',
-  STAKING_EMPTY_ILLUSTRATION = 'STAKING_EMPTY_ILLUSTRATION',
   CELEBRATE = 'CELEBRATE',
   READ_ONLY_CARD_BACKGROUND = 'READ_ONLY_CARD_BACKGROUND',
   NFT_EMPTY_ILLUSTATION = 'NFT_EMPTY_ILLUSTATION',
