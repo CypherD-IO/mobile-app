@@ -1,6 +1,7 @@
 #import "RCTDeviceCheckBridge.h"
 #import <DeviceCheck/DeviceCheck.h>
 #import <CommonCrypto/CommonDigest.h>
+#import <React/RCTLog.h>
 
 // Helper method to generate SHA256 hash
 @interface NSData (SHA256)
@@ -36,6 +37,7 @@ RCT_EXPORT_METHOD(generateToken:(NSString *)keyId
             // Generate a new key
             [service generateKeyWithCompletionHandler:^(NSString * _Nullable generatedKeyId, NSError * _Nullable error) {
                 if (error) {
+                    RCTLogError(@"Failed to generate key: %@", error.localizedDescription);
                     reject(@"error", @"Failed to generate key", error);
                     return;
                 }
@@ -45,7 +47,17 @@ RCT_EXPORT_METHOD(generateToken:(NSString *)keyId
                 // Generate attestation
                 [service attestKey:generatedKeyId clientDataHash:clientDataHash completionHandler:^(NSData * _Nullable attestationObject, NSError * _Nullable error) {
                     if (error) {
+                        RCTLogError(@"Failed to generate attestation: %@", error.localizedDescription);
+                        if (error.userInfo) {
+                            RCTLogError(@"Error details: %@", error.userInfo);
+                        }
                         reject(@"error", @"Failed to generate attestation", error);
+                        return;
+                    }
+                    
+                    if (!attestationObject) {
+                        RCTLogError(@"Attestation object is nil");
+                        reject(@"error", @"Attestation object is nil", nil);
                         return;
                     }
                     
