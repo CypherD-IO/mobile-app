@@ -153,12 +153,6 @@ export default function TokenOverviewToolBar({
               case ChainBackendNames.SOLANA:
                 addressTypeQRCode = FundWalletAddressType.SOLANA;
                 break;
-              case ChainBackendNames.SHARDEUM:
-                addressTypeQRCode = FundWalletAddressType.SHARDEUM;
-                break;
-              case ChainBackendNames.SHARDEUM_SPHINX:
-                addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
-                break;
               case ChainBackendNames.ZKSYNC_ERA:
                 addressTypeQRCode = FundWalletAddressType.ZKSYNC_ERA;
                 break;

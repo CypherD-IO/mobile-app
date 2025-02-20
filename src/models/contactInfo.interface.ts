@@ -11,8 +11,6 @@ export interface ContactInfo {
   optimism?: string[];
   arbitrum?: string[];
   noble?: string[];
-  shardeum?: string[];
-  shardeum_sphinx?: string[];
   polygon_zkevm?: [];
   zksync_era?: [];
   base?: [];

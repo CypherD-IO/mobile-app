@@ -58,9 +58,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     cosmos: globalContext.globalState.rpcEndpoints.COSMOS.primary,
     juno: globalContext.globalState.rpcEndpoints.JUNO.primary,
     noble: globalContext.globalState.rpcEndpoints?.NOBLE?.primary,
-    shardeum: globalContext.globalState.rpcEndpoints?.SHARDEUM?.primary,
-    shardeum_sphinx:
-      globalContext.globalState.rpcEndpoints?.SHARDEUM_SPHINX?.primary,
     zksync_era: globalContext.globalState.rpcEndpoints?.ZKSYNC_ERA?.primary,
     base: globalContext.globalState.rpcEndpoints?.BASE?.primary,
     polygon_zkevm:
@@ -168,12 +165,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     }
     if (tempRPCEndpoints?.KUJIRA?.primary) {
       tempRPCEndpoints.KUJIRA.primary = rpcEndpoints?.kujira;
-    }
-    if (tempRPCEndpoints?.SHARDEUM?.primary) {
-      tempRPCEndpoints.SHARDEUM.primary = rpcEndpoints?.shardeum;
-    }
-    if (tempRPCEndpoints?.SHARDEUM_SPHINX?.primary) {
-      tempRPCEndpoints.SHARDEUM_SPHINX.primary = rpcEndpoints?.shardeum_sphinx;
     }
 
     setLoading(true);
@@ -469,55 +460,6 @@ export default function HostsAndRPCScreen({ navigation }) {
               key='noble'
               onChangeText={value => {
                 setRPCEndpoints({ ...rpcEndpoints, noble: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
-        {rpcEndpoints.shardeum ? (
-          <CyDView className={'mt-[25px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.SHARDEUM}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.shardeum)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='shardeum'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, shardeum: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
-        <CyDView className='mb-[30px]' />
-        {rpcEndpoints.shardeum_sphinx ? (
-          <CyDView className={'mb-[30px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.SHARDEUM_SPHINX}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.shardeum_sphinx)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='shardeum_sphinx'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, shardeum_sphinx: value });
               }}
               autoCorrect={false}
               placeholderTextColor={'#C5C5C5'}

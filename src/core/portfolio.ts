@@ -12,8 +12,6 @@ import {
   CHAIN_ARBITRUM,
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
@@ -90,8 +88,6 @@ export interface WalletHoldings {
   juno: ChainHoldings;
   stargaze: ChainHoldings;
   noble: ChainHoldings;
-  shardeum: ChainHoldings;
-  shardeum_sphinx: ChainHoldings;
   zksync_era: ChainHoldings;
   base: ChainHoldings;
   polygon_zkevm: ChainHoldings;
@@ -168,10 +164,6 @@ export function getCurrentChainHoldings(
       return portfolio.stargaze;
     case CHAIN_NOBLE.backendName:
       return portfolio.noble;
-    case CHAIN_SHARDEUM.backendName:
-      return portfolio.shardeum;
-    case CHAIN_SHARDEUM_SPHINX.backendName:
-      return portfolio.shardeum_sphinx;
     case CHAIN_ZKSYNC_ERA.backendName:
       return portfolio.zksync_era;
     case CHAIN_BASE.backendName:
@@ -233,8 +225,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let coreumHoldings;
   let injectiveHoldings;
   let kujiraHoldings;
-  let shardeumHoldings;
-  let shardeumSphinxHoldings;
   let arbitrumHoldings;
   let optimismHoldings;
   let zksyncEraHoldings;
@@ -332,12 +322,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         case CHAIN_NOBLE.backendName:
           tokenHolding.chainDetails = CHAIN_NOBLE;
           break;
-        case CHAIN_SHARDEUM.backendName:
-          tokenHolding.chainDetails = CHAIN_SHARDEUM;
-          break;
-        case CHAIN_SHARDEUM_SPHINX.backendName:
-          tokenHolding.chainDetails = CHAIN_SHARDEUM_SPHINX;
-          break;
         case CHAIN_POLYGON_ZKEVM.backendName:
           tokenHolding.chainDetails = CHAIN_POLYGON_ZKEVM;
           break;
@@ -432,12 +416,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       case CHAIN_NOBLE.backendName:
         nobleHoldings = chainHoldings;
         break;
-      case CHAIN_SHARDEUM.backendName:
-        shardeumHoldings = chainHoldings;
-        break;
-      case CHAIN_SHARDEUM_SPHINX.backendName:
-        shardeumSphinxHoldings = chainHoldings;
-        break;
       case CHAIN_POLYGON_ZKEVM.backendName:
         polygonZkevmHoldings = chainHoldings;
         break;
@@ -489,8 +467,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     noble: nobleHoldings as ChainHoldings,
     optimism: optimismHoldings as ChainHoldings,
     arbitrum: arbitrumHoldings as ChainHoldings,
-    shardeum: shardeumHoldings as ChainHoldings,
-    shardeum_sphinx: shardeumSphinxHoldings as ChainHoldings,
     zksync_era: zksyncEraHoldings as ChainHoldings,
     base: baseHoldings as ChainHoldings,
     polygon_zkevm: polygonZkevmHoldings as ChainHoldings,

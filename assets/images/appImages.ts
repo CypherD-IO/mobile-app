@@ -11,7 +11,6 @@ const S3_BUCKET_URL_DAPPS = 'https://public.cypherd.io/assets/dapps';
 const EMPTY = require('./emptyImg.png');
 const CYPHERD = require('./cypherD.png');
 const POLYGON = require('./polygon.png');
-const SHARDEUM = require('./shardeum.png');
 const AVALANCHE = require('./avalanche.png');
 const ARBITRUM = require('./arbitrum.png');
 const OPTIMISM = require('./optimism.png');
@@ -610,7 +609,6 @@ export const AppImagesMap = {
     CYPHERD,
     PORTFOLIO_BG_S3,
     POLYGON,
-    SHARDEUM,
     AVALANCHE,
     ARBITRUM,
     OPTIMISM,
@@ -869,7 +867,6 @@ enum AppImages {
   CYPHERD = 'CYPHERD',
   PORTFOLIO_BG_S3 = 'PORTFOLIO_BG_S3',
   POLYGON = 'POLYGON',
-  SHARDEUM = 'SHARDEUM',
   AVALANCHE = 'AVALANCHE',
   ARBITRUM = 'ARBITRUM',
   OPTIMISM = 'OPTIMISM',
