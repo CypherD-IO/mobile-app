@@ -4,8 +4,10 @@ import {
   Registry,
 } from '@cosmjs/proto-signing';
 import {
+  calculateFee,
   Coin,
   defaultRegistryTypes,
+  GasPrice,
   MsgSendEncodeObject,
   MsgTransferEncodeObject,
   SigningStargateClient,
@@ -26,7 +28,7 @@ import {
   TransactionMessage,
 } from '@solana/web3.js';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import { get } from 'lodash';
+import { ceil, get } from 'lodash';
 import {
   Address,
   bytesToHex,
@@ -614,6 +616,7 @@ export default function useGasService() {
         const signingClient = await getCosmosSigningClient(chain, rpc, signer);
         const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
         const amountToSend = parseUnits(amount, contractDecimal).toString();
+        const nativeToken = await getNativeToken(backendName);
 
         // transaction gas fee calculation
         const sendMsg: MsgSendEncodeObject = {
@@ -634,30 +637,29 @@ export default function useGasService() {
           [sendMsg],
           '',
         );
-        const nativeToken = await getNativeToken(backendName);
 
-        const { gasPrice } = await getCosmosGasPrice(backendName);
-        const gasFee = DecimalHelper.multiply(simulation, [1.8, gasPrice]);
+        const { gasPrice, gasLimitMultiplier } =
+          await getCosmosGasPrice(backendName);
+        const gasFee = DecimalHelper.multiply(simulation, [
+          gasLimitMultiplier,
+          gasPrice,
+        ]);
         const gasFeeInCrypto = DecimalHelper.toString(
           DecimalHelper.toDecimal(gasFee, nativeToken.contractDecimals),
           6,
         );
-        const fee = {
-          gas: Math.floor(simulation * 1.8).toString(),
-          amount: [
-            {
-              denom: nativeToken?.denom ?? denom,
-              amount: GASLESS_CHAINS.includes(backendName)
-                ? '0'
-                : gasFee.floor().toString(),
-            },
-          ],
-        };
+
+        const gasPriceWithDenom = GasPrice.fromString(
+          `${gasPrice}${nativeToken?.denom}`,
+        );
+
+        const gasLimit = ceil(simulation * gasLimitMultiplier);
+        const fee = calculateFee(gasLimit, gasPriceWithDenom);
         return {
           isError: false,
           gasFeeInCrypto,
           gasLimit: fee.gas,
-          gasPrice,
+          gasPrice: Number(gasPrice),
           fee,
         };
       }
@@ -700,6 +702,7 @@ export default function useGasService() {
           signer,
         );
 
+        const nativeToken = await getNativeToken(backendName);
         const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
         const amountToSend = parseUnits(amount, contractDecimal).toString();
         const transferAmount: Coin = {
@@ -730,30 +733,24 @@ export default function useGasService() {
           '',
         );
 
-        const nativeToken = await getNativeToken(backendName);
-
-        const { gasPrice } = await getCosmosGasPrice(backendName);
+        const { gasPrice, gasLimitMultiplier } =
+          await getCosmosGasPrice(backendName);
 
         const gasFee = DecimalHelper.multiply(simulation, [
+          gasLimitMultiplier,
           gasPrice,
-          1.8,
         ]).toNumber();
         const gasFeeInCrypto = DecimalHelper.toString(
           DecimalHelper.toDecimal(gasFee, nativeToken.contractDecimals),
           6,
         );
 
-        const fee = {
-          gas: Math.floor(simulation * 1.8).toString(),
-          amount: [
-            {
-              denom: nativeToken?.denom ?? denom,
-              amount: GASLESS_CHAINS.includes(backendName)
-                ? '0'
-                : Math.floor(gasFee).toString(),
-            },
-          ],
-        };
+        const gasLimit = ceil(simulation * gasLimitMultiplier);
+        const gasPriceWithDenom = GasPrice.fromString(
+          `${gasPrice}${nativeToken?.denom}`,
+        );
+
+        const fee = calculateFee(gasLimit, gasPriceWithDenom);
         return {
           isError: false,
           gasFeeInCrypto,
