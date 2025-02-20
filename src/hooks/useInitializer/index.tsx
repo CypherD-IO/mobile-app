@@ -55,6 +55,9 @@ import useValidSessionToken from '../useValidSessionToken';
 import { IPlanDetails } from '../../models/planDetails.interface';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import { useIntegrityService } from '../useIntegrityService';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { t } from 'i18next';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -69,7 +72,7 @@ export default function useInitializer() {
   );
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile, getPlanData } = useCardUtilities();
-
+  const { getIntegrityToken } = useIntegrityService();
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
       return '********'; // Replace with asterisks
@@ -80,6 +83,7 @@ export default function useInitializer() {
       return value; // Don't scrub other data
     }
   };
+  const { showModal, hideModal } = useGlobalModalContext();
 
   const initializeSentry = () => {
     Sentry.init({
@@ -415,70 +419,122 @@ export default function useInitializer() {
     });
   };
 
+  const MAX_RETRY_ATTEMPTS = 3;
+
   const getAuthTokenData = async (
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
-    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
+    retryCount = 0,
   ) => {
-    if (
-      ethereum?.address
-      // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
-      const isSessionTokenValid = await verifySessionToken();
-      if (!isSessionTokenValid) {
-        const signInResponse = await signIn(
-          ethereum,
-          hdWallet,
-          setShowDefaultAuthRemoveModal,
-        );
-        if (signInResponse) {
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            setForcedUpdate(false);
-            setTamperedSignMessageModal(false);
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: signInResponse?.token,
-            });
+    if (ethereum?.address) {
+      try {
+        const integrityObj = await getIntegrityToken();
+        if (integrityObj) {
+          const isSessionTokenValid = await verifySessionToken(integrityObj);
+          if (!isSessionTokenValid) {
+            const signInResponse = await signIn(
+              ethereum,
+              hdWallet,
+              setShowDefaultAuthRemoveModal,
+              integrityObj,
+            );
+            if (signInResponse) {
+              if (
+                signInResponse?.message === SignMessageValidationType.VALID &&
+                has(signInResponse, 'token')
+              ) {
+                setForcedUpdate(false);
+                setTamperedSignMessageModal(false);
+                globalContext.globalDispatch({
+                  type: GlobalContextType.SIGN_IN,
+                  sessionToken: signInResponse?.token,
+                });
+                globalContext.globalDispatch({
+                  type: GlobalContextType.IS_APP_AUTHENTICATED,
+                  isAuthenticated: true,
+                });
+                await setAuthToken(signInResponse?.token);
+                if (has(signInResponse, 'refreshToken')) {
+                  await setRefreshToken(signInResponse?.refreshToken);
+                }
+                void getProfile(signInResponse.token);
+              } else if (
+                signInResponse?.message === SignMessageValidationType.INVALID
+              ) {
+                setUpdateModal(false);
+                setTamperedSignMessageModal(true);
+              } else if (
+                signInResponse?.message ===
+                SignMessageValidationType.NEEDS_UPDATE
+              ) {
+                setUpdateModal(true);
+                setForcedUpdate(true);
+              }
+            }
+          } else {
+            let authToken = await getAuthToken();
+            const connectionType = await getConnectionType();
+            // don't ask for authentication in case of wallet connect
+            if (
+              !(
+                connectionType === ConnectionTypes.WALLET_CONNECT ||
+                retryCount > 0
+              )
+            ) {
+              await loadFromKeyChain(DUMMY_AUTH, true, () =>
+                setShowDefaultAuthRemoveModal(true),
+              );
+            }
+            authToken = JSON.parse(String(authToken));
+            void getProfile(authToken ?? '');
             globalContext.globalDispatch({
               type: GlobalContextType.IS_APP_AUTHENTICATED,
               isAuthenticated: true,
             });
-            await setAuthToken(signInResponse?.token);
-            if (has(signInResponse, 'refreshToken')) {
-              await setRefreshToken(signInResponse?.refreshToken);
-            }
-            void getProfile(signInResponse.token);
-          } else if (
-            signInResponse?.message === SignMessageValidationType.INVALID
-          ) {
-            setUpdateModal(false);
-            setTamperedSignMessageModal(true);
-          } else if (
-            signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
-          ) {
-            setUpdateModal(true);
-            setForcedUpdate(true);
           }
         }
-      } else {
-        let authToken = await getAuthToken();
-        const connectionType = await getConnectionType();
-        // don't ask for authentication in case of wallet connect
-        if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
-          await loadFromKeyChain(DUMMY_AUTH, true, () =>
-            setShowDefaultAuthRemoveModal(true),
-          );
+      } catch (error) {
+        if (retryCount >= MAX_RETRY_ATTEMPTS) {
+          showModal('state', {
+            type: 'error',
+            title: t('UNABLE_TO_VERIFY_APP'),
+            description: `<p style="color: #000000; font-size: 14px; font-weight: 500; text-align: center;">${t('MAX_RETRIES_REACHED')}<a href="https://cypherhq.io/support" style="color: #007AFF; text-decoration: underline;">https://cypherhq.io/support</a></p>`,
+            onSuccess: () => {
+              hideModal();
+              RNExitApp.exitApp();
+            },
+            onFailure: () => {
+              hideModal();
+              RNExitApp.exitApp();
+            },
+          });
+        } else {
+          showModal('state', {
+            type: 'warning',
+            title: t('UNABLE_TO_VERIFY_APP'),
+            description:
+              getPlatform() === 'android'
+                ? t('APP_INTEGRITY_CHECK_FAILED_ANDROID')
+                : t('APP_INTEGRITY_CHECK_FAILED_IOS'),
+            onSuccess: async () => {
+              hideModal();
+              // Retry with incremented counter
+              await getAuthTokenData(
+                setForcedUpdate,
+                setTamperedSignMessageModal,
+                setUpdateModal,
+                setShowDefaultAuthRemoveModal,
+                retryCount + 1,
+              );
+            },
+            onFailure: () => {
+              hideModal();
+              RNExitApp.exitApp();
+            },
+          });
         }
-        authToken = JSON.parse(String(authToken));
-        void getProfile(authToken ?? '');
-        globalContext.globalDispatch({
-          type: GlobalContextType.IS_APP_AUTHENTICATED,
-          isAuthenticated: true,
-        });
       }
     }
   };

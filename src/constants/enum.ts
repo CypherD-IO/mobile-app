@@ -471,3 +471,10 @@ export const CARD_IDS = {
   METAL_CARD: 'metal-card',
   HIDDEN_CARD: 'hidden',
 };
+
+export enum DeviceType {
+  IOS = 'iOS',
+  ANDROID = 'android',
+  WEB = 'web',
+  DAPP = 'dapp',
+}

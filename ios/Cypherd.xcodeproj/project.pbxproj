@@ -14,6 +14,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */; };
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
+		43E0119A2D2831C2000E621F /* RCTDeviceCheckBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E011992D2831C2000E621F /* RCTDeviceCheckBridge.m */; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
 		63948B4D9075475B8A0C2CE4 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */; };
@@ -42,7 +43,7 @@
 		00E356EE1AD99517003FC87E /* CypherdTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CypherdTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* CypherdTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CypherdTests.m; sourceTree = "<group>"; };
-		04A813A9A0D14C6CB8E1EBA0 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
+		04A813A9A0D14C6CB8E1EBA0 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd-CypherdTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		127D4C06EDB04D5BAEA58723 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Cypherd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cypherd.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -60,6 +61,8 @@
 		3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CC408C1228D48B28D032D9C /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
+		43E011982D2831C2000E621F /* RCTDeviceCheckBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTDeviceCheckBridge.h; sourceTree = "<group>"; };
+		43E011992D2831C2000E621F /* RCTDeviceCheckBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTDeviceCheckBridge.m; sourceTree = "<group>"; };
 		5C433F5928E49B2100FA84F8 /* Cypherd-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Cypherd-Bridging-Header.h"; sourceTree = "<group>"; };
 		5C433F5A28E49B2100FA84F8 /* Dynamic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dynamic.swift; sourceTree = "<group>"; };
 		5C433F6428E585ED00FA84F8 /* splash.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = splash.json; sourceTree = "<group>"; };
@@ -204,6 +207,8 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				43E011982D2831C2000E621F /* RCTDeviceCheckBridge.h */,
+				43E011992D2831C2000E621F /* RCTDeviceCheckBridge.m */,
 				2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */,
 				B76522962792A50F002A2E46 /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* Cypherd */,
@@ -355,7 +360,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/zsh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=\"/Users/local/.nvm/versions/node/v18.17.1/bin/node\"\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=$(which node)\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
 		};
 		3AF4ACDDA9171F12683EF267 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -530,6 +535,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43E0119A2D2831C2000E621F /* RCTDeviceCheckBridge.m in Sources */,
 				5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
@@ -614,6 +620,17 @@
 				DEVELOPMENT_TEAM = 7FZT7KSBXD;
 				ENABLE_BITCODE = NO;
 				ENABLE_DEBUG_DYLIB = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native/React",
+					"$(SRCROOT)/../node_modules/react-native/React/Base",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native/React",
+					"$(SRCROOT)/../node_modules/react-native/React/Base",
+					"$(SRCROOT)/../node_modules/react-native/React/Modules",
+				);
 				INFOPLIST_FILE = Cypherd/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Cypher Wallet";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -627,6 +644,8 @@
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
+					"-framework",
+					DeviceCheck,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cypherd.ioswalletv1;
 				PRODUCT_NAME = Cypherd;

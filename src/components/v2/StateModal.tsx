@@ -17,6 +17,7 @@ import { screenTitle } from '../../constants';
 import { State } from '../../models/globalModal.interface';
 import Button from './button';
 import { ButtonType } from '../../constants/enum';
+import RenderHtml from 'react-native-render-html';
 
 const StateModal: React.FC<State> = (store: State) => {
   const { t } = useTranslation();
@@ -74,7 +75,25 @@ const StateModal: React.FC<State> = (store: State) => {
 
   const RenderDescription = useCallback(() => {
     const typeOfDesription = typeof store.description;
+
     if (typeOfDesription === 'string') {
+      // Check if the string contains HTML-like content
+      const containsHTML = /<[a-z][\s\S]*>/i.test(store.description as string);
+
+      if (containsHTML) {
+        return (
+          <CyDView className='max-h-[150px]'>
+            <CyDScrollView className='flex-grow-0'>
+              <RenderHtml
+                contentWidth={300}
+                source={{ html: store.description as string }}
+              />
+            </CyDScrollView>
+          </CyDView>
+        );
+      }
+
+      // Regular string without HTML
       return (
         <CyDView className='max-h-[150px]'>
           <CyDScrollView className='flex-grow-0'>

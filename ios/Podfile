@@ -40,6 +40,8 @@ target 'Cypherd' do
 
   # pod 'Firebase/Crashlytics'
 
+  pod 'RCTDeviceCheckBridge', :path => '../ios'
+
   target 'CypherdTests' do
     inherit! :complete
     # Pods for testing

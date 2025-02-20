@@ -20,6 +20,14 @@ import com.facebook.react.views.text.ReactFontManager;
 import java.util.List;
 import com.intercom.reactnative.IntercomModule;
 import com.lugg.RNCConfig.RNCConfigPackage;
+import com.cypherd.androidwallet.IntegrityPackage;
+import com.cypherd.androidwallet.IntegrityModule;
+import com.google.android.play.core.integrity.IntegrityManagerFactory;
+import com.google.android.play.core.integrity.IntegrityTokenRequest;
+import com.google.android.play.core.integrity.IntegrityTokenResponse;
+import java.security.SecureRandom;
+import java.util.Base64;
+import android.util.Log;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -36,6 +44,7 @@ public class MainApplication extends Application implements ReactApplication {
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
+          packages.add(new IntegrityPackage());
           packages.add(new CustomPreventScreenshotPackage());
           return packages;
         }
@@ -58,6 +67,12 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public ReactNativeHost getReactNativeHost() {
     return mReactNativeHost;
+  }
+
+  private String generateNonce() {
+    byte[] nonceBytes = new byte[32];
+    new SecureRandom().nextBytes(nonceBytes);
+    return Base64.getEncoder().encodeToString(nonceBytes);
   }
 
   @Override

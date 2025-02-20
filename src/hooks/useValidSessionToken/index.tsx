@@ -13,11 +13,12 @@ import DeviceInfo from 'react-native-device-info';
 import { useContext } from 'react';
 import { GlobalContext } from '../../core/globalContext';
 import { GlobalContextType } from '../../constants/enum';
+import { IIntegrity } from '../../models';
 
 export default function useValidSessionToken() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const globalContext = useContext<any>(GlobalContext);
-  const verifySessionToken = async () => {
+  const verifySessionToken = async (integrityObj?: IIntegrity) => {
     const authToken: string = await getAuthToken();
     if (authToken) {
       const refreshToken = await getRefreshToken();
@@ -34,8 +35,8 @@ export default function useValidSessionToken() {
       };
       try {
         const resp = await axios.post(
-          `${baseUrl}/v1/authentication/refresh`,
-          {},
+          `${baseUrl}/v1/authentication/refresh/integrity`,
+          integrityObj ? { ...integrityObj } : {},
           config,
         );
         if (resp?.data) {

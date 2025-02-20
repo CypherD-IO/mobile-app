@@ -71,6 +71,7 @@ import { Keypair } from '@solana/web3.js';
 import { createWalletClient, Hex, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mainnet } from 'viem/chains';
+import { IIntegrity } from '../models';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 10;
@@ -653,46 +654,44 @@ export async function signIn(
   ethereum: { address: string },
   hdWallet: HdWalletContextDef,
   setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+  integrityObj?: IIntegrity,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  try {
-    const { data } = await axios.get(
-      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+  const { data } = await axios.get(
+    `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+  );
+  const verifyMessage = data.message;
+  const validationResponse = isValidMessage(ethereum.address, verifyMessage);
+  if (validationResponse.message === SignMessageValidationType.VALID) {
+    const walletClient = createWalletClient({
+      chain: mainnet,
+      transport: http(),
+    });
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      true,
+      hdWallet.state.pinValue,
+      () => setShowDefaultAuthRemoveModal(true),
     );
-    const verifyMessage = data.message;
-    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
-    if (validationResponse.message === SignMessageValidationType.VALID) {
-      const walletClient = createWalletClient({
-        chain: mainnet,
-        transport: http(),
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const account = privateKeyToAccount(privateKey as Hex);
+      const signature = await walletClient.signMessage({
+        account,
+        message: verifyMessage,
       });
-      const privateKey = await loadPrivateKeyFromKeyChain(
-        true,
-        hdWallet.state.pinValue,
-        () => setShowDefaultAuthRemoveModal(true),
-      );
-      if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        const account = privateKeyToAccount(privateKey as Hex);
-        const signature = await walletClient.signMessage({
-          account,
-          message: verifyMessage,
-        });
 
-        const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
-          {
-            signature,
-          },
-        );
-        return {
-          ...validationResponse,
-          token: result.data.token,
-          refreshToken: result.data.refreshToken,
-        };
-      }
-      return validationResponse;
+      const result = await axios.post(
+        `${ARCH_HOST}/v1/authentication/verify-message/integrity/${ethereum.address}`,
+        {
+          signature,
+          ...(integrityObj ? { integrity: integrityObj } : {}),
+        },
+      );
+      return {
+        ...validationResponse,
+        token: result.data.token,
+        refreshToken: result.data.refreshToken,
+      };
     }
-  } catch (error) {
-    Sentry.captureException(error);
+    return validationResponse;
   }
 }
