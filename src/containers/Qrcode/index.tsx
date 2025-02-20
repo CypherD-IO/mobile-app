@@ -11,7 +11,7 @@ import {
   CyDMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import AppImages, { AppImagesMap } from '../../../assets/images/appImages';
+import { AppImagesMap } from '../../../assets/images/appImages';
 import { HdWalletContext, getMaskedAddress } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -37,8 +37,6 @@ import {
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
@@ -115,16 +113,6 @@ export default function QRCodeGenerator() {
       case FundWalletAddressType.BSC:
         return {
           ...CHAIN_BSC,
-          address: hdWalletContext.state.wallet.ethereum.address,
-        };
-      case FundWalletAddressType.SHARDEUM:
-        return {
-          ...CHAIN_SHARDEUM,
-          address: hdWalletContext.state.wallet.ethereum.address,
-        };
-      case FundWalletAddressType.SHARDEUM_SPHINX:
-        return {
-          ...CHAIN_SHARDEUM_SPHINX,
           address: hdWalletContext.state.wallet.ethereum.address,
         };
       case FundWalletAddressType.ZKSYNC_ERA:
@@ -390,7 +378,7 @@ export default function QRCodeGenerator() {
               </CyDText>
               <CyDText className={'text-[14px] text-center font-bold'}>
                 {selectedChain.chainName === 'ethereum'
-                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Optimism, Arbitrum, Aurora, Moonbeam, Moonriver, Shardeum'
+                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Optimism, Arbitrum, Aurora, Moonbeam, Moonriver'
                   : selectedChain.name}
               </CyDText>
             </CyDView>

@@ -96,12 +96,6 @@ export const initialGlobalState: GlobalStateDef = {
     POLYGON: {
       primary: 'https://rpc.ankr.com/polygon',
     },
-    SHARDEUM: {
-      primary: 'https://dapps.shardeum.org/',
-    },
-    SHARDEUM_SPHINX: {
-      primary: 'https://sphinx.shardeum.org/',
-    },
     ZKSYNC_ERA: {
       primary: 'https://mainnet.era.zksync.io',
     },

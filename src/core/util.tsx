@@ -14,12 +14,10 @@ import {
   CHAIN_JUNO,
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
-  CHAIN_SHARDEUM,
   ChainBackendNames,
   EnsCoinTypes,
   CosmosStakingTokens,
   NativeTokenMapping,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
@@ -126,10 +124,6 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
       return `https://bscscan.com/tx/${hash}`;
     case ChainBackendNames.POLYGON:
       return `https://polygonscan.com/tx/${hash}`;
-    case ChainBackendNames.SHARDEUM:
-      return `https://explorer-dapps.shardeum.org/transaction/${hash}`;
-    case ChainBackendNames.SHARDEUM_SPHINX:
-      return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
     case ChainBackendNames.ARBITRUM:
       return `https://arbiscan.io/tx/${hash}`;
     case ChainBackendNames.OPTIMISM:
@@ -177,10 +171,6 @@ export function getExplorerUrlFromChainId(chainId: string, hash: string) {
       return `https://bscscan.com/tx/${hash}`;
     case CHAIN_POLYGON.chainIdNumber.toString():
       return `https://polygonscan.com/tx/${hash}`;
-    case CHAIN_SHARDEUM.chainIdNumber.toString():
-      return `https://explorer-dapps.shardeum.org/transaction/${hash}`;
-    case CHAIN_SHARDEUM_SPHINX.chainIdNumber.toString():
-      return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
     case CHAIN_ARBITRUM.chainIdNumber.toString():
       return `https://arbiscan.io/tx/${hash}`;
     case CHAIN_OPTIMISM.chainIdNumber.toString():
@@ -268,10 +258,6 @@ export function getExplorerUrl(
       return `https://www.mintscan.io/injective/txs/${hash}`;
     case CHAIN_KUJIRA.symbol:
       return `https://atomscan.com/kujira/transactions/${hash}`;
-    case CHAIN_SHARDEUM.symbol:
-      return `https://explorer-dapps.shardeum.org/transaction/${hash}`;
-    case CHAIN_SHARDEUM_SPHINX.symbol:
-      return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
     case CHAIN_SOLANA.symbol:
       return `https://solscan.io/tx/${hash}`;
   }
@@ -298,10 +284,6 @@ export function getNftExplorerUrl(
       return `https://www.stargaze.zone/media/${contractAddress}/${id}`;
     case CHAIN_NOBLE.backendName:
       return `https://noblescan.com/address/${contractAddress}`;
-    case CHAIN_SHARDEUM.backendName:
-      return `https://explorer-dapps.shardeum.org/account/${contractAddress}`;
-    case CHAIN_SHARDEUM_SPHINX.backendName:
-      return `https://explorer-sphinx.shardeum.org/account/${contractAddress}`;
     default:
       return `https://etherscan.io/address/${contractAddress}`;
   }
@@ -828,12 +810,6 @@ export const getChain = (chain: string): Chain => {
       break;
     case 'kujira':
       blockchain = CHAIN_KUJIRA;
-      break;
-    case 'shardeum':
-      blockchain = CHAIN_SHARDEUM;
-      break;
-    case 'shardeum_sphinx':
-      blockchain = CHAIN_SHARDEUM_SPHINX;
       break;
   }
   return blockchain;

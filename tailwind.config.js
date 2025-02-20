@@ -86,7 +86,6 @@ module.exports = {
         avalanche: '#fff6f5',
         arbitrum: '#f1f4fa',
         optimism: '#fff0f0',
-        shardeum: '#fff0f0',
         infoTextBackground: '#F3FFFB',
         secondaryButtonBackgroundColor: '#525252',
         greyButtonBackgroundColor: '#C5C5C5',

@@ -148,16 +148,6 @@ export const CreateContact = () => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.ARBITRUM,
     },
-    shardeum: {
-      label: t(`${ChainNames.SHARDEUM.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.SHARDEUM,
-    },
-    shardeum_sphinx: {
-      label: t(`${ChainNames.SHARDEUM_SPHINX.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.SHARDEUM,
-    },
     zksync_era: {
       label: t(`${ChainNames.ZKSYNC_ERA.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
@@ -409,18 +399,6 @@ export const CreateContact = () => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), arbitrum =>
             validateAddress(arbitrum, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    shardeum: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), shardeum =>
-            validateAddress(shardeum, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

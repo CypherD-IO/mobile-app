@@ -1,4 +1,3 @@
-import AppImages from '../../assets/images/appImages';
 import {
   ApplicationName,
   CypherDeclineCodes,
@@ -6,7 +5,6 @@ import {
   RPCODES,
 } from './enum';
 import {
-  CHAIN_SHARDEUM,
   CHAIN_SOLANA,
   CHAIN_ARBITRUM,
   CHAIN_AURORA,
@@ -28,7 +26,6 @@ import {
   CHAIN_POLYGON_ZKEVM,
   CHAIN_STARGAZE,
   ChainBackendNames,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
   Chain,
 } from './server';
@@ -57,8 +54,6 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   COREUM: 0.1,
   INJECTIVE: 0.001,
   KUJIRA: 0.1,
-  SHARDEUM: 0.1,
-  SHARDEUM_SPHINX: 0.01,
   ZKSYNC_ERA: 0.0006, // TODO
   BASE: 0.000004,
   POLYGON_ZKEVM: 0.0006, // TODO
@@ -805,8 +800,6 @@ export const CardFeePercentage = {
   JUNO: 0.5,
   STARGAZE: 0.5,
   NOBLE: 0,
-  SHARDEUM: 0.5,
-  SHARDEUM_SPHINX: 0.5,
   MOONBEAM: 0.5,
   MOONRIVER: 0.5,
   AURORA: 0.5,
@@ -834,8 +827,6 @@ export const SlippageFactor = {
   JUNO: 0.003,
   STARGAZE: 0.003,
   NOBLE: 0,
-  SHARDEUM: 0.003,
-  SHARDEUM_SPHINX: 0.003,
   MOONBEAM: 0.003,
   MOONRIVER: 0.003,
   AURORA: 0.003,
@@ -970,8 +961,6 @@ export const ChainNameToChainMapping: Record<ChainBackendNames, Chain> = {
   [ChainBackendNames.INJECTIVE]: CHAIN_INJECTIVE,
   [ChainBackendNames.KUJIRA]: CHAIN_KUJIRA,
   [ChainBackendNames.SOLANA]: CHAIN_SOLANA,
-  [ChainBackendNames.SHARDEUM]: CHAIN_SHARDEUM,
-  [ChainBackendNames.SHARDEUM_SPHINX]: CHAIN_SHARDEUM_SPHINX,
 };
 
 export const QUICK_ACTION_NOTIFICATION_CATEGORY_IDS: Array<

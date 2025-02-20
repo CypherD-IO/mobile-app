@@ -513,12 +513,6 @@ export default function ShortcutsModal() {
         case ChainBackendNames.NOBLE:
           addressTypeQRCode = FundWalletAddressType.NOBLE;
           break;
-        case ChainBackendNames.SHARDEUM:
-          addressTypeQRCode = FundWalletAddressType.SHARDEUM;
-          break;
-        case ChainBackendNames.SHARDEUM_SPHINX:
-          addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
-          break;
         case ChainBackendNames.COREUM:
           addressTypeQRCode = FundWalletAddressType.COREUM;
           break;

@@ -337,8 +337,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       avalanche: {},
       optimism: {},
       arbitrum: {},
-      shardeum: {},
-      shardeum_sphinx: {},
       zksync_era: {},
       base: {},
       polygon_zkevm: {},

@@ -46,8 +46,6 @@ export enum ChainBackendNames {
   COREUM = 'COREUM',
   INJECTIVE = 'INJECTIVE',
   KUJIRA = 'KUJIRA',
-  SHARDEUM = 'SHARDEUM',
-  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   POLYGON_ZKEVM = 'POLYGON_ZKEVM',
@@ -80,8 +78,6 @@ export enum FundWalletAddressType {
   ARBITRUM = 'ARBITRUM',
   OPTIMISM = 'OPTIMISM',
   BSC = 'BSC',
-  SHARDEUM = 'SHARDEUM',
-  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   POLYGON_ZKEVM = 'POLYGON_ZKEVM',
@@ -171,34 +167,6 @@ export const CHAIN_ARBITRUM: Chain = {
   nativeTokenLogoUrl:
     'https://public.cypherd.io/assets/blockchains/arbitrum/info/logo.png',
   chainIdNumber: 42161,
-};
-
-export const CHAIN_SHARDEUM: Chain = {
-  chainName: 'ethereum',
-  name: 'Shardeum Sphinx DApp 1.X',
-  symbol: 'SHM',
-  id: 15,
-  logo_url: AppImages.SHARDEUM,
-  backendName: ChainBackendNames.SHARDEUM,
-  chain_id: '0x1f91',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl:
-    'https://img.api.cryptorank.io/coins/shardeum1665056595732.png', // TODO : Add shardeum resources.
-  chainIdNumber: 8081,
-};
-
-export const CHAIN_SHARDEUM_SPHINX: Chain = {
-  chainName: 'ethereum',
-  name: 'Shardeum Sphinx',
-  symbol: 'SHM',
-  id: 14,
-  logo_url: AppImages.SHARDEUM,
-  backendName: ChainBackendNames.SHARDEUM_SPHINX,
-  chain_id: '0x1f92',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl:
-    'https://img.api.cryptorank.io/coins/shardeum1665056595732.png', // TODO: Add shardeum resources.
-  chainIdNumber: 8082,
 };
 
 export const OwlracleChainCodes = {
@@ -439,8 +407,6 @@ export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.AVALANCHE]: '2147526762',
   [ChainBackendNames.BSC]: '2147483704',
   [ChainBackendNames.POLYGON]: '2147483785',
-  [ChainBackendNames.SHARDEUM]: 'dummy',
-  [ChainBackendNames.SHARDEUM_SPHINX]: 'dummy',
 };
 
 export const SUPPORTED_EVM_CHAINS = [
@@ -500,22 +466,18 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_SOLANA,
 ];
 
 export const EVM_CHAINS: Chain[] = [
   CHAIN_ETH,
   CHAIN_POLYGON,
-  CHAIN_BSC,
-  CHAIN_AVALANCHE,
-  CHAIN_OPTIMISM,
-  CHAIN_ARBITRUM,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
-  CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
+  CHAIN_BSC,
+  CHAIN_ARBITRUM,
+  CHAIN_OPTIMISM,
+  CHAIN_AVALANCHE,
+  CHAIN_ZKSYNC_ERA,
   CHAIN_POLYGON_ZKEVM,
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
@@ -541,8 +503,6 @@ export const EVM_CHAINS_FOR_ADDRESS_DIR = [
   'avalanche',
   'optimism',
   'arbitrum',
-  'shardeum',
-  'shardeum_sphinx',
   'zksync_era',
   'base',
   'polygon_zkevm',
@@ -572,8 +532,6 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.AVALANCHE,
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
-  ChainBackendNames.SHARDEUM,
-  ChainBackendNames.SHARDEUM_SPHINX,
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.BASE,
   ChainBackendNames.POLYGON_ZKEVM,
@@ -600,8 +558,6 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.AVALANCHE,
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
-  // ChainBackendNames.SHARDEUM,
-  ChainBackendNames.SHARDEUM_SPHINX,
   ChainBackendNames.COSMOS,
   ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
@@ -632,8 +588,6 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
@@ -695,8 +649,6 @@ export enum ChainNames {
   AVALANCHE = 'avalanche',
   OPTIMISM = 'optimism',
   ARBITRUM = 'arbitrum',
-  SHARDEUM = 'shardeum',
-  SHARDEUM_SPHINX = 'shardeum_sphinx',
   ZKSYNC_ERA = 'zksync_era',
   BASE = 'base',
   POLYGON_ZKEVM = 'polygon_zkevm',
@@ -721,8 +673,6 @@ export enum ChainNameMapping {
   KUJIRA = 'kujira',
   STARGAZE = 'stargaze',
   NOBLE = 'noble',
-  SHARDEUM = 'shardeum',
-  SHARDEUM_SPHINX = 'shardeum_sphinx',
   ZKSYNC_ERA = 'zksync_era',
   BASE = 'base',
   POLYGON_ZKEVM = 'polygon_zkevm',
@@ -750,8 +700,6 @@ export const ChainConfigMapping = {
   coreum: CHAIN_COREUM,
   injective: CHAIN_INJECTIVE,
   kujira: CHAIN_KUJIRA,
-  shardeum: CHAIN_SHARDEUM,
-  shardeum_sphinx: CHAIN_SHARDEUM_SPHINX,
   zksync_era: CHAIN_ZKSYNC_ERA,
   base: CHAIN_BASE,
   polygon_zkevm: CHAIN_POLYGON_ZKEVM,
@@ -790,8 +738,6 @@ export const ChainNameToContactsChainNameMapping = {
   'Binance Smart Chain': 'binance',
   Avalanche: 'avalanche',
   'Arbitrum One': 'arbitrum',
-  'Shardeum Liberty 2.0': 'shardeum',
-  'Shardeum Sphinx': 'shardeum_sphinx',
   Cosmos: 'cosmos',
   Osmosis: 'osmosis',
   Juno: 'juno',
@@ -1407,7 +1353,6 @@ export const NON_EIP1599_CHAINS: ChainBackendNames[] = [
   ChainBackendNames.POLYGON_ZKEVM,
   ChainBackendNames.AURORA,
   ChainBackendNames.ZKSYNC_ERA,
-  ChainBackendNames.SHARDEUM_SPHINX,
 ];
 
 export const OP_STACK_ENUMS = [
