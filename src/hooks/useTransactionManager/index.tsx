@@ -498,13 +498,7 @@ export default function useTransactionManager() {
         const ibcResponse = await signingClient.signAndBroadcast(
           fromAddress,
           [transferMsg],
-          {
-            gas: gasFeeDetails?.fee?.gas ?? '0',
-            amount: coins(
-              gasFeeDetails?.fee?.amount?.[0]?.amount ?? '0',
-              gasFeeDetails?.fee?.amount?.[0]?.denom ?? '',
-            ),
-          },
+          gasFeeDetails.fee,
           'Cypher Wallet',
         );
         if (ibcResponse.code === 0) {
