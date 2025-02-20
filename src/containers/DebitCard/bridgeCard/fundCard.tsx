@@ -1130,6 +1130,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         isChooseTokenModalVisible={isChooseTokenVisible}
         setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
+        minTokenValueEth={minTokenValueEth}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);

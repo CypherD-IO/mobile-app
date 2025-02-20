@@ -110,6 +110,7 @@ export default function FirstLoadCard() {
   const optedPlanId =
     cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN;
   const minTokenValueLimit = Math.max(10, Number(planCost));
+  const minTokenValueEth = 50;
 
   const insect = useSafeAreaInsets();
 
@@ -1085,6 +1086,7 @@ export default function FirstLoadCard() {
           setIsChooseTokenVisible(false);
         }}
         type={TokenModalType.CARD_LOAD}
+        minTokenValueEth={minTokenValueEth}
       />
 
       <CyDView className='flex flex-col justify-between flex-1'>

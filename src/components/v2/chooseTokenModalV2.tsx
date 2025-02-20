@@ -13,6 +13,7 @@ import { TokenModalType } from '../../constants/enum';
 import {
   ALL_FUNDABLE_CHAINS,
   Chain,
+  CHAIN_ETH,
   ChainBackendNames,
 } from '../../constants/server';
 import Fuse from 'fuse.js';
@@ -48,6 +49,7 @@ interface TokenModal {
   isChooseTokenModalVisible: boolean;
   setIsChooseTokenModalVisible: Dispatch<SetStateAction<boolean>>;
   minTokenValueLimit?: number;
+  minTokenValueEth?: number;
   onSelectingToken: (token: Holding | SwapToken) => void;
   type?: TokenModalType;
   onCancel?: () => void;
@@ -181,18 +183,30 @@ const RenderToken = React.memo(
     setSelected,
     setModalVisible,
     minTokenValueLimit = 0,
+    minTokenValueEth = 0,
     onSelectingToken,
     setErrorMessage,
+    type,
   }: {
     item: Holding | SupportedToken;
     selected: Holding | null;
     setSelected: (token: Holding | null) => void;
     setModalVisible: (visible: boolean) => void;
     minTokenValueLimit?: number;
+    minTokenValueEth?: number;
     onSelectingToken: (token: Holding | SwapToken) => void;
     setErrorMessage: (errorMessage: string) => void;
+    type?: TokenModalType;
   }) => {
-    const isDisabled = Number(item.totalValue) < minTokenValueLimit;
+    const isEthereumToken =
+      type === TokenModalType.CARD_LOAD &&
+      item.chainDetails.chain_id === CHAIN_ETH.chain_id;
+
+    // minvalue for eth is $50 check
+    const minimumValue = isEthereumToken
+      ? minTokenValueEth
+      : minTokenValueLimit;
+    const isDisabled = Number(item.totalValue) < minimumValue;
     const isSelected =
       item.symbol === selected?.symbol &&
       item.chainDetails.name === selected?.chainDetails.name;
@@ -220,7 +234,7 @@ const RenderToken = React.memo(
           if (isDisabled) {
             setErrorMessage(
               t('MINIMUM_TOKEN_VALUE_ERROR', {
-                value: currencyFormatter.format(minTokenValueLimit),
+                value: currencyFormatter.format(minimumValue),
               }),
             );
             return;
@@ -282,26 +296,23 @@ const RenderToken = React.memo(
         </CyDView>
 
         <CyDView>
+          <CyDText className={'font-semibold text-[16px] text-right mr-[2px]'}>
+            {formatCurrency(item.totalValue)}
+          </CyDText>
           <CyDView className='flex flex-row items-center justify-end'>
             <CyDText
               className={
-                'font-semibold text-subTextColor text-[16px] text-right'
+                'font-semibold text-subTextColor text-[12px] text-right'
               }>
               {formatBalance(item.actualBalance)}
             </CyDText>
             <CyDText
               className={
-                'font-semibold text-subTextColor text-[16px] ml-[4px]'
+                'font-semibold text-subTextColor text-[12px] ml-[4px]'
               }>
               {item.symbol}
             </CyDText>
           </CyDView>
-          <CyDText
-            className={
-              'font-semibold text-subTextColor text-[12px] text-right mr-[2px]'
-            }>
-            {formatCurrency(item.totalValue)}
-          </CyDText>
         </CyDView>
       </CyDTouchView>
     );
@@ -314,7 +325,9 @@ const RenderToken = React.memo(
         nextProps.selected?.contractAddress &&
       prevProps.selected?.chainDetails.name ===
         nextProps.selected?.chainDetails.name &&
-      prevProps.minTokenValueLimit === nextProps.minTokenValueLimit
+      prevProps.minTokenValueLimit === nextProps.minTokenValueLimit &&
+      prevProps.minTokenValueEth === nextProps.minTokenValueEth &&
+      prevProps.type === nextProps.type
     );
   },
 );
@@ -398,7 +411,6 @@ const EmptyListMessage = ({
   </CyDView>
 );
 
-// Add a stable key generator
 const getTokenKey = (item: Holding | SupportedToken) => {
   const chainId = item.chainDetails?.chain_id || '';
   const address = item.contractAddress || '';
@@ -412,6 +424,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     setIsChooseTokenModalVisible,
     tokenList,
     minTokenValueLimit = 0,
+    minTokenValueEth = 0,
     onSelectingToken,
     type = TokenModalType.PORTFOLIO,
     noTokensAvailableMessage = t('NO_TOKENS_FOUND'),
@@ -479,31 +492,27 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     }
   }, [isChooseTokenModalVisible, type, tokenList]);
 
-  // Update the useEffect for combinedTokensList
+  // Update the combinedTokensList effect to properly deduplicate
   useEffect(() => {
     if (type === TokenModalType.CARD_LOAD) {
-      // For card load, show both supported tokens and holdings
-      const holdingsMap = new Map(
-        totalHoldings.originalHoldings.map(token => [
-          `${token.chainDetails.chain_id}-${token.symbol}`,
-          token,
-        ]),
-      );
+      // Create a Map using a unique key for each token
+      const uniqueTokens = new Map();
 
-      // Merge supported tokens with holdings
-      const mergedTokens = [...supportedTokens].map(token => {
-        const key = `${token.chainDetails.chain_id}-${token.symbol}`;
-        const existingHolding = holdingsMap.get(key);
-
-        if (existingHolding) {
-          return existingHolding;
-        }
-        return token;
+      // First add all supported tokens
+      supportedTokens.forEach(token => {
+        const key = `${token.chainDetails.chain_id}-${token.contractAddress}-${token.symbol}`;
+        uniqueTokens.set(key, token);
       });
 
-      setCombinedTokensList(mergedTokens);
+      // Then add/override with holdings where they exist
+      totalHoldings.originalHoldings.forEach(token => {
+        const key = `${token.chainDetails.chain_id}-${token.contractAddress}-${token.symbol}`;
+        uniqueTokens.set(key, token);
+      });
+
+      setCombinedTokensList(Array.from(uniqueTokens.values()));
     } else {
-      // For other types, show only holdings
+      // For other types, show only holdings with non-zero total value
       setCombinedTokensList(
         totalHoldings.originalHoldings.filter(
           token => Number(token.totalValue) > 0,
@@ -868,7 +877,9 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                       onSelectingToken={onSelectingToken}
                       setModalVisible={setIsChooseTokenModalVisible}
                       minTokenValueLimit={minTokenValueLimit}
+                      minTokenValueEth={minTokenValueEth}
                       setErrorMessage={setErrorMessage}
+                      type={type}
                     />
                   )}
                   showsVerticalScrollIndicator={true}
