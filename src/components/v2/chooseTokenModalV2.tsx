@@ -15,6 +15,7 @@ import {
   Chain,
   CHAIN_ETH,
   ChainBackendNames,
+  COSMOS_CHAINS,
 } from '../../constants/server';
 import Fuse from 'fuse.js';
 import {
@@ -413,9 +414,11 @@ const EmptyListMessage = ({
 
 const getTokenKey = (item: Holding | SupportedToken) => {
   const chainId = item.chainDetails?.chain_id || '';
-  const address = item.contractAddress || '';
-  const symbol = item.symbol || '';
-  return `${chainId}-${address}-${symbol}`;
+  const address =
+    item.contractAddress ||
+    (COSMOS_CHAINS.includes(item.chainDetails.chainName) ? item.denom : '');
+  const key = `${chainId}-${address}`;
+  return key;
 };
 
 export default function ChooseTokenModalV2(props: TokenModal) {
@@ -495,18 +498,18 @@ export default function ChooseTokenModalV2(props: TokenModal) {
   // Update the combinedTokensList effect to properly deduplicate
   useEffect(() => {
     if (type === TokenModalType.CARD_LOAD) {
-      // Create a Map using a unique key for each token
+      // Create a Map using chainId-contractAddress as key for deduplication
       const uniqueTokens = new Map();
 
-      // First add all supported tokens
+      // First add supported tokens
       supportedTokens.forEach(token => {
-        const key = `${token.chainDetails.chain_id}-${token.contractAddress}-${token.symbol}`;
+        const key = getTokenKey(token);
         uniqueTokens.set(key, token);
       });
 
-      // Then add/override with holdings where they exist
+      // Then override with holdings where they exist (to show actual balances)
       totalHoldings.originalHoldings.forEach(token => {
-        const key = `${token.chainDetails.chain_id}-${token.contractAddress}-${token.symbol}`;
+        const key = getTokenKey(token);
         uniqueTokens.set(key, token);
       });
 
@@ -784,7 +787,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                     chain => chain.chain_id === selectedChain?.chain_id,
                   );
 
-                  if (selectedIndex >= 5) {
+                  if (selectedIndex >= 4) {
                     const _selected = displayChains[selectedIndex];
                     displayChains.splice(selectedIndex, 1);
                     displayChains.unshift(_selected);
