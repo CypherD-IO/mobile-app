@@ -2403,7 +2403,7 @@ const Bridge: React.FC = () => {
               chainDetails: selectedChainDetails,
               tokens: allowanceResp.tokens,
               walletAddress: ethereum.address as `0x${string}`,
-              isErc20: !selectedFromToken.isNativeToken,
+              isErc20: !selectedFromToken.isNative,
             });
 
             if (approvalResp.isError) {

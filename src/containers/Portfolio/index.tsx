@@ -254,10 +254,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const calculatePortfolioBalance = (portfolio: WalletHoldings) => {
     const { totalBalance, totalUnverifiedBalance } =
       getCurrentChainHoldings(portfolio, selectedChain) ?? {};
+    const safeTotalBalance = totalBalance ?? 0;
+    const safeUnverifiedBalance = totalUnverifiedBalance ?? 0;
     if (isVerifyCoinChecked) {
-      return totalBalance.toString();
+      return safeTotalBalance.toString();
     } else {
-      return totalUnverifiedBalance.toString();
+      return safeUnverifiedBalance.toString();
     }
   };
 

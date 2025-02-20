@@ -383,6 +383,10 @@ export default function IBC({
           toAddress: receiverAddress,
         });
 
+        if (gasDetails?.isError) {
+          throw new Error('Error estimating gas');
+        }
+
         gasReserved = gasDetails?.gasFeeInCrypto;
       }
 
