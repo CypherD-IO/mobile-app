@@ -366,6 +366,7 @@ export default function useTransactionManager() {
   }): Promise<TransactionResponse> => {
     try {
       const { chainName, backendName } = fromChain;
+
       const signer = await getCosmosSignerClient(chainName);
       if (signer) {
         const gasDetails = await estimateGasForCosmos({
@@ -390,20 +391,13 @@ export default function useTransactionManager() {
         );
 
         const tokenDenom = denom ?? '';
-
         const amountToSend = parseUnits(amount, contractDecimals).toString();
 
         const result = await signingClient.sendTokens(
           fromAddress,
           toAddress,
           coins(amountToSend, tokenDenom),
-          {
-            gas: gasDetails?.fee?.gas ?? '0',
-            amount: coins(
-              gasDetails?.fee?.amount?.[0]?.amount ?? '0',
-              gasDetails?.fee?.amount?.[0]?.denom ?? '',
-            ),
-          },
+          gasDetails?.fee,
           'Cypher Wallet',
         );
 
