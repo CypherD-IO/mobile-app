@@ -339,7 +339,8 @@ export default function useGasService() {
         return {
           gasFeeInCrypto,
           gasLimit,
-          gasPrice: finalGasPrice,
+          gasPrice:
+            DecimalHelper.scientificNotationToNumberString(finalGasPrice),
           isEIP1599Supported: false,
         };
       }

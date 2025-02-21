@@ -59,7 +59,7 @@ export type EvmGasEstimation =
       gasLimit: number;
       gasFeeInCrypto: string;
     } & (
-      | { isEIP1599Supported: false; gasPrice: Hex }
+      | { isEIP1599Supported: false; gasPrice: string }
       | {
           isEIP1599Supported: true;
           priorityFee: string;
