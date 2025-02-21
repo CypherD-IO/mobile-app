@@ -672,7 +672,7 @@ export default function FirstLoadCard() {
         if (
           DecimalHelper.isGreaterThan(
             cryptoAmount,
-            selectedToken?.actualBalance,
+            selectedToken?.balanceDecimal,
           )
         ) {
           errorMessage = '*You do not have enough balance to load the card';
@@ -700,7 +700,7 @@ export default function FirstLoadCard() {
       }
     }
     return null;
-  }, [selectedToken, cryptoAmount, nativeToken?.balance]);
+  }, [selectedToken, cryptoAmount, nativeToken?.balanceInteger]);
 
   const fundCard = async () => {
     const {
@@ -896,7 +896,6 @@ export default function FirstLoadCard() {
   ) => {
     const {
       chainDetails,
-      actualBalance,
       symbol: selectedTokenSymbol,
       contractAddress,
       contractDecimals,
@@ -1049,7 +1048,7 @@ export default function FirstLoadCard() {
         e,
         message: 'Error when estimating gasFee for the transaction for EVM',
         isMaxQuote,
-        actualBalance,
+        balanceDecimal,
         actualTokensRequired,
       };
       Sentry.captureException(errorObject);
@@ -1130,7 +1129,7 @@ export default function FirstLoadCard() {
                   )}
                   {isCryptoInput && (
                     <CyDText className='font-medium text-n100 text-[12px]'>
-                      {`${round(selectedToken?.actualBalance ?? 0, 8)} ${String(selectedToken?.symbol ?? '')}`}
+                      {`${DecimalHelper.round(selectedToken?.balanceDecimal ?? '', 8).toString()} ${String(selectedToken?.symbol ?? '')}`}
                     </CyDText>
                   )}
                   <CyDMaterialDesignIcons

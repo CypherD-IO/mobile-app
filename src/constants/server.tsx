@@ -55,14 +55,6 @@ export enum ChainBackendNames {
   SOLANA = 'SOLANA',
 }
 
-export enum CosmosStakingTokens {
-  COSMOS = 'atom',
-  OSMOSIS = 'osmosis',
-  JUNO = 'juno',
-  STARGAZE = 'stargaze',
-  NOBLE = 'noble',
-}
-
 export enum FundWalletAddressType {
   EVM = 'EVM',
   COSMOS = 'COSMOS',
@@ -717,12 +709,6 @@ export enum QRScannerScreens {
 }
 
 export enum NotificationEvents {
-  BEEFY_FINANCE = 'BEEFY_FINANCE',
-  COSMOS_STAKING = 'COSMOS_STAKING',
-  OSMOSIS_STAKING = 'OSMOSIS_STAKING',
-  JUNO_STAKING = 'JUNO_STAKING',
-  STARGAZE_STAKING = 'STARGAZE_STAKING',
-  NOBLE_STAKING = 'NOBLE_STAKING',
   ACTIVITY_UPDATE = 'ACTIVITY_UPDATE',
   ORBITAL_APES = 'ORBITAL_APES',
   ADDRESS_ACTIVITY_WEBHOOK = 'ADDRESS_ACTIVITY_WEBHOOK',

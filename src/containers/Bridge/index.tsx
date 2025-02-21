@@ -453,7 +453,7 @@ const Bridge: React.FC = () => {
           );
           return {
             ...token,
-            balance: matchingHolding?.actualBalance ?? 0,
+            balance: matchingHolding?.balanceDecimal ?? 0,
             balanceInNumbers: matchingHolding?.totalValue ?? 0,
             balanceDecimal: matchingHolding?.balanceDecimal ?? 0,
           };

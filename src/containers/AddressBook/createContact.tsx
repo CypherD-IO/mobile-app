@@ -671,7 +671,6 @@ export const CreateContact = () => {
         title={'Choose Chain'}
         selectedItem={''}
         onPress={setChooseChainFunction}
-        type={'chain'}
       />
       <ChooseContactModal
         isChooseContactModalVisible={chooseContactModalVisible}

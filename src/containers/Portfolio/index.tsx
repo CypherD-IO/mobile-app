@@ -251,23 +251,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   const calculatePortfolioBalance = (portfolio: WalletHoldings) => {
-    const {
-      totalBalance,
-      totalStakedBalance,
-      totalUnverifiedBalance,
-      totalUnbondingBalance,
-    } = getCurrentChainHoldings(portfolio, selectedChain) ?? {};
+    const { totalBalance, totalUnverifiedBalance } =
+      getCurrentChainHoldings(portfolio, selectedChain) ?? {};
+    const safeTotalBalance = totalBalance ?? 0;
+    const safeUnverifiedBalance = totalUnverifiedBalance ?? 0;
     if (isVerifyCoinChecked) {
-      return DecimalHelper.add(totalBalance, [
-        totalStakedBalance,
-        totalUnbondingBalance,
-      ]).toString();
+      return safeTotalBalance.toString();
     } else {
-      return DecimalHelper.add(totalBalance, [
-        totalStakedBalance,
-        totalUnbondingBalance,
-        totalUnverifiedBalance,
-      ]).toString();
+      return safeUnverifiedBalance.toString();
     }
   };
 
@@ -397,45 +388,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       });
     }
   };
-
-  const constructTokenMeta = (
-    localPortfolio: { data: WalletHoldings },
-    event: string,
-  ) => {
-    switch (event) {
-      case NotificationEvents.COSMOS_STAKING: {
-        const [tokenData] = localPortfolio.data.cosmos.totalHoldings.filter(
-          (holding: Holding) => holding.name === 'ATOM',
-        );
-        return tokenData;
-      }
-      case NotificationEvents.OSMOSIS_STAKING: {
-        const [tokenData] = localPortfolio.data.osmosis.totalHoldings.filter(
-          (holding: Holding) => holding.name === 'Osmosis',
-        );
-        return tokenData;
-      }
-      case NotificationEvents.JUNO_STAKING: {
-        const [tokenData] = localPortfolio.data.juno.totalHoldings.filter(
-          (holding: Holding) => holding.name === 'Juno',
-        );
-        return tokenData;
-      }
-      case NotificationEvents.STARGAZE_STAKING: {
-        const [tokenData] = localPortfolio.data.stargaze.totalHoldings.filter(
-          (holding: Holding) => holding.name === 'Stargaze',
-        );
-        return tokenData;
-      }
-      case NotificationEvents.NOBLE_STAKING: {
-        const [tokenData] = localPortfolio.data.noble.totalHoldings.filter(
-          (holding: Holding) => holding.name === 'Noble',
-        );
-        return tokenData;
-      }
-    }
-  };
-
   async function handlePushNotification(
     remoteMessage: FirebaseMessagingTypes.RemoteMessage | null,
   ) {
@@ -453,94 +405,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             break;
           }
-          case NotificationEvents.BEEFY_FINANCE: {
-            void analytics().logEvent('beefy_cta', {
-              from: ethereum.address,
-            });
-            navigation.navigate(C.screenTitle.OPTIONS, {
-              params: {
-                url: remoteMessage.data.url ?? 'https://app.beefy.com/',
-              },
-              screen: C.screenTitle.BROWSER_SCREEN,
-            });
-            break;
-          }
-          case NotificationEvents.COSMOS_STAKING: {
-            void analytics().logEvent('cosmos_staking_cta', {
-              from: [ethereum.address, hdWallet.state.wallet.cosmos.address],
-              chain: 'COSMOS',
-            });
-            const tknData = constructTokenMeta(
-              localPortfolio,
-              NotificationEvents.COSMOS_STAKING,
-            );
-            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
-              tokenData: tknData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
-            });
-            break;
-          }
-          case NotificationEvents.OSMOSIS_STAKING: {
-            void analytics().logEvent('osmosis_staking_cta', {
-              from: [ethereum.address, hdWallet.state.wallet.osmosis.address],
-              chain: 'OSMOSIS',
-            });
-            const tknData = constructTokenMeta(
-              localPortfolio,
-              NotificationEvents.OSMOSIS_STAKING,
-            );
-            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
-              tokenData: tknData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
-            });
-            break;
-          }
-          case NotificationEvents.JUNO_STAKING: {
-            void analytics().logEvent('juno_staking_cta', {
-              from: [ethereum.address, hdWallet.state.wallet.juno.address],
-              chain: 'JUNO',
-            });
-            const tknData = constructTokenMeta(
-              localPortfolio,
-              NotificationEvents.JUNO_STAKING,
-            );
-
-            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
-              tokenData: tknData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
-            });
-            break;
-          }
-          case NotificationEvents.STARGAZE_STAKING: {
-            void analytics().logEvent('stargaze_staking_cta', {
-              from: [ethereum.address, hdWallet.state.wallet.stargaze.address],
-              chain: 'STARGAZE',
-            });
-            const tknData = constructTokenMeta(
-              localPortfolio,
-              NotificationEvents.STARGAZE_STAKING,
-            );
-            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
-              tokenData: tknData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
-            });
-            break;
-          }
-          case NotificationEvents.NOBLE_STAKING: {
-            void analytics().logEvent('noble_staking_cta', {
-              from: [ethereum.address, hdWallet.state.wallet.noble.address],
-              chain: 'NOBLE',
-            });
-            const tknData = constructTokenMeta(
-              localPortfolio,
-              NotificationEvents.NOBLE_STAKING,
-            );
-            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
-              tokenData: tknData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
-            });
-            break;
-          }
           case NotificationEvents.ACTIVITY_UPDATE: {
             void analytics().logEvent('activity_cta', {
               from: ethereum.address,
@@ -548,18 +412,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             navigation.navigate(C.screenTitle.OPTIONS, {
               screen: C.screenTitle.ACTIVITIES,
             });
-            break;
-          }
-          case NotificationEvents.ORBITAL_APES: {
-            void analytics().logEvent('orbital_apes_cta', {
-              from: ethereum.address,
-            });
-            if (remoteMessage.data.url) {
-              navigation.navigate(C.screenTitle.OPTIONS, {
-                params: { url: remoteMessage.data.url },
-                screen: C.screenTitle.BROWSER_SCREEN,
-              });
-            }
             break;
           }
           case NotificationEvents.ADDRESS_ACTIVITY_WEBHOOK: {

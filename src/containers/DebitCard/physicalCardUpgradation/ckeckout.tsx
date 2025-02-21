@@ -61,9 +61,7 @@ export default function ShippingCheckout() {
     preferredName,
     physicalCardType,
   } = route.params;
-  const { globalState, globalDispatch } = useContext<any>(
-    GlobalContext,
-  ) as GlobalContextDef;
+  const { globalState } = useContext<any>(GlobalContext) as GlobalContextDef;
   const { t } = useTranslation();
   const { getWithAuth, postWithAuth } = useAxios();
   const [balance, setBalance] = useState<number>(0);

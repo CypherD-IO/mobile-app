@@ -31,14 +31,11 @@ import { screenTitle } from '../../../constants';
 import { Chain } from '../../../constants/server';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { ALL_CHAINS_TYPE } from '../../../constants/type';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 
 interface NFTSceneProps {
   selectedChain: string;
-  navigation: {
-    goBack: () => void;
-    setOptions: ({ title }: { title: string }) => void;
-    navigate: (screen: string, params?: {}) => void;
-  };
+  navigation: NavigationProp<ParamListBase>;
 }
 
 const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
@@ -72,26 +69,6 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
   useEffect(() => {
     void filterNFTHoldingsByChain();
   }, [selectedChain, origNFTHoldings]);
-
-  // useEffect(() => {
-  //   if (scrollViewRef.current) {
-  //     if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
-  //       scrollViewRef.current.scrollTo({
-  //         y: Math.max(
-  //           Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
-  //           OFFSET_TABVIEW,
-  //         ),
-  //         animated: false,
-  //       });
-  //     } else {
-  //       scrollViewRef.current.scrollTo({
-  //         y: OFFSET_TABVIEW + bannerHeight,
-  //         animated: false,
-  //       });
-  //     }
-  //     trackRef(routeKey, scrollViewRef.current);
-  //   }
-  // }, [scrollViewRef.current, loading]);
 
   const getNFTHoldings = async () => {
     setLoading(true);
