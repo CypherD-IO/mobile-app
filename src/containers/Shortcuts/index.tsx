@@ -770,7 +770,6 @@ export default function ShortcutsModal() {
         title={'Choose Chain'}
         selectedItem={selectedChain.name}
         onPress={onSelectingChain}
-        type={'chain'}
         customStyle={{ justifyContent: 'flex-end', padding: 0 }}
         isClosable={true}
         animationOut={'slideOutDown'}

@@ -16,7 +16,6 @@ import {
   CHAIN_NOBLE,
   ChainBackendNames,
   EnsCoinTypes,
-  CosmosStakingTokens,
   NativeTokenMapping,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
@@ -693,28 +692,6 @@ export const isBasicCosmosChain = (backendName: string) =>
 
 export const isCosmosChain = (backendName: string) =>
   isBasicCosmosChain(backendName);
-
-export const isCosmosStakingToken = (chain: string, tokenData: any) =>
-  tokenData.chainDetails.backendName ===
-    ChainBackendNames[chain as ChainBackendNames] &&
-  tokenData.name.toLowerCase() ===
-    CosmosStakingTokens[chain as CosmosStakingTokens];
-
-export const isACosmosStakingToken = (tokenData: any) =>
-  [
-    ChainBackendNames.OSMOSIS,
-    ChainBackendNames.COSMOS,
-    ChainBackendNames.JUNO,
-    ChainBackendNames.STARGAZE,
-  ].some(chain => isCosmosStakingToken(chain as string, tokenData));
-
-export const isABasicCosmosStakingToken = (tokenData: any) =>
-  [
-    ChainBackendNames.OSMOSIS,
-    ChainBackendNames.COSMOS,
-    ChainBackendNames.JUNO,
-    ChainBackendNames.STARGAZE,
-  ].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
 export const calculateTime = function time(ttime: string) {
   const ms = Date.parse(String(new Date())) - Date.parse(ttime);

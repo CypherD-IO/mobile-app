@@ -35,11 +35,8 @@ export interface Holding {
   logoUrl: string;
   price: string;
   contractAddress: string;
-  balance: string;
   contractDecimals: number;
   totalValue: number;
-  actualBalance: number;
-  balanceInInteger: number;
   balanceInteger: string;
   balanceDecimal: string;
   isVerified: boolean;
@@ -48,9 +45,6 @@ export interface Holding {
   id: number;
   chainDetails: Chain;
   denom: string;
-  stakedBalance?: string;
-  actualStakedBalance: number;
-  stakedBalanceTotalValue?: number;
   price24h?: number | string;
   unbondingBalanceTotalValue?: number;
   actualUnbondingBalance?: number;
@@ -59,15 +53,12 @@ export interface Holding {
   isFundable: boolean;
   isBridgeable: boolean;
   isSwapable: boolean;
-  isStakeable?: boolean;
   isZeroFeeCardFunding?: boolean;
 }
 
 export interface ChainHoldings {
   totalBalance: number;
   totalUnverifiedBalance: number;
-  totalStakedBalance: number;
-  totalUnbondingBalance: number;
   totalHoldings: Holding[];
   timestamp: string;
 }
@@ -75,8 +66,6 @@ export interface ChainHoldings {
 export interface WalletHoldings {
   totalBalance: number;
   totalUnverifiedBalance: number;
-  totalStakedBalance: number;
-  totalUnbondingBalance: number;
   eth: ChainHoldings;
   polygon: ChainHoldings;
   bsc: ChainHoldings;
@@ -190,14 +179,8 @@ export function getCurrentChainHoldings(
 }
 
 export function sortDesc(a: Holding, b: Holding) {
-  const first = DecimalHelper.add(
-    get(a, 'totalValue', 0),
-    get(a, 'actualStakedBalance', 0),
-  );
-  const second = DecimalHelper.add(
-    get(b, 'totalValue', 0),
-    get(b, 'actualStakedBalance', 0),
-  );
+  const first = get(a, 'totalValue', 0);
+  const second = get(b, 'totalValue', 0);
 
   if (DecimalHelper.isLessThan(first, second)) {
     return 1;
@@ -211,8 +194,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let id = 1;
   let totalUnverifiedBalance = 0;
   let totalBalance = 0;
-  let totalStakedBalance = 0;
-  let totalUnbondingBalance = 0;
   let ethHoldings;
   let maticHoldings;
   let bscHoldings;
@@ -243,8 +224,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   } else allholdings = [];
 
   for (let i = 0; i < allholdings.length; i++) {
-    let chainStakedBalance = 0;
-    let chainUnbondingBalance = 0;
     const tokenHoldings: Holding[] = [];
     const currentHoldings = allholdings[i]?.tokens || [];
 
@@ -256,11 +235,8 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         logoUrl: holding.logoUrl,
         price: holding.price,
         contractAddress: holding.contractAddress,
-        balance: holding.balanceInInteger,
         contractDecimals: holding.decimals,
         totalValue: holding.totalValue,
-        actualBalance: holding.actualBalance,
-        balanceInInteger: holding.balanceInInteger,
         balanceInteger: holding.balanceInteger,
         balanceDecimal: holding.balanceDecimal,
         isVerified: flags.verified,
@@ -268,16 +244,12 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         about: '',
         id: id++,
         price24h: holding.coingeckoId ?? 'NA',
-        stakedBalance: holding.stakedBalance ?? undefined,
-        actualStakedBalance: holding.actualStakedBalance ?? 0,
-        stakedBalanceTotalValue: holding.stakedBalanceTotalValue ?? 0,
         actualUnbondingBalance: holding.actualUnbondingBalance ?? 0,
         unbondingBalanceTotalValue: holding.unbondingBalanceTotalValue ?? 0,
         isNativeToken: flags.nativeToken,
         isFundable: flags.fundable,
         isBridgeable: flags.bridgeable,
         isSwapable: flags.swapable,
-        isStakeable: flags.stakeable ?? false,
         isZeroFeeCardFunding: flags.zeroFeeToken ?? false,
         chainDetails: CHAIN_ETH,
         denom: '',
@@ -357,8 +329,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         tokenHoldings.push(tokenHolding);
         totalHoldings.push(tokenHolding);
       }
-      chainStakedBalance += tokenHolding.actualStakedBalance;
-      chainUnbondingBalance += Number(tokenHolding.actualUnbondingBalance);
     }
 
     const chainTotalBalance = allholdings[i]?.totalValue
@@ -370,15 +340,11 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     const chainHoldings: ChainHoldings = {
       totalUnverifiedBalance: chainUnVerifiedBalance,
       totalBalance: chainTotalBalance,
-      totalStakedBalance: chainStakedBalance,
-      totalUnbondingBalance: chainUnbondingBalance,
       totalHoldings: tokenHoldings,
       timestamp: new Date().toISOString(),
     };
     totalBalance += chainTotalBalance;
     totalUnverifiedBalance += chainUnVerifiedBalance;
-    totalStakedBalance += chainStakedBalance;
-    totalUnbondingBalance += chainUnbondingBalance;
 
     chainHoldings.totalHoldings.sort(sortDesc);
 
@@ -454,8 +420,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   const portfolio: WalletHoldings = {
     totalBalance,
     totalUnverifiedBalance,
-    totalStakedBalance,
-    totalUnbondingBalance,
     eth: ethHoldings as ChainHoldings,
     polygon: maticHoldings as ChainHoldings,
     bsc: bscHoldings as ChainHoldings,

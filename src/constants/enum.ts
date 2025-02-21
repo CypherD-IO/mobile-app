@@ -24,7 +24,6 @@ export enum AllChainsEnum {
 }
 
 export enum TokenFunctionality {
-  STAKING = 'STAKING',
   TRANSACTIONS = 'TRANSACTIONS',
   ABOUT = 'ABOUT',
 }
@@ -200,13 +199,11 @@ export enum OtherIdTypes {
 export enum TokenOverviewTabs {
   OVERVIEW = 'OVERVIEW',
   TRANSACTIONS = 'TRANSACTIONS',
-  STAKING = 'STAKING',
 }
 
 export enum TokenOverviewTabIndices {
   OVERVIEW = 0,
   TRANSACTIONS = 1,
-  STAKING = 2,
 }
 
 export enum RPCPreference {
