@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { WalletConnectListener } from '../walletConnectListener';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -17,21 +11,14 @@ import {
   bsc,
   base,
   polygonZkEvm,
-  aurora,
-  moonbeam,
-  moonriver,
 } from '@wagmi/core/chains';
 import {
-  AppKit,
   createAppKit,
   defaultWagmiConfig,
 } from '@reown/appkit-wagmi-react-native';
 import { Config } from 'react-native-config';
 import Loading from '../v2/loading';
-import {
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-  HdWalletContext,
-} from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { getConnectionType } from '../../core/asyncStorage';
 import { ConnectionTypes } from '../../constants/enum';
 
@@ -48,9 +35,6 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
     bsc,
     base,
     polygonZkEvm,
-    aurora,
-    moonbeam,
-    moonriver,
   ] as const;
 
   const projectId = String(Config.WALLET_CONNECT_PROJECTID);

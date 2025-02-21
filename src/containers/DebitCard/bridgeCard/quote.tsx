@@ -116,7 +116,6 @@ export default function CardQuote({
   ] = useState<boolean>(false);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
-  const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
@@ -126,7 +125,6 @@ export default function CardQuote({
   const cosmosAddresses = {
     cosmos: cosmos.address,
     osmosis: osmosis.address,
-    juno: juno.address,
     stargaze: stargaze.address,
     noble: noble.address,
     coreum: coreum.address,

@@ -99,9 +99,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
               case ChainBackendNames.OSMOSIS:
                 addressTypeQRCode = FundWalletAddressType.OSMOSIS;
                 break;
-              case ChainBackendNames.JUNO:
-                addressTypeQRCode = FundWalletAddressType.JUNO;
-                break;
               case ChainBackendNames.STARGAZE:
                 addressTypeQRCode = FundWalletAddressType.STARGAZE;
                 break;
@@ -125,18 +122,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
                 break;
               case ChainBackendNames.BASE:
                 addressTypeQRCode = FundWalletAddressType.BASE;
-                break;
-              case ChainBackendNames.POLYGON_ZKEVM:
-                addressTypeQRCode = FundWalletAddressType.POLYGON_ZKEVM;
-                break;
-              case ChainBackendNames.AURORA:
-                addressTypeQRCode = FundWalletAddressType.AURORA;
-                break;
-              case ChainBackendNames.MOONBEAM:
-                addressTypeQRCode = FundWalletAddressType.MOONBEAM;
-                break;
-              case ChainBackendNames.MOONRIVER:
-                addressTypeQRCode = FundWalletAddressType.MOONRIVER;
                 break;
               case ChainBackendNames.POLYGON:
                 addressTypeQRCode = FundWalletAddressType.POLYGON;

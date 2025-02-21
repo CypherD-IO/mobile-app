@@ -479,7 +479,6 @@ export async function getSignerClient(
   const accounts: string[] = [
     'cosmos',
     'osmosis',
-    'juno',
     'stargaze',
     'noble',
     'coreum',

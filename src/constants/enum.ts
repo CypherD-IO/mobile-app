@@ -7,7 +7,6 @@ export enum AllChainsEnum {
   BSC = 'BSC',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
-  JUNO = 'JUNO',
   STARGAZE = 'STARGAZE',
   COREUM = 'COREUM',
   INJECTIVE = 'INJECTIVE',
@@ -15,10 +14,6 @@ export enum AllChainsEnum {
   NOBLE = 'NOBLE',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
-  POLYGON_ZKEVM = 'POLYGON_ZKEVM',
-  AURORA = 'AURORA',
-  MOONBEAM = 'MOONBEAM',
-  MOONRIVER = 'MOONRIVER',
   TRON = 'TRON',
   SOLANA = 'SOLANA',
 }

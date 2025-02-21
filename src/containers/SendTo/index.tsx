@@ -86,7 +86,6 @@ import {
 import { isCoreumAddress } from '../utilities/coreumUtilities';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
-import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isKujiraAddress } from '../utilities/kujiraUtilities';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
@@ -258,7 +257,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const {
     cosmos,
     osmosis,
-    juno,
     stargaze,
     noble,
     coreum,
@@ -270,7 +268,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const senderAddress: Record<string, string> = {
     cosmos: cosmos.address,
     osmosis: osmosis.address,
-    juno: juno.address,
     stargaze: stargaze.address,
     noble: noble.address,
     coreum: coreum.address,
@@ -325,7 +322,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       evmAddresses: {},
       ethereum: {},
       cosmos: {},
-      juno: {},
       osmosis: {},
       stargaze: {},
       noble: {},
@@ -339,10 +335,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       arbitrum: {},
       zksync_era: {},
       base: {},
-      polygon_zkevm: {},
-      aurora: {},
-      moonbeam: {},
-      moonriver: {},
       solana: {},
     };
     if (tempContactBook) {
@@ -620,11 +612,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         isOsmosisAddress(addressRef.current)
       ) {
         activityData.fromAddress = osmosis.address;
-      } else if (
-        chainDetails?.chainName === ChainNames.JUNO &&
-        isJunoAddress(addressRef.current)
-      ) {
-        activityData.fromAddress = juno.address;
       } else if (
         chainDetails?.chainName === ChainNames.STARGAZE &&
         isStargazeAddress(addressRef.current)
@@ -973,18 +960,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             });
           }
           break;
-        case ChainNames.JUNO:
-          if (!isJunoAddress(address)) {
-            error = true;
-            showModal('state', {
-              type: 'error',
-              title: t('INVALID_ADDRESS'),
-              description: t('NOT_VALID_JUNO_ADDRESS'),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }
-          break;
         case ChainNames.STARGAZE:
           if (!isStargazeAddress(address)) {
             error = true;
@@ -1088,8 +1063,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const isMemoNeeded = () => {
     return (
       chainDetails?.chainName === ChainNames.COSMOS ||
-      chainDetails?.chainName === ChainNames.OSMOSIS ||
-      chainDetails?.chainName === ChainNames.JUNO
+      chainDetails?.chainName === ChainNames.OSMOSIS
     );
   };
 

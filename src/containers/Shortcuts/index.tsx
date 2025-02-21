@@ -504,9 +504,6 @@ export default function ShortcutsModal() {
         case ChainBackendNames.OSMOSIS:
           addressTypeQRCode = FundWalletAddressType.OSMOSIS;
           break;
-        case ChainBackendNames.JUNO:
-          addressTypeQRCode = FundWalletAddressType.JUNO;
-          break;
         case ChainBackendNames.STARGAZE:
           addressTypeQRCode = FundWalletAddressType.STARGAZE;
           break;

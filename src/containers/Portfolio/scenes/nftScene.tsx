@@ -258,7 +258,6 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
           BSC: [],
           COSMOS: [],
           OSMOSIS: [],
-          JUNO: [],
           STARGAZE: [],
           NOBLE: [],
         };
@@ -290,7 +289,6 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
         BSC: [],
         COSMOS: [],
         OSMOSIS: [],
-        JUNO: [],
         STARGAZE: [],
         NOBLE: [],
       });

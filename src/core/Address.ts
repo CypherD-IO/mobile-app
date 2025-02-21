@@ -34,7 +34,6 @@ export type AddressChainNames =
   | 'ethereum'
   | 'cosmos'
   | 'osmosis'
-  | 'juno'
   | 'stargaze'
   | 'noble'
   | 'coreum'
@@ -121,10 +120,6 @@ export const generateWalletFromMnemonic = async (
     Bech32Prefixes.COSMOS,
     getBytes(cosmosRipemd160Hash),
   );
-  const junoAddress = Bech32.encode(
-    Bech32Prefixes.JUNO,
-    getBytes(cosmosRipemd160Hash),
-  );
   const stargazeAddress = Bech32.encode(
     Bech32Prefixes.STARGAZE,
     getBytes(cosmosRipemd160Hash),
@@ -139,11 +134,6 @@ export const generateWalletFromMnemonic = async (
   );
   const osmosisAddress = Bech32.encode(
     Bech32Prefixes.OSMOSIS,
-    getBytes(cosmosRipemd160Hash),
-  );
-
-  const injectiveAddress = Bech32.encode(
-    Bech32Prefixes.INJECTIVE,
     getBytes(cosmosRipemd160Hash),
   );
 
@@ -178,11 +168,6 @@ export const generateWalletFromMnemonic = async (
       {
         name: 'osmosis',
         address: osmosisAddress.toLowerCase(),
-        publicKey: cosmosPubKey,
-      },
-      {
-        name: 'juno',
-        address: junoAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {

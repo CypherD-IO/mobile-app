@@ -350,7 +350,6 @@ export default function useInitializer() {
           get(attributes, 'ethereumAddress', ''),
           get(attributes, 'cosmosAddress'),
           get(attributes, 'osmosisAddress'),
-          get(attributes, 'junoAddress'),
           get(attributes, 'stargazeAddress'),
           get(attributes, 'nobleAddress'),
           get(attributes, 'coreumAddress'),

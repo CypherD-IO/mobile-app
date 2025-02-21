@@ -32,7 +32,6 @@ export const chainExplorerMapping: Record<string, string> = {
   OPTIMISM: 'https://optimistic.etherscan.io/tx/',
   COSMOS: 'https://www.mintscan.io/cosmos/txs/',
   OSMOSIS: 'https://www.mintscan.io/osmosis/txs/',
-  JUNO: 'https://www.mintscan.io/juno/txs/',
   STARGAZE: 'https://www.mintscan.io/stargaze/txs/',
   NOBLE: 'https://www.mintscan.io/noble/txs/',
   COREUM: 'https://www.mintscan.io/coreum/txs/',

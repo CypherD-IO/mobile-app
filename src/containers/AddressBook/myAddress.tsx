@@ -9,7 +9,6 @@ import {
   CHAIN_BSC,
   CHAIN_COSMOS,
   CHAIN_ETH,
-  CHAIN_JUNO,
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
@@ -18,10 +17,6 @@ import {
   FundWalletAddressType,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
@@ -45,7 +40,6 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { CyDIconsPack } from '../../customFonts/generator';
 
 interface RouteParams {
   indexValue: number;
@@ -61,7 +55,6 @@ export function AddressBook() {
     stargaze,
     cosmos,
     osmosis,
-    juno,
     noble,
     coreum,
     injective,
@@ -140,15 +133,6 @@ export function AddressBook() {
                 bGC={'#f5edfa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.OSMOSIS}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_JUNO.name}
-                wallet={juno.wallets[juno.currentIndex]}
-                logo={AppImages.JUNO_LOGO}
-                bGC={'#ebebeb'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.JUNO}
               />
 
               <AddressBookContainer
@@ -257,42 +241,6 @@ export function AddressBook() {
                 bGC={'#f1f4fa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.BASE}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_POLYGON_ZKEVM.name}
-                wallet={ethereum}
-                logo={AppImages.POLYGON_ZKEVM_LOGO}
-                bGC={'#f5efff'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.POLYGON_ZKEVM}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_AURORA.name}
-                wallet={ethereum}
-                logo={AppImages.AURORA_LOGO}
-                bGC={'#f3fee3'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.AURORA}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_MOONBEAM.name}
-                wallet={ethereum}
-                logo={AppImages.MOONBEAM_LOGO}
-                bGC={'#faedf8'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.MOONBEAM}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_MOONRIVER.name}
-                wallet={ethereum}
-                logo={AppImages.MOONRIVER_LOGO}
-                bGC={'#f2fcfa'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.MOONRIVER}
               />
             </CyDView>
           </CyDScrollView>

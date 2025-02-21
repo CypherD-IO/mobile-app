@@ -27,7 +27,6 @@ export default function usePortfolio() {
     const {
       cosmos,
       osmosis,
-      juno,
       stargaze,
       noble,
       ethereum,
@@ -41,7 +40,6 @@ export default function usePortfolio() {
         ethereum.address,
         cosmos?.wallets[cosmos?.currentIndex]?.address,
         osmosis?.wallets[osmosis?.currentIndex]?.address,
-        juno?.wallets[juno?.currentIndex]?.address,
         stargaze?.address,
         noble?.address,
         coreum?.address,

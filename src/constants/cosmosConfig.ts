@@ -3,7 +3,6 @@ import Long from 'long';
 export enum Denom {
   ATOM = 'uatom',
   OSMOSIS = 'uosmo',
-  JUNO = 'ujuno',
   STARGAZE = 'ustars',
   NOBLE = 'uusdc',
   COREUM = 'ucore',
@@ -32,7 +31,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     backendName: 'COSMOS',
     channel: {
       osmosis: 'channel-141',
-      juno: 'channel-207',
       stargaze: 'channel-730',
       noble: 'channel-536',
       coreum: 'channel-660',
@@ -44,7 +42,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
       cosmos: 'uatom',
       osmosis:
         'ibc/14F9BC3E44B8A9C1BE1FB08980FAB87034C9905EF17CF2F5008FC085218811CC',
-      juno: 'ibc/CDAB23DA5495290063363BD1C3499E26189036302DC689985A7E23F8DF8D8DB0',
       stargaze:
         'ibc/F79A876741A3A49DD66421F63CD68FC43A5F92C381EB1415966277BF66C720A7',
       noble:
@@ -66,7 +63,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     backendName: 'OSMOSIS',
     channel: {
       cosmos: 'channel-0',
-      juno: 'channel-42',
       stargaze: 'channel-75',
       noble: 'channel-750',
       coreum: 'channel-2188',
@@ -78,7 +74,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
       osmosis: 'uosmo',
       cosmos:
         'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-      juno: 'ibc/46B44899322F3CD854D2D46DEEF881958467CDD4B3B10086DA49296BBED94BED',
       stargaze:
         'ibc/987C17B11ABC2B20019178ACE62929FE9840202CE79498E29FE8E5CB02B7C0A4',
       noble:
@@ -92,43 +87,10 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     },
     poolIds: {
       cosmos: Long.fromNumber(1),
-      juno: Long.fromNumber(497),
       stargaze: Long.fromNumber(604),
       noble: Long.fromNumber(605),
     },
     rest: 'https://rest.lavenderfive.com:443/osmosis',
-  },
-  juno: {
-    prefix: 'juno',
-    denom: Denom.JUNO,
-    contractDecimal: 6,
-    coinType: 118,
-    backendName: 'juno',
-    channel: {
-      cosmos: 'channel-1',
-      osmosis: 'channel-0',
-      stargaze: 'channel-20',
-      noble: 'channel-224',
-      coreum: '',
-      injective: '',
-      kujira: '',
-    },
-    gasPrice: 0.1,
-    ibcDenoms: {
-      cosmos:
-        'ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9',
-      osmosis:
-        'ibc/ED07A3391A112B175915CD8FAF43A2DA8E4790EDE12566649D0C2F97716B8518',
-      juno: 'ujuno',
-      stargaze:
-        'ibc/F6B367385300865F654E110976B838502504231705BAC0849B0651C226385885',
-      noble:
-        'ibc/4A482FA914A4B9B05801ED81C33713899F322B24F76A06F4B8FE872485EA22FF',
-      coreum: '',
-      injective: '',
-      kujira: '',
-    },
-    rest: 'https://lcd-juno.itastakers.com',
   },
   stargaze: {
     prefix: 'stars',
@@ -139,7 +101,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     channel: {
       cosmos: 'channel-239',
       osmosis: 'channel-0',
-      juno: 'channel-5',
       noble: 'channel-204',
       coreum: '',
       injective: '',
@@ -151,7 +112,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
         'iibc/9DF365E2C0EF4EA02FA771F638BB9C0C830EFCD354629BDC017F79B348B4E989',
       osmosis:
         'ibc/AB7C92666DE8C7A977666B8080CABF0127B652B9D40F7251E6914DE942D9942B',
-      juno: 'ibc/448C1061CE97D86CC5E86374CD914870FB8EBA16C58661B5F1D3F46729A2422D',
       stargaze: 'ustars',
       noble:
         'ibc/4A1C18CA7F50544760CF306189B810CE4C1CB156C7FC870143D401FE7280E591',
@@ -170,7 +130,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     channel: {
       cosmos: 'channel-4',
       osmosis: 'channel-1',
-      juno: 'channel-3',
       stargaze: 'channel-11',
       coreum: 'channel-49',
       injective: 'channel-31',
@@ -182,7 +141,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
         'ibc/EF48E6B1A1A19F47ECAEA62F5670C37C0580E86A9E88498B7E393EB6F49F33C0',
       osmosis:
         'ibc/0471F1C4E7AFD3F07702BEF6DC365268D64570F7C1FDC98EA6098DD6DE59817B',
-      juno: 'ibc/C814F0B662234E24248AE3B2FE2C1B54BBAF12934B757F6E7BC5AEC119963895',
       stargaze:
         'ibc/D7CBF85B893451FA339A4171FEEC19A328FE7AFA86D37D6CD66EAAC02AF6EB5F',
       noble: 'uatom',
@@ -204,7 +162,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     channel: {
       cosmos: 'channel-9',
       osmosis: 'channel-2',
-      juno: '',
       stargaze: '',
       noble: 'channel-19',
       injective: '',
@@ -216,7 +173,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
         'ibc/45C001A5AE212D09879BE4627C45B64D5636086285590D5145A51E18E9D16722',
       osmosis:
         'ibc/13B2C536BB057AC79D5616B8EA1B9540EC1F2170718CAFF6F0083C966FFFED0B',
-      juno: '',
       stargaze: '',
       noble:
         'ibc/E1E3674A0E4E1EF9C69646F9AF8D9497173821826074622D831BAB73CCB99A2D',
@@ -236,7 +192,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     channel: {
       cosmos: 'channel-1',
       osmosis: 'channel-8',
-      juno: '',
       stargaze: '',
       noble: 'channel-148',
       coreum: '',
@@ -248,7 +203,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
         'ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9',
       osmosis:
         'ibc/92E0120F15D037353CFB73C14651FC8930ADC05B93100FD7754D3A689E53B333',
-      juno: '',
       stargaze: '',
       noble:
         'ibc/2CBC2EA121AE42563B08028466F37B600F2D7D4282342DE938283CC3FB2BC00E',
@@ -268,7 +222,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
     channel: {
       cosmos: 'channel-0',
       osmosis: 'channel-3',
-      juno: 'channel-1',
       stargaze: 'channel-7',
       noble: 'channel-62',
       coreum: 'channel-122',
@@ -280,7 +233,6 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
         'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
       osmosis:
         'ibc/47BD209179859CDE4A2806763D7189B6E6FE13A17880FE2B42DE1E6C1E329E23',
-      juno: 'ibc/EFF323CC632EC4F747C61BCE238A758EFDB7699C3226565F7C20DA06509D59A5',
       stargaze:
         'ibc/4F393C3FCA4190C0A6756CE7F6D897D5D1BE57D6CCB80D0BC87393566A7B6602',
       noble:

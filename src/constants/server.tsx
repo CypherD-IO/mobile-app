@@ -10,9 +10,6 @@ import {
   zkSync,
   base,
   polygonZkEvm,
-  aurora,
-  moonbeam,
-  moonriver,
 } from 'wagmi/chains';
 import { AllChainsEnum } from './enum';
 export interface Chain {
@@ -40,7 +37,6 @@ export enum ChainBackendNames {
   BSC = 'BSC',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
-  JUNO = 'JUNO',
   STARGAZE = 'STARGAZE',
   NOBLE = 'NOBLE',
   COREUM = 'COREUM',
@@ -48,10 +44,6 @@ export enum ChainBackendNames {
   KUJIRA = 'KUJIRA',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
-  POLYGON_ZKEVM = 'POLYGON_ZKEVM',
-  AURORA = 'AURORA',
-  MOONBEAM = 'MOONBEAM',
-  MOONRIVER = 'MOONRIVER',
   SOLANA = 'SOLANA',
 }
 
@@ -59,7 +51,6 @@ export enum FundWalletAddressType {
   EVM = 'EVM',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
-  JUNO = 'JUNO',
   STARGAZE = 'STARGAZE',
   NOBLE = 'NOBLE',
   COREUM = 'COREUM',
@@ -72,10 +63,6 @@ export enum FundWalletAddressType {
   BSC = 'BSC',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
-  POLYGON_ZKEVM = 'POLYGON_ZKEVM',
-  AURORA = 'AURORA',
-  MOONBEAM = 'MOONBEAM',
-  MOONRIVER = 'MOONRIVER',
   SOLANA = 'SOLANA',
 }
 
@@ -200,21 +187,6 @@ export const CHAIN_OSMOSIS: Chain = {
   coinGeckoId: 'osmosis',
 };
 
-export const CHAIN_JUNO: Chain = {
-  chainName: 'juno',
-  name: 'Juno',
-  symbol: 'JUNO',
-  id: 9,
-  logo_url: AppImages.JUNO_LOGO,
-  backendName: ChainBackendNames.JUNO,
-  chain_id: 'juno-1',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl:
-    'https://public.cypherd.io/assets/blockchains/juno/info/logo.png',
-  chainIdNumber: 0,
-  coinGeckoId: 'juno-network',
-};
-
 export const CHAIN_OPTIMISM: Chain = {
   chainName: 'ethereum',
   name: 'Optimism',
@@ -326,61 +298,6 @@ export const CHAIN_BASE: Chain = {
   chainIdNumber: 8453,
 };
 
-export const CHAIN_POLYGON_ZKEVM: Chain = {
-  chainName: 'ethereum',
-  name: 'Polygon zkEVM',
-  symbol: 'ETH',
-  id: 18,
-  logo_url: AppImages.POLYGON_ZKEVM_LOGO,
-  backendName: ChainBackendNames.POLYGON_ZKEVM,
-  chain_id: '0x44d',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl:
-    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
-  chainIdNumber: 1101,
-};
-
-export const CHAIN_AURORA: Chain = {
-  chainName: 'ethereum',
-  name: 'Aurora',
-  symbol: 'ETH',
-  id: 19,
-  logo_url: AppImages.AURORA_LOGO,
-  backendName: ChainBackendNames.AURORA,
-  chain_id: '0x4e454152',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  secondaryAddress: '',
-  nativeTokenLogoUrl:
-    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
-  chainIdNumber: 1313161554,
-};
-
-export const CHAIN_MOONBEAM: Chain = {
-  chainName: 'ethereum',
-  name: 'Moonbeam',
-  symbol: 'GLMR',
-  id: 20,
-  logo_url: AppImages.MOONBEAM_LOGO,
-  backendName: ChainBackendNames.MOONBEAM,
-  chain_id: '0x504',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  secondaryAddress: '',
-  nativeTokenLogoUrl: AppImages.MOONBEAM_LOGO,
-  chainIdNumber: 1284,
-};
-export const CHAIN_MOONRIVER: Chain = {
-  chainName: 'ethereum',
-  name: 'Moonriver',
-  symbol: 'MOVR',
-  id: 21,
-  logo_url: AppImages.MOONRIVER_LOGO,
-  backendName: ChainBackendNames.MOONRIVER,
-  chain_id: '0x505',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  secondaryAddress: '',
-  nativeTokenLogoUrl: AppImages.MOONRIVER_LOGO,
-  chainIdNumber: 1285,
-};
 export const CHAIN_SOLANA: Chain = {
   chainName: 'solana',
   name: 'Solana',
@@ -409,7 +326,6 @@ export const CHAIN_NAMES = [
   'ethereum',
   'cosmos',
   'osmosis',
-  'juno',
   'stargaze',
   'noble',
   'coreum',
@@ -420,7 +336,6 @@ export const CHAIN_NAMES = [
 export const COSMOS_CHAINS = [
   'cosmos',
   'osmosis',
-  'juno',
   'stargaze',
   'noble',
   'coreum',
@@ -430,7 +345,6 @@ export const COSMOS_CHAINS = [
 export const PURE_COSMOS_CHAINS = [
   'cosmos',
   'osmosis',
-  'juno',
   'stargaze',
   'noble',
   'coreum',
@@ -447,17 +361,12 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_ARBITRUM,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
   CHAIN_BSC,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
   CHAIN_SOLANA,
 ];
 
@@ -470,10 +379,6 @@ export const EVM_CHAINS: Chain[] = [
   CHAIN_OPTIMISM,
   CHAIN_AVALANCHE,
   CHAIN_ZKSYNC_ERA,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
 ];
 
 export const SOLANA_CHAINS: Chain[] = [CHAIN_SOLANA];
@@ -481,7 +386,6 @@ export const SOLANA_CHAINS: Chain[] = [CHAIN_SOLANA];
 export const COSMOS_CHAINS_LIST: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO,
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_COREUM,
@@ -497,10 +401,6 @@ export const EVM_CHAINS_FOR_ADDRESS_DIR = [
   'arbitrum',
   'zksync_era',
   'base',
-  'polygon_zkevm',
-  'aurora',
-  'moonbeam',
-  'moonriver',
 ];
 
 export const chainIdNumberMapping: Record<number, Chain> = {
@@ -512,10 +412,6 @@ export const chainIdNumberMapping: Record<number, Chain> = {
   42161: CHAIN_ARBITRUM,
   324: CHAIN_ZKSYNC_ERA,
   8453: CHAIN_BASE,
-  1101: CHAIN_POLYGON_ZKEVM,
-  1313161554: CHAIN_AURORA,
-  1284: CHAIN_MOONBEAM,
-  1285: CHAIN_MOONRIVER,
 };
 
 export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
@@ -526,15 +422,10 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.ARBITRUM,
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.BASE,
-  ChainBackendNames.POLYGON_ZKEVM,
-  ChainBackendNames.AURORA,
-  ChainBackendNames.MOONBEAM,
-  ChainBackendNames.MOONRIVER,
 ];
 
 export const COSMOS_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.COSMOS,
-  ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
   ChainBackendNames.COREUM,
   ChainBackendNames.INJECTIVE,
@@ -551,7 +442,6 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
   ChainBackendNames.COSMOS,
-  ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
   ChainBackendNames.COREUM,
   ChainBackendNames.INJECTIVE,
@@ -560,10 +450,6 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.STARGAZE,
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.BASE,
-  ChainBackendNames.POLYGON_ZKEVM,
-  ChainBackendNames.AURORA,
-  ChainBackendNames.MOONBEAM,
-  ChainBackendNames.MOONRIVER,
   ChainBackendNames.SOLANA,
 ];
 
@@ -576,23 +462,17 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_ARBITRUM,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
   CHAIN_SOLANA,
 ];
 
 export const IBC_CHAINS: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO,
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_COREUM,
@@ -615,22 +495,17 @@ export const ALL_FUNDABLE_CHAINS = [
   CHAIN_BSC,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
   CHAIN_STARGAZE,
   CHAIN_ZKSYNC_ERA,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
 ];
 
 export enum ChainNames {
   ETH = 'ethereum',
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
-  JUNO = 'juno',
   STARGAZE = 'stargaze',
   NOBLE = 'noble',
   COREUM = 'coreum',
@@ -643,10 +518,6 @@ export enum ChainNames {
   ARBITRUM = 'arbitrum',
   ZKSYNC_ERA = 'zksync_era',
   BASE = 'base',
-  POLYGON_ZKEVM = 'polygon_zkevm',
-  AURORA = 'aurora',
-  MOONBEAM = 'moonbeam',
-  MOONRIVER = 'moonriver',
   SOLANA = 'solana',
 }
 
@@ -659,7 +530,6 @@ export enum ChainNameMapping {
   ARBITRUM = 'arbitrum',
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
-  JUNO = 'juno',
   COREUM = 'coreum',
   INJECTIVE = 'injective',
   KUJIRA = 'kujira',
@@ -667,10 +537,6 @@ export enum ChainNameMapping {
   NOBLE = 'noble',
   ZKSYNC_ERA = 'zksync_era',
   BASE = 'base',
-  POLYGON_ZKEVM = 'polygon_zkevm',
-  AURORA = 'aurora',
-  MOONBEAM = 'moonbeam',
-  MOONRIVER = 'moonriver',
   SOLANA = 'solana',
   ALL = 'All',
 }
@@ -686,7 +552,6 @@ export const ChainConfigMapping = {
   arbitrum: CHAIN_ARBITRUM,
   cosmos: CHAIN_COSMOS,
   osmosis: CHAIN_OSMOSIS,
-  juno: CHAIN_JUNO,
   stargaze: CHAIN_STARGAZE,
   noble: CHAIN_NOBLE,
   coreum: CHAIN_COREUM,
@@ -694,10 +559,6 @@ export const ChainConfigMapping = {
   kujira: CHAIN_KUJIRA,
   zksync_era: CHAIN_ZKSYNC_ERA,
   base: CHAIN_BASE,
-  polygon_zkevm: CHAIN_POLYGON_ZKEVM,
-  aurora: CHAIN_AURORA,
-  moonbeam: CHAIN_MOONBEAM,
-  moonriver: CHAIN_MOONRIVER,
   solana: CHAIN_SOLANA,
 };
 
@@ -726,7 +587,6 @@ export const ChainNameToContactsChainNameMapping = {
   'Arbitrum One': 'arbitrum',
   Cosmos: 'cosmos',
   Osmosis: 'osmosis',
-  Juno: 'juno',
   Coreum: 'coreum',
   Injective: 'injective',
   Kujira: 'kujira',
@@ -735,10 +595,6 @@ export const ChainNameToContactsChainNameMapping = {
   Noble: 'noble',
   'zkSync Era': 'zksync_era',
   Base: 'base',
-  'Polygon zkEVM': 'polygon_zkevm',
-  Aurora: 'aurora',
-  Moonbeam: 'moonbeam',
-  Moonriver: 'moonriver',
   Solana: 'solana',
 };
 
@@ -751,7 +607,6 @@ export const NativeTokenMapping: Record<AllChainsEnum, string> = {
   BSC: 'BNB',
   COSMOS: 'ATOM',
   OSMOSIS: 'OSMO',
-  JUNO: 'JUNO',
   STARGAZE: 'STARS',
   NOBLE: 'USDC',
   COREUM: 'COREUM',
@@ -759,10 +614,6 @@ export const NativeTokenMapping: Record<AllChainsEnum, string> = {
   KUJIRA: 'KUJI',
   ZKSYNC_ERA: 'ETH',
   BASE: 'ETH',
-  POLYGON_ZKEVM: 'ETH',
-  AURORA: 'ETH',
-  MOONBEAM: 'GLMR',
-  MOONRIVER: 'MOVR',
   SOLANA: 'SOL',
   TRON: 'TRX',
 };
@@ -959,54 +810,6 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
     rpcUrls: ['https://developer-access-mainnet.base.org'],
     blockExplorerUrls: ['https://basescan.org'],
     chainConfig: base,
-  },
-  POLYGON_ZKEVM: {
-    chainId: '0x44d',
-    chainName: 'Polygon zkEVM',
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-    rpcUrls: ['https://zkevm-rpc.com'],
-    blockExplorerUrls: ['https://zkevm.polygonscan.com'],
-    chainConfig: polygonZkEvm,
-  },
-  AURORA: {
-    chainId: '0x4e454152',
-    chainName: 'Aurora',
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-    rpcUrls: ['https://1rpc.io/aurora'],
-    blockExplorerUrls: ['https://explorer.aurora.dev'],
-    chainConfig: aurora,
-  },
-  MOONBEAM: {
-    chainId: '0x504',
-    chainName: 'Moonbeam',
-    nativeCurrency: {
-      name: 'Glimmer',
-      symbol: 'GLMR',
-      decimals: 18,
-    },
-    rpcUrls: ['https://rpc.ankr.com/moonbeam'],
-    blockExplorerUrls: ['https://moonbeam.moonscan.io'],
-    chainConfig: moonbeam,
-  },
-  MOONRIVER: {
-    chainId: '0x505',
-    chainName: 'Moonriver',
-    nativeCurrency: {
-      name: 'Moonriver',
-      symbol: 'MOVR',
-      decimals: 18,
-    },
-    rpcUrls: ['https://moonriver.publicnode.com'],
-    blockExplorerUrls: ['https://moonriver.moonscan.io'],
-    chainConfig: moonriver,
   },
 };
 
@@ -1226,35 +1029,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
     ],
   ],
   [
-    'POLYGON_ZKEVM',
-    [
-      {
-        contractAddress: '0xa8ce8aee21bc2a48a5ef670afcc9274c7bbbc035',
-        decimal: 6,
-        symbol: 'USDC',
-        name: 'USD Coin',
-        coingeckoId: 'usd-coin',
-        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
-      },
-      {
-        contractAddress: '0x1e4a5963abfd975d8c9021ce480b42188849d41d',
-        decimal: 6,
-        symbol: 'USDT',
-        name: 'Tether',
-        coingeckoId: 'tether',
-        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
-      },
-      {
-        contractAddress: '0xc5015b9d9161dca7e18e32f6f25c4ad850731fd4',
-        decimal: 18,
-        symbol: 'DAI',
-        name: 'Dai',
-        coingeckoId: 'dai',
-        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
-      },
-    ],
-  ],
-  [
     'BASE',
     [
       {
@@ -1267,37 +1041,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
       },
       {
         contractAddress: '0x50c5725949a6f0c72e6c4a641f24049a917db0cb',
-        decimal: 18,
-        symbol: 'DAI',
-        name: 'Dai',
-        coingeckoId: 'dai',
-        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
-      },
-    ],
-  ],
-  ['MOONBEAM', []],
-  ['MOONRIVER', []],
-  [
-    'AURORA',
-    [
-      {
-        contractAddress: '0xb12bfca5a55806aaf64e99521918a4bf0fc40802',
-        decimal: 6,
-        symbol: 'USDC',
-        name: 'USD Coin',
-        coingeckoId: 'usd-coin',
-        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
-      },
-      {
-        contractAddress: '0x4988a896b1227218e4a686fde5eabdcabd91571f',
-        decimal: 6,
-        symbol: 'USDT',
-        name: 'Tether',
-        coingeckoId: 'tether',
-        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
-      },
-      {
-        contractAddress: '0xe3520349f477a5f6eb06107066048508498a291b',
         decimal: 18,
         symbol: 'DAI',
         name: 'Dai',
@@ -1336,8 +1079,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
 
 export const NON_EIP1599_CHAINS: ChainBackendNames[] = [
   ChainBackendNames.BSC,
-  ChainBackendNames.POLYGON_ZKEVM,
-  ChainBackendNames.AURORA,
   ChainBackendNames.ZKSYNC_ERA,
 ];
 
@@ -1350,5 +1091,4 @@ export const CAN_ESTIMATE_L1_FEE_CHAINS = [
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.BASE,
   ChainBackendNames.ARBITRUM,
-  ChainBackendNames.AURORA,
 ];

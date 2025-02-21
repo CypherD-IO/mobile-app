@@ -24,7 +24,6 @@ import * as yup from 'yup';
 import clsx from 'clsx';
 import { setContactBookData } from '../../core/asyncStorage';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
-import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
@@ -103,11 +102,6 @@ export const CreateContact = () => {
       placeHolder: t('COSMOS_ADDRESS_PLACEHOLDER'),
       logo: AppImages.COSMOS_LOGO,
     },
-    juno: {
-      label: t(`${ChainNames.JUNO.toUpperCase()} ADDRESS`),
-      placeHolder: t('JUNO_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.JUNO_LOGO,
-    },
     osmosis: {
       label: t(`${ChainNames.OSMOSIS.toUpperCase()} ADDRESS`),
       placeHolder: t('OSMOSIS_ADDRESS_PLACEHOLDER'),
@@ -153,30 +147,10 @@ export const CreateContact = () => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.ZKSYNC_ERA_LOGO,
     },
-    polygon_zkevm: {
-      label: t(`${ChainNames.POLYGON_ZKEVM.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.POLYGON_ZKEVM_LOGO,
-    },
     base: {
       label: t(`${ChainNames.BASE.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.BASE_LOGO,
-    },
-    aurora: {
-      label: t(`${ChainNames.AURORA.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.AURORA_LOGO,
-    },
-    moonbeam: {
-      label: t(`${ChainNames.MOONBEAM.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.MOONBEAM_LOGO,
-    },
-    moonriver: {
-      label: t(`${ChainNames.MOONRIVER.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.MOONRIVER_LOGO,
     },
     coreum: {
       label: t(`${ChainNames.COREUM.toUpperCase()} ADDRESS`),
@@ -255,18 +229,6 @@ export const CreateContact = () => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
             validateAddress(cosmos, isCosmosAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    juno: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), juno =>
-            validateAddress(juno, isJunoAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -416,18 +378,6 @@ export const CreateContact = () => {
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
         checkForDuplicates(addressList),
       ),
-    polygon_zkevm: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), polygon_zkevm =>
-            validateAddress(polygon_zkevm, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
     base: yup
       .array()
       .of(
@@ -435,42 +385,6 @@ export const CreateContact = () => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), base =>
             validateAddress(base, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    aurora: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), aurora =>
-            validateAddress(aurora, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    moonbeam: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), moonbeam =>
-            validateAddress(moonbeam, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    moonriver: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), moonriver =>
-            validateAddress(moonriver, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

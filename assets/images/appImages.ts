@@ -66,7 +66,6 @@ const WALLETCONNECT_FAILED = require('./walletconnect_error.png');
 const WALLETCONNECT_PENDING = require('./walletconnect_pending.png');
 const IBC_GRAY = require('./ibc_label.png');
 const NO_ACTIVITIES = require('./no_activites.png');
-const JUNO_LOGO = require('./juno.png');
 const STARGAZE_LOGO = require('./stars.png');
 const NOBLE_LOGO = require('./noble.png');
 const BRIDGE_SHORTCUT = require('./shortcutsBridge.png');
@@ -132,10 +131,6 @@ const TXN_SELF_SUCCESS = require('./txn_self_success.png');
 const TXN_SELF_ERROR = require('./txn_self_error.png');
 const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
 const BASE_LOGO = require('./base.png');
-const POLYGON_ZKEVM_LOGO = require('./polygon_zkevm.png');
-const AURORA_LOGO = require('./aurora.png');
-const MOONBEAM_LOGO = require('./moonbeam.png');
-const MOONRIVER_LOGO = require('./moonriver.png');
 const UPGRADE_TO_PHYSICAL_CARD_ARROW = require('./upgradeToPhysicalCardArrow.png');
 const SEND_INVITE_CODE_BG = require('./sendInviteCodeBg.png');
 const SEND_INVITE_CODE = require('./sendInviteCode.png');
@@ -668,7 +663,6 @@ export const AppImagesMap = {
     ONMETA,
     SHORTCUTS,
     CARD_SEL,
-    JUNO_LOGO,
     STARGAZE_LOGO,
     NOBLE_LOGO,
     BROWSERACTIVITY_SUCCESS,
@@ -720,10 +714,6 @@ export const AppImagesMap = {
     SWAP_ERROR,
     ZKSYNC_ERA_LOGO,
     BASE_LOGO,
-    POLYGON_ZKEVM_LOGO,
-    AURORA_LOGO,
-    MOONBEAM_LOGO,
-    MOONRIVER_LOGO,
     NO_TRANSACTIONS,
     TXN_SEND_ERROR,
     TXN_RECEIVE_ERROR,
@@ -925,7 +915,6 @@ enum AppImages {
   ONMETA = 'ONMETA',
   SHORTCUTS = 'SHORTCUTS',
   CARD_SEL = 'CARD_SEL',
-  JUNO_LOGO = 'JUNO_LOGO',
   STARGAZE_LOGO = 'STARGAZE_LOGO',
   NOBLE_LOGO = 'NOBLE_LOGO',
   BROWSERACTIVITY_SUCCESS = 'BROWSERACTIVITY_SUCCESS',
@@ -978,10 +967,6 @@ enum AppImages {
   SWAP_ERROR = 'SWAP_ERROR',
   ZKSYNC_ERA_LOGO = 'ZKSYNC_ERA_LOGO',
   BASE_LOGO = 'BASE_LOGO',
-  POLYGON_ZKEVM_LOGO = 'POLYGON_ZKEVM_LOGO',
-  AURORA_LOGO = 'AURORA_LOGO',
-  MOONBEAM_LOGO = 'MOONBEAM_LOGO',
-  MOONRIVER_LOGO = 'MOONRIVER_LOGO',
   NO_TRANSACTIONS = 'NO_TRANSACTIONS',
   TXN_SEND_ERROR = 'TXN_SEND_ERROR',
   TXN_RECEIVE_ERROR = 'TXN_RECEIVE_ERROR',

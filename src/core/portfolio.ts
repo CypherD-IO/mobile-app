@@ -7,17 +7,12 @@ import {
   CHAIN_ETH,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
-  CHAIN_JUNO,
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
@@ -74,15 +69,10 @@ export interface WalletHoldings {
   optimism: ChainHoldings;
   cosmos: ChainHoldings;
   osmosis: ChainHoldings;
-  juno: ChainHoldings;
   stargaze: ChainHoldings;
   noble: ChainHoldings;
   zksync_era: ChainHoldings;
   base: ChainHoldings;
-  polygon_zkevm: ChainHoldings;
-  aurora: ChainHoldings;
-  moonbeam: ChainHoldings;
-  moonriver: ChainHoldings;
   coreum: ChainHoldings;
   injective: ChainHoldings;
   kujira: ChainHoldings;
@@ -117,7 +107,6 @@ export interface NftHoldings {
   OPTIMISM: ChainNftHoldings[] | undefined;
   COSMOS: ChainNftHoldings[] | undefined;
   OSMO: ChainNftHoldings[] | undefined;
-  JUNO: ChainNftHoldings[] | undefined;
   STARS: ChainNftHoldings[] | undefined;
   NOBLE: ChainNftHoldings[] | undefined;
   SHM: ChainNftHoldings[] | undefined;
@@ -147,8 +136,6 @@ export function getCurrentChainHoldings(
       return portfolio.cosmos;
     case CHAIN_OSMOSIS.backendName:
       return portfolio.osmosis;
-    case CHAIN_JUNO.backendName:
-      return portfolio.juno;
     case CHAIN_STARGAZE.backendName:
       return portfolio.stargaze;
     case CHAIN_NOBLE.backendName:
@@ -157,14 +144,6 @@ export function getCurrentChainHoldings(
       return portfolio.zksync_era;
     case CHAIN_BASE.backendName:
       return portfolio.base;
-    case CHAIN_POLYGON_ZKEVM.backendName:
-      return portfolio.polygon_zkevm;
-    case CHAIN_AURORA.backendName:
-      return portfolio.aurora;
-    case CHAIN_MOONBEAM.backendName:
-      return portfolio.moonbeam;
-    case CHAIN_MOONRIVER.backendName:
-      return portfolio.moonriver;
     case CHAIN_COREUM.backendName:
       return portfolio.coreum;
     case CHAIN_INJECTIVE.backendName:
@@ -200,7 +179,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let avaxHoldings;
   let cosmosHoldings;
   let osmosisHoldings;
-  let junoHoldings;
   let stargazeHoldings;
   let nobleHoldings;
   let coreumHoldings;
@@ -210,10 +188,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let optimismHoldings;
   let zksyncEraHoldings;
   let baseHoldings;
-  let polygonZkevmHoldings;
-  let auroraHoldings;
-  let moonbeamHoldings;
-  let moonriverHoldings;
   let solanaHoldings;
 
   const totalHoldings: Holding[] = [];
@@ -285,32 +259,17 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         case CHAIN_OSMOSIS.backendName:
           tokenHolding.chainDetails = CHAIN_OSMOSIS;
           break;
-        case CHAIN_JUNO.backendName:
-          tokenHolding.chainDetails = CHAIN_JUNO;
-          break;
         case CHAIN_STARGAZE.backendName:
           tokenHolding.chainDetails = CHAIN_STARGAZE;
           break;
         case CHAIN_NOBLE.backendName:
           tokenHolding.chainDetails = CHAIN_NOBLE;
           break;
-        case CHAIN_POLYGON_ZKEVM.backendName:
-          tokenHolding.chainDetails = CHAIN_POLYGON_ZKEVM;
-          break;
         case CHAIN_ZKSYNC_ERA.backendName:
           tokenHolding.chainDetails = CHAIN_ZKSYNC_ERA;
           break;
         case CHAIN_BASE.backendName:
           tokenHolding.chainDetails = CHAIN_BASE;
-          break;
-        case CHAIN_AURORA.backendName:
-          tokenHolding.chainDetails = CHAIN_AURORA;
-          break;
-        case CHAIN_MOONBEAM.backendName:
-          tokenHolding.chainDetails = CHAIN_MOONBEAM;
-          break;
-        case CHAIN_MOONRIVER.backendName:
-          tokenHolding.chainDetails = CHAIN_MOONRIVER;
           break;
         case CHAIN_COREUM.backendName:
           tokenHolding.chainDetails = CHAIN_COREUM;
@@ -373,32 +332,17 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       case CHAIN_OSMOSIS.backendName:
         osmosisHoldings = chainHoldings;
         break;
-      case CHAIN_JUNO.backendName:
-        junoHoldings = chainHoldings;
-        break;
       case CHAIN_STARGAZE.backendName:
         stargazeHoldings = chainHoldings;
         break;
       case CHAIN_NOBLE.backendName:
         nobleHoldings = chainHoldings;
         break;
-      case CHAIN_POLYGON_ZKEVM.backendName:
-        polygonZkevmHoldings = chainHoldings;
-        break;
       case CHAIN_ZKSYNC_ERA.backendName:
         zksyncEraHoldings = chainHoldings;
         break;
       case CHAIN_BASE.backendName:
         baseHoldings = chainHoldings;
-        break;
-      case CHAIN_AURORA.backendName:
-        auroraHoldings = chainHoldings;
-        break;
-      case CHAIN_MOONBEAM.backendName:
-        moonbeamHoldings = chainHoldings;
-        break;
-      case CHAIN_MOONRIVER.backendName:
-        moonriverHoldings = chainHoldings;
         break;
       case CHAIN_COREUM.backendName:
         coreumHoldings = chainHoldings;
@@ -426,17 +370,12 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     avalanche: avaxHoldings as ChainHoldings,
     cosmos: cosmosHoldings as ChainHoldings,
     osmosis: osmosisHoldings as ChainHoldings,
-    juno: junoHoldings as ChainHoldings,
     stargaze: stargazeHoldings as ChainHoldings,
     noble: nobleHoldings as ChainHoldings,
     optimism: optimismHoldings as ChainHoldings,
     arbitrum: arbitrumHoldings as ChainHoldings,
     zksync_era: zksyncEraHoldings as ChainHoldings,
     base: baseHoldings as ChainHoldings,
-    polygon_zkevm: polygonZkevmHoldings as ChainHoldings,
-    aurora: auroraHoldings as ChainHoldings,
-    moonbeam: moonbeamHoldings as ChainHoldings,
-    moonriver: moonriverHoldings as ChainHoldings,
     coreum: coreumHoldings as ChainHoldings,
     injective: injectiveHoldings as ChainHoldings,
     kujira: kujiraHoldings as ChainHoldings,

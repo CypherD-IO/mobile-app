@@ -64,7 +64,6 @@ export default function IBC({
   const hdWallet = useContext<any>(HdWalletContext);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
-  const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
@@ -74,7 +73,6 @@ export default function IBC({
   const cosmosAddresses = {
     cosmos: cosmos.address,
     osmosis: osmosis.address,
-    juno: juno.address,
     stargaze: stargaze.address,
     noble: noble.address,
     coreum: coreum.address,
@@ -99,7 +97,6 @@ export default function IBC({
   const { showModal, hideModal } = useGlobalModalContext();
   const { interCosmosIBC } = useTransactionManager();
   const { getNativeToken } = usePortfolio();
-  const { getCosmosSignerClient } = useCosmosSigner();
   const { estimateGasForCosmosIBCRest } = useGasService();
   const { refreshPortfolio } = usePortfolioRefresh();
   const [maxLoading, setMaxLoading] = useState<boolean>(false);
@@ -150,8 +147,6 @@ export default function IBC({
         return cosmos.address;
       case ChainBackendNames.OSMOSIS:
         return osmosis.address;
-      case ChainBackendNames.JUNO:
-        return juno.address;
       case ChainBackendNames.STARGAZE:
         return stargaze.address;
       case ChainBackendNames.NOBLE:
@@ -223,7 +218,6 @@ export default function IBC({
         [
           ChainBackendNames.COSMOS,
           ChainBackendNames.OSMOSIS,
-          ChainBackendNames.JUNO,
           ChainBackendNames.STARGAZE,
           ChainBackendNames.NOBLE,
           ChainBackendNames.COREUM,
