@@ -337,8 +337,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       avalanche: {},
       optimism: {},
       arbitrum: {},
-      shardeum: {},
-      shardeum_sphinx: {},
       zksync_era: {},
       base: {},
       polygon_zkevm: {},
@@ -674,13 +672,15 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       );
 
       if (gasFee) {
-        const hasSufficient = hasSufficientBalanceAndGasFee(
-          tokenData.isNativeToken,
-          String(gasFee.gasFeeInCrypto),
-          nativeTokenDetails?.balanceDecimal,
-          amountToSend,
-          tokenData.balanceDecimal,
-        );
+        const { hasSufficientBalance, hasSufficientGasFee } =
+          hasSufficientBalanceAndGasFee(
+            tokenData.isNativeToken,
+            String(gasFee.gasFeeInCrypto),
+            nativeTokenDetails?.balanceDecimal,
+            amountToSend,
+            tokenData.balanceDecimal,
+          );
+        const hasSufficient = hasSufficientBalance && hasSufficientGasFee;
         if (!hasSufficient) {
           showModal('state', {
             type: 'error',

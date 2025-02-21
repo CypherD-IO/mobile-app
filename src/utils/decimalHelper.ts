@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js';
+Decimal.set({ toExpNeg: -18 });
 
 export const DecimalHelper = {
   fromString(value: string | number | Decimal | bigint): Decimal {
@@ -165,5 +166,9 @@ export const DecimalHelper = {
       precision,
       Decimal.ROUND_HALF_UP,
     );
+  },
+
+  scientificNotationToNumberString(value: string | number | Decimal): string {
+    return new Decimal(value).toString();
   },
 };

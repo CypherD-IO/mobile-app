@@ -21,7 +21,6 @@ import {
   STABLE_TOKEN_CHAIN_MAP,
 } from '../../../constants/server';
 import useAxios from '../../../core/HttpRequest';
-import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import DatePickerModal from 'react-native-modal-datetime-picker';
 import Button from '../../../components/v2/button';
 import { ButtonType } from '../../../constants/enum';
@@ -36,6 +35,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 export default function AutoLoad() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -132,8 +132,9 @@ export default function AutoLoad() {
   return (
     <CyDScrollView className='flex-1 bg-n20'>
       <CyDKeyboardAwareScrollView>
-        <ChooseTokenModal
+        <ChooseTokenModalV2
           isChooseTokenModalVisible={isChooseTokenVisible}
+          setIsChooseTokenModalVisible={setIsChooseTokenVisible}
           tokenList={supportedTokens}
           minTokenValueLimit={0}
           onSelectingToken={token => {
@@ -143,8 +144,9 @@ export default function AutoLoad() {
           onCancel={() => {
             setIsChooseTokenVisible(false);
           }}
-          noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
-          renderPage={'autoLoad'}
+          noTokensAvailableMessage={t<string>('AUTO_LOAD_NO_TOKENS_AVAILABLE', {
+            supportedChains: AUTO_LOAD_SUPPORTED_CHAINS.join(', '),
+          })}
         />
         <DatePickerModal
           isVisible={isDatePickerVisible}

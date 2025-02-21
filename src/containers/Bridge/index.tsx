@@ -40,6 +40,7 @@ import {
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
+  isNativeToken,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
@@ -783,14 +784,17 @@ const Bridge: React.FC = () => {
         ? DecimalHelper.subtract(amount, gasFeeRequired)
         : DecimalHelper.fromString(amount);
 
-      const isBalanceAndGasFeeSufficient = hasSufficientBalanceAndGasFee(
-        isNativeToken,
-        gasFeeRequired,
-        nativeToken?.balanceDecimal,
-        bal,
-        selectedFromToken?.balanceDecimal,
-      );
+      const { hasSufficientBalance, hasSufficientGasFee } =
+        hasSufficientBalanceAndGasFee(
+          isNativeToken,
+          String(gasFeeRequired),
+          nativeToken?.balanceDecimal,
+          bal,
+          selectedFromToken?.balanceDecimal,
+        );
 
+      const isBalanceAndGasFeeSufficient =
+        hasSufficientBalance && hasSufficientGasFee;
       if (isBalanceAndGasFeeSufficient) {
         // Set a flag to prevent the useEffect from triggering another quote fetch
         const finalAmount = DecimalHelper.isLessThan(bal, 0)
@@ -1828,6 +1832,7 @@ const Bridge: React.FC = () => {
                     contractData,
                     chainDetails: fromChainDetails,
                     tokens: allowanceResp.tokens,
+                    isErc20: !selectedFromToken.isNative,
                   });
 
                   if (approvalResp.isError) {
@@ -2251,13 +2256,17 @@ const Bridge: React.FC = () => {
           ? DecimalHelper.subtract(cryptoAmount, gasFeeRequired)
           : DecimalHelper.fromString(cryptoAmount);
 
-        const isBalanceAndGasFeeSufficient = hasSufficientBalanceAndGasFee(
-          isNativeToken,
-          gasFeeRequired.toString(),
-          nativeToken?.balanceDecimal,
-          bal,
-          selectedFromToken?.balanceDecimal,
-        );
+        const { hasSufficientBalance, hasSufficientGasFee } =
+          hasSufficientBalanceAndGasFee(
+            isNativeToken,
+            gasFeeRequired.toString(),
+            nativeToken?.balanceDecimal,
+            bal,
+            selectedFromToken?.balanceDecimal,
+          );
+
+        const isBalanceAndGasFeeSufficient =
+          hasSufficientBalance && hasSufficientGasFee;
 
         if (!isBalanceAndGasFeeSufficient) {
           setError(
@@ -2394,6 +2403,7 @@ const Bridge: React.FC = () => {
               chainDetails: selectedChainDetails,
               tokens: allowanceResp.tokens,
               walletAddress: ethereum.address as `0x${string}`,
+              isErc20: !selectedFromToken.isNative,
             });
 
             if (approvalResp.isError) {

@@ -40,8 +40,6 @@ import { AnalyticsType } from '../../constants/enum';
 import {
   Chain,
   CHAIN_OPTIMISM,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
@@ -98,6 +96,7 @@ export default function useTransactionManager() {
     estiamteGasForDelgate,
     estimateGasForUndelegate,
     estimateGasForRedelgate,
+    getCosmosGasPrice,
   } = useGasService();
   const { signEthTransaction, signApprovalEthereum } = useEthSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
@@ -182,10 +181,10 @@ export default function useTransactionManager() {
               maxPriorityFeePerGas: parseGwei(
                 String(gasEstimateResponse.priorityFee),
               ),
-              maxFeePerGas: parseGwei(String(gasEstimateResponse.maxFee)),
+              maxFeePerGas: parseGwei(gasEstimateResponse.maxFee),
             }
           : {
-              gasPrice: parseGwei(String(gasEstimateResponse.gasPrice)),
+              gasPrice: parseGwei(gasEstimateResponse.gasPrice),
             }),
       };
 
@@ -316,9 +315,7 @@ export default function useTransactionManager() {
       if (
         (contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
           chain === CHAIN_OPTIMISM.backendName) ||
-        ((chain === CHAIN_SHARDEUM.backendName ||
-          chain === CHAIN_SHARDEUM_SPHINX.backendName) &&
-          symbol === 'SHM') ||
+        symbol === 'SHM' ||
         isNativeCurrency(chainConfig, contractAddress)
       ) {
         const hash = await sendNativeToken({
@@ -365,6 +362,7 @@ export default function useTransactionManager() {
   }): Promise<TransactionResponse> => {
     try {
       const { chainName, backendName } = fromChain;
+
       const signer = await getCosmosSignerClient(chainName);
       if (signer) {
         const gasDetails = await estimateGasForCosmos({
@@ -388,21 +386,14 @@ export default function useTransactionManager() {
           signer,
         );
 
-        const tokenDenom = denom ?? cosmosConfig[backendName].denom;
-
+        const tokenDenom = denom ?? '';
         const amountToSend = parseUnits(amount, contractDecimals).toString();
 
         const result = await signingClient.sendTokens(
           fromAddress,
           toAddress,
           coins(amountToSend, tokenDenom),
-          {
-            gas: gasDetails?.fee?.gas ?? '0',
-            amount: coins(
-              gasDetails?.fee?.amount?.[0]?.amount ?? '0',
-              gasDetails?.fee?.amount?.[0]?.denom ?? '',
-            ),
-          },
+          gasDetails?.fee,
           'Cypher Wallet',
         );
 
@@ -503,13 +494,7 @@ export default function useTransactionManager() {
         const ibcResponse = await signingClient.signAndBroadcast(
           fromAddress,
           [transferMsg],
-          {
-            gas: gasFeeDetails?.fee?.gas ?? '0',
-            amount: coins(
-              gasFeeDetails?.fee?.amount?.[0]?.amount ?? '0',
-              gasFeeDetails?.fee?.amount?.[0]?.denom ?? '',
-            ),
-          },
+          gasFeeDetails.fee,
           'Cypher Wallet',
         );
         if (ibcResponse.code === 0) {
@@ -903,6 +888,7 @@ export default function useTransactionManager() {
     contractData,
     chainDetails,
     tokens,
+    isErc20 = true,
   }: {
     publicClient: PublicClient;
     tokenContractAddress: Address;
@@ -910,6 +896,7 @@ export default function useTransactionManager() {
     contractData?: `0x${string}`;
     chainDetails: Chain;
     tokens: bigint;
+    isErc20: boolean;
   }): Promise<TransactionResponse> => {
     try {
       const gasEstimateResponse = await estimateGasForEvm({
@@ -921,7 +908,7 @@ export default function useTransactionManager() {
         contractAddress: tokenContractAddress,
         contractDecimals: 18,
         contractData,
-        isErc20: !isNativeToken(tokenContractAddress),
+        isErc20,
       });
 
       if (gasEstimateResponse.isError) {
@@ -935,26 +922,11 @@ export default function useTransactionManager() {
         ...(contractData && { data: contractData }),
         ...(gasEstimateResponse.isEIP1599Supported
           ? {
-              maxPriorityFeePerGas: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.priorityFee,
-                  9,
-                ).toString(),
-              ),
-              maxFeePerGas: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.maxFee,
-                  9,
-                ).toString(),
-              ),
+              maxPriorityFeePerGas: parseGwei(gasEstimateResponse.priorityFee),
+              maxFeePerGas: parseGwei(gasEstimateResponse.maxFee),
             }
           : {
-              gasPrice: BigInt(
-                DecimalHelper.toInteger(
-                  gasEstimateResponse.gasPrice,
-                  9,
-                ).toString(),
-              ),
+              gasPrice: parseGwei(gasEstimateResponse.gasPrice),
             }),
       };
 
@@ -983,13 +955,11 @@ export default function useTransactionManager() {
     allowList,
     denom,
     amount,
-    contractDecimals = 6,
   }: {
     chain: Chain;
     allowList: string[];
     denom: string;
     amount: string;
-    contractDecimals: number;
   }) {
     return {
       typeUrl: '/ibc.applications.transfer.v1.TransferAuthorization',
@@ -1006,7 +976,7 @@ export default function useTransactionManager() {
               spendLimit: [
                 {
                   denom,
-                  amount: parseUnits(amount, contractDecimals).toString(),
+                  amount: amount.toString(),
                 },
               ],
               allowList,
@@ -1021,12 +991,10 @@ export default function useTransactionManager() {
     allowList,
     denom,
     amount,
-    contractDecimals = 6,
   }: {
     allowList: string[];
     denom: string;
     amount: string;
-    contractDecimals: number;
   }) {
     return {
       typeUrl: '/cosmos.bank.v1beta1.SendAuthorization',
@@ -1035,7 +1003,7 @@ export default function useTransactionManager() {
           spendLimit: [
             {
               denom,
-              amount: parseUnits(amount, contractDecimals).toString(),
+              amount: amount.toString(),
             },
           ],
           allowList,
@@ -1098,6 +1066,7 @@ export default function useTransactionManager() {
           contractData,
           chainDetails: selectedToken.chainDetails,
           tokens: allowanceResp.tokens ?? 0n,
+          isErc20: !selectedToken.isNativeToken,
         });
 
         if (approvalResp?.isError) {
@@ -1109,7 +1078,7 @@ export default function useTransactionManager() {
           return { isError: false, hash: approvalResp?.hash };
         }
       } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
-        const { gasPrice, contractDecimal } = get(cosmosConfig, chainName);
+        const { gasPrice } = await getCosmosGasPrice(backendName);
         const isIbcAuthz = backendName !== ChainBackendNames.OSMOSIS;
         const authorizationMsg = isIbcAuthz
           ? getMsgValueForIbcTransfer({
@@ -1117,13 +1086,11 @@ export default function useTransactionManager() {
               allowList,
               denom,
               amount,
-              contractDecimals: contractDecimal,
             })
           : getAuthorizationMsgForSend({
               allowList,
               denom,
               amount,
-              contractDecimals: contractDecimal,
             });
         const grantMsg = {
           typeUrl: '/cosmos.authz.v1beta1.MsgGrant',
@@ -1214,6 +1181,7 @@ export default function useTransactionManager() {
           chainDetails,
           contractData,
           tokens: 0n,
+          isErc20: true,
         });
 
         if (approvalResp?.isError) {
@@ -1222,8 +1190,8 @@ export default function useTransactionManager() {
           return { isError: false, hash: approvalResp?.hash };
         }
       } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
-        const { gasPrice, denom } = get(cosmosConfig, chainName);
-
+        const { denom } = get(cosmosConfig, chainName);
+        const { gasPrice } = await getCosmosGasPrice(backendName);
         const isIbcAuthz = backendName !== ChainBackendNames.OSMOSIS;
         const msgTypeUrl = isIbcAuthz
           ? '/ibc.applications.transfer.v1.MsgTransfer'
@@ -1391,7 +1359,7 @@ export default function useTransactionManager() {
 
       if (simulation.value.err) {
         throw new Error(
-          `Simulation failed from rpc after successfully simualting: ${parseErrorMessage(simulation.value.err)}`,
+          `Simulating from rpc failed, reason: ${parseErrorMessage(simulation.value.err)}`,
         );
       }
 

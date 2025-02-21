@@ -11,7 +11,7 @@ export enum Denom {
   KUJIRA = 'ukuji',
 }
 
-export interface IIBCData {
+export interface CosmosChainConfig {
   prefix: string;
   backendName: string;
   denom: Denom;
@@ -23,7 +23,7 @@ export interface IIBCData {
   poolIds?: Record<string, Long>;
   rest?: string;
 }
-export const cosmosConfig: Record<string, IIBCData> = {
+export const cosmosConfig: Record<string, CosmosChainConfig> = {
   cosmos: {
     prefix: 'cosmos',
     denom: Denom.ATOM,

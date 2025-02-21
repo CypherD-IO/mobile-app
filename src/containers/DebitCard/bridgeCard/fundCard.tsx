@@ -6,7 +6,6 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, useWindowDimensions } from 'react-native';
 import Button from '../../../components/v2/button';
-import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
 import CyDNumberPad from '../../../components/v2/numberpad';
@@ -19,7 +18,11 @@ import {
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  TokenModalType,
+} from '../../../constants/enum';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
@@ -44,10 +47,6 @@ import {
   parseErrorMessage,
   validateAmount,
 } from '../../../core/util';
-import useCosmosSigner from '../../../hooks/useCosmosSigner';
-import useGasService from '../../../hooks/useGasService';
-import usePortfolio from '../../../hooks/usePortfolio';
-import { CardQuoteResponse } from '../../../models/card.model';
 import {
   CyDImage,
   CyDMaterialDesignIcons,
@@ -57,6 +56,10 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import { CardQuoteResponse } from '../../../models/card.model';
+import useGasService from '../../../hooks/useGasService';
+import usePortfolio from '../../../hooks/usePortfolio';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -106,7 +109,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
-  const { getCosmosSignerClient } = useCosmosSigner();
 
   const { height } = useWindowDimensions();
   const isSmallScreenMobile = height <= 750;
@@ -229,40 +231,63 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       setLoading(false);
       setIsMaxLoading(false);
       if (!gasDetails?.isError) {
-        const hasSufficient = hasSufficientBalanceAndGasFee(
-          selectedTokenSymbol === chainDetails.symbol,
-          String(gasDetails.gasFeeInCrypto),
-          nativeTokenBalance,
-          actualTokensRequired,
-          balanceDecimal,
-        );
-        navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-          hasSufficientBalanceAndGasFee: hasSufficient,
-          cardProvider: currentCardProvider,
-          cardId,
-          tokenSendParams: {
-            chain: chainDetails.backendName,
-            amountInCrypto: actualTokensRequired,
-            amountInFiat: String(quote.amount),
-            symbol: selectedTokenSymbol,
-            toAddress: targetWalletAddress,
-            gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
-            gasFeeInFiat: formatAmount(
-              DecimalHelper.multiply(
-                gasDetails?.gasFeeInCrypto,
-                nativeToken?.price ?? 0,
+        const { hasSufficientBalance, hasSufficientGasFee } =
+          hasSufficientBalanceAndGasFee(
+            selectedToken?.isNativeToken ?? false,
+            String(gasDetails?.gasFeeInCrypto),
+            nativeTokenBalance,
+            actualTokensRequired,
+            balanceDecimal,
+          );
+        if (!hasSufficientBalance) {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_FUNDS'),
+            description: t('INSUFFICIENT_FUNDS_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        } else if (!hasSufficientGasFee) {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_GAS_FEE'),
+            description: t('INSUFFICIENT_GAS_FEE_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }
+        if (hasSufficientBalance && hasSufficientGasFee) {
+          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
+            hasSufficientBalanceAndGasFee:
+              hasSufficientBalance && hasSufficientGasFee,
+            cardProvider: currentCardProvider,
+            cardId,
+            tokenSendParams: {
+              chain: chainDetails.backendName,
+              amountInCrypto: actualTokensRequired,
+              amountInFiat: String(quote.amount),
+              symbol: selectedTokenSymbol,
+              toAddress: targetWalletAddress,
+              gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
+              gasFeeInFiat: formatAmount(
+                DecimalHelper.multiply(
+                  gasDetails?.gasFeeInCrypto ?? 0,
+                  nativeToken?.price ?? 0,
+                ),
               ),
-            ),
-            nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-            selectedToken,
-            tokenQuote: quote,
-          },
-        });
+              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
+              selectedToken,
+              tokenQuote: quote,
+            },
+          });
+        }
       } else {
         showModal('state', {
           type: 'error',
           title: t('GAS_ESTIMATION_FAILED'),
-          description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+          description:
+            parseErrorMessage(gasDetails?.error) ??
+            t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -313,6 +338,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
         );
+
         if (response?.data && !response.isError) {
           if (chainDetails.chainName != null) {
             const quote: CardQuoteResponse = response.data;
@@ -322,9 +348,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           Sentry.captureException(response.error);
           showModal('state', {
             type: 'error',
-            title: response?.error?.message?.includes('minimum amount')
+            title: parseErrorMessage(response.error)?.includes('minimum amount')
               ? t('INSUFFICIENT_FUNDS')
-              : '',
+              : t('ERROR_FETCHING_QUOTE'),
             description: response.error.message ?? t('UNABLE_TO_TRANSFER'),
             onSuccess: hideModal,
             onFailure: hideModal,
@@ -350,8 +376,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         setLoading(false);
         showModal('state', {
           type: 'error',
-          title: '',
-          description: t('UNABLE_TO_TRANSFER'),
+          title: t('ERROR_FETCHING_QUOTE'),
+          description: parseErrorMessage(e),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -606,7 +632,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         showModal('state', {
           type: 'error',
           title: t('GAS_ESTIMATION_FAILED'),
-          description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+          description:
+            parseErrorMessage(e) ?? t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -633,13 +660,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           setIsMaxLoading(false);
           showModal('state', {
             type: 'error',
-            title: response?.error?.message?.includes('minimum amount')
+            title: parseErrorMessage(response.error).includes('minimum amount')
               ? t('INSUFFICIENT_FUNDS')
               : '',
-            description: response?.error?.message?.includes(
+            description: parseErrorMessage(response.error).includes(
               'amount is lower than 10 USD',
             )
-              ? response.error.message +
+              ? parseErrorMessage(response.error) +
                 `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
               : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
             onSuccess: hideModal,
@@ -687,18 +714,22 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             contractAddress,
             contractDecimals,
           });
-          if (gasDetails) {
+          if (!gasDetails?.isError) {
+            // not doing it or solana because if we are sending max amount, then there should be 0 SOL balance in the account, or there should SOL balance enough
+            // for handling the account rent, else we will get the error InsufficientFundsForRent, since we will not be having enough SOL
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
+              gasFeeEstimationForTxn,
             ).toString();
           } else {
             setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
-              description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+              description:
+                parseErrorMessage(gasDetails?.error) ??
+                t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -715,7 +746,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           showModal('state', {
             type: 'error',
             title: t('GAS_ESTIMATION_FAILED'),
-            description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+            description:
+              parseErrorMessage(err) ?? t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -743,13 +775,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           setIsMaxLoading(false);
           showModal('state', {
             type: 'error',
-            title: response?.error?.message?.includes('minimum amount')
+            title: parseErrorMessage(response.error).includes('minimum amount')
               ? t('INSUFFICIENT_FUNDS')
               : '',
-            description: response?.error?.message?.includes(
+            description: parseErrorMessage(response.error).includes(
               'amount is lower than 10 USD',
             )
-              ? response.error.message +
+              ? parseErrorMessage(response.error) +
                 `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
               : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
             onSuccess: hideModal,
@@ -829,7 +861,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           showModal('state', {
             type: 'error',
             title: t('GAS_ESTIMATION_FAILED'),
-            description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+            description:
+              parseErrorMessage(err) ?? t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -857,13 +890,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           setIsMaxLoading(false);
           showModal('state', {
             type: 'error',
-            title: response?.error?.message?.includes('minimum amount')
+            title: parseErrorMessage(response.error).includes('minimum amount')
               ? t('INSUFFICIENT_FUNDS')
               : '',
-            description: response?.error?.message?.includes(
+            description: parseErrorMessage(response.error).includes(
               'amount is lower than 10 USD',
             )
-              ? response.error.message +
+              ? parseErrorMessage(response.error) +
                 '. Please ensure you have enough balance for gas fees.'
               : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
             onSuccess: hideModal,
@@ -913,7 +946,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return (
       <CyDTouchView
         className={
-          'bg-n20 py-[6px] px-[16px] my-[16px] border-[1px] border-n40 rounded-[34px] self-center'
+          'bg-n0 py-[6px] px-[16px] my-[16px] border-[1px] border-n40 rounded-[34px] self-center'
         }
         onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView
@@ -924,9 +957,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 source={{ uri: selectedToken.logoUrl }}
                 className={'w-[26px] h-[26px] rounded-[20px]'}
               />
-              <CyDView className='flex flex-col justify-start items-start ml-[8px]'>
+              <CyDView className='flex flex-col justify-start items-start ml-[8px] max-w-[100px]'>
                 <CyDText
-                  className={clsx('font-extrabold text-[16px]', {
+                  numberOfLines={1}
+                  className={clsx('font-extrabold text-[16px] w-full', {
                     'text-[14px]': selectedToken.isZeroFeeCardFunding,
                   })}>
                   {selectedToken.name}
@@ -981,7 +1015,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     if (selectedToken) {
       const { symbol, backendName } = selectedToken.chainDetails;
       if (symbol && backendName) {
-        const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
         let errorMessage = '';
         if (
           DecimalHelper.isGreaterThan(
@@ -1092,21 +1125,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         '': loading,
       })}>
       {isMaxLoading && <Loading blurBg={true} />}
-      <ChooseTokenModal
+
+      <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}
+        setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
+        minTokenValueEth={minTokenValueEth}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);
         }}
+        type={TokenModalType.CARD_LOAD}
         onCancel={() => {
           setIsChooseTokenVisible(false);
           if (!selectedToken) {
             navigation.goBack();
           }
         }}
-        noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
-        renderPage={'fundCardPage'}
       />
 
       <CyDView>

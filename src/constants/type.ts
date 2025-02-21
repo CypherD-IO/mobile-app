@@ -1,3 +1,4 @@
+import { StdFee } from '@cosmjs/stargate';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { Hex } from 'viem';
 
@@ -7,9 +8,7 @@ export type EVM_ONLY_CHAINS_TYPE =
   | 'AVALANCHE'
   | 'ARBITRUM'
   | 'OPTIMISM'
-  | 'BSC'
-  | 'SHARDEUM'
-  | 'SHARDEUM_SPHINX';
+  | 'BSC';
 
 export type EVM_CHAINS_TYPE = EVM_ONLY_CHAINS_TYPE;
 
@@ -60,12 +59,12 @@ export type EvmGasEstimation =
       gasLimit: number;
       gasFeeInCrypto: string;
     } & (
-      | { isEIP1599Supported: false; gasPrice: Hex }
+      | { isEIP1599Supported: false; gasPrice: string }
       | {
           isEIP1599Supported: true;
-          priorityFee: number;
-          baseFee: number;
-          maxFee: number;
+          priorityFee: string;
+          baseFee: string;
+          maxFee: string;
         }
     ));
 
@@ -76,10 +75,7 @@ export type CosmosGasEstimation =
       gasFeeInCrypto: string;
       gasLimit: string;
       gasPrice: number;
-      fee: {
-        gas: string;
-        amount: Array<{ denom: string; amount: string }>;
-      };
+      fee: StdFee;
     };
 
 export type SolanaGasEstimation =

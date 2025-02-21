@@ -13,7 +13,6 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../../components/v2/button';
-import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { screenTitle } from '../../../constants';
 import {
@@ -23,7 +22,12 @@ import {
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
-import { CARD_IDS, CardProviders, CypherPlanId } from '../../../constants/enum';
+import {
+  CARD_IDS,
+  CardProviders,
+  CypherPlanId,
+  TokenModalType,
+} from '../../../constants/enum';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
@@ -62,6 +66,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -105,6 +110,7 @@ export default function FirstLoadCard() {
   const optedPlanId =
     cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN;
   const minTokenValueLimit = Math.max(10, Number(planCost));
+  const minTokenValueEth = 50;
 
   const insect = useSafeAreaInsets();
 
@@ -982,36 +988,53 @@ export default function FirstLoadCard() {
       }
       setLoading(false);
       setIsMaxLoading(false);
-      if (gasDetails) {
-        const hasSufficient = hasSufficientBalanceAndGasFee(
-          selectedTokenSymbol === chainDetails.symbol,
-          String(gasDetails.gasFeeInCrypto),
-          nativeToken?.balanceDecimal ?? '0',
-          actualTokensRequired,
-          balanceDecimal,
-        );
-        navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
-          hasSufficientBalanceAndGasFee: hasSufficient,
-          cardProvider: currentCardProvider,
-          cardId,
-          tokenSendParams: {
-            chain: chainDetails.backendName,
-            amountInCrypto: actualTokensRequired,
-            amountInFiat: String(quote.amount),
-            symbol: selectedTokenSymbol,
-            toAddress: targetWalletAddress,
-            gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
-            gasFeeInFiat: formatAmount(
-              DecimalHelper.multiply(
-                gasDetails?.gasFeeInCrypto,
-                nativeToken?.price ?? 0,
+      if (!gasDetails?.isError) {
+        const { hasSufficientBalance, hasSufficientGasFee } =
+          hasSufficientBalanceAndGasFee(
+            selectedToken?.isNativeToken ?? false,
+            String(gasDetails?.gasFeeInCrypto ?? '0'),
+            nativeToken?.balanceDecimal ?? '0',
+            actualTokensRequired,
+            balanceDecimal,
+          );
+        if (!hasSufficientBalance) {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_FUNDS'),
+            description: t('INSUFFICIENT_FUNDS_DESCRIPTION'),
+          });
+        } else if (!hasSufficientGasFee) {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_GAS_FEE'),
+            description: t('INSUFFICIENT_GAS_FEE_DESCRIPTION'),
+          });
+        }
+        if (hasSufficientBalance && hasSufficientGasFee) {
+          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
+            hasSufficientBalanceAndGasFee:
+              hasSufficientBalance && hasSufficientGasFee,
+            cardProvider: currentCardProvider,
+            cardId,
+            tokenSendParams: {
+              chain: chainDetails.backendName,
+              amountInCrypto: actualTokensRequired,
+              amountInFiat: String(quote.amount),
+              symbol: selectedTokenSymbol,
+              toAddress: targetWalletAddress,
+              gasFeeInCrypto: formatAmount(gasDetails?.gasFeeInCrypto),
+              gasFeeInFiat: formatAmount(
+                DecimalHelper.multiply(
+                  gasDetails?.gasFeeInCrypto,
+                  nativeToken?.price ?? 0,
+                ),
               ),
-            ),
-            nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
-            selectedToken,
-            tokenQuote: quote,
-          },
-        });
+              nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
+              selectedToken,
+              tokenQuote: quote,
+            },
+          });
+        }
       } else {
         showModal('state', {
           type: 'error',
@@ -1051,8 +1074,9 @@ export default function FirstLoadCard() {
 
   return (
     <CyDView className='bg-n20 flex-1' style={{ paddingTop: insect.top }}>
-      <ChooseTokenModal
+      <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}
+        setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
@@ -1061,8 +1085,8 @@ export default function FirstLoadCard() {
         onCancel={() => {
           setIsChooseTokenVisible(false);
         }}
-        noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
-        renderPage={'fundCardPage'}
+        type={TokenModalType.CARD_LOAD}
+        minTokenValueEth={minTokenValueEth}
       />
 
       <CyDView className='flex flex-col justify-between flex-1'>
@@ -1123,7 +1147,7 @@ export default function FirstLoadCard() {
                 'opacity-40 pointer-events-none': !selectedToken,
               })}>
               <CyDText className='font-bold text-[12px]'>
-                Amount to be loaded in the card
+                {t('AMOUNT_TO_BE_LOADED_IN_CARD')}
               </CyDText>
               <CyDView className='mt-[8px] rounded-[16px] p-[24px] bg-n0'>
                 <CyDView className='flex-row justify-between items-center'>
