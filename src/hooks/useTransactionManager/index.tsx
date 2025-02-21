@@ -179,12 +179,22 @@ export default function useTransactionManager() {
         ...(gasEstimateResponse.isEIP1599Supported
           ? {
               maxPriorityFeePerGas: parseGwei(
-                String(gasEstimateResponse.priorityFee),
+                DecimalHelper.scientificNotationToNumberString(
+                  gasEstimateResponse.priorityFee ?? 0,
+                ),
               ),
-              maxFeePerGas: parseGwei(gasEstimateResponse.maxFee),
+              maxFeePerGas: parseGwei(
+                DecimalHelper.scientificNotationToNumberString(
+                  gasEstimateResponse.maxFee ?? 0,
+                ),
+              ),
             }
           : {
-              gasPrice: parseGwei(gasEstimateResponse.gasPrice),
+              gasPrice: parseGwei(
+                DecimalHelper.scientificNotationToNumberString(
+                  gasEstimateResponse.gasPrice ?? 0,
+                ),
+              ),
             }),
       };
 
@@ -922,11 +932,23 @@ export default function useTransactionManager() {
         ...(contractData && { data: contractData }),
         ...(gasEstimateResponse.isEIP1599Supported
           ? {
-              maxPriorityFeePerGas: parseGwei(gasEstimateResponse.priorityFee),
-              maxFeePerGas: parseGwei(gasEstimateResponse.maxFee),
+              maxPriorityFeePerGas: parseGwei(
+                DecimalHelper.scientificNotationToNumberString(
+                  gasEstimateResponse.priorityFee ?? 0,
+                ),
+              ),
+              maxFeePerGas: parseGwei(
+                DecimalHelper.scientificNotationToNumberString(
+                  gasEstimateResponse.maxFee ?? 0,
+                ),
+              ),
             }
           : {
-              gasPrice: parseGwei(gasEstimateResponse.gasPrice),
+              gasPrice: parseGwei(
+                DecimalHelper.scientificNotationToNumberString(
+                  gasEstimateResponse.gasPrice ?? 0,
+                ),
+              ),
             }),
       };
 
@@ -1264,12 +1286,22 @@ export default function useTransactionManager() {
         ...(quoteData?.gasInfo?.isEIP1599Supported
           ? {
               maxPriorityFeePerGas: parseGwei(
-                String(quoteData?.gasInfo?.priorityFee),
+                DecimalHelper.scientificNotationToNumberString(
+                  quoteData?.gasInfo?.priorityFee ?? 0,
+                ),
               ),
-              maxFeePerGas: parseGwei(String(quoteData?.gasInfo?.maxFee)),
+              maxFeePerGas: parseGwei(
+                DecimalHelper.scientificNotationToNumberString(
+                  quoteData?.gasInfo?.maxFee ?? 0,
+                ),
+              ),
             }
           : {
-              gasPrice: BigInt(quoteData?.gasInfo?.gasPrice ?? 0),
+              gasPrice: parseGwei(
+                DecimalHelper.scientificNotationToNumberString(
+                  quoteData?.gasInfo?.gasPrice ?? 0,
+                ),
+              ),
             }),
       };
 
