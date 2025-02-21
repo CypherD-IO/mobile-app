@@ -85,6 +85,7 @@ import crypto from 'crypto';
 import { mainnet } from 'viem/chains';
 import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { DeviceMetadata } from '../models/deviceMetaData.interface';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1358,4 +1359,29 @@ export const getViemPublicClient = (rpc: string) => {
   return createPublicClient({
     transport: http(rpc),
   });
+};
+
+export const getDeviceMetadata = async (): Promise<DeviceMetadata> => {
+  const baseMetadata = {
+    brand: DeviceInfo.getBrand(),
+    model: DeviceInfo.getModel(),
+    systemVersion: DeviceInfo.getSystemVersion(),
+    appVersion: DeviceInfo.getVersion(),
+    buildNumber: DeviceInfo.getBuildNumber(),
+    bundleId: DeviceInfo.getBundleId(),
+  };
+
+  if (Platform.OS === 'ios') {
+    return {
+      ...baseMetadata,
+      deviceId: await DeviceInfo.getUniqueId(), // Uses IDFV (identifierForVendor)
+      manufacturer: 'Apple',
+    };
+  } else {
+    return {
+      ...baseMetadata,
+      deviceId: await DeviceInfo.getAndroidId(), // Android ID
+      manufacturer: await DeviceInfo.getManufacturer(),
+    };
+  }
 };

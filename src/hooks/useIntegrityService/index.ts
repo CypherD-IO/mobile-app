@@ -2,6 +2,7 @@ import { NativeModules, Platform } from 'react-native';
 import useAxios from '../../core/HttpRequest';
 import Config from 'react-native-config';
 import { DeviceType } from '../../constants/enum';
+import { getDeviceMetadata } from '../../core/util';
 
 const { IntegrityModule } = NativeModules;
 const { DeviceCheckBridge } = NativeModules;
@@ -20,6 +21,7 @@ export const useIntegrityService = () => {
         return {
           token: Config.MOCK_INTEGRITY_TOKEN,
           platform: Platform.OS === 'ios' ? DeviceType.IOS : DeviceType.ANDROID,
+          deviceMetadata: await getDeviceMetadata(),
         };
       }
 
@@ -48,12 +50,14 @@ export const useIntegrityService = () => {
           keyId: response.keyId,
           challenge: nonce,
           platform: DeviceType.IOS,
+          deviceMetadata: await getDeviceMetadata(),
         };
       } else {
         const token = await IntegrityModule.getIntegrityToken(nonce);
         return {
           token,
           platform: DeviceType.ANDROID,
+          deviceMetadata: await getDeviceMetadata(),
         };
       }
     } catch (error) {
