@@ -3,7 +3,6 @@ export interface ContactInfo {
   ethereum?: string[];
   cosmos?: string[];
   osmosis?: string[];
-  stargaze?: string[];
   binance?: string[];
   polygon?: string[];
   avalanche?: string[];

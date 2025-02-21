@@ -86,11 +86,9 @@ import {
 import { isCoreumAddress } from '../utilities/coreumUtilities';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
-import { isKujiraAddress } from '../utilities/kujiraUtilities';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
-import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isAddress } from 'web3-validator';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import usePortfolio from '../../hooks/usePortfolio';
@@ -254,25 +252,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const activityRef = useRef<SendTransactionActivity | null>(null);
-  const {
-    cosmos,
-    osmosis,
-    stargaze,
-    noble,
-    coreum,
-    injective,
-    kujira,
-    solana,
-    ethereum,
-  } = hdWalletContext.state.wallet;
+  const { cosmos, osmosis, noble, coreum, injective, solana, ethereum } =
+    hdWalletContext.state.wallet;
   const senderAddress: Record<string, string> = {
     cosmos: cosmos.address,
     osmosis: osmosis.address,
-    stargaze: stargaze.address,
     noble: noble.address,
     coreum: coreum.address,
     injective: injective.address,
-    kujira: kujira.address,
     ethereum: ethereum.address,
     solana: solana.address,
   };
@@ -323,11 +310,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       ethereum: {},
       cosmos: {},
       osmosis: {},
-      stargaze: {},
       noble: {},
       coreum: {},
       injective: {},
-      kujira: {},
       binance: {},
       polygon: {},
       avalanche: {},
@@ -613,11 +598,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       ) {
         activityData.fromAddress = osmosis.address;
       } else if (
-        chainDetails?.chainName === ChainNames.STARGAZE &&
-        isStargazeAddress(addressRef.current)
-      ) {
-        activityData.fromAddress = stargaze.address;
-      } else if (
         chainDetails?.chainName === ChainNames.NOBLE &&
         isNobleAddress(addressRef.current)
       ) {
@@ -632,11 +612,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         isInjectiveAddress(addressRef.current)
       ) {
         activityData.fromAddress = injective.address;
-      } else if (
-        chainDetails?.chainName === ChainNames.KUJIRA &&
-        isKujiraAddress(addressRef.current)
-      ) {
-        activityData.fromAddress = kujira.address;
       } else {
         error = true;
         showModal('state', {
@@ -960,18 +935,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             });
           }
           break;
-        case ChainNames.STARGAZE:
-          if (!isStargazeAddress(address)) {
-            error = true;
-            showModal('state', {
-              type: 'error',
-              title: t('INVALID_ADDRESS'),
-              description: t('NOT_VALID_STARGAZE_ADDRESS'),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }
-          break;
         case ChainNames.NOBLE:
           if (!isNobleAddress(address)) {
             error = true;
@@ -998,18 +961,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           break;
         case ChainNames.INJECTIVE:
           if (!isInjectiveAddress(address)) {
-            error = true;
-            showModal('state', {
-              type: 'error',
-              title: t('INVALID_ADDRESS'),
-              description: t('NOT_VALID_NOBLE_ADDRESS'),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }
-          break;
-        case ChainNames.KUJIRA:
-          if (!isKujiraAddress(address)) {
             error = true;
             showModal('state', {
               type: 'error',

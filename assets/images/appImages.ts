@@ -38,7 +38,6 @@ const COSMOS_LOGO = require('./cosmos.png');
 const OSMOSIS_LOGO = require('./osmo.png');
 const COREUM_LOGO = require('./coreum.png');
 const INJECTIVE_LOGO = require('./injective.png');
-const KUJIRA_LOGO = require('./kujira.png');
 const BG_SETTINGS = require('./bg_settings.png');
 const IBC = require('./ibc.png');
 const SEND = require('./transactions_send.png');
@@ -66,7 +65,6 @@ const WALLETCONNECT_FAILED = require('./walletconnect_error.png');
 const WALLETCONNECT_PENDING = require('./walletconnect_pending.png');
 const IBC_GRAY = require('./ibc_label.png');
 const NO_ACTIVITIES = require('./no_activites.png');
-const STARGAZE_LOGO = require('./stars.png');
 const NOBLE_LOGO = require('./noble.png');
 const BRIDGE_SHORTCUT = require('./shortcutsBridge.png');
 const SWAP_SHORTCUT = require('./shortcutsSwap.png');
@@ -112,7 +110,6 @@ const CARD_KYC_BACKGROUND = require('./cardKYCBackground.png');
 const DEBIT_CARD_BACKGROUND = require('./debit-card-background.png');
 const LOAD_CARD_LOTTIE = require('./loadCardLottie.json');
 const NO_TRANSACTIONS_YET = require('./noTransactions.png');
-const STARGAZE_PNG = require('./stargaze.png');
 const NOBLE_PNG = require('./noble.png');
 const APR_ICON = require('./apr.png');
 const CELEBRATE = require('./celebrate.png');
@@ -663,7 +660,6 @@ export const AppImagesMap = {
     ONMETA,
     SHORTCUTS,
     CARD_SEL,
-    STARGAZE_LOGO,
     NOBLE_LOGO,
     BROWSERACTIVITY_SUCCESS,
     BROWSERACTIVITY_PENDING,
@@ -698,7 +694,6 @@ export const AppImagesMap = {
     DEBIT_CARD_BACKGROUND,
     LOAD_CARD_LOTTIE,
     NO_TRANSACTIONS_YET,
-    STARGAZE_PNG,
     NOBLE_PNG,
     APR_ICON,
     CELEBRATE,
@@ -747,7 +742,6 @@ export const AppImagesMap = {
     TELEGRAM_BLUE,
     COREUM_LOGO,
     INJECTIVE_LOGO,
-    KUJIRA_LOGO,
     VIRTUAL_CARD_MASTER,
     PHYSICAL_CARD_MASTER,
     SOLANA_LOGO,
@@ -915,7 +909,6 @@ enum AppImages {
   ONMETA = 'ONMETA',
   SHORTCUTS = 'SHORTCUTS',
   CARD_SEL = 'CARD_SEL',
-  STARGAZE_LOGO = 'STARGAZE_LOGO',
   NOBLE_LOGO = 'NOBLE_LOGO',
   BROWSERACTIVITY_SUCCESS = 'BROWSERACTIVITY_SUCCESS',
   BROWSERACTIVITY_PENDING = 'BROWSERACTIVITY_PENDING',
@@ -951,7 +944,6 @@ enum AppImages {
   DEBIT_CARD_BACKGROUND = 'DEBIT_CARD_BACKGROUND',
   LOAD_CARD_LOTTIE = 'LOAD_CARD_LOTTIE',
   NO_TRANSACTIONS_YET = 'NO_TRANSACTIONS_YET',
-  STARGAZE_PNG = 'STARGAZE_PNG',
   NOBLE_PNG = 'NOBLE_PNG',
   APR_ICON = 'APR_ICON',
   CELEBRATE = 'CELEBRATE',
@@ -1000,7 +992,6 @@ enum AppImages {
   TELEGRAM_BLUE = 'TELEGRAM_BLUE',
   COREUM_LOGO = 'COREUM_LOGO',
   INJECTIVE_LOGO = 'INJECTIVE_LOGO',
-  KUJIRA_LOGO = 'KUJIRA_LOGO',
   VIRTUAL_CARD_MASTER = 'VIRTUAL_CARD_MASTER',
   PHYSICAL_CARD_MASTER = 'PHYSICAL_CARD_MASTER',
   SOLANA_LOGO = 'SOLANA_LOGO',

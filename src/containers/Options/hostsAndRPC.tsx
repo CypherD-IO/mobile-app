@@ -61,7 +61,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     base: globalContext.globalState.rpcEndpoints?.BASE?.primary,
     coreum: globalContext.globalState.rpcEndpoints?.COREUM?.primary,
     injective: globalContext.globalState.rpcEndpoints?.INJECTIVE?.primary,
-    kujira: globalContext.globalState.rpcEndpoints?.KUJIRA?.primary,
   });
 
   const handleBackButton = () => {
@@ -155,9 +154,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     }
     if (tempRPCEndpoints?.INJECTIVE?.primary) {
       tempRPCEndpoints.INJECTIVE.primary = rpcEndpoints?.injective;
-    }
-    if (tempRPCEndpoints?.KUJIRA?.primary) {
-      tempRPCEndpoints.KUJIRA.primary = rpcEndpoints?.kujira;
     }
 
     setLoading(true);
@@ -529,30 +525,6 @@ export default function HostsAndRPCScreen({ navigation }) {
               key='injective'
               onChangeText={value => {
                 setRPCEndpoints({ ...rpcEndpoints, injective: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
-        {rpcEndpoints.kujira ? (
-          <CyDView className={'mb-[30px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.KUJIRA}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.kujira)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='kujira'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, kujira: value });
               }}
               autoCorrect={false}
               placeholderTextColor={'#C5C5C5'}

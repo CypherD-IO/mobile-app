@@ -116,19 +116,15 @@ export default function CardQuote({
   ] = useState<boolean>(false);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
-  const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
-  const kujira = hdWallet.state.wallet.kujira;
   const injective = hdWallet.state.wallet.injective;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
     osmosis: osmosis.address,
-    stargaze: stargaze.address,
     noble: noble.address,
     coreum: coreum.address,
-    kujira: kujira.address,
     injective: injective.address,
   };
 
@@ -722,20 +718,3 @@ export default function CardQuote({
     </CyDView>
   );
 }
-
-const styles = StyleSheet.create({
-  loaderStyle: {
-    width: 20,
-  },
-  linearGradient: {
-    borderRadius: 24,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  priceFluctuationLearnMoreModal: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-});

@@ -46,8 +46,7 @@ export function TokenTransactions({
   const [lastPage, setLastPage] = useState<boolean>(false);
   const [noTransaction, setNoTransaction] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(0);
-  const { cosmos, osmosis, stargaze, noble, coreum, injective, kujira } =
-    hdWallet.state.wallet;
+  const { cosmos, osmosis, noble, coreum, injective } = hdWallet.state.wallet;
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
@@ -121,9 +120,6 @@ export function TokenTransactions({
       case ChainBackendNames.OSMOSIS:
         uri = `https://www.mintscan.io/osmosis/account/${osmosis.wallets[osmosis.currentIndex].address}`;
         break;
-      case ChainBackendNames.STARGAZE:
-        uri = `https://www.mintscan.io/stargaze/account/${stargaze.address}`;
-        break;
       case ChainBackendNames.NOBLE:
         uri = `https://www.mintscan.io/noble/account/${noble.address}`;
         break;
@@ -132,9 +128,6 @@ export function TokenTransactions({
         break;
       case ChainBackendNames.INJECTIVE:
         uri = `https://www.mintscan.io/injective/account/${injective.address}`;
-        break;
-      case ChainBackendNames.KUJIRA:
-        uri = `https://atomscan.com/kujira/accounts/${kujira.address}`;
         break;
       case ChainBackendNames.OPTIMISM:
         uri =

@@ -25,7 +25,6 @@ import clsx from 'clsx';
 import { setContactBookData } from '../../core/asyncStorage';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
-import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ContactInfo } from '../../models/contactInfo.interface';
@@ -41,7 +40,6 @@ import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { showToast } from '../utilities/toastUtility';
 import { isCoreumAddress } from '../utilities/coreumUtilities';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
-import { isKujiraAddress } from '../utilities/kujiraUtilities';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
 import {
   NavigationProp,
@@ -107,11 +105,6 @@ export const CreateContact = () => {
       placeHolder: t('OSMOSIS_ADDRESS_PLACEHOLDER'),
       logo: AppImages.OSMOSIS_LOGO,
     },
-    stargaze: {
-      label: t(`${ChainNames.STARGAZE.toUpperCase()} ADDRESS`),
-      placeHolder: t('STARGAZE_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.STARGAZE_LOGO,
-    },
     noble: {
       label: t(`${ChainNames.NOBLE.toUpperCase()} ADDRESS`),
       placeHolder: t('NOBLE_ADDRESS_PLACEHOLDER'),
@@ -161,11 +154,6 @@ export const CreateContact = () => {
       label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.INJECTIVE_LOGO,
-    },
-    kujira: {
-      label: t(`${ChainNames.KUJIRA.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.KUJIRA_LOGO,
     },
     solana: {
       label: t(`${ChainNames.SOLANA.toUpperCase()} ADDRESS`),
@@ -246,18 +234,6 @@ export const CreateContact = () => {
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
         checkForDuplicates(addressList),
       ),
-    stargaze: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), stargaze =>
-            validateAddress(stargaze, isStargazeAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
     noble: yup
       .array()
       .of(
@@ -289,18 +265,6 @@ export const CreateContact = () => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), injective =>
             validateAddress(injective, isInjectiveAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    kujira: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), kujira =>
-            validateAddress(kujira, isKujiraAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

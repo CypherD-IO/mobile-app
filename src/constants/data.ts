@@ -14,12 +14,10 @@ import {
   CHAIN_COSMOS,
   CHAIN_ETH,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_NOBLE,
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
-  CHAIN_STARGAZE,
   ChainBackendNames,
   CHAIN_ZKSYNC_ERA,
   Chain,
@@ -43,11 +41,9 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   ARBITRUM: 0.00001,
   COSMOS: 0.1,
   OSMOSIS: 0.2,
-  STARGAZE: 0.1,
   NOBLE: 0.1,
   COREUM: 0.1,
   INJECTIVE: 0.001,
-  KUJIRA: 0.1,
   ZKSYNC_ERA: 0.0006, // TODO
   BASE: 0.000004,
   SOLANA: 0.001,
@@ -786,11 +782,9 @@ export const CardFeePercentage = {
   BSC: 0.5,
   COSMOS: 0.5,
   OSMOSIS: 0.5,
-  STARGAZE: 0.5,
   NOBLE: 0,
   TRON: 3,
   COREUM: 3,
-  KUJIRA: 3,
   INJECTIVE: 3,
   SOLANA: 0.5,
 };
@@ -808,11 +802,9 @@ export const SlippageFactor = {
   BSC: 0.003,
   COSMOS: 0.003,
   OSMOSIS: 0.003,
-  STARGAZE: 0.003,
   NOBLE: 0,
   TRON: 0.005,
   COREUM: 0.005,
-  KUJIRA: 0.005,
   INJECTIVE: 0.005,
   SOLANA: 0.003,
 };
@@ -835,22 +827,18 @@ export const ChainIdNameMapping = {
   '79': 'ethereum',
   'cosmoshub-4': 'cosmos',
   'osmosis-1': 'osmosis',
-  'stargaze-1': 'stargaze',
   'noble-1': 'noble',
   'coreum-mainnet-1': 'coreum',
   'injective-1': 'injective',
-  'kaiyo-1': 'kujira',
   solana: 'solana',
 };
 
 export const ChainBackendNameMapping = {
   cosmos: [ChainBackendNames.COSMOS],
   osmosis: [ChainBackendNames.OSMOSIS],
-  stargaze: [ChainBackendNames.STARGAZE],
   noble: [ChainBackendNames.NOBLE],
   coreum: [ChainBackendNames.COREUM],
   injective: [ChainBackendNames.INJECTIVE],
-  kujira: [ChainBackendNames.KUJIRA],
 };
 
 export const AddressDerivationPath = {
@@ -862,9 +850,7 @@ export const AddressDerivationPath = {
 
 export const Bech32Prefixes = {
   COSMOS: 'cosmos',
-  STARGAZE: 'stars',
   NOBLE: 'noble',
-  KUJIRA: 'kujira',
   OSMOSIS: 'osmo',
   COREUM: 'core',
   INJECTIVE: 'inj',
@@ -891,11 +877,9 @@ export const ChainIdToBackendNameMapping = {
   '8453': ChainBackendNames.BASE,
   'cosmoshub-4': ChainBackendNames.COSMOS,
   'osmosis-1': ChainBackendNames.OSMOSIS,
-  'stargaze-1': ChainBackendNames.STARGAZE,
   'noble-1': ChainBackendNames.NOBLE,
   'coreum-mainnet-1': ChainBackendNames.COREUM,
   'injective-1': ChainBackendNames.INJECTIVE,
-  'kaiyo-1': ChainBackendNames.KUJIRA,
   solana: ChainBackendNames.SOLANA,
 };
 
@@ -922,11 +906,9 @@ export const ChainNameToChainMapping: Record<ChainBackendNames, Chain> = {
   [ChainBackendNames.BASE]: CHAIN_BASE,
   [ChainBackendNames.COSMOS]: CHAIN_COSMOS,
   [ChainBackendNames.OSMOSIS]: CHAIN_OSMOSIS,
-  [ChainBackendNames.STARGAZE]: CHAIN_STARGAZE,
   [ChainBackendNames.NOBLE]: CHAIN_NOBLE,
   [ChainBackendNames.COREUM]: CHAIN_COREUM,
   [ChainBackendNames.INJECTIVE]: CHAIN_INJECTIVE,
-  [ChainBackendNames.KUJIRA]: CHAIN_KUJIRA,
   [ChainBackendNames.SOLANA]: CHAIN_SOLANA,
 };
 

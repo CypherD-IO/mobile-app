@@ -9,13 +9,11 @@ import {
   CHAIN_POLYGON,
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_SOLANA,
 } from '../constants/server';
 import axios from './Http';
@@ -69,13 +67,11 @@ export interface WalletHoldings {
   optimism: ChainHoldings;
   cosmos: ChainHoldings;
   osmosis: ChainHoldings;
-  stargaze: ChainHoldings;
   noble: ChainHoldings;
   zksync_era: ChainHoldings;
   base: ChainHoldings;
   coreum: ChainHoldings;
   injective: ChainHoldings;
-  kujira: ChainHoldings;
   solana: ChainHoldings;
   totalHoldings: Holding[];
   timestamp: string;
@@ -136,8 +132,6 @@ export function getCurrentChainHoldings(
       return portfolio.cosmos;
     case CHAIN_OSMOSIS.backendName:
       return portfolio.osmosis;
-    case CHAIN_STARGAZE.backendName:
-      return portfolio.stargaze;
     case CHAIN_NOBLE.backendName:
       return portfolio.noble;
     case CHAIN_ZKSYNC_ERA.backendName:
@@ -148,8 +142,6 @@ export function getCurrentChainHoldings(
       return portfolio.coreum;
     case CHAIN_INJECTIVE.backendName:
       return portfolio.injective;
-    case CHAIN_KUJIRA.backendName:
-      return portfolio.kujira;
     case CHAIN_SOLANA.backendName:
       return portfolio.solana;
     default:
@@ -179,11 +171,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let avaxHoldings;
   let cosmosHoldings;
   let osmosisHoldings;
-  let stargazeHoldings;
   let nobleHoldings;
   let coreumHoldings;
   let injectiveHoldings;
-  let kujiraHoldings;
   let arbitrumHoldings;
   let optimismHoldings;
   let zksyncEraHoldings;
@@ -259,9 +249,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         case CHAIN_OSMOSIS.backendName:
           tokenHolding.chainDetails = CHAIN_OSMOSIS;
           break;
-        case CHAIN_STARGAZE.backendName:
-          tokenHolding.chainDetails = CHAIN_STARGAZE;
-          break;
         case CHAIN_NOBLE.backendName:
           tokenHolding.chainDetails = CHAIN_NOBLE;
           break;
@@ -273,9 +260,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
           break;
         case CHAIN_COREUM.backendName:
           tokenHolding.chainDetails = CHAIN_COREUM;
-          break;
-        case CHAIN_KUJIRA.backendName:
-          tokenHolding.chainDetails = CHAIN_KUJIRA;
           break;
         case CHAIN_INJECTIVE.backendName:
           tokenHolding.chainDetails = CHAIN_INJECTIVE;
@@ -332,9 +316,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       case CHAIN_OSMOSIS.backendName:
         osmosisHoldings = chainHoldings;
         break;
-      case CHAIN_STARGAZE.backendName:
-        stargazeHoldings = chainHoldings;
-        break;
       case CHAIN_NOBLE.backendName:
         nobleHoldings = chainHoldings;
         break;
@@ -346,9 +327,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         break;
       case CHAIN_COREUM.backendName:
         coreumHoldings = chainHoldings;
-        break;
-      case CHAIN_KUJIRA.backendName:
-        kujiraHoldings = chainHoldings;
         break;
       case CHAIN_INJECTIVE.backendName:
         injectiveHoldings = chainHoldings;
@@ -370,7 +348,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     avalanche: avaxHoldings as ChainHoldings,
     cosmos: cosmosHoldings as ChainHoldings,
     osmosis: osmosisHoldings as ChainHoldings,
-    stargaze: stargazeHoldings as ChainHoldings,
     noble: nobleHoldings as ChainHoldings,
     optimism: optimismHoldings as ChainHoldings,
     arbitrum: arbitrumHoldings as ChainHoldings,
@@ -378,7 +355,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     base: baseHoldings as ChainHoldings,
     coreum: coreumHoldings as ChainHoldings,
     injective: injectiveHoldings as ChainHoldings,
-    kujira: kujiraHoldings as ChainHoldings,
     solana: solanaHoldings as ChainHoldings,
     totalHoldings,
     timestamp: '',

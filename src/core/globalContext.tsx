@@ -77,11 +77,6 @@ export const initialGlobalState: GlobalStateDef = {
       restEndpoint:
         'https://injective-1-public-rest.mesa.ec1-prod.newmetric.xyz',
     },
-    KUJIRA: {
-      primary: 'https://rpc-kujira-ia.cosmosia.notional.ventures/',
-      secondaryList: 'https://rpc-kujira.whispernode.com:443',
-      restEndpoint: 'https://lcd-kujira.whispernode.com:443',
-    },
     SOLANA: {
       primary: 'https://api.mainnet-beta.solana.com',
       secondaryList: 'https://api.mainnet-beta.solana.com',

@@ -28,13 +28,11 @@ import {
   CHAIN_BSC,
   CHAIN_ARBITRUM,
   CHAIN_OPTIMISM,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_SOLANA,
 } from '../../constants/server';
 import { captureRef } from 'react-native-view-shot';
@@ -136,11 +134,6 @@ export default function QRCodeGenerator() {
           ...CHAIN_OSMOSIS,
           address: hdWalletContext.state.wallet.osmosis?.wallets[0]?.address,
         };
-      case FundWalletAddressType.STARGAZE:
-        return {
-          ...CHAIN_STARGAZE,
-          address: hdWalletContext.state.wallet.stargaze?.address,
-        };
       case FundWalletAddressType.NOBLE:
         return {
           ...CHAIN_NOBLE,
@@ -155,11 +148,6 @@ export default function QRCodeGenerator() {
         return {
           ...CHAIN_INJECTIVE,
           address: hdWalletContext.state.wallet.injective?.wallets[0]?.address,
-        };
-      case FundWalletAddressType.KUJIRA:
-        return {
-          ...CHAIN_KUJIRA,
-          address: hdWalletContext.state.wallet.kujira?.wallets[0]?.address,
         };
 
       default:

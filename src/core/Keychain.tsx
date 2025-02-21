@@ -479,11 +479,9 @@ export async function getSignerClient(
   const accounts: string[] = [
     'cosmos',
     'osmosis',
-    'stargaze',
     'noble',
     'coreum',
     'injective',
-    'kujira',
   ];
 
   const wallets: Map<string, OfflineDirectSigner> = new Map();

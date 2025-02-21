@@ -12,14 +12,12 @@ import {
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   FundWalletAddressType,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_SOLANA,
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
@@ -50,17 +48,8 @@ export function AddressBook() {
   const { indexValue = 0 } = route.params;
   const [index, setIndex] = useState(indexValue);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const {
-    ethereum,
-    stargaze,
-    cosmos,
-    osmosis,
-    noble,
-    coreum,
-    injective,
-    kujira,
-    solana,
-  } = hdWalletContext.state.wallet;
+  const { ethereum, cosmos, osmosis, noble, coreum, injective, solana } =
+    hdWalletContext.state.wallet;
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -136,15 +125,6 @@ export function AddressBook() {
               />
 
               <AddressBookContainer
-                chain={CHAIN_STARGAZE.name}
-                wallet={stargaze.wallets[stargaze.currentIndex]}
-                logo={AppImages.STARGAZE_LOGO}
-                bGC={'#ebebeb'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.STARGAZE}
-              />
-
-              <AddressBookContainer
                 chain={CHAIN_NOBLE.name}
                 wallet={noble.wallets[noble.currentIndex]}
                 logo={AppImages.NOBLE_LOGO}
@@ -169,15 +149,6 @@ export function AddressBook() {
                 bGC={'#f1f4fa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.INJECTIVE}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_KUJIRA.name}
-                wallet={kujira.wallets[kujira.currentIndex]}
-                logo={AppImages.KUJIRA_LOGO}
-                bGC={'#fff0f0'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.KUJIRA}
               />
 
               <AddressBookContainer

@@ -9,7 +9,6 @@ import {
   bsc,
   zkSync,
   base,
-  polygonZkEvm,
 } from 'wagmi/chains';
 import { AllChainsEnum } from './enum';
 export interface Chain {
@@ -37,11 +36,9 @@ export enum ChainBackendNames {
   BSC = 'BSC',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
-  STARGAZE = 'STARGAZE',
   NOBLE = 'NOBLE',
   COREUM = 'COREUM',
   INJECTIVE = 'INJECTIVE',
-  KUJIRA = 'KUJIRA',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   SOLANA = 'SOLANA',
@@ -51,11 +48,9 @@ export enum FundWalletAddressType {
   EVM = 'EVM',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
-  STARGAZE = 'STARGAZE',
   NOBLE = 'NOBLE',
   COREUM = 'COREUM',
   INJECTIVE = 'INJECTIVE',
-  KUJIRA = 'KUJIRA',
   POLYGON = 'POLYGON',
   AVALANCHE = 'AVALANCHE',
   ARBITRUM = 'ARBITRUM',
@@ -201,21 +196,6 @@ export const CHAIN_OPTIMISM: Chain = {
   chainIdNumber: 10,
 };
 
-export const CHAIN_STARGAZE: Chain = {
-  chainName: 'stargaze',
-  name: 'Stargaze',
-  symbol: 'STARS',
-  id: 12,
-  logo_url: AppImages.STARGAZE_LOGO,
-  backendName: ChainBackendNames.STARGAZE,
-  chain_id: 'stargaze-1',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl:
-    'https://public.cypherd.io/assets/blockchains/stargaze/info/logo.png',
-  chainIdNumber: 0,
-  coinGeckoId: 'stargaze',
-};
-
 export const CHAIN_NOBLE: Chain = {
   chainName: 'noble',
   name: 'Noble',
@@ -255,19 +235,6 @@ export const CHAIN_INJECTIVE: Chain = {
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   chainIdNumber: 0,
   coinGeckoId: 'injective-protocol',
-};
-
-export const CHAIN_KUJIRA: Chain = {
-  chainName: 'kujira',
-  name: 'Kujira',
-  symbol: 'KUJI',
-  id: 24,
-  logo_url: AppImages.KUJIRA_LOGO,
-  backendName: ChainBackendNames.KUJIRA,
-  chain_id: 'kaiyo-1',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  chainIdNumber: 0,
-  coinGeckoId: 'kujira',
 };
 
 export const CHAIN_ZKSYNC_ERA: Chain = {
@@ -326,35 +293,23 @@ export const CHAIN_NAMES = [
   'ethereum',
   'cosmos',
   'osmosis',
-  'stargaze',
   'noble',
   'coreum',
   'injective',
-  'kujira',
   'solana',
 ];
 export const COSMOS_CHAINS = [
   'cosmos',
   'osmosis',
-  'stargaze',
   'noble',
   'coreum',
   'injective',
-  'kujira',
 ];
-export const PURE_COSMOS_CHAINS = [
-  'cosmos',
-  'osmosis',
-  'stargaze',
-  'noble',
-  'coreum',
-  'kujira',
-];
+export const PURE_COSMOS_CHAINS = ['cosmos', 'osmosis', 'noble', 'coreum'];
 
 export const ALL_CHAINS: Chain[] = [
   CHAIN_ETH,
   CHAIN_POLYGON,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_AVALANCHE,
   CHAIN_OPTIMISM,
@@ -363,7 +318,6 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_OSMOSIS,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_BSC,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
@@ -386,10 +340,8 @@ export const SOLANA_CHAINS: Chain[] = [CHAIN_SOLANA];
 export const COSMOS_CHAINS_LIST: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_COREUM,
-  CHAIN_KUJIRA,
 ];
 
 export const EVM_CHAINS_FOR_ADDRESS_DIR = [
@@ -429,9 +381,7 @@ export const COSMOS_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.NOBLE,
   ChainBackendNames.COREUM,
   ChainBackendNames.INJECTIVE,
-  ChainBackendNames.KUJIRA,
   ChainBackendNames.OSMOSIS,
-  ChainBackendNames.STARGAZE,
 ];
 
 export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
@@ -445,9 +395,7 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.NOBLE,
   ChainBackendNames.COREUM,
   ChainBackendNames.INJECTIVE,
-  ChainBackendNames.KUJIRA,
   ChainBackendNames.OSMOSIS,
-  ChainBackendNames.STARGAZE,
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.BASE,
   ChainBackendNames.SOLANA,
@@ -464,7 +412,6 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_OSMOSIS,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_SOLANA,
@@ -473,11 +420,9 @@ export const CARD_CHAINS: Chain[] = [
 export const IBC_CHAINS: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
 ];
 
 export const ALL_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...ALL_CHAINS];
@@ -497,8 +442,6 @@ export const ALL_FUNDABLE_CHAINS = [
   CHAIN_OSMOSIS,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
-  CHAIN_STARGAZE,
   CHAIN_ZKSYNC_ERA,
 ];
 
@@ -506,11 +449,9 @@ export enum ChainNames {
   ETH = 'ethereum',
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
-  STARGAZE = 'stargaze',
   NOBLE = 'noble',
   COREUM = 'coreum',
   INJECTIVE = 'injective',
-  KUJIRA = 'kujira',
   BSC = 'binance',
   POLYGON = 'polygon',
   AVALANCHE = 'avalanche',
@@ -532,8 +473,6 @@ export enum ChainNameMapping {
   OSMOSIS = 'osmosis',
   COREUM = 'coreum',
   INJECTIVE = 'injective',
-  KUJIRA = 'kujira',
-  STARGAZE = 'stargaze',
   NOBLE = 'noble',
   ZKSYNC_ERA = 'zksync_era',
   BASE = 'base',
@@ -552,11 +491,9 @@ export const ChainConfigMapping = {
   arbitrum: CHAIN_ARBITRUM,
   cosmos: CHAIN_COSMOS,
   osmosis: CHAIN_OSMOSIS,
-  stargaze: CHAIN_STARGAZE,
   noble: CHAIN_NOBLE,
   coreum: CHAIN_COREUM,
   injective: CHAIN_INJECTIVE,
-  kujira: CHAIN_KUJIRA,
   zksync_era: CHAIN_ZKSYNC_ERA,
   base: CHAIN_BASE,
   solana: CHAIN_SOLANA,
@@ -589,9 +526,7 @@ export const ChainNameToContactsChainNameMapping = {
   Osmosis: 'osmosis',
   Coreum: 'coreum',
   Injective: 'injective',
-  Kujira: 'kujira',
   Optimism: 'optimism',
-  Stargaze: 'stargaze',
   Noble: 'noble',
   'zkSync Era': 'zksync_era',
   Base: 'base',
@@ -607,11 +542,9 @@ export const NativeTokenMapping: Record<AllChainsEnum, string> = {
   BSC: 'BNB',
   COSMOS: 'ATOM',
   OSMOSIS: 'OSMO',
-  STARGAZE: 'STARS',
   NOBLE: 'USDC',
   COREUM: 'COREUM',
   INJECTIVE: 'INJ',
-  KUJIRA: 'KUJI',
   ZKSYNC_ERA: 'ETH',
   BASE: 'ETH',
   SOLANA: 'SOL',

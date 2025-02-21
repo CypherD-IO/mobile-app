@@ -350,10 +350,8 @@ export default function useInitializer() {
           get(attributes, 'ethereumAddress', ''),
           get(attributes, 'cosmosAddress'),
           get(attributes, 'osmosisAddress'),
-          get(attributes, 'stargazeAddress'),
           get(attributes, 'nobleAddress'),
           get(attributes, 'coreumAddress'),
-          get(attributes, 'kujiraAddress'),
         );
         void registerIntercomUser(attributes);
       } else {

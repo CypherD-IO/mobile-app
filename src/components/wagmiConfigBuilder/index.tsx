@@ -10,7 +10,6 @@ import {
   avalanche,
   bsc,
   base,
-  polygonZkEvm,
 } from '@wagmi/core/chains';
 import {
   createAppKit,
@@ -34,7 +33,6 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
     avalanche,
     bsc,
     base,
-    polygonZkEvm,
   ] as const;
 
   const projectId = String(Config.WALLET_CONNECT_PROJECTID);
