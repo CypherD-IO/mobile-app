@@ -78,8 +78,6 @@ module.exports = {
         ethereum: '#F6F6F9',
         cosmos: '#eff0f5',
         osmosis: '#f5edfa',
-        juno: '#ebebeb',
-        stargaze: '#ebebeb',
         noble: '#ebebeb',
         polygon: '#f5efff',
         binance: '#fff7e3',

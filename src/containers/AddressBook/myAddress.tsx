@@ -9,22 +9,15 @@ import {
   CHAIN_BSC,
   CHAIN_COSMOS,
   CHAIN_ETH,
-  CHAIN_JUNO,
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   FundWalletAddressType,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_SOLANA,
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
@@ -45,7 +38,6 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { CyDIconsPack } from '../../customFonts/generator';
 
 interface RouteParams {
   indexValue: number;
@@ -56,18 +48,8 @@ export function AddressBook() {
   const { indexValue = 0 } = route.params;
   const [index, setIndex] = useState(indexValue);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const {
-    ethereum,
-    stargaze,
-    cosmos,
-    osmosis,
-    juno,
-    noble,
-    coreum,
-    injective,
-    kujira,
-    solana,
-  } = hdWalletContext.state.wallet;
+  const { ethereum, cosmos, osmosis, noble, coreum, injective, solana } =
+    hdWalletContext.state.wallet;
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -143,24 +125,6 @@ export function AddressBook() {
               />
 
               <AddressBookContainer
-                chain={CHAIN_JUNO.name}
-                wallet={juno.wallets[juno.currentIndex]}
-                logo={AppImages.JUNO_LOGO}
-                bGC={'#ebebeb'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.JUNO}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_STARGAZE.name}
-                wallet={stargaze.wallets[stargaze.currentIndex]}
-                logo={AppImages.STARGAZE_LOGO}
-                bGC={'#ebebeb'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.STARGAZE}
-              />
-
-              <AddressBookContainer
                 chain={CHAIN_NOBLE.name}
                 wallet={noble.wallets[noble.currentIndex]}
                 logo={AppImages.NOBLE_LOGO}
@@ -185,15 +149,6 @@ export function AddressBook() {
                 bGC={'#f1f4fa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.INJECTIVE}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_KUJIRA.name}
-                wallet={kujira.wallets[kujira.currentIndex]}
-                logo={AppImages.KUJIRA_LOGO}
-                bGC={'#fff0f0'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.KUJIRA}
               />
 
               <AddressBookContainer
@@ -257,42 +212,6 @@ export function AddressBook() {
                 bGC={'#f1f4fa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.BASE}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_POLYGON_ZKEVM.name}
-                wallet={ethereum}
-                logo={AppImages.POLYGON_ZKEVM_LOGO}
-                bGC={'#f5efff'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.POLYGON_ZKEVM}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_AURORA.name}
-                wallet={ethereum}
-                logo={AppImages.AURORA_LOGO}
-                bGC={'#f3fee3'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.AURORA}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_MOONBEAM.name}
-                wallet={ethereum}
-                logo={AppImages.MOONBEAM_LOGO}
-                bGC={'#faedf8'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.MOONBEAM}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_MOONRIVER.name}
-                wallet={ethereum}
-                logo={AppImages.MOONRIVER_LOGO}
-                bGC={'#f2fcfa'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.MOONRIVER}
               />
             </CyDView>
           </CyDScrollView>

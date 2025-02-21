@@ -7,24 +7,16 @@ export enum AllChainsEnum {
   BSC = 'BSC',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
-  JUNO = 'JUNO',
-  STARGAZE = 'STARGAZE',
   COREUM = 'COREUM',
   INJECTIVE = 'INJECTIVE',
-  KUJIRA = 'KUJIRA',
   NOBLE = 'NOBLE',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
-  POLYGON_ZKEVM = 'POLYGON_ZKEVM',
-  AURORA = 'AURORA',
-  MOONBEAM = 'MOONBEAM',
-  MOONRIVER = 'MOONRIVER',
   TRON = 'TRON',
   SOLANA = 'SOLANA',
 }
 
 export enum TokenFunctionality {
-  STAKING = 'STAKING',
   TRANSACTIONS = 'TRANSACTIONS',
   ABOUT = 'ABOUT',
 }
@@ -200,13 +192,11 @@ export enum OtherIdTypes {
 export enum TokenOverviewTabs {
   OVERVIEW = 'OVERVIEW',
   TRANSACTIONS = 'TRANSACTIONS',
-  STAKING = 'STAKING',
 }
 
 export enum TokenOverviewTabIndices {
   OVERVIEW = 0,
   TRANSACTIONS = 1,
-  STAKING = 2,
 }
 
 export enum RPCPreference {

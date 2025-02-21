@@ -4,7 +4,6 @@ import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDAnimatedView,
   CyDIcons,
-  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -28,7 +27,6 @@ import {
 import Loading from '../../components/v2/loading';
 import { TokenTransactions } from './transactions';
 import TokenOverviewToolBar from './toolbar';
-import TokenStaking from './staking';
 import analytics from '@react-native-firebase/analytics';
 import clsx from 'clsx';
 import { isAndroid } from '../../misc/checkers';
@@ -37,7 +35,6 @@ import usePortfolio from '../../hooks/usePortfolio';
 import { Holding } from '../../core/portfolio';
 import { get, groupBy } from 'lodash';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
   tokenData: TokenMeta;
@@ -52,10 +49,6 @@ function TokenOverviewV2() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const isFocused = useIsFocused();
   const { tokenData } = route.params;
-  const [tokenTabs, setTokenTabs] = useState([
-    TokenOverviewTabs.OVERVIEW,
-    TokenOverviewTabs.TRANSACTIONS,
-  ]);
   const [index, setIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [tokenHoldingsByCoinGeckoId, setTokenHoldingsByCoinGeckoId] = useState<
@@ -77,7 +70,6 @@ function TokenOverviewV2() {
         ![
           TokenOverviewTabIndices.OVERVIEW,
           TokenOverviewTabIndices.TRANSACTIONS,
-          TokenOverviewTabIndices.STAKING,
         ].includes(+route.params.navigateTo)
       ) {
         void analytics().logEvent('visited_token_overview_page');
@@ -90,13 +82,6 @@ function TokenOverviewV2() {
       navigation.setOptions({
         title: tokenData.name,
       });
-      if (tokenData.isStakeable) {
-        setTokenTabs([
-          TokenOverviewTabs.OVERVIEW,
-          TokenOverviewTabs.TRANSACTIONS,
-          TokenOverviewTabs.STAKING,
-        ]);
-      }
       setLoading(false);
     }
   }, [isFocused]);
@@ -127,7 +112,7 @@ function TokenOverviewV2() {
       </CyDView>
       <CyDView className={'flex flex-row justify-center'}>
         <SwitchView
-          titles={tokenTabs}
+          titles={[TokenOverviewTabs.OVERVIEW, TokenOverviewTabs.TRANSACTIONS]}
           index={index}
           setIndexChange={(index: number) => {
             setIndex(index);
@@ -156,9 +141,6 @@ function TokenOverviewV2() {
               )}
               navigation={navigation}
             />
-          )}
-          {index === 2 && (
-            <TokenStaking tokenData={tokenData} navigation={navigation} />
           )}
         </CyDView>
       )}

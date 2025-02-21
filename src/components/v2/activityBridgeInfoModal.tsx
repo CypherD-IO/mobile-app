@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { t } from 'i18next';
-import { capitalize, round } from 'lodash';
+import { capitalize } from 'lodash';
 import moment from 'moment';
 import React, { useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -29,7 +29,6 @@ import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import CyDModalLayout from './modal';
 import { screenTitle } from '../../constants';
-import { DecimalHelper } from '../../utils/decimalHelper';
 
 const statuses: Record<string, string> = {
   [ActivityStatus.PENDING]: 'PENDING',

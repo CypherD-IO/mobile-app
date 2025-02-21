@@ -73,10 +73,7 @@ export default function WalletConnectModal(props) {
       return;
     }
     const nativeToken = await getNativeToken(item.backendName);
-    if (
-      nativeToken?.actualBalance &&
-      renderContent?.dAppInfo?.name !== 'Cypher Wallet DApp'
-    ) {
+    if (renderContent?.dAppInfo?.name !== 'Cypher Wallet DApp') {
       setTimeout(() => {
         showModal('state', {
           type: 'error',

@@ -38,7 +38,6 @@ const COSMOS_LOGO = require('./cosmos.png');
 const OSMOSIS_LOGO = require('./osmo.png');
 const COREUM_LOGO = require('./coreum.png');
 const INJECTIVE_LOGO = require('./injective.png');
-const KUJIRA_LOGO = require('./kujira.png');
 const BG_SETTINGS = require('./bg_settings.png');
 const IBC = require('./ibc.png');
 const SEND = require('./transactions_send.png');
@@ -66,8 +65,6 @@ const WALLETCONNECT_FAILED = require('./walletconnect_error.png');
 const WALLETCONNECT_PENDING = require('./walletconnect_pending.png');
 const IBC_GRAY = require('./ibc_label.png');
 const NO_ACTIVITIES = require('./no_activites.png');
-const JUNO_LOGO = require('./juno.png');
-const STARGAZE_LOGO = require('./stars.png');
 const NOBLE_LOGO = require('./noble.png');
 const BRIDGE_SHORTCUT = require('./shortcutsBridge.png');
 const SWAP_SHORTCUT = require('./shortcutsSwap.png');
@@ -113,10 +110,8 @@ const CARD_KYC_BACKGROUND = require('./cardKYCBackground.png');
 const DEBIT_CARD_BACKGROUND = require('./debit-card-background.png');
 const LOAD_CARD_LOTTIE = require('./loadCardLottie.json');
 const NO_TRANSACTIONS_YET = require('./noTransactions.png');
-const STARGAZE_PNG = require('./stargaze.png');
 const NOBLE_PNG = require('./noble.png');
 const APR_ICON = require('./apr.png');
-const STAKING_EMPTY_ILLUSTRATION = require('./stakingEmptyIllustration.png');
 const CELEBRATE = require('./celebrate.png');
 const READ_ONLY_CARD_BACKGROUND = require('./readOnlyCardBackground.png');
 const NFT_EMPTY_ILLUSTATION = require('./emptyNFTIllustration.png');
@@ -133,10 +128,6 @@ const TXN_SELF_SUCCESS = require('./txn_self_success.png');
 const TXN_SELF_ERROR = require('./txn_self_error.png');
 const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
 const BASE_LOGO = require('./base.png');
-const POLYGON_ZKEVM_LOGO = require('./polygon_zkevm.png');
-const AURORA_LOGO = require('./aurora.png');
-const MOONBEAM_LOGO = require('./moonbeam.png');
-const MOONRIVER_LOGO = require('./moonriver.png');
 const UPGRADE_TO_PHYSICAL_CARD_ARROW = require('./upgradeToPhysicalCardArrow.png');
 const SEND_INVITE_CODE_BG = require('./sendInviteCodeBg.png');
 const SEND_INVITE_CODE = require('./sendInviteCode.png');
@@ -669,8 +660,6 @@ export const AppImagesMap = {
     ONMETA,
     SHORTCUTS,
     CARD_SEL,
-    JUNO_LOGO,
-    STARGAZE_LOGO,
     NOBLE_LOGO,
     BROWSERACTIVITY_SUCCESS,
     BROWSERACTIVITY_PENDING,
@@ -705,10 +694,8 @@ export const AppImagesMap = {
     DEBIT_CARD_BACKGROUND,
     LOAD_CARD_LOTTIE,
     NO_TRANSACTIONS_YET,
-    STARGAZE_PNG,
     NOBLE_PNG,
     APR_ICON,
-    STAKING_EMPTY_ILLUSTRATION,
     CELEBRATE,
     READ_ONLY_CARD_BACKGROUND,
     NFT_EMPTY_ILLUSTATION,
@@ -722,10 +709,6 @@ export const AppImagesMap = {
     SWAP_ERROR,
     ZKSYNC_ERA_LOGO,
     BASE_LOGO,
-    POLYGON_ZKEVM_LOGO,
-    AURORA_LOGO,
-    MOONBEAM_LOGO,
-    MOONRIVER_LOGO,
     NO_TRANSACTIONS,
     TXN_SEND_ERROR,
     TXN_RECEIVE_ERROR,
@@ -759,7 +742,6 @@ export const AppImagesMap = {
     TELEGRAM_BLUE,
     COREUM_LOGO,
     INJECTIVE_LOGO,
-    KUJIRA_LOGO,
     VIRTUAL_CARD_MASTER,
     PHYSICAL_CARD_MASTER,
     SOLANA_LOGO,
@@ -927,8 +909,6 @@ enum AppImages {
   ONMETA = 'ONMETA',
   SHORTCUTS = 'SHORTCUTS',
   CARD_SEL = 'CARD_SEL',
-  JUNO_LOGO = 'JUNO_LOGO',
-  STARGAZE_LOGO = 'STARGAZE_LOGO',
   NOBLE_LOGO = 'NOBLE_LOGO',
   BROWSERACTIVITY_SUCCESS = 'BROWSERACTIVITY_SUCCESS',
   BROWSERACTIVITY_PENDING = 'BROWSERACTIVITY_PENDING',
@@ -964,10 +944,8 @@ enum AppImages {
   DEBIT_CARD_BACKGROUND = 'DEBIT_CARD_BACKGROUND',
   LOAD_CARD_LOTTIE = 'LOAD_CARD_LOTTIE',
   NO_TRANSACTIONS_YET = 'NO_TRANSACTIONS_YET',
-  STARGAZE_PNG = 'STARGAZE_PNG',
   NOBLE_PNG = 'NOBLE_PNG',
   APR_ICON = 'APR_ICON',
-  STAKING_EMPTY_ILLUSTRATION = 'STAKING_EMPTY_ILLUSTRATION',
   CELEBRATE = 'CELEBRATE',
   READ_ONLY_CARD_BACKGROUND = 'READ_ONLY_CARD_BACKGROUND',
   NFT_EMPTY_ILLUSTATION = 'NFT_EMPTY_ILLUSTATION',
@@ -981,10 +959,6 @@ enum AppImages {
   SWAP_ERROR = 'SWAP_ERROR',
   ZKSYNC_ERA_LOGO = 'ZKSYNC_ERA_LOGO',
   BASE_LOGO = 'BASE_LOGO',
-  POLYGON_ZKEVM_LOGO = 'POLYGON_ZKEVM_LOGO',
-  AURORA_LOGO = 'AURORA_LOGO',
-  MOONBEAM_LOGO = 'MOONBEAM_LOGO',
-  MOONRIVER_LOGO = 'MOONRIVER_LOGO',
   NO_TRANSACTIONS = 'NO_TRANSACTIONS',
   TXN_SEND_ERROR = 'TXN_SEND_ERROR',
   TXN_RECEIVE_ERROR = 'TXN_RECEIVE_ERROR',
@@ -1018,7 +992,6 @@ enum AppImages {
   TELEGRAM_BLUE = 'TELEGRAM_BLUE',
   COREUM_LOGO = 'COREUM_LOGO',
   INJECTIVE_LOGO = 'INJECTIVE_LOGO',
-  KUJIRA_LOGO = 'KUJIRA_LOGO',
   VIRTUAL_CARD_MASTER = 'VIRTUAL_CARD_MASTER',
   PHYSICAL_CARD_MASTER = 'PHYSICAL_CARD_MASTER',
   SOLANA_LOGO = 'SOLANA_LOGO',

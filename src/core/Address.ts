@@ -34,13 +34,11 @@ export type AddressChainNames =
   | 'ethereum'
   | 'cosmos'
   | 'osmosis'
-  | 'juno'
-  | 'stargaze'
   | 'noble'
   | 'coreum'
   | 'injective'
-  | 'kujira'
   | 'solana';
+
 export interface IAccountDetail {
   address: string;
   algo?: string;
@@ -121,29 +119,12 @@ export const generateWalletFromMnemonic = async (
     Bech32Prefixes.COSMOS,
     getBytes(cosmosRipemd160Hash),
   );
-  const junoAddress = Bech32.encode(
-    Bech32Prefixes.JUNO,
-    getBytes(cosmosRipemd160Hash),
-  );
-  const stargazeAddress = Bech32.encode(
-    Bech32Prefixes.STARGAZE,
-    getBytes(cosmosRipemd160Hash),
-  );
   const nobleAddress = Bech32.encode(
     Bech32Prefixes.NOBLE,
     getBytes(cosmosRipemd160Hash),
   );
-  const kujiraAddress = Bech32.encode(
-    Bech32Prefixes.KUJIRA,
-    getBytes(cosmosRipemd160Hash),
-  );
   const osmosisAddress = Bech32.encode(
     Bech32Prefixes.OSMOSIS,
-    getBytes(cosmosRipemd160Hash),
-  );
-
-  const injectiveAddress = Bech32.encode(
-    Bech32Prefixes.INJECTIVE,
     getBytes(cosmosRipemd160Hash),
   );
 
@@ -181,23 +162,8 @@ export const generateWalletFromMnemonic = async (
         publicKey: cosmosPubKey,
       },
       {
-        name: 'juno',
-        address: junoAddress.toLowerCase(),
-        publicKey: cosmosPubKey,
-      },
-      {
-        name: 'stargaze',
-        address: stargazeAddress.toLowerCase(),
-        publicKey: cosmosPubKey,
-      },
-      {
         name: 'noble',
         address: nobleAddress.toLowerCase(),
-        publicKey: cosmosPubKey,
-      },
-      {
-        name: 'kujira',
-        address: kujiraAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {

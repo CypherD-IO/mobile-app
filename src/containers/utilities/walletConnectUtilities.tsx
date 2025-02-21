@@ -10,17 +10,13 @@ import Toast from 'react-native-toast-message';
 import AppImages from '../../../assets/images/appImages';
 import {
   CHAIN_ARBITRUM,
-  CHAIN_AURORA,
   CHAIN_AVALANCHE,
   CHAIN_BASE,
   CHAIN_BSC,
   CHAIN_ETH,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
-  CHAIN_POLYGON_ZKEVM,
   CHAIN_ZKSYNC_ERA,
 } from '../../constants/server';
 import {
@@ -56,11 +52,7 @@ const SUPPORTED_CHAIN_ID_MAP = {
   42161: CHAIN_ARBITRUM,
   10: CHAIN_OPTIMISM,
   8453: CHAIN_BASE,
-  1101: CHAIN_POLYGON_ZKEVM,
   324: CHAIN_ZKSYNC_ERA,
-  1313161554: CHAIN_AURORA,
-  1284: CHAIN_MOONBEAM,
-  1285: CHAIN_MOONRIVER,
 };
 
 const SUPPORTED_CHAIN_ID = [
@@ -71,12 +63,8 @@ const SUPPORTED_CHAIN_ID = [
   CHAIN_OSMOSIS.chain_id,
   CHAIN_ARBITRUM.chain_id,
   CHAIN_OPTIMISM.chain_id,
-  CHAIN_POLYGON_ZKEVM.chain_id,
   CHAIN_ZKSYNC_ERA.chain_id,
   CHAIN_BASE.chain_id,
-  CHAIN_AURORA.chain_id,
-  CHAIN_MOONBEAM.chain_id,
-  CHAIN_MOONRIVER.chain_id,
 ];
 
 const SUPPORTED_CHAIN_ID_NO = [
