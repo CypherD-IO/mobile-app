@@ -12,7 +12,12 @@ import Axios from 'axios';
 import Long from 'long';
 import { useContext, useEffect, useRef } from 'react';
 import { ConnectionTypes, Web3Origin } from '../../constants/enum';
-import { ALL_CHAINS, Chain, CHAIN_ETH } from '../../constants/server';
+import {
+  ALL_CHAINS,
+  Chain,
+  CHAIN_COLLECTION,
+  CHAIN_ETH,
+} from '../../constants/server';
 import {
   CosmosWeb3Method,
   errorCodes,
@@ -122,9 +127,19 @@ export default function useWeb3(origin: Web3Origin) {
 
   const web3Callback = useWeb3Callbacks(origin);
 
+  const getChainForViemClient = () => {
+    if (
+      hdWalletContext.state.selectedChain?.chainName !==
+      CHAIN_COLLECTION.chainName
+    ) {
+      return hdWalletContext.state.selectedChain;
+    }
+    return CHAIN_ETH;
+  };
+
   const publicClient = useRef<PublicClient>(
     getViemPublicClient(
-      getWeb3Endpoint(hdWalletContext.state.selectedChain, globalContext),
+      getWeb3Endpoint(getChainForViemClient(), globalContext),
     ),
   );
 
@@ -137,7 +152,7 @@ export default function useWeb3(origin: Web3Origin) {
 
   useEffect(() => {
     publicClient.current = getViemPublicClient(
-      getWeb3Endpoint(hdWalletContext.state.selectedChain, globalContext),
+      getWeb3Endpoint(getChainForViemClient(), globalContext),
     );
   }, [hdWalletContext.state.selectedChain]);
 
@@ -485,11 +500,10 @@ export default function useWeb3(origin: Web3Origin) {
         wallet: {
           ethereum: { address },
         },
-        selectedChain: sChain,
       } = hdWalletContext.state;
 
       const { params, method, id: payloadId } = payload;
-      const selectedChain = chain ?? sChain;
+      const selectedChain = chain ?? getChainForViemClient();
       publicClient.current = getViemPublicClient(
         getWeb3Endpoint(selectedChain, globalContext),
       );

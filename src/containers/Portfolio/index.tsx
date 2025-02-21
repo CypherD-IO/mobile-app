@@ -116,7 +116,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
-  const [copyToClipBoard, setCopyToClipBoard] = useState<boolean>(false);
   const [appState, setAppState] = useState<string>('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
@@ -355,7 +354,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     if (deFiFilters.chain !== selectedChain.backendName)
       setDeFiFilters({
         ...deFiFilters,
-        chain: selectedChain.backendName as ChainBackendNames,
+        chain: selectedChain.backendName,
       });
     if (portfolioData?.portfolio) {
       setPortfolioBalance(calculatePortfolioBalance(portfolioData?.portfolio));

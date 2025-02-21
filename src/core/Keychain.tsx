@@ -664,7 +664,7 @@ export async function signIn(
     if (validationResponse.message === SignMessageValidationType.VALID) {
       const walletClient = createWalletClient({
         chain: mainnet,
-        transport: http(),
+        transport: http(''),
       });
       const privateKey = await loadPrivateKeyFromKeyChain(
         true,
