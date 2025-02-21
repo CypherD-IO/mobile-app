@@ -45,10 +45,6 @@ export const initialGlobalState: GlobalStateDef = {
     ETH: {
       primary: 'https://rpc.ankr.com/eth',
     },
-    JUNO: {
-      primary: 'https://rpc-juno-ia.cosmosia.notional.ventures/',
-      restEndpoint: 'https://rest-juno.ecostake.com',
-    },
     OPTIMISM: {
       primary:
         'https://opt-mainnet.g.alchemy.com/v2/_xYARKGN55iQpuX94lySfkcZ7GTW-a4C',
@@ -66,22 +62,6 @@ export const initialGlobalState: GlobalStateDef = {
     BASE: {
       primary: 'https://1rpc.io/base',
     },
-    POLYGON_ZKEVM: {
-      primary: 'https://rpc.ankr.com/polygon_zkevm',
-    },
-    AURORA: {
-      primary: 'https://1rpc.io/aurora',
-    },
-    MOONBEAM: {
-      primary: 'https://rpc.ankr.com/moonbeam',
-    },
-    MOONRIVER: {
-      primary: 'https://moonriver.publicnode.com',
-    },
-    STARGAZE: {
-      primary: 'https://rpc-stargaze-ia.cosmosia.notional.ventures/',
-      restEndpoint: 'https://lcd-stargaze.keplr.app',
-    },
     NOBLE: {
       primary: 'https://noble-rpc.polkachu.com',
       restEndpoint: 'https://noble-api.polkachu.com',
@@ -96,11 +76,6 @@ export const initialGlobalState: GlobalStateDef = {
       secondaryList: 'https://rpc-injective.keplr.app',
       restEndpoint:
         'https://injective-1-public-rest.mesa.ec1-prod.newmetric.xyz',
-    },
-    KUJIRA: {
-      primary: 'https://rpc-kujira-ia.cosmosia.notional.ventures/',
-      secondaryList: 'https://rpc-kujira.whispernode.com:443',
-      restEndpoint: 'https://lcd-kujira.whispernode.com:443',
     },
     SOLANA: {
       primary: 'https://api.mainnet-beta.solana.com',

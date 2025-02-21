@@ -108,12 +108,6 @@ export default function TokenOverviewToolBar({
               case ChainBackendNames.OSMOSIS:
                 addressTypeQRCode = FundWalletAddressType.OSMOSIS;
                 break;
-              case ChainBackendNames.JUNO:
-                addressTypeQRCode = FundWalletAddressType.JUNO;
-                break;
-              case ChainBackendNames.STARGAZE:
-                addressTypeQRCode = FundWalletAddressType.STARGAZE;
-                break;
               case ChainBackendNames.NOBLE:
                 addressTypeQRCode = FundWalletAddressType.NOBLE;
                 break;
@@ -123,9 +117,6 @@ export default function TokenOverviewToolBar({
               case ChainBackendNames.INJECTIVE:
                 addressTypeQRCode = FundWalletAddressType.INJECTIVE;
                 break;
-              case ChainBackendNames.KUJIRA:
-                addressTypeQRCode = FundWalletAddressType.KUJIRA;
-                break;
               case ChainBackendNames.SOLANA:
                 addressTypeQRCode = FundWalletAddressType.SOLANA;
                 break;
@@ -134,18 +125,6 @@ export default function TokenOverviewToolBar({
                 break;
               case ChainBackendNames.BASE:
                 addressTypeQRCode = FundWalletAddressType.BASE;
-                break;
-              case ChainBackendNames.POLYGON_ZKEVM:
-                addressTypeQRCode = FundWalletAddressType.POLYGON_ZKEVM;
-                break;
-              case ChainBackendNames.AURORA:
-                addressTypeQRCode = FundWalletAddressType.AURORA;
-                break;
-              case ChainBackendNames.MOONBEAM:
-                addressTypeQRCode = FundWalletAddressType.MOONBEAM;
-                break;
-              case ChainBackendNames.MOONRIVER:
-                addressTypeQRCode = FundWalletAddressType.MOONRIVER;
                 break;
               case ChainBackendNames.POLYGON:
                 addressTypeQRCode = FundWalletAddressType.POLYGON;

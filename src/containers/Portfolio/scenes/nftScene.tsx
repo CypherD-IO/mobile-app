@@ -46,7 +46,6 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
     HdWalletContext,
   );
   const ethereum = hdWalletContext?.state.wallet?.ethereum;
-  const stargaze = hdWalletContext?.state.wallet?.stargaze;
 
   const [loading, setLoading] = useState<boolean>(true);
   const [viewType, setViewType] = useState<string>(RenderViewType.GRID_VIEW);
@@ -75,9 +74,6 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
     let NFTURL = '/v1/portfolio/nfts';
     if (ethereum?.wallets[0]?.address) {
       NFTURL += `?address[]=${ethereum?.wallets[0].address}`;
-    }
-    if (stargaze?.wallets[0]?.address) {
-      NFTURL += `&address[]=${stargaze?.wallets[0].address}`;
     }
     const { isError, data: allNFTs } = await getWithAuth(NFTURL);
     if (!isError) {
@@ -258,16 +254,9 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
           BSC: [],
           COSMOS: [],
           OSMOSIS: [],
-          JUNO: [],
-          STARGAZE: [],
           NOBLE: [],
         };
-        if (selectedChain === 'STARS' || selectedChain === 'STARGAZE') {
-          if (has(origNFTHoldings, 'STARGAZE')) {
-            tempFilter[selectedChain as ALL_CHAINS_TYPE] =
-              origNFTHoldings.STARGAZE;
-          }
-        } else if (selectedChain === 'MATIC' || selectedChain === 'POLYGON') {
+        if (selectedChain === 'MATIC' || selectedChain === 'POLYGON') {
           if (has(origNFTHoldings, 'POLYGON')) {
             tempFilter[selectedChain as ALL_CHAINS_TYPE] =
               origNFTHoldings.POLYGON;
@@ -290,8 +279,6 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
         BSC: [],
         COSMOS: [],
         OSMOSIS: [],
-        JUNO: [],
-        STARGAZE: [],
         NOBLE: [],
       });
     }
