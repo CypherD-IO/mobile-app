@@ -953,7 +953,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             showModal('state', {
               type: 'error',
               title: t('INVALID_ADDRESS'),
-              description: t('NOT_VALID_NOBLE_ADDRESS'),
+              description: t('NOT_VALID_COREUM_ADDRESS'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -965,7 +965,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             showModal('state', {
               type: 'error',
               title: t('INVALID_ADDRESS'),
-              description: t('NOT_VALID_NOBLE_ADDRESS'),
+              description: t('NOT_VALID_INJECTIVE_ADDRESS'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });

@@ -328,6 +328,8 @@ const resources = {
       NOT_VALID_COSMOS_ADDRESS: 'Not a valid Cosmos address',
       NOT_VALID_OSMOSIS_ADDRESS: 'Not a valid Osmosis address',
       NOT_VALID_NOBLE_ADDRESS: 'Not a valid Noble address',
+      NOT_VALID_COREUM_ADDRESS: 'Not a valid Coreum address',
+      NOT_VALID_INJECTIVE_ADDRESS: 'Not a valid Injective address',
       NOT_VALID_ENS: 'Not a registered ens domain',
       CHECK_RECEIVER_ADDRESS: "Please check your receiver's address",
       CUSTOMER_SUPPORT_QUOTE_UUID:
