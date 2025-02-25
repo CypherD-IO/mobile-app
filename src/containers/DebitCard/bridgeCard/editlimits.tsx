@@ -8,7 +8,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { t } from 'i18next';
 import AppImages from '../../../../assets/images/appImages';
 import {

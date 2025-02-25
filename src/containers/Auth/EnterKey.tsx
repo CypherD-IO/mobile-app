@@ -46,7 +46,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { mnemonicToAccount } from 'viem/accounts';
 
 export default function Login(props) {

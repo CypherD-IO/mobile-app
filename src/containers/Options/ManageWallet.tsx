@@ -11,7 +11,7 @@ import {
   CyDFlatList,
   CyDImageBackground,
   CyDIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 
 import { HDWallet } from '../../reducers/hdwallet_reducer';
 import useConnectionManager from '../../hooks/useConnectionManager';

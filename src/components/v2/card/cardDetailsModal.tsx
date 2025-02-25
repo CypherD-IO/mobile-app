@@ -6,7 +6,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import clsx from 'clsx';
 import CyDModalLayout from '../modal';
 import { showToast } from '../../../containers/utilities/toastUtility';

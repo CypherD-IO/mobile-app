@@ -8,7 +8,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import {
   ActivityContext,

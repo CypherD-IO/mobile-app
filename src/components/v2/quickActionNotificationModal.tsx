@@ -11,7 +11,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import Button from './button';
 import CyDModalLayout from './modal';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';

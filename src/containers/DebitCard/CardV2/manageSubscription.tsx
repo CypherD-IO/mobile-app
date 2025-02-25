@@ -6,7 +6,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { t } from 'i18next';
 import {

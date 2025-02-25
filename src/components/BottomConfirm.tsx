@@ -9,7 +9,7 @@ import {
   CyDFastImage,
   CyDMaterialDesignIcons,
   CyDView,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
 const { CText, DynamicView } = require('../styles');

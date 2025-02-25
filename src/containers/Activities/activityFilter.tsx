@@ -11,7 +11,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { BackHandler } from 'react-native';
 import Button from '../../components/v2/button';
 import { useTranslation } from 'react-i18next';

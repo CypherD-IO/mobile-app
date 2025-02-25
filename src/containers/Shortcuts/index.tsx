@@ -9,7 +9,7 @@ import {
   CyDMaterialDesignIcons,
   CyDLottieView,
   CyDIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from '../../components/v2/modal';
 import * as React from 'react';
 import AppImages from '../../../assets/images/appImages';

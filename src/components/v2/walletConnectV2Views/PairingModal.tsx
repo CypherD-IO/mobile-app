@@ -14,7 +14,7 @@ import {
   CyDScrollView,
   CyDText,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import Button from '../button';
 import {
   WalletConnectActions,

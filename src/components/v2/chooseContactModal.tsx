@@ -12,7 +12,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { useIsFocused } from '@react-navigation/native';
 import { ChainConfigMapping } from '../../constants/server';

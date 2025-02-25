@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing, ViewStyle } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { CyDAnimatedView, CyDView } from '../../styles/tailwindStyles';
+import { CyDAnimatedView, CyDView } from '../../styles/tailwindComponents';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 
 interface SkeletonLoaderProps {

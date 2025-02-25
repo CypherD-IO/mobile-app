@@ -25,7 +25,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { CyDIconsPack } from '../../../customFonts';
 
 export default function SetTelegramPin() {

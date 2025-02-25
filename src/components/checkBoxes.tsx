@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindComponents';
 
 export default function CheckBoxes(props: any) {
   const {

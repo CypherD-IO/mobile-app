@@ -6,7 +6,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator } from 'react-native';
 import { Colors } from '../../constants/theme';
-import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDSafeAreaView,
+  CyDText,
+  CyDView,
+} from '../../styles/tailwindComponents';
 
 export default function Loading({ loadingText }: { loadingText?: string }) {
   const { t } = useTranslation();

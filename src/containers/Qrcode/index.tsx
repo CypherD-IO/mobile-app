@@ -9,7 +9,7 @@ import {
   CyDScrollView,
   CyDFastImage,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 import { AppImagesMap } from '../../../assets/images/appImages';
 import { HdWalletContext, getMaskedAddress } from '../../core/util';

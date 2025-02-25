@@ -14,7 +14,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { isIOS } from '../../misc/checkers';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 

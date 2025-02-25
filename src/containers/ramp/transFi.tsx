@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-raw-text */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import React, { useContext, useEffect, useState } from 'react';
-import { CyDImage, CyDText, CyDView } from '../../styles/tailwindStyles';
+import { CyDImage, CyDText, CyDView } from '../../styles/tailwindComponents';
 import { HdWalletContext } from '../../core/util';
 import WebView from 'react-native-webview';
 import Loading from '../../components/v2/loading';

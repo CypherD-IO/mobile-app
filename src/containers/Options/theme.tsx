@@ -1,5 +1,9 @@
 import React from 'react';
-import { CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindComponents';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 
 export default function AppearanceSelector() {

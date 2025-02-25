@@ -6,7 +6,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { StyleSheet } from 'react-native';
 import * as React from 'react';

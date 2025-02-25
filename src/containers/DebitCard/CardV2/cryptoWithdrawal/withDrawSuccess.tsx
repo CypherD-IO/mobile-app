@@ -3,7 +3,7 @@ import {
   CyDFastImage,
   CyDText,
   CyDView,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import Button from '../../../../components/v2/button';
 import { t } from 'i18next';
 import AppImages from '../../../../../assets/images/appImages';

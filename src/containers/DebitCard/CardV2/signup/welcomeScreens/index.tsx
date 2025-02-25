@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CyDView } from '../../../../../styles/tailwindStyles';
+import { CyDView } from '../../../../../styles/tailwindComponents';
 import Button from '../../../../../components/v2/button';
 import { useTranslation } from 'react-i18next';
 import {

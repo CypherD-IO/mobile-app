@@ -15,7 +15,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();

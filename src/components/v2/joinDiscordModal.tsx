@@ -7,7 +7,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import useAxios from '../../core/HttpRequest';
 import AppImages from '../../../assets/images/appImages';
