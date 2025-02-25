@@ -18,7 +18,7 @@ import {
   CyDImageBackground,
   CyDFlatList,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
 

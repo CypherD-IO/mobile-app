@@ -6,7 +6,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
 import { DeFiFilter, protocolOptionType } from '../models/defi.interface';

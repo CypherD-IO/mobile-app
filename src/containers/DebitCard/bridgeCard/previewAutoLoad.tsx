@@ -1,6 +1,10 @@
 import React, { useContext, useState } from 'react';
 import useAxios from '../../../core/HttpRequest';
-import { CyDFastImage, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDText,
+  CyDView,
+} from '../../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
 import { CardProviders } from '../../../constants/enum';

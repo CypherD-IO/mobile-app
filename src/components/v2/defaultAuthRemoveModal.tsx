@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
-import { CyDText, CyDView } from '../../styles/tailwindStyles';
+import { CyDText, CyDView } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { removeCredentialsFromKeychain } from '../../core/Keychain';
 import { clearAllData } from '../../core/asyncStorage';

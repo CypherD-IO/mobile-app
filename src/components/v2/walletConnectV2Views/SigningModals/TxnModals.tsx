@@ -15,7 +15,7 @@ import {
   CyDIcons,
   CyDText,
   CyDView,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import {
   Divider,
   RenderDAPPInfo,

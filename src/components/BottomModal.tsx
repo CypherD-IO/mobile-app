@@ -7,7 +7,7 @@ import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicScrollView, DynamicTouchView } from '../styles/viewStyle';
-import { CyDMaterialDesignIcons } from '../styles/tailwindStyles';
+import { CyDMaterialDesignIcons } from '../styles/tailwindComponents';
 
 const { CText, DynamicView } = require('../styles');
 

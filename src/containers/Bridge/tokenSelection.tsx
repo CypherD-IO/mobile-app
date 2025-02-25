@@ -18,7 +18,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { DecimalHelper } from '../../utils/decimalHelper';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {

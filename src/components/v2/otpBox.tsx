@@ -6,7 +6,7 @@ import {
   Platform,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { CyDTextInput, CyDView } from '../../styles/tailwindStyles';
+import { CyDTextInput, CyDView } from '../../styles/tailwindComponents';
 
 interface OTPVerificationProps {
   pinCount?: number;

@@ -9,7 +9,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';

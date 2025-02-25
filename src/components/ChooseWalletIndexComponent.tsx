@@ -21,7 +21,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 import Button from './v2/button';
 
 const randomIcons = [

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CyDText, CyDTouchView } from '../../styles/tailwindStyles';
+import { CyDText, CyDTouchView } from '../../styles/tailwindComponents';
 import clsx from 'clsx';
 import { isAndroid, isIOS } from '../../misc/checkers';
 

@@ -8,7 +8,7 @@ import {
   CyDTouchView,
   CyDScrollView,
   CyDImageBackground,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { QRScannerScreens } from '../../constants/server';
 import { BarCodeReadEvent } from 'react-native-camera';
 import AppImages from '../../../assets/images/appImages';

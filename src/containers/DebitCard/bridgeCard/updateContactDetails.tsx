@@ -11,7 +11,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { Formik } from 'formik';
 import Button from '../../../components/v2/button';
 import clsx from 'clsx';

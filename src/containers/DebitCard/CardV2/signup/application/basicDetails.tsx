@@ -2,7 +2,7 @@ import React from 'react';
 import {
   CyDKeyboardAwareScrollView,
   CyDText,
-} from '../../../../../styles/tailwindStyles';
+} from '../../../../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 
 import FormikTextInput from '../../../../../components/v2/formikInput';

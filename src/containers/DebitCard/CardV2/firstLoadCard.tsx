@@ -64,7 +64,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 

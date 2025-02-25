@@ -36,6 +36,7 @@ import { Theme, useTheme } from '../reducers/themeReducer';
 import { get } from 'lodash';
 import AppImages, { AppImagesMap } from '../../assets/images/appImages';
 import LottieView, { AnimatedLottieViewProps } from 'lottie-react-native';
+import { ProgressCircle } from 'react-native-svg-charts';
 
 export const CyDText = (props: TextProps) => {
   return (
@@ -213,3 +214,7 @@ export const CyDLottieView = (
     <_CyDLottieView {...props} source={getImageSource(props.source, theme)} />
   );
 };
+
+export const CydProgessCircle = cssInterop(ProgressCircle, {
+  className: 'style',
+});

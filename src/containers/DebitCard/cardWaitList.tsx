@@ -12,7 +12,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { hostWorker } from '../../global';
 import { isValidEmailID, HdWalletContext } from '../../core/util';
 import * as Sentry from '@sentry/react-native';

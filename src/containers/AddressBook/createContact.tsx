@@ -17,7 +17,7 @@ import {
   CyDFastImage,
   CyDIcons,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import { Formik } from 'formik';
 import * as yup from 'yup';

@@ -12,7 +12,7 @@ import { Web3Origin } from '../../constants/enum';
 import { CommunicationEvents } from '../../constants/web3';
 import useWeb3 from '../../hooks/useWeb3';
 import { WebsiteInfo } from '../../types/Browser';
-import { CyDSafeAreaView, CyDView } from '../../styles/tailwindStyles';
+import { CyDSafeAreaView, CyDView } from '../../styles/tailwindComponents';
 import Loading from '../../components/v2/loading';
 const { SafeAreaView, DynamicView } = require('../../styles');
 

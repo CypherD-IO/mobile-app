@@ -1,6 +1,10 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import AppImages from '../../../../../assets/images/appImages';
-import { CyDImage, CyDText, CyDView } from '../../../../styles/tailwindStyles';
+import {
+  CyDImage,
+  CyDText,
+  CyDView,
+} from '../../../../styles/tailwindComponents';
 import Button from '../../../../components/v2/button';
 import { t } from 'i18next';
 

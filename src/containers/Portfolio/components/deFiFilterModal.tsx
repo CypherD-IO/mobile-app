@@ -20,7 +20,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 
 interface DeFiFilterModalInterface {
   filters: DeFiFilter;

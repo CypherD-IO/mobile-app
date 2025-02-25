@@ -7,7 +7,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Loading from '../../../../components/v2/loading';
 import useAxios from '../../../../core/HttpRequest';

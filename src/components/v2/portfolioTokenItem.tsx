@@ -15,7 +15,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { Holding } from '../../core/portfolio';

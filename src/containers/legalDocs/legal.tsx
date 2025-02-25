@@ -1,5 +1,5 @@
 import React from 'react';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDView } from '../../styles/tailwindComponents';
 import WebView from 'react-native-webview';
 import { BackHandler } from 'react-native';
 import {

@@ -5,7 +5,7 @@ import {
   interpolate,
   useAnimatedStyle,
 } from 'react-native-reanimated';
-import { CyDAnimatedView } from '../../../styles/tailwindStyles';
+import { CyDAnimatedView } from '../../../styles/tailwindComponents';
 import { CardSectionHeights } from '.';
 import { isIOS } from '../../../misc/checkers';
 

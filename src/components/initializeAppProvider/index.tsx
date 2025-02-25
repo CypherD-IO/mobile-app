@@ -22,7 +22,7 @@ import Dialog, {
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { t } from 'i18next';
-import { CyDText } from '../../styles/tailwindStyles';
+import { CyDText } from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';

@@ -6,7 +6,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDFastImage,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 import AppImages from '../../assets/images/appImages';
 export const GetMetalCardModal = ({
   onPressUpgradeNow,

@@ -15,7 +15,7 @@ import {
   CyDFastImage,
   CyDMaterialDesignIcons,
   CyDIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import {
   WalletConnectContext,
   walletConnectContextDef,

@@ -8,7 +8,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import Button from '../../../../components/v2/button';
 import CyDModalLayout from '../../../../components/v2/modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';

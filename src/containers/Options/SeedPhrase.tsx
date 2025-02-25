@@ -5,7 +5,7 @@ import {
   CyDTouchView,
   CyDScrollView,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { BackHandler, NativeModules } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CyDView } from '../../../../styles/tailwindStyles';
+import { CyDView } from '../../../../styles/tailwindComponents';
 import {
   Divider,
   RenderDAPPInfo,

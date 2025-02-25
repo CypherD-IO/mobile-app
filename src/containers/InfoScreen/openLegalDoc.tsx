@@ -17,7 +17,7 @@ import {
   CyDIcons,
   CyDSafeAreaView,
   CyDTouchView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import Loading from '../../components/v2/loading';
 
 interface RouteParams {

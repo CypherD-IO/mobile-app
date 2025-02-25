@@ -7,7 +7,7 @@ import {
   CyDView,
   CyDImageBackground,
   CyDTouchView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import clsx from 'clsx';
 import { screenTitle } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';

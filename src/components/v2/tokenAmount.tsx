@@ -5,7 +5,7 @@ import {
   formatAmount,
   limitDecimalPlaces,
 } from '../../core/util';
-import { CyDText } from '../../styles/tailwindStyles';
+import { CyDText } from '../../styles/tailwindComponents';
 
 export default function CyDTokenAmount(props?: any) {
   const hdWallet = useContext<any>(HdWalletContext);

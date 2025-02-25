@@ -7,7 +7,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 import { DynamicTouchView, DynamicView } from '../styles/viewStyle';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { t } from 'i18next';

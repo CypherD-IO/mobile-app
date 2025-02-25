@@ -7,7 +7,6 @@ import Button from '../../../components/v2/button';
 import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
 import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCountryModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import { Loader } from '../../../components/v2/walletConnectV2Views/SigningModals/SigningModalComponents';
 import {
   ButtonType,
   CARD_LIMIT_TYPE,
@@ -25,7 +24,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import EditLimitModal from './editLimitModal';
 import { ICountry } from '../../../models/cardApplication.model';
 import Loading from '../../../components/v2/loading';

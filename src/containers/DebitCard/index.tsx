@@ -17,7 +17,7 @@ import {
   CyDImageBackground,
   CyDText,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';

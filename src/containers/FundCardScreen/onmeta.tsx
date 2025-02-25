@@ -5,7 +5,7 @@ import {
 } from '../../core/util';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import WebView from 'react-native-webview';
-import { CyDImage, CyDView } from '../../styles/tailwindStyles';
+import { CyDImage, CyDView } from '../../styles/tailwindComponents';
 import { PayModalParams } from '../../types/Browser';
 import { GlobalContext } from '../../core/globalContext';
 import {

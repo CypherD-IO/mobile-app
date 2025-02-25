@@ -8,7 +8,7 @@ import {
   CyDMaterialDesignIcons,
   CyDText,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import clsx from 'clsx';
 import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';

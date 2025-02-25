@@ -39,7 +39,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import DeFiFilterModal from '../components/deFiFilterModal';
 import Loading from '../../../components/v2/loading';

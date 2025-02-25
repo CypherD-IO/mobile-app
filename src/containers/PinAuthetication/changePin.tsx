@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { t } from 'i18next';
-import { CyDView, CyDText, CyDSafeAreaView } from '../../styles/tailwindStyles';
+import {
+  CyDView,
+  CyDText,
+  CyDSafeAreaView,
+} from '../../styles/tailwindComponents';
 import OtpInput from '../../components/v2/OTPInput';
 import { screenTitle } from '../../constants';
 import { validatePin } from '../../core/Keychain';

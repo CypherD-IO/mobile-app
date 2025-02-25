@@ -5,7 +5,7 @@ import {
   CyDImage,
   CyDText,
   CyDView,
-} from '../../../../../styles/tailwindStyles';
+} from '../../../../../styles/tailwindComponents';
 
 export default function WelcomeSceen() {
   const { t } = useTranslation();

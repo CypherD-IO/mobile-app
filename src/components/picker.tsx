@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { CyDView, CyDText } from '../styles/tailwindStyles';
+import { CyDView, CyDText } from '../styles/tailwindComponents';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,

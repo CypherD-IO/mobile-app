@@ -4,7 +4,7 @@ import {
   CyDMaterialDesignIcons,
   CyDText,
   CyDView,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 import { t } from 'i18next';
 import { StyleSheet } from 'react-native';
 export default function PriceFluctuationLearnMoreModal(props: any) {

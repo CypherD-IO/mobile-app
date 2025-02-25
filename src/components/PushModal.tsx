@@ -6,7 +6,10 @@ import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
-import { CyDFastImage, CyDMaterialDesignIcons } from '../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDMaterialDesignIcons,
+} from '../styles/tailwindComponents';
 const { CText, DynamicView, DynamicImage } = require('../styles');
 
 export default function PushModal(props) {

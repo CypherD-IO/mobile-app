@@ -24,7 +24,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import {
   NavigationProp,

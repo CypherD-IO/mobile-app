@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BackHandler } from 'react-native';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDView } from '../../styles/tailwindComponents';
 import WebView from 'react-native-webview';
 import {
   NavigationProp,

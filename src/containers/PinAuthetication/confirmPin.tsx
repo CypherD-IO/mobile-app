@@ -9,7 +9,7 @@ import {
   CyDTouchView,
   CyDMaterialDesignIcons,
   CyDIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import OtpInput from '../../components/v2/OTPInput';
 import { screenTitle } from '../../constants';
 import Toast from 'react-native-toast-message';

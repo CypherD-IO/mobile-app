@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { HdWalletContext } from '../../core/util';
-import { CyDText } from '../../styles/tailwindStyles';
+import { CyDText } from '../../styles/tailwindComponents';
 
 export default function CyDTokenValue(props?: any) {
   const hdWallet = useContext<any>(HdWalletContext);

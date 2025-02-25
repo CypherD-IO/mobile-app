@@ -9,7 +9,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { screenTitle } from '../../../constants';
 import { t } from 'i18next';
 import { CardProfile } from '../../../models/cardProfile.model';

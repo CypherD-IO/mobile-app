@@ -9,7 +9,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import { Colors } from '../../constants/theme';
 import { ICountry, IState } from '../../models/cardApplication.model';

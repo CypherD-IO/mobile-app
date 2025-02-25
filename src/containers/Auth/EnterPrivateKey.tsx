@@ -10,7 +10,7 @@ import {
   CyDTextInput,
   CyDScrollView,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
 import { HdWalletContext, isValidPrivateKey } from '../../core/util';

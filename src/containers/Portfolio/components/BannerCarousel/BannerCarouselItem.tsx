@@ -13,7 +13,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import React, { memo, useMemo } from 'react';
 import { BannerRecord } from '../../../../models/bannerRecord.interface';
 import { BridgeOrCardActivity } from '.';

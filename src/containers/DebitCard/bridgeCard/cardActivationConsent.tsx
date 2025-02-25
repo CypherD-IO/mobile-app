@@ -8,7 +8,7 @@ import {
   CyDScrollView,
   CyDMaterialDesignIcons,
   CyDIcons,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { StyleSheet, StatusBar } from 'react-native';
 import {
   NavigationProp,

@@ -6,7 +6,11 @@ import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from '../../core/util';
 import { hostWorker } from '../../global';
 import { GlobalContext } from '../../core/globalContext';
-import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDSafeAreaView,
+  CyDText,
+  CyDView,
+} from '../../styles/tailwindComponents';
 import Loading from '../../components/v2/loading';
 
 export interface NotificationList {

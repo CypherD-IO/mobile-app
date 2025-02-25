@@ -7,7 +7,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';

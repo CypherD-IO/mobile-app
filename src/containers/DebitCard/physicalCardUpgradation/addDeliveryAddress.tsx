@@ -9,7 +9,7 @@ import {
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
   CyDIcons,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import {
   NavigationProp,
   ParamListBase,

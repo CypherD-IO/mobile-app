@@ -8,7 +8,7 @@ import {
   CyDTouchView,
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { copyToClipboard } from '../../core/util';
 import { GlobalContext } from '../../core/globalContext';
 import clsx from 'clsx';

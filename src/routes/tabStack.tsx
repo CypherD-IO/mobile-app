@@ -8,7 +8,7 @@ import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
-import { CyDIcons, CyDView } from '../styles/tailwindStyles';
+import { CyDIcons, CyDView } from '../styles/tailwindComponents';
 import {
   DebitCardStackScreen,
   OptionsStackScreen,

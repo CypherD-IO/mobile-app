@@ -1,6 +1,10 @@
 import React from 'react';
 import { useField } from 'formik';
-import { CyDText, CyDTextInput, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDText,
+  CyDTextInput,
+  CyDView,
+} from '../../styles/tailwindComponents';
 import clsx from 'clsx';
 
 interface FormikTextInputProps {

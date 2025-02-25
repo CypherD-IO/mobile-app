@@ -8,7 +8,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState, useContext } from 'react';
 import bip39 from 'react-native-bip39';

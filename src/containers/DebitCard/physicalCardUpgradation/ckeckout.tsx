@@ -8,7 +8,7 @@ import {
   CyDScrollView,
   CyDMaterialDesignIcons,
   CyDIcons,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,

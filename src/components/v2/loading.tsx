@@ -1,5 +1,5 @@
 import React from 'react';
-import { CyDView, CyDLottieView } from '../../styles/tailwindStyles';
+import { CyDView, CyDLottieView } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';

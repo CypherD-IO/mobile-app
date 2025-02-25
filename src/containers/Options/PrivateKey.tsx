@@ -10,7 +10,7 @@ import {
   CyDImage,
   CyDScrollView,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 import { AppImagesMap } from '../../../assets/images/appImages';
 import {

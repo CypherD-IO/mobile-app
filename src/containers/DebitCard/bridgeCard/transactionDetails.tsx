@@ -29,7 +29,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../utilities/analyticsUtility';
 import {
   TransactionFilterTypes,

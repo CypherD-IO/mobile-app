@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React, { useRef, useEffect } from 'react';
-import { CyDView, CyDTextInput } from '../../styles/tailwindStyles';
+import { CyDView, CyDTextInput } from '../../styles/tailwindComponents';
 
 export const PinInput = ({
   value,
