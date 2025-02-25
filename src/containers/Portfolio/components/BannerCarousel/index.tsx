@@ -26,7 +26,7 @@ import {
 } from '../../../../core/asyncStorage';
 import { showToast } from '../../../utilities/toastUtility';
 import { ACTIVITIES_REFRESH_TIMEOUT } from '../../../../constants/timeOuts';
-import { CyDView } from '../../../../styles/tailwindStyles';
+import { CyDView } from '../../../../styles/tailwindComponents';
 import CardCarousel from '../../../../components/v2/CardCarousel';
 import { SharedValue } from 'react-native-reanimated';
 import { get } from 'lodash';

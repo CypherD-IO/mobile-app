@@ -7,7 +7,7 @@ import PairingModal from './walletConnectV2Views/PairingModal';
 import SigningModal from './walletConnectV2Views/SigningModal';
 import CosmosSigningModal from './walletConnectV2Views/CosmosSigningModal';
 import CyDModalLayout from './modal';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDView } from '../../styles/tailwindComponents';
 import { CustomModalLayoutDef } from '../../models/globalModal.interface';
 import RemoveWalletModal from './removeWalletModal';
 import ThreeDSecureApprovalModal from './threeDSecureApprovalModal';

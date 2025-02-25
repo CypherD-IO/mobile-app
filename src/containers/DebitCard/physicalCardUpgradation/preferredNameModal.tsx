@@ -8,7 +8,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { Keyboard, StyleSheet } from 'react-native';
 import { isAndroid } from '../../../misc/checkers';
 import AppImages from '../../../../assets/images/appImages';

@@ -59,7 +59,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { DynamicScrollView } from '../../styles/viewStyle';
 import {
   BrowserHistoryEntry,

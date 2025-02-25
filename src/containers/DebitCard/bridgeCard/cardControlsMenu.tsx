@@ -11,7 +11,6 @@ import { find, get } from 'lodash';
 import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ProgressCircle } from 'react-native-svg-charts';
 import countryMaster from '../../../../assets/datasets/countryMaster';
 import AppImages from '../../../../assets/images/appImages';
 import SelectPlanModal from '../../../components/selectPlanModal';
@@ -35,16 +34,15 @@ import { ICountry } from '../../../models/cardApplication.model';
 import {
   CyDFastImage,
   CyDIcons,
-  CyDImage,
   CyDLottieView,
   CyDMaterialDesignIcons,
+  CydProgessCircle,
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { showToast } from '../../utilities/toastUtility';
 import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   cardId: string;
@@ -439,8 +437,8 @@ export default function CardControlsMenu() {
                     )}
                     <CyDView className='flex flex-row'>
                       <CyDView>
-                        <ProgressCircle
-                          className={'h-[130px] w-[130px] mt-[12px]'}
+                        <CydProgessCircle
+                          className='w-[130px] h-[130px] mt-[12px]'
                           progress={getMonthlyLimitPercentage()}
                           strokeWidth={13}
                           cornerRadius={30}

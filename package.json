@@ -202,6 +202,7 @@
     "@types/react-native": "^0.66.11",
     "@types/react-native-background-timer": "^2.0.2",
     "@types/react-native-popup-dialog": "^0.16.4",
+    "@types/react-native-svg-charts": "^5.0.16",
     "@types/react-test-renderer": "^18.0.0",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.33.1",

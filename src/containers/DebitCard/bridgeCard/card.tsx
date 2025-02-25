@@ -54,7 +54,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { showToast } from '../../utilities/toastUtility';
 import { cardDesign } from '../../../models/cardDesign.interface';
 import Carousel from 'react-native-reanimated-carousel';

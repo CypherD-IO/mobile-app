@@ -9,7 +9,7 @@ import {
   CyDTouchView,
   CyDScrollView,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import { getExplorerUrl, copyToClipboard } from '../../core/util';

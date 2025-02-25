@@ -7,7 +7,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { ButtonType } from '../../constants/enum';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';

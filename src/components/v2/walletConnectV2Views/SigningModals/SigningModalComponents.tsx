@@ -5,7 +5,7 @@ import {
   CyDScrollView,
   CyDText,
   CyDView,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import { Chain } from '../../../../constants/server';
 import { EIP155_SIGNING_METHODS } from '../../../../constants/EIP155Data';
 import { t } from 'i18next';

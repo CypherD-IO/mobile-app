@@ -28,7 +28,7 @@ import {
   CyDFlatList,
   CyDScrollView,
   CyDLottieView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { endsWith, capitalize } from 'lodash';
 import { SvgUri } from 'react-native-svg';

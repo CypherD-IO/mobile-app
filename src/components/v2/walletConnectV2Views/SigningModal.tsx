@@ -17,7 +17,7 @@ import {
   chainIdNumberMapping,
 } from '../../../constants/server';
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
-import { CyDScrollView, CyDView } from '../../../styles/tailwindStyles';
+import { CyDScrollView, CyDView } from '../../../styles/tailwindComponents';
 import { t } from 'i18next';
 import { EIP155_SIGNING_METHODS } from '../../../constants/EIP155Data';
 import { useGlobalModalContext } from '../GlobalModal';

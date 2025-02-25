@@ -10,7 +10,7 @@ import useAxios from '../../core/HttpRequest';
 import { t } from 'i18next';
 
 import Loading from '../../components/v2/loading';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDView } from '../../styles/tailwindComponents';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 
 export type SupportedBlockchains =

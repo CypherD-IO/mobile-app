@@ -7,7 +7,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { PinInput } from '../../../components/v2/pinInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';

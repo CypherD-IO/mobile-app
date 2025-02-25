@@ -1,5 +1,9 @@
 import React, { memo, useMemo, useState } from 'react';
-import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindComponents';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import { isAndroid } from '../../../misc/checkers';
 import Button from '../../../components/v2/button';

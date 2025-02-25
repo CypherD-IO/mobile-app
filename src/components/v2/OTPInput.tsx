@@ -9,7 +9,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { OTP_CALLBACK_TIMEOUT } from '../../constants/timeOuts';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';

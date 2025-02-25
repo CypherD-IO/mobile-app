@@ -6,7 +6,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import AppImages from '../../../../assets/images/appImages';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
 import { RouteProp, useRoute } from '@react-navigation/native';

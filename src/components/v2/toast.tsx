@@ -3,7 +3,7 @@ import {
   CyDMaterialDesignIcons,
   CyDText,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 
 export const toastConfig = {
   simpleToast: ({ props }: { props: any }) => (

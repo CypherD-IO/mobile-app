@@ -1,5 +1,5 @@
 import React from 'react';
-import { CyDText, CyDView, CyDImage } from '../../styles/tailwindStyles';
+import { CyDText, CyDView, CyDImage } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 
 export default function Empty() {

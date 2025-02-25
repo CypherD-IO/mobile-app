@@ -7,7 +7,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import {
   NavigationProp,
   ParamListBase,

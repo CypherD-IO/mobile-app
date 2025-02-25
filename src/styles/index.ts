@@ -14,7 +14,7 @@ import {
   CyDRefreshControl,
   CyDSwitch,
   CyDTextInput,
-} from './tailwindStyles';
+} from './tailwindComponents';
 
 module.exports = {
   ...TextStyles,

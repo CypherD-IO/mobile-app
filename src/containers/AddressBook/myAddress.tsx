@@ -27,7 +27,7 @@ import {
   CyDScrollView,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { AddressBookContainer } from '../Auth/Share';
 import { Contacts } from './contacts';
 import { BackHandler } from 'react-native';

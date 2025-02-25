@@ -75,7 +75,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import AddressProfile from '../AddressBook/addressProfile';
 import { genId } from '../utilities/activityUtilities';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';

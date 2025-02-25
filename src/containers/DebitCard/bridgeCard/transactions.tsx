@@ -28,7 +28,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import CardTransactionItem from '../../../components/v2/CardTransactionItem';
 import { RefreshControl, StyleSheet, ViewToken } from 'react-native';
 import clsx from 'clsx';

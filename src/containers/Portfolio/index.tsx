@@ -85,7 +85,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
 import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';

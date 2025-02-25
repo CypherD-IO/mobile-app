@@ -5,7 +5,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDLottieView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import clsx from 'clsx';
 import AppImages from '../../../assets/images/appImages';
 import { AppState, Keyboard, StyleSheet } from 'react-native';

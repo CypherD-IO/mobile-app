@@ -3,7 +3,7 @@ import {
   CyDImageBackground,
   CyDSafeAreaView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { Colors } from '../../constants/theme';
 import { ImageSourcePropType } from 'react-native';
 

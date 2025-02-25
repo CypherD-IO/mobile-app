@@ -14,7 +14,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import Loading from '../../../components/v2/loading';
 import clsx from 'clsx';
 import { RenderViewType } from '../../../constants/enum';
