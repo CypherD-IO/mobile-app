@@ -181,7 +181,7 @@ export default function EnterAmount(props: any) {
     }
     const nativeBackendName = backendName;
     const nativeToken = await getNativeToken(nativeBackendName);
-    const nativeTokenBalance = nativeToken.actualBalance;
+    const nativeTokenBalance = nativeToken.balanceDecimal;
     return DecimalHelper.isGreaterThanOrEqualTo(
       nativeTokenBalance,
       gasReserved,
@@ -196,7 +196,7 @@ export default function EnterAmount(props: any) {
     const gasReserved = (await getGasFee(tokenData.chainDetails?.chainName))
       ?.gasFeeInCrypto;
 
-    if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.actualBalance)) {
+    if (DecimalHelper.isGreaterThan(cryptoValue, tokenData.balanceDecimal)) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
@@ -214,7 +214,7 @@ export default function EnterAmount(props: any) {
       });
     } else if (!(await isGasReservedForNative(cryptoValue, gasReserved))) {
       const cryVal = DecimalHelper.subtract(
-        tokenData.actualBalance,
+        tokenData.balanceDecimal,
         gasReserved,
       );
       const reqAmount = enterCryptoAmount
@@ -455,7 +455,7 @@ export default function EnterAmount(props: any) {
                           {tokenData.totalValue}
                         </CyDTokenValue>
                         <CyDTokenAmount className='text-[14px] text-subTextColor font-bold'>
-                          {tokenData.actualBalance}
+                          {tokenData.balanceDecimal}
                         </CyDTokenAmount>
                       </CyDView>
                     </CyDView>

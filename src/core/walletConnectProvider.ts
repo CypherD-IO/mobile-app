@@ -35,10 +35,6 @@ export function walletConnectProvider<C extends Chain = Chain>({
       // Polygon Mumbai
       80001,
       // Celo Mainnet
-      42220,
-      // Aurora
-      1313161554,
-      // Aurora Testnet
       1313161555,
       // Binance Smart Chain
       56,

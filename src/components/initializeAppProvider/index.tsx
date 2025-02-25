@@ -148,7 +148,7 @@ export const InitializeAppProvider = ({
       if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
         return (
           <Loading
-            loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
+          // loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
           />
         );
       } else {

@@ -22,11 +22,8 @@ export const getToken = async (
   walletAddress: string,
   cosmosAddress?: string,
   osmosisAddress?: string,
-  junoAddress?: string,
-  stargazeAddress?: string,
   nobleAddress?: string,
   coreumAddress?: string,
-  kujiraAddress?: string,
 ) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
@@ -37,11 +34,8 @@ export const getToken = async (
         address: walletAddress,
         cosmosAddress,
         osmosisAddress,
-        junoAddress,
-        stargazeAddress,
         nobleAddress,
         coreumAddress,
-        kujiraAddress,
         fcmToken,
       };
       try {

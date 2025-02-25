@@ -10,14 +10,10 @@ import {
   CHAIN_COSMOS,
   CHAIN_ETH,
   CHAIN_INJECTIVE,
-  CHAIN_JUNO,
-  CHAIN_KUJIRA,
   CHAIN_NOBLE,
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_STARGAZE,
   CHAIN_ZKSYNC_ERA,
   ChainBackendNames,
 } from '../constants/server';
@@ -50,26 +46,18 @@ export function getChainLogo(chainName: ChainBackendNames) {
       return CHAIN_BSC.logo_url;
     case ChainBackendNames.COSMOS:
       return CHAIN_COSMOS.logo_url;
-    case ChainBackendNames.JUNO:
-      return CHAIN_JUNO.logo_url;
     case ChainBackendNames.NOBLE:
       return CHAIN_NOBLE.logo_url;
     case ChainBackendNames.COREUM:
       return CHAIN_COREUM.logo_url;
     case ChainBackendNames.INJECTIVE:
       return CHAIN_INJECTIVE.logo_url;
-    case ChainBackendNames.KUJIRA:
-      return CHAIN_KUJIRA.logo_url;
     case ChainBackendNames.OPTIMISM:
       return CHAIN_OPTIMISM.logo_url;
     case ChainBackendNames.OSMOSIS:
       return CHAIN_OSMOSIS.logo_url;
     case ChainBackendNames.POLYGON:
       return CHAIN_POLYGON.logo_url;
-    case ChainBackendNames.POLYGON_ZKEVM:
-      return CHAIN_POLYGON_ZKEVM.logo_url;
-    case ChainBackendNames.STARGAZE:
-      return CHAIN_STARGAZE.logo_url;
     case ChainBackendNames.ZKSYNC_ERA:
       return CHAIN_ZKSYNC_ERA.logo_url;
     default:

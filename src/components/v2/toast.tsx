@@ -6,7 +6,7 @@ import {
 } from '../../styles/tailwindStyles';
 
 export const toastConfig = {
-  simpleToast: ({ text1, props }: { text1: string; props: any }) => (
+  simpleToast: ({ props }: { props: any }) => (
     <CyDView className='h-[36px] w-[80px] flex flex-row justify-center items-center'>
       <CyDMaterialDesignIcons
         name='check-bold'

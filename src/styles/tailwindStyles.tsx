@@ -91,13 +91,18 @@ const getImageSource = (
 };
 
 export const CyDFastImage = (
-  props: Omit<FastImageProps, 'source'> & {
+  props: Omit<FastImageProps, 'source' | 'defaultSource'> & {
     source?: AppImages | { uri: string } | number;
+    defaultSource?: AppImages | { uri: string } | number;
   },
 ) => {
   const { theme } = useTheme();
   return (
-    <_CyDFastImage {...props} source={getImageSource(props.source, theme)} />
+    <_CyDFastImage
+      {...props}
+      source={getImageSource(props.source, theme)}
+      defaultSource={getImageSource(props.defaultSource, theme)}
+    />
   );
 };
 

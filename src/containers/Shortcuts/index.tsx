@@ -504,12 +504,6 @@ export default function ShortcutsModal() {
         case ChainBackendNames.OSMOSIS:
           addressTypeQRCode = FundWalletAddressType.OSMOSIS;
           break;
-        case ChainBackendNames.JUNO:
-          addressTypeQRCode = FundWalletAddressType.JUNO;
-          break;
-        case ChainBackendNames.STARGAZE:
-          addressTypeQRCode = FundWalletAddressType.STARGAZE;
-          break;
         case ChainBackendNames.NOBLE:
           addressTypeQRCode = FundWalletAddressType.NOBLE;
           break;
@@ -518,9 +512,6 @@ export default function ShortcutsModal() {
           break;
         case ChainBackendNames.INJECTIVE:
           addressTypeQRCode = FundWalletAddressType.INJECTIVE;
-          break;
-        case ChainBackendNames.KUJIRA:
-          addressTypeQRCode = FundWalletAddressType.KUJIRA;
           break;
         case ChainBackendNames.SOLANA:
           addressTypeQRCode = FundWalletAddressType.SOLANA;
@@ -770,7 +761,6 @@ export default function ShortcutsModal() {
         title={'Choose Chain'}
         selectedItem={selectedChain.name}
         onPress={onSelectingChain}
-        type={'chain'}
         customStyle={{ justifyContent: 'flex-end', padding: 0 }}
         isClosable={true}
         animationOut={'slideOutDown'}
