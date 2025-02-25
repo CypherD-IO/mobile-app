@@ -15,8 +15,6 @@ export enum ActivityType {
   BRIDGE = 'bridge',
   SWAP = 'swap',
   CLAIM = 'claim',
-  STAKE = 'stake',
-  UNSTAKE = 'unstake',
   CARD = 'card',
   IBC = 'ibc',
   BROWSER = 'browser',

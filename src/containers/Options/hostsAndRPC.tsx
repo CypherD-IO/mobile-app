@@ -56,18 +56,11 @@ export default function HostsAndRPCScreen({ navigation }) {
     bsc: globalContext.globalState.rpcEndpoints.BSC.primary,
     osmosis: globalContext.globalState.rpcEndpoints.OSMOSIS.primary,
     cosmos: globalContext.globalState.rpcEndpoints.COSMOS.primary,
-    juno: globalContext.globalState.rpcEndpoints.JUNO.primary,
     noble: globalContext.globalState.rpcEndpoints?.NOBLE?.primary,
     zksync_era: globalContext.globalState.rpcEndpoints?.ZKSYNC_ERA?.primary,
     base: globalContext.globalState.rpcEndpoints?.BASE?.primary,
-    polygon_zkevm:
-      globalContext.globalState.rpcEndpoints?.POLYGON_ZKEVM?.primary,
-    aurora: globalContext.globalState.rpcEndpoints?.AURORA?.primary,
-    moonbeam: globalContext.globalState.rpcEndpoints?.MOONBEAM?.primary,
-    moonriver: globalContext.globalState.rpcEndpoints?.MOONRIVER?.primary,
     coreum: globalContext.globalState.rpcEndpoints?.COREUM?.primary,
     injective: globalContext.globalState.rpcEndpoints?.INJECTIVE?.primary,
-    kujira: globalContext.globalState.rpcEndpoints?.KUJIRA?.primary,
   });
 
   const handleBackButton = () => {
@@ -153,7 +146,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     tempRPCEndpoints.BSC.primary = rpcEndpoints.bsc;
     tempRPCEndpoints.OSMOSIS.primary = rpcEndpoints.osmosis;
     tempRPCEndpoints.COSMOS.primary = rpcEndpoints.cosmos;
-    tempRPCEndpoints.JUNO.primary = rpcEndpoints.juno;
     if (tempRPCEndpoints?.NOBLE?.primary) {
       tempRPCEndpoints.NOBLE.primary = rpcEndpoints?.noble;
     }
@@ -162,9 +154,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     }
     if (tempRPCEndpoints?.INJECTIVE?.primary) {
       tempRPCEndpoints.INJECTIVE.primary = rpcEndpoints?.injective;
-    }
-    if (tempRPCEndpoints?.KUJIRA?.primary) {
-      tempRPCEndpoints.KUJIRA.primary = rpcEndpoints?.kujira;
     }
 
     setLoading(true);
@@ -425,26 +414,6 @@ export default function HostsAndRPCScreen({ navigation }) {
             placeholder=''
           />
         </CyDView>
-        <CyDView className={'mt-[25px]'}>
-          <CyDText className={'text-[16px] font-black'}>
-            {ChainBackendNames.JUNO}
-          </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-            )}
-            value={maskString(rpcEndpoints.juno)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='juno'
-            onChangeText={value => {
-              setRPCEndpoints({ ...rpcEndpoints, juno: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
-        </CyDView>
         {rpcEndpoints.noble ? (
           <CyDView className={'mt-[25px]'}>
             <CyDText className={'text-[16px] font-black'}>
@@ -517,102 +486,6 @@ export default function HostsAndRPCScreen({ navigation }) {
         ) : (
           <CyDView />
         )}
-        {rpcEndpoints.polygon_zkevm ? (
-          <CyDView className={'mb-[30px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.POLYGON_ZKEVM}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.polygon_zkevm)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='polygon_zkevm'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, polygon_zkevm: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
-        {rpcEndpoints.aurora ? (
-          <CyDView className={'mb-[30px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.AURORA}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.aurora)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='aurora'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, aurora: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
-        {rpcEndpoints.moonbeam ? (
-          <CyDView className={'mb-[30px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.MOONBEAM}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.moonbeam)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='moonbeam'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, moonbeam: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
-        {rpcEndpoints.moonriver ? (
-          <CyDView className={'mb-[30px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.MOONRIVER}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.moonriver)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='moonriver'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, moonriver: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
         {rpcEndpoints.coreum ? (
           <CyDView className={'mb-[30px]'}>
             <CyDText className={'text-[16px] font-black'}>
@@ -652,30 +525,6 @@ export default function HostsAndRPCScreen({ navigation }) {
               key='injective'
               onChangeText={value => {
                 setRPCEndpoints({ ...rpcEndpoints, injective: value });
-              }}
-              autoCorrect={false}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder=''
-            />
-          </CyDView>
-        ) : (
-          <CyDView />
-        )}
-        {rpcEndpoints.kujira ? (
-          <CyDView className={'mb-[30px]'}>
-            <CyDText className={'text-[16px] font-black'}>
-              {ChainBackendNames.KUJIRA}
-            </CyDText>
-            <CyDTextInput
-              className={clsx(
-                'mt-[10px] border-[1px] border-n40 rounded-[5px] p-[12px] text-[18px]  ',
-              )}
-              value={maskString(rpcEndpoints.kujira)}
-              editable={devMode}
-              autoCapitalize='none'
-              key='kujira'
-              onChangeText={value => {
-                setRPCEndpoints({ ...rpcEndpoints, kujira: value });
               }}
               autoCorrect={false}
               placeholderTextColor={'#C5C5C5'}

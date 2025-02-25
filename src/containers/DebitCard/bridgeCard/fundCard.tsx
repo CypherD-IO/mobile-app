@@ -137,7 +137,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   ) => {
     const {
       chainDetails,
-      actualBalance,
       symbol: selectedTokenSymbol,
       contractAddress,
       contractDecimals,
@@ -297,7 +296,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         e,
         message: 'Error when estimating gasFee for the transaction',
         isMaxQuote,
-        actualBalance,
+        balanceDecimal,
         actualTokensRequired,
       };
       Sentry.captureException(errorObject);
@@ -976,7 +975,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   <CyDView className='flex flex-row items-center'>
                     {isCrpytoInput ? (
                       <CyDTokenAmount className={'font-bold mr-[3px]'}>
-                        {selectedToken.actualBalance}
+                        {selectedToken.balanceDecimal}
                       </CyDTokenAmount>
                     ) : (
                       <CyDTokenValue className={'font-bold mr-[3px]'}>
@@ -1019,7 +1018,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         if (
           DecimalHelper.isGreaterThan(
             cryptoAmount,
-            selectedToken?.actualBalance,
+            selectedToken?.balanceDecimal,
           )
         ) {
           errorMessage = t('INSUFFICIENT_FUNDS');

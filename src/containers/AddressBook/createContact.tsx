@@ -24,9 +24,7 @@ import * as yup from 'yup';
 import clsx from 'clsx';
 import { setContactBookData } from '../../core/asyncStorage';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
-import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
-import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ContactInfo } from '../../models/contactInfo.interface';
@@ -42,7 +40,6 @@ import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { showToast } from '../utilities/toastUtility';
 import { isCoreumAddress } from '../utilities/coreumUtilities';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
-import { isKujiraAddress } from '../utilities/kujiraUtilities';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
 import {
   NavigationProp,
@@ -103,20 +100,10 @@ export const CreateContact = () => {
       placeHolder: t('COSMOS_ADDRESS_PLACEHOLDER'),
       logo: AppImages.COSMOS_LOGO,
     },
-    juno: {
-      label: t(`${ChainNames.JUNO.toUpperCase()} ADDRESS`),
-      placeHolder: t('JUNO_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.JUNO_LOGO,
-    },
     osmosis: {
       label: t(`${ChainNames.OSMOSIS.toUpperCase()} ADDRESS`),
       placeHolder: t('OSMOSIS_ADDRESS_PLACEHOLDER'),
       logo: AppImages.OSMOSIS_LOGO,
-    },
-    stargaze: {
-      label: t(`${ChainNames.STARGAZE.toUpperCase()} ADDRESS`),
-      placeHolder: t('STARGAZE_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.STARGAZE_LOGO,
     },
     noble: {
       label: t(`${ChainNames.NOBLE.toUpperCase()} ADDRESS`),
@@ -153,30 +140,10 @@ export const CreateContact = () => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.ZKSYNC_ERA_LOGO,
     },
-    polygon_zkevm: {
-      label: t(`${ChainNames.POLYGON_ZKEVM.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.POLYGON_ZKEVM_LOGO,
-    },
     base: {
       label: t(`${ChainNames.BASE.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.BASE_LOGO,
-    },
-    aurora: {
-      label: t(`${ChainNames.AURORA.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.AURORA_LOGO,
-    },
-    moonbeam: {
-      label: t(`${ChainNames.MOONBEAM.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.MOONBEAM_LOGO,
-    },
-    moonriver: {
-      label: t(`${ChainNames.MOONRIVER.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.MOONRIVER_LOGO,
     },
     coreum: {
       label: t(`${ChainNames.COREUM.toUpperCase()} ADDRESS`),
@@ -187,11 +154,6 @@ export const CreateContact = () => {
       label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.INJECTIVE_LOGO,
-    },
-    kujira: {
-      label: t(`${ChainNames.KUJIRA.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.KUJIRA_LOGO,
     },
     solana: {
       label: t(`${ChainNames.SOLANA.toUpperCase()} ADDRESS`),
@@ -260,18 +222,6 @@ export const CreateContact = () => {
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
         checkForDuplicates(addressList),
       ),
-    juno: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), juno =>
-            validateAddress(juno, isJunoAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
     osmosis: yup
       .array()
       .of(
@@ -279,18 +229,6 @@ export const CreateContact = () => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), osmosis =>
             validateAddress(osmosis, isOsmosisAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    stargaze: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), stargaze =>
-            validateAddress(stargaze, isStargazeAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -327,18 +265,6 @@ export const CreateContact = () => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), injective =>
             validateAddress(injective, isInjectiveAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    kujira: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), kujira =>
-            validateAddress(kujira, isKujiraAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -416,18 +342,6 @@ export const CreateContact = () => {
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
         checkForDuplicates(addressList),
       ),
-    polygon_zkevm: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), polygon_zkevm =>
-            validateAddress(polygon_zkevm, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
     base: yup
       .array()
       .of(
@@ -435,42 +349,6 @@ export const CreateContact = () => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), base =>
             validateAddress(base, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    aurora: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), aurora =>
-            validateAddress(aurora, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    moonbeam: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), moonbeam =>
-            validateAddress(moonbeam, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    moonriver: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), moonriver =>
-            validateAddress(moonriver, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -671,7 +549,6 @@ export const CreateContact = () => {
         title={'Choose Chain'}
         selectedItem={''}
         onPress={setChooseChainFunction}
-        type={'chain'}
       />
       <ChooseContactModal
         isChooseContactModalVisible={chooseContactModalVisible}

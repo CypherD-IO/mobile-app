@@ -40,7 +40,6 @@ import {
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
-  isNativeToken,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
@@ -68,13 +67,25 @@ import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { Transaction } from '@solana/web3.js';
 import clsx from 'clsx';
+import { Decimal } from 'decimal.js';
 import { StyleSheet } from 'react-native';
 import JSONTree from 'react-native-json-tree';
 import { SvgUri } from 'react-native-svg';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  encodeFunctionData,
+  formatEther,
+  formatUnits,
+  parseEther,
+  parseGwei,
+  parseUnits,
+  PublicClient,
+  toHex,
+} from 'viem';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import SignatureModal from '../../components/v2/signatureModal';
+import CyDSkeleton from '../../components/v2/skeleton';
 import { screenTitle } from '../../constants';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
 import {
@@ -86,9 +97,13 @@ import {
 } from '../../constants/server';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
+import { Holding } from '../../core/portfolio';
 import useSkipApiBridge from '../../core/skipApi';
+import { allowanceApprovalContractABI } from '../../core/swap';
+import useGasService from '../../hooks/useGasService';
 import useIsSignable from '../../hooks/useIsSignable';
 import usePortfolio from '../../hooks/usePortfolio';
+import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import { OdosSwapQuoteResponse } from '../../models/osdoQuote.interface';
 import {
@@ -109,25 +124,9 @@ import {
   BridgeReducerAction,
   BridgeStatus,
 } from '../../reducers/bridge.reducer';
+import { DecimalHelper } from '../../utils/decimalHelper';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
-import CyDSkeleton from '../../components/v2/skeleton';
-import { DecimalHelper } from '../../utils/decimalHelper';
-import useGasService from '../../hooks/useGasService';
-import { Holding } from '../../core/portfolio';
-import { Decimal } from 'decimal.js';
-import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
-import {
-  encodeFunctionData,
-  formatEther,
-  formatUnits,
-  parseEther,
-  parseGwei,
-  parseUnits,
-  PublicClient,
-  toHex,
-} from 'viem';
-import { allowanceApprovalContractABI } from '../../core/swap';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -453,7 +452,7 @@ const Bridge: React.FC = () => {
           );
           return {
             ...token,
-            balance: matchingHolding?.actualBalance ?? 0,
+            balance: matchingHolding?.balanceDecimal ?? 0,
             balanceInNumbers: matchingHolding?.totalValue ?? 0,
             balanceDecimal: matchingHolding?.balanceDecimal ?? 0,
           };
