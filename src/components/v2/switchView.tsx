@@ -1,6 +1,10 @@
 import clsx from 'clsx';
 import React from 'react';
-import { CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindComponents';
 
 export default function SwitchView(props) {
   const { titles, index, setIndexChange } = props;

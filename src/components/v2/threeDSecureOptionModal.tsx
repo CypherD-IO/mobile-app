@@ -6,7 +6,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { StyleSheet } from 'react-native';
 import Button from './button';
 import { ButtonType, CardProviders } from '../../constants/enum';

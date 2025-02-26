@@ -4,7 +4,11 @@ import { useField } from 'formik';
 import React, { useState } from 'react';
 import { Keyboard } from 'react-native';
 import DatePickerModal from 'react-native-modal-datetime-picker';
-import { CyDText, CyDTextInput, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDText,
+  CyDTextInput,
+  CyDView,
+} from '../../styles/tailwindComponents';
 
 interface FormikDateInputProps {
   name: string;

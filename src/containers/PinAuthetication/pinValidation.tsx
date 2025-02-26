@@ -7,7 +7,11 @@ import {
 } from '../../core/Keychain';
 import { HdWalletContext } from '../../core/util';
 import { t } from 'i18next';
-import { CyDView, CyDText, CyDSafeAreaView } from '../../styles/tailwindStyles';
+import {
+  CyDView,
+  CyDText,
+  CyDSafeAreaView,
+} from '../../styles/tailwindComponents';
 import OtpInput from '../../components/v2/OTPInput';
 import { clearAllData } from '../../core/asyncStorage';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';

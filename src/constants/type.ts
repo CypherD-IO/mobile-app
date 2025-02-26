@@ -12,12 +12,7 @@ export type EVM_ONLY_CHAINS_TYPE =
 
 export type EVM_CHAINS_TYPE = EVM_ONLY_CHAINS_TYPE;
 
-export type COSMOS_CHAINS_TYPE =
-  | 'COSMOS'
-  | 'OSMOSIS'
-  | 'JUNO'
-  | 'STARGAZE'
-  | 'NOBLE';
+export type COSMOS_CHAINS_TYPE = 'COSMOS' | 'OSMOSIS' | 'NOBLE';
 
 export type ALL_CHAINS_TYPE = EVM_CHAINS_TYPE | COSMOS_CHAINS_TYPE;
 

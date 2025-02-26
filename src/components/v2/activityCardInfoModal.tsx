@@ -1,6 +1,13 @@
-import React, { useContext } from 'react';
+import { round } from 'lodash';
+import moment from 'moment';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
-import CyDModalLayout from './modal';
+import AppImages from '../../../assets/images/appImages';
+import { onShare } from '../../containers/utilities/socialShareUtility';
+import { showToast } from '../../containers/utilities/toastUtility';
+import { copyToClipboard, generateUserInviteLink } from '../../core/util';
+import { ActivityStatus } from '../../reducers/activity_reducer';
 import {
   CyDImage,
   CyDMaterialDesignIcons,
@@ -8,16 +15,9 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
-import AppImages from '../../../assets/images/appImages';
+} from '../../styles/tailwindComponents';
 import Button from './button';
-import moment from 'moment';
-import { onShare } from '../../containers/utilities/socialShareUtility';
-import { useTranslation } from 'react-i18next';
-import { copyToClipboard, generateUserInviteLink } from '../../core/util';
-import { showToast } from '../../containers/utilities/toastUtility';
-import { round } from 'lodash';
-import { ActivityStatus } from '../../reducers/activity_reducer';
+import CyDModalLayout from './modal';
 
 export default function ActivityInfoModal({
   isModalVisible,

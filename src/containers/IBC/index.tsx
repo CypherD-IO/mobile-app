@@ -8,7 +8,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import {
   ActivityContext,
@@ -43,12 +43,11 @@ import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
-import { get, random } from 'lodash';
+import { get } from 'lodash';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import { Holding } from '../../core/portfolio';
 import usePortfolio from '../../hooks/usePortfolio';
 import { DecimalHelper } from '../../utils/decimalHelper';
-import useCosmosSigner from '../../hooks/useCosmosSigner';
 import useGasService from '../../hooks/useGasService';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 
@@ -64,22 +63,16 @@ export default function IBC({
   const hdWallet = useContext<any>(HdWalletContext);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
-  const juno = hdWallet.state.wallet.juno;
-  const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
-  const kujira = hdWallet.state.wallet.kujira;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
     osmosis: osmosis.address,
-    juno: juno.address,
-    stargaze: stargaze.address,
     noble: noble.address,
     coreum: coreum.address,
     injective: injective.address,
-    kujira: kujira.address,
   };
 
   const [chain, setChain] = useState<Chain>([]);
@@ -99,7 +92,6 @@ export default function IBC({
   const { showModal, hideModal } = useGlobalModalContext();
   const { interCosmosIBC } = useTransactionManager();
   const { getNativeToken } = usePortfolio();
-  const { getCosmosSignerClient } = useCosmosSigner();
   const { estimateGasForCosmosIBCRest } = useGasService();
   const { refreshPortfolio } = usePortfolioRefresh();
   const [maxLoading, setMaxLoading] = useState<boolean>(false);
@@ -119,14 +111,6 @@ export default function IBC({
   useEffect(() => {
     const temp: Chain[] = [];
     IBC_CHAINS.forEach(item => {
-      if (
-        (tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE &&
-          item.backendName === ChainBackendNames.COSMOS) ||
-        (tokenData.chainDetails.backendName === ChainBackendNames.COSMOS &&
-          item.backendName === ChainBackendNames.STARGAZE)
-      ) {
-        return;
-      }
       if (tokenData.chainDetails.backendName !== item.backendName) {
         temp.push(item);
       }
@@ -150,18 +134,12 @@ export default function IBC({
         return cosmos.address;
       case ChainBackendNames.OSMOSIS:
         return osmosis.address;
-      case ChainBackendNames.JUNO:
-        return juno.address;
-      case ChainBackendNames.STARGAZE:
-        return stargaze.address;
       case ChainBackendNames.NOBLE:
         return noble.address;
       case ChainBackendNames.COREUM:
         return coreum.address;
       case ChainBackendNames.INJECTIVE:
         return injective.address;
-      case ChainBackendNames.KUJIRA:
-        return kujira.address;
       default:
         return undefined;
     }
@@ -223,12 +201,9 @@ export default function IBC({
         [
           ChainBackendNames.COSMOS,
           ChainBackendNames.OSMOSIS,
-          ChainBackendNames.JUNO,
-          ChainBackendNames.STARGAZE,
           ChainBackendNames.NOBLE,
           ChainBackendNames.COREUM,
           ChainBackendNames.INJECTIVE,
-          ChainBackendNames.KUJIRA,
         ].includes(tokenData.chainDetails.backendName)
       ) {
         setLoading(true);
@@ -383,6 +358,10 @@ export default function IBC({
           toAddress: receiverAddress,
         });
 
+        if (gasDetails?.isError) {
+          throw new Error('Error estimating gas');
+        }
+
         gasReserved = gasDetails?.gasFeeInCrypto;
       }
 
@@ -413,7 +392,6 @@ export default function IBC({
           onPress={({ item }: { item: Chain }) => {
             setChain(item);
           }}
-          type={'chain'}
         />
 
         <SignatureModal
@@ -885,7 +863,7 @@ export default function IBC({
                 'font-semibold text-[14px] text-center text-base100 mt-[8px] mr-1'
               }>{`${tokenData.name} balance `}</CyDText>
             <CyDTokenAmount className='ml-[10px]' decimalPlaces={6}>
-              {tokenData.actualBalance}
+              {tokenData.balanceDecimal}
             </CyDTokenAmount>
           </CyDView>
         </CyDTouchView>

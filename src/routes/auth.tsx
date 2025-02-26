@@ -25,10 +25,6 @@ import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import TransDetail from '../containers/Auth/TransDetail';
 import Bridge from '../containers/Bridge';
 import BrowserScreen from '../containers/Browser/Browser';
-import CosmosAction from '../containers/CosmosStaking/action';
-import CosmosSelectReValidator from '../containers/CosmosStaking/reValidator';
-import CosmosUnboundings from '../containers/CosmosStaking/unboundings';
-import CosmosValidators from '../containers/CosmosStaking/validators';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import CypherCardScreen from '../containers/DebitCard/CardV2';
 import CryptoWithdrawal from '../containers/DebitCard/CardV2/cryptoWithdrawal/cryptoWithdrawal';
@@ -114,7 +110,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../styles/tailwindStyles';
+} from '../styles/tailwindComponents';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -265,50 +261,6 @@ export function PortfolioStackScreen() {
         component={TokenOverviewV2}
         options={({ navigation, route }) => ({
           headerShown: false,
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.COSMOS_VALIDATORS}
-        component={CosmosValidators}
-        options={({ navigation, route }) => ({
-          headerShown: false,
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.COSMOS_UNBOUNDINGS}
-        component={CosmosUnboundings}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={'Unboundings'}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.COSMOS_ACTION}
-        component={CosmosAction}
-        options={({ navigation, route }) => ({
-          headerShown: false,
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.COSMOS_REVALIDATOR}
-        component={CosmosSelectReValidator}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('RE_VALIDATE_TO')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
         })}
       />
 

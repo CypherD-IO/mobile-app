@@ -3,7 +3,7 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
 import ChooseWalletIndexComponent from '../../components/ChooseWalletIndexComponent';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDView } from '../../styles/tailwindComponents';
 
 interface RouteParams {
   walletAddresses: string[];

@@ -43,7 +43,6 @@ export default function useConnectionManager() {
     hdWalletContext.state.wallet.cosmos?.wallets[0]?.address;
   const osmosisAddress =
     hdWalletContext.state.wallet.osmosis?.wallets[0]?.address;
-  const junoAddress = hdWalletContext.state.wallet.juno?.wallets[0]?.address;
   const [connectionType, setConnectionType] = useState<ConnectionTypes>();
   const { showModal, hideModal } = useGlobalModalContext();
   const { deleteWithoutAuth } = useAxios();
@@ -79,7 +78,6 @@ export default function useConnectionManager() {
         data: {
           cosmosAddress,
           osmosisAddress,
-          junoAddress,
         },
       };
       axios

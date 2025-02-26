@@ -4,7 +4,7 @@ import {
   CyDMaterialDesignIcons,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import AppImages from '../../../../assets/images/appImages';
 
 interface FilterBarProps {

@@ -39,7 +39,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import DeFiFilterModal from '../components/deFiFilterModal';
 import Loading from '../../../components/v2/loading';
@@ -299,10 +299,10 @@ const DeFiScene = ({
                 <CyDView className='flex-1 flex-row justify-start items-center'>
                   {protocol.chains
                     .slice(0, moreChainsCount === 1 ? 4 : 3)
-                    .map((chain, index) => {
+                    .map((chain, _index) => {
                       return (
                         <CyDFastImage
-                          key={`${protocol.protocolName}-${chain}-${index}`}
+                          key={`${protocol.protocolName}-${chain}-${_index}`}
                           source={getChainLogo(chain)}
                           className='h-[16px] w-[16px] rounded-full'
                           resizeMode='contain'

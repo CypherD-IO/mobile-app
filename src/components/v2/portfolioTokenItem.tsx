@@ -15,7 +15,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { Holding } from '../../core/portfolio';
@@ -99,12 +99,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
               case ChainBackendNames.OSMOSIS:
                 addressTypeQRCode = FundWalletAddressType.OSMOSIS;
                 break;
-              case ChainBackendNames.JUNO:
-                addressTypeQRCode = FundWalletAddressType.JUNO;
-                break;
-              case ChainBackendNames.STARGAZE:
-                addressTypeQRCode = FundWalletAddressType.STARGAZE;
-                break;
               case ChainBackendNames.NOBLE:
                 addressTypeQRCode = FundWalletAddressType.NOBLE;
                 break;
@@ -114,9 +108,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
               case ChainBackendNames.INJECTIVE:
                 addressTypeQRCode = FundWalletAddressType.INJECTIVE;
                 break;
-              case ChainBackendNames.KUJIRA:
-                addressTypeQRCode = FundWalletAddressType.KUJIRA;
-                break;
               case ChainBackendNames.SOLANA:
                 addressTypeQRCode = FundWalletAddressType.SOLANA;
                 break;
@@ -125,18 +116,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
                 break;
               case ChainBackendNames.BASE:
                 addressTypeQRCode = FundWalletAddressType.BASE;
-                break;
-              case ChainBackendNames.POLYGON_ZKEVM:
-                addressTypeQRCode = FundWalletAddressType.POLYGON_ZKEVM;
-                break;
-              case ChainBackendNames.AURORA:
-                addressTypeQRCode = FundWalletAddressType.AURORA;
-                break;
-              case ChainBackendNames.MOONBEAM:
-                addressTypeQRCode = FundWalletAddressType.MOONBEAM;
-                break;
-              case ChainBackendNames.MOONRIVER:
-                addressTypeQRCode = FundWalletAddressType.MOONRIVER;
                 break;
               case ChainBackendNames.POLYGON:
                 addressTypeQRCode = FundWalletAddressType.POLYGON;
@@ -249,41 +228,20 @@ const PortfolioTokenItem = ({
                 <CyDText className={'font-bold text-[16px]'}>
                   {item.name}
                 </CyDText>
-                {item.isStakeable && (
-                  <CyDView
-                    className={
-                      ' bg-p100 px-[5px] ml-[10px] text-[12px] rounded-[4px]'
-                    }>
-                    <CyDText className='font-semibold text-black'>
-                      {t('STAKE')}
-                    </CyDText>
-                  </CyDView>
-                )}
               </CyDView>
               <CyDText className={'text-[12px]'}>
-                ${limitDecimalPlaces(item.price, 2)}
+                ${limitDecimalPlaces(item.price, 4)}
               </CyDText>
             </CyDView>
             <CyDView className='flex self-center items-end max-w-[35%]'>
               {item.isVerified && (
                 <CyDTokenValue className='text-[18px] font-bold'>
-                  {item.actualUnbondingBalance !== undefined
-                    ? DecimalHelper.add(item.totalValue, [
-                        item.actualStakedBalance,
-                        item.actualUnbondingBalance,
-                      ]).toString()
-                    : '...'}
+                  {item.totalValue}
                 </CyDTokenValue>
               )}
               <CyDView className='flex flex-row items-center gap-[4px]'>
                 <CyDTokenAmount className='text-[14px]'>
-                  {item.stakedBalanceTotalValue !== undefined &&
-                  item.unbondingBalanceTotalValue !== undefined
-                    ? DecimalHelper.add(item.actualBalance, [
-                        item.stakedBalanceTotalValue,
-                        item.unbondingBalanceTotalValue,
-                      ]).toString()
-                    : '...'}
+                  {item.balanceDecimal}
                 </CyDTokenAmount>
                 <CyDText className='font-semibold'>{item.symbol}</CyDText>
               </CyDView>

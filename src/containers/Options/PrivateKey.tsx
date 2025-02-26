@@ -10,9 +10,9 @@ import {
   CyDImage,
   CyDScrollView,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
-import AppImages, { AppImagesMap } from '../../../assets/images/appImages';
+import { AppImagesMap } from '../../../assets/images/appImages';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
@@ -25,13 +25,9 @@ import {
   CHAIN_COSMOS,
   CHAIN_ETH,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_COREUM,
-  CHAIN_KUJIRA,
   CHAIN_INJECTIVE,
-  FundWalletAddressType,
   COSMOS_CHAINS,
   ChainNames,
   CHAIN_SOLANA,
@@ -100,19 +96,10 @@ export default function PrivateKey(props) {
         ...CHAIN_OSMOSIS,
       },
       {
-        ...CHAIN_JUNO,
-      },
-      {
-        ...CHAIN_STARGAZE,
-      },
-      {
         ...CHAIN_NOBLE,
       },
       {
         ...CHAIN_COREUM,
-      },
-      {
-        ...CHAIN_KUJIRA,
       },
       {
         ...CHAIN_SOLANA,
@@ -199,25 +186,7 @@ export default function PrivateKey(props) {
   useEffect(() => {
     if (isFocused) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
-      const walletAddressType =
-        hdWalletContext?.state.selectedChain.backendName;
-      if (walletAddressType === FundWalletAddressType.COSMOS) {
-        setSelectedChain(data[2]);
-      } else if (walletAddressType === FundWalletAddressType.OSMOSIS) {
-        setSelectedChain(data[3]);
-      } else if (walletAddressType === FundWalletAddressType.JUNO) {
-        setSelectedChain(data[4]);
-      } else if (walletAddressType === FundWalletAddressType.STARGAZE) {
-        setSelectedChain(data[5]);
-      } else if (walletAddressType === FundWalletAddressType.COREUM) {
-        setSelectedChain(data[6]);
-      } else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
-        setSelectedChain(data[7]);
-      } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
-        setSelectedChain(data[8]);
-      } else if (walletAddressType === FundWalletAddressType.SOLANA) {
-        setSelectedChain(data[9]);
-      }
+      setSelectedChain(hdWalletContext?.state.selectedChain);
     } else {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
     }

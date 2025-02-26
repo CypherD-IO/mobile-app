@@ -4,7 +4,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDMaterialDesignIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { t } from 'i18next';
 import { QRCode } from 'react-native-custom-qr-codes';

@@ -11,24 +11,16 @@ import {
   CHAIN_ARBITRUM,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO,
-  CHAIN_STARGAZE,
   CHAIN_NOBLE,
   ChainBackendNames,
   EnsCoinTypes,
-  CosmosStakingTokens,
   NativeTokenMapping,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
-  CHAIN_POLYGON_ZKEVM,
-  CHAIN_AURORA,
-  CHAIN_MOONBEAM,
-  CHAIN_MOONRIVER,
   CHAIN_COLLECTION,
   EVM_CHAINS,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
-  CHAIN_KUJIRA,
   CHAIN_SOLANA,
   NON_EIP1599_CHAINS,
 } from '../constants/server';
@@ -45,8 +37,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { find, get, omit } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
-import { isJunoAddress } from '../containers/utilities/junoSendUtility';
-import { isStargazeAddress } from '../containers/utilities/stargazeSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
 
 import { ActivityContextDef } from '../reducers/activity_reducer';
@@ -68,7 +58,6 @@ import { Holding } from './portfolio';
 import Long from 'long';
 import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
-import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
 import moment from 'moment';
 import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
 import { RSA } from 'react-native-rsa-native';
@@ -130,34 +119,18 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
       return `https://optimistic.etherscan.io/tx/${hash}`;
     case ChainBackendNames.BASE:
       return `https://basescan.org/tx/${hash}`;
-    case ChainBackendNames.POLYGON_ZKEVM:
-      return `https://zkevm.polygonscan.com/tx/${hash}`;
     case ChainBackendNames.ZKSYNC_ERA:
       return `https://www.oklink.com/zksync/tx/${hash}`;
-    case ChainBackendNames.AURORA:
-      return `https://explorer.aurora.dev/tx/${hash}`;
-    case ChainBackendNames.MOONBEAM:
-      return `https://moonbeam.moonscan.io/tx/${hash}`;
-    case ChainBackendNames.MOONRIVER:
-      return `https://moonriver.moonscan.io/tx/${hash}`;
     case ChainBackendNames.COSMOS:
       return `https://www.mintscan.io/cosmos/txs/${hash}`;
     case ChainBackendNames.OSMOSIS:
       return `https://www.mintscan.io/osmosis/txs/${hash}`;
-    case ChainBackendNames.JUNO:
-      return `https://www.mintscan.io/juno/txs/${hash}`;
-    case ChainBackendNames.STARGAZE:
-      return `https://www.mintscan.io/stargaze/txs/${hash}`;
     case ChainBackendNames.NOBLE:
       return `https://www.mintscan.io/noble/txs/${hash}`;
     case ChainBackendNames.COREUM:
       return `https://www.mintscan.io/coreum/txs/${hash}`;
     case ChainBackendNames.INJECTIVE:
       return `https://www.mintscan.io/injective/txs/${hash}`;
-    case ChainBackendNames.KUJIRA:
-      return `https://atomscan.com/kujira/transactions/${hash}`;
-    default:
-      return '';
   }
 }
 
@@ -177,32 +150,18 @@ export function getExplorerUrlFromChainId(chainId: string, hash: string) {
       return `https://optimistic.etherscan.io/tx/${hash}`;
     case CHAIN_BASE.chainIdNumber.toString():
       return `https://basescan.org/tx/${hash}`;
-    case CHAIN_POLYGON_ZKEVM.chainIdNumber.toString():
-      return `https://zkevm.polygonscan.com/tx/${hash}`;
     case CHAIN_ZKSYNC_ERA.chainIdNumber.toString():
       return `https://www.oklink.com/zksync/tx/${hash}`;
-    case CHAIN_AURORA.chainIdNumber.toString():
-      return `https://explorer.aurora.dev/tx/${hash}`;
-    case CHAIN_MOONBEAM.chainIdNumber.toString():
-      return `https://moonbeam.moonscan.io/tx/${hash}`;
-    case CHAIN_MOONRIVER.chainIdNumber.toString():
-      return `https://moonriver.moonscan.io/tx/${hash}`;
     case CHAIN_COSMOS.chain_id:
       return `https://www.mintscan.io/cosmos/txs/${hash}`;
     case CHAIN_OSMOSIS.chain_id:
       return `https://www.mintscan.io/osmosis/txs/${hash}`;
-    case CHAIN_JUNO.chain_id:
-      return `https://www.mintscan.io/juno/txs/${hash}`;
-    case CHAIN_STARGAZE.chain_id:
-      return `https://www.mintscan.io/stargaze/txs/${hash}`;
     case CHAIN_NOBLE.chain_id:
       return `https://www.mintscan.io/noble/txs/${hash}`;
     case CHAIN_COREUM.chain_id:
       return `https://www.mintscan.io/coreum/txs/${hash}`;
     case CHAIN_INJECTIVE.chain_id:
       return `https://www.mintscan.io/injective/txs/${hash}`;
-    case CHAIN_KUJIRA.chain_id:
-      return `https://atomscan.com/kujira/transactions/${hash}`;
     case CHAIN_SOLANA.chain_id:
       return `https://solscan.io/tx/${hash}`;
     default:
@@ -225,10 +184,6 @@ export function getExplorerUrl(
         return `https://explorer.zksync.io/tx/${hash}`;
       } else if (chainName === CHAIN_BASE.name) {
         return `https://basescan.org/tx/${hash}`;
-      } else if (chainName === CHAIN_POLYGON_ZKEVM.name) {
-        return `https://zkevm.polygonscan.com/tx/${hash}`;
-      } else if (chainName === CHAIN_AURORA.name) {
-        return `https://explorer.aurora.dev/tx/${hash}`;
       }
       return `https://etherscan.io/tx/${hash}`;
     case CHAIN_AVALANCHE.symbol:
@@ -237,27 +192,17 @@ export function getExplorerUrl(
       return `https://bscscan.com/tx/${hash}`;
     case CHAIN_POLYGON.symbol:
       return `https://polygonscan.com/tx/${hash}`;
-    case CHAIN_MOONBEAM.symbol:
-      return `https://moonbeam.moonscan.io/tx/${hash}`;
-    case CHAIN_MOONRIVER.symbol:
-      return `https://moonriver.moonscan.io/tx/${hash}`;
     case CHAIN_COSMOS.symbol:
     case NativeTokenMapping.COSMOS:
       return `https://www.mintscan.io/cosmos/txs/${hash}`;
     case CHAIN_OSMOSIS.symbol:
       return `https://www.mintscan.io/osmosis/txs/${hash}`;
-    case CHAIN_JUNO.symbol:
-      return `https://www.mintscan.io/juno/txs/${hash}`;
-    case CHAIN_STARGAZE.symbol:
-      return `https://www.mintscan.io/stargaze/txs/${hash}`;
     case CHAIN_NOBLE.symbol:
       return `https://www.mintscan.io/noble/txs/${hash}`;
     case CHAIN_COREUM.symbol:
       return `https://www.mintscan.io/coreum/txs/${hash}`;
     case CHAIN_INJECTIVE.symbol:
       return `https://www.mintscan.io/injective/txs/${hash}`;
-    case CHAIN_KUJIRA.symbol:
-      return `https://atomscan.com/kujira/transactions/${hash}`;
     case CHAIN_SOLANA.symbol:
       return `https://solscan.io/tx/${hash}`;
   }
@@ -280,40 +225,12 @@ export function getNftExplorerUrl(
       return `https://arbitrum.nftscan.com/${contractAddress}`;
     case CHAIN_OPTIMISM.backendName:
       return `https://optimistic.etherscan.io/address/${contractAddress}`;
-    case CHAIN_STARGAZE.backendName:
-      return `https://www.stargaze.zone/media/${contractAddress}/${id}`;
     case CHAIN_NOBLE.backendName:
       return `https://noblescan.com/address/${contractAddress}`;
     default:
       return `https://etherscan.io/address/${contractAddress}`;
   }
 }
-
-export const TARGET_CARD_EVM_WALLET_ADDRESS =
-  '0x43ea3262A6a208470AA686254bE9673F97CbCeD9';
-export const TARGET_CARD_COSMOS_WALLET_ADDRESS =
-  'cosmos15fm4ycvl6skw4h5v76tqt2zg36nzxl4mklkr8j';
-export const TARGET_CARD_OSMOSIS_WALLET_ADDRESS =
-  'osmo15fm4ycvl6skw4h5v76tqt2zg36nzxl4m7y9n3q';
-export const TARGET_CARD_JUNO_WALLET_ADDRESS =
-  'juno15fm4ycvl6skw4h5v76tqt2zg36nzxl4mqd4cqw';
-export const TARGET_CARD_STARGAZE_WALLET_ADDRESS =
-  'stars15fm4ycvl6skw4h5v76tqt2zg36nzxl4mzrp7vr';
-export const TARGET_CARD_NOBLE_WALLET_ADDRESS =
-  'noble15fm4ycvl6skw4h5v76tqt2zg36nzxl4mzrp7vr';
-
-export const TARGET_BRIDGE_EVM_WALLET_ADDRESS =
-  '0xa2a048426dd38b4925283230bfa9ebce2ab4c037';
-export const TARGET_BRIDGE_COSMOS_WALLET_ADDRESS =
-  'cosmos1e6khhgeyut7y0qxw2glrdl4al3acavdf9mypt9';
-export const TARGET_BRIDGE_OSMOSIS_WALEET_ADDRESS =
-  'osmo1e6khhgeyut7y0qxw2glrdl4al3acavdfdqh3ah';
-export const TARGET_BRIDGE_JUNO_WALLET_ADDRESS =
-  'juno1e6khhgeyut7y0qxw2glrdl4al3acavdfnf86ve';
-export const TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS =
-  'stars1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
-export const TARGET_BRIDGE_NOBLE_WALLET_ADDRESS =
-  'noble1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
 
 export function getWeb3Endpoint(
   selectedChain: Chain,
@@ -594,9 +511,9 @@ export function getMaskedAddress(address: string, maskLength = 6) {
     prefixLength = 2; // length of 0x
   } else if (isCosmosAddress(address)) {
     prefixLength = 6;
-  } else if (isOsmosisAddress(address) || isJunoAddress(address)) {
+  } else if (isOsmosisAddress(address)) {
     prefixLength = 4;
-  } else if (isStargazeAddress(address) || isNobleAddress(address)) {
+  } else if (isNobleAddress(address)) {
     prefixLength = 3;
   } else {
     prefixLength = 0;
@@ -622,18 +539,12 @@ export function SendToAddressValidator(
         return isCosmosAddress(address);
       case CHAIN_OSMOSIS.chainName:
         return isOsmosisAddress(address);
-      case CHAIN_JUNO.chainName:
-        return isJunoAddress(address);
-      case CHAIN_STARGAZE.chainName:
-        return isStargazeAddress(address);
       case CHAIN_NOBLE.chainName:
         return isNobleAddress(address);
       case CHAIN_COREUM.chainName:
         return isCoreumAddress(address);
       case CHAIN_INJECTIVE.chainName:
         return isInjectiveAddress(address);
-      case CHAIN_KUJIRA.chainName:
-        return isKujiraAddress(address);
       case CHAIN_SOLANA.chainName:
         return isSolanaAddress(address);
       default:
@@ -647,12 +558,9 @@ export function findChainOfAddress(address: string) {
   if (address) {
     if (isCosmosAddress(address)) return 'cosmos';
     if (isOsmosisAddress(address)) return 'osmosis';
-    if (isJunoAddress(address)) return 'juno';
-    if (isStargazeAddress(address)) return 'stargaze';
     if (isNobleAddress(address)) return 'noble';
     if (isCoreumAddress(address)) return 'coreum';
     if (isInjectiveAddress(address)) return 'injective';
-    if (isKujiraAddress(address)) return 'kujira';
     if (
       Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
         ? isAddress(address) || isValidEns(address)
@@ -683,38 +591,13 @@ export const isBasicCosmosChain = (backendName: string) =>
   [
     ChainBackendNames.OSMOSIS,
     ChainBackendNames.COSMOS,
-    ChainBackendNames.JUNO,
-    ChainBackendNames.STARGAZE,
     ChainBackendNames.NOBLE,
     ChainBackendNames.COREUM,
     ChainBackendNames.INJECTIVE,
-    ChainBackendNames.KUJIRA,
   ].includes(backendName);
 
 export const isCosmosChain = (backendName: string) =>
   isBasicCosmosChain(backendName);
-
-export const isCosmosStakingToken = (chain: string, tokenData: any) =>
-  tokenData.chainDetails.backendName ===
-    ChainBackendNames[chain as ChainBackendNames] &&
-  tokenData.name.toLowerCase() ===
-    CosmosStakingTokens[chain as CosmosStakingTokens];
-
-export const isACosmosStakingToken = (tokenData: any) =>
-  [
-    ChainBackendNames.OSMOSIS,
-    ChainBackendNames.COSMOS,
-    ChainBackendNames.JUNO,
-    ChainBackendNames.STARGAZE,
-  ].some(chain => isCosmosStakingToken(chain as string, tokenData));
-
-export const isABasicCosmosStakingToken = (tokenData: any) =>
-  [
-    ChainBackendNames.OSMOSIS,
-    ChainBackendNames.COSMOS,
-    ChainBackendNames.JUNO,
-    ChainBackendNames.STARGAZE,
-  ].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
 export const calculateTime = function time(ttime: string) {
   const ms = Date.parse(String(new Date())) - Date.parse(ttime);
@@ -793,12 +676,6 @@ export const getChain = (chain: string): Chain => {
     case 'osmosis':
       blockchain = CHAIN_OSMOSIS;
       break;
-    case 'juno':
-      blockchain = CHAIN_JUNO;
-      break;
-    case 'stargaze':
-      blockchain = CHAIN_STARGAZE;
-      break;
     case 'noble':
       blockchain = CHAIN_NOBLE;
       break;
@@ -807,9 +684,6 @@ export const getChain = (chain: string): Chain => {
       break;
     case 'injective':
       blockchain = CHAIN_INJECTIVE;
-      break;
-    case 'kujira':
-      blockchain = CHAIN_KUJIRA;
       break;
   }
   return blockchain;
@@ -983,18 +857,12 @@ export function getChainNameFromAddress(address: string) {
     return ChainBackendNames.COSMOS;
   } else if (isOsmosisAddress(address)) {
     return ChainBackendNames.OSMOSIS;
-  } else if (isJunoAddress(address)) {
-    return ChainBackendNames.JUNO;
-  } else if (isStargazeAddress(address)) {
-    return ChainBackendNames.STARGAZE;
   } else if (isNobleAddress(address)) {
     return ChainBackendNames.NOBLE;
   } else if (isCoreumAddress(address)) {
     return ChainBackendNames.COREUM;
   } else if (isInjectiveAddress(address)) {
     return ChainBackendNames.INJECTIVE;
-  } else if (isKujiraAddress(address)) {
-    return ChainBackendNames.KUJIRA;
   }
 }
 
@@ -1039,18 +907,8 @@ export const validateAndFormatPrivateKey = (privateKey: string): string => {
 };
 
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
-  const {
-    ethereum,
-    solana,
-    cosmos,
-    osmosis,
-    juno,
-    stargaze,
-    noble,
-    coreum,
-    injective,
-    kujira,
-  } = hdWallet.state.wallet;
+  const { ethereum, solana, cosmos, osmosis, noble, coreum, injective } =
+    hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
     availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS];
@@ -1065,12 +923,6 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   if (get(osmosis.wallets, osmosis.currentIndex)?.address) {
     availableChains.push(CHAIN_OSMOSIS);
   }
-  if (get(juno.wallets, juno.currentIndex)?.address) {
-    availableChains.push(CHAIN_JUNO);
-  }
-  if (get(stargaze.wallets, stargaze.currentIndex)?.address) {
-    availableChains.push(CHAIN_STARGAZE);
-  }
   if (get(noble.wallets, noble.currentIndex)?.address) {
     availableChains.push(CHAIN_NOBLE);
   }
@@ -1079,9 +931,6 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   }
   if (get(injective.wallets, injective.currentIndex)?.address) {
     availableChains.push(CHAIN_INJECTIVE);
-  }
-  if (get(kujira.wallets, kujira.currentIndex)?.address) {
-    availableChains.push(CHAIN_KUJIRA);
   }
 
   return availableChains;

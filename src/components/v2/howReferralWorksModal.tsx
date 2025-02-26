@@ -5,7 +5,7 @@ import {
   CyDTouchView,
   CyDMaterialDesignIcons,
   CyDFastImage,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { t } from 'i18next';
 import AppImages from '../../../assets/images/appImages';

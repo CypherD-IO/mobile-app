@@ -30,7 +30,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../../styles/tailwindStyles';
+} from '../../../styles/tailwindComponents';
 
 interface RouteParams {
   currentCardProvider: CardProviders;

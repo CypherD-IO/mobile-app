@@ -16,7 +16,7 @@ import {
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
   CyDIcons,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { GlobalContext } from '../../core/globalContext';
 import { useIsFocused } from '@react-navigation/native';
 import { isEnglish } from '../../core/util';

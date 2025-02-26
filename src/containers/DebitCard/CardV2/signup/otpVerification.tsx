@@ -17,7 +17,7 @@ import {
   CyDMaterialDesignIcons,
   CyDLottieView,
   CyDIcons,
-} from '../../../../styles/tailwindStyles';
+} from '../../../../styles/tailwindComponents';
 import AppImages from '../../../../../assets/images/appImages';
 import OTPInput from '../../../../components/v2/otpBox';
 import Button from '../../../../components/v2/button';

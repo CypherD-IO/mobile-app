@@ -6,21 +6,11 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { StyleSheet } from 'react-native';
 import * as React from 'react';
 import clsx from 'clsx';
-
-enum typeOfChain {
-  CHAIN = 'chain',
-  TOKEN = 'token',
-}
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
 
 export default function ChooseChainModal({
   isModalVisible,
@@ -29,7 +19,6 @@ export default function ChooseChainModal({
   onPress,
   title,
   selectedItem,
-  type = 'chain',
   customStyle = {},
   animationIn = 'slideInUp',
   animationOut = 'slideOutDown',
@@ -39,61 +28,36 @@ export default function ChooseChainModal({
 }) {
   const renderFromList = item => {
     return (
-      (type === typeOfChain.CHAIN ? true : item.item.isVerified) && (
-        <CyDTouchView
-          key={item.item.name}
-          className={clsx(
-            'flex flex-row py-[12px] px-[24px] items-center justify-between',
-            {
-              'bg-n0 rounded-[18px]': item.item.name === selectedItem,
-            },
-          )}
-          onPress={() => {
-            setModalVisible(false);
-            onPress(item);
-          }}>
-          <CyDView className={'flex flex-row items-center'}>
-            <CyDImage
-              source={
-                type === typeOfChain.CHAIN
-                  ? item.item.logo_url
-                  : { uri: item.item.logoUrl }
-              }
-              className={'w-[28px] h-[28px] mr-[18px]'}
-            />
-            <CyDText className={' text-[18px]  font-regular'}>
-              {item.item.name}
-            </CyDText>
-          </CyDView>
+      <CyDTouchView
+        key={item.item.name}
+        className={clsx(
+          'flex flex-row py-[12px] px-[24px] items-center justify-between',
+          {
+            'bg-n0 rounded-[18px]': item.item.name === selectedItem,
+          },
+        )}
+        onPress={() => {
+          setModalVisible(false);
+          onPress(item);
+        }}>
+        <CyDView className={'flex flex-row items-center'}>
+          <CyDImage
+            source={item.item.logo_url}
+            className={'w-[28px] h-[28px] mr-[18px]'}
+          />
+          <CyDText className={' text-[18px]  font-regular'}>
+            {item.item.name}
+          </CyDText>
+        </CyDView>
 
-          {item.item.name === selectedItem && type === typeOfChain.CHAIN && (
-            <CyDMaterialDesignIcons
-              name='check-bold'
-              size={16}
-              className='text-base400 self-end'
-            />
-          )}
-
-          {type === typeOfChain.TOKEN && (
-            <CyDView>
-              <CyDText
-                className={
-                  'font-semibold text-subTextColor text-[16px] text-right'
-                }>
-                {new Intl.NumberFormat('en-US', {
-                  maximumSignificantDigits: 4,
-                }).format(item.item.actualBalance)}
-              </CyDText>
-              <CyDText
-                className={
-                  'font-semibold text-subTextColor text-[12px] text-right mr-[2px]'
-                }>
-                {currencyFormatter.format(item.item.totalValue)}
-              </CyDText>
-            </CyDView>
-          )}
-        </CyDTouchView>
-      )
+        {item.item.name === selectedItem && (
+          <CyDMaterialDesignIcons
+            name='check-bold'
+            size={16}
+            className='text-base400 self-end'
+          />
+        )}
+      </CyDTouchView>
     );
   };
 

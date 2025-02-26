@@ -27,7 +27,7 @@ import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import Loading from '../../containers/Loading';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDView } from '../../styles/tailwindComponents';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';

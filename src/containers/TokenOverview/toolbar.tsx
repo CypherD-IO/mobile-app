@@ -7,53 +7,29 @@ import {
   FundWalletAddressType,
 } from '../../constants/server';
 import { GlobalContext } from '../../core/globalContext';
-import {
-  isBasicCosmosChain,
-  convertFromUnitAmount,
-  isABasicCosmosStakingToken,
-} from '../../core/util';
+import { isBasicCosmosChain } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
 import {
   CyDImage,
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { isIOS } from '../../misc/checkers';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 
 export default function TokenOverviewToolBar({
   tokenData,
   navigation,
 }: {
   tokenData: TokenMeta;
-  navigation: { navigate: (screen: string, {}: any) => void };
+  navigation: NavigationProp<ParamListBase>;
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
-  const cosmosStaking = useContext<any>(CosmosStakingContext);
   const { isBridgeable, isSwapable } = tokenData;
   const canShowIBC =
     globalStateContext.globalState.ibc &&
     isBasicCosmosChain(tokenData.chainDetails.backendName);
-
-  const userBalance = () => {
-    if (isABasicCosmosStakingToken(tokenData)) {
-      return (
-        Number(tokenData.price) *
-        Number(
-          convertFromUnitAmount(
-            (
-              Number(cosmosStaking.cosmosStakingState.balance) +
-              Number(cosmosStaking.cosmosStakingState.stakedBalance)
-            ).toString(),
-            tokenData.contractDecimals,
-          ),
-        )
-      );
-    } else {
-      return tokenData.totalValue;
-    }
-  };
 
   return (
     <CyDView
@@ -132,12 +108,6 @@ export default function TokenOverviewToolBar({
               case ChainBackendNames.OSMOSIS:
                 addressTypeQRCode = FundWalletAddressType.OSMOSIS;
                 break;
-              case ChainBackendNames.JUNO:
-                addressTypeQRCode = FundWalletAddressType.JUNO;
-                break;
-              case ChainBackendNames.STARGAZE:
-                addressTypeQRCode = FundWalletAddressType.STARGAZE;
-                break;
               case ChainBackendNames.NOBLE:
                 addressTypeQRCode = FundWalletAddressType.NOBLE;
                 break;
@@ -147,9 +117,6 @@ export default function TokenOverviewToolBar({
               case ChainBackendNames.INJECTIVE:
                 addressTypeQRCode = FundWalletAddressType.INJECTIVE;
                 break;
-              case ChainBackendNames.KUJIRA:
-                addressTypeQRCode = FundWalletAddressType.KUJIRA;
-                break;
               case ChainBackendNames.SOLANA:
                 addressTypeQRCode = FundWalletAddressType.SOLANA;
                 break;
@@ -158,18 +125,6 @@ export default function TokenOverviewToolBar({
                 break;
               case ChainBackendNames.BASE:
                 addressTypeQRCode = FundWalletAddressType.BASE;
-                break;
-              case ChainBackendNames.POLYGON_ZKEVM:
-                addressTypeQRCode = FundWalletAddressType.POLYGON_ZKEVM;
-                break;
-              case ChainBackendNames.AURORA:
-                addressTypeQRCode = FundWalletAddressType.AURORA;
-                break;
-              case ChainBackendNames.MOONBEAM:
-                addressTypeQRCode = FundWalletAddressType.MOONBEAM;
-                break;
-              case ChainBackendNames.MOONRIVER:
-                addressTypeQRCode = FundWalletAddressType.MOONRIVER;
                 break;
               case ChainBackendNames.POLYGON:
                 addressTypeQRCode = FundWalletAddressType.POLYGON;

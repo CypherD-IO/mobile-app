@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
-import { CyDText } from '../styles/tailwindStyles';
+import { CyDText } from '../styles/tailwindComponents';
 const { DynamicView, DynamicTouchView } = require('../styles');
 
 export default function SwitchView(props) {

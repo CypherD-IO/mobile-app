@@ -10,7 +10,11 @@ import useWeb3 from '../../../hooks/useWeb3';
 import { ButtonType, Web3Origin } from '../../../constants/enum';
 import { Chain, chainIdNumberMapping } from '../../../constants/server';
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
-import { CyDFastImage, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDText,
+  CyDView,
+} from '../../../styles/tailwindComponents';
 import { t } from 'i18next';
 import Button from '../button';
 

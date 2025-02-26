@@ -3,7 +3,7 @@ import { GlobalContext } from '../core/globalContext';
 import useCardUtilities from '../hooks/useCardUtilities';
 import { CardProviders, GlobalContextType } from '../constants/enum';
 import { CardProfile } from '../models/cardProfile.model';
-import { CyDView } from '../styles/tailwindStyles';
+import { CyDView } from '../styles/tailwindComponents';
 import SwitchView from './v2/switchView';
 import {
   NavigationProp,

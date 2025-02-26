@@ -36,44 +36,34 @@ import {
 } from 'react-native-reanimated';
 import HTML from 'react-native-render-html';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import AppImages from '../../../assets/images/appImages';
 import Loading from '../../components/v2/loading';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import { screenTitle } from '../../constants';
 import { Colors } from '../../constants/theme';
-import { getCosmosStakingData } from '../../core/cosmosStaking';
 import { GlobalContext } from '../../core/globalContext';
 import useAxios from '../../core/HttpRequest';
 import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
 import {
   beautifyPriceWithUSDDenom,
-  convertFromUnitAmount,
   copyToClipboard,
   HdWalletContext,
-  isABasicCosmosStakingToken,
   isNativeToken,
 } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
-  COSMOS_STAKING_LOADING,
-  CosmosStakingContext,
-} from '../../reducers/cosmosStakingReducer';
-import {
   CyDAnimatedView,
   CyDFastImage,
   CyDIcons,
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
 import { showToast } from '../utilities/toastUtility';
-import { DecimalHelper } from '../../utils/decimalHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -118,11 +108,7 @@ export default function Overview({
 }) {
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
-  const cosmosStaking = useContext<any>(CosmosStakingContext);
-  const cosmosStakingContextStatus = cosmosStaking.cosmosStakingState.status;
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const globalStateContext = useContext<any>(GlobalContext);
-  const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];
   const { width: SIZE } = Dimensions.get('window');
   const [loadMoreAbout, setLoadMoreAbout] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -159,17 +145,10 @@ export default function Overview({
   const chartXValue = useSharedValue('');
   const [tokenDescription, setTokenDescription] = useState<string>('');
   const [totalValueInAmount, setTotalAmountInValue] = useState(
-    DecimalHelper.add(tokenData.totalValue, [
-      tokenData.actualStakedBalance,
-      tokenData.actualUnbondingBalance,
-    ]).toString(),
+    tokenData.totalValue,
   );
-  const [totalValue, setTotalValue] = useState(
-    DecimalHelper.add(tokenData.actualBalance, [
-      tokenData.stakedBalanceTotalValue,
-      tokenData.unbondingBalanceTotalValue,
-    ]).toString(),
-  );
+  const [totalValue, setTotalValue] = useState(tokenData.balanceDecimal);
+
   const [chartVisible, setChartVisible] = useState(false);
 
   const CyDChartYLabel = cssInterop(ChartYLabel, {
@@ -334,67 +313,11 @@ export default function Overview({
     }
   };
 
-  const getStakingMetaData = async () => {
-    await getStakingData();
-  };
-
-  const getStakingData = async () => {
-    await getCosmosStakingData(
-      cosmosStaking.cosmosStakingDispatch,
-      globalStateContext.globalState,
-      tokenData.chainDetails.backendName,
-      chain.wallets[chain.currentIndex].address,
-      tokenData.denom,
-    );
-  };
-
   const onRefresh = () => {
     setRefreshing(true);
-    void getStakingMetaData();
-    getTotalTokens();
-    getTotalValue();
+    setTotalValue(`${tokenData.balanceDecimal}`);
+    setTotalAmountInValue(`${tokenData.totalValue}`);
     setRefreshing(false);
-  };
-
-  useEffect(() => {
-    if (cosmosStakingContextStatus !== COSMOS_STAKING_LOADING) {
-      onRefresh();
-    }
-  }, [tokenData]);
-
-  const getTotalTokens = () => {
-    if (isABasicCosmosStakingToken(tokenData)) {
-      setTotalValue(
-        convertFromUnitAmount(
-          DecimalHelper.add(
-            cosmosStaking.cosmosStakingState.balance,
-            cosmosStaking.cosmosStakingState.stakedBalance,
-          ),
-          tokenData.contractDecimals,
-        ).toString(),
-      );
-    } else {
-      setTotalValue(`${tokenData.actualBalance}`);
-    }
-  };
-
-  const getTotalValue = () => {
-    if (isABasicCosmosStakingToken(tokenData)) {
-      setTotalAmountInValue(
-        DecimalHelper.multiply(
-          tokenData.price,
-          convertFromUnitAmount(
-            DecimalHelper.add(
-              cosmosStaking.cosmosStakingState.balance,
-              cosmosStaking.cosmosStakingState.stakedBalance,
-            ),
-            tokenData.contractDecimals,
-          ),
-        ).toString(),
-      );
-    } else {
-      setTotalAmountInValue(`${tokenData.totalValue}`);
-    }
   };
 
   const { width } = Dimensions.get('window');
@@ -606,16 +529,6 @@ export default function Overview({
               otherChainItem => otherChainItem !== tokenData,
             )}
             renderItem={({ item }) => {
-              const tokenVal = `${
-                +item.totalValue +
-                +item.actualStakedBalance +
-                +item.actualUnbondingBalance
-              }`;
-              const tokenAmt = `${
-                +item.actualBalance +
-                +item.stakedBalanceTotalValue +
-                +item.unbondingBalanceTotalValue
-              }`;
               return (
                 <CyDTouchView
                   onPress={() => {
@@ -641,10 +554,10 @@ export default function Overview({
                   />
                   <CyDView className='flex flex-col mx-[10px] justify-center items-end'>
                     <CyDTokenValue className='text-[16px] font-extrabold'>
-                      {tokenVal}
+                      {item.totalValue}
                     </CyDTokenValue>
                     <CyDTokenAmount className='text-[12px]'>
-                      {tokenAmt}
+                      {item.balanceDecimal}
                     </CyDTokenAmount>
                   </CyDView>
                 </CyDTouchView>

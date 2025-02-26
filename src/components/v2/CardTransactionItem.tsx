@@ -1,34 +1,33 @@
-import React, { memo } from 'react';
-import {
-  CyDFastImage,
-  CyDImage,
-  CyDMaterialDesignIcons,
-  CyDText,
-  CyDTouchView,
-  CyDView,
-} from '../../styles/tailwindStyles';
-import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtility';
-import { screenTitle } from '../../constants';
-import { useTranslation } from 'react-i18next';
-import {
-  TransactionFilterTypes,
-  CardTransactionTypes,
-  ReapTxnStatus,
-} from '../../constants/enum';
-import clsx from 'clsx';
-import AppImages from '../../../assets/images/appImages';
-import moment from 'moment';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
-import { ICardTransaction } from '../../models/card.model';
+import clsx from 'clsx';
+import moment from 'moment';
+import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
+import AppImages from '../../../assets/images/appImages';
+import { screenTitle } from '../../constants';
+import {
+  CardTransactionTypes,
+  ReapTxnStatus,
+  TransactionFilterTypes,
+} from '../../constants/enum';
+import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtility';
 import {
   formatToLocalDate,
   getSymbolFromCurrency,
   limitDecimalPlaces,
 } from '../../core/util';
+import { ICardTransaction } from '../../models/card.model';
+import {
+  CyDFastImage,
+  CyDMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindComponents';
 
 interface CardTransactionItemProps {
   item: ICardTransaction;

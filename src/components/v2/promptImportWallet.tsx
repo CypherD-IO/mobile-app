@@ -14,7 +14,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 import Button from './button';
 import Loading from './loading';
 import CyDModalLayout from './modal';

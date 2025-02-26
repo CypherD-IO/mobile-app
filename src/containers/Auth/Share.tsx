@@ -17,7 +17,7 @@ import {
   CyDFastImage,
   CyDIcons,
   CyDLottieView,
-} from '../../styles/tailwindStyles';
+} from '../../styles/tailwindComponents';
 
 const { DynamicButton } = require('../../styles');
 
