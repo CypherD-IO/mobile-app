@@ -111,6 +111,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../styles/tailwindComponents';
+import DefaultLimitSetup from '../containers/DebitCard/bridgeCard/defaultLimitSetup';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -144,15 +145,17 @@ const CustomHeader = ({
   title,
   navigation,
   keyboardHeight,
+  style,
 }: {
   title: string;
   navigation: NavigationProp<ParamListBase>;
   keyboardHeight: number;
+  style?: string;
 }) => {
   const insets = useSafeAreaInsets();
   return (
     <CyDView
-      className='bg-n20 flex-row justify-between pb-[10px]'
+      className={`bg-n20 flex-row justify-between pb-[10px] ${style}`}
       style={{ paddingTop: insets.top }}>
       <CyDTouchView
         className='px-[12px]'
@@ -649,6 +652,13 @@ export function DebitCardStackScreen({ route }) {
               keyboardHeight={keyboardHeight}
             />
           ),
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.DEFAULT_LIMIT_SETUP}
+        component={DefaultLimitSetup}
+        options={() => ({
+          headerShown: false,
         })}
       />
       <FundCardStack.Screen

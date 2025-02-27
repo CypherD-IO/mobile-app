@@ -139,6 +139,7 @@ export const screenTitle = {
   MANAGE_SUBSCRIPTION: 'manageSubscription',
   FIRST_LOAD_CARD: 'firstLoadCard',
   THEME: 'theme',
+  DEFAULT_LIMIT_SETUP: 'defaultLimitSetup',
 };
 
 export const fontsName = {

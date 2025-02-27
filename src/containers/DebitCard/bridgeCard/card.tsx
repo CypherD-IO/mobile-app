@@ -167,6 +167,38 @@ export default function CardScreen({
     }
   }, [currentCardProvider, isFocused, cardProfile]);
 
+  useEffect(() => {
+    const cardConfig = get(cardProfile, currentCardProvider);
+    const cards = cardConfig?.cards;
+    if (cards?.length && currentCardProvider) {
+      void checkForDefaultLimits();
+    }
+  }, [cardProfile, currentCardProvider]);
+
+  const checkForDefaultLimits = async () => {
+    const cardConfig = get(cardProfile, currentCardProvider);
+    const cards = cardConfig?.cards;
+    // Skip if no cards available
+    if (!cards?.length) return;
+
+    // Check limits for each card
+    for (const card of cards) {
+      // console.log('card in loop : ', card);
+      if (!card.cardId || card.cardId === CARD_IDS.HIDDEN_CARD) continue;
+
+      const response = await getWithAuth(
+        `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
+      );
+      // console.log('response in checkForDefaultLimits : ', response, card);
+      if (!response.isError && response.data?.isDefaultSetting) {
+        navigation.navigate(screenTitle.DEFAULT_LIMIT_SETUP, {
+          state: { card: card, provider: currentCardProvider },
+        });
+        break; // Exit loop once we find a card with default settings
+      }
+    }
+  };
+
   const getCardImage = (card: Card) => {
     if (currentCardProvider === CardProviders.REAP_CARD) {
       if (isAccountLocked) {
