@@ -718,3 +718,20 @@ export default function CardQuote({
     </CyDView>
   );
 }
+
+const styles = StyleSheet.create({
+  loaderStyle: {
+    width: 20,
+  },
+  linearGradient: {
+    borderRadius: 24,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  priceFluctuationLearnMoreModal: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+});
