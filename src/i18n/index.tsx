@@ -1503,6 +1503,30 @@ const resources = {
         "This product is intended for residents domiciled in Hong Kong. Distribution outside this region may require regulatory approvals. By continuing, you confirm you're accessing this content voluntarily without any third-party pressure.",
       RC_APPLICATION_CONSENT_CHECKBOX:
         'I Agree to continue with the Application',
+      SAVE_CHANGES_DESC:
+        'Your changes will be saved to {{cardType}} card ** {{last4}}. Would you like to apply these changes to all your cards ?',
+      SAVE_CHANGES_CONFIRM_BUTTON: 'Apply to {{cardType}} card ** {{last4}}',
+      APPLY_TO_ALL_CARDS: 'Apply to all cards',
+      LETS_SETUP_YOUR_CARD: "Let's setup your card",
+      LOCATION: 'Location',
+      DOMESTIC_COUNTRY: 'Domestic Country',
+      DAILY_AND_MONTHLY_USAGE_LIMIT: 'Daily and Monthly Usage Limit',
+      DEFAULT_LIMIT: 'Default Limit',
+      MONTHLY_LIMIT: 'Monthly Limit',
+      SETUP_LIMITS_DESC:
+        'Set up your daily and monthly spending limits to manage expenses and stay in control.',
+      SETUP_SPEND_CONTROL: 'Spend Control',
+      EDIT_SPEND_CONTROL: 'Edit Spend Control',
+      TELEGRAM_BOT_DESC:
+        'Get real-time notifications for card transactions and manage your card directly through Telegram.',
+      APPLE_PAY_GOOGLE_PAY: 'Apple Pay / Google Pay',
+      ATM_WITHDRAWALS: 'ATM Withdrawals',
+      DOMESTIC: 'Domestic',
+      INTERNATIONAL: 'International',
+      CARD_SETTINGS_ACKNOWLEDGMENT:
+        'I acknowledge that I have reviewed and accepted all card settings and understand how to manage my card limits and controls.',
+      START_USING_CARD: 'START USING CARD',
+      SETUP_USAGE_LIMIT: 'Setup Usage Limit',
     },
   },
 };

@@ -85,6 +85,9 @@ export default function TelegramSetup() {
 
   useFocusEffect(
     React.useCallback(() => {
+      console.log(
+        'getNewTelegramConnectionId and refreshProfile called in useFocusEffect',
+      );
       void getNewTelegramConnectionId();
       void refreshProfile();
     }, []),
