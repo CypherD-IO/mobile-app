@@ -1570,6 +1570,20 @@ export function OptionsStackScreen({
           ),
         })}
       />
+
+      <OptionsStack.Screen
+        name={screenTitle.CARD_TRANSACTIONS_SCREEN}
+        component={CardTransactions}
+        options={({ navigation }) => ({
+          header: () => (
+            <CustomHeader
+              title='Card Transactions'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
+        })}
+      />
     </OptionsStack.Navigator>
   );
 }

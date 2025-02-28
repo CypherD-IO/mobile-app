@@ -674,7 +674,6 @@ export default function CypherCardScreen() {
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,
                       cardProvider,
-                      currentCardIndex,
                     })
                   }>
                   <CyDText className='text-[14px] font-bold'>
@@ -708,7 +707,6 @@ export default function CypherCardScreen() {
                   navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                     navigation,
                     cardProvider: CardProviders.PAYCADDY,
-                    currentCardIndex,
                   })
                 }>
                 <CyDText className='text-[14px] font-bold'>
