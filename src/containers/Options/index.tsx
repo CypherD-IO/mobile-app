@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler, Linking } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
-import { ConnectionTypes } from '../../constants/enum';
+import { CardProviders, ConnectionTypes } from '../../constants/enum';
 import * as C from '../../constants/index';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { showToast } from '../../containers/utilities/toastUtility';
@@ -42,6 +42,8 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppImages from '../../../assets/images/appImages';
+import { CardProfile } from '../../models/cardProfile.model';
 
 export interface Section {
   sentryLabel: string;
@@ -101,7 +103,8 @@ export default function Options() {
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
   const resolveDomain = useEns()[1];
-  const { getWalletProfile } = useCardUtilities();
+  const { getWalletProfile, isLegacyCardClosed } = useCardUtilities();
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   useEffect(() => {
     setConnectionTypeValue(connectionType);
@@ -307,6 +310,20 @@ export default function Options() {
               title={t('LEGAL')}
               logo={'note'}
             />
+
+            {isLegacyCardClosed(cardProfile) && (
+              <OptionsContainer
+                sentryLabel={'legacy-transactions-button'}
+                onPress={() => {
+                  navigation.navigate(C.screenTitle.CARD_TRANSACTIONS_SCREEN, {
+                    navigation,
+                    cardProvider: CardProviders.PAYCADDY,
+                  });
+                }}
+                title={t('LEGACY_TRANSACTIONS')}
+                logo={'card'}
+              />
+            )}
 
             {updateModal && (
               <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
