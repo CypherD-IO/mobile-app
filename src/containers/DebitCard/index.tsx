@@ -46,7 +46,7 @@ export default function DebitCardScreen(props: RouteProps) {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
-  const { getWalletProfile } = useCardUtilities();
+  const { getWalletProfile, isLegacyCardClosed } = useCardUtilities();
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -82,7 +82,9 @@ export default function DebitCardScreen(props: RouteProps) {
   let provider: CardProviders | undefined = cardProfile?.provider;
 
   const setCardProvider = () => {
-    const hasPc = has(cardProfile, CardProviders.PAYCADDY);
+    const hasPc =
+      has(cardProfile, CardProviders.PAYCADDY) &&
+      !isLegacyCardClosed(cardProfile);
     const hasRc = has(cardProfile, CardProviders.REAP_CARD);
 
     if (!hasPc && !hasRc) {
