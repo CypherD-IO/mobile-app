@@ -23,13 +23,12 @@ import {
   LEGAL_CYPHERHQ,
   TERMS_PRIVACY_POLICY_URL,
 } from '../../../../../constants/data';
-import { CardProviders } from '../../../../../constants/enum';
 
 export default function BillingAddress({
   supportedCountries,
   setFieldValue,
   values,
-  provider,
+  isRainCard,
   acceptTerms,
   acceptConsent,
   setAcceptTerms,
@@ -46,7 +45,7 @@ export default function BillingAddress({
   }>;
   setFieldValue: FormikHelpers<FormInitalValues>['setFieldValue'];
   values: FormInitalValues;
-  provider: CardProviders;
+  isRainCard: boolean;
   acceptTerms: boolean;
   acceptConsent: boolean;
   setAcceptTerms: (acceptTerms: boolean) => void;
@@ -322,7 +321,7 @@ export default function BillingAddress({
             </CyDText>
           </CyDView>
 
-          {provider === CardProviders.REAP_CARD && (
+          {isRainCard && (
             <CyDView className='flex flex-row w-full'>
               <CyDTouchView
                 className='flex flex-row items-center'

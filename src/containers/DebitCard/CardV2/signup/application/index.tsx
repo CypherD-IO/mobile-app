@@ -39,6 +39,7 @@ import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import { getReferralCode } from '../../../../../core/asyncStorage';
+import { isRainReferralCode } from '../../../../../core/util';
 
 // Add this type definition
 interface SupportedCountry {
@@ -351,7 +352,9 @@ export default function CardApplicationV2() {
             {index === 0 && <BasicDetails />}
             {index === 1 && (
               <BillingAddress
-                provider={provider}
+                isRainCard={
+                  referralCode ? isRainReferralCode(referralCode) : false
+                }
                 supportedCountries={supportedCountries}
                 setFieldValue={setFieldValue}
                 values={values}
