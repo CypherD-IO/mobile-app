@@ -13,16 +13,27 @@ import {
 } from '../../../../../styles/tailwindComponents';
 import CyDModalLayout from '../../../../../components/v2/modal';
 import AppImages from '../../../../../../assets/images/appImages';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Linking } from 'react-native';
 import { FormikHelpers } from 'formik';
 import Loading from '../../../../../components/v2/loading';
 import { FormInitalValues } from '.';
 import { Colors } from '../../../../../constants/theme';
+import clsx from 'clsx';
+import {
+  LEGAL_CYPHERHQ,
+  TERMS_PRIVACY_POLICY_URL,
+} from '../../../../../constants/data';
+import { CardProviders } from '../../../../../constants/enum';
 
 export default function BillingAddress({
   supportedCountries,
   setFieldValue,
   values,
+  provider,
+  acceptTerms,
+  acceptConsent,
+  setAcceptTerms,
+  setAcceptConsent,
 }: {
   supportedCountries: Array<{
     name: string;
@@ -35,6 +46,11 @@ export default function BillingAddress({
   }>;
   setFieldValue: FormikHelpers<FormInitalValues>['setFieldValue'];
   values: FormInitalValues;
+  provider: CardProviders;
+  acceptTerms: boolean;
+  acceptConsent: boolean;
+  setAcceptTerms: (acceptTerms: boolean) => void;
+  setAcceptConsent: (acceptConsent: boolean) => void;
 }) {
   const { t } = useTranslation();
   const [showCountries, setShowCountries] = useState(false);
@@ -267,6 +283,72 @@ export default function BillingAddress({
             placeholder='Your Phone Number'
             keyboardType='number-pad'
           />
+        </CyDView>
+        <CyDView className='flex flex-col bg-n0 rounded-[12px] p-[14px] gap-y-[10px] border border-n30 mb-[16px]'>
+          <CyDView className='flex flex-row w-full'>
+            <CyDTouchView
+              className='flex flex-row items-center'
+              onPress={() => setAcceptTerms(!acceptTerms)}>
+              <CyDView
+                className={clsx(
+                  'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                  {
+                    'bg-p150 border-p150': acceptTerms,
+                  },
+                )}>
+                {acceptTerms && (
+                  <CyDMaterialDesignIcons
+                    name='check-bold'
+                    size={16}
+                    className='text-n0'
+                  />
+                )}
+              </CyDView>
+            </CyDTouchView>
+
+            <CyDText className='px-[12px] text-[12px] text-primaryText'>
+              By continuing, I agree to{' '}
+              <CyDText
+                className='text-blue-800'
+                onPress={() => Linking.openURL(LEGAL_CYPHERHQ)}>
+                Terms and Conditions
+              </CyDText>{' '}
+              and{' '}
+              <CyDText
+                className='text-blue-800'
+                onPress={() => Linking.openURL(TERMS_PRIVACY_POLICY_URL)}>
+                Privacy Policy
+              </CyDText>
+            </CyDText>
+          </CyDView>
+
+          {provider === CardProviders.REAP_CARD && (
+            <CyDView className='flex flex-row w-full'>
+              <CyDTouchView
+                className='flex flex-row items-center'
+                onPress={() => setAcceptConsent(!acceptConsent)}>
+                <CyDView
+                  className={clsx(
+                    'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                    {
+                      'bg-p150 border-p150': acceptConsent,
+                    },
+                  )}>
+                  {acceptConsent && (
+                    <CyDMaterialDesignIcons
+                      name='check-bold'
+                      size={16}
+                      className='text-n0'
+                    />
+                  )}
+                </CyDView>
+              </CyDTouchView>
+
+              <CyDText className='px-[12px] text-[12px] text-primaryText'>
+                {t('RC_APPLICATION_CONSENT_TEXT')}
+              </CyDText>
+            </CyDView>
+          )}
         </CyDView>
       </CyDKeyboardAwareScrollView>
     </CyDKeyboardAwareScrollView>

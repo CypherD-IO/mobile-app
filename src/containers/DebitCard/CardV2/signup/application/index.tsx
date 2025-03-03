@@ -135,6 +135,8 @@ export default function CardApplicationV2() {
   const cardProfile = globalState.cardProfile as CardProfile;
   const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptConsent, setAcceptConsent] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -349,9 +351,14 @@ export default function CardApplicationV2() {
             {index === 0 && <BasicDetails />}
             {index === 1 && (
               <BillingAddress
+                provider={provider}
                 supportedCountries={supportedCountries}
                 setFieldValue={setFieldValue}
                 values={values}
+                acceptTerms={acceptTerms}
+                acceptConsent={acceptConsent}
+                setAcceptTerms={setAcceptTerms}
+                setAcceptConsent={setAcceptConsent}
               />
             )}
             {index === 0 && (
@@ -385,6 +392,11 @@ export default function CardApplicationV2() {
                   onPress={handleSubmit}
                   loaderStyle={styles.loading}
                   loading={isSubmitting}
+                  disabled={
+                    (provider === CardProviders.REAP_CARD &&
+                      (!acceptTerms || !acceptConsent)) ||
+                    !acceptTerms
+                  }
                 />
               </CyDView>
             )}
