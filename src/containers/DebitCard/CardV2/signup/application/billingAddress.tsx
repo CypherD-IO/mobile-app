@@ -321,7 +321,7 @@ export default function BillingAddress({
             </CyDText>
           </CyDView>
 
-          {isRainCard && (
+          {!isRainCard && (
             <CyDView className='flex flex-row w-full'>
               <CyDTouchView
                 className='flex flex-row items-center'
