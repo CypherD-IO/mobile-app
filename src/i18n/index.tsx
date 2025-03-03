@@ -10,7 +10,7 @@ const resources = {
   en: {
     translation: {
       english: 'English',
-      LETS_CONNECT_MSG: 'Let’s connect to Cypher wallet',
+      LETS_CONNECT_MSG: "Let's connect to Cypher wallet",
       LETS_CONNECT_SUB_MSG:
         'Create or import wallet to keep your crypto securely',
       CREATE_WALLET: 'Create New Wallet',
@@ -255,7 +255,7 @@ const resources = {
         'Non-Custodial wallet for all your Multi-Chain and DeFi needs!',
       ON_BOARDING_PAGE_2_CONTENT: 'Seamless access to different blockchains',
       ON_BOARDING_PAGE_3_CONTENT:
-        'Get the world’s first non-custodial cypher card',
+        "Get the world's first non-custodial cypher card",
       ON_BOARDING_PAGE_3_SUB_CONTENT: 'Explore all of Web3 in one place',
       UNBOUNDING_PERIOD_IS: 'Unbounding period is',
       DAYS: 'days',
@@ -375,10 +375,10 @@ const resources = {
       DELAYED: 'DELAYED',
       CARD_WAITLIST_PAGE_CAPTION:
         'Access your Crypto anytime and anywhere with one swipe!',
-      CARD_SIGNUP_WELCOME_TEXT: 'Let’s begin your journey to Cypher Card',
+      CARD_SIGNUP_WELCOME_TEXT: "Let's begin your journey to Cypher Card",
       CARD_SIGNUP_CONSENT_TEXT:
-        'I confirm that I have read, understood and agree to CypherD’s',
-      CARD_SIGNUP_PAGE1_TITLE: 'Let’s get to know you better',
+        "I confirm that I have read, understood and agree to CypherD's",
+      CARD_SIGNUP_PAGE1_TITLE: "Let's get to know you better",
       CARD_SIGNUP_COMPLETE_TEXT:
         'Your card application is submitted successfully. Please proceed with KYC',
       CONGRATULATIONS_INIT_CAPS: 'Congratulations',
@@ -648,7 +648,7 @@ const resources = {
       ADDRESS_NOT_ACCESSIBLE: 'address is not accessible',
       MARKET_CAP_FORMULA: 'Market Cap = Current Price x Circulating Supply',
       MARKET_CAP_TOOLTIP:
-        'Refers to the total market value of a cryptocurrency’s circulating supply. It is similar to the stock market’s measurement of multiplying price per share by shares readily available in the market (not held & locked by insiders, governments)',
+        "Refers to the total market value of a cryptocurrency's circulating supply. It is similar to the stock market's measurement of multiplying price per share by shares readily available in the market (not held & locked by insiders, governments)",
       VOLUME_TOOLTIP:
         'A measure of how much of a cryptocurrency was traded in the last 24 hours',
       CIRCULATING_SUPPLY_TOOLTIP:
@@ -1481,7 +1481,7 @@ const resources = {
       PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_1:
         'When loading your card, the transaction interacts with the blockchain network. If you fund with a highly volatile token and its value drops during processing, network fees and fluctuations may reduce the final amount. Otherwise, if the token value remains stable or increases, you will receive the full requested amount.',
       PRICE_FLUCTUATION_LEARN_MORE_DESCRIPTION_2:
-        'If multiple transactions are in the queue, the system may take up to 20 minutes to process your request. During this time, the token’s value may fluctuate. When the transaction is executed, your card will be loaded based on the token’s price at that moment, which may differ from your initial input.',
+        "If multiple transactions are in the queue, the system may take up to 20 minutes to process your request. During this time, the token's value may fluctuate. When the transaction is executed, your card will be loaded based on the token's price at that moment, which may differ from your initial input.",
       GAS_ESTIMATION_FAILED_DESCRIPTION_WITH_LOAD_MORE:
         'Insufficient {{tokenName}} to pay for gas. Need atleast {{gasFeeRequired}} {{tokenName}} on {{chainName}} chain for this transaction',
       MANUAL_ADD_APPLE_GOOGLE_PAY:
@@ -1499,6 +1499,10 @@ const resources = {
       AUTO_LOAD_NO_TOKENS_AVAILABLE:
         "You don't have any tokens in this chain or the selected chain is not supported for auto load. Supported Chains: {{supportedChains}}",
       LEGACY_TRANSACTIONS: 'Legacy Transactions',
+      RC_APPLICATION_CONSENT_TEXT:
+        "This product is intended for residents domiciled in Hong Kong. Distribution outside this region may require regulatory approvals. By continuing, you confirm you're accessing this content voluntarily without any third-party pressure.",
+      RC_APPLICATION_CONSENT_CHECKBOX:
+        'I Agree to continue with the Application',
     },
   },
 };
