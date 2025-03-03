@@ -923,3 +923,7 @@ export const QUICK_ACTION_NOTIFICATION_CATEGORY_IDS: Array<
 // address for gas estimation in comsos chains ( as the target address will be a osmosis address and the action is IBC )
 export const OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION =
   'osmo1xalq4sul7623pelmym39taknt0svyq63evw7zd';
+
+export const LEGAL_CYPHERHQ = 'https://cypherhq.io/legal';
+export const TERMS_PRIVACY_POLICY_URL =
+  'https://public.cypherd.io/docs/CypherD-Terms-Privacy-Policy.pdf';

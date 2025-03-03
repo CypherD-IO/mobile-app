@@ -49,7 +49,6 @@ import {
 
 interface RouteParams {
   cardProvider: CardProviders;
-  currentCardIndex: number;
 }
 
 export default function CardTransactions() {

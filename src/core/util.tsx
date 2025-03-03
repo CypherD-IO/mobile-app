@@ -1208,3 +1208,7 @@ export const getViemPublicClient = (rpc: string) => {
     transport: http(rpc),
   });
 };
+
+export const isRainReferralCode = (referralCode: string) => {
+  return referralCode.endsWith('RA');
+};
