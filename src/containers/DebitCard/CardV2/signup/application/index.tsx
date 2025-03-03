@@ -138,6 +138,7 @@ export default function CardApplicationV2() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptConsent, setAcceptConsent] = useState(false);
+  const isRainCard = referralCode ? isRainReferralCode(referralCode) : false;
 
   useFocusEffect(
     useCallback(() => {
@@ -352,9 +353,7 @@ export default function CardApplicationV2() {
             {index === 0 && <BasicDetails />}
             {index === 1 && (
               <BillingAddress
-                isRainCard={
-                  referralCode ? isRainReferralCode(referralCode) : false
-                }
+                isRainCard={isRainCard}
                 supportedCountries={supportedCountries}
                 setFieldValue={setFieldValue}
                 values={values}
@@ -396,8 +395,7 @@ export default function CardApplicationV2() {
                   loaderStyle={styles.loading}
                   loading={isSubmitting}
                   disabled={
-                    (provider === CardProviders.REAP_CARD &&
-                      (!acceptTerms || !acceptConsent)) ||
+                    (!isRainCard && (!acceptTerms || !acceptConsent)) ||
                     !acceptTerms
                   }
                 />
