@@ -281,6 +281,7 @@ const Bridge: React.FC = () => {
     estimateGasForEvmCustomContract,
     estimateReserveFee,
     estimateReserveFeeForCustomContract,
+    estimateGasForSolanaCustomContract,
   } = useGasService();
   const [nativeToken, setNativeToken] = useState<Holding | null>(null);
   const globalContext = useContext(GlobalContext);
@@ -698,6 +699,17 @@ const Bridge: React.FC = () => {
             selectedChainDetails,
             cosmosContractData,
           );
+          gasFeeRequired = gasDetails?.gasFeeInCrypto;
+        } else if (['solana'].includes(selectedChainDetails.chainName)) {
+          const solanaContractData = get(skipApiMessages, [
+            'data',
+            'txs',
+            0,
+            'svm_tx',
+            'tx',
+          ]);
+          const gasDetails =
+            await estimateGasForSolanaCustomContract(solanaContractData);
           gasFeeRequired = gasDetails?.gasFeeInCrypto;
         } else {
           // Handle EVM chain
@@ -2178,6 +2190,17 @@ const Bridge: React.FC = () => {
               selectedChainDetails,
               cosmosContractData,
             );
+            gasFeeRequired = gasDetails?.gasFeeInCrypto;
+          } else if (['solana'].includes(selectedChainDetails.chainName)) {
+            const solanaContractData = get(skipApiMessages, [
+              'data',
+              'txs',
+              0,
+              'svm_tx',
+              'tx',
+            ]);
+            const gasDetails =
+              await estimateGasForSolanaCustomContract(solanaContractData);
             gasFeeRequired = gasDetails?.gasFeeInCrypto;
           } else {
             // Handle EVM chain

@@ -25,6 +25,7 @@ import {
   Connection,
   PublicKey,
   SystemProgram,
+  Transaction,
   TransactionMessage,
 } from '@solana/web3.js';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
@@ -1026,6 +1027,26 @@ export default function useGasService() {
     };
   };
 
+  const estimateGasForSolanaCustomContract = async (
+    solanaContractData: string,
+  ) => {
+    const decodedTxn = Buffer.from(solanaContractData, 'base64');
+    const transactionDeserialized = Transaction.from(decodedTxn);
+    const solanRpc = getSolanaRpc();
+    const connection = new Connection(solanRpc, 'confirmed');
+    const feeCalculator = await connection.getFeeForMessage(
+      transactionDeserialized.compileMessage(),
+    );
+    const fee = feeCalculator.value ?? 5000;
+    const feeInLamports = DecimalHelper.toDecimal(fee, 9).toString();
+
+    return {
+      isError: false,
+      gasFeeInCrypto: feeInLamports,
+      gasPrice: 0.000005,
+    };
+  };
+
   const estimateGasForCosmosCustomContractRest = async (
     chain: Chain,
     cosmosData: {
@@ -1246,6 +1267,7 @@ export default function useGasService() {
         // },
       };
     } catch (error) {
+      console.log('🚀 ~ useGasService ~ error:', error);
       logAnalytics({
         type: AnalyticsType.ERROR,
         chain: chain.backendName,
@@ -1475,5 +1497,6 @@ export default function useGasService() {
     fetchEstimatedL1Fee,
     estimateReserveFee,
     estimateReserveFeeForCustomContract,
+    estimateGasForSolanaCustomContract,
   };
 }
