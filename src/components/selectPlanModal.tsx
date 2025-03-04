@@ -799,7 +799,7 @@ export default function SelectPlanModal({
               }}>
               <CyDView
                 className={clsx(
-                  'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                  'h-[20px] w-[20px] border-[1px] rounded-[4px] border-n50',
                   {
                     'bg-n0': consent,
                   },
@@ -813,10 +813,8 @@ export default function SelectPlanModal({
                 )}
               </CyDView>
               <CyDText className='px-[12px] text-[14px]'>
-                Upgrading to premium will cost you $${proPlanData?.cost}, which
-                is will be deducted from your Cypher card balance immediately
-                after the upgrade. I acknowledge and authorize the deduction of
-                the above mentioned amount from my card and agree to the
+                By proceeding, I acknowledge and authorize a $199 USD deduction
+                from my Cypher account for the premium upgrade and agree to the
                 {/* {t('UPGRADE_PLAN_CONSENT')} */}
                 <CyDText
                   className='font-bold text-[14px] underline'
@@ -825,7 +823,7 @@ export default function SelectPlanModal({
                     setIsModalVisible(false);
                     navigation.navigate(screenTitle.LEGAL_SCREEN);
                   }}>
-                  {' terms and conditions'}
+                  {' terms and conditions.'}
                 </CyDText>
               </CyDText>
             </CyDTouchView>
