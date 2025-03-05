@@ -290,7 +290,7 @@ export default function BillingAddress({
               onPress={() => setAcceptTerms(!acceptTerms)}>
               <CyDView
                 className={clsx(
-                  'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                  'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base100',
                   {
                     'bg-p150 border-p150': acceptTerms,
                   },
@@ -321,14 +321,14 @@ export default function BillingAddress({
             </CyDText>
           </CyDView>
 
-          {!isRainCard && (
+          {!isRainCard && values.country === 'US' && (
             <CyDView className='flex flex-row w-full'>
               <CyDTouchView
                 className='flex flex-row items-center p-[8px] -m-[8px]'
                 onPress={() => setAcceptConsent(!acceptConsent)}>
                 <CyDView
                   className={clsx(
-                    'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                    'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base100',
                     {
                       'bg-p150 border-p150': acceptConsent,
                     },
