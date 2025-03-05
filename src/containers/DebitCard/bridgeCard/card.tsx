@@ -61,6 +61,8 @@ import Carousel from 'react-native-reanimated-carousel';
 import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
+import moment from 'moment';
+
 interface CardSecrets {
   cvv: string;
   expiryMonth: string;
@@ -183,14 +185,25 @@ export default function CardScreen({
 
     // Check limits for each card
     for (const card of cards) {
-      // console.log('card in loop : ', card);
-      if (!card.cardId || card.cardId === CARD_IDS.HIDDEN_CARD) continue;
+      if (
+        !card.cardId ||
+        card.cardId === CARD_IDS.HIDDEN_CARD ||
+        (card.status !== CardStatus.IN_ACTIVE &&
+          card.status !== CardStatus.ACTIVE)
+      )
+        continue;
 
       const response = await getWithAuth(
         `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
       );
-      // console.log('response in checkForDefaultLimits : ', response, card);
-      if (!response.isError && response.data?.isDefaultSetting) {
+
+      if (
+        !response.isError &&
+        ((response.data?.isDefaultSetting &&
+          !response.data?.timeToRemindLater) ||
+          (response.data?.isDefaultSetting &&
+            moment().unix() >= response.data?.timeToRemindLater))
+      ) {
         navigation.navigate(screenTitle.DEFAULT_LIMIT_SETUP, {
           state: { card: card, provider: currentCardProvider },
         });

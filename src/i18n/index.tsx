@@ -1525,8 +1525,9 @@ const resources = {
       INTERNATIONAL: 'International',
       CARD_SETTINGS_ACKNOWLEDGMENT:
         'I acknowledge that I have reviewed and accepted all card settings and understand how to manage my card limits and controls.',
-      START_USING_CARD: 'START USING CARD',
+      START_USING_CARD: 'Start using card',
       SETUP_USAGE_LIMIT: 'Setup Usage Limit',
+      REMIND_ME_LATER: 'Remind me later',
     },
   },
 };

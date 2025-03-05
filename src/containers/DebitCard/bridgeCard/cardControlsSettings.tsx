@@ -38,6 +38,7 @@ interface RouteParams {
   currentCardProvider: string;
   cardId: string;
   navigateToOnOpen: NavigateToScreenOnOpen;
+  isShowAllCards?: boolean;
 }
 
 interface CardOption {
@@ -51,8 +52,13 @@ interface CardOption {
 export default function CardControlsSettings() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
-  const { cardControlType, currentCardProvider, cardId, navigateToOnOpen } =
-    route.params;
+  const {
+    cardControlType,
+    currentCardProvider,
+    cardId,
+    navigateToOnOpen,
+    isShowAllCards = false,
+  } = route.params;
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [countries, setCountries] = useState<ICountry[]>([]);
   const [allowedCountries, setAllowedCountries] = useState<ICountry[]>([]);
@@ -678,7 +684,11 @@ export default function CardControlsSettings() {
             onPress={() => {
               // setLoading(true);
               // void saveLimits();
-              setIsSaveChangesModalVisible(true);
+              if (isShowAllCards) {
+                setIsSaveChangesModalVisible(true);
+              } else {
+                void saveLimits();
+              }
             }}
             paddingY={12}
             style='mx-[26px] rounded-[12px] mt-[10px] mb-[20px]'

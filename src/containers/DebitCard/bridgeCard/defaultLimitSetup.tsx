@@ -7,6 +7,7 @@ import {
   CyDView,
   CyDLottieView,
   CyDSafeAreaView,
+  CyDSwitch,
 } from '../../../styles/tailwindComponents';
 import { t } from 'i18next';
 import {
@@ -26,6 +27,7 @@ import {
   ButtonType,
   CardControlTypes,
   NavigateToScreenOnOpen,
+  CARD_LIMIT_TYPE,
 } from '../../../constants/enum';
 import AppImages, {
   CYPHER_CARD_IMAGES,
@@ -43,6 +45,8 @@ import clsx from 'clsx';
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { screenTitle } from '../../../constants';
 import { SafeAreaView } from '../../../styles/viewStyle';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
 
 interface RouteParams {
   provider: CardProviders;
@@ -88,21 +92,42 @@ export default function DefaultLimitSetup(props: any) {
     globalContext?.globalState?.cardProfile;
   const { getWithAuth, patchWithAuth } = useAxios();
   const isFocused = useIsFocused();
-
+  const { showModal, hideModal } = useGlobalModalContext();
   const [limits, setLimits] = useState<any>(null);
   const [domesticCountry, setDomesticCountry] = useState<ICountry | null>(null);
   const [acceptCheck, setAcceptCheck] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isTelegramConnected, setIsTelegramConnected] = useState(false);
+  const [isRemindLaterLoading, setIsRemindLaterLoading] = useState(false);
 
-  // console.log('card in default limit setup : ', card);
+  const [controlSettings, setControlSettings] = useState({
+    domestic: {
+      online: true,
+      wallet: true,
+      atm: true,
+    },
+    international: {
+      online: true,
+      wallet: true,
+      atm: true,
+    },
+  });
+  const [isUpdatingControls, setIsUpdatingControls] = useState(false);
+
+  const [limitsByControlType, setLimitsByControlType] = useState({
+    dis: true,
+    pos: 0,
+    tap: 0,
+    atm: 0,
+    ecom: 0,
+    wal: 0,
+  });
 
   const isNavigatingToTelegram = React.useRef(false);
 
   useEffect(() => {
     // This will run whenever the screen comes into focus
     if (isFocused) {
-      console.log('fetchlimits and refreshprofile called in isFocused');
       void fetchLimits();
       void refreshProfile();
     }
@@ -110,7 +135,6 @@ export default function DefaultLimitSetup(props: any) {
 
   // Keep the initial data loading for first render
   useEffect(() => {
-    console.log('fetchlimits and refreshprofile called in useEffect');
     void fetchLimits();
     void refreshProfile();
   }, []);
@@ -120,12 +144,9 @@ export default function DefaultLimitSetup(props: any) {
     // AND not in the middle of navigating to the Telegram setup screen
     if (isFocused && cardProfile) {
       if (!isNavigatingToTelegram.current) {
-        console.log('CARD PROFILE update - normal flow');
         setIsTelegramConnected(
           get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false),
         );
-      } else {
-        console.log('CARD PROFILE update - skipping during navigation');
       }
     }
 
@@ -135,21 +156,61 @@ export default function DefaultLimitSetup(props: any) {
     }
   }, [cardProfile, isFocused]);
 
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener('focus', () => {
-  //     // This will run when returning to DefaultLimitSetup
-  //     console.log('DefaultLimitSetup focused');
-  //     void refreshProfile();
-  //   });
+  useEffect(() => {
+    if (limits) {
+      // Update control settings based on fetched limits
+      const domesticControls = get(
+        limits,
+        ['cusL', CardControlTypes.DOMESTIC],
+        {},
+      );
+      const internationalControls = get(
+        limits,
+        ['cusL', CardControlTypes.INTERNATIONAL],
+        {},
+      );
 
-  //   return unsubscribe;
-  // }, [navigation]);
+      setControlSettings({
+        domestic: {
+          online:
+            Number(get(domesticControls, 'ecom', 0)) > 0 &&
+            isOptionSupported('online'),
+          wallet:
+            Number(get(domesticControls, 'wal', 0)) > 0 &&
+            isOptionSupported('wallet'),
+          atm:
+            Number(get(domesticControls, 'atm', 0)) > 0 &&
+            isOptionSupported('atm'),
+        },
+        international: {
+          online:
+            Number(get(internationalControls, 'ecom', 0)) > 0 &&
+            isOptionSupported('online'),
+          wallet:
+            Number(get(internationalControls, 'wal', 0)) > 0 &&
+            isOptionSupported('wallet'),
+          atm:
+            Number(get(internationalControls, 'atm', 0)) > 0 &&
+            isOptionSupported('atm'),
+        },
+      });
+
+      // Set international disabled status
+      setLimitsByControlType(prev => ({
+        ...prev,
+        dis: get(
+          limits,
+          ['cusL', CardControlTypes.INTERNATIONAL, CARD_LIMIT_TYPE.DISABLED],
+          true,
+        ),
+      }));
+    }
+  }, [limits]);
 
   const fetchLimits = async () => {
     const response = await getWithAuth(
       `/v1/cards/${provider}/card/${card.cardId}/limits`,
     );
-    console.log('response in fetchLimits : ', response);
     setLimits(response.data);
     await fetchCountriesList(response.data);
   };
@@ -158,17 +219,11 @@ export default function DefaultLimitSetup(props: any) {
     const response = await axios.get(
       `https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`,
     );
-    // console.log('response in fetchCountriesList : ', response);
-    console.log(
-      'response in fetchCountriesList : ',
-      get(limitsValue, 'cCode', ''),
-    );
     if (response?.data) {
       const tempCountries = response.data;
       const matchingCountry = tempCountries.find(
         (country: ICountry) => country.Iso2 === get(limitsValue, 'cCode', ''),
       );
-      console.log('matchingCountry : ', matchingCountry);
       if (matchingCountry) {
         setDomesticCountry(matchingCountry);
       }
@@ -176,6 +231,14 @@ export default function DefaultLimitSetup(props: any) {
   };
 
   const refreshProfile = async () => {
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: 'refresh_profile',
+      label: 'refresh_profile',
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
+
     setIsProfileLoading(true);
     const data = await getWalletProfile(globalContext.globalState.token);
     globalContext.globalDispatch({
@@ -203,6 +266,13 @@ export default function DefaultLimitSetup(props: any) {
   };
 
   const handleSetupUsageLimits = () => {
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: 'click_setup_usage_limits',
+      label: 'setup_usage_limits',
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
     navigation.navigate(screenTitle.EDIT_USAGE_LIMITS, {
       currentCardProvider: provider,
       card,
@@ -210,6 +280,13 @@ export default function DefaultLimitSetup(props: any) {
   };
 
   const handleEditSpendControl = () => {
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: 'click_edit_spend_control',
+      label: 'edit_spend_control',
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
     navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
       currentCardProvider: provider,
       cardId: card.cardId,
@@ -218,7 +295,13 @@ export default function DefaultLimitSetup(props: any) {
   };
 
   const handleSetupTelegram = () => {
-    console.log('handleSetupTelegram called');
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: 'click_setup_telegram',
+      label: 'telegram_setup',
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
     // Set the flag before navigating
     isNavigatingToTelegram.current = true;
     navigation.navigate(screenTitle.TELEGRAM_SETUP, {
@@ -246,15 +329,191 @@ export default function DefaultLimitSetup(props: any) {
         cardProvider: provider,
       });
     }
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: 'start_using_card',
+      label: `card_${card.last4}`,
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
   };
 
   const handleChooseDomesticCountry = () => {
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: 'remind_later',
+      label: 'remind_later',
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
+
     navigation.navigate(screenTitle.DOMESTIC_CARD_CONTROLS, {
       cardControlType: CardControlTypes.DOMESTIC,
       currentCardProvider: provider,
       cardId: card.cardId,
       navigateToOnOpen: NavigateToScreenOnOpen.DOMESTIC_COUNTRY,
     });
+  };
+
+  const handleControlToggle = async (
+    controlType: string,
+    controlKey: string,
+    isEnabled: boolean,
+  ) => {
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: `toggle_${controlType}_${controlType}`,
+      label: `toggle_${controlType}_${controlType}_${!isEnabled ? 'enabled' : 'disabled'}`,
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
+    // Don't allow toggling unsupported options
+    if (!isOptionSupported(controlKey)) {
+      return;
+    }
+
+    setIsUpdatingControls(true);
+
+    // Update local state first for immediate UI feedback
+    setControlSettings(prev => ({
+      ...prev,
+      [controlType]: {
+        ...prev[controlType],
+        [controlKey]: !isEnabled,
+      },
+    }));
+
+    // Map control keys to API limit types
+    const limitTypeMap = {
+      online: 'ecom',
+      wallet: 'wal',
+      atm: 'atm',
+    };
+
+    const limitType = limitTypeMap[controlKey];
+    const cardControlType =
+      controlType === 'domestic'
+        ? CardControlTypes.DOMESTIC
+        : CardControlTypes.INTERNATIONAL;
+
+    // Get default limit value based on control type
+    let newLimitValue = 0;
+    if (!isEnabled) {
+      // If currently disabled, enable with default limit
+      if (controlKey === 'atm') {
+        newLimitValue = 2000; // Default ATM limit
+      } else {
+        newLimitValue = get(limits, ['planLimit', 'd'], 0);
+      }
+    }
+
+    // Prepare payload similar to cardControlsSettings.tsx
+    const payload = {
+      cusL: {
+        ...get(limits, 'cusL', {}),
+        [cardControlType]: {
+          ...get(limits, ['cusL', cardControlType], {}),
+          [limitType]: newLimitValue,
+        },
+      },
+    };
+
+    try {
+      const response = await patchWithAuth(
+        `/v1/cards/${provider}/card/${card.cardId}/limits`,
+        payload,
+      );
+
+      if (!response.isError) {
+        // Refresh limits after successful update
+        await fetchLimits();
+      } else {
+        // Revert local state if API call fails
+        setControlSettings(prev => ({
+          ...prev,
+          [controlType]: {
+            ...prev[controlType],
+            [controlKey]: isEnabled,
+          },
+        }));
+
+        // Show error modal
+        await showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_UPDATE_DETAILS'),
+          description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating control settings:', error);
+      // Revert local state if API call fails
+      setControlSettings(prev => ({
+        ...prev,
+        [controlType]: {
+          ...prev[controlType],
+          [controlKey]: isEnabled,
+        },
+      }));
+    } finally {
+      setIsUpdatingControls(false);
+    }
+  };
+
+  // Add a function to check if an option is supported for the current card
+  const isOptionSupported = (optionId: string) => {
+    const isRainCard = card?.cardProvider === CardProviders.RAIN_CARD;
+    const isVirtualRainCard = isRainCard && card?.type === CardType.VIRTUAL;
+
+    if (isVirtualRainCard) {
+      // Virtual Rain Card only supports online and wallet
+      return ['online', 'wallet'].includes(optionId);
+    } else if (isRainCard && card?.type === CardType.PHYSICAL) {
+      // Physical Rain Card supports atm, online, and wallet
+      return ['atm', 'online', 'wallet'].includes(optionId);
+    }
+    // Other cards support all options
+    return true;
+  };
+
+  const handleRemindLater = async () => {
+    logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+      category: 'card_setup',
+      action: 'remind_later',
+      label: `remind_later`,
+      cardProvider: provider,
+      cardId: card.cardId,
+    });
+    setIsRemindLaterLoading(true);
+
+    try {
+      const response = await patchWithAuth(
+        `/v1/cards/${provider}/card/${card.cardId}/limits`,
+        {
+          toRemindLater: true,
+        },
+      );
+
+      if (!response.isError) {
+        navigation.navigate(screenTitle.CARD_SCREEN, {
+          cardProvider: provider,
+        });
+      } else {
+        // Show error modal
+        await showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_UPDATE_DETAILS'),
+          description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } catch (error) {
+      console.error('Error setting remind later:', error);
+    } finally {
+      setIsRemindLaterLoading(false);
+    }
   };
 
   return (
@@ -379,17 +638,35 @@ export default function DefaultLimitSetup(props: any) {
                       </CyDText>
                     </CyDView>
                     <CyDView className='w-[30%] items-center'>
-                      <CyDMaterialDesignIcons
-                        name='shield-check'
-                        size={24}
-                        className='text-green-600'
+                      <CyDSwitch
+                        value={controlSettings.domestic.online}
+                        onValueChange={() =>
+                          handleControlToggle(
+                            'domestic',
+                            'online',
+                            controlSettings.domestic.online,
+                          )
+                        }
+                        disabled={
+                          isUpdatingControls || !isOptionSupported('online')
+                        }
                       />
                     </CyDView>
                     <CyDView className='w-[30%] items-center'>
-                      <CyDMaterialDesignIcons
-                        name='shield-check'
-                        size={24}
-                        className='text-green-600'
+                      <CyDSwitch
+                        value={controlSettings.international.online}
+                        onValueChange={() =>
+                          handleControlToggle(
+                            'international',
+                            'online',
+                            controlSettings.international.online,
+                          )
+                        }
+                        disabled={
+                          isUpdatingControls ||
+                          limitsByControlType.dis ||
+                          !isOptionSupported('online')
+                        }
                       />
                     </CyDView>
                   </CyDView>
@@ -401,17 +678,35 @@ export default function DefaultLimitSetup(props: any) {
                       </CyDText>
                     </CyDView>
                     <CyDView className='w-[30%] items-center'>
-                      <CyDMaterialDesignIcons
-                        name='shield-check'
-                        size={24}
-                        className='text-green-600'
+                      <CyDSwitch
+                        value={controlSettings.domestic.wallet}
+                        onValueChange={() =>
+                          handleControlToggle(
+                            'domestic',
+                            'wallet',
+                            controlSettings.domestic.wallet,
+                          )
+                        }
+                        disabled={
+                          isUpdatingControls || !isOptionSupported('wallet')
+                        }
                       />
                     </CyDView>
                     <CyDView className='w-[30%] items-center'>
-                      <CyDMaterialDesignIcons
-                        name='shield-check'
-                        size={24}
-                        className='text-green-600'
+                      <CyDSwitch
+                        value={controlSettings.international.wallet}
+                        onValueChange={() =>
+                          handleControlToggle(
+                            'international',
+                            'wallet',
+                            controlSettings.international.wallet,
+                          )
+                        }
+                        disabled={
+                          isUpdatingControls ||
+                          limitsByControlType.dis ||
+                          !isOptionSupported('wallet')
+                        }
                       />
                     </CyDView>
                   </CyDView>
@@ -423,17 +718,35 @@ export default function DefaultLimitSetup(props: any) {
                       </CyDText>
                     </CyDView>
                     <CyDView className='w-[30%] items-center'>
-                      <CyDMaterialDesignIcons
-                        name='shield-check'
-                        size={24}
-                        className='text-green-600'
+                      <CyDSwitch
+                        value={controlSettings.domestic.atm}
+                        onValueChange={() =>
+                          handleControlToggle(
+                            'domestic',
+                            'atm',
+                            controlSettings.domestic.atm,
+                          )
+                        }
+                        disabled={
+                          isUpdatingControls || !isOptionSupported('atm')
+                        }
                       />
                     </CyDView>
                     <CyDView className='w-[30%] items-center'>
-                      <CyDMaterialDesignIcons
-                        name='shield-check'
-                        size={24}
-                        className='text-green-600'
+                      <CyDSwitch
+                        value={controlSettings.international.atm}
+                        onValueChange={() =>
+                          handleControlToggle(
+                            'international',
+                            'atm',
+                            controlSettings.international.atm,
+                          )
+                        }
+                        disabled={
+                          isUpdatingControls ||
+                          limitsByControlType.dis ||
+                          !isOptionSupported('atm')
+                        }
                       />
                     </CyDView>
                   </CyDView>
@@ -448,7 +761,7 @@ export default function DefaultLimitSetup(props: any) {
                 </CyDView>
               </CyDView>
 
-              <CyDView className='flex flex-col'>
+              {/* <CyDView className='flex flex-col'>
                 <CyDText className='text-[28px] font-medium'>
                   {t('SETUP_TELEGRAM_BOT')}
                 </CyDText>
@@ -513,26 +826,54 @@ export default function DefaultLimitSetup(props: any) {
                     />
                   </CyDView>
                 </CyDView>
-              </CyDView>
+              </CyDView> */}
             </CyDView>
           </CyDView>
         </ScrollView>
 
         <CyDView className='bg-n0 p-[24px] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] absolute bottom-0 left-0 right-0'>
-          <CyDView className='flex flex-row items-center mb-[16px]'>
-            <SimpleCheckbox
-              onChange={() => setAcceptCheck(!acceptCheck)}
-              checked={acceptCheck}
+          {limits?.isDefaultSetting && (
+            <CyDView className='flex flex-row items-center mb-[16px]'>
+              <SimpleCheckbox
+                onChange={() => {
+                  logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+                    category: 'card_setup',
+                    action: 'click_accept_check',
+                    label: `accept_check_${!acceptCheck}`,
+                    cardProvider: provider,
+                    cardId: card.cardId,
+                  });
+                  setAcceptCheck(!acceptCheck);
+                }}
+                checked={acceptCheck}
+              />
+              <CyDText className='text-[12px] ml-[8px]'>
+                {t('CARD_SETTINGS_ACKNOWLEDGMENT')}
+              </CyDText>
+            </CyDView>
+          )}
+          <CyDView className='flex flex-row gap-x-[12px]'>
+            {limits?.isDefaultSetting && (
+              <Button
+                title={t('REMIND_ME_LATER')}
+                onPress={handleRemindLater}
+                type={ButtonType.SECONDARY}
+                loading={isRemindLaterLoading}
+                disabled={isRemindLaterLoading || isUpdatingControls}
+                style='flex-1'
+              />
+            )}
+            <Button
+              title={t('START_USING_CARD')}
+              onPress={handleStartUsingCard}
+              disabled={
+                (limits?.isDefaultSetting && !acceptCheck) ||
+                isRemindLaterLoading
+              }
+              loading={isUpdatingControls}
+              style='flex-1'
             />
-            <CyDText className='text-[12px] ml-[8px]'>
-              {t('CARD_SETTINGS_ACKNOWLEDGMENT')}
-            </CyDText>
           </CyDView>
-          <Button
-            title={t('START_USING_CARD')}
-            onPress={handleStartUsingCard}
-            disabled={!acceptCheck}
-          />
         </CyDView>
       </CyDSafeAreaView>
     </>
