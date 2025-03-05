@@ -927,3 +927,21 @@ export const OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION =
 export const LEGAL_CYPHERHQ = 'https://cypherhq.io/legal';
 export const TERMS_PRIVACY_POLICY_URL =
   'https://public.cypherd.io/docs/CypherD-Terms-Privacy-Policy.pdf';
+
+export const chainExplorerMapping: Record<string, string> = {
+  ETH: 'https://etherscan.io/tx/',
+  POLYGON: 'https://polygonscan.com/tx/',
+  BSC: 'https://bscscan.com/tx/',
+  AVALANCHE: 'https://explorer.avax.network/tx/',
+  ARBITRUM: 'https://arbiscan.io/tx/',
+  OPTIMISM: 'https://optimistic.etherscan.io/tx/',
+  COSMOS: 'https://www.mintscan.io/cosmos/txs/',
+  OSMOSIS: 'https://www.mintscan.io/osmosis/txs/',
+  NOBLE: 'https://www.mintscan.io/noble/txs/',
+  COREUM: 'https://www.mintscan.io/coreum/txs/',
+  INJECTIVE: 'https://www.mintscan.io/injective/txs/',
+  BASE: 'https://basescan.org/tx/',
+  ZKSYNC_ERA: 'https://explorer.zksync.io/tx/',
+  TRON: 'https://tronscan.org/#/transaction/',
+  SOLANA: 'https://solscan.io/tx/',
+};

@@ -50,6 +50,7 @@ import {
 import {
   ANALYTICS_ERROR_URL,
   ANALYTICS_SUCCESS_URL,
+  chainExplorerMapping,
   ChainNameToChainMapping,
 } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
@@ -207,6 +208,12 @@ export function getExplorerUrl(
       return `https://solscan.io/tx/${hash}`;
   }
 }
+
+export function getExplorerUrlFromChainName(chainName: string, hash: string) {
+  const sanitizedHash = hash.replace(/[^a-zA-Z0-9]/g, '');
+  return chainExplorerMapping[chainName] + sanitizedHash;
+}
+
 export function getNftExplorerUrl(
   chain_symbol: string,
   contractAddress: string,
