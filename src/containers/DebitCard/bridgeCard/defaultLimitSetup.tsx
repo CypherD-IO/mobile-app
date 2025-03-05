@@ -520,7 +520,11 @@ export default function DefaultLimitSetup(props: any) {
     <>
       <CyDSafeAreaView>
         <ScrollView>
-          <CyDView className='bg-n40 pb-[126px]'>
+          <CyDView
+            className={clsx('bg-n40 ', {
+              'pb-[126px]': limits?.isDefaultSetting,
+              'pb-[66px]': !limits?.isDefaultSetting,
+            })}>
             <CyDView className={'bg-n40 px-[24px] pb-[28px] pt-[24px]'}>
               <CyDText className={'text-[28px] font-bold'}>
                 {t('LETS_SETUP_YOUR_CARD')}
@@ -533,18 +537,28 @@ export default function DefaultLimitSetup(props: any) {
                 <CyDView className='flex flex-col justify-center gap-y-[12px]'>
                   <CyDView className='flex flex-row items-center justify-center gap-x-[10px] bg-n0 rounded-[9px] px-[16px] py-[12px]'>
                     <CyDImage
-                      source={AppImages.VERIFIED_BY_VISA_WHITE}
+                      source={AppImages.VISA_LOGO_GREY}
                       className='w-[50px] h-[16px]'
                     />
                     <CyDView className='flex flex-row items-center gap-x-[2px]'>
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-black' />
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-black' />
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-black' />
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-black' />
+                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
+                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
+                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
+                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
                     </CyDView>
                     <CyDText className='text-[14px] font-bold'>
                       {card.last4}
                     </CyDText>
+                  </CyDView>
+                  <CyDView className='bg-n0 rounded-[9px] px-[16px] py-[12px]'>
+                    <CyDView className='flex flex-row items-center justify-between'>
+                      <CyDText className='text-[12px] font-medium text-n200'>
+                        {t('CURRENCY')}
+                      </CyDText>
+                      <CyDText className='text-[14px] font-bold'>
+                        {'$ USD'}
+                      </CyDText>
+                    </CyDView>
                   </CyDView>
                 </CyDView>
               </CyDView>

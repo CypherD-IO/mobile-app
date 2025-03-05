@@ -1528,6 +1528,7 @@ const resources = {
       START_USING_CARD: 'Start using card',
       SETUP_USAGE_LIMIT: 'Setup Usage Limit',
       REMIND_ME_LATER: 'Remind me later',
+      CURRENCY: 'Currency',
     },
   },
 };

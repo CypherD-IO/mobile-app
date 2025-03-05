@@ -178,6 +178,29 @@ const CustomHeader = ({
     </CyDView>
   );
 };
+
+const CustomHeaderWithoutBack = ({
+  title,
+  keyboardHeight,
+  style,
+}: {
+  title: string;
+  keyboardHeight: number;
+  style?: string;
+}) => {
+  const insets = useSafeAreaInsets();
+  return (
+    <CyDView
+      className={`bg-n20 flex-row justify-center pb-[10px] ${style}`}
+      style={{ paddingTop: insets.top }}>
+      <CyDText className='text-base400 text-[20px] font-extrabold'>
+        {title}
+      </CyDText>
+      <CyDView className='' />
+    </CyDView>
+  );
+};
+
 export function PortfolioStackScreen() {
   const { keyboardHeight } = useKeyboard();
 
@@ -658,7 +681,9 @@ export function DebitCardStackScreen({ route }) {
         name={screenTitle.DEFAULT_LIMIT_SETUP}
         component={DefaultLimitSetup}
         options={() => ({
-          headerShown: false,
+          header: () => (
+            <CustomHeaderWithoutBack title='' keyboardHeight={keyboardHeight} />
+          ),
         })}
       />
       <FundCardStack.Screen
