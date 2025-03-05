@@ -395,7 +395,9 @@ export default function CardApplicationV2() {
                   loaderStyle={styles.loading}
                   loading={isSubmitting}
                   disabled={
-                    (!isRainCard && (!acceptTerms || !acceptConsent)) ||
+                    (!isRainCard &&
+                      values.country === 'US' &&
+                      (!acceptTerms || !acceptConsent)) ||
                     !acceptTerms
                   }
                 />
