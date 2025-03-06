@@ -932,7 +932,7 @@ export const chainExplorerMapping: Record<string, string> = {
   ETH: 'https://etherscan.io/tx/',
   POLYGON: 'https://polygonscan.com/tx/',
   BSC: 'https://bscscan.com/tx/',
-  AVALANCHE: 'https://explorer.avax.network/tx/',
+  AVALANCHE: 'https://snowtrace.io/tx/',
   ARBITRUM: 'https://arbiscan.io/tx/',
   OPTIMISM: 'https://optimistic.etherscan.io/tx/',
   COSMOS: 'https://www.mintscan.io/cosmos/txs/',
@@ -941,7 +941,7 @@ export const chainExplorerMapping: Record<string, string> = {
   COREUM: 'https://www.mintscan.io/coreum/txs/',
   INJECTIVE: 'https://www.mintscan.io/injective/txs/',
   BASE: 'https://basescan.org/tx/',
-  ZKSYNC_ERA: 'https://explorer.zksync.io/tx/',
+  ZKSYNC_ERA: 'https://www.oklink.com/zksync/tx/',
   TRON: 'https://tronscan.org/#/transaction/',
   SOLANA: 'https://solscan.io/tx/',
 };
