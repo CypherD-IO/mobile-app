@@ -37,7 +37,7 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
     null,
   );
   const [pageLoader, setPageLoader] = useState(false);
-  const [duration, setDuration] = useState(720);
+  const [duration, setDuration] = useState<number>(720);
 
   const handleProceedClick = async () => {
     await onPressProceed(duration);
@@ -111,21 +111,19 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                     {'Zero restriction will be active for '}
                   </CyDText>
                   <CyDView className='mt-[4px]'>
-                    <GestureHandlerRootView>
-                      <CyDPicker
-                        value={[
-                          { label: '30 mins', value: 30 },
-                          { label: '1 hour', value: 60 },
-                          { label: '12 hours', value: 720 },
-                          { label: '1 day', value: 1440 },
-                          { label: '1 week', value: 10080 },
-                        ]}
-                        onChange={selected => {
-                          setDuration(selected.value as number);
-                        }}
-                        initialValue={duration}
-                      />
-                    </GestureHandlerRootView>
+                    <CyDPicker
+                      value={[
+                        { label: '30 mins', value: 30 },
+                        { label: '1 hour', value: 60 },
+                        { label: '12 hours', value: 720 },
+                        { label: '1 day', value: 1440 },
+                        { label: '1 week', value: 10080 },
+                      ]}
+                      onChange={selected => {
+                        setDuration(selected.value as number);
+                      }}
+                      initialValue={duration}
+                    />
                   </CyDView>
                 </CyDView>
 
@@ -146,7 +144,7 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                   </CyDText>
                   <CyDText className='font-normal text-[12px] text-n200'>
                     {
-                      'Fraud risk is higher while this mode is active. \nLimited protection: Fraud protection won’t apply during this time.'
+                      "Fraud risk is higher while this mode is active. \nLimited protection: Fraud protection won't apply during this time."
                     }
                   </CyDText>
                 </CyDView>

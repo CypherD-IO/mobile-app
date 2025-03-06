@@ -554,6 +554,9 @@ const UNFREEZE_ICON_BLACK = {
 const GET_PHYSICAL_CARD = {
   uri: `${S3_BUCKET_URL_ICONS}/getPhysicalCard.svg`,
 };
+const VISA_LOGO_GREY = {
+  uri: `${S3_BUCKET_URL_ICONS}/visaLogoGrey.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -800,6 +803,7 @@ export const AppImagesMap = {
     RC_PHYSICAL_DISABLED,
     RC_METAL_DISABLED,
     GET_PHYSICAL_CARD,
+    VISA_LOGO_GREY,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1050,6 +1054,7 @@ enum AppImages {
   FREEZE_ICON_BLACK = 'FREEZE_ICON_BLACK',
   UNFREEZE_ICON_BLACK = 'UNFREEZE_ICON_BLACK',
   GET_PHYSICAL_CARD = 'GET_PHYSICAL_CARD',
+  VISA_LOGO_GREY = 'VISA_LOGO_GREY',
 }
 
 export default AppImages;
