@@ -13,6 +13,7 @@ import {
   CardControlTypes,
   CardProviders,
   CardType,
+  NavigateToScreenOnOpen,
 } from '../../../constants/enum';
 import axios from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
@@ -30,11 +31,14 @@ import { ICountry } from '../../../models/cardApplication.model';
 import Loading from '../../../components/v2/loading';
 import { GlobalContextDef, GlobalContext } from '../../../core/globalContext';
 import { Card } from '../../../models/card.model';
+import SaveChangesModal from '../../../components/v2/saveChangesModal';
 
 interface RouteParams {
   cardControlType: string;
   currentCardProvider: string;
   cardId: string;
+  navigateToOnOpen: NavigateToScreenOnOpen;
+  isShowAllCards?: boolean;
 }
 
 interface CardOption {
@@ -48,7 +52,13 @@ interface CardOption {
 export default function CardControlsSettings() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
-  const { cardControlType, currentCardProvider, cardId } = route.params;
+  const {
+    cardControlType,
+    currentCardProvider,
+    cardId,
+    navigateToOnOpen,
+    isShowAllCards = false,
+  } = route.params;
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [countries, setCountries] = useState<ICountry[]>([]);
   const [allowedCountries, setAllowedCountries] = useState<ICountry[]>([]);
@@ -88,6 +98,8 @@ export default function CardControlsSettings() {
   const [disableOptions, setDisableOptions] = useState(true);
   const activeCards =
     get(globalState?.cardProfile, currentCardProvider)?.cards ?? [];
+  const [isSaveChangesModalVisible, setIsSaveChangesModalVisible] =
+    useState(false);
 
   const card: Card | undefined = find(activeCards, { cardId });
 
@@ -105,6 +117,12 @@ export default function CardControlsSettings() {
   useEffect(() => {
     setEditedLimits(limits);
   }, [isFocused]);
+
+  useEffect(() => {
+    if (navigateToOnOpen === NavigateToScreenOnOpen.DOMESTIC_COUNTRY) {
+      setIsChooseDomesticCountryModalVisible(true);
+    }
+  }, [navigateToOnOpen]);
 
   useEffect(() => {
     void fetchCountriesList();
@@ -141,7 +159,8 @@ export default function CardControlsSettings() {
     });
   };
 
-  const saveLimits = async () => {
+  const saveLimits = async (forAllCards = false) => {
+    setLoading(true);
     let payload = editedLimits;
     if (
       cardControlType === CardControlTypes.DOMESTIC &&
@@ -177,11 +196,25 @@ export default function CardControlsSettings() {
         },
       };
     }
+    payload = {
+      ...payload,
+      ...(forAllCards && { forAllCards: true }),
+    };
 
     const response = await patchWithAuth(
       `/v1/cards/${currentCardProvider}/card/${cardId}/limits`,
       pick(payload, ['cusL', 'cCode']),
     );
+
+    console.log(
+      '-------------------------------- forAllCards : ',
+      forAllCards,
+      'called with : ',
+      `/v1/cards/${currentCardProvider}/card/${cardId}/limits`,
+      'payload : ',
+      pick(payload, ['cusL', 'cCode', ...(forAllCards ? ['forAllCards'] : [])]),
+    );
+    console.log('response', response);
 
     if (!response.isError) {
       void getCardLimits();
@@ -202,6 +235,7 @@ export default function CardControlsSettings() {
         onFailure: hideModal,
       });
     }
+    setLoading(false);
   };
 
   const editLimit = async (limitType: string, newLimit: number | boolean) => {
@@ -471,6 +505,19 @@ export default function CardControlsSettings() {
   ) : (
     <>
       <CyDView className={'h-full bg-n20'}>
+        <SaveChangesModal
+          isModalVisible={isSaveChangesModalVisible}
+          setIsModalVisible={setIsSaveChangesModalVisible}
+          card={card as Card}
+          onApplyToAllCards={() => {
+            void saveLimits(true);
+            setIsSaveChangesModalVisible(false);
+          }}
+          onApplyToCard={() => {
+            void saveLimits();
+            setIsSaveChangesModalVisible(false);
+          }}
+        />
         <ChooseMultipleCountryModal
           isModalVisible={countryModalVisible}
           setModalVisible={setCountryModalVisible}
@@ -635,8 +682,13 @@ export default function CardControlsSettings() {
             type={ButtonType.PRIMARY}
             title={t('SAVE_CHANGES')}
             onPress={() => {
-              setLoading(true);
-              void saveLimits();
+              // setLoading(true);
+              // void saveLimits();
+              if (isShowAllCards) {
+                setIsSaveChangesModalVisible(true);
+              } else {
+                void saveLimits();
+              }
             }}
             paddingY={12}
             style='mx-[26px] rounded-[12px] mt-[10px] mb-[20px]'
