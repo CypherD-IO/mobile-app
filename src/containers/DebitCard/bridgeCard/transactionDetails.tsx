@@ -18,7 +18,7 @@ import {
   parseErrorMessage,
   getSymbolFromCurrency,
   getChainIconFromChainName,
-  getExplorerUrl,
+  getExplorerUrlFromChainName,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -628,6 +628,7 @@ const TransactionDetail = ({
   }, []);
 
   const isCredit = transaction.type === CardTransactionTypes.CREDIT;
+  const isWithdrawal = transaction.category === 'Crypto Withdrawal';
   const countryList = get(limits, 'cusL.intl.cLs', []) as string[];
   const countryAlreadyAllowed = countryList.includes(
     metadata?.merchantCountry ?? '',
@@ -777,7 +778,7 @@ const TransactionDetail = ({
             </CyDView>
           </CyDView>
 
-          {isCredit && transaction.tokenData && (
+          {(isCredit || isWithdrawal) && transaction.tokenData && (
             <>
               <CyDView className='flex flex-row justify-between items-center mt-[24px]'>
                 <CyDText className='text-[14px] text-n200 font-semibold'>
@@ -824,8 +825,7 @@ const TransactionDetail = ({
                   className='flex flex-row items-center'
                   onPress={() => {
                     navigation.navigate(screenTitle.TRANS_DETAIL, {
-                      url: getExplorerUrl(
-                        transaction.tokenData?.symbol ?? '',
+                      url: getExplorerUrlFromChainName(
                         transaction.tokenData?.chain ?? '',
                         transaction.tokenData?.hash ?? '',
                       ),

@@ -219,8 +219,8 @@ export default function CyDModalLayout({
       animationOutTiming={animationOutTiming}
       onModalHide={onModalHide}
       useNativeDriver={useNativeDriver}
-      onSwipeComplete={onSwipeComplete}
-      swipeDirection={swipeDirection}
+      {...(swipeDirection.length > 0 && { swipeDirection })}
+      {...(onSwipeComplete !== (() => {}) && { onSwipeComplete })}
       style={style}>
       {children}
     </Modal>
