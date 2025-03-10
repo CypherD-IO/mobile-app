@@ -99,7 +99,6 @@ export default function DefaultLimitSetup(props: any) {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isTelegramConnected, setIsTelegramConnected] = useState(false);
   const [isRemindLaterLoading, setIsRemindLaterLoading] = useState(false);
-
   const [controlSettings, setControlSettings] = useState({
     domestic: {
       online: true,
@@ -113,7 +112,6 @@ export default function DefaultLimitSetup(props: any) {
     },
   });
   const [isUpdatingControls, setIsUpdatingControls] = useState(false);
-
   const [limitsByControlType, setLimitsByControlType] = useState({
     dis: true,
     pos: 0,
@@ -122,7 +120,8 @@ export default function DefaultLimitSetup(props: any) {
     ecom: 0,
     wal: 0,
   });
-
+  const [dailyUsageLimit, setDailyUsageLimit] = useState(0);
+  const [monthlyUsageLimit, setMonthlyUsageLimit] = useState(0);
   const isNavigatingToTelegram = React.useRef(false);
 
   useEffect(() => {
@@ -169,6 +168,14 @@ export default function DefaultLimitSetup(props: any) {
         ['cusL', CardControlTypes.INTERNATIONAL],
         {},
       );
+
+      if (get(limits, 'advL')) {
+        setDailyUsageLimit(get(limits, ['advL', 'd']) ?? 0);
+        setMonthlyUsageLimit(get(limits, ['advL', 'm']) ?? 0);
+      } else {
+        setDailyUsageLimit(get(limits, ['planLimit', 'd']));
+        setMonthlyUsageLimit(get(limits, ['planLimit', 'm']));
+      }
 
       setControlSettings({
         domestic: {
@@ -600,7 +607,7 @@ export default function DefaultLimitSetup(props: any) {
                         {t('DAILY_LIMIT')}
                       </CyDText>
                       <CyDText className='text-semibold'>
-                        ${get(limits, ['currentLimit', 'd'], 0)}
+                        ${dailyUsageLimit}
                       </CyDText>
                     </CyDView>
 
@@ -609,7 +616,7 @@ export default function DefaultLimitSetup(props: any) {
                         {t('MONTHLY_LIMIT')}
                       </CyDText>
                       <CyDText className='text-semibold'>
-                        ${get(limits, ['currentLimit', 'm'], 0)}
+                        ${monthlyUsageLimit}
                       </CyDText>
                     </CyDView>
                   </CyDView>
