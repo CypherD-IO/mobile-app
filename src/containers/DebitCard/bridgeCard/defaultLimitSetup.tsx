@@ -297,6 +297,7 @@ export default function DefaultLimitSetup(props: any) {
     navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
       currentCardProvider: provider,
       cardId: card.cardId,
+      isShowAllCards: false,
       // initialOptionOpened: CARD_CONTROL_INITIAL_OPTION_OPENED.DOMESTIC,
     });
   };
@@ -359,6 +360,7 @@ export default function DefaultLimitSetup(props: any) {
       currentCardProvider: provider,
       cardId: card.cardId,
       navigateToOnOpen: NavigateToScreenOnOpen.DOMESTIC_COUNTRY,
+      isShowAllCards: false,
     });
   };
 
