@@ -51,6 +51,7 @@ interface RouteParams {
   cardId: string;
   currentCardProvider: string;
   isCardActivation?: boolean;
+  isShowAllCards?: boolean;
 }
 
 const SecuritySection = ({
@@ -158,7 +159,12 @@ export default function CardControlsMenu() {
   const { showModal, hideModal } = useGlobalModalContext();
   const insets = useSafeAreaInsets();
 
-  const { cardId, currentCardProvider, isCardActivation } = route.params ?? {};
+  const {
+    cardId,
+    currentCardProvider,
+    isCardActivation,
+    isShowAllCards = true,
+  } = route.params ?? {};
   const planInfo = globalState?.cardProfile?.planInfo;
   const activeCards =
     get(globalState?.cardProfile, currentCardProvider)?.cards ?? [];
@@ -692,7 +698,8 @@ export default function CardControlsMenu() {
                       cardControlType: CardControlTypes.DOMESTIC,
                       currentCardProvider,
                       cardId: card?.cardId,
-                      isShowAllCards: getActiveCards().length > 1,
+                      isShowAllCards:
+                        isShowAllCards && getActiveCards().length > 1,
                     });
                   } else {
                     showToast(
@@ -740,7 +747,8 @@ export default function CardControlsMenu() {
                         cardControlType: CardControlTypes.INTERNATIONAL,
                         currentCardProvider,
                         cardId: card?.cardId,
-                        isShowAllCards: getActiveCards().length > 1,
+                        isShowAllCards:
+                          isShowAllCards && getActiveCards().length > 1, // false when isShowAllCards is passed as false in parameter
                       },
                     );
                   } else {

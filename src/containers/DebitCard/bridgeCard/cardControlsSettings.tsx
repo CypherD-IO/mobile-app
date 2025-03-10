@@ -203,18 +203,8 @@ export default function CardControlsSettings() {
 
     const response = await patchWithAuth(
       `/v1/cards/${currentCardProvider}/card/${cardId}/limits`,
-      pick(payload, ['cusL', 'cCode']),
-    );
-
-    console.log(
-      '-------------------------------- forAllCards : ',
-      forAllCards,
-      'called with : ',
-      `/v1/cards/${currentCardProvider}/card/${cardId}/limits`,
-      'payload : ',
       pick(payload, ['cusL', 'cCode', ...(forAllCards ? ['forAllCards'] : [])]),
     );
-    console.log('response', response);
 
     if (!response.isError) {
       void getCardLimits();
@@ -682,8 +672,6 @@ export default function CardControlsSettings() {
             type={ButtonType.PRIMARY}
             title={t('SAVE_CHANGES')}
             onPress={() => {
-              // setLoading(true);
-              // void saveLimits();
               if (isShowAllCards) {
                 setIsSaveChangesModalVisible(true);
               } else {
