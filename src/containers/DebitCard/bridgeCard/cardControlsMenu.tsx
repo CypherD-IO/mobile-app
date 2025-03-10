@@ -748,7 +748,7 @@ export default function CardControlsMenu() {
                         currentCardProvider,
                         cardId: card?.cardId,
                         isShowAllCards:
-                          isShowAllCards && getActiveCards().length > 1,
+                          isShowAllCards && getActiveCards().length > 1, // false when isShowAllCards is passed as false in parameter
                       },
                     );
                   } else {
