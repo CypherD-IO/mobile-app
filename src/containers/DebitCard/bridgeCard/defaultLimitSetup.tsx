@@ -173,8 +173,8 @@ export default function DefaultLimitSetup(props: any) {
         setDailyUsageLimit(get(limits, ['advL', 'd']) ?? 0);
         setMonthlyUsageLimit(get(limits, ['advL', 'm']) ?? 0);
       } else {
-        setDailyUsageLimit(get(limits, ['planLimit', 'd']));
-        setMonthlyUsageLimit(get(limits, ['planLimit', 'm']));
+        setDailyUsageLimit(get(limits, ['planLimit', 'd']) ?? 0);
+        setMonthlyUsageLimit(get(limits, ['planLimit', 'm']) ?? 0);
       }
 
       setControlSettings({
