@@ -1515,7 +1515,7 @@ const resources = {
       MONTHLY_LIMIT: 'Monthly Limit',
       SETUP_LIMITS_DESC:
         'Set up your daily and monthly spending limits to manage expenses and stay in control.',
-      SETUP_SPEND_CONTROL: 'Spend Control',
+      SETUP_SPEND_CONTROL: 'Setup your Spend Control',
       EDIT_SPEND_CONTROL: 'Edit Spend Control',
       TELEGRAM_BOT_DESC:
         'Get real-time notifications for card transactions and manage your card directly through Telegram.',
@@ -1529,6 +1529,7 @@ const resources = {
       SETUP_USAGE_LIMIT: 'Setup Usage Limit',
       REMIND_ME_LATER: 'Remind me later',
       CURRENCY: 'Currency',
+      SEE_MORE: 'See More',
     },
   },
 };
