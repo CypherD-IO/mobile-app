@@ -1,11 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   CyDImage,
   CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
-  CyDLottieView,
   CyDSafeAreaView,
   CyDSwitch,
 } from '../../../styles/tailwindComponents';
@@ -17,7 +16,6 @@ import {
   useIsFocused,
   useNavigation,
   useRoute,
-  CommonActions,
 } from '@react-navigation/native';
 import {
   CardType,
@@ -28,6 +26,7 @@ import {
   CardControlTypes,
   NavigateToScreenOnOpen,
   CARD_LIMIT_TYPE,
+  IconPosition,
 } from '../../../constants/enum';
 import AppImages, {
   CYPHER_CARD_IMAGES,
@@ -47,6 +46,7 @@ import { screenTitle } from '../../../constants';
 import { SafeAreaView } from '../../../styles/viewStyle';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
 
 interface RouteParams {
   provider: CardProviders;
@@ -123,6 +123,12 @@ export default function DefaultLimitSetup(props: any) {
   const [dailyUsageLimit, setDailyUsageLimit] = useState(0);
   const [monthlyUsageLimit, setMonthlyUsageLimit] = useState(0);
   const isNavigatingToTelegram = React.useRef(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const theme = useTheme();
+  const [isScrollable, setIsScrollable] = useState(true);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   useEffect(() => {
     // This will run whenever the screen comes into focus
@@ -525,16 +531,41 @@ export default function DefaultLimitSetup(props: any) {
     }
   };
 
+  const handleSeeMore = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
+
+  const checkScrollable = () => {
+    // Check if scrollable and not at bottom
+    const isScrollableAndNotAtBottom =
+      contentHeight > containerHeight &&
+      scrollPosition + containerHeight + 52 < contentHeight;
+
+    setIsScrollable(isScrollableAndNotAtBottom);
+  };
+
+  useEffect(() => {
+    checkScrollable();
+  }, [contentHeight, containerHeight, scrollPosition]);
+
   return (
     <>
-      <CyDSafeAreaView>
+      <CyDSafeAreaView className='flex-1 bg-n20'>
         <CyDView className='bg-n0'>
-          <ScrollView>
-            <CyDView
-              className={clsx('bg-n40 ', {
-                'pb-[126px]': limits?.isDefaultSetting,
-                'pb-[66px]': !limits?.isDefaultSetting,
-              })}>
+          <ScrollView
+            ref={scrollViewRef}
+            onContentSizeChange={(_contentWidth, height) => {
+              setContentHeight(height);
+            }}
+            onLayout={event => {
+              setContainerHeight(event.nativeEvent.layout.height);
+            }}
+            onScroll={event => {
+              const currentPosition = event.nativeEvent.contentOffset.y;
+              setScrollPosition(currentPosition);
+            }}
+            scrollEventThrottle={16}>
+            <CyDView className={clsx('bg-n40')}>
               <CyDView className={'bg-n40 px-[24px] pb-[28px] pt-[24px]'}>
                 <CyDText className={'text-[28px] font-bold'}>
                   {t('LETS_SETUP_YOUR_CARD')}
@@ -851,55 +882,85 @@ export default function DefaultLimitSetup(props: any) {
                   </CyDView>
                 </CyDView>
               </CyDView> */}
+
+                <CyDView className='mb-[16px]'>
+                  {limits?.isDefaultSetting && (
+                    <CyDView className='flex flex-row items-center mb-[16px] border border-n40 rounded-[9px] px-[16px] py-[12px]'>
+                      <SimpleCheckbox
+                        onChange={() => {
+                          logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
+                            category: 'card_setup',
+                            action: 'click_accept_check',
+                            label: `accept_check_${!acceptCheck}`,
+                            cardProvider: provider,
+                            cardId: card.cardId,
+                          });
+                          setAcceptCheck(!acceptCheck);
+                        }}
+                        checked={acceptCheck}
+                      />
+                      <CyDText className='text-[12px] ml-[8px] flex-1'>
+                        {t('CARD_SETTINGS_ACKNOWLEDGMENT')}
+                      </CyDText>
+                    </CyDView>
+                  )}
+                  <CyDView className='flex flex-row gap-x-[12px]'>
+                    {limits?.isDefaultSetting && (
+                      <Button
+                        title={t('REMIND_ME_LATER')}
+                        onPress={handleRemindLater}
+                        type={ButtonType.SECONDARY}
+                        loading={isRemindLaterLoading}
+                        disabled={isRemindLaterLoading || isUpdatingControls}
+                        style='flex-1'
+                      />
+                    )}
+                    <Button
+                      title={t('START_USING_CARD')}
+                      onPress={handleStartUsingCard}
+                      disabled={
+                        (limits?.isDefaultSetting && !acceptCheck) ||
+                        isRemindLaterLoading
+                      }
+                      loading={isUpdatingControls}
+                      style='flex-1'
+                    />
+                  </CyDView>
+                </CyDView>
               </CyDView>
             </CyDView>
           </ScrollView>
         </CyDView>
 
-        <CyDView className='bg-n0 p-[24px] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] absolute bottom-0 left-0 right-0'>
-          {limits?.isDefaultSetting && (
-            <CyDView className='flex flex-row items-center mb-[16px]'>
-              <SimpleCheckbox
-                onChange={() => {
-                  logAnalytics(AnalyticEvent.DEFAULT_CARD_CONTROLS, {
-                    category: 'card_setup',
-                    action: 'click_accept_check',
-                    label: `accept_check_${!acceptCheck}`,
-                    cardProvider: provider,
-                    cardId: card.cardId,
-                  });
-                  setAcceptCheck(!acceptCheck);
-                }}
-                checked={acceptCheck}
-              />
-              <CyDText className='text-[12px] ml-[8px]'>
-                {t('CARD_SETTINGS_ACKNOWLEDGMENT')}
-              </CyDText>
-            </CyDView>
-          )}
-          <CyDView className='flex flex-row gap-x-[12px]'>
-            {limits?.isDefaultSetting && (
+        {isScrollable && (
+          <CyDView
+            className={clsx(
+              'bg-n0 p-[16px] pb-[24px] absolute bottom-0 left-0 right-0',
+              {
+                'shadow-[0_-4px_6px_-1px_rgba(255,255,255,0.15)]':
+                  theme.theme === Theme.DARK,
+                'shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]':
+                  theme.theme === Theme.LIGHT,
+              },
+            )}>
+            <CyDView className='flex items-end'>
               <Button
-                title={t('REMIND_ME_LATER')}
-                onPress={handleRemindLater}
-                type={ButtonType.SECONDARY}
-                loading={isRemindLaterLoading}
-                disabled={isRemindLaterLoading || isUpdatingControls}
-                style='flex-1'
+                title={t('SEE_MORE')}
+                onPress={handleSeeMore}
+                type={ButtonType.PRIMARY}
+                paddingY={8}
+                icon={
+                  <CyDMaterialDesignIcons
+                    name='arrow-down'
+                    size={20}
+                    className='text-black ml-[4px]'
+                  />
+                }
+                iconPosition={IconPosition.RIGHT}
               />
-            )}
-            <Button
-              title={t('START_USING_CARD')}
-              onPress={handleStartUsingCard}
-              disabled={
-                (limits?.isDefaultSetting && !acceptCheck) ||
-                isRemindLaterLoading
-              }
-              loading={isUpdatingControls}
-              style='flex-1'
-            />
+            </CyDView>
           </CyDView>
-        </CyDView>
+        )}
       </CyDSafeAreaView>
     </>
   );

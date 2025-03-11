@@ -1267,7 +1267,6 @@ export default function useGasService() {
         // },
       };
     } catch (error) {
-      console.log('🚀 ~ useGasService ~ error:', error);
       logAnalytics({
         type: AnalyticsType.ERROR,
         chain: chain.backendName,
