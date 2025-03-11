@@ -343,12 +343,6 @@ export default function CardControlsMenu() {
     godmExpiryInMinutes?: number,
     forAllCards?: boolean,
   ) => {
-    console.log(
-      'toggleZeroRestrictionMode',
-      value,
-      godmExpiryInMinutes,
-      forAllCards,
-    );
     setIsZeroRestrictionModeLoading(true);
     const payload = {
       godm: value,
@@ -366,12 +360,10 @@ export default function CardControlsMenu() {
         forAllCards,
       });
     } else {
-      console.log('payload', payload);
       const response = await patchWithAuth(
         `/v1/cards/${currentCardProvider}/card/${card?.cardId ?? ''}/god-mode`,
         payload,
       );
-      console.log('response', response);
       if (!response.isError) {
         void successFeedBack();
       } else {
@@ -389,10 +381,6 @@ export default function CardControlsMenu() {
   };
 
   const handleZeroRestionModeToggle = async () => {
-    console.log(
-      'isZeroRestrictionModeEnabled toggled  : ',
-      isZeroRestrictionModeEnabled,
-    );
     if (!isZeroRestrictionModeEnabled) {
       setShowZeroRestrictionModeModal(true);
     } else {

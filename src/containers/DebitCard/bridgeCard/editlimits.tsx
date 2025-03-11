@@ -183,16 +183,6 @@ export default function EditLimits() {
     );
     setLoading(false);
 
-    console.log('payload : ', {
-      advL: {
-        d: round(dailyUsageLimit),
-        m: round(monthlyUsageLimit),
-      },
-      ...(applyToAllCards && {
-        forAllCards: true,
-      }),
-    });
-
     if (isError) {
       showModal('state', {
         type: 'error',

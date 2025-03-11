@@ -102,7 +102,7 @@ export default function WithdrawConfirmation() {
 
         <CyDKeyboardAwareScrollView className='flex-1 bg-n30 mt-[12px]'>
           <CyDText className='font-bold text-[28px] text-base400 '>
-            {'Does Everything look right ?'}
+            {'Confirm Withdrawal'}
           </CyDText>
           <CyDView className='bg-n0 p-6 rounded-[16px] flex flex-col gap-y-6 mt-[24px]'>
             <CyDView className='flex flex-col gap-1'>
@@ -186,8 +186,8 @@ export default function WithdrawConfirmation() {
               size={32}
               className='text-n200 -ml-[12px]'
             />
-            <CyDText className='font-medium text-[12px] text-n200 mt-[4px] flex-1'>
-              {'It will take up to 2-3 business days to credit in your wallet '}
+            <CyDText className='font-medium text-[12px] text-n200 flex-1'>
+              {'It may take up to 24 hrs to process the withdrawal'}
             </CyDText>
           </CyDView>
         </CyDKeyboardAwareScrollView>
