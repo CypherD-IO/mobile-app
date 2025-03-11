@@ -8,7 +8,7 @@ import {
 } from '@react-navigation/native';
 import { t } from 'i18next';
 import { find, get } from 'lodash';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import countryMaster from '../../../../assets/datasets/countryMaster';
@@ -20,10 +20,12 @@ import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionMo
 import { screenTitle } from '../../../constants';
 import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
 import {
+  CARD_IDS,
   CARD_LIMIT_TYPE,
   CardControlTypes,
   CardOperationsAuthType,
   CardProviders,
+  CardStatus,
   CardType,
   CypherPlanId,
 } from '../../../constants/enum';
@@ -43,11 +45,13 @@ import {
 } from '../../../styles/tailwindComponents';
 import { showToast } from '../../utilities/toastUtility';
 import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
+import SaveChangesModal from '../../../components/v2/saveChangesModal';
 
 interface RouteParams {
   cardId: string;
   currentCardProvider: string;
   isCardActivation?: boolean;
+  isShowAllCards?: boolean;
 }
 
 const SecuritySection = ({
@@ -155,7 +159,12 @@ export default function CardControlsMenu() {
   const { showModal, hideModal } = useGlobalModalContext();
   const insets = useSafeAreaInsets();
 
-  const { cardId, currentCardProvider, isCardActivation } = route.params ?? {};
+  const {
+    cardId,
+    currentCardProvider,
+    isCardActivation,
+    isShowAllCards = true,
+  } = route.params ?? {};
   const planInfo = globalState?.cardProfile?.planInfo;
   const activeCards =
     get(globalState?.cardProfile, currentCardProvider)?.cards ?? [];
@@ -185,6 +194,10 @@ export default function CardControlsMenu() {
   const [timerEnd, setTimerEnd] = useState<number | null>(null);
   const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
   const [openComparePlans, setOpenComparePlans] = useState(false);
+  const [isSaveChangesModalVisible, setIsSaveChangesModalVisible] =
+    useState(false);
+
+  const godmExpiryInMinutes = useRef<number | null>(0);
 
   useEffect(() => {
     if (isZeroRestrictionModeEnabled) {
@@ -303,6 +316,15 @@ export default function CardControlsMenu() {
     return percentage;
   };
 
+  const getActiveCards = () => {
+    const cards = activeCards.filter(
+      (card: Card) =>
+        card.status !== CardStatus.PENDING_ACTIVATION &&
+        card.cardId !== CARD_IDS.HIDDEN_CARD,
+    );
+    return cards ?? activeCards;
+  };
+
   const successFeedBack = () => {
     void fetchData();
     showModal('state', {
@@ -319,10 +341,12 @@ export default function CardControlsMenu() {
   const toggleZeroRestrictionMode = async (
     value: boolean,
     godmExpiryInMinutes?: number,
+    forAllCards?: boolean,
   ) => {
     setIsZeroRestrictionModeLoading(true);
     const payload = {
       godm: value,
+      forAllCards: forAllCards ?? false,
     };
     if (value) {
       navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
@@ -333,6 +357,7 @@ export default function CardControlsMenu() {
         card,
         authType: CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON,
         godmExpiryInMinutes,
+        forAllCards,
       });
     } else {
       const response = await patchWithAuth(
@@ -359,7 +384,7 @@ export default function CardControlsMenu() {
     if (!isZeroRestrictionModeEnabled) {
       setShowZeroRestrictionModeModal(true);
     } else {
-      await toggleZeroRestrictionMode(false);
+      setIsSaveChangesModalVisible(true);
     }
   };
 
@@ -376,12 +401,49 @@ export default function CardControlsMenu() {
       <ZeroRestrictionModeConfirmationModal
         isModalVisible={showZeroRestrictionModeModal}
         setIsModalVisible={setShowZeroRestrictionModeModal}
-        onPressProceed={(godmExpiryInMinutes: number) => {
+        onPressProceed={(expiryInMinutes: number) => {
+          godmExpiryInMinutes.current = expiryInMinutes;
           setIsZeroRestrictionModeLoading(true);
           setShowZeroRestrictionModeModal(false);
-          void toggleZeroRestrictionMode(true, godmExpiryInMinutes);
+          if (getActiveCards().length > 1) {
+            setTimeout(() => {
+              setIsSaveChangesModalVisible(true);
+            }, 1000);
+          } else {
+            void toggleZeroRestrictionMode(true, expiryInMinutes);
+          }
         }}
         setLoader={setIsZeroRestrictionModeLoading}
+        card={card as Card}
+      />
+      <SaveChangesModal
+        isModalVisible={isSaveChangesModalVisible}
+        setIsModalVisible={setIsSaveChangesModalVisible}
+        card={card as Card}
+        onApplyToAllCards={() => {
+          if (!isZeroRestrictionModeEnabled) {
+            void toggleZeroRestrictionMode(
+              true,
+              godmExpiryInMinutes.current,
+              true,
+            );
+          } else {
+            void toggleZeroRestrictionMode(false, undefined, true);
+          }
+          setIsSaveChangesModalVisible(false);
+        }}
+        onApplyToCard={() => {
+          if (!isZeroRestrictionModeEnabled) {
+            void toggleZeroRestrictionMode(
+              true,
+              godmExpiryInMinutes.current,
+              false,
+            );
+          } else {
+            void toggleZeroRestrictionMode(false, undefined, false);
+          }
+          setIsSaveChangesModalVisible(false);
+        }}
       />
       <SelectPlanModal
         isModalVisible={planChangeModalVisible}
@@ -624,6 +686,8 @@ export default function CardControlsMenu() {
                       cardControlType: CardControlTypes.DOMESTIC,
                       currentCardProvider,
                       cardId: card?.cardId,
+                      isShowAllCards:
+                        isShowAllCards && getActiveCards().length > 1,
                     });
                   } else {
                     showToast(
@@ -671,6 +735,8 @@ export default function CardControlsMenu() {
                         cardControlType: CardControlTypes.INTERNATIONAL,
                         currentCardProvider,
                         cardId: card?.cardId,
+                        isShowAllCards:
+                          isShowAllCards && getActiveCards().length > 1, // false when isShowAllCards is passed as false in parameter
                       },
                     );
                   } else {

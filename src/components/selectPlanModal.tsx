@@ -444,8 +444,8 @@ export default function SelectPlanModal({
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {t('OTHER_TOKENS')}
                     </CyDText>
-                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                    {/* <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' /> */}
+                    {/* <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                       <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
                         <CyDImage
                           source={AppImages.FOREX_FEE}
@@ -461,7 +461,7 @@ export default function SelectPlanModal({
                     </CyDText>
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {t('USDC_TXN')}
-                    </CyDText>
+                    </CyDText> */}
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                       <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
@@ -528,16 +528,16 @@ export default function SelectPlanModal({
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {`${freePlanData?.nonUsdcFee === 0 ? 'FREE' : `${freePlanData?.nonUsdcFee}%*`} `}
                     </CyDText>
-                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                    <CyDView className='mt-[16px] h-[32px]' />
+                    {/* <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' /> */}
+                    {/* <CyDView className='mt-[16px] h-[32px]' /> */}
                     {/* fx fee non usd txn */}
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `}
-                    </CyDText>
+                    </CyDText> */}
                     {/* fx fee usd txn */}
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {'✅ Free'}
-                    </CyDText>
+                    </CyDText> */}
                     {/* ATM fee */}
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
@@ -595,16 +595,16 @@ export default function SelectPlanModal({
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {`${proPlanData?.nonUsdcFee === 0 ? '✅ Free' : `${proPlanData?.nonUsdcFee}%`} `}
                     </CyDText>
-                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
+                    {/* <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' /> */}
                     {/* non usd txn fx fee */}
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `}
-                    </CyDText>
+                    </CyDText> */}
                     {/*  usd txn fx fee */}
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {`${proPlanData?.usdcFee === 0 ? '✅ Free' : `${proPlanData?.usdcFee}%`} `}
-                    </CyDText>
+                    </CyDText> */}
 
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* ------------------------------ todo ----------------------- */}
@@ -948,7 +948,7 @@ export default function SelectPlanModal({
               </CyDTouchView>
 
               <CyDTouchView className='bg-n30 p-[16px]' activeOpacity={1}>
-                <CyDView className='border border-n40 rounded-[16px] bg-n0 '>
+                {/* <CyDView className='border border-n40 rounded-[16px] bg-n0 '>
                   <CyDView className='px-[16px] pt-[16px]'>
                     <CyDText className='text-[20px] font-semibold'>
                       Savings Calculator
@@ -1206,7 +1206,7 @@ export default function SelectPlanModal({
                       </CyDView>
                     )}
                   </CyDView>
-                </CyDView>
+                </CyDView> */}
 
                 <CyDText className='mb-[12px] mt-[24px] font-semibold text-[14px] text-center'>
                   Premium Benefits

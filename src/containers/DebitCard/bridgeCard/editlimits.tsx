@@ -30,6 +30,7 @@ import { StyleSheet } from 'react-native';
 import Loading from '../../../components/v2/loading';
 import Slider from '../../../components/v2/slider';
 import { CyDIconsPack } from '../../../customFonts';
+import SaveChangesModal from '../../../components/v2/saveChangesModal';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -52,11 +53,13 @@ const ImpactModal = ({
   setIsModalVisible,
   dailyLimit,
   changeLimits,
+  setShowSaveChangesModal,
 }: {
   isModalVisible: boolean;
   setIsModalVisible: Dispatch<SetStateAction<boolean>>;
   dailyLimit: number;
-  changeLimits: () => Promise<void>;
+  changeLimits?: () => Promise<void>;
+  setShowSaveChangesModal?: Dispatch<SetStateAction<boolean>>;
 }) => {
   return (
     <CyDModalLayout
@@ -98,8 +101,13 @@ const ImpactModal = ({
           <Button
             title={'Confirm & Set Usage limit'}
             onPress={() => {
-              void changeLimits();
               setIsModalVisible(false);
+
+              setTimeout(() => {
+                if (setShowSaveChangesModal) {
+                  setShowSaveChangesModal(true);
+                }
+              }, 300);
             }}
           />
         </CyDView>
@@ -122,6 +130,7 @@ export default function EditLimits() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
   const [showImpactModal, setShowImpactModal] = useState(false);
+  const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
 
   const getLimits = async () => {
     setPageLoading(true);
@@ -157,7 +166,8 @@ export default function EditLimits() {
     void getLimits();
   }, []);
 
-  const changeLimits = async () => {
+  const changeLimits = async (applyToAllCards = false) => {
+    setShowSaveChangesModal(false);
     setLoading(true);
     const { isError, error } = await patchWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
@@ -166,6 +176,9 @@ export default function EditLimits() {
           d: round(dailyUsageLimit),
           m: round(monthlyUsageLimit),
         },
+        ...(applyToAllCards && {
+          forAllCards: true,
+        }),
       },
     );
     setLoading(false);
@@ -199,11 +212,22 @@ export default function EditLimits() {
     <CyDView
       className='flex flex-col justify-between h-full bg-n0 text-base400'
       style={{ paddingTop: insets.top }}>
+      <SaveChangesModal
+        isModalVisible={showSaveChangesModal}
+        setIsModalVisible={setShowSaveChangesModal}
+        card={card}
+        onApplyToAllCards={() => {
+          void changeLimits(true);
+        }}
+        onApplyToCard={() => {
+          void changeLimits();
+        }}
+      />
       <ImpactModal
         isModalVisible={showImpactModal}
         setIsModalVisible={setShowImpactModal}
         dailyLimit={dailyUsageLimit}
-        changeLimits={changeLimits}
+        setShowSaveChangesModal={setShowSaveChangesModal}
       />
 
       <CyDTouchView
@@ -339,7 +363,7 @@ export default function EditLimits() {
             if (dailyUsageLimit < limitsData?.currentLimit?.d) {
               setShowImpactModal(true);
             } else {
-              void changeLimits();
+              setShowSaveChangesModal(true);
             }
           }}
         />

@@ -133,7 +133,6 @@ export default function ActivateCard() {
     const payload = {
       otp: +otp,
       last4,
-      shouldCancelVirtualCard: false,
     };
     setLoading(true);
     Keyboard.dismiss();

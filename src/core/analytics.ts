@@ -11,6 +11,7 @@ export const AnalyticEvent = {
   SKIP_API_BRIDGE_ERROR: 'bridge_falied',
   SKIP_API_BRIDGE_SUCESS: 'bridge_sucess',
   SKIP_API_BRIDGE_QUOTE: 'bridge_quote',
+  DEFAULT_CARD_CONTROLS: 'default_card_controls',
 };
 
 export const logAnalytics = (event: string, data: any): void => {

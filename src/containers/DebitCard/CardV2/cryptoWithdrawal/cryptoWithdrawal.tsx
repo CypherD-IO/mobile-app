@@ -44,6 +44,7 @@ interface WithdrawPost {
   chain: ChainBackendNames;
   toAddress: string;
   isCharged: boolean;
+  initiateOnConfirmation: boolean;
 }
 
 export default function CryptoWithdrawal() {
@@ -92,6 +93,7 @@ export default function CryptoWithdrawal() {
       chain: ChainBackendNames.BASE,
       toAddress: ethereumAddress,
       isCharged: true,
+      initiateOnConfirmation: true,
     };
     const { isError, error, data } = await postWithAuth(
       '/v1/cards/crypto-withdrawal',
