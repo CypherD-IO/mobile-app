@@ -63,8 +63,8 @@ const SimpleCheckbox = ({ onChange, checked, label = '' }) => {
         className={clsx(
           'w-[20px] h-[20px] border-[1px] rounded-[4px] mr-[8px] flex items-center justify-center',
           {
-            'bg-base400 border-base400': checked,
-            'bg-transparent border-n200': !checked,
+            'bg-p150 border-p150': checked,
+            'bg-transparent border-base100': !checked,
           },
         )}>
         {checked && (
@@ -528,263 +528,264 @@ export default function DefaultLimitSetup(props: any) {
   return (
     <>
       <CyDSafeAreaView>
-        <ScrollView>
-          <CyDView
-            className={clsx('bg-n40 ', {
-              'pb-[126px]': limits?.isDefaultSetting,
-              'pb-[66px]': !limits?.isDefaultSetting,
-            })}>
-            <CyDView className={'bg-n40 px-[24px] pb-[28px] pt-[24px]'}>
-              <CyDText className={'text-[28px] font-bold'}>
-                {t('LETS_SETUP_YOUR_CARD')}
-              </CyDText>
-              <CyDView className='flex flex-row justify-between mt-[24px]'>
-                <CyDImage
-                  source={getCardImage(card)}
-                  className='w-[171px] h-[108px]'
-                />
-                <CyDView className='flex flex-col justify-center gap-y-[12px]'>
-                  <CyDView className='flex flex-row items-center justify-center gap-x-[10px] bg-n0 rounded-[9px] px-[16px] py-[12px]'>
-                    <CyDImage
-                      source={AppImages.VISA_LOGO_GREY}
-                      className='w-[50px] h-[16px]'
-                    />
-                    <CyDView className='flex flex-row items-center gap-x-[2px]'>
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
-                      <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
-                    </CyDView>
-                    <CyDText className='text-[14px] font-bold'>
-                      {card.last4}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='bg-n0 rounded-[9px] px-[16px] py-[12px]'>
-                    <CyDView className='flex flex-row items-center justify-between'>
-                      <CyDText className='text-[12px] font-medium text-n200'>
-                        {t('CURRENCY')}
-                      </CyDText>
+        <CyDView className='bg-n0'>
+          <ScrollView>
+            <CyDView
+              className={clsx('bg-n40 ', {
+                'pb-[126px]': limits?.isDefaultSetting,
+                'pb-[66px]': !limits?.isDefaultSetting,
+              })}>
+              <CyDView className={'bg-n40 px-[24px] pb-[28px] pt-[24px]'}>
+                <CyDText className={'text-[28px] font-bold'}>
+                  {t('LETS_SETUP_YOUR_CARD')}
+                </CyDText>
+                <CyDView className='flex flex-row justify-between mt-[24px]'>
+                  <CyDImage
+                    source={getCardImage(card)}
+                    className='w-[171px] h-[108px]'
+                  />
+                  <CyDView className='flex flex-col justify-center gap-y-[12px]'>
+                    <CyDView className='flex flex-row items-center justify-center gap-x-[10px] bg-n0 rounded-[9px] px-[16px] py-[12px]'>
+                      <CyDImage
+                        source={AppImages.VISA_LOGO_GREY}
+                        className='w-[50px] h-[16px]'
+                      />
+                      <CyDView className='flex flex-row items-center gap-x-[2px]'>
+                        <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
+                        <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
+                        <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
+                        <CyDView className='w-[4px] h-[4px] rounded-full bg-base400' />
+                      </CyDView>
                       <CyDText className='text-[14px] font-bold'>
-                        {'$ USD'}
+                        {card.last4}
                       </CyDText>
+                    </CyDView>
+                    <CyDView className='bg-n0 rounded-[9px] px-[16px] py-[12px]'>
+                      <CyDView className='flex flex-row items-center justify-between'>
+                        <CyDText className='text-[12px] font-medium text-n200'>
+                          {t('CURRENCY')}
+                        </CyDText>
+                        <CyDText className='text-[14px] font-bold'>
+                          {'$ USD'}
+                        </CyDText>
+                      </CyDView>
                     </CyDView>
                   </CyDView>
                 </CyDView>
-              </CyDView>
-              <CyDView className='flex flex-row items-center justify-center gap-x-[10px] bg-n0 rounded-[9px] px-[16px] py-[12px] mt-[18px]'>
-                <CyDView className='flex-1 flex-row justify-between items-center mt-[4px]'>
-                  <CyDText className='text-[12px] font-semibold text-borderColor'>
-                    {t('DOMESTIC_COUNTRY')}
-                  </CyDText>
-                  <CyDTouchView
-                    className={'flex flex-row items-center '}
-                    onPress={handleChooseDomesticCountry}>
-                    <CyDText className={'text-[14px]'}>
-                      {domesticCountry?.unicode_flag}
+                <CyDView className='flex flex-row items-center justify-center gap-x-[10px] bg-n0 rounded-[9px] px-[16px] py-[12px] mt-[18px]'>
+                  <CyDView className='flex-1 flex-row justify-between items-center mt-[4px]'>
+                    <CyDText className='text-[12px] font-semibold text-borderColor'>
+                      {t('DOMESTIC_COUNTRY')}
                     </CyDText>
-                    <CyDText className={'ml-[4px] font-semibold text-[14px]'}>
-                      {domesticCountry?.name}
+                    <CyDTouchView
+                      className={'flex flex-row items-center '}
+                      onPress={handleChooseDomesticCountry}>
+                      <CyDText className={'text-[14px]'}>
+                        {domesticCountry?.unicode_flag}
+                      </CyDText>
+                      <CyDText className={'ml-[4px] font-semibold text-[14px]'}>
+                        {domesticCountry?.name}
+                      </CyDText>
+                      <CyDMaterialDesignIcons
+                        name='chevron-down'
+                        size={20}
+                        className='text-base400 mr-2'
+                      />
+                    </CyDTouchView>
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+              <CyDView className='bg-n0 px-[24px] py-[24px]'>
+                <CyDView className='flex flex-col mb-[32px]'>
+                  <CyDText className='text-[28px] font-medium'>
+                    {t('SETUP_SPEND_CONTROL')}
+                  </CyDText>
+                  <CyDView className='flex flex-col mt-[24px]'>
+                    <CyDView className='flex flex-row mt-[8px]'>
+                      <CyDView className='w-[40%]'></CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDText className='text-[12px] font-medium text-n200'>
+                          {t('DOMESTIC')}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDText className='text-[12px] font-medium text-n200'>
+                          {t('INTERNATIONAL')}
+                        </CyDText>
+                      </CyDView>
+                    </CyDView>
+
+                    <CyDView className='flex flex-row items-center mt-[12px]'>
+                      <CyDView className='w-[40%]'>
+                        <CyDText className='text-[14px] text-n200'>
+                          {t('ONLINE_TRANSACTIONS')}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDSwitch
+                          value={controlSettings.domestic.online}
+                          onValueChange={() =>
+                            handleControlToggle(
+                              'domestic',
+                              'online',
+                              controlSettings.domestic.online,
+                            )
+                          }
+                          disabled={
+                            isUpdatingControls || !isOptionSupported('online')
+                          }
+                        />
+                      </CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDSwitch
+                          value={controlSettings.international.online}
+                          onValueChange={() =>
+                            handleControlToggle(
+                              'international',
+                              'online',
+                              controlSettings.international.online,
+                            )
+                          }
+                          disabled={
+                            isUpdatingControls ||
+                            limitsByControlType.dis ||
+                            !isOptionSupported('online')
+                          }
+                        />
+                      </CyDView>
+                    </CyDView>
+
+                    <CyDView className='flex flex-row items-center mt-[12px]'>
+                      <CyDView className='w-[40%]'>
+                        <CyDText className='text-[14px] text-n200'>
+                          {t('APPLE_PAY_GOOGLE_PAY')}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDSwitch
+                          value={controlSettings.domestic.wallet}
+                          onValueChange={() =>
+                            handleControlToggle(
+                              'domestic',
+                              'wallet',
+                              controlSettings.domestic.wallet,
+                            )
+                          }
+                          disabled={
+                            isUpdatingControls || !isOptionSupported('wallet')
+                          }
+                        />
+                      </CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDSwitch
+                          value={controlSettings.international.wallet}
+                          onValueChange={() =>
+                            handleControlToggle(
+                              'international',
+                              'wallet',
+                              controlSettings.international.wallet,
+                            )
+                          }
+                          disabled={
+                            isUpdatingControls ||
+                            limitsByControlType.dis ||
+                            !isOptionSupported('wallet')
+                          }
+                        />
+                      </CyDView>
+                    </CyDView>
+
+                    <CyDView className='flex flex-row items-center mt-[12px]'>
+                      <CyDView className='w-[40%]'>
+                        <CyDText className='text-[14px] text-n200'>
+                          {t('ATM_WITHDRAWALS')}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDSwitch
+                          value={controlSettings.domestic.atm}
+                          onValueChange={() =>
+                            handleControlToggle(
+                              'domestic',
+                              'atm',
+                              controlSettings.domestic.atm,
+                            )
+                          }
+                          disabled={
+                            isUpdatingControls || !isOptionSupported('atm')
+                          }
+                        />
+                      </CyDView>
+                      <CyDView className='w-[30%] items-center'>
+                        <CyDSwitch
+                          value={controlSettings.international.atm}
+                          onValueChange={() =>
+                            handleControlToggle(
+                              'international',
+                              'atm',
+                              controlSettings.international.atm,
+                            )
+                          }
+                          disabled={
+                            isUpdatingControls ||
+                            limitsByControlType.dis ||
+                            !isOptionSupported('atm')
+                          }
+                        />
+                      </CyDView>
+                    </CyDView>
+
+                    <CyDView className='mt-[24px]'>
+                      <Button
+                        title={t('EDIT_SPEND_CONTROL')}
+                        onPress={handleEditSpendControl}
+                        type={ButtonType.GREY_FILL}
+                      />
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
+
+                <CyDView className='flex flex-col mb-[32px]'>
+                  <CyDText className='text-[28px] font-medium'>
+                    {t('DAILY_AND_MONTHLY_USAGE_LIMIT')}
+                  </CyDText>
+                  <CyDView className='flex flex-col mt-[24px]'>
+                    <CyDText className='text-[14px] font-semibold text-n200'>
+                      {t('DEFAULT_LIMIT')}
                     </CyDText>
-                    <CyDMaterialDesignIcons
-                      name='chevron-down'
-                      size={20}
-                      className='text-base400 mr-2'
-                    />
-                  </CyDTouchView>
-                </CyDView>
-              </CyDView>
-            </CyDView>
-            <CyDView className='bg-n0 px-[24px] py-[24px]'>
-              <CyDView className='flex flex-col mb-[32px]'>
-                <CyDText className='text-[28px] font-medium'>
-                  {t('DAILY_AND_MONTHLY_USAGE_LIMIT')}
-                </CyDText>
-                <CyDView className='flex flex-col mt-[24px]'>
-                  <CyDText className='text-[14px] font-semibold text-n200'>
-                    {t('DEFAULT_LIMIT')}
-                  </CyDText>
-                  <CyDView className='flex flex-row items-center justify-between gap-x-[12px] w-full mt-[8px]'>
-                    <CyDView className='flex flex-col px-[16px] py-[12px] bg-n20 rounded-[9px] w-[48%]'>
-                      <CyDText className='text-[12px] font-medium'>
-                        {t('DAILY_LIMIT')}
-                      </CyDText>
-                      <CyDText className='text-semibold'>
-                        ${dailyUsageLimit}
-                      </CyDText>
-                    </CyDView>
+                    <CyDView className='flex flex-row items-center justify-between gap-x-[12px] w-full mt-[8px]'>
+                      <CyDView className='flex flex-col px-[16px] py-[12px] bg-n20 rounded-[9px] w-[48%]'>
+                        <CyDText className='text-[12px] font-medium'>
+                          {t('DAILY_LIMIT')}
+                        </CyDText>
+                        <CyDText className='text-semibold'>
+                          ${dailyUsageLimit}
+                        </CyDText>
+                      </CyDView>
 
-                    <CyDView className='flex flex-col px-[16px] py-[12px] bg-n20 rounded-[9px] w-[48%]'>
-                      <CyDText className='text-[12px] font-medium'>
-                        {t('MONTHLY_LIMIT')}
-                      </CyDText>
-                      <CyDText className='text-semibold'>
-                        ${monthlyUsageLimit}
-                      </CyDText>
+                      <CyDView className='flex flex-col px-[16px] py-[12px] bg-n20 rounded-[9px] w-[48%]'>
+                        <CyDText className='text-[12px] font-medium'>
+                          {t('MONTHLY_LIMIT')}
+                        </CyDText>
+                        <CyDText className='text-semibold'>
+                          ${monthlyUsageLimit}
+                        </CyDText>
+                      </CyDView>
                     </CyDView>
-                  </CyDView>
-                  <CyDText className='text-[14px] text-n200 mt-[12px]'>
-                    {t('SETUP_LIMITS_DESC')}
-                  </CyDText>
-                  <CyDView className='mt-[24px]'>
-                    <Button
-                      title={t('SETUP_USAGE_LIMIT')}
-                      onPress={handleSetupUsageLimits}
-                      type={ButtonType.GREY_FILL}
-                    />
+                    <CyDText className='text-[14px] text-n200 mt-[12px]'>
+                      {t('SETUP_LIMITS_DESC')}
+                    </CyDText>
+                    <CyDView className='mt-[24px]'>
+                      <Button
+                        title={t('SETUP_USAGE_LIMIT')}
+                        onPress={handleSetupUsageLimits}
+                        type={ButtonType.GREY_FILL}
+                      />
+                    </CyDView>
                   </CyDView>
                 </CyDView>
-              </CyDView>
 
-              <CyDView className='flex flex-col mb-[32px]'>
-                <CyDText className='text-[28px] font-medium'>
-                  {t('SETUP_SPEND_CONTROL')}
-                </CyDText>
-                <CyDView className='flex flex-col mt-[24px]'>
-                  <CyDView className='flex flex-row mt-[8px]'>
-                    <CyDView className='w-[40%]'></CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDText className='text-[12px] font-medium text-n200'>
-                        {t('DOMESTIC')}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDText className='text-[12px] font-medium text-n200'>
-                        {t('INTERNATIONAL')}
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='flex flex-row items-center mt-[12px]'>
-                    <CyDView className='w-[40%]'>
-                      <CyDText className='text-[14px] text-n200'>
-                        {t('ONLINE_TRANSACTIONS')}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDSwitch
-                        value={controlSettings.domestic.online}
-                        onValueChange={() =>
-                          handleControlToggle(
-                            'domestic',
-                            'online',
-                            controlSettings.domestic.online,
-                          )
-                        }
-                        disabled={
-                          isUpdatingControls || !isOptionSupported('online')
-                        }
-                      />
-                    </CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDSwitch
-                        value={controlSettings.international.online}
-                        onValueChange={() =>
-                          handleControlToggle(
-                            'international',
-                            'online',
-                            controlSettings.international.online,
-                          )
-                        }
-                        disabled={
-                          isUpdatingControls ||
-                          limitsByControlType.dis ||
-                          !isOptionSupported('online')
-                        }
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='flex flex-row items-center mt-[12px]'>
-                    <CyDView className='w-[40%]'>
-                      <CyDText className='text-[14px] text-n200'>
-                        {t('APPLE_PAY_GOOGLE_PAY')}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDSwitch
-                        value={controlSettings.domestic.wallet}
-                        onValueChange={() =>
-                          handleControlToggle(
-                            'domestic',
-                            'wallet',
-                            controlSettings.domestic.wallet,
-                          )
-                        }
-                        disabled={
-                          isUpdatingControls || !isOptionSupported('wallet')
-                        }
-                      />
-                    </CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDSwitch
-                        value={controlSettings.international.wallet}
-                        onValueChange={() =>
-                          handleControlToggle(
-                            'international',
-                            'wallet',
-                            controlSettings.international.wallet,
-                          )
-                        }
-                        disabled={
-                          isUpdatingControls ||
-                          limitsByControlType.dis ||
-                          !isOptionSupported('wallet')
-                        }
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='flex flex-row items-center mt-[12px]'>
-                    <CyDView className='w-[40%]'>
-                      <CyDText className='text-[14px] text-n200'>
-                        {t('ATM_WITHDRAWALS')}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDSwitch
-                        value={controlSettings.domestic.atm}
-                        onValueChange={() =>
-                          handleControlToggle(
-                            'domestic',
-                            'atm',
-                            controlSettings.domestic.atm,
-                          )
-                        }
-                        disabled={
-                          isUpdatingControls || !isOptionSupported('atm')
-                        }
-                      />
-                    </CyDView>
-                    <CyDView className='w-[30%] items-center'>
-                      <CyDSwitch
-                        value={controlSettings.international.atm}
-                        onValueChange={() =>
-                          handleControlToggle(
-                            'international',
-                            'atm',
-                            controlSettings.international.atm,
-                          )
-                        }
-                        disabled={
-                          isUpdatingControls ||
-                          limitsByControlType.dis ||
-                          !isOptionSupported('atm')
-                        }
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='mt-[24px]'>
-                    <Button
-                      title={t('EDIT_SPEND_CONTROL')}
-                      onPress={handleEditSpendControl}
-                      type={ButtonType.GREY_FILL}
-                    />
-                  </CyDView>
-                </CyDView>
-              </CyDView>
-
-              {/* <CyDView className='flex flex-col'>
+                {/* <CyDView className='flex flex-col'>
                 <CyDText className='text-[28px] font-medium'>
                   {t('SETUP_TELEGRAM_BOT')}
                 </CyDText>
@@ -850,9 +851,10 @@ export default function DefaultLimitSetup(props: any) {
                   </CyDView>
                 </CyDView>
               </CyDView> */}
+              </CyDView>
             </CyDView>
-          </CyDView>
-        </ScrollView>
+          </ScrollView>
+        </CyDView>
 
         <CyDView className='bg-n0 p-[24px] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] absolute bottom-0 left-0 right-0'>
           {limits?.isDefaultSetting && (
@@ -902,10 +904,3 @@ export default function DefaultLimitSetup(props: any) {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  lottie: {
-    height: 18,
-    width: 18,
-  },
-});
