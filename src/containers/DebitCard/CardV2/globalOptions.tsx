@@ -38,6 +38,7 @@ import SelectPlanModal from '../../../components/selectPlanModal';
 import { useTheme } from '../../../reducers/themeReducer';
 import clsx from 'clsx';
 import { cardDesign } from '../../../models/cardDesign.interface';
+import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
 
 interface RouteParams {
   cardProvider: string;
@@ -138,6 +139,11 @@ export default function GlobalOptions() {
               'Shop in-store, online, and withdraw cash conveniently',
             image: 'card-plus' as const,
             action: () => {
+              logAnalytics(AnalyticEvent.GET_PHYSICAL_CARD, {
+                from: 'card_options',
+                type: 'plastic',
+                address: cardProfile?.primaryEthAddress,
+              });
               onBuyAdditionalPhysicalCard();
               navigation.goBack();
             },

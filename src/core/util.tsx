@@ -42,7 +42,11 @@ import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
 import { ActivityContextDef } from '../reducers/activity_reducer';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { t } from 'i18next';
-import { AnalyticsType, SignMessageValidationType } from '../constants/enum';
+import {
+  AnalyticsType,
+  CypherPlanId,
+  SignMessageValidationType,
+} from '../constants/enum';
 import {
   ErrorAnalytics,
   SuccessAnalytics,
@@ -75,6 +79,8 @@ import crypto from 'crypto';
 import { mainnet } from 'viem/chains';
 import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { CardProfile } from '../models/cardProfile.model';
+import { cardDesign } from '../models/cardDesign.interface';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1218,4 +1224,21 @@ export const getViemPublicClient = (rpc: string) => {
 
 export const isRainReferralCode = (referralCode: string) => {
   return referralCode.endsWith('RA');
+};
+
+// show the get physical card in stack if it is their first plastic physical card alone
+export const shouldShowGetPhysicalCardInStack = (
+  profile: CardProfile,
+  cardDesignAndFeeData: cardDesign,
+) => {
+  if (
+    (get(profile, ['planInfo', 'planId'], '') === CypherPlanId.PRO_PLAN &&
+      cardDesignAndFeeData?.allowedCount?.physical === 3 &&
+      cardDesignAndFeeData?.allowedCount?.metal === 0) ||
+    (get(profile, ['planInfo', 'planId'], '') === CypherPlanId.BASIC_PLAN &&
+      cardDesignAndFeeData?.allowedCount?.physical === 1)
+  ) {
+    return true;
+  }
+  return false;
 };
