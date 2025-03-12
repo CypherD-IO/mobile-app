@@ -147,6 +147,12 @@ export default function CypherCardScreen() {
     void onRefresh();
   }, [cardProvider]);
 
+  useEffect(() => {
+    if (isFocused && cardId !== CARD_IDS.HIDDEN_CARD) {
+      void getCardDesignValues();
+    }
+  }, [isFocused, cardId]);
+
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
     if (cardProvider !== CardProviders.PAYCADDY) {
