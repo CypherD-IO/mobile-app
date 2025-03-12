@@ -63,6 +63,7 @@ import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import moment from 'moment';
+import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
 
 interface CardSecrets {
   cvv: string;
@@ -938,7 +939,14 @@ const RenderCardActions = ({
           <Button
             title={'Get Physical Card'}
             style='px-[28px] w-[300px]'
-            onPress={onPressUpgradeNow}
+            onPress={() => {
+              logAnalytics(AnalyticEvent.GET_PHYSICAL_CARD, {
+                from: 'card_stack',
+                type: 'plastic',
+                address: cardProfile.primaryEthAddress,
+              });
+              onPressUpgradeNow();
+            }}
           />
         </CyDView>
       );
