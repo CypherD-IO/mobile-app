@@ -4,7 +4,6 @@ import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDIcons,
 } from '../../../styles/tailwindComponents';
@@ -28,7 +27,6 @@ import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import PreferredNameModal from './preferredNameModal';
 import clsx from 'clsx';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   userData: IKycPersonDetail;

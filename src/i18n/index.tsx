@@ -540,6 +540,7 @@ const resources = {
       CITY_INIT_CAPS: 'City',
       STATE_INIT_CAPS: 'State',
       ZIPCODE_INIT_CAPS: 'Zipcode',
+      TAX_RFC: 'Tax ID/RFC Number',
       DOB_INIT_CAPS: 'Date of Birth',
       SSN_ALL_CAPS: 'SSN',
       PASSPORT_NO_INIT_CAPS: 'Passport Number',
@@ -1530,6 +1531,7 @@ const resources = {
       REMIND_ME_LATER: 'Remind me later',
       CURRENCY: 'Currency',
       SEE_MORE: 'See More',
+      TAX_ID_REQUIRED: 'Tax ID/RFC Number is required',
     },
   },
 };

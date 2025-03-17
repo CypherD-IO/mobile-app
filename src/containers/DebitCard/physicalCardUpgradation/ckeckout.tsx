@@ -41,7 +41,6 @@ import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -139,10 +138,11 @@ export default function ShippingCheckout() {
 
   const onConfirm = async (otp: string) => {
     setIsVerifyingOTP(true);
-    const { line2, ...restShippingAddress } = shippingAddress;
+    const { line2, taxId, ...restShippingAddress } = shippingAddress;
     const payload = {
       ...restShippingAddress,
       ...(line2 ? { line2 } : {}),
+      ...(taxId ? { taxId } : {}),
       preferredCardName: preferredName,
       otp: Number(otp),
       ...(preferredDesignId ? { preferredDesignId } : {}),
@@ -213,6 +213,9 @@ export default function ShippingCheckout() {
             </CyDText>
             <CyDText className='text-[14px] my-[2px]'>
               {shippingAddress?.phoneNumber}
+            </CyDText>
+            <CyDText className='text-[14px] my-[2px]'>
+              {shippingAddress?.taxId}
             </CyDText>
           </CyDView>
         </CyDView>
