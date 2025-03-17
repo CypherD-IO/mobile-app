@@ -593,10 +593,6 @@ export default function CypherCardScreen() {
                   }
                   disabled={shouldBlockAction()}
                   onPress={() => {
-                    // code rabbit find this and remove
-                    // navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
-                    //   currentCardProvider: cardProvider,
-                    // });
                     onPressFundCard();
                   }}
                   style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
