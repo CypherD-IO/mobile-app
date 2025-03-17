@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, useWindowDimensions } from 'react-native';
 import {
   CyDView,
   CyDText,
-  CyDSafeAreaView,
   CyDTouchView,
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDIcons,
 } from '../../../styles/tailwindComponents';
-import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -33,7 +29,6 @@ import CyDSkeleton from '../../../components/v2/skeleton';
 import { getCountryNameById } from '../../../core/util';
 import clsx from 'clsx';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;

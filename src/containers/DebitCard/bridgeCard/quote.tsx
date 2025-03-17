@@ -594,7 +594,7 @@ export default function CardQuote({
 
         <CyDView
           className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-medium text-[14px]]'}>
+          <CyDText className={'font-medium text-[14px]'}>
             {t('ESTIMATED_GAS')}
           </CyDText>
           <CyDView
@@ -610,7 +610,7 @@ export default function CardQuote({
 
         <CyDView className={'flex flex-row justify-between py-[16px]'}>
           <CyDView className='flex flex-row justify-start items-center w-[50%]'>
-            <CyDText className={'font-medium text-[14px]]'}>
+            <CyDText className={'font-medium text-[14px]'}>
               {t('ESTIMATED_TIME')}
             </CyDText>
           </CyDView>
