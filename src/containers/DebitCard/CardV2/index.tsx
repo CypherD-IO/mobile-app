@@ -807,15 +807,7 @@ export default function CypherCardScreen() {
                       {'Premium'}
                     </CyDText>
                   }
-                  gradientColors={[
-                    '#EDD500',
-                    '#F89408',
-                    '#FA9703',
-                    '#F48F0F',
-                    '#F6510A',
-                    '#F89408',
-                  ]}
-                  locations={[0, 0.8, 0.85, 0.9, 0.95, 1]}
+                  gradientColors={['#FA9703', '#F89408', '#F6510A']}
                 />
               </CyDView>
               <CyDView className='mt-[16px]'>

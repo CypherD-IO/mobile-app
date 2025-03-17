@@ -695,7 +695,7 @@ export default function CardQuote({
         {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
           <CyDView className='bg-p10 mb-[24px] px-[12px] py-[16px] mx-[16px] rounded-[12px] flex flex-row justify-between items-center'>
             <CyDText className='text-base200 font-medium text-[12px]'>
-              {`Want to save $${String(tokenQuote?.fees?.fee ?? 'more')} on this load?`}
+              {`Want to save ${tokenQuote?.fees?.fee && tokenQuote?.fees?.fee > 1 ? '$' + String(tokenQuote?.fees?.fee) : 'more'} on this load?`}
             </CyDText>
             <CyDTouchView
               className='flex flex-row items-center gap-[4px]'

@@ -7,7 +7,7 @@ export default function GradientText({
   textElement,
   gradientColors,
   locations,
-  useAngle,
+  useAngle = false,
   angle,
   angleCenter,
 }: {
@@ -25,9 +25,9 @@ export default function GradientText({
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         locations={locations}
-        useAngle={true}
-        angleCenter={{ x: 0, y: 0 }}
-        angle={120}>
+        useAngle={useAngle}
+        angleCenter={angleCenter}
+        angle={angle}>
         <CyDView className='opacity-0'>{textElement}</CyDView>
       </LinearGradient>
     </MaskedView>
