@@ -582,6 +582,9 @@ PODS:
     - React-Core
   - RNCClipboard (1.15.0):
     - React-Core
+  - RNCMaskedView (0.3.2):
+    - RCT-Folly (= 2021.07.22.00)
+    - React-Core
   - RNCPushNotificationIOS (1.11.0):
     - React-Core
   - RNDateTimePicker (6.7.5):
@@ -741,6 +744,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
+  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
@@ -919,6 +923,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
+  RNCMaskedView:
+    :path: "../node_modules/@react-native-masked-view/masked-view"
   RNCPushNotificationIOS:
     :path: "../node_modules/@react-native-community/push-notification-ios"
   RNDateTimePicker:
@@ -1050,6 +1056,7 @@ SPEC CHECKSUMS:
   ReactCommon: cd970cbd9e212b78dca50ca47fea4dafa485f674
   RNCAsyncStorage: ec53e44dc3e75b44aa2a9f37618a49c3bc080a7a
   RNCClipboard: 69ab8e51324d5b351f6ba72bbdb72478087a2c64
+  RNCMaskedView: fbf0642002ce7f1b6cb4e4822a58667f41392ff7
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
   RNDateTimePicker: 65e1d202799460b286ff5e741d8baf54695e8abd
   RNDeviceInfo: aad3c663b25752a52bf8fce93f2354001dd185aa
@@ -1079,4 +1086,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 919bd5cbff78a93c0f63dd81843e1307ea3fa46a
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

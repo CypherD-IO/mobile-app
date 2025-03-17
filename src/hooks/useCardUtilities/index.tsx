@@ -10,7 +10,7 @@ import useAxios from '../../core/HttpRequest';
 import { getDeveloperMode, getIsRcEnabled } from '../../core/asyncStorage';
 
 export default function useCardUtilities() {
-  const { getWithoutAuth } = useAxios();
+  const { getWithoutAuth, getWithAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider;
@@ -102,6 +102,14 @@ export default function useCardUtilities() {
     return false;
   };
 
+  const getCardSpendStats = async () => {
+    const { data, isError } = await getWithAuth('/v1/cards/spend-stats');
+    if (isError) {
+      return null;
+    }
+    return data;
+  };
+
   return {
     getProvider,
     hasBothProviders,
@@ -110,5 +118,6 @@ export default function useCardUtilities() {
     getWalletProfile,
     checkIsRCEnabled,
     getPlanData,
+    getCardSpendStats,
   };
 }

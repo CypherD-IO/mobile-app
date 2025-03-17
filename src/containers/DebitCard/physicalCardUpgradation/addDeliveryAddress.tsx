@@ -31,7 +31,6 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import clsx from 'clsx';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -97,6 +96,11 @@ export default function AddDeliveryAddress() {
       .string()
       .required(t('PHONE_NUMBER_REQUIRED'))
       .matches(/^[0-9]*$/, t('PHONE_NUMBER_INVALID_CHARACTERS')),
+    taxId: yup.string().when([], {
+      is: () => selectedCountry?.Iso2 === 'MX',
+      then: schema => schema.required(t('TAX_ID_REQUIRED')),
+      otherwise: schema => schema.optional().nullable(),
+    }),
   });
 
   const initialValues = {
@@ -107,17 +111,22 @@ export default function AddDeliveryAddress() {
     city: '',
     state: '',
     phoneNumber: '',
+    taxId: '',
   };
 
   const onSubmit = (values: typeof initialValues) => {
     const formattedValues = {
-      country: selectedCountry.Iso2,
+      country: selectedCountry?.Iso2,
       line1: values.addressLine1,
       line2: values.addressLine2,
       city: values.city,
       state: values.state,
       postalCode: values.postalCode,
       phoneNumber: selectedCountryForDialCode.dialCode + values.phoneNumber,
+      ...(values.taxId &&
+        selectedCountry?.Iso2 === 'MX' && {
+          taxId: values.taxId,
+        }),
     };
 
     navigation.navigate(screenTitle.NAME_ON_CARD_SCREEN, {
@@ -363,6 +372,34 @@ export default function AddDeliveryAddress() {
                       />
                     </CyDView>
                   </CyDView>
+                  {selectedCountry?.Iso2 === 'MX' && (
+                    <CyDView>
+                      <CyDView className=' mt-[20px] flex flex-row items-center'>
+                        <CyDText className='text-[16px] font-semibold'>
+                          {t('TAX_RFC')}
+                        </CyDText>
+                        <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
+                          {errors.taxId ?? ''}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView
+                        className={
+                          'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                        }>
+                        <CyDView className='flex flex-row justify-between items-center'>
+                          <CyDTextInput
+                            className='h-full w-[100%] text-[16px]'
+                            inputMode='text'
+                            placeholder='RFC #'
+                            placeholderTextColor={'#ccc'}
+                            onChangeText={handleChange('taxId')}
+                            onBlur={handleBlur('taxId')}
+                            value={values.taxId}
+                          />
+                        </CyDView>
+                      </CyDView>
+                    </CyDView>
+                  )}
                 </CyDView>
                 <CyDView className='w-full py-[22px] px-[16px] mt-[12px]'>
                   <Button
