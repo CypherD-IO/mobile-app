@@ -38,7 +38,7 @@ import * as Sentry from '@sentry/react-native';
 import { screenTitle } from '../../../constants';
 import { isAndroid } from '../../../misc/checkers';
 import clsx from 'clsx';
-import { getCountryNameById } from '../../../core/util';
+import { getCountryNameById, parseErrorMessage } from '../../../core/util';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -165,10 +165,7 @@ export default function ShippingCheckout() {
       showModal('state', {
         type: 'error',
         title: '',
-        description:
-          response.error.errors?.[0].message ??
-          response?.error?.message ??
-          'Error while placing your order. Contact cypher support',
+        description: parseErrorMessage(response.error),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
