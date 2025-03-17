@@ -6,4 +6,5 @@ export interface IShippingAddress {
   phoneNumber: string;
   postalCode: string;
   state: string;
+  taxId?: string;
 }

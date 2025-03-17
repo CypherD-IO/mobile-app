@@ -67,7 +67,7 @@ import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
 import UpdateCardContactDetails from '../containers/DebitCard/bridgeCard/updateContactDetails';
 import DebitCardScreen from '../containers/DebitCard/index';
 import AddDeliveryAddress from '../containers/DebitCard/physicalCardUpgradation/addDeliveryAddress';
-import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ckeckout';
+import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/checkout';
 import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradation/confirmation';
 import NameOnCard from '../containers/DebitCard/physicalCardUpgradation/nameOnCard';
 import OrderSteps from '../containers/DebitCard/physicalCardUpgradation/orderSteps';

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Keyboard, StyleSheet } from 'react-native';
+import Button from '../../../components/v2/button';
 import CyDModalLayout from '../../../components/v2/modal';
+import { ButtonType } from '../../../constants/enum';
+import { isAndroid } from '../../../misc/checkers';
 import {
-  CyDImage,
   CyDKeyboardAvoidingView,
   CyDMaterialDesignIcons,
   CyDText,
@@ -9,12 +13,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import { Keyboard, StyleSheet } from 'react-native';
-import { isAndroid } from '../../../misc/checkers';
-import AppImages from '../../../../assets/images/appImages';
-import Button from '../../../components/v2/button';
-import { ButtonType } from '../../../constants/enum';
-import { useTranslation } from 'react-i18next';
 
 export default function PreferredNameModal({
   isModalVisible,
