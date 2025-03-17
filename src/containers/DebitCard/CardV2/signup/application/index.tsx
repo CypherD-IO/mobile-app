@@ -241,7 +241,8 @@ export default function CardApplicationV2() {
             ? changedFields.dialCode + changedFields.phone
             : undefined,
         dateOfBirth: changedFields.dateOfBirth ?? undefined,
-        ...(referralCode && { referralCodeV2: referralCode }),
+        ...(referralCode &&
+          !applicationData && { referralCodeV2: referralCode }), // include only if referralCodeV2 is present and it is post applciation call
       };
       // Remove undefined fields and dialCode
       const cleanPayload = omitBy(
