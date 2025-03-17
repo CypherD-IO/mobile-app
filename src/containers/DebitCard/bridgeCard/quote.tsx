@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import {
   CyDFastImage,
-  CyDLottieView,
   CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -28,7 +27,7 @@ import {
   ButtonType,
   CypherPlanId,
 } from '../../../constants/enum';
-import { get } from 'lodash';
+import { capitalize, get } from 'lodash';
 import {
   CHAIN_OSMOSIS,
   ChainBackendNames,
@@ -63,6 +62,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
 import { usePortfolioRefresh } from '../../../hooks/usePortfolioRefresh';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import GradientText from '../../../components/gradientText';
+import SelectPlanModal from '../../../components/selectPlanModal';
 
 export default function CardQuote({
   navigation,
@@ -98,6 +99,8 @@ export default function CardQuote({
     hasSufficientBalanceAndGasFee,
   );
   const [hasPriceFluctuationConsent, setHasPriceFluctuationConsent] =
+    useState<boolean>(false);
+  const [planChangeModalVisible, setPlanChangeModalVisible] =
     useState<boolean>(false);
   const hdWallet = useContext<any>(HdWalletContext);
   const ethereum = hdWallet.state.wallet.ethereum;
@@ -496,6 +499,12 @@ export default function CardQuote({
         setModalVisible={setIsPriceFluctuationLearnMoreModalVisible}
         style={styles.priceFluctuationLearnMoreModal}
       />
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        cardProvider={cardProvider}
+        cardId={cardId}
+      />
       <CyDView className={'mx-[22px]'}>
         <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-n40'>
           <CyDText className='text-[52px] text-mandarin font-bold'>
@@ -509,27 +518,29 @@ export default function CardQuote({
           className={
             'flex flex-row justify-between items-center mt-[40px] pb-[16px]'
           }>
-          <CyDText className={'font-bold text-[14px]'}>{t('NETWORK')}</CyDText>
+          <CyDText className={'font-medium text-[14px]'}>
+            {t('NETWORK')}
+          </CyDText>
           <CyDView
             className={'flex flex-row justify-center items-center pl-[25px]'}>
             <CyDFastImage source={chainLogo} className={'w-[18px] h-[18px]'} />
-            <CyDText className={'font-medium text-[14px] ml-[4px]'}>
-              {chain}
+            <CyDText className={'font-semibold text-[14px] ml-[4px]'}>
+              {capitalize(chain)}
             </CyDText>
           </CyDView>
         </CyDView>
 
         <CyDView
           className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-bold text-[14px]'}>
+          <CyDText className={'font-medium text-[14px]'}>
             {t('CRYPTO_VALUE')}
           </CyDText>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={' font-medium text-[16px] '}>
+            <CyDText className={'font-bold text-[14px] '}>
               {limitDecimalPlaces(tokenQuote.tokensRequired, 4) + ' ' + symbol}
             </CyDText>
-            <CyDText className={' font-medium text-[12px]'}>
+            <CyDText className={'font-bold text-[14px] text-base100'}>
               {`$${DecimalHelper.multiply(
                 selectedToken.price,
                 tokenQuote.tokensRequired,
@@ -547,7 +558,7 @@ export default function CardQuote({
                 source={AppImages.PREMIUM_TEXT_GRADIENT}
               />
             )}
-            <CyDText className={'font-bold text-[14px]'}>
+            <CyDText className={'font-medium text-[14px]'}>
               {t('LOAD_FEE')}
             </CyDText>
           </CyDView>
@@ -574,7 +585,7 @@ export default function CardQuote({
                 </LinearGradient>
               </CyDView>
             ) : (
-              <CyDText className={'font-medium text-[16px] '}>
+              <CyDText className={'font-bold text-[14px] '}>
                 {'$' + String(tokenQuote.fees.fee)}
               </CyDText>
             )}
@@ -583,15 +594,15 @@ export default function CardQuote({
 
         <CyDView
           className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-bold text-[14px]'}>
+          <CyDText className={'font-medium text-[14px]]'}>
             {t('ESTIMATED_GAS')}
           </CyDText>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={'font-medium text-[14px] '}>
+            <CyDText className={'font-bold text-[14px] '}>
               {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
             </CyDText>
-            <CyDText className={'font-medium text-[14px]'}>
+            <CyDText className={'font-bold text-[14px] text-base100'}>
               {'$' + formatAmount(gasFeeInFiat)}
             </CyDText>
           </CyDView>
@@ -599,20 +610,21 @@ export default function CardQuote({
 
         <CyDView className={'flex flex-row justify-between py-[16px]'}>
           <CyDView className='flex flex-row justify-start items-center w-[50%]'>
-            <CyDText className={'font-bold text-[14px]'}>
+            <CyDText className={'font-medium text-[14px]]'}>
               {t('ESTIMATED_TIME')}
             </CyDText>
-            <CyDLottieView
-              source={AppImages.ESTIMATED_TIME}
-              resizeMode={'contain'}
-              autoPlay
-              loop
-              style={styles.loaderStyle}
-            />
           </CyDView>
 
-          <CyDView className={'flex flex-row justify-between items-center'}>
-            <CyDText className={' text-[14px] font-medium ml-[12px]'}>
+          <CyDView
+            className={
+              'flex flex-row justify-between items-center px-[6px] py-[2px] bg-n40 rounded-full'
+            }>
+            <CyDMaterialDesignIcons
+              name='clock-time-three'
+              size={16}
+              className='text-n70'
+            />
+            <CyDText className={'text-[14px] font-bold text-base100'}>
               ~ 4 mins
             </CyDText>
           </CyDView>
@@ -679,50 +691,74 @@ export default function CardQuote({
           </CyDView>
         </>
       )}
-      <CyDView
-        className={'flex flex-row justify-between items-center px-[10px]'}>
-        <Button
-          title={t<string>('CANCEL')}
-          titleStyle='text-[14px]'
-          disabled={loading}
-          type={ButtonType.SECONDARY}
-          onPress={() => {
-            onCancel();
-          }}
-          style={'h-[60px] w-[46%] mr-[6px]'}
-        />
-        <Button
-          title={
-            t<string>('LOAD_ALL_CAPS') +
-            (!isPayDisabled
-              ? tokenExpiryTime
-                ? ' (' + String(tokenExpiryTime) + ')'
-                : ''
-              : '')
-          }
-          titleStyle='text-[14px]'
-          loading={loading}
-          disabled={
-            isPayDisabled ||
-            (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
-          }
-          onPress={() => {
-            if (!isPayDisabled) {
-              void onLoadPress();
+      <CyDView>
+        {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
+          <CyDView className='bg-p10 mb-[24px] px-[12px] py-[16px] mx-[16px] rounded-[12px] flex flex-row justify-between items-center'>
+            <CyDText className='text-base200 font-medium text-[12px]'>
+              {`Want to save $${String(tokenQuote?.fees?.fee ?? 'more')} on this load?`}
+            </CyDText>
+            <CyDTouchView
+              className='flex flex-row items-center gap-[4px]'
+              onPress={() => {
+                setPlanChangeModalVisible(true);
+                void analytics().logEvent('explore_premium_load_card_cta');
+              }}>
+              <CyDText className='font-extrabold text-[14px] underline'>
+                {'Explore'}
+              </CyDText>
+              <GradientText
+                textElement={
+                  <CyDText className='font-extrabold text-[14px] underline'>
+                    {'Premium'}
+                  </CyDText>
+                }
+                gradientColors={['#FA9703', '#F89408', '#F6510A']}
+              />
+            </CyDTouchView>
+          </CyDView>
+        )}
+        <CyDView
+          className={'flex flex-row justify-between items-center px-[10px]'}>
+          <Button
+            title={t<string>('CANCEL')}
+            titleStyle='text-[14px]'
+            disabled={loading}
+            type={ButtonType.SECONDARY}
+            onPress={() => {
+              onCancel();
+            }}
+            style={'h-[60px] w-[46%] mr-[6px]'}
+          />
+          <Button
+            title={
+              t<string>('LOAD_ALL_CAPS') +
+              (!isPayDisabled
+                ? tokenExpiryTime
+                  ? ' (' + String(tokenExpiryTime) + ')'
+                  : ''
+                : '')
             }
-          }}
-          isPrivateKeyDependent={true}
-          style={'h-[60px] w-[46%] ml-[6px]'}
-        />
+            titleStyle='text-[14px]'
+            loading={loading}
+            disabled={
+              isPayDisabled ||
+              (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
+            }
+            onPress={() => {
+              if (!isPayDisabled) {
+                void onLoadPress();
+              }
+            }}
+            isPrivateKeyDependent={true}
+            style={'h-[60px] w-[46%] ml-[6px]'}
+          />
+        </CyDView>
       </CyDView>
     </CyDView>
   );
 }
 
 const styles = StyleSheet.create({
-  loaderStyle: {
-    width: 20,
-  },
   linearGradient: {
     borderRadius: 24,
     paddingHorizontal: 10,

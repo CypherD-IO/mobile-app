@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/native';
 import clsx from 'clsx';
 import moment from 'moment';
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
@@ -28,6 +28,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
+import { get } from 'lodash';
 
 interface CardTransactionItemProps {
   item: ICardTransaction;
@@ -75,7 +76,7 @@ const CHANNEL_MAP = {
   },
   ATM: { categoryIcon: AppImages.ATM_ICON_GRAY, paymentChannel: 'ATM' },
 };
-const getChannelIcon = (channel: string) => CHANNEL_MAP[channel] || {};
+const getChannelIcon = (channel: string) => get(CHANNEL_MAP, [channel], {});
 
 const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   const { t } = useTranslation();
@@ -86,7 +87,6 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
     createdAt,
     title,
     amount,
-    isSettled,
     tStatus,
     fxCurrencyValue,
     fxCurrencySymbol,
@@ -142,12 +142,14 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
               <CyDText className='text-[11px] font-base150'>
                 {formatToLocalDate(moment.unix(createdAt).toISOString())}
               </CyDText>
-              {getChannelIcon(wallet ?? channel).categoryIcon && (
+              {getChannelIcon(wallet ?? channel ?? '').categoryIcon && (
                 <>
                   <CyDView className='w-[4px] h-[4px] bg-base150 rounded-full mx-[4px]' />
 
                   <CyDFastImage
-                    source={getChannelIcon(wallet ?? channel).categoryIcon}
+                    source={
+                      getChannelIcon(wallet ?? channel ?? '').categoryIcon
+                    }
                     className='h-[16px] w-[16px]'
                     resizeMode='contain'
                   />

@@ -61,6 +61,11 @@ import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
 import { cardDesign } from '../../../models/cardDesign.interface';
 import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
 import Intercom from '@intercom/intercom-react-native';
+import GradientText from '../../../components/gradientText';
+import LinearGradient from 'react-native-linear-gradient';
+import SelectPlanModal from '../../../components/selectPlanModal';
+import moment from 'moment';
+import analytics from '@react-native-firebase/analytics';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -122,10 +127,59 @@ export default function CypherCardScreen() {
   const rcApplicationStatus = get(cardProfile, ['rc', 'applicationStatus'], '');
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
-  const { getWalletProfile } = useCardUtilities();
-  const { isLegacyCardClosed } = useCardUtilities();
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
+  const [planInfo, setPlanInfo] = useState<{
+    expiresOn: number;
+    metalCardEligible: boolean;
+    optedPlanId: CypherPlanId;
+    planId: CypherPlanId;
+    updatedOn: number;
+  } | null>(get(cardProfile, ['planInfo'], null));
+  const { getWalletProfile, isLegacyCardClosed, getCardSpendStats } =
+    useCardUtilities();
+  const [spendStats, setSpendStats] = useState<{
+    isPremiumPlan: boolean;
+    amount: number;
+    year: string;
+    timePeriod: string;
+  }>({
+    isPremiumPlan: false,
+    amount: 0,
+    year: '2025-01-01',
+    timePeriod: '3 months',
+  });
+
   const onRefresh = async () => {
     void refreshProfile();
+    const spendStatsFromAPI = await getCardSpendStats();
+    if (spendStatsFromAPI) {
+      const premiumDataStats = spendStatsFromAPI?.projectedSavings;
+      let amount = 0;
+      if (premiumDataStats?.isPremiumPlan) {
+        amount =
+          Number(premiumDataStats?.projectedFxFeeSaved) +
+          Number(premiumDataStats?.projectedLoadFeeSaved);
+      } else {
+        amount =
+          Number(premiumDataStats?.projectedFxFeeLoss) +
+          Number(premiumDataStats?.projectedLoadFeeLoss);
+      }
+
+      // Calculate months between current date and target year using moment
+      const targetDate = moment(premiumDataStats?.year);
+      const currentDate = moment();
+      const monthsDiff = Math.abs(currentDate.diff(targetDate, 'months'));
+      const timePeriod = `${monthsDiff} months`;
+
+      setSpendStats({
+        ...spendStats,
+        amount,
+        isPremiumPlan: premiumDataStats?.isPremiumPlan,
+        year: premiumDataStats?.year,
+        timePeriod,
+      });
+    }
+    //
     setCardBalance('');
     if (cardId !== CARD_IDS.HIDDEN_CARD) {
       await fetchCardBalance();
@@ -155,6 +209,7 @@ export default function CypherCardScreen() {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
+    setPlanInfo(get(data, ['planInfo'], null));
     if (cardProvider !== CardProviders.PAYCADDY) {
       setIsTermsAndConditionsModalVisible(
         !get(data, [cardProvider, 'termsAgreedOn'], 0),
@@ -369,6 +424,13 @@ export default function CypherCardScreen() {
         }}
       />
 
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        cardProvider={cardProvider}
+        cardId={cardId}
+      />
+
       {(shouldShowLocked() ||
         shouldShowActionNeeded() ||
         shouldShowContactSupport()) && (
@@ -439,14 +501,20 @@ export default function CypherCardScreen() {
         ) && (
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDView>
-              <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
+              <CyDText className='font-extrabold text-[26px] text-base100'>
+                Cards
+              </CyDText>
             </CyDView>
             <CyDTouchView
               className='bg-n40 rounded-full p-[8px] flex flex-row items-center'
               onPress={() => {
                 navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
                   cardProvider,
-                  card: get(cardProfile, [cardProvider, 'cards', 0]),
+                  card: get(cardProfile, [
+                    cardProvider,
+                    'cards',
+                    currentCardIndex,
+                  ]),
                   cardDesignData,
                   onBuyAdditionalPhysicalCard: onPressUpgradeNow,
                 });
@@ -675,7 +743,7 @@ export default function CypherCardScreen() {
                   return <CardTransactionItem item={transaction} key={index} />;
                 })}
                 <CyDTouchView
-                  className='bg-n40 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
+                  className='bg-n0 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
                   onPress={() =>
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,
@@ -686,7 +754,7 @@ export default function CypherCardScreen() {
                     {t<string>('VIEW_ALL_TRANSACTIONS')}
                   </CyDText>
                   <CyDMaterialDesignIcons
-                    name='arrow-right-thin'
+                    name='chevron-right'
                     size={24}
                     className='text-base400'
                   />
@@ -726,6 +794,102 @@ export default function CypherCardScreen() {
               </CyDTouchView>
             </CyDView>
           )}
+
+          {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
+            <CyDView className='mx-[12px] mt-[13px] bg-p10 p-6 rounded-xl'>
+              <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
+                <CyDText className='font-extrabold text-[20px]'>
+                  {'Cypher'}
+                </CyDText>
+                <GradientText
+                  textElement={
+                    <CyDText className='font-extrabold text-[20px]'>
+                      {'Premium'}
+                    </CyDText>
+                  }
+                  gradientColors={[
+                    '#EDD500',
+                    '#F89408',
+                    '#FA9703',
+                    '#F48F0F',
+                    '#F6510A',
+                    '#F89408',
+                  ]}
+                  locations={[0, 0.8, 0.85, 0.9, 0.95, 1]}
+                />
+              </CyDView>
+              <CyDView className='mt-[16px]'>
+                {spendStats.amount > 20 ? (
+                  <CyDView>
+                    <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                      <CyDText className='font-medium text-[14px] text-base200'>
+                        {'You could have saved'}
+                      </CyDText>
+
+                      <LinearGradient
+                        colors={['#FA9703', '#F7510A', '#FA9703']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        locations={[0, 0.5, 1]}
+                        style={style.gradientStyle}>
+                        <CyDText className='font-semibold text-[14px] text-white'>
+                          {`$${spendStats.amount}`}
+                        </CyDText>
+                      </LinearGradient>
+                      <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                        {'in'}
+                      </CyDText>
+                    </CyDView>
+                    <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                      {`last ${spendStats.timePeriod} and also get a free \nMetal card`}
+                    </CyDText>
+                  </CyDView>
+                ) : (
+                  <CyDView className='self-center'>
+                    <CyDText className='font-medium text-[14px] text-center text-base200'>
+                      {'Save more on each transaction and'}
+                    </CyDText>
+                    <CyDText className='text-[14px] font-medium text-center text-base200'>
+                      {'get a free premium metal card'}
+                    </CyDText>
+                  </CyDView>
+                )}
+              </CyDView>
+              <CyDView className='mt-[16px] flex flex-row justify-between items-center mx-[16px]'>
+                <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                  <CyDMaterialDesignIcons
+                    name='check-bold'
+                    size={18}
+                    className='text-base400'
+                  />
+                  <CyDText className='font-semibold text-[12px]'>
+                    {'Zero Forex Markup'}
+                  </CyDText>
+                </CyDView>
+                <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                  <CyDMaterialDesignIcons
+                    name='check-bold'
+                    size={18}
+                    className='text-base400'
+                  />
+                  <CyDText className='font-semibold text-[12px]'>
+                    {'Zero Forex Markup'}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+
+              <Button
+                title={'Explore Premium'}
+                type={ButtonType.DARK}
+                onPress={() => {
+                  setPlanChangeModalVisible(true);
+                  void analytics().logEvent('explore_premium_card_page_cta');
+                }}
+                style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black'
+                titleStyle='text-[14px] text-white font-semibold'
+              />
+            </CyDView>
+          )}
         </CyDView>
       </CyDScrollView>
     </CyDSafeAreaView>
@@ -736,5 +900,10 @@ export default function CypherCardScreen() {
 const style = StyleSheet.create({
   loaderStyle: {
     height: 38,
+  },
+  gradientStyle: {
+    borderRadius: 100,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
   },
 });
