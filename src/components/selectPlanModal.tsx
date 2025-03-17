@@ -23,11 +23,10 @@ import AppImages from '../../assets/images/appImages';
 import { t } from 'i18next';
 import { GlobalContext, GlobalContextDef } from '../core/globalContext';
 import useCardUtilities from '../hooks/useCardUtilities';
-import { get, round } from 'lodash';
+import { get } from 'lodash';
 import { ButtonType, CypherPlanId, GlobalContextType } from '../constants/enum';
 import Button from './v2/button';
 import { useSharedValue } from 'react-native-reanimated';
-import { Slider } from 'react-native-awesome-slider';
 import clsx from 'clsx';
 import { CYPHER_PLAN_ID_NAME_MAPPING } from '../constants/data';
 import useAxios from '../core/HttpRequest';
@@ -39,14 +38,12 @@ import {
   NavigationProp,
   useNavigation,
 } from '@react-navigation/native';
+import { parseErrorMessage } from '../core/util';
 
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end',
-  },
-  sliderContainer: {
-    borderRadius: 4,
   },
   loaderStyle: {
     width: 19,
@@ -256,7 +253,7 @@ export default function SelectPlanModal({
             showModal('state', {
               type: 'error',
               title: t('PLAN_UPDATE_FAILED'),
-              description: error?.message ?? error,
+              description: parseErrorMessage(error),
               onSuccess: hideModal,
               onFailure: hideModal,
             });

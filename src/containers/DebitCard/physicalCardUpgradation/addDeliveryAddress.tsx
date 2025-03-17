@@ -31,7 +31,6 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import clsx from 'clsx';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
