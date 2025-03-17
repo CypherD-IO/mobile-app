@@ -82,6 +82,9 @@ export default function ShippingConfirmation() {
             <CyDText className='text-[14px] my-[2px]'>
               {shippingAddress?.phoneNumber}
             </CyDText>
+            <CyDText className='text-[14px] my-[2px]'>
+              {shippingAddress?.taxId}
+            </CyDText>
           </CyDView>
         </CyDView>
       </CyDView>
