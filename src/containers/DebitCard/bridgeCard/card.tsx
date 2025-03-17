@@ -39,6 +39,7 @@ import useAxios from '../../../core/HttpRequest';
 import {
   copyToClipboard,
   decryptWithSecretKey,
+  shouldShowGetPhysicalCardInStack,
   sleepFor,
 } from '../../../core/util';
 import { Card } from '../../../models/card.model';
@@ -62,6 +63,7 @@ import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import moment from 'moment';
+import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
 
 interface CardSecrets {
   cvv: string;
@@ -186,6 +188,7 @@ export default function CardScreen({
     // Check limits for each card
     for (const card of cards) {
       if (
+        currentCardProvider !== CardProviders.REAP_CARD ||
         !card.cardId ||
         card.cardId === CARD_IDS.HIDDEN_CARD ||
         (card.status !== CardStatus.IN_ACTIVE &&
@@ -355,6 +358,22 @@ export default function CardScreen({
     const actualCards = userCardDetails.cards
       .filter(card => card.cardId !== CARD_IDS.METAL_CARD)
       .map(card => card);
+
+    if (
+      shouldShowGetPhysicalCardInStack(cardProfile, cardDesignData) &&
+      !isHiddenCard() &&
+      currentCardProvider === CardProviders.REAP_CARD
+    ) {
+      actualCards.push({
+        cardId: '',
+        bin: '',
+        last4: '',
+        network: 'rc',
+        status: 'upgradeAvailable',
+        type: CardType.PHYSICAL,
+        designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
+      });
+    }
 
     if (isRcUpgradableCardShown) {
       actualCards.unshift({
@@ -908,6 +927,30 @@ const RenderCardActions = ({
 
   if (card.status === CardStatus.HIDDEN) {
     return <></>;
+  } else if (card.status === 'upgradeAvailable') {
+    if (shouldShowGetPhysicalCardInStack(cardProfile, cardDesignData)) {
+      return (
+        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
+          <CyDText className='text-[14px] font-semibold text-center mb-[12px] mt-[6px] w-[90%]'>
+            {
+              'Obtain a Physical card and enjoy the convenience of making purchases worldwide'
+            }
+          </CyDText>
+          <Button
+            title={'Get Physical Card'}
+            style='px-[28px] w-[300px]'
+            onPress={() => {
+              logAnalytics(AnalyticEvent.GET_PHYSICAL_CARD, {
+                from: 'card_stack',
+                type: 'plastic',
+                address: cardProfile.primaryEthAddress,
+              });
+              onPressUpgradeNow();
+            }}
+          />
+        </CyDView>
+      );
+    }
   } else if (status === CardStatus.PENDING_ACTIVATION) {
     return (
       <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
