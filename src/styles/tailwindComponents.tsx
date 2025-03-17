@@ -42,7 +42,8 @@ export const CyDText = (props: TextProps) => {
   return (
     <Text
       {...props}
-      className={`text-base400 font-manrope ${props?.className ?? ''}`}
+      className={`font-manrope text-base400 ${props?.className ?? ''}`}
+      style={props.style}
     />
   );
 };

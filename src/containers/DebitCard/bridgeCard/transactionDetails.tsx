@@ -1,12 +1,6 @@
 import Intercom from '@intercom/intercom-react-native';
 import moment from 'moment';
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -42,6 +36,7 @@ import {
   CardStatus,
   GlobalContextType,
   CardOperationsAuthType,
+  CypherPlanId,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
@@ -66,13 +61,16 @@ import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Dimensions, StyleSheet, Linking, Platform } from 'react-native';
+import { StyleSheet, Linking, Platform } from 'react-native';
 import CyDModalLayout from '../../../components/v2/modal';
 import Button from '../../../components/v2/button';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
 import useCardUtilities from '../../../hooks/useCardUtilities';
-import { CyDIconsPack } from '../../../customFonts';
+import LinearGradient from 'react-native-linear-gradient';
+import GradientText from '../../../components/gradientText';
+import SelectPlanModal from '../../../components/selectPlanModal';
+import analytics from '@react-native-firebase/analytics';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -302,7 +300,13 @@ const MerchantDetailsModal = ({
           }}
           style='py-[15px]'
           type={ButtonType.GREY_FILL}
-          icon={<CyDMaterialDesignIcons name='map-marker-radius' size={24} />}
+          icon={
+            <CyDMaterialDesignIcons
+              name='map-marker-radius'
+              size={24}
+              className='text-base400'
+            />
+          }
         />
       </CyDView>
     </CyDModalLayout>
@@ -568,7 +572,6 @@ const getStatusText = (transaction: ICardTransaction) => {
 };
 
 const TransactionDetail = ({
-  isSettled = false,
   isDeclined = false,
   reason = '',
   metadata,
@@ -583,7 +586,6 @@ const TransactionDetail = ({
   activateCard,
   fetchCardBalance,
 }: {
-  isSettled: boolean;
   isDeclined?: boolean;
   reason?: string;
   cardDetails: Card;
@@ -937,7 +939,7 @@ export default function TransactionDetails() {
   const { fxCurrencySymbol } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const { getWithAuth, patchWithAuth, postWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth } = useAxios();
   const cardProfile: CardProfile | undefined =
     globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
@@ -945,13 +947,14 @@ export default function TransactionDetails() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [limits, setLimits] = useState({});
   const insets = useSafeAreaInsets();
-  const screenHeight = Dimensions.get('window').height;
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
   const [isMerchantDetailsModalVisible, setIsMerchantDetailsModalVisible] =
     useState(false);
   const viewRef = useRef<any>(null);
   const { getWalletProfile } = useCardUtilities();
+  const planInfo = get(cardProfile, ['planInfo'], null);
 
-  const cardDetails: Card = get(cardProfile, [provider, 'cards'])?.find(
+  const cardDetails: Card = get(cardProfile, [provider, 'cards'], null)?.find(
     card => card?.cardId === transaction?.cardId,
   ) ?? {
     bin: '',
@@ -1140,7 +1143,6 @@ export default function TransactionDetails() {
 
       await Share.open(shareImage);
     } catch (error) {
-      console.error('Share error:', error);
       if (error.message !== 'User did not share') {
         Toast.show({
           type: 'error',
@@ -1155,7 +1157,6 @@ export default function TransactionDetails() {
     try {
       await shareTransactionImage();
     } catch (error) {
-      console.error('Share error:', error);
       Toast.show({
         type: 'error',
         text1: 'Share failed',
@@ -1164,8 +1165,43 @@ export default function TransactionDetails() {
     }
   }
 
+  const shouldShowPremium = () => {
+    let showPremium = false;
+
+    if (planInfo?.planId !== CypherPlanId.PRO_PLAN) {
+      if (transaction.type === CardTransactionTypes.CREDIT) {
+        showPremium = true;
+      } else if (
+        (transaction.type === CardTransactionTypes.DEBIT ||
+          transaction.tStatus === ReapTxnStatus.DECLINED) &&
+        !transaction.title.toLowerCase().includes('crypto withdrawal')
+      ) {
+        showPremium = true;
+      }
+    }
+
+    return showPremium;
+  };
+
+  const getPremiumAmount = () => {
+    if (transaction?.type === CardTransactionTypes.CREDIT) {
+      const fee = get(transaction, ['tokenData', 'fee'], 0);
+      return Number(fee);
+    } else if (transaction?.type === CardTransactionTypes.DEBIT) {
+      const fee = get(transaction, ['fxFee'], 0);
+      return Number(fee / 2);
+    }
+    return 0;
+  };
+
   return (
     <>
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        cardProvider={provider}
+        cardId={cardDetails.cardId}
+      />
       {transaction?.metadata?.merchant && (
         <MerchantDetailsModal
           showModal={isMerchantDetailsModalVisible}
@@ -1190,7 +1226,7 @@ export default function TransactionDetails() {
             <CyDView className='min-h-full'>
               <CyDView
                 className={
-                  'flex flex-col justify-center items-center mt-[24px]'
+                  'flex flex-col justify-center items-center my-[24px]'
                 }>
                 <CyDView className='h-[36px] w-[36px] rounded-full bg-n40 flex items-center justify-center'>
                   <CyDFastImage
@@ -1250,13 +1286,14 @@ export default function TransactionDetails() {
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row items-center mt-[4px]'>
-                  {getChannelIcon(transaction?.wallet ?? transaction?.channel)
-                    ?.categoryIcon && (
+                  {getChannelIcon(
+                    transaction?.wallet ?? transaction?.channel ?? '',
+                  )?.categoryIcon && (
                     <>
                       <CyDFastImage
                         source={
                           getChannelIcon(
-                            transaction?.wallet ?? transaction?.channel,
+                            transaction?.wallet ?? transaction?.channel ?? '',
                           )?.categoryIcon
                         }
                         className='h-[16px] w-[16px]'
@@ -1265,7 +1302,7 @@ export default function TransactionDetails() {
                       <CyDText className='text-[12px] text-n200 ml-[2px] font-semibold'>
                         {
                           getChannelIcon(
-                            transaction?.wallet ?? transaction?.channel,
+                            transaction?.wallet ?? transaction?.channel ?? '',
                           )?.paymentChannel
                         }
                       </CyDText>
@@ -1313,74 +1350,160 @@ export default function TransactionDetails() {
                   </CyDView>
                 )}
               </CyDView>
-              <CyDView
-                style={{
-                  minHeight: screenHeight - insets.top - 250, // 200 is approximate header height
-                }}
-                className='w-full flex-1 bg-n0 px-[25px] mt-[24px]'>
-                <TransactionDetail
-                  isSettled={transaction?.isSettled ?? false}
-                  isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
-                  reason={transaction?.cDReason ?? transaction?.dReason ?? ''}
-                  metadata={transaction?.metadata?.merchant}
-                  getRequiredData={getRequiredData}
-                  cardDetails={cardDetails}
-                  limits={limits}
-                  provider={provider}
-                  addIntlCountry={addIntlCountry}
-                  navigation={navigation}
-                  transaction={transaction}
-                  setIsMerchantDetailsModalVisible={
-                    setIsMerchantDetailsModalVisible
-                  }
-                  activateCard={activateCard}
-                  fetchCardBalance={fetchCardBalance}
-                />
+              <CyDView className='flex flex-col flex-1 justify-between bg-n0'>
+                <CyDView className='w-full bg-n0 px-[25px] mt-[24px]'>
+                  <TransactionDetail
+                    isSettled={transaction?.isSettled ?? false}
+                    isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
+                    reason={transaction?.cDReason ?? transaction?.dReason ?? ''}
+                    metadata={transaction?.metadata?.merchant}
+                    getRequiredData={getRequiredData}
+                    cardDetails={cardDetails}
+                    limits={limits}
+                    provider={provider}
+                    addIntlCountry={addIntlCountry}
+                    navigation={navigation}
+                    transaction={transaction}
+                    setIsMerchantDetailsModalVisible={
+                      setIsMerchantDetailsModalVisible
+                    }
+                    activateCard={activateCard}
+                    fetchCardBalance={fetchCardBalance}
+                  />
 
-                {Number(transaction?.mccPaddingAmount) > 0 && (
-                  <CyDView className='flex flex-row gap-[4px] bg-p0 rounded-[6px] border-[1px] border-p400 p-[12px] mt-[24px]'>
-                    <CyDMaterialDesignIcons
-                      name={'information-outline'}
-                      size={16}
-                      className={'text-p400 mt-[4px] flex-shrink-0'}
+                  {Number(transaction?.mccPaddingAmount) > 0 && (
+                    <CyDView className='flex flex-row gap-[4px] bg-p0 rounded-[6px] border-[1px] border-p400 p-[12px] mt-[24px]'>
+                      <CyDMaterialDesignIcons
+                        name={'information-outline'}
+                        size={16}
+                        className={'text-p400 mt-[4px] flex-shrink-0'}
+                      />
+                      <CyDText className='text-p400 text-[12px] font-medium flex-1 flex-wrap'>
+                        {t('MCC_PADDING_MESSAGE', {
+                          amount: transaction?.mccPaddingAmount,
+                          days: t('REFUND_DAYS_RANGE'),
+                        })}
+                      </CyDText>
+                    </CyDView>
+                  )}
+
+                  <CyDView className='flex flex-row justify-start mt-[24px] mb-[20px]'>
+                    <Button
+                      title={capitalize(t('SHARE'))}
+                      onPress={() => {
+                        void shareTransaction();
+                      }}
+                      type={ButtonType.GREY_FILL}
+                      icon={
+                        <CyDMaterialDesignIcons
+                          name={'share-variant'}
+                          size={16}
+                          className='text-base400 mr-[6px]'
+                        />
+                      }
+                      style='bg-n10 border-[1px] border-n40 py-[8px] px-[8px] text-black mx-[4px] rounded-[4px] '
+                      titleStyle='text-[14px] font-medium'
                     />
-                    <CyDText className='text-p400 text-[12px] font-medium flex-1 flex-wrap'>
-                      {t('MCC_PADDING_MESSAGE', {
-                        amount: transaction?.mccPaddingAmount,
-                        days: t('REFUND_DAYS_RANGE'),
-                      })}
-                    </CyDText>
+                    <Button
+                      title={t('NEED_HELP')}
+                      onPress={() => {
+                        void Intercom.present();
+                        sendFirebaseEvent(hdWalletContext, 'support');
+                      }}
+                      type={ButtonType.GREY_FILL}
+                      style='bg-n10 border-[1px] border-n40 py-[8px] px-[8px] text-black mx-[4px] rounded-[4px]'
+                      titleStyle='text-[14px] font-medium'
+                    />
+                  </CyDView>
+                </CyDView>
+                {shouldShowPremium() && (
+                  <CyDView
+                    className='bg-p10 p-6'
+                    style={{
+                      paddingBottom: insets.bottom + 20,
+                    }}>
+                    <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
+                      <CyDText className='font-extrabold text-[20px]'>
+                        {'Cypher'}
+                      </CyDText>
+                      <GradientText
+                        textElement={
+                          <CyDText className='font-extrabold text-[20px]'>
+                            {'Premium'}
+                          </CyDText>
+                        }
+                        gradientColors={['#FA9703', '#F89408', '#F6510A']}
+                      />
+                    </CyDView>
+                    <CyDView className='mt-[16px]'>
+                      <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                        <CyDText className='font-medium text-[14px] text-base200'>
+                          {'Save'}
+                        </CyDText>
+                        {getPremiumAmount() > 1 ? (
+                          <LinearGradient
+                            colors={['#FA9703', '#F7510A', '#FA9703']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            locations={[0, 0.5, 1]}
+                            style={styles.gradientStyle}>
+                            <CyDText className='font-semibold text-[14px] text-white'>
+                              {`~$${getPremiumAmount()}`}
+                            </CyDText>
+                          </LinearGradient>
+                        ) : (
+                          <CyDText className='font-medium text-[14px] text-base200'>
+                            {'more'}
+                          </CyDText>
+                        )}
+                      </CyDView>
+                      {transaction.type === CardTransactionTypes.CREDIT ? (
+                        <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                          {'on this load with premium'}
+                        </CyDText>
+                      ) : (
+                        <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                          {'on this transaction with premium'}
+                        </CyDText>
+                      )}
+                    </CyDView>
+                    <CyDView className='mt-[16px] flex flex-row justify-center items-center mx-[24px] gap-x-[33px]'>
+                      <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                        <CyDMaterialDesignIcons
+                          name='check-bold'
+                          size={18}
+                          className='text-base400'
+                        />
+                        <CyDText className='font-semibold text-[12px]'>
+                          {'Zero Forex Markup'}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                        <CyDMaterialDesignIcons
+                          name='check-bold'
+                          size={18}
+                          className='text-base400'
+                        />
+                        <CyDText className='font-semibold text-[12px]'>
+                          {'Zero Forex Markup'}
+                        </CyDText>
+                      </CyDView>
+                    </CyDView>
+
+                    <Button
+                      title={'Explore Premium'}
+                      type={ButtonType.DARK}
+                      onPress={() => {
+                        void analytics().logEvent(
+                          'explore_premium_tn_detail_cta',
+                        );
+                        setPlanChangeModalVisible(true);
+                      }}
+                      style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black w-2/3 self-center'
+                      titleStyle='text-[14px] text-white font-semibold'
+                    />
                   </CyDView>
                 )}
-
-                <CyDView className='flex flex-row justify-center mt-[24px] mb-[20px]'>
-                  <Button
-                    title={capitalize(t('SHARE'))}
-                    onPress={() => {
-                      void shareTransaction();
-                    }}
-                    type={ButtonType.GREY_FILL}
-                    icon={
-                      <CyDMaterialDesignIcons
-                        name={'share'}
-                        size={16}
-                        className='text-base400'
-                      />
-                    }
-                    style='bg-n10 border-[1px] border-n40 py-[8px] px-[8px] text-black mx-[4px]'
-                    titleStyle='text-[14px] font-medium'
-                  />
-                  <Button
-                    title={t('NEED_HELP')}
-                    onPress={() => {
-                      void Intercom.present();
-                      sendFirebaseEvent(hdWalletContext, 'support');
-                    }}
-                    type={ButtonType.GREY_FILL}
-                    style='bg-n10 border-[1px] border-n40 py-[8px] px-[8px] text-black mx-[4px]'
-                    titleStyle='text-[14px] font-medium'
-                  />
-                </CyDView>
               </CyDView>
             </CyDView>
           </CyDScrollView>
@@ -1395,5 +1518,10 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'flex-end',
     margin: 0,
+  },
+  gradientStyle: {
+    borderRadius: 100,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
   },
 });
