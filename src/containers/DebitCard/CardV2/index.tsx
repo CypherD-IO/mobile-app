@@ -157,12 +157,12 @@ export default function CypherCardScreen() {
       let amount = 0;
       if (premiumDataStats?.isPremiumPlan) {
         amount =
-          Number(premiumDataStats?.projectedFxFeeSaved) +
-          Number(premiumDataStats?.projectedLoadFeeSaved);
+          Number(premiumDataStats?.projectedFxFeeSaved ?? 0) +
+          Number(premiumDataStats?.projectedLoadFeeSaved ?? 0);
       } else {
         amount =
-          Number(premiumDataStats?.projectedFxFeeLoss) +
-          Number(premiumDataStats?.projectedLoadFeeLoss);
+          Number(premiumDataStats?.projectedFxFeeLost ?? 0) +
+          Number(premiumDataStats?.projectedLoadFeeLost ?? 0);
       }
 
       // Calculate months between current date and target year using moment
