@@ -39,7 +39,6 @@ import useAxios from '../../../core/HttpRequest';
 import {
   copyToClipboard,
   decryptWithSecretKey,
-  shouldShowGetPhysicalCardInStack,
   sleepFor,
 } from '../../../core/util';
 import { Card } from '../../../models/card.model';
@@ -57,7 +56,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { showToast } from '../../utilities/toastUtility';
-import { cardDesign } from '../../../models/cardDesign.interface';
+import { CardDesign } from '../../../models/cardDesign.interface';
 import Carousel from 'react-native-reanimated-carousel';
 import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
@@ -93,7 +92,7 @@ export default function CardScreen({
   onPressUpgradeNow: () => void;
   onPressActivateCard: (card: any) => void;
   refreshProfile: () => void;
-  cardDesignData: cardDesign;
+  cardDesignData: CardDesign;
   isAccountLocked: boolean;
 }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -123,10 +122,6 @@ export default function CardScreen({
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [trackingDetails, setTrackingDetails] = useState({});
   const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
-
-  const isHiddenCard = () => {
-    return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
-  };
 
   const setUpgradeCorrectedCardIndex = (index: number) => {
     setCurrentCardIndex(index);
@@ -208,7 +203,7 @@ export default function CardScreen({
             moment().unix() >= response.data?.timeToRemindLater))
       ) {
         navigation.navigate(screenTitle.DEFAULT_LIMIT_SETUP, {
-          state: { card: card, provider: currentCardProvider },
+          state: { card, provider: currentCardProvider },
         });
         break; // Exit loop once we find a card with default settings
       }
@@ -227,6 +222,9 @@ export default function CardScreen({
           return AppImages.RC_VIRTUAL_DISABLED;
         }
         return AppImages.RC_VIRTUAL_DISABLED;
+      }
+      if (card.status === CardStatus.ADDITIONAL_CARD) {
+        return AppImages.ADDITIONAL_CARD;
       }
       const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`;
       return {
@@ -336,6 +334,7 @@ export default function CardScreen({
         )}
         {card.status !== CardStatus.HIDDEN &&
           card.status !== CardStatus.RC_UPGRADABLE &&
+          card.status !== CardStatus.ADDITIONAL_CARD &&
           cardProfile.provider === CardProviders.REAP_CARD && (
             <CyDView className='absolute bottom-[14px] left-[14px]'>
               <CyDText
@@ -359,19 +358,16 @@ export default function CardScreen({
       .filter(card => card.cardId !== CARD_IDS.METAL_CARD)
       .map(card => card);
 
-    if (
-      shouldShowGetPhysicalCardInStack(cardProfile, cardDesignData) &&
-      !isHiddenCard() &&
-      currentCardProvider === CardProviders.REAP_CARD
-    ) {
-      actualCards.push({
+    if (currentCardProvider === CardProviders.REAP_CARD) {
+      actualCards.unshift({
         cardId: '',
         bin: '',
         last4: '',
         network: 'rc',
-        status: 'upgradeAvailable',
+        status: CardStatus.ADDITIONAL_CARD,
         type: CardType.PHYSICAL,
         designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
+        cardProvider: currentCardProvider,
       });
     }
 
@@ -380,7 +376,7 @@ export default function CardScreen({
         cardId: '',
         bin: '',
         last4: '',
-        network: 'pc',
+        network: 'rc',
         cardProvider: currentCardProvider,
         status: CardStatus.RC_UPGRADABLE,
         type: CardType.VIRTUAL,
@@ -413,6 +409,7 @@ export default function CardScreen({
           data={cardsWithUpgrade}
           snapEnabled={true}
           pagingEnabled={true}
+          defaultIndex={cardsWithUpgrade?.length > 1 ? 1 : 0}
           mode='parallax'
           modeConfig={{
             parallaxScrollingScale: 0.92,
@@ -440,56 +437,6 @@ export default function CardScreen({
           />
         )}
       </CyDView>
-      {/* {get(cardsWithUpgrade, currentCardIndex)?.cardId !== 'hidden' ? (
-        <CyDView className={'h-[350px]'}>
-          <CyDFlatList
-            className='py-[24px] flex-1 '
-            horizontal
-            data={cardsWithUpgrade}
-            showsHorizontalScrollIndicator={false}
-            snapToAlignment='center'
-            decelerationRate='fast'
-            snapToInterval={320}
-            contentContainerStyle={{
-              paddingHorizontal: 20,
-            }}
-            renderItem={({ item, index }) => (
-              <CyDView
-                className='w-[270px] mx-[20px] h-[190px]'
-                style={{
-                  opacity: currentCardIndex === index ? 1 : 0.4,
-                  transform: [{ scale: currentCardIndex === index ? 1 : 0.9 }],
-                }}>
-                {renderItem({ item, index })}
-              </CyDView>
-            )}
-            onMomentumScrollEnd={event => {
-              const contentOffset = event.nativeEvent.contentOffset.x;
-              const index = Math.round(contentOffset / 320);
-              setUpgradeCorrectedCardIndex(index);
-            }}
-          />
-          {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) && (
-            <RenderCardActions
-              card={get(cardsWithUpgrade, currentCardIndex)}
-              cardProvider={currentCardProvider}
-              navigation={navigation}
-              refreshProfile={refreshProfile}
-              onPressUpgradeNow={onPressUpgradeNow}
-              onPressActivateCard={onPressActivateCard}
-              cardProfile={cardProfile}
-              trackingDetails={trackingDetails}
-              cardDesignData={cardDesignData}
-            />
-          )}
-        </CyDView>
-      ) : (
-        <>
-          {cardsWithUpgrade.map((card, index) =>
-            renderItem({ item: card, index }),
-          )}
-        </>
-      )} */}
     </>
   );
 }
@@ -514,7 +461,7 @@ const RenderCardActions = ({
   onPressActivateCard: (card: Card) => void;
   cardProfile: CardProfile;
   trackingDetails: any;
-  cardDesignData: cardDesign;
+  cardDesignData: CardDesign;
   isAccountLocked: boolean;
 }) => {
   const { t } = useTranslation();
@@ -927,30 +874,25 @@ const RenderCardActions = ({
 
   if (card.status === CardStatus.HIDDEN) {
     return <></>;
-  } else if (card.status === 'upgradeAvailable') {
-    if (shouldShowGetPhysicalCardInStack(cardProfile, cardDesignData)) {
-      return (
-        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
-          <CyDText className='text-[14px] font-semibold text-center mb-[12px] mt-[6px] w-[90%]'>
-            {
-              'Obtain a Physical card and enjoy the convenience of making purchases worldwide'
-            }
-          </CyDText>
-          <Button
-            title={'Get Physical Card'}
-            style='px-[28px] w-[300px]'
-            onPress={() => {
-              logAnalytics(AnalyticEvent.GET_PHYSICAL_CARD, {
-                from: 'card_stack',
-                type: 'plastic',
-                address: cardProfile.primaryEthAddress,
-              });
-              onPressUpgradeNow();
-            }}
-          />
-        </CyDView>
-      );
-    }
+  } else if (card.status === CardStatus.ADDITIONAL_CARD) {
+    // if (shouldShowGetPhysicalCardInStack(cardProfile, cardDesignData)) {
+    return (
+      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
+        <Button
+          title={'Get New Card'}
+          style='px-[28px] w-[300px] mt-[24px]'
+          onPress={() => {
+            logAnalytics(AnalyticEvent.GET_PHYSICAL_CARD, {
+              from: 'card_stack',
+              type: 'new_card',
+              address: cardProfile.primaryEthAddress,
+            });
+            onPressUpgradeNow();
+          }}
+        />
+      </CyDView>
+    );
+    // }
   } else if (status === CardStatus.PENDING_ACTIVATION) {
     return (
       <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>

@@ -50,15 +50,13 @@ import {
   TYPES,
   initialCardTxnDateRange,
 } from '../../../constants/cardPageV2';
-import { MODAL_HIDE_TIMEOUT, MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
-import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
 import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
-import { cardDesign } from '../../../models/cardDesign.interface';
+import { CardDesign } from '../../../models/cardDesign.interface';
 import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
 import Intercom from '@intercom/intercom-react-native';
 import GradientText from '../../../components/gradientText';
@@ -86,20 +84,12 @@ export default function CypherCardScreen() {
   const [currentCardIndex] = useState(0); // Not setting anywhere.
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [
-    isShippingFeeConsentModalVisible,
-    setIsShippingFeeConsentModalVisible,
-  ] = useState(false);
-  const [
     isTermsAndConditionsModalVisible,
     setIsTermsAndConditionsModalVisible,
   ] = useState(false);
-  const [cardDesignData, setCardDesignData] = useState<cardDesign | undefined>(
+  const [cardDesignData, setCardDesignData] = useState<CardDesign | undefined>(
     undefined,
   );
-  const [cardFee, setCardFee] = useState(0);
-  const [choosenPhysicalCardType, setChoosenPhysicalCardType] = useState<
-    PhysicalCardType | undefined
-  >(undefined);
   const [recentTransactions, setRecentTransactions] = useState<
     ICardTransaction[]
   >([]);
@@ -248,44 +238,7 @@ export default function CypherCardScreen() {
       setRecentTransactions(txnsToSet);
     }
   };
-  const onPressFundCard = () => {
-    navigation.navigate(
-      cardId === CARD_IDS.HIDDEN_CARD
-        ? screenTitle.FIRST_LOAD_CARD
-        : screenTitle.BRIDGE_FUND_CARD_SCREEN,
-      {
-        navigation,
-        currentCardProvider: cardProvider,
-        currentCardIndex,
-      },
-    );
-  };
-  function onModalHide() {
-    hideModal();
-    setTimeout(() => {
-      onPressFundCard();
-    }, MODAL_HIDE_TIMEOUT);
-  }
-  const onShippingConfirmation = (physicalCardType?: PhysicalCardType) => {
-    if (isShippingFeeConsentModalVisible) {
-      setIsShippingFeeConsentModalVisible(false);
-      setTimeout(() => {
-        navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
-          currentCardProvider: cardProvider,
-          ...(physicalCardType && {
-            physicalCardType,
-          }),
-        });
-      }, MODAL_HIDE_TIMEOUT);
-    } else {
-      navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
-        currentCardProvider: cardProvider,
-        ...(physicalCardType && {
-          physicalCardType,
-        }),
-      });
-    }
-  };
+
   const onCardActivationConfirmation = (card: Card) => {
     navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
       currentCardProvider: cardProvider,
@@ -296,50 +249,17 @@ export default function CypherCardScreen() {
   const getCardDesignValues = async () => {
     const response = await getWithAuth('/v1/cards/designs');
     if (!response.isError) {
-      const cardDesignValues: cardDesign = response.data;
+      const cardDesignValues: CardDesign = response.data;
       setCardDesignData(cardDesignValues);
     }
   };
 
-  const getCardFee = async (physicalCardType?: PhysicalCardType) => {
-    const planData = globalContext.globalState.planInfo;
-    const cardType =
-      physicalCardType === PhysicalCardType.METAL
-        ? CardDesignType.METAL
-        : CardDesignType.PHYSICAL;
-
-    const defaultFeeKey =
-      physicalCardType === PhysicalCardType.METAL
-        ? 'metalCardFee'
-        : 'physicalCardFee';
-
-    return get(
+  const onPressUpgradeNow = () => {
+    navigation.navigate(screenTitle.SELECT_ADDITIONAL_CARD, {
+      currentCardProvider: cardProvider,
       cardDesignData,
-      ['feeDetails', cardType],
-      get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
-    );
-  };
-
-  const onPressUpgradeNow = async (physicalCardType?: PhysicalCardType) => {
-    setChoosenPhysicalCardType(physicalCardType);
-    const fee = await getCardFee(physicalCardType);
-    setCardFee(fee);
-
-    if (Number(cardBalance) < Number(fee)) {
-      showModal('state', {
-        type: 'error',
-        title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${String(fee)} balance to upgrade to ${physicalCardType ?? 'physical'} card. Please load now to upgrade`,
-        onSuccess: onModalHide,
-        onFailure: hideModal,
-      });
-    } else {
-      if (Number(fee) > 0) {
-        setIsShippingFeeConsentModalVisible(true);
-      } else {
-        onShippingConfirmation(physicalCardType);
-      }
-    }
+      cardBalance,
+    });
   };
 
   const onPressActivateCard = (card: any) => {
@@ -515,8 +435,6 @@ export default function CypherCardScreen() {
                     'cards',
                     currentCardIndex,
                   ]),
-                  cardDesignData,
-                  onBuyAdditionalPhysicalCard: onPressUpgradeNow,
                 });
               }}>
               <CyDMaterialDesignIcons
@@ -533,18 +451,15 @@ export default function CypherCardScreen() {
 
         <CardProviderSwitch />
 
-        {isShippingFeeConsentModalVisible && (
+        {/* {isShippingFeeConsentModalVisible && (
           <ShippingFeeConsentModal
             isModalVisible={isShippingFeeConsentModalVisible}
             feeAmount={String(cardFee)}
-            onSuccess={() => {
-              onShippingConfirmation(choosenPhysicalCardType);
-            }}
             onFailure={() => {
               setIsShippingFeeConsentModalVisible(false);
             }}
           />
-        )}
+        )} */}
 
         {/* balance and add funds/activate card */}
         <CyDView className={'h-[60px] mt-[24px]'}>
