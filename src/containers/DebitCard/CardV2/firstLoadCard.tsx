@@ -433,9 +433,10 @@ export default function FirstLoadCard() {
             toAddress: solana.address ?? '',
             amountToSend: String(amountInCrypto),
             contractAddress,
-            contractDecimals,
+            tokenContractDecimals: contractDecimals,
+            isMaxGasEstimation: true,
           });
-          if (gasDetails) {
+          if (gasDetails && !gasDetails.isError) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
@@ -981,7 +982,7 @@ export default function FirstLoadCard() {
             toAddress: targetWalletAddress,
             amountToSend: actualTokensRequired,
             contractAddress,
-            contractDecimals,
+            tokenContractDecimals: contractDecimals,
           });
         }
       }
