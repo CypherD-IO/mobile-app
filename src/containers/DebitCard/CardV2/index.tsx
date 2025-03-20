@@ -625,23 +625,25 @@ export default function CypherCardScreen() {
           </CyDView>
         )}
 
-        <CyDView className='mt-[2px]'>
-          <CardScreen
-            navigation={navigation}
-            currentCardProvider={cardProvider}
-            onPressUpgradeNow={onPressUpgradeNow}
-            onPressActivateCard={onPressActivateCard}
-            refreshProfile={() => {
-              void refreshProfile();
-            }}
-            cardDesignData={cardDesignData}
-            isAccountLocked={
-              shouldBlockAction() ||
-              shouldShowLocked() ||
-              shouldShowContactSupport()
-            }
-          />
-        </CyDView>
+        {cardDesignData && (
+          <CyDView className='mt-[2px]'>
+            <CardScreen
+              navigation={navigation}
+              currentCardProvider={cardProvider}
+              onPressUpgradeNow={onPressUpgradeNow}
+              onPressActivateCard={onPressActivateCard}
+              refreshProfile={() => {
+                void refreshProfile();
+              }}
+              cardDesignData={cardDesignData}
+              isAccountLocked={
+                shouldBlockAction() ||
+                shouldShowLocked() ||
+                shouldShowContactSupport()
+              }
+            />
+          </CyDView>
+        )}
 
         <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
           {get(cardDesignData, ['allowedCount', 'metal'], 0) > 0 &&

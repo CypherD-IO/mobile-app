@@ -63,6 +63,7 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import moment from 'moment';
 import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
+import Loading from '../../../components/v2/loading';
 
 interface CardSecrets {
   cvv: string;
@@ -383,6 +384,7 @@ export default function CardScreen({
         designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
       });
     }
+    setCurrentCardIndex(1);
     return actualCards;
   }, [currentCardProvider, userCardDetails.cards, cardProfile]);
 
@@ -399,30 +401,32 @@ export default function CardScreen({
 
   return (
     <>
-      <CyDView>
-        <Carousel
-          enabled={!isAccountLocked}
-          loop={false}
-          width={width}
-          height={cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250}
-          autoPlay={false}
-          data={cardsWithUpgrade}
-          snapEnabled={true}
-          pagingEnabled={true}
-          defaultIndex={cardsWithUpgrade?.length > 1 ? 1 : 0}
-          mode='parallax'
-          modeConfig={{
-            parallaxScrollingScale: 0.92,
-            parallaxScrollingOffset: isAndroid()
-              ? width / (pixelDensity * fontScaleFactor)
-              : width * 0.31,
-            parallaxAdjacentItemScale: 0.74,
-          }}
-          scrollAnimationDuration={0}
-          onSnapToItem={setUpgradeCorrectedCardIndex}
-          renderItem={renderItem as any}
-        />
-        {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) && (
+      {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) ? (
+        <CyDView>
+          <Carousel
+            enabled={!isAccountLocked}
+            loop={false}
+            width={width}
+            height={
+              cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250
+            }
+            autoPlay={false}
+            data={cardsWithUpgrade}
+            snapEnabled={true}
+            pagingEnabled={true}
+            defaultIndex={currentCardIndex}
+            mode='parallax'
+            modeConfig={{
+              parallaxScrollingScale: 0.92,
+              parallaxScrollingOffset: isAndroid()
+                ? width / (pixelDensity * fontScaleFactor)
+                : width * 0.31,
+              parallaxAdjacentItemScale: 0.74,
+            }}
+            scrollAnimationDuration={0}
+            onSnapToItem={setUpgradeCorrectedCardIndex}
+            renderItem={renderItem as any}
+          />
           <RenderCardActions
             card={get(cardsWithUpgrade, currentCardIndex)}
             cardProvider={currentCardProvider}
@@ -435,8 +439,12 @@ export default function CardScreen({
             cardDesignData={cardDesignData}
             isAccountLocked={isAccountLocked}
           />
-        )}
-      </CyDView>
+        </CyDView>
+      ) : (
+        <CyDView>
+          <Loading />
+        </CyDView>
+      )}
     </>
   );
 }
