@@ -14,7 +14,11 @@ import { GlobalContextType } from '../../../constants/enum';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import { GlobalContext } from '../../../core/globalContext';
-import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
+import {
+  getChainNameFromAddress,
+  parseErrorMessage,
+  trimWhitespace,
+} from '../../../core/util';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
   CyDKeyboardAwareScrollView,
@@ -31,6 +35,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { isSolanaAddress } from '../../utilities/solanaUtilities';
 
 export default function LinkAnotherWallet() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -55,7 +60,10 @@ export default function LinkAnotherWallet() {
       .string()
       .required('Address Required')
       .test('Enter valid ETH Address', 'Enter valid ETH Address', address => {
-        return isAddress(trimWhitespace(address ?? ''));
+        return (
+          isSolanaAddress(trimWhitespace(address ?? '')) ||
+          isAddress(trimWhitespace(address ?? ''))
+        );
       }),
     walletName: yup.string().required('Wallet Name Required'),
   });
@@ -138,6 +146,7 @@ export default function LinkAnotherWallet() {
     if (otp.length === 4) {
       data.otp = Number(otp);
     }
+    console.log('🚀 ~ onOTPEntry ~ data:', data);
 
     const response = await postWithAuth(
       `/v1/authentication/profile/child`,
@@ -160,7 +169,7 @@ export default function LinkAnotherWallet() {
       showModal('state', {
         type: 'error',
         title: t('FAILURE'),
-        description: response.error?.message ?? t('WALLET_LINK_UNSUCCESSFUL'),
+        description: parseErrorMessage(response.error),
         onSuccess: onModalHide,
         onFailure: hideModal,
       });
