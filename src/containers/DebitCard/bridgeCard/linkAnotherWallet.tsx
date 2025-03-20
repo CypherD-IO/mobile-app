@@ -146,7 +146,6 @@ export default function LinkAnotherWallet() {
     if (otp.length === 4) {
       data.otp = Number(otp);
     }
-    console.log('🚀 ~ onOTPEntry ~ data:', data);
 
     const response = await postWithAuth(
       `/v1/authentication/profile/child`,
