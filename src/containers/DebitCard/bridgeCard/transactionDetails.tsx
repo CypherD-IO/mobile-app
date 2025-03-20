@@ -1485,7 +1485,7 @@ export default function TransactionDetails() {
                           className='text-base400'
                         />
                         <CyDText className='font-semibold text-[12px]'>
-                          {'Zero Forex Markup'}
+                          {'Zero USDC Load Fee'}
                         </CyDText>
                       </CyDView>
                     </CyDView>

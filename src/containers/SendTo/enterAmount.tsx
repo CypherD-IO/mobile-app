@@ -105,6 +105,7 @@ export default function EnterAmount(props: any) {
 
   const getGasFee = async (
     chainName: string,
+    isMaxGasEstimation = false,
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
     // for gas estimation the amount we send is half of the balance, passing the entire amount might result in insufficient balance error
@@ -134,7 +135,8 @@ export default function EnterAmount(props: any) {
         toAddress: solana.address ?? '',
         amountToSend,
         contractAddress: tokenData.contractAddress,
-        contractDecimals: tokenData.contractDecimals,
+        tokenContractDecimals: tokenData.contractDecimals,
+        isMaxGasEstimation,
       });
     } else if (COSMOS_CHAINS.includes(tokenData.chainDetails.chainName)) {
       const cosmosWallet = get(hdWallet.state.wallet, chainName, null);
@@ -191,7 +193,7 @@ export default function EnterAmount(props: any) {
   const _validateValueForUsd = async () => {
     setIsLoading(true);
     const nativeTokenSymbol =
-      NativeTokenMapping[tokenData.chainDetails.symbol] ||
+      NativeTokenMapping[tokenData.chainDetails.symbol as AllChainsEnum] ||
       tokenData.chainDetails.symbol;
     const gasReserved = (await getGasFee(tokenData.chainDetails?.chainName))
       ?.gasFeeInCrypto;
@@ -265,6 +267,7 @@ export default function EnterAmount(props: any) {
       } else if (isNativeToken(tokenData)) {
         const gasFeeDetails = await getGasFee(
           tokenData.chainDetails?.chainName,
+          true,
         );
         gasReservedForNativeToken = gasFeeDetails?.gasFeeInCrypto;
         if (tokenData.chainDetails.backendName !== ChainBackendNames.SOLANA) {
@@ -305,6 +308,12 @@ export default function EnterAmount(props: any) {
           DecimalHelper.multiply(textAmount, tokenData.price),
         ),
       );
+      navigation.navigate(C.screenTitle.SEND_TO, {
+        valueForUsd: textAmount,
+        tokenData,
+        sendAddress,
+        isMaxGasEstimation: true,
+      });
     } finally {
       setIsMaxLoading(false);
     }

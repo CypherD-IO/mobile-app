@@ -876,6 +876,8 @@ export function getChainNameFromAddress(address: string) {
     return ChainBackendNames.COREUM;
   } else if (isInjectiveAddress(address)) {
     return ChainBackendNames.INJECTIVE;
+  } else if (isSolanaAddress(address)) {
+    return ChainBackendNames.SOLANA;
   }
 }
 

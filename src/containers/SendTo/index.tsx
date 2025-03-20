@@ -101,10 +101,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     valueForUsd,
     tokenData,
     sendAddress = '',
+    isMaxGasEstimation = false,
   }: {
     valueForUsd: string;
     tokenData: Holding;
     sendAddress: string;
+    isMaxGasEstimation?: boolean;
   } = route.params;
   const [Data, setData] = useState<string[]>([]);
   const [addressText, setAddressText] = useState<string>(sendAddress);
@@ -482,6 +484,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const getGasFee = async (
     chainName: string,
     address: string,
+    isMaxGasEstimation = false,
   ): Promise<{ gasFeeInCrypto: number }> => {
     let gasEstimate;
     const amountToSend = limitDecimalPlaces(
@@ -508,7 +511,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         toAddress: address ?? '',
         amountToSend,
         contractAddress: tokenData.contractAddress,
-        contractDecimals: tokenData.contractDecimals,
+        tokenContractDecimals: tokenData.contractDecimals,
+        isMaxGasEstimation,
       });
     } else if (COSMOS_CHAINS.includes(tokenData.chainDetails.chainName)) {
       gasEstimate = await estimateGasForCosmosRest({
@@ -626,6 +630,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       const gasFee = await getGasFee(
         chainDetails.chainName,
         activityData.fromAddress,
+        isMaxGasEstimation,
       );
 
       const amountToSend = limitDecimalPlaces(

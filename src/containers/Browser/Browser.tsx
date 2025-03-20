@@ -314,7 +314,7 @@ export default function Browser({ navigation }: any) {
         toAddress: solana.address,
         amountToSend: String(nativeToken.balanceDecimal),
         contractAddress: nativeToken.contractAddress,
-        contractDecimals: nativeToken.contractDecimals,
+        tokenContractDecimals: nativeToken.contractDecimals,
       });
     } else if (selectedChain.chainName === ChainNames.ETH) {
       const publicClient = getViemPublicClient(
