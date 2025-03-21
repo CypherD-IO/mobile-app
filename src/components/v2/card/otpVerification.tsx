@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import {
   CyDIcons,
   CyDLottieView,
+  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -15,7 +16,6 @@ import * as Sentry from '@sentry/react-native';
 import CyDModalLayout from '../modal';
 import StateModal from '../StateModal';
 import { PinInput } from '../pinInput';
-import { CyDIconsPack } from '../../../customFonts/generator';
 
 export default function OtpVerificationModal({
   isModalVisible,
@@ -23,12 +23,14 @@ export default function OtpVerificationModal({
   triggerOTPUrl,
   isVerifyingOTP,
   verifyOTP,
+  feeAmount = 50,
 }: {
   isModalVisible: boolean;
   setIsModalVisible: (isModalVisible: boolean) => void;
   triggerOTPUrl: string;
   isVerifyingOTP: boolean;
   verifyOTP: (otp: string) => void;
+  feeAmount: number;
 }) {
   const { t } = useTranslation();
   const { postWithAuth } = useAxios();
@@ -115,7 +117,7 @@ export default function OtpVerificationModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDView className={'h-full bg-n0 p-[12px] pt-[10px]'}>
+      <CyDSafeAreaView className={'h-full bg-n0 p-[12px] pt-[10px]'}>
         <StateModal
           isModalVisible={error !== ''}
           type={'error'}
@@ -134,10 +136,21 @@ export default function OtpVerificationModal({
               setIsModalVisible(false);
             }}
             className='w-[36px] h-[36px]'>
-            <CyDIcons name='arrow-left' size={24} className='text-base400' />
+            <CyDIcons name='close' size={24} className='text-base400' />
           </CyDTouchView>
         </CyDView>
         <OTPHeader />
+        <CyDView className='mx-[12px]'>
+          <CyDText className='mt-[24px] text-[14px] font-bold'>
+            Please Note:
+          </CyDText>
+          <CyDText className={'ml-[8px] font-semibold text-[12px]'}>
+            {t('SHIPPING_FEE_SUB1') +
+              '$' +
+              String(feeAmount) +
+              t('SHIPPING_FEE_SUB2')}
+          </CyDText>
+        </CyDView>
         <CyDView className={'flex-1 mx-[20px]'}>
           {!isVerifyingOTP && (
             <CyDView className={'mt-[15%]'}>
@@ -183,7 +196,7 @@ export default function OtpVerificationModal({
             </CyDView>
           )}
         </CyDView>
-      </CyDView>
+      </CyDSafeAreaView>
     </CyDModalLayout>
   );
 }

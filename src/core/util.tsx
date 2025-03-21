@@ -80,7 +80,7 @@ import { mainnet } from 'viem/chains';
 import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { CardProfile } from '../models/cardProfile.model';
-import { cardDesign } from '../models/cardDesign.interface';
+import { CardDesign } from '../models/cardDesign.interface';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1231,14 +1231,17 @@ export const isRainReferralCode = (referralCode: string) => {
 // show the get physical card in stack if it is their first plastic physical card alone
 export const shouldShowGetPhysicalCardInStack = (
   profile: CardProfile,
-  cardDesignAndFeeData: cardDesign,
+  cardDesignAndFeeData: CardDesign,
 ) => {
   if (
     (get(profile, ['planInfo', 'planId'], '') === CypherPlanId.PRO_PLAN &&
-      cardDesignAndFeeData?.allowedCount?.physical === 3 &&
-      cardDesignAndFeeData?.allowedCount?.metal === 0) ||
+      // cardDesignAndFeeData?.allowedCount?.physical === 3 &&
+      cardDesignAndFeeData?.allowedCount?.physical > 0 &&
+      // cardDesignAndFeeData?.allowedCount?.metal === 0) ||
+      cardDesignAndFeeData?.allowedCount?.metal > 0) ||
     (get(profile, ['planInfo', 'planId'], '') === CypherPlanId.BASIC_PLAN &&
-      cardDesignAndFeeData?.allowedCount?.physical === 1)
+      // cardDesignAndFeeData?.allowedCount?.physical === 1
+      cardDesignAndFeeData?.allowedCount?.physical > 0)
   ) {
     return true;
   }
