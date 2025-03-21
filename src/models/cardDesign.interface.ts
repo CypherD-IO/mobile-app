@@ -1,33 +1,27 @@
-export interface cardDesign {
-  allowedCount: {
-    metal: number;
-    physical: number;
-    virtual: number;
-  };
-  feeDetails: {
-    metal: number;
-    physical: number;
-    virtual: number;
-  };
-  metal: Array<{
-    description: string;
-    id: string;
-    name: string;
-    physicalCardType: string;
-    secondaryName: string;
-  }>;
-  physical: Array<{
-    description: string;
-    id: string;
-    name: string;
-    physicalCardType: string;
-    secondaryName: string;
-  }>;
-  virtual: Array<{
-    description: string;
-    id: string;
-    name: string;
-    physicalCardType: string;
-    secondaryName: string;
-  }>;
+export interface CardDesignCardMetaData {
+  description: string;
+  id: string;
+  name: string;
+  physicalCardType: string;
+  secondaryName: string;
+}
+
+export interface CardDesignFeeDetails {
+  metal: number;
+  physical: number;
+  virtual: number;
+}
+
+export interface CardDesignAllowedCount {
+  metal: number;
+  physical: number;
+  virtual: number;
+}
+
+export interface CardDesign {
+  allowedCount: CardDesignAllowedCount;
+  feeDetails: CardDesignFeeDetails;
+  metal: CardDesignCardMetaData[];
+  physical: CardDesignCardMetaData[];
+  virtual: CardDesignCardMetaData[];
 }

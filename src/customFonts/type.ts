@@ -88,4 +88,7 @@ export type IconNames =
   | 'wireless-left'
   | 'wireless-right'
   | 'withdraw'
-  | 'card-plus';
+  | 'card-plus'
+  | 'paypal-icon'
+  | 'apple-google-icon'
+  | 'balance-scale';

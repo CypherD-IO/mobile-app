@@ -78,6 +78,7 @@ export enum CardStatus {
   OTHER = 'other',
   COMING_SOON = 'coming-soon',
   RC_UPGRADABLE = 'rcUpgradable',
+  ADDITIONAL_CARD = 'additionalCard',
 }
 
 export enum OTPType {
@@ -127,6 +128,7 @@ export enum CardControlTypes {
 export enum CardType {
   PHYSICAL = 'physical',
   VIRTUAL = 'virtual',
+  METAL = 'metal',
 }
 
 export enum PhysicalCardType {

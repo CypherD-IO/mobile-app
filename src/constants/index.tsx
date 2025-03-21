@@ -140,6 +140,8 @@ export const screenTitle = {
   FIRST_LOAD_CARD: 'firstLoadCard',
   THEME: 'theme',
   DEFAULT_LIMIT_SETUP: 'defaultLimitSetup',
+  SELECT_ADDITIONAL_CARD: 'selectAdditionalCard',
+  ADDITIONAL_CARD_DESCRIPTION: 'additionalCardDescription',
 };
 
 export const fontsName = {

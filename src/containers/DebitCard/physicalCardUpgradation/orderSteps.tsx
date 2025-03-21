@@ -16,25 +16,21 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import {
-  ButtonType,
-  CardProviders,
-  PhysicalCardType,
-} from '../../../constants/enum';
+import { ButtonType, CardProviders, CardType } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import clsx from 'clsx';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
-  physicalCardType?: PhysicalCardType;
+  cardType?: CardType;
 }
 
 export default function OrderSteps() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
-  const { physicalCardType, currentCardProvider } = route.params;
+  const { cardType, currentCardProvider } = route.params;
   const { t } = useTranslation();
   const steps = [
     {
@@ -59,16 +55,18 @@ export default function OrderSteps() {
         <CyDView className='mx-[16px]'>
           <CyDView className='flex-row items-center justify-between'>
             <CyDTouchView
-              onPress={() => {
-                navigation.goBack();
-              }}
-              className='w-[36px] h-[36px]'>
-              <CyDIcons name='arrow-left' size={24} className='text-base400' />
+              onPress={() => navigation.goBack()}
+              className='w-[32px] h-[32px] bg-n40 rounded-full flex items-center justify-center'>
+              <CyDMaterialDesignIcons
+                name='arrow-left'
+                size={20}
+                className='text-base400 '
+              />
             </CyDTouchView>
           </CyDView>
           <CyDView className='my-[12px]'>
             <CyDText className='text-[26px] font-bold'>
-              {physicalCardType === PhysicalCardType.METAL
+              {cardType === CardType.METAL
                 ? t('ORDER_YOUR_METAL_CARD')
                 : t('ORDER_YOUR_PHYSICAL_CARD')}
             </CyDText>
@@ -93,12 +91,12 @@ export default function OrderSteps() {
             ))}
           </CyDView>
         </CyDView>
-        <CyDView className={clsx('w-full bg-n0 py-[32px] px-[16px]')}>
+        <CyDView className={clsx('w-full bg-n0 pt-[16px] pb-[32px] px-[16px]')}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN, {
                 currentCardProvider,
-                ...(physicalCardType && { physicalCardType }),
+                cardType,
               });
             }}
             type={ButtonType.PRIMARY}

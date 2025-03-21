@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import {
   CyDView,
@@ -19,13 +19,7 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import {
-  ButtonType,
-  CardDesignType,
-  CardProviders,
-  CypherPlanId,
-  PhysicalCardType,
-} from '../../../constants/enum';
+import { ButtonType, CardProviders, CardType } from '../../../constants/enum';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import useAxios from '../../../core/HttpRequest';
@@ -39,16 +33,34 @@ import { screenTitle } from '../../../constants';
 import { isAndroid } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById, parseErrorMessage } from '../../../core/util';
-import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { t } from 'i18next';
 
 interface RouteParams {
   userData: IKycPersonDetail;
   shippingAddress: IShippingAddress;
   currentCardProvider: CardProviders;
   preferredName: string;
-  physicalCardType?: PhysicalCardType;
+  cardType: CardType;
 }
+
+const RenderTitle = ({ cardType }: { cardType: CardType }) => {
+  if (cardType === CardType.METAL) {
+    return (
+      <CyDText className='text-[28px] font-bold'>
+        {t('METAL_CARD_CONFIRMATION')}
+      </CyDText>
+    );
+  } else if (cardType === CardType.PHYSICAL) {
+    return (
+      <CyDText className='text-[28px] font-bold'>
+        {t('PHYSICAL_CARD_CONFIRMATION')}
+      </CyDText>
+    );
+  }
+  return <CyDText className='text-[28px] font-bold'>{t('CHECKOUT')}</CyDText>;
+};
+
 export default function ShippingCheckout() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -58,9 +70,8 @@ export default function ShippingCheckout() {
     shippingAddress,
     currentCardProvider,
     preferredName,
-    physicalCardType,
+    cardType,
   } = route.params;
-  const { globalState } = useContext<any>(GlobalContext) as GlobalContextDef;
   const { t } = useTranslation();
   const { getWithAuth, postWithAuth } = useAxios();
   const [balance, setBalance] = useState<number>(0);
@@ -71,7 +82,6 @@ export default function ShippingCheckout() {
   const [preferredDesignId, setPreferredDesignId] = useState<string>('');
   const [cardDesignDetails, setCardDesignDetails] = useState<any>();
   const [cardFee, setCardFee] = useState<number>(0);
-  const planData = globalState.planInfo;
 
   useEffect(() => {
     void fetchProfileAndBalance();
@@ -82,28 +92,11 @@ export default function ShippingCheckout() {
     try {
       const response = await getWithAuth('/v1/cards/designs');
       if (!response.isError) {
-        const cardType =
-          physicalCardType === PhysicalCardType.METAL
-            ? CardDesignType.METAL
-            : CardDesignType.PHYSICAL;
-
         // Set card design ID and details
         setPreferredDesignId(get(response.data, [cardType, 0, 'id'], ''));
         setCardDesignDetails(get(response.data, cardType, {}));
 
-        // Set card fee
-        const defaultFeeKey =
-          physicalCardType === PhysicalCardType.METAL
-            ? 'metalCardFee'
-            : 'physicalCardFee';
-
-        setCardFee(
-          get(
-            response.data,
-            ['feeDetails', cardType],
-            get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
-          ),
-        );
+        setCardFee(get(response.data, ['feeDetails', cardType], 0));
       }
     } catch (error) {
       Sentry.captureException(error);
@@ -123,7 +116,7 @@ export default function ShippingCheckout() {
         tempProfile,
         [currentCardProvider, 'cards', 0, 'cardId'],
         '',
-      );
+      ) as string;
       if (currentCardProvider && cardId) {
         const balanceData = await getWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/balance`,
@@ -138,20 +131,27 @@ export default function ShippingCheckout() {
 
   const onConfirm = async (otp: string) => {
     setIsVerifyingOTP(true);
-    const { line2, taxId, ...restShippingAddress } = shippingAddress;
-    const payload = {
-      ...restShippingAddress,
-      ...(line2 ? { line2 } : {}),
-      ...(taxId ? { taxId } : {}),
-      preferredCardName: preferredName,
-      otp: Number(otp),
-      ...(preferredDesignId ? { preferredDesignId } : {}),
-    };
+    let payload, url;
+    if (cardType === CardType.VIRTUAL) {
+      payload = {
+        preferredDesignId,
+        otp: Number(otp),
+      };
+      url = `/v1/cards/${currentCardProvider}/generate/virtual`;
+    } else {
+      const { line2, taxId, ...restShippingAddress } = shippingAddress;
+      payload = {
+        ...restShippingAddress,
+        ...(line2 ? { line2 } : {}),
+        ...(taxId ? { taxId } : {}),
+        preferredCardName: preferredName,
+        otp: Number(otp),
+        preferredDesignId,
+      };
+      url = `/v1/cards/${currentCardProvider}/generate/physical`;
+    }
     setIsOTPModalVisible(false);
-    const response = await postWithAuth(
-      `/v1/cards/${currentCardProvider}/generate/physical`,
-      payload,
-    );
+    const response = await postWithAuth(url, payload);
     setIsVerifyingOTP(false);
     if (!response.isError) {
       navigation.navigate(screenTitle.SHIPPING_CONFIRMATION_SCREEN, {
@@ -159,7 +159,8 @@ export default function ShippingCheckout() {
         shippingAddress,
         currentCardProvider,
         preferredName,
-        ...(physicalCardType && { physicalCardType }),
+        cardType,
+        preferredDesignId,
       });
     } else {
       showModal('state', {
@@ -176,42 +177,44 @@ export default function ShippingCheckout() {
   const RenderShippingAddress = useCallback(() => {
     return (
       <CyDView>
-        <CyDText className='text-subTextColor'>{t('DELIVERING_TO')}</CyDText>
+        <CyDText className='text-n100 text-[12px]'>
+          {t('DELIVERING_TO')}
+        </CyDText>
         <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] my-[4px]'>
           <CyDView className='flex flex-row items-center justify-between'>
-            <CyDView className='flex flex-row items-center gap-x-[12px]'>
+            <CyDView className='flex flex-row items-center gap-x-[4px]'>
               <CyDMaterialDesignIcons
-                name='wallet-bifold-outline'
-                size={28}
+                name='map-marker-outline'
+                size={20}
                 className='text-base400'
               />
-              <CyDText className='text-[16px] font-bold'>
+              <CyDText className='text-[14px] font-bold'>
                 {t('SHIPPING_ADDRESS')}
               </CyDText>
             </CyDView>
             <CyDView>
-              <CyDText className='text-[14px] font-medium'>3 Weeks</CyDText>
+              <CyDText className='text-[14px] font-bold'>4-5 Weeks</CyDText>
             </CyDView>
           </CyDView>
           <CyDView>
-            <CyDText className='text-[16px] font-medium'>
+            <CyDText className='text-[12px] font-medium'>
               {`${capitalize(userData?.firstName)} ${capitalize(userData?.lastName)}`}
             </CyDText>
-            <CyDText className='text-[14px] my-[2px]'>
+            <CyDText className='text-[12px] my-[2px] font-medium'>
               {shippingAddress?.line1}
             </CyDText>
-            <CyDText className='text-[14px] my-[2px]'>
+            <CyDText className='text-[12px] my-[2px] font-medium'>
               {`${shippingAddress?.line2 ? `${shippingAddress.line2}, ` : ''}${shippingAddress?.city}`}
             </CyDText>
-            <CyDText className='text-[14px] my-[2px]'>
+            <CyDText className='text-[12px] my-[2px] font-medium'>
               {`${shippingAddress?.state}, ${String(getCountryNameById(shippingAddress?.country ?? ''))} ${
                 shippingAddress?.postalCode
               }`}
             </CyDText>
-            <CyDText className='text-[14px] my-[2px]'>
+            <CyDText className='text-[12px] my-[2px] font-medium'>
               {shippingAddress?.phoneNumber}
             </CyDText>
-            <CyDText className='text-[14px] my-[2px]'>
+            <CyDText className='text-[12px] my-[2px] font-medium'>
               {shippingAddress?.taxId}
             </CyDText>
           </CyDView>
@@ -221,48 +224,51 @@ export default function ShippingCheckout() {
   }, [userData, shippingAddress]);
 
   const RenderShippingCharges = useCallback(() => {
+    const getTitle = () => {
+      if (cardType === CardType.METAL) {
+        return t('METAL_CARD');
+      } else if (cardType === CardType.PHYSICAL) {
+        return t('PHYSICAL_CARD');
+      }
+      return t('VIRTUAL_CARD');
+    };
     return (
       <CyDView className='flex flex-col bg-n0 rounded-[12px]'>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-base80'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
-            <CyDMaterialDesignIcons
-              name='credit-card-outline'
-              size={24}
-              className='text-base400'
-            />
-            <CyDText>
-              {physicalCardType === PhysicalCardType.METAL
-                ? t('METAL_CARD')
-                : t('PHYSICAL_CARD')}
-            </CyDText>
+            <CyDIcons name='card' size={26} className='text-base400' />
+            <CyDText className='text-[14px] font-medium'>{getTitle()}</CyDText>
           </CyDView>
           <CyDView className='flex flex-row items-center'>
-            <CyDText className='font-bold text-successTextGreen'>
-              {'🎉' + t('FREE')}
-            </CyDText>
+            {cardFee === 0 ? (
+              <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
+                <CyDText className='font-bold text-green400 text-[14px]'>
+                  {'🎉' + 'Free'}
+                </CyDText>
+              </CyDSkeleton>
+            ) : (
+              <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
+                <CyDText className='text-[14px] font-bold'>${cardFee}</CyDText>
+              </CyDSkeleton>
+            )}
           </CyDView>
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-base80'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
             <CyDMaterialDesignIcons
-              name='truck'
+              name='email-outline'
               size={24}
               className='text-base400'
             />
-            <CyDText>{t('SHIPPING_CHARGES')}</CyDText>
+            <CyDText className='text-[14px] font-medium'>
+              {cardType === CardType.VIRTUAL
+                ? t('OTHER_CHARGES')
+                : t('SHIPPING_CHARGES')}
+            </CyDText>
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
-              {cardFee === 0 ? (
-                <CyDView className='flex flex-row items-center gap-x-[4px]'>
-                  <CyDText className='line-through font-bold'>{'$50'}</CyDText>
-                  <CyDText className='font-bold text-successTextGreen'>
-                    {'🎉' + t('FREE')}
-                  </CyDText>
-                </CyDView>
-              ) : (
-                <CyDText>${cardFee}</CyDText>
-              )}
+              <CyDText className='font-bold text-[14px]'>{'$0'}</CyDText>
             </CyDSkeleton>
           </CyDView>
         </CyDView>
@@ -283,9 +289,11 @@ export default function ShippingCheckout() {
   const RenderNameOnCard = useCallback(() => {
     return (
       <CyDView>
-        <CyDText className='text-subTextColor'>{t('NAME_ON_CARD')}</CyDText>
+        <CyDText className='text-n100 text-[12px]'>{t('NAME_ON_CARD')}</CyDText>
         <CyDView className='flex flex-row justify-between bg-n0 rounded-[12px] p-[16px] mt-[4px]'>
-          <CyDText className='text-[16px]'>{preferredName}</CyDText>
+          <CyDText className='text-[14px] font-semibold'>
+            {preferredName}
+          </CyDText>
         </CyDView>
       </CyDView>
     );
@@ -294,7 +302,7 @@ export default function ShippingCheckout() {
   const RenderPaymentMethod = useCallback(() => {
     return (
       <CyDView>
-        <CyDText className='text-subTextColor'>{t('PAYING_FROM')}</CyDText>
+        <CyDText className='text-n100 text-[12px]'>{t('PAYING_FROM')}</CyDText>
         <CyDView className='bg-n0 rounded-[12px] p-[4px] mt-[4px]'>
           <CyDView className='flex flex-row justify-between items-center px-[16px] py-[4px]'>
             <CyDView className='flex flex-row gap-x-[12px] items-center'>
@@ -306,14 +314,18 @@ export default function ShippingCheckout() {
                 />
               </CyDView>
               <CyDView>
-                <CyDText>{t('CYPHER_CARD_BALANCE')}</CyDText>
-                <CyDText className='text-subTextColor'>
+                <CyDText className='text-[14px] font-semibold'>
+                  {t('CYPHER_CARD_BALANCE')}
+                </CyDText>
+                <CyDText className='text-n300 text-[10px] font-medium'>
                   {t('CYPHER_CARD_BALANCE_SUB')}
                 </CyDText>
               </CyDView>
             </CyDView>
             <CyDView className='flex flex-row items-center'>
-              <CyDText className='text-[16px] font-bold'>{`$${balance}`}</CyDText>
+              <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
+                <CyDText className='text-[16px] font-bold'>{`$${balance}`}</CyDText>
+              </CyDSkeleton>
             </CyDView>
           </CyDView>
         </CyDView>
@@ -327,58 +339,66 @@ export default function ShippingCheckout() {
       <OtpVerificationModal
         isModalVisible={isOTPModalVisible}
         setIsModalVisible={setIsOTPModalVisible}
-        triggerOTPUrl={`/v1/cards/${currentCardProvider}/generate/physical/otp`}
+        triggerOTPUrl={`/v1/cards/${currentCardProvider}/generate/otp`}
         isVerifyingOTP={isVerifyingOTP}
         verifyOTP={(otp: string) => {
           void onConfirm(otp);
         }}
+        feeAmount={cardFee}
       />
       <CyDView className='flex flex-1 flex-col justify-between h-full'>
         <CyDView className='mx-[16px] flex-1'>
           <CyDView className='flex-row items-center justify-between'>
             <CyDTouchView
-              onPress={() => {
-                navigation.goBack();
-              }}
-              className='w-[36px] h-[36px]'>
-              <CyDIcons name='arrow-left' size={24} className='text-base400' />
+              onPress={() => navigation.goBack()}
+              className='w-[32px] h-[32px] bg-n40 rounded-full flex items-center justify-center'>
+              <CyDMaterialDesignIcons
+                name='arrow-left'
+                size={20}
+                className='text-base400 '
+              />
             </CyDTouchView>
           </CyDView>
           <CyDScrollView
             className={clsx('flex-1', { 'mb-[22px]': isAndroid() })}
             showsVerticalScrollIndicator={false}>
             <CyDView className='my-[16px]'>
-              <CyDText className='text-[26px] font-bold'>
-                {physicalCardType === PhysicalCardType.METAL
-                  ? t('METAL_CARD_CONFIRMATION')
-                  : t('PHYSICAL_CARD_CONFIRMATION')}
-              </CyDText>
-              <CyDText className='text-[14px] mt-[8px]'>
+              <RenderTitle cardType={cardType} />
+              <CyDText className='text-[14px] font-semibold text-n400 mt-[6px]'>
                 {t('PHYSICAL_CARD_CONFIRMATION_SUB')}
               </CyDText>
             </CyDView>
-            <CyDView className='mb-[24px]'>
+            <CyDView className='mb-[16px]'>
               <RenderPaymentMethod />
             </CyDView>
             <RenderShippingCharges />
-            <CyDView className='mt-[24px]'>
-              <RenderNameOnCard />
-            </CyDView>
-            <CyDView className='mt-[24px]'>
-              <RenderShippingAddress />
-            </CyDView>
+            {cardType !== CardType.VIRTUAL && (
+              <CyDView className='mt-[16px]'>
+                <RenderNameOnCard />
+              </CyDView>
+            )}
+            {cardType !== CardType.VIRTUAL && (
+              <CyDView className='mt-[16px]'>
+                <RenderShippingAddress />
+              </CyDView>
+            )}
           </CyDScrollView>
         </CyDView>
 
-        <CyDView className={clsx('w-full bg-n0 py-[32px] px-[16px]')}>
+        <CyDView className={clsx('w-full bg-n0 pt-[16px] pb-[32px] px-[16px]')}>
           <Button
             onPress={() => {
               setIsOTPModalVisible(true);
             }}
             loading={isVerifyingOTP}
             type={ButtonType.PRIMARY}
-            title={t('CONTINUE')}
+            title={
+              cardType === CardType.VIRTUAL
+                ? t('GET_VIRTUAL_CARD')
+                : t('CONFIRM_SHIPPING')
+            }
             style={'h-[60px] w-full py-[10px]'}
+            disabled={!preferredDesignId}
           />
         </CyDView>
       </CyDView>

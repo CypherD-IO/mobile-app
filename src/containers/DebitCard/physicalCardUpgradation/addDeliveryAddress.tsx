@@ -19,11 +19,7 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import {
-  ButtonType,
-  CardProviders,
-  PhysicalCardType,
-} from '../../../constants/enum';
+import { ButtonType, CardProviders, CardType } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../../models/cardApplication.model';
@@ -35,7 +31,7 @@ import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 interface RouteParams {
   currentCardProvider: CardProviders;
   userData: IKycPersonDetail;
-  physicalCardType?: PhysicalCardType;
+  cardType?: CardType;
 }
 
 export default function AddDeliveryAddress() {
@@ -58,7 +54,7 @@ export default function AddDeliveryAddress() {
       currency: 'USD',
     });
   const { t } = useTranslation();
-  const { currentCardProvider, userData, physicalCardType } = route.params;
+  const { currentCardProvider, userData, cardType } = route.params;
 
   useEffect(() => {
     if (selectedCountry) {
@@ -133,7 +129,7 @@ export default function AddDeliveryAddress() {
       userData,
       shippingAddress: formattedValues,
       currentCardProvider,
-      ...(physicalCardType && { physicalCardType }),
+      cardType,
     });
   };
 
@@ -157,14 +153,16 @@ export default function AddDeliveryAddress() {
         <CyDView className='h-full'>
           <CyDView className='flex-row items-center justify-between mx-[16px]'>
             <CyDTouchView
-              onPress={() => {
-                navigation.goBack();
-              }}
-              className='w-[36px] h-[36px]'>
-              <CyDIcons name='arrow-left' size={24} className='text-base400' />
+              onPress={() => navigation.goBack()}
+              className='w-[32px] h-[32px] bg-n40 rounded-full flex items-center justify-center'>
+              <CyDMaterialDesignIcons
+                name='arrow-left'
+                size={20}
+                className='text-base400 '
+              />
             </CyDTouchView>
           </CyDView>
-          <CyDText className='text-[26px] font-bold mx-[16px]'>
+          <CyDText className='text-[26px] font-bold mx-[16px] mt-[8px]'>
             {t('ADD_DELIVERY_ADDRESS')}
           </CyDText>
           <Formik
@@ -177,7 +175,7 @@ export default function AddDeliveryAddress() {
                 enableOnAndroid={true}
                 showsVerticalScrollIndicator={false}>
                 <CyDView className='mx-[16px]'>
-                  <CyDText className='text-[16px] font-semibold'>
+                  <CyDText className='text-[12px] font-bold'>
                     {t('COUNTRY_INIT_CAPS')}
                   </CyDText>
                   <CyDTouchView
@@ -200,7 +198,7 @@ export default function AddDeliveryAddress() {
                           </CyDText>
                         </CyDView>
                       ) : (
-                        <CyDText className='text-center text-[18px] ml-[8px]'>
+                        <CyDText className='text-n70 text-[16px] ml-[8px]'>
                           {t('SELECT_COUNTRY')}
                         </CyDText>
                       )}
@@ -212,7 +210,7 @@ export default function AddDeliveryAddress() {
                     />
                   </CyDTouchView>
                   <CyDView className=' mt-[20px] flex flex-row items-center'>
-                    <CyDText className='text-[16px] font-semibold'>
+                    <CyDText className='text-[12px] font-bold'>
                       {t('PHONE_NUMBER_INIT_CAPS')}
                     </CyDText>
                     <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
@@ -253,7 +251,7 @@ export default function AddDeliveryAddress() {
                     </CyDView>
                   </CyDView>
                   <CyDView className='mt-[20px] flex flex-row items-center'>
-                    <CyDText className='text-[16px] font-semibold'>
+                    <CyDText className='text-[12px] font-bold'>
                       {t('ADDRESS_LINE_1_INIT_CAPS')}
                     </CyDText>
                     <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
@@ -277,7 +275,7 @@ export default function AddDeliveryAddress() {
                     </CyDView>
                   </CyDView>
                   <CyDView className=' mt-[20px] flex flex-row items-center'>
-                    <CyDText className='text-[16px] font-semibold'>
+                    <CyDText className='text-[12px] font-bold'>
                       {t('ADDRESS_LINE_2_INIT_CAPS')}
                     </CyDText>
                     <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
@@ -301,7 +299,7 @@ export default function AddDeliveryAddress() {
                     </CyDView>
                   </CyDView>
                   <CyDView className=' mt-[20px] flex flex-row items-center'>
-                    <CyDText className='text-[16px] font-semibold'>
+                    <CyDText className='text-[12px] font-bold'>
                       {t('CITY_INIT_CAPS')}
                     </CyDText>
                     <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
@@ -325,7 +323,7 @@ export default function AddDeliveryAddress() {
                     </CyDView>
                   </CyDView>
                   <CyDView className=' mt-[20px] flex flex-row items-center'>
-                    <CyDText className='text-[16px] font-semibold'>
+                    <CyDText className='text-[12px] font-bold'>
                       {t('STATE_INIT_CAPS')}
                     </CyDText>
                     <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
@@ -349,7 +347,7 @@ export default function AddDeliveryAddress() {
                     </CyDView>
                   </CyDView>
                   <CyDView className=' mt-[20px] flex flex-row items-center'>
-                    <CyDText className='text-[16px] font-semibold'>
+                    <CyDText className='text-[12px] font-bold'>
                       {t('ZIPCODE_INIT_CAPS')}
                     </CyDText>
                     <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
@@ -375,7 +373,7 @@ export default function AddDeliveryAddress() {
                   {selectedCountry?.Iso2 === 'MX' && (
                     <CyDView>
                       <CyDView className=' mt-[20px] flex flex-row items-center'>
-                        <CyDText className='text-[16px] font-semibold'>
+                        <CyDText className='text-[12px] font-bold'>
                           {t('TAX_RFC')}
                         </CyDText>
                         <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>
@@ -401,7 +399,7 @@ export default function AddDeliveryAddress() {
                     </CyDView>
                   )}
                 </CyDView>
-                <CyDView className='w-full py-[22px] px-[16px] mt-[12px]'>
+                <CyDView className='w-full pt-[16px] pb-[32px] px-[16px] mt-[12px]'>
                   <Button
                     onPress={handleSubmit}
                     type={ButtonType.PRIMARY}
