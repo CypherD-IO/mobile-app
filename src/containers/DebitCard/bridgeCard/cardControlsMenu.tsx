@@ -572,7 +572,7 @@ export default function CardControlsMenu() {
                           setOpenComparePlans(true);
                           setPlanChangeModalVisible(true);
                         }}>
-                        <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
+                        <CyDText className=' text-center text-[14px] font-semibold text-n100 mr-[2px]'>
                           {t('COMPARE_PLANS')}
                         </CyDText>
                       </CyDTouchView>

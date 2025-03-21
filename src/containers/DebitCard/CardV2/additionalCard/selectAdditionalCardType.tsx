@@ -35,6 +35,7 @@ import {
 import clsx from 'clsx';
 import { screenTitle } from '../../../../constants';
 import { AnalyticEvent, logAnalytics } from '../../../../core/analytics';
+import { t } from 'i18next';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -95,7 +96,7 @@ const RenderCard = ({
   ) => void;
 }) => {
   const isMetalCard = cardType === CardType.METAL;
-  const isMetalCardDisabled = () => {
+  const isMetalCardNonPremiumUser = () => {
     if (isMetalCard) {
       return !isPremiumPlan;
     }
@@ -103,13 +104,22 @@ const RenderCard = ({
   };
 
   const isGetCardLimitReached = () => {
+    if (!isPremiumPlan) {
+      // am letting the users to go into the description page and see the card details but
+      // the next page will not allow to proceed rather it will ask to upgrade to the premium plan
+      if (cardType === CardType.METAL && cardCount === 0) {
+        return false;
+      }
+    }
+    // for other card types if the count has reached the limit then it should be disabled
     if (cardCount === 0) {
       return true;
     }
     return false;
   };
 
-  const showWarningMessage = isGetCardLimitReached() || isMetalCardDisabled();
+  const showWarningMessage =
+    isGetCardLimitReached() || isMetalCardNonPremiumUser();
 
   return (
     <CyDView className='mt-[8px] p-[16px] bg-n0 rounded-xl'>
@@ -161,32 +171,25 @@ const RenderCard = ({
       {showWarningMessage && (
         <>
           <CyDView className='my-[12px] h-[1px] bg-n30 w-full' />
-          <CyDTouchView
-            className='flex flex-row gap-x-[4px] items-center text-base400'
-            disabled={isGetCardLimitReached()}>
+          <CyDView className='flex flex-row gap-x-[4px] items-center text-base400'>
             <CyDMaterialDesignIcons
               name='information-outline'
               size={20}
               className='text-n200'
             />
-            {isMetalCardDisabled() && (
-              <CyDText className='text-[12px] font-normal text-n200'>
-                {
-                  'The metal card is exclusively offered with our \npremium plan.'
-                }
-                <CyDText className='text-[12px] font-bold text-blue300 underline'>
-                  {' Know more'}
+            <CyDView>
+              {isMetalCardNonPremiumUser() && (
+                <CyDText className='text-[12px] font-normal text-n200'>
+                  {t('METAL_CARD_FOR_PREMIUM_USERS')}
                 </CyDText>
-              </CyDText>
-            )}
-            {isGetCardLimitReached() && (
-              <CyDText className='text-[12px] font-normal text-n200'>
-                {
-                  'You have reached the maximum limit of cards.\n Please reach out to support.'
-                }
-              </CyDText>
-            )}
-          </CyDTouchView>
+              )}
+              {isGetCardLimitReached() && (
+                <CyDText className='text-[12px] font-normal text-n200'>
+                  {t('MAXIMUM_CARD_LIMIT_REACHED')}
+                </CyDText>
+              )}
+            </CyDView>
+          </CyDView>
         </>
       )}
     </CyDView>

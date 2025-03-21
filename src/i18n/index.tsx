@@ -1550,6 +1550,23 @@ const resources = {
       VIRTUAL_CARD_ISSUED:
         'We have issued your virtual card as per your request, you can load your card and start spending!',
       COMING_SOON: 'Coming soon',
+      METAL_CARD_FOR_PREMIUM_USERS:
+        'The metal card is exclusively offered to our \n premium users.',
+      MAXIMUM_CARD_LIMIT_REACHED:
+        'You have reached the maximum limit of cards.\n Please reach out to support.',
+      GET_INSTANTLY: '🎉 Get it Instantly',
+      ARRIVES_IN_WEEKS: '🚚 Arrives in 5-6 weeks',
+      VIRTUAL_CARD_DESCRIPTION:
+        'A sleek virtual card, ready to tap and pay instantly, with Apple pay and Google pay anytime, anywhere!',
+      PHYSICAL_CARD_DESCRIPTION:
+        'High-quality plastic card with durable, dual-sided tap-to-pay functionality.',
+      METAL_CARD_DESCRIPTION:
+        'It has a stainless steel core covered in PVC on both sides. You can tap and pay on either side!',
+      PREMIUM_SCALE: 'Premium Scale',
+      CORE_PREMIUM: 'Core Premium',
+      ULTRA_HIGH_END: 'Ultra - High end',
+      FEATURES: 'Features',
+      PER_CARD: 'per card',
     },
   },
 };

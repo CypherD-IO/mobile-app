@@ -60,24 +60,24 @@ const GetCardArrivingDuration = ({ cardType }: { cardType: CardType }) => {
   if (cardType === CardType.VIRTUAL) {
     return (
       <CyDText className='text-green400 font-semibold text-[14px]'>
-        {'🎉 Get it Instantly'}
+        {t('GET_INSTANTLY')}
       </CyDText>
     );
   }
   return (
     <CyDText className='text-n200 font-normal text-[14px]'>
-      {'🚚 Arrives in 5-6 weeks'}
+      {t('ARRIVES_IN_WEEKS')}
     </CyDText>
   );
 };
 
 const getCardDescription = (cardType: CardType) => {
   if (cardType === CardType.VIRTUAL) {
-    return 'A sleek virtual card, ready to tap and pay instantly, with Apple pay and Google pay anytime, anywhere!';
+    return t('VIRTUAL_CARD_DESCRIPTION');
   } else if (cardType === CardType.PHYSICAL) {
-    return 'It has a stainless steel core covered in PVC on both sides. You can tap and pay on either side!';
+    return t('PHYSICAL_CARD_DESCRIPTION');
   } else if (cardType === CardType.METAL) {
-    return 'It has a stainless steel core covered in PVC on both sides. You can tap and pay on either side!';
+    return t('METAL_CARD_DESCRIPTION');
   }
   return '';
 };
@@ -105,7 +105,9 @@ const GetWeightAndCardType = ({ cardType }: { cardType: CardType }) => {
         <CyDView className='flex flex-row items-center gap-x-[4px] justify-center py-[16px] '>
           <CyDIcons name='card-filled' size={20} className='text-base400' />
           <CyDText className='text-[12px] font-medium text-base400'>
-            {cardType === CardType.PHYSICAL ? 'Physical Card' : 'Metal Card'}
+            {cardType === CardType.PHYSICAL
+              ? t('PHYSICAL_CARD')
+              : t('METAL_CARD')}
           </CyDText>
         </CyDView>
       </CyDView>
@@ -121,7 +123,7 @@ const RenderPremiumScale = ({
   return (
     <CyDView className=''>
       <CyDText className='text-[14px] font-medium text-base400'>
-        {'Premium Scale'}
+        {t('PREMIUM_SCALE')}
       </CyDText>
       <CyDView className='flex-1 flex-row h-[10px] w-full mt-[32px]'>
         <LinearGradient
@@ -134,10 +136,10 @@ const RenderPremiumScale = ({
       </CyDView>
       <CyDView className='flex-1 flex-row justify-between mt-[6px]'>
         <CyDText className='text-n200 font-normal text-[12px]'>
-          {'Core Premium'}
+          {t('CORE_PREMIUM')}
         </CyDText>
         <CyDText className='text-n200 font-normal text-[12px]'>
-          {'Ultra - High end'}
+          {t('ULTRA_HIGH_END')}
         </CyDText>
       </CyDView>
     </CyDView>
@@ -257,7 +259,7 @@ export default function CardDescription() {
 
             <CyDView className='mt-[16px] '>
               <CyDText className='text-[14px] font-bold mb-[8px]'>
-                {'Features'}
+                {t('FEATURES')}
               </CyDText>
               <CyDView className='bg-n0 rounded-t-xl p-[24px]'>
                 {/* apple and google pay */}
@@ -353,7 +355,7 @@ export default function CardDescription() {
                       setOpenComparePlans(true);
                       setPlanChangeModalVisible(true);
                     }}>
-                    <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
+                    <CyDText className=' text-center text-[14px] font-semibold text-n100 mr-[2px]'>
                       {t('COMPARE_PLANS')}
                     </CyDText>
                   </CyDTouchView>
@@ -367,7 +369,7 @@ export default function CardDescription() {
                   <CyDView className='flex flex-row items-center gap-x-[4px]'>
                     <CyDText className='font-bold text-[28px]'>{`$${price}`}</CyDText>
                     <CyDText className='font-semibold text-[14px] text-n200'>
-                      {'per card'}
+                      {t('PER_CARD')}
                     </CyDText>
                   </CyDView>
                   <GetCardArrivingDuration cardType={cardType} />
