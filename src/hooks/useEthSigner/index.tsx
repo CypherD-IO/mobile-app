@@ -11,12 +11,7 @@ import { useContext } from 'react';
 import { Linking, Platform } from 'react-native';
 import { createWalletClient, Hash, Hex, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import {
-  useSendTransaction,
-  useSwitchChain,
-  useWriteContract,
-  WagmiContext,
-} from 'wagmi';
+import { useSendTransaction, useSwitchChain, WagmiContext } from 'wagmi';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ChainIdToBackendNameMapping } from '../../constants/data';
 import { ConnectionTypes } from '../../constants/enum';
@@ -25,7 +20,6 @@ import { getConnectionType } from '../../core/asyncStorage';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import useAxios from '../../core/HttpRequest';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
-import { allowanceApprovalContractABI } from '../../core/swap';
 import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   HdWalletContext,
@@ -41,7 +35,6 @@ export default function useEthSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
-  const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();
   const navigation = useNavigation();
@@ -204,12 +197,19 @@ export default function useEthSigner() {
         } catch (e) {}
       }
 
-      const response = await writeContractAsync({
-        abi: allowanceApprovalContractABI,
-        address: transactionToBeSigned.to,
-        functionName: 'approve',
-        args: [transactionToBeSigned.to, BigInt(tokens ?? 0)],
+      const response = await sendTransactionAsync({
+        account: transactionToBeSigned.from as `0x${string}`,
+        to: transactionToBeSigned.to,
+        data: transactionToBeSigned.data,
+        value: transactionToBeSigned.value,
+        gas: transactionToBeSigned.gas,
         chainId: chainConfig.id,
+        ...(transactionToBeSigned.gasPrice
+          ? { gasPrice: transactionToBeSigned.gasPrice }
+          : {
+              maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas,
+              maxFeePerGas: transactionToBeSigned.maxFeePerGas,
+            }),
       });
       const receipt = await getTransactionReceipt(response, chainConfig.id);
       return receipt;
