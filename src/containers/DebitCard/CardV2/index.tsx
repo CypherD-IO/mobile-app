@@ -64,6 +64,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import moment from 'moment';
 import analytics from '@react-native-firebase/analytics';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -322,6 +323,14 @@ export default function CypherCardScreen() {
       return true;
     }
     return false;
+  };
+
+  const onPressFundCard = () => {
+    navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
+      navigation,
+      currentCardProvider: cardProvider,
+      currentCardIndex: 0,
+    });
   };
 
   return isLayoutRendered ? (
