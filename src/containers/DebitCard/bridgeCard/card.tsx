@@ -890,7 +890,7 @@ const RenderCardActions = ({
           title={'Get New Card'}
           style='px-[28px] w-[300px] mt-[24px]'
           onPress={() => {
-            logAnalytics(AnalyticEvent.GET_PHYSICAL_CARD, {
+            logAnalytics(AnalyticEvent.GET_NEW_CARD, {
               from: 'card_stack',
               type: 'new_card',
               address: cardProfile.primaryEthAddress,

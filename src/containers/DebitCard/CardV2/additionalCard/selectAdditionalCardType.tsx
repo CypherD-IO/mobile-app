@@ -34,6 +34,7 @@ import {
 } from '../../../../core/globalContext';
 import clsx from 'clsx';
 import { screenTitle } from '../../../../constants';
+import { AnalyticEvent, logAnalytics } from '../../../../core/analytics';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -213,6 +214,12 @@ export default function SelectAdditionalCardType() {
     cardType: CardType,
     price: number,
   ) => {
+    logAnalytics(AnalyticEvent.GET_NEW_CARD, {
+      from: 'get_new_card_explore',
+      type: cardType,
+      price,
+      address: cardProfile?.primaryEthAddress,
+    });
     navigation.navigate(screenTitle.ADDITIONAL_CARD_DESCRIPTION, {
       cardMetaData: card,
       currentCardProvider,
