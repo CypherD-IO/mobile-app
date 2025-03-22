@@ -311,7 +311,7 @@ export default function CardDescription() {
                   </CyDView>
                 </CyDView>
                 {/* multiple countries */}
-                <CyDView className='flex flex-row  gap-x-[4px] mt-[16px]'>
+                {/* <CyDView className='flex flex-row  gap-x-[4px] mt-[16px]'>
                   <CyDIcons
                     name='paypal-icon'
                     size={24}
@@ -325,7 +325,7 @@ export default function CardDescription() {
                       {t('PAY_PAL_VISA_DIRECT_DESCRIPTION')}
                     </CyDText>
                   </CyDView>
-                </CyDView>
+                </CyDView> */}
               </CyDView>
             </CyDView>
           </CyDScrollView>

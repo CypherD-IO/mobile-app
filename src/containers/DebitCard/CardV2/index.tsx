@@ -255,7 +255,7 @@ export default function CypherCardScreen() {
     }
   };
 
-  const onPressUpgradeNow = () => {
+  const onGetAdditionalCard = () => {
     navigation.navigate(screenTitle.SELECT_ADDITIONAL_CARD, {
       currentCardProvider: cardProvider,
       cardDesignData,
@@ -639,7 +639,7 @@ export default function CypherCardScreen() {
             <CardScreen
               navigation={navigation}
               currentCardProvider={cardProvider}
-              onPressUpgradeNow={onPressUpgradeNow}
+              onGetAdditionalCard={onGetAdditionalCard}
               onPressActivateCard={onPressActivateCard}
               refreshProfile={() => {
                 void refreshProfile();
@@ -657,7 +657,7 @@ export default function CypherCardScreen() {
         <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
           {get(cardDesignData, ['allowedCount', 'metal'], 0) > 0 &&
             get(cardDesignData, ['feeDetails', 'metal'], 100) === 0 && (
-              <GetMetalCardModal onPressUpgradeNow={onPressUpgradeNow} />
+              <GetMetalCardModal onGetAdditionalCard={onGetAdditionalCard} />
             )}
           <CyDView className='mx-[12px] my-[12px]'>
             <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
