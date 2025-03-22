@@ -82,7 +82,7 @@ const initialCardDetails: CardSecrets = {
 export default function CardScreen({
   navigation,
   currentCardProvider,
-  onPressUpgradeNow,
+  onGetAdditionalCard,
   onPressActivateCard,
   refreshProfile,
   cardDesignData,
@@ -90,7 +90,7 @@ export default function CardScreen({
 }: {
   navigation: any;
   currentCardProvider: CardProviders;
-  onPressUpgradeNow: () => void;
+  onGetAdditionalCard: () => void;
   onPressActivateCard: (card: any) => void;
   refreshProfile: () => void;
   cardDesignData: CardDesign;
@@ -349,6 +349,14 @@ export default function CardScreen({
               </CyDText>
             </CyDView>
           )}
+        {card.status === CardStatus.ADDITIONAL_CARD && (
+          <CyDTouchView
+            className='bg-transparent w-full h-full '
+            onPress={() => {
+              onGetAdditionalCard();
+            }}
+          />
+        )}
       </CyDImageBackground>
     );
   };
@@ -432,7 +440,7 @@ export default function CardScreen({
             cardProvider={currentCardProvider}
             navigation={navigation}
             refreshProfile={refreshProfile}
-            onPressUpgradeNow={onPressUpgradeNow}
+            onGetAdditionalCard={onGetAdditionalCard}
             onPressActivateCard={onPressActivateCard}
             cardProfile={cardProfile}
             trackingDetails={trackingDetails}
@@ -454,7 +462,7 @@ const RenderCardActions = ({
   cardProvider,
   navigation,
   refreshProfile,
-  onPressUpgradeNow,
+  onGetAdditionalCard,
   onPressActivateCard,
   cardProfile,
   trackingDetails,
@@ -465,7 +473,7 @@ const RenderCardActions = ({
   cardProvider: CardProviders;
   navigation: any;
   refreshProfile: () => void;
-  onPressUpgradeNow: () => void;
+  onGetAdditionalCard: () => void;
   onPressActivateCard: (card: Card) => void;
   cardProfile: CardProfile;
   trackingDetails: any;
@@ -895,7 +903,7 @@ const RenderCardActions = ({
               type: 'new_card',
               address: cardProfile.primaryEthAddress,
             });
-            onPressUpgradeNow();
+            onGetAdditionalCard();
           }}
         />
       </CyDView>
