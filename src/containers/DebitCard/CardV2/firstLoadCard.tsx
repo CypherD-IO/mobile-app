@@ -302,7 +302,7 @@ export default function FirstLoadCard() {
               toAddress: hdWallet.state.wallet.ethereum
                 .address as `0x${string}`,
               publicClient,
-              web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
+              rpc: getWeb3Endpoint(chainDetails, globalContext),
             });
 
             amountInCrypto = DecimalHelper.subtract(

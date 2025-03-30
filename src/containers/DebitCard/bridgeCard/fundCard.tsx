@@ -581,8 +581,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               tokenData: selectedToken,
               fromAddress: hdWallet.state.wallet.ethereum.address,
               toAddress: hdWallet.state.wallet.ethereum.address,
-              estimateReserveFee,
-              web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
+              publicClient,
+              rpc: getWeb3Endpoint(chainDetails, globalContext),
             });
 
             amountInCrypto = DecimalHelper.subtract(
