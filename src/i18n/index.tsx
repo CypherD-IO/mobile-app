@@ -1117,6 +1117,8 @@ const resources = {
       STANDARD_PLAN_SUB:
         "The essentials, perfected. Experience the industry's best with our free crypto card.",
       APPLE_GOOGLE_PAY: 'Apple Pay & Google Pay',
+      APPLE_GOOGLE_PAY_DESCRIPTION:
+        'Shop on the go with Apple Pay and Google Pay for quick and safe payments. Enjoy hassle-free transactions wherever you are!',
       FOREX_FEE: 'Forex Fee',
       CARD_LOAD_FEE_USDC: 'USDC Card loads',
       CARD_LOAD_FEE_NON_USDC: 'Non USDC Card loads',
@@ -1286,6 +1288,8 @@ const resources = {
       PREFERRED_NAME_SUB:
         'Your preferred name will be printed on the card, while your legal name from your KYC document will be used for billing purposes.',
       PHYSICAL_CARD_CONFIRMATION: 'Physical Card Confirmation',
+      METAL_CARD_CONFIRMATION: 'Metal Card Confirmation',
+      CHECKOUT: 'Checkout',
       PHYSICAL_CARD_CONFIRMATION_SUB:
         'Please review your shipping details. Once confirmed, the details cannot be changed.',
       SHIPPING_CHARGES: 'Shipping Charges',
@@ -1425,7 +1429,6 @@ const resources = {
       METAL_CARD_SUB_TEXT:
         'Why settle for ordinary when you can experience the extraordinary?',
       CLAIM_NOW: 'Claim Now',
-      METAL_CARD_CONFIRMATION: 'Metal Card Confirmation',
       CARD_ACTIVATION_SUCCESS: 'Card Activation Success',
       CARD_ACTIVATION_FAIL: 'Card Activation Failed',
       UNABLE_TO_ACTIVATE_CARD: 'Unable to activate card',
@@ -1522,6 +1525,8 @@ const resources = {
         'Get real-time notifications for card transactions and manage your card directly through Telegram.',
       APPLE_PAY_GOOGLE_PAY: 'Apple Pay / Google Pay',
       ATM_WITHDRAWALS: 'ATM Withdrawals',
+      ATM_WITHDRAWALS_DESCRIPTION:
+        'Take out cash from any ATM worldwide, no matter the currency!',
       DOMESTIC: 'Domestic',
       INTERNATIONAL: 'International',
       CARD_SETTINGS_ACKNOWLEDGMENT:
@@ -1532,6 +1537,36 @@ const resources = {
       CURRENCY: 'Currency',
       SEE_MORE: 'See More',
       TAX_ID_REQUIRED: 'Tax ID/RFC Number is required',
+      MULTIPLE_COUNTRIES: 'One card to spend at 195+ Countries',
+      MULTIPLE_COUNTRIES_DESCRIPTION:
+        'Use one card to spend wherever you want or grab your cash in any currency, no matter where you are in the world!',
+      PAY_PAL_VISA_DIRECT: 'Support Paypal, Visa Direct',
+      PAY_PAL_VISA_DIRECT_DESCRIPTION:
+        'You can use Cypher Card with PayPal and all the cool Visa Direct stuff!',
+      GET_THIS_CARD: 'Get this card',
+      CONFIRM_SHIPPING: 'Confirm Shipping',
+      GET_VIRTUAL_CARD: 'Get Virtual Card',
+      OTHER_CHARGES: 'Other Charges',
+      VIRTUAL_CARD_ISSUED:
+        'We have issued your virtual card as per your request, you can load your card and start spending!',
+      COMING_SOON: 'Coming soon',
+      METAL_CARD_FOR_PREMIUM_USERS:
+        'The metal card is exclusively offered to our \n premium users.',
+      MAXIMUM_CARD_LIMIT_REACHED:
+        'You have reached the maximum limit of cards.\n Please reach out to support.',
+      GET_INSTANTLY: '🎉 Get it Instantly',
+      ARRIVES_IN_WEEKS: '🚚 Arrives in 5-6 weeks',
+      VIRTUAL_CARD_DESCRIPTION:
+        'A sleek virtual card, ready to tap and pay instantly, with Apple pay and Google pay anytime, anywhere!',
+      PHYSICAL_CARD_DESCRIPTION:
+        'High-quality plastic card with durable, dual-sided tap-to-pay functionality.',
+      METAL_CARD_DESCRIPTION:
+        'It has a stainless steel core covered in PVC on both sides. You can tap and pay on either side!',
+      PREMIUM_SCALE: 'Premium Scale',
+      CORE_PREMIUM: 'Core Premium',
+      ULTRA_HIGH_END: 'Ultra - High end',
+      FEATURES: 'Features',
+      PER_CARD: 'per card',
     },
   },
 };

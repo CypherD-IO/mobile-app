@@ -112,6 +112,8 @@ import {
   CyDView,
 } from '../styles/tailwindComponents';
 import DefaultLimitSetup from '../containers/DebitCard/bridgeCard/defaultLimitSetup';
+import SelectAdditionalCardType from '../containers/DebitCard/CardV2/additionalCard/selectAdditionalCardType';
+import CardDescription from '../containers/DebitCard/CardV2/additionalCard/cardDescription';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -1051,6 +1053,20 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.FIRST_LOAD_CARD}
         component={FirstLoadCard}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SELECT_ADDITIONAL_CARD}
+        component={SelectAdditionalCardType}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.ADDITIONAL_CARD_DESCRIPTION}
+        component={CardDescription}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}

@@ -223,7 +223,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             toAddress: targetWalletAddress,
             amountToSend: actualTokensRequired,
             contractAddress,
-            contractDecimals,
+            tokenContractDecimals: contractDecimals,
           });
         }
       }
@@ -581,8 +581,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               tokenData: selectedToken,
               fromAddress: hdWallet.state.wallet.ethereum.address,
               toAddress: hdWallet.state.wallet.ethereum.address,
-              estimateReserveFee,
-              web3Endpoint: getWeb3Endpoint(chainDetails, globalContext),
+              publicClient,
+              rpc: getWeb3Endpoint(chainDetails, globalContext),
             });
 
             amountInCrypto = DecimalHelper.subtract(
@@ -711,7 +711,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             toAddress: solana.address,
             amountToSend: String(amountInCrypto),
             contractAddress,
-            contractDecimals,
+            tokenContractDecimals: contractDecimals,
+            isMaxGasEstimation: true,
           });
           if (!gasDetails?.isError) {
             // not doing it or solana because if we are sending max amount, then there should be 0 SOL balance in the account, or there should SOL balance enough

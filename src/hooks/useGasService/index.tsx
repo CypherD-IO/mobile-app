@@ -957,20 +957,23 @@ export default function useGasService() {
     fromAddress,
     toAddress,
     contractAddress,
-    contractDecimals = 9,
+    tokenContractDecimals = 9,
+    isMaxGasEstimation = false,
   }: {
     amountToSend: string;
     fromAddress: string;
     toAddress: string;
     contractAddress: string;
-    contractDecimals: number;
+    tokenContractDecimals: number;
+    isMaxGasEstimation?: boolean;
   }): Promise<SolanaGasEstimation> => {
     let transferInstruction;
     const solanRpc = getSolanaRpc();
     const senderPublicKey = new PublicKey(fromAddress);
     const recipientPublicKey = new PublicKey(toAddress);
-    const amountInLamports = parseUnits(amountToSend, contractDecimals);
+    const amountInLamports = parseUnits(amountToSend, tokenContractDecimals);
     const connection = new Connection(solanRpc, 'confirmed');
+
     const { blockhash } = await connection.getLatestBlockhash();
 
     if (contractAddress === 'solana-native') {
@@ -1006,9 +1009,15 @@ export default function useGasService() {
       recentBlockhash: blockhash,
       instructions: [transferInstruction],
     }).compileToV0Message();
+
+    const rentExempt = await connection.getMinimumBalanceForRentExemption(0);
     const feeCalculator = await connection.getFeeForMessage(message);
     const fee = feeCalculator.value ?? 5000;
-    const feeInLamports = DecimalHelper.toDecimal(fee, 9).toString();
+    const totalAmountToBeReserved = DecimalHelper.add(fee, rentExempt);
+    const feeInLamports = DecimalHelper.toDecimal(
+      isMaxGasEstimation ? fee : totalAmountToBeReserved,
+      9,
+    ).toString();
     // const transaction = new VersionedTransaction(message);
     // const simulation = await connection.simulateTransaction(transaction, {
     //   replaceRecentBlockhash: true,
@@ -1283,7 +1292,7 @@ export default function useGasService() {
     }
   };
 
-  const opStackL1FeeEstimate = async (txParams: any, web3Endpoint: string) => {
+  const opStackL1FeeEstimate = async (txParams: any, rpc: string) => {
     // fetching the contract address of gaspriceestimator on l1
     const address = addresses.GasPriceOracle[420];
     const abi = abis.GasPriceOracle;
@@ -1291,7 +1300,7 @@ export default function useGasService() {
       buildUnserializedTransaction(txParams).serialize();
 
     const publicClient = createPublicClient({
-      transport: http(web3Endpoint),
+      transport: http(rpc),
     });
 
     // Create contract instance
@@ -1304,21 +1313,22 @@ export default function useGasService() {
     const l1Fee1 =
       (await contract.read.getL1Fee([bytesToHex(serializedTransaction)])) ?? 0n;
 
-    return `0x${l1Fee1.toString(16)}`;
+    return l1Fee1;
   };
 
   const fetchEstimatedL1Fee = async (
     txParams: any,
     chain: Chain,
-    web3Endpoint: string,
+    rpc: string,
   ) => {
     if (OP_STACK_ENUMS.includes(chain.backendName)) {
-      return await opStackL1FeeEstimate(txParams, web3Endpoint);
+      return await opStackL1FeeEstimate(txParams, rpc);
     } else {
       return DecimalHelper.multiply(txParams.gas, txParams.gasPrice);
     }
   };
 
+  // estiamtes the gas Fee to reserve for L2 chains [OPT, ARBITRUM, BASE] use estimateGasForEVM for other EVM chains (becasue these L2 chains require a reserve of gasFee to commit the transaction to L!)
   const estimateReserveFee = async ({
     tokenData,
     fromAddress,
@@ -1371,7 +1381,7 @@ export default function useGasService() {
           );
 
           const gasTokenAmountRequiredForL1Fee = DecimalHelper.multiply(
-            DecimalHelper.divide(l1GasFee, 1e18),
+            DecimalHelper.toDecimal(l1GasFee.toString(), 18),
             1.1,
           );
 
@@ -1439,7 +1449,7 @@ export default function useGasService() {
               ).toNumber(),
             ),
             gas: toHex(Number(gas)),
-            gasPrice: toHex(parseGwei(gasPrice)),
+            gasPrice: toHex(DecimalHelper.toInteger(gasPrice, 18).toString()),
             data: '0x0',
           },
           tokenData.chainDetails,
@@ -1447,7 +1457,7 @@ export default function useGasService() {
         );
 
         const gasTokenAmountRequiredForL1Fee = DecimalHelper.multiply(
-          DecimalHelper.divide(l1GasFee, 1e18),
+          DecimalHelper.toDecimal(l1GasFee.toString(), 18),
           1.1,
         );
 

@@ -50,15 +50,13 @@ import {
   TYPES,
   initialCardTxnDateRange,
 } from '../../../constants/cardPageV2';
-import { MODAL_HIDE_TIMEOUT, MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
-import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
 import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
-import { cardDesign } from '../../../models/cardDesign.interface';
+import { CardDesign } from '../../../models/cardDesign.interface';
 import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
 import Intercom from '@intercom/intercom-react-native';
 import GradientText from '../../../components/gradientText';
@@ -66,6 +64,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import moment from 'moment';
 import analytics from '@react-native-firebase/analytics';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -86,20 +85,12 @@ export default function CypherCardScreen() {
   const [currentCardIndex] = useState(0); // Not setting anywhere.
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [
-    isShippingFeeConsentModalVisible,
-    setIsShippingFeeConsentModalVisible,
-  ] = useState(false);
-  const [
     isTermsAndConditionsModalVisible,
     setIsTermsAndConditionsModalVisible,
   ] = useState(false);
-  const [cardDesignData, setCardDesignData] = useState<cardDesign | undefined>(
+  const [cardDesignData, setCardDesignData] = useState<CardDesign | undefined>(
     undefined,
   );
-  const [cardFee, setCardFee] = useState(0);
-  const [choosenPhysicalCardType, setChoosenPhysicalCardType] = useState<
-    PhysicalCardType | undefined
-  >(undefined);
   const [recentTransactions, setRecentTransactions] = useState<
     ICardTransaction[]
   >([]);
@@ -248,44 +239,7 @@ export default function CypherCardScreen() {
       setRecentTransactions(txnsToSet);
     }
   };
-  const onPressFundCard = () => {
-    navigation.navigate(
-      cardId === CARD_IDS.HIDDEN_CARD
-        ? screenTitle.FIRST_LOAD_CARD
-        : screenTitle.BRIDGE_FUND_CARD_SCREEN,
-      {
-        navigation,
-        currentCardProvider: cardProvider,
-        currentCardIndex,
-      },
-    );
-  };
-  function onModalHide() {
-    hideModal();
-    setTimeout(() => {
-      onPressFundCard();
-    }, MODAL_HIDE_TIMEOUT);
-  }
-  const onShippingConfirmation = (physicalCardType?: PhysicalCardType) => {
-    if (isShippingFeeConsentModalVisible) {
-      setIsShippingFeeConsentModalVisible(false);
-      setTimeout(() => {
-        navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
-          currentCardProvider: cardProvider,
-          ...(physicalCardType && {
-            physicalCardType,
-          }),
-        });
-      }, MODAL_HIDE_TIMEOUT);
-    } else {
-      navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
-        currentCardProvider: cardProvider,
-        ...(physicalCardType && {
-          physicalCardType,
-        }),
-      });
-    }
-  };
+
   const onCardActivationConfirmation = (card: Card) => {
     navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
       currentCardProvider: cardProvider,
@@ -296,50 +250,17 @@ export default function CypherCardScreen() {
   const getCardDesignValues = async () => {
     const response = await getWithAuth('/v1/cards/designs');
     if (!response.isError) {
-      const cardDesignValues: cardDesign = response.data;
+      const cardDesignValues: CardDesign = response.data;
       setCardDesignData(cardDesignValues);
     }
   };
 
-  const getCardFee = async (physicalCardType?: PhysicalCardType) => {
-    const planData = globalContext.globalState.planInfo;
-    const cardType =
-      physicalCardType === PhysicalCardType.METAL
-        ? CardDesignType.METAL
-        : CardDesignType.PHYSICAL;
-
-    const defaultFeeKey =
-      physicalCardType === PhysicalCardType.METAL
-        ? 'metalCardFee'
-        : 'physicalCardFee';
-
-    return get(
+  const onGetAdditionalCard = () => {
+    navigation.navigate(screenTitle.SELECT_ADDITIONAL_CARD, {
+      currentCardProvider: cardProvider,
       cardDesignData,
-      ['feeDetails', cardType],
-      get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
-    );
-  };
-
-  const onPressUpgradeNow = async (physicalCardType?: PhysicalCardType) => {
-    setChoosenPhysicalCardType(physicalCardType);
-    const fee = await getCardFee(physicalCardType);
-    setCardFee(fee);
-
-    if (Number(cardBalance) < Number(fee)) {
-      showModal('state', {
-        type: 'error',
-        title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${String(fee)} balance to upgrade to ${physicalCardType ?? 'physical'} card. Please load now to upgrade`,
-        onSuccess: onModalHide,
-        onFailure: hideModal,
-      });
-    } else {
-      if (Number(fee) > 0) {
-        setIsShippingFeeConsentModalVisible(true);
-      } else {
-        onShippingConfirmation(physicalCardType);
-      }
-    }
+      cardBalance,
+    });
   };
 
   const onPressActivateCard = (card: any) => {
@@ -402,6 +323,14 @@ export default function CypherCardScreen() {
       return true;
     }
     return false;
+  };
+
+  const onPressFundCard = () => {
+    navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
+      navigation,
+      currentCardProvider: cardProvider,
+      currentCardIndex: 0,
+    });
   };
 
   return isLayoutRendered ? (
@@ -515,8 +444,6 @@ export default function CypherCardScreen() {
                     'cards',
                     currentCardIndex,
                   ]),
-                  cardDesignData,
-                  onBuyAdditionalPhysicalCard: onPressUpgradeNow,
                 });
               }}>
               <CyDMaterialDesignIcons
@@ -533,18 +460,15 @@ export default function CypherCardScreen() {
 
         <CardProviderSwitch />
 
-        {isShippingFeeConsentModalVisible && (
+        {/* {isShippingFeeConsentModalVisible && (
           <ShippingFeeConsentModal
             isModalVisible={isShippingFeeConsentModalVisible}
             feeAmount={String(cardFee)}
-            onSuccess={() => {
-              onShippingConfirmation(choosenPhysicalCardType);
-            }}
             onFailure={() => {
               setIsShippingFeeConsentModalVisible(false);
             }}
           />
-        )}
+        )} */}
 
         {/* balance and add funds/activate card */}
         <CyDView className={'h-[60px] mt-[24px]'}>
@@ -710,28 +634,30 @@ export default function CypherCardScreen() {
           </CyDView>
         )}
 
-        <CyDView className='mt-[2px]'>
-          <CardScreen
-            navigation={navigation}
-            currentCardProvider={cardProvider}
-            onPressUpgradeNow={onPressUpgradeNow}
-            onPressActivateCard={onPressActivateCard}
-            refreshProfile={() => {
-              void refreshProfile();
-            }}
-            cardDesignData={cardDesignData}
-            isAccountLocked={
-              shouldBlockAction() ||
-              shouldShowLocked() ||
-              shouldShowContactSupport()
-            }
-          />
-        </CyDView>
+        {cardDesignData && (
+          <CyDView className='mt-[2px]'>
+            <CardScreen
+              navigation={navigation}
+              currentCardProvider={cardProvider}
+              onGetAdditionalCard={onGetAdditionalCard}
+              onPressActivateCard={onPressActivateCard}
+              refreshProfile={() => {
+                void refreshProfile();
+              }}
+              cardDesignData={cardDesignData}
+              isAccountLocked={
+                shouldBlockAction() ||
+                shouldShowLocked() ||
+                shouldShowContactSupport()
+              }
+            />
+          </CyDView>
+        )}
 
         <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
           {get(cardDesignData, ['allowedCount', 'metal'], 0) > 0 &&
             get(cardDesignData, ['feeDetails', 'metal'], 100) === 0 && (
-              <GetMetalCardModal onPressUpgradeNow={onPressUpgradeNow} />
+              <GetMetalCardModal onGetAdditionalCard={onGetAdditionalCard} />
             )}
           <CyDView className='mx-[12px] my-[12px]'>
             <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
@@ -865,7 +791,7 @@ export default function CypherCardScreen() {
                     className='text-base400'
                   />
                   <CyDText className='font-semibold text-[12px]'>
-                    {'Zero Forex Markup'}
+                    {'Zero USDC Load Fee'}
                   </CyDText>
                 </CyDView>
               </CyDView>

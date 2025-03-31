@@ -20,6 +20,7 @@ const APP_LOGO = require('./appLogo.png');
 const CARD = require('./card.png');
 const ETHEREUM = require('./ethereum_logo.png');
 const BINANCE = require('./binance_coin_bnb_logo.png');
+const ADDITIONAL_CARD = require('./getNewCard.png');
 // need dm image
 const SENDTO_EMPTY = require('./sento_Empty.png');
 const RED_COIN = require('./coinRed.png');
@@ -804,12 +805,14 @@ export const AppImagesMap = {
     RC_METAL_DISABLED,
     GET_PHYSICAL_CARD,
     VISA_LOGO_GREY,
+    ADDITIONAL_CARD,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
 };
 
 enum AppImages {
+  ADDITIONAL_CARD = 'ADDITIONAL_CARD',
   INTERNATIONAL_COUNTRIES_QUICK_ACTION = 'INTERNATIONAL_COUNTRIES_QUICK_ACTION',
   UNBLOCK_CARD_QUICK_ACTION = 'UNBLOCK_CARD_QUICK_ACTION',
   ACTIVATE_CARD_QUICK_ACTION = 'ACTIVATE_CARD_QUICK_ACTION',

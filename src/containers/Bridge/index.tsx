@@ -760,10 +760,7 @@ const Bridge: React.FC = () => {
               toAddress: hdWallet?.state?.wallet?.ethereum
                 ?.address as `0x${string}`,
               publicClient,
-              web3Endpoint: getWeb3Endpoint(
-                selectedChainDetails,
-                globalContext,
-              ),
+              rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
             });
           } else {
             const gasDetails = await estimateGasForEvmCustomContract(

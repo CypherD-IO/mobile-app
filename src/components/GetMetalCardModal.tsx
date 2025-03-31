@@ -1,6 +1,5 @@
 import React from 'react';
 import { t } from 'i18next';
-import { PhysicalCardType } from '../constants/enum';
 import {
   CyDView,
   CyDText,
@@ -9,9 +8,9 @@ import {
 } from '../styles/tailwindComponents';
 import AppImages from '../../assets/images/appImages';
 export const GetMetalCardModal = ({
-  onPressUpgradeNow,
+  onGetAdditionalCard,
 }: {
-  onPressUpgradeNow: (physicalCardType?: PhysicalCardType) => void;
+  onGetAdditionalCard: () => void;
 }) => {
   return (
     <CyDView className='bg-[#1A1F59] rounded-[12px] px-[16px] pb-[16px] m-[16px]'>
@@ -34,7 +33,7 @@ export const GetMetalCardModal = ({
       <CyDTouchView
         className='bg-[#FFB900] rounded-[12px] h-[42px] py-[11px] px-[12px] items-center justify-center mt-[4px]'
         onPress={() => {
-          onPressUpgradeNow(PhysicalCardType.METAL);
+          onGetAdditionalCard();
         }}>
         <CyDText className='font-bold text-black'>{t('CLAIM_NOW')}</CyDText>
       </CyDTouchView>
