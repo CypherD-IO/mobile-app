@@ -1567,6 +1567,11 @@ const resources = {
       ULTRA_HIGH_END: 'Ultra - High end',
       FEATURES: 'Features',
       PER_CARD: 'per card',
+      RAIN_INFO_CONSENT:
+        'I certify that the information i have provided is accurate and that i will abide by all the rules and requirements related to my Cypher Card.',
+      RAIN_SOLICITATION:
+        'I acknowledge that applying for the Cypher Card does not constitute unauthorized solicitation',
+      CARD_OUT_OF_STOCK: 'Not yet available for your region',
     },
   },
 };

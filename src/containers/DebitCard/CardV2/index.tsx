@@ -65,6 +65,7 @@ import SelectPlanModal from '../../../components/selectPlanModal';
 import moment from 'moment';
 import analytics from '@react-native-firebase/analytics';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
+import { getRainTerms } from '../../../core/asyncStorage';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -73,7 +74,9 @@ interface RouteParams {
 export default function CypherCardScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { cardProvider } = route?.params ?? {};
+  const { cardProvider } = route?.params ?? {
+    cardProvider: CardProviders.REAP_CARD,
+  };
   const isFocused = useIsFocused();
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
@@ -103,12 +106,12 @@ export default function CypherCardScreen() {
     dateRange: initialCardTxnDateRange,
     statuses: STATUSES,
   });
-  const cardId = get(cardProfile, [
+  const selectedCard = get(cardProfile, [
     cardProvider,
     'cards',
     currentCardIndex,
-    'cardId',
   ]);
+  const cardId = selectedCard?.cardId;
   const isLockdownModeEnabled = get(
     cardProfile,
     ['accountStatus'],
@@ -202,9 +205,17 @@ export default function CypherCardScreen() {
     const data = await getWalletProfile(globalContext.globalState.token);
     setPlanInfo(get(data, ['planInfo'], null));
     if (cardProvider !== CardProviders.PAYCADDY) {
-      setIsTermsAndConditionsModalVisible(
-        !get(data, [cardProvider, 'termsAgreedOn'], 0),
-      );
+      if (
+        selectedCard?.cardProvider === CardProviders.RAIN_CARD &&
+        cardId === CARD_IDS.HIDDEN_CARD
+      ) {
+        const rainTerms = await getRainTerms();
+        setIsTermsAndConditionsModalVisible(!rainTerms);
+      } else {
+        setIsTermsAndConditionsModalVisible(
+          !get(data, [cardProvider, 'termsAgreedOn'], 0),
+        );
+      }
     }
     globalContext.globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
@@ -342,6 +353,7 @@ export default function CypherCardScreen() {
       <TermsAndConditionsModal
         isModalVisible={isTermsAndConditionsModalVisible}
         setIsModalVisible={setIsTermsAndConditionsModalVisible}
+        cardProvider={selectedCard?.cardProvider}
         onAgree={() => {
           void refreshProfile();
         }}
