@@ -67,7 +67,7 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope);
     ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont);
-    ReactFontManager.getInstance().addCustomFont(this, "CypherNord", R.font.cyphernord);
+    ReactFontManager.getInstance().addCustomFont(this, "Nord", R.font.nord);
     ReactFontManager fontManager = ReactFontManager.getInstance();
     fontManager.addCustomFont(this, "Manrope-Light", R.font.manrope_light);
     fontManager.addCustomFont(this, "Manrope-Regular", R.font.manrope_regular);
@@ -75,6 +75,7 @@ public class MainApplication extends Application implements ReactApplication {
     fontManager.addCustomFont(this, "Manrope-SemiBold", R.font.manrope_semibold);
     fontManager.addCustomFont(this, "Manrope-Bold", R.font.manrope_bold);
     fontManager.addCustomFont(this, "Manrope-ExtraBold", R.font.manrope_extrabold);
+    fontManager.addCustomFont(this, "Nord-Regular", R.font.nord_regular);
     SoLoader.init(this, /* native exopackage */ false);
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
