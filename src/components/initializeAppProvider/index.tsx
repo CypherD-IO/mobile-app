@@ -43,7 +43,6 @@ import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 export const InitializeAppProvider = ({
   children,
 }: {
-  navigationRef: any;
   children: React.ReactNode;
 }) => {
   const {
@@ -57,6 +56,7 @@ export const InitializeAppProvider = ({
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
+    initializeWeb3Auth,
   } = useInitializer();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [pinAuthentication, setPinAuthentication] = useState(false);
@@ -72,6 +72,7 @@ export const InitializeAppProvider = ({
   const { isReadOnlyWallet } = hdWallet.state;
   const { ethereum } = hdWallet.state.wallet;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
+
   const { showModal, hideModal } = useGlobalModalContext();
   const [isJoinDiscordModalVisible, setIsJoinDiscordModalVisible] =
     useState<boolean>(false);
@@ -119,6 +120,8 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     if (ethereum.address) {
+      void initializeWeb3Auth();
+
       void getHosts(
         setForcedUpdate,
         setTamperedSignMessageModal,
@@ -173,6 +176,7 @@ export const InitializeAppProvider = ({
         return children;
       }
     }
+
     // {
     //   ethereum.address === undefined ? (
     //     pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (

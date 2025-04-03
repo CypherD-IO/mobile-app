@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -10,7 +9,6 @@ import {
 } from '../../styles/tailwindComponents';
 import { ButtonType, ConnectionTypes } from '../../constants/enum';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import clsx from 'clsx';
 export default function RemoveWalletModal(store: {

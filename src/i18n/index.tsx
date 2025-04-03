@@ -1567,6 +1567,7 @@ const resources = {
       ULTRA_HIGH_END: 'Ultra - High end',
       FEATURES: 'Features',
       PER_CARD: 'per card',
+      SIGN_OUT: 'Sign Out',
     },
   },
 };
