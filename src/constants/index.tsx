@@ -2,6 +2,8 @@ import React from 'react';
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
   ONBOARDING: 'OnBoarding',
+  ONBOARDING_GET_STARTED: 'OnBoardingGetStarted',
+  ONBOARDING_OPTIONS: 'OnBoardingOptions',
   ACTIVITYFILTER: 'ACTIVITYFILTER',
   ACTIVITIES: 'Activities',
   REFERRAL_REWARDS: 'ReferralRewards',

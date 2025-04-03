@@ -416,60 +416,64 @@ export default function useInitializer() {
       ethereum?.address
       // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
-      const isSessionTokenValid = await verifySessionToken();
-      if (!isSessionTokenValid) {
-        const signInResponse = await signIn(
-          ethereum,
-          hdWallet,
-          setShowDefaultAuthRemoveModal,
-        );
-        if (signInResponse) {
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            setForcedUpdate(false);
-            setTamperedSignMessageModal(false);
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: signInResponse?.token,
-            });
-            globalContext.globalDispatch({
-              type: GlobalContextType.IS_APP_AUTHENTICATED,
-              isAuthenticated: true,
-            });
-            await setAuthToken(signInResponse?.token);
-            if (has(signInResponse, 'refreshToken')) {
-              await setRefreshToken(signInResponse?.refreshToken);
-            }
-            void getProfile(signInResponse.token);
-          } else if (
-            signInResponse?.message === SignMessageValidationType.INVALID
-          ) {
-            setUpdateModal(false);
-            setTamperedSignMessageModal(true);
-          } else if (
-            signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
-          ) {
-            setUpdateModal(true);
-            setForcedUpdate(true);
-          }
-        }
-      } else {
-        let authToken = await getAuthToken();
-        const connectionType = await getConnectionType();
-        // don't ask for authentication in case of wallet connect
-        if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
-          await loadFromKeyChain(DUMMY_AUTH, true, () =>
-            setShowDefaultAuthRemoveModal(true),
+      try {
+        const isSessionTokenValid = await verifySessionToken();
+        if (!isSessionTokenValid) {
+          const signInResponse = await signIn(
+            ethereum,
+            hdWallet,
+            setShowDefaultAuthRemoveModal,
           );
+          if (signInResponse) {
+            if (
+              signInResponse?.message === SignMessageValidationType.VALID &&
+              has(signInResponse, 'token')
+            ) {
+              setForcedUpdate(false);
+              setTamperedSignMessageModal(false);
+              globalContext.globalDispatch({
+                type: GlobalContextType.SIGN_IN,
+                sessionToken: signInResponse?.token,
+              });
+              globalContext.globalDispatch({
+                type: GlobalContextType.IS_APP_AUTHENTICATED,
+                isAuthenticated: true,
+              });
+              await setAuthToken(signInResponse?.token);
+              if (has(signInResponse, 'refreshToken')) {
+                await setRefreshToken(signInResponse?.refreshToken);
+              }
+              void getProfile(signInResponse.token);
+            } else if (
+              signInResponse?.message === SignMessageValidationType.INVALID
+            ) {
+              setUpdateModal(false);
+              setTamperedSignMessageModal(true);
+            } else if (
+              signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
+            ) {
+              setUpdateModal(true);
+              setForcedUpdate(true);
+            }
+          }
+        } else {
+          let authToken = await getAuthToken();
+          const connectionType = await getConnectionType();
+          // don't ask for authentication in case of wallet connect
+          if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
+            await loadFromKeyChain(DUMMY_AUTH, true, () =>
+              setShowDefaultAuthRemoveModal(true),
+            );
+          }
+          authToken = JSON.parse(String(authToken));
+          void getProfile(authToken ?? '');
+          globalContext.globalDispatch({
+            type: GlobalContextType.IS_APP_AUTHENTICATED,
+            isAuthenticated: true,
+          });
         }
-        authToken = JSON.parse(String(authToken));
-        void getProfile(authToken ?? '');
-        globalContext.globalDispatch({
-          type: GlobalContextType.IS_APP_AUTHENTICATED,
-          isAuthenticated: true,
-        });
+      } catch (error) {
+        console.log('error', error);
       }
     }
   };
@@ -497,6 +501,18 @@ export default function useInitializer() {
     }
   };
 
+  const initializeWeb3Auth = async () => {
+    const web3Auth = hdWallet.state.socialAuth?.web3Auth;
+    if (web3Auth) {
+      await web3Auth.init();
+      const isConnected = web3Auth.connected;
+      if (isConnected) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   return {
     initializeSentry,
     exitIfJailBroken,
@@ -508,5 +524,6 @@ export default function useInitializer() {
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
+    initializeWeb3Auth,
   };
 }

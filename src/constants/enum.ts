@@ -344,6 +344,8 @@ export enum ConnectionTypes {
   PRIVATE_KEY = 'privateKey',
   WALLET_CONNECT = 'walletConnect',
   WALLET_CONNECT_WITHOUT_SIGN = 'walletConnectWithoutSign',
+  SOCIAL_LOGIN_EVM = 'socialLoginEvm',
+  SOCIAL_LOGIN_SOLANA = 'socialLoginSolana',
 }
 
 export enum CARD_ALERT_TYPES {
@@ -364,6 +366,8 @@ export enum CARD_NOTIFICATION_TYPES {
 export enum SECRET_TYPES {
   MENEMONIC = 'mnemonic',
   PRIVATE_KEY = 'privateKey',
+  SOCIAL_LOGIN_EVM = 'socialLoginEvm',
+  SOCIAL_LOGIN_SOLANA = 'socialLoginSolana',
 }
 
 export enum CardReferralStatus {

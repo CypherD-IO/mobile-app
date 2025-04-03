@@ -81,8 +81,6 @@ import {
   type GetFeeHistoryParameters,
   type SignableMessage,
 } from 'viem';
-import useGasService from '../useGasService';
-import useTransactionManager from '../useTransactionManager';
 import { privateKeyToAccount } from 'viem/accounts';
 
 const bigNumberToHex = (val: string) => toHex(BigInt(val));

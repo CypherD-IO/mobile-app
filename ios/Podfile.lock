@@ -149,6 +149,7 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - OpenSSL-Universal (3.3.2000)
   - Permission-Camera (3.6.0):
     - RNPermissions
   - PromisesObjC (2.4.0)
@@ -458,6 +459,11 @@ PODS:
     - React-Core
   - react-native-pager-view (7.0.0-rc.0):
     - React-Core
+  - react-native-quick-crypto (0.7.12):
+    - OpenSSL-Universal
+    - RCT-Folly (= 2021.07.22.00)
+    - React
+    - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
   - react-native-render-html (6.3.4):
@@ -472,6 +478,8 @@ PODS:
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-view-shot (3.5.0):
+    - React-Core
+  - react-native-web-browser (1.1.0):
     - React-Core
   - react-native-webview (13.12.4):
     - RCT-Folly (= 2021.07.22.00)
@@ -721,6 +729,7 @@ DEPENDENCIES:
   - react-native-lottie-splash-screen (from `../node_modules/react-native-lottie-splash-screen`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
+  - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-restart (from `../node_modules/react-native-restart`)
@@ -728,6 +737,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-vector-icons (from `../node_modules/@react-native-vector-icons/common`)"
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
+  - "react-native-web-browser (from `../node_modules/@toruslabs/react-native-web-browser`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -795,6 +805,7 @@ SPEC REPOS:
     - libwebp
     - lottie-ios
     - nanopb
+    - OpenSSL-Universal
     - PromisesObjC
     - PromisesSwift
     - SDWebImage
@@ -875,6 +886,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
+  react-native-quick-crypto:
+    :path: "../node_modules/react-native-quick-crypto"
   react-native-randombytes:
     :path: "../node_modules/react-native-randombytes"
   react-native-render-html:
@@ -889,6 +902,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-vector-icons/common"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
+  react-native-web-browser:
+    :path: "../node_modules/@toruslabs/react-native-web-browser"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:

@@ -3,6 +3,7 @@ import React, { type Dispatch } from 'react';
 import { GlobalContextType } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
 import { CardProfile } from '../models/cardProfile.model';
+import { ISocialAuth } from '../models/socailAuth.interface';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -98,6 +99,7 @@ interface GlobalReducerInput {
   cardProfile?: CardProfile;
   ibc?: boolean;
   isAuthenticated?: boolean;
+  socialAuth?: ISocialAuth;
 }
 
 export const gloabalContextReducer = (

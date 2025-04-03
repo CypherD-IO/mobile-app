@@ -1,4 +1,7 @@
 import { decode, encode } from 'base-64';
+import {install} from 'react-native-quick-crypto';
+
+install();
 
 if (typeof BigInt === 'undefined') { global.BigInt = require('big-integer'); }
 if (!global.btoa) global.btoa = encode;
@@ -28,3 +31,19 @@ if (typeof localStorage !== 'undefined') {
 require('crypto');
 
 if (typeof BigInt === 'undefined') global.BigInt = require('big-integer');
+
+
+// Needed so that 'stream-http' chooses the right default protocol.
+// @ts-ignore
+global.location = {
+  protocol: 'file:',
+};
+// @ts-ignore
+global.process.version = 'v16.0.0';
+if (!global.process.version) {
+  global.process = require('process');
+  console.log({process: global.process});
+}
+// @ts-ignore
+process.browser = true;
+

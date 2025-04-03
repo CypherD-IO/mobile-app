@@ -142,6 +142,10 @@ const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
 const ZRM_INTRO_1 = require('./zrmImage1.png');
 const ZRM_INTRO_2 = require('./zrmImage2.png');
 const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
+const CREATE_WALLET = require('./createWallet.png');
+const IMPORT_WALLET = require('./importWallet.png');
+const CONNECT_WALLET = require('./connectWallet.png');
+const GOOGLE_LOGO = require('./googleLogo.png');
 
 // ICONS FROM S3
 // const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -922,12 +926,20 @@ export const AppImagesMap = {
     CHECK_MARK_GREEN_CURLY_BG,
     DCC_POS_TERMINAL,
     CARDS_WITH_EXCLAMATION,
+    CREATE_WALLET,
+    IMPORT_WALLET,
+    CONNECT_WALLET,
+    GOOGLE_LOGO,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
 };
 
 enum AppImages {
+  CREATE_WALLET = 'CREATE_WALLET',
+  IMPORT_WALLET = 'IMPORT_WALLET',
+  CONNECT_WALLET = 'CONNECT_WALLET',
+  GOOGLE_LOGO = 'GOOGLE_LOGO',
   ADDITIONAL_CARD = 'ADDITIONAL_CARD',
   INTERNATIONAL_COUNTRIES_QUICK_ACTION = 'INTERNATIONAL_COUNTRIES_QUICK_ACTION',
   UNBLOCK_CARD_QUICK_ACTION = 'UNBLOCK_CARD_QUICK_ACTION',

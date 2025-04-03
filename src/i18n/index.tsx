@@ -1700,6 +1700,7 @@ const resources = {
       LOAD_UP_TO: 'Load up to ${{maxLoadLimit}}',
       MINIMUM_AMOUNT_HL_SPOT:
         'Minimum amount for Hyper Liquid Spot Token is ${{minAmount}}',
+      SIGN_OUT: 'Sign Out',
     },
   },
 };
