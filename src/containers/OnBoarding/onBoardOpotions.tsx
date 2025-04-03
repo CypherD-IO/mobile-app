@@ -108,7 +108,6 @@ export default function OnBoardOpotions() {
         login_hint: email,
       },
       mfaLevel: MFA_LEVELS.MANDATORY,
-      curve: 'secp256k1',
     });
     if (provider.connected) {
       const connectionType =
@@ -151,6 +150,7 @@ export default function OnBoardOpotions() {
 
     await provider.login({
       loginProvider: LOGIN_PROVIDER.GOOGLE,
+      mfaLevel: MFA_LEVELS.MANDATORY,
     });
     if (provider.connected) {
       const connectionType =
@@ -481,7 +481,7 @@ export default function OnBoardOpotions() {
       <CyDView
         className='flex-1 bg-[#F74555]'
         style={{ paddingTop: inset.top }}>
-        <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-cypherNord'>
+        <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord'>
           {"LET'S \nGET STARTED"}
         </CyDText>
         <CyDView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
