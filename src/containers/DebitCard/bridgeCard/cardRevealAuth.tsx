@@ -357,7 +357,7 @@ export default function CardRevealAuthScreen() {
               void resendOTP();
             }}>
             <CyDText className={'font-normal text-[12px] text-n200'}>
-              {"Didn't received the OTP? Try "}
+              {"Didn't receive ? "}
               <CyDText className='underline text-blue300 font-bold'>
                 {t<string>('RESEND_OTP')}
               </CyDText>

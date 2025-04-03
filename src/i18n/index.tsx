@@ -1325,7 +1325,7 @@ const resources = {
       BILLED_AMOUNT: 'Billed Amount',
       TRANSACTION_AMOUNT: 'Transaction Amount',
       ACCOUNT_OPTIONS: 'Account Options',
-      DIDNT_RECEIVE_OTP: "Didn't received the OTP? Try",
+      DIDNT_RECEIVE_OTP: "Didn't receive? ",
       VERIFY_OTP: 'Verify OTP',
       CHANGE_EMAIL: 'Change Email',
       ENTER_NEW_EMAIL: 'Enter new email',
