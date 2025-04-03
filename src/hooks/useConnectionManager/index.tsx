@@ -57,6 +57,12 @@ export default function useConnectionManager() {
       await disconnectWalletConnect();
     } else {
       await removeCredentialsFromKeychain();
+      if (connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM) {
+        const web3Auth = hdWalletContext.state.socialAuth?.web3Auth;
+        if (web3Auth?.connected) {
+          await web3Auth?.logout();
+        }
+      }
     }
     await clearAllData();
     hdWalletContext.dispatch({ type: 'RESET_WALLET' });
@@ -124,13 +130,7 @@ export default function useConnectionManager() {
     }
   };
 
-  const deleteWallet = async ({
-    navigation,
-    importNewWallet,
-  }: {
-    navigation: any;
-    importNewWallet?: boolean;
-  }) => {
+  const deleteWallet = async ({ navigation }: { navigation: any }) => {
     showModal(GlobalModalType.REMOVE_WALLET, {
       connectionType,
       onSuccess: () => {
@@ -139,6 +139,12 @@ export default function useConnectionManager() {
       },
       onFailure: hideModal,
     });
+  };
+
+  const logoutSocialAuth = async ({ navigation }: { navigation: any }) => {
+    const web3Auth = hdWalletContext.state.socialAuth?.web3Auth;
+    await web3Auth?.logout();
+    void authorizeWalletDeletion({ navigation });
   };
 
   useEffect(() => {
@@ -152,5 +158,6 @@ export default function useConnectionManager() {
     deleteWallet,
     getConnectedType,
     deleteWalletConfig,
+    logoutSocialAuth,
   };
 }

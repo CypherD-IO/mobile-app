@@ -1623,6 +1623,7 @@ const resources = {
       UPDATE_CHANNEL_SETTINGS: 'Update Channel Settings',
       NO_THANKS: 'No Thanks',
       PORTFOLIO: 'Portfolio',
+      SIGN_OUT: 'Sign Out',
     },
   },
 };
