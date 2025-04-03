@@ -481,7 +481,7 @@ export default function OnBoardOpotions() {
       <CyDView
         className='flex-1 bg-[#F74555]'
         style={{ paddingTop: inset.top }}>
-        <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord'>
+        <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord text-n0'>
           {"LET'S \nGET STARTED"}
         </CyDText>
         <CyDView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
@@ -496,7 +496,7 @@ export default function OnBoardOpotions() {
               <TextInput
                 className='flex-1 text-[14px] text-base400'
                 placeholder='Enter your email address'
-                placeholderClassName='text-n90 text-[14px]'
+                placeholderTextColor={'#8993A4'}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType='email-address'
