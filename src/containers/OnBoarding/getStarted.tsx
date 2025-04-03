@@ -62,7 +62,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
             <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'Non Custodial \nCrypto Wallet'}
             </CyDText>
-            <CyDText className='text-[18px] font-medium text-[#C2C7D0] mt-[12px]'>
+            <CyDText className='text-[18px] font-medium text-white mt-[12px]'>
               {
                 'You can support over 16+ chains and more than 1000+ tokens! Keep an eye on DeFi, NFTs, and easily send or receive from any wallet.'
               }
@@ -94,7 +94,7 @@ function Section3({ handleContinue }: { handleContinue: () => void }) {
             <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'VISA Powered \nCrypto card '}
             </CyDText>
-            <CyDText className='text-[18px] font-medium text-[#C2C7D0] mt-[20px]'>
+            <CyDText className='text-[18px] font-medium text-white mt-[20px]'>
               {
                 'Use your crypto at over 60 million places worldwide without worrying about currency conversion!'
               }
