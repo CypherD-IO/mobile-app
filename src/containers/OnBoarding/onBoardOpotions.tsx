@@ -152,6 +152,40 @@ export default function OnBoardOpotions() {
     await provider.login({
       loginProvider: LOGIN_PROVIDER.GOOGLE,
     });
+    if (provider.connected) {
+      const connectionType =
+        providerType === ProviderType.ETHEREUM
+          ? ConnectionTypes.SOCIAL_LOGIN_EVM
+          : ConnectionTypes.SOCIAL_LOGIN_SOLANA;
+      const userInfo = provider.userInfo() as AuthUserInfo;
+      hdWalletContext.dispatch({
+        type: 'SET_SOCIAL_AUTH',
+        value: {
+          socialAuth: {
+            connectionType,
+            web3Auth: provider,
+            userInfo,
+          },
+        },
+      });
+
+      let _privateKey = (await provider.provider?.request({
+        method: 'eth_private_key',
+      })) as string;
+
+      if (!_privateKey) {
+        return;
+      }
+
+      if (!_privateKey.startsWith('0x')) {
+        _privateKey = '0x' + _privateKey;
+      }
+
+      if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
+        await importWalletPrivateKey(hdWalletContext, _privateKey);
+        void setConnectionType(connectionType);
+      }
+    }
   };
 
   const handleSocialLogin = async () => {
