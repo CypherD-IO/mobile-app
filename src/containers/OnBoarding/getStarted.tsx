@@ -4,7 +4,6 @@ import {
   CyDText,
   CyDTouchView,
   CyDImage,
-  CyDIcons,
   CyDSafeAreaView,
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
@@ -24,16 +23,16 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
           {'Cypher'}
         </CyDText>
         <CyDView className='flex-1 justify-center'>
-          <CyDText className='text-[#FBE19D] leading-[120%] text-[44px] font-medium'>
+          <CyDText className='text-[44px] font-medium text-goldText'>
             {'Get Ready to'}
           </CyDText>
           <CyDText className='text-white leading-[120%] text-[44px] font-medium'>
             {'Supercharge your'}
           </CyDText>
-          <CyDText className='text-[#FBE19D] leading-[120%] text-[44px] font-medium'>
+          <CyDText className='text-goldText leading-[120%] text-[44px] font-medium'>
             {'Crypto Spending'}
           </CyDText>
-          <CyDText className='text-[#FBE19D] leading-[120%] text-[44px] font-medium'>
+          <CyDText className='text-goldText leading-[120%] text-[44px] font-medium'>
             {'journey'}
           </CyDText>
         </CyDView>
@@ -60,7 +59,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
       <CyDView className='bg-black flex-1'>
         <CyDView className=' flex-1 justify-between'>
           <CyDView className='px-[24px]'>
-            <CyDText className='text-[32px] font-bold text-white mt-[38px] font-cypherNord'>
+            <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'Non Custodial \nCrypto Wallet'}
             </CyDText>
             <CyDText className='text-[18px] font-medium text-[#C2C7D0] mt-[12px]'>
@@ -92,7 +91,7 @@ function Section3({ handleContinue }: { handleContinue: () => void }) {
       <CyDView className='bg-black flex-1'>
         <CyDView className=' flex-1 justify-between'>
           <CyDView className='px-[24px]'>
-            <CyDText className='text-[32px] font-bold text-white mt-[38px] font-cypherNord'>
+            <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'VISA Powered \nCrypto card '}
             </CyDText>
             <CyDText className='text-[18px] font-medium text-[#C2C7D0] mt-[20px]'>
