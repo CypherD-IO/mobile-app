@@ -26,12 +26,15 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function TrackWallet({
-  navigation,
-}: {
-  navigation: { navigate: () => {} };
-}) {
+export default function TrackWallet() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
   const [address, setAddress] = useState('');
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -136,14 +139,16 @@ export default function TrackWallet({
   };
 
   return (
-    <CyDView className='flex-1 h-[100%] flex-col justify-between bg-n0'>
-      <CyDView className='px-[20px] flex flex-col items-center'>
+    <CyDView className='flex-1 bg-n0'>
+      <CyDView className='px-[20px] flex flex-col items-center mb-[32px]'>
         <CyDView
           className={
-            'flex flex-row justify-between items-center self-center mt-[15px] border-[0.2px] border-black rounded-[5px] pl-[15px] pr-[10px] py-[5px]'
+            'flex flex-row justify-between items-center mt-[15px] gap-x-[12px]'
           }>
           <CyDTextInput
-            className={'self-center py-[12px] w-[90%] pr-[10px]'}
+            className={
+              'self-center py-[12px] w-[90%] pr-[10px] bg-n40 px-[12px] rounded-[8px] border border-n50'
+            }
             value={address}
             autoCapitalize='none'
             autoCorrect={false}

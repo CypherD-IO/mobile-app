@@ -16,7 +16,11 @@ export const _generateWalletFromMnemonic = async (
     trk_event,
     hdWalletContext.state.choosenWalletIndex,
   );
-  saveCredentialsToKeychain(hdWalletContext, wallet, SECRET_TYPES.MENEMONIC);
+  void saveCredentialsToKeychain(
+    hdWalletContext,
+    wallet,
+    SECRET_TYPES.MENEMONIC,
+  );
 };
 
 export const createWallet = hdWalletContext => {

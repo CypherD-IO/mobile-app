@@ -1670,6 +1670,7 @@ const resources = {
       INTRODUCE_YOURSELF_DESCRIPTION:
         'Share a few basic details to help us get to know you.',
       INTRODUCE_YOURSELF: 'Introduce yourself',
+      SIGN_OUT: 'Sign Out',
     },
   },
 };
