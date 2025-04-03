@@ -75,7 +75,7 @@ import Decimal from 'decimal.js';
 import { DecimalHelper } from '../utils/decimalHelper';
 import { Common, Hardfork } from '@ethereumjs/common';
 import { TransactionFactory } from '@ethereumjs/tx';
-import crypto from 'crypto';
+import crypto, { randomBytes } from 'crypto';
 import { mainnet } from 'viem/chains';
 import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -1109,6 +1109,41 @@ export const generateSessionId = async (pem: string, secret?: string) => {
   return {
     secretKey,
     sessionId: secretKeyBase64BufferEncrypted.toString('base64'),
+  };
+};
+
+export const encryptPin = async ({
+  pin,
+  sessionKey,
+  sessionId,
+}: {
+  pin: string;
+  sessionKey: string;
+  sessionId: string;
+}) => {
+  const formattedPin = `2${pin.length.toString(16)}${pin}${'F'.repeat(14 - pin.length)}`;
+
+  // Convert sessionKey from hex to Buffer
+  const keyBytes = Buffer.from(sessionKey, 'hex');
+
+  const iv = crypto.randomBytes(16);
+
+  // Encrypt using AES-256-GCM
+  const cipher = crypto.createCipheriv('aes-128-gcm', keyBytes, iv);
+  let encrypted = cipher.update(formattedPin, 'utf8'); // Encrypted part
+  encrypted = Buffer.concat([encrypted, cipher.final()]); // Finalize encryption
+  const tag = cipher.getAuthTag(); // Authentication tag
+
+  // Concatenate the encrypted data (ciphertext) and tag
+  const result = Buffer.concat([encrypted, tag]);
+
+  // Encode the result (ciphertext + tag) in base64
+  const encryptedPin = result.toString('base64'); // Final encrypted PIN to send to API
+
+  return {
+    encryptedPin,
+    encodedIv: iv.toString('base64'),
+    sessionId,
   };
 };
 

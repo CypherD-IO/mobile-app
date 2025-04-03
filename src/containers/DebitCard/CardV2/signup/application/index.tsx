@@ -1,8 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
-  CyDFastImage,
   CyDIcons,
-  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDTouchView,
   CyDView,

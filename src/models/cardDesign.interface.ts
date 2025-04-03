@@ -4,6 +4,7 @@ export interface CardDesignCardMetaData {
   name: string;
   physicalCardType: string;
   secondaryName: string;
+  isStockAvailable: boolean;
 }
 
 export interface CardDesignFeeDetails {

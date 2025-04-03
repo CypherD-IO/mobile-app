@@ -17,6 +17,7 @@ import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders, PhysicalCardType } from '../../../constants/enum';
 import {
+  encryptPin,
   generateKeys,
   generateSessionId,
   parseErrorMessage,
@@ -246,6 +247,20 @@ export default function CardRevealAuthScreen() {
         otp: +num,
         ...(verifyOTPPayload || {}),
       };
+      if (card.cardProvider === CardProviders.RAIN_CARD) {
+        const pem = Config.RA_PUB_KEY;
+        const { secretKey, sessionId } = await generateSessionId(pem);
+        const { encryptedPin: encryptedPinData, encodedIv } = await encryptPin({
+          pin: verifyOTPPayload.pin,
+          sessionKey: secretKey,
+          sessionId,
+        });
+        payload.encryptedPin = {
+          iv: encodedIv,
+          data: encryptedPinData,
+        };
+        payload.sessionId = sessionId;
+      }
       try {
         const response = await postWithAuth(OTPVerificationUrl, payload);
         if (!response.isError) {
@@ -342,7 +357,7 @@ export default function CardRevealAuthScreen() {
               void resendOTP();
             }}>
             <CyDText className={'font-normal text-[12px] text-n200'}>
-              {"Didn't received the OTP? Try "}
+              {"Didn't receive ? "}
               <CyDText className='underline text-blue300 font-bold'>
                 {t<string>('RESEND_OTP')}
               </CyDText>

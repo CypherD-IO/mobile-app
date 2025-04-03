@@ -598,3 +598,20 @@ export const removeReferralCode = async () => {
     Sentry.captureException(error);
   }
 };
+
+export const setRainTerms = async (agreed: boolean) => {
+  try {
+    await AsyncStorage.setItem('RAIN_TERMS', agreed.toString());
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getRainTerms = async () => {
+  try {
+    const agreed = await AsyncStorage.getItem('RAIN_TERMS');
+    return agreed;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};

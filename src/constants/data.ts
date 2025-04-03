@@ -928,6 +928,11 @@ export const LEGAL_CYPHERHQ = 'https://cypherhq.io/legal';
 export const TERMS_PRIVACY_POLICY_URL =
   'https://public.cypherd.io/docs/CypherD-Terms-Privacy-Policy.pdf';
 
+export const RAIN_E_SIGN_CONSENT_URL =
+  'https://legal.raincards.xyz/legal/electronic-communications-notice';
+export const RAIN_ACCOUNT_OPENING_PRIVACY_POLICY_URL =
+  'https://legal.raincards.xyz/legal/privacy-policy';
+
 export const chainExplorerMapping: Record<string, string> = {
   ETH: 'https://etherscan.io/tx/',
   POLYGON: 'https://polygonscan.com/tx/',
