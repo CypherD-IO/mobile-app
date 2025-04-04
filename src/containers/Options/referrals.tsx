@@ -36,7 +36,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
   const shareUrlText = `🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:
 
     💳 Google Pay & Apple Pay support
-    💰 Lowest ever 0.5% Forex Fee
+    💰 Lowest ever 0% Forex Markup
     💲 0% Loading Fee for USDC 
     🌍 Use your crypto anywhere, just like a regular card
 
