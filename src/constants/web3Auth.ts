@@ -94,26 +94,36 @@ export const web3AuthEvm = new Web3Auth(WebBrowser, EncryptedStorage, {
   privateKeyProvider: ethereumPrivateKeyProvider,
   // accountAbstractionProvider,
   mfaSettings: {
-    backUpShareFactor: {
+    socialBackupFactor: {
       enable: true,
       priority: 1,
       mandatory: true, // at least two factors are mandatory
     },
-    // deviceShareFactor: {
-    //   enable: true,
-    //   priority: 2,
-    //   mandatory: true, // at least two factors are mandatory
-    // },
-    // socialBackupFactor: {
-    //   enable: true,
-    //   priority: 3,
-    //   mandatory: true, // at least two factors are mandatory
-    // },
-    // passwordFactor: {
-    //   enable: true,
-    //   priority: 4,
-    //   mandatory: true, // at least two factors are mandatory
-    // },
+    backUpShareFactor: {
+      enable: true,
+      priority: 2,
+      mandatory: false, // at least two factors are mandatory
+    },
+    authenticatorFactor: {
+      enable: true,
+      priority: 3,
+      mandatory: false, // at least two factors are mandatory
+    },
+    deviceShareFactor: {
+      enable: true,
+      priority: 4,
+      mandatory: false,
+    },
+    passkeysFactor: {
+      enable: true,
+      priority: 5,
+      mandatory: false, // at least two factors are mandatory
+    },
+    passwordFactor: {
+      enable: false,
+      priority: 6,
+      mandatory: false,
+    },
   },
 });
 
