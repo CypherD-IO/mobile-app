@@ -405,11 +405,8 @@ export default function SelectPlanModal({
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {t('VIRTUAL_CARD')}
                     </CyDText>
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                    <CyDText className='text-[12px] font-medium mt-[10px] mb-[18px] pl-[12px] h-[18px]'>
                       {t('PHYSICAL_CARD')}
-                    </CyDText>
-                    <CyDText className='text-[12px] font-medium mt-[28px]  pl-[12px] h-[18px]'>
-                      {t('ADD_ON_CARDS')}
                     </CyDText>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
@@ -441,8 +438,8 @@ export default function SelectPlanModal({
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {t('OTHER_TOKENS')}
                     </CyDText>
-                    {/* <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' /> */}
-                    {/* <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                       <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
                         <CyDImage
                           source={AppImages.FOREX_FEE}
@@ -450,15 +447,9 @@ export default function SelectPlanModal({
                         />
                       </CyDView>
                       <CyDText className='font-bold text-[12px]'>
-                        {t('FOREX_FEE')}
+                        {t('FOREX_MARKUP_NON_USD')}
                       </CyDText>
                     </CyDView>
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {t('NON_USDC_TXN')}
-                    </CyDText>
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {t('USDC_TXN')}
-                    </CyDText> */}
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                       <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
@@ -504,10 +495,6 @@ export default function SelectPlanModal({
                         {`${freePlanData?.physicalCardFee === 0 ? 'FREE' : `($${freePlanData?.physicalCardFee}`} fee)`}
                       </CyDText>
                     </CyDView>
-                    {/* add on cards */}
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {'🚫'}
-                    </CyDText>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* apple and gpay */}
                     <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
@@ -525,22 +512,18 @@ export default function SelectPlanModal({
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {`${freePlanData?.nonUsdcFee === 0 ? 'FREE' : `${freePlanData?.nonUsdcFee}%*`} `}
                     </CyDText>
-                    {/* <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' /> */}
-                    {/* <CyDView className='mt-[16px] h-[32px]' /> */}
                     {/* fx fee non usd txn */}
-                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `}
-                    </CyDText> */}
-                    {/* fx fee usd txn */}
-                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {'✅ Free'}
-                    </CyDText> */}
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium mt-[10px]  h-[18px]'>
+                        {`${freePlanData?.fxMarkup}%`}
+                      </CyDText>
+                    </CyDView>
                     {/* ATM fee */}
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
                       <CyDText className='text-[12px] font-medium  pl-[12px]'>
                         {`${freePlanData?.atmFee}%`}
-                        {/* {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `} */}
                       </CyDText>
                     </CyDView>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
@@ -572,9 +555,6 @@ export default function SelectPlanModal({
                       </CyDText>
                     </CyDView>
                     {/* metal card */}
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {'✅ 3 Cards'}
-                    </CyDText>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* gpay and apple pay */}
                     <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
@@ -592,17 +572,13 @@ export default function SelectPlanModal({
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {`${proPlanData?.nonUsdcFee === 0 ? '✅ Free' : `${proPlanData?.nonUsdcFee}%`} `}
                     </CyDText>
-                    {/* <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                    <CyDView className='mt-[16px] pl-[12px] h-[32px]' /> */}
+                    <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* non usd txn fx fee */}
-                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `}
-                    </CyDText> */}
-                    {/*  usd txn fx fee */}
-                    {/* <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {`${proPlanData?.usdcFee === 0 ? '✅ Free' : `${proPlanData?.usdcFee}%`} `}
-                    </CyDText> */}
-
+                    <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
+                      <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
+                        {`${proPlanData?.fxMarkup}%`}
+                      </CyDText>
+                    </CyDView>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* ------------------------------ todo ----------------------- */}
                     {/* atm fee */}
@@ -751,9 +727,6 @@ export default function SelectPlanModal({
                 <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
                   {t('COMPARISION_NOTE_3')}
                 </CyDText>
-                <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                  {t('COMPARISION_NOTE_4')}
-                </CyDText>
               </CyDTouchView>
             </CyDScrollView>
           </CyDView>
@@ -898,10 +871,10 @@ export default function SelectPlanModal({
                 </CyDView>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CyDText className='text-[14px] font-bold w-[36px]'>
-                    {`${proPlanData?.fxFeePc}%`}
+                    {`${proPlanData?.fxMarkup}%`}
                   </CyDText>
                   <CyDText className='text-[14px] ml-[8px] font-medium'>
-                    {t('FOREX_FEE')}
+                    {t('FOREX_MARKUP')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex-row items-center mt-[8px]'>
@@ -1236,10 +1209,10 @@ export default function SelectPlanModal({
                       Free Metal card for all
                     </CyDText>
                     <CyDText className='text-[16px] font-semibold'>
-                      the premium users
+                      premium users
                     </CyDText>
                     <CyDText className='text-[12px] font-bold text-n300'>
-                      who enrols premium until Dec 31st
+                      Sleek, shiny and durable
                     </CyDText>
                   </CyDView>
                   <CyDView className='pr-[12px]'>
@@ -1254,7 +1227,7 @@ export default function SelectPlanModal({
                 <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
                   <CyDView>
                     <CyDText className='text-[16px] font-semibold'>
-                      0.5% Discounted forex fee
+                      0% Forex Markup
                     </CyDText>
                     <CyDText className='text-[16px] font-semibold'>
                       without any spending limit

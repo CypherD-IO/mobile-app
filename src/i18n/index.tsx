@@ -1120,6 +1120,7 @@ const resources = {
       APPLE_GOOGLE_PAY_DESCRIPTION:
         'Shop on the go with Apple Pay and Google Pay for quick and safe payments. Enjoy hassle-free transactions wherever you are!',
       FOREX_FEE: 'Forex Fee',
+      FOREX_MARKUP: 'Forex Markup',
       CARD_LOAD_FEE_USDC: 'USDC Card loads',
       CARD_LOAD_FEE_NON_USDC: 'Non USDC Card loads',
       CARD_LOAD_FEE_USDC_AND__NON_USDC: 'USDC & Non USDC Card loads',
@@ -1135,6 +1136,7 @@ const resources = {
       ORDER_YOUR_METAL_CARD: 'Order your Metal Card',
       USDC_TOKEN: 'USDC token',
       OTHER_TOKENS: 'Other tokens',
+      FOREX_MARKUP_NON_USD: 'Forex Markup (Non USD)',
       CRYPTO_LOAD_FEE: 'Crypto load fee',
       CHARGE_BACK_COVER: 'Chargeback Cover',
       ATM_FEE: 'ATM Withdraw Fee',
@@ -1146,12 +1148,10 @@ const resources = {
       COUNTRIES_SUPPORTED: 'Countries supported',
       MERCHANTS_SUPPORTED: 'Merchants supported',
       COMPARISION_NOTE_1:
-        '(1) There is currently a waiting list for metal cards. To join, please contact support.',
-      COMPARISION_NOTE_2:
-        '(2) Users can request a higher spending limit. If you have specific requirements, reach out to support increasing your limit.',
-      COMPARISION_NOTE_3: '(3) Shipping Charges Apply for add on cards',
-      COMPARISION_NOTE_4:
-        '(4) Lower liquidity tokens may incur crypto load fees of up to 3%.',
+        '(1) Users can request a higher spending limit. If you have specific requirements, reach out to support increasing your limit.',
+      COMPARISION_NOTE_2: '(2) Shipping Charges Apply for add on cards',
+      COMPARISION_NOTE_3:
+        '(3) Lower liquidity tokens may incur crypto load fees of up to 3%.',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
