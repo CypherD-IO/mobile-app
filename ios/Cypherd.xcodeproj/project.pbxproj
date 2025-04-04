@@ -15,6 +15,7 @@
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
+		62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A29F23708E9E4C56AAC109CA /* CypherNord.ttf */; };
 		63948B4D9075475B8A0C2CE4 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */; };
 		7A10E59221E64F2881B4F8EC /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D85EC71D87BE43D8BF1C0222 /* Manrope-Medium.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -24,7 +25,6 @@
 		CE9E0F3A317C49DAAC2543B6 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 72477196227C4FD09D60B1D5 /* CydFont.ttf */; };
 		CFD1E93603024C288F7A5B12 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1D7A6FE1B6745E2A1FEC3CC /* Manrope-ExtraBold.ttf */; };
 		DA4EFF8144104B61B81880A0 /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E7A3B5BB16A41F9BE9CC0FB /* Manrope-Light.ttf */; };
-		E5E2160CC03D421886BCFE19 /* Cypher Nord.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 39490924B7824E689E566EC8 /* Cypher Nord.ttf */; };
 		E9978F60E5B01199651AF2FE /* libPods-Cypherd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */; };
 		EC8AF5C1EF1942ADBFC836D3 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */; };
 /* End PBXBuildFile section */
@@ -56,7 +56,6 @@
 		26D55C3DED51232041978D65 /* Pods-Cypherd.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd.release.xcconfig"; path = "Target Support Files/Pods-Cypherd/Pods-Cypherd.release.xcconfig"; sourceTree = "<group>"; };
 		29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		2E7A3B5BB16A41F9BE9CC0FB /* Manrope-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Light.ttf"; path = "../assets/fonts/Manrope-Light.ttf"; sourceTree = "<group>"; };
-		39490924B7824E689E566EC8 /* Cypher Nord.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Cypher Nord.ttf"; path = "../assets/fonts/Cypher Nord.ttf"; sourceTree = "<group>"; };
 		3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CC408C1228D48B28D032D9C /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
@@ -73,6 +72,7 @@
 		8344FF6AB5AA4763AEE029F2 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		8A37B86548A041D78BDC106D /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
 		A25717E7C02E454B955A69A4 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
+		A29F23708E9E4C56AAC109CA /* CypherNord.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CypherNord.ttf; path = ../assets/fonts/CypherNord.ttf; sourceTree = "<group>"; };
 		A6D50395BA894C54A0F2412F /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
 		AB6789855D4A4DC7B6648FFE /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		B1D7A6FE1B6745E2A1FEC3CC /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
@@ -154,7 +154,7 @@
 				3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */,
 				29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */,
 				72477196227C4FD09D60B1D5 /* CydFont.ttf */,
-				39490924B7824E689E566EC8 /* Cypher Nord.ttf */,
+				A29F23708E9E4C56AAC109CA /* CypherNord.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -340,7 +340,7 @@
 				9051DFCC29A24E86A3C678EE /* Manrope-Regular.ttf in Resources */,
 				EC8AF5C1EF1942ADBFC836D3 /* Manrope-SemiBold.ttf in Resources */,
 				CE9E0F3A317C49DAAC2543B6 /* CydFont.ttf in Resources */,
-				E5E2160CC03D421886BCFE19 /* Cypher Nord.ttf in Resources */,
+				62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
