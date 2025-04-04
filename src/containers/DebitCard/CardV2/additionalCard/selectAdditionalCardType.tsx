@@ -26,7 +26,7 @@ import {
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../../assets/images/appImages';
-import { capitalize, get } from 'lodash';
+import { capitalize, get, isUndefined } from 'lodash';
 import { CardProfile } from '../../../../models/cardProfile.model';
 import {
   GlobalContextDef,
@@ -81,6 +81,7 @@ const RenderCard = ({
   price,
   cardType,
   cardCount,
+  hasStock,
   isPremiumPlan,
   onSelectCard,
 }: {
@@ -88,6 +89,7 @@ const RenderCard = ({
   price: number;
   cardType: CardType;
   cardCount: number;
+  hasStock: boolean;
   isPremiumPlan: boolean;
   onSelectCard: (
     card: CardDesignCardMetaData,
@@ -118,8 +120,10 @@ const RenderCard = ({
     return false;
   };
 
+  hasStock = !isUndefined(hasStock) ? hasStock : true;
+
   const showWarningMessage =
-    isGetCardLimitReached() || isMetalCardNonPremiumUser();
+    isGetCardLimitReached() || isMetalCardNonPremiumUser() || !hasStock;
 
   return (
     <CyDView className='mt-[8px] p-[16px] bg-n0 rounded-xl'>
@@ -178,12 +182,17 @@ const RenderCard = ({
               className='text-n200'
             />
             <CyDView>
-              {isMetalCardNonPremiumUser() && (
+              {!hasStock && (
+                <CyDText className='text-[12px] font-normal text-n200'>
+                  {t('CARD_OUT_OF_STOCK')}
+                </CyDText>
+              )}
+              {hasStock && isMetalCardNonPremiumUser() && (
                 <CyDText className='text-[12px] font-normal text-n200'>
                   {t('METAL_CARD_FOR_PREMIUM_USERS')}
                 </CyDText>
               )}
-              {isGetCardLimitReached() && (
+              {hasStock && isGetCardLimitReached() && (
                 <CyDText className='text-[12px] font-normal text-n200'>
                   {t('MAXIMUM_CARD_LIMIT_REACHED')}
                 </CyDText>
@@ -259,6 +268,9 @@ export default function SelectAdditionalCardType() {
               price={get(cardDesignData, 'feeDetails.virtual', 10)}
               cardType={CardType.VIRTUAL}
               cardCount={get(cardDesignData, ['allowedCount', 'virtual'], 0)}
+              hasStock={
+                get(cardDesignData, 'virtual')?.[index]?.isStockAvailable
+              }
               isPremiumPlan={isPremiumPlan}
               onSelectCard={onSelectCard}
             />
@@ -275,6 +287,9 @@ export default function SelectAdditionalCardType() {
               price={get(cardDesignData, 'feeDetails.physical', 50)}
               cardType={CardType.PHYSICAL}
               cardCount={get(cardDesignData, ['allowedCount', 'physical'], 0)}
+              hasStock={
+                get(cardDesignData, 'physical')?.[index]?.isStockAvailable
+              }
               isPremiumPlan={isPremiumPlan}
               onSelectCard={onSelectCard}
             />
@@ -291,6 +306,7 @@ export default function SelectAdditionalCardType() {
               price={get(cardDesignData, 'feeDetails.metal', 150)}
               cardType={CardType.METAL}
               cardCount={get(cardDesignData, ['allowedCount', 'metal'], 0)}
+              hasStock={get(cardDesignData, 'metal')?.[index]?.isStockAvailable}
               isPremiumPlan={isPremiumPlan}
               onSelectCard={onSelectCard}
             />

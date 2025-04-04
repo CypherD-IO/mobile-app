@@ -143,8 +143,8 @@ const SecuritySection = ({
 
   return (
     <>
-      {!isVirtualRainCard && renderSectiontitle()}
-      {!isVirtualRainCard && renderSetPinOption()}
+      {renderSectiontitle()}
+      {renderSetPinOption()}
       {!isRainCard && renderAuthenticationOption()}
     </>
   );

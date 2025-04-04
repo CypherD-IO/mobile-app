@@ -47,16 +47,16 @@ export default function BasicDetails() {
       />
       <FormikTextInput
         name='annualSalary'
-        label='Annual Salary'
+        label='Annual Income'
         containerClassName='mb-[17px]'
-        placeholder='Annual Salary in USD'
+        placeholder='Annual Income in USD'
         keyboardType='numeric'
       />
       <FormikTextInput
         name='expectedMonthlyVolume'
-        label='Expected Monthly Volume'
+        label='Expected Monthly Spend'
         containerClassName='mb-[17px]'
-        placeholder='Expected Monthly Volume in USD'
+        placeholder='Expected Monthly Spend in USD'
         keyboardType='numeric'
       />
     </CyDKeyboardAwareScrollView>
