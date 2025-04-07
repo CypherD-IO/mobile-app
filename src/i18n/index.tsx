@@ -944,6 +944,9 @@ const resources = {
       DISCONNECT_WALLET: 'Disconnect wallet',
       DISCONNECT_WALLET_SUB:
         'Are you sure you want to disconnect from your wallet ?',
+      SESSION_EXPIRED: 'Session expired',
+      SESSION_EXPIRED_SUB:
+        'Your session has expired with email. \nPlease login again to access your wallet again',
       UNABLE_TO_CONNECT: 'Unable to connect',
       BROWSER_WALLET_CONNECT_ERROR:
         'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
@@ -1701,6 +1704,7 @@ const resources = {
       MINIMUM_AMOUNT_HL_SPOT:
         'Minimum amount for Hyper Liquid Spot Token is ${{minAmount}}',
       SIGN_OUT: 'Sign Out',
+      LOGIN_AGAIN: 'Login Again',
     },
   },
 };

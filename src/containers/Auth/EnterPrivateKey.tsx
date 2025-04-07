@@ -4,7 +4,6 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
-  CyDImage,
   CyDTouchableWithoutFeedback,
   CyDSafeAreaView,
   CyDTextInput,
@@ -14,8 +13,7 @@ import {
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
 import { HdWalletContext, isValidPrivateKey } from '../../core/util';
-import { importWalletPrivateKey } from '../../core/HdWallet';
-import AppImages from '../../../assets/images/appImages';
+import { importWalletFromEvmPrivateKey } from '../../core/HdWallet';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { QRScannerScreens } from '../../constants/server';
 import { screenTitle } from '../../constants/index';
@@ -32,6 +30,7 @@ import { isAndroid } from '../../misc/checkers';
 import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
 import { ConnectionTypes } from '../../constants/enum';
+import { get } from 'lodash';
 
 export default function Login(props) {
   const { t } = useTranslation();
@@ -62,7 +61,11 @@ export default function Login(props) {
 
   const submitImportWallet = async (textValue = privateKey) => {
     const { isReadOnlyWallet } = hdWalletContext.state;
-    const { ethereum } = hdWalletContext.state.wallet;
+    const ethereumAddress = get(
+      hdWalletContext,
+      'state.wallet.ethereum.address',
+      undefined,
+    ) as string;
     if (!textValue.startsWith('0x')) {
       textValue = '0x' + textValue;
     }
@@ -73,12 +76,12 @@ export default function Login(props) {
         if (data) {
           const readOnlyWalletData = JSON.parse(data);
           await deleteWithAuth(
-            `/v1/configuration/address/${ethereum.address}/observer/${readOnlyWalletData.observerId}`,
+            `/v1/configuration/address/${ethereumAddress}/observer/${readOnlyWalletData.observerId}`,
           );
         }
       }
       setTimeout(() => {
-        void importWalletPrivateKey(hdWalletContext, textValue);
+        void importWalletFromEvmPrivateKey(hdWalletContext, textValue);
         setLoading(false);
         setPrivateKey('');
         void setConnectionType(ConnectionTypes.PRIVATE_KEY);

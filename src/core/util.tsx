@@ -48,6 +48,7 @@ import {
   CardTransactionTypes,
   CypherPlanId,
   ReapTxnStatus,
+  EcosystemsEnum,
   SignMessageValidationType,
 } from '../constants/enum';
 import {
@@ -475,11 +476,7 @@ export const removeSolidProhibitedCountriesFromCountryMaster = () => {
 };
 
 export const isAddressSet = (address: string) => {
-  return (
-    address !== undefined &&
-    address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-    address !== IMPORTING
-  );
+  return address !== undefined && address !== IMPORTING;
 };
 
 export function copyToClipboard(text: string) {
@@ -994,9 +991,12 @@ export const isNativeToken = (tokenData: any) => {
 export const isValidMessage = (
   address: string,
   messageToBeValidated: string,
+  ecosystem: EcosystemsEnum = EcosystemsEnum.EVM,
 ) => {
   const messageToBeValidatedWith =
-    /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
+    ecosystem === EcosystemsEnum.EVM
+      ? /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i
+      : /^Cypher Wallet wants you to sign in with your Solana account: \nAddress: [1-9A-HJ-NP-Za-km-z]{32,44} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: [1-9A-HJ-NP-Za-km-z]{32,44} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
   const currentVersion = '1.0';
   const versionSubstring = messageToBeValidated
     .match(/Version: (.*)[^\\n]/g)

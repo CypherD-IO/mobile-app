@@ -229,16 +229,6 @@ export function PortfolioStackScreen() {
     return true;
   };
 
-  const portfolioStackScreenHeaderTitleStyles: StyleProp<
-    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
-      color?: string | undefined;
-    }
-  > = {
-    fontFamily: C.fontsName.FONT_BLACK,
-    fontSize: 20,
-    fontWeight: '800',
-  };
-
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
     return () => {

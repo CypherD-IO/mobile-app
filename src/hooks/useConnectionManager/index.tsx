@@ -30,6 +30,8 @@ import * as Sentry from '@sentry/react-native';
 import { useTranslation } from 'react-i18next';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useWalletConnectMobile from '../useWalletConnectMobile';
+import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
+import Web3Auth from '@web3auth/react-native-sdk/dist/types/Web3Auth';
 
 export default function useConnectionManager() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -48,7 +50,7 @@ export default function useConnectionManager() {
   const { deleteWithoutAuth } = useAxios();
   const getConnectedType = async () => {
     const connectedType = await getConnectionType();
-    setConnectionType(connectedType as ConnectionTypes);
+    setConnectionType(connectedType);
     return connectedType;
   };
 
@@ -57,12 +59,6 @@ export default function useConnectionManager() {
       await disconnectWalletConnect();
     } else {
       await removeCredentialsFromKeychain();
-      if (connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM) {
-        const web3Auth = hdWalletContext.state.socialAuth?.web3Auth;
-        if (web3Auth?.connected) {
-          await web3Auth?.logout();
-        }
-      }
     }
     await clearAllData();
     hdWalletContext.dispatch({ type: 'RESET_WALLET' });
@@ -75,29 +71,31 @@ export default function useConnectionManager() {
 
   const deleteWalletConfig = async () => {
     const { isReadOnlyWallet } = hdWalletContext.state;
-    const { ethereum } = hdWalletContext.state.wallet;
+    const { ethereum, solana } = hdWalletContext.state.wallet;
+    const address = ethereum?.address ?? solana?.address;
     if (!isReadOnlyWallet) {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${String(globalContext.globalState.token)}`,
-        },
-        data: {
-          cosmosAddress,
-          osmosisAddress,
-        },
-      };
-      axios
-        .delete(`${ARCH_HOST}/v1/configuration/device`, config)
-        .catch(error => {
-          Sentry.captureException(error);
-        });
+      // const config = {
+      //   headers: {
+      //     Authorization: `Bearer ${String(globalContext.globalState.token)}`,
+      //   },
+      //   data: {
+      //     cosmosAddress,
+      //     osmosisAddress,
+      //   },
+      // };
+      // axios
+      //   .delete(`${ARCH_HOST}/v1/configuration/device`, config)
+      //   .catch(error => {
+      //     console.log('🚀 ~ deleteWalletConfig ~ error:', error);
+      //     Sentry.captureException(error);
+      //   });
     } else {
       const data = await getReadOnlyWalletData();
       if (data) {
         const readOnlyWalletData = JSON.parse(data);
         await deleteWithoutAuth(
           `/v1/configuration/address/${String(
-            ethereum.address,
+            address,
           )}/observer/${String(readOnlyWalletData.observerId)}`,
         );
       }
@@ -141,10 +139,42 @@ export default function useConnectionManager() {
     });
   };
 
-  const logoutSocialAuth = async ({ navigation }: { navigation: any }) => {
-    const web3Auth = hdWalletContext.state.socialAuth?.web3Auth;
-    await web3Auth?.logout();
-    void authorizeWalletDeletion({ navigation });
+  const getSocialAuthProvider = async (): Promise<Web3Auth | null> => {
+    if (
+      connectionType &&
+      [
+        ConnectionTypes.SOCIAL_LOGIN_EVM,
+        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
+      ].includes(connectionType)
+    ) {
+      let web3Auth;
+      switch (connectionType) {
+        case ConnectionTypes.SOCIAL_LOGIN_EVM:
+          web3Auth = web3AuthEvm;
+          break;
+        case ConnectionTypes.SOCIAL_LOGIN_SOLANA:
+          web3Auth = web3AuthSolana;
+          break;
+      }
+      if (web3Auth) {
+        await web3Auth.init();
+        return web3Auth;
+      }
+    }
+    return null;
+  };
+
+  const deleteSocialAuthWalletIfSessionExpired = async () => {
+    const socialAuthProvider = await getSocialAuthProvider();
+    if (socialAuthProvider && !socialAuthProvider.connected) {
+      showModal(GlobalModalType.REMOVE_SOCIAL_AUTH_WALLET, {
+        onSuccess: () => {
+          hideModal();
+          void deleteWalletConfig();
+        },
+        onFailure: hideModal,
+      });
+    }
   };
 
   useEffect(() => {
@@ -158,6 +188,7 @@ export default function useConnectionManager() {
     deleteWallet,
     getConnectedType,
     deleteWalletConfig,
-    logoutSocialAuth,
+    getSocialAuthProvider,
+    deleteSocialAuthWalletIfSessionExpired,
   };
 }

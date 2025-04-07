@@ -27,7 +27,7 @@ import {
   web3WalletPair,
   web3wallet,
 } from '../../core/walletConnectV2Utils';
-import { has } from 'lodash';
+import { get, has } from 'lodash';
 import moment from 'moment';
 import clsx from 'clsx';
 import Button from '../../components/v2/button';
@@ -57,7 +57,11 @@ export default function WalletConnectCamera() {
     useContext<walletConnectContextDef>(WalletConnectContext);
 
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
 
   const [walletConnectURI, setWalletConnectURI] = useState(
     route?.params?.walletConnectURI ?? '',
@@ -137,7 +141,7 @@ export default function WalletConnectCamera() {
       loading.current = true;
       void connectWallet(link);
       void analytics().logEvent('wallet_connect_url_scan', {
-        fromEthAddress: ethereum.address,
+        fromEthAddress: ethereumAddress,
       });
     } else {
       showModal('state', {

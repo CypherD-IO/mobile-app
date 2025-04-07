@@ -108,7 +108,11 @@ export default function CardQuote({
   const [planChangeModalVisible, setPlanChangeModalVisible] =
     useState<boolean>(false);
   const hdWallet = useContext<any>(HdWalletContext);
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const solana = hdWallet.state.wallet.solana;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
@@ -173,7 +177,7 @@ export default function CardQuote({
 
   const onCancel = () => {
     void intercomAnalyticsLog('cancel_transfer_token', {
-      from: ethereum.address,
+      from: ethereumAddress,
     });
     if (quoteExpiry && tokenExpiryTime !== 0) {
       clearInterval(expiryTimer);

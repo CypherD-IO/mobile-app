@@ -38,6 +38,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { get } from 'lodash';
 
 interface RouteParams {
   indexValue: number;
@@ -90,7 +91,7 @@ export function AddressBook() {
             <CyDView className={'w-[100%] flex flex-col items-center'}>
               <AddressBookContainer
                 chain={CHAIN_ETH.name}
-                wallet={ethereum}
+                address={get(ethereum, 'address', undefined)}
                 logo={AppImages.ETHEREUM}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.EVM}
@@ -99,7 +100,11 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_SOLANA.name}
-                wallet={solana.wallets[solana.currentIndex]}
+                address={get(
+                  solana,
+                  ['wallets', solana.currentIndex, 'address'],
+                  undefined,
+                )}
                 logo={AppImages.SOLANA_LOGO}
                 bGC={'#f1f4fa'}
                 navigation={navigation}
@@ -108,7 +113,11 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_COSMOS.name}
-                wallet={cosmos.wallets[cosmos.currentIndex]}
+                address={get(
+                  cosmos,
+                  ['wallets', cosmos.currentIndex, 'address'],
+                  undefined,
+                )}
                 logo={AppImages.COSMOS_LOGO}
                 bGC={'#eff0f5'}
                 navigation={navigation}
@@ -117,7 +126,11 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_OSMOSIS.name}
-                wallet={osmosis.wallets[osmosis.currentIndex]}
+                address={get(
+                  osmosis,
+                  ['wallets', osmosis.currentIndex, 'address'],
+                  undefined,
+                )}
                 logo={AppImages.OSMOSIS_LOGO}
                 bGC={'#f5edfa'}
                 navigation={navigation}
@@ -126,7 +139,11 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_NOBLE.name}
-                wallet={noble.wallets[noble.currentIndex]}
+                address={get(
+                  noble,
+                  ['wallets', noble.currentIndex, 'address'],
+                  undefined,
+                )}
                 logo={AppImages.NOBLE_LOGO}
                 bGC={'#ebebeb'}
                 navigation={navigation}
@@ -135,7 +152,11 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_COREUM.name}
-                wallet={coreum.wallets[coreum.currentIndex]}
+                address={get(
+                  coreum,
+                  ['wallets', coreum.currentIndex, 'address'],
+                  undefined,
+                )}
                 logo={AppImages.COREUM_LOGO}
                 bGC={'#f3fee3'}
                 navigation={navigation}
@@ -144,7 +165,11 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_INJECTIVE.name}
-                wallet={injective.wallets[injective.currentIndex]}
+                address={get(
+                  injective,
+                  ['wallets', injective.currentIndex, 'address'],
+                  undefined,
+                )}
                 logo={AppImages.INJECTIVE_LOGO}
                 bGC={'#f1f4fa'}
                 navigation={navigation}
@@ -152,8 +177,17 @@ export function AddressBook() {
               />
 
               <AddressBookContainer
+                chain={CHAIN_BASE.name}
+                address={get(ethereum, 'address', undefined)}
+                logo={AppImages.BASE_LOGO}
+                bGC={'#f1f4fa'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.BASE}
+              />
+
+              <AddressBookContainer
                 chain={CHAIN_POLYGON.name}
-                wallet={ethereum}
+                address={get(ethereum, 'address', undefined)}
                 logo={AppImages.POLYGON}
                 bGC={'#f5efff'}
                 navigation={navigation}
@@ -162,7 +196,7 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_BSC.name}
-                wallet={ethereum}
+                address={get(ethereum, 'address', undefined)}
                 logo={AppImages.BINANCE}
                 bGC={'#fff7e3'}
                 navigation={navigation}
@@ -171,7 +205,7 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_AVALANCHE.name}
-                wallet={ethereum}
+                address={get(ethereum, 'address', undefined)}
                 logo={AppImages.AVALANCHE}
                 bGC={'#fff6f5'}
                 navigation={navigation}
@@ -180,7 +214,7 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_ARBITRUM.name}
-                wallet={ethereum}
+                address={get(ethereum, 'address', undefined)}
                 logo={AppImages.ARBITRUM}
                 bGC={'#f1f4fa'}
                 navigation={navigation}
@@ -189,7 +223,7 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_OPTIMISM.name}
-                wallet={ethereum}
+                address={get(ethereum, 'address', undefined)}
                 logo={AppImages.OPTIMISM}
                 bGC={'#fff0f0'}
                 navigation={navigation}
@@ -198,20 +232,11 @@ export function AddressBook() {
 
               <AddressBookContainer
                 chain={CHAIN_ZKSYNC_ERA.name}
-                wallet={ethereum}
+                address={get(ethereum, 'address', undefined)}
                 logo={AppImages.ZKSYNC_ERA_LOGO}
                 bGC={'#f6f6f9'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.ZKSYNC_ERA}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_BASE.name}
-                wallet={ethereum}
-                logo={AppImages.BASE_LOGO}
-                bGC={'#f1f4fa'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.BASE}
               />
             </CyDView>
           </CyDScrollView>

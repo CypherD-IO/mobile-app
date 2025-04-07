@@ -44,6 +44,7 @@ import {
 } from '@react-navigation/native';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { CyDIconsPack } from '../../customFonts';
+import { get } from 'lodash';
 
 interface RouteParams {
   protocol: defiProtocolData;
@@ -197,7 +198,11 @@ export function DEFIOverviewScreen() {
   const isVisible = useSharedValue(true);
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { isReadOnlyWallet } = hdWalletContext.state;
-  const { ethereum } = hdWalletContext.state.wallet;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const { showModal, hideModal } = useGlobalModalContext();
   const moreChainsCount = protocol.chains.length - MAX_CHAIN_COUNT;
   useEffect(() => {
@@ -297,7 +302,7 @@ export function DEFIOverviewScreen() {
                   } else {
                     showModal(GlobalModalType.PROMPT_IMPORT_WALLET, {
                       type: t('MANAGE_POSITIONS').toLowerCase(),
-                      address: ethereum.address,
+                      address: ethereumAddress,
                       description: '',
                       onSuccess: () => {
                         hideModal();
@@ -376,7 +381,7 @@ export function DEFIOverviewScreen() {
             } else {
               showModal(GlobalModalType.PROMPT_IMPORT_WALLET, {
                 type: t('MANAGE_POSITIONS').toLowerCase(),
-                address: ethereum.address,
+                address: ethereumAddress,
                 description: '',
                 onSuccess: () => {
                   hideModal();

@@ -22,7 +22,7 @@ import { CosmosChainConfig } from '../constants/cosmosConfig';
 import { AddressDerivationPath, Bech32Prefixes } from '../constants/data';
 import { ConnectionTypes } from '../constants/enum';
 import { setConnectionType } from './asyncStorage';
-import { addHexPrefix } from './util';
+import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_, addHexPrefix } from './util';
 import { HDKey } from 'micro-ed25519-hdkey';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
@@ -41,7 +41,7 @@ export type AddressChainNames =
   | 'solana';
 
 export interface IAccountDetail {
-  address: string;
+  address: string | undefined;
   algo?: string;
   publicKey: string;
   rawAddress?: Uint8Array;
@@ -211,10 +211,14 @@ export const generateSolanaPrivateKey = async (
   mnemonic: string,
   bip44HDPath: string,
 ) => {
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const derivedKey = derivePath(bip44HDPath, seed.toString('hex')).key;
-  const keypair = Keypair.fromSeed(derivedKey);
-  return bs58.default.encode(keypair.secretKey);
+  try {
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const derivedKey = derivePath(bip44HDPath, seed.toString('hex')).key;
+    const keypair = Keypair.fromSeed(derivedKey);
+    return bs58.default.encode(keypair.secretKey);
+  } catch (e) {
+    return _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
+  }
 };
 
 export const generateCosmosWallet = async (
@@ -259,50 +263,6 @@ export const generateCosmosWallet = async (
   };
 };
 
-export const generateInjectiveWallet = (
-  ethereumAddress: string,
-  chainConfig: CosmosChainConfig,
-  mnemonic: string,
-  bip44HDPath: {
-    account: number;
-    change: number;
-    addressIndex: number;
-  },
-): IAccountDetailWithChain => {
-  const masterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
-  const path = `m/44'/${chainConfig.coinType}'/${bip44HDPath.account}'/${bip44HDPath.change}/${bip44HDPath.addressIndex}`;
-  const privateKey = Mnemonic.generatePrivateKeyFromMasterSeed(
-    masterSeed,
-    path,
-  );
-  const address = getInjectiveAddress(ethereumAddress);
-
-  const privKeyInstance = new PrivKeySecp256k1(privateKey);
-  const publicKey = privKeyInstance.getPubKey().toBytes();
-  return {
-    name: 'injective',
-    address,
-    // privateKey: uintToHex(privateKey),
-    publicKey: uintToHex(publicKey),
-  };
-};
-
-export const generateSolanaWallet = async (
-  mnemonic: string,
-  bip44HDPath = `m/44'/501'/0'/0'`,
-): Promise<IAccountDetailWithChain> => {
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const derivedSeed = derivePath(bip44HDPath, seed.toString('hex')).key;
-  const keypair = Keypair.fromSeed(derivedSeed);
-  const address = keypair.publicKey.toBase58();
-  return {
-    name: 'solana',
-    address,
-    // privateKey: uintToHex(privateKey),
-    publicKey: address,
-  };
-};
-
 export const generateRawAddressFromPubKeys = (publicKey: Uint8Array) => {
   let hash = CryptoJS.SHA256(
     CryptoJS.lib.WordArray.create(publicKey as any),
@@ -311,7 +271,7 @@ export const generateRawAddressFromPubKeys = (publicKey: Uint8Array) => {
   return new Uint8Array(Buffer.from(hash, 'hex'));
 };
 
-export const generateWalletFromPrivateKey = async (privateKey: string) => {
+export const generateWalletFromEthPrivateKey = async (privateKey: string) => {
   const ethersWallet = new Wallet(addHexPrefix(privateKey));
   const ethereumWallet = {
     name: 'ethereum',
@@ -323,5 +283,18 @@ export const generateWalletFromPrivateKey = async (privateKey: string) => {
   const accounts: IAccountDetailWithChain[] = [ethereumWallet];
   // emit event to firebase
   sendFirebaseEvent(ethereumWallet.address, 'import_wallet_private_key');
+  return { accounts, privateKey };
+};
+
+export const generateWalletFromSolanaPrivateKey = async (
+  privateKey: string,
+) => {
+  const keypair = Keypair.fromSecretKey(bs58.default.decode(privateKey));
+  const solanaWallet = {
+    name: 'solana',
+    address: keypair.publicKey.toBase58(),
+    publicKey: keypair.publicKey.toBase58(),
+  };
+  const accounts: IAccountDetailWithChain[] = [solanaWallet];
   return { accounts, privateKey };
 };

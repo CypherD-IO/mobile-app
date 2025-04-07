@@ -5,7 +5,7 @@
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useIsFocused } from '@react-navigation/native';
 import clsx from 'clsx';
-import { debounce } from 'lodash';
+import { debounce, get } from 'lodash';
 import React, {
   useCallback,
   useContext,
@@ -148,14 +148,18 @@ export default function Login(props) {
 
     const keyValue = textValue.trim().split(/\s+/);
     const { isReadOnlyWallet } = hdWalletContext.state;
-    const { ethereum } = hdWalletContext.state.wallet;
+    const ethereumAddress = get(
+      hdWalletContext,
+      'state.wallet.ethereum.address',
+      undefined,
+    );
     if (keyValue.length >= 12 && isValidMnemonic(keyValue.join(' '))) {
       if (isReadOnlyWallet) {
         const data = await getReadOnlyWalletData();
         if (data) {
           const readOnlyWalletData = JSON.parse(data);
           await deleteWithAuth(
-            `/v1/configuration/address/${ethereum.address}/observer/${readOnlyWalletData.observerId}`,
+            `/v1/configuration/address/${ethereumAddress ?? ''}/observer/${readOnlyWalletData.observerId}`,
           );
         }
       }

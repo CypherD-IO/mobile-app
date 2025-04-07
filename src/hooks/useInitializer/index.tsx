@@ -5,6 +5,7 @@ import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
 import {
   ConnectionTypes,
+  EcosystemsEnum,
   GlobalContextType,
   PinPresentStates,
   RPCPreference,
@@ -55,6 +56,7 @@ import useValidSessionToken from '../useValidSessionToken';
 import { IPlanDetails } from '../../models/planDetails.interface';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -64,6 +66,7 @@ export default function useInitializer() {
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const ethereum = hdWallet.state.wallet.ethereum;
+  const solana = hdWallet.state.wallet.solana;
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
@@ -153,10 +156,7 @@ export default function useInitializer() {
     [key: string]: string;
   }) {
     const devMode = await getDeveloperMode();
-    if (
-      !devMode &&
-      walletAddresses.ethereumAddress !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
+    if (!devMode && walletAddresses.ethereumAddress) {
       Intercom.loginUserWithUserAttributes({
         userId: walletAddresses.ethereumAddress,
       }).catch(() => {
@@ -271,6 +271,7 @@ export default function useInitializer() {
 
   const setPinAuthenticationStateValue = async () => {
     const isBiometricPasscodeEnabled = await isBiometricEnabled();
+
     return isBiometricPasscodeEnabled && !(await isPinAuthenticated()); //  for devices with biometreics enabled the pinAuthentication will be set true
   };
 
@@ -300,7 +301,6 @@ export default function useInitializer() {
         value: {
           chain: string;
           address: any;
-          // privateKey: any;
           publicKey: any;
           algo: any;
           rawAddress: Uint8Array | undefined;
@@ -309,14 +309,14 @@ export default function useInitializer() {
     },
     state = initialHdWalletState,
   ) => {
-    // const cyRootData = await loadCyRootDataFromKeyChain(state);
     const cyRootData = await loadCyRootData(state);
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {
         void Sentry.captureMessage('app load error for load existing wallet');
       } else if (
-        accounts.ethereum[0].address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+        accounts.ethereum?.[0]?.address ||
+        accounts.solana?.[0]?.address
       ) {
         const attributes = {};
         Object.keys(accounts).forEach((chainName: string) => {
@@ -324,7 +324,6 @@ export default function useInitializer() {
           chainAccountList.forEach(
             (addressDetail: {
               address: any;
-              // privateKey: any;
               publicKey: any;
               algo: any;
               rawAddress: { [s: string]: number } | ArrayLike<number>;
@@ -334,7 +333,6 @@ export default function useInitializer() {
                 value: {
                   chain: chainName,
                   address: addressDetail.address,
-                  // privateKey: addressDetail.privateKey,
                   publicKey: addressDetail.publicKey,
                   algo: addressDetail.algo,
                   rawAddress: addressDetail.rawAddress
@@ -347,7 +345,8 @@ export default function useInitializer() {
           );
         });
         await getToken(
-          get(attributes, 'ethereumAddress', ''),
+          get(attributes, 'ethereumAddress', '') ??
+            get(attributes, 'solanaAddress', ''),
           get(attributes, 'cosmosAddress'),
           get(attributes, 'osmosisAddress'),
           get(attributes, 'nobleAddress'),
@@ -368,8 +367,7 @@ export default function useInitializer() {
               type: 'ADD_ADDRESS',
               value: {
                 chain: 'ethereum',
-                address: _ethereum.address,
-                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                address: get(_ethereum, 'address', ''),
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -385,8 +383,17 @@ export default function useInitializer() {
               type: 'ADD_ADDRESS',
               value: {
                 chain: 'ethereum',
-                address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                address: undefined,
+                publicKey: '',
+                algo: '',
+                rawAddress: undefined,
+              },
+            });
+            dispatch({
+              type: 'ADD_ADDRESS',
+              value: {
+                chain: 'solana',
+                address: undefined,
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -410,71 +417,65 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
-    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ) => {
-    if (
-      ethereum?.address
-      // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
-      try {
-        const isSessionTokenValid = await verifySessionToken();
-        if (!isSessionTokenValid) {
-          const signInResponse = await signIn(
-            ethereum,
-            hdWallet,
-            setShowDefaultAuthRemoveModal,
-          );
-          if (signInResponse) {
-            if (
-              signInResponse?.message === SignMessageValidationType.VALID &&
-              has(signInResponse, 'token')
-            ) {
-              setForcedUpdate(false);
-              setTamperedSignMessageModal(false);
-              globalContext.globalDispatch({
-                type: GlobalContextType.SIGN_IN,
-                sessionToken: signInResponse?.token,
-              });
-              globalContext.globalDispatch({
-                type: GlobalContextType.IS_APP_AUTHENTICATED,
-                isAuthenticated: true,
-              });
-              await setAuthToken(signInResponse?.token);
-              if (has(signInResponse, 'refreshToken')) {
-                await setRefreshToken(signInResponse?.refreshToken);
-              }
-              void getProfile(signInResponse.token);
-            } else if (
-              signInResponse?.message === SignMessageValidationType.INVALID
-            ) {
-              setUpdateModal(false);
-              setTamperedSignMessageModal(true);
-            } else if (
-              signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
-            ) {
-              setUpdateModal(true);
-              setForcedUpdate(true);
+    try {
+      const isSessionTokenValid = await verifySessionToken();
+      if (!isSessionTokenValid) {
+        const signInResponse = await signIn(
+          hdWallet,
+          setShowDefaultAuthRemoveModal,
+        );
+        if (signInResponse) {
+          if (
+            signInResponse?.message === SignMessageValidationType.VALID &&
+            has(signInResponse, 'token')
+          ) {
+            setForcedUpdate(false);
+            setTamperedSignMessageModal(false);
+            globalContext.globalDispatch({
+              type: GlobalContextType.SIGN_IN,
+              sessionToken: signInResponse?.token,
+            });
+            globalContext.globalDispatch({
+              type: GlobalContextType.IS_APP_AUTHENTICATED,
+              isAuthenticated: true,
+            });
+            await setAuthToken(signInResponse?.token);
+            if (has(signInResponse, 'refreshToken')) {
+              await setRefreshToken(signInResponse?.refreshToken);
             }
+            void getProfile(signInResponse.token);
+          } else if (
+            signInResponse?.message === SignMessageValidationType.INVALID
+          ) {
+            setUpdateModal(false);
+            setTamperedSignMessageModal(true);
+          } else if (
+            signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
+          ) {
+            setUpdateModal(true);
+            setForcedUpdate(true);
           }
-        } else {
-          let authToken = await getAuthToken();
-          const connectionType = await getConnectionType();
-          // don't ask for authentication in case of wallet connect
-          if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
-            await loadFromKeyChain(DUMMY_AUTH, true, () =>
-              setShowDefaultAuthRemoveModal(true),
-            );
-          }
-          authToken = JSON.parse(String(authToken));
-          void getProfile(authToken ?? '');
-          globalContext.globalDispatch({
-            type: GlobalContextType.IS_APP_AUTHENTICATED,
-            isAuthenticated: true,
-          });
         }
-      } catch (error) {
-        console.log('error', error);
+      } else {
+        let authToken = await getAuthToken();
+        const connectionType = await getConnectionType();
+        // don't ask for authentication in case of wallet connect
+        if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
+          await loadFromKeyChain(DUMMY_AUTH, true, () =>
+            setShowDefaultAuthRemoveModal(true),
+          );
+        }
+        authToken = JSON.parse(String(authToken));
+        void getProfile(authToken ?? '');
+        globalContext.globalDispatch({
+          type: GlobalContextType.IS_APP_AUTHENTICATED,
+          isAuthenticated: true,
+        });
       }
+    } catch (error) {
+      console.log('error', error);
     }
   };
 
@@ -482,15 +483,12 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
-    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     const hosts = await initializeHostsFromAsync();
     if (hosts) {
-      if (
-        ethereum?.address &&
-        ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-        // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-      ) {
+      const address = ethereum?.address ?? solana?.address;
+      if (address) {
         void getAuthTokenData(
           setForcedUpdate,
           setTamperedSignMessageModal,
@@ -502,15 +500,33 @@ export default function useInitializer() {
   };
 
   const initializeWeb3Auth = async () => {
-    const web3Auth = hdWallet.state.socialAuth?.web3Auth;
-    if (web3Auth) {
-      await web3Auth.init();
-      const isConnected = web3Auth.connected;
-      if (isConnected) {
-        return true;
+    const socialLoginAuthType = hdWallet.state.socialAuth?.connectionType;
+    if (
+      socialLoginAuthType &&
+      [
+        ConnectionTypes.SOCIAL_LOGIN_EVM,
+        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
+      ].includes(socialLoginAuthType)
+    ) {
+      let web3Auth;
+      switch (socialLoginAuthType) {
+        case ConnectionTypes.SOCIAL_LOGIN_EVM:
+          web3Auth = web3AuthEvm;
+          break;
+        case ConnectionTypes.SOCIAL_LOGIN_SOLANA:
+          web3Auth = web3AuthSolana;
+          break;
+      }
+      if (web3Auth) {
+        await web3Auth.init();
+        if (!web3Auth.connected) {
+          globalContext.globalDispatch({
+            type: GlobalContextType.IS_APP_AUTHENTICATED,
+            isAuthenticated: false,
+          });
+        }
       }
     }
-    return false;
   };
 
   return {

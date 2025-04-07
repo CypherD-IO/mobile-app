@@ -142,7 +142,11 @@ export default function Browser({ navigation }: any) {
   const [removeBookmarkMode, setRemoveBookmarkMode] = useState(false);
   const [inbuildPage, setInbuiltPage] = useState<PageType>('home');
   const [browserErrorCode, setBrowserErrorCode] = useState('');
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const { showModal, hideModal } = useGlobalModalContext();
   const [selectedDappChain, setSelectedDappChain] = useState<Chain>(CHAIN_ETH);
   const globalContext = useContext(GlobalContext);
@@ -324,8 +328,8 @@ export default function Browser({ navigation }: any) {
       gasDetails = await estimateGasForEvm({
         publicClient,
         chain: selectedChain.backendName,
-        fromAddress: ethereum.address,
-        toAddress: ethereum.address,
+        fromAddress: ethereumAddress,
+        toAddress: ethereumAddress,
         amountToSend: String(nativeToken.balanceDecimal),
         contractAddress: nativeToken.contractAddress as `0x${string}`,
         contractDecimals: nativeToken.contractDecimals,
@@ -463,7 +467,7 @@ export default function Browser({ navigation }: any) {
     setSearch(upgradedURL);
     analytics()
       .logEvent('browser_addressbar', {
-        from: ethereum.address,
+        from: ethereumAddress,
         chain: hdWalletContext.state.selectedChain.name,
         url: e?.nativeEvent?.text === undefined ? e : e.nativeEvent.text,
       })

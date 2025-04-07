@@ -49,6 +49,7 @@ import {
 } from '@react-navigation/native';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { ButtonType } from '../../constants/enum';
+import { get } from 'lodash';
 
 function copyToClipboard(text: string) {
   Clipboard.setString(text);
@@ -73,6 +74,11 @@ export default function QRCodeGenerator() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const routeParams = route?.params;
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    '',
+  );
 
   const getChainDataWithAddress = (
     walletAddressType: FundWalletAddressType,
@@ -81,86 +87,110 @@ export default function QRCodeGenerator() {
       case FundWalletAddressType.EVM:
         return {
           ...CHAIN_ETH,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.POLYGON:
         return {
           ...CHAIN_POLYGON,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.AVALANCHE:
         return {
           ...CHAIN_AVALANCHE,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.ARBITRUM:
         return {
           ...CHAIN_ARBITRUM,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.OPTIMISM:
         return {
           ...CHAIN_OPTIMISM,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.BSC:
         return {
           ...CHAIN_BSC,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.ZKSYNC_ERA:
         return {
           ...CHAIN_ZKSYNC_ERA,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.BASE:
         return {
           ...CHAIN_BASE,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
       case FundWalletAddressType.SOLANA:
         return {
           ...CHAIN_SOLANA,
-          address: hdWalletContext.state.wallet.solana?.wallets[0]?.address,
+          address: get(
+            hdWalletContext,
+            'state.wallet.solana.wallets[0].address',
+            '',
+          ),
         };
 
       case FundWalletAddressType.COSMOS:
         return {
           ...CHAIN_COSMOS,
-          address: hdWalletContext.state.wallet.cosmos?.wallets[0]?.address,
+          address: get(
+            hdWalletContext,
+            'state.wallet.cosmos.wallets[0].address',
+            '',
+          ),
         };
       case FundWalletAddressType.OSMOSIS:
         return {
           ...CHAIN_OSMOSIS,
-          address: hdWalletContext.state.wallet.osmosis?.wallets[0]?.address,
+          address: get(
+            hdWalletContext,
+            'state.wallet.osmosis.wallets[0].address',
+            '',
+          ),
         };
       case FundWalletAddressType.NOBLE:
         return {
           ...CHAIN_NOBLE,
-          address: hdWalletContext.state.wallet.noble?.wallets[0]?.address,
+          address: get(
+            hdWalletContext,
+            'state.wallet.noble.wallets[0].address',
+            '',
+          ),
         };
       case FundWalletAddressType.COREUM:
         return {
           ...CHAIN_COREUM,
-          address: hdWalletContext.state.wallet.coreum?.wallets[0]?.address,
+          address: get(
+            hdWalletContext,
+            'state.wallet.coreum.wallets[0].address',
+            '',
+          ),
         };
       case FundWalletAddressType.INJECTIVE:
         return {
           ...CHAIN_INJECTIVE,
-          address: hdWalletContext.state.wallet.injective?.wallets[0]?.address,
+          address: get(
+            hdWalletContext,
+            'state.wallet.injective.wallets[0].address',
+            '',
+          ),
         };
 
       default:
         return {
           ...CHAIN_ETH,
-          address: hdWalletContext.state.wallet.ethereum.address,
+          address: ethereumAddress,
         };
     }
   };
 
   const [selectedChain, setSelectedChain] = useState<UserChain>({
     ...CHAIN_ETH,
-    address: hdWalletContext.state.wallet.ethereum.address,
+    address: ethereumAddress,
   });
   const [isCapturingDetails, setIsCapturingDetails] = useState<boolean>(false);
 

@@ -48,6 +48,7 @@ import {
   setCyRootData,
   removeCyRootData,
   setConnectionType,
+  getConnectionType,
 } from './asyncStorage';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
@@ -55,6 +56,7 @@ import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import {
   ConnectionTypes,
+  EcosystemsEnum,
   SECRET_TYPES,
   SignMessageValidationType,
 } from '../constants/enum';
@@ -70,6 +72,9 @@ import { Keypair } from '@solana/web3.js';
 import { createWalletClient, Hex, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mainnet } from 'viem/chains';
+import * as nacl from 'tweetnacl';
+import * as bs58 from 'bs58';
+import { get } from 'lodash';
 import { HDKey } from 'micro-ed25519-hdkey';
 
 // increase this when you want the CyRootData to be reconstructed
@@ -122,12 +127,11 @@ export async function saveCredentialsToKeychain(
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
       value: {
-        address: account.address,
-        // privateKey: account.privateKey,
+        address: account.address ?? '',
         chain: account.name,
-        publicKey: account.publicKey,
+        publicKey: account.publicKey ?? '',
         rawAddress: account.rawAddress,
-        algo: account.algo,
+        algo: account.algo ?? '',
       },
     });
   });
@@ -393,7 +397,12 @@ export async function loadCyRootData(hdWallet: any) {
   const defaultData = constructRootData([
     {
       name: 'ethereum',
-      address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+      address: undefined,
+      publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+    },
+    {
+      name: 'solana',
+      address: undefined,
       publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
     },
   ]);
@@ -526,28 +535,38 @@ export async function getSignerClient(
 
 export const getSolanaWallet = async (hdWallet: any) => {
   try {
-    const seedPhrase = await loadRecoveryPhraseFromKeyChain(
-      false,
-      hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
-    );
+    const connectionType = await getConnectionType();
+    if (connectionType === ConnectionTypes.SEED_PHRASE) {
+      const seedPhrase = await loadRecoveryPhraseFromKeyChain(
+        false,
+        hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
+      );
 
-    if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
-      const seed = bip39.mnemonicToSeedSync(seedPhrase);
+      if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
+        const seed = bip39.mnemonicToSeedSync(seedPhrase);
 
-      if (!seed) {
-        throw new Error('Invalid seed');
+        if (!seed) {
+          throw new Error('Invalid seed');
+        }
+
+        const hd = HDKey.fromMasterSeed(seed.toString('hex'));
+
+        const path =
+          hdWallet?.state?.choosenWalletIndex > 0
+            ? `m/44'/501'/${String(hdWallet?.state?.choosenWalletIndex)}'/0'`
+            : "m/44'/501'/0'/0'";
+
+        const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
+        return keypair;
       }
-
-      const hd = HDKey.fromMasterSeed(seed.toString('hex'));
-
-      const path =
-        hdWallet?.state?.choosenWalletIndex > 0
-          ? `m/44'/501'/${String(hdWallet?.state?.choosenWalletIndex)}'/0'`
-          : "m/44'/501'/0'/0'";
-
-      const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
-
-      return keypair;
+    } else {
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        false,
+        hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
+      );
+      if (privateKey) {
+        return Keypair.fromSecretKey(bs58.default.decode(privateKey));
+      }
     }
   } catch (e) {
     Sentry.captureException(e);
@@ -653,36 +672,68 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
 }
 
 export async function signIn(
-  ethereum: { address: string },
   hdWallet: HdWalletContextDef,
-  setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+  setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
+    const ethereumAddress = get(
+      hdWallet,
+      'state.wallet.ethereum.address',
+      undefined,
+    );
+    const solanaAddress = get(
+      hdWallet,
+      'state.wallet.solana.address',
+      undefined,
+    );
+    const address = ethereumAddress ?? solanaAddress ?? '';
+    let ecosystem = EcosystemsEnum.EVM;
+    if (solanaAddress) {
+      ecosystem = EcosystemsEnum.SOLANA;
+    }
+
     const { data } = await axios.get(
-      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+      `${ARCH_HOST}/v1/authentication/sign-message/${address}/${ecosystem}`,
     );
     const verifyMessage = data.message;
-    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
+    const validationResponse = isValidMessage(
+      address,
+      verifyMessage,
+      ecosystem,
+    );
     if (validationResponse.message === SignMessageValidationType.VALID) {
-      const walletClient = createWalletClient({
-        chain: mainnet,
-        transport: http(''),
-      });
       const privateKey = await loadPrivateKeyFromKeyChain(
         true,
         hdWallet.state.pinValue,
-        () => setShowDefaultAuthRemoveModal(true),
+        () => setShowDefaultAuthRemoveModal?.(true),
       );
       if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        const account = privateKeyToAccount(privateKey as Hex);
-        const signature = await walletClient.signMessage({
-          account,
-          message: verifyMessage,
-        });
+        let signature;
+        if (ecosystem === EcosystemsEnum.EVM) {
+          const walletClient = createWalletClient({
+            chain: mainnet,
+            transport: http(''),
+          });
+          const account = privateKeyToAccount(privateKey as Hex);
+          signature = await walletClient.signMessage({
+            account,
+            message: verifyMessage,
+          });
+        } else if (ecosystem === EcosystemsEnum.SOLANA) {
+          const keypair = Keypair.fromSecretKey(
+            bs58.default.decode(privateKey),
+          );
+          const messageBytes = new TextEncoder().encode(verifyMessage);
+          const signatureBytes = nacl.sign.detached(
+            messageBytes,
+            keypair.secretKey,
+          );
+          signature = Array.from(signatureBytes);
+        }
 
         const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
+          `${ARCH_HOST}/v1/authentication/verify-message/${address}/${ecosystem}`,
           {
             signature,
           },
