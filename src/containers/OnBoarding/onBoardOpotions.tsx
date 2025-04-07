@@ -5,7 +5,6 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import Web3Auth, {
-  AuthUserInfo,
   LOGIN_PROVIDER,
   MFA_LEVELS,
 } from '@web3auth/react-native-sdk';
@@ -19,7 +18,10 @@ import CyDModalLayout from '../../components/v2/modal';
 import { screenTitle } from '../../constants';
 import { ConnectionTypes, SeedPhraseType } from '../../constants/enum';
 import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
-import { importWalletPrivateKey } from '../../core/HdWallet';
+import {
+  importWalletFromEvmPrivateKey,
+  importWalletFromSolanaPrivateKey,
+} from '../../core/HdWallet';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { setConnectionType } from '../../core/asyncStorage';
 import {
@@ -37,6 +39,8 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
+import { SolanaWallet } from '@web3auth/solana-provider';
+import bs58 from 'bs58';
 
 const enum ProviderType {
   ETHEREUM = 'ethereum',
@@ -101,7 +105,6 @@ export default function OnBoardOpotions() {
     provider: Web3Auth,
     providerType: ProviderType,
   ) => {
-    console.log('Logging in');
     await provider.login({
       loginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS,
       extraLoginOptions: {
@@ -109,45 +112,42 @@ export default function OnBoardOpotions() {
       },
       mfaLevel: MFA_LEVELS.MANDATORY,
     });
-    if (provider.connected) {
+    if (provider.connected && provider.provider) {
       const connectionType =
         providerType === ProviderType.ETHEREUM
           ? ConnectionTypes.SOCIAL_LOGIN_EVM
           : ConnectionTypes.SOCIAL_LOGIN_SOLANA;
-      const userInfo = provider.userInfo() as AuthUserInfo;
-      hdWalletContext.dispatch({
-        type: 'SET_SOCIAL_AUTH',
-        value: {
-          socialAuth: {
-            connectionType,
-            web3Auth: provider,
-            userInfo,
-          },
-        },
-      });
 
-      let _privateKey = (await provider.provider?.request({
-        method: 'eth_private_key',
-      })) as string;
+      let _privateKey = '';
 
-      if (!_privateKey) {
+      if (providerType === ProviderType.ETHEREUM) {
+        _privateKey = (await provider.provider?.request({
+          method: 'eth_private_key',
+        })) as string;
+        if (!_privateKey.startsWith('0x')) {
+          _privateKey = '0x' + _privateKey;
+        }
+        if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
+          await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
+        }
+      } else if (providerType === ProviderType.SOLANA) {
+        _privateKey = (await provider.provider.request({
+          method: 'solanaPrivateKey',
+        })) as string;
+        const base58privatekey = bs58.encode(Buffer.from(_privateKey, 'hex'));
+        await importWalletFromSolanaPrivateKey(
+          hdWalletContext,
+          base58privatekey,
+        );
+      } else {
         return;
       }
 
-      if (!_privateKey.startsWith('0x')) {
-        _privateKey = '0x' + _privateKey;
-      }
-
-      if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
-        await importWalletPrivateKey(hdWalletContext, _privateKey);
-        void setConnectionType(connectionType);
-      }
+      void setConnectionType(connectionType);
     }
   };
 
   const googleLogin = async (provider: Web3Auth) => {
-    console.log('Logging in');
-
     await provider.login({
       loginProvider: LOGIN_PROVIDER.GOOGLE,
       mfaLevel: MFA_LEVELS.MANDATORY,
@@ -157,24 +157,13 @@ export default function OnBoardOpotions() {
         providerType === ProviderType.ETHEREUM
           ? ConnectionTypes.SOCIAL_LOGIN_EVM
           : ConnectionTypes.SOCIAL_LOGIN_SOLANA;
-      const userInfo = provider.userInfo() as AuthUserInfo;
-      hdWalletContext.dispatch({
-        type: 'SET_SOCIAL_AUTH',
-        value: {
-          socialAuth: {
-            connectionType,
-            web3Auth: provider,
-            userInfo,
-          },
-        },
-      });
 
       let _privateKey = (await provider.provider?.request({
         method: 'eth_private_key',
       })) as string;
 
       if (!_privateKey) {
-        return;
+        throw new Error('Unable to construct the private key');
       }
 
       if (!_privateKey.startsWith('0x')) {
@@ -182,7 +171,7 @@ export default function OnBoardOpotions() {
       }
 
       if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
-        await importWalletPrivateKey(hdWalletContext, _privateKey);
+        await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
         void setConnectionType(connectionType);
       }
     }
@@ -198,7 +187,6 @@ export default function OnBoardOpotions() {
       }
       await provider.init();
       if (!provider.ready) {
-        console.log('Provider not ready');
         showModal('state', {
           type: 'error',
           title: t('UNEXPECTED_ERROR'),
@@ -215,7 +203,6 @@ export default function OnBoardOpotions() {
         await googleLogin(provider);
       }
     } catch (error) {
-      console.log('Error', error);
       showModal('state', {
         type: 'error',
         title: 'Unable to login',

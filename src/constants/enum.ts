@@ -238,6 +238,7 @@ export enum GlobalModalType {
   STATE = 'state',
   PROMPT_IMPORT_WALLET = 'promptImportWallet',
   REMOVE_WALLET = 'removeWallet',
+  REMOVE_SOCIAL_AUTH_WALLET = 'removeSocialAuthWallet',
   WALLET_CONNECT_V2_PAIRING = 'walletConnectV2Pairing',
   WALLET_CONNECT_V2_SIGNING = 'walletConnectV2Signing',
   WALLET_CONNECT_V2_TYPED_SIGNING = 'walletConnectV2TypedSigning',
@@ -513,4 +514,10 @@ export enum HyperLiquidAccount {
 export enum HyperLiquidTransfers {
   SPOT_TRANSFER = 'spotTransfer',
   PERPETUAL_TRANSFER = 'internalTransfer',
+}
+export enum EcosystemsEnum {
+  COSMOS = 'cosmos',
+  EVM = 'evm',
+  TRON = 'tron',
+  SOLANA = 'solana',
 }
