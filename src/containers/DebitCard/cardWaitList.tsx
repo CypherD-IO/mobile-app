@@ -48,7 +48,11 @@ export default function CardWailtList({ navigation }: Props) {
   const { t } = useTranslation();
 
   const hdWallet = useContext<any>(HdWalletContext);
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
 
   const [joiningWaitlist, setJoiningWaitlist] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
@@ -89,7 +93,7 @@ export default function CardWailtList({ navigation }: Props) {
           setJoiningWaitlist(true);
           const payload = {
             email: userEmail,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             country: selectedCountry.Iso2,
           };
           const response = await axios.post(

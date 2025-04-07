@@ -12,6 +12,7 @@ import { CustomModalLayoutDef } from '../../models/globalModal.interface';
 import RemoveWalletModal from './removeWalletModal';
 import ThreeDSecureApprovalModal from './threeDSecureApprovalModal';
 import QuickActionNotificationModal from './quickActionNotificationModal';
+import RemoveSocialAuthWalletModal from './removeSocialAuthWalletModal';
 
 interface GlobalModalContextInterface {
   showModal: (modalType: string, params: any) => void;
@@ -61,6 +62,9 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
       )}
       {store?.modalType === GlobalModalType.REMOVE_WALLET && (
         <RemoveWalletModal {...store} />
+      )}
+      {store?.modalType === GlobalModalType.REMOVE_SOCIAL_AUTH_WALLET && (
+        <RemoveSocialAuthWalletModal {...store} />
       )}
       {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_PAIRING && (
         <PairingModal {...store} />

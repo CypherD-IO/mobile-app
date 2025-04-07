@@ -76,7 +76,6 @@ export const chainConfigs = {
 
 export const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
   config: {
-    // chainConfig: chainConfigs.baseTestnet,
     chainConfig: chainConfigs.base,
   },
 });
@@ -93,6 +92,7 @@ export const web3AuthEvm = new Web3Auth(WebBrowser, EncryptedStorage, {
   network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider: ethereumPrivateKeyProvider,
   // accountAbstractionProvider,
+  sessionTime: 30 * 24 * 60 * 60, // 30 days in seconds
   mfaSettings: {
     socialBackupFactor: {
       enable: true,
@@ -132,27 +132,37 @@ export const web3AuthSolana = new Web3Auth(WebBrowser, EncryptedStorage, {
   redirectUrl,
   network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider: solanaPrivateKeyProvider,
-  // accountAbstractionProvider,
+  sessionTime: 30 * 24 * 60 * 60, // 30 days in seconds
   mfaSettings: {
-    backUpShareFactor: {
+    socialBackupFactor: {
       enable: true,
       priority: 1,
       mandatory: true, // at least two factors are mandatory
     },
-    // deviceShareFactor: {
-    //   enable: true,
-    //   priority: 2,
-    //   mandatory: true, // at least two factors are mandatory
-    // },
-    // socialBackupFactor: {
-    //   enable: true,
-    //   priority: 3,
-    //   mandatory: true, // at least two factors are mandatory
-    // },
-    // passwordFactor: {
-    //   enable: true,
-    //   priority: 4,
-    //   mandatory: true, // at least two factors are mandatory
-    // },
+    backUpShareFactor: {
+      enable: true,
+      priority: 2,
+      mandatory: false, // at least two factors are mandatory
+    },
+    authenticatorFactor: {
+      enable: true,
+      priority: 3,
+      mandatory: false, // at least two factors are mandatory
+    },
+    deviceShareFactor: {
+      enable: true,
+      priority: 4,
+      mandatory: false,
+    },
+    passkeysFactor: {
+      enable: true,
+      priority: 5,
+      mandatory: false, // at least two factors are mandatory
+    },
+    passwordFactor: {
+      enable: false,
+      priority: 6,
+      mandatory: false,
+    },
   },
 });

@@ -65,6 +65,7 @@ import { screenTitle } from './src/constants';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
 import { ThemeProvider } from './src/reducers/themeReducer';
 import { CyDView } from './src/styles/tailwindComponents';
+import { get } from 'lodash';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -98,7 +99,7 @@ function App() {
     bridgeContextInitialState,
   );
 
-  const ethereum = state.wallet.ethereum;
+  const ethereumAddress = get(state, 'wallet.ethereum.address', '');
   const [walletConnectModalVisible, setWalletConnectModalVisible] =
     useState<boolean>(false);
   const [walletConnectModalData, setWalletConnectModalData] = useState({
@@ -197,7 +198,7 @@ function App() {
 
   useEffect(() => {
     const getData = async () => {
-      const data = await getConnectWalletData(ethereum.address);
+      const data = await getConnectWalletData(ethereumAddress);
       if (data && data.data?.connectors?.length !== 0) {
         const { connectors, dAppInfo } = data.data;
         if (connectors && dAppInfo) {
@@ -220,7 +221,7 @@ function App() {
       }
     };
     void getData();
-  }, [ethereum.address]);
+  }, [ethereumAddress]);
 
   const handleBackButton = (): boolean => {
     Keyboard.dismiss();

@@ -3,13 +3,8 @@ import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
 import { GlobalModalType, PinPresentStates } from '../../constants/enum';
-import PinAuthRoute from '../../routes/pinAuthRoute';
-import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
-import {
-  HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { WalletConnectV2Provider } from '../walletConnectV2Provider';
 import { SPLASH_SCREEN_TIMEOUT } from '../../constants/timeOuts';
 import SplashScreen from 'react-native-lottie-splash-screen';
@@ -33,12 +28,15 @@ import { useGlobalModalContext } from '../v2/GlobalModal';
 import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
+import { get } from 'lodash';
 
 import {
   requestUserPermission,
   showNotification,
 } from '../../notification/pushNotification';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
+import PinAuthRoute from '../../routes/pinAuthRoute';
+import { screenTitle } from '../../constants';
 
 export const InitializeAppProvider = ({
   children,
@@ -70,7 +68,13 @@ export const InitializeAppProvider = ({
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
     useState<boolean>(false);
   const { isReadOnlyWallet } = hdWallet.state;
-  const { ethereum } = hdWallet.state.wallet;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
+  const solanaAddress = get(hdWallet, 'state.wallet.solana.address', undefined);
+  const address = ethereumAddress ?? solanaAddress;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
 
   const { showModal, hideModal } = useGlobalModalContext();
@@ -119,9 +123,8 @@ export const InitializeAppProvider = ({
   }, []);
 
   useEffect(() => {
-    if (ethereum.address) {
+    if (address) {
       void initializeWeb3Auth();
-
       void getHosts(
         setForcedUpdate,
         setTamperedSignMessageModal,
@@ -129,85 +132,55 @@ export const InitializeAppProvider = ({
         setShowDefaultAuthRemoveModal,
       );
     }
-  }, [ethereum.address]);
+  }, [address]);
 
   useEffect(() => {
-    if (ethereum.address === undefined && pinAuthentication) {
+    if (!ethereumAddress && !solanaAddress && pinAuthentication) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
     }
   }, [pinAuthentication]);
 
   useEffect(() => {
     const discordTokenFromUrl = initialUrl?.split('discordToken=')[1];
-    if (isAuthenticated && ethereum?.address && discordTokenFromUrl) {
+    if (isAuthenticated && ethereumAddress && discordTokenFromUrl) {
       setDiscordToken(discordTokenFromUrl);
       setIsJoinDiscordModalVisible(true);
       updateUrl('https://app.cypherhq.io');
     }
-  }, [isAuthenticated, ethereum?.address, initialUrl]);
+  }, [isAuthenticated, ethereumAddress, initialUrl]);
 
   const RenderNavStack = useCallback(() => {
-    if (ethereum.address === undefined) {
-      if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
-        return (
-          <Loading
-          // loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-          />
-        );
-      } else {
-        return (
-          <PinAuthRoute
-            setPinAuthentication={setPinAuthentication}
-            initialScreen={
-              pinPresent === PinPresentStates.TRUE
-                ? C.screenTitle.PIN_VALIDATION
-                : C.screenTitle.SET_PIN
-            }
-          />
-        );
-      }
+    if (!ethereumAddress && !solanaAddress) {
+      return <OnBoardingStack />;
     } else {
-      if (ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        return <OnBoardingStack />;
+      if (!isReadOnlyWallet && !isAuthenticated) {
+        return <Loading />;
       } else {
-        if (!isReadOnlyWallet && !isAuthenticated) {
-          return <Loading />;
-        }
-        return children;
+        // console.log(
+        //   '🚀 ~ RenderNavStack ~ pinAuthentication:',
+        //   pinAuthentication,
+        // );
+        // console.log('🚀 ~ RenderNavStack ~ pinPresent:', pinPresent);
+        // if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
+        //   return <Loading />;
+        // } else {
+        //   return (
+        //     <PinAuthRoute
+        //       setPinAuthentication={setPinAuthentication}
+        //       initialScreen={
+        //         pinPresent === PinPresentStates.TRUE
+        //           ? screenTitle.PIN_VALIDATION
+        //           : screenTitle.SET_PIN
+        //       }
+        //     />
+        //   );
+        // }
       }
+      return children;
     }
-
-    // {
-    //   ethereum.address === undefined ? (
-    //     pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-    //       // reomve in the next build
-    //       <Loading
-    //         loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-    //       />
-    //     ) : (
-    //       <PinAuthRoute
-    //         setPinAuthentication={setPinAuthentication}
-    //         initialScreen={
-    //           pinPresent === PinPresentStates.TRUE
-    //             ? C.screenTitle.PIN_VALIDATION
-    //             : C.screenTitle.SET_PIN
-    //         }
-    //       />
-    //     )
-    //   ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-    //     hdWallet.state.reset ? (
-    //       <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
-    //     ) : (
-    //       <OnBoardingStack />
-    //     )
-    //   ) : !isReadOnlyWallet && !isAuthenticated ? (
-    //     <Loading />
-    //   ) : (
-    //     children
-    //   );
     // }
   }, [
-    ethereum.address,
+    address,
     pinAuthentication,
     pinPresent,
     hdWallet.state.reset,

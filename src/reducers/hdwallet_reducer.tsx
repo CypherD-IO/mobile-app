@@ -3,10 +3,9 @@ import analytics from '@react-native-firebase/analytics';
 import { CHAIN_ETH, Chain, CHAIN_NAMES } from '../constants/server';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_, isAddressSet } from '../core/util';
 import { Dispatch } from 'react';
-import { ISocialAuth } from '../models/socailAuth.interface';
 
 export interface WalletKey {
-  address: string;
+  address: string | undefined;
   publicKey: Buffer | Uint8Array | string;
   rawAddress?: string;
   algo?: string;
@@ -53,7 +52,6 @@ export interface HDWallet {
   hideBalance: boolean;
   isReadOnlyWallet: boolean;
   choosenWalletIndex: number;
-  socialAuth?: ISocialAuth;
 }
 
 export interface HdWalletContextDef {
@@ -118,12 +116,6 @@ type HdWalletAction =
       value: {
         isReadOnlyWallet: boolean;
       };
-    }
-  | {
-      type: 'SET_SOCIAL_AUTH';
-      value: {
-        socialAuth: ISocialAuth;
-      };
     };
 
 const wallet: CypherDWallet = {};
@@ -146,7 +138,6 @@ export const initialHdWalletState: HDWallet = {
   hideBalance: false,
   isReadOnlyWallet: false,
   choosenWalletIndex: -1,
-  socialAuth: undefined,
 };
 
 // reducers
@@ -158,106 +149,141 @@ export function hdWalletStateReducer(
     case 'ADD_ADDRESS': {
       const { address, chain, publicKey } = action.value;
 
-      const wallet = state.wallet;
-
-      if (
-        address !== undefined &&
-        address !== 'IMPORTING' &&
-        CHAIN_NAMES.includes(chain)
-      ) {
-        wallet[chain].wallets.push({
-          address,
-          publicKey,
-        });
-
-        // currIndex = 0 when its the first entry for wallets
-        if (wallet[chain].wallets.length === 1) {
-          wallet[chain].currentIndex = 0;
-        }
+      if (!address || address === 'IMPORTING' || !CHAIN_NAMES.includes(chain)) {
+        return state;
       }
 
-      return { ...state, wallet };
+      const existingChainWallet =
+        state.wallet[chain] ||
+        new ChainWallet({
+          currentIndex: -1,
+          wallets: [],
+        });
+
+      const updatedWallets = [
+        ...existingChainWallet.wallets,
+        { address, publicKey },
+      ];
+
+      const updatedWallet = {
+        ...state.wallet,
+        [chain]: new ChainWallet({
+          currentIndex:
+            updatedWallets.length === 1 ? 0 : existingChainWallet.currentIndex,
+          wallets: updatedWallets,
+        }),
+      };
+
+      return {
+        ...state,
+        wallet: updatedWallet,
+      };
     }
     case 'LOAD_WALLET': {
       const { address, chain, publicKey, rawAddress, algo } = action.value;
 
-      const wallet = state.wallet;
-      if (isAddressSet(address) && CHAIN_NAMES.includes(chain)) {
-        wallet[chain].wallets.length = 0;
-        wallet[chain].wallets.push({
-          address,
-          publicKey,
-          rawAddress,
-          algo,
-        });
-
-        // currIndex = 0 when its the first entry for wallets
-        if (wallet[chain].wallets.length === 1) {
-          wallet[chain].currentIndex = 0;
-        }
-
-        if (chain === CHAIN_ETH.chainName) {
-          Intercom.loginUserWithUserAttributes({ userId: address }).catch(
-            () => {
-              // throws error if user is already registered
-            },
-          );
-          void analytics().setUserId(address);
-        }
+      if (!isAddressSet(address) || !CHAIN_NAMES.includes(chain)) {
+        return state;
       }
 
-      return { ...state, wallet };
+      // Create new wallet state immutably
+      const updatedWallet = {
+        ...state.wallet,
+        [chain]: new ChainWallet({
+          currentIndex: 0,
+          wallets: [
+            {
+              address,
+              publicKey,
+              rawAddress,
+              algo,
+            },
+          ],
+        }),
+      };
+
+      // Handle analytics for ETH chain
+      if (chain === CHAIN_ETH.chainName) {
+        void Promise.all([
+          Intercom.loginUserWithUserAttributes({ userId: address }).catch(
+            () => {
+              // User already registered
+            },
+          ),
+          analytics().setUserId(address),
+        ]);
+      }
+
+      return {
+        ...state,
+        wallet: updatedWallet,
+      };
     }
 
     case 'CHOOSE_CHAIN': {
-      return { ...state, ...action.value };
+      return {
+        ...state,
+        selectedChain: action.value.selectedChain,
+      };
     }
 
     case 'RESET_WALLET': {
-      const resetWallet = initialHdWalletState;
-      resetWallet.pinValue = state.pinValue;
       const emptyWallet: CypherDWallet = {};
       CHAIN_NAMES.forEach(chain => {
         emptyWallet[chain] = new ChainWallet({
-          currentIndex: -1,
-          wallets: [],
+          currentIndex: chain === 'ethereum' || chain === 'solana' ? 0 : -1,
+          wallets:
+            chain === 'ethereum' || chain === 'solana'
+              ? [
+                  {
+                    address: undefined,
+                    publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                  },
+                ]
+              : [],
         });
       });
-      emptyWallet.ethereum.currentIndex = 0;
 
-      emptyWallet.ethereum.wallets.push({
-        address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-        publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-      });
-      resetWallet.wallet = emptyWallet;
-      return { ...resetWallet };
+      return {
+        ...initialHdWalletState,
+        pinValue: state.pinValue,
+        wallet: emptyWallet,
+      };
     }
 
     case 'RESET_PIN_AUTHENTICATION': {
-      const { isReset } = action.value;
-      return { ...state, reset: isReset };
+      return {
+        ...state,
+        reset: action.value.isReset,
+      };
     }
 
     case 'SET_PIN_VALUE': {
-      const { pin } = action.value;
-      return { ...state, pinValue: pin };
+      return {
+        ...state,
+        pinValue: action.value.pin,
+      };
     }
 
     case 'SET_CHOOSEN_WALLET_INDEX': {
-      const { indexValue } = action.value;
-      return { ...state, choosenWalletIndex: indexValue };
+      return {
+        ...state,
+        choosenWalletIndex: action.value.indexValue,
+      };
     }
 
     case 'TOGGLE_BALANCE_VISIBILITY': {
-      return { ...state, ...action.value };
+      return {
+        ...state,
+        hideBalance: action.value.hideBalance,
+      };
     }
 
     case 'SET_READ_ONLY_WALLET': {
-      return { ...state, ...action.value };
-    }
-
-    case 'SET_SOCIAL_AUTH': {
-      return { ...state, ...action.value };
+      return {
+        ...state,
+        isReadOnlyWallet: action.value.isReadOnlyWallet,
+      };
     }
 
     default:

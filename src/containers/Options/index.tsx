@@ -90,7 +90,11 @@ export default function Options() {
   const [ens, setEns] = useState(false);
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } =
     hdWalletContext.state;
   const activityContext = useContext<any>(ActivityContext);
@@ -146,7 +150,7 @@ export default function Options() {
       const profileData = await getWalletProfile(
         globalContext.globalState.token,
       );
-      const ens = await resolveDomain(ethereum.address, CHAIN_ETH.backendName);
+      const ens = await resolveDomain(ethereumAddress, CHAIN_ETH.backendName);
       if (get(profileData, ['child'])) {
         setTitle(t('LINKED_WALLET'));
       } else if (ens) {
