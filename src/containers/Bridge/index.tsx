@@ -87,7 +87,11 @@ import Button from '../../components/v2/button';
 import SignatureModal from '../../components/v2/signatureModal';
 import CyDSkeleton from '../../components/v2/skeleton';
 import { screenTitle } from '../../constants';
-import { AnalyticsType, ButtonType } from '../../constants/enum';
+import {
+  AnalyticsType,
+  ButtonType,
+  ConnectionTypes,
+} from '../../constants/enum';
 import {
   ALL_CHAINS,
   CAN_ESTIMATE_L1_FEE_CHAINS,
@@ -127,6 +131,7 @@ import {
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
+import useConnectionManager from '../../hooks/useConnectionManager';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -204,6 +209,7 @@ const Bridge: React.FC = () => {
     swapTokens,
     checkIfAllowanceIsEnough,
   } = useTransactionManager();
+  const { connectionType } = useConnectionManager();
   const { getGasPrice } = useGasService();
   const globalStateContext = useContext(GlobalContext) as GlobalContextDef;
   const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
@@ -215,7 +221,8 @@ const Bridge: React.FC = () => {
   const { getNativeToken } = usePortfolio();
   const { refreshPortfolio } = usePortfolioRefresh();
   const slippage = 0.4;
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const ethereum = get(hdWallet, 'state.wallet.ethereum', '');
+  const ethereumAddress = get(ethereum, 'address', '');
 
   const [chainData, setChainData] = useState<SwapBridgeChainData[]>([]);
   const [tokenData, setTokenData] = useState<
@@ -307,8 +314,15 @@ const Bridge: React.FC = () => {
 
   const fetchChainData = async () => {
     const chainResult = await getWithAuth('/v1/swap/chains');
-    setChainData(chainResult.data);
-    setSelectedFromChain(chainResult.data[0]);
+    if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
+      const solanaChainData = chainResult.data.filter(
+        (chain: SwapBridgeChainData) => chain.chainId === 'solana',
+      );
+      setChainData(solanaChainData);
+    } else {
+      setChainData(chainResult.data);
+      setSelectedFromChain(chainResult.data[0]);
+    }
     bridgeDispatch({
       type: BridgeReducerAction.SUCCESS,
       payload: {
@@ -394,12 +408,23 @@ const Bridge: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (bridgeState.status === BridgeStatus.ERROR) void fetchData();
-      else {
+      if (bridgeState.status === BridgeStatus.ERROR) {
+        void fetchData();
+      } else {
         setIndex(0);
-        setChainData(bridgeState.chainData);
+        let chainDataSelected;
+        if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
+          const solanaChainData = bridgeState.chainData.filter(
+            (chain: SwapBridgeChainData) => chain.chainId === 'solana',
+          );
+          setChainData(solanaChainData);
+          chainDataSelected = solanaChainData[0];
+        } else {
+          setChainData(bridgeState.chainData);
+          chainDataSelected = bridgeState.chainData[0];
+        }
         setTokenData(bridgeState.tokenData);
-        setChainData(bridgeState.chainData);
+
         if (routeParamsTokenData?.chainDetails) {
           const selectedChain = bridgeState.chainData.find(
             chain =>
@@ -409,7 +434,7 @@ const Bridge: React.FC = () => {
           );
           setSelectedFromChain(selectedChain ?? bridgeState.chainData[0]);
         } else {
-          setSelectedFromChain(bridgeState.chainData[0]);
+          setSelectedFromChain(chainDataSelected);
         }
       }
     }, []),
@@ -1399,7 +1424,7 @@ const Bridge: React.FC = () => {
               publicClient,
               evmTx,
               selectedFromToken,
-              walletAddress: ethereum.address as `0x${string}`,
+              walletAddress: ethereumAddress as `0x${string}`,
               setApproveModalVisible,
               showModalAndGetResponse,
               setApproveParams,
@@ -1726,7 +1751,7 @@ const Bridge: React.FC = () => {
         ? '0x0000000000000000000000000000000000000000'
         : selectedToToken.tokenContract,
       slippage,
-      walletAddress: ethereum.address,
+      walletAddress: ethereumAddress,
     };
 
     const response = await postWithAuth(
@@ -1836,7 +1861,7 @@ const Bridge: React.FC = () => {
                     publicClient,
                     tokenContractAddress:
                       selectedFromToken.tokenContract as `0x${string}`,
-                    walletAddress: (ethereum.address ?? '') as `0x${string}`,
+                    walletAddress: (ethereumAddress ?? '') as `0x${string}`,
                     contractData,
                     chainDetails: fromChainDetails,
                     tokens: allowanceResp.tokens,
@@ -2363,7 +2388,7 @@ const Bridge: React.FC = () => {
           );
 
           const gasLimit = await publicClient.estimateGas({
-            account: ethereum.address as `0x${string}`,
+            account: ethereumAddress as `0x${string}`,
             to: approval.token_contract as `0x${string}`,
             value: parseEther('0'),
             data: contractData,
@@ -2377,7 +2402,7 @@ const Bridge: React.FC = () => {
           ) {
             gasFeeReserveRequired = await estimateReserveFeeForCustomContract({
               tokenData: nativeToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
+              fromAddress: ethereumAddress,
               toAddress: get(approval, 'spender', ''),
               rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               gas: toHex(gasLimit),
@@ -2421,7 +2446,7 @@ const Bridge: React.FC = () => {
               contractData,
               chainDetails: selectedChainDetails,
               tokens: allowanceResp.tokens,
-              walletAddress: ethereum.address as `0x${string}`,
+              walletAddress: ethereumAddress as `0x${string}`,
               isErc20: !selectedFromToken.isNative,
             });
 

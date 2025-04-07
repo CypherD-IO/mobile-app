@@ -114,9 +114,13 @@ export default function FirstLoadCard() {
     estimateReserveFee,
   } = useGasService();
 
-  const ethereum = hdWallet.state.wallet.ethereum;
-  const solana = hdWallet.state.wallet.solana;
-  const wallet = hdWallet.state.wallet;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
+  const solanaAddress = get(hdWallet, 'state.wallet.solana.address', undefined);
+  const wallet = get(hdWallet, 'state.wallet', '');
   const { currentCardProvider } = route.params;
   const minTokenValueLimit = 10;
   const minTokenValueEth = 50;
@@ -310,8 +314,8 @@ export default function FirstLoadCard() {
             const gasDetails = await estimateGasForEvm({
               publicClient,
               chain: chainDetails.backendName,
-              fromAddress: (ethereum.address ?? '') as `0x${string}`,
-              toAddress: (ethereum.address ?? '') as `0x${string}`,
+              fromAddress: (ethereumAddress ?? '') as `0x${string}`,
+              toAddress: (ethereumAddress ?? '') as `0x${string}`,
               amountToSend: amountInCrypto,
               contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
@@ -360,7 +364,7 @@ export default function FirstLoadCard() {
       try {
         const payload = {
           ecosystem: 'evm',
-          address: ethereum.address,
+          address: ethereumAddress,
           chain: chainDetails.backendName,
           amount: DecimalHelper.toNumber(amountInCrypto),
           tokenAddress: contractAddress,
@@ -405,7 +409,7 @@ export default function FirstLoadCard() {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -429,8 +433,8 @@ export default function FirstLoadCard() {
       ) {
         try {
           const gasDetails = await estimateGasForSolana({
-            fromAddress: solana.address ?? '',
-            toAddress: solana.address ?? '',
+            fromAddress: solanaAddress ?? '',
+            toAddress: solanaAddress ?? '',
             amountToSend: String(amountInCrypto),
             contractAddress,
             tokenContractDecimals: contractDecimals,
@@ -474,7 +478,7 @@ export default function FirstLoadCard() {
       try {
         const payload = {
           ecosystem: 'solana',
-          address: solana.address,
+          address: solanaAddress,
           chain: chainDetails.backendName,
           amount: DecimalHelper.toNumber(amountInCrypto),
           coinId: coinGeckoId,
@@ -516,7 +520,7 @@ export default function FirstLoadCard() {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
             contractDecimals,
@@ -637,7 +641,7 @@ export default function FirstLoadCard() {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
             contractDecimals,
@@ -718,7 +722,7 @@ export default function FirstLoadCard() {
         const amountToQuote = isCryptoInput ? cryptoAmount : usdAmount;
         const payload = {
           ecosystem: 'evm',
-          address: ethereum.address,
+          address: ethereumAddress,
           chain: chainDetails.backendName,
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
@@ -760,7 +764,7 @@ export default function FirstLoadCard() {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -817,7 +821,7 @@ export default function FirstLoadCard() {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
             contractDecimals,
@@ -838,7 +842,7 @@ export default function FirstLoadCard() {
         const amountToQuote = isCryptoInput ? cryptoAmount : usdAmount;
         const payload = {
           ecosystem: 'solana',
-          address: solana.address,
+          address: solanaAddress,
           chain: chainDetails.backendName,
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
@@ -878,7 +882,7 @@ export default function FirstLoadCard() {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -940,7 +944,7 @@ export default function FirstLoadCard() {
           gasDetails = await estimateGasForEvm({
             publicClient,
             chain: chainDetails.backendName,
-            fromAddress: (ethereum.address ?? '') as `0x${string}`,
+            fromAddress: (ethereumAddress ?? '') as `0x${string}`,
             toAddress: (targetWalletAddress ?? '') as `0x${string}`,
             amountToSend: actualTokensRequired,
             contractAddress: contractAddress as `0x${string}`,
@@ -982,7 +986,7 @@ export default function FirstLoadCard() {
           )
         ) {
           gasDetails = await estimateGasForSolana({
-            fromAddress: solana.address ?? '',
+            fromAddress: solanaAddress ?? '',
             toAddress: targetWalletAddress,
             amountToSend: actualTokensRequired,
             contractAddress,

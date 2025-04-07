@@ -8,7 +8,7 @@ import {
   GlobalContextType,
   SignMessageValidationType,
 } from '../constants/enum';
-import { has } from 'lodash';
+import { get, has } from 'lodash';
 import { t } from 'i18next';
 import { signIn } from './Keychain';
 import { useGlobalModalContext } from '../components/v2/GlobalModal';
@@ -36,7 +36,12 @@ export default function useAxios() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    '',
+  );
+
   let token = globalContext.globalState.token;
 
   const response: IHttpResponse = { isError: false };
@@ -66,7 +71,7 @@ export default function useAxios() {
     async (req: any) => {
       if (!isTokenValid(token)) {
         try {
-          const signInResponse = await signIn(ethereum, hdWalletContext);
+          const signInResponse = await signIn(hdWalletContext);
           if (
             signInResponse?.message === SignMessageValidationType.VALID &&
             has(signInResponse, 'token')
@@ -201,7 +206,10 @@ export default function useAxios() {
         const errorCode = error?.response?.status;
         if (errorCode === 401) {
           try {
-            const signInResponse = await signIn(ethereum, hdWalletContext);
+            const signInResponse = await signIn(
+              ethereumAddress,
+              hdWalletContext,
+            );
             if (
               signInResponse?.message === SignMessageValidationType.VALID &&
               has(signInResponse, 'token')

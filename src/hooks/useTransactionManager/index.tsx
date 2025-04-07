@@ -98,7 +98,11 @@ export default function useTransactionManager() {
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const { getSolanWallet, getSolanaRpc } = useSolanaSigner();
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
-
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    '',
+  );
   async function getCosmosSigningClient(
     chain: Chain,
     rpc: string,
@@ -145,13 +149,10 @@ export default function useTransactionManager() {
     isErc20?: boolean;
   }): Promise<TransactionResponse> => {
     try {
-      const ethereum = hdWalletContext.state.wallet.ethereum;
-      const fromAddress = ethereum.address;
-
       const gasEstimateResponse = await estimateGasForEvm({
         publicClient,
         chain: chain.backendName,
-        fromAddress,
+        fromAddress: ethereumAddress,
         toAddress,
         amountToSend,
         contractAddress,
@@ -165,7 +166,7 @@ export default function useTransactionManager() {
       }
 
       const txnPayload = {
-        from: ethereum.address,
+        from: ethereumAddress,
         to: isErc20 ? contractAddress : toAddress,
         gas: BigInt(gasEstimateResponse.gasLimit),
         value: isErc20
@@ -681,6 +682,7 @@ export default function useTransactionManager() {
   }): Promise<IAutoLoadResponse> {
     try {
       const { chainName, backendName } = chain;
+
       if (map(EVM_CHAINS, 'backendName').includes(backendName)) {
         const publicClient = getViemPublicClient(
           getWeb3Endpoint(chain, globalContext),
@@ -712,7 +714,7 @@ export default function useTransactionManager() {
         const approvalResp = await executeApprovalRevokeContract({
           publicClient,
           tokenContractAddress: selectedToken.contractAddress as Address,
-          walletAddress: hdWallet.state.wallet.ethereum.address as Address,
+          walletAddress: ethereumAddress as Address,
           contractData,
           chainDetails: selectedToken.chainDetails,
           tokens: allowanceResp.tokens ?? 0n,
@@ -902,11 +904,8 @@ export default function useTransactionManager() {
     chainDetails,
   }: SwapMetaData): Promise<TransactionResponse> => {
     try {
-      const ethereum = hdWalletContext.state.wallet.ethereum;
-      const fromAddress = ethereum.address;
-
       const txnPayload = {
-        from: fromAddress,
+        from: ethereumAddress,
         to: quoteData?.data?.to as `0x${string}`,
         gas: BigInt(quoteData?.data?.gas),
         value: BigInt(quoteData?.data?.value),
@@ -1312,9 +1311,7 @@ export default function useTransactionManager() {
     amount: string;
   }): Promise<CheckAllowanceResponse> => {
     try {
-      const { ethereum } = get(hdWallet, ['state', 'wallet']);
-
-      if (!ethereum?.address) {
+      if (!ethereumAddress) {
         throw new Error('Ethereum wallet not initialized');
       }
 
@@ -1329,7 +1326,7 @@ export default function useTransactionManager() {
       }
 
       const allowance = await contract.read.allowance([
-        ethereum.address as Address,
+        ethereumAddress as Address,
         routerAddress,
       ]);
 
