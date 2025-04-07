@@ -7,10 +7,11 @@ import {
 import { DefiData, DefiResponse } from '../models/defi.interface';
 import { CYPHERD_ROOT_DATA } from './util';
 import { WalletHoldings } from './portfolio';
+import { ConnectionTypes } from '../constants/enum';
 
 export const storePortfolioData = async (
   value: WalletHoldings,
-  ethereum: { address: any },
+  address: string,
   key = 'v2',
 ) => {
   try {
@@ -18,20 +19,15 @@ export const storePortfolioData = async (
       data: value,
       timestamp: new Date().toISOString(),
     });
-    await AsyncStorage.setItem(String(ethereum.address) + key, jsonValue);
+    await AsyncStorage.setItem(String(address) + key, jsonValue);
   } catch (error) {
     Sentry.captureException(error);
   }
 };
 
-export const getPortfolioData = async (
-  ethereum: { address: any },
-  key = 'v2',
-) => {
+export const getPortfolioData = async (address: string, key = 'v2') => {
   try {
-    const jsonValue = await AsyncStorage.getItem(
-      String(ethereum.address) + key,
-    );
+    const jsonValue = await AsyncStorage.getItem(String(address) + key);
     return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
     Sentry.captureException(error);
@@ -480,7 +476,7 @@ export const getRefreshToken = async () => {
   }
 };
 
-export const setConnectionType = async (token: string) => {
+export const setConnectionType = async (token: ConnectionTypes) => {
   try {
     await AsyncStorage.setItem('CONNECTION_TYPE', token);
   } catch (error) {
@@ -496,12 +492,15 @@ export const removeConnectionType = async () => {
   }
 };
 
-export const getConnectionType = async () => {
+export const getConnectionType = async (): Promise<ConnectionTypes> => {
   try {
-    const connectionType = await AsyncStorage.getItem('CONNECTION_TYPE');
+    const connectionType = (await AsyncStorage.getItem(
+      'CONNECTION_TYPE',
+    )) as ConnectionTypes;
     return connectionType;
   } catch (error) {
     Sentry.captureException(error);
+    throw error;
   }
 };
 

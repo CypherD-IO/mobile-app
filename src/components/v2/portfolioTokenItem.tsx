@@ -20,22 +20,14 @@ import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { Holding } from '../../core/portfolio';
 import { limitDecimalPlaces } from '../../core/util';
-import { DecimalHelper } from '../../utils/decimalHelper';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ParamListBase } from '@react-navigation/native';
 
 interface PortfolioTokenItemProps {
   item: Holding;
   index: number;
   isVerifyCoinChecked: boolean;
-  navigation: {
-    goBack: () => void;
-    navigate: (screen: string, params?: object) => void;
-    push: (screen: string, params?: object) => void;
-    popToTop: () => void;
-    reset: (arg0: {
-      index: number;
-      routes: Array<{ name: string; params?: object }>;
-    }) => void;
-  };
+  navigation: NativeStackNavigationProp<ParamListBase>;
   onSwipe: (key: number) => void;
   setSwipeableRefs: (index: number, ref: Swipeable | null) => void;
 }

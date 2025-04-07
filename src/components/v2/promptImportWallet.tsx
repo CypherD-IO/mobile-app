@@ -1,3 +1,4 @@
+import { get } from 'lodash';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
@@ -9,7 +10,6 @@ import { PromptImportWalletDef } from '../../models/globalModal.interface';
 import {
   CyDIcons,
   CyDImage,
-  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -18,7 +18,6 @@ import {
 import Button from './button';
 import Loading from './loading';
 import CyDModalLayout from './modal';
-import { CyDIconsPack } from '../../customFonts';
 
 const PromptImportWallet: React.FC<PromptImportWalletDef> = (
   store: PromptImportWalletDef,
@@ -26,7 +25,11 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
   const { t } = useTranslation();
   const [showEnterKey, setShowEnterKey] = useState(false);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const { ethereum } = hdWalletContext.state.wallet;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const [loading, setLoading] = useState(false);
 
   function onSuccess() {
@@ -49,7 +52,7 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
     if (hdWalletContext.state.choosenWalletIndex === -1) {
       setLoading(true);
     } else {
-      if (store.address === ethereum.address) {
+      if (store.address === ethereumAddress) {
         onSuccess();
       } else {
         onFailure();

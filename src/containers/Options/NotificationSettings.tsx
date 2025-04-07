@@ -12,6 +12,7 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import Loading from '../../components/v2/loading';
+import { get } from 'lodash';
 
 export interface NotificationList {
   id: string;
@@ -28,8 +29,10 @@ export default function NotificationSettings(props) {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const [ethAddress, setEthAddress] = useState<string>(
-    hdWalletContext.state.wallet.ethereum.address,
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
   );
   const [notificationList, setNotificationList] = useState<NotificationList[]>(
     [],
@@ -61,7 +64,7 @@ export default function NotificationSettings(props) {
 
   const getNotificationPreferences = async () => {
     try {
-      if (ethAddress) {
+      if (ethereumAddress) {
         const headers = {
           headers: {
             Authorization: `Bearer ${String(globalContext.globalState.token)}`,

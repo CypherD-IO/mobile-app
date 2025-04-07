@@ -74,7 +74,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const wallet = hdWallet.state.wallet;
   const cardProfile = globalContext.globalState.cardProfile;
   const cards = get(cardProfile, currentCardProvider)?.cards;
@@ -177,7 +181,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           gasDetails = await estimateGasForEvm({
             publicClient,
             chain: chainDetails.backendName,
-            fromAddress: ethereum.address,
+            fromAddress: ethereumAddress,
             toAddress: targetWalletAddress as `0x${string}`,
             amountToSend: actualTokensRequired,
             contractAddress: contractAddress as `0x${string}`,
@@ -327,7 +331,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         const amountToQuote = isCrpytoInput ? cryptoAmount : usdAmount;
         const payload = {
           ecosystem: 'evm',
-          address: ethereum.address,
+          address: ethereumAddress,
           chain: chainDetails.backendName,
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
@@ -367,7 +371,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -423,7 +427,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
             contractDecimals,
@@ -484,7 +488,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -579,8 +583,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           ) {
             const gasReservedForNativeToken = await estimateReserveFee({
               tokenData: selectedToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
-              toAddress: hdWallet.state.wallet.ethereum.address,
+              fromAddress: ethereumAddress,
+              toAddress: ethereumAddress,
               publicClient,
               rpc: getWeb3Endpoint(chainDetails, globalContext),
             });
@@ -593,8 +597,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             const gasDetails = await estimateGasForEvm({
               publicClient,
               chain: chainDetails.backendName,
-              fromAddress: ethereum.address,
-              toAddress: ethereum.address,
+              fromAddress: ethereumAddress,
+              toAddress: ethereumAddress,
               amountToSend: amountInCrypto,
               contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
@@ -642,7 +646,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       try {
         const payload = {
           ecosystem: 'evm',
-          address: ethereum.address,
+          address: ethereumAddress,
           chain: chainDetails.backendName,
           amount: DecimalHelper.toNumber(amountInCrypto),
           tokenAddress: contractAddress,
@@ -683,7 +687,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -799,7 +803,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
             contractDecimals,
@@ -914,7 +918,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
             contractDecimals,
