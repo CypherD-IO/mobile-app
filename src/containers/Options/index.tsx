@@ -356,6 +356,17 @@ export default function Options() {
               </CyDView>
             )}
 
+            {devMode && (
+              <OptionsContainer
+                sentryLabel={'attribution-debug'}
+                onPress={() => {
+                  void navigation.navigate(C.screenTitle.ATTRIBUTION_DEBUG);
+                }}
+                title={'Attribution Debug'}
+                logo={'code-tags'}
+              />
+            )}
+
             <CyDTouchView
               className={'flex items-center justify-center w-full'}
               onPress={async () => {

@@ -150,6 +150,8 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation 'com.android.installreferrer:installreferrer:2.2'
 }
 
 apply plugin: 'com.google.gms.google-services' // Do not remove. This is to support psuh notifications in android
