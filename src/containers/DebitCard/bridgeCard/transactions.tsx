@@ -1,44 +1,3 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { GlobalContext } from '../../../core/globalContext';
-import { CardProfile } from '../../../models/cardProfile.model';
-import {
-  CardProviders,
-  CardTransactionStatuses,
-  CardTransactionTypes,
-  ReapTxnStatus,
-} from '../../../constants/enum';
-import { get } from 'lodash';
-import { ICardTransaction } from '../../../models/card.model';
-import moment from 'moment';
-import useAxios from '../../../core/HttpRequest';
-import {
-  DateRange,
-  initialCardTxnDateRange,
-  STATUSES,
-  TYPES,
-} from '../../../constants/cardPageV2';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import { useTranslation } from 'react-i18next';
-import * as Sentry from '@sentry/react-native';
-import {
-  CyDFastImage,
-  CyDFlatList,
-  CyDImage,
-  CyDMaterialDesignIcons,
-  CyDText,
-  CyDTouchView,
-  CyDView,
-} from '../../../styles/tailwindComponents';
-import CardTransactionItem from '../../../components/v2/CardTransactionItem';
-import { RefreshControl, StyleSheet, ViewToken } from 'react-native';
-import clsx from 'clsx';
-import { isIOS } from '../../../misc/checkers';
-import InfiniteScrollFooterLoader from '../../../components/v2/InfiniteScrollFooterLoader';
-import AppImages from '../../../../assets/images/appImages';
-import CardTxnFilterModal from '../CardV2/CardTxnFilterModal';
-import { parseMonthYear } from '../../../core/util';
-import CyDModalLayout from '../../../components/v2/modal';
-import Button from '../../../components/v2/button';
 import {
   NavigationProp,
   ParamListBase,
@@ -46,6 +5,49 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import clsx from 'clsx';
+import moment from 'moment';
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import { RefreshControl, StyleSheet, ViewToken } from 'react-native';
+import Button from '../../../components/v2/button';
+import CardTransactionItem from '../../../components/v2/CardTransactionItem';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import InfiniteScrollFooterLoader from '../../../components/v2/InfiniteScrollFooterLoader';
+import CyDModalLayout from '../../../components/v2/modal';
+import {
+  DateRange,
+  initialCardTxnDateRange,
+  STATUSES,
+  TYPES,
+} from '../../../constants/cardPageV2';
+import {
+  CardProviders,
+  CardTransactionStatuses,
+  CardTransactionTypes,
+  ReapTxnStatus,
+} from '../../../constants/enum';
+import { GlobalContext } from '../../../core/globalContext';
+import useAxios from '../../../core/HttpRequest';
+import { parseMonthYear } from '../../../core/util';
+import { isIOS } from '../../../misc/checkers';
+import { ICardTransaction } from '../../../models/card.model';
+import { CardProfile } from '../../../models/cardProfile.model';
+import {
+  CyDFlatList,
+  CyDMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindComponents';
+import CardTxnFilterModal from '../CardV2/CardTxnFilterModal';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -84,6 +86,7 @@ export default function CardTransactions() {
   const lastViewableTransactionDate = useRef<string>('');
   const [exportOptionOpen, setExportOptionOpen] = useState(false);
   const [isEndReached, setIsEndReached] = useState(false);
+  const fetchDebounced = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     void fetchTransactions(true);
@@ -198,10 +201,7 @@ export default function CardTransactions() {
           setTransactions([...transactions, ...txnsToSet]);
           spliceTransactions([...transactions, ...txnsToSet]);
         }
-
-        setRefreshing(false);
       } else {
-        setRefreshing(false);
         const errorObject = {
           res: JSON.stringify(res),
           location: 'isError=true when trying to fetch card txns.',
@@ -215,22 +215,35 @@ export default function CardTransactions() {
           onFailure: hideModal,
         });
       }
-    } catch (e) {
-      setRefreshing(false);
+    } catch (error) {
       const errorObject = {
-        e,
+        error,
         location: 'Error when trying to fetch card txns.',
       };
       Sentry.captureException(errorObject);
       showModal('state', {
         type: 'error',
         title: t('FAILED_TO_UPDATE_TXNS'),
-        description: e,
+        description: error,
         onSuccess: hideModal,
         onFailure: hideModal,
       });
+    } finally {
+      setRefreshing(false);
     }
   };
+
+  const handleEndReached = useCallback(() => {
+    if (fetchDebounced.current) {
+      clearTimeout(fetchDebounced.current);
+    }
+
+    fetchDebounced.current = setTimeout(() => {
+      if (!isEndReached && !refreshing) {
+        void fetchTransactions();
+      }
+    }, 100);
+  }, [isEndReached, refreshing]);
 
   useEffect(() => {
     spliceTransactions(transactions);
@@ -374,12 +387,8 @@ export default function CardTransactions() {
               progressViewOffset={0}
             />
           }
-          onEndReached={() => {
-            if (txnRetrievalOffset.current) {
-              void fetchTransactions();
-            }
-          }}
-          onEndReachedThreshold={0}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={
             <InfiniteScrollFooterLoader
               refreshing={refreshing}
@@ -396,8 +405,6 @@ export default function CardTransactions() {
 const styles = StyleSheet.create({
   infiniteScrollFooterLoaderStyle: {
     height: 40,
-    marginBottom: 60,
-    marginTop: 20,
   },
   modalLayout: {
     margin: 0,

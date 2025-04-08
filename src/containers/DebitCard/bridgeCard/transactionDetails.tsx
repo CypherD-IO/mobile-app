@@ -1440,7 +1440,7 @@ export default function TransactionDetails() {
                         <CyDText className='font-medium text-[14px] text-base200'>
                           {'Save'}
                         </CyDText>
-                        {getPremiumAmount() > 1 ? (
+                        {getPremiumAmount() > 0 ? (
                           <LinearGradient
                             colors={['#FA9703', '#F7510A', '#FA9703']}
                             start={{ x: 0, y: 0 }}
