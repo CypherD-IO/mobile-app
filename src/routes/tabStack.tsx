@@ -3,8 +3,21 @@ import {
   NavigationContainer,
   useNavigationContainerRef,
 } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useLayoutEffect,
+} from 'react';
+import {
+  Animated,
+  BackHandler,
+  StyleSheet,
+  ToastAndroid,
+  Platform,
+  Alert,
+} from 'react-native';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
@@ -18,6 +31,9 @@ import {
 import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
 import { useColorScheme } from 'nativewind';
+import { useInstallReferrer } from '../hooks';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AsyncStorageKeys } from '../constants/asyncStorage';
 
 const Tab = createBottomTabNavigator();
 
@@ -49,12 +65,54 @@ function TabStack(props: TabStackProps) {
   const { deepLinkData, setDeepLinkData } = props;
   const [showTabBar, setShowTabBar] = useState(true);
   const tabBarAnimation = useState(new Animated.Value(1))[0];
+  const { referrerData } = useInstallReferrer();
 
   let backPressCount = 0;
 
   // Use useNavigationContainerRef to get access to the navigation ref
   const navigationRef = useNavigationContainerRef();
-  // Determine if the tab bar should be shown
+
+  // Check for referral code from install referrer
+  useEffect(() => {
+    const checkReferralCode = async () => {
+      if (Platform.OS === 'android' && referrerData?.ref) {
+        // Android: We have a referral code from install referrer
+        console.log(
+          'Processing referral code from Android install referrer:',
+          referrerData.ref,
+        );
+
+        try {
+          // Check if we've already processed this referral code
+          const processedReferralCode = await AsyncStorage.getItem(
+            AsyncStorageKeys.PROCESSED_REFERRER_CODE,
+          );
+
+          if (processedReferralCode !== referrerData.ref) {
+            // Navigate to referral code screen
+            setDeepLinkData({
+              screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+            });
+
+            // Mark as processed
+            await AsyncStorage.setItem(
+              AsyncStorageKeys.PROCESSED_REFERRER_CODE,
+              referrerData.ref,
+            );
+          }
+        } catch (error) {
+          console.error(
+            'Error processing referral code from install referrer:',
+            error,
+          );
+        }
+      }
+      // Note: For iOS, referral codes require server-side resolution of the attribution token
+      // and subsequent server-to-app communication to trigger the referral screen
+    };
+
+    void checkReferralCode();
+  }, [referrerData, setDeepLinkData]);
 
   const handleBackButton = () => {
     if (backPressCount === 0) {

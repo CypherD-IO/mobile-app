@@ -33,6 +33,8 @@ import { useGlobalModalContext } from '../v2/GlobalModal';
 import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
+import { useInstallReferrer } from '../../hooks/useInstallReferrer';
+import { setReferralCodeAsync } from '../../core/asyncStorage';
 
 import {
   requestUserPermission,
@@ -76,6 +78,7 @@ export const InitializeAppProvider = ({
   const [isJoinDiscordModalVisible, setIsJoinDiscordModalVisible] =
     useState<boolean>(false);
   const { url: initialUrl, updateUrl } = useInitialIntentURL();
+  const { referrerData } = useInstallReferrer();
   const [discordToken, setDiscordToken] = useState<string>('');
   usePortfolioRefresh();
 
@@ -118,6 +121,23 @@ export const InitializeAppProvider = ({
   }, []);
 
   useEffect(() => {
+    if (referrerData?.ref) {
+      console.log('Referral code found in install referrer:', referrerData.ref);
+      void setReferralCodeAsync(referrerData.ref);
+
+      if (isAuthenticated && ethereum?.address) {
+        showModal('success', {
+          title: t('REFERRAL_CODE_FOUND'),
+          description: t('REFERRAL_CODE_APPLIED', { code: referrerData.ref }),
+          onSuccess: () => {
+            hideModal();
+          },
+        });
+      }
+    }
+  }, [referrerData, isAuthenticated, ethereum?.address]);
+
+  useEffect(() => {
     if (ethereum.address) {
       void getHosts(
         setForcedUpdate,
@@ -142,6 +162,46 @@ export const InitializeAppProvider = ({
       updateUrl('https://app.cypherhq.io');
     }
   }, [isAuthenticated, ethereum?.address, initialUrl]);
+
+  // Handle attribution data
+  useEffect(() => {
+    if (referrerData) {
+      console.log('Attribution data received:', referrerData);
+
+      // Log attribution data to Firebase Analytics
+      if (analytics) {
+        // For Android: Full attribution data available
+        if (Platform.OS === 'android') {
+          const installAttribution = {
+            utm_source: referrerData.utm_source,
+            utm_medium: referrerData.utm_medium,
+            utm_campaign: referrerData.utm_campaign,
+            utm_content: referrerData.utm_content,
+            utm_term: referrerData.utm_term,
+            ref: referrerData.ref,
+            install_referrer: referrerData.install_referrer,
+          };
+
+          void analytics().logEvent('install_attribution', installAttribution);
+
+          // Save referral code to AsyncStorage if present
+          if (referrerData.ref) {
+            void setReferralCodeAsync(referrerData.ref);
+          }
+        }
+        // For iOS: Only attribution token available, needs server-side resolution
+        else if (Platform.OS === 'ios' && referrerData.attribution_token) {
+          void analytics().logEvent('ios_attribution_token_received', {
+            attribution_token: referrerData.attribution_token,
+            requires_server_resolution: true,
+          });
+
+          // Note: Server needs to resolve the token and communicate back to the app
+          // for any referral code handling
+        }
+      }
+    }
+  }, [referrerData, analytics]);
 
   const RenderNavStack = useCallback(() => {
     if (ethereum.address === undefined) {
@@ -173,35 +233,6 @@ export const InitializeAppProvider = ({
         return children;
       }
     }
-    // {
-    //   ethereum.address === undefined ? (
-    //     pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-    //       // reomve in the next build
-    //       <Loading
-    //         loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-    //       />
-    //     ) : (
-    //       <PinAuthRoute
-    //         setPinAuthentication={setPinAuthentication}
-    //         initialScreen={
-    //           pinPresent === PinPresentStates.TRUE
-    //             ? C.screenTitle.PIN_VALIDATION
-    //             : C.screenTitle.SET_PIN
-    //         }
-    //       />
-    //     )
-    //   ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-    //     hdWallet.state.reset ? (
-    //       <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
-    //     ) : (
-    //       <OnBoardingStack />
-    //     )
-    //   ) : !isReadOnlyWallet && !isAuthenticated ? (
-    //     <Loading />
-    //   ) : (
-    //     children
-    //   );
-    // }
   }, [
     ethereum.address,
     pinAuthentication,
@@ -302,7 +333,7 @@ export const InitializeAppProvider = ({
           discordToken={discordToken}
         />
         <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
-        <RenderNavStack />
+        {RenderNavStack()}
       </WalletConnectV2Provider>
     </>
   );

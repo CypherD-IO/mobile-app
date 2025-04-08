@@ -142,6 +142,7 @@ export const screenTitle = {
   DEFAULT_LIMIT_SETUP: 'defaultLimitSetup',
   SELECT_ADDITIONAL_CARD: 'selectAdditionalCard',
   ADDITIONAL_CARD_DESCRIPTION: 'additionalCardDescription',
+  ATTRIBUTION_DEBUG: 'AttributionDebug',
 };
 
 export const fontsName = {

@@ -114,6 +114,7 @@ import {
 import DefaultLimitSetup from '../containers/DebitCard/bridgeCard/defaultLimitSetup';
 import SelectAdditionalCardType from '../containers/DebitCard/CardV2/additionalCard/selectAdditionalCardType';
 import CardDescription from '../containers/DebitCard/CardV2/additionalCard/cardDescription';
+import AttributionDebugScreen from '../containers/Options/AttributionDebugScreen';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -1634,6 +1635,15 @@ export function OptionsStackScreen({
             />
           ),
         })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.ATTRIBUTION_DEBUG}
+        component={AttributionDebugScreen}
+        options={{
+          title: 'Attribution Debug',
+          headerShown: true,
+        }}
       />
     </OptionsStack.Navigator>
   );
