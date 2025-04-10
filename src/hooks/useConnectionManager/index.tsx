@@ -74,21 +74,20 @@ export default function useConnectionManager() {
     const { ethereum, solana } = hdWalletContext.state.wallet;
     const address = ethereum?.address ?? solana?.address;
     if (!isReadOnlyWallet) {
-      // const config = {
-      //   headers: {
-      //     Authorization: `Bearer ${String(globalContext.globalState.token)}`,
-      //   },
-      //   data: {
-      //     cosmosAddress,
-      //     osmosisAddress,
-      //   },
-      // };
-      // axios
-      //   .delete(`${ARCH_HOST}/v1/configuration/device`, config)
-      //   .catch(error => {
-      //     console.log('🚀 ~ deleteWalletConfig ~ error:', error);
-      //     Sentry.captureException(error);
-      //   });
+      const config = {
+        headers: {
+          Authorization: `Bearer ${String(globalContext.globalState.token)}`,
+        },
+        data: {
+          cosmosAddress,
+          osmosisAddress,
+        },
+      };
+      axios
+        .delete(`${ARCH_HOST}/v1/configuration/device`, config)
+        .catch(error => {
+          Sentry.captureException(error);
+        });
     } else {
       const data = await getReadOnlyWalletData();
       if (data) {
