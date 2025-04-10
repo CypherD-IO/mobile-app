@@ -42,6 +42,12 @@
 				<string>wc</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app.cypherhq.web3auth</string>
+			</array>
+		</dict>
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>

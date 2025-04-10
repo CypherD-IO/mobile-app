@@ -42,6 +42,30 @@ import {
 } from '../../notification/pushNotification';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import { screenTitle } from '../../constants';
+import PinAuthRoute from '../../routes/pinAuthRoute';
+
+interface UseInitializerReturn {
+  initializeSentry: () => void;
+  exitIfJailBroken: () => Promise<void>;
+  fetchRPCEndpointsFromServer: (globalDispatch: any) => Promise<any>;
+  loadActivitiesFromAsyncStorage: () => Promise<void>;
+  setPinAuthenticationStateValue: () => Promise<boolean>;
+  setPinPresentStateValue: () => Promise<PinPresentStates>;
+  loadExistingWallet: (dispatch: any, state?: any) => Promise<void>;
+  getHosts: (
+    setForcedUpdate: React.Dispatch<React.SetStateAction<boolean>>,
+    setTamperedSignMessageModal: React.Dispatch<React.SetStateAction<boolean>>,
+    setUpdateModal: React.Dispatch<React.SetStateAction<boolean>>,
+    setShowDefaultAuthRemoveModal: React.Dispatch<
+      React.SetStateAction<boolean>
+    >,
+  ) => Promise<void>;
+  checkForUpdatesAndShowModal: (
+    setUpdateModal: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => Promise<void>;
+  checkAPIAccessibility: () => Promise<boolean>;
+  initializeWeb3Auth: () => Promise<void>;
+}
 
 export const InitializeAppProvider = ({
   children,
@@ -60,14 +84,13 @@ export const InitializeAppProvider = ({
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
     initializeWeb3Auth,
-  } = useInitializer();
+  } = useInitializer() as UseInitializerReturn;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [pinAuthentication, setPinAuthentication] = useState(false);
   const [pinPresent, setPinPresent] = useState(PinPresentStates.NOTSET);
   const [showDefaultAuthRemoveModal, setShowDefaultAuthRemoveModal] =
     useState<boolean>(false);
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
-
   const [updateModal, setUpdateModal] = useState<boolean>(false);
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
@@ -79,6 +102,16 @@ export const InitializeAppProvider = ({
     undefined,
   );
   const solanaAddress = get(hdWallet, 'state.wallet.solana.address', undefined);
+  const ethCurrentIndex = get(
+    hdWallet,
+    'state.wallet.ethereum.currentIndex',
+    undefined,
+  );
+  const solCurrentIndex = get(
+    hdWallet,
+    'state.wallet.solana.currentIndex',
+    undefined,
+  );
   const address = ethereumAddress ?? solanaAddress;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
 
@@ -132,9 +165,6 @@ export const InitializeAppProvider = ({
         setTimeout(() => {
           SplashScreen.hide();
         }, SPLASH_SCREEN_TIMEOUT);
-
-        setPinAuthentication(await setPinAuthenticationStateValue());
-        setPinPresent(await setPinPresentStateValue());
       }
     };
 
@@ -176,6 +206,18 @@ export const InitializeAppProvider = ({
       }
     }
   }, [referrerData, isAuthenticated, ethereumAddress]);
+
+  useEffect(() => {
+    const setPinAuthenticationState = async () => {
+      const pinPresentStateValue = await setPinPresentStateValue();
+      const pinAuthenticationStateValue =
+        await setPinAuthenticationStateValue();
+
+      setPinPresent(pinPresentStateValue);
+      setPinAuthentication(pinAuthenticationStateValue);
+    };
+    void setPinAuthenticationState();
+  }, [solCurrentIndex, ethCurrentIndex]);
 
   useEffect(() => {
     if (address) {
@@ -258,11 +300,34 @@ export const InitializeAppProvider = ({
   }, [referrerData, analytics]);
 
   const RenderNavStack = useCallback(() => {
-    if (!ethereumAddress && !solanaAddress) {
-      return <OnBoardingStack />;
-    } else {
-      if (!isReadOnlyWallet && !isAuthenticated) {
+    if (ethCurrentIndex === -1 && solCurrentIndex === -1) {
+      if (pinPresent === PinPresentStates.NOTSET) {
+        if (pinAuthentication) {
+          return <OnBoardingStack />;
+        }
         return <Loading />;
+      } else if (pinPresent === PinPresentStates.FALSE) {
+        if (pinAuthentication) {
+          return <OnBoardingStack />;
+        } else {
+          return (
+            <PinAuthRoute
+              setPinAuthentication={setPinAuthentication}
+              initialScreen={screenTitle.SET_PIN}
+            />
+          );
+        }
+      } else {
+        return (
+          <PinAuthRoute
+            setPinAuthentication={setPinAuthentication}
+            initialScreen={screenTitle.PIN_VALIDATION}
+          />
+        );
+      }
+    } else {
+      if (!ethereumAddress && !solanaAddress) {
+        return <OnBoardingStack />;
       } else {
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading />;
@@ -271,7 +336,10 @@ export const InitializeAppProvider = ({
       }
     }
   }, [
-    address,
+    ethCurrentIndex,
+    solCurrentIndex,
+    ethereumAddress,
+    solanaAddress,
     pinAuthentication,
     pinPresent,
     hdWallet.state.reset,

@@ -22,7 +22,7 @@ const config = {
       url: require.resolve('empty-module'), // url can be polyfilled here if needed
       zlib: require.resolve('empty-module'), // browserify-zlib can be polyfilled here if needed
       path: require.resolve('empty-module'),
-      crypto: require.resolve('crypto-browserify'),
+      crypto: require.resolve('react-native-quick-crypto'),
       stream: require.resolve('readable-stream'),
       path: require.resolve('path-browserify'),
       fs: require.resolve('react-native-level-fs'),

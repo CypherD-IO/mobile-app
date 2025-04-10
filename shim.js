@@ -28,7 +28,7 @@ if (typeof localStorage !== 'undefined') {
 }
 // If using the crypto shim, uncomment the following line to ensure
 // crypto is loaded first, so it can populate global.crypto
-require('crypto');
+// require('crypto');
 
 if (typeof BigInt === 'undefined') global.BigInt = require('big-integer');
 
@@ -42,7 +42,6 @@ global.location = {
 global.process.version = 'v16.0.0';
 if (!global.process.version) {
   global.process = require('process');
-  console.log({process: global.process});
 }
 // @ts-ignore
 process.browser = true;

@@ -36,11 +36,12 @@ import {
   CyDImage,
   CyDMaterialDesignIcons,
   CyDText,
+  CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import { SolanaWallet } from '@web3auth/solana-provider';
 import bs58 from 'bs58';
+import Loading from '../../components/v2/loading';
 
 const enum ProviderType {
   ETHEREUM = 'ethereum',
@@ -76,11 +77,14 @@ export default function OnBoardOpotions() {
   );
   const [isImportWalletModalVisible, setIsImportWalletModalVisible] =
     useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async () => {
     try {
+      setLoading(true);
       setIsProviderSelectionModalVisible(false);
       await handleSocialLogin();
+      setLoading(false);
     } catch (error) {
       showModal('state', {
         type: 'error',
@@ -212,6 +216,10 @@ export default function OnBoardOpotions() {
       });
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <>
@@ -468,7 +476,7 @@ export default function OnBoardOpotions() {
       <CyDView
         className='flex-1 bg-[#F74555]'
         style={{ paddingTop: inset.top }}>
-        <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord text-n0'>
+        <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord text-white'>
           {"LET'S \nGET STARTED"}
         </CyDText>
         <CyDView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
@@ -479,9 +487,9 @@ export default function OnBoardOpotions() {
             <CyDText className='text-[12px] font-medium text-n200'>
               {'Login with Email'}
             </CyDText>
-            <CyDView className='mt-[6px] flex-row items-center border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0'>
-              <TextInput
-                className='flex-1 text-[14px] text-base400'
+            <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
+              <CyDTextInput
+                className='flex-1 text-[14px] text-base400 py-[16px] pl-[12px] rounded-[8px]'
                 placeholder='Enter your email address'
                 placeholderTextColor={'#8993A4'}
                 value={email}
@@ -498,7 +506,7 @@ export default function OnBoardOpotions() {
                   <CyDMaterialDesignIcons
                     name='arrow-right-circle'
                     size={17}
-                    className='text-n200'
+                    className='text-n200 pr-[12px]'
                   />
                 </TouchableOpacity>
               )}

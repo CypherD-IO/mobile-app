@@ -434,7 +434,7 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.PIN}
         component={PinValidation}
-        options={({ navigation, route }) => ({
+        options={() => ({
           headerShown: false,
         })}
       />

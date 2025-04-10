@@ -7,7 +7,6 @@ import {
   CyDText,
   CyDSafeAreaView,
   CyDTouchView,
-  CyDMaterialDesignIcons,
   CyDIcons,
 } from '../../styles/tailwindComponents';
 import OtpInput from '../../components/v2/OTPInput';
@@ -21,10 +20,9 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { CyDIconsPack } from '../../customFonts';
 
 interface RouteParams {
-  setPinAuthentication: (value: any) => {};
+  setPinAuthentication: (value: boolean) => void;
   pin: string;
   backButton: boolean;
   changePinValue: boolean;
@@ -89,7 +87,7 @@ export default function ConfirmPin() {
       text2: t('PIN_SET_SUCCESSFUL_DESCRIPTION'),
       position: 'bottom',
     });
-    navigation.setParams(setPinAuthentication(true));
+    setPinAuthentication(true);
   };
   if (changePinValue) {
     savePinValue = async (pinConfirm: string) => {

@@ -88,6 +88,9 @@ android {
         versionName System.getenv('VERSION_NAME') ?: "4.78"
         missingDimensionStrategy 'react-native-camera', 'general'
     }
+    packagingOptions {
+        pickFirst '**/libcrypto.so'
+    }
     signingConfigs {
         release {
             if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {

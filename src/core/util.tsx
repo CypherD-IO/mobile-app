@@ -80,7 +80,6 @@ import { DecimalHelper } from '../utils/decimalHelper';
 import { Common, Hardfork } from '@ethereumjs/common';
 import { TransactionFactory } from '@ethereumjs/tx';
 import crypto, { randomBytes } from 'crypto';
-import { mainnet } from 'viem/chains';
 import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { CardProfile } from '../models/cardProfile.model';

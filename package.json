@@ -90,7 +90,6 @@
     "console-browserify": "^1.2.0",
     "constants-browserify": "^1.0.0",
     "cosmjs-types": "^0.8.0",
-    "crypto-browserify": "^3.12.1",
     "crypto-js": "^4.1.1",
     "decimal.js": "^10.4.3",
     "deprecated-react-native-prop-types": "^2.2.0",
@@ -134,7 +133,6 @@
     "react-native-camera": "^4.2.1",
     "react-native-collapsible": "^1.6.0",
     "react-native-config": "^1.5.1",
-    "react-native-crypto": "^2.2.0",
     "react-native-custom-qr-codes": "^2.0.0",
     "react-native-device-info": "^8.7.1",
     "react-native-element-dropdown": "^1.8.13",
@@ -159,7 +157,7 @@
     "react-native-progress": "^5.0.1",
     "react-native-push-notification": "^8.1.1",
     "react-native-qrcode-scanner": "^1.5.5",
-    "react-native-quick-crypto": "^0.7.12",
+    "react-native-quick-crypto": "^0.7.9",
     "react-native-randombytes": "^3.6.1",
     "react-native-reanimated": "^3.4.2",
     "react-native-reanimated-carousel": "^3.5.1",
@@ -294,7 +292,7 @@
     "tty": "tty-browserify",
     "vm": "vm-browserify",
     "tls": false,
-    "crypto": "react-native-crypto"
+    "crypto": "react-native-quick-crypto"
   },
   "overrides": {
     "secp256k1": "5.0.1",

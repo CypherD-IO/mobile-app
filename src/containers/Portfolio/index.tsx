@@ -545,7 +545,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         data={tempTotalHoldings}
         scrollEnabled={false}
         renderItem={renderPortfolioItem as ListRenderItem<unknown>}
-        getItemLayout={(data, index) => ({
+        getItemLayout={(_data, index) => ({
           length: 60,
           offset: 60 * index,
           index,
@@ -583,6 +583,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     portfolioBalance,
     isPortfolioRefreshing,
     isVerifyCoinChecked,
+    selectedChain,
   ]);
 
   const RenderDefiScene = useMemo(() => {
@@ -624,7 +625,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         />
       </CyDView>
     );
-  }, [selectedChain, filterModalVisible, setFilterModalVisible]);
+  }, [selectedChain.chainIdNumber, filterModalVisible, setFilterModalVisible]);
 
   const scenesData = [
     {

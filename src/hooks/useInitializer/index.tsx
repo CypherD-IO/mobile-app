@@ -43,7 +43,6 @@ import {
   ActivityContext,
   DUMMY_AUTH,
   HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   getPlatform,
   getPlatformVersion,
 } from '../../core/util';
@@ -271,18 +270,17 @@ export default function useInitializer() {
 
   const setPinAuthenticationStateValue = async () => {
     const isBiometricPasscodeEnabled = await isBiometricEnabled();
-
     return isBiometricPasscodeEnabled && !(await isPinAuthenticated()); //  for devices with biometreics enabled the pinAuthentication will be set true
   };
 
   const setPinPresentStateValue = async () => {
     const pinAuthenticated = await isPinAuthenticated();
+
     const hasBiometricEnabled = await isBiometricEnabled();
     if (!hasBiometricEnabled) {
       if (pinAuthenticated) {
         return PinPresentStates.TRUE;
       } else {
-        await loadCyRootData(hdWallet.state);
         return PinPresentStates.FALSE;
       }
     } else {

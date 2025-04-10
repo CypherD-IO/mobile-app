@@ -8,7 +8,7 @@ import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
 import { SolanaPrivateKeyProvider } from '@web3auth/solana-provider';
 import { CHAIN_NAMESPACES, getEvmChainConfig } from '@web3auth/base';
 
-const scheme = 'com.cypherd.ioswalletv1'; // Or your desired app redirection scheme
+const scheme = 'app.cypherhq.web3auth';
 
 const redirectUrl = `${scheme}://auth`;
 
