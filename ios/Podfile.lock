@@ -458,7 +458,7 @@ PODS:
     - React-Core
   - react-native-pager-view (7.0.0-rc.0):
     - React-Core
-  - react-native-quick-crypto (0.7.12):
+  - react-native-quick-crypto (0.7.8):
     - OpenSSL-Universal
     - RCT-Folly (= 2021.07.22.00)
     - React
@@ -1051,7 +1051,7 @@ SPEC CHECKSUMS:
   react-native-lottie-splash-screen: 2d84b1c81c176981d3e5e17df14da5a99a2f5082
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: 8d3447fe3c366333c082a844138336973140dffa
-  react-native-quick-crypto: 4755d026098f779cc2bb14efb6674ab6fe68828b
+  react-native-quick-crypto: 82c6ae8f3095055d99dd6c4d50e80018bfdd62ef
   react-native-randombytes: 3c8f3e89d12487fd03a2f966c288d495415fc116
   react-native-render-html: 5afc4751f1a98621b3009432ef84c47019dcb2bd
   react-native-restart: df7caae89026a8ab2ecdd82839978f657701f51d

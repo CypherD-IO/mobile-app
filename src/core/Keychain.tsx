@@ -85,8 +85,8 @@ export async function saveCredentialsToKeychain(
   wallet: any,
   secretType: SECRET_TYPES,
 ) {
-  await clearAsyncStorage();
-  await removeCredentialsFromKeychain();
+  // await clearAsyncStorage();
+  // await removeCredentialsFromKeychain();
   if (secretType === SECRET_TYPES.MENEMONIC) {
     void setConnectionType(ConnectionTypes.SEED_PHRASE);
   } else if (secretType === SECRET_TYPES.PRIVATE_KEY) {
@@ -142,6 +142,8 @@ export async function removeCredentialsFromKeychain() {
   await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
   // Reset Private Key
   await removeFromKeyChain(CYPHERD_PRIVATE_KEY);
+  // Reset Pin Authentication
+  await removeFromKeyChain(PIN_AUTH);
   // Remove cypherD root data
   // await removeFromKeyChain(CYPHERD_ROOT_DATA);
   await removeCyRootData();
@@ -291,7 +293,11 @@ export async function loadRecoveryPhraseFromKeyChain(
     forceCloseOnFailure,
     showModal,
   );
-  if (mnemonic && (await isPinAuthenticated())) {
+  if (
+    mnemonic &&
+    mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+    (await isPinAuthenticated())
+  ) {
     mnemonic = decryptMnemonic(mnemonic, pin);
   }
   return mnemonic;
@@ -307,7 +313,11 @@ export async function loadPrivateKeyFromKeyChain(
     forceCloseOnFailure,
     showModal,
   );
-  if (privateKey && (await isPinAuthenticated())) {
+  if (
+    privateKey &&
+    privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+    (await isPinAuthenticated())
+  ) {
     privateKey = decryptMnemonic(privateKey, pin);
   }
   return privateKey;
@@ -327,28 +337,28 @@ export async function loadCyRootData(hdWallet: any) {
   // Update schemaVersion whenever adding a new address generation logic
 
   // Specifically for BUILD 2.48 (remove in subsequent builds)
-  if (await isPinAuthenticated()) {
-    const privateKeyFromKeychain = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
-    const privateKeyFromKeychainWithPinAuth = await loadPrivateKeyFromKeyChain(
-      false,
-      hdWallet.pinValue,
-    );
-    if (
-      privateKeyFromKeychain !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-      !privateKeyFromKeychainWithPinAuth
-    ) {
-      const unEncryptedPrivateKey = privateKeyFromKeychain;
-      if (unEncryptedPrivateKey) {
-        await saveToKeychain(
-          CYPHERD_PRIVATE_KEY,
-          CryptoJS.AES.encrypt(
-            unEncryptedPrivateKey,
-            hdWallet.pinValue,
-          ).toString(),
-        );
-      }
-    }
-  }
+  // if (await isPinAuthenticated()) {
+  //   const privateKeyFromKeychain = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
+  //   const privateKeyFromKeychainWithPinAuth = await loadPrivateKeyFromKeyChain(
+  //     false,
+  //     hdWallet.pinValue,
+  //   );
+  //   if (
+  //     privateKeyFromKeychain !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+  //     !privateKeyFromKeychainWithPinAuth
+  //   ) {
+  //     const unEncryptedPrivateKey = privateKeyFromKeychain;
+  //     if (unEncryptedPrivateKey) {
+  //       await saveToKeychain(
+  //         CYPHERD_PRIVATE_KEY,
+  //         CryptoJS.AES.encrypt(
+  //           unEncryptedPrivateKey,
+  //           hdWallet.pinValue,
+  //         ).toString(),
+  //       );
+  //     }
+  //   }
+  // }
 
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
