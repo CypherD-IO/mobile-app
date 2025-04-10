@@ -62,7 +62,9 @@ export default function DefaultAuthRemoveModal(props: {
             style='py-[15px]'
             type={ButtonType.RED}
             title={t('PROCEED')}
-            onPress={() => void onProceedPress()}
+            onPress={() => {
+              void onProceedPress();
+            }}
           />
           <Button
             style='mt-[10px]'

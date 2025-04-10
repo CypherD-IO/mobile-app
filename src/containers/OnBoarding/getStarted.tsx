@@ -4,7 +4,6 @@ import {
   CyDText,
   CyDTouchView,
   CyDImage,
-  CyDSafeAreaView,
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import {
@@ -14,10 +13,17 @@ import {
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
+import clsx from 'clsx';
 
 function Section1({ handleContinue }: { handleContinue: () => void }) {
+  const inset = useSafeAreaInsets();
+
   return (
-    <CyDSafeAreaView className='flex-1 bg-[#FFBF15]'>
+    <CyDView
+      className={clsx('flex-1 bg-[#FFBF15] pb-[40px]')}
+      style={{
+        paddingTop: inset.top,
+      }}>
       <CyDView className=' flex-1 ml-[24px]'>
         <CyDText className='text-[22px] font-bold text-black mt-[24px]'>
           {'Cypher'}
@@ -45,7 +51,7 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
           {'Continue'}
         </CyDText>
       </CyDTouchView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }
 

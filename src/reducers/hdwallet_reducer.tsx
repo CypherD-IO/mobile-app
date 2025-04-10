@@ -231,16 +231,8 @@ export function hdWalletStateReducer(
       const emptyWallet: CypherDWallet = {};
       CHAIN_NAMES.forEach(chain => {
         emptyWallet[chain] = new ChainWallet({
-          currentIndex: chain === 'ethereum' || chain === 'solana' ? 0 : -1,
-          wallets:
-            chain === 'ethereum' || chain === 'solana'
-              ? [
-                  {
-                    address: undefined,
-                    publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                  },
-                ]
-              : [],
+          currentIndex: -1,
+          wallets: [],
         });
       });
 

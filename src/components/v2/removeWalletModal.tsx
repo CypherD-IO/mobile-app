@@ -24,44 +24,55 @@ export default function RemoveWalletModal(store: {
       ? t('DISCONNECT_WALLET')
       : t('DELETE_WALLET');
   const [hasConsent, setHasConsent] = useState(false);
+  const isSocialLogin =
+    connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM ||
+    connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA;
 
   const RenderContent = useCallback(() => {
     return (
       <CyDView className=''>
-        {connectionType === ConnectionTypes.WALLET_CONNECT ? (
+        {connectionType === ConnectionTypes.WALLET_CONNECT && (
           <CyDText className='mt-[12px] mb-[50px] text-center font-bold'>
             {t('DISCONNECT_WALLET_SUB')}
           </CyDText>
-        ) : (
+        )}
+        {isSocialLogin && (
           <CyDText className='mt-[12px] text-center font-bold'>
-            {t('DELETE_WALLET_SUB')}
+            {t('DELETE_WALLET_SUB_SOCIAL')}
           </CyDText>
         )}
-        {connectionType !== ConnectionTypes.WALLET_CONNECT && (
-          <CyDView className='flex flex-row items-center mt-[54px]'>
-            <CyDTouchView
-              className={clsx(
-                'h-[20px] w-[20px] border-base400 border-[1px] rounded-[4px]',
-                {
-                  'bg-n0': hasConsent,
-                },
-              )}
-              onPress={() => {
-                setHasConsent(!hasConsent);
-              }}>
-              {hasConsent && (
-                <CyDMaterialDesignIcons
-                  name='check'
-                  size={18}
-                  className='text-base400'
-                />
-              )}
-            </CyDTouchView>
-            <CyDText className='px-[12px] text-[12px]'>
-              {t('REMOVE_WALL_ACC')}
+        {connectionType !== ConnectionTypes.WALLET_CONNECT &&
+          !isSocialLogin && (
+            <CyDText className='mt-[12px] text-center font-bold'>
+              {t('DELETE_WALLET_SUB')}
             </CyDText>
-          </CyDView>
-        )}
+          )}
+        {connectionType !== ConnectionTypes.WALLET_CONNECT &&
+          !isSocialLogin && (
+            <CyDView className='flex flex-row items-center mt-[32px]'>
+              <CyDTouchView
+                className={clsx(
+                  'h-[20px] w-[20px] border-base400 border-[1px] rounded-[4px]',
+                  {
+                    'bg-n0': hasConsent,
+                  },
+                )}
+                onPress={() => {
+                  setHasConsent(!hasConsent);
+                }}>
+                {hasConsent && (
+                  <CyDMaterialDesignIcons
+                    name='check'
+                    size={18}
+                    className='text-base400'
+                  />
+                )}
+              </CyDTouchView>
+              <CyDText className='px-[12px] text-[12px]'>
+                {t('REMOVE_WALL_ACC')}
+              </CyDText>
+            </CyDView>
+          )}
       </CyDView>
     );
   }, [hasConsent, setHasConsent]);
@@ -98,7 +109,9 @@ export default function RemoveWalletModal(store: {
             title={t('PROCEED')}
             titleStyle='text-white'
             disabled={
-              connectionType !== ConnectionTypes.WALLET_CONNECT && !hasConsent
+              connectionType !== ConnectionTypes.WALLET_CONNECT &&
+              !isSocialLogin &&
+              !hasConsent
             }
             onPress={() => {
               onSuccess();

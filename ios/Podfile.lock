@@ -459,7 +459,7 @@ PODS:
     - React-Core
   - react-native-pager-view (7.0.0-rc.0):
     - React-Core
-  - react-native-quick-crypto (0.7.12):
+  - react-native-quick-crypto (0.7.8):
     - OpenSSL-Universal
     - RCT-Folly (= 2021.07.22.00)
     - React
