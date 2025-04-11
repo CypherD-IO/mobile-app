@@ -94,6 +94,7 @@ export default function Button({
           'bg-black': ButtonType.DARK === type,
           'bg-n50': disabled,
           'bg-n0': ButtonType.WHITE_FILL === type,
+          'bg-base200': ButtonType.DARK_GREY_FILL === type,
         },
       )}>
       {loading && (

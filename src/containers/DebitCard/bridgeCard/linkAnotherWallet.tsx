@@ -78,6 +78,7 @@ export default function LinkAnotherWallet() {
   }, [resendInterval]);
 
   const triggerOtp = async () => {
+    // add / delete pass this after the slash
     const path = `/v1/authentication/profile/trigger/update-child`;
 
     const response = await postWithAuth(path, {});

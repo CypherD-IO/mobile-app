@@ -65,8 +65,17 @@ import { screenTitle } from './src/constants';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
 import { ThemeProvider } from './src/reducers/themeReducer';
 import { CyDView } from './src/styles/tailwindComponents';
+import { CardProviders } from './src/constants/enum';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
+
+interface DeepLinkData {
+  screenToNavigate: string;
+  params?: {
+    cardId: string;
+    currentCardProvider: string;
+  };
+}
 
 function App() {
   const routeNameRef = React.useRef();
@@ -112,7 +121,7 @@ function App() {
     event: '',
   });
 
-  const [deepLinkData, setDeepLinkData] = useState(null);
+  const [deepLinkData, setDeepLinkData] = useState<DeepLinkData | null>(null);
 
   let params = {};
   let renderContent: any = {};
@@ -142,6 +151,20 @@ function App() {
           setDeepLinkData({
             screenToNavigate: screenTitle.TELEGRAM_SETUP,
           });
+        } else if (url.includes('/card?')) {
+          const urlObj = new URL(url);
+          const decline = urlObj.searchParams.get('decline');
+          const cardId = urlObj.searchParams.get('cardId');
+
+          if (decline === 'true' && cardId) {
+            setDeepLinkData({
+              screenToNavigate: screenTitle.CARD_CONTROLS,
+              params: {
+                cardId,
+                currentCardProvider: CardProviders.REAP_CARD,
+              },
+            });
+          }
         }
       }
       return null;

@@ -19,7 +19,6 @@ import { useTranslation } from 'react-i18next';
 import { CardProviders } from '../../../constants/enum';
 import WebView from 'react-native-webview';
 import Loading from '../loading';
-import useAxios from '../../../core/HttpRequest';
 
 export default function CardDetailsModal({
   isModalVisible,
@@ -51,14 +50,9 @@ export default function CardDetailsModal({
   const [hideTimer, setHideTimer] = useState(0);
   const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
   const detailsAutoCloseTime = 60;
-  const { getWithAuth } = useAxios();
   const { t } = useTranslation();
-  const [isInternationalTxnsDiabled, setIsInternationalTxnsDiabled] =
-    useState(false);
-
   useEffect(() => {
     if (isModalVisible) {
-      void getCardLimits();
       let hideTime = detailsAutoCloseTime;
       setHideInterval(
         setInterval(() => {
@@ -91,14 +85,6 @@ export default function CardDetailsModal({
       setShowModal(false);
     }
   }, [hideTimer]);
-
-  const getCardLimits = async () => {
-    const url = `/v1/cards/${card.cardProvider}/card/${card.cardId}/limits`;
-    const { isError, data } = await getWithAuth(url);
-    if (!isError) {
-      setIsInternationalTxnsDiabled(data.cusL.intl.dis);
-    }
-  };
 
   const getCardImage = () => {
     const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-reveal-${card.designId ?? ''}.png`;
@@ -179,23 +165,6 @@ export default function CardDetailsModal({
           </CyDText>
           <CyDText className='text-[14px] mt-[4px]'>{userName}</CyDText>
         </CyDView>
-
-        {isInternationalTxnsDiabled && (
-          <CyDView className='mt-[8px]'>
-            <CyDText className='mt-[14px] text-[14px] font-bold underline'>
-              {t('IMPORTANT') + ':'}
-            </CyDText>
-            <CyDText className='text-[14px]'>
-              {t('INTERNATIONAL_TXNS_DISABLED_CARD')}
-            </CyDText>
-
-            <CyDTouchView onPress={manageLimits}>
-              <CyDText className='text-[14px] mt-[4px] text-blue300 font-bold'>
-                {t('MANAGE_LIMITS') + '->'}
-              </CyDText>
-            </CyDTouchView>
-          </CyDView>
-        )}
 
         <CyDView className='mt-[22px] bg-base40 border-[0.5px] border-base80 p-[8px] rounded-[6px]'>
           <CyDView className='flex flex-row justify-start items-center gap-[8px]'>

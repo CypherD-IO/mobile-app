@@ -83,6 +83,40 @@ export const InitializeAppProvider = ({
     const initializeApp = async () => {
       initializeSentry();
 
+      // TODO: remove this after testing
+      // showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+      //   data: {
+      //     last4: '1234',
+      //     transactionAmount: 100,
+      //     currency: 'USD',
+      //     merchantName: 'Merchant Name',
+      //     approveUrl: 'https://app.cypherhq.io/approve',
+      //     declineUrl: 'https://app.cypherhq.io/decline',
+      //   },
+      //   closeModal: hideModal,
+      // });
+      // TODO: remove this after testing
+      // showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
+      //   data: {
+      //     last4: '1234',
+      //     transactionAmount: 74000,
+      //     currency: 'USD',
+      //     merchantName: 'Merchant Name',
+      //     transactionId: '1234567890',
+      //     date: new Date(),
+      //     approveUrl: 'https://app.cypherhq.io/approve',
+      //     reportUrl: 'https://app.cypherhq.io/report',
+      //     cardType: 'Physical',
+      //   },
+      //   onThisIsntMe: () => {
+      //     hideModal();
+      //   },
+      //   onThisWasMe: () => {
+      //     hideModal();
+      //   },
+      //   closeModal: hideModal,
+      // });
+
       messaging().onMessage(response => {
         if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
           setTimeout(() => {

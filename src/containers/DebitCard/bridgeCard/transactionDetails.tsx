@@ -37,6 +37,8 @@ import {
   GlobalContextType,
   CardOperationsAuthType,
   CypherPlanId,
+  CypherDeclineCodes,
+  ON_OPEN_NAVIGATE,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
@@ -50,8 +52,8 @@ import {
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import {
   Card,
-  ICardSubObjectMerchant,
   ICardTransaction,
+  ICardSubObjectMerchant,
 } from '../../../models/card.model';
 import { capitalize, get, startCase, truncate } from 'lodash';
 import { t } from 'i18next';
@@ -71,6 +73,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import analytics from '@react-native-firebase/analytics';
+import ReportTransactionModal from '../../../components/v2/reportTransactionModal';
+import Loading from '../../../components/v2/loading';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -97,7 +101,14 @@ const getTransactionSign = (type: string) => {
   }
 };
 
-const CHANNEL_MAP = {
+interface ChannelMap {
+  [key: string]: {
+    categoryIcon: AppImages;
+    paymentChannel: string;
+  };
+}
+
+const CHANNEL_MAP: ChannelMap = {
   APPLE: { categoryIcon: AppImages.APPLE_LOGO_GRAY, paymentChannel: 'Pay' },
   ANDROID: { categoryIcon: AppImages.GOOGLE_LOGO_GRAY, paymentChannel: 'Pay' },
   POS: { categoryIcon: AppImages.POS_ICON_GRAY, paymentChannel: 'P.O.S' },
@@ -321,13 +332,16 @@ const DeclinedTransactionActionItem = ({
   addIntlCountry,
   navigation,
   isInsufficientFunds,
-  isLimitExceeded,
+  isDailyLimitExceeded,
+  isMonthlyLimitExceeded,
   isCountryDisabled,
   isCardInactive,
   activateCard,
   isCardActivated,
   fetchCardBalance,
   fundsAvailable,
+  showTransactionDeclineHandlingModal = true,
+  limits,
 }: {
   metadata: ICardSubObjectMerchant;
   countryAlreadyAllowed: boolean;
@@ -336,20 +350,130 @@ const DeclinedTransactionActionItem = ({
   addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
   navigation: NavigationProp<ParamListBase>;
   isInsufficientFunds: boolean;
-  isLimitExceeded: boolean;
+  isDailyLimitExceeded: boolean;
+  isMonthlyLimitExceeded: boolean;
   isCountryDisabled: boolean;
   isCardInactive: boolean;
   isCardActivated: boolean;
   activateCard: () => Promise<void>;
   fetchCardBalance: () => Promise<number>;
   fundsAvailable: boolean;
+  showTransactionDeclineHandlingModal: boolean;
+  limits: any;
 }) => {
   const { t } = useTranslation();
+  const { showModal, hideModal } = useGlobalModalContext();
+  const { patchWithAuth } = useAxios();
+  const [isThisWasMeLoading, setIsThisWasMeLoading] = useState(false);
+  const [isThisIsntMeLoading, setIsThisIsntMeLoading] = useState(false);
+
+  const handleThisWasMe = async (): Promise<void> => {
+    try {
+      setIsThisWasMeLoading(true);
+      const merchantId = metadata?.merchantId;
+      if (!merchantId) {
+        throw new Error('Merchant ID is required');
+      }
+
+      // Get existing amerc array from limits prop
+      const existingAMercs = get(limits, 'aMercs', {});
+
+      // Add the new merchant to the list
+      const payload = {
+        aMercs: {
+          ...existingAMercs,
+          [merchantId]: -1, // 1 indicates allowed merchant
+        },
+      };
+
+      const response = await patchWithAuth(
+        `/v1/cards/${provider}/card/${cardId}/limits-v2`,
+        payload,
+      );
+
+      console.log('response : ', response);
+
+      if (!response.error) {
+        showModal('state', {
+          type: 'success',
+          title: t('SUCCESS'),
+          description: t('TXN_APPROVED_SUCCESS_DESCRIPTION'),
+        });
+        hideModal();
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: t('ERROR'),
+          text2: t('ACTION_FAILED'),
+        });
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+      Toast.show({
+        type: 'error',
+        text1: t('ERROR'),
+        text2: t('SOMETHING_WENT_WRONG'),
+      });
+    } finally {
+      setIsThisWasMeLoading(false);
+    }
+  };
+
+  const handleThisIsntMe = async (): Promise<void> => {
+    try {
+      setIsThisIsntMeLoading(true);
+      const merchantId = metadata?.merchantId;
+      if (!merchantId) {
+        throw new Error('Merchant ID is required');
+      }
+
+      // Get existing dmerc array from limits prop
+      const existingDMercs = get(limits, 'dMercs', []);
+
+      // Add the new merchant to the list if not already present
+      if (!existingDMercs.includes(merchantId)) {
+        const payload = {
+          dMercs: [...existingDMercs, merchantId],
+        };
+
+        const response = await patchWithAuth(
+          `/v1/cards/${provider}/card/${cardId}/limits-v2`,
+          payload,
+        );
+
+        console.log('resonse : ', response);
+
+        if (!response.error) {
+          showModal('state', {
+            type: 'success',
+            title: t('SUCCESS'),
+            description: t('TXN_DISPUTED_SUCCESS_DESCRIPTION'),
+          });
+          hideModal();
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: t('ERROR'),
+            text2: t('ACTION_FAILED'),
+          });
+        }
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+      Toast.show({
+        type: 'error',
+        text1: t('ERROR'),
+        text2: t('SOMETHING_WENT_WRONG'),
+      });
+    } finally {
+      setIsThisIsntMeLoading(false);
+    }
+  };
 
   if (isCountryDisabled && metadata?.merchantCountry && isCountryDisabled) {
     // Show existing UI for country disabled scenario
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
+      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px]'>
         <CyDView className='flex-row items-start'>
           <CyDMaterialDesignIcons
             name='information-outline'
@@ -366,9 +490,10 @@ const DeclinedTransactionActionItem = ({
           <CyDTouchView
             className='rounded-[4px] bg-n20 px-[8px] py-[6px] flex-1'
             onPress={() => {
-              navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+              navigation.navigate(screenTitle.CARD_CONTROLS, {
                 cardId: cardId ?? '',
                 currentCardProvider: provider,
+                onOpenNavigate: ON_OPEN_NAVIGATE.SELECT_COUNTRY,
               });
             }}>
             <CyDText className='text-center text-[14px] font-semibold'>
@@ -411,9 +536,52 @@ const DeclinedTransactionActionItem = ({
         </CyDView>
       </CyDView>
     );
+  } else if (showTransactionDeclineHandlingModal) {
+    console.log(
+      'showTransactionDeclineHandlingModal',
+      showTransactionDeclineHandlingModal,
+    );
+    return (
+      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px]'>
+        <CyDView className='flex-row items-center'>
+          <CyDMaterialDesignIcons
+            name='information-outline'
+            size={24}
+            className='text-base400 mr-[6px]'
+          />
+          <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+            {t('TRANSACTION_DECLINE_HANDLING_MESSAGE')}
+          </CyDText>
+        </CyDView>
+        <CyDView className='mt-[10px] flex-row items-center flex-1 gap-x-[4px]'>
+          <Button
+            title={t('THIS_WAS_ME')}
+            onPress={() => {
+              void handleThisWasMe();
+            }}
+            paddingY={8}
+            loading={isThisWasMeLoading}
+            type={ButtonType.PRIMARY}
+            style='flex-1'
+            titleStyle='text-[14px] font-semibold'
+          />
+          <Button
+            title={t('THIS_ISNT_ME')}
+            onPress={() => {
+              void handleThisIsntMe();
+            }}
+            paddingY={8}
+            loading={isThisIsntMeLoading}
+            type={ButtonType.SECONDARY}
+            style='flex-1'
+            titleStyle='text-[14px] font-semibold text-red400'
+          />
+        </CyDView>
+      </CyDView>
+    );
   } else if (isInsufficientFunds) {
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
+      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px]'>
         <CyDView className='flex-row items-center'>
           {/* <CyDFastImage
             source={
@@ -458,9 +626,9 @@ const DeclinedTransactionActionItem = ({
         )}
       </CyDView>
     );
-  } else if (isLimitExceeded) {
+  } else if (isDailyLimitExceeded) {
     return (
-      <CyDView className='rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
+      <CyDView className='rounded-[12px] border border-n40 p-[12px]'>
         <CyDView className='flex-row items-center'>
           <CyDMaterialDesignIcons
             name='information-outline'
@@ -468,20 +636,51 @@ const DeclinedTransactionActionItem = ({
             className='text-base400 mr-[6px]'
           />
           <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
-            {t('REVIEW_SETTINGS_MESSAGE')}
+            {t('REVIEW_SETTINGS_MESSAGE_DAILY_LIMIT')}
           </CyDText>
         </CyDView>
         <CyDView className='mt-[10px] flex-row items-center flex-1'>
           <CyDTouchView
             className='rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1'
             onPress={() => {
-              navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+              navigation.navigate(screenTitle.CARD_CONTROLS, {
                 cardId: cardId ?? '',
                 currentCardProvider: provider,
+                onOpenNavigate: ON_OPEN_NAVIGATE.DAILY_LIMIT,
               });
             }}>
             <CyDText className='text-center text-[14px] font-semibold text-black'>
-              {t('REVIEW_SETTINGS')}
+              {t('UPDATE_LIMITS')}
+            </CyDText>
+          </CyDTouchView>
+        </CyDView>
+      </CyDView>
+    );
+  } else if (isMonthlyLimitExceeded) {
+    return (
+      <CyDView className='rounded-[12px] border border-n40 p-[12px]'>
+        <CyDView className='flex-row items-center'>
+          <CyDMaterialDesignIcons
+            name='information-outline'
+            size={24}
+            className='text-base400 mr-[6px]'
+          />
+          <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+            {t('REVIEW_SETTINGS_MESSAGE_MONTHLY_LIMIT')}
+          </CyDText>
+        </CyDView>
+        <CyDView className='mt-[10px] flex-row items-center flex-1'>
+          <CyDTouchView
+            className='rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1'
+            onPress={() => {
+              navigation.navigate(screenTitle.CARD_CONTROLS, {
+                cardId: cardId ?? '',
+                currentCardProvider: provider,
+                onOpenNavigate: ON_OPEN_NAVIGATE.MONTHLY_LIMIT,
+              });
+            }}>
+            <CyDText className='text-center text-[14px] font-semibold text-black'>
+              {t('UPDATE_LIMITS')}
             </CyDText>
           </CyDTouchView>
         </CyDView>
@@ -490,7 +689,7 @@ const DeclinedTransactionActionItem = ({
   } else if (isCardInactive) {
     return (
       <>
-        <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
+        <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px]'>
           <CyDView className='flex-row items-center'>
             <CyDFastImage
               source={
@@ -571,6 +770,23 @@ const getStatusText = (transaction: ICardTransaction) => {
     : t('SETTLED');
 };
 
+interface TransactionDetailProps {
+  isDeclined?: boolean;
+  reason?: string;
+  metadata?: ICardSubObjectMerchant;
+  cardDetails: Card;
+  provider: CardProviders;
+  addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
+  navigation: NavigationProp<ParamListBase>;
+  transaction: ICardTransaction;
+  getRequiredData: (cardId: string) => Promise<void>;
+  setIsMerchantDetailsModalVisible: (visible: boolean) => void;
+  limits: any;
+  activateCard: () => Promise<void>;
+  fetchCardBalance: () => Promise<number>;
+  declineCode: string;
+}
+
 const TransactionDetail = ({
   isDeclined = false,
   reason = '',
@@ -585,22 +801,8 @@ const TransactionDetail = ({
   limits,
   activateCard,
   fetchCardBalance,
-}: {
-  isDeclined?: boolean;
-  reason?: string;
-  cardDetails: Card;
-  metadata?: ICardSubObjectMerchant;
-  cardId: string;
-  provider: CardProviders;
-  addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
-  navigation: NavigationProp<ParamListBase>;
-  transaction: ICardTransaction;
-  getRequiredData: (cardId: string) => Promise<void>;
-  setIsMerchantDetailsModalVisible: (visible: boolean) => void;
-  limits: any;
-  activateCard: () => Promise<void>;
-  fetchCardBalance: () => Promise<number>;
-}) => {
+  declineCode,
+}: TransactionDetailProps) => {
   const isCountryDisabled =
     reason?.includes('International transactions are disabled') ||
     reason?.includes('is not in the allow list');
@@ -631,10 +833,14 @@ const TransactionDetail = ({
 
   const isCredit = transaction.type === CardTransactionTypes.CREDIT;
   const isWithdrawal = transaction.category === 'Crypto Withdrawal';
-  const countryList = get(limits, 'cusL.intl.cLs', []) as string[];
+  const countryList = get(limits, 'countries', []) as string[];
   const countryAlreadyAllowed = countryList.includes(
     metadata?.merchantCountry ?? '',
   );
+  const isBlacklistedMerchant =
+    declineCode === CypherDeclineCodes.BLACKLISTED_MERCHANT;
+  const isNewMerchantHighSpendRule =
+    declineCode === CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE;
 
   return (
     <>
@@ -648,13 +854,23 @@ const TransactionDetail = ({
             addIntlCountry={addIntlCountry}
             navigation={navigation}
             isInsufficientFunds={isInsufficientFunds}
-            isLimitExceeded={isLimitExceeded}
+            isDailyLimitExceeded={
+              // declineCode === CypherDeclineCodes.DAILY_LIMIT
+              true
+            }
+            isMonthlyLimitExceeded={
+              declineCode === CypherDeclineCodes.MONTHLY_LIMIT
+            }
             isCountryDisabled={isCountryDisabled}
             activateCard={activateCard}
             isCardInactive={isCardInactive}
             isCardActivated={isCardActivated}
             fetchCardBalance={fetchCardBalance}
             fundsAvailable={fundsAvailable}
+            showTransactionDeclineHandlingModal={
+              isBlacklistedMerchant || isNewMerchantHighSpendRule
+            }
+            limits={limits}
           />
         )}
         <InfoMessage
@@ -939,7 +1155,7 @@ export default function TransactionDetails() {
   const { fxCurrencySymbol } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const { getWithAuth, patchWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth, postWithAuth } = useAxios();
   const cardProfile: CardProfile | undefined =
     globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
@@ -953,6 +1169,7 @@ export default function TransactionDetails() {
   const viewRef = useRef<any>(null);
   const { getWalletProfile } = useCardUtilities();
   const planInfo = get(cardProfile, ['planInfo'], null);
+  const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
   const cardDetails: Card = get(cardProfile, [provider, 'cards'], null)?.find(
     card => card?.cardId === transaction?.cardId,
@@ -992,9 +1209,9 @@ export default function TransactionDetails() {
     if (provider && cardId) {
       try {
         const { isError, data } = await getWithAuth(
-          `/v1/cards/${provider}/card/${cardId}/limits`,
+          `/v1/cards/${provider}/card/${cardId}/limits-v2`,
         );
-        if (!isError) {
+        if (!isError && data) {
           setLimits(data);
         }
       } catch (error) {
@@ -1038,25 +1255,15 @@ export default function TransactionDetails() {
       return;
     }
     try {
+      // Get current countries list
+      const currentCountries = get(limits, 'countries', []) as string[];
+
       const payload = {
-        cusL: {
-          ...get(limits, 'cusL'),
-          intl: {
-            ...get(limits, ['cusL', CardControlTypes.INTERNATIONAL]),
-            dis: false,
-            cLs: [
-              ...get(
-                limits,
-                ['cusL', CardControlTypes.INTERNATIONAL, 'cLs'],
-                [],
-              ),
-              iso2,
-            ],
-          },
-        },
+        countries: [...currentCountries, iso2],
       };
+
       const response = await patchWithAuth(
-        `/v1/cards/${provider}/card/${cardId}/limits`,
+        `/v1/cards/${provider}/card/${cardId}/limits-v2`,
         payload,
       );
 
@@ -1067,7 +1274,7 @@ export default function TransactionDetails() {
           description: 'Please retry your transaction again.',
           onSuccess: () => {
             hideModal();
-            navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+            navigation.navigate(screenTitle.CARD_CONTROLS, {
               cardId: cardId ?? '',
               currentCardProvider: provider,
             });
@@ -1123,6 +1330,18 @@ export default function TransactionDetails() {
     transaction.tStatus,
   );
 
+  const getShareMessage = () => {
+    if (transaction.metadata?.merchant?.merchantName) {
+      if (transaction.fxCurrencySymbol && transaction.fxCurrencyValue) {
+        return `Hey! I just spent ${getSymbolFromCurrency(transaction.fxCurrencySymbol)}${transaction.fxCurrencyValue} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`;
+      } else {
+        return `Hey! I just spent $${transaction.amount} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`;
+      }
+    } else {
+      return `Hey I just made this transaction using my Cypher Card! 🚀 Living the crypto life!`;
+    }
+  };
+
   async function shareTransactionImage() {
     try {
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -1134,9 +1353,7 @@ export default function TransactionDetails() {
       });
       const shareImage = {
         title: t('SHARE_TITLE'),
-        message: transaction.metadata?.merchant?.merchantName
-          ? `Hey! I just spent ${getSymbolFromCurrency(transaction.fxCurrencySymbol)} ${transaction.amount} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`
-          : `Hey I just made this transaction using my Cypher Card! 🚀 Living the crypto life!`,
+        message: getShareMessage(),
         subject: t('SHARE_TITLE'),
         url: `data:image/jpeg;base64,${url}`,
       };
@@ -1209,6 +1426,11 @@ export default function TransactionDetails() {
           metadata={transaction?.metadata?.merchant}
         />
       )}
+      <ReportTransactionModal
+        isModalVisible={isReportModalVisible}
+        setModalVisible={setIsReportModalVisible}
+        transaction={transaction}
+      />
       <CyDView className='flex-1 bg-n20' style={{ paddingTop: insets.top }}>
         <CyDTouchView
           className='w-full'
@@ -1221,13 +1443,14 @@ export default function TransactionDetails() {
             className='text-base400 ml-[16px]'
           />
         </CyDTouchView>
-        <ViewShot ref={viewRef}>
-          <CyDScrollView className='h-full bg-n20'>
-            <CyDView className='min-h-full'>
-              <CyDView
-                className={
-                  'flex flex-col justify-center items-center my-[24px]'
-                }>
+        <ViewShot ref={viewRef} style={styles.container}>
+          <CyDScrollView
+            className='bg-n20'
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            bounces={false}>
+            <CyDView className='min-h-full pb-[100px]'>
+              <CyDView className='flex flex-col justify-center items-center my-[24px]'>
                 <CyDView className='h-[36px] w-[36px] rounded-full bg-n40 flex items-center justify-center'>
                   <CyDFastImage
                     source={displayProps.image}
@@ -1351,7 +1574,7 @@ export default function TransactionDetails() {
                 )}
               </CyDView>
               <CyDView className='flex flex-col flex-1 justify-between bg-n0'>
-                <CyDView className='w-full bg-n0 px-[25px] mt-[24px]'>
+                <CyDView className='w-full bg-n0 px-[25px] mt-[24px] mb-[60px]'>
                   <TransactionDetail
                     isSettled={transaction?.isSettled ?? false}
                     isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
@@ -1369,6 +1592,7 @@ export default function TransactionDetails() {
                     }
                     activateCard={activateCard}
                     fetchCardBalance={fetchCardBalance}
+                    declineCode={transaction?.cDCode ?? transaction?.dCode}
                   />
 
                   {Number(transaction?.mccPaddingAmount) > 0 && (
@@ -1386,42 +1610,9 @@ export default function TransactionDetails() {
                       </CyDText>
                     </CyDView>
                   )}
-
-                  <CyDView className='flex flex-row justify-start mt-[24px] mb-[20px]'>
-                    <Button
-                      title={capitalize(t('SHARE'))}
-                      onPress={() => {
-                        void shareTransaction();
-                      }}
-                      type={ButtonType.GREY_FILL}
-                      icon={
-                        <CyDMaterialDesignIcons
-                          name={'share-variant'}
-                          size={16}
-                          className='text-base400 mr-[6px]'
-                        />
-                      }
-                      style='bg-n10 border-[1px] border-n40 py-[8px] px-[8px] text-black mx-[4px] rounded-[4px] '
-                      titleStyle='text-[14px] font-medium'
-                    />
-                    <Button
-                      title={t('NEED_HELP')}
-                      onPress={() => {
-                        void Intercom.present();
-                        sendFirebaseEvent(hdWalletContext, 'support');
-                      }}
-                      type={ButtonType.GREY_FILL}
-                      style='bg-n10 border-[1px] border-n40 py-[8px] px-[8px] text-black mx-[4px] rounded-[4px]'
-                      titleStyle='text-[14px] font-medium'
-                    />
-                  </CyDView>
                 </CyDView>
                 {shouldShowPremium() && (
-                  <CyDView
-                    className='bg-p10 p-6'
-                    style={{
-                      paddingBottom: insets.bottom + 20,
-                    }}>
+                  <CyDView className='bg-p10 p-6'>
                     <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
                       <CyDText className='font-extrabold text-[20px]'>
                         {'Cypher'}
@@ -1508,6 +1699,54 @@ export default function TransactionDetails() {
             </CyDView>
           </CyDScrollView>
         </ViewShot>
+
+        {/* Sticky bottom buttons */}
+        <CyDView
+          className='absolute bottom-0 left-0 right-0 bg-n0 px-[16px] flex flex-row justify-between shadow-lg shadow-black/10'
+          style={{
+            paddingBottom: insets.bottom + 16,
+            paddingTop: 16,
+          }}>
+          <Button
+            title={t('NEED_HELP')}
+            onPress={() => {
+              if (transaction.isReported) {
+                Toast.show({
+                  type: 'error',
+                  text1: t('TRANSACTION_ALREADY_REPORTED'),
+                });
+              } else if (
+                transaction.type === CardTransactionTypes.DEBIT &&
+                !transaction.title.toLowerCase().includes('withdrawal')
+              ) {
+                setIsReportModalVisible(true);
+                sendFirebaseEvent(hdWalletContext, 'report_transaction_issue');
+              } else {
+                sendFirebaseEvent(hdWalletContext, 'support');
+                void Intercom.present();
+              }
+            }}
+            type={ButtonType.GREY_FILL}
+            style='bg-n30 py-[8px] px-[8px] text-black mx-[4px] rounded-[16px] flex-1'
+            titleStyle='text-[14px] font-medium'
+          />
+          <Button
+            title={capitalize(t('SHARE'))}
+            onPress={() => {
+              void shareTransaction();
+            }}
+            type={ButtonType.GREY_FILL}
+            icon={
+              <CyDMaterialDesignIcons
+                name={'share-variant'}
+                size={16}
+                className='text-base400 mr-[6px]'
+              />
+            }
+            style='bg-n30 py-[8px] px-[8px] text-black mx-[4px] rounded-[16px] flex-1'
+            titleStyle='text-[14px] font-medium'
+          />
+        </CyDView>
       </CyDView>
     </>
   );
@@ -1523,5 +1762,11 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     paddingHorizontal: 6,
     paddingVertical: 3,
+  },
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
 });

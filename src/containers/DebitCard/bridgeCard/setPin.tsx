@@ -349,7 +349,7 @@ export default function SetPin() {
         )}
         {pinSetSuccess && (
           <CyDView className=''>
-            <CyDView className='h-screen'>
+            <CyDView>
               <CyDImage
                 source={AppImages.SUCCESS_TICK_GREEN_BG}
                 className='w-[85px] h-[85px] mt-[44px]'
@@ -373,23 +373,6 @@ export default function SetPin() {
                   {t('KEEP_PIN_SAFE')}
                 </CyDText>
               </CyDView>
-            </CyDView>
-            <CyDView className='h-screen pt-[44px]' ref={setLimitsPromptsRef}>
-              <CyDImage
-                source={AppImages.MULTIPLE_CARDS}
-                className='w-[145px] h-[145px] mt-[44px]'
-                resizeMode='contain'
-              />
-
-              <CyDText className='mt-[14px] text-[44px] font-extrabold'>
-                {t('SET_LIMITS')}
-              </CyDText>
-              <CyDText className='mt-[14px] text-[14px] font-bold underline'>
-                {t('IMPORTANT') + ':'}
-              </CyDText>
-              <CyDText className='text-[14px]'>
-                {t('INTERNATIONAL_TXNS_DISABLED_DEFAULT')}
-              </CyDText>
             </CyDView>
           </CyDView>
         )}
@@ -417,10 +400,9 @@ export default function SetPin() {
             title={t('SETUP_NOW')}
             onPress={() => {
               setPinSetSuccess(false);
-              navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+              navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
                 currentCardProvider,
                 cardId: card.cardId,
-                isCardActivation: true,
               });
             }}
             type={ButtonType.PRIMARY}

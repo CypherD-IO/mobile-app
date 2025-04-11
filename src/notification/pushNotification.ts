@@ -13,6 +13,7 @@ import {
   CypherDeclineCodes,
   GlobalModalType,
   NOTIFE_ACTIONS,
+  ON_OPEN_NAVIGATE,
   RPCODES,
 } from '../constants/enum';
 import { screenTitle } from '../constants';
@@ -71,40 +72,6 @@ const getAndroidActions = (categoryId?: CypherDeclineCodes | RPCODES) => {
           title: 'Add Country',
           pressAction: {
             id: NOTIFE_ACTIONS.ADD_COUNTRY,
-            launchActivity: 'default',
-          },
-        },
-        {
-          title: 'Enable Zero Restriction',
-          pressAction: {
-            id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-            launchActivity: 'default',
-          },
-        },
-      ];
-    case CypherDeclineCodes.INT_CHANNEL_LIMIT:
-      return [
-        {
-          title: 'Increase International Limit',
-          pressAction: {
-            id: NOTIFE_ACTIONS.INCREASE_INTERNATIONAL_LIMIT,
-            launchActivity: 'default',
-          },
-        },
-        {
-          title: 'Enable Zero Restriction',
-          pressAction: {
-            id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-            launchActivity: 'default',
-          },
-        },
-      ];
-    case CypherDeclineCodes.DOM_CHANNEL_LIMIT:
-      return [
-        {
-          title: 'Increase Domestic Limit',
-          pressAction: {
-            id: NOTIFE_ACTIONS.INCREASE_DOMESTIC_LIMIT,
             launchActivity: 'default',
           },
         },
@@ -222,41 +189,6 @@ async function setCategories() {
           title: 'Add Country',
           foreground: true,
         },
-        {
-          id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-          title: 'Enable Zero Restriction',
-          foreground: true,
-        },
-      ],
-    },
-    {
-      id: CypherDeclineCodes.INT_CHANNEL_LIMIT,
-      actions: [
-        {
-          id: NOTIFE_ACTIONS.INCREASE_INTERNATIONAL_LIMIT,
-          title: 'Increase International Limit',
-          foreground: true,
-        },
-        {
-          id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-          title: 'Enable Zero Restriction',
-          foreground: true,
-        },
-      ],
-    },
-    {
-      id: CypherDeclineCodes.DOM_CHANNEL_LIMIT,
-      actions: [
-        {
-          id: NOTIFE_ACTIONS.INCREASE_DOMESTIC_LIMIT,
-          title: 'Increase Domestic Limit',
-          foreground: true,
-        },
-        {
-          id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-          title: 'Enable Zero Restriction',
-          foreground: true,
-        },
       ],
     },
     {
@@ -267,11 +199,6 @@ async function setCategories() {
           title: 'Increase Daily Limit',
           foreground: true,
         },
-        {
-          id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-          title: 'Enable Zero Restriction',
-          foreground: true,
-        },
       ],
     },
     {
@@ -280,31 +207,6 @@ async function setCategories() {
         {
           id: NOTIFE_ACTIONS.INCREASE_MONTHLY_LIMIT,
           title: 'Increase Monthly Limit',
-          foreground: true,
-        },
-        {
-          id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-          title: 'Enable Zero Restriction',
-          foreground: true,
-        },
-      ],
-    },
-    {
-      id: CypherDeclineCodes.RATE_CHECK_USER,
-      actions: [
-        {
-          id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-          title: 'Enable Zero Restriction',
-          foreground: true,
-        },
-      ],
-    },
-    {
-      id: CypherDeclineCodes.LOCATION_CHECK_USER,
-      actions: [
-        {
-          id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-          title: 'Enable Zero Restriction',
           foreground: true,
         },
       ],
@@ -362,47 +264,23 @@ export async function RouteNotificationAction({
       });
 
       break;
-    case NOTIFE_ACTIONS.INCREASE_DOMESTIC_LIMIT:
-      navigation?.navigate(screenTitle.CARD, {
-        screen: screenTitle.DOMESTIC_CARD_CONTROLS,
-        params: {
-          cardId: data?.cardId,
-          currentCardProvider: data?.provider,
-          cardControlType: CardControlTypes.DOMESTIC,
-        },
-      });
-
-      break;
-    case NOTIFE_ACTIONS.INCREASE_INTERNATIONAL_LIMIT:
-      navigation?.navigate(screenTitle.CARD, {
-        screen: screenTitle.INTERNATIONAL_CARD_CONTROLS,
-        params: {
-          cardId: data?.cardId,
-          currentCardProvider: data?.provider,
-          cardControlType: CardControlTypes.INTERNATIONAL,
-        },
-      });
-      break;
     case NOTIFE_ACTIONS.INCREASE_DAILY_LIMIT:
+      navigation?.navigate(screenTitle.CARD, {
+        screen: screenTitle.CARD_CONTROLS,
+        params: {
+          cardId: data?.cardId,
+          currentCardProvider: data?.provider,
+          onOpenNavigate: ON_OPEN_NAVIGATE.DAILY_LIMIT,
+        },
+      });
+      break;
     case NOTIFE_ACTIONS.INCREASE_MONTHLY_LIMIT:
       navigation?.navigate(screenTitle.CARD, {
-        screen: screenTitle.EDIT_USAGE_LIMITS,
-        params: {
-          card: {
-            cardId: data?.cardId,
-            type: data?.cardType,
-            last4: data?.last4,
-          },
-          currentCardProvider: data?.provider,
-        },
-      });
-      break;
-    case NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE:
-      navigation?.navigate(screenTitle.CARD, {
-        screen: screenTitle.CARD_CONTROLS_MENU,
+        screen: screenTitle.CARD_CONTROLS,
         params: {
           cardId: data?.cardId,
           currentCardProvider: data?.provider,
+          onOpenNavigate: ON_OPEN_NAVIGATE.MONTHLY_LIMIT,
         },
       });
       break;
