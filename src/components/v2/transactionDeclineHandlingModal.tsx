@@ -103,7 +103,8 @@ const TransactionDeclineHandlingModal: React.FC<
     }),
   ).current;
 
-  const handleThisIsntMe = () => {
+  const handleThisIsntMe = async () => {
+    console.log('handleThisIsntMe');
     closeModal();
     setTimeout(() => {
       showModal('state', {
@@ -155,6 +156,7 @@ const TransactionDeclineHandlingModal: React.FC<
   };
 
   const handleThisWasMe = async () => {
+    console.log('handleThisWasMe');
     if (!approveUrl) return;
 
     setIsLoading(true);
@@ -166,7 +168,7 @@ const TransactionDeclineHandlingModal: React.FC<
           showModal('state', {
             type: 'success',
             title: t('TRANSACTION_APPROVED_SUCCESS'),
-            description: '',
+            description: t('TRANSACTION_APPROVED_SUCCESS_DESCRIPTION'),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -262,7 +264,7 @@ const TransactionDeclineHandlingModal: React.FC<
                   className='text-white mr-[8px]'
                 />
                 <CyDText className='text-white text-[14px]'>
-                  {cardType} Card **{last4}
+                  {capitalize(cardType)} Card **{last4}
                 </CyDText>
               </CyDView>
 
@@ -290,14 +292,14 @@ const TransactionDeclineHandlingModal: React.FC<
               <CyDView className='gap-[12px] mb-[42px]'>
                 <Button
                   title='Yes, I made this purchase *'
-                  onPress={handleThisWasMe}
+                  onPress={() => handleThisWasMe()}
                   style='rounded-full py-[16px] bg-[#FFB800]'
                   type={ButtonType.PRIMARY}
                   loading={isLoading}
                 />
                 <Button
                   title="This isn't me, Report transaction"
-                  onPress={handleThisIsntMe}
+                  onPress={() => handleThisIsntMe()}
                   style='rounded-full bg-[#333333] py-[16px]'
                   type={ButtonType.DARK_GREY_FILL}
                   titleStyle='text-white text-[16px]'

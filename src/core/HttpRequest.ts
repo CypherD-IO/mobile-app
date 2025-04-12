@@ -52,7 +52,48 @@ export default function useAxios() {
     },
   });
 
+  // Create a separate instance for multipart form data
+  const axiosFormInstance = axios.create({
+    baseURL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'multipart/form-data',
+      Authorization: `Bearer ${String(token)}`,
+    },
+  });
+
   axiosInstance.interceptors.request.use(
+    async (req: any) => {
+      if (!isTokenValid(token)) {
+        try {
+          const signInResponse = await signIn(ethereum, hdWalletContext);
+          if (
+            signInResponse?.message === SignMessageValidationType.VALID &&
+            has(signInResponse, 'token')
+          ) {
+            token = signInResponse?.token;
+            globalContext.globalDispatch({
+              type: GlobalContextType.SIGN_IN,
+              sessionToken: token,
+            });
+            req.headers.Authorization = `Bearer ${String(token)}`;
+            return req;
+          }
+        } catch (e: any) {
+          Sentry.captureException(e.message);
+        }
+      } else {
+        req.headers.Authorization = `Bearer ${String(token)}`;
+        return req;
+      }
+    },
+    async function (error) {
+      return await Promise.reject(error);
+    },
+  );
+
+  // Add the same interceptor to the form instance
+  axiosFormInstance.interceptors.request.use(
     async (req: any) => {
       if (!isTokenValid(token)) {
         try {
@@ -297,6 +338,30 @@ export default function useAxios() {
     return await request('POST_TO_OTHER_SOURCE', url, timeout, data, config);
   };
 
+  const postFormWithAuth = async (
+    url: string,
+    formData: FormData,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
+  ) => {
+    try {
+      const { data, status } = await axiosFormInstance.post(url, formData, {
+        ...config,
+        timeout,
+      });
+      return { isError: false, data, status };
+    } catch (error: any) {
+      return {
+        isError: true,
+        error:
+          error?.response?.data?.errors?.[0] ??
+          error?.response?.data?.message ??
+          null,
+        status: error?.response?.status,
+      };
+    }
+  };
+
   return {
     getWithAuth,
     postWithAuth,
@@ -308,5 +373,6 @@ export default function useAxios() {
     postWithoutAuth,
     getFromOtherSource,
     postToOtherSource,
+    postFormWithAuth,
   };
 }

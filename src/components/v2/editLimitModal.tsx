@@ -42,11 +42,16 @@ export default function EditLimitModal({
 
   React.useEffect(() => {
     setLimitValue(currentLimit);
-  }, [currentLimit]);
+  }, [currentLimit, isModalVisible]);
 
   const handleRequestHigherLimit = () => {
     setIsModalVisible(false);
     onRequestHigherLimit();
+  };
+
+  const handleModalClose = () => {
+    setLimitValue(currentLimit);
+    setIsModalVisible(false);
   };
 
   return (
@@ -55,10 +60,10 @@ export default function EditLimitModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
-      setModalVisible={setIsModalVisible}
+      setModalVisible={handleModalClose}
       onSwipeComplete={({ swipingDirection }) => {
         if (swipingDirection === 'down') {
-          setIsModalVisible(false);
+          handleModalClose();
         }
       }}
       swipeDirection={['down']}
@@ -116,8 +121,7 @@ export default function EditLimitModal({
             className='text-n200 mt-[2px]'
           />
           <CyDText className='text-[12px] text-n200 ml-[8px] flex-1'>
-            Planning to make a large purchase? Consider Requesting your limit
-            beyond the standard daily premium limit.
+            Planning to make a large purchase? Consider Requesting higher limits
           </CyDText>
         </CyDView>
 

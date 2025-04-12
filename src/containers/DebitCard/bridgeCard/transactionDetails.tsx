@@ -396,10 +396,12 @@ const DeclinedTransactionActionItem = ({
       if (!response.error) {
         showModal('state', {
           type: 'success',
-          title: t('SUCCESS'),
+          title: t('SUCCESS_RETRY_TRANSACTION'),
           description: t('TXN_APPROVED_SUCCESS_DESCRIPTION'),
+          onSuccess: () => {
+            hideModal();
+          },
         });
-        hideModal();
       } else {
         Toast.show({
           type: 'error',
@@ -838,9 +840,12 @@ const TransactionDetail = ({
     metadata?.merchantCountry ?? '',
   );
   const isBlacklistedMerchant =
-    declineCode === CypherDeclineCodes.BLACKLISTED_MERCHANT;
+    declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
+    declineCode === CypherDeclineCodes.MERCHANT_GLOBAL;
   const isNewMerchantHighSpendRule =
     declineCode === CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE;
+
+  console.log('decline CODE : ', declineCode);
 
   return (
     <>
@@ -855,8 +860,7 @@ const TransactionDetail = ({
             navigation={navigation}
             isInsufficientFunds={isInsufficientFunds}
             isDailyLimitExceeded={
-              // declineCode === CypherDeclineCodes.DAILY_LIMIT
-              true
+              declineCode === CypherDeclineCodes.DAILY_LIMIT
             }
             isMonthlyLimitExceeded={
               declineCode === CypherDeclineCodes.MONTHLY_LIMIT
@@ -1545,7 +1549,6 @@ export default function TransactionDetails() {
                           'text-center text-red400 tracking-[-0.5px] leading-[22.4px] font-[500] mx-[24px]',
                           'text-[14px]',
                         )}>
-                        Declined due to{' '}
                         {transaction?.cDReason ?? transaction?.dReason}
                       </CyDText>
                     </CyDTouchView>

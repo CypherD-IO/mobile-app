@@ -15,44 +15,23 @@ import { ICardTransaction } from '../../models/card.model';
 import { StyleSheet } from 'react-native';
 import { pick } from '@react-native-documents/picker';
 import clsx from 'clsx';
-import { ComplaintReason, ButtonType } from '../../constants/enum';
+import {
+  ComplaintReason,
+  ButtonType,
+  CardProviders,
+} from '../../constants/enum';
 import Toast from 'react-native-toast-message';
 import AppImages from '../../../assets/images/appImages';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useAxios from '../../core/HttpRequest';
 import { useGlobalModalContext } from './GlobalModal';
-import { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
+import { hostWorker } from '../../global';
 
-const REPORT_ISSUES = [
-  {
-    value: ComplaintReason.REFUND_NOT_RECEIVED,
-    label: ComplaintReason.REFUND_NOT_RECEIVED,
-  },
-  {
-    value: ComplaintReason.PRODUCT_NOT_RECEIVED,
-    label: ComplaintReason.PRODUCT_NOT_RECEIVED,
-  },
-  {
-    value: ComplaintReason.DISSATISFIED,
-    label: ComplaintReason.DISSATISFIED,
-  },
-  {
-    value: ComplaintReason.HIGHER_CHARGE,
-    label: ComplaintReason.HIGHER_CHARGE,
-  },
-  {
-    value: ComplaintReason.MULTIPLE_CHARGES,
-    label: ComplaintReason.MULTIPLE_CHARGES,
-  },
-  {
-    value: ComplaintReason.DECLINED_BUT_CHARGED,
-    label: ComplaintReason.DECLINED_BUT_CHARGED,
-  },
-  {
-    value: ComplaintReason.UNRECOGNIZED_TRANSACTION,
-    label: ComplaintReason.UNRECOGNIZED_TRANSACTION,
-  },
-] as const;
+const REPORT_ISSUES = Object.entries(ComplaintReason).map(([key, value]) => ({
+  value: key,
+  label: value,
+}));
 
 interface SelectedFile {
   id: string;
@@ -106,7 +85,7 @@ export default function ReportTransactionModal({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { postWithAuth } = useAxios();
+  const { postFormWithAuth } = useAxios();
   const [selectedIssue, setSelectedIssue] = useState<string>('');
   const [description, setDescription] = useState('');
   const [purchaseDescription, setPurchaseDescription] = useState('');
@@ -118,78 +97,71 @@ export default function ReportTransactionModal({
     try {
       setIsSubmitting(true);
 
-      // Create FormData instance
+      console.log('Uploaded files before submit:', uploadedFiles);
+
       const formData = new FormData();
 
-      // Add complaint data as a JSON string in a field called 'body'
+      // Add complaint data
       const complaintData = {
         reason: selectedIssue,
         transactionId: transaction.id,
         purchaseDescription: purchaseDescription.trim(),
         disputeDescription: description.trim(),
-        lockCards: false,
+        cardId: transaction.cardId,
       };
-      formData.append('body', JSON.stringify(complaintData));
 
-      // Add files if any
-      uploadedFiles.forEach(file => {
-        formData.append('files', {
-          uri: file.uri,
-          type: file.type,
-          name: file.name,
+      // Add files if they exist
+      if (uploadedFiles.length > 0) {
+        uploadedFiles.forEach(file => {
+          formData.append('files[]', {
+            uri: file.uri,
+            type: file.type || 'application/octet-stream',
+            name: file.name,
+          } as any);
         });
+      }
+
+      // Add other form data
+      Object.entries(complaintData).forEach(([key, value]) => {
+        formData.append(key, value);
       });
 
-      // Show loading state
-      Toast.show({
-        type: 'info',
-        text1: t('Submitting complaint...'),
-        position: 'bottom',
-      });
-
-      // Make API call with FormData
-      const config: AxiosRequestConfig = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        transformRequest: [(data: FormData) => data],
-      };
-
-      const response = await postWithAuth(
-        '/v1/card/transaction/complaint',
+      console.log('FormData structure:', formData);
+      const response = await postFormWithAuth(
+        `/v1/cards/${CardProviders.REAP_CARD}/card/complain`,
         formData,
-        undefined,
-        config,
+        30000, // 30 second timeout
       );
 
-      // Close the modal
-      setModalVisible(false);
+      console.log('response in reportTransactionModal : ', response);
 
-      if (!response.error) {
-        // Show success modal
+      if (!response.isError) {
+        setModalVisible(false);
         showModal('state', {
           type: 'success',
-          title: t('Report Submitted'),
-          description: t(
-            'We have received your report and will look into it. Our support team will contact you soon.',
-          ),
-          onSuccess: hideModal,
+          title: t('TRANSACTION_REPORTED'),
+          description: t('TRANSACTION_REPORTED_DESCRIPTION'),
+          onSuccess: () => {
+            hideModal();
+          },
           onFailure: hideModal,
         });
       } else {
         showModal('state', {
           type: 'error',
-          title: t('Report Submission Failed'),
-          description: t('Please try again later'),
+          title: t('Error'),
+          description: response.error
+            ? response.error.message
+            : t('Please try again later'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
       }
     } catch (error) {
-      // Show error message
+      console.log('error in reportTransactionModal : ', error);
       showModal('state', {
         type: 'error',
-        title: t('Report Submission Failed'),
+        title: t('Error'),
         description: t('Please try again later'),
         onSuccess: hideModal,
         onFailure: hideModal,

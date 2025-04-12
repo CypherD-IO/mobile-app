@@ -51,6 +51,7 @@ import HigherSpendingLimitStatusModal from '../../../components/v2/higherSpendin
 import Loading from '../../../components/v2/loading';
 import SaveChangesModal from '../../../components/v2/saveChangesModal';
 import SelectPlanModal from '../../../components/selectPlanModal';
+import { countryMaster } from '../../../../assets/datasets/countryMaster';
 
 interface RouteParams {
   cardId: string;
@@ -91,6 +92,14 @@ interface CardLimitsV2Response {
   countries: string[];
   isDefaultSetting?: boolean;
   timeToRemindLater?: number;
+}
+
+interface Card {
+  id: string;
+  countrySettings?: {
+    countries: string[];
+  };
+  // ... other card properties
 }
 
 export default function CardControls() {
@@ -142,6 +151,9 @@ export default function CardControls() {
   const [showForAllCards, setShowForAllCards] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | undefined>(undefined);
 
+  const [selectedCountries, setSelectedCountries] = useState<ICountry[]>([]);
+  const [allCountriesSelected, setAllCountriesSelected] = useState(false);
+
   useEffect(() => {
     const filteredCards =
       get(globalState?.cardProfile, currentCardProvider)?.cards?.filter(
@@ -161,6 +173,37 @@ export default function CardControls() {
     setSelectedCard(card);
     void fetchCardLimits();
   }, [selectedCardId, activeCards]);
+
+  useEffect(() => {
+    console.log('hasChanges : ', hasChanges);
+    console.log('changes : ', changes);
+  }, [hasChanges, changes]);
+
+  const populateSelectedCountries = (countries: string[]) => {
+    if (countries) {
+      // Check if countries array contains "ALL"
+      if (countries.includes('ALL')) {
+        setAllCountriesSelected(true);
+        setSelectedCountries([]); // Clear selected countries when ALL is selected
+      } else {
+        // Convert country codes to ICountry objects
+        const countryObjects = countries.map(code => {
+          const country = countryMaster.find(c => c.Iso2 === code);
+          return {
+            name: country?.name ?? '',
+            Iso2: code,
+            unicode_flag: country?.unicode_flag ?? '',
+            dialCode: country?.dial_code ?? '',
+            flag: country?.flag ?? '',
+            Iso3: country?.Iso3 ?? '',
+            currency: country?.currency ?? '',
+          };
+        });
+        setSelectedCountries(countryObjects);
+        setAllCountriesSelected(false);
+      }
+    }
+  };
 
   useEffect(() => {
     if (isExpanded) {
@@ -231,7 +274,7 @@ export default function CardControls() {
       });
 
       const response = await patchWithAuth(
-        `/v1/cards/${currentCardProvider}/card/${cardId}/channel-control`,
+        `/v1/cards/${currentCardProvider}/card/${cardId}/limits-v2`,
         {
           customLimit: {
             [channelCode]: !originalChannelControl,
@@ -321,37 +364,28 @@ export default function CardControls() {
           cardProvider: currentCardProvider,
         });
 
-        setTimeout(() => {
-          showModal('state', {
-            type: 'success',
-            title: t('LIMIT_UPDATED_SUCCESSFULLY'),
-            onSuccess: () => {
-              hideModal();
-              void fetchCardLimits();
-            },
-            onFailure: hideModal,
-          });
-        }, 300);
+        Toast.show({
+          type: 'success',
+          text1: t('LIMIT_UPDATED_SUCCESSFULLY'),
+          position: 'bottom',
+        });
+        void fetchCardLimits();
       } else {
-        setTimeout(() => {
-          showModal('state', {
-            type: 'error',
-            title: t('UNABLE_TO_UPDATE_LIMIT'),
-            description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }, 300);
+        Toast.show({
+          type: 'error',
+          text1: t('UNABLE_TO_UPDATE_LIMIT'),
+          text2: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+          position: 'bottom',
+        });
       }
     } catch (error) {
       console.log('error in handleLimitChange : ', error);
-      setTimeout(() => {
-        showModal('state', {
-          type: 'error',
-          title: t('UNABLE_TO_UPDATE_LIMIT'),
-          description: t('PLEASE_CONTACT_SUPPORT'),
-        });
-      }, 300);
+      Toast.show({
+        type: 'error',
+        text1: t('UNABLE_TO_UPDATE_LIMIT'),
+        text2: t('PLEASE_CONTACT_SUPPORT'),
+        position: 'bottom',
+      });
     }
   };
 
@@ -418,9 +452,6 @@ export default function CardControls() {
   };
 
   const [isCountryModalVisible, setIsCountryModalVisible] = useState(false);
-  const [selectedCountries, setSelectedCountries] = useState<ICountry[]>([]);
-  const [allCountriesSelected, setAllCountriesSelected] = useState(false);
-
   const [show3DsModal, setShow3DsModal] = useState(false);
   const [isTelegramEnabled, setIsTelegramEnabled] = useState(
     get(selectedCard, 'is3dsEnabled', false),
@@ -459,6 +490,8 @@ export default function CardControls() {
           applePay: response.data.customLimit?.wal || false,
         });
 
+        populateSelectedCountries(response.data.countries);
+
         // Handle navigation based on ON_OPEN_NAVIGATE
         if (onOpenNavigate) {
           switch (onOpenNavigate) {
@@ -475,9 +508,8 @@ export default function CardControls() {
               setIsCountryModalVisible(true);
               break;
             case ON_OPEN_NAVIGATE.DEFAULT:
-              console.log('DEFAULT');
+              break;
             default:
-              // No action needed
               break;
           }
         }
@@ -501,61 +533,63 @@ export default function CardControls() {
     }
   };
 
-  const handleSaveCountryChanges = async () => {
+  const handleCountrySelection = (countries: ICountry[]) => {
+    setSelectedCountries(countries);
+    setAllCountriesSelected(countries.length === countryMaster.length);
+  };
+
+  const handleSaveCountries = async () => {
     try {
-      const countryPayload = {
-        countries: allCountriesSelected
-          ? ['ALL']
-          : selectedCountries.map(country => country.Iso2),
-      };
+      setLoading(true);
+      // Remove duplicates from selected countries
+      const uniqueCountries = selectedCountries.filter(
+        (country, index, self) =>
+          index === self.findIndex(c => c.Iso2 === country.Iso2),
+      );
+
+      const countryCodes = allCountriesSelected
+        ? ['ALL']
+        : uniqueCountries.map(country => country.Iso2);
 
       const response = await patchWithAuth(
         `/v1/cards/${currentCardProvider}/card/${cardId}/limits-v2`,
-        countryPayload,
+        {
+          countries: countryCodes,
+        },
       );
 
       if (!response.isError) {
-        // Track changes only on success
+        // Update the selectedCountries state with unique countries
+        setSelectedCountries(uniqueCountries);
+
+        // Track the changes only after successful save
         setHasChanges(true);
         setChanges(prev => ({
           ...prev,
-          countries: countryPayload.countries,
+          countries: countryCodes,
         }));
 
-        // Log analytics event
-        void analytics().logEvent('card_countries_update', {
-          cardId,
-          cardProvider: currentCardProvider,
-          allCountriesSelected,
-          selectedCountries: countryPayload.countries,
-        });
-
-        showModal('state', {
+        Toast.show({
           type: 'success',
-          title: t('COUNTRIES_UPDATED_SUCCESSFULLY'),
-          onSuccess: () => {
-            hideModal();
-            void fetchCardLimits();
-          },
-          onFailure: hideModal,
+          text1: t('COUNTRIES_UPDATED_SUCCESSFULLY'),
+          position: 'bottom',
         });
+        setIsCountryModalVisible(false);
       } else {
-        showModal('state', {
+        Toast.show({
           type: 'error',
-          title: t('UNABLE_TO_UPDATE_COUNTRIES'),
-          description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          text1: t('UNABLE_TO_UPDATE_COUNTRIES'),
+          position: 'bottom',
         });
       }
     } catch (error) {
-      showModal('state', {
+      Toast.show({
         type: 'error',
-        title: t('UNABLE_TO_UPDATE_COUNTRIES'),
-        description: t('PLEASE_CONTACT_SUPPORT'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        text1: t('UNABLE_TO_UPDATE_COUNTRIES'),
+        position: 'bottom',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -570,6 +604,8 @@ export default function CardControls() {
             `/v1/cards/${currentCardProvider}/card/${cardId}/limits-v2`,
             { restoreToDefaults: true },
           );
+
+          console.log('response in handleResetCardSettings : ', response);
 
           if (!response.isError) {
             // Log analytics event
@@ -621,13 +657,16 @@ export default function CardControls() {
         if (showForAllCards) {
           setShowSaveChangesModal(true);
         } else {
+          // Only clear changes when actually navigating back
+          setHasChanges(false);
+          setChanges({});
           navigation.goBack();
         }
       }
     });
 
     return unsubscribe;
-  }, [navigation, hasChanges, changes]);
+  }, [navigation, hasChanges, changes, showForAllCards]);
 
   const handleApplyToAllCards = async () => {
     try {
@@ -635,24 +674,33 @@ export default function CardControls() {
         `/v1/cards/${currentCardProvider}/card/${cardId}/limits-v2`,
         {
           ...changes,
-          safeForAllCards: true,
+          forAllCards: true,
         },
       );
 
       console.log('response in handleApplyToAllCards : ', response);
-      setShowSaveChangesModal(false);
+      console.log('changes in handleApplyToAllCards : ', changes);
 
       if (!response.isError) {
-        // Log analytics event
-        void analytics().logEvent('card_changes_apply_all', {
-          cardId,
-          cardProvider: currentCardProvider,
-          changes,
-        });
-
+        // Only clear changes after successful apply to all
+        setHasChanges(false);
+        setChanges({});
         setShowSaveChangesModal(false);
-        navigation.goBack();
+
+        showModal('state', {
+          type: 'success',
+          title: t('CHANGES_APPLIED_SUCCESSFULLY'),
+          onSuccess: () => {
+            hideModal();
+            navigation.goBack();
+          },
+          onFailure: () => {
+            hideModal();
+            navigation.goBack();
+          },
+        });
       } else {
+        setShowSaveChangesModal(false);
         showModal('state', {
           type: 'error',
           title: t('UNABLE_TO_APPLY_CHANGES'),
@@ -662,6 +710,7 @@ export default function CardControls() {
         });
       }
     } catch (error) {
+      setShowSaveChangesModal(false);
       showModal('state', {
         type: 'error',
         title: t('UNABLE_TO_APPLY_CHANGES'),
@@ -1142,12 +1191,12 @@ export default function CardControls() {
       <ChooseMultipleCountryModal
         isModalVisible={isCountryModalVisible}
         setModalVisible={setIsCountryModalVisible}
-        selectedCountryState={[selectedCountries, setSelectedCountries]}
+        selectedCountryState={[selectedCountries, handleCountrySelection]}
         allCountriesSelectedState={[
           allCountriesSelected,
           setAllCountriesSelected,
         ]}
-        onSaveChanges={handleSaveCountryChanges}
+        onSaveChanges={handleSaveCountries}
       />
 
       {/* Authentication Method Modal */}
@@ -1167,6 +1216,14 @@ export default function CardControls() {
         onApplyToAllCards={handleApplyToAllCards}
         onApplyToCard={() => {
           setShowSaveChangesModal(false);
+          setHasChanges(false);
+          setChanges({});
+          navigation.goBack();
+        }}
+        onCancel={() => {
+          setShowSaveChangesModal(false);
+          setHasChanges(false);
+          setChanges({});
           navigation.goBack();
         }}
       />

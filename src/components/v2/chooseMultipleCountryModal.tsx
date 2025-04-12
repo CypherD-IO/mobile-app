@@ -45,6 +45,8 @@ const ChooseMultipleCountryModal = ({
   allCountriesSelectedState,
   onSaveChanges,
 }: Props) => {
+  console.log('selectedCountryState', selectedCountryState);
+
   const [selectedCountry, setSelectedCountry] = selectedCountryState;
   const [isFullHeight, setIsFullHeight] = useState(false);
   const heightAnim = useRef(new Animated.Value(80)).current;
@@ -60,6 +62,11 @@ const ChooseMultipleCountryModal = ({
   >([]);
   const [allCountriesSelected, setAllCountriesSelected] =
     allCountriesSelectedState;
+  const [initialSelectedCountry, setInitialSelectedCountry] = useState<
+    ICountry[]
+  >([]);
+  const [initialAllCountriesSelected, setInitialAllCountriesSelected] =
+    useState(false);
 
   const getCountryMasterWithDialCode = (countries: any[]) => {
     return countries.map(country => ({
@@ -126,13 +133,38 @@ const ChooseMultipleCountryModal = ({
     }
   }, [copyCountriesWithFlagAndDialcodes, countryFilterText]);
 
+  // Store initial state when modal opens
+  useEffect(() => {
+    if (isModalVisible) {
+      setInitialSelectedCountry([...selectedCountry]);
+      setInitialAllCountriesSelected(allCountriesSelected);
+    }
+  }, [isModalVisible]);
+
   const handleAllCountriesSelected = (isAllCountriesSelected: boolean) => {
     if (!isAllCountriesSelected) {
       setSelectedCountry([]);
     } else {
-      setSelectedCountry(origCountriesWithFlagAndDialcodes);
+      setSelectedCountry([]);
     }
     setAllCountriesSelected(isAllCountriesSelected);
+  };
+
+  const handleCountrySelect = (country: ICountry) => {
+    if (allCountriesSelected) {
+      setAllCountriesSelected(false);
+      setSelectedCountry([country]);
+    } else {
+      // Remove duplicates and update selection
+      const isSelected = selectedCountry.some(c => c.Iso2 === country.Iso2);
+      if (isSelected) {
+        setSelectedCountry(
+          selectedCountry.filter(c => c.Iso2 !== country.Iso2),
+        );
+      } else {
+        setSelectedCountry([...selectedCountry, country]);
+      }
+    }
   };
 
   const animateToFullHeight = () => {
@@ -155,10 +187,26 @@ const ChooseMultipleCountryModal = ({
   };
 
   const handleModalClose = () => {
+    // Restore initial state when closing without saving
+    setSelectedCountry([...initialSelectedCountry]);
+    setAllCountriesSelected(initialAllCountriesSelected);
     setIsFullHeight(false);
     setBackdropOpacity(0.5);
     heightAnim.setValue(80);
     setModalVisible(false);
+  };
+
+  const handleSaveChanges = () => {
+    if (onSaveChanges) {
+      // Remove any duplicates before saving
+      const uniqueCountries = selectedCountry.filter(
+        (country, index, self) =>
+          index === self.findIndex(c => c.Iso2 === country.Iso2),
+      );
+      setSelectedCountry(uniqueCountries);
+      onSaveChanges();
+    }
+    handleModalClose();
   };
 
   return (
@@ -266,37 +314,17 @@ const ChooseMultipleCountryModal = ({
                   </CyDView>
                 )}
                 {origCountriesWithFlagAndDialcodes.map(country => {
+                  const isSelected =
+                    allCountriesSelected ||
+                    selectedCountry.some(c => c.Iso2 === country.Iso2);
                   return (
                     <React.Fragment key={country.Iso2}>
                       <CyDTouchView
-                        onPress={() => {
-                          if (some(selectedCountry, { name: country.name })) {
-                            const updatedSelection =
-                              reject(selectedCountry, { name: country.name }) ??
-                              [];
-                            setSelectedCountry(updatedSelection);
-                            setAllCountriesSelected(
-                              updatedSelection.length ===
-                                origCountriesWithFlagAndDialcodes.length,
-                            );
-                          } else {
-                            const updatedSelection = [
-                              ...selectedCountry,
-                              country,
-                            ];
-                            setSelectedCountry(updatedSelection);
-                            setAllCountriesSelected(
-                              updatedSelection.length ===
-                                origCountriesWithFlagAndDialcodes.length,
-                            );
-                          }
-                        }}
+                        onPress={() => handleCountrySelect(country)}
                         className={clsx(
                           'flex flex-row items-center justify-between px-[16px] my-[6px] mx-[12px] rounded-[8px] bg-n10/80',
                           {
-                            'bg-blue20': some(selectedCountry, {
-                              name: country.name,
-                            }),
+                            'bg-blue20': isSelected,
                           },
                         )}
                         key={country.Iso2 + country.name}>
@@ -311,7 +339,7 @@ const ChooseMultipleCountryModal = ({
                         </CyDView>
                         <CyDView className={'flex flex-row justify-end'}>
                           <CyDView
-                            className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-p50' : ''} rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center`}>
+                            className={`h-[21px] w-[21px] ${isSelected ? 'bg-p50' : ''} rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center`}>
                             <CyDMaterialDesignIcons
                               name='check-bold'
                               size={18}
@@ -330,14 +358,9 @@ const ChooseMultipleCountryModal = ({
           {/* Sticky Save Changes Button */}
           <CyDView className='absolute bottom-0 left-0 right-0 px-[16px] py-[16px] bg-n20 border-t-[1px] border-n40 pb-[32px]'>
             <Button
-              title={`Save Changes${selectedCountry.length ? ` (${selectedCountry.length})` : ''}`}
-              onPress={() => {
-                if (onSaveChanges) {
-                  onSaveChanges();
-                }
-                handleModalClose();
-              }}
-              disabled={selectedCountry.length === 0}
+              title={`Save Changes${allCountriesSelected ? ' (All)' : selectedCountry.length ? ` (${selectedCountry.length})` : ''}`}
+              onPress={handleSaveChanges}
+              disabled={!allCountriesSelected && selectedCountry.length === 0}
             />
           </CyDView>
         </Animated.View>

@@ -39,8 +39,10 @@ export const getToken = async (
         coreumAddress,
         fcmToken,
       };
+      console.log('payload', payload);
       try {
         await axios.put(registerURL, payload);
+        console.log('fcmToken', fcmToken);
         return { fcmToken };
       } catch (error) {
         Sentry.captureException(error);
@@ -75,13 +77,6 @@ const getAndroidActions = (categoryId?: CypherDeclineCodes | RPCODES) => {
             launchActivity: 'default',
           },
         },
-        {
-          title: 'Enable Zero Restriction',
-          pressAction: {
-            id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-            launchActivity: 'default',
-          },
-        },
       ];
     case CypherDeclineCodes.DAILY_LIMIT:
       return [
@@ -92,13 +87,6 @@ const getAndroidActions = (categoryId?: CypherDeclineCodes | RPCODES) => {
             launchActivity: 'default',
           },
         },
-        {
-          title: 'Enable Zero Restriction',
-          pressAction: {
-            id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-            launchActivity: 'default',
-          },
-        },
       ];
     case CypherDeclineCodes.MONTHLY_LIMIT:
       return [
@@ -106,25 +94,6 @@ const getAndroidActions = (categoryId?: CypherDeclineCodes | RPCODES) => {
           title: 'Increase Monthly Limit',
           pressAction: {
             id: NOTIFE_ACTIONS.INCREASE_MONTHLY_LIMIT,
-            launchActivity: 'default',
-          },
-        },
-        {
-          title: 'Enable Zero Restriction',
-          pressAction: {
-            id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
-            launchActivity: 'default',
-          },
-        },
-      ];
-
-    case CypherDeclineCodes.RATE_CHECK_USER:
-    case CypherDeclineCodes.LOCATION_CHECK_USER:
-      return [
-        {
-          title: 'Enable Zero Restriction Mode',
-          pressAction: {
-            id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
             launchActivity: 'default',
           },
         },
@@ -249,6 +218,7 @@ export async function RouteNotificationAction({
   showModal: (type: GlobalModalType, data: any) => void;
   hideModal: () => void;
 }) {
+  console.log('actionId : ', actionId);
   switch (actionId) {
     case NOTIFE_ACTIONS.ACTIVATE_CARD:
     case NOTIFE_ACTIONS.ADD_COUNTRY:

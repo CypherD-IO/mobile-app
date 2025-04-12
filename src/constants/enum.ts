@@ -446,7 +446,6 @@ export enum CypherDeclineCodes {
   MERCHANT_GLOBAL = 'B2G', // cypher global settings
   MERCHANT_DENIED = 'B3G', // user settings
   MERCHANT_LIMIT = 'B4G', // user settings
-  BLACKLISTED_MERCHANT = 'B2G',
   NEW_MERCHANT_HIGH_SPEND_RULE = 'C10',
 }
 
@@ -481,15 +480,17 @@ export enum HigherSpendingLimitStatus {
   REJECTED = 'rejected',
 }
 
-export enum ComplaintReason {
-  REFUND_NOT_RECEIVED = "Returned/cancelled this purchase and haven't received a refund",
-  PRODUCT_NOT_RECEIVED = 'Never received this product/service/ATM funds',
-  DISSATISFIED = 'Dissatisfied with product or service',
-  HIGHER_CHARGE = 'Charged higher amount that expected',
-  MULTIPLE_CHARGES = 'Made this purchase but it was paid for more than once',
-  DECLINED_BUT_CHARGED = "Was charged but declined at merchant's end",
-  UNRECOGNIZED_TRANSACTION = 'I did not make this purchase/ I do not recognize this transaction',
-}
+export const ComplaintReason = {
+  REFUND_NOT_RECEIVED:
+    "Returned/cancelled this purchase and haven't received a refund",
+  PRODUCT_NOT_RECEIVED: 'Never received this product/service/ATM funds',
+  DISSATISFIED: 'Dissatisfied with product or service',
+  HIGHER_CHARGE: 'Charged higher amount that expected',
+  MULTIPLE_CHARGES: 'Made this purchase but it was paid for more than once',
+  DECLINED_BUT_CHARGED: "Was charged but declined at merchant's end",
+  UNRECOGNIZED_TRANSACTION:
+    'I did not make this purchase/ I do not recognize this transaction',
+};
 
 export enum ON_OPEN_NAVIGATE {
   DEFAULT = 'DEFAULT',

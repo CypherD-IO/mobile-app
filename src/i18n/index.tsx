@@ -1599,15 +1599,23 @@ const resources = {
       APPLY_CHANGES_TO_ALL_CARDS_DESCRIPTION:
         'Do you want to apply these changes to all your cards?',
       UNABLE_TO_APPLY_CHANGES: 'Unable to apply changes.',
-      TXN_APPROVED_SUCCESS_DESCRIPTION: 'Transaction approved successfully',
+      TXN_APPROVED_SUCCESS_DESCRIPTION:
+        'Transaction approved successfully. Please retry the transaction.',
       TXN_DISPUTED_SUCCESS_DESCRIPTION: 'Transaction disputed successfully',
       TRANSACTION_DECLINE_HANDLING_MESSAGE:
-        "This transaction was declined as a precaution, since it's a high-value transaction with a merchant you don't frequently use. Was this transaction made by you? ",
+        'This transaction was declined as a precaution. Was this transaction made by you? ',
       THIS_WAS_ME: 'This Was Me',
       THIS_ISNT_ME: "This Wasn't Me",
       UNEXCPECTED_ERROR: 'Unexpected Error',
       ACTION_FAILED: 'Action could not be completed. Please contact support.',
       TRANSACTION_ALREADY_REPORTED: 'Transaction already reported',
+      TRANSACTION_REPORTED_SUCCESSFULLY: 'Transaction reported successfully',
+      TRANSACTION_REPORT_FAILED: 'Transaction report failed',
+      TRANSACTION_REPORTED_DESCRIPTION:
+        'Thank you for reporting this transaction. We will review it and get back to you soon.',
+      SUCCESS_RETRY_TRANSACTION: 'Please retry the transaction',
+      TRANSACTION_APPROVED_SUCCESS_DESCRIPTION:
+        'Your transaction has been approved. Please retry the transaction.',
     },
   },
 };
