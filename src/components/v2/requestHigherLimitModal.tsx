@@ -30,6 +30,7 @@ export default function RequestHigherLimitModal({
   const [dailyLimit, setDailyLimit] = React.useState('');
   const [monthlyLimit, setMonthlyLimit] = React.useState('');
   const [reason, setReason] = React.useState('');
+  const [error, setError] = React.useState<string>('');
   const MAX_REASON_LENGTH = 200;
 
   const formatNumber = (value: string) => {
@@ -41,10 +42,12 @@ export default function RequestHigherLimitModal({
 
   const handleDailyLimitChange = (text: string) => {
     setDailyLimit(formatNumber(text));
+    setError(''); // Clear any previous errors when user makes changes
   };
 
   const handleMonthlyLimitChange = (text: string) => {
     setMonthlyLimit(formatNumber(text));
+    setError(''); // Clear any previous errors when user makes changes
   };
 
   const handleReasonChange = (text: string) => {
@@ -57,6 +60,12 @@ export default function RequestHigherLimitModal({
     // Convert formatted strings back to numbers for submission
     const dailyValue = parseInt(dailyLimit.replace(/[^0-9]/g, ''), 10);
     const monthlyValue = parseInt(monthlyLimit.replace(/[^0-9]/g, ''), 10);
+
+    if (monthlyValue < dailyValue) {
+      setError('Monthly limit cannot be less than daily limit');
+      return;
+    }
+
     onSubmit(dailyValue, monthlyValue, reason);
     setIsModalVisible(false);
   };
@@ -117,6 +126,11 @@ export default function RequestHigherLimitModal({
               placeholder='10,00,000'
             />
           </CyDView>
+          {error && (
+            <CyDText className='text-[12px] text-red-500 mt-[4px]'>
+              {error}
+            </CyDText>
+          )}
         </CyDView>
 
         <CyDView className='mt-[16px]'>

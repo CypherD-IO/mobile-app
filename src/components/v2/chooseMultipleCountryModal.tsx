@@ -138,16 +138,21 @@ const ChooseMultipleCountryModal = ({
     if (isModalVisible) {
       setInitialSelectedCountry([...selectedCountry]);
       setInitialAllCountriesSelected(allCountriesSelected);
+      // If selectedCountry is empty and allCountriesSelected is true, it means "ALL" was selected
+      if (selectedCountry.length === 0 && allCountriesSelected) {
+        setAllCountriesSelected(true);
+      }
     }
   }, [isModalVisible]);
 
   const handleAllCountriesSelected = (isAllCountriesSelected: boolean) => {
-    if (!isAllCountriesSelected) {
+    if (isAllCountriesSelected) {
       setSelectedCountry([]);
+      setAllCountriesSelected(true);
     } else {
       setSelectedCountry([]);
+      setAllCountriesSelected(false);
     }
-    setAllCountriesSelected(isAllCountriesSelected);
   };
 
   const handleCountrySelect = (country: ICountry) => {
@@ -158,9 +163,14 @@ const ChooseMultipleCountryModal = ({
       // Remove duplicates and update selection
       const isSelected = selectedCountry.some(c => c.Iso2 === country.Iso2);
       if (isSelected) {
-        setSelectedCountry(
-          selectedCountry.filter(c => c.Iso2 !== country.Iso2),
+        const newSelectedCountries = selectedCountry.filter(
+          c => c.Iso2 !== country.Iso2,
         );
+        setSelectedCountry(newSelectedCountries);
+        // If no countries are selected after removal, set allCountriesSelected to false
+        if (newSelectedCountries.length === 0) {
+          setAllCountriesSelected(false);
+        }
       } else {
         setSelectedCountry([...selectedCountry, country]);
       }

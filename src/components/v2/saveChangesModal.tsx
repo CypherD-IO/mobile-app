@@ -47,14 +47,14 @@ export default function SaveChangesModal({
         <CyDView className='flex flex-col gap-[10px] mt-[40px]'>
           <Button
             title={t('APPLY_TO_ALL_CARDS')}
-            type={ButtonType.GREY_FILL}
+            type={ButtonType.PRIMARY}
             onPress={() => {
               onApplyToAllCards();
             }}
           />
           <Button
             title={capitalize(t('CANCEL'))}
-            type={ButtonType.PRIMARY}
+            type={ButtonType.GREY_FILL}
             onPress={() => {
               onApplyToCard();
             }}

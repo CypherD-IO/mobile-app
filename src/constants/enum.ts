@@ -447,6 +447,7 @@ export enum CypherDeclineCodes {
   MERCHANT_DENIED = 'B3G', // user settings
   MERCHANT_LIMIT = 'B4G', // user settings
   NEW_MERCHANT_HIGH_SPEND_RULE = 'C10',
+  INT_CHANNEL_LIMIT = 'I5G',
 }
 
 export enum NOTIFE_ACTIONS {

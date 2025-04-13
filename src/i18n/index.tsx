@@ -1584,7 +1584,7 @@ const resources = {
       LIMIT_INCREASE_REQUEST_SUBMITTED: 'Limit increase request submitted.',
       LIMIT_INCREASE_REQUEST_FAILED: 'Limit increase request failed.',
       LIMIT_INCREASE_REQUEST_SUBMITTED_DESC:
-        'Your request for Limit has been successfully submitted. You will be notified once the request is processed.',
+        'You will be notified once the request is processed through email and telegram.',
       LIMIT_INCREASE_REQUEST_FAILED_DESC:
         'Could not process the limit increase request. Please contact support.',
       UNABLE_TO_FETCH_LIMITS: 'Unable to fetch limits.',
@@ -1616,6 +1616,13 @@ const resources = {
       SUCCESS_RETRY_TRANSACTION: 'Please retry the transaction',
       TRANSACTION_APPROVED_SUCCESS_DESCRIPTION:
         'Your transaction has been approved. Please retry the transaction.',
+      CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS:
+        'Changes applied successfully to all cards',
+      UNABLE_TO_APPLY_CHANGES_TO_ALL_CARDS:
+        'Unable to apply changes to all cards',
+      REVIEW_SETTINGS_MESSAGE_CHANNEL_OFF:
+        'This channel is currently off. Please toggle the channel on and retry.',
+      UPDATE_CHANNEL_SETTINGS: 'Update Channel Settings',
     },
   },
 };

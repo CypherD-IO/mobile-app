@@ -139,7 +139,7 @@ export default function ReportTransactionModal({
         setModalVisible(false);
         showModal('state', {
           type: 'success',
-          title: t('TRANSACTION_REPORTED'),
+          title: t('TRANSACTION_REPORTED_SUCCESSFULLY'),
           description: t('TRANSACTION_REPORTED_DESCRIPTION'),
           onSuccess: () => {
             hideModal();
@@ -323,17 +323,19 @@ export default function ReportTransactionModal({
 
               {/* Dropdown Options */}
               {isDropdownOpen && (
-                <CyDView className='absolute top-full left-0 right-0 bg-n0 border border-n40 rounded-b-[12px] z-[1000]'>
-                  {REPORT_ISSUES.map(issue => (
-                    <CyDTouchView
-                      key={issue.value}
-                      className='p-[16px] border-t border-n40'
-                      onPress={() => handleIssueSelect(issue.value)}>
-                      <CyDText className='text-[14px] text-n200'>
-                        {issue.label}
-                      </CyDText>
-                    </CyDTouchView>
-                  ))}
+                <CyDView className='absolute top-full left-0 right-0 bg-n0 border border-n40 rounded-b-[12px] z-[1000] max-h-[300px]'>
+                  <CyDScrollView className='max-h-[300px]'>
+                    {REPORT_ISSUES.map(issue => (
+                      <CyDTouchView
+                        key={issue.value}
+                        className='p-[16px] border-t border-n40'
+                        onPress={() => handleIssueSelect(issue.value)}>
+                        <CyDText className='text-[14px] text-n200'>
+                          {issue.label}
+                        </CyDText>
+                      </CyDTouchView>
+                    ))}
+                  </CyDScrollView>
                 </CyDView>
               )}
             </CyDView>

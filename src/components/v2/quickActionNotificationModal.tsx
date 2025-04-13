@@ -152,7 +152,7 @@ function RenderCountryDecline({
                       params: {
                         cardId: data?.cardId,
                         currentCardProvider: data?.provider,
-                        // TODO: add which control type to open
+                        onOpenNavigate: ON_OPEN_NAVIGATE.SELECT_COUNTRY,
                       },
                     });
                 }}

@@ -327,7 +327,6 @@ const MerchantDetailsModal = ({
 const DeclinedTransactionActionItem = ({
   metadata,
   countryAlreadyAllowed,
-  cardId,
   provider,
   addIntlCountry,
   navigation,
@@ -342,10 +341,11 @@ const DeclinedTransactionActionItem = ({
   fundsAvailable,
   showTransactionDeclineHandlingModal = true,
   limits,
+  cardDetails,
+  isChannelOff,
 }: {
   metadata: ICardSubObjectMerchant;
   countryAlreadyAllowed: boolean;
-  cardId: string;
   provider: CardProviders;
   addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
   navigation: NavigationProp<ParamListBase>;
@@ -360,12 +360,17 @@ const DeclinedTransactionActionItem = ({
   fundsAvailable: boolean;
   showTransactionDeclineHandlingModal: boolean;
   limits: any;
+  cardDetails: Card;
+  isChannelOff: boolean;
 }) => {
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const { patchWithAuth } = useAxios();
   const [isThisWasMeLoading, setIsThisWasMeLoading] = useState(false);
   const [isThisIsntMeLoading, setIsThisIsntMeLoading] = useState(false);
+
+  console.log('limits?.dMercs : ', limits?.dMercs);
+  console.log('cardDetails : ', cardDetails);
 
   const handleThisWasMe = async (): Promise<void> => {
     try {
@@ -387,7 +392,7 @@ const DeclinedTransactionActionItem = ({
       };
 
       const response = await patchWithAuth(
-        `/v1/cards/${provider}/card/${cardId}/limits-v2`,
+        `/v1/cards/${provider}/card/${cardDetails.cardId}/limits-v2`,
         payload,
       );
 
@@ -400,6 +405,7 @@ const DeclinedTransactionActionItem = ({
           description: t('TXN_APPROVED_SUCCESS_DESCRIPTION'),
           onSuccess: () => {
             hideModal();
+            navigation.goBack();
           },
         });
       } else {
@@ -422,54 +428,69 @@ const DeclinedTransactionActionItem = ({
   };
 
   const handleThisIsntMe = async (): Promise<void> => {
-    try {
-      setIsThisIsntMeLoading(true);
-      const merchantId = metadata?.merchantId;
-      if (!merchantId) {
-        throw new Error('Merchant ID is required');
-      }
+    console.log('handleThisIsntMe - Starting function');
+    const merchantId = metadata?.merchantId;
+    if (!merchantId) {
+      throw new Error('Merchant ID is required');
+    }
 
-      // Get existing dmerc array from limits prop
-      const existingDMercs = get(limits, 'dMercs', []);
+    showModal('state', {
+      type: 'warning',
+      title: t('CONFIRM_REPORT_TRANSACTION'),
+      description: t('CARD_WILL_BE_FROZEN_WARNING', {
+        cardType: capitalize(cardDetails.type),
+        last4: cardDetails.last4,
+      }),
+      onSuccess: async () => {
+        try {
+          setIsThisIsntMeLoading(true);
+          // Get existing dmerc array from limits prop
+          const existingDMercs = get(limits, 'dMercs', []);
 
-      // Add the new merchant to the list if not already present
-      if (!existingDMercs.includes(merchantId)) {
-        const payload = {
-          dMercs: [...existingDMercs, merchantId],
-        };
+          // Add the new merchant to the list if not already present
+          if (!existingDMercs.includes(merchantId)) {
+            const payload = {
+              dMercs: [...existingDMercs, merchantId],
+            };
 
-        const response = await patchWithAuth(
-          `/v1/cards/${provider}/card/${cardId}/limits-v2`,
-          payload,
-        );
+            const response = await patchWithAuth(
+              `/v1/cards/${provider}/card/${cardDetails.cardId}/limits-v2`,
+              payload,
+            );
 
-        console.log('resonse : ', response);
+            console.log('response : ', response);
 
-        if (!response.error) {
-          showModal('state', {
-            type: 'success',
-            title: t('SUCCESS'),
-            description: t('TXN_DISPUTED_SUCCESS_DESCRIPTION'),
-          });
-          hideModal();
-        } else {
+            if (!response.error) {
+              showModal('state', {
+                type: 'success',
+                title: t('TRANSACTION_REPORTED_SUCCESSFULLY'),
+                description: t('TRANSACTION_REPORTED_DESCRIPTION'),
+                onSuccess: () => {
+                  hideModal();
+                  navigation.goBack();
+                },
+              });
+            } else {
+              Toast.show({
+                type: 'error',
+                text1: t('ERROR'),
+                text2: t('ACTION_FAILED'),
+              });
+            }
+          }
+        } catch (error) {
+          Sentry.captureException(error);
           Toast.show({
             type: 'error',
             text1: t('ERROR'),
-            text2: t('ACTION_FAILED'),
+            text2: t('SOMETHING_WENT_WRONG'),
           });
+        } finally {
+          setIsThisIsntMeLoading(false);
         }
-      }
-    } catch (error) {
-      Sentry.captureException(error);
-      Toast.show({
-        type: 'error',
-        text1: t('ERROR'),
-        text2: t('SOMETHING_WENT_WRONG'),
-      });
-    } finally {
-      setIsThisIsntMeLoading(false);
-    }
+      },
+      onFailure: hideModal,
+    });
   };
 
   if (isCountryDisabled && metadata?.merchantCountry && isCountryDisabled) {
@@ -493,7 +514,7 @@ const DeclinedTransactionActionItem = ({
             className='rounded-[4px] bg-n20 px-[8px] py-[6px] flex-1'
             onPress={() => {
               navigation.navigate(screenTitle.CARD_CONTROLS, {
-                cardId: cardId ?? '',
+                cardId: cardDetails.cardId ?? '',
                 currentCardProvider: provider,
                 onOpenNavigate: ON_OPEN_NAVIGATE.SELECT_COUNTRY,
               });
@@ -509,7 +530,10 @@ const DeclinedTransactionActionItem = ({
             )}
             disabled={countryAlreadyAllowed}
             onPress={() => {
-              void addIntlCountry(metadata?.merchantCountry, cardId ?? '');
+              void addIntlCountry(
+                metadata?.merchantCountry,
+                cardDetails.cardId,
+              );
             }}>
             <CyDView className='flex flex-row items-center justify-center px-[4px]'>
               {countryAlreadyAllowed && (
@@ -555,7 +579,7 @@ const DeclinedTransactionActionItem = ({
             {t('TRANSACTION_DECLINE_HANDLING_MESSAGE')}
           </CyDText>
         </CyDView>
-        <CyDView className='mt-[10px] flex-row items-center flex-1 gap-x-[4px]'>
+        <CyDView className='mt-[10px] flex-row items-center flex-1 gap-x-[6px]'>
           <Button
             title={t('THIS_WAS_ME')}
             onPress={() => {
@@ -564,20 +588,22 @@ const DeclinedTransactionActionItem = ({
             paddingY={8}
             loading={isThisWasMeLoading}
             type={ButtonType.PRIMARY}
-            style='flex-1'
+            style='flex-1 rounded-[6px]'
             titleStyle='text-[14px] font-semibold'
           />
-          <Button
-            title={t('THIS_ISNT_ME')}
-            onPress={() => {
-              void handleThisIsntMe();
-            }}
-            paddingY={8}
-            loading={isThisIsntMeLoading}
-            type={ButtonType.SECONDARY}
-            style='flex-1'
-            titleStyle='text-[14px] font-semibold text-red400'
-          />
+          {!limits?.dMercs?.includes(metadata?.merchantId ?? '') && (
+            <Button
+              title={t('THIS_ISNT_ME')}
+              onPress={() => {
+                void handleThisIsntMe();
+              }}
+              paddingY={8}
+              loading={isThisIsntMeLoading}
+              type={ButtonType.SECONDARY}
+              style='flex-1 rounded-[6px]'
+              titleStyle='text-[14px] font-semibold text-red400'
+            />
+          )}
         </CyDView>
       </CyDView>
     );
@@ -616,7 +642,7 @@ const DeclinedTransactionActionItem = ({
               onPress={() => {
                 navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
                   navigation,
-                  cardId: cardId ?? '',
+                  cardId: cardDetails.cardId ?? '',
                   currentCardProvider: provider,
                 });
               }}>
@@ -646,7 +672,7 @@ const DeclinedTransactionActionItem = ({
             className='rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1'
             onPress={() => {
               navigation.navigate(screenTitle.CARD_CONTROLS, {
-                cardId: cardId ?? '',
+                cardId: cardDetails.cardId ?? '',
                 currentCardProvider: provider,
                 onOpenNavigate: ON_OPEN_NAVIGATE.DAILY_LIMIT,
               });
@@ -676,13 +702,42 @@ const DeclinedTransactionActionItem = ({
             className='rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1'
             onPress={() => {
               navigation.navigate(screenTitle.CARD_CONTROLS, {
-                cardId: cardId ?? '',
+                cardId: cardDetails.cardId ?? '',
                 currentCardProvider: provider,
                 onOpenNavigate: ON_OPEN_NAVIGATE.MONTHLY_LIMIT,
               });
             }}>
             <CyDText className='text-center text-[14px] font-semibold text-black'>
               {t('UPDATE_LIMITS')}
+            </CyDText>
+          </CyDTouchView>
+        </CyDView>
+      </CyDView>
+    );
+  } else if (isChannelOff) {
+    return (
+      <CyDView className='rounded-[12px] border border-n40 p-[12px]'>
+        <CyDView className='flex-row items-center'>
+          <CyDMaterialDesignIcons
+            name='information-outline'
+            size={24}
+            className='text-base400 mr-[6px]'
+          />
+          <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+            {t('REVIEW_SETTINGS_MESSAGE_CHANNEL_OFF')}
+          </CyDText>
+        </CyDView>
+        <CyDView className='mt-[10px] flex-row items-center flex-1'>
+          <CyDTouchView
+            className='rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1'
+            onPress={() => {
+              navigation.navigate(screenTitle.CARD_CONTROLS, {
+                cardId: cardDetails.cardId ?? '',
+                currentCardProvider: provider,
+              });
+            }}>
+            <CyDText className='text-center text-[14px] font-semibold text-black'>
+              {t('UPDATE_CHANNEL_SETTINGS')}
             </CyDText>
           </CyDTouchView>
         </CyDView>
@@ -805,9 +860,6 @@ const TransactionDetail = ({
   fetchCardBalance,
   declineCode,
 }: TransactionDetailProps) => {
-  const isCountryDisabled =
-    reason?.includes('International transactions are disabled') ||
-    reason?.includes('is not in the allow list');
   const isInsufficientFunds = reason
     ?.toLowerCase()
     .includes('insufficient funds');
@@ -836,9 +888,9 @@ const TransactionDetail = ({
   const isCredit = transaction.type === CardTransactionTypes.CREDIT;
   const isWithdrawal = transaction.category === 'Crypto Withdrawal';
   const countryList = get(limits, 'countries', []) as string[];
-  const countryAlreadyAllowed = countryList.includes(
-    metadata?.merchantCountry ?? '',
-  );
+  const countryAlreadyAllowed =
+    countryList.includes(metadata?.merchantCountry ?? '') ||
+    countryList.includes('ALL');
   const isBlacklistedMerchant =
     declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
     declineCode === CypherDeclineCodes.MERCHANT_GLOBAL;
@@ -854,7 +906,6 @@ const TransactionDetail = ({
           <DeclinedTransactionActionItem
             metadata={metadata}
             countryAlreadyAllowed={countryAlreadyAllowed}
-            cardId={cardDetails.cardId}
             provider={provider}
             addIntlCountry={addIntlCountry}
             navigation={navigation}
@@ -865,7 +916,7 @@ const TransactionDetail = ({
             isMonthlyLimitExceeded={
               declineCode === CypherDeclineCodes.MONTHLY_LIMIT
             }
-            isCountryDisabled={isCountryDisabled}
+            isCountryDisabled={declineCode === CypherDeclineCodes.INT_COUNTRY}
             activateCard={activateCard}
             isCardInactive={isCardInactive}
             isCardActivated={isCardActivated}
@@ -874,7 +925,9 @@ const TransactionDetail = ({
             showTransactionDeclineHandlingModal={
               isBlacklistedMerchant || isNewMerchantHighSpendRule
             }
+            isChannelOff={declineCode === CypherDeclineCodes.INT_CHANNEL_LIMIT}
             limits={limits}
+            cardDetails={cardDetails}
           />
         )}
         <InfoMessage
@@ -1278,10 +1331,6 @@ export default function TransactionDetails() {
           description: 'Please retry your transaction again.',
           onSuccess: () => {
             hideModal();
-            navigation.navigate(screenTitle.CARD_CONTROLS, {
-              cardId: cardId ?? '',
-              currentCardProvider: provider,
-            });
           },
           onFailure: hideModal,
         });
