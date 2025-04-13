@@ -146,6 +146,7 @@ export default function EditLimitModal({
             <CyDView className='mt-[54px] mb-[32px]'>
               <Button
                 title={'Update Limit'}
+                disabled={limitValue === currentLimit}
                 onPress={() => {
                   onChangeLimit(limitValue);
                   setIsModalVisible(false);

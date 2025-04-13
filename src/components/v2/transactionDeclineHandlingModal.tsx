@@ -9,11 +9,7 @@ import {
   CyDTouchView,
 } from '../../styles/tailwindComponents';
 import Button from './button';
-import {
-  formatAmount,
-  formatDate,
-  getSymbolFromCurrency,
-} from '../../core/util';
+import { formatAmount, getSymbolFromCurrency } from '../../core/util';
 import { ButtonType, CardProviders } from '../../constants/enum';
 import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
@@ -132,6 +128,7 @@ const TransactionDeclineHandlingModal: React.FC<
       return;
     }
 
+    setIsLoading(true);
     closeModal();
     setTimeout(() => {
       showModal('state', {
@@ -142,7 +139,6 @@ const TransactionDeclineHandlingModal: React.FC<
           last4: last4,
         }),
         onSuccess: async () => {
-          setIsLoading(true);
           try {
             const response = await getWithAuth(reportUrl);
             if (!response?.isError) {
@@ -175,7 +171,10 @@ const TransactionDeclineHandlingModal: React.FC<
             setIsLoading(false);
           }
         },
-        onFailure: hideModal,
+        onFailure: () => {
+          setIsLoading(false);
+          hideModal();
+        },
       });
     }, 500);
   };

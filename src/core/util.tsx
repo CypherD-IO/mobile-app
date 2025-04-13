@@ -1287,14 +1287,14 @@ export const shouldShowGetPhysicalCardInStack = (
 };
 
 export const getCardImage = (card: Card, provider: CardProviders) => {
+  if (!card || !card.type) {
+    return undefined;
+  }
+
   if (provider === CardProviders.REAP_CARD) {
     const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`;
     return {
       uri: cardImage,
     };
   }
-};
-
-export const formatDate = (date: Date) => {
-  return moment(date).format('MMM DD YYYY, h:mm a');
 };

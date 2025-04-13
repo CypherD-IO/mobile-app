@@ -93,7 +93,7 @@ export interface ICardTransaction {
   raTxnId?: string;
   tStatus?: ReapTxnStatus;
   wallet?: string;
-  programId?: Card;
+  programId?: CardProviders;
   client?: string;
   isReported?: boolean;
 }

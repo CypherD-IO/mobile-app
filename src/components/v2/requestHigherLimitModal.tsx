@@ -39,7 +39,9 @@ export default function RequestHigherLimitModal({
     // Remove any non-digits
     const numericValue = value.replace(/[^0-9]/g, '');
     // Convert to number and format with locale string
-    return numericValue ? parseInt(numericValue, 10).toLocaleString() : '';
+    return numericValue
+      ? parseInt(numericValue, 10).toLocaleString('en-US')
+      : '';
   };
 
   const handleDailyLimitChange = (text: string) => {
