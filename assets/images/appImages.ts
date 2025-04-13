@@ -558,6 +558,39 @@ const GET_PHYSICAL_CARD = {
 const VISA_LOGO_GREY = {
   uri: `${S3_BUCKET_URL_ICONS}/visaLogoGrey.png`,
 };
+const SPEND_CONTROL_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/spendControlIcon.png`,
+};
+const ONLINE_TRANSACTIONS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/onlineTransactionIcon.png`,
+};
+const TAP_AND_PAY_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/tapAndPayIcon.png`,
+};
+const ATM_WITHDRAWAL_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/atmWithdrawalIcon.png`,
+};
+const MERCHANT_OUTLET_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/merchantOutlet.png`,
+};
+const MOBILE_WALLETS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/mobileWalletIcon.png`,
+};
+const SELECT_COUNTRIES_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/selectCountriesIcon.png`,
+};
+const AUTHENTICATION_METHOD_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/authenticationMethodIcon.png`,
+};
+const CARD_PIN_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardPinIcon.png`,
+};
+const BLUE_EDIT_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/blueEditIcon.png`,
+};
+const WHITE_SHIELD_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/whiteShieldIcon.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -806,6 +839,17 @@ export const AppImagesMap = {
     GET_PHYSICAL_CARD,
     VISA_LOGO_GREY,
     ADDITIONAL_CARD,
+    SPEND_CONTROL_ICON,
+    ONLINE_TRANSACTIONS_ICON,
+    TAP_AND_PAY_ICON,
+    ATM_WITHDRAWAL_ICON,
+    MERCHANT_OUTLET_ICON,
+    MOBILE_WALLETS_ICON,
+    SELECT_COUNTRIES_ICON,
+    AUTHENTICATION_METHOD_ICON,
+    CARD_PIN_ICON,
+    BLUE_EDIT_ICON,
+    WHITE_SHIELD_ICON,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1058,6 +1102,17 @@ enum AppImages {
   UNFREEZE_ICON_BLACK = 'UNFREEZE_ICON_BLACK',
   GET_PHYSICAL_CARD = 'GET_PHYSICAL_CARD',
   VISA_LOGO_GREY = 'VISA_LOGO_GREY',
+  SPEND_CONTROL_ICON = 'SPEND_CONTROL_ICON',
+  ONLINE_TRANSACTIONS_ICON = 'ONLINE_TRANSACTIONS_ICON',
+  TAP_AND_PAY_ICON = 'TAP_AND_PAY_ICON',
+  ATM_WITHDRAWAL_ICON = 'ATM_WITHDRAWAL_ICON',
+  MERCHANT_OUTLET_ICON = 'MERCHANT_OUTLET_ICON',
+  MOBILE_WALLETS_ICON = 'MOBILE_WALLETS_ICON',
+  SELECT_COUNTRIES_ICON = 'SELECT_COUNTRIES_ICON',
+  AUTHENTICATION_METHOD_ICON = 'AUTHENTICATION_METHOD_ICON',
+  CARD_PIN_ICON = 'CARD_PIN_ICON',
+  BLUE_EDIT_ICON = 'BLUE_EDIT_ICON',
+  WHITE_SHIELD_ICON = 'WHITE_SHIELD_ICON',
 }
 
 export default AppImages;

@@ -190,7 +190,8 @@ export default function CyDModalLayout({
   React.useEffect(() => {
     // Automatically hide this modal if ThreeDSecureApprovalModal is shown,
     if (
-      store?.modalType === GlobalModalType.THREE_D_SECURE_APPROVAL &&
+      (store?.modalType === GlobalModalType.THREE_D_SECURE_APPROVAL ||
+        store?.modalType === GlobalModalType.TRANSACTION_DECLINE_HANDLING) &&
       isModalVisible
     ) {
       setModalVisible(false);
@@ -219,8 +220,9 @@ export default function CyDModalLayout({
       animationOutTiming={animationOutTiming}
       onModalHide={onModalHide}
       useNativeDriver={useNativeDriver}
-      {...(swipeDirection.length > 0 && { swipeDirection })}
-      {...(onSwipeComplete !== (() => {}) && { onSwipeComplete })}
+      swipeDirection={swipeDirection}
+      onSwipeComplete={onSwipeComplete}
+      swipeThreshold={20}
       style={style}>
       {children}
     </Modal>

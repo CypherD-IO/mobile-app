@@ -1419,8 +1419,11 @@ const resources = {
       MERCHANT_COUNTRY: 'Merchant Country',
       MERCHANT_NAME: 'Merchant Name',
       INSUFFICIENT_FUNDS_MESSAGE: 'Load funds to your card and retry',
-      REVIEW_SETTINGS_MESSAGE: 'Adjust your card limits and retry',
+      REVIEW_SETTINGS_MESSAGE_DAILY_LIMIT: 'Adjust your daily limit and retry',
+      REVIEW_SETTINGS_MESSAGE_MONTHLY_LIMIT:
+        'Adjust your monthly limit and retry',
       REVIEW_SETTINGS: 'Review Settings',
+      UPDATE_LIMITS: 'Update Limits',
       TRANSACTION_DECLINE: 'Transaction Declined',
       GET_PREMIUM: 'Get Premium',
       REFUND_IN_PROGRESS_MESSAGE:
@@ -1508,7 +1511,7 @@ const resources = {
       RC_APPLICATION_CONSENT_CHECKBOX:
         'I Agree to continue with the Application',
       SAVE_CHANGES_DESC:
-        'Your changes will be saved to {{cardType}} card ** {{last4}}. Would you like to apply these changes to all your cards ?',
+        'Your changes were saved to {{cardType}} Card ** {{last4}}. Would you like to apply these changes to all your cards ?',
       SAVE_CHANGES_CONFIRM_BUTTON: 'Apply to {{cardType}} card ** {{last4}}',
       APPLY_TO_ALL_CARDS: 'Apply to all cards',
       LETS_SETUP_YOUR_CARD: "Let's setup your card",
@@ -1572,6 +1575,55 @@ const resources = {
       RAIN_SOLICITATION:
         'I acknowledge that applying for the Cypher Card does not constitute unauthorized solicitation',
       CARD_OUT_OF_STOCK: 'Not yet available for your region',
+      CONFIRM_REPORT_TRANSACTION:
+        'Are you sure you want to report this transaction?',
+      CARD_WILL_BE_FROZEN_WARNING:
+        'This transaction will be reported, and your {{cardType}} **{{last4}} will be frozen. You can unfreeze it anytime. Future transactions with this merchant will be blocked unless you contact support.',
+      LIMIT_UPDATED_SUCCESSFULLY: 'Limit updated successfully.',
+      UNABLE_TO_UPDATE_LIMIT: 'Unable to update limit.',
+      LIMIT_INCREASE_REQUEST_SUBMITTED: 'Limit increase request submitted.',
+      LIMIT_INCREASE_REQUEST_FAILED: 'Limit increase request failed.',
+      LIMIT_INCREASE_REQUEST_SUBMITTED_DESC:
+        'You will be notified once the request is processed through email and telegram.',
+      LIMIT_INCREASE_REQUEST_FAILED_DESC:
+        'Could not process the limit increase request. Please contact support.',
+      UNABLE_TO_FETCH_LIMITS: 'Unable to fetch limits.',
+      COUNTRIES_UPDATED_SUCCESSFULLY: 'Countries updated successfully.',
+      UNABLE_TO_UPDATE_COUNTRIES: 'Unable to update countries.',
+      RESET_CARD_SETTINGS: 'Reset Card Settings',
+      RESET_CARD_SETTINGS_CONFIRMATION:
+        'Are you sure you want to reset all card settings to default?',
+      CARD_SETTINGS_RESET_SUCCESSFULLY: 'Card settings reset successfully.',
+      UNABLE_TO_RESET_CARD_SETTINGS: 'Unable to reset card settings.',
+      APPLY_CHANGES_TO_ALL_CARDS: 'Apply Changes to All Cards',
+      APPLY_CHANGES_TO_ALL_CARDS_DESCRIPTION:
+        'Do you want to apply these changes to all your cards?',
+      UNABLE_TO_APPLY_CHANGES: 'Unable to apply changes.',
+      TXN_APPROVED_SUCCESS_DESCRIPTION:
+        'Transaction approved successfully. Please retry the transaction.',
+      TXN_DISPUTED_SUCCESS_DESCRIPTION: 'Transaction disputed successfully',
+      TRANSACTION_DECLINE_HANDLING_MESSAGE:
+        'This transaction was declined as a precaution. Was this transaction made by you? ',
+      THIS_WAS_ME: 'This Was Me',
+      THIS_ISNT_ME: "This Wasn't Me",
+      UNEXCPECTED_ERROR: 'Unexpected Error',
+      ACTION_FAILED: 'Action could not be completed. Please contact support.',
+      TRANSACTION_ALREADY_REPORTED: 'Transaction already reported',
+      TRANSACTION_REPORTED_SUCCESSFULLY: 'Transaction reported successfully',
+      TRANSACTION_REPORT_FAILED: 'Transaction report failed',
+      TRANSACTION_REPORTED_DESCRIPTION:
+        'Thank you for reporting this transaction. We will review it and get back to you soon.',
+      SUCCESS_RETRY_TRANSACTION: 'Please retry the transaction',
+      TRANSACTION_APPROVED_SUCCESS_DESCRIPTION:
+        'Your transaction has been approved. Please retry the transaction.',
+      CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS:
+        'Changes applied successfully to all cards',
+      UNABLE_TO_APPLY_CHANGES_TO_ALL_CARDS:
+        'Unable to apply changes to all cards',
+      REVIEW_SETTINGS_MESSAGE_CHANNEL_OFF:
+        'This channel is currently off. Please toggle the channel on and retry.',
+      UPDATE_CHANNEL_SETTINGS: 'Update Channel Settings',
+      NO_THANKS: 'No Thanks',
     },
   },
 };

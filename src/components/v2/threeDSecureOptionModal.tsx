@@ -69,10 +69,10 @@ export default function ThreeDSecureOptionModal({
         className={
           'bg-n20 px-[16px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'
         }>
-        <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
+        <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
           <CyDView className='flex-1 justify-center items-center'>
             <CyDText className='text-[18px] font-[600] ml-[24px]'>
-              Online Payment Authentication
+              Authentication Method
             </CyDText>
           </CyDView>
           <CyDTouchView
@@ -87,6 +87,15 @@ export default function ThreeDSecureOptionModal({
             />
           </CyDTouchView>
         </CyDView>
+
+        <CyDView className='flex flex-row items-center mb-[16px]'>
+          <CyDText className='text-[14px] text-n200'>
+            {
+              "Select where you'd like to receive the online payment verification (3DS)"
+            }
+          </CyDText>
+        </CyDView>
+
         <CyDTouchView
           className='bg-n0 px-[12px] py-[14px] mb-[8px] rounded-[10px] flex flex-row justify-between items-center'
           onPress={() => {

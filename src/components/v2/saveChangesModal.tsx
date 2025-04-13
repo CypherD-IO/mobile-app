@@ -6,6 +6,7 @@ import CyDModalLayout from './modal';
 import { ButtonType } from '../../constants/enum';
 import { t } from 'i18next';
 import Button from './button';
+import { capitalize } from 'lodash';
 
 export default function SaveChangesModal({
   isModalVisible,
@@ -39,24 +40,21 @@ export default function SaveChangesModal({
         <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] self-center mb-[16px] rounded-full' />
         <CyDText className='text-[16px] font-bold mt-[20px] text-center'>
           {t('SAVE_CHANGES_DESC', {
-            cardType: card.type,
+            cardType: capitalize(card.type),
             last4: card.last4,
           })}
         </CyDText>
         <CyDView className='flex flex-col gap-[10px] mt-[40px]'>
           <Button
             title={t('APPLY_TO_ALL_CARDS')}
-            type={ButtonType.GREY_FILL}
+            type={ButtonType.PRIMARY}
             onPress={() => {
               onApplyToAllCards();
             }}
           />
           <Button
-            title={t('SAVE_CHANGES_CONFIRM_BUTTON', {
-              cardType: card.type,
-              last4: card.last4,
-            })}
-            type={ButtonType.PRIMARY}
+            title={capitalize(t('NO_THANKS'))}
+            type={ButtonType.GREY_FILL}
             onPress={() => {
               onApplyToCard();
             }}

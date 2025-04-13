@@ -20,6 +20,7 @@ import {
   CardControlTypes,
   CardOperationsAuthType,
   CypherDeclineCodes,
+  ON_OPEN_NAVIGATE,
   RPCODES,
 } from '../../constants/enum';
 import { useGlobalModalContext } from './GlobalModal';
@@ -147,11 +148,11 @@ function RenderCountryDecline({
                   closeModal();
                   if (data?.navigation)
                     data?.navigation?.navigate(screenTitle.CARD, {
-                      screen: screenTitle.INTERNATIONAL_CARD_CONTROLS,
+                      screen: screenTitle.CARD_CONTROLS,
                       params: {
                         cardId: data?.cardId,
                         currentCardProvider: data?.provider,
-                        cardControlType: CardControlTypes.INTERNATIONAL,
+                        onOpenNavigate: ON_OPEN_NAVIGATE.SELECT_COUNTRY,
                       },
                     });
                 }}
@@ -224,14 +225,11 @@ function RenderCountryDecline({
               setUpdateError(false);
               closeModal();
               if (data?.navigation)
-                data?.navigation?.navigate(
-                  screenTitle.INTERNATIONAL_CARD_CONTROLS,
-                  {
-                    cardId: data?.cardId,
-                    currentCardProvider: data?.provider,
-                    cardControlType: CardControlTypes.INTERNATIONAL,
-                  },
-                );
+                data?.navigation?.navigate(screenTitle.CARD_CONTROLS, {
+                  cardId: data?.cardId,
+                  currentCardProvider: data?.provider,
+                  onOpenNavigate: ON_OPEN_NAVIGATE.SELECT_COUNTRY,
+                });
             }}
             style={'p-[3%] mt-[20px]'}
           />
@@ -370,27 +368,29 @@ export default function QuickActionNotificationModal({
         error: limitError,
         isError: isLimitError,
       } = await getWithAuth(
-        `/v1/cards/${data?.provider}/card/${data?.cardId}/limits`,
+        `/v1/cards/${data?.provider}/card/${data?.cardId}/limits-v2`,
       );
       if (isLimitError) {
         throw new Error(parseErrorMessage(limitError));
       }
-      const payload = {
-        cusL: {
-          intl: {
-            ...get(limits, 'cusL.intl'),
-            cLs: [...get(limits, 'cusL.intl.cLs'), data?.merchantCountry],
-            dis: false,
-          },
-        },
-      };
-      const { error: _updateError, isError: isUpdateError } =
-        await patchWithAuth(
-          `/v1/cards/${data?.provider}/card/${data?.cardId}/limits`,
-          payload,
-        );
-      if (isUpdateError) {
-        throw new Error(parseErrorMessage(_updateError));
+
+      // Get existing countries from the response
+      const existingCountries = get(limits, 'countries', []);
+
+      // Add the new country to the list if not already present
+      if (!existingCountries.includes(data?.merchantCountry)) {
+        const payload = {
+          countries: [...existingCountries, data?.merchantCountry],
+        };
+
+        const { error: _updateError, isError: isUpdateError } =
+          await patchWithAuth(
+            `/v1/cards/${data?.provider}/card/${data?.cardId}/limits-v2`,
+            payload,
+          );
+        if (isUpdateError) {
+          throw new Error(parseErrorMessage(_updateError));
+        }
       }
       setUpdateSuccess(true);
     } catch (error) {

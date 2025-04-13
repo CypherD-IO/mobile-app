@@ -45,6 +45,7 @@
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-community/push-notification-ios": "^1.10.1",
     "@react-native-cookies/cookies": "^6.2.1",
+    "@react-native-documents/picker": "^10.1.2",
     "@react-native-firebase/analytics": "^21.5.0",
     "@react-native-firebase/app": "^21.5.0",
     "@react-native-firebase/messaging": "^21.5.0",

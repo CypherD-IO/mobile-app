@@ -2,7 +2,11 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
-import { GlobalModalType, PinPresentStates } from '../../constants/enum';
+import {
+  CypherDeclineCodes,
+  GlobalModalType,
+  PinPresentStates,
+} from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
@@ -87,6 +91,19 @@ export const InitializeAppProvider = ({
         if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
           setTimeout(() => {
             showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+              data: response.data,
+              closeModal: hideModal,
+            });
+          }, 1000);
+        } else if (
+          response.data?.actionKey === NotificationEvents.CARD_TXN_UPDATE &&
+          (response.data?.declineCode === CypherDeclineCodes.MERCHANT_GLOBAL ||
+            response.data?.declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
+            response.data?.declineCode ===
+              CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE)
+        ) {
+          setTimeout(() => {
+            showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
               data: response.data,
               closeModal: hideModal,
             });
