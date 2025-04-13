@@ -126,8 +126,6 @@ export default function ReportTransactionModal({
     try {
       setIsSubmitting(true);
 
-      console.log('Uploaded files before submit:', uploadedFiles);
-
       const formData = new FormData();
 
       // Add complaint data
@@ -155,14 +153,11 @@ export default function ReportTransactionModal({
         formData.append(key, value);
       });
 
-      console.log('FormData structure:', formData);
       const response = await postFormWithAuth(
         `/v1/cards/${CardProviders.REAP_CARD}/card/complain`,
         formData,
         30000, // 30 second timeout
       );
-
-      console.log('response in reportTransactionModal : ', response);
 
       if (!response.isError) {
         setModalVisible(false);
@@ -187,7 +182,6 @@ export default function ReportTransactionModal({
         });
       }
     } catch (error) {
-      console.log('error in reportTransactionModal : ', error);
       showModal('state', {
         type: 'error',
         title: t('Error'),
@@ -233,12 +227,9 @@ export default function ReportTransactionModal({
         maxFiles: MAX_FILES - uploadedFiles.length,
       });
 
-      console.log('File pick results:', results);
-
       results.forEach(file => {
         // Skip files with missing required data
         if (!file.name || !file.uri || !file.size) {
-          console.log('Invalid file data:', file);
           Toast.show({
             type: 'error',
             text1: t('Invalid file data'),
@@ -276,8 +267,6 @@ export default function ReportTransactionModal({
           isUploading: true,
         };
 
-        console.log('Adding new file:', newFile);
-
         setUploadedFiles(prev => [...prev, newFile]);
 
         // Simulate upload complete after 1 second
@@ -288,7 +277,6 @@ export default function ReportTransactionModal({
         }, 1000);
       });
     } catch (err) {
-      console.log('File selection error:', err);
       Toast.show({
         type: 'error',
         text1: t('Error selecting files'),

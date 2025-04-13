@@ -61,8 +61,6 @@ const SWIPE_THRESHOLD = 50;
 const TransactionDeclineHandlingModal: React.FC<
   TransactionDeclineHandlingModalProps
 > = ({ isModalVisible, data, closeModal }) => {
-  console.log('TransactionDeclineHandlingModal - Received data:', data);
-
   const { t } = useTranslation();
   const {
     amount,
@@ -82,20 +80,14 @@ const TransactionDeclineHandlingModal: React.FC<
   const [isLoading, setIsLoading] = useState(false);
 
   const handleThisWasMe = async () => {
-    console.log('handleThisWasMe - Starting function');
-    console.log('handleThisWasMe - approveUrl:', approveUrl);
     if (!approveUrl) {
-      console.log('handleThisWasMe - No approveUrl provided');
       return;
     }
 
     setIsLoading(true);
     try {
-      console.log('handleThisWasMe - Making API call to:', approveUrl);
       const response = await getWithAuth(approveUrl);
-      console.log('handleThisWasMe - API response:', response);
       if (!response?.isError) {
-        console.log('handleThisWasMe - Success case');
         closeModal();
         setTimeout(() => {
           showModal('state', {
@@ -107,7 +99,6 @@ const TransactionDeclineHandlingModal: React.FC<
           });
         }, 500);
       } else {
-        console.log('handleThisWasMe - Error case:', response?.error);
         closeModal();
         setTimeout(() => {
           showModal('state', {
@@ -121,7 +112,6 @@ const TransactionDeclineHandlingModal: React.FC<
         }, 500);
       }
     } catch (error) {
-      console.log('handleThisWasMe - Exception caught:', error);
       closeModal();
       setTimeout(() => {
         showModal('state', {
@@ -133,16 +123,12 @@ const TransactionDeclineHandlingModal: React.FC<
         });
       }, 500);
     } finally {
-      console.log('handleThisWasMe - Function completed');
       setIsLoading(false);
     }
   };
 
   const handleThisIsntMe = async () => {
-    console.log('handleThisIsntMe - Starting function');
-    console.log('handleThisIsntMe - reportUrl:', reportUrl);
     if (!reportUrl) {
-      console.log('handleThisIsntMe - No reportUrl provided');
       return;
     }
 
@@ -158,11 +144,8 @@ const TransactionDeclineHandlingModal: React.FC<
         onSuccess: async () => {
           setIsLoading(true);
           try {
-            console.log('handleThisIsntMe - Making API call to:', reportUrl);
             const response = await getWithAuth(reportUrl);
-            console.log('handleThisIsntMe - API response:', response);
             if (!response?.isError) {
-              console.log('handleThisIsntMe - Success case');
               showModal('state', {
                 type: 'success',
                 title: t('TRANSACTION_REPORTED_SUCCESSFULLY'),
@@ -171,7 +154,6 @@ const TransactionDeclineHandlingModal: React.FC<
                 onFailure: hideModal,
               });
             } else {
-              console.log('handleThisIsntMe - Error case:', response?.error);
               showModal('state', {
                 type: 'error',
                 title: t('TRANSACTION_REPORT_FAILED'),
@@ -182,7 +164,6 @@ const TransactionDeclineHandlingModal: React.FC<
               });
             }
           } catch (error) {
-            console.log('handleThisIsntMe - Exception caught:', error);
             showModal('state', {
               type: 'error',
               title: t('TRANSACTION_REPORT_FAILED'),
@@ -191,7 +172,6 @@ const TransactionDeclineHandlingModal: React.FC<
               onFailure: hideModal,
             });
           } finally {
-            console.log('handleThisIsntMe - Function completed');
             setIsLoading(false);
           }
         },

@@ -289,8 +289,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
       if (type === EventType.ACTION_PRESS) {
         const { notification, pressAction } = detail;
-        console.log('notification : ', notification);
-        console.log('pressAction : ', pressAction);
         if (notification?.id && pressAction?.id) {
           await RouteNotificationAction({
             notificationId: notification?.id,
@@ -308,8 +306,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       const { type, detail } = remoteMessage;
       if (type === EventType.ACTION_PRESS) {
         const { notification, pressAction } = detail;
-        console.log('notification : ', notification);
-        console.log('pressAction : ', pressAction);
         if (notification?.id && pressAction?.id) {
           RouteNotificationAction({
             notificationId: notification?.id,
@@ -438,7 +434,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.CARD_TXN_UPDATE: {
-            console.log('remoteMessage.data : ', remoteMessage.data);
             const { categoryId, cardId, url, provider, declineCode } =
               remoteMessage.data;
 

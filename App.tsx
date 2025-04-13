@@ -135,7 +135,6 @@ function App() {
     },
     async getInitialURL() {
       const url = await Linking.getInitialURL();
-      console.log('url : ', url);
       if (url != null) {
         if (url.includes('/card/referral/')) {
           const referralCode = url.split('/card/referral/')[1];
@@ -157,14 +156,7 @@ function App() {
           const decline = urlObj.searchParams.get('decline');
           const cardId = urlObj.searchParams.get('cardId');
 
-          console.log('Deep link card params:', { decline, cardId });
-
           if (decline === 'true' && cardId) {
-            console.log('Navigating to card controls with params:', {
-              cardId,
-              currentCardProvider: CardProviders.REAP_CARD,
-            });
-
             setDeepLinkData({
               screenToNavigate: screenTitle.CARD_CONTROLS,
               params: {
@@ -172,8 +164,6 @@ function App() {
                 currentCardProvider: CardProviders.REAP_CARD,
               },
             });
-          } else {
-            console.log('Invalid card deep link params');
           }
         }
       }

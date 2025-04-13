@@ -103,7 +103,6 @@ export default function CardControls() {
     currentCardProvider,
     onOpenNavigate = ON_OPEN_NAVIGATE.DEFAULT,
   } = route.params ?? {};
-  console.log('onOpenNavigate : ', onOpenNavigate);
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const { getWithAuth, patchWithAuth, postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -149,41 +148,25 @@ export default function CardControls() {
   const [allCountriesSelected, setAllCountriesSelected] = useState(false);
 
   useEffect(() => {
-    console.log('globalState?.cardProfile:', globalState?.cardProfile);
-    console.log('currentCardProvider:', currentCardProvider);
-    console.log(
-      'cardProfile data:',
-      get(globalState?.cardProfile, currentCardProvider),
-    );
-
     const filteredCards =
       get(globalState?.cardProfile, [currentCardProvider, 'cards'])?.filter(
         (card: Card) =>
           card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.ACTIVE,
       ) ?? [];
-    console.log('filteredCards : ', filteredCards);
     setActiveCards(filteredCards);
     setShowForAllCards(filteredCards.length > 1);
   }, [globalState?.cardProfile, currentCardProvider]);
 
   useEffect(() => {
-    console.log('Looking for card with ID:', selectedCardId);
-    console.log('Available cards:', activeCards);
     const card = find(activeCards, {
       cardId: selectedCardId,
     });
-    console.log('Found card:', card);
     if (card) {
       setSelectedCard(card);
       void fetchCardLimits();
     }
   }, [selectedCardId, activeCards]);
-
-  useEffect(() => {
-    console.log('hasChanges : ', hasChanges);
-    console.log('changes : ', changes);
-  }, [hasChanges, changes]);
 
   const populateSelectedCountries = (countries: string[]) => {
     if (countries) {
@@ -273,17 +256,6 @@ export default function CardControls() {
         [channel]: !originalChannelControl,
       });
 
-      console.log('channel change payload : ', {
-        customLimit: {
-          [channelCode]: !originalChannelControl,
-        },
-      });
-
-      console.log(
-        'url : ',
-        `/v1/cards/${currentCardProvider}/card/${selectedCardId}/limits-v2`,
-      );
-
       const response = await patchWithAuth(
         `/v1/cards/${currentCardProvider}/card/${selectedCardId}/limits-v2`,
         {
@@ -292,8 +264,6 @@ export default function CardControls() {
           },
         },
       );
-
-      console.log('response in handleChannelToggle : ', response);
 
       if (!response.isError) {
         // Track changes only on success
@@ -347,14 +317,10 @@ export default function CardControls() {
         },
       };
 
-      console.log('payload in handleLimitChange : ', payload);
-
       const response = await patchWithAuth(
         `/v1/cards/${currentCardProvider}/card/${selectedCardId}/limits-v2`,
         payload,
       );
-
-      console.log('response in handleLimitChange : ', response);
 
       if (!response.isError) {
         // Track changes only on success
@@ -390,7 +356,6 @@ export default function CardControls() {
         });
       }
     } catch (error) {
-      console.log('error in handleLimitChange : ', error);
       Toast.show({
         type: 'error',
         text1: t('UNABLE_TO_UPDATE_LIMIT'),
@@ -413,16 +378,11 @@ export default function CardControls() {
     reason: string,
   ) => {
     try {
-      console.log('dailyLimit : ', dailyLimit);
-      console.log('monthlyLimit : ', monthlyLimit);
-      console.log('reason : ', reason);
       const response = await postWithAuth('/v1/cards/increase-limit-request', {
         reason,
         dailyLimit,
         monthlyLimit,
       });
-
-      console.log('response in handleHigherLimitSubmit : ', response);
 
       if (!response.isError) {
         showModal('state', {
@@ -482,15 +442,12 @@ export default function CardControls() {
   const [cardLimits, setCardLimits] = useState<CardLimitsV2Response>();
 
   const fetchCardLimits = async (cardId = selectedCardId) => {
-    console.log('cardId : ', cardId);
-
     if (!cardId) return;
     setLoading(true);
     try {
       const response = await getWithAuth(
         `/v1/cards/${currentCardProvider}/card/${cardId}/limits-v2`,
       );
-      console.log('response', response);
       if (!response.isError) {
         setCardLimits(response.data);
         setChannelControls({
@@ -507,15 +464,12 @@ export default function CardControls() {
         if (onOpenNavigateTo) {
           switch (onOpenNavigateTo) {
             case ON_OPEN_NAVIGATE.DAILY_LIMIT:
-              console.log('DAILY LIMIT');
               setIsDailyLimitModalVisible(true);
               break;
             case ON_OPEN_NAVIGATE.MONTHLY_LIMIT:
-              console.log('MONTHLY LIMIT');
               setIsMonthlyLimitModalVisible(true);
               break;
             case ON_OPEN_NAVIGATE.SELECT_COUNTRY:
-              console.log('SELECT COUNTRY');
               setIsCountryModalVisible(true);
               break;
             case ON_OPEN_NAVIGATE.DEFAULT:
@@ -620,8 +574,6 @@ export default function CardControls() {
             { restoreToDefaults: true },
           );
 
-          console.log('response in handleResetCardSettings : ', response);
-
           if (!response.isError) {
             // Log analytics event
             void analytics().logEvent('card_settings_reset', {
@@ -693,9 +645,6 @@ export default function CardControls() {
         },
       );
 
-      console.log('response in handleApplyToAllCards : ', response);
-      console.log('changes in handleApplyToAllCards : ', changes);
-
       if (!response.isError) {
         // Only clear changes after successful apply to all
         setHasChanges(false);
@@ -739,12 +688,6 @@ export default function CardControls() {
   if (loading) {
     return <Loading />;
   }
-
-  // Add debug logs before the null check
-  console.log('Current state before render:');
-  console.log('selectedCard:', selectedCard);
-  console.log('cardLimits:', cardLimits);
-  console.log('activeCards:', activeCards);
 
   if (!selectedCard) {
     // Instead of returning null, show a loading state or error message

@@ -147,7 +147,6 @@ export default function EditLimitModal({
               <Button
                 title={'Update Limit'}
                 onPress={() => {
-                  console.log('limitValue : ', limitValue);
                   onChangeLimit(limitValue);
                   setIsModalVisible(false);
                 }}

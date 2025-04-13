@@ -369,9 +369,6 @@ const DeclinedTransactionActionItem = ({
   const [isThisWasMeLoading, setIsThisWasMeLoading] = useState(false);
   const [isThisIsntMeLoading, setIsThisIsntMeLoading] = useState(false);
 
-  console.log('limits?.dMercs : ', limits?.dMercs);
-  console.log('cardDetails : ', cardDetails);
-
   const handleThisWasMe = async (): Promise<void> => {
     try {
       setIsThisWasMeLoading(true);
@@ -395,8 +392,6 @@ const DeclinedTransactionActionItem = ({
         `/v1/cards/${provider}/card/${cardDetails.cardId}/limits-v2`,
         payload,
       );
-
-      console.log('response : ', response);
 
       if (!response.error) {
         showModal('state', {
@@ -428,7 +423,6 @@ const DeclinedTransactionActionItem = ({
   };
 
   const handleThisIsntMe = async (): Promise<void> => {
-    console.log('handleThisIsntMe - Starting function');
     const merchantId = metadata?.merchantId;
     if (!merchantId) {
       throw new Error('Merchant ID is required');
@@ -457,8 +451,6 @@ const DeclinedTransactionActionItem = ({
               `/v1/cards/${provider}/card/${cardDetails.cardId}/limits-v2`,
               payload,
             );
-
-            console.log('response : ', response);
 
             if (!response.error) {
               showModal('state', {
@@ -563,10 +555,6 @@ const DeclinedTransactionActionItem = ({
       </CyDView>
     );
   } else if (showTransactionDeclineHandlingModal) {
-    console.log(
-      'showTransactionDeclineHandlingModal',
-      showTransactionDeclineHandlingModal,
-    );
     return (
       <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px]'>
         <CyDView className='flex-row items-center'>
@@ -896,8 +884,6 @@ const TransactionDetail = ({
     declineCode === CypherDeclineCodes.MERCHANT_GLOBAL;
   const isNewMerchantHighSpendRule =
     declineCode === CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE;
-
-  console.log('decline CODE : ', declineCode);
 
   return (
     <>

@@ -39,10 +39,8 @@ export const getToken = async (
         coreumAddress,
         fcmToken,
       };
-      console.log('payload', payload);
       try {
         await axios.put(registerURL, payload);
-        console.log('fcmToken', fcmToken);
         return { fcmToken };
       } catch (error) {
         Sentry.captureException(error);
@@ -218,7 +216,6 @@ export async function RouteNotificationAction({
   showModal: (type: GlobalModalType, data: any) => void;
   hideModal: () => void;
 }) {
-  console.log('actionId : ', actionId);
   switch (actionId) {
     case NOTIFE_ACTIONS.ACTIVATE_CARD:
     case NOTIFE_ACTIONS.ADD_COUNTRY:

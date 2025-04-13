@@ -45,8 +45,6 @@ const ChooseMultipleCountryModal = ({
   allCountriesSelectedState,
   onSaveChanges,
 }: Props) => {
-  console.log('selectedCountryState', selectedCountryState);
-
   const [selectedCountry, setSelectedCountry] = selectedCountryState;
   const [isFullHeight, setIsFullHeight] = useState(false);
   const heightAnim = useRef(new Animated.Value(80)).current;
