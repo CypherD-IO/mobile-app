@@ -45,12 +45,9 @@ import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens'
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import CardActivationConsent from '../containers/DebitCard/bridgeCard/cardActivationConsent';
-import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMenu';
-import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
 import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNotificationSettings';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
 import CardUnlockAuth from '../containers/DebitCard/bridgeCard/cardUnlockAuth';
-import EditLimits from '../containers/DebitCard/bridgeCard/editlimits';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
 import LinkAnotherWallet from '../containers/DebitCard/bridgeCard/linkAnotherWallet';
 import LinkWalletAuth from '../containers/DebitCard/bridgeCard/linkWalletAuth';
@@ -111,9 +108,9 @@ import {
   CyDTouchView,
   CyDView,
 } from '../styles/tailwindComponents';
-import DefaultLimitSetup from '../containers/DebitCard/bridgeCard/defaultLimitSetup';
 import SelectAdditionalCardType from '../containers/DebitCard/CardV2/additionalCard/selectAdditionalCardType';
 import CardDescription from '../containers/DebitCard/CardV2/additionalCard/cardDescription';
+import CardControls from '../containers/DebitCard/bridgeCard/cardControls';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -147,20 +144,24 @@ const CustomHeader = ({
   title,
   navigation,
   keyboardHeight,
-  style,
+  textAlign = 'center',
+  textStyle,
+  backgroundColor,
 }: {
   title: string;
   navigation: NavigationProp<ParamListBase>;
   keyboardHeight: number;
-  style?: string;
+  textAlign?: 'center' | 'start';
+  textStyle?: string;
+  backgroundColor?: string;
 }) => {
   const insets = useSafeAreaInsets();
   return (
     <CyDView
-      className={`bg-n20 flex-row justify-between pb-[10px] ${style}`}
+      className={`flex-row ${textAlign === 'center' ? 'justify-between' : 'items-center'} pb-[10px] ${backgroundColor ?? 'bg-n20'}`}
       style={{ paddingTop: insets.top }}>
       <CyDTouchView
-        className='px-[12px]'
+        className='px-[12px] mx-[4px]'
         onPress={() => {
           if (keyboardHeight) {
             Keyboard.dismiss();
@@ -173,10 +174,11 @@ const CustomHeader = ({
         }}>
         <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
-      <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+      <CyDText
+        className={`text-base400 text-[20px] font-extrabold ${textAlign === 'center' ? 'mr-[44px]' : ''} ${textStyle ?? ''}`}>
         {title}
       </CyDText>
-      <CyDView className='' />
+      {textAlign === 'center' && <CyDView className='' />}
     </CyDView>
   );
 };
@@ -501,50 +503,6 @@ export function PortfolioStackScreen() {
       /> */}
 
       {/* <PortfolioStack.Screen
-        name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
-        component={CardControlsSettings}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='International Transactions'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      /> */}
-
-      {/* <PortfolioStack.Screen
-        name={screenTitle.CARD_CONTROLS_MENU}
-        component={CardControlsMenu}
-        options={({ navigation, route }) => ({
-          headerShown: false,
-        })}
-      /> */}
-
-      {/* <PortfolioStack.Screen
-        name={screenTitle.DOMESTIC_CARD_CONTROLS}
-        component={CardControlsSettings}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title='Domestic Transactions'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      /> */}
-
-      {/* <PortfolioStack.Screen
-        name={screenTitle.EDIT_USAGE_LIMITS}
-        component={EditLimits}
-        options={() => ({
-          headerShown: false,
-        })}
-      /> */}
-
-      {/* <PortfolioStack.Screen
         name={screenTitle.CARD_UNLOCK_AUTH}
         component={CardUnlockAuth}
         options={({ navigation }) => ({
@@ -600,13 +558,6 @@ export function DebitCardStackScreen({ route }) {
         options={{ headerShown: false }}
       />
       <FundCardStack.Screen
-        name={screenTitle.CARD_CONTROLS_MENU}
-        component={CardControlsMenu}
-        options={({ navigation, route }) => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
         options={({ navigation, route }) => ({
@@ -654,45 +605,19 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.DOMESTIC_CARD_CONTROLS}
-        component={CardControlsSettings}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title='Domestic Transactions'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
-        component={CardControlsSettings}
+        name={screenTitle.CARD_CONTROLS}
+        component={CardControls}
         options={({ navigation }) => ({
           header: () => (
             <CustomHeader
-              title='International Transactions'
+              title='Card Controls'
               navigation={navigation}
               keyboardHeight={keyboardHeight}
+              textAlign='start'
+              textStyle='text-[20px] font-medium'
+              backgroundColor='bg-n0'
             />
           ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.DEFAULT_LIMIT_SETUP}
-        component={DefaultLimitSetup}
-        options={() => ({
-          header: () => (
-            <CustomHeaderWithoutBack title='' keyboardHeight={keyboardHeight} />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.EDIT_USAGE_LIMITS}
-        component={EditLimits}
-        options={() => ({
-          headerShown: false,
         })}
       />
       <FundCardStack.Screen

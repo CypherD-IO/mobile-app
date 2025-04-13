@@ -51,13 +51,11 @@ export interface ITokenData {
 
 export interface ICardTransaction {
   id: string;
-  type: CardTransactionTypes;
   category?: string;
   iconUrl?: string;
   title: string;
   amount: number;
-  date: Date;
-  createdAt: number;
+  prAmount?: number;
   fId?: string;
   metadata?: ICardSubObject;
   tokenData?: ITokenData;
@@ -67,17 +65,37 @@ export interface ICardTransaction {
   fxCurrencySymbol?: string;
   fxCurrencyValue?: number;
   fxConversionPrice?: number;
-  mccPaddingAmount?: string | number;
+  planId?: string;
+  dCode?: string; // decline code
+  dReason?: string; // decline reason
+  cDReason?: string;
+  cDCode?: string;
+  fxFee?: number;
+  prFxFee?: number;
+  atmFee?: number;
   cardId?: string;
   last4?: string;
   userId?: string;
   label?: string;
   isSettled?: boolean;
-  cDReason?: string;
-  dReason?: string;
+  isB2b?: boolean;
+  biAccId?: string;
+  biUserId?: string;
+  authorizationNumber?: string;
+  authMethod?: string;
+  processCode?: string;
+  acquirerCountryCode?: string;
+  terminalId?: string;
+  merchant?: string;
+  isCorrection?: boolean;
+  pcTxnId?: string;
+  rpTxnId?: string;
+  raTxnId?: string;
   tStatus?: ReapTxnStatus;
-  channel?: 'ATM' | 'POS' | 'ECOMMERCE' | 'Visa Direct';
   wallet?: string;
+  programId?: CardProviders;
+  client?: string;
+  isReported?: boolean;
 }
 
 export interface CardQuoteResponse {

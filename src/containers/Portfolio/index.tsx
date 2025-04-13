@@ -289,7 +289,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
       if (type === EventType.ACTION_PRESS) {
         const { notification, pressAction } = detail;
-
         if (notification?.id && pressAction?.id) {
           await RouteNotificationAction({
             notificationId: notification?.id,
@@ -438,6 +437,17 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             const { categoryId, cardId, url, provider, declineCode } =
               remoteMessage.data;
 
+            if (
+              declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
+              declineCode === CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE ||
+              declineCode === CypherDeclineCodes.MERCHANT_GLOBAL
+            ) {
+              showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
+                data: remoteMessage.data,
+                closeModal: hideModal,
+              });
+            }
+
             if (categoryId && declineCode) {
               void analytics().logEvent('card_decline_add_txn_cta', {
                 from: ethereum.address,
@@ -459,7 +469,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                     },
                   });
                 } else {
-                  navigation.navigate(C.screenTitle.CARD_CONTROLS_MENU, {
+                  navigation.navigate(C.screenTitle.CARD_CONTROLS, {
                     cardId,
                     currentCardProvider: provider,
                   });

@@ -28,6 +28,10 @@ interface TabStackProps {
   setDeepLinkData: React.Dispatch<
     React.SetStateAction<{
       screenToNavigate?: string;
+      params?: {
+        cardId: string;
+        currentCardProvider: string;
+      };
     } | null>
   >;
 }
@@ -97,6 +101,13 @@ function TabStack(props: TabStackProps) {
               showSetupLaterOption: false,
               enableBackButton: true,
             },
+          };
+          break;
+        case screenTitle.CARD_CONTROLS:
+          tabName = screenTitle.CARD;
+          navigationParams = {
+            screen: deepLinkData.screenToNavigate,
+            params: deepLinkData.params,
           };
           break;
         default:

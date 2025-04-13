@@ -26,15 +26,26 @@ const styles = StyleSheet.create({
   },
 });
 
+interface ThreeDSecureData {
+  last4: string;
+  transactionAmount: number;
+  currency: string;
+  merchantName: string;
+  approveUrl: string;
+  declineUrl: string;
+}
+
+interface ThreeDSecureApprovalModalProps {
+  isModalVisible: boolean;
+  closeModal: () => void;
+  data: ThreeDSecureData;
+}
+
 export default function ThreeDSecureApprovalModal({
   isModalVisible,
   closeModal,
   data,
-}: {
-  isModalVisible: boolean;
-  closeModal: () => void;
-  data: any;
-}) {
+}: ThreeDSecureApprovalModalProps) {
   const seconds = 120;
   const [timer, setTimer] = useState<number | null>(seconds * 1000); // 120 seconds in milliseconds
   const [timerEnd, setTimerEnd] = useState<number | null>(null);

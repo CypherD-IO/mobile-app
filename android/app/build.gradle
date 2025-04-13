@@ -84,8 +84,8 @@ android {
         applicationId "com.cypherd.androidwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 431
-        versionName System.getenv('VERSION_NAME') ?: "4.20"
+        versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 696
+        versionName System.getenv('VERSION_NAME') ?: "4.75"
         missingDimensionStrategy 'react-native-camera', 'general'
     }
     signingConfigs {

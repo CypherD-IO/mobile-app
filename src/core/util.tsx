@@ -44,6 +44,7 @@ import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { t } from 'i18next';
 import {
   AnalyticsType,
+  CardProviders,
   CypherPlanId,
   SignMessageValidationType,
 } from '../constants/enum';
@@ -81,6 +82,8 @@ import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { CardProfile } from '../models/cardProfile.model';
 import { CardDesign } from '../models/cardDesign.interface';
+import { CYPHER_CARD_IMAGES } from '../../assets/images/appImages';
+import { Card } from '../models/card.model';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1281,4 +1284,17 @@ export const shouldShowGetPhysicalCardInStack = (
     return true;
   }
   return false;
+};
+
+export const getCardImage = (card: Card, provider: CardProviders) => {
+  if (!card || !card.type) {
+    return undefined;
+  }
+
+  if (provider === CardProviders.REAP_CARD) {
+    const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`;
+    return {
+      uri: cardImage,
+    };
+  }
 };
