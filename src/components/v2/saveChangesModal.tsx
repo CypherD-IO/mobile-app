@@ -53,7 +53,7 @@ export default function SaveChangesModal({
             }}
           />
           <Button
-            title={capitalize(t('CANCEL'))}
+            title={capitalize(t('NO_THANKS'))}
             type={ButtonType.GREY_FILL}
             onPress={() => {
               onApplyToCard();

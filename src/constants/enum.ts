@@ -486,7 +486,7 @@ export const ComplaintReason = {
     "Returned/cancelled this purchase and haven't received a refund",
   PRODUCT_NOT_RECEIVED: 'Never received this product/service/ATM funds',
   DISSATISFIED: 'Dissatisfied with product or service',
-  HIGHER_CHARGE: 'Charged higher amount that expected',
+  HIGHER_CHARGE: 'Charged higher amount than expected',
   MULTIPLE_CHARGES: 'Made this purchase but it was paid for more than once',
   DECLINED_BUT_CHARGED: "Was charged but declined at merchant's end",
   UNRECOGNIZED_TRANSACTION:

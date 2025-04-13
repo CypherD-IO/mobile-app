@@ -8,11 +8,12 @@ import {
   CyDMaterialDesignIcons,
   CyDScrollView,
   CyDLottieView,
+  CyDKeyboardAvoidingView,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import Button from './button';
 import { ICardTransaction } from '../../models/card.model';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { pick } from '@react-native-documents/picker';
 import clsx from 'clsx';
 import {
@@ -74,6 +75,34 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100, // Add extra padding to account for the fixed button
+  },
+  dropdownContainer: {
+    // ...Platform.select({
+    //   android: {
+    //     position: 'relative',
+    //     elevation: 5,
+    //   },
+    //   ios: {
+    position: 'relative',
+    zIndex: 999,
+    //   },
+    // }),
+  },
+  dropdownOptions: {
+    // ...Platform.select({
+    //   android: {
+    //     position: 'relative',
+    //     marginTop: -1,
+    //     elevation: 5,
+    //   },
+    //   ios: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    // },
+    // }),
   },
 });
 
@@ -190,14 +219,26 @@ export default function ReportTransactionModal({
 
       const results = await pick({
         allowMultiSelection: true,
-        type: ['image/*', 'application/pdf'],
+        type: Platform.select({
+          ios: [
+            'public.image',
+            'public.jpeg',
+            'public.png',
+            'public.pdf',
+            'com.adobe.pdf',
+          ],
+          android: ['image/*', 'application/pdf'],
+        }),
         // Limit selection to remaining slots
         maxFiles: MAX_FILES - uploadedFiles.length,
       });
 
+      console.log('File pick results:', results);
+
       results.forEach(file => {
         // Skip files with missing required data
-        if (!file.name || !file.uri || !file.type || !file.size) {
+        if (!file.name || !file.uri || !file.size) {
+          console.log('Invalid file data:', file);
           Toast.show({
             type: 'error',
             text1: t('Invalid file data'),
@@ -205,6 +246,13 @@ export default function ReportTransactionModal({
           });
           return;
         }
+
+        // For iOS, we need to handle the file type differently
+        const fileType =
+          Platform.OS === 'ios'
+            ? file.type ||
+              (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg')
+            : file.type;
 
         // Check file size
         if (file.size > MAX_FILE_SIZE) {
@@ -221,11 +269,14 @@ export default function ReportTransactionModal({
         const newFile: SelectedFile = {
           id: fileId,
           name: file.name,
-          uri: file.uri,
-          type: file.type,
+          uri:
+            Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
+          type: fileType,
           size: file.size,
           isUploading: true,
         };
+
+        console.log('Adding new file:', newFile);
 
         setUploadedFiles(prev => [...prev, newFile]);
 
@@ -237,7 +288,7 @@ export default function ReportTransactionModal({
         }, 1000);
       });
     } catch (err) {
-      // The new package doesn't have isCancel, all errors should be handled
+      console.log('File selection error:', err);
       Toast.show({
         type: 'error',
         text1: t('Error selecting files'),
@@ -265,66 +316,72 @@ export default function ReportTransactionModal({
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
       style={styles.modalStyle}>
-      <CyDView className='bg-n20 h-full'>
-        <CyDView style={{ paddingTop: insets.top }}>
-          <CyDView className='flex-row justify-between items-center px-[24px] py-[16px]'>
-            <CyDText className='text-[20px] font-bold mb-[2px]'>
-              {t('Report an Issue')}
-            </CyDText>
-            <CyDTouchView
-              onPress={() => setModalVisible(false)}
-              className='p-[8px]'>
-              <CyDMaterialDesignIcons
-                name='close'
-                size={24}
-                className='text-n200'
-              />
-            </CyDTouchView>
-          </CyDView>
-        </CyDView>
-
-        <CyDView className='flex-1'>
-          <CyDScrollView
-            className='px-[24px]'
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}>
-            <CyDText className='text-[12px] text-n200 mb-[16px]'>
-              {t(
-                'Please provide details about any concerns with this transaction.',
-              )}
-            </CyDText>
-
-            <CyDText className='text-[14px] text-n200 mb-[8px]'>
-              {t('What is the issue you are facing?')}
-            </CyDText>
-
-            {/* Dropdown Container */}
-            <CyDView className='mb-[24px] relative z-[999]'>
-              {/* Dropdown Trigger */}
+      <CyDKeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        className='flex-1'>
+        <CyDView className='bg-n20 h-full'>
+          <CyDView style={{ paddingTop: insets.top }}>
+            <CyDView className='flex-row justify-between items-center px-[24px] py-[16px]'>
+              <CyDText className='text-[20px] font-bold mb-[2px]'>
+                {t('Report an Issue')}
+              </CyDText>
               <CyDTouchView
-                className={clsx(
-                  'border border-n40 p-[16px] bg-n0',
-                  isDropdownOpen
-                    ? 'rounded-t-[12px] border-b-0'
-                    : 'rounded-[12px]',
-                )}
-                onPress={() => setIsDropdownOpen(!isDropdownOpen)}>
-                <CyDView className='flex-row justify-between items-center'>
-                  <CyDText className='text-[14px] text-n200'>
-                    {selectedIssueLabel}
-                  </CyDText>
-                  <CyDMaterialDesignIcons
-                    name={isDropdownOpen ? 'chevron-up' : 'chevron-down'}
-                    size={20}
-                    className='text-n200'
-                  />
-                </CyDView>
+                onPress={() => setModalVisible(false)}
+                className='p-[8px]'>
+                <CyDMaterialDesignIcons
+                  name='close'
+                  size={24}
+                  className='text-n200'
+                />
               </CyDTouchView>
+            </CyDView>
+          </CyDView>
 
-              {/* Dropdown Options */}
-              {isDropdownOpen && (
-                <CyDView className='absolute top-full left-0 right-0 bg-n0 border border-n40 rounded-b-[12px] z-[1000] max-h-[300px]'>
-                  <CyDScrollView className='max-h-[300px]'>
+          <CyDView className='flex-1'>
+            <CyDScrollView
+              className='px-[24px]'
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps='handled'
+              contentContainerStyle={styles.scrollContent}>
+              <CyDText className='text-[12px] text-n200 mb-[16px]'>
+                {t(
+                  'Please provide details about any concerns with this transaction.',
+                )}
+              </CyDText>
+
+              <CyDText className='text-[14px] text-n200 mb-[8px]'>
+                {t('What is the issue you are facing?')}
+              </CyDText>
+
+              {/* Dropdown Container */}
+              <CyDView className='mb-[24px]' style={styles.dropdownContainer}>
+                {/* Dropdown Trigger */}
+                <CyDTouchView
+                  className={clsx(
+                    'border border-n40 p-[16px] bg-n0',
+                    isDropdownOpen
+                      ? 'rounded-t-[12px] border-b-0'
+                      : 'rounded-[12px]',
+                  )}
+                  onPress={() => setIsDropdownOpen(!isDropdownOpen)}>
+                  <CyDView className='flex-row justify-between items-center'>
+                    <CyDText className='text-[14px] text-n200'>
+                      {selectedIssueLabel}
+                    </CyDText>
+                    <CyDMaterialDesignIcons
+                      name={isDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                      size={20}
+                      className='text-n200'
+                    />
+                  </CyDView>
+                </CyDTouchView>
+
+                {/* Dropdown Options */}
+                {isDropdownOpen && (
+                  <CyDView
+                    className='bg-n0 border border-n40 rounded-b-[12px]'
+                    style={styles.dropdownOptions}>
                     {REPORT_ISSUES.map(issue => (
                       <CyDTouchView
                         key={issue.value}
@@ -335,108 +392,108 @@ export default function ReportTransactionModal({
                         </CyDText>
                       </CyDTouchView>
                     ))}
-                  </CyDScrollView>
-                </CyDView>
-              )}
-            </CyDView>
+                  </CyDView>
+                )}
+              </CyDView>
 
-            <CyDText className='text-[14px] text-n200 mb-[8px]'>
-              {t('Describe your purchase in brief')}
-            </CyDText>
-            <CyDTextInput
-              className='border border-n40 p-[16px] rounded-[12px] bg-n0 mb-[8px] h-[100px]'
-              placeholder={t('Enter purchase description')}
-              value={purchaseDescription}
-              onChangeText={setPurchaseDescription}
-              maxLength={MAX_PURCHASE_CHARS}
-              multiline
-            />
-            <CyDText className='text-[12px] text-n200 text-right mb-[8px]'>
-              {`${purchaseDescription.length}/${MAX_PURCHASE_CHARS}`}
-            </CyDText>
+              <CyDText className='text-[14px] text-n200 mb-[8px]'>
+                {t('Describe your purchase in brief')}
+              </CyDText>
+              <CyDTextInput
+                className='border border-n40 p-[16px] rounded-[12px] bg-n0 mb-[8px] h-[100px]'
+                placeholder={t('Enter purchase description')}
+                value={purchaseDescription}
+                onChangeText={setPurchaseDescription}
+                maxLength={MAX_PURCHASE_CHARS}
+                multiline
+              />
+              <CyDText className='text-[12px] text-n200 text-right mb-[8px]'>
+                {`${purchaseDescription.length}/${MAX_PURCHASE_CHARS}`}
+              </CyDText>
 
-            <CyDText className='text-[14px] text-n200 mb-[8px]'>
-              {t('Describe your issue')}
-            </CyDText>
-            <CyDTextInput
-              className='border border-n40 p-[16px] rounded-[12px] bg-n0 mb-[8px] h-[100px]'
-              placeholder={t('Enter issue description')}
-              value={description}
-              onChangeText={setDescription}
-              maxLength={MAX_CHARS}
-              multiline
-            />
-            <CyDText className='text-[12px] text-n200 text-right mb-[8px]'>
-              {`${description.length}/${MAX_CHARS}`}
-            </CyDText>
+              <CyDText className='text-[14px] text-n200 mb-[8px]'>
+                {t('Describe your issue')}
+              </CyDText>
+              <CyDTextInput
+                className='border border-n40 p-[16px] rounded-[12px] bg-n0 mb-[8px] h-[100px]'
+                placeholder={t('Enter issue description')}
+                value={description}
+                onChangeText={setDescription}
+                maxLength={MAX_CHARS}
+                multiline
+              />
+              <CyDText className='text-[12px] text-n200 text-right mb-[8px]'>
+                {`${description.length}/${MAX_CHARS}`}
+              </CyDText>
 
-            <CyDText className='text-[14px] text-n200 mb-[8px]'>
-              {t('Upload supporting documents')}
-            </CyDText>
-            <CyDView className='mb-[24px]'>
-              {uploadedFiles.map(file => (
-                <CyDView
-                  key={file.id}
-                  className='flex-row items-center justify-between bg-n0 border border-n40 rounded-[8px] p-[12px] mb-[8px]'>
-                  <CyDText
-                    className='flex-1 text-[14px] mr-[8px]'
-                    numberOfLines={1}>
-                    {file.name}
-                  </CyDText>
-                  {file.isUploading ? (
-                    <CyDLottieView
-                      source={AppImages.LOADING_SPINNER}
-                      autoPlay
-                      loop
-                      style={styles.spinner}
-                    />
-                  ) : (
-                    <CyDTouchView onPress={() => handleFileDelete(file.id)}>
-                      <CyDMaterialDesignIcons
-                        name='delete-outline'
-                        size={20}
-                        className='text-n200'
+              <CyDText className='text-[14px] text-n200 mb-[8px]'>
+                {t('Upload supporting documents')}
+              </CyDText>
+              <CyDView className='mb-[24px]'>
+                {uploadedFiles.map(file => (
+                  <CyDView
+                    key={file.id}
+                    className='flex-row items-center justify-between bg-n0 border border-n40 rounded-[8px] p-[12px] mb-[8px]'>
+                    <CyDText
+                      className='flex-1 text-[14px] mr-[8px]'
+                      numberOfLines={1}>
+                      {file.name}
+                    </CyDText>
+                    {file.isUploading ? (
+                      <CyDLottieView
+                        source={AppImages.LOADING_SPINNER}
+                        autoPlay
+                        loop
+                        style={styles.spinner}
                       />
-                    </CyDTouchView>
-                  )}
-                </CyDView>
-              ))}
+                    ) : (
+                      <CyDTouchView onPress={() => handleFileDelete(file.id)}>
+                        <CyDMaterialDesignIcons
+                          name='delete-outline'
+                          size={20}
+                          className='text-n200'
+                        />
+                      </CyDTouchView>
+                    )}
+                  </CyDView>
+                ))}
 
-              {/* Upload Button */}
-              {uploadedFiles.length < MAX_FILES && (
-                <CyDTouchView
-                  className='bg-n0 border border-dashed border-n40 rounded-[12px] p-[16px] items-center'
-                  onPress={handleFileSelectPress}>
-                  <CyDText className='text-[14px] text-n200'>
-                    {t('Click to upload files')}
-                  </CyDText>
-                </CyDTouchView>
-              )}
+                {/* Upload Button */}
+                {uploadedFiles.length < MAX_FILES && (
+                  <CyDTouchView
+                    className='bg-n0 border border-dashed border-n40 rounded-[12px] p-[16px] items-center'
+                    onPress={handleFileSelectPress}>
+                    <CyDText className='text-[14px] text-n200'>
+                      {t('Click to upload files')}
+                    </CyDText>
+                  </CyDTouchView>
+                )}
+              </CyDView>
+            </CyDScrollView>
+
+            {/* Submit Button - Fixed at bottom */}
+            <CyDView
+              style={{ paddingBottom: insets.bottom }}
+              className='px-[24px] pt-[16px] bg-n20 border-t border-n40'>
+              <Button
+                title={t('Submit')}
+                onPress={() => {
+                  void handleSubmit();
+                }}
+                type={ButtonType.PRIMARY}
+                disabled={
+                  !selectedIssue ||
+                  !description.trim() ||
+                  !purchaseDescription.trim() ||
+                  isSubmitting
+                }
+                style='py-[16px] rounded-full'
+                loading={isSubmitting}
+              />
             </CyDView>
-          </CyDScrollView>
-
-          {/* Submit Button - Fixed at bottom */}
-          <CyDView
-            style={{ paddingBottom: insets.bottom }}
-            className='px-[24px] pt-[16px] bg-n20 border-t border-n40'>
-            <Button
-              title={t('Submit')}
-              onPress={() => {
-                void handleSubmit();
-              }}
-              type={ButtonType.PRIMARY}
-              disabled={
-                !selectedIssue ||
-                !description.trim() ||
-                !purchaseDescription.trim() ||
-                isSubmitting
-              }
-              style='py-[16px] rounded-full'
-              loading={isSubmitting}
-            />
           </CyDView>
         </CyDView>
-      </CyDView>
+      </CyDKeyboardAvoidingView>
     </CyDModalLayout>
   );
 }

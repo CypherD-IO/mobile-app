@@ -1623,6 +1623,7 @@ const resources = {
       REVIEW_SETTINGS_MESSAGE_CHANNEL_OFF:
         'This channel is currently off. Please toggle the channel on and retry.',
       UPDATE_CHANNEL_SETTINGS: 'Update Channel Settings',
+      NO_THANKS: 'No Thanks',
     },
   },
 };

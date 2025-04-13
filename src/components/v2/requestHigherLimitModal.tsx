@@ -4,8 +4,10 @@ import {
   CyDText,
   CyDTextInput,
   CyDView,
+  CyDScrollView,
+  CyDKeyboardAvoidingView,
 } from '../../styles/tailwindComponents';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import CyDModalLayout from './modal';
 import Button from './button';
 
@@ -84,84 +86,92 @@ export default function RequestHigherLimitModal({
       }}
       propagateSwipe={true}
       setModalVisible={setIsModalVisible}>
-      <CyDView className='bg-n20 rounded-t-[16px] p-[16px]'>
-        <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] self-center mb-[16px] rounded-full' />
+      <CyDKeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
+        <CyDView className='bg-n20 rounded-t-[16px]'>
+          <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] self-center mt-[16px] mb-[16px] rounded-full' />
 
-        <CyDText className='text-[24px] font-bold'>
-          Request higher spending limit
-        </CyDText>
-
-        <CyDText className='text-[14px] text-n200 mt-[8px]'>
-          by requesting the higher spending limit, our agent will verify the
-          request and enable it for you
-        </CyDText>
-
-        <CyDView className='mt-[24px]'>
-          <CyDText className='text-[16px] text-n200 mb-[8px]'>
-            Expected Daily limit
-          </CyDText>
-          <CyDView className='bg-n0 rounded-[8px] px-[16px] py-[12px] flex-row items-center'>
-            <CyDText className='text-[16px] text-n200'>$</CyDText>
-            <CyDTextInput
-              className='flex-1 text-[16px] ml-[4px]'
-              keyboardType='numeric'
-              value={dailyLimit}
-              onChangeText={handleDailyLimitChange}
-              placeholder='1,00,000'
-            />
-          </CyDView>
-        </CyDView>
-
-        <CyDView className='mt-[16px]'>
-          <CyDText className='text-[16px] text-n200 mb-[8px]'>
-            Expected Monthly limit
-          </CyDText>
-          <CyDView className='bg-n0 rounded-[8px] px-[16px] py-[12px] flex-row items-center'>
-            <CyDText className='text-[16px] text-n200'>$</CyDText>
-            <CyDTextInput
-              className='flex-1 text-[16px] ml-[4px]'
-              keyboardType='numeric'
-              value={monthlyLimit}
-              onChangeText={handleMonthlyLimitChange}
-              placeholder='10,00,000'
-            />
-          </CyDView>
-          {error && (
-            <CyDText className='text-[12px] text-red-500 mt-[4px]'>
-              {error}
+          <CyDScrollView
+            className='px-[16px]'
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            keyboardShouldPersistTaps='handled'>
+            <CyDText className='text-[24px] font-bold'>
+              Request higher spending limit
             </CyDText>
-          )}
-        </CyDView>
 
-        <CyDView className='mt-[16px]'>
-          <CyDText className='text-[16px] text-n200 mb-[8px]'>
-            Reason for increase
-          </CyDText>
-          <CyDTextInput
-            className='rounded-[8px] p-[12px] text-[16px] h-[100px] text-left bg-n0'
-            value={reason}
-            onChangeText={handleReasonChange}
-            placeholder='Please provide a reason for the limit increase'
-            multiline={true}
-            textAlignVertical='top'
-            maxLength={MAX_REASON_LENGTH}
-            numberOfLines={4}
-            scrollEnabled={true}
-            style={{ textAlignVertical: 'top' }}
-          />
-          <CyDText className='text-[12px] text-n200 mt-[4px] text-right'>
-            {reason.length}/{MAX_REASON_LENGTH}
-          </CyDText>
-        </CyDView>
+            <CyDText className='text-[14px] text-n200 mt-[8px]'>
+              Our agent will verify the request and enable it for you
+            </CyDText>
 
-        <CyDView className='mt-[24px] mb-[32px]'>
-          <Button
-            title='Submit'
-            onPress={handleSubmit}
-            disabled={!dailyLimit || !monthlyLimit || !reason}
-          />
+            <CyDView className='mt-[24px]'>
+              <CyDText className='text-[16px] text-n200 mb-[8px]'>
+                Expected Daily Limit
+              </CyDText>
+              <CyDView className='bg-n0 rounded-[8px] px-[16px] py-[12px] flex-row items-center'>
+                <CyDText className='text-[16px] text-n200'>$</CyDText>
+                <CyDTextInput
+                  className='flex-1 text-[16px] ml-[4px]'
+                  keyboardType='numeric'
+                  value={dailyLimit}
+                  onChangeText={handleDailyLimitChange}
+                  placeholder='1,00,000'
+                />
+              </CyDView>
+            </CyDView>
+
+            <CyDView className='mt-[16px]'>
+              <CyDText className='text-[16px] text-n200 mb-[8px]'>
+                Expected Monthly Limit
+              </CyDText>
+              <CyDView className='bg-n0 rounded-[8px] px-[16px] py-[12px] flex-row items-center'>
+                <CyDText className='text-[16px] text-n200'>$</CyDText>
+                <CyDTextInput
+                  className='flex-1 text-[16px] ml-[4px]'
+                  keyboardType='numeric'
+                  value={monthlyLimit}
+                  onChangeText={handleMonthlyLimitChange}
+                  placeholder='10,00,000'
+                />
+              </CyDView>
+              {error && (
+                <CyDText className='text-[12px] text-red-500 mt-[4px]'>
+                  {error}
+                </CyDText>
+              )}
+            </CyDView>
+
+            <CyDView className='mt-[16px]'>
+              <CyDText className='text-[16px] text-n200 mb-[8px]'>
+                Reason for increase
+              </CyDText>
+              <CyDTextInput
+                className='rounded-[8px] p-[12px] text-[16px] h-[100px] text-left bg-n0'
+                value={reason}
+                onChangeText={handleReasonChange}
+                placeholder='Please provide a reason for the limit increase'
+                multiline={true}
+                textAlignVertical='top'
+                maxLength={MAX_REASON_LENGTH}
+                numberOfLines={4}
+                scrollEnabled={true}
+              />
+              <CyDText className='text-[12px] text-n200 mt-[4px] text-right'>
+                {reason.length}/{MAX_REASON_LENGTH}
+              </CyDText>
+            </CyDView>
+
+            <CyDView className='mt-[24px] mb-[32px]'>
+              <Button
+                title='Submit'
+                onPress={handleSubmit}
+                disabled={!dailyLimit || !monthlyLimit || !reason}
+              />
+            </CyDView>
+          </CyDScrollView>
         </CyDView>
-      </CyDView>
+      </CyDKeyboardAvoidingView>
     </CyDModalLayout>
   );
 }
