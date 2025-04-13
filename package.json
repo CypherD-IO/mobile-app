@@ -72,7 +72,7 @@
     "@walletconnect/utils": "^2.7.0",
     "assert": "^1.5.0",
     "asyncstorage-down": "^4.2.0",
-    "axios": "^0.24.0",
+    "axios": "^0.30.0",
     "axios-retry": "^3.2.5",
     "base-64": "^1.0.0",
     "big-integer": "^1.6.52",
