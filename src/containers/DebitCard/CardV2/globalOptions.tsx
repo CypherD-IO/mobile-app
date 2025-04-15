@@ -66,7 +66,6 @@ export default function GlobalOptions() {
   const [planInfo, setPlanInfo] = useState<{
     expiresOn: number;
     metalCardEligible: boolean;
-    optedPlanId: CypherPlanId;
     planId: CypherPlanId;
     updatedOn: number;
   } | null>(get(cardProfile, ['planInfo'], null));
