@@ -88,7 +88,6 @@ enum ShortcutsTitle {
   BRIDGE = 'BRIDGE',
   SEND = 'SEND',
   RECEIVE = 'RECEIVE',
-  FUND_CARD = 'FUND_CARD',
   BUY = 'BUY',
   IBC = 'IBC',
   SELL = 'Sell',

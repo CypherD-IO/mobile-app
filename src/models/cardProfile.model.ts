@@ -55,7 +55,6 @@ export interface CardProfile {
   child?: string;
   planInfo: {
     planId: CypherPlanId;
-    optedPlanId: CypherPlanId;
     updatedOn: number;
     expiresOn: number;
     metalCardEligible: boolean;

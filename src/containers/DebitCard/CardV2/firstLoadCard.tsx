@@ -96,20 +96,7 @@ export default function FirstLoadCard() {
   const solana = hdWallet.state.wallet.solana;
   const wallet = hdWallet.state.wallet;
   const { currentCardProvider } = route.params;
-  const cardProfile = globalContext.globalState.cardProfile;
-  const planData = globalContext.globalState.planInfo;
-  const planCost = get(
-    planData,
-    [
-      'default',
-      cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN,
-      'cost',
-    ],
-    0,
-  );
-  const optedPlanId =
-    cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN;
-  const minTokenValueLimit = Math.max(10, Number(planCost));
+  const minTokenValueLimit = 10;
   const minTokenValueEth = 50;
 
   const insect = useSafeAreaInsets();
@@ -498,9 +485,9 @@ export default function FirstLoadCard() {
             description: response?.error?.message?.includes(
               'amount is lower than 10 USD',
             )
-              ? response.error.message +
+              ? parseErrorMessage(response.error) +
                 `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-              : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
+              : (parseErrorMessage(response.error) ?? t('UNABLE_TO_TRANSFER')),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -682,12 +669,12 @@ export default function FirstLoadCard() {
           backendName === CHAIN_ETH.backendName &&
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH} ${planCost > 0 ? '(including plan cost)' : ''}`;
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = 'Minimum card load amount for Ethereum is $50';
           } else {
-            errorMessage = `Minimum card load amount is $${String(minTokenValueLimit)} ${planCost > 0 ? '(including plan cost)' : ''}`;
+            errorMessage = `Minimum card load amount is $${String(minTokenValueLimit)}`;
           }
         }
 
@@ -1292,84 +1279,6 @@ export default function FirstLoadCard() {
                       </CyDText>
                     )}
                   </CyDTouchView>
-                </CyDView>
-              </CyDView>
-            </CyDView>
-
-            <CyDView
-              className={clsx('mt-[16px]', {
-                'opacity-40 pointer-events-none': !selectedToken,
-              })}>
-              <CyDText className='font-bold text-[12px]'>Summary</CyDText>
-              <CyDView className='mt-[8px] rounded-[16px] bg-n0'>
-                <CyDView className='p-[24px]'>
-                  <CyDView className='flex-row justify-between items-center'>
-                    <CyDText className='font-normal text-[14px]'>
-                      {get(
-                        CYPHER_PLAN_ID_NAME_MAPPING,
-                        optedPlanId,
-                        optedPlanId,
-                      )}
-                    </CyDText>
-                    {optedPlanId === CypherPlanId.BASIC_PLAN && (
-                      <CyDText className='font-bold text-[14px] text-green400'>
-                        {' 🎉 Free'}
-                      </CyDText>
-                    )}
-                    {optedPlanId === CypherPlanId.PRO_PLAN && (
-                      <CyDText className='font-bold text-[14px]'>
-                        {`$${planCost}`}
-                      </CyDText>
-                    )}
-                  </CyDView>
-                  <CyDView className='flex-row justify-between items-center mt-[12px]'>
-                    <CyDText className='font-normal text-[14px]'>
-                      {'Card Load'}
-                    </CyDText>
-                    {usdAmount && Number(usdAmount) < planCost && (
-                      <CyDText className='font-bold text-[14px]'>
-                        {`$${limitDecimalPlaces(usdAmount, 2)}`}
-                      </CyDText>
-                    )}
-                    {usdAmount && Number(usdAmount) > planCost && (
-                      <CyDText className='font-bold text-[14px]'>
-                        {`$${limitDecimalPlaces(
-                          DecimalHelper.subtract(usdAmount, planCost),
-                          2,
-                        )}`}
-                      </CyDText>
-                    )}
-                    {(!usdAmount || !cryptoAmount) && (
-                      <CyDText className='font-bold text-[14px]'>
-                        {'$0.00'}
-                      </CyDText>
-                    )}
-                  </CyDView>
-                </CyDView>
-                <CyDView className='flex-row'>
-                  {Array.from({ length: 30 }).map((_, index) => (
-                    <CyDView
-                      key={index}
-                      className='flex-1 h-[1px] bg-n40 mx-[2px]'
-                    />
-                  ))}
-                </CyDView>
-                <CyDView className='p-[24px]'>
-                  <CyDView className='flex-row justify-between items-center'>
-                    <CyDText className='font-normal text-[14px]'>
-                      {'Total'}
-                    </CyDText>
-                    {usdAmount && (
-                      <CyDText className='font-bold text-[14px]'>
-                        {`$${limitDecimalPlaces(usdAmount, 2)}`}
-                      </CyDText>
-                    )}
-                    {!usdAmount && (
-                      <CyDText className='font-bold text-[14px]'>
-                        {'$0.00'}
-                      </CyDText>
-                    )}
-                  </CyDView>
                 </CyDView>
               </CyDView>
             </CyDView>

@@ -24,13 +24,11 @@ import { sendFirebaseEvent } from '../../utilities/analyticsUtility';
 import { HdWalletContext } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import * as Sentry from '@sentry/react-native';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   planInfo: {
     expiresOn: number;
     metalCardEligible: boolean;
-    optedPlanId: CypherPlanId;
     planId: CypherPlanId;
     updatedOn: number;
   };

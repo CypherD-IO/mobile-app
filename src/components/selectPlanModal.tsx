@@ -276,73 +276,6 @@ export default function SelectPlanModal({
     }
   };
 
-  // const onSelectPlan = async (
-  //   newlyOptedPlan: CypherPlanId = CypherPlanId.BASIC_PLAN,
-  // ) => {
-  //   setLoading(true);
-  //   if (!deductAmountNow) {
-  //     try {
-  //       const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
-  //         optedPlanId: newlyOptedPlan,
-  //       });
-
-  //       const resp = await getWalletProfile(globalState.token);
-  //       globalDispatch({
-  //         type: GlobalContextType.CARD_PROFILE,
-  //         cardProfile: resp,
-  //       });
-
-  //       if (!isError) {
-  //         setIsModalVisible(false);
-  //         setTimeout(() => {
-  //           showModal('state', {
-  //             type: 'success',
-  //             title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, newlyOptedPlan)}`,
-  //             description: 'You can change your plan anytime in the future',
-  //             onSuccess: () => {
-  //               hideModal();
-  //               if (onPlanChangeSuccess) {
-  //                 setTimeout(() => {
-  //                   onPlanChangeSuccess();
-  //                 }, 500);
-  //               }
-  //             },
-  //             onFailure: hideModal,
-  //           });
-  //         }, 500);
-  //       } else {
-  //         setIsModalVisible(false);
-  //         setTimeout(() => {
-  //           showModal('state', {
-  //             type: 'error',
-  //             title: t('PLAN_UPDATE_FAILED'),
-  //             description: t('CONTACT_CYPHERD_SUPPORT'),
-  //             onSuccess: hideModal,
-  //             onFailure: hideModal,
-  //           });
-  //         }, 500);
-  //         Sentry.captureException(error);
-  //       }
-  //     } catch (err: any) {
-  //       setIsModalVisible(false);
-  //       setTimeout(() => {
-  //         showModal('state', {
-  //           type: 'error',
-  //           title: t('PLAN_UPDATE_FAILED'),
-  //           description: JSON.stringify(err?.message),
-  //           onSuccess: hideModal,
-  //           onFailure: hideModal,
-  //         });
-  //       }, 500);
-
-  //       Sentry.captureException(err);
-  //     }
-  //   } else {
-  //     setConsentModalVisible(true);
-  //   }
-  //   setLoading(false);
-  // };
-
   return (
     <CyDModalLayout
       isModalVisible={isModalVisible}
@@ -1178,30 +1111,9 @@ export default function SelectPlanModal({
                   </CyDView>
                 </CyDView> */}
 
-                <CyDText className='mb-[12px] mt-[24px] font-semibold text-[14px] text-center'>
+                <CyDText className='my-[12px] font-semibold text-[14px] text-center'>
                   Premium Benefits
                 </CyDText>
-
-                <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
-                  <CyDView>
-                    <CyDText className='text-[16px] font-semibold'>
-                      Free Physical Card &
-                    </CyDText>
-                    <CyDText className='text-[16px] font-semibold'>
-                      Card Shipping
-                    </CyDText>
-                    <CyDText className='text-[12px] font-bold text-n300'>
-                      {t('Ships anywhere in the world*')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='pr-[12px]'>
-                    <CyDFastImage
-                      source={AppImages.POST_CARD}
-                      className='h-[60px] w-[57px] mx-auto'
-                      resizeMode='contain'
-                    />
-                  </CyDView>
-                </CyDView>
 
                 <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
                   <CyDView>
@@ -1303,6 +1215,24 @@ export default function SelectPlanModal({
                     <CyDFastImage
                       source={AppImages.SHOPPING_WOMEN}
                       className='h-[66px] w-[66px] mx-auto'
+                      resizeMode='contain'
+                    />
+                  </CyDView>
+                </CyDView>
+
+                <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
+                  <CyDView>
+                    <CyDText className='text-[16px] font-semibold'>
+                      {'Free Shipping \nworldwide'}
+                    </CyDText>
+                    <CyDText className='text-[12px] font-bold text-n300'>
+                      {t('Ships anywhere in the world*')}
+                    </CyDText>
+                  </CyDView>
+                  <CyDView className='pr-[12px]'>
+                    <CyDFastImage
+                      source={AppImages.POST_CARD}
+                      className='h-[60px] w-[57px] mx-auto'
                       resizeMode='contain'
                     />
                   </CyDView>
