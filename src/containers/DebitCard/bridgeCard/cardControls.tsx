@@ -127,7 +127,7 @@ export default function CardControls() {
     atm: false,
     online: false,
     merchantOutlet: false,
-    cardPin: false,
+    tap: false,
     applePay: false,
   });
 
@@ -387,6 +387,13 @@ export default function CardControls() {
       });
 
       if (!response.isError) {
+        void analytics().logEvent('card_controls_request_higher_limit_submit', {
+          card_id: selectedCardId,
+          card_type: selectedCard?.type,
+          reason,
+          dailyLimit,
+          monthlyLimit,
+        });
         showModal('state', {
           type: 'success',
           title: t('LIMIT_INCREASE_REQUEST_SUBMITTED'),
@@ -456,7 +463,7 @@ export default function CardControls() {
           atm: response.data.customLimit?.atm || false,
           online: response.data.customLimit?.ecom || false,
           merchantOutlet: response.data.customLimit?.pos || false,
-          cardPin: false,
+          tap: false,
           applePay: response.data.customLimit?.wal || false,
         });
 
@@ -536,6 +543,11 @@ export default function CardControls() {
           ...prev,
           countries: countryCodes,
         }));
+
+        void analytics().logEvent('card_controls_update_countries', {
+          card_id: selectedCardId,
+          card_type: selectedCard?.type,
+        });
 
         // Fetch updated limits after successful country update
         await fetchCardLimits();
@@ -905,6 +917,13 @@ export default function CardControls() {
                     <CyDTouchView
                       className='flex flex-row items-center bg-n20 rounded-[15px] px-[12px] py-[8px]'
                       onPress={() => {
+                        void analytics().logEvent(
+                          'card_controls_explore_premium',
+                          {
+                            card_id: selectedCardId,
+                            card_type: selectedCard?.type,
+                          },
+                        );
                         setPlanChangeModalVisible(true);
                       }}>
                       <GradientText
@@ -1050,7 +1069,13 @@ export default function CardControls() {
               {/* Select Country */}
               <CyDTouchView
                 className='flex flex-row items-center justify-between py-[16px]'
-                onPress={() => setIsCountryModalVisible(true)}>
+                onPress={() => {
+                  void analytics().logEvent('card_controls_select_country', {
+                    card_id: selectedCardId,
+                    card_type: selectedCard?.type,
+                  });
+                  setIsCountryModalVisible(true);
+                }}>
                 <CyDView className='flex flex-row items-center gap-x-[12px]'>
                   <CyDImage
                     source={AppImages.SELECT_COUNTRIES_ICON}
