@@ -950,3 +950,22 @@ export const chainExplorerMapping: Record<string, string> = {
   TRON: 'https://tronscan.org/#/transaction/',
   SOLANA: 'https://solscan.io/tx/',
 };
+
+// Referral Attribution Dropdown options
+export const CONTENT_TYPES: { [key: string]: string } = {
+  blog: 'Blog',
+  video: 'Video',
+  social_media: 'Social Media Post',
+  podcast: 'Podcast',
+  newsletter: 'Newsletter',
+  other: 'Other',
+};
+
+export const TARGET_AUDIENCES: { [key: string]: string } = {
+  crypto_beginners: 'Crypto Beginners',
+  crypto_enthusiasts: 'Crypto Enthusiasts',
+  developers: 'Developers',
+  investors: 'Investors',
+  content_creators: 'Content Creators',
+  other: 'Other',
+};
