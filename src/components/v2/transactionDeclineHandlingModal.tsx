@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, Modal, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,6 +15,7 @@ import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
 import { capitalize } from 'lodash';
 import useAxios from '../../core/HttpRequest';
+import analytics from '@react-native-firebase/analytics';
 
 export interface DeclineHandlingData {
   reason: string;
@@ -69,7 +70,24 @@ const TransactionDeclineHandlingModal: React.FC<
     reason,
     merchantCountry,
     merchantCity,
+    txnId,
   } = data;
+
+  // Track modal appearance
+  useEffect(() => {
+    if (isModalVisible) {
+      void analytics().logScreenView({
+        screen_name: 'TransactionDeclineHandlingModal',
+        screen_class: 'TransactionDeclineHandlingModal',
+      });
+
+      void analytics().logEvent('transaction_decline_modal_viewed', {
+        transaction_id: txnId,
+        merchant: merchant,
+        reason: reason,
+      });
+    }
+  }, [isModalVisible, txnId, merchant, reason]);
 
   const { showModal, hideModal } = useGlobalModalContext();
   const { getWithAuth } = useAxios();
@@ -80,10 +98,21 @@ const TransactionDeclineHandlingModal: React.FC<
       return;
     }
 
+    // Track approval action
+    void analytics().logEvent('transaction_decline_approve', {
+      transaction_id: txnId,
+      merchant: merchant,
+    });
+
     setIsLoading(true);
     try {
       const response = await getWithAuth(approveUrl);
       if (!response?.isError) {
+        // Track successful approval
+        void analytics().logEvent('transaction_decline_approve_success', {
+          transaction_id: txnId,
+        });
+
         closeModal();
         setTimeout(() => {
           showModal('state', {
@@ -95,6 +124,12 @@ const TransactionDeclineHandlingModal: React.FC<
           });
         }, 500);
       } else {
+        // Track approval failure
+        void analytics().logEvent('transaction_decline_approve_failed', {
+          transaction_id: txnId,
+          error: response?.error?.message || 'Unknown error',
+        });
+
         closeModal();
         setTimeout(() => {
           showModal('state', {
@@ -108,6 +143,11 @@ const TransactionDeclineHandlingModal: React.FC<
         }, 500);
       }
     } catch (error) {
+      // Track exception
+      void analytics().logEvent('transaction_decline_approve_exception', {
+        transaction_id: txnId,
+      });
+
       closeModal();
       setTimeout(() => {
         showModal('state', {
@@ -128,6 +168,12 @@ const TransactionDeclineHandlingModal: React.FC<
       return;
     }
 
+    // Track fraud report action
+    void analytics().logEvent('transaction_decline_report_fraud', {
+      transaction_id: txnId,
+      merchant: merchant,
+    });
+
     setIsLoading(true);
     closeModal();
     setTimeout(() => {
@@ -142,6 +188,11 @@ const TransactionDeclineHandlingModal: React.FC<
           try {
             const response = await getWithAuth(reportUrl);
             if (!response?.isError) {
+              // Track successful fraud report
+              void analytics().logEvent('transaction_decline_report_success', {
+                transaction_id: txnId,
+              });
+
               showModal('state', {
                 type: 'success',
                 title: t('TRANSACTION_REPORTED_SUCCESSFULLY'),
@@ -150,6 +201,12 @@ const TransactionDeclineHandlingModal: React.FC<
                 onFailure: hideModal,
               });
             } else {
+              // Track fraud report failure
+              void analytics().logEvent('transaction_decline_report_failed', {
+                transaction_id: txnId,
+                error: response?.error?.message || 'Unknown error',
+              });
+
               showModal('state', {
                 type: 'error',
                 title: t('TRANSACTION_REPORT_FAILED'),
@@ -160,6 +217,11 @@ const TransactionDeclineHandlingModal: React.FC<
               });
             }
           } catch (error) {
+            // Track exception
+            void analytics().logEvent('transaction_decline_report_exception', {
+              transaction_id: txnId,
+            });
+
             showModal('state', {
               type: 'error',
               title: t('TRANSACTION_REPORT_FAILED'),
@@ -172,11 +234,24 @@ const TransactionDeclineHandlingModal: React.FC<
           }
         },
         onFailure: () => {
+          // Track user canceled confirmation
+          void analytics().logEvent('transaction_decline_report_canceled', {
+            transaction_id: txnId,
+          });
+
           setIsLoading(false);
           hideModal();
         },
       });
     }, 500);
+  };
+
+  // Track close action
+  const handleCloseModal = () => {
+    void analytics().logEvent('transaction_decline_modal_dismissed', {
+      transaction_id: txnId,
+    });
+    closeModal();
   };
 
   return (
@@ -185,12 +260,12 @@ const TransactionDeclineHandlingModal: React.FC<
       transparent
       animationType='slide'
       style={styles.modalLayout}
-      onRequestClose={closeModal}>
+      onRequestClose={handleCloseModal}>
       <CyDView className='flex-1' style={styles.overlay}>
         <CyDView className='bg-black rounded-t-[32px] pt-[16px]'>
           {/* Close button */}
           <CyDView className='flex-row justify-end px-[24px] mb-[8px]'>
-            <CyDTouchView onPress={closeModal} className='p-[8px]'>
+            <CyDTouchView onPress={handleCloseModal} className='p-[8px]'>
               <CyDMaterialDesignIcons
                 name='close'
                 size={24}
@@ -271,7 +346,9 @@ const TransactionDeclineHandlingModal: React.FC<
             <CyDView className='gap-[12px] mb-[42px]'>
               <Button
                 title='Yes, I made this purchase *'
-                onPress={handleThisWasMe}
+                onPress={() => {
+                  void handleThisWasMe();
+                }}
                 style='rounded-full py-[16px] bg-[#FFB800]'
                 type={ButtonType.PRIMARY}
                 loading={isLoading}
@@ -279,7 +356,7 @@ const TransactionDeclineHandlingModal: React.FC<
               <Button
                 title="This isn't me, Report transaction"
                 onPress={() => {
-                  handleThisIsntMe();
+                  void handleThisIsntMe();
                 }}
                 style='rounded-full bg-[#333333] py-[16px]'
                 type={ButtonType.DARK_GREY_FILL}

@@ -45,9 +45,11 @@ export default function EditLimitModal({
   onRequestHigherLimit,
 }: EditLimitModalProps) {
   const [limitValue, setLimitValue] = React.useState(currentLimit);
+  const [inputError, setInputError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setLimitValue(currentLimit);
+    setInputError(null);
   }, [currentLimit, isModalVisible]);
 
   const handleRequestHigherLimit = () => {
@@ -57,7 +59,18 @@ export default function EditLimitModal({
 
   const handleModalClose = () => {
     setLimitValue(currentLimit);
+    setInputError(null);
     setIsModalVisible(false);
+  };
+
+  const validateAndSetLimit = (value: number) => {
+    if (value > maxLimit) {
+      setInputError(`Maximum limit is $${maxLimit}`);
+      setLimitValue(maxLimit);
+    } else {
+      setInputError(null);
+      setLimitValue(value);
+    }
   };
 
   return (
@@ -66,7 +79,7 @@ export default function EditLimitModal({
       transparent={true}
       animationType='fade'
       onRequestClose={handleModalClose}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView className='flex-1'>
         <CyDView style={styles.modalBackground}>
           <CyDView className='bg-n20 rounded-t-[16px] p-[16px]'>
             <CyDTouchView
@@ -98,12 +111,19 @@ export default function EditLimitModal({
                 onChangeText={text => {
                   const numericText = text.replace(/[^0-9]/g, '');
                   const parsedValue = parseInt(numericText, 10);
-                  setLimitValue(isNaN(parsedValue) ? 0 : round(parsedValue));
+                  const value = isNaN(parsedValue) ? 0 : round(parsedValue);
+                  validateAndSetLimit(value);
                 }}
                 value={`$${limitValue}`}
               />
 
-              <CyDText className='text-[14px] text-n200 text-center'>
+              {inputError && (
+                <CyDText className='text-[12px] text-red-500 text-center mt-[4px]'>
+                  {inputError}
+                </CyDText>
+              )}
+
+              <CyDText className='text-[14px] text-n200 text-center mt-[4px]'>
                 {type === SpendLimitType.DAILY
                   ? 'Daily Usage Limit'
                   : 'Monthly Usage Limit'}
@@ -115,7 +135,7 @@ export default function EditLimitModal({
                   maxValue={maxLimit}
                   steps={4}
                   onValueChange={value => {
-                    setLimitValue(value);
+                    validateAndSetLimit(value);
                   }}
                   value={limitValue}
                   showValues={true}
