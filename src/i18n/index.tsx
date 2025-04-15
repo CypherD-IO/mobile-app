@@ -1218,6 +1218,24 @@ const resources = {
       CREATE_REFERRAL_CODE: 'Create New Referral Code',
       CREATE_REFERRAL_CODE_SUB:
         'You can create personalized invite codes that you can share with friends, family, or on social media.',
+      NEW_INVITE_CODE: 'New Invite code',
+      YOUR_CUSTOM_INVITE_CODE: 'Your custom invite code',
+      ADD_CUSTOM_ATTRIBUTION: 'Add Custom Attribution',
+      ATTRIBUTION_PLACEHOLDER: 'Enter custom attribution',
+      CUSTOM_ATTRIBUTION_INFO:
+        'Helps Cypher track where your referrals come from and how each code performs. These insights allow us to make our rewards program more rewarding for popular referral channels.',
+      CHANNEL: 'Channel',
+      WHERE_YOU_ARE_PLANNING_TO_USE_CODE:
+        'Where you are planing to use the code',
+      CONTENT_TYPE: 'Content Type',
+      SELECT_CONTENT_TYPE: 'Select the type of content',
+      SPECIFY_OTHER_CONTENT_TYPE: 'Specify other content type',
+      REGION: 'Region',
+      REGION_PLACEHOLDER: 'The Demographic you are planning to cover',
+      REGION_EXAMPLE: 'Eg: USA, Asia, All Regions',
+      TARGET_AUDIENCE: 'Target Audience',
+      SELECT_TARGET_AUDIENCE: 'Which type of user are you expecting?',
+      SPECIFY_OTHER_TARGET_AUDIENCE: 'Specify other target audience',
       REFERRAL_CODE: 'Referral Code',
       REFERRAL_CODE_CREATED: 'Referral Code Created',
       REFERRAL_CODE_CREATED_MESSAGE:
@@ -1623,6 +1641,10 @@ const resources = {
       UPDATE_CHANNEL_SETTINGS: 'Update Channel Settings',
       NO_THANKS: 'No Thanks',
       PORTFOLIO: 'Portfolio',
+      CHANNEL_EXAMPLE: 'e.g. YouTube, X, Instagram, Blog, etc.',
+      USERNAME: 'Username / Social Media Handle',
+      USERNAME_PLACEHOLDER: 'Your username or social media handle',
+      USERNAME_EXAMPLE: 'e.g. vitalik.eth (X username)',
     },
   },
 };
