@@ -215,6 +215,7 @@ export enum ButtonType {
   DARK = 'dark',
   GREY_FILL = 'greyFill',
   WHITE_FILL = 'whiteFill',
+  DARK_GREY_FILL = 'darkGreyFill',
 }
 
 export enum ImagePosition {
@@ -244,6 +245,7 @@ export enum GlobalModalType {
   CUSTOM_LAYOUT = 'customLayout',
   THREE_D_SECURE_APPROVAL = 'threeDSecureApproval',
   CARD_ACTIONS_FROM_NOTIFICATION = 'cardActionsFromNotification',
+  TRANSACTION_DECLINE_HANDLING = 'transactionDeclineHandling',
 }
 
 export enum TokenModalType {
@@ -432,8 +434,6 @@ export enum CypherDeclineCodes {
   ACC_LOCKED = 'C2',
   ACC_INACTIVE = 'C3',
   INT_COUNTRY = 'I4G',
-  INT_CHANNEL_LIMIT = 'I5G',
-  DOM_CHANNEL_LIMIT = 'D5G',
   DAILY_LIMIT = 'C6',
   MONTHLY_LIMIT = 'C7',
   RATE_CHECK_USER = 'U8G',
@@ -446,15 +446,14 @@ export enum CypherDeclineCodes {
   MERCHANT_GLOBAL = 'B2G', // cypher global settings
   MERCHANT_DENIED = 'B3G', // user settings
   MERCHANT_LIMIT = 'B4G', // user settings
+  NEW_MERCHANT_HIGH_SPEND_RULE = 'C10',
+  INT_CHANNEL_LIMIT = 'I5G',
 }
 
 export enum NOTIFE_ACTIONS {
   ADD_COUNTRY = 'add-country',
-  INCREASE_DOMESTIC_LIMIT = 'increase-domestic-limit',
-  INCREASE_INTERNATIONAL_LIMIT = 'increase-international-limit',
   INCREASE_DAILY_LIMIT = 'increase-daily-limit',
   INCREASE_MONTHLY_LIMIT = 'increase-monthly-limit',
-  ENABLE_ZERO_RESTRICTION_MODE = 'enable-zero-restriction-mode',
   ACTIVATE_CARD = 'activate-card',
   UNBLOCK_CARD = 'unblock-card',
 }
@@ -469,5 +468,34 @@ export enum NavigateToScreenOnOpen {
   DOMESTIC_TRANSACTIONS = 'DOMESTIC_TRANSACTIONS',
   INTERNATIONAL_TRANSACTIONS = 'INTERNATIONAL_TRANSACTIONS',
   INTERNATIONAL_COUNTRIES = 'INTERNATIONAL_COUNTRIES',
-  DEFAULT_LIMIT_SETUP = 'DEFAULT_LIMIT_SETUP',
+}
+
+export enum SpendLimitType {
+  DAILY = 'daily',
+  MONTHLY = 'monthly',
+}
+
+export enum HigherSpendingLimitStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
+export const ComplaintReason = {
+  REFUND_NOT_RECEIVED:
+    "Returned/cancelled this purchase and haven't received a refund",
+  PRODUCT_NOT_RECEIVED: 'Never received this product/service/ATM funds',
+  DISSATISFIED: 'Dissatisfied with product or service',
+  HIGHER_CHARGE: 'Charged higher amount than expected',
+  MULTIPLE_CHARGES: 'Made this purchase but it was paid for more than once',
+  DECLINED_BUT_CHARGED: "Was charged but declined at merchant's end",
+  UNRECOGNIZED_TRANSACTION:
+    'I did not make this purchase/ I do not recognize this transaction',
+};
+
+export enum ON_OPEN_NAVIGATE {
+  DEFAULT = 'DEFAULT',
+  DAILY_LIMIT = 'DAILY_LIMIT',
+  MONTHLY_LIMIT = 'MONTHLY_LIMIT',
+  SELECT_COUNTRY = 'SELECT_COUNTRY',
 }

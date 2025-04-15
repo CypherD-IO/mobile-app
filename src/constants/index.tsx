@@ -112,10 +112,6 @@ export const screenTitle = {
   AUTO_LOAD_SCREEN: 'autoLoadScreen',
   PREVIEW_AUTO_LOAD_SCREEN: 'previewAutoLoadScreen',
   SWAP_SCREEN: 'swapScreen',
-  CARD_CONTROLS_MENU: 'CardControls',
-  DOMESTIC_CARD_CONTROLS: 'DomesticTransactions',
-  INTERNATIONAL_CARD_CONTROLS: 'InternationalTransactions',
-  EDIT_USAGE_LIMITS: 'EditUsageLimits',
   THREE_D_SECURE: '3D Secure',
   LOCKDOWN_MODE: 'LockdownMode',
   LOCKDOWN_MODE_AUTH: 'LockdownModeAuth',
@@ -139,9 +135,9 @@ export const screenTitle = {
   MANAGE_SUBSCRIPTION: 'manageSubscription',
   FIRST_LOAD_CARD: 'firstLoadCard',
   THEME: 'theme',
-  DEFAULT_LIMIT_SETUP: 'defaultLimitSetup',
   SELECT_ADDITIONAL_CARD: 'selectAdditionalCard',
   ADDITIONAL_CARD_DESCRIPTION: 'additionalCardDescription',
+  CARD_CONTROLS: 'CardControls',
 };
 
 export const fontsName = {

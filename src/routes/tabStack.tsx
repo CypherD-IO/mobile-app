@@ -4,7 +4,13 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
+import {
+  Animated,
+  BackHandler,
+  Linking,
+  StyleSheet,
+  ToastAndroid,
+} from 'react-native';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
@@ -18,16 +24,19 @@ import {
 import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
 import { useColorScheme } from 'nativewind';
+import { handleDeepLink } from '../../App';
 
 const Tab = createBottomTabNavigator();
 
 interface TabStackProps {
   deepLinkData: {
     screenToNavigate?: string;
+    params?: any;
   } | null;
   setDeepLinkData: React.Dispatch<
     React.SetStateAction<{
       screenToNavigate?: string;
+      params?: any;
     } | null>
   >;
 }
@@ -77,21 +86,32 @@ function TabStack(props: TabStackProps) {
     };
   }, []);
 
-  useEffect(() => {
-    if (deepLinkData?.screenToNavigate) {
+  // Extract common deep link navigation logic into a reusable function
+  const handleNavigation = useCallback(
+    (data: { screenToNavigate?: string; params?: any }) => {
+      if (!data?.screenToNavigate) return false;
+
       let tabName;
       let navigationParams: any;
-      switch (deepLinkData.screenToNavigate) {
+
+      switch (data.screenToNavigate) {
         case screenTitle.I_HAVE_REFERRAL_CODE_SCREEN:
           tabName = screenTitle.CARD;
+          navigationParams = {
+            screenToNavigate: data.screenToNavigate,
+            ...data.params,
+          };
           break;
         case screenTitle.TELEGRAM_PIN_SETUP:
           tabName = screenTitle.CARD;
+          navigationParams = {
+            screenToNavigate: data.screenToNavigate,
+          };
           break;
         case screenTitle.TELEGRAM_SETUP:
           tabName = screenTitle.CARD;
           navigationParams = {
-            screen: deepLinkData.screenToNavigate,
+            screen: data.screenToNavigate,
             params: {
               navigateTo: screenTitle.TELEGRAM_PIN_SETUP,
               showSetupLaterOption: false,
@@ -99,21 +119,59 @@ function TabStack(props: TabStackProps) {
             },
           };
           break;
+        case screenTitle.CARD_CONTROLS:
+          tabName = screenTitle.CARD;
+          navigationParams = {
+            screen: data.screenToNavigate,
+            params: data.params,
+          };
+          break;
         default:
           tabName = screenTitle.PORTFOLIO_SCREEN;
       }
-      if (tabName) {
-        navigationRef.current?.navigate(
+
+      if (tabName && navigationRef.current) {
+        navigationRef.current.navigate(
           tabName,
           navigationParams || {
-            screenToNavigate: deepLinkData.screenToNavigate,
+            screenToNavigate: data.screenToNavigate,
           },
         );
+        return true;
       }
+      return false;
+    },
+    [],
+  );
 
-      setDeepLinkData(null);
+  // Handle deep links that arrive while app is running
+  useEffect(() => {
+    const deepLinkListener = ({ url }: { url: string }) => {
+      void handleDeepLink(url).then(linkData => {
+        if (linkData) {
+          // Try to navigate immediately if possible
+          const navigated = handleNavigation(linkData);
+          // If navigation isn't ready, store the data for later
+          if (!navigated) {
+            setDeepLinkData(linkData);
+          }
+        }
+      });
+    };
+
+    const subscription = Linking.addEventListener('url', deepLinkListener);
+    return () => subscription.remove();
+  }, [handleNavigation, setDeepLinkData]);
+
+  // Handle deepLinkData changes (from initial URL or when navigation wasn't ready)
+  useEffect(() => {
+    if (deepLinkData?.screenToNavigate) {
+      const navigated = handleNavigation(deepLinkData);
+      if (navigated) {
+        setDeepLinkData(null);
+      }
     }
-  }, [deepLinkData, setDeepLinkData]);
+  }, [deepLinkData, handleNavigation, setDeepLinkData]);
 
   // Memoize the tab bar style
   useEffect(() => {

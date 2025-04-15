@@ -9,9 +9,9 @@ import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import crypto from 'crypto';
-import { get, has, isEmpty, isUndefined, orderBy, some, trim } from 'lodash';
+import { get, has, isEmpty, isUndefined, orderBy, trim } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { PixelRatio, StyleSheet, useWindowDimensions } from 'react-native';
+import { PixelRatio, useWindowDimensions } from 'react-native';
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
@@ -61,7 +61,6 @@ import Carousel from 'react-native-reanimated-carousel';
 import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
-import moment from 'moment';
 import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
 import Loading from '../../../components/v2/loading';
 
@@ -166,50 +165,6 @@ export default function CardScreen({
       }
     }
   }, [currentCardProvider, isFocused, cardProfile]);
-
-  useEffect(() => {
-    const cardConfig = get(cardProfile, currentCardProvider);
-    const cards = cardConfig?.cards;
-    if (cards?.length && currentCardProvider) {
-      void checkForDefaultLimits();
-    }
-  }, [cardProfile, currentCardProvider]);
-
-  const checkForDefaultLimits = async () => {
-    const cardConfig = get(cardProfile, currentCardProvider);
-    const cards = cardConfig?.cards;
-    // Skip if no cards available
-    if (!cards?.length) return;
-
-    // Check limits for each card
-    for (const card of cards) {
-      if (
-        currentCardProvider !== CardProviders.REAP_CARD ||
-        !card.cardId ||
-        card.cardId === CARD_IDS.HIDDEN_CARD ||
-        (card.status !== CardStatus.IN_ACTIVE &&
-          card.status !== CardStatus.ACTIVE)
-      )
-        continue;
-
-      const response = await getWithAuth(
-        `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
-      );
-
-      if (
-        !response.isError &&
-        ((response.data?.isDefaultSetting &&
-          !response.data?.timeToRemindLater) ||
-          (response.data?.isDefaultSetting &&
-            moment().unix() >= response.data?.timeToRemindLater))
-      ) {
-        navigation.navigate(screenTitle.DEFAULT_LIMIT_SETUP, {
-          state: { card, provider: currentCardProvider },
-        });
-        break; // Exit loop once we find a card with default settings
-      }
-    }
-  };
 
   const getCardImage = (card: Card) => {
     if (currentCardProvider === CardProviders.REAP_CARD) {
@@ -982,7 +937,7 @@ const RenderCardActions = ({
         manageLimits={() => {
           setShowCardDetailsModal(false);
           setTimeout(() => {
-            navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+            navigation.navigate(screenTitle.CARD_CONTROLS, {
               currentCardProvider: cardProvider,
               cardId: card.cardId,
             });
@@ -1092,7 +1047,7 @@ const RenderCardActions = ({
           disabled={isAccountLocked}
           onPress={() => {
             cardProvider === CardProviders.REAP_CARD
-              ? navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+              ? navigation.navigate(screenTitle.CARD_CONTROLS, {
                   currentCardProvider: cardProvider,
                   cardId: card.cardId,
                 })
@@ -1125,11 +1080,3 @@ const RenderCardActions = ({
     </CyDView>
   );
 };
-
-const styles = StyleSheet.create({
-  modalLayout: {
-    marginBottom: 50,
-    justifyContent: 'flex-end',
-    width: '100%',
-  },
-});
