@@ -72,7 +72,6 @@ interface ISpentState {
 
 interface ICustomLimit {
   pos?: boolean;
-  tap?: boolean;
   atm?: boolean;
   ecom?: boolean;
   wal?: boolean;
@@ -127,7 +126,6 @@ export default function CardControls() {
     atm: false,
     online: false,
     merchantOutlet: false,
-    tap: false,
     applePay: false,
   });
 
@@ -463,7 +461,6 @@ export default function CardControls() {
           atm: response.data.customLimit?.atm || false,
           online: response.data.customLimit?.ecom || false,
           merchantOutlet: response.data.customLimit?.pos || false,
-          tap: false,
           applePay: response.data.customLimit?.wal || false,
         });
 
