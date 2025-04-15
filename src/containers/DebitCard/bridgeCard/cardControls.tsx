@@ -39,6 +39,7 @@ import {
   ON_OPEN_NAVIGATE,
   CardStatus,
   CypherPlanId,
+  PhysicalCardType,
 } from '../../../constants/enum';
 import AppImages from '../../../../assets/images/appImages';
 import GradientText from '../../../components/gradientText';
@@ -292,6 +293,8 @@ export default function CardControls() {
 
   const [showMobileWalletTooltip, setShowMobileWalletTooltip] = useState(false);
   const [showMerchantOutletTooltip, setShowMerchantOutletTooltip] =
+    useState(false);
+  const [showAtmWithdrawalTooltip, setShowAtmWithdrawalTooltip] =
     useState(false);
 
   const handleEditLimit = (type: 'daily' | 'monthly') => {
@@ -693,6 +696,16 @@ export default function CardControls() {
     }
   };
 
+  const getDisplayCardType = (card: Card) => {
+    if (
+      card?.type === CardType.PHYSICAL &&
+      card?.physicalCardType === PhysicalCardType.METAL
+    ) {
+      return 'Metal';
+    }
+    return capitalize(card?.type);
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -733,7 +746,7 @@ export default function CardControls() {
                   })}
                   resizeMode='contain'
                 />
-                <CyDText className='font-medium'>{`${capitalize(selectedCard?.type)} card ** ${selectedCard?.last4}`}</CyDText>
+                <CyDText className='font-medium'>{`${getDisplayCardType(selectedCard)} card ** ${selectedCard?.last4}`}</CyDText>
               </CyDView>
             )}
             <CyDMaterialDesignIcons
@@ -797,7 +810,7 @@ export default function CardControls() {
                       })}
                       resizeMode='contain'
                     />
-                    <CyDText className='font-medium text-base400'>{`${capitalize(cardItem?.type)} card ** ${cardItem?.last4}`}</CyDText>
+                    <CyDText className='font-medium text-base400'>{`${getDisplayCardType(cardItem)} card ** ${cardItem?.last4}`}</CyDText>
                   </CyDView>
                   {cardItem.cardId === selectedCardId && (
                     <CyDMaterialDesignIcons
@@ -947,6 +960,35 @@ export default function CardControls() {
                     className='w-[32px] h-[32px]'
                   />
                   <CyDText className='text-[16px]'>ATM Withdrawals</CyDText>
+                  <Tooltip
+                    isVisible={showAtmWithdrawalTooltip}
+                    content={
+                      <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
+                        <CyDText className='text-[14px] text-base400'>
+                          Daily ATM withdrawals are limited to $2,000 and
+                          monthly limit is set to $10,000. Additional
+                          restrictions may apply based on local ATM networks and
+                          regulations.
+                        </CyDText>
+                      </CyDView>
+                    }
+                    onClose={() => setShowAtmWithdrawalTooltip(false)}
+                    placement='top'
+                    backgroundColor='transparent'
+                    useInteractionManager={true}
+                    contentStyle={{
+                      backgroundColor: 'transparent',
+                      borderWidth: 0,
+                    }}>
+                    <CyDTouchView
+                      onPress={() => setShowAtmWithdrawalTooltip(true)}>
+                      <CyDMaterialDesignIcons
+                        name='information-outline'
+                        size={16}
+                        className='text-n200'
+                      />
+                    </CyDTouchView>
+                  </Tooltip>
                 </CyDView>
                 <CyDSwitch
                   value={channelControls.atm}
