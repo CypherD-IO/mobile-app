@@ -21,6 +21,7 @@ import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
 import axios from 'axios';
+import analytics from '@react-native-firebase/analytics';
 
 const SlideToConfirmV2 = ({
   approveUrl,
@@ -44,16 +45,19 @@ const SlideToConfirmV2 = ({
   const handleAccept = async () => {
     setAcceptLoading(true);
     setSwipeStatus('swiping');
+    void analytics().logEvent('transaction_approval_approve');
     try {
       await axios.get(approveUrl);
       setIsError(false);
       setConfirmed(true);
       setSwipeStatus('approved');
+      void analytics().logEvent('transaction_approval_approve_success');
       closeModal();
     } catch (error) {
       setIsError(true);
       setConfirmed(true);
       setSwipeStatus('failed');
+      void analytics().logEvent('transaction_approval_approve_failed');
       setTimeout(() => {
         closeModal();
       }, 500);

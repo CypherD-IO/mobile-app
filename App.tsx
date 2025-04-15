@@ -72,10 +72,49 @@ const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 interface DeepLinkData {
   screenToNavigate: string;
   params?: {
-    cardId: string;
-    currentCardProvider: string;
+    cardId?: string;
+    currentCardProvider?: string;
+    referralCode?: string;
   };
 }
+
+// Export this utility function for handling deep links
+export const handleDeepLink = async (url: string | null) => {
+  if (!url) return null;
+
+  if (url.includes('/card/referral/')) {
+    const referralCode = url.split('/card/referral/')[1];
+    await setReferralCodeAsync(referralCode);
+    void referralLinkAnalytics(referralCode);
+    return {
+      screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+      params: { referralCode },
+    };
+  } else if (url.includes('/card/telegramPinSetup')) {
+    return {
+      screenToNavigate: screenTitle.TELEGRAM_PIN_SETUP,
+    };
+  } else if (url.includes('/card/telegramSetup')) {
+    return {
+      screenToNavigate: screenTitle.TELEGRAM_SETUP,
+    };
+  } else if (url.includes('/card?')) {
+    const urlObj = new URL(url);
+    const decline = urlObj.searchParams.get('decline');
+    const cardId = urlObj.searchParams.get('cardId');
+
+    if (decline === 'true' && cardId) {
+      return {
+        screenToNavigate: screenTitle.CARD_CONTROLS,
+        params: {
+          cardId,
+          currentCardProvider: CardProviders.REAP_CARD,
+        },
+      };
+    }
+  }
+  return null;
+};
 
 function App() {
   const routeNameRef = React.useRef();
@@ -136,35 +175,9 @@ function App() {
     async getInitialURL() {
       const url = await Linking.getInitialURL();
       if (url != null) {
-        if (url.includes('/card/referral/')) {
-          const referralCode = url.split('/card/referral/')[1];
-          await setReferralCodeAsync(referralCode);
-          setDeepLinkData({
-            screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
-          });
-          void referralLinkAnalytics(referralCode);
-        } else if (url.includes('/card/telegramPinSetup')) {
-          setDeepLinkData({
-            screenToNavigate: screenTitle.TELEGRAM_PIN_SETUP,
-          });
-        } else if (url.includes('/card/telegramSetup')) {
-          setDeepLinkData({
-            screenToNavigate: screenTitle.TELEGRAM_SETUP,
-          });
-        } else if (url.includes('/card?')) {
-          const urlObj = new URL(url);
-          const decline = urlObj.searchParams.get('decline');
-          const cardId = urlObj.searchParams.get('cardId');
-
-          if (decline === 'true' && cardId) {
-            setDeepLinkData({
-              screenToNavigate: screenTitle.CARD_CONTROLS,
-              params: {
-                cardId,
-                currentCardProvider: CardProviders.REAP_CARD,
-              },
-            });
-          }
+        const linkData = await handleDeepLink(url);
+        if (linkData) {
+          setDeepLinkData(linkData);
         }
       }
       return null;

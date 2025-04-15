@@ -13,6 +13,7 @@ import SlideToConfirmV2 from './slideToConfirmModalV2';
 import useAxios from '../../core/HttpRequest';
 import { useGlobalModalContext } from './GlobalModal';
 import { capitalize } from 'lodash';
+import analytics from '@react-native-firebase/analytics';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -55,21 +56,37 @@ export default function ThreeDSecureApprovalModal({
   const [declineLoading, setDeclineLoading] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
 
+  // Track modal view
   useEffect(() => {
     if (isModalVisible) {
+      void analytics().logScreenView({
+        screen_name: '3DSecureApprovalModal',
+        screen_class: 'ThreeDSecureApprovalModal',
+      });
+
+      void analytics().logEvent('3d_secure_modal_viewed', {
+        merchant: data?.merchantName,
+        amount: data?.transactionAmount,
+      });
+
       const end = Date.now() + seconds * 1000;
       setTimerEnd(end);
       setTimer(seconds * 1000);
       setCallDeclineOnClose(true);
     }
-  }, [isModalVisible]);
+  }, [isModalVisible, data]);
 
+  // Track timer expiration
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (timer !== null) {
       interval = setInterval(() => {
         const now = Date.now();
         if (timerEnd && now >= timerEnd) {
+          void analytics().logEvent('3d_secure_timer_expired', {
+            merchant: data?.merchantName,
+          });
+
           clearInterval(interval);
           setTimer(null);
           setTimerEnd(null);
@@ -80,7 +97,7 @@ export default function ThreeDSecureApprovalModal({
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [timer, timerEnd]);
+  }, [timer, timerEnd, data]);
 
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -88,10 +105,19 @@ export default function ThreeDSecureApprovalModal({
   };
 
   const handleAccept = async () => {
+    void analytics().logEvent('3d_secure_approve', {
+      merchant: data?.merchantName,
+      amount: data?.transactionAmount,
+    });
+
     setAcceptLoading(true);
     const response = await getWithAuth(data?.approveUrl);
     setAcceptLoading(false);
     if (!response?.isError) {
+      void analytics().logEvent('3d_secure_approve_success', {
+        merchant: data?.merchantName,
+      });
+
       closeModal();
       setTimeout(() => {
         showModal('state', {
@@ -103,6 +129,11 @@ export default function ThreeDSecureApprovalModal({
         });
       }, 500);
     } else {
+      void analytics().logEvent('3d_secure_approve_failed', {
+        merchant: data?.merchantName,
+        error: response?.error?.message || 'Unknown error',
+      });
+
       closeModal();
       setTimeout(() => {
         showModal('state', {
@@ -119,10 +150,19 @@ export default function ThreeDSecureApprovalModal({
   };
 
   const handleDecline = async () => {
+    void analytics().logEvent('3d_secure_decline', {
+      merchant: data?.merchantName,
+      amount: data?.transactionAmount,
+    });
+
     setDeclineLoading(true);
     const response = await getWithAuth(data?.declineUrl);
     setDeclineLoading(false);
     if (!response?.isError) {
+      void analytics().logEvent('3d_secure_decline_success', {
+        merchant: data?.merchantName,
+      });
+
       closeModal();
       setTimeout(() => {
         showModal('state', {
@@ -134,6 +174,11 @@ export default function ThreeDSecureApprovalModal({
         });
       }, 500);
     } else {
+      void analytics().logEvent('3d_secure_decline_failed', {
+        merchant: data?.merchantName,
+        error: response?.error?.message || 'Unknown error',
+      });
+
       closeModal();
       setTimeout(() => {
         showModal('state', {
@@ -149,13 +194,29 @@ export default function ThreeDSecureApprovalModal({
     }
   };
 
+  // Handle close with cancel
+  const handleCloseWithCancel = () => {
+    if (callDeclineOnClose) {
+      void analytics().logEvent('3d_secure_close_with_decline', {
+        merchant: data?.merchantName,
+      });
+
+      void handleDecline();
+    } else {
+      void analytics().logEvent('3d_secure_dismissed', {
+        merchant: data?.merchantName,
+      });
+    }
+    closeModal();
+  };
+
   return (
     <Modal
       visible={isModalVisible}
       transparent
       animationType='fade'
       style={styles.modalLayout}
-      onRequestClose={closeModal}>
+      onRequestClose={handleCloseWithCancel}>
       <CyDView className='flex-1' style={styles.overlay}>
         <CyDView className='bg-black px-[20px] pt-[24px] pb-[36px] rounded-t-[16px]'>
           <CyDView className='flex flex-row items-center justify-between'>
@@ -175,13 +236,7 @@ export default function ThreeDSecureApprovalModal({
                   </CyDText>
                 </CyDView>
               )}
-              <CyDTouchView
-                onPress={() => {
-                  if (callDeclineOnClose) {
-                    void handleDecline();
-                  }
-                  closeModal();
-                }}>
+              <CyDTouchView onPress={handleCloseWithCancel}>
                 <CyDMaterialDesignIcons
                   name='close'
                   size={24}
