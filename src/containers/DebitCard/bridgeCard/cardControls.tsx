@@ -225,11 +225,6 @@ export default function CardControls() {
     }
   }, [isExpanded]);
 
-  const maxHeight = animatedHeight.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, activeCards.length * 68],
-  });
-
   const handleCardSelect = (selectedCard: Card) => {
     setSelectedCardId(selectedCard.cardId);
     setIsExpanded(false);
@@ -635,10 +630,12 @@ export default function CardControls() {
         if (showForAllCards) {
           setShowSaveChangesModal(true);
         } else {
-          // Only clear changes when actually navigating back
+          // Clear changes without calling goBack, as this would trigger
+          // the listener again and cause a recursive loop
           setHasChanges(false);
           setChanges({});
-          navigation.goBack();
+          // Allow the navigation to continue
+          navigation.dispatch(e.data.action);
         }
       }
     });
