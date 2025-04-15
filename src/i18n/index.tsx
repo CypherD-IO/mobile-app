@@ -125,7 +125,6 @@ const resources = {
       FUND_TRANSFER:
         'Your wallet is currently empty. Transfer tokens to this wallet or import another wallet',
       LOAD_WALLET: 'FUND WALLET',
-      FUND_CARD: 'Fund Card',
       APPLY_CARD: 'Apply for card',
       FROM: 'From',
       TO: 'To',
@@ -480,8 +479,6 @@ const resources = {
         'Your quote has been expired. Please retry initiating your transaction',
       QUOTE_EXPIRES_IN: 'Quote expires in',
       DEBIT_CARD: 'Debit Card',
-      LOAD_CARD: 'Load Card',
-      LOAD_CARD_CAPS: 'LOAD CARD',
       GO_TO_DEPRECATED_CARD: 'Deprecated Card',
       GO_TO_NEW_CARD: 'New Card',
       BRIDGE_ALL_CAPS: 'BRIDGE',

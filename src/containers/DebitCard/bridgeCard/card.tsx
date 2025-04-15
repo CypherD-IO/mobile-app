@@ -9,9 +9,9 @@ import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import crypto from 'crypto';
-import { get, has, isEmpty, isUndefined, orderBy, some, trim } from 'lodash';
+import { get, has, isEmpty, isUndefined, orderBy, trim } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { PixelRatio, StyleSheet, useWindowDimensions } from 'react-native';
+import { PixelRatio, useWindowDimensions } from 'react-native';
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
