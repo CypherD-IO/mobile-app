@@ -43,6 +43,7 @@ import {
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import { screenTitle } from '../../constants';
 import PinAuthRoute from '../../routes/pinAuthRoute';
+import { logAnalyticsToFirebase } from '../../core/analytics';
 
 interface UseInitializerReturn {
   initializeSentry: () => void;
@@ -332,7 +333,7 @@ export const InitializeAppProvider = ({
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading />;
         }
-        return children;
+        return <>{children}</>;
       }
     }
   }, [
@@ -383,7 +384,7 @@ export const InitializeAppProvider = ({
               disabled={forcedUpdate}
               onPress={() => {
                 setUpdateModal(false);
-                void analytics().logEvent('update_later', {});
+                logAnalyticsToFirebase('update_later', {});
               }}
             />
           </DialogFooter>

@@ -7,13 +7,20 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
 import { SolanaPrivateKeyProvider } from '@web3auth/solana-provider';
 import { CHAIN_NAMESPACES, getEvmChainConfig } from '@web3auth/base';
+import { Config } from 'react-native-config';
+
+// This file is deprecated. Please use the useWeb3Auth hook from src/hooks/useWeb3Auth/index.tsx instead.
+// The hook provides the same functionality but with proper RPC endpoint management from the global context.
 
 const scheme = 'app.cypherhq.web3auth';
 
 const redirectUrl = `${scheme}://auth`;
 
-const clientId =
-  'BKavBsdsLEBBNQ5ur5iEdqr7FBvJ5aQy2nnWjAB5qwwa74HOeH3dFTs-EklbKP9AuTup9PhV5FpR3fkHqwl1mGg';
+if (!Config.WEB3_AUTH_CLIENT_ID) {
+  throw new Error('WEB3_AUTH_CLIENT_ID is not set');
+}
+
+const clientId = Config.WEB3_AUTH_CLIENT_ID;
 
 export const chainConfigs = {
   eth: getEvmChainConfig(1, clientId),
@@ -64,7 +71,7 @@ export const chainConfigs = {
   },
   solana: {
     chainNamespace: CHAIN_NAMESPACES.SOLANA,
-    chainId: '0x1', // Please use 0x1 for Mainnet, 0x2 for Testnet, 0x3 for Devnet
+    chainId: '0x1',
     rpcTarget: 'https://api.mainnet-beta.solana.com',
     displayName: 'Solana Mainnet',
     blockExplorerUrl: 'https://explorer.solana.com',
@@ -87,7 +94,7 @@ export const solanaPrivateKeyProvider = new SolanaPrivateKeyProvider({
 });
 
 export const web3AuthEvm = new Web3Auth(WebBrowser, EncryptedStorage, {
-  clientId,
+  clientId: Config.WEB3_AUTH_CLIENT_ID ?? '',
   redirectUrl,
   network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider: ethereumPrivateKeyProvider,
@@ -128,7 +135,7 @@ export const web3AuthEvm = new Web3Auth(WebBrowser, EncryptedStorage, {
 });
 
 export const web3AuthSolana = new Web3Auth(WebBrowser, EncryptedStorage, {
-  clientId,
+  clientId: Config.WEB3_AUTH_CLIENT_ID ?? '',
   redirectUrl,
   network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider: solanaPrivateKeyProvider,
