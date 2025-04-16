@@ -30,8 +30,9 @@ import * as Sentry from '@sentry/react-native';
 import { useTranslation } from 'react-i18next';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useWalletConnectMobile from '../useWalletConnectMobile';
-import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
+// import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 import Web3Auth from '@web3auth/react-native-sdk/dist/types/Web3Auth';
+import useWeb3Auth from '../useWeb3Auth';
 
 export default function useConnectionManager() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -53,6 +54,7 @@ export default function useConnectionManager() {
     setConnectionType(connectedType);
     return connectedType;
   };
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   const deletAndResetReducers = async () => {
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {

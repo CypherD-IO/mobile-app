@@ -73,9 +73,8 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
-import analytics from '@react-native-firebase/analytics';
 import ReportTransactionModal from '../../../components/v2/reportTransactionModal';
-import Loading from '../../../components/v2/loading';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');

@@ -22,9 +22,9 @@ import { CyDView } from '../../styles/tailwindComponents';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
-import analytics from '@react-native-firebase/analytics';
 import { getToken } from '../../notification/pushNotification';
 import { get } from 'lodash';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -197,8 +197,8 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     );
     if (!response.isError) {
       const msg = response?.data?.message;
-      const signMsgResponse = await signMessageAsync({ message: msg });
-      void analytics().logEvent('sign_wallet_connect_msg', {
+      await signMessageAsync({ message: msg });
+      void logAnalyticsToFirebase(AnalyticEvent.SIGN_WALLET_CONNECT_MSG, {
         from: walletInfo?.name,
       });
     }

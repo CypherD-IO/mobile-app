@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { Web3Origin } from '../../constants/enum';
 import { Web3Method } from '../../constants/web3';
-import { AnalyticEvent, logAnalytics } from '../../core/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import { ActivityContext } from '../../core/util';
 import {
   ActivityContextDef,
@@ -22,7 +22,7 @@ export default function useWeb3Callbacks(origin: Web3Origin) {
           type: ActivityReducerAction.POST,
           value: activityData as BrowserTransaction,
         });
-        logAnalytics(AnalyticEvent.TRANSACTION_RECEIPT_RECEIVED, {
+        logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_RECEIPT_RECEIVED, {
           origin,
           ...receipt,
         });
@@ -40,7 +40,7 @@ export default function useWeb3Callbacks(origin: Web3Origin) {
           type: ActivityReducerAction.POST,
           value: activityData as WalletConnectTransaction,
         });
-        logAnalytics(AnalyticEvent.TRANSACTION_RECEIPT_RECEIVED, {
+        logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_RECEIPT_RECEIVED, {
           origin,
           ...receipt,
         });

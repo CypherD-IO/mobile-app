@@ -5,7 +5,6 @@ import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
 import {
   ConnectionTypes,
-  EcosystemsEnum,
   GlobalContextType,
   PinPresentStates,
   RPCPreference,
@@ -55,7 +54,8 @@ import useValidSessionToken from '../useValidSessionToken';
 import { IPlanDetails } from '../../models/planDetails.interface';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
-import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
+import useWeb3Auth from '../useWeb3Auth';
+// import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -71,6 +71,7 @@ export default function useInitializer() {
   );
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile, getPlanData } = useCardUtilities();
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
@@ -86,8 +87,7 @@ export default function useInitializer() {
   const initializeSentry = () => {
     Sentry.init({
       dsn: Config.SENTRY_DSN,
-      // environment: 'staging',
-      environment: Config.ENVIROINMENT ?? 'staging',
+      environment: Config.ENVIRONMENT ?? 'staging',
       integrations: [
         new Sentry.ReactNativeTracing({
           routingInstrumentation,

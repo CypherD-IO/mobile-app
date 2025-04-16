@@ -63,7 +63,6 @@ import {
 import BridgeRoutePreview from './bridgePreview';
 import TokenSelectionV2 from './tokenSelection';
 
-import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { Transaction } from '@solana/web3.js';
 import clsx from 'clsx';
@@ -132,6 +131,7 @@ import { DecimalHelper } from '../../utils/decimalHelper';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
 import useConnectionManager from '../../hooks/useConnectionManager';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -1088,7 +1088,7 @@ const Bridge: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        void analytics().logEvent('SWAP_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.SWAP_QUOTE_ERROR, {
           error: quoteError,
         });
         Sentry.captureException(quoteError);
@@ -1126,7 +1126,7 @@ const Bridge: React.FC = () => {
         // Handle other errors
 
         setError(quoteError?.message);
-        void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_QUOTE_ERROR, {
           error: quoteError,
         });
         Sentry.captureException(quoteError);
@@ -1202,7 +1202,7 @@ const Bridge: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_QUOTE_ERROR, {
           error: e,
         });
         Sentry.captureException(e);
@@ -1358,7 +1358,7 @@ const Bridge: React.FC = () => {
         onFailure: navigateToPortfolio,
       });
 
-      void analytics().logEvent('BRIDGE_SUCCESS');
+      void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_SUCCESS);
       void refreshPortfolio();
     } catch (e: unknown) {
       const errMsg = parseErrorMessage(e);
@@ -1380,7 +1380,7 @@ const Bridge: React.FC = () => {
       });
 
       if (!errMsg.includes('reject')) {
-        void analytics().logEvent('BRIDGE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_ERROR, {
           error: e,
         });
         Sentry.captureException(e);
@@ -1802,7 +1802,7 @@ const Bridge: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        void analytics().logEvent('SWAP_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.SWAP_QUOTE_ERROR, {
           error: err,
         });
         Sentry.captureException(err);
@@ -2028,7 +2028,7 @@ const Bridge: React.FC = () => {
               selectedToUsdAmount: usdAmountOut,
             },
           });
-          void analytics().logEvent('SWAP_SUCCESS');
+          void logAnalyticsToFirebase(AnalyticEvent.SWAP_SUCCESS);
           void refreshPortfolio();
         } else {
           activityContext.dispatch({
@@ -2065,7 +2065,7 @@ const Bridge: React.FC = () => {
               selectedToUsdAmount: usdAmountOut,
             },
           });
-          void analytics().logEvent('SWAP_ERROR', {
+          void logAnalyticsToFirebase(AnalyticEvent.SWAP_ERROR, {
             error: response.error,
           });
           Sentry.captureException(response.error);
@@ -2100,7 +2100,7 @@ const Bridge: React.FC = () => {
           selectedToUsdAmount: usdAmountOut,
         },
       });
-      void analytics().logEvent('SWAP_ERROR', {
+      void logAnalyticsToFirebase(AnalyticEvent.SWAP_ERROR, {
         error: err,
       });
       Sentry.captureException(err);

@@ -4,7 +4,6 @@ import {
   PositionDetail,
   PositionTypeData,
 } from '../../models/defi.interface';
-import analytics from '@react-native-firebase/analytics';
 import {
   CyDAnimatedView,
   CyDFastImage,
@@ -18,7 +17,6 @@ import {
 } from '../../styles/tailwindComponents';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from '../../components/v2/modal';
-import AppImages from '../../../assets/images/appImages';
 import { getChainLogo, sortDefiPositionDesc } from '../../core/defi';
 import { t } from 'i18next';
 import CyDTokenValue from '../../components/v2/tokenValue';
@@ -43,8 +41,8 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
-import { CyDIconsPack } from '../../customFonts';
 import { get } from 'lodash';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface RouteParams {
   protocol: defiProtocolData;
@@ -206,10 +204,7 @@ export function DEFIOverviewScreen() {
   const { showModal, hideModal } = useGlobalModalContext();
   const moreChainsCount = protocol.chains.length - MAX_CHAIN_COUNT;
   useEffect(() => {
-    void analytics().logEvent('visited_defi_overview_screen');
-    // navigation.setOptions({
-    //   title: protocol.protocolName,
-    // });
+    void logAnalyticsToFirebase(AnalyticEvent.VISITED_DEFI_OVERVIEW_SCREEN);
   }, [navigation, protocol.protocolName]);
 
   const handleScroll = useAnimatedScrollHandler({

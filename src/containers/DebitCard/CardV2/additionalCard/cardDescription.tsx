@@ -38,7 +38,10 @@ import { screenTitle } from '../../../../constants';
 import { MODAL_HIDE_TIMEOUT } from '../../../../core/Http';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import SelectPlanModal from '../../../../components/selectPlanModal';
-import { AnalyticEvent, logAnalytics } from '../../../../core/analytics';
+import {
+  AnalyticEvent,
+  logAnalyticsToFirebase,
+} from '../../../../core/analytics';
 import useCardUtilities from '../../../../hooks/useCardUtilities';
 import { IPlanData } from '../../../../models/planData.interface';
 import Loading from '../../../../containers/Loading';
@@ -210,7 +213,7 @@ export default function CardDescription() {
         onFailure: hideModal,
       });
     } else {
-      logAnalytics(AnalyticEvent.GET_NEW_CARD, {
+      logAnalyticsToFirebase(AnalyticEvent.GET_NEW_CARD, {
         from: 'get_new_card',
         type: cardType,
         price,

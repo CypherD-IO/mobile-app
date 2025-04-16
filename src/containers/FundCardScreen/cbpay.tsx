@@ -5,13 +5,13 @@ import WebView from 'react-native-webview';
 import { ChainBackendNames } from '../../constants/server';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import analytics from '@react-native-firebase/analytics';
 import useAxios from '../../core/HttpRequest';
 import { t } from 'i18next';
 
 import Loading from '../../components/v2/loading';
 import { CyDView } from '../../styles/tailwindComponents';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export type SupportedBlockchains =
   | 'avalanche-c-chain'
@@ -88,7 +88,7 @@ export default function CoinbasePay({ route, navigation }) {
   const { getWithAuth } = useAxios();
 
   useEffect(() => {
-    void analytics().logEvent('inside_coinbase_pay');
+    void logAnalyticsToFirebase(AnalyticEvent.INSIDE_COINBASE_PAY);
   }, []);
 
   let blockchain: string[];

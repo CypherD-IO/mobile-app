@@ -442,14 +442,16 @@ PODS:
   - react-native-compat (2.17.2):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
-  - react-native-config (1.5.3):
-    - react-native-config/App (= 1.5.3)
-  - react-native-config/App (1.5.3):
+  - react-native-config (1.5.5):
+    - react-native-config/App (= 1.5.5)
+  - react-native-config/App (1.5.5):
     - React-Core
   - react-native-cookies (6.2.1):
     - React-Core
   - react-native-document-picker (10.1.2):
     - RCT-Folly (= 2021.07.22.00)
+    - React-Core
+  - react-native-encrypted-storage (4.0.3):
     - React-Core
   - react-native-get-random-values (1.11.0):
     - React-Core
@@ -459,7 +461,7 @@ PODS:
     - React-Core
   - react-native-pager-view (7.0.0-rc.0):
     - React-Core
-  - react-native-quick-crypto (0.7.8):
+  - react-native-quick-crypto (0.7.9):
     - OpenSSL-Universal
     - RCT-Folly (= 2021.07.22.00)
     - React
@@ -725,6 +727,7 @@ DEPENDENCIES:
   - react-native-config (from `../node_modules/react-native-config`)
   - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
   - "react-native-document-picker (from `../node_modules/@react-native-documents/picker`)"
+  - react-native-encrypted-storage (from `../node_modules/react-native-encrypted-storage`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-lottie-splash-screen (from `../node_modules/react-native-lottie-splash-screen`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -878,6 +881,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-cookies/cookies"
   react-native-document-picker:
     :path: "../node_modules/@react-native-documents/picker"
+  react-native-encrypted-storage:
+    :path: "../node_modules/react-native-encrypted-storage"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-lottie-splash-screen:

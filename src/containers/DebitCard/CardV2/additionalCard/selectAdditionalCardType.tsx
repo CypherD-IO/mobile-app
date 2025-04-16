@@ -34,7 +34,10 @@ import {
 } from '../../../../core/globalContext';
 import clsx from 'clsx';
 import { screenTitle } from '../../../../constants';
-import { AnalyticEvent, logAnalytics } from '../../../../core/analytics';
+import {
+  AnalyticEvent,
+  logAnalyticsToFirebase,
+} from '../../../../core/analytics';
 import { t } from 'i18next';
 
 interface RouteParams {
@@ -226,7 +229,7 @@ export default function SelectAdditionalCardType() {
     cardType: CardType,
     price: number,
   ) => {
-    logAnalytics(AnalyticEvent.GET_NEW_CARD, {
+    logAnalyticsToFirebase(AnalyticEvent.GET_NEW_CARD, {
       from: 'get_new_card_explore',
       type: cardType,
       price,

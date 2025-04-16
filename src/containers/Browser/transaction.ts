@@ -4,7 +4,6 @@
  */
 import { estimateGas, getGasPriceFor } from './gasHelper';
 import * as Sentry from '@sentry/react-native';
-import analytics from '@react-native-firebase/analytics';
 import Toast from 'react-native-toast-message';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import { ALL_CHAINS, CHAIN_ETH } from '../../constants/server';
@@ -22,13 +21,13 @@ import {
 import { isHex } from 'web3-validator';
 import {
   createWalletClient,
-  fromHex,
   hexToString,
   http,
   SendTransactionParameters,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { get } from 'lodash';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const chainIdToChain = (chainId: number) =>
   ALL_CHAINS.find(chain => chain.chainIdNumber === chainId) ?? CHAIN_ETH;
@@ -116,7 +115,7 @@ export async function sendTransaction(
             },
           });
 
-        void analytics().logEvent('transaction_submit', {
+        void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_SUBMIT, {
           from: ethereumAddress,
           to: payload.params[0].to,
           gasPrice: finalGasPrice,
@@ -214,7 +213,7 @@ export async function personalSign(hdWalletContext, payload, webviewRef, rpc) {
       text2: 'Message Signed',
       position: 'bottom',
     });
-    await analytics().logEvent('transaction_personal_sign', {
+    await logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_PERSONAL_SIGN, {
       from: ethereumAddress,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,
@@ -564,7 +563,7 @@ export function parseWebviewPayload(
       signMessageTitleLocal = 'Message';
     }
     signModal(payloadMessage, payload, signMessageTitleLocal);
-    void analytics().logEvent('eth_signtypeddata_v4', {
+    void logAnalyticsToFirebase(AnalyticEvent.ETH_SIGN_TYPED_DATA_V4, {
       from: ethereumAddress,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,
@@ -607,7 +606,7 @@ export function parseWebviewPayload(
   } else if (payload.method === 'eth_getCode') {
     // To be implementated
   } else {
-    void analytics().logEvent('unknown_rpc_call', {
+    void logAnalyticsToFirebase(AnalyticEvent.UNKNOWN_RPC_CALL, {
       from: ethereumAddress,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,

@@ -34,7 +34,7 @@ import { screenTitle } from '../../constants/index';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
-import { logAnalytics } from '../../core/analytics';
+import { logAnalyticsToFirebase } from '../../core/analytics';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import {
   NavigationProp,
@@ -299,7 +299,7 @@ export default function Options() {
             <OptionsContainer
               sentryLabel={'browser'}
               onPress={() => {
-                logAnalytics('broswerClick', {});
+                logAnalyticsToFirebase('broswerClick', {});
                 navigation.navigate(C.screenTitle.BROWSER);
               }}
               title={t('BROWSER')}

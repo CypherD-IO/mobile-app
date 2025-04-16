@@ -132,7 +132,7 @@
     "react-native-bip39": "^2.3.0",
     "react-native-camera": "^4.2.1",
     "react-native-collapsible": "^1.6.0",
-    "react-native-config": "^1.5.1",
+    "react-native-config": "^1.5.5",
     "react-native-custom-qr-codes": "^2.0.0",
     "react-native-device-info": "^8.7.1",
     "react-native-element-dropdown": "^1.8.13",

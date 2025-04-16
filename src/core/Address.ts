@@ -2,8 +2,7 @@ import { Secp256k1HdWallet } from '@cosmjs-rn/amino';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { Bech32 } from '@cosmjs-rn/encoding';
 import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
-import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
-import analytics from '@react-native-firebase/analytics';
+import { Mnemonic } from '@keplr-wallet/crypto';
 import { Keypair } from '@solana/web3.js';
 import * as bip39 from 'bip39';
 import * as bs58 from 'bs58';
@@ -24,9 +23,10 @@ import { ConnectionTypes } from '../constants/enum';
 import { setConnectionType } from './asyncStorage';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_, addHexPrefix } from './util';
 import { HDKey } from 'micro-ed25519-hdkey';
+import { logAnalyticsToFirebase } from './analytics';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
-  void analytics().logEvent(trkEvent, {
+  void logAnalyticsToFirebase(trkEvent, {
     walletaddress,
   });
 }

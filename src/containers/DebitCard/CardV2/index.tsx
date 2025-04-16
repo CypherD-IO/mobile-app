@@ -64,7 +64,6 @@ import GradientText from '../../../components/gradientText';
 import LinearGradient from 'react-native-linear-gradient';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import moment from 'moment';
-import analytics from '@react-native-firebase/analytics';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import {
   getOverchargeDccInfoModalShown,
@@ -73,6 +72,7 @@ import {
 } from '../../../core/asyncStorage';
 import OverchargeDccInfoModal from '../../../components/v2/OverchargeDccInfoModal';
 import { isPotentiallyDccOvercharged } from '../../../core/util';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -845,7 +845,9 @@ export default function CypherCardScreen() {
                 type={ButtonType.DARK}
                 onPress={() => {
                   setPlanChangeModalVisible(true);
-                  void analytics().logEvent('explore_premium_card_page_cta');
+                  void logAnalyticsToFirebase(
+                    AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,
+                  );
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black'
                 titleStyle='text-[14px] text-white font-semibold'

@@ -1,4 +1,3 @@
-import analytics from '@react-native-firebase/analytics';
 import {
   NavigationProp,
   ParamListBase,
@@ -10,14 +9,14 @@ import Web3Auth, {
 } from '@web3auth/react-native-sdk';
 import { t } from 'i18next';
 import React, { useContext, useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import CyDModalLayout from '../../components/v2/modal';
 import { screenTitle } from '../../constants';
 import { ConnectionTypes, SeedPhraseType } from '../../constants/enum';
-import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
+// import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 import {
   importWalletFromEvmPrivateKey,
   importWalletFromSolanaPrivateKey,
@@ -42,6 +41,8 @@ import {
 } from '../../styles/tailwindComponents';
 import bs58 from 'bs58';
 import Loading from '../../components/v2/loading';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import useWeb3Auth from '../../hooks/useWeb3Auth';
 
 const enum ProviderType {
   ETHEREUM = 'ethereum',
@@ -58,6 +59,7 @@ export default function OnBoardOpotions() {
   const { openWalletConnectModal } = useConnectionManager();
   const { showModal, hideModal } = useGlobalModalContext();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   const inset = useSafeAreaInsets();
   const [email, setEmail] = useState('');
@@ -134,6 +136,9 @@ export default function OnBoardOpotions() {
         if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
           await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
         }
+        logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_EVM, {
+          from: 'email',
+        });
       } else if (providerType === ProviderType.SOLANA) {
         _privateKey = (await provider.provider.request({
           method: 'solanaPrivateKey',
@@ -143,6 +148,9 @@ export default function OnBoardOpotions() {
           hdWalletContext,
           base58privatekey,
         );
+        logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_SOLANA, {
+          from: 'email',
+        });
       } else {
         return;
       }
@@ -177,6 +185,13 @@ export default function OnBoardOpotions() {
       if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
         await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
         void setConnectionType(connectionType);
+        const analyticType =
+          providerType === ProviderType.ETHEREUM
+            ? AnalyticEvent.SOCIAL_LOGIN_EVM
+            : AnalyticEvent.SOCIAL_LOGIN_SOLANA;
+        logAnalyticsToFirebase(analyticType, {
+          from: 'google',
+        });
       }
     }
   };
@@ -586,7 +601,9 @@ export default function OnBoardOpotions() {
                 className='flex flex-row items-center justify-between'
                 onPress={() => {
                   void openWalletConnectModal();
-                  void analytics().logEvent('connect_using_wallet_connect', {});
+                  void logAnalyticsToFirebase(
+                    AnalyticEvent.CONNECT_USING_WALLET_CONNECT,
+                  );
                 }}>
                 <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
                   <CyDImage
