@@ -677,27 +677,31 @@ export default function CardControls() {
         setChanges({});
         setShowSaveChangesModal(false);
 
-        showModal('state', {
-          type: 'success',
-          title: t('CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS'),
-          onSuccess: () => {
-            hideModal();
-            navigation.goBack();
-          },
-          onFailure: () => {
-            hideModal();
-            navigation.goBack();
-          },
-        });
+        setTimeout(() => {
+          showModal('state', {
+            type: 'success',
+            title: t('CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS'),
+            onSuccess: () => {
+              hideModal();
+              navigation.goBack();
+            },
+            onFailure: () => {
+              hideModal();
+              navigation.goBack();
+            },
+          });
+        }, 300);
       } else {
         setShowSaveChangesModal(false);
-        showModal('state', {
-          type: 'error',
-          title: t('UNABLE_TO_APPLY_CHANGES_TO_ALL_CARDS'),
-          description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
+        setTimeout(() => {
+          showModal('state', {
+            type: 'error',
+            title: t('UNABLE_TO_APPLY_CHANGES_TO_ALL_CARDS'),
+            description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }, 300);
       }
     } catch (error) {
       setShowSaveChangesModal(false);
