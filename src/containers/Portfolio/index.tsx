@@ -1,5 +1,4 @@
 import notifee, { EventType } from '@notifee/react-native';
-import analytics from '@react-native-firebase/analytics';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
@@ -89,6 +88,7 @@ import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
 import Loading from '../../components/v2/loading';
 import useConnectionManager from '../../hooks/useConnectionManager';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface PortfolioProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
@@ -409,7 +409,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       if (remoteMessage?.data) {
         switch (remoteMessage.data.title) {
           case NotificationEvents.DAPP_BROWSER_OPEN: {
-            void analytics().logEvent(`DAPP_${remoteMessage.data.title}`, {
+            void logAnalyticsToFirebase(`DAPP_${remoteMessage.data.title}`, {
               from: ethereumAddress,
             });
             navigation.navigate(C.screenTitle.OPTIONS, {
@@ -419,7 +419,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.ACTIVITY_UPDATE: {
-            void analytics().logEvent('activity_cta', {
+            void logAnalyticsToFirebase('activity_cta', {
               from: ethereumAddress,
             });
             navigation.navigate(C.screenTitle.OPTIONS, {
@@ -428,7 +428,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.ADDRESS_ACTIVITY_WEBHOOK: {
-            void analytics().logEvent('address_activity_cta', {
+            void logAnalyticsToFirebase('address_activity_cta', {
               from: ethereumAddress,
             });
             const url = remoteMessage.data.url;
@@ -438,7 +438,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.CARD_APPLICATION_UPDATE: {
-            void analytics().logEvent('card_application_cta', {
+            void logAnalyticsToFirebase('card_application_cta', {
               from: ethereumAddress,
             });
             const url = remoteMessage.data.url;
@@ -463,9 +463,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             }
 
             if (categoryId && declineCode) {
-              void analytics().logEvent('card_decline_add_txn_cta', {
-                from: ethereumAddress,
-              });
+              void logAnalyticsToFirebase(
+                AnalyticEvent.CARD_DECLINE_ADD_TXN_CTA,
+                {
+                  from: ethereumAddress,
+                },
+              );
 
               if (cardId && provider) {
                 if (
@@ -492,7 +495,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
               break;
             } else {
-              void analytics().logEvent('card_txn_cta', {
+              void logAnalyticsToFirebase(AnalyticEvent.CARD_TXN_CTA, {
                 from: ethereumAddress,
               });
               if (url) {

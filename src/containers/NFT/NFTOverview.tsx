@@ -17,7 +17,6 @@ import {
 } from '../../styles/tailwindComponents';
 import clsx from 'clsx';
 import { getChain } from '../../core/util';
-import analytics from '@react-native-firebase/analytics';
 import {
   NavigationProp,
   ParamListBase,
@@ -26,7 +25,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../customFonts';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface RouteParams {
   nftHolding: NFTHolding;
@@ -43,7 +42,7 @@ export function NFTOverviewScreen() {
   const [imageZoomIn, setImageZoomIn] = useState<boolean>(false);
 
   useEffect(() => {
-    void analytics().logEvent('visited_nft_overview_screen');
+    void logAnalyticsToFirebase(AnalyticEvent.VISITED_NFT_OVERVIEW_SCREEN);
   }, []);
 
   const holdingChain = getChain(nftHolding.blockchain);

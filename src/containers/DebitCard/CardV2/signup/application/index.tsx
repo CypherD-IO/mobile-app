@@ -38,7 +38,10 @@ import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import { getReferralCode } from '../../../../../core/asyncStorage';
-import { isRainReferralCode } from '../../../../../core/util';
+import {
+  isRainReferralCode,
+  parseErrorMessage,
+} from '../../../../../core/util';
 
 // Add this type definition
 interface SupportedCountry {
@@ -223,79 +226,85 @@ export default function CardApplicationV2() {
     values: FormInitalValues,
     { setSubmitting, setFieldError }: FormikHelpers<FormInitalValues>,
   ) => {
-    if (provider) {
-      setSubmitting(true);
+    console.log('🚀 ~ CardApplicationV2 ~ values:', values);
+    try {
+      if (provider) {
+        setSubmitting(true);
 
-      // Use Lodash to compare values and return only changed fields
-      const changedFields = applicationData
-        ? omitBy(values, (value, key) =>
-            isEqual(value, applicationData[key as keyof FormInitalValues]),
-          )
-        : values;
+        // Use Lodash to compare values and return only changed fields
+        const changedFields = applicationData
+          ? omitBy(values, (value, key) =>
+              isEqual(value, applicationData[key as keyof FormInitalValues]),
+            )
+          : values;
 
-      const payload = {
-        ...changedFields,
-        phone:
-          changedFields.phone?.trim() && changedFields.dialCode
-            ? changedFields.dialCode + changedFields.phone
-            : undefined,
-        dateOfBirth: changedFields.dateOfBirth ?? undefined,
-        ...(referralCode &&
-          !applicationData && { referralCodeV2: referralCode }), // include only if referralCodeV2 is present and it is post applciation call
-      };
-      // Remove undefined fields and dialCode
-      const cleanPayload = omitBy(
-        payload,
-        (value, key) => isUndefined(value) || key === 'dialCode',
-      );
+        const payload = {
+          ...changedFields,
+          phone:
+            changedFields.phone?.trim() && changedFields.dialCode
+              ? changedFields.dialCode + changedFields.phone
+              : undefined,
+          dateOfBirth: changedFields.dateOfBirth ?? undefined,
+          ...(referralCode &&
+            !applicationData && { referralCodeV2: referralCode }), // include only if referralCodeV2 is present and it is post applciation call
+        };
+        // Remove undefined fields and dialCode
+        const cleanPayload = omitBy(
+          payload,
+          (value, key) => isUndefined(value) || key === 'dialCode',
+        );
 
-      const { isError, error } = applicationData
-        ? await patchWithAuth(
-            `/v1/cards/${CardProviders.REAP_CARD}/application`,
-            cleanPayload,
-          )
-        : await postWithAuth(
-            `/v1/cards/${CardProviders.REAP_CARD}/application`,
-            cleanPayload,
-          );
+        const { isError, error } = applicationData
+          ? await patchWithAuth(
+              `/v1/cards/${CardProviders.REAP_CARD}/application`,
+              cleanPayload,
+            )
+          : await postWithAuth(
+              `/v1/cards/${CardProviders.REAP_CARD}/application`,
+              cleanPayload,
+            );
 
-      if (isError) {
-        if (error.field) {
-          setFieldError(error.field, error.message);
+        if (isError) {
+          if (error.field) {
+            setFieldError(error.field, error.message);
 
-          // Check which page contains the error and update index if necessary
-          const firstPageFields = [
-            'firstName',
-            'lastName',
-            'email',
-            'dateOfBirth',
-          ];
-          if (firstPageFields.includes(error.field) && index === 1) {
-            setIndex(0);
+            // Check which page contains the error and update index if necessary
+            const firstPageFields = [
+              'firstName',
+              'lastName',
+              'email',
+              'dateOfBirth',
+            ];
+            if (firstPageFields.includes(error.field) && index === 1) {
+              setIndex(0);
+            }
+          } else {
+            showModal('state', {
+              type: 'error',
+              title: t('INVALID_USER_DETAILS'),
+              description:
+                parseErrorMessage(error) ??
+                'Error in submitting your application',
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
           }
         } else {
-          showModal('state', {
-            type: 'error',
-            title: t('INVALID_USER_DETAILS'),
-            description:
-              error?.message ?? 'Error in submitting your application',
-            onSuccess: hideModal,
-            onFailure: hideModal,
+          const data = await getWalletProfile(globalState.token);
+          set(data as CardProfile, 'provider', CardProviders.REAP_CARD);
+          globalDispatch({
+            type: GlobalContextType.CARD_PROFILE,
+            cardProfile: data,
           });
+          applicationData
+            ? navigation.goBack()
+            : navigation.navigate(screenTitle.CARD_SIGNUP_OTP_VERIFICATION);
         }
-      } else {
-        const data = await getWalletProfile(globalState.token);
-        set(data as CardProfile, 'provider', CardProviders.REAP_CARD);
-        globalDispatch({
-          type: GlobalContextType.CARD_PROFILE,
-          cardProfile: data,
-        });
-        applicationData
-          ? navigation.goBack()
-          : navigation.navigate(screenTitle.CARD_SIGNUP_OTP_VERIFICATION);
-      }
 
-      setSubmitting(false);
+        setSubmitting(false);
+      }
+    } catch (err) {
+      console.log('🚀 ~ CardApplicationV2 ~ err:', err);
     }
   };
 

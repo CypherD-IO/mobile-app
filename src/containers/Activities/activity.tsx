@@ -2,7 +2,6 @@
  * @format
  * @flow
  */
-import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import moment from 'moment';
@@ -62,6 +61,7 @@ import { TIME_GAPS } from '../../constants/data';
 import { endsWith, get, round } from 'lodash';
 import { SvgUri } from 'react-native-svg';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const IN_PROGRESS = 'IN_PROGRESS';
 const PENDING = 'PENDING';
@@ -920,11 +920,9 @@ export default function Activites() {
     const {
       ethereum: { address },
     } = hdWalletContext.state.wallet;
-    analytics()
-      .logEvent('activity_screen_view', {
-        fromEthAddress: address,
-      })
-      .catch(Sentry.captureException);
+    logAnalyticsToFirebase(AnalyticEvent.ACTIVITY_SCREEN_VIEW, {
+      fromEthAddress: address,
+    });
   }, []);
 
   useLayoutEffect(() => {

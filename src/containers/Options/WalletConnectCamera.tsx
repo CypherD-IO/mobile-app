@@ -3,7 +3,6 @@ import * as C from '../../constants/index';
 import AppImages from './../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
-import analytics from '@react-native-firebase/analytics';
 import { FlatList } from 'react-native';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -43,6 +42,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface RouteParams {
   walletConnectURI: string;
@@ -140,7 +140,7 @@ export default function WalletConnectCamera() {
     if (link.startsWith('wc')) {
       loading.current = true;
       void connectWallet(link);
-      void analytics().logEvent('wallet_connect_url_scan', {
+      void logAnalyticsToFirebase(AnalyticEvent.WALLET_CONNECT_URL_SCAN, {
         fromEthAddress: ethereumAddress,
       });
     } else {
