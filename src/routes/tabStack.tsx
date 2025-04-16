@@ -2,7 +2,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   NavigationContainer,
   useNavigationContainerRef,
-  ParamListBase,
 } from '@react-navigation/native';
 import React, {
   useCallback,
