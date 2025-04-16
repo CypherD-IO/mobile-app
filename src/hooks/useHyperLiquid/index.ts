@@ -225,12 +225,12 @@ export default function useHyperLiquid() {
       };
       console.log('payload', payload);
     }
-    await sleepFor(5000);
     const result = await postToOtherSource(
       'https://api.hyperliquid.xyz/exchange',
       payload,
     );
     if (!result.isError) {
+      await sleepFor(5000);
       const userTransfers = await postToOtherSource(
         'https://api.hyperliquid.xyz/info',
         {

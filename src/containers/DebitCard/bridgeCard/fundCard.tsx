@@ -92,8 +92,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  //testchange
-  const minTokenValueLimit = 0;
+  const minTokenValueLimit = 10;
   const minTokenValueEth = 50;
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>('0');
@@ -1139,25 +1138,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         '': loading,
       })}>
       {isMaxLoading && <Loading blurBg={true} />}
-
-      {/* testchange */}
-      {/* <ChooseTokenModalV2
-        isChooseTokenModalVisible={isChooseTokenVisible}
-        setIsChooseTokenModalVisible={setIsChooseTokenVisible}
-        minTokenValueLimit={minTokenValueLimit}
-        minTokenValueEth={minTokenValueEth}
-        onSelectingToken={token => {
-          setIsChooseTokenVisible(false);
-          void onSelectingToken(token as Holding);
-        }}
-        type={TokenModalType.CARD_LOAD}
-        onCancel={() => {
-          setIsChooseTokenVisible(false);
-          if (!selectedToken) {
-            navigation.goBack();
-          }
-        }}
-      /> */}
 
       <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}
