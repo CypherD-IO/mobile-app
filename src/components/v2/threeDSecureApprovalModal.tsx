@@ -14,6 +14,7 @@ import useAxios from '../../core/HttpRequest';
 import { useGlobalModalContext } from './GlobalModal';
 import { capitalize } from 'lodash';
 import analytics from '@react-native-firebase/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -64,7 +65,7 @@ export default function ThreeDSecureApprovalModal({
         screen_class: 'ThreeDSecureApprovalModal',
       });
 
-      void analytics().logEvent('3d_secure_modal_viewed', {
+      void logAnalyticsToFirebase(AnalyticEvent.THREE_D_SECURE_MODAL_VIEWED, {
         merchant: data?.merchantName,
         amount: data?.transactionAmount,
       });
@@ -83,9 +84,12 @@ export default function ThreeDSecureApprovalModal({
       interval = setInterval(() => {
         const now = Date.now();
         if (timerEnd && now >= timerEnd) {
-          void analytics().logEvent('3d_secure_timer_expired', {
-            merchant: data?.merchantName,
-          });
+          void logAnalyticsToFirebase(
+            AnalyticEvent.THREE_D_SECURE_TIMER_EXPIRED,
+            {
+              merchant: data?.merchantName,
+            },
+          );
 
           clearInterval(interval);
           setTimer(null);
@@ -105,7 +109,7 @@ export default function ThreeDSecureApprovalModal({
   };
 
   const handleAccept = async () => {
-    void analytics().logEvent('3d_secure_approve', {
+    void logAnalyticsToFirebase(AnalyticEvent.THREE_D_SECURE_APPROVE, {
       merchant: data?.merchantName,
       amount: data?.transactionAmount,
     });
@@ -114,9 +118,12 @@ export default function ThreeDSecureApprovalModal({
     const response = await getWithAuth(data?.approveUrl);
     setAcceptLoading(false);
     if (!response?.isError) {
-      void analytics().logEvent('3d_secure_approve_success', {
-        merchant: data?.merchantName,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.THREE_D_SECURE_APPROVE_SUCCESS,
+        {
+          merchant: data?.merchantName,
+        },
+      );
 
       closeModal();
       setTimeout(() => {
@@ -129,7 +136,7 @@ export default function ThreeDSecureApprovalModal({
         });
       }, 500);
     } else {
-      void analytics().logEvent('3d_secure_approve_failed', {
+      void logAnalyticsToFirebase(AnalyticEvent.THREE_D_SECURE_APPROVE_FAILED, {
         merchant: data?.merchantName,
         error: response?.error?.message || 'Unknown error',
       });
@@ -150,7 +157,7 @@ export default function ThreeDSecureApprovalModal({
   };
 
   const handleDecline = async () => {
-    void analytics().logEvent('3d_secure_decline', {
+    void logAnalyticsToFirebase(AnalyticEvent.THREE_D_SECURE_DECLINE, {
       merchant: data?.merchantName,
       amount: data?.transactionAmount,
     });
@@ -159,9 +166,12 @@ export default function ThreeDSecureApprovalModal({
     const response = await getWithAuth(data?.declineUrl);
     setDeclineLoading(false);
     if (!response?.isError) {
-      void analytics().logEvent('3d_secure_decline_success', {
-        merchant: data?.merchantName,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.THREE_D_SECURE_DECLINE_SUCCESS,
+        {
+          merchant: data?.merchantName,
+        },
+      );
 
       closeModal();
       setTimeout(() => {
@@ -174,7 +184,7 @@ export default function ThreeDSecureApprovalModal({
         });
       }, 500);
     } else {
-      void analytics().logEvent('3d_secure_decline_failed', {
+      void logAnalyticsToFirebase(AnalyticEvent.THREE_D_SECURE_DECLINE_FAILED, {
         merchant: data?.merchantName,
         error: response?.error?.message || 'Unknown error',
       });
@@ -197,13 +207,16 @@ export default function ThreeDSecureApprovalModal({
   // Handle close with cancel
   const handleCloseWithCancel = () => {
     if (callDeclineOnClose) {
-      void analytics().logEvent('3d_secure_close_with_decline', {
-        merchant: data?.merchantName,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.THREE_D_SECURE_CLOSE_WITH_DECLINE,
+        {
+          merchant: data?.merchantName,
+        },
+      );
 
       void handleDecline();
     } else {
-      void analytics().logEvent('3d_secure_dismissed', {
+      void logAnalyticsToFirebase(AnalyticEvent.THREE_D_SECURE_DISMISSED, {
         merchant: data?.merchantName,
       });
     }

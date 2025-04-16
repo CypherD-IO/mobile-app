@@ -30,7 +30,6 @@ import {
   CardTransactionTypes,
   CardProviders,
   ReapTxnStatus,
-  CardControlTypes,
   ButtonType,
   GlobalModalType,
   CardStatus,
@@ -372,10 +371,13 @@ const DeclinedTransactionActionItem = ({
     try {
       setIsThisWasMeLoading(true);
 
-      void analytics().logEvent('transaction_details_this_was_me', {
-        merchant_id: metadata?.merchantId,
-        merchant_name: metadata?.merchantName,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_DETAILS_THIS_WAS_ME,
+        {
+          merchant_id: metadata?.merchantId,
+          merchant_name: metadata?.merchantName,
+        },
+      );
 
       const merchantId = metadata?.merchantId;
       if (!merchantId) {
@@ -433,10 +435,13 @@ const DeclinedTransactionActionItem = ({
       throw new Error('Merchant ID is required');
     }
 
-    void analytics().logEvent('transaction_details_this_isnt_me', {
-      merchant_id: merchantId,
-      merchant_name: metadata?.merchantName,
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.TRANSACTION_DETAILS_THIS_ISNT_ME,
+      {
+        merchant_id: merchantId,
+        merchant_name: metadata?.merchantName,
+      },
+    );
 
     showModal('state', {
       type: 'warning',
@@ -1283,7 +1288,7 @@ export default function TransactionDetails() {
   };
 
   const addIntlCountry = async (iso2: string, cardId?: string) => {
-    void analytics().logEvent('transaction_details_add_country', {
+    void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_DETAILS_ADD_COUNTRY, {
       country_code: iso2,
       card_id: cardId,
     });
@@ -1360,10 +1365,13 @@ export default function TransactionDetails() {
   };
 
   const activateCard = () => {
-    void analytics().logEvent('transaction_details_activate_card', {
-      card_type: cardDetails.type,
-      card_id: cardDetails.cardId,
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.TRANSACTION_DETAILS_ACTIVATE_CARD,
+      {
+        card_type: cardDetails.type,
+        card_id: cardDetails.cardId,
+      },
+    );
 
     hideModal();
     navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
@@ -1433,7 +1441,7 @@ export default function TransactionDetails() {
 
   async function shareTransaction() {
     try {
-      void analytics().logEvent('transaction_details_share', {
+      void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_DETAILS_SHARE, {
         transaction_id: transaction.id,
         transaction_type: transaction.type ?? '',
       });
@@ -1479,16 +1487,19 @@ export default function TransactionDetails() {
 
   const setIsMerchantDetailsModalVisible = (visible: boolean) => {
     if (visible) {
-      void analytics().logEvent('transaction_details_view_merchant', {
-        merchant_id: transaction?.metadata?.merchant?.merchantId,
-        merchant_name: transaction?.metadata?.merchant?.merchantName,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_DETAILS_VIEW_MERCHANT,
+        {
+          merchant_id: transaction?.metadata?.merchant?.merchantId,
+          merchant_name: transaction?.metadata?.merchant?.merchantName,
+        },
+      );
     }
     setMerchantDetailsModalVisibleState(visible);
   };
 
   useEffect(() => {
-    void analytics().logEvent('transaction_details_viewed', {
+    void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_DETAILS_VIEWED, {
       transaction_id: transaction.id,
       transaction_type: transaction.type ?? '',
       transaction_status: transaction.tStatus,
@@ -1770,16 +1781,13 @@ export default function TransactionDetails() {
                       title={'Explore Premium'}
                       type={ButtonType.DARK}
                       onPress={() => {
-                        void analytics().logEvent(
-                          'transaction_details_explore_premium',
+                        void logAnalyticsToFirebase(
+                          AnalyticEvent.TRANSACTION_DETAILS_EXPLORE_PREMIUM,
                           {
                             transaction_id: transaction.id,
                             transaction_type: transaction.type ?? '',
                             premium_amount_saved: getPremiumAmount(),
                           },
-                        );
-                        void analytics().logEvent(
-                          'explore_premium_tn_detail_cta',
                         );
                         setPlanChangeModalVisible(true);
                       }}
@@ -1812,14 +1820,17 @@ export default function TransactionDetails() {
                 transaction.type === CardTransactionTypes.DEBIT &&
                 !transaction.title.toLowerCase().includes('withdrawal')
               ) {
-                void analytics().logEvent('transaction_details_report_issue', {
-                  transaction_id: transaction.id,
-                });
+                void logAnalyticsToFirebase(
+                  AnalyticEvent.TRANSACTION_DETAILS_REPORT_ISSUE,
+                  {
+                    transaction_id: transaction.id,
+                  },
+                );
                 setIsReportModalVisible(true);
                 sendFirebaseEvent(hdWalletContext, 'report_transaction_issue');
               } else {
-                void analytics().logEvent(
-                  'transaction_details_contact_support',
+                void logAnalyticsToFirebase(
+                  AnalyticEvent.TRANSACTION_DETAILS_CONTACT_SUPPORT,
                   {
                     transaction_id: transaction.id,
                   },
