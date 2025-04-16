@@ -27,7 +27,6 @@ import {
 import Loading from '../../components/v2/loading';
 import { TokenTransactions } from './transactions';
 import TokenOverviewToolBar from './toolbar';
-import analytics from '@react-native-firebase/analytics';
 import clsx from 'clsx';
 import { isAndroid } from '../../misc/checkers';
 import { Layout } from 'react-native-reanimated';
@@ -35,6 +34,7 @@ import usePortfolio from '../../hooks/usePortfolio';
 import { Holding } from '../../core/portfolio';
 import { get, groupBy } from 'lodash';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface RouteParams {
   tokenData: TokenMeta;
@@ -72,7 +72,7 @@ function TokenOverviewV2() {
           TokenOverviewTabIndices.TRANSACTIONS,
         ].includes(+route.params.navigateTo)
       ) {
-        void analytics().logEvent('visited_token_overview_page');
+        void logAnalyticsToFirebase(AnalyticEvent.VISITED_TOKEN_OVERVIEW_PAGE);
         void getTokenHoldingsByCoinGeckoId();
         setIndex(TokenOverviewTabIndices.OVERVIEW);
       } else {

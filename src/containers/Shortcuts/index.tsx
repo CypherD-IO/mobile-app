@@ -31,7 +31,6 @@ import {
   getAvailableChains,
   sortJSONArrayByKey,
 } from '../../core/util';
-import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 import useIsSignable from '../../hooks/useIsSignable';
@@ -42,7 +41,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
-import { CyDIconsPack } from '../../customFonts';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface IShortcutsData {
   index: number;
@@ -231,7 +230,7 @@ export default function ShortcutsModal() {
   const [animation, setAnimation] = useState<any>();
 
   const onSelectingShortCutItems = async (item: any) => {
-    await analytics().logEvent(`shortcuts_button_${item.title}`);
+    await logAnalyticsToFirebase(`shortcuts_button_${item.title}`);
     setSelectedOption(item.title);
     setShortcutsModalVisible(false);
     switch (item.title) {
@@ -563,7 +562,7 @@ export default function ShortcutsModal() {
       className={'bg-transparent'}
       onPress={async () => {
         setShortcutsModalVisible(true);
-        await analytics().logEvent('shortcuts_button_click');
+        logAnalyticsToFirebase(AnalyticEvent.SHORTCUTS_BUTTON_CLICK);
       }}>
       {/* shortcuts modal */}
       <CyDModalLayout

@@ -29,10 +29,10 @@ import * as Sentry from '@sentry/react-native';
 import axios from '../../core/Http';
 import AppImages from '../../../assets/images/appImages';
 import Loading from '../../components/v2/loading';
-import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../../global';
 import { Linking } from 'react-native';
 import MetaWidget from '@onmeta/react-native-sdk';
+import { logAnalyticsToFirebase } from '../../core/analytics';
 
 function parseRequest(
   payload: any,
@@ -178,7 +178,7 @@ export default function Onmeta({ route }) {
     };
 
     void getClientToken();
-    void analytics().logEvent(`inside_onmeta_pay_${ometaOperation}`);
+    void logAnalyticsToFirebase(`inside_onmeta_pay_${ometaOperation}`);
   }, []);
 
   if (error) {
