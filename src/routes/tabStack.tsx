@@ -2,13 +2,21 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   NavigationContainer,
   useNavigationContainerRef,
+  ParamListBase,
 } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react';
 import {
   Animated,
   BackHandler,
   Linking,
   StyleSheet,
+  Platform,
   ToastAndroid,
 } from 'react-native';
 import { screenTitle } from '../constants';
@@ -28,6 +36,8 @@ import { handleDeepLink } from '../../App';
 import analytics from '@react-native-firebase/analytics';
 
 const Tab = createBottomTabNavigator();
+const NAVIGATION_DELAY = 50;
+const DEEP_LINK_PROCESSING_DELAY = 100;
 
 interface TabStackProps {
   deepLinkData: {
@@ -40,6 +50,11 @@ interface TabStackProps {
       params?: any;
     } | null>
   >;
+}
+
+interface NavigationParams {
+  screen: string | undefined;
+  params?: any;
 }
 
 const screensToHaveNavBar = [
@@ -59,6 +74,8 @@ function TabStack(props: TabStackProps) {
   const { deepLinkData, setDeepLinkData } = props;
   const [showTabBar, setShowTabBar] = useState(true);
   const tabBarAnimation = useState(new Animated.Value(1))[0];
+  const navigationReadyRef = useRef<boolean>(false);
+  const pendingDeepLinkRef = useRef<typeof deepLinkData>(null);
 
   let backPressCount = 0;
 
@@ -72,7 +89,11 @@ function TabStack(props: TabStackProps) {
       setTimeout(() => {
         backPressCount = 0;
       }, 2000);
-      ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
+
+      if (Platform.OS === 'android') {
+        // Only show toast on Android
+        ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
+      }
     } else if (backPressCount === 1) {
       backPressCount = 0;
       BackHandler.exitApp();
@@ -87,74 +108,123 @@ function TabStack(props: TabStackProps) {
     };
   }, []);
 
+  /**
+   * Navigate to a specific screen within a tab with proper two-step navigation
+   * to ensure the tab stack is initialized correctly
+   */
+  const navigateToScreenInTab = useCallback(
+    (tabName: string, navigationParams: NavigationParams) => {
+      if (!navigationRef.current) return;
+
+      // Step 1: Navigate to the parent tab first
+      navigationRef.current.navigate(tabName);
+
+      // Step 2: After a short delay, navigate to the specific screen within the tab
+      setTimeout(() => {
+        if (navigationRef.current) {
+          navigationRef.current.navigate(tabName, navigationParams);
+        }
+      }, NAVIGATION_DELAY);
+    },
+    [],
+  );
+
   // Extract common deep link navigation logic into a reusable function
   const handleNavigation = useCallback(
     (data: { screenToNavigate?: string; params?: any }) => {
       if (!data?.screenToNavigate) return false;
-
-      let tabName;
-      let navigationParams: any;
+      if (!navigationRef.current || !navigationReadyRef.current) {
+        // Store for later processing once navigation is ready
+        pendingDeepLinkRef.current = data;
+        return false;
+      }
 
       switch (data.screenToNavigate) {
         case screenTitle.I_HAVE_REFERRAL_CODE_SCREEN:
-          tabName = screenTitle.CARD;
-          navigationParams = {
-            screenToNavigate: data.screenToNavigate,
-            ...data.params,
-          };
+          navigateToScreenInTab(screenTitle.CARD, {
+            screen: data.screenToNavigate,
+            params: data.params,
+          });
           break;
+
         case screenTitle.TELEGRAM_PIN_SETUP:
-          tabName = screenTitle.CARD;
-          navigationParams = {
-            screenToNavigate: data.screenToNavigate,
-          };
+          navigateToScreenInTab(screenTitle.CARD, {
+            screen: data.screenToNavigate,
+          });
           break;
+
         case screenTitle.TELEGRAM_SETUP:
-          tabName = screenTitle.CARD;
-          navigationParams = {
+          navigateToScreenInTab(screenTitle.CARD, {
             screen: data.screenToNavigate,
             params: {
               navigateTo: screenTitle.TELEGRAM_PIN_SETUP,
               showSetupLaterOption: false,
               enableBackButton: true,
             },
-          };
+          });
           break;
+
         case screenTitle.CARD_CONTROLS:
-          tabName = screenTitle.CARD;
-          navigationParams = {
+          navigateToScreenInTab(screenTitle.CARD, {
             screen: data.screenToNavigate,
             params: data.params,
-          };
+          });
           break;
-        default:
-          tabName = screenTitle.PORTFOLIO_SCREEN;
-      }
 
-      if (tabName && navigationRef.current) {
-        navigationRef.current.navigate(
-          tabName,
-          navigationParams || {
-            screenToNavigate: data.screenToNavigate,
-          },
-        );
-        return true;
+        default:
+          navigationRef.current.navigate(screenTitle.PORTFOLIO_SCREEN);
       }
-      return false;
+      return true;
     },
-    [],
+    [navigateToScreenInTab],
   );
+
+  /**
+   * Process any pending deep links that were received
+   * before navigation was ready
+   */
+  const processPendingDeepLinks = useCallback(() => {
+    if (pendingDeepLinkRef.current) {
+      setTimeout(() => {
+        handleNavigation(pendingDeepLinkRef.current!);
+        pendingDeepLinkRef.current = null;
+      }, DEEP_LINK_PROCESSING_DELAY);
+    } else if (deepLinkData) {
+      setTimeout(() => {
+        handleNavigation(deepLinkData);
+        setDeepLinkData(null);
+      }, DEEP_LINK_PROCESSING_DELAY);
+    }
+  }, [deepLinkData, handleNavigation, setDeepLinkData]);
+
+  // Handle navigation container becoming ready
+  useEffect(() => {
+    const unsubscribeReady = navigationRef.current?.addListener('state', () => {
+      // Mark navigation as ready after the first state change
+      if (!navigationReadyRef.current) {
+        navigationReadyRef.current = true;
+        processPendingDeepLinks();
+      }
+    });
+
+    return () => {
+      if (unsubscribeReady) {
+        unsubscribeReady();
+      }
+    };
+  }, [processPendingDeepLinks]);
 
   // Handle deep links that arrive while app is running
   useEffect(() => {
     const deepLinkListener = ({ url }: { url: string }) => {
       void handleDeepLink(url).then(linkData => {
         if (linkData) {
-          // Try to navigate immediately if possible
-          const navigated = handleNavigation(linkData);
-          // If navigation isn't ready, store the data for later
-          if (!navigated) {
-            setDeepLinkData(linkData);
+          // Process deep link immediately if navigation is ready
+          if (navigationReadyRef.current) {
+            handleNavigation(linkData);
+          } else {
+            // Otherwise store it for when navigation becomes ready
+            pendingDeepLinkRef.current = linkData;
           }
         }
       });
@@ -162,15 +232,13 @@ function TabStack(props: TabStackProps) {
 
     const subscription = Linking.addEventListener('url', deepLinkListener);
     return () => subscription.remove();
-  }, [handleNavigation, setDeepLinkData]);
+  }, [handleNavigation]);
 
-  // Handle deepLinkData changes (from initial URL or when navigation wasn't ready)
+  // Handle deepLinkData changes from initial URL
   useEffect(() => {
-    if (deepLinkData?.screenToNavigate) {
-      const navigated = handleNavigation(deepLinkData);
-      if (navigated) {
-        setDeepLinkData(null);
-      }
+    if (deepLinkData && navigationReadyRef.current) {
+      handleNavigation(deepLinkData);
+      setDeepLinkData(null);
     }
   }, [deepLinkData, handleNavigation, setDeepLinkData]);
 
@@ -196,7 +264,7 @@ function TabStack(props: TabStackProps) {
       ],
       opacity: tabBarAnimation,
       borderTopWidth: 0,
-      position: 'absolute',
+      position: 'absolute' as const,
       bottom: 0,
       left: 0,
       right: 0,
@@ -225,7 +293,11 @@ function TabStack(props: TabStackProps) {
   useEffect(() => {
     const unsubscribe = navigationRef.current?.addListener('state', () => {
       const currentRouteName = getCurrentRouteName();
-      setShowTabBar(screensToHaveNavBar.includes(currentRouteName ?? ''));
+      setShowTabBar(
+        currentRouteName
+          ? screensToHaveNavBar.includes(currentRouteName)
+          : false,
+      );
     });
 
     return () => {
@@ -249,6 +321,8 @@ function TabStack(props: TabStackProps) {
       onReady={() => {
         const currentRoute = navigationRef.current?.getCurrentRoute();
         routeNameRef.current = currentRoute?.name;
+        navigationReadyRef.current = true;
+        processPendingDeepLinks();
       }}
       onStateChange={() => {
         const previousRouteName = routeNameRef.current;
@@ -267,7 +341,7 @@ function TabStack(props: TabStackProps) {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarIcon: ({ focused }) => {
-            let iconSource;
+            let iconSource = '';
             if (route.name === screenTitle.PORTFOLIO) {
               iconSource = 'home-filled';
             } else if (route.name === screenTitle.CARD) {
@@ -279,7 +353,7 @@ function TabStack(props: TabStackProps) {
             }
             return (
               <CyDIcons
-                name={iconSource}
+                name={iconSource as any}
                 size={32}
                 className={clsx('', {
                   'text-base400': focused,

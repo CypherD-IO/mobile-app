@@ -1605,7 +1605,8 @@ const resources = {
       THIS_ISNT_ME: "This Wasn't Me",
       UNEXCPECTED_ERROR: 'Unexpected Error',
       ACTION_FAILED: 'Action could not be completed. Please contact support.',
-      TRANSACTION_ALREADY_REPORTED: 'Transaction already reported',
+      TRANSACTION_ALREADY_REPORTED:
+        'Transaction already reported. Refer email for updates',
       TRANSACTION_REPORTED_SUCCESSFULLY: 'Transaction reported successfully',
       TRANSACTION_REPORT_FAILED: 'Transaction report failed',
       TRANSACTION_REPORTED_DESCRIPTION:
