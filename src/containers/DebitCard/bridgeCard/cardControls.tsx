@@ -7,9 +7,9 @@ import {
   ParamListBase,
   RouteProp,
 } from '@react-navigation/native';
+import { StyleSheet, Animated } from 'react-native';
 import { capitalize, find, get } from 'lodash';
 import clsx from 'clsx';
-import { Animated, StyleSheet, View } from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
@@ -144,6 +144,9 @@ export default function CardControls() {
   const [selectedCountries, setSelectedCountries] = useState<ICountry[]>([]);
   const [allCountriesSelected, setAllCountriesSelected] = useState(false);
   const [isPremiumUser, setIsPremiumUser] = useState(false);
+
+  // Add a ref to store the exit action
+  const exitActionRef = useRef<any>();
 
   useEffect(() => {
     const filteredCards =
@@ -625,26 +628,38 @@ export default function CardControls() {
 
   const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
 
-  // Add navigation listener to handle back press
   useEffect(() => {
+    // Handle back navigation for iOS and Android
     const unsubscribe = navigation.addListener('beforeRemove', e => {
-      if (hasChanges) {
+      // If there are no changes, let the navigation proceed normally
+      if (!hasChanges) {
+        return;
+      }
+
+      // Specifically check for GO_BACK action type (swipe back or hardware back)
+      if (e.data.action.type === 'GO_BACK') {
+        // Prevent default behavior
         e.preventDefault();
+
+        // Store the navigation action for later use
+        exitActionRef.current = e.data.action;
+
+        // Show modal if multiple cards, otherwise navigate back
         if (showForAllCards) {
           setShowSaveChangesModal(true);
         } else {
-          // Clear changes without calling goBack, as this would trigger
-          // the listener again and cause a recursive loop
+          // Clear changes without triggering navigation recursion
           setHasChanges(false);
           setChanges({});
-          // Allow the navigation to continue
-          navigation.dispatch(e.data.action);
+          // Explicitly dispatch the original action we captured
+          navigation.dispatch(exitActionRef.current);
         }
       }
+      // No else needed - for other action types, just let them proceed normally
     });
 
-    return unsubscribe;
-  }, [navigation, hasChanges, changes, showForAllCards]);
+    return () => unsubscribe();
+  }, [navigation, hasChanges, showForAllCards]);
 
   const handleApplyToAllCards = async () => {
     try {
@@ -694,6 +709,20 @@ export default function CardControls() {
         onFailure: hideModal,
       });
     }
+  };
+
+  // Update the onApplyToCard and onCancel functions to use the stored navigation action
+  const handleApplyToCard = () => {
+    setShowSaveChangesModal(false);
+    setHasChanges(false);
+    setChanges({});
+    if (exitActionRef.current) {
+      navigation.dispatch(exitActionRef.current);
+    }
+  };
+
+  const handleCancelExit = () => {
+    setShowSaveChangesModal(false);
   };
 
   const getDisplayCardType = (card: Card) => {
@@ -1250,18 +1279,8 @@ export default function CardControls() {
         setIsModalVisible={setShowSaveChangesModal}
         card={selectedCard}
         onApplyToAllCards={handleApplyToAllCards}
-        onApplyToCard={() => {
-          setShowSaveChangesModal(false);
-          setHasChanges(false);
-          setChanges({});
-          navigation.goBack();
-        }}
-        onCancel={() => {
-          setShowSaveChangesModal(false);
-          setHasChanges(false);
-          setChanges({});
-          navigation.goBack();
-        }}
+        onApplyToCard={handleApplyToCard}
+        onCancel={handleCancelExit}
       />
 
       <SelectPlanModal
