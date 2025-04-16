@@ -196,6 +196,8 @@ export default function useInitializer() {
     const availableChains = Object.keys(resultFromEndpoint.data);
     availableChains.map(async chain => {
       if (get(resultFromEndpoint.data, chain) && get(rpcEndpoints, chain)) {
+        console.log('chain', chain);
+        console.log('rpcEndpoints', get(rpcEndpoints, chain));
         Object.assign(updatedEndpoints, { [chain]: get(rpcEndpoints, chain) });
       } else if (
         get(resultFromEndpoint.data, chain) &&
@@ -218,6 +220,7 @@ export default function useInitializer() {
     // if (rpcPreferenceFromAsync && rpcPreferenceFromAsync !== '') {
     //   rpcPreference = rpcPreferenceFromAsync;
     // }
+    console.log('fetchRPCEndpointsFromServer', rpcPreference);
     let result;
     const RPCFromAsync = await getRpcEndpoints();
     if (
@@ -234,6 +237,7 @@ export default function useInitializer() {
       const resultFromEndpoint = await getWithoutAuth(
         `/v1/configuration/rpcEndpoints`,
       );
+      console.log('resultFromEndpoint', resultFromEndpoint.data);
       result = resultFromEndpoint.data;
     }
     globalDispatch({ type: GlobalContextType.RPC_UPDATE, rpc: result });

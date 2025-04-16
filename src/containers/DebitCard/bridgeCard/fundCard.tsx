@@ -1,7 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { floor, get } from 'lodash';
+import { chain, floor, get } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, useWindowDimensions } from 'react-native';
@@ -31,6 +31,7 @@ import {
   COSMOS_CHAINS,
   GASLESS_CHAINS,
   NativeTokenMapping,
+  STABLE_TOKEN_CHAIN_MAP,
 } from '../../../constants/server';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
@@ -59,6 +60,7 @@ import { DecimalHelper } from '../../../utils/decimalHelper';
 import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
 import usePortfolio from '../../../hooks/usePortfolio';
+import { EVM_CHAINS_TYPE } from '../../../constants/type';
 import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
@@ -90,7 +92,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  const minTokenValueLimit = 10;
+  //testchange
+  const minTokenValueLimit = 0;
   const minTokenValueEth = 50;
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>('0');
@@ -138,11 +141,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     const {
       chainDetails,
       symbol: selectedTokenSymbol,
-      contractAddress,
       contractDecimals,
       balanceDecimal,
       denom,
     } = selectedToken as Holding;
+    const contractAddress = selectedToken?.isHyperliquid
+      ? STABLE_TOKEN_CHAIN_MAP.get(
+          chainDetails.backendName as EVM_CHAINS_TYPE,
+        )?.[0]?.contractAddress
+      : selectedToken?.contractAddress;
     const nativeToken = await getNativeToken(chainDetails.backendName);
     const actualTokensRequired = limitDecimalPlaces(
       quote.tokensRequired,
@@ -173,7 +180,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           const publicClient = getViemPublicClient(
             getWeb3Endpoint(chainDetails, globalContext),
           );
-
+          console.log(
+            'contractAddress',
+            contractAddress,
+            chainDetails.backendName,
+          );
           gasDetails = await estimateGasForEvm({
             publicClient,
             chain: chainDetails.backendName,
@@ -332,6 +343,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
           amountInCrypto: isCrpytoInput,
+          ...(selectedToken?.isHyperliquid && {
+            hyperliquidTradeType: selectedToken?.accountType,
+          }),
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
@@ -1125,6 +1139,25 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         '': loading,
       })}>
       {isMaxLoading && <Loading blurBg={true} />}
+
+      {/* testchange */}
+      {/* <ChooseTokenModalV2
+        isChooseTokenModalVisible={isChooseTokenVisible}
+        setIsChooseTokenModalVisible={setIsChooseTokenVisible}
+        minTokenValueLimit={minTokenValueLimit}
+        minTokenValueEth={minTokenValueEth}
+        onSelectingToken={token => {
+          setIsChooseTokenVisible(false);
+          void onSelectingToken(token as Holding);
+        }}
+        type={TokenModalType.CARD_LOAD}
+        onCancel={() => {
+          setIsChooseTokenVisible(false);
+          if (!selectedToken) {
+            navigation.goBack();
+          }
+        }}
+      /> */}
 
       <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}

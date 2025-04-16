@@ -591,6 +591,9 @@ const BLUE_EDIT_ICON = {
 const WHITE_SHIELD_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/whiteShieldIcon.png`,
 };
+const HYPERLIQUID_LOGO = {
+  uri: `${S3_BUCKET_URL_ICONS}/hyperLiquidLogo.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -850,6 +853,7 @@ export const AppImagesMap = {
     CARD_PIN_ICON,
     BLUE_EDIT_ICON,
     WHITE_SHIELD_ICON,
+    HYPERLIQUID_LOGO,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1113,6 +1117,7 @@ enum AppImages {
   CARD_PIN_ICON = 'CARD_PIN_ICON',
   BLUE_EDIT_ICON = 'BLUE_EDIT_ICON',
   WHITE_SHIELD_ICON = 'WHITE_SHIELD_ICON',
+  HYPERLIQUID_LOGO = 'HYPERLIQUID_LOGO',
 }
 
 export default AppImages;

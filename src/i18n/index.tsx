@@ -1621,6 +1621,7 @@ const resources = {
         'This channel is currently off. Please toggle the channel on and retry.',
       UPDATE_CHANNEL_SETTINGS: 'Update Channel Settings',
       NO_THANKS: 'No Thanks',
+      PORTFOLIO: 'Portfolio',
     },
   },
 };
