@@ -402,13 +402,16 @@ export default function CardControls() {
       });
 
       if (!response.isError) {
-        void analytics().logEvent('card_controls_request_higher_limit_submit', {
-          card_id: selectedCardId,
-          card_type: selectedCard?.type,
-          reason,
-          dailyLimit,
-          monthlyLimit,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.CARD_CONTROLS_REQUEST_HIGHER_LIMIT_SUBMIT,
+          {
+            card_id: selectedCardId,
+            card_type: selectedCard?.type,
+            reason,
+            dailyLimit,
+            monthlyLimit,
+          },
+        );
         showModal('state', {
           type: 'success',
           title: t('LIMIT_INCREASE_REQUEST_SUBMITTED'),
@@ -539,10 +542,13 @@ export default function CardControls() {
           countries: countryCodes,
         }));
 
-        void analytics().logEvent('card_controls_update_countries', {
-          card_id: selectedCardId,
-          card_type: selectedCard?.type,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.CARD_CONTROLS_UPDATE_COUNTRIES,
+          {
+            card_id: selectedCardId,
+            card_type: selectedCard?.type,
+          },
+        );
 
         // Fetch updated limits after successful country update
         await fetchCardLimits();
@@ -951,8 +957,8 @@ export default function CardControls() {
                     <CyDTouchView
                       className='flex flex-row items-center bg-n20 rounded-[15px] px-[12px] py-[8px]'
                       onPress={() => {
-                        void analytics().logEvent(
-                          'card_controls_explore_premium',
+                        void logAnalyticsToFirebase(
+                          AnalyticEvent.CARD_CONTROLS_EXPLORE_PREMIUM,
                           {
                             card_id: selectedCardId,
                             card_type: selectedCard?.type,
@@ -1139,10 +1145,13 @@ export default function CardControls() {
               <CyDTouchView
                 className='flex flex-row items-center justify-between py-[16px]'
                 onPress={() => {
-                  void analytics().logEvent('card_controls_select_country', {
-                    card_id: selectedCardId,
-                    card_type: selectedCard?.type,
-                  });
+                  void logAnalyticsToFirebase(
+                    AnalyticEvent.CARD_CONTROLS_SELECT_COUNTRY,
+                    {
+                      card_id: selectedCardId,
+                      card_type: selectedCard?.type,
+                    },
+                  );
                   setIsCountryModalVisible(true);
                 }}>
                 <CyDView className='flex flex-row items-center gap-x-[12px]'>

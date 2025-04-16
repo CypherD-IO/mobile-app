@@ -58,7 +58,7 @@ export default function OnBoardOpotions() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { openWalletConnectModal } = useConnectionManager();
   const { showModal, hideModal } = useGlobalModalContext();
-  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const hdWalletContext = useContext(HdWalletContext);
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   const inset = useSafeAreaInsets();
@@ -499,56 +499,6 @@ export default function OnBoardOpotions() {
             {'Log in or Sign up'}
           </CyDText>
           <CyDView className='mt-[24px]'>
-            <CyDText className='text-[12px] font-medium text-n200'>
-              {'Login with Email'}
-            </CyDText>
-            <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
-              <CyDTextInput
-                className='flex-1 text-[14px] text-base400 py-[16px] pl-[12px] rounded-[8px]'
-                placeholder='Enter your email address'
-                placeholderTextColor={'#8993A4'}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType='email-address'
-                autoCapitalize='none'
-              />
-              {email.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setSocialLoginMethod(SocialLoginMethod.EMAIL);
-                    setIsProviderSelectionModalVisible(true);
-                  }}>
-                  <CyDMaterialDesignIcons
-                    name='arrow-right-circle'
-                    size={17}
-                    className='text-n200 pr-[12px]'
-                  />
-                </TouchableOpacity>
-              )}
-            </CyDView>
-            <CyDTouchView
-              className='mt-[12px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px]'
-              onPress={() => {
-                setSocialLoginMethod(SocialLoginMethod.GOOGLE);
-                setIsProviderSelectionModalVisible(true);
-              }}>
-              <CyDImage
-                source={AppImages.GOOGLE_LOGO}
-                className='w-[17px] h-[17px]'
-              />
-              <CyDText className='text-[12px] font-medium text-base400'>
-                {'Sign in with Google'}
-              </CyDText>
-            </CyDTouchView>
-
-            <CyDView className='my-[16px] flex-row items-center justify-center gap-[4px]'>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
-              <CyDText className='text-[12px] font-medium text-n200'>
-                {'or'}
-              </CyDText>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
-            </CyDView>
-
             <CyDView className='bg-n30 p-[16px] rounded-[8px]'>
               {/* create wallet */}
               <CyDTouchView
@@ -625,7 +575,57 @@ export default function OnBoardOpotions() {
             <CyDView className='my-[16px] flex-row items-center justify-center gap-[4px]'>
               <CyDView className='flex-1 h-[1px] bg-n30' />
               <CyDText className='text-[12px] font-medium text-n200'>
-                {'or'}
+                {'OR'}
+              </CyDText>
+              <CyDView className='flex-1 h-[1px] bg-n30' />
+            </CyDView>
+
+            <CyDText className='text-[12px] font-medium text-n200'>
+              {'Login with Email'}
+            </CyDText>
+            <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
+              <CyDTextInput
+                className='flex-1 text-[14px] text-base400 py-[16px] pl-[12px] rounded-[8px]'
+                placeholder='Enter your email address'
+                placeholderTextColor={'#8993A4'}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType='email-address'
+                autoCapitalize='none'
+              />
+              {email.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSocialLoginMethod(SocialLoginMethod.EMAIL);
+                    setIsProviderSelectionModalVisible(true);
+                  }}>
+                  <CyDMaterialDesignIcons
+                    name='arrow-right-circle'
+                    size={17}
+                    className='text-n200 pr-[12px]'
+                  />
+                </TouchableOpacity>
+              )}
+            </CyDView>
+            <CyDTouchView
+              className='mt-[12px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px]'
+              onPress={() => {
+                setSocialLoginMethod(SocialLoginMethod.GOOGLE);
+                setIsProviderSelectionModalVisible(true);
+              }}>
+              <CyDImage
+                source={AppImages.GOOGLE_LOGO}
+                className='w-[17px] h-[17px]'
+              />
+              <CyDText className='text-[12px] font-medium text-base400'>
+                {'Sign in with Google'}
+              </CyDText>
+            </CyDTouchView>
+
+            <CyDView className='my-[16px] flex-row items-center justify-center gap-[4px]'>
+              <CyDView className='flex-1 h-[1px] bg-n30' />
+              <CyDText className='text-[12px] font-medium text-n200'>
+                {'OR'}
               </CyDText>
               <CyDView className='flex-1 h-[1px] bg-n30' />
             </CyDView>
