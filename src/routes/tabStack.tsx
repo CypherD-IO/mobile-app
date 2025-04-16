@@ -25,6 +25,7 @@ import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
 import { useColorScheme } from 'nativewind';
 import { handleDeepLink } from '../../App';
+import analytics from '@react-native-firebase/analytics';
 
 const Tab = createBottomTabNavigator();
 
@@ -63,7 +64,7 @@ function TabStack(props: TabStackProps) {
 
   // Use useNavigationContainerRef to get access to the navigation ref
   const navigationRef = useNavigationContainerRef();
-  // Determine if the tab bar should be shown
+  const routeNameRef = React.useRef<string | undefined>(undefined);
 
   const handleBackButton = () => {
     if (backPressCount === 0) {
@@ -242,7 +243,26 @@ function TabStack(props: TabStackProps) {
   }, [theme, colorScheme]);
 
   return (
-    <NavigationContainer independent={true} ref={navigationRef}>
+    <NavigationContainer
+      independent={true}
+      ref={navigationRef}
+      onReady={() => {
+        const currentRoute = navigationRef.current?.getCurrentRoute();
+        routeNameRef.current = currentRoute?.name;
+      }}
+      onStateChange={() => {
+        const previousRouteName = routeNameRef.current;
+        const currentRoute = navigationRef.current?.getCurrentRoute();
+        const currentRouteName = currentRoute?.name;
+
+        if (previousRouteName !== currentRouteName && currentRouteName) {
+          void analytics().logScreenView({
+            screen_name: currentRouteName,
+            screen_class: currentRouteName,
+          });
+          routeNameRef.current = currentRouteName;
+        }
+      }}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
