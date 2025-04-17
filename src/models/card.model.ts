@@ -5,7 +5,7 @@ import {
   ReapTxnStatus,
 } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
-import { Holding } from '../core/portfolio';
+import { Holding, IHyperLiquidHolding } from '../core/portfolio';
 
 export interface Card {
   bin: string;
@@ -133,7 +133,7 @@ export interface PayTokenModalParams {
     gasFeeInCrypto: string;
     gasFeeInFiat: string;
     nativeTokenSymbol: string;
-    selectedToken: Holding;
+    selectedToken: Holding | IHyperLiquidHolding;
     tokenQuote: CardQuoteResponse;
   };
 }

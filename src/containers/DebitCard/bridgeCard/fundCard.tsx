@@ -35,7 +35,7 @@ import {
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
-import { Holding } from '../../../core/portfolio';
+import { Holding, IHyperLiquidHolding } from '../../../core/portfolio';
 import {
   formatAmount,
   getViemPublicClient,
@@ -92,7 +92,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
   const minTokenValueEth = 50;
-  const [selectedToken, setSelectedToken] = useState<Holding>();
+  const [selectedToken, setSelectedToken] = useState<
+    Holding & IHyperLiquidHolding
+  >();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>('0');
   const { getNativeToken } = usePortfolio();
   const { t } = useTranslation();
@@ -138,11 +140,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     const {
       chainDetails,
       symbol: selectedTokenSymbol,
-      contractAddress,
       contractDecimals,
       balanceDecimal,
       denom,
-    } = selectedToken as Holding;
+      contractAddress,
+    } = selectedToken as Holding & IHyperLiquidHolding;
+
     const nativeToken = await getNativeToken(chainDetails.backendName);
     const actualTokensRequired = limitDecimalPlaces(
       quote.tokensRequired,
@@ -163,7 +166,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     let gasDetails;
     const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
     try {
-      if (chainDetails.chainName === ChainNames.ETH) {
+      if (selectedToken?.isHyperliquid) {
+        // No gas needed for hyperliquid. Just sign typed data
+        gasDetails = {
+          isError: false,
+          gasFeeInCrypto: 0,
+          gasFeeInFiat: 0,
+        };
+      } else if (chainDetails.chainName === ChainNames.ETH) {
         if (
           DecimalHelper.isLessThanOrEqualTo(
             actualTokensRequired,
@@ -173,7 +183,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           const publicClient = getViemPublicClient(
             getWeb3Endpoint(chainDetails, globalContext),
           );
-
           gasDetails = await estimateGasForEvm({
             publicClient,
             chain: chainDetails.backendName,
@@ -332,6 +341,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
           amountInCrypto: isCrpytoInput,
+          ...(selectedToken?.isHyperliquid && {
+            hyperliquidTradeType: selectedToken?.accountType,
+          }),
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,

@@ -161,6 +161,7 @@ module.exports = {
         green80: 'var(--color-green80)',
         green100: 'var(--color-green100)',
         green200: 'var(--color-green200)',
+        green250: 'var(--color-green250)',
         green300: 'var(--color-green300)',
         green350: 'var(--color-green350)',
         green400: 'var(--color-green400)',
