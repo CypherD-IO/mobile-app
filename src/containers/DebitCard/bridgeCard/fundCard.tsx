@@ -581,7 +581,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         // Reserving gas for the txn if the selected token is a native token.
         if (
           selectedTokenSymbol === nativeTokenSymbol &&
-          !GASLESS_CHAINS.includes(chainDetails.backendName)
+          !GASLESS_CHAINS.includes(chainDetails.backendName) &&
+          !selectedToken?.isHyperliquid
         ) {
           // remove this gasFeeReservation once we have gas estimation for eip1599 chains
           // Estimate the gasFee for the transaction
@@ -659,6 +660,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: DecimalHelper.toNumber(amountInCrypto),
           tokenAddress: contractAddress,
           amountInCrypto: true,
+          ...(selectedToken?.isHyperliquid && {
+            hyperliquidTradeType: selectedToken?.accountType,
+          }),
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
