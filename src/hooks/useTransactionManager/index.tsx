@@ -34,6 +34,7 @@ import {
   parseGwei,
   parseUnits,
   PublicClient,
+  SignTypedDataParameters,
 } from 'viem';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { AnalyticsType } from '../../constants/enum';
@@ -92,7 +93,8 @@ export default function useTransactionManager() {
     estimateGasForCosmosIBC,
     getCosmosGasPrice,
   } = useGasService();
-  const { signEthTransaction, signApprovalEthereum } = useEthSigner();
+  const { signEthTransaction, signApprovalEthereum, signTypedDataEth } =
+    useEthSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const { getSolanWallet, getSolanaRpc } = useSolanaSigner();
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
@@ -1347,6 +1349,21 @@ export default function useTransactionManager() {
     }
   };
 
+  const signTypedData = async ({
+    dataToBeSigned,
+  }: {
+    dataToBeSigned: SignTypedDataParameters;
+  }): Promise<{ isError: boolean; signature?: string; error?: any }> => {
+    try {
+      const signature = await signTypedDataEth({
+        dataToBeSigned,
+      });
+      return { isError: false, signature };
+    } catch (e) {
+      return { isError: true, error: e };
+    }
+  };
+
   return {
     sendEvmToken,
     sendCosmosToken,
@@ -1358,5 +1375,6 @@ export default function useTransactionManager() {
     swapTokens,
     sendSolanaTokens,
     executeTransferContract,
+    signTypedData,
   };
 }

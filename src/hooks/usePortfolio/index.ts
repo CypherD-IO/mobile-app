@@ -42,6 +42,7 @@ export default function usePortfolio() {
         addresses,
         allowTestNets: false,
         isVerified: isVerifyCoinChecked,
+        inclHyperliquidBalances: true,
       };
       try {
         const response = await axios.post(portfolioUrl, payload);

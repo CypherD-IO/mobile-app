@@ -499,3 +499,13 @@ export enum ON_OPEN_NAVIGATE {
   MONTHLY_LIMIT = 'MONTHLY_LIMIT',
   SELECT_COUNTRY = 'SELECT_COUNTRY',
 }
+
+export enum HyperLiquidAccount {
+  SPOT = 'spot',
+  PERPETUAL = 'perpetual',
+}
+
+export enum HyperLiquidTransfers {
+  SPOT_TRANSFER = 'spotTransfer',
+  PERPETUAL_TRANSFER = 'internalTransfer',
+}

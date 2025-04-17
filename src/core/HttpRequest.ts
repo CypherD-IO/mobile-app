@@ -189,6 +189,7 @@ export default function useAxios() {
             ...config,
             headers: {
               accept: 'application/json',
+              'Content-Type': 'application/json',
             },
           };
 
