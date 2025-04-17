@@ -28,6 +28,7 @@ import {
   CyDFlatList,
   CyDScrollView,
   CyDLottieView,
+  CyDIcons,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { endsWith, capitalize } from 'lodash';
@@ -742,8 +743,14 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     }: {
       onSelectingToken: (token: Holding | SwapToken) => void;
     }) => {
+      if (
+        !totalHoldings?.hyperliquidBalances ||
+        totalHoldings.hyperliquidBalances.length === 0
+      ) {
+        return null;
+      }
       return (
-        <CyDView className='bg-black p-[16px] my-[4px] mx-[12px] rounded-[8px]'>
+        <CyDView className='bg-black p-[16px] mt-[4px] mb-[12px] mx-[12px] rounded-[8px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='flex flex-row items-center justify-center'>
               <CyDFastImage
@@ -752,7 +759,10 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                 resizeMode='contain'
               />
               <CyDText className='text-[12px] text-white font-bold ml-[4px]'>
-                HyperLiquid
+                Hyper
+                <CyDText className='text-[12px] text-white italic font-bold'>
+                  liquid
+                </CyDText>
               </CyDText>
             </CyDView>
             <CyDView className='flex flex-row items-center justify-center'>
@@ -761,57 +771,71 @@ export default function ChooseTokenModalV2(props: TokenModal) {
               </CyDText>
             </CyDView>
           </CyDView>
-          <CyDView className='mt-[22px]'>
-            {totalHoldings.hyperliquidBalances
-              .find(position => position.accountType === 'perpetual')
-              ?.tokens.map(token => (
-                <CyDTouchView
-                  className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                  key={token.symbol}
-                  onPress={() => onSelectingToken(token)}>
-                  <CyDText className='text-[12px] text-white font-bold'>
-                    {token.name}
-                  </CyDText>
-                  <CyDView>
-                    <CyDText
-                      className={
-                        'font-semibold text-[16px] text-white text-right mr-[2px]'
-                      }>
-                      {formatCurrency(token.totalValue)}
-                    </CyDText>
-                  </CyDView>
-                </CyDTouchView>
-              ))}
-          </CyDView>
-          <CyDView className=''>
-            {totalHoldings.hyperliquidBalances
-              .find(position => position.accountType === 'spot')
-              ?.tokens.map(token => (
-                <CyDTouchView
-                  className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                  key={token.symbol}
-                  onPress={() => onSelectingToken(token)}>
-                  <CyDView className='flex flex-row items-center'>
-                    <CyDFastImage
-                      source={{ uri: token.logoUrl }}
-                      className='w-[18px] h-[18px]'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-[12px] text-white font-bold ml-[4px]'>
-                      {token.name}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView>
-                    <CyDText
-                      className={
-                        'font-semibold text-[16px] text-white text-right mr-[2px]'
-                      }>
-                      {formatCurrency(token.totalValue)}
-                    </CyDText>
-                  </CyDView>
-                </CyDTouchView>
-              ))}
-          </CyDView>
+          <CyDScrollView className='max-h-[220px]'>
+            <CyDView className='mt-[22px]'>
+              {totalHoldings.hyperliquidBalances
+                .find(position => position.accountType === 'perpetual')
+                ?.tokens.map(token => (
+                  <CyDTouchView
+                    className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
+                    key={token.symbol}
+                    onPress={() => onSelectingToken(token)}>
+                    <CyDView className='flex flex-row items-center'>
+                      <CyDIcons
+                        name='wallet'
+                        size={18}
+                        className='text-green250'
+                      />
+                      <CyDText className='text-[12px] text-white font-bold ml-[4px]'>
+                        {token.name}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView>
+                      <CyDText
+                        className={
+                          'font-semibold text-[16px] text-white text-right mr-[2px]'
+                        }>
+                        {formatCurrency(token.totalValue)}
+                      </CyDText>
+                    </CyDView>
+                  </CyDTouchView>
+                ))}
+            </CyDView>
+            <CyDView className=''>
+              {totalHoldings.hyperliquidBalances
+                .find(position => position.accountType === 'spot')
+                ?.tokens.map(token => (
+                  <CyDTouchView
+                    className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
+                    key={token.symbol}
+                    onPress={() => onSelectingToken(token)}>
+                    <CyDView className='flex flex-row items-center'>
+                      <CyDFastImage
+                        source={{ uri: token.logoUrl }}
+                        className='w-[18px] h-[18px]'
+                        resizeMode='contain'
+                      />
+                      <CyDView className='flex flex-row ml-[4px]'>
+                        <CyDText className='text-[12px] text-white font-bold'>
+                          {token.symbol}
+                        </CyDText>
+                        <CyDText className='text-[10px] text-green250 ml-[4px] font-bold'>
+                          spot
+                        </CyDText>
+                      </CyDView>
+                    </CyDView>
+                    <CyDView>
+                      <CyDText
+                        className={
+                          'font-semibold text-[16px] text-white text-right mr-[2px]'
+                        }>
+                        {formatCurrency(token.totalValue)}
+                      </CyDText>
+                    </CyDView>
+                  </CyDTouchView>
+                ))}
+            </CyDView>
+          </CyDScrollView>
         </CyDView>
       );
     },

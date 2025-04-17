@@ -12,6 +12,7 @@ import {
 import { get } from 'lodash';
 import { IHyperLiquidTransfer } from '../../models/hyperliquid.interface';
 import { HyperLiquidAccount, HyperLiquidTransfers } from '../../constants/enum';
+import { error } from 'console';
 
 export default function useHyperLiquid() {
   const { signTypedData } = useTransactionManager();
@@ -79,11 +80,6 @@ export default function useHyperLiquid() {
       dataToBeSigned,
     });
     if (!response.isError) {
-      console.log('signature', response.signature);
-      console.log(
-        'parseSignature',
-        parseSignature(response.signature as `0x${string}`),
-      );
       const { r, s, v } = parseSignature(response.signature as `0x${string}`);
       const signature = {
         r,
@@ -137,11 +133,6 @@ export default function useHyperLiquid() {
       dataToBeSigned,
     });
     if (!response.isError) {
-      console.log('signature', response.signature);
-      console.log(
-        'parseSignature',
-        parseSignature(response.signature as `0x${string}`),
-      );
       const { r, s, v } = parseSignature(response.signature as `0x${string}`);
       const signature = {
         r,
@@ -186,7 +177,6 @@ export default function useHyperLiquid() {
         timeStampInMs,
         symbol,
       });
-      console.log('signature', signature);
       payload = {
         action: {
           type: 'spotSend',
@@ -200,9 +190,7 @@ export default function useHyperLiquid() {
         nonce: timeStampInMs,
         signature,
       };
-      console.log('payload', payload);
     } else if (accountType === HyperLiquidAccount.PERPETUAL) {
-      console.log('perpTransfer');
       const signature = await perpTransfer({
         chainId: chainConfig.chainIdNumber,
         amountToSend,
@@ -210,7 +198,6 @@ export default function useHyperLiquid() {
         timeStampInMs,
         symbol,
       });
-      console.log('signature', signature);
       payload = {
         action: {
           type: 'usdSend',
@@ -223,7 +210,6 @@ export default function useHyperLiquid() {
         nonce: timeStampInMs,
         signature,
       };
-      console.log('payload', payload);
     }
     const result = await postToOtherSource(
       'https://api.hyperliquid.xyz/exchange',
@@ -238,7 +224,6 @@ export default function useHyperLiquid() {
           user: ethereum.address,
         },
       );
-      console.log('userTransfers', userTransfers.data);
       if (!userTransfers.isError) {
         let reqTransfer;
         if (accountType === HyperLiquidAccount.SPOT) {
@@ -261,15 +246,20 @@ export default function useHyperLiquid() {
         }
 
         const latestTransfer = reqTransfer.sort((a, b) => b.time - a.time)[0];
-        console.log('latestTransfer', latestTransfer);
         if (latestTransfer) {
           return { isError: false, hash: latestTransfer.hash };
+        } else {
+          return { isError: true, hash: '', error: 'No transfer found' };
         }
       } else {
-        console.log('userTransfers', userTransfers);
+        return { isError: true, hash: '', error: 'No transfer found' };
       }
     } else {
-      console.log('result', result);
+      return {
+        isError: true,
+        hash: '',
+        error: result?.error?.message ?? 'Transfer failed',
+      };
     }
   }
 

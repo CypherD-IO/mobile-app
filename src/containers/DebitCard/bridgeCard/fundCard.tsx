@@ -1,7 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { chain, floor, get } from 'lodash';
+import { floor, get } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, useWindowDimensions } from 'react-native';
@@ -31,12 +31,11 @@ import {
   COSMOS_CHAINS,
   GASLESS_CHAINS,
   NativeTokenMapping,
-  STABLE_TOKEN_CHAIN_MAP,
 } from '../../../constants/server';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
-import { Holding } from '../../../core/portfolio';
+import { Holding, IHyperLiquidHolding } from '../../../core/portfolio';
 import {
   formatAmount,
   getViemPublicClient,
@@ -60,7 +59,6 @@ import { DecimalHelper } from '../../../utils/decimalHelper';
 import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
 import usePortfolio from '../../../hooks/usePortfolio';
-import { EVM_CHAINS_TYPE } from '../../../constants/type';
 import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
@@ -94,7 +92,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
   const minTokenValueEth = 50;
-  const [selectedToken, setSelectedToken] = useState<Holding>();
+  const [selectedToken, setSelectedToken] = useState<
+    Holding & IHyperLiquidHolding
+  >();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>('0');
   const { getNativeToken } = usePortfolio();
   const { t } = useTranslation();
@@ -143,12 +143,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       contractDecimals,
       balanceDecimal,
       denom,
-    } = selectedToken as Holding;
-    const contractAddress = selectedToken?.isHyperliquid
-      ? STABLE_TOKEN_CHAIN_MAP.get(
-          chainDetails.backendName as EVM_CHAINS_TYPE,
-        )?.[0]?.contractAddress
-      : selectedToken?.contractAddress;
+      contractAddress,
+    } = selectedToken as Holding & IHyperLiquidHolding;
+
     const nativeToken = await getNativeToken(chainDetails.backendName);
     const actualTokensRequired = limitDecimalPlaces(
       quote.tokensRequired,
@@ -169,7 +166,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     let gasDetails;
     const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
     try {
-      if (chainDetails.chainName === ChainNames.ETH) {
+      if (selectedToken?.isHyperliquid) {
+        // No gas needed for hyperliquid. Just sign typed data
+        gasDetails = {
+          isError: false,
+          gasFeeInCrypto: 0,
+          gasFeeInFiat: 0,
+        };
+      } else if (chainDetails.chainName === ChainNames.ETH) {
         if (
           DecimalHelper.isLessThanOrEqualTo(
             actualTokensRequired,
@@ -178,11 +182,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         ) {
           const publicClient = getViemPublicClient(
             getWeb3Endpoint(chainDetails, globalContext),
-          );
-          console.log(
-            'contractAddress',
-            contractAddress,
-            chainDetails.backendName,
           );
           gasDetails = await estimateGasForEvm({
             publicClient,

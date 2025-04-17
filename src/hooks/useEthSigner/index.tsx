@@ -411,16 +411,6 @@ export default function useEthSigner() {
       hdWalletContext.state.pinValue,
     );
     const account = privateKeyToAccount(privateKey as Hex);
-    console.log('account', account.address);
-    // const client = createWalletClient({
-    //   account,
-    //   transport: custom({
-    //     async request({ method, params }) {
-    //       throw new Error(`Method ${method} not supported in custom transport`);
-    //     },
-    //   }),
-    // });
-
     const signature = await account.signTypedData(dataToBeSigned);
     return signature;
   };
