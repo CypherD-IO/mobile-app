@@ -23,7 +23,7 @@ import {
 import { MsgRevoke } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
 import { SendAuthorization } from 'cosmjs-types/cosmos/bank/v1beta1/authz';
 import { TransferAuthorization } from 'cosmjs-types/ibc/applications/transfer/v1/authz';
-import { chain, get, isNil, map } from 'lodash';
+import { get, isNil, map } from 'lodash';
 import Long from 'long';
 import { useContext } from 'react';
 import {

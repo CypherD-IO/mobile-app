@@ -12,7 +12,6 @@ import {
 import { get } from 'lodash';
 import { IHyperLiquidTransfer } from '../../models/hyperliquid.interface';
 import { HyperLiquidAccount, HyperLiquidTransfers } from '../../constants/enum';
-import { error } from 'console';
 
 export default function useHyperLiquid() {
   const { signTypedData } = useTransactionManager();

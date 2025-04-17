@@ -380,7 +380,7 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
 
   totalHoldings.sort(sortDesc);
 
-  const tempHyperliquidBalances = portfolioFromAPI.hyperliquidBalances;
+  const tempHyperliquidBalances = portfolioFromAPI.hyperliquidBalances ?? [];
   const hyperliquidBalances = tempHyperliquidBalances.map(
     (account: IHyperLiquidHoldings) => {
       return {

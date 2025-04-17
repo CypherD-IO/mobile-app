@@ -7,7 +7,11 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-import { Holding, IHyperLiquidHoldings } from '../../core/portfolio';
+import {
+  Holding,
+  IHyperLiquidHolding,
+  IHyperLiquidHoldings,
+} from '../../core/portfolio';
 import { SwapToken } from '../../models/swapToken.interface';
 import { TokenModalType } from '../../constants/enum';
 import {
@@ -773,9 +777,10 @@ export default function ChooseTokenModalV2(props: TokenModal) {
           </CyDView>
           <CyDScrollView className='max-h-[220px]'>
             <CyDView className='mt-[22px]'>
-              {totalHoldings.hyperliquidBalances
-                .find(position => position.accountType === 'perpetual')
-                ?.tokens.map(token => (
+              {totalHoldings.hyperliquidBalances.find(
+                position => position.accountType === 'perpetual',
+              )?.tokens ??
+                [].map((token: IHyperLiquidHolding) => (
                   <CyDTouchView
                     className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
                     key={token.symbol}
@@ -802,9 +807,10 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                 ))}
             </CyDView>
             <CyDView className=''>
-              {totalHoldings.hyperliquidBalances
-                .find(position => position.accountType === 'spot')
-                ?.tokens.map(token => (
+              {totalHoldings.hyperliquidBalances.find(
+                position => position.accountType === 'spot',
+              )?.tokens ??
+                [].map((token: IHyperLiquidHolding) => (
                   <CyDTouchView
                     className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
                     key={token.symbol}
