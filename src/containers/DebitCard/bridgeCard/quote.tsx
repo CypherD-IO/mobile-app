@@ -385,7 +385,11 @@ export default function CardQuote({
             const addressList = await getAddressList(
               tokenQuote.cosmosSwap?.requiredAddresses ?? [],
             );
-            addressList[addressList.length - 1] = tokenQuote.targetAddress;
+            if (!addressList.length) {
+              addressList.push(tokenQuote.targetAddress);
+            } else {
+              addressList[addressList.length - 1] = tokenQuote.targetAddress;
+            }
             const body = {
               source_asset_denom: tokenQuote.cosmosSwap?.sourceAssetDenom,
               source_asset_chain_id: tokenQuote.cosmosSwap?.sourceAssetChainId,
