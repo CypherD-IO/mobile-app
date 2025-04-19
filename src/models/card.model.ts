@@ -114,6 +114,20 @@ export interface CardQuoteResponse {
   expiry: number;
   estimatedTime: number;
   isInstSwapEnabled: boolean;
+  fees: {
+    fee: number;
+    actualFee: number;
+  };
+  cosmosSwap?: {
+    sourceAssetDenom: string;
+    sourceAssetChainId: string;
+    destAssetDenom: string;
+    destAssetChainId: string;
+    amountIn: string;
+    amountOut: string;
+    requiredAddresses: string[];
+    operations: string[];
+  };
   version: 2;
 }
 
