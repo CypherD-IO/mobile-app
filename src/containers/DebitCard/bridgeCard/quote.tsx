@@ -420,14 +420,11 @@ export default function CardQuote({
                       setCosmosModalVisible: () => {},
                       shouldBroadcast: false,
                     });
-                    console.log('transaction', transaction);
                     const txRaw = TxRaw.fromPartial({
                       bodyBytes: transaction.txn?.bodyBytes,
                       authInfoBytes: transaction.txn?.authInfoBytes,
                       signatures: transaction.txn?.signatures,
                     });
-                    console.log('txRaw', txRaw);
-
                     // Encode the transaction into Uint8Array
                     const signedTxBytes = TxRaw.encode(txRaw).finish();
 
