@@ -54,6 +54,7 @@ export default function useCardUtilities() {
     };
     try {
       const response = await axios.get(profileUrl, config);
+      console.log('profile response', response);
       if (response.data) {
         const { data } = response;
         const tempProfile = await cardProfileModal(data);

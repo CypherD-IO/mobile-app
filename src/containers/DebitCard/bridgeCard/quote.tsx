@@ -20,6 +20,7 @@ import {
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
+  toBase64,
 } from '../../../core/util';
 import Button from '../../../components/v2/button';
 import {
@@ -65,6 +66,10 @@ import { DecimalHelper } from '../../../utils/decimalHelper';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import useHyperLiquid from '../../../hooks/useHyperLiquid';
+import { COSMOS_CHAINS_TYPE } from '../../../constants/type';
+import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
+import useSkipApiBridge from '../../../core/skipApi';
+import { parseEther, parseUnits, formatUnits } from 'viem';
 
 export default function CardQuote({
   navigation,
@@ -108,11 +113,11 @@ export default function CardQuote({
   const solana = hdWallet.state.wallet.solana;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
-  const { sendEvmToken, sendCosmosToken, interCosmosIBC, sendSolanaTokens } =
-    useTransactionManager();
+  const { sendEvmToken, sendSolanaTokens } = useTransactionManager();
+  const { skipApiSignAndBroadcast } = useSkipApiBridge();
   const { transferOnHyperLiquid } = useHyperLiquid();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, postToOtherSource } = useAxios();
   const { refreshPortfolio } = usePortfolioRefresh();
   const planInfo = globalState?.cardProfile?.planInfo;
   const [
@@ -131,6 +136,11 @@ export default function CardQuote({
     noble: noble.address,
     coreum: coreum.address,
     injective: injective.address,
+    'cosmoshub-4': cosmos.address,
+    'osmosis-1': osmosis.address,
+    'coreum-mainnet-1': coreum.address,
+    'noble-1': noble.address,
+    'injective-1': injective.address,
   };
 
   const chainLogo = get(
@@ -175,6 +185,19 @@ export default function CardQuote({
         value: { id: activityRef.current.id },
       });
     navigation.goBack();
+  };
+
+  const getAddressList = async (requiredAddresses: string[]) => {
+    const addresses: string[] = [];
+    try {
+      for (let i = 0; i < requiredAddresses?.length; i++) {
+        const address = get(cosmosAddresses, requiredAddresses[i], '');
+        addresses.push(address);
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+    return addresses;
   };
 
   const transferSentQuote = async (
@@ -358,28 +381,91 @@ export default function CardQuote({
               contractDecimals,
               symbol: selectedToken.symbol,
             });
-          } else if (
-            COSMOS_CHAINS.includes(chainName) &&
-            chainName !== ChainNames.OSMOSIS
-          ) {
-            response = await interCosmosIBC({
-              fromChain: chainDetails,
-              toChain: CHAIN_OSMOSIS,
-              denom,
-              amount: actualTokensRequired,
-              fromAddress: get(cosmosAddresses, chainDetails.chainName),
-              toAddress: tokenQuote.targetAddress,
-              contractDecimals,
-            });
-          } else if (chainName === ChainNames.OSMOSIS) {
-            response = await sendCosmosToken({
-              fromChain: chainDetails,
-              denom,
-              amount: actualTokensRequired,
-              fromAddress: get(cosmosAddresses, chainDetails.chainName),
-              toAddress: tokenQuote.targetAddress,
-              contractDecimals,
-            });
+          } else if (COSMOS_CHAINS.includes(chainName)) {
+            const addressList = await getAddressList(
+              tokenQuote.cosmosSwap?.requiredAddresses ?? [],
+            );
+            addressList[addressList.length - 1] = tokenQuote.targetAddress;
+            const body = {
+              source_asset_denom: tokenQuote.cosmosSwap?.sourceAssetDenom,
+              source_asset_chain_id: tokenQuote.cosmosSwap?.sourceAssetChainId,
+              dest_asset_denom: tokenQuote.cosmosSwap?.destAssetDenom,
+              dest_asset_chain_id: tokenQuote.cosmosSwap?.destAssetChainId,
+              amount_in: tokenQuote.cosmosSwap?.amountIn,
+              amount_out: tokenQuote.cosmosSwap?.amountOut,
+              address_list: addressList,
+              slippage_tolerance_percent: '1',
+              operations: tokenQuote.cosmosSwap?.operations,
+            };
+            const {
+              isError,
+              error: fetchError,
+              data,
+            } = await postToOtherSource(
+              'https://api.skip.build/v2/fungible/msgs',
+              body,
+            );
+            if (!isError) {
+              const txs = data?.txs;
+              for (const tx of txs) {
+                const cosmosTx = get(tx, 'cosmos_tx');
+                if (cosmosTx) {
+                  try {
+                    const transaction = await skipApiSignAndBroadcast({
+                      cosmosTx,
+                      chain: selectedToken.chainDetails.chain_id,
+                      showModalAndGetResponse: async (setter: any) => {
+                        return true;
+                      },
+                      setCosmosModalVisible: () => {},
+                      shouldBroadcast: false,
+                    });
+                    console.log('transaction', transaction);
+                    const txRaw = TxRaw.fromPartial({
+                      bodyBytes: transaction.txn?.bodyBytes,
+                      authInfoBytes: transaction.txn?.authInfoBytes,
+                      signatures: transaction.txn?.signatures,
+                    });
+                    console.log('txRaw', txRaw);
+
+                    // Encode the transaction into Uint8Array
+                    const signedTxBytes = TxRaw.encode(txRaw).finish();
+
+                    // Convert to Base64 for Skip API
+                    const base64Tx = toBase64(signedTxBytes);
+                    const {
+                      isError,
+                      error: fetchError,
+                      data,
+                    } = await postToOtherSource(
+                      'https://api.skip.build/v2/tx/submit',
+                      {
+                        tx: base64Tx,
+                        chain_id: tokenQuote.cosmosSwap?.sourceAssetChainId,
+                      },
+                    );
+
+                    if (!isError && data?.tx_hash) {
+                      response = { isError: false, hash: data.tx_hash };
+                    } else {
+                      throw new Error(fetchError);
+                    }
+                  } catch (e) {
+                    const errorMessage = parseErrorMessage(`${e}`);
+                    if (
+                      !errorMessage.includes(
+                        'User denied transaction signature.',
+                      )
+                    ) {
+                      Sentry.captureException(e);
+                    }
+                    throw new Error(errorMessage);
+                  }
+                }
+              }
+            } else {
+              response = { isError: true, error: fetchError };
+            }
           } else if (chainName === ChainNames.SOLANA) {
             response = await sendSolanaTokens({
               amountToSend: actualTokensRequired,
@@ -550,13 +636,20 @@ export default function CardQuote({
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
             <CyDText className={'font-bold text-[14px] '}>
-              {limitDecimalPlaces(tokenQuote.tokensRequired, 4) + ' ' + symbol}
+              {limitDecimalPlaces(
+                tokenQuote.cosmosSwap
+                  ? formatUnits(
+                      BigInt(tokenQuote.cosmosSwap.amountIn),
+                      selectedToken.contractDecimals,
+                    )
+                  : tokenQuote.tokensRequired,
+                4,
+              ) +
+                ' ' +
+                symbol}
             </CyDText>
             <CyDText className={'font-bold text-[14px] text-base100'}>
-              {`$${DecimalHelper.multiply(
-                selectedToken.price,
-                tokenQuote.tokensRequired,
-              ).toFixed(2)}`}
+              {`$${tokenQuote.amount + tokenQuote.fees.fee}`}
             </CyDText>
           </CyDView>
         </CyDView>
