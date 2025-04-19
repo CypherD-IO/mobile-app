@@ -20,6 +20,7 @@ import axios from './Http';
 import { hostWorker } from '../global';
 import { get, has } from 'lodash';
 import { DecimalHelper } from '../utils/decimalHelper';
+import { HyperLiquidAccount } from '../constants/enum';
 
 export interface Holding {
   name: string;
@@ -49,6 +50,45 @@ export interface Holding {
   isZeroFeeCardFunding?: boolean;
 }
 
+export interface IHyperLiquidHolding {
+  name: string;
+  symbol: string;
+  logoUrl: string;
+  coingeckoId: string;
+  szDecimals: number;
+  decimals: number;
+  price: number;
+  totalValue: number;
+  balanceInInteger: number;
+  actualBalance: number;
+  balanceDecimal: string;
+  balanceInteger: string;
+  flags: {
+    nativeToken: boolean;
+    verified: boolean;
+    zeroFeeToken: boolean;
+    fundable: boolean;
+    swapable: boolean;
+    bridgeable: boolean;
+    memeToken: boolean;
+  };
+  contractAddress: string;
+  chainDetails: Chain;
+  isHyperliquid: boolean;
+  accountType: HyperLiquidAccount;
+}
+
+export interface IHyperLiquidHoldings {
+  accountType: HyperLiquidAccount;
+  totalValue: number;
+  unverifiedTotalValue: number;
+  tokens: IHyperLiquidHolding[];
+  address: string;
+  provider: string;
+  isSuccessful: boolean;
+  lag: string;
+}
+
 export interface ChainHoldings {
   totalBalance: number;
   totalUnverifiedBalance: number;
@@ -74,6 +114,7 @@ export interface WalletHoldings {
   injective: ChainHoldings;
   solana: ChainHoldings;
   totalHoldings: Holding[];
+  hyperliquidBalances: IHyperLiquidHoldings[];
   timestamp: string;
 }
 
@@ -339,6 +380,23 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
 
   totalHoldings.sort(sortDesc);
 
+  const tempHyperliquidBalances = portfolioFromAPI.hyperliquidBalances ?? [];
+  const hyperliquidBalances = tempHyperliquidBalances.map(
+    (account: IHyperLiquidHoldings) => {
+      return {
+        ...account,
+        tokens: account.tokens.map((token: IHyperLiquidHolding) => {
+          return {
+            ...token,
+            chainDetails: CHAIN_ARBITRUM,
+            isHyperliquid: true,
+            accountType: account.accountType,
+          };
+        }),
+      };
+    },
+  );
+
   const portfolio: WalletHoldings = {
     totalBalance,
     totalUnverifiedBalance,
@@ -357,6 +415,7 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     injective: injectiveHoldings as ChainHoldings,
     solana: solanaHoldings as ChainHoldings,
     totalHoldings,
+    hyperliquidBalances,
     timestamp: '',
   };
   return portfolio;

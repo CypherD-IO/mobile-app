@@ -7,9 +7,9 @@ import {
   ParamListBase,
   RouteProp,
 } from '@react-navigation/native';
+import { StyleSheet, Animated } from 'react-native';
 import { capitalize, find, get } from 'lodash';
 import clsx from 'clsx';
-import { Animated, StyleSheet, View } from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
@@ -39,6 +39,7 @@ import {
   ON_OPEN_NAVIGATE,
   CardStatus,
   CypherPlanId,
+  PhysicalCardType,
 } from '../../../constants/enum';
 import AppImages from '../../../../assets/images/appImages';
 import GradientText from '../../../components/gradientText';
@@ -144,6 +145,9 @@ export default function CardControls() {
   const [allCountriesSelected, setAllCountriesSelected] = useState(false);
   const [isPremiumUser, setIsPremiumUser] = useState(false);
 
+  // Add a ref to store the exit action
+  const exitActionRef = useRef<any>();
+
   useEffect(() => {
     const filteredCards =
       get(globalState?.cardProfile, [currentCardProvider, 'cards'])?.filter(
@@ -225,11 +229,6 @@ export default function CardControls() {
     }
   }, [isExpanded]);
 
-  const maxHeight = animatedHeight.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, activeCards.length * 68],
-  });
-
   const handleCardSelect = (selectedCard: Card) => {
     setSelectedCardId(selectedCard.cardId);
     setIsExpanded(false);
@@ -297,6 +296,8 @@ export default function CardControls() {
 
   const [showMobileWalletTooltip, setShowMobileWalletTooltip] = useState(false);
   const [showMerchantOutletTooltip, setShowMerchantOutletTooltip] =
+    useState(false);
+  const [showAtmWithdrawalTooltip, setShowAtmWithdrawalTooltip] =
     useState(false);
 
   const handleEditLimit = (type: 'daily' | 'monthly') => {
@@ -627,24 +628,38 @@ export default function CardControls() {
 
   const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
 
-  // Add navigation listener to handle back press
   useEffect(() => {
+    // Handle back navigation for iOS and Android
     const unsubscribe = navigation.addListener('beforeRemove', e => {
-      if (hasChanges) {
+      // If there are no changes, let the navigation proceed normally
+      if (!hasChanges) {
+        return;
+      }
+
+      // Specifically check for GO_BACK action type (swipe back or hardware back)
+      if (e.data.action.type === 'GO_BACK') {
+        // Prevent default behavior
         e.preventDefault();
+
+        // Store the navigation action for later use
+        exitActionRef.current = e.data.action;
+
+        // Show modal if multiple cards, otherwise navigate back
         if (showForAllCards) {
           setShowSaveChangesModal(true);
         } else {
-          // Only clear changes when actually navigating back
+          // Clear changes without triggering navigation recursion
           setHasChanges(false);
           setChanges({});
-          navigation.goBack();
+          // Explicitly dispatch the original action we captured
+          navigation.dispatch(exitActionRef.current);
         }
       }
+      // No else needed - for other action types, just let them proceed normally
     });
 
-    return unsubscribe;
-  }, [navigation, hasChanges, changes, showForAllCards]);
+    return () => unsubscribe();
+  }, [navigation, hasChanges, showForAllCards]);
 
   const handleApplyToAllCards = async () => {
     try {
@@ -662,27 +677,31 @@ export default function CardControls() {
         setChanges({});
         setShowSaveChangesModal(false);
 
-        showModal('state', {
-          type: 'success',
-          title: t('CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS'),
-          onSuccess: () => {
-            hideModal();
-            navigation.goBack();
-          },
-          onFailure: () => {
-            hideModal();
-            navigation.goBack();
-          },
-        });
+        setTimeout(() => {
+          showModal('state', {
+            type: 'success',
+            title: t('CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS'),
+            onSuccess: () => {
+              hideModal();
+              navigation.goBack();
+            },
+            onFailure: () => {
+              hideModal();
+              navigation.goBack();
+            },
+          });
+        }, 300);
       } else {
         setShowSaveChangesModal(false);
-        showModal('state', {
-          type: 'error',
-          title: t('UNABLE_TO_APPLY_CHANGES_TO_ALL_CARDS'),
-          description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
+        setTimeout(() => {
+          showModal('state', {
+            type: 'error',
+            title: t('UNABLE_TO_APPLY_CHANGES_TO_ALL_CARDS'),
+            description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }, 300);
       }
     } catch (error) {
       setShowSaveChangesModal(false);
@@ -694,6 +713,30 @@ export default function CardControls() {
         onFailure: hideModal,
       });
     }
+  };
+
+  // Update the onApplyToCard and onCancel functions to use the stored navigation action
+  const handleApplyToCard = () => {
+    setShowSaveChangesModal(false);
+    setHasChanges(false);
+    setChanges({});
+    if (exitActionRef.current) {
+      navigation.dispatch(exitActionRef.current);
+    }
+  };
+
+  const handleCancelExit = () => {
+    setShowSaveChangesModal(false);
+  };
+
+  const getDisplayCardType = (card: Card) => {
+    if (
+      card?.type === CardType.PHYSICAL &&
+      card?.physicalCardType === PhysicalCardType.METAL
+    ) {
+      return 'Metal';
+    }
+    return capitalize(card?.type);
   };
 
   if (loading) {
@@ -736,7 +779,7 @@ export default function CardControls() {
                   })}
                   resizeMode='contain'
                 />
-                <CyDText className='font-medium'>{`${capitalize(selectedCard?.type)} card ** ${selectedCard?.last4}`}</CyDText>
+                <CyDText className='font-medium'>{`${getDisplayCardType(selectedCard)} card ** ${selectedCard?.last4}`}</CyDText>
               </CyDView>
             )}
             <CyDMaterialDesignIcons
@@ -800,7 +843,7 @@ export default function CardControls() {
                       })}
                       resizeMode='contain'
                     />
-                    <CyDText className='font-medium text-base400'>{`${capitalize(cardItem?.type)} card ** ${cardItem?.last4}`}</CyDText>
+                    <CyDText className='font-medium text-base400'>{`${getDisplayCardType(cardItem)} card ** ${cardItem?.last4}`}</CyDText>
                   </CyDView>
                   {cardItem.cardId === selectedCardId && (
                     <CyDMaterialDesignIcons
@@ -950,6 +993,35 @@ export default function CardControls() {
                     className='w-[32px] h-[32px]'
                   />
                   <CyDText className='text-[16px]'>ATM Withdrawals</CyDText>
+                  <Tooltip
+                    isVisible={showAtmWithdrawalTooltip}
+                    content={
+                      <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
+                        <CyDText className='text-[14px] text-base400'>
+                          Daily ATM withdrawals are limited to $2,000 and
+                          monthly limit is set to $10,000. Additional
+                          restrictions may apply based on local ATM networks and
+                          regulations.
+                        </CyDText>
+                      </CyDView>
+                    }
+                    onClose={() => setShowAtmWithdrawalTooltip(false)}
+                    placement='top'
+                    backgroundColor='transparent'
+                    useInteractionManager={true}
+                    contentStyle={{
+                      backgroundColor: 'transparent',
+                      borderWidth: 0,
+                    }}>
+                    <CyDTouchView
+                      onPress={() => setShowAtmWithdrawalTooltip(true)}>
+                      <CyDMaterialDesignIcons
+                        name='information-outline'
+                        size={16}
+                        className='text-n200'
+                      />
+                    </CyDTouchView>
+                  </Tooltip>
                 </CyDView>
                 <CyDSwitch
                   value={channelControls.atm}
@@ -1211,18 +1283,8 @@ export default function CardControls() {
         setIsModalVisible={setShowSaveChangesModal}
         card={selectedCard}
         onApplyToAllCards={handleApplyToAllCards}
-        onApplyToCard={() => {
-          setShowSaveChangesModal(false);
-          setHasChanges(false);
-          setChanges({});
-          navigation.goBack();
-        }}
-        onCancel={() => {
-          setShowSaveChangesModal(false);
-          setHasChanges(false);
-          setChanges({});
-          navigation.goBack();
-        }}
+        onApplyToCard={handleApplyToCard}
+        onCancel={handleCancelExit}
       />
 
       <SelectPlanModal

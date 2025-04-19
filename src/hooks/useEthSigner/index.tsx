@@ -9,9 +9,21 @@ import {
 import { get } from 'lodash';
 import { useContext } from 'react';
 import { Linking, Platform } from 'react-native';
-import { createWalletClient, Hash, Hex, http } from 'viem';
+import {
+  createWalletClient,
+  custom,
+  Hash,
+  Hex,
+  http,
+  SignTypedDataParameters,
+} from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { useSendTransaction, useSwitchChain, WagmiContext } from 'wagmi';
+import {
+  useSendTransaction,
+  useSignTypedData,
+  useSwitchChain,
+  WagmiContext,
+} from 'wagmi';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ChainIdToBackendNameMapping } from '../../constants/data';
 import { ConnectionTypes } from '../../constants/enum';
@@ -29,12 +41,14 @@ import {
   EthSingerParams,
   EthTransactionPayload,
 } from '../../models/ethSigner.interface';
+import { recoverTypedSignature } from '@metamask/eth-sig-util';
 
 export default function useEthSigner() {
   const wagmiConfig = useContext(WagmiContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
+  const { signTypedDataAsync } = useSignTypedData();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();
   const navigation = useNavigation();
@@ -387,10 +401,25 @@ export default function useEthSigner() {
     }
   };
 
+  const signTypedDataEth = async ({
+    dataToBeSigned,
+  }: {
+    dataToBeSigned: SignTypedDataParameters;
+  }): Promise<string> => {
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
+    );
+    const account = privateKeyToAccount(privateKey as Hex);
+    const signature = await account.signTypedData(dataToBeSigned);
+    return signature;
+  };
+
   return {
     signEthTransaction,
     signApprovalEthereum,
     sendNativeCoin,
     sendToken,
+    signTypedDataEth,
   };
 }

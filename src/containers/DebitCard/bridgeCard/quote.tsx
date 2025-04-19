@@ -64,6 +64,7 @@ import { usePortfolioRefresh } from '../../../hooks/usePortfolioRefresh';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
+import useHyperLiquid from '../../../hooks/useHyperLiquid';
 
 export default function CardQuote({
   navigation,
@@ -109,6 +110,7 @@ export default function CardQuote({
   const activityRef = useRef<DebitCardTransaction | null>(null);
   const { sendEvmToken, sendCosmosToken, interCosmosIBC, sendSolanaTokens } =
     useTransactionManager();
+  const { transferOnHyperLiquid } = useHyperLiquid();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const { refreshPortfolio } = usePortfolioRefresh();
@@ -337,7 +339,17 @@ export default function CardQuote({
           });
         if (chainName != null) {
           let response;
-          if (chainName === ChainNames.ETH) {
+          if (selectedToken?.isHyperliquid) {
+            response = await transferOnHyperLiquid({
+              chain: selectedToken.chainDetails.backendName,
+              amountToSend: actualTokensRequired,
+              toAddress: tokenQuote.targetAddress,
+              contractAddress,
+              contractDecimals,
+              accountType: selectedToken.accountType,
+              symbol: selectedToken.symbol,
+            });
+          } else if (chainName === ChainNames.ETH) {
             response = await sendEvmToken({
               chain: selectedToken.chainDetails.backendName,
               amountToSend: actualTokensRequired,
