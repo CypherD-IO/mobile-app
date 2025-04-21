@@ -333,11 +333,13 @@ export default function useSkipApiBridge() {
     chain,
     showModalAndGetResponse,
     setCosmosModalVisible,
+    shouldBroadcast = true,
   }: {
     cosmosTx: SkipApiCosmosTxn;
     chain: string;
     showModalAndGetResponse: (setter: any) => Promise<boolean | null>;
     setCosmosModalVisible: Dispatch<SetStateAction<boolean>>;
+    shouldBroadcast?: boolean;
   }) => {
     const approveSend = await showModalAndGetResponse(setCosmosModalVisible);
     if (approveSend) {
@@ -386,17 +388,27 @@ export default function useSkipApiBridge() {
             },
           ],
         };
-        const response = await signingClient.signAndBroadcast(
-          cosmosTx.signer_address,
-          transferMsg,
-          fee,
-          'cypher skip transfer',
-        );
-        return {
-          isError: false,
-          hash: response.transactionHash,
-          chainId: cosmosTx.chain_id,
-        };
+        if (shouldBroadcast) {
+          const response = await signingClient.signAndBroadcast(
+            cosmosTx.signer_address,
+            transferMsg,
+            fee,
+            'cypher skip transfer',
+          );
+          return {
+            isError: false,
+            hash: response.transactionHash,
+            chainId: cosmosTx.chain_id,
+          };
+        } else {
+          const rawTxn = await signingClient.sign(
+            cosmosTx.signer_address,
+            transferMsg,
+            fee,
+            'cypher skip transfer',
+          );
+          return { isError: false, txn: rawTxn, chainId: cosmosTx.chain_id };
+        }
       } else {
         return { isError: true, error: 'Unable to fetch the signer' };
       }
