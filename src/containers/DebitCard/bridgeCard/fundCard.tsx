@@ -404,6 +404,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           coinId: coinGeckoId,
           tokenAddress: denom,
           amountInCrypto: isCrpytoInput,
+          isCosmosV2: true,
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
@@ -894,6 +895,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           coinId: coinGeckoId,
           amountInCrypto: true,
           tokenAddress: denom,
+          isCosmosV2: true,
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,

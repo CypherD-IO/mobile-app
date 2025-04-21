@@ -49,6 +49,7 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
+import { logAnalytics } from '../../core/analytics';
 
 interface TokenModal {
   tokenList?: Holding[];
@@ -753,6 +754,9 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       ) {
         return null;
       }
+      logAnalytics('hyperliquid', {
+        action: 'see hyperliquid tokens',
+      });
       return (
         <CyDView className='bg-black p-[16px] mt-[4px] mb-[12px] mx-[12px] rounded-[8px]'>
           <CyDView className='flex flex-row items-center justify-between'>
@@ -785,7 +789,13 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                 <CyDTouchView
                   className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
                   key={token.symbol}
-                  onPress={() => onSelectingToken(token)}>
+                  onPress={() => {
+                    logAnalytics('hyperliquid', {
+                      action: 'click perp token',
+                      token: token.symbol,
+                    });
+                    onSelectingToken(token);
+                  }}>
                   <CyDView className='flex flex-row items-center'>
                     <CyDIcons
                       name='wallet'
@@ -816,7 +826,13 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                 <CyDTouchView
                   className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
                   key={token.symbol}
-                  onPress={() => onSelectingToken(token)}>
+                  onPress={() => {
+                    logAnalytics('hyperliquid', {
+                      action: 'click spot token',
+                      token: token.symbol,
+                    });
+                    onSelectingToken(token);
+                  }}>
                   <CyDView className='flex flex-row items-center'>
                     <CyDFastImage
                       source={{ uri: token.logoUrl }}
@@ -943,7 +959,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
 
             <RenderHyperLiquidPosition onSelectingToken={onSelectingToken} />
 
-            <CyDView className='bg-n0 p-[12px] pt-0 flex-1'>
+            <CyDView className='bg-n0 p-[12px] pt-[0px] flex-1'>
               <CyDView
                 className={clsx(
                   'mb-[16px] flex flex-row justify-between items-center self-center border-[1px] w-full rounded-[8px] px-[12px] py-[0px] border-n40',
@@ -961,7 +977,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
               </CyDView>
 
               {errorMessage ? (
-                <CyDView className='mb-[8px] p-3 rounded-[8px]'>
+                <CyDView className='mb-[8px] p-[3px] rounded-[8px]'>
                   <CyDText className=' font-medium'>{errorMessage}</CyDText>
                 </CyDView>
               ) : null}
