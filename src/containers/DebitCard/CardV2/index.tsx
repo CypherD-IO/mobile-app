@@ -210,7 +210,7 @@ export default function CypherCardScreen() {
       ) {
         const rainTerms = await getRainTerms();
         setIsTermsAndConditionsModalVisible(!rainTerms);
-      } else {
+      } else if (cardProvider === CardProviders.REAP_CARD) {
         setIsTermsAndConditionsModalVisible(
           !get(data, [cardProvider, 'termsAgreedOn'], 0),
         );
