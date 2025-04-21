@@ -354,6 +354,7 @@ export default function CypherCardScreen() {
         setIsModalVisible={setIsTermsAndConditionsModalVisible}
         cardProvider={selectedCard?.cardProvider}
         onAgree={() => {
+          setIsTermsAndConditionsModalVisible(false);
           void refreshProfile();
         }}
         onCancel={() => {
