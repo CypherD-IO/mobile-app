@@ -27,7 +27,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useAxios from '../../core/HttpRequest';
 import { useGlobalModalContext } from './GlobalModal';
 import analytics from '@react-native-firebase/analytics';
-import { hostWorker } from '../../global';
+import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
+import {
+  ParamListBase,
+  NavigationProp,
+  useNavigation,
+} from '@react-navigation/native';
+import { screenTitle } from '../../constants';
+import { sleepFor } from '../../core/util';
 
 const REPORT_ISSUES = Object.entries(ComplaintReason).map(([key, value]) => ({
   value: key,
@@ -50,6 +57,7 @@ interface ComplaintFormData {
   disputeDescription: string;
   lockCards: boolean;
   files?: SelectedFile[];
+  expiryDate?: string;
 }
 
 interface ReportTransactionModalProps {
@@ -121,6 +129,8 @@ export default function ReportTransactionModal({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<SelectedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expiryDate, setExpiryDate] = useState('');
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   // Track modal opening
   React.useEffect(() => {
@@ -138,8 +148,47 @@ export default function ReportTransactionModal({
     }
   }, [isModalVisible, transaction]);
 
+  function onModalHide() {
+    hideModal();
+    setTimeout(() => {
+      navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+    }, MODAL_HIDE_TIMEOUT);
+  }
+
   const handleSubmit = async () => {
     try {
+      // Validate expiry date if reason is UNRECOGNIZED_TRANSACTION
+      if (selectedIssue === 'UNRECOGNIZED_TRANSACTION') {
+        if (!expiryDate) {
+          Toast.show({
+            type: 'error',
+            text1: t('Please enter card expiry date'),
+            position: 'bottom',
+          });
+          return;
+        }
+        // Validate MM/YY format
+        const [month, year] = expiryDate.split('/');
+        if (!month || !year || month.length !== 2 || year.length !== 2) {
+          Toast.show({
+            type: 'error',
+            text1: t('Please enter expiry date in MM/YY format'),
+            position: 'bottom',
+          });
+          return;
+        }
+        // Validate month is between 01-12
+        const monthNum = parseInt(month, 10);
+        if (monthNum < 1 || monthNum > 12) {
+          Toast.show({
+            type: 'error',
+            text1: t('Please enter a valid month (01-12)'),
+            position: 'bottom',
+          });
+          return;
+        }
+      }
+
       setIsSubmitting(true);
 
       // Track submission attempt
@@ -160,6 +209,9 @@ export default function ReportTransactionModal({
         purchaseDescription: purchaseDescription.trim(),
         disputeDescription: description.trim(),
         cardId: transaction.cardId,
+        ...(selectedIssue === 'UNRECOGNIZED_TRANSACTION' && expiryDate
+          ? { expirationDate: expiryDate }
+          : {}),
       };
 
       // Add files if they exist
@@ -184,6 +236,10 @@ export default function ReportTransactionModal({
         30000, // 30 second timeout
       );
 
+      setIsSubmitting(false);
+      setModalVisible(false);
+      await sleepFor(300); // required to wait for modal to close
+
       if (!response.isError) {
         // Track successful submission
         void analytics().logEvent('report_transaction_submit_success', {
@@ -194,14 +250,11 @@ export default function ReportTransactionModal({
           merchantId: transaction.metadata?.merchant?.merchantId ?? 'Unknown',
         });
 
-        setModalVisible(false);
         showModal('state', {
           type: 'success',
           title: t('TRANSACTION_REPORTED_SUCCESSFULLY'),
           description: t('TRANSACTION_REPORTED_DESCRIPTION'),
-          onSuccess: () => {
-            hideModal();
-          },
+          onSuccess: onModalHide,
           onFailure: hideModal,
         });
       } else {
@@ -497,6 +550,58 @@ export default function ReportTransactionModal({
                 )}
               </CyDView>
 
+              {selectedIssue === 'UNRECOGNIZED_TRANSACTION' && (
+                <>
+                  <CyDText className='text-[14px] text-n200 mb-[8px]'>
+                    {t('Card Expiry Date')}
+                  </CyDText>
+                  <CyDTextInput
+                    className='border border-n40 p-[16px] rounded-[12px] bg-n0 mb-[24px]'
+                    placeholder={t('MM/YY')}
+                    value={expiryDate}
+                    onChangeText={text => {
+                      // Handle backspace
+                      if (text.length < expiryDate.length) {
+                        // If deleting the slash, remove the last digit before it
+                        if (expiryDate.endsWith('/') && text.length === 2) {
+                          setExpiryDate(text.slice(0, -1));
+                          return;
+                        }
+                        setExpiryDate(text);
+                        return;
+                      }
+
+                      // Only allow numbers and forward slash
+                      const cleaned = text.replace(/[^\d/]/g, '');
+
+                      // Handle month part (MM)
+                      if (cleaned.length <= 2) {
+                        setExpiryDate(cleaned);
+                        // If valid month is entered, automatically add slash
+                        if (cleaned.length === 2) {
+                          const month = parseInt(cleaned, 10);
+                          if (month >= 1 && month <= 12) {
+                            setExpiryDate(cleaned + '/');
+                          }
+                        }
+                      } else {
+                        // Handle year part (YY)
+                        const month = cleaned.slice(0, 2);
+                        const year = cleaned.slice(2).replace('/', '');
+                        if (
+                          parseInt(month, 10) >= 1 &&
+                          parseInt(month, 10) <= 12
+                        ) {
+                          setExpiryDate(`${month}/${year}`);
+                        }
+                      }
+                    }}
+                    maxLength={5}
+                    keyboardType='numeric'
+                  />
+                </>
+              )}
+
               <CyDText className='text-[14px] text-n200 mb-[8px]'>
                 {t('Describe your purchase in brief')}
               </CyDText>
@@ -586,7 +691,8 @@ export default function ReportTransactionModal({
                   !selectedIssue ||
                   !description.trim() ||
                   !purchaseDescription.trim() ||
-                  isSubmitting
+                  isSubmitting ||
+                  (selectedIssue === 'UNRECOGNIZED_TRANSACTION' && !expiryDate)
                 }
                 style='py-[16px] rounded-full'
                 loading={isSubmitting}
