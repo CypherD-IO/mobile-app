@@ -222,88 +222,119 @@ export default function BillingAddress({
         </CyDView>
       </CyDModalLayout>
 
-      <CyDKeyboardAwareScrollView
-        className='flex-1'
-        keyboardShouldPersistTaps='handled'
-        enableOnAndroid={true}
-        enableAutomaticScroll={true}
-        extraScrollHeight={0}
-        keyboardOpeningTime={0}>
-        <CyDView className='px-[16px]'>
-          <CyDText className='font-bold text-[28px] mb-[24px]'>
-            {t('BILLING_ADDRESS_TITLE')}
-          </CyDText>
+      <CyDView className='px-[16px]'>
+        <CyDText className='font-bold text-[28px] mb-[24px]'>
+          {t('BILLING_ADDRESS_TITLE')}
+        </CyDText>
+        <FormikTextInput
+          name='line1'
+          label='Address line 1'
+          containerClassName='mb-[17px]'
+        />
+        <FormikTextInput
+          name='line2'
+          label='Address Line 2'
+          placeholder='(optional)'
+          containerClassName='mb-[17px]'
+        />
+        <FormikTextInput
+          name='postalCode'
+          label='Postal Code/Zip Code'
+          containerClassName='mb-[17px]'
+        />
+        <CyDTouchView onPress={() => setShowCountries(true)}>
           <FormikTextInput
-            name='line1'
-            label='Address line 1'
+            name='country'
+            label='Country'
             containerClassName='mb-[17px]'
+            editable={false}
+            pointerEvents='none'
+            value={country}
           />
-          <FormikTextInput
-            name='line2'
-            label='Address Line 2'
-            placeholder='(optional)'
-            containerClassName='mb-[17px]'
-          />
-          <FormikTextInput
-            name='postalCode'
-            label='Postal Code/Zip Code'
-            containerClassName='mb-[17px]'
-          />
-          <CyDTouchView onPress={() => setShowCountries(true)}>
+        </CyDTouchView>
+        <FormikTextInput
+          name='city'
+          label='City'
+          containerClassName='mb-[17px]'
+        />
+        <FormikTextInput
+          name='state'
+          label='State'
+          containerClassName='mb-[17px]'
+        />
+        <CyDView className='flex flex-row w-full'>
+          <CyDTouchView
+            className='w-[20%]'
+            onPress={() => setShowDialCodeCountry(true)}>
             <FormikTextInput
-              name='country'
-              label='Country'
+              name='dialCode'
+              label='Phone'
               containerClassName='mb-[17px]'
+              placeholder=''
               editable={false}
               pointerEvents='none'
-              value={country}
+              value={dialCode}
             />
           </CyDTouchView>
           <FormikTextInput
-            name='city'
-            label='City'
-            containerClassName='mb-[17px]'
+            name='phone'
+            label=''
+            containerClassName='mb-[17px] ml-[6px] mt-[2px] w-[78%]'
+            placeholder='Your Phone Number'
+            keyboardType='number-pad'
           />
-          <FormikTextInput
-            name='state'
-            label='State'
-            containerClassName='mb-[17px]'
-          />
+        </CyDView>
+        <CyDView className='flex flex-col bg-n0 rounded-[12px] p-[14px] gap-y-[10px] border border-n30 mb-[16px]'>
           <CyDView className='flex flex-row w-full'>
             <CyDTouchView
-              className='w-[20%]'
-              onPress={() => setShowDialCodeCountry(true)}>
-              <FormikTextInput
-                name='dialCode'
-                label='Phone'
-                containerClassName='mb-[17px]'
-                placeholder=''
-                editable={false}
-                pointerEvents='none'
-                value={dialCode}
-              />
+              className='flex flex-row items-center p-[8px] -m-[8px]'
+              onPress={() => setAcceptTerms(!acceptTerms)}>
+              <CyDView
+                className={clsx(
+                  'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base100',
+                  {
+                    'bg-p150 border-p150': acceptTerms,
+                  },
+                )}>
+                {acceptTerms && (
+                  <CyDMaterialDesignIcons
+                    name='check-bold'
+                    size={16}
+                    className='text-n0'
+                  />
+                )}
+              </CyDView>
             </CyDTouchView>
-            <FormikTextInput
-              name='phone'
-              label=''
-              containerClassName='mb-[17px] ml-[6px] mt-[2px] w-[78%]'
-              placeholder='Your Phone Number'
-              keyboardType='number-pad'
-            />
+
+            <CyDText className='px-[12px] text-[12px] text-primaryText'>
+              By continuing, I agree to{' '}
+              <CyDText
+                className='text-blue-800'
+                onPress={() => void Linking.openURL(LEGAL_CYPHERHQ)}>
+                Terms and Conditions
+              </CyDText>{' '}
+              and{' '}
+              <CyDText
+                className='text-blue-800'
+                onPress={() => void Linking.openURL(TERMS_PRIVACY_POLICY_URL)}>
+                Privacy Policy
+              </CyDText>
+            </CyDText>
           </CyDView>
-          <CyDView className='flex flex-col bg-n0 rounded-[12px] p-[14px] gap-y-[10px] border border-n30 mb-[16px]'>
+
+          {!isRainCard && values.country === 'US' && (
             <CyDView className='flex flex-row w-full'>
               <CyDTouchView
                 className='flex flex-row items-center p-[8px] -m-[8px]'
-                onPress={() => setAcceptTerms(!acceptTerms)}>
+                onPress={() => setAcceptConsent(!acceptConsent)}>
                 <CyDView
                   className={clsx(
                     'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base100',
                     {
-                      'bg-p150 border-p150': acceptTerms,
+                      'bg-p150 border-p150': acceptConsent,
                     },
                   )}>
-                  {acceptTerms && (
+                  {acceptConsent && (
                     <CyDMaterialDesignIcons
                       name='check-bold'
                       size={16}
@@ -314,53 +345,12 @@ export default function BillingAddress({
               </CyDTouchView>
 
               <CyDText className='px-[12px] text-[12px] text-primaryText'>
-                By continuing, I agree to{' '}
-                <CyDText
-                  className='text-blue-800'
-                  onPress={() => void Linking.openURL(LEGAL_CYPHERHQ)}>
-                  Terms and Conditions
-                </CyDText>{' '}
-                and{' '}
-                <CyDText
-                  className='text-blue-800'
-                  onPress={() =>
-                    void Linking.openURL(TERMS_PRIVACY_POLICY_URL)
-                  }>
-                  Privacy Policy
-                </CyDText>
+                {t('RC_APPLICATION_CONSENT_TEXT')}
               </CyDText>
             </CyDView>
-
-            {!isRainCard && values.country === 'US' && (
-              <CyDView className='flex flex-row w-full'>
-                <CyDTouchView
-                  className='flex flex-row items-center p-[8px] -m-[8px]'
-                  onPress={() => setAcceptConsent(!acceptConsent)}>
-                  <CyDView
-                    className={clsx(
-                      'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base100',
-                      {
-                        'bg-p150 border-p150': acceptConsent,
-                      },
-                    )}>
-                    {acceptConsent && (
-                      <CyDMaterialDesignIcons
-                        name='check-bold'
-                        size={16}
-                        className='text-n0'
-                      />
-                    )}
-                  </CyDView>
-                </CyDTouchView>
-
-                <CyDText className='px-[12px] text-[12px] text-primaryText'>
-                  {t('RC_APPLICATION_CONSENT_TEXT')}
-                </CyDText>
-              </CyDView>
-            )}
-          </CyDView>
+          )}
         </CyDView>
-      </CyDKeyboardAwareScrollView>
+      </CyDView>
     </>
   );
 }
