@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   CyDIcons,
   CyDSafeAreaView,
+  CyDScrollView,
   CyDTouchView,
   CyDView,
 } from '../../../../../styles/tailwindComponents';
@@ -34,7 +35,7 @@ import {
 import { screenTitle } from '../../../../../constants';
 import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal';
 import { CardProfile } from '../../../../../models/cardProfile.model';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import { getReferralCode } from '../../../../../core/asyncStorage';
 import { isRainReferralCode } from '../../../../../core/util';
@@ -302,109 +303,114 @@ export default function CardApplicationV2() {
 
   return (
     <CyDSafeAreaView className='flex-1 bg-n20'>
-      {/* remove the CardProviderSwitch after sunsetting PC */}
       <CyDTouchView
         className='w-[60px] ml-[16px] mb-[10px]'
         onPress={() => {
           if (index === 0) {
-            // navigation.reset({
-            //   index: 0,
-            //   routes: [{ name: screenTitle.PORTFOLIO }],
-            // });
             navigation.goBack();
           } else setIndex(0);
         }}>
         <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
 
-      <Formik
-        initialValues={
-          applicationData ?? {
-            firstName: '',
-            lastName: '',
-            email: '',
-            dateOfBirth: new Date(),
-            line1: '',
-            line2: '',
-            postalCode: '',
-            country: '',
-            city: '',
-            state: '',
-            phone: '',
-            dialCode: '',
-            expectedMonthlyVolume: '',
-            annualSalary: '',
-            occupation: '',
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 40}>
+        <Formik
+          initialValues={
+            applicationData ?? {
+              firstName: '',
+              lastName: '',
+              email: '',
+              dateOfBirth: new Date(),
+              line1: '',
+              line2: '',
+              postalCode: '',
+              country: '',
+              city: '',
+              state: '',
+              phone: '',
+              dialCode: '',
+              expectedMonthlyVolume: '',
+              annualSalary: '',
+              occupation: '',
+            }
           }
-        }
-        validationSchema={validationSchema}
-        enableReinitialize={!!applicationData}
-        onSubmit={_handleSubmit}>
-        {({
-          handleSubmit,
-          validateForm,
-          setFieldTouched,
-          setFieldValue,
-          values,
-          isSubmitting,
-        }) => (
-          <CyDView className='bg-n20 flex flex-col justify-between h-full'>
-            {index === 0 && <BasicDetails />}
-            {index === 1 && (
-              <BillingAddress
-                isRainCard={isRainCard}
-                supportedCountries={supportedCountries}
-                setFieldValue={setFieldValue}
-                values={values}
-                acceptTerms={acceptTerms}
-                acceptConsent={acceptConsent}
-                setAcceptTerms={setAcceptTerms}
-                setAcceptConsent={setAcceptConsent}
-              />
-            )}
-            {index === 0 && (
-              <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[60px] '>
-                <Button
-                  title={t('NEXT')}
-                  onPress={() => {
-                    void setFieldTouched('lastName', true);
-                    void setFieldTouched('firstName', true);
-                    void setFieldTouched('email', true);
-                    void setFieldTouched('dateOfBirth', true);
-                    void validateForm().then(_errors => {
-                      if (
-                        Object.keys(_errors).length === 0 ||
-                        (!_errors.lastName &&
-                          !_errors.firstName &&
-                          !_errors.email &&
-                          !_errors.dateOfBirth)
-                      ) {
-                        setIndex(1);
-                      }
-                    });
-                  }}
-                />
-              </CyDView>
-            )}
-            {index === 1 && (
-              <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[60px]'>
-                <Button
-                  title={t('CONTINUE')}
-                  onPress={handleSubmit}
-                  loaderStyle={styles.loading}
-                  loading={isSubmitting}
-                  disabled={
-                    (!isRainCard &&
-                      values.country === 'US' &&
-                      (!acceptTerms || !acceptConsent)) ||
-                    !acceptTerms
-                  }
-                />
-              </CyDView>
-            )}
-          </CyDView>
-        )}
-      </Formik>
+          validationSchema={validationSchema}
+          enableReinitialize={!!applicationData}
+          onSubmit={_handleSubmit}>
+          {({
+            handleSubmit,
+            validateForm,
+            setFieldTouched,
+            setFieldValue,
+            values,
+            isSubmitting,
+          }) => (
+            <CyDView className='flex-1'>
+              <CyDScrollView
+                className='flex-1'
+                keyboardShouldPersistTaps='handled'>
+                {index === 0 && <BasicDetails />}
+                {index === 1 && (
+                  <BillingAddress
+                    isRainCard={isRainCard}
+                    supportedCountries={supportedCountries}
+                    setFieldValue={setFieldValue}
+                    values={values}
+                    acceptTerms={acceptTerms}
+                    acceptConsent={acceptConsent}
+                    setAcceptTerms={setAcceptTerms}
+                    setAcceptConsent={setAcceptConsent}
+                  />
+                )}
+              </CyDScrollView>
+
+              {index === 0 && (
+                <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[16px]'>
+                  <Button
+                    title={t('NEXT')}
+                    onPress={() => {
+                      void setFieldTouched('lastName', true);
+                      void setFieldTouched('firstName', true);
+                      void setFieldTouched('email', true);
+                      void setFieldTouched('dateOfBirth', true);
+                      void validateForm().then(_errors => {
+                        if (
+                          Object.keys(_errors).length === 0 ||
+                          (!_errors.lastName &&
+                            !_errors.firstName &&
+                            !_errors.email &&
+                            !_errors.dateOfBirth)
+                        ) {
+                          setIndex(1);
+                        }
+                      });
+                    }}
+                  />
+                </CyDView>
+              )}
+              {index === 1 && (
+                <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[16px]'>
+                  <Button
+                    title={t('CONTINUE')}
+                    onPress={handleSubmit}
+                    loaderStyle={styles.loading}
+                    loading={isSubmitting}
+                    disabled={
+                      (!isRainCard &&
+                        values.country === 'US' &&
+                        (!acceptTerms || !acceptConsent)) ||
+                      !acceptTerms
+                    }
+                  />
+                </CyDView>
+              )}
+            </CyDView>
+          )}
+        </Formik>
+      </KeyboardAvoidingView>
     </CyDSafeAreaView>
   );
 }

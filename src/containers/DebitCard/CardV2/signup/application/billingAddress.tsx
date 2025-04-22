@@ -84,7 +84,7 @@ export default function BillingAddress({
 
   if (supportedCountries.length === 0) return <Loading />;
   return (
-    <CyDKeyboardAwareScrollView className='px-[16px] h-[86%]'>
+    <>
       <CyDModalLayout
         style={styles.modalLayout}
         isModalVisible={showCountries}
@@ -221,7 +221,8 @@ export default function BillingAddress({
           </CyDScrollView>
         </CyDView>
       </CyDModalLayout>
-      <CyDKeyboardAwareScrollView>
+
+      <CyDView className='px-[16px]'>
         <CyDText className='font-bold text-[28px] mb-[24px]'>
           {t('BILLING_ADDRESS_TITLE')}
         </CyDText>
@@ -241,7 +242,7 @@ export default function BillingAddress({
           label='Postal Code/Zip Code'
           containerClassName='mb-[17px]'
         />
-        <CyDTouchView className='' onPress={() => setShowCountries(true)}>
+        <CyDTouchView onPress={() => setShowCountries(true)}>
           <FormikTextInput
             name='country'
             label='Country'
@@ -309,13 +310,13 @@ export default function BillingAddress({
               By continuing, I agree to{' '}
               <CyDText
                 className='text-blue-800'
-                onPress={() => Linking.openURL(LEGAL_CYPHERHQ)}>
+                onPress={() => void Linking.openURL(LEGAL_CYPHERHQ)}>
                 Terms and Conditions
               </CyDText>{' '}
               and{' '}
               <CyDText
                 className='text-blue-800'
-                onPress={() => Linking.openURL(TERMS_PRIVACY_POLICY_URL)}>
+                onPress={() => void Linking.openURL(TERMS_PRIVACY_POLICY_URL)}>
                 Privacy Policy
               </CyDText>
             </CyDText>
@@ -349,8 +350,8 @@ export default function BillingAddress({
             </CyDView>
           )}
         </CyDView>
-      </CyDKeyboardAwareScrollView>
-    </CyDKeyboardAwareScrollView>
+      </CyDView>
+    </>
   );
 }
 
