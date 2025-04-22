@@ -1,18 +1,24 @@
 import React from 'react';
-import {
-  CyDKeyboardAwareScrollView,
-  CyDText,
-} from '../../../../../styles/tailwindComponents';
+import { CyDText, CyDView } from '../../../../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 
 import FormikTextInput from '../../../../../components/v2/formikInput';
 import FormikDateInput from '../../../../../components/v2/formikDatePicker';
+import FormikSelect from '../../../../../components/v2/formikSelect';
+import { OCCUPATION_LABEL_TO_CODE_MAP } from '../../../../../constants/data';
 
 export default function BasicDetails() {
   const { t } = useTranslation();
 
+  const occupationOptions = Object.entries(OCCUPATION_LABEL_TO_CODE_MAP).map(
+    ([label, value]) => ({
+      label,
+      value,
+    }),
+  );
+
   return (
-    <CyDKeyboardAwareScrollView className='px-[16px]'>
+    <CyDView className='px-[16px]'>
       <CyDText className='font-bold text-[28px] mb-[24px]'>
         {t('BASIC_DETAILS')}
       </CyDText>
@@ -38,12 +44,12 @@ export default function BasicDetails() {
           'An email address is necessary for verification, updates and further communication',
         )}
       </CyDText>
-      <FormikTextInput
+      <FormikSelect
         name='occupation'
         label='Occupation'
+        options={occupationOptions}
         containerClassName='mb-[17px]'
-        placeholder='Occupation'
-        keyboardType='default'
+        placeholder='Select your occupation'
       />
       <FormikTextInput
         name='annualSalary'
@@ -59,6 +65,6 @@ export default function BasicDetails() {
         placeholder='Expected Monthly Spend in USD'
         keyboardType='numeric'
       />
-    </CyDKeyboardAwareScrollView>
+    </CyDView>
   );
 }

@@ -306,22 +306,20 @@ export default function TermsAndConditionsModal({
         </CyDView>
 
         <CyDTouchView
-          className='flex flex-row items-center my-[32px]'
-          onPress={() => {
-            setHasConsent(!hasConsent);
-          }}>
+          className='flex flex-row items-center p-[8px] my-[32px]'
+          onPress={() => setHasConsent(!hasConsent)}>
           <CyDView
             className={clsx(
-              'h-[20px] w-[20px] border-[1px] border-base400 rounded-[4px]',
+              'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base400',
               {
-                'bg-black': hasConsent,
+                'bg-p150 border-p150': hasConsent,
               },
             )}>
             {hasConsent && (
               <CyDMaterialDesignIcons
                 name='check-bold'
                 size={16}
-                className='text-base400'
+                className='text-n0'
               />
             )}
           </CyDView>
@@ -340,7 +338,7 @@ export default function TermsAndConditionsModal({
         </CyDView>
       </CyDView>
     );
-  }, [setIsModalVisible, cardProvider, acceptRainTerms]);
+  }, [setIsModalVisible, cardProvider, acceptRainTerms, hasConsent]);
 
   return (
     <CyDModalLayout
@@ -351,8 +349,7 @@ export default function TermsAndConditionsModal({
       animationOut={'slideOutDown'}>
       <CyDView
         className={clsx(
-          'w-full bg-n0 p-[24px] pb-[48px] rounded-[22px]',
-          cardProvider === CardProviders.RAIN_CARD && 'h-full',
+          'w-full bg-n0 p-[24px] pb-[48px] rounded-[22px] h-full',
         )}>
         <CyDSafeAreaView className='flex-1'>
           <CyDView className='flex flex-row items-center'>
