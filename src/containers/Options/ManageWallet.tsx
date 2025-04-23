@@ -79,7 +79,7 @@ const getManageWalletData = (
           title: t('CONNECT_ANOTHER_WALLET'),
           logo: 'wallet' as const,
           callback: () => {
-            void deleteWallet({ navigation });
+            void deleteWallet({ navigation, importNewWallet: true });
           },
           firebaseEvent: 'import_another_wallet',
         },

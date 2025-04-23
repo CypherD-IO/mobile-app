@@ -29,7 +29,6 @@ import {
   parseErrorMessage,
 } from '../../core/util';
 import useConnectionManager from '../../hooks/useConnectionManager';
-import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
   CyDIcons,
   CyDImage,
@@ -43,8 +42,9 @@ import bs58 from 'bs58';
 import Loading from '../../components/v2/loading';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import useWeb3Auth from '../../hooks/useWeb3Auth';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
-const enum ProviderType {
+enum ProviderType {
   ETHEREUM = 'ethereum',
   SOLANA = 'solana',
 }
@@ -58,7 +58,7 @@ export default function OnBoardOpotions() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { openWalletConnectModal } = useConnectionManager();
   const { showModal, hideModal } = useGlobalModalContext();
-  const hdWalletContext = useContext(HdWalletContext);
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   const inset = useSafeAreaInsets();
@@ -85,8 +85,11 @@ export default function OnBoardOpotions() {
     try {
       setLoading(true);
       setIsProviderSelectionModalVisible(false);
-      await handleSocialLogin();
-      setLoading(false);
+      try {
+        await handleSocialLogin();
+      } finally {
+        setLoading(false);
+      }
     } catch (error) {
       showModal('state', {
         type: 'error',
@@ -107,10 +110,7 @@ export default function OnBoardOpotions() {
     }, MODAL_HIDE_TIMEOUT_250);
   };
 
-  const handleEmailLogin = async (
-    provider: Web3Auth,
-    providerType: ProviderType,
-  ) => {
+  const handleEmailLogin = async (provider: Web3Auth) => {
     await provider.login({
       loginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS,
       extraLoginOptions: {
@@ -118,6 +118,20 @@ export default function OnBoardOpotions() {
       },
       mfaLevel: MFA_LEVELS.MANDATORY,
     });
+
+    await generateWallet(provider);
+  };
+
+  const googleLogin = async (provider: Web3Auth) => {
+    await provider.login({
+      loginProvider: LOGIN_PROVIDER.GOOGLE,
+      mfaLevel: MFA_LEVELS.MANDATORY,
+    });
+
+    await generateWallet(provider);
+  };
+
+  const generateWallet = async (provider: Web3Auth) => {
     if (provider.connected && provider.provider) {
       const connectionType =
         providerType === ProviderType.ETHEREUM
@@ -159,43 +173,6 @@ export default function OnBoardOpotions() {
     }
   };
 
-  const googleLogin = async (provider: Web3Auth) => {
-    await provider.login({
-      loginProvider: LOGIN_PROVIDER.GOOGLE,
-      mfaLevel: MFA_LEVELS.MANDATORY,
-    });
-    if (provider.connected) {
-      const connectionType =
-        providerType === ProviderType.ETHEREUM
-          ? ConnectionTypes.SOCIAL_LOGIN_EVM
-          : ConnectionTypes.SOCIAL_LOGIN_SOLANA;
-
-      let _privateKey = (await provider.provider?.request({
-        method: 'eth_private_key',
-      })) as string;
-
-      if (!_privateKey) {
-        throw new Error('Unable to construct the private key');
-      }
-
-      if (!_privateKey.startsWith('0x')) {
-        _privateKey = '0x' + _privateKey;
-      }
-
-      if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
-        await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
-        void setConnectionType(connectionType);
-        const analyticType =
-          providerType === ProviderType.ETHEREUM
-            ? AnalyticEvent.SOCIAL_LOGIN_EVM
-            : AnalyticEvent.SOCIAL_LOGIN_SOLANA;
-        logAnalyticsToFirebase(analyticType, {
-          from: 'google',
-        });
-      }
-    }
-  };
-
   const handleSocialLogin = async () => {
     try {
       let provider;
@@ -217,7 +194,7 @@ export default function OnBoardOpotions() {
       }
 
       if (socialLoginMethod === SocialLoginMethod.EMAIL) {
-        await handleEmailLogin(provider, providerType);
+        await handleEmailLogin(provider);
       } else if (socialLoginMethod === SocialLoginMethod.GOOGLE) {
         await googleLogin(provider);
       }

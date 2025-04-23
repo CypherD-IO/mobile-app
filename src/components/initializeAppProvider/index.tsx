@@ -106,14 +106,13 @@ export const InitializeAppProvider = ({
   const ethCurrentIndex = get(
     hdWallet,
     'state.wallet.ethereum.currentIndex',
-    undefined,
+    -1,
   );
-  const solCurrentIndex = get(
-    hdWallet,
-    'state.wallet.solana.currentIndex',
-    undefined,
-  );
-  const address = ethereumAddress ?? solanaAddress;
+  const solCurrentIndex = get(hdWallet, 'state.wallet.solana.currentIndex', -1);
+  const address =
+    ethereumAddress && ethereumAddress.trim().length > 0
+      ? ethereumAddress
+      : solanaAddress;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
 
   const { showModal, hideModal } = useGlobalModalContext();
