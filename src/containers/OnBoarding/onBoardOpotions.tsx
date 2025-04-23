@@ -110,27 +110,6 @@ export default function OnBoardOpotions() {
     }, MODAL_HIDE_TIMEOUT_250);
   };
 
-  const handleEmailLogin = async (provider: Web3Auth) => {
-    await provider.login({
-      loginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS,
-      extraLoginOptions: {
-        login_hint: email,
-      },
-      mfaLevel: MFA_LEVELS.MANDATORY,
-    });
-
-    await generateWallet(provider);
-  };
-
-  const googleLogin = async (provider: Web3Auth) => {
-    await provider.login({
-      loginProvider: LOGIN_PROVIDER.GOOGLE,
-      mfaLevel: MFA_LEVELS.MANDATORY,
-    });
-
-    await generateWallet(provider);
-  };
-
   const generateWallet = async (provider: Web3Auth) => {
     if (provider.connected && provider.provider) {
       const connectionType =
@@ -151,25 +130,71 @@ export default function OnBoardOpotions() {
           await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
         }
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_EVM, {
-          from: 'email',
+          from:
+            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
         });
       } else if (providerType === ProviderType.SOLANA) {
         _privateKey = (await provider.provider.request({
           method: 'solanaPrivateKey',
         })) as string;
         const base58privatekey = bs58.encode(Buffer.from(_privateKey, 'hex'));
+        if (!_privateKey || _privateKey.length === 0) {
+          throw new Error('Invalid Solana private key');
+        }
         await importWalletFromSolanaPrivateKey(
           hdWalletContext,
           base58privatekey,
         );
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_SOLANA, {
-          from: 'email',
+          from:
+            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
         });
       } else {
         return;
       }
 
       void setConnectionType(connectionType);
+    }
+  };
+
+  const handleEmailLogin = async (provider: Web3Auth) => {
+    await provider.login({
+      loginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS,
+      extraLoginOptions: {
+        login_hint: email,
+      },
+      mfaLevel: MFA_LEVELS.MANDATORY,
+    });
+
+    try {
+      await generateWallet(provider);
+    } catch (error) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNEXPECTED_ERROR'),
+        description: parseErrorMessage(error),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
+  const googleLogin = async (provider: Web3Auth) => {
+    await provider.login({
+      loginProvider: LOGIN_PROVIDER.GOOGLE,
+      mfaLevel: MFA_LEVELS.MANDATORY,
+    });
+
+    try {
+      await generateWallet(provider);
+    } catch (error) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNEXPECTED_ERROR'),
+        description: parseErrorMessage(error),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
   };
 
