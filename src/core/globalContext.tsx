@@ -4,7 +4,6 @@ import { GlobalContextType } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
 import { CardProfile } from '../models/cardProfile.model';
 import { IPlanData } from '../models/planData.interface';
-import { ISocialAuth } from '../models/socailAuth.interface';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -138,7 +137,6 @@ interface GlobalReducerInput {
   ibc?: boolean;
   isAuthenticated?: boolean;
   planInfo?: IPlanData;
-  socialAuth?: ISocialAuth;
 }
 
 export const gloabalContextReducer = (

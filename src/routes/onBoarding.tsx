@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { screenTitle } from '../constants/index';
-import OnBoarding from '../containers/OnBoarding';
 import EnterKeyScreen from '../containers/Auth/EnterKey';
 import QRScanner from '../containers/Qrcode/QRScanner';
 import CreateSeedPhrase from '../containers/OnBoarding/createSeedPhrase';
@@ -63,13 +62,13 @@ function OnBoardingStack({
 }: OnBoardingStackProps) {
   return (
     <Stack.Navigator initialRouteName={initialScreen}>
-      <Stack.Screen
+      {/* <Stack.Screen
         name={screenTitle.ONBOARDING}
         component={OnBoarding}
         options={{
           headerShown: false,
         }}
-      />
+      /> */}
       <Stack.Screen
         name={screenTitle.ONBOARDING_GET_STARTED}
         component={OnBoardingGetStarted}

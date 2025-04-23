@@ -74,7 +74,7 @@ type HdWalletAction =
         address: string;
         chain: string;
         publicKey: Buffer | Uint8Array | string;
-        rawAddress?: string;
+        rawAddress?: Uint8Array;
         algo?: string;
       };
     }

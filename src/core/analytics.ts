@@ -115,5 +115,9 @@ export const logAnalyticsToFirebase = (
   event: string,
   data: Record<string, any> = {},
 ): void => {
-  void analytics().logEvent(event, data);
+  void analytics()
+    .logEvent(event, data)
+    .catch(error => {
+      console.error('Error logging event to Firebase:', error);
+    });
 };
