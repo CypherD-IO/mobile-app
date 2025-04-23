@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import Web3Auth, { WEB3AUTH_NETWORK } from '@web3auth/react-native-sdk';
 import type { CustomChainConfig } from '@web3auth/base';
 import * as WebBrowser from '@toruslabs/react-native-web-browser';
@@ -13,7 +13,10 @@ import { get } from 'lodash';
 
 const scheme = 'app.cypherhq.web3auth';
 const redirectUrl = `${scheme}://auth`;
-const clientId = Config.WEB3_AUTH_CLIENT_ID ?? '';
+const clientId = Config.WEB3_AUTH_CLIENT_ID;
+if (!clientId) {
+  throw new Error('WEB3_AUTH_CLIENT_ID env var is not defined');
+}
 
 type SupportedChains = Exclude<
   ChainBackendNames,
@@ -97,7 +100,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.AVALANCHE]: '0xA86A',
       [ChainBackendNames.BASE]: '0x2105',
       [ChainBackendNames.SOLANA]: '0x1',
-      [ChainBackendNames.ZKSYNC_ERA]: '0x1',
+      [ChainBackendNames.ZKSYNC_ERA]: '0x144',
     };
     return chainIds[chainName as SupportedChains] || '0x1';
   };
@@ -169,97 +172,65 @@ export default function useWeb3Auth() {
     throw new Error('Failed to initialize chain configurations');
   }
 
-  const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
-    config: {
-      chainConfig: baseChainConfig,
+  const mfaSettings = {
+    socialBackupFactor: {
+      enable: true,
+      priority: 1,
+      mandatory: true,
     },
-  });
+    backUpShareFactor: {
+      enable: true,
+      priority: 2,
+      mandatory: false,
+    },
+    authenticatorFactor: {
+      enable: true,
+      priority: 3,
+      mandatory: false,
+    },
+    deviceShareFactor: {
+      enable: true,
+      priority: 4,
+      mandatory: false,
+    },
+    passkeysFactor: {
+      enable: true,
+      priority: 5,
+      mandatory: false,
+    },
+    passwordFactor: {
+      enable: false,
+      priority: 6,
+      mandatory: false,
+    },
+  };
+  const { web3AuthEvm, web3AuthSolana } = useMemo(() => {
+    const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
+      config: { chainConfig: baseChainConfig },
+    });
+    const solanaPrivateKeyProvider = new SolanaPrivateKeyProvider({
+      config: { chainConfig: solanaChainConfig },
+    });
 
-  const solanaPrivateKeyProvider = new SolanaPrivateKeyProvider({
-    config: {
-      chainConfig: solanaChainConfig,
-    },
-  });
-
-  const web3AuthEvm = new Web3Auth(WebBrowser, EncryptedStorage, {
-    clientId,
-    redirectUrl,
-    network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
-    privateKeyProvider: ethereumPrivateKeyProvider,
-    sessionTime: 30 * 24 * 60 * 60, // 30 days in seconds
-    mfaSettings: {
-      socialBackupFactor: {
-        enable: true,
-        priority: 1,
-        mandatory: true,
-      },
-      backUpShareFactor: {
-        enable: true,
-        priority: 2,
-        mandatory: false,
-      },
-      authenticatorFactor: {
-        enable: true,
-        priority: 3,
-        mandatory: false,
-      },
-      deviceShareFactor: {
-        enable: true,
-        priority: 4,
-        mandatory: false,
-      },
-      passkeysFactor: {
-        enable: true,
-        priority: 5,
-        mandatory: false,
-      },
-      passwordFactor: {
-        enable: false,
-        priority: 6,
-        mandatory: false,
-      },
-    },
-  });
-
-  const web3AuthSolana = new Web3Auth(WebBrowser, EncryptedStorage, {
-    clientId,
-    redirectUrl,
-    network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
-    privateKeyProvider: solanaPrivateKeyProvider,
-    sessionTime: 30 * 24 * 60 * 60, // 30 days in seconds
-    mfaSettings: {
-      socialBackupFactor: {
-        enable: true,
-        priority: 1,
-        mandatory: true,
-      },
-      backUpShareFactor: {
-        enable: true,
-        priority: 2,
-        mandatory: false,
-      },
-      authenticatorFactor: {
-        enable: true,
-        priority: 3,
-        mandatory: false,
-      },
-      deviceShareFactor: {
-        enable: true,
-        priority: 4,
-        mandatory: false,
-      },
-      passkeysFactor: {
-        enable: true,
-        priority: 5,
-        mandatory: false,
-      },
-      passwordFactor: {
-        enable: false,
-        priority: 6,
-        mandatory: false,
-      },
-    },
-  });
+    return {
+      web3AuthEvm: new Web3Auth(WebBrowser, EncryptedStorage, {
+        clientId,
+        redirectUrl,
+        network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+        privateKeyProvider: ethereumPrivateKeyProvider,
+        sessionTime: 30 * 24 * 60 * 60,
+        mfaSettings,
+      }),
+      web3AuthSolana: new Web3Auth(WebBrowser, EncryptedStorage, {
+        clientId,
+        redirectUrl,
+        network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+        privateKeyProvider: solanaPrivateKeyProvider,
+        sessionTime: 30 * 24 * 60 * 60,
+        mfaSettings,
+      }),
+    };
+  }, [baseChainConfig, solanaChainConfig, clientId, redirectUrl]);
 
   return {
     web3AuthEvm,

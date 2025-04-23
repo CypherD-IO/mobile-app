@@ -102,7 +102,7 @@ export default function useAxios() {
     async (req: any) => {
       if (!isTokenValid(token)) {
         try {
-          const signInResponse = await signIn(ethereum, hdWalletContext);
+          const signInResponse = await signIn(hdWalletContext);
           if (
             signInResponse?.message === SignMessageValidationType.VALID &&
             has(signInResponse, 'token')
@@ -206,10 +206,7 @@ export default function useAxios() {
         const errorCode = error?.response?.status;
         if (errorCode === 401) {
           try {
-            const signInResponse = await signIn(
-              ethereumAddress,
-              hdWalletContext,
-            );
+            const signInResponse = await signIn(hdWalletContext);
             if (
               signInResponse?.message === SignMessageValidationType.VALID &&
               has(signInResponse, 'token')

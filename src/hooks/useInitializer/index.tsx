@@ -515,8 +515,13 @@ export default function useInitializer() {
           web3Auth = web3AuthSolana;
           break;
       }
-      if (web3Auth) {
-        await web3Auth.init();
+      if (web3Auth && !web3Auth.connected) {
+        try {
+          await web3Auth.init();
+        } catch (e) {
+          Sentry.captureException(e);
+          return;
+        }
         if (!web3Auth.connected) {
           globalContext.globalDispatch({
             type: GlobalContextType.IS_APP_AUTHENTICATED,

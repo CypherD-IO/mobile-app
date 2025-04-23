@@ -320,7 +320,7 @@ export default function Browser({ navigation }: any) {
         contractAddress: nativeToken.contractAddress,
         tokenContractDecimals: nativeToken.contractDecimals,
       });
-    } else if (selectedChain.chainName === ChainNames.ETH) {
+    } else if (selectedChain.chainName === ChainNames.ETH && ethereumAddress) {
       const publicClient = getViemPublicClient(
         getWeb3Endpoint(selectedChain, globalContext),
       );

@@ -43,7 +43,6 @@ import { isIOS } from '../misc/checkers';
 import {
   setSchemaVersion,
   getSchemaVersion,
-  clearAllData as clearAsyncStorage,
   getCyRootData,
   setCyRootData,
   removeCyRootData,
@@ -69,7 +68,7 @@ import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as bip39 from 'bip39';
 import { Keypair } from '@solana/web3.js';
-import { createWalletClient, Hex, http } from 'viem';
+import { createWalletClient, custom, Hex, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mainnet } from 'viem/chains';
 import * as nacl from 'tweetnacl';
@@ -575,7 +574,10 @@ export const getSolanaWallet = async (hdWallet: any) => {
         hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
       );
       if (privateKey) {
-        return Keypair.fromSecretKey(bs58.default.decode(privateKey));
+        const secret = privateKey.startsWith('0x')
+          ? Buffer.from(privateKey, 'hex')
+          : bs58.default.decode(privateKey);
+        return Keypair.fromSecretKey(secret);
       }
     }
   } catch (e) {
@@ -723,7 +725,7 @@ export async function signIn(
         if (ecosystem === EcosystemsEnum.EVM) {
           const walletClient = createWalletClient({
             chain: mainnet,
-            transport: http(''),
+            transport: custom({ request: async () => undefined }), // no network calls
           });
           const account = privateKeyToAccount(privateKey as Hex);
           signature = await walletClient.signMessage({
