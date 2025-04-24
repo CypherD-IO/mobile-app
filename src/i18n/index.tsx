@@ -1422,7 +1422,6 @@ const resources = {
       MCC_CODE_COPIED: 'MCC Code copied',
       MERCHANT_ID_COPIED: 'Merchant ID copied',
       RETRY_KYC: 'Retry KYC',
-      CHANNEL: 'Channel',
       DECLINED: 'Declined',
       DEBITED: 'Debited',
       CREDITED: 'Credited',
@@ -1645,6 +1644,9 @@ const resources = {
       USERNAME: 'Username / Social Media Handle',
       USERNAME_PLACEHOLDER: 'Your username or social media handle',
       USERNAME_EXAMPLE: 'e.g. vitalik.eth (X username)',
+      CAMPAIGN_NAME: 'Campaign Name',
+      CAMPAIGN_NAME_PLACEHOLDER: 'Enter the name of your campaign',
+      CAMPAIGN_EXAMPLE: 'e.g. DubaiToken2049',
     },
   },
 };
