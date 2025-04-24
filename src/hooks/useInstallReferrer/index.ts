@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NativeModules, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AsyncStorageKeys } from '../../constants/asyncStorage';
+import { AsyncStorageKeys } from '../../constants/data';
 import analytics from '@react-native-firebase/analytics';
 import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtility';
 
@@ -18,10 +18,13 @@ interface InstallReferrerData {
   utm_content?: string;
   utm_term?: string;
   ref?: string;
+  referral?: string;
   install_version?: string;
   referrer_click_timestamp_seconds?: number;
   install_begin_timestamp_seconds?: number;
   google_play_instant?: boolean;
+  channel?: string;
+  influencer?: string;
 
   // iOS fields
   attribution_token?: string;

@@ -11,10 +11,10 @@ import {
   TextInput,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AsyncStorageKeys } from '../../constants/asyncStorage';
 import { CyDText } from '../../styles/tailwindComponents';
 import analytics from '@react-native-firebase/analytics';
 import { useInstallReferrer } from '../../hooks';
+import { AsyncStorageKeys } from '../../constants/data';
 
 interface AttributionData {
   [key: string]: any;
@@ -28,8 +28,7 @@ const AttributionDebugScreen = ({ navigation }: any) => {
   const [lastUpdated, setLastUpdated] = useState<string>('Never');
   const [loading, setLoading] = useState(false);
   const [sentToFirebase, setSentToFirebase] = useState(false);
-  const [testCampaignId, setTestCampaignId] =
-    useState<string>('TESTCAMPAIGN123');
+  const [testCampaignId, setTestCampaignId] = useState<string>('');
   const { referrerData, loading: hookLoading, error } = useInstallReferrer();
 
   const loadAttributionData = async () => {

@@ -138,14 +138,19 @@ export const InitializeAppProvider = ({
   }, []);
 
   useEffect(() => {
-    if (referrerData?.ref) {
-      console.log('Referral code found in install referrer:', referrerData.ref);
-      void setReferralCodeAsync(referrerData.ref);
+    if (referrerData?.referral) {
+      console.log(
+        'Referral code found in install referrer:',
+        referrerData.referral,
+      );
+      void setReferralCodeAsync(referrerData.referral);
 
       if (isAuthenticated && ethereum?.address) {
         showModal('success', {
           title: t('REFERRAL_CODE_FOUND'),
-          description: t('REFERRAL_CODE_APPLIED', { code: referrerData.ref }),
+          description: t('REFERRAL_CODE_APPLIED', {
+            code: referrerData.referral,
+          }),
           onSuccess: () => {
             hideModal();
           },
@@ -190,20 +195,35 @@ export const InitializeAppProvider = ({
         // For Android: Full attribution data available
         if (Platform.OS === 'android') {
           const installAttribution = {
-            utm_source: referrerData.utm_source,
-            utm_medium: referrerData.utm_medium,
-            utm_campaign: referrerData.utm_campaign,
-            utm_content: referrerData.utm_content,
-            utm_term: referrerData.utm_term,
-            ref: referrerData.ref,
-            install_referrer: referrerData.install_referrer,
+            ...(referrerData.utm_source && {
+              utm_source: referrerData.utm_source,
+            }),
+            ...(referrerData.utm_medium && {
+              utm_medium: referrerData.utm_medium,
+            }),
+            ...(referrerData.utm_campaign && {
+              utm_campaign: referrerData.utm_campaign,
+            }),
+            ...(referrerData.utm_content && {
+              utm_content: referrerData.utm_content,
+            }),
+            ...(referrerData.channel && { channel: referrerData.channel }),
+            ...(referrerData.influencer && {
+              influencer: referrerData.influencer,
+            }),
+            ...(referrerData.utm_term && { utm_term: referrerData.utm_term }),
+            ...(referrerData.referral && { referral: referrerData.referral }),
+            ...(referrerData.ref && { ref: referrerData.ref }),
+            ...(referrerData.install_referrer && {
+              install_referrer: referrerData.install_referrer,
+            }),
           };
 
           void analytics().logEvent('install_attribution', installAttribution);
 
           // Save referral code to AsyncStorage if present
-          if (referrerData.ref) {
-            void setReferralCodeAsync(referrerData.ref);
+          if (referrerData.referral) {
+            void setReferralCodeAsync(referrerData.referral);
           }
         }
         // For iOS: Only attribution token available, needs server-side resolution

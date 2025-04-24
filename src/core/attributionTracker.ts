@@ -24,6 +24,8 @@ const processAttributionData = (params: any) => {
     // Custom parameters
     influencer: params?.influencer || '',
     ref: params?.ref || '',
+    channel: params?.channel || '',
+    referral: params?.referral || '',
 
     // Device info
     platform: Platform.OS,
