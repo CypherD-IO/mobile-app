@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AsyncStorageKeys } from '../../constants/data';
 import analytics from '@react-native-firebase/analytics';
 import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtility';
+import useAxios from '../../core/HttpRequest';
 
 // Define the attribution data interfaces for each platform
 interface InstallReferrerData {
@@ -41,13 +42,13 @@ interface InstallReferrerData {
  * while iOS provides an attribution token that requires server-side resolution.
  */
 export const useInstallReferrer = () => {
+  const { InstallReferrerModule, AdAttributionModule } = NativeModules;
+  const { getWithoutAuth } = useAxios();
   const [referrerData, setReferrerData] = useState<InstallReferrerData | null>(
     null,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-
-  const { InstallReferrerModule, AdAttributionModule } = NativeModules;
 
   const fetchReferrerData = async () => {
     try {
@@ -58,17 +59,11 @@ export const useInstallReferrer = () => {
         AsyncStorageKeys.PROCESSED_REFERRER_CODE,
       );
 
-      if (storedData) {
+      if (storedData || Platform.OS === 'ios') {
         // If we've already processed the referrer data, use the stored data
         const parsedData = JSON.parse(storedData);
         setReferrerData(parsedData);
-        // Log campaign name and token if available
-        if (parsedData.campaign_name) {
-          console.log('Campaign Name:', parsedData.campaign_name);
-        }
-        if (parsedData.attribution_token) {
-          console.log('Attribution Token:', parsedData.attribution_token);
-        }
+        console.log('Referrer Data:', referrerData);
         setLoading(false);
         return;
       }
@@ -81,28 +76,23 @@ export const useInstallReferrer = () => {
         attributionData =
           await InstallReferrerModule.getInstallReferrerDetails();
         console.log('Android attribution data:', attributionData);
-      } else if (Platform.OS === 'ios' && AdAttributionModule) {
-        console.log('Fetching iOS attribution data...');
-        // For iOS, get the attribution token that requires server-side resolution
-        attributionData =
-          await AdAttributionModule.getAttributionReferralCode();
-        console.log(
-          'iOS attribution token received:',
-          attributionData?.attribution_token
-            ? 'Yes (requires server resolution)'
-            : 'No',
-        );
-
-        // Log campaign name and token if available
-        if (attributionData?.campaign_name) {
-          console.log('Campaign Name:', attributionData.campaign_name);
-        }
-        if (attributionData?.attribution_token) {
-          console.log('Attribution Token:', attributionData.attribution_token);
-        }
       }
 
       if (attributionData) {
+        if (attributionData.referral) {
+          const attributionDataResponse = await getWithoutAuth(
+            `/v1/cards/referral-v2/attribution/${attributionData.referral}`,
+          );
+
+          if (!attributionDataResponse.isError) {
+            // Merge the data from the API response with existing attributionData
+            attributionData = {
+              ...attributionData,
+              ...attributionDataResponse.data,
+            };
+            console.log('Updated attribution data:', attributionData);
+          }
+        }
         // Store the attribution data in AsyncStorage
         await AsyncStorage.setItem(
           AsyncStorageKeys.PROCESSED_REFERRER_CODE,
