@@ -120,14 +120,6 @@ export const AddressBookContainer = ({
               </CyDText>
             </CyDView>
           </CyDView>
-          {chain.toUpperCase() === ChainBackendNames.SOLANA.toUpperCase() && (
-            <CyDLottieView
-              source={AppImages.NEW}
-              autoPlay
-              loop
-              style={styles.lottieViewWidth}
-            />
-          )}
           <CyDView className='flex flex-row justify-between items-center w-[16%]'>
             {wallet?.address !== '' && (
               <CyDTouchView
