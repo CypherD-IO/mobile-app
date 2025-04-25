@@ -11,6 +11,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
+  CyDScrollView,
 } from '../../../styles/tailwindComponents';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -589,10 +590,7 @@ export default function CardQuote({
   };
 
   return (
-    <CyDView
-      className={
-        'flex-1 w-full bg-n20 pb-[30px] flex flex-col justify-between'
-      }>
+    <CyDView className={'flex-1 w-full bg-n20 flex flex-col justify-between'}>
       <PriceFluctuationLearnMoreModal
         isModalVisible={isPriceFluctuationLearnMoreModalVisible}
         setModalVisible={setIsPriceFluctuationLearnMoreModalVisible}
@@ -604,155 +602,163 @@ export default function CardQuote({
         cardProvider={cardProvider}
         cardId={cardId}
       />
-      <CyDView className={'mx-[22px]'}>
-        <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-n40'>
-          <CyDText className='text-[52px] text-mandarin font-bold'>
-            {'$' + limitDecimalPlaces(amountInFiat, 4)}
-          </CyDText>
-          <CyDText className='mt-[6px]'>
-            {t('AMOUNT_TO_BE_LOADED_IN_CARD')}
-          </CyDText>
-        </CyDView>
-        <CyDView
-          className={
-            'flex flex-row justify-between items-center mt-[40px] pb-[16px]'
-          }>
-          <CyDText className={'font-medium text-[14px]'}>
-            {t('NETWORK')}
-          </CyDText>
-          <CyDView
-            className={'flex flex-row justify-center items-center pl-[25px]'}>
-            <CyDFastImage source={chainLogo} className={'w-[18px] h-[18px]'} />
-            <CyDText className={'font-semibold text-[14px] ml-[4px]'}>
-              {capitalize(chain)}
-            </CyDText>
-          </CyDView>
-        </CyDView>
 
-        <CyDView
-          className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-medium text-[14px]'}>
-            {t('CRYPTO_VALUE')}
-          </CyDText>
-          <CyDView
-            className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={'font-bold text-[14px] '}>
-              {limitDecimalPlaces(
-                tokenQuote.cosmosSwap
-                  ? formatUnits(
-                      BigInt(tokenQuote.cosmosSwap.amountIn),
-                      selectedToken.contractDecimals,
-                    )
-                  : tokenQuote.tokensRequired,
-                4,
-              ) +
-                ' ' +
-                symbol}
+      {/* Scrollable content area */}
+      <CyDScrollView className='flex-1'>
+        <CyDView className={'mx-[22px]'}>
+          <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-n40'>
+            <CyDText className='text-[52px] text-mandarin font-bold'>
+              {'$' + limitDecimalPlaces(amountInFiat, 4)}
             </CyDText>
-            <CyDText className={'font-bold text-[14px] text-base100'}>
-              {`$${tokenQuote.amount + tokenQuote.fees.fee}`}
+            <CyDText className='mt-[6px]'>
+              {t('AMOUNT_TO_BE_LOADED_IN_CARD')}
             </CyDText>
           </CyDView>
-        </CyDView>
-
-        <CyDView
-          className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDView className={'flex flex-col gap-[4px]'}>
-            {planInfo?.planId === CypherPlanId.PRO_PLAN && (
-              <CyDFastImage
-                className='h-[12px] w-[66px]'
-                source={AppImages.PREMIUM_TEXT_GRADIENT}
-              />
-            )}
-            <CyDText className={'font-medium text-[14px]'}>
-              {t('LOAD_FEE')}
-            </CyDText>
-          </CyDView>
-          <CyDView
-            className={'flex flex-col flex-wrap justify-between items-end'}>
-            {planInfo?.planId === CypherPlanId.PRO_PLAN ? (
-              <CyDView className={'flex flex-row items-center gap-[6px]'}>
-                <CyDText
-                  className={
-                    'font-medium text-[16px] line-through text-[color:var(--color-base100)]'
-                  }>
-                  {'$' + String(tokenQuote.fees.actualFee)}
-                </CyDText>
-                <LinearGradient
-                  colors={['#FA9703', '#F7510A', '#F48F0F']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.linearGradient}>
-                  <CyDText className={'font-bold text-white'}>
-                    {Number(tokenQuote.fees.fee) === 0
-                      ? 'Free'
-                      : '$' + String(tokenQuote.fees.fee)}
-                  </CyDText>
-                </LinearGradient>
-              </CyDView>
-            ) : (
-              <CyDText className={'font-bold text-[14px] '}>
-                {'$' + String(tokenQuote.fees.fee)}
-              </CyDText>
-            )}
-          </CyDView>
-        </CyDView>
-
-        <CyDView
-          className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-medium text-[14px]'}>
-            {t('ESTIMATED_GAS')}
-          </CyDText>
-          <CyDView
-            className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={'font-bold text-[14px] '}>
-              {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
-            </CyDText>
-            <CyDText className={'font-bold text-[14px] text-base100'}>
-              {'$' + formatAmount(gasFeeInFiat)}
-            </CyDText>
-          </CyDView>
-        </CyDView>
-
-        <CyDView className={'flex flex-row justify-between py-[16px]'}>
-          <CyDView className='flex flex-row justify-start items-center w-[50%]'>
-            <CyDText className={'font-medium text-[14px]'}>
-              {t('ESTIMATED_TIME')}
-            </CyDText>
-          </CyDView>
-
           <CyDView
             className={
-              'flex flex-row justify-between items-center px-[6px] py-[2px] bg-n40 rounded-full'
+              'flex flex-row justify-between items-center mt-[40px] pb-[16px]'
             }>
-            <CyDMaterialDesignIcons
-              name='clock-time-three'
-              size={16}
-              className='text-n70'
-            />
-            <CyDText className={'text-[14px] font-bold text-base100'}>
-              ~ 4 mins
+            <CyDText className={'font-medium text-[14px]'}>
+              {t('NETWORK')}
             </CyDText>
-          </CyDView>
-        </CyDView>
-
-        {planCost > 0 && (
-          <CyDView
-            className={'flex flex-row justify-between items-center py-[16px]'}>
-            <CyDText className={'font-bold text-[14px]'}>
-              {t('PLAN_COST')}
-            </CyDText>
-            <CyDView className={''}>
-              <CyDText className={'font-medium text-[14px] '}>
-                {'$' + String(planCost)}
+            <CyDView
+              className={'flex flex-row justify-center items-center pl-[25px]'}>
+              <CyDFastImage
+                source={chainLogo}
+                className={'w-[18px] h-[18px]'}
+              />
+              <CyDText className={'font-semibold text-[14px] ml-[4px]'}>
+                {capitalize(chain)}
               </CyDText>
             </CyDView>
           </CyDView>
-        )}
-      </CyDView>
-      {tokenQuote.isInstSwapEnabled && (
-        <>
-          <CyDView className='flex flex-col p-[12px] bg-n0 mx-4 rounded-[12px]'>
+
+          <CyDView
+            className={'flex flex-row justify-between items-center py-[16px]'}>
+            <CyDText className={'font-medium text-[14px]'}>
+              {t('CRYPTO_VALUE')}
+            </CyDText>
+            <CyDView
+              className={'flex flex-col flex-wrap justify-between items-end'}>
+              <CyDText className={'font-bold text-[14px] '}>
+                {limitDecimalPlaces(
+                  tokenQuote.cosmosSwap
+                    ? formatUnits(
+                        BigInt(tokenQuote.cosmosSwap.amountIn),
+                        selectedToken.contractDecimals,
+                      )
+                    : tokenQuote.tokensRequired,
+                  4,
+                ) +
+                  ' ' +
+                  symbol}
+              </CyDText>
+              <CyDText className={'font-bold text-[14px] text-base100'}>
+                {`$${tokenQuote.amount + tokenQuote.fees.fee}`}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+
+          <CyDView
+            className={'flex flex-row justify-between items-center py-[16px]'}>
+            <CyDView className={'flex flex-col gap-[4px]'}>
+              {planInfo?.planId === CypherPlanId.PRO_PLAN && (
+                <CyDFastImage
+                  className='h-[12px] w-[66px]'
+                  source={AppImages.PREMIUM_TEXT_GRADIENT}
+                />
+              )}
+              <CyDText className={'font-medium text-[14px]'}>
+                {t('LOAD_FEE')}
+              </CyDText>
+            </CyDView>
+            <CyDView
+              className={'flex flex-col flex-wrap justify-between items-end'}>
+              {planInfo?.planId === CypherPlanId.PRO_PLAN ? (
+                <CyDView className={'flex flex-row items-center gap-[6px]'}>
+                  <CyDText
+                    className={
+                      'font-medium text-[16px] line-through text-[color:var(--color-base100)]'
+                    }>
+                    {'$' + String(tokenQuote.fees.actualFee)}
+                  </CyDText>
+                  <LinearGradient
+                    colors={['#FA9703', '#F7510A', '#F48F0F']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.linearGradient}>
+                    <CyDText className={'font-bold text-white'}>
+                      {Number(tokenQuote.fees.fee) === 0
+                        ? 'Free'
+                        : '$' + String(tokenQuote.fees.fee)}
+                    </CyDText>
+                  </LinearGradient>
+                </CyDView>
+              ) : (
+                <CyDText className={'font-bold text-[14px] '}>
+                  {'$' + String(tokenQuote.fees.fee)}
+                </CyDText>
+              )}
+            </CyDView>
+          </CyDView>
+
+          <CyDView
+            className={'flex flex-row justify-between items-center py-[16px]'}>
+            <CyDText className={'font-medium text-[14px]'}>
+              {t('ESTIMATED_GAS')}
+            </CyDText>
+            <CyDView
+              className={'flex flex-col flex-wrap justify-between items-end'}>
+              <CyDText className={'font-bold text-[14px] '}>
+                {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
+              </CyDText>
+              <CyDText className={'font-bold text-[14px] text-base100'}>
+                {'$' + formatAmount(gasFeeInFiat)}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+
+          <CyDView className={'flex flex-row justify-between py-[16px]'}>
+            <CyDView className='flex flex-row justify-start items-center w-[50%]'>
+              <CyDText className={'font-medium text-[14px]'}>
+                {t('ESTIMATED_TIME')}
+              </CyDText>
+            </CyDView>
+
+            <CyDView
+              className={
+                'flex flex-row justify-between items-center px-[6px] py-[2px] bg-n40 rounded-full'
+              }>
+              <CyDMaterialDesignIcons
+                name='clock-time-three'
+                size={16}
+                className='text-n70'
+              />
+              <CyDText className={'text-[14px] font-bold text-base100'}>
+                ~ 4 mins
+              </CyDText>
+            </CyDView>
+          </CyDView>
+
+          {planCost > 0 && (
+            <CyDView
+              className={
+                'flex flex-row justify-between items-center py-[16px]'
+              }>
+              <CyDText className={'font-bold text-[14px]'}>
+                {t('PLAN_COST')}
+              </CyDText>
+              <CyDView className={''}>
+                <CyDText className={'font-medium text-[14px] '}>
+                  {'$' + String(planCost)}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+          )}
+        </CyDView>
+
+        {tokenQuote.isInstSwapEnabled && (
+          <CyDView className='flex flex-col p-[12px] bg-n0 mx-4 rounded-[12px] mb-[24px]'>
             <CyDView className='flex flex-row items-start gap-[6px]'>
               <CyDMaterialDesignIcons
                 name='alert'
@@ -795,9 +801,13 @@ export default function CardQuote({
               </CyDText>
             </CyDView>
           </CyDView>
-        </>
-      )}
-      <CyDView>
+        )}
+
+        <CyDView className='pb-[120px]' />
+      </CyDScrollView>
+
+      {/* Sticky footer with "Explore Premium" and buttons */}
+      <CyDView className='absolute bottom-0 left-0 right-0 bg-n20 pb-[30px]'>
         {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
           <CyDView className='bg-p10 mb-[24px] px-[12px] py-[16px] mx-[16px] rounded-[12px] flex flex-row justify-between items-center'>
             <CyDText className='text-base200 font-medium text-[12px]'>
