@@ -1,7 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { floor, get } from 'lodash';
+import { floor, get, isEmpty } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, useWindowDimensions } from 'react-native';
@@ -572,54 +572,327 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     const nativeTokenSymbol =
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
 
-    if (chainDetails.chainName === ChainNames.ETH) {
-      const publicClient = getViemPublicClient(
-        getWeb3Endpoint(chainDetails, globalContext),
-      );
-      setIsMaxLoading(true);
-      let amountInCrypto = balanceDecimal;
-      try {
-        // Reserving gas for the txn if the selected token is a native token.
-        if (
-          selectedTokenSymbol === nativeTokenSymbol &&
-          !GASLESS_CHAINS.includes(chainDetails.backendName) &&
-          !selectedToken?.isHyperliquid
-        ) {
-          // remove this gasFeeReservation once we have gas estimation for eip1599 chains
-          // Estimate the gasFee for the transaction
-          if (
-            CAN_ESTIMATE_L1_FEE_CHAINS.includes(chainDetails.backendName) &&
-            isNativeToken(selectedToken)
-          ) {
-            const gasReservedForNativeToken = await estimateReserveFee({
-              tokenData: selectedToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
-              toAddress: hdWallet.state.wallet.ethereum.address,
-              publicClient,
-              rpc: getWeb3Endpoint(chainDetails, globalContext),
-            });
+    let amountInCrypto = balanceDecimal;
 
-            amountInCrypto = DecimalHelper.subtract(
-              balanceDecimal,
-              gasReservedForNativeToken,
-            ).toString();
-          } else {
-            const gasDetails = await estimateGasForEvm({
-              publicClient,
-              chain: chainDetails.backendName,
-              fromAddress: ethereum.address,
-              toAddress: ethereum.address,
-              amountToSend: amountInCrypto,
-              contractAddress: contractAddress as `0x${string}`,
-              contractDecimals,
-              isErc20: !selectedToken?.isNativeToken,
-            });
-            if (!gasDetails.isError) {
-              // Adjust the amountInCrypto with the estimated gas fee
-              // 10% buffer is added as there will be another gasEstimation in the quote modal
+    const usdAmount_ = DecimalHelper.multiply(
+      amountInCrypto,
+      selectedToken?.isZeroFeeCardFunding ? 1 : Number(selectedToken?.price),
+    );
+
+    if (selectedToken) {
+      const { backendName } = selectedToken.chainDetails;
+      let errorMessage = '';
+      if (
+        usdAmount &&
+        backendName === CHAIN_ETH.backendName &&
+        DecimalHelper.isLessThan(usdAmount_, MINIMUM_TRANSFER_AMOUNT_ETH)
+      ) {
+        errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
+      } else if (
+        !usdAmount_ ||
+        DecimalHelper.isLessThan(usdAmount_, minTokenValueLimit)
+      ) {
+        errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
+      }
+
+      if (!isEmpty(errorMessage)) {
+        showModal('state', {
+          type: 'error',
+          title: errorMessage,
+          description: 'Change the amount and try again',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+
+      if (chainDetails.chainName === ChainNames.ETH) {
+        const publicClient = getViemPublicClient(
+          getWeb3Endpoint(chainDetails, globalContext),
+        );
+        setIsMaxLoading(true);
+
+        try {
+          // Reserving gas for the txn if the selected token is a native token.
+          if (
+            selectedTokenSymbol === nativeTokenSymbol &&
+            !GASLESS_CHAINS.includes(chainDetails.backendName) &&
+            !selectedToken?.isHyperliquid
+          ) {
+            // remove this gasFeeReservation once we have gas estimation for eip1599 chains
+            // Estimate the gasFee for the transaction
+            if (
+              CAN_ESTIMATE_L1_FEE_CHAINS.includes(chainDetails.backendName) &&
+              isNativeToken(selectedToken)
+            ) {
+              const gasReservedForNativeToken = await estimateReserveFee({
+                tokenData: selectedToken,
+                fromAddress: hdWallet.state.wallet.ethereum.address,
+                toAddress: hdWallet.state.wallet.ethereum.address,
+                publicClient,
+                rpc: getWeb3Endpoint(chainDetails, globalContext),
+              });
+
               amountInCrypto = DecimalHelper.subtract(
                 balanceDecimal,
-                DecimalHelper.multiply(gasDetails.gasFeeInCrypto, 1.1),
+                gasReservedForNativeToken,
+              ).toString();
+            } else {
+              const gasDetails = await estimateGasForEvm({
+                publicClient,
+                chain: chainDetails.backendName,
+                fromAddress: ethereum.address,
+                toAddress: ethereum.address,
+                amountToSend: amountInCrypto,
+                contractAddress: contractAddress as `0x${string}`,
+                contractDecimals,
+                isErc20: !selectedToken?.isNativeToken,
+              });
+              if (!gasDetails.isError) {
+                // Adjust the amountInCrypto with the estimated gas fee
+                // 10% buffer is added as there will be another gasEstimation in the quote modal
+                amountInCrypto = DecimalHelper.subtract(
+                  balanceDecimal,
+                  DecimalHelper.multiply(gasDetails.gasFeeInCrypto, 1.1),
+                ).toString();
+              } else {
+                setIsMaxLoading(false);
+                showModal('state', {
+                  type: 'error',
+                  title: t('GAS_ESTIMATION_FAILED'),
+                  description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+                  onSuccess: hideModal,
+                  onFailure: hideModal,
+                });
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          const errorObject = {
+            e,
+            message: 'Error when estimating gas for the evm transaction.',
+            selectedToken,
+          };
+          Sentry.captureException(errorObject);
+          setIsMaxLoading(false);
+          showModal('state', {
+            type: 'error',
+            title: t('GAS_ESTIMATION_FAILED'),
+            description:
+              parseErrorMessage(e) ?? t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
+
+        try {
+          const payload = {
+            ecosystem: 'evm',
+            address: ethereum.address,
+            chain: chainDetails.backendName,
+            amount: DecimalHelper.toNumber(amountInCrypto),
+            tokenAddress: contractAddress,
+            amountInCrypto: true,
+            ...(selectedToken?.isHyperliquid && {
+              hyperliquidTradeType: selectedToken?.accountType,
+            }),
+          };
+          const response = await postWithAuth(
+            `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
+            payload,
+          );
+          if (!response.isError) {
+            const quote: CardQuoteResponse = response.data;
+            void showQuoteModal(quote, true);
+          } else {
+            setIsMaxLoading(false);
+            showModal('state', {
+              type: 'error',
+              title: parseErrorMessage(response.error).includes(
+                'minimum amount',
+              )
+                ? t('INSUFFICIENT_FUNDS')
+                : '',
+              description: parseErrorMessage(response.error).includes(
+                'amount is lower than 10 USD',
+              )
+                ? parseErrorMessage(response.error) +
+                  `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
+                : (parseErrorMessage(response.error) ??
+                  t('UNABLE_TO_TRANSFER')),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
+        } catch (e) {
+          const errorObject = {
+            e,
+            message: 'Error when quoting non-max amount in evm chains',
+            selectedToken,
+            quoteData: {
+              currentCardProvider,
+              cardId,
+              chain: chainDetails.backendName,
+              contractAddress,
+              usdAmount,
+              ethAddress: ethereum.address,
+              contractDecimals,
+            },
+          };
+          Sentry.captureException(errorObject);
+          setIsMaxLoading(false);
+          showModal('state', {
+            type: 'error',
+            title: '',
+            description: t('UNABLE_TO_TRANSFER'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }
+      } else if (chainDetails.chainName === ChainNames.SOLANA) {
+        // Reserving gas for the txn if the selected token is a native token.
+        setIsMaxLoading(true);
+        if (
+          selectedTokenSymbol === nativeTokenSymbol &&
+          !GASLESS_CHAINS.includes(chainDetails.backendName)
+        ) {
+          try {
+            const gasDetails = await estimateGasForSolana({
+              fromAddress: solana.address,
+              toAddress: solana.address,
+              amountToSend: String(amountInCrypto),
+              contractAddress,
+              tokenContractDecimals: contractDecimals,
+              isMaxGasEstimation: true,
+            });
+            if (!gasDetails?.isError) {
+              // not doing it or solana because if we are sending max amount, then there should be 0 SOL balance in the account, or there should SOL balance enough
+              // for handling the account rent, else we will get the error InsufficientFundsForRent, since we will not be having enough SOL
+              const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
+              amountInCrypto = DecimalHelper.subtract(
+                balanceDecimal,
+                gasFeeEstimationForTxn,
+              ).toString();
+            } else {
+              setIsMaxLoading(false);
+              showModal('state', {
+                type: 'error',
+                title: t('GAS_ESTIMATION_FAILED'),
+                description:
+                  parseErrorMessage(gasDetails?.error) ??
+                  t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+                onSuccess: hideModal,
+                onFailure: hideModal,
+              });
+              return;
+            }
+          } catch (err) {
+            const errorObject = {
+              err,
+              message: 'Error when estimating gas for the cosmos transaction.',
+              selectedToken,
+            };
+            Sentry.captureException(errorObject);
+            setIsMaxLoading(false);
+            showModal('state', {
+              type: 'error',
+              title: t('GAS_ESTIMATION_FAILED'),
+              description:
+                parseErrorMessage(err) ??
+                t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+            return;
+          }
+        }
+        try {
+          const payload = {
+            ecosystem: 'solana',
+            address: solana.address,
+            chain: chainDetails.backendName,
+            amount: DecimalHelper.toNumber(amountInCrypto),
+            coinId: coinGeckoId,
+            amountInCrypto: true,
+            tokenAddress: contractAddress,
+          };
+          const response = await postWithAuth(
+            `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
+            payload,
+          );
+          if (!response.isError) {
+            const quote: CardQuoteResponse = response.data;
+            void showQuoteModal(quote, true);
+          } else {
+            setIsMaxLoading(false);
+            showModal('state', {
+              type: 'error',
+              title: parseErrorMessage(response.error).includes(
+                'minimum amount',
+              )
+                ? t('INSUFFICIENT_FUNDS')
+                : '',
+              description: parseErrorMessage(response.error).includes(
+                'amount is lower than 10 USD',
+              )
+                ? parseErrorMessage(response.error) +
+                  `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
+                : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
+        } catch (e) {
+          const errorObject = {
+            e,
+            message: 'Error when quoting non-max amount in cosmos chains',
+            selectedToken,
+            quoteData: {
+              currentCardProvider,
+              cardId,
+              chain: chainDetails.backendName,
+              contractAddress,
+              usdAmount,
+              ethAddress: ethereum.address,
+              chainAddress: wallet[chainDetails.chainName].address,
+              coinGeckoId,
+              contractDecimals,
+            },
+          };
+          Sentry.captureException(errorObject);
+          setIsMaxLoading(false);
+          showModal('state', {
+            type: 'error',
+            title: '',
+            description: t('UNABLE_TO_TRANSFER'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }
+      } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
+        // Reserving gas for the txn if the selected token is a native token.
+        setIsMaxLoading(true);
+        if (
+          selectedTokenSymbol === nativeTokenSymbol &&
+          !GASLESS_CHAINS.includes(chainDetails.backendName)
+        ) {
+          try {
+            // target address is osmosis address so doing IBC instead of send for estimation
+            const gasDetails = await estimateGasForCosmosIBCRest({
+              fromChain: chainDetails,
+              toChain: CHAIN_OSMOSIS,
+              denom,
+              amount: amountInCrypto,
+              fromAddress: wallet[chainDetails.chainName].address,
+              toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
+            });
+            if (gasDetails) {
+              const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
+              amountInCrypto = DecimalHelper.subtract(
+                balanceDecimal,
+                DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
               ).toString();
             } else {
               setIsMaxLoading(false);
@@ -632,313 +905,91 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               });
               return;
             }
-          }
-        }
-      } catch (e) {
-        const errorObject = {
-          e,
-          message: 'Error when estimating gas for the evm transaction.',
-          selectedToken,
-        };
-        Sentry.captureException(errorObject);
-        setIsMaxLoading(false);
-        showModal('state', {
-          type: 'error',
-          title: t('GAS_ESTIMATION_FAILED'),
-          description:
-            parseErrorMessage(e) ?? t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-        return;
-      }
-
-      try {
-        const payload = {
-          ecosystem: 'evm',
-          address: ethereum.address,
-          chain: chainDetails.backendName,
-          amount: DecimalHelper.toNumber(amountInCrypto),
-          tokenAddress: contractAddress,
-          amountInCrypto: true,
-          ...(selectedToken?.isHyperliquid && {
-            hyperliquidTradeType: selectedToken?.accountType,
-          }),
-        };
-        const response = await postWithAuth(
-          `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-          payload,
-        );
-        if (!response.isError) {
-          const quote: CardQuoteResponse = response.data;
-          void showQuoteModal(quote, true);
-        } else {
-          setIsMaxLoading(false);
-          showModal('state', {
-            type: 'error',
-            title: parseErrorMessage(response.error).includes('minimum amount')
-              ? t('INSUFFICIENT_FUNDS')
-              : '',
-            description: parseErrorMessage(response.error).includes(
-              'amount is lower than 10 USD',
-            )
-              ? parseErrorMessage(response.error) +
-                `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-              : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }
-      } catch (e) {
-        const errorObject = {
-          e,
-          message: 'Error when quoting non-max amount in evm chains',
-          selectedToken,
-          quoteData: {
-            currentCardProvider,
-            cardId,
-            chain: chainDetails.backendName,
-            contractAddress,
-            usdAmount,
-            ethAddress: ethereum.address,
-            contractDecimals,
-          },
-        };
-        Sentry.captureException(errorObject);
-        setIsMaxLoading(false);
-        showModal('state', {
-          type: 'error',
-          title: '',
-          description: t('UNABLE_TO_TRANSFER'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    } else if (chainDetails.chainName === ChainNames.SOLANA) {
-      let amountInCrypto = balanceDecimal;
-      // Reserving gas for the txn if the selected token is a native token.
-      setIsMaxLoading(true);
-      if (
-        selectedTokenSymbol === nativeTokenSymbol &&
-        !GASLESS_CHAINS.includes(chainDetails.backendName)
-      ) {
-        try {
-          const gasDetails = await estimateGasForSolana({
-            fromAddress: solana.address,
-            toAddress: solana.address,
-            amountToSend: String(amountInCrypto),
-            contractAddress,
-            tokenContractDecimals: contractDecimals,
-            isMaxGasEstimation: true,
-          });
-          if (!gasDetails?.isError) {
-            // not doing it or solana because if we are sending max amount, then there should be 0 SOL balance in the account, or there should SOL balance enough
-            // for handling the account rent, else we will get the error InsufficientFundsForRent, since we will not be having enough SOL
-            const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
-            amountInCrypto = DecimalHelper.subtract(
-              balanceDecimal,
-              gasFeeEstimationForTxn,
-            ).toString();
-          } else {
+          } catch (err) {
+            const errorObject = {
+              err,
+              message: 'Error when estimating gas for the cosmos transaction.',
+              selectedToken,
+            };
+            Sentry.captureException(errorObject);
             setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
               description:
-                parseErrorMessage(gasDetails?.error) ??
+                parseErrorMessage(err) ??
                 t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
             return;
           }
-        } catch (err) {
-          const errorObject = {
-            err,
-            message: 'Error when estimating gas for the cosmos transaction.',
-            selectedToken,
-          };
-          Sentry.captureException(errorObject);
-          setIsMaxLoading(false);
-          showModal('state', {
-            type: 'error',
-            title: t('GAS_ESTIMATION_FAILED'),
-            description:
-              parseErrorMessage(err) ?? t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-          return;
         }
-      }
-      try {
-        const payload = {
-          ecosystem: 'solana',
-          address: solana.address,
-          chain: chainDetails.backendName,
-          amount: DecimalHelper.toNumber(amountInCrypto),
-          coinId: coinGeckoId,
-          amountInCrypto: true,
-          tokenAddress: contractAddress,
-        };
-        const response = await postWithAuth(
-          `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-          payload,
-        );
-        if (!response.isError) {
-          const quote: CardQuoteResponse = response.data;
-          void showQuoteModal(quote, true);
-        } else {
-          setIsMaxLoading(false);
-          showModal('state', {
-            type: 'error',
-            title: parseErrorMessage(response.error).includes('minimum amount')
-              ? t('INSUFFICIENT_FUNDS')
-              : '',
-            description: parseErrorMessage(response.error).includes(
-              'amount is lower than 10 USD',
-            )
-              ? parseErrorMessage(response.error) +
-                `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-              : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }
-      } catch (e) {
-        const errorObject = {
-          e,
-          message: 'Error when quoting non-max amount in cosmos chains',
-          selectedToken,
-          quoteData: {
-            currentCardProvider,
-            cardId,
-            chain: chainDetails.backendName,
-            contractAddress,
-            usdAmount,
-            ethAddress: ethereum.address,
-            chainAddress: wallet[chainDetails.chainName].address,
-            coinGeckoId,
-            contractDecimals,
-          },
-        };
-        Sentry.captureException(errorObject);
-        setIsMaxLoading(false);
-        showModal('state', {
-          type: 'error',
-          title: '',
-          description: t('UNABLE_TO_TRANSFER'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
-      let amountInCrypto = balanceDecimal;
-      // Reserving gas for the txn if the selected token is a native token.
-      setIsMaxLoading(true);
-      if (
-        selectedTokenSymbol === nativeTokenSymbol &&
-        !GASLESS_CHAINS.includes(chainDetails.backendName)
-      ) {
         try {
-          // target address is osmosis address so doing IBC instead of send for estimation
-          const gasDetails = await estimateGasForCosmosIBCRest({
-            fromChain: chainDetails,
-            toChain: CHAIN_OSMOSIS,
-            denom,
-            amount: amountInCrypto,
-            fromAddress: wallet[chainDetails.chainName].address,
-            toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
-          });
-          if (gasDetails) {
-            const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
-            amountInCrypto = DecimalHelper.subtract(
-              balanceDecimal,
-              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
-            ).toString();
+          const payload = {
+            ecosystem: 'cosmos',
+            address: wallet[chainDetails.chainName].address,
+            chain: chainDetails.backendName,
+            amount: DecimalHelper.toNumber(amountInCrypto),
+            coinId: coinGeckoId,
+            amountInCrypto: true,
+            tokenAddress: denom,
+            isCosmosV2: true,
+          };
+          const response = await postWithAuth(
+            `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
+            payload,
+          );
+          if (!response.isError) {
+            const quote: CardQuoteResponse = response.data;
+            void showQuoteModal(quote, true);
           } else {
             setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
-              title: t('GAS_ESTIMATION_FAILED'),
-              description: t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
+              title: parseErrorMessage(response.error).includes(
+                'minimum amount',
+              )
+                ? t('INSUFFICIENT_FUNDS')
+                : '',
+              description: parseErrorMessage(response.error).includes(
+                'amount is lower than 10 USD',
+              )
+                ? parseErrorMessage(response.error) +
+                  '. Please ensure you have enough balance for gas fees.'
+                : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
-            return;
           }
-        } catch (err) {
+        } catch (e) {
           const errorObject = {
-            err,
-            message: 'Error when estimating gas for the cosmos transaction.',
+            e,
+            message: 'Error when quoting non-max amount in cosmos chains',
             selectedToken,
+            quoteData: {
+              currentCardProvider,
+              cardId,
+              chain: chainDetails.backendName,
+              contractAddress,
+              usdAmount,
+              ethAddress: ethereum.address,
+              chainAddress: wallet[chainDetails.chainName].address,
+              coinGeckoId,
+              contractDecimals,
+            },
           };
           Sentry.captureException(errorObject);
           setIsMaxLoading(false);
           showModal('state', {
             type: 'error',
-            title: t('GAS_ESTIMATION_FAILED'),
-            description:
-              parseErrorMessage(err) ?? t('GAS_ESTIMATION_FAILED_DESCRIPTION'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-          return;
-        }
-      }
-      try {
-        const payload = {
-          ecosystem: 'cosmos',
-          address: wallet[chainDetails.chainName].address,
-          chain: chainDetails.backendName,
-          amount: DecimalHelper.toNumber(amountInCrypto),
-          coinId: coinGeckoId,
-          amountInCrypto: true,
-          tokenAddress: denom,
-          isCosmosV2: true,
-        };
-        const response = await postWithAuth(
-          `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-          payload,
-        );
-        if (!response.isError) {
-          const quote: CardQuoteResponse = response.data;
-          void showQuoteModal(quote, true);
-        } else {
-          setIsMaxLoading(false);
-          showModal('state', {
-            type: 'error',
-            title: parseErrorMessage(response.error).includes('minimum amount')
-              ? t('INSUFFICIENT_FUNDS')
-              : '',
-            description: parseErrorMessage(response.error).includes(
-              'amount is lower than 10 USD',
-            )
-              ? parseErrorMessage(response.error) +
-                '. Please ensure you have enough balance for gas fees.'
-              : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
+            title: '',
+            description: t('UNABLE_TO_TRANSFER'),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
         }
-      } catch (e) {
-        const errorObject = {
-          e,
-          message: 'Error when quoting non-max amount in cosmos chains',
-          selectedToken,
-          quoteData: {
-            currentCardProvider,
-            cardId,
-            chain: chainDetails.backendName,
-            contractAddress,
-            usdAmount,
-            ethAddress: ethereum.address,
-            chainAddress: wallet[chainDetails.chainName].address,
-            coinGeckoId,
-            contractDecimals,
-          },
-        };
-        Sentry.captureException(errorObject);
+      } else {
         setIsMaxLoading(false);
         showModal('state', {
           type: 'error',
@@ -948,15 +999,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           onFailure: hideModal,
         });
       }
-    } else {
-      setIsMaxLoading(false);
-      showModal('state', {
-        type: 'error',
-        title: '',
-        description: t('UNABLE_TO_TRANSFER'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
     }
   };
 
@@ -975,7 +1017,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 source={{ uri: selectedToken.logoUrl }}
                 className={'w-[26px] h-[26px] rounded-[20px]'}
               />
-              <CyDView className='flex flex-col justify-start items-start ml-[8px] max-w-[100px]'>
+              <CyDView className='flex flex-col justify-start items-start ml-[8px] max-w-[250px]'>
                 <CyDText
                   numberOfLines={1}
                   className={clsx('font-extrabold text-[16px] w-full', {
@@ -1017,13 +1059,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             </CyDView>
           )}
 
-          <CyDView className='flex flex-row items-center ml-[8px]'>
-            <CyDMaterialDesignIcons
-              name='chevron-down'
-              size={20}
-              className='text-base400'
-            />
-          </CyDView>
+          <CyDMaterialDesignIcons
+            name='chevron-down'
+            size={20}
+            className='text-base400 ml-[8px]'
+          />
         </CyDView>
       </CyDTouchView>
     );
