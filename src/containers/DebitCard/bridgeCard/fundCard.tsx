@@ -583,15 +583,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       const { backendName } = selectedToken.chainDetails;
       let errorMessage = '';
       if (
-        usdAmount &&
         backendName === CHAIN_ETH.backendName &&
         DecimalHelper.isLessThan(usdAmount_, MINIMUM_TRANSFER_AMOUNT_ETH)
       ) {
         errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
-      } else if (
-        !usdAmount_ ||
-        DecimalHelper.isLessThan(usdAmount_, minTokenValueLimit)
-      ) {
+      } else if (DecimalHelper.isLessThan(usdAmount_, minTokenValueLimit)) {
         errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
       }
 
