@@ -916,10 +916,7 @@ const RenderCardActions = ({
               type: GlobalContextType.CARD_PROFILE,
               cardProfile: tempProfile,
             });
-            navigation.navigate(screenTitle.GET_YOUR_CARD, {
-              deductAmountNow: false,
-              toPage: screenTitle.CARD_APPLICATION,
-            });
+            navigation.navigate(screenTitle.CARD_APPLICATION_WELCOME);
           }}
         />
       </CyDView>

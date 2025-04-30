@@ -142,7 +142,7 @@ export default function DebitCardScreen(props: RouteProps) {
                   index: 0,
                   routes: [
                     {
-                      name: screenTitle.KYC_VERIFICATION,
+                      name: screenTitle.KYC_VERIFICATION_INTRO,
                     },
                   ],
                 });
@@ -167,7 +167,7 @@ export default function DebitCardScreen(props: RouteProps) {
                   index: 0,
                   routes: [
                     {
-                      name: screenTitle.GET_YOUR_CARD,
+                      name: screenTitle.CARD_APPLICATION_WELCOME,
                       params: {
                         deductAmountNow: false,
                         toPage: screenTitle.CARD_APPLICATION,
@@ -221,7 +221,7 @@ export default function DebitCardScreen(props: RouteProps) {
             index: 0,
             routes: [
               {
-                name: screenTitle.CARD_SIGNUP_OTP_VERIFICATION,
+                name: screenTitle.EMAIL_VERIFICATION,
               },
             ],
           });

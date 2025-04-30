@@ -1,3 +1,4 @@
+import React from 'react';
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
   ONBOARDING: 'OnBoarding',
@@ -119,6 +120,22 @@ export const screenTitle = {
   GET_YOUR_CARD: 'GetYourCard',
   CARD_WELCOME_SCREEN: 'welcomeScreen',
   CARD_APPLICATION: 'cardApplication',
+  CARD_APPLICATION_WELCOME: 'cardApplicationWelcome',
+  ENTER_REFERRAL_CODE: 'enterReferralCode',
+  BASIC_DETAILS: 'basicDetails',
+  SHIPPING_ADDRESS: 'shippingAddress',
+  ADDITIONAL_DETAILS: 'additionalDetails',
+  EMAIL_VERIFICATION: 'emailVerification',
+  CARD_FAQ_SCREEN: 'cardFaqScreen',
+  KYC_VERIFICATION_INTRO: 'kycVerificationIntro',
+  KYC_WEBVIEW: 'kycWebView',
+  KYC_VERIFICATION_IN_PROGRESS: 'kycVerificationInProgress',
+  ADDITIONAL_DOCUMENT_REQUIRED: 'additionalDocumentRequired',
+  ADDITIONAL_REVIEW: 'additionalReview',
+  VERIFICATION_COMPLETED: 'verificationCompleted',
+  VERIFICATION_FAILED: 'verificationFailed',
+  NAME_ON_CARD: 'nameOnCard',
+  CARD_CREATION: 'cardCreation',
   REWARDS: 'Rewards',
   MIGRATE_FUNDS: 'migrateFunds',
   REFERRALS: 'Referrals',
