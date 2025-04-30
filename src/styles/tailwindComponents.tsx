@@ -20,6 +20,7 @@ import {
   TextInputProps,
   ImageProps,
   ImageBackgroundProps,
+  ScrollViewProps,
 } from 'react-native';
 import FastImage, { FastImageProps } from 'react-native-fast-image';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -135,7 +136,9 @@ export const CyDModal = Modal;
 
 export const CyDRefreshControl = RefreshControl;
 
-export const CyDScrollView = ScrollView;
+export const CyDScrollView = (props: ScrollViewProps) => (
+  <ScrollView showsVerticalScrollIndicator={false} {...props} />
+);
 
 export const CyDSwitch = Switch;
 

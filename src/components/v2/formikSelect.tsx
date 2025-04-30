@@ -24,6 +24,7 @@ interface FormikSelectProps {
   selectClassName?: string;
   errorClassName?: string;
   placeholder?: string;
+  leftIcon?: string;
 }
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -38,6 +39,7 @@ const FormikSelect: React.FC<FormikSelectProps> = ({
   selectClassName = 'p-[16px] rounded-[8px] bg-n0 font-semibold border-[1px] border-n40 mt-[2px]',
   errorClassName = 'text-red200 text-[12px] mt-[2px] text-end w-full',
   placeholder = 'Select an option',
+  leftIcon,
 }) => {
   const [field, meta, helpers] = useField(name);
   const [isOpen, setIsOpen] = useState(false);
@@ -61,9 +63,18 @@ const FormikSelect: React.FC<FormikSelectProps> = ({
             'rounded-b-none': isOpen,
           })}>
           <CyDView className='flex-row justify-between items-center'>
-            <CyDText className={!selectedOption ? 'text-n200' : ''}>
-              {selectedOption ? selectedOption.label : placeholder}
-            </CyDText>
+            <CyDView className='flex-row items-center flex-1'>
+              {leftIcon && (
+                <CyDMaterialDesignIcons
+                  name={leftIcon}
+                  size={20}
+                  className='text-n400 mr-2'
+                />
+              )}
+              <CyDText className={!selectedOption ? 'text-n200' : ''}>
+                {selectedOption ? selectedOption.label : placeholder}
+              </CyDText>
+            </CyDView>
             <CyDMaterialDesignIcons
               name={isOpen ? 'chevron-up' : 'chevron-down'}
               size={20}

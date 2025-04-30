@@ -91,4 +91,6 @@ export type IconNames =
   | 'card-plus'
   | 'paypal-icon'
   | 'apple-google-icon'
-  | 'balance-scale';
+  | 'balance-scale'
+  | 'help-circle-outline'
+  | 'arrow-forward';
