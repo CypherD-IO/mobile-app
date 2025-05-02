@@ -144,6 +144,30 @@ export default function CardControls() {
   const [selectedCountries, setSelectedCountries] = useState<ICountry[]>([]);
   const [allCountriesSelected, setAllCountriesSelected] = useState(false);
   const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [showMobileWalletTooltip, setShowMobileWalletTooltip] = useState(false);
+  const [showMerchantOutletTooltip, setShowMerchantOutletTooltip] =
+    useState(false);
+  const [showAtmWithdrawalTooltip, setShowAtmWithdrawalTooltip] =
+    useState(false);
+  const [isCountryModalVisible, setIsCountryModalVisible] = useState(false);
+  const [show3DsModal, setShow3DsModal] = useState(false);
+  const [isTelegramEnabled, setIsTelegramEnabled] = useState(
+    get(selectedCard, 'is3dsEnabled', false),
+  );
+
+  // const [showHigherLimitStatus, setShowHigherLimitStatus] = useState(true);
+  // const [higherLimitStatus, setHigherLimitStatus] =
+  //   useState<HigherSpendingLimitStatus>(HigherSpendingLimitStatus.PENDING);
+
+  // const handleContactSupport = () => {
+  //   // Handle contact support action
+  //   setShowHigherLimitStatus(false);
+  //   // Add your contact support navigation/action here
+  // };
+
+  const [loading, setLoading] = useState(true);
+  const [cardLimits, setCardLimits] = useState<CardLimitsV2Response>();
+  const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
 
   // Add a ref to store the exit action
   const exitActionRef = useRef<any>();
@@ -170,6 +194,7 @@ export default function CardControls() {
     if (card) {
       setSelectedCard(card);
       void fetchCardLimits();
+      setIsTelegramEnabled(get(card, 'is3dsEnabled', false));
     }
   }, [selectedCardId, activeCards]);
 
@@ -293,12 +318,6 @@ export default function CardControls() {
       console.error('Error toggling channel:', error);
     }
   };
-
-  const [showMobileWalletTooltip, setShowMobileWalletTooltip] = useState(false);
-  const [showMerchantOutletTooltip, setShowMerchantOutletTooltip] =
-    useState(false);
-  const [showAtmWithdrawalTooltip, setShowAtmWithdrawalTooltip] =
-    useState(false);
 
   const handleEditLimit = (type: 'daily' | 'monthly') => {
     if (type === 'daily') {
@@ -429,25 +448,6 @@ export default function CardControls() {
       });
     }
   };
-
-  const [isCountryModalVisible, setIsCountryModalVisible] = useState(false);
-  const [show3DsModal, setShow3DsModal] = useState(false);
-  const [isTelegramEnabled, setIsTelegramEnabled] = useState(
-    get(selectedCard, 'is3dsEnabled', false),
-  );
-
-  // const [showHigherLimitStatus, setShowHigherLimitStatus] = useState(true);
-  // const [higherLimitStatus, setHigherLimitStatus] =
-  //   useState<HigherSpendingLimitStatus>(HigherSpendingLimitStatus.PENDING);
-
-  // const handleContactSupport = () => {
-  //   // Handle contact support action
-  //   setShowHigherLimitStatus(false);
-  //   // Add your contact support navigation/action here
-  // };
-
-  const [loading, setLoading] = useState(true);
-  const [cardLimits, setCardLimits] = useState<CardLimitsV2Response>();
 
   const fetchCardLimits = async (cardId = selectedCardId) => {
     if (!cardId) return;
@@ -625,9 +625,6 @@ export default function CardControls() {
       onFailure: hideModal,
     });
   };
-
-  const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
-
   useEffect(() => {
     // Handle back navigation for iOS and Android
     const unsubscribe = navigation.addListener('beforeRemove', e => {
