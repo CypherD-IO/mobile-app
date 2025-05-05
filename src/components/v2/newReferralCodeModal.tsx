@@ -25,6 +25,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import clsx from 'clsx';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { showToast } from '../../containers/utilities/toastUtility';
 
 // Keep only the styles we need to pass directly to components
 const styles = StyleSheet.create({
@@ -71,7 +72,12 @@ export default function NewReferralCodeModal({
 }: {
   isModalVisible: boolean;
   setIsModalVisible: (val: boolean) => void;
-  createReferralCode: (payload: any) => Promise<void>;
+  createReferralCode: (payload: {
+    utm_source?: string;
+    utm_campaign?: string;
+    influencer?: string;
+    utm_medium: string;
+  }) => Promise<void>;
   code: string;
   setCode: Dispatch<SetStateAction<string>>;
 }) {
@@ -195,6 +201,7 @@ export default function NewReferralCodeModal({
       });
     } catch (error) {
       console.error('Error creating referral code:', error);
+      showToast(t('REFERRAL_CODE_CREATION_FAILED_MESSAGE'), 'error');
     }
   };
 
