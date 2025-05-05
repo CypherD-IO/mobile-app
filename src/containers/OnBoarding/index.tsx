@@ -232,11 +232,15 @@ export default function OnBoarding({ navigation }) {
                 title={'SKIP'}
                 type={'secondary'}
                 style={'p-[5%] w-[30%]'}
+                testID='skip-button'
+                accessibilityLabel='SKIP'
               />
               <Button
                 onPress={onPressNext}
                 title={'NEXT'}
                 style={'p-[5%] w-[30%]'}
+                testID='next-button'
+                accessibilityLabel='NEXT'
               />
             </CyDView>
           )}

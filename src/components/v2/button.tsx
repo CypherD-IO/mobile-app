@@ -28,6 +28,8 @@ interface IButton {
   paddingY?: number;
   icon?: React.ReactNode;
   iconPosition?: IconPosition;
+  testID?: string;
+  accessibilityLabel?: string;
 }
 export default function Button({
   onPress,
@@ -46,6 +48,8 @@ export default function Button({
   paddingY,
   icon,
   iconPosition = IconPosition.LEFT,
+  testID,
+  accessibilityLabel,
 }: IButton) {
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState();
@@ -80,6 +84,10 @@ export default function Button({
         }, 100);
       }}
       disabled={disabled || loading}
+      testID={testID ?? `button-${title}`}
+      accessibilityLabel={accessibilityLabel ?? title}
+      accessible={true}
+      accessibilityRole='button'
       className={clsx(
         `rounded-[12px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
         {
