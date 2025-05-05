@@ -517,10 +517,13 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       });
 
       // Then override with holdings where they exist (to show actual balances)
-      totalHoldings.originalHoldings.forEach(token => {
-        const key = getTokenKey(token);
-        uniqueTokens.set(key, token);
-      });
+      // Only include holdings that have isFundable flag set to true
+      totalHoldings.originalHoldings
+        .filter(token => token.isFundable)
+        .forEach(token => {
+          const key = getTokenKey(token);
+          uniqueTokens.set(key, token);
+        });
 
       setCombinedTokensList(Array.from(uniqueTokens.values()));
     } else {
