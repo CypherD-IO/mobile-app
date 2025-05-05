@@ -15,7 +15,19 @@
     "postinstall": "./node_modules/.bin/rn-nodeify --install 'crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,fs' --hack&&patch-package",
     "react-devtools": "react-devtools",
     "postversion": "react-native-version",
-    "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'"
+    "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'",
+    "e2e:build": "detox build",
+    "e2e:test": "detox test",
+    "e2e:build:ios": "detox build --configuration ios.sim.debug",
+    "e2e:test:ios": "detox test --configuration ios.sim.debug",
+    "e2e:test:ios:single": "detox test --configuration ios.sim.debug -f",
+    "e2e:build:android": "detox build --configuration android.emu.debug",
+    "e2e:test:android": "detox test --configuration android.emu.debug",
+    "e2e:reset-sim": "bash scripts/reset-sim.sh",
+    "e2e:clean-test:ios": "npm run e2e:reset-sim && npm run e2e:test:ios",
+    "e2e:clean-test:ios:single": "npm run e2e:reset-sim && npm run e2e:test:ios:single",
+    "e2e:prepare": "chmod +x scripts/prepare-test-environment.sh && scripts/prepare-test-environment.sh",
+    "e2e:full-workflow": "npm run e2e:prepare && npm run e2e:build:ios && npm run e2e:clean-test:ios"
   },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
@@ -218,7 +230,7 @@
     "@typescript-eslint/eslint-plugin": "^5.33.1",
     "@walletconnect/types": "2.11.0",
     "babel-jest": "29.2.1",
-    "detox": "^19.7.1",
+    "detox": "^20.19.1",
     "eslint": "^8.29.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-standard-with-typescript": "22.0.0",
@@ -234,7 +246,9 @@
     "react-native-version": "^4.0.0",
     "react-test-renderer": "18.2.0",
     "rn-nodeify": "^10.3.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "@types/detox": "^18.1.0",
+    "ts-jest": "^29.1.1"
   },
   "reactNativePermissionsIOS": [
     "Camera"
