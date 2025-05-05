@@ -464,7 +464,7 @@ export default function Referrals() {
             referralData?.referralCodes.map((code, index) => (
               <ReferralInfo
                 key={index}
-                referralLink={`https://cypherhq.io?referral=${code}`}
+                referralLink={`https://app.cypherhq.io/card/referral/${code}`}
                 referralCode={code}
               />
             ))}
