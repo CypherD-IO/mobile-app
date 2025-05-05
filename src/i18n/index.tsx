@@ -1226,7 +1226,7 @@ const resources = {
         'Helps Cypher track where your referrals come from and how each code performs. These insights allow us to make our rewards program more rewarding for popular referral channels.',
       CHANNEL: 'Channel',
       WHERE_YOU_ARE_PLANNING_TO_USE_CODE:
-        'Where you are planing to use the code',
+        'Where you are planning to use the code',
       CONTENT_TYPE: 'Content Type',
       SELECT_CONTENT_TYPE: 'Select the type of content',
       SPECIFY_OTHER_CONTENT_TYPE: 'Specify other content type',
@@ -1647,6 +1647,7 @@ const resources = {
       CAMPAIGN_NAME: 'Campaign Name',
       CAMPAIGN_NAME_PLACEHOLDER: 'Enter the name of your campaign',
       CAMPAIGN_EXAMPLE: 'e.g. DubaiToken2049',
+      REFERRAL_CODE_REQUIRED: 'Referral code is required',
     },
   },
 };

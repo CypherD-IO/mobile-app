@@ -360,7 +360,12 @@ export default function Referrals() {
     }
   };
 
-  const createReferralCode = async (payload: any) => {
+  const createReferralCode = async (payload: {
+    utm_source?: string;
+    utm_campaign?: string;
+    influencer?: string;
+    utm_medium: string;
+  }) => {
     setIsModalVisible(false);
     setCreateReferralCodeLoading(true);
     const response = await postWithAuth('/v1/cards/referral-v2', {
