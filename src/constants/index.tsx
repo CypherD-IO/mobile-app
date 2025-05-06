@@ -138,7 +138,6 @@ export const screenTitle = {
   SELECT_ADDITIONAL_CARD: 'selectAdditionalCard',
   ADDITIONAL_CARD_DESCRIPTION: 'additionalCardDescription',
   CARD_CONTROLS: 'CardControls',
-  ATTRIBUTION_DEBUG: 'AttributionDebug',
 };
 
 export const fontsName = {

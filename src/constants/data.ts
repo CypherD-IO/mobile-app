@@ -981,7 +981,3 @@ export const OCCUPATION_LABEL_TO_CODE_MAP: Record<string, string> = {
   Retired: 'RETIRED',
   'Other / Not Listed': 'OTHERXX',
 };
-
-export const AsyncStorageKeys = {
-  PROCESSED_REFERRER_CODE: 'processedReferrerCode',
-};

@@ -36,8 +36,10 @@ import { useColorScheme } from 'nativewind';
 import { handleDeepLink } from '../../App';
 import analytics from '@react-native-firebase/analytics';
 import { useInstallReferrer } from '../hooks';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AsyncStorageKeys } from '../constants/data';
+import {
+  getProcessedReferrerCode,
+  setProcessedReferrerCode,
+} from '../core/asyncStorage';
 
 const Tab = createBottomTabNavigator();
 const NAVIGATION_DELAY = 50;
@@ -93,16 +95,9 @@ function TabStack(props: TabStackProps) {
     const checkReferralCode = async () => {
       if (Platform.OS === 'android' && referrerData?.referral) {
         // Android: We have a referral code from install referrer
-        console.log(
-          'Processing referral code from Android install referrer:',
-          referrerData.referral,
-        );
-
         try {
           // Check if we've already processed this referral code
-          const processedReferralCode = await AsyncStorage.getItem(
-            AsyncStorageKeys.PROCESSED_REFERRER_CODE,
-          );
+          const processedReferralCode = await getProcessedReferrerCode();
 
           if (processedReferralCode !== referrerData.referral) {
             // Navigate to referral code screen
@@ -111,10 +106,7 @@ function TabStack(props: TabStackProps) {
             });
 
             // Mark as processed
-            await AsyncStorage.setItem(
-              AsyncStorageKeys.PROCESSED_REFERRER_CODE,
-              referrerData.referral,
-            );
+            await setProcessedReferrerCode(referrerData.referral);
           }
         } catch (error) {
           console.error(

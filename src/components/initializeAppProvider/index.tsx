@@ -139,10 +139,6 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     if (referrerData?.referral) {
-      console.log(
-        'Referral code found in install referrer:',
-        referrerData.referral,
-      );
       void setReferralCodeAsync(referrerData.referral);
 
       if (isAuthenticated && ethereum?.address) {
@@ -188,8 +184,6 @@ export const InitializeAppProvider = ({
   // Handle attribution data
   useEffect(() => {
     if (referrerData) {
-      console.log('Attribution data received:', referrerData);
-
       // Log attribution data to Firebase Analytics
       if (analytics) {
         // For Android: Full attribution data available

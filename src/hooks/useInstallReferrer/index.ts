@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { NativeModules, Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AsyncStorageKeys } from '../../constants/data';
-import analytics from '@react-native-firebase/analytics';
-import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtility';
 import useAxios from '../../core/HttpRequest';
+import {
+  getProcessedReferrerCode,
+  setProcessedReferrerCode,
+} from '../../core/asyncStorage';
 
 // Define the attribution data interfaces for each platform
 interface InstallReferrerData {
@@ -42,7 +42,7 @@ interface InstallReferrerData {
  * while iOS provides an attribution token that requires server-side resolution.
  */
 export const useInstallReferrer = () => {
-  const { InstallReferrerModule, AdAttributionModule } = NativeModules;
+  const { InstallReferrerModule } = NativeModules;
   const { getWithoutAuth } = useAxios();
   const [referrerData, setReferrerData] = useState<InstallReferrerData | null>(
     null,
@@ -52,18 +52,19 @@ export const useInstallReferrer = () => {
 
   const fetchReferrerData = async () => {
     try {
-      console.log('in fetchReferrerData');
-      console.log('AttributionModule:', AdAttributionModule);
       // Check if we've already fetched and stored the referrer data
-      const storedData = await AsyncStorage.getItem(
-        AsyncStorageKeys.PROCESSED_REFERRER_CODE,
-      );
+      const storedData = await getProcessedReferrerCode();
 
-      if (storedData || Platform.OS === 'ios') {
+      // Currently iOS does not support this feature
+      if (Platform.OS === 'ios') {
+        setLoading(false);
+        return;
+      }
+
+      if (storedData) {
         // If we've already processed the referrer data, use the stored data
         const parsedData = JSON.parse(storedData);
         setReferrerData(parsedData);
-        console.log('Referrer Data:', referrerData);
         setLoading(false);
         return;
       }
@@ -75,7 +76,6 @@ export const useInstallReferrer = () => {
         // For Android, get the install referrer details including UTM parameters
         attributionData =
           await InstallReferrerModule.getInstallReferrerDetails();
-        console.log('Android attribution data:', attributionData);
       }
 
       if (attributionData) {
@@ -90,14 +90,10 @@ export const useInstallReferrer = () => {
               ...attributionData,
               ...attributionDataResponse.data,
             };
-            console.log('Updated attribution data:', attributionData);
           }
         }
         // Store the attribution data in AsyncStorage
-        await AsyncStorage.setItem(
-          AsyncStorageKeys.PROCESSED_REFERRER_CODE,
-          JSON.stringify(attributionData),
-        );
+        await setProcessedReferrerCode(JSON.stringify(attributionData));
 
         // Update state with the attribution data
         setReferrerData(attributionData);
