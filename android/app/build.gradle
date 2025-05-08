@@ -84,8 +84,8 @@ android {
         applicationId "com.cypherd.androidwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 696
-        versionName System.getenv('VERSION_NAME') ?: "4.75"
+        versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 719
+        versionName System.getenv('VERSION_NAME') ?: "4.78"
         missingDimensionStrategy 'react-native-camera', 'general'
     }
     signingConfigs {
@@ -150,6 +150,8 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation 'com.android.installreferrer:installreferrer:2.2'
 }
 
 apply plugin: 'com.google.gms.google-services' // Do not remove. This is to support psuh notifications in android
