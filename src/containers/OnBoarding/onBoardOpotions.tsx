@@ -496,6 +496,7 @@ export default function OnBoardOpotions() {
         <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord text-white'>
           {"LET'S \nGET STARTED"}
         </CyDText>
+        {/* TODO: change the bg color as suriya bhiya mentioned */}
         <CyDView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
           <CyDText className='text-[18px] font-semibold text-center'>
             {'Log in or Sign up'}
