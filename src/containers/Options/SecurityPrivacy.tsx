@@ -1,26 +1,18 @@
-import * as C from '../../constants';
 import React, { useContext, useEffect, useState } from 'react';
-import { BackHandler } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import {
-  HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from '../../core/util';
-import AppImages from '../../../assets/images/appImages';
-import { isAuthenticatedForPrivateKey } from '../../core/Keychain';
-import { showToast } from '../../containers/utilities/toastUtility';
+import { BackHandler } from 'react-native';
+import * as C from '../../constants';
+import { ConnectionTypes } from '../../constants/enum';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import { HdWalletContext } from '../../core/util';
+import useConnectionManager from '../../hooks/useConnectionManager';
 import {
-  CyDView,
-  CyDTouchView,
-  CyDText,
-  CyDImage,
-  CyDImageBackground,
   CyDFlatList,
   CyDMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
 } from '../../styles/tailwindComponents';
-import useConnectionManager from '../../hooks/useConnectionManager';
-import { ConnectionTypes } from '../../constants/enum';
 
 interface ISecurityPrivacyData {
   index: number;

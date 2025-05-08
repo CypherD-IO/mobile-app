@@ -17,14 +17,14 @@ import {
 } from '@react-navigation/native';
 
 interface RouteParams {
-  setPinAuthentication: (value: any) => {};
+  setPinAuthentication: (value: boolean) => void;
   changePinValue: boolean;
 }
 
 export default function SetPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { setPinAuthentication = value => {}, changePinValue = false } =
+  const { setPinAuthentication = () => {}, changePinValue = false } =
     route.params;
 
   let setPin = (pin: string) => {

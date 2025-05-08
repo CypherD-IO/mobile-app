@@ -24,17 +24,27 @@ export default function usePortfolio() {
   async function fetchPortfolio(isVerifyCoinChecked = true) {
     const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
     const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
-    const { cosmos, osmosis, noble, ethereum, coreum, injective, solana } =
-      hdWallet.state.wallet;
-    if (ethereum.address && ethereum.address !== 'null') {
+    const { cosmos, osmosis, noble, coreum, injective } = hdWallet.state.wallet;
+    const ethereumAddress = get(
+      hdWallet,
+      'state.wallet.ethereum.address',
+      undefined,
+    );
+    const solanaAddress = get(
+      hdWallet,
+      'state.wallet.solana.address',
+      undefined,
+    );
+    const address = ethereumAddress ?? solanaAddress;
+    if (address) {
       const addresses = [
-        ethereum.address,
+        ethereumAddress,
         cosmos?.wallets[cosmos?.currentIndex]?.address,
         osmosis?.wallets[osmosis?.currentIndex]?.address,
         noble?.address,
         coreum?.address,
         injective?.address,
-        solana.address,
+        solanaAddress,
       ].filter(address => address !== undefined);
 
       const payload = {
@@ -49,7 +59,10 @@ export default function usePortfolio() {
         if (response && response?.status === 201) {
           if (response.data?.chainPortfolios?.length) {
             const portfolio = getPortfolioModel(response.data);
-            void storePortfolioData(portfolio, ethereum);
+            void storePortfolioData(
+              portfolio,
+              ethereumAddress ?? solanaAddress ?? '',
+            );
             return { data: portfolio, isError: false, isPortfolioEmpty: false };
           }
           return { isError: false, isPortfolioEmpty: true };
@@ -64,8 +77,19 @@ export default function usePortfolio() {
   async function getNativeToken(
     chainName: ChainBackendNames,
   ): Promise<Holding> {
-    const { ethereum } = hdWallet.state.wallet;
-    const localPortfolio = await getPortfolioData(ethereum);
+    const ethereumAddress = get(
+      hdWallet,
+      'state.wallet.ethereum.address',
+      undefined,
+    );
+    const solanaAddress = get(
+      hdWallet,
+      'state.wallet.solana.address',
+      undefined,
+    );
+    const localPortfolio = await getPortfolioData(
+      ethereumAddress ?? solanaAddress ?? '',
+    );
     const chainHoldings = get(
       localPortfolio.data,
       get(ChainNameMapping, chainName, ''),
@@ -82,8 +106,19 @@ export default function usePortfolio() {
   }
 
   async function getLocalPortfolio(): Promise<WalletHoldings | null> {
-    const { ethereum } = hdWallet.state.wallet;
-    const localPortfolio = await getPortfolioData(ethereum);
+    const ethereumAddress = get(
+      hdWallet,
+      'state.wallet.ethereum.address',
+      undefined,
+    );
+    const solanaAddress = get(
+      hdWallet,
+      'state.wallet.solana.address',
+      undefined,
+    );
+    const localPortfolio = await getPortfolioData(
+      ethereumAddress ?? solanaAddress ?? '',
+    );
     if (localPortfolio) return localPortfolio.data;
     return null;
   }

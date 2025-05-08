@@ -30,6 +30,9 @@ import * as Sentry from '@sentry/react-native';
 import { useTranslation } from 'react-i18next';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useWalletConnectMobile from '../useWalletConnectMobile';
+// import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
+import Web3Auth from '@web3auth/react-native-sdk/dist/types/Web3Auth';
+import useWeb3Auth from '../useWeb3Auth';
 
 export default function useConnectionManager() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -48,9 +51,10 @@ export default function useConnectionManager() {
   const { deleteWithoutAuth } = useAxios();
   const getConnectedType = async () => {
     const connectedType = await getConnectionType();
-    setConnectionType(connectedType as ConnectionTypes);
+    setConnectionType(connectedType);
     return connectedType;
   };
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   const deletAndResetReducers = async () => {
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
@@ -69,7 +73,8 @@ export default function useConnectionManager() {
 
   const deleteWalletConfig = async () => {
     const { isReadOnlyWallet } = hdWalletContext.state;
-    const { ethereum } = hdWalletContext.state.wallet;
+    const { ethereum, solana } = hdWalletContext.state.wallet;
+    const address = ethereum?.address ?? solana?.address;
     if (!isReadOnlyWallet) {
       const config = {
         headers: {
@@ -91,7 +96,7 @@ export default function useConnectionManager() {
         const readOnlyWalletData = JSON.parse(data);
         await deleteWithoutAuth(
           `/v1/configuration/address/${String(
-            ethereum.address,
+            address,
           )}/observer/${String(readOnlyWalletData.observerId)}`,
         );
       }
@@ -124,13 +129,7 @@ export default function useConnectionManager() {
     }
   };
 
-  const deleteWallet = async ({
-    navigation,
-    importNewWallet,
-  }: {
-    navigation: any;
-    importNewWallet?: boolean;
-  }) => {
+  const deleteWallet = async ({ navigation }: { navigation: any }) => {
     showModal(GlobalModalType.REMOVE_WALLET, {
       connectionType,
       onSuccess: () => {
@@ -139,6 +138,44 @@ export default function useConnectionManager() {
       },
       onFailure: hideModal,
     });
+  };
+
+  const getSocialAuthProvider = async (): Promise<Web3Auth | null> => {
+    if (
+      connectionType &&
+      [
+        ConnectionTypes.SOCIAL_LOGIN_EVM,
+        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
+      ].includes(connectionType)
+    ) {
+      let web3Auth;
+      switch (connectionType) {
+        case ConnectionTypes.SOCIAL_LOGIN_EVM:
+          web3Auth = web3AuthEvm;
+          break;
+        case ConnectionTypes.SOCIAL_LOGIN_SOLANA:
+          web3Auth = web3AuthSolana;
+          break;
+      }
+      if (web3Auth) {
+        await web3Auth.init();
+        return web3Auth;
+      }
+    }
+    return null;
+  };
+
+  const deleteSocialAuthWalletIfSessionExpired = async () => {
+    const socialAuthProvider = await getSocialAuthProvider();
+    if (socialAuthProvider && !socialAuthProvider.connected) {
+      showModal(GlobalModalType.REMOVE_SOCIAL_AUTH_WALLET, {
+        onSuccess: () => {
+          hideModal();
+          void deleteWalletConfig();
+        },
+        onFailure: hideModal,
+      });
+    }
   };
 
   useEffect(() => {
@@ -152,5 +189,7 @@ export default function useConnectionManager() {
     deleteWallet,
     getConnectedType,
     deleteWalletConfig,
+    getSocialAuthProvider,
+    deleteSocialAuthWalletIfSessionExpired,
   };
 }

@@ -38,7 +38,10 @@ import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import { getReferralCode } from '../../../../../core/asyncStorage';
-import { isRainReferralCode } from '../../../../../core/util';
+import {
+  isRainReferralCode,
+  parseErrorMessage,
+} from '../../../../../core/util';
 
 // Add this type definition
 interface SupportedCountry {
@@ -278,11 +281,14 @@ export default function CardApplicationV2() {
             type: 'error',
             title: t('INVALID_USER_DETAILS'),
             description:
-              error?.message ?? 'Error in submitting your application',
+              parseErrorMessage(error) ??
+              'Error in submitting your application',
             onSuccess: hideModal,
             onFailure: hideModal,
           });
         }
+        setSubmitting(false);
+        return;
       } else {
         const data = await getWalletProfile(globalState.token);
         set(data as CardProfile, 'provider', CardProviders.REAP_CARD);

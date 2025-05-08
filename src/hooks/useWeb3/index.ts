@@ -37,7 +37,7 @@ import {
 } from '../../containers/Browser/gasHelper';
 import { genId } from '../../containers/utilities/activityUtilities';
 import { hexToUint } from '../../core/Address';
-import { AnalyticEvent, logAnalytics } from '../../core/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import { GlobalContext } from '../../core/globalContext';
 import axios from '../../core/Http';
 import { GasPriceDetail } from '../../core/types';
@@ -79,8 +79,6 @@ import {
   type GetFeeHistoryParameters,
   type SignableMessage,
 } from 'viem';
-import useGasService from '../useGasService';
-import useTransactionManager from '../useTransactionManager';
 import { privateKeyToAccount } from 'viem/accounts';
 
 const bigNumberToHex = (val: string) => toHex(BigInt(val));
@@ -282,7 +280,7 @@ export default function useWeb3(origin: Web3Origin) {
 
           const signature = privateKeyInstance.sign(serializedSignDoc);
 
-          logAnalytics(AnalyticEvent.COSMOS_SIGNAMINO, {
+          logAnalyticsToFirebase(AnalyticEvent.COSMOS_SIGNAMINO, {
             origin,
             websiteInfo,
             method,
@@ -355,7 +353,7 @@ export default function useWeb3(origin: Web3Origin) {
 
           const signature = privateKeyInstance.sign(messageToSign);
 
-          logAnalytics(AnalyticEvent.COSMOS_SIGNDIRECT, {
+          logAnalyticsToFirebase(AnalyticEvent.COSMOS_SIGNDIRECT, {
             origin,
             method,
             websiteInfo,
@@ -417,7 +415,7 @@ export default function useWeb3(origin: Web3Origin) {
 
         return txHash;
       } else {
-        logAnalytics(AnalyticEvent.COSMOS_METHOD_NOTFOUND, {
+        logAnalyticsToFirebase(AnalyticEvent.COSMOS_METHOD_NOTFOUND, {
           method,
           websiteInfo,
         });
@@ -426,7 +424,7 @@ export default function useWeb3(origin: Web3Origin) {
       }
     } catch (e: any) {
       Sentry.captureException(e);
-      logAnalytics(AnalyticEvent.COSMOS_PROVIDER_ERROR, {
+      logAnalyticsToFirebase(AnalyticEvent.COSMOS_PROVIDER_ERROR, {
         origin,
         method,
         payload,
@@ -464,7 +462,7 @@ export default function useWeb3(origin: Web3Origin) {
       delete result.callbackData;
       return result;
     } catch (e: any) {
-      logAnalytics(AnalyticEvent.JSON_RPC_ERROR, {
+      logAnalyticsToFirebase(AnalyticEvent.JSON_RPC_ERROR, {
         origin,
         websiteInfo,
         payload,
@@ -989,7 +987,7 @@ export default function useWeb3(origin: Web3Origin) {
           };
         }
         default: {
-          logAnalytics(AnalyticEvent.WEB3_METHOD_NOTFOUND, {
+          logAnalyticsToFirebase(AnalyticEvent.WEB3_METHOD_NOTFOUND, {
             origin,
             ...payload,
             websiteInfo,

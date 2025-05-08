@@ -1,14 +1,5 @@
-import React, {
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from 'react';
-import {
-  HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from '../../core/util';
+import React, { useContext, useEffect, useState, useRef } from 'react';
+import { HdWalletContext } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
 import { AppKit, useWalletInfo } from '@reown/appkit-wagmi-react-native';
@@ -31,13 +22,18 @@ import { CyDView } from '../../styles/tailwindComponents';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
-import analytics from '@react-native-firebase/analytics';
 import { getToken } from '../../notification/pushNotification';
+import { get } from 'lodash';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const { isConnected, address, connector } = useAccount();
   const { disconnectAsync } = useDisconnect();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -97,12 +93,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     if (isInitializing) {
       return; // Don't perform any checks while initializing
     }
-    if (
-      isConnected &&
-      address &&
-      (!ethereum.address ||
-        ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_)
-    ) {
+    if (isConnected && address && !ethereumAddress) {
       void verifySessionTokenAndSign();
     } else if (
       connectionType === ConnectionTypes.WALLET_CONNECT &&
@@ -111,7 +102,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     ) {
       void handleDisconnect();
     }
-  }, [isConnected, address, ethereum.address, connectionType, isInitializing]);
+  }, [isConnected, address, ethereumAddress, connectionType, isInitializing]);
 
   const dispatchProfileData = async (token: string) => {
     const profileData = await getWalletProfile(token);
@@ -143,7 +134,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       type: 'LOAD_WALLET',
       value: {
         address,
-        // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
         chain: 'ethereum',
         publicKey: '',
         rawAddress: '',
@@ -207,8 +197,8 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     );
     if (!response.isError) {
       const msg = response?.data?.message;
-      const signMsgResponse = await signMessageAsync({ message: msg });
-      void analytics().logEvent('sign_wallet_connect_msg', {
+      await signMessageAsync({ message: msg });
+      void logAnalyticsToFirebase(AnalyticEvent.SIGN_WALLET_CONNECT_MSG, {
         from: walletInfo?.name,
       });
     }

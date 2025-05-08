@@ -1,13 +1,14 @@
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { CHAIN_ETH, Chain, CHAIN_NAMES } from '../constants/server';
-import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_, isAddressSet } from '../core/util';
+import { isAddressSet } from '../core/util';
 import { Dispatch } from 'react';
 
 export interface WalletKey {
-  address: string;
-  // privateKey: Buffer | Uint8Array | string
+  address: string | undefined;
   publicKey: Buffer | Uint8Array | string;
+  rawAddress?: string;
+  algo?: string;
 }
 
 export class ChainWallet {
@@ -30,12 +31,6 @@ export class ChainWallet {
       : this.wallets[this.currentIndex].address;
   }
 
-  // public get privateKey(): Buffer | Uint8Array | string {
-  //   return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
-  //     ? 'null'
-  //     : this.wallets[this.currentIndex].privateKey;
-  // }
-
   public get publicKey(): Buffer | Uint8Array | string {
     return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
       ? 'null'
@@ -50,9 +45,7 @@ export interface CypherDWallet {
 export interface HDWallet {
   wallet: CypherDWallet;
   selectedChain: Chain;
-  isForceRefresh: any;
   card: any;
-  pre_card_token: any;
   reset: boolean;
   pinValue: string;
   hideTabBar: boolean;
@@ -63,8 +56,67 @@ export interface HDWallet {
 
 export interface HdWalletContextDef {
   state: HDWallet;
-  dispatch: Dispatch<any>;
+  dispatch: Dispatch<HdWalletAction>;
 }
+
+type HdWalletAction =
+  | {
+      type: 'ADD_ADDRESS';
+      value: {
+        address: string;
+        chain: string;
+        publicKey: Buffer | Uint8Array | string;
+      };
+    }
+  | {
+      type: 'LOAD_WALLET';
+      value: {
+        address: string;
+        chain: string;
+        publicKey: Buffer | Uint8Array | string;
+        rawAddress?: Uint8Array;
+        algo?: string;
+      };
+    }
+  | {
+      type: 'CHOOSE_CHAIN';
+      value: {
+        selectedChain: Chain;
+      };
+    }
+  | {
+      type: 'RESET_WALLET';
+    }
+  | {
+      type: 'RESET_PIN_AUTHENTICATION';
+      value: {
+        isReset: boolean;
+      };
+    }
+  | {
+      type: 'SET_PIN_VALUE';
+      value: {
+        pin: string;
+      };
+    }
+  | {
+      type: 'SET_CHOOSEN_WALLET_INDEX';
+      value: {
+        indexValue: number;
+      };
+    }
+  | {
+      type: 'TOGGLE_BALANCE_VISIBILITY';
+      value: {
+        hideBalance: boolean;
+      };
+    }
+  | {
+      type: 'SET_READ_ONLY_WALLET';
+      value: {
+        isReadOnlyWallet: boolean;
+      };
+    };
 
 const wallet: CypherDWallet = {};
 
@@ -79,9 +131,7 @@ CHAIN_NAMES.forEach(chain => {
 export const initialHdWalletState: HDWallet = {
   wallet,
   selectedChain: CHAIN_ETH,
-  isForceRefresh: undefined,
   card: undefined,
-  pre_card_token: undefined,
   reset: false,
   pinValue: '',
   hideTabBar: false,
@@ -91,131 +141,93 @@ export const initialHdWalletState: HDWallet = {
 };
 
 // reducers
-export function hdWalletStateReducer(state: any, action: any) {
+export function hdWalletStateReducer(
+  state: HDWallet,
+  action: HdWalletAction,
+): HDWallet {
   switch (action.type) {
     case 'ADD_ADDRESS': {
       const { address, chain, publicKey } = action.value;
 
-      const wallet = state.wallet;
-
-      if (
-        address !== undefined &&
-        address !== 'IMPORTING' &&
-        CHAIN_NAMES.includes(chain)
-      ) {
-        wallet[chain].wallets.push({
-          address,
-          publicKey,
-        });
-
-        // currIndex = 0 when its the first entry for wallets
-        if (wallet[chain].wallets.length === 1) {
-          wallet[chain].currentIndex = 0;
-        }
+      if (!address || address === 'IMPORTING' || !CHAIN_NAMES.includes(chain)) {
+        return state;
       }
 
-      return { ...state, wallet };
+      const existingChainWallet =
+        state.wallet[chain] ||
+        new ChainWallet({
+          currentIndex: -1,
+          wallets: [],
+        });
+
+      const updatedWallets = [
+        ...existingChainWallet.wallets,
+        { address, publicKey },
+      ];
+
+      const updatedWallet = {
+        ...state.wallet,
+        [chain]: new ChainWallet({
+          currentIndex:
+            updatedWallets.length === 1 ? 0 : existingChainWallet.currentIndex,
+          wallets: updatedWallets,
+        }),
+      };
+
+      return {
+        ...state,
+        wallet: updatedWallet,
+      };
     }
     case 'LOAD_WALLET': {
       const { address, chain, publicKey, rawAddress, algo } = action.value;
 
-      const wallet = state.wallet;
-      if (isAddressSet(address) && CHAIN_NAMES.includes(chain)) {
-        wallet[chain].wallets.length = 0;
-        wallet[chain].wallets.push({
-          address,
-          publicKey,
-          rawAddress,
-          algo,
-        });
+      if (!isAddressSet(address) || !CHAIN_NAMES.includes(chain)) {
+        return state;
+      }
 
-        // currIndex = 0 when its the first entry for wallets
-        if (wallet[chain].wallets.length === 1) {
-          wallet[chain].currentIndex = 0;
-        }
+      // Create new wallet state immutably
+      const updatedWallet = {
+        ...state.wallet,
+        [chain]: new ChainWallet({
+          currentIndex: 0,
+          wallets: [
+            {
+              address,
+              publicKey,
+              rawAddress,
+              algo,
+            },
+          ],
+        }),
+      };
 
-        if (
-          chain === CHAIN_ETH.chainName
-          // && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-        ) {
+      // Handle analytics for ETH chain
+      if (chain === CHAIN_ETH.chainName) {
+        void Promise.all([
           Intercom.loginUserWithUserAttributes({ userId: address }).catch(
             () => {
-              // throws error if user is already registered
+              // User already registered
             },
-          );
-          void analytics().setUserId(address);
-        }
+          ),
+          analytics().setUserId(address),
+        ]);
       }
 
-      return { ...state, wallet };
-    }
-
-    case 'UPDATE_CHAIN_INDEX': {
-      const { chain, index } = action.value;
-      const { wallet } = state;
-
-      if (
-        CHAIN_NAMES.includes(chain) &&
-        index >= 0 &&
-        index <= wallet[chain].wallets.length - 1
-      ) {
-        wallet[chain].currentIndex = index;
-      }
-      return { ...state, wallet };
-    }
-
-    case 'LOAD_PRIVATE_KEY': {
-      return { ...state, ...action.value };
-    }
-
-    case 'LOAD_TOKEN_HOLDINGS': {
-      return { ...state, ...action.value };
-    }
-
-    case 'FORGET_WALLET': {
-      const address = _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
-      // const privateKey = _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
-      const publicKey = _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
-
-      const wallet: CypherDWallet = {};
-
-      CHAIN_NAMES.forEach(chain => {
-        wallet[chain] = new ChainWallet({
-          currentIndex: -1,
-          wallets: [],
-        });
-      });
-
-      wallet.ethereum.currentIndex = 0;
-
-      wallet.ethereum.wallets.push({
-        address,
-        // privateKey,
-        publicKey,
-      });
-
-      return { ...state, wallet, isReadOnlyWallet: false };
+      return {
+        ...state,
+        wallet: updatedWallet,
+      };
     }
 
     case 'CHOOSE_CHAIN': {
-      return { ...state, ...action.value };
-    }
-
-    case 'FORCE_REFRESH': {
-      return { ...state, ...action.value };
-    }
-
-    case 'CARD_REFRESH': {
-      return { ...state, ...action.value };
-    }
-
-    case 'PRE_CARD_TOKEN': {
-      return { ...state, ...action.value };
+      return {
+        ...state,
+        selectedChain: action.value.selectedChain,
+      };
     }
 
     case 'RESET_WALLET': {
-      const resetWallet = initialHdWalletState;
-      resetWallet.pinValue = state.pinValue;
       const emptyWallet: CypherDWallet = {};
       CHAIN_NAMES.forEach(chain => {
         emptyWallet[chain] = new ChainWallet({
@@ -223,44 +235,49 @@ export function hdWalletStateReducer(state: any, action: any) {
           wallets: [],
         });
       });
-      emptyWallet.ethereum.currentIndex = 0;
 
-      emptyWallet.ethereum.wallets.push({
-        address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-        // privateKey,
-        publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-      });
-      resetWallet.wallet = emptyWallet;
-      return { ...resetWallet };
+      return {
+        ...initialHdWalletState,
+        pinValue: state.pinValue,
+        wallet: emptyWallet,
+      };
     }
 
     case 'RESET_PIN_AUTHENTICATION': {
-      const { isReset } = action.value;
-      let reset = state.reset;
-      reset = isReset;
-      return { ...state, reset };
+      return {
+        ...state,
+        reset: action.value.isReset,
+      };
     }
 
     case 'SET_PIN_VALUE': {
-      const { pin } = action.value;
-      let pinValue = state.pinValue;
-      pinValue = pin;
-      return { ...state, pinValue };
+      return {
+        ...state,
+        pinValue: action.value.pin,
+      };
     }
 
     case 'SET_CHOOSEN_WALLET_INDEX': {
-      const { indexValue } = action.value;
-      let choosenWalletIndex = state.choosenWalletIndex;
-      choosenWalletIndex = indexValue;
-      return { ...state, choosenWalletIndex };
+      return {
+        ...state,
+        choosenWalletIndex: action.value.indexValue,
+      };
     }
 
     case 'TOGGLE_BALANCE_VISIBILITY': {
-      return { ...state, ...action.value };
+      return {
+        ...state,
+        hideBalance: action.value.hideBalance,
+      };
     }
+
     case 'SET_READ_ONLY_WALLET': {
-      return { ...state, ...action.value };
+      return {
+        ...state,
+        isReadOnlyWallet: action.value.isReadOnlyWallet,
+      };
     }
+
     default:
       return state;
   }
