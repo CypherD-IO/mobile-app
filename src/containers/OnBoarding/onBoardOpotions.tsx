@@ -9,7 +9,7 @@ import Web3Auth, {
 } from '@web3auth/react-native-sdk';
 import { t } from 'i18next';
 import React, { useContext, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -32,6 +32,7 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import {
   CyDIcons,
   CyDImage,
+  CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
   CyDText,
   CyDTextInput,
@@ -496,13 +497,12 @@ export default function OnBoardOpotions() {
         <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord text-white'>
           {"LET'S \nGET STARTED"}
         </CyDText>
-        {/* TODO: change the bg color as suriya bhiya mentioned */}
-        <CyDView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
+        <CyDKeyboardAwareScrollView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
           <CyDText className='text-[18px] font-semibold text-center'>
             {'Log in or Sign up'}
           </CyDText>
           <CyDView className='mt-[24px]'>
-            <CyDView className='bg-n30 p-[16px] rounded-[8px]'>
+            <CyDView className='bg-n0 p-[16px] rounded-[8px]'>
               {/* create wallet */}
               <CyDTouchView
                 className='flex flex-row items-center justify-between'
@@ -595,6 +595,12 @@ export default function OnBoardOpotions() {
                 onChangeText={setEmail}
                 keyboardType='email-address'
                 autoCapitalize='none'
+                returnKeyType='done'
+                onSubmitEditing={() => {
+                  setSocialLoginMethod(SocialLoginMethod.EMAIL);
+                  setIsProviderSelectionModalVisible(true);
+                  Keyboard.dismiss();
+                }}
               />
               {email.length > 0 && (
                 <TouchableOpacity
@@ -648,7 +654,7 @@ export default function OnBoardOpotions() {
               </CyDText>
             </CyDTouchView>
           </CyDView>
-        </CyDView>
+        </CyDKeyboardAwareScrollView>
       </CyDView>
     </>
   );
