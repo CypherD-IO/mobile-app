@@ -88,7 +88,10 @@ export const handleDeepLink = async (url: string | null) => {
     void referralLinkAnalytics(referralCode);
     return {
       screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
-      params: { referralCode },
+      params: {
+        referralCodeFromLink: referralCode,
+        toPage: screenTitle.CARD_APPLICATION,
+      },
     };
   } else if (url.includes('/card/telegramPinSetup')) {
     return {

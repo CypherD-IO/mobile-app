@@ -103,6 +103,10 @@ function TabStack(props: TabStackProps) {
             // Navigate to referral code screen
             setDeepLinkData({
               screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+              params: {
+                referralCodeFromLink: referrerData.referral,
+                toPage: screenTitle.CARD_APPLICATION,
+              },
             });
 
             // Mark as processed
