@@ -252,22 +252,21 @@ export function getWeb3Endpoint(
   selectedChain: Chain,
   context: GlobalContextDef,
 ): string {
+  const chainBackendName =
+    selectedChain.backendName === ChainBackendNames.HYPERLIQUID
+      ? ChainBackendNames.ARBITRUM
+      : selectedChain.backendName;
   try {
     if (context) {
       const globalStateCasted: GlobalStateDef = (
         context as unknown as GlobalContextDef
       ).globalState;
-      return (
-        globalStateCasted?.rpcEndpoints?.[selectedChain.backendName]?.primary ??
-        ''
-      );
+      return globalStateCasted?.rpcEndpoints?.[chainBackendName]?.primary ?? '';
     }
   } catch (e) {
     Sentry.captureException(e);
   }
-  return (
-    initialGlobalState?.rpcEndpoints?.[selectedChain.backendName]?.primary ?? ''
-  );
+  return initialGlobalState?.rpcEndpoints?.[chainBackendName]?.primary ?? '';
 }
 
 export const apiTimeout = 30000;

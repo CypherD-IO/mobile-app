@@ -1617,7 +1617,7 @@ const resources = {
         'Transaction approved successfully. Please retry the transaction.',
       TXN_DISPUTED_SUCCESS_DESCRIPTION: 'Transaction disputed successfully',
       TRANSACTION_DECLINE_HANDLING_MESSAGE:
-        'This transaction was declined as a precaution. Was this transaction made by you? ',
+        'To approve this merchant, confirm if the transaction was initiated by you and RETRY the transaction',
       THIS_WAS_ME: 'This Was Me',
       THIS_ISNT_ME: "This Wasn't Me",
       UNEXCPECTED_ERROR: 'Unexpected Error',

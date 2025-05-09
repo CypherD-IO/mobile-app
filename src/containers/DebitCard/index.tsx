@@ -155,6 +155,10 @@ export default function DebitCardScreen(props: RouteProps) {
                   routes: [
                     {
                       name: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+                      params: {
+                        toPage: screenTitle.CARD_APPLICATION,
+                        referralCodeFromLink: isReferralCodeApplied,
+                      },
                     },
                   ],
                 });

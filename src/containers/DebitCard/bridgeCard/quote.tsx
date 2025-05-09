@@ -28,10 +28,10 @@ import {
   AnalyticsType,
   ButtonType,
   CypherPlanId,
+  HyperLiquidAccount,
 } from '../../../constants/enum';
 import { capitalize, get } from 'lodash';
 import {
-  CHAIN_OSMOSIS,
   ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
@@ -63,14 +63,12 @@ import { clsx } from 'clsx';
 import LinearGradient from 'react-native-linear-gradient';
 import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
 import { usePortfolioRefresh } from '../../../hooks/usePortfolioRefresh';
-import { DecimalHelper } from '../../../utils/decimalHelper';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import useHyperLiquid from '../../../hooks/useHyperLiquid';
-import { COSMOS_CHAINS_TYPE } from '../../../constants/type';
 import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
-import { parseEther, parseUnits, formatUnits } from 'viem';
+import { formatUnits } from 'viem';
 
 export default function CardQuote({
   navigation,
@@ -363,14 +361,14 @@ export default function CardQuote({
           });
         if (chainName != null) {
           let response;
-          if (selectedToken?.isHyperliquid) {
+          if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
             response = await transferOnHyperLiquid({
-              chain: selectedToken.chainDetails.backendName,
+              chain: ChainBackendNames.ARBITRUM,
               amountToSend: actualTokensRequired,
               toAddress: tokenQuote.targetAddress,
               contractAddress,
               contractDecimals,
-              accountType: selectedToken.accountType,
+              accountType: selectedToken.accountType as HyperLiquidAccount,
               symbol: selectedToken.symbol,
             });
           } else if (chainName === ChainNames.ETH) {

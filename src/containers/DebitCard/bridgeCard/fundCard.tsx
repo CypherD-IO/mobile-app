@@ -1,7 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { floor, get, isEmpty } from 'lodash';
+import { floor, get, isEmpty, set } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, useWindowDimensions } from 'react-native';
@@ -25,8 +25,10 @@ import {
 } from '../../../constants/enum';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
+  CHAIN_ARBITRUM,
   CHAIN_ETH,
   CHAIN_OSMOSIS,
+  ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
   GASLESS_CHAINS,
@@ -146,6 +148,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       contractAddress,
     } = selectedToken as Holding & IHyperLiquidHolding;
 
+    console.log(balanceDecimal, 'balanceDecimal');
+
     const nativeToken = await getNativeToken(chainDetails.backendName);
     const actualTokensRequired = limitDecimalPlaces(
       quote.tokensRequired,
@@ -166,8 +170,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     let gasDetails;
     const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
     try {
-      if (selectedToken?.isHyperliquid) {
-        // No gas needed for hyperliquid. Just sign typed data
+      if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
+        // No gas needed for hyperliquid. Just signtyped data
         gasDetails = {
           isError: false,
           gasFeeInCrypto: 0,
@@ -341,10 +345,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
           amountInCrypto: isCrpytoInput,
-          ...(selectedToken?.isHyperliquid && {
-            hyperliquidTradeType: selectedToken?.accountType,
-          }),
         };
+        if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
+          set(payload, 'hyperliquidTradeType', selectedToken?.accountType);
+          payload.chain = CHAIN_ARBITRUM.backendName;
+        }
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
           payload,
@@ -613,7 +618,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           if (
             selectedTokenSymbol === nativeTokenSymbol &&
             !GASLESS_CHAINS.includes(chainDetails.backendName) &&
-            !selectedToken?.isHyperliquid
+            chainDetails.backendName !== ChainBackendNames.HYPERLIQUID
           ) {
             // remove this gasFeeReservation once we have gas estimation for eip1599 chains
             // Estimate the gasFee for the transaction
@@ -691,10 +696,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amount: DecimalHelper.toNumber(amountInCrypto),
             tokenAddress: contractAddress,
             amountInCrypto: true,
-            ...(selectedToken?.isHyperliquid && {
-              hyperliquidTradeType: selectedToken?.accountType,
-            }),
           };
+          if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
+            set(payload, 'hyperliquidTradeType', selectedToken?.accountType);
+            payload.chain = CHAIN_ARBITRUM.backendName;
+          }
           const response = await postWithAuth(
             `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
             payload,
@@ -1005,8 +1011,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           'bg-n0 py-[6px] px-[16px] my-[16px] border-[1px] border-n40 rounded-[34px] self-center'
         }
         onPress={() => setIsChooseTokenVisible(true)}>
-        <CyDView
-          className={'flex flex-row flex-wrap justify-center items-center'}>
+        <CyDView className={'flex flex-row justify-center items-center'}>
           {selectedToken && (
             <CyDView className={'flex flex-row items-center'}>
               <CyDImage
