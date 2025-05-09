@@ -227,8 +227,13 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let solanaHoldings;
   let hyperliquidHoldings;
 
-  const tempHyperliquidBalances = portfolioFromAPI.hyperliquidBalances;
-  tempHyperliquidBalances.map(account => {
+  const tempHyperliquidBalances: any[] = Array.isArray(
+    portfolioFromAPI.hyperliquidBalances,
+  )
+    ? portfolioFromAPI.hyperliquidBalances
+    : [];
+
+  tempHyperliquidBalances.forEach(account => {
     account.chain = CHAIN_HYPERLIQUID.backendName;
   });
 
@@ -429,7 +434,12 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     coreum: coreumHoldings as ChainHoldings,
     injective: injectiveHoldings as ChainHoldings,
     solana: solanaHoldings as ChainHoldings,
-    hyperliquid: hyperliquidHoldings as ChainHoldings,
+    hyperliquid: hyperliquidHoldings ?? {
+      totalBalance: 0,
+      totalUnverifiedBalance: 0,
+      totalHoldings: [],
+      timestamp: new Date().toISOString(),
+    },
     totalHoldings,
     timestamp: '',
   };

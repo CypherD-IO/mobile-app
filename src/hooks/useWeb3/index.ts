@@ -135,8 +135,8 @@ export default function useWeb3(origin: Web3Origin) {
       CHAIN_COLLECTION.chainName
     ) {
       if (
-        hdWalletContext.state.selectedChain?.chainName ===
-        CHAIN_HYPERLIQUID.chainName
+        hdWalletContext.state.selectedChain?.backendName ===
+        CHAIN_HYPERLIQUID.backendName
       ) {
         return CHAIN_ARBITRUM;
       }

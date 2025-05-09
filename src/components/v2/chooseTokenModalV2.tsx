@@ -28,7 +28,6 @@ import {
   CyDFlatList,
   CyDScrollView,
   CyDLottieView,
-  CyDIcons,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { endsWith, capitalize } from 'lodash';
@@ -638,7 +637,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       setTotalHoldings({
         originalHoldings: valuedTokens,
         filteredHoldings: [], // Start empty, will be populated by combinedTokens effect
-        hyperliquidHoldings: localPortfolio?.hyperliquid.totalHoldings ?? [],
+        hyperliquidHoldings: localPortfolio?.hyperliquid?.totalHoldings ?? [],
       });
     } catch (error) {
       showModal('state', {
