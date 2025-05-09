@@ -15,6 +15,7 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
+  CHAIN_HYPERLIQUID,
 } from '../constants/server';
 import axios from './Http';
 import { hostWorker } from '../global';
@@ -25,11 +26,13 @@ import { HyperLiquidAccount } from '../constants/enum';
 export interface Holding {
   name: string;
   displayName?: string; // used in card
+  accountType?: HyperLiquidAccount;
   symbol: string;
   logoUrl: string;
   price: string;
   contractAddress: string;
   contractDecimals: number;
+  szDecimals?: number;
   totalValue: number;
   balanceInteger: string;
   balanceDecimal: string;
@@ -114,7 +117,7 @@ export interface WalletHoldings {
   injective: ChainHoldings;
   solana: ChainHoldings;
   totalHoldings: Holding[];
-  hyperliquidBalances: IHyperLiquidHoldings[];
+  hyperliquid: ChainHoldings;
   timestamp: string;
 }
 
@@ -185,6 +188,8 @@ export function getCurrentChainHoldings(
       return portfolio.injective;
     case CHAIN_SOLANA.backendName:
       return portfolio.solana;
+    case CHAIN_HYPERLIQUID.backendName:
+      return portfolio.hyperliquid;
     default:
       return portfolio;
   }
@@ -220,9 +225,18 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let zksyncEraHoldings;
   let baseHoldings;
   let solanaHoldings;
+  let hyperliquidHoldings;
+
+  const tempHyperliquidBalances = portfolioFromAPI.hyperliquidBalances;
+  tempHyperliquidBalances.map(account => {
+    account.chain = CHAIN_HYPERLIQUID.backendName;
+  });
 
   const totalHoldings: Holding[] = [];
-  const tokenHoldings = portfolioFromAPI.chainPortfolios;
+  const tokenHoldings = [
+    ...portfolioFromAPI.chainPortfolios,
+    ...tempHyperliquidBalances,
+  ];
   let allholdings;
   if (tokenHoldings) {
     allholdings = tokenHoldings;
@@ -237,10 +251,12 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       const tokenHolding: Holding = {
         name: holding.name,
         symbol: holding.symbol,
+        accountType: holding.accountType,
         logoUrl: holding.logoUrl,
         price: holding.price,
         contractAddress: holding.contractAddress,
         contractDecimals: holding.decimals,
+        szDecimals: holding.szDecimals,
         totalValue: holding.totalValue,
         balanceInteger: holding.balanceInteger,
         balanceDecimal: holding.balanceDecimal,
@@ -307,6 +323,10 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
           break;
         case CHAIN_SOLANA.backendName:
           tokenHolding.chainDetails = CHAIN_SOLANA;
+          break;
+        case CHAIN_HYPERLIQUID.backendName:
+          tokenHolding.accountType = allholdings[+i]?.accountType;
+          tokenHolding.chainDetails = CHAIN_HYPERLIQUID;
           break;
       }
       if (has(tokenHolding, 'chainDetails')) {
@@ -375,27 +395,22 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       case CHAIN_SOLANA.backendName:
         solanaHoldings = chainHoldings;
         break;
+      case CHAIN_HYPERLIQUID.backendName:
+        if (hyperliquidHoldings) {
+          hyperliquidHoldings.totalHoldings.push(
+            ...chainHoldings.totalHoldings,
+          );
+          hyperliquidHoldings.totalBalance += chainHoldings.totalBalance;
+          hyperliquidHoldings.totalUnverifiedBalance +=
+            chainHoldings.totalUnverifiedBalance;
+        } else {
+          hyperliquidHoldings = chainHoldings;
+        }
+        break;
     }
   }
 
   totalHoldings.sort(sortDesc);
-
-  const tempHyperliquidBalances = portfolioFromAPI.hyperliquidBalances ?? [];
-  const hyperliquidBalances = tempHyperliquidBalances.map(
-    (account: IHyperLiquidHoldings) => {
-      return {
-        ...account,
-        tokens: account.tokens.map((token: IHyperLiquidHolding) => {
-          return {
-            ...token,
-            chainDetails: CHAIN_ARBITRUM,
-            isHyperliquid: true,
-            accountType: account.accountType,
-          };
-        }),
-      };
-    },
-  );
 
   const portfolio: WalletHoldings = {
     totalBalance,
@@ -414,8 +429,8 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     coreum: coreumHoldings as ChainHoldings,
     injective: injectiveHoldings as ChainHoldings,
     solana: solanaHoldings as ChainHoldings,
+    hyperliquid: hyperliquidHoldings as ChainHoldings,
     totalHoldings,
-    hyperliquidBalances,
     timestamp: '',
   };
   return portfolio;

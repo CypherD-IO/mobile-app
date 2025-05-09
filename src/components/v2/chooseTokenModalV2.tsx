@@ -257,7 +257,7 @@ const RenderToken = React.memo(
               <SvgUri
                 width='32'
                 height='32'
-                className='w-[32px] h-[32px]'
+                className='w-[32px] h-[32px] rounded-full'
                 uri={item.logoUrl}
               />
             ) : (
@@ -265,7 +265,7 @@ const RenderToken = React.memo(
                 source={{
                   uri: item.logoUrl,
                 }}
-                className={'w-[32px] h-[32px]'}
+                className={'w-[32px] h-[32px] rounded-full'}
               />
             )}
 
@@ -1024,7 +1024,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                       type={type}
                     />
                   )}
-                  showsVerticalScrollIndicator={true}
+                  showsVerticalScrollIndicator={false}
                   ListFooterComponent={
                     pagination.isLoading ? ListFooterLoader : null
                   }

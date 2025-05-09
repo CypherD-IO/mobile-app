@@ -594,6 +594,9 @@ const WHITE_SHIELD_ICON = {
 const HYPERLIQUID_LOGO = {
   uri: `${S3_BUCKET_URL_ICONS}/hyperLiquidLogo.png`,
 };
+const HYPERLIQUID = {
+  uri: `${S3_BUCKET_URL_ICONS}/hyperliquid.png`,
+};
 const HYPERLIQUID_LOGO_TEXT = {
   uri: `${S3_BUCKET_URL_ICONS}/hyperLiquidLogoText.png`,
 };
@@ -858,6 +861,7 @@ export const AppImagesMap = {
     WHITE_SHIELD_ICON,
     HYPERLIQUID_LOGO,
     HYPERLIQUID_LOGO_TEXT,
+    HYPERLIQUID,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1123,6 +1127,7 @@ enum AppImages {
   WHITE_SHIELD_ICON = 'WHITE_SHIELD_ICON',
   HYPERLIQUID_LOGO = 'HYPERLIQUID_LOGO',
   HYPERLIQUID_LOGO_TEXT = 'HYPERLIQUID_LOGO_TEXT',
+  HYPERLIQUID = 'HYPERLIQUID',
 }
 
 export default AppImages;

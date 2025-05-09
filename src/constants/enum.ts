@@ -1,5 +1,6 @@
 export enum AllChainsEnum {
   ETH = 'ETH',
+  HYPERLIQUID = 'HYPERLIQUID',
   POLYGON = 'POLYGON',
   AVALANCHE = 'AVALANCHE',
   ARBITRUM = 'ARBITRUM',

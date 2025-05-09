@@ -310,7 +310,9 @@ export default function SelectPlanModal({
                 </CyDView>
               </CyDTouchView>
             </CyDView>
-            <CyDScrollView className='h-[80%] my-[16px]'>
+            <CyDScrollView
+              className='h-[80%] my-[16px]'
+              showsVerticalScrollIndicator={false}>
               <CyDTouchView activeOpacity={1}>
                 {/* title */}
                 <CyDView className='flex flex-row w-[100%]' />
@@ -772,7 +774,9 @@ export default function SelectPlanModal({
               </CyDTouchView>
             </CyDView>
 
-            <CyDScrollView className='flex-1'>
+            <CyDScrollView
+              className='flex-1'
+              showsVerticalScrollIndicator={false}>
               <CyDTouchView className='mt-[16px] px-[16px]' activeOpacity={1}>
                 <CyDView className='flex-row items-center mt-[8px]'>
                   <CyDMaterialDesignIcons

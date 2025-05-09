@@ -15,8 +15,10 @@ import { ConnectionTypes, Web3Origin } from '../../constants/enum';
 import {
   ALL_CHAINS,
   Chain,
+  CHAIN_ARBITRUM,
   CHAIN_COLLECTION,
   CHAIN_ETH,
+  CHAIN_HYPERLIQUID,
 } from '../../constants/server';
 import {
   CosmosWeb3Method,
@@ -132,6 +134,12 @@ export default function useWeb3(origin: Web3Origin) {
       hdWalletContext.state.selectedChain?.chainName !==
       CHAIN_COLLECTION.chainName
     ) {
+      if (
+        hdWalletContext.state.selectedChain?.chainName ===
+        CHAIN_HYPERLIQUID.chainName
+      ) {
+        return CHAIN_ARBITRUM;
+      }
       return hdWalletContext.state.selectedChain;
     }
     return CHAIN_ETH;
