@@ -96,7 +96,6 @@ export default function CardScreen({
   cardDesignData: CardDesign;
   isAccountLocked: boolean;
 }) {
-  console.log('currentCardProvider from params  : ', currentCardProvider);
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
@@ -126,14 +125,10 @@ export default function CardScreen({
   const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
 
   const setUpgradeCorrectedCardIndex = (index: number) => {
-    console.log('....... updating currentCardIndex : ', index);
     setCurrentCardIndex(index);
   };
 
   useEffect(() => {
-    console.log('cardProfile : ', cardProfile);
-    console.log('currentCardProvider : ', currentCardProvider);
-
     const checkIsRcUpgradableCardShown = async () => {
       setIsRcUpgradableCardShown(
         !has(cardProfile, CardProviders.REAP_CARD) &&
@@ -205,8 +200,6 @@ export default function CardScreen({
 
   const renderItem = ({ item, index }: { item: Card; index: number }) => {
     const card = item;
-
-    // console.log('card in renderItem : ', card);
 
     return (
       <CyDImageBackground
@@ -322,10 +315,6 @@ export default function CardScreen({
       card => card.status === CardStatus.HIDDEN,
     );
 
-    console.log('hasHiddenCard : ', hasHiddenCard);
-
-    console.log('actualCards : ', actualCards);
-
     if (
       actualCards.length > 0 &&
       currentCardProvider === CardProviders.REAP_CARD &&
@@ -341,7 +330,6 @@ export default function CardScreen({
         designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
         cardProvider: currentCardProvider,
       });
-      console.log('....... 1 updating currentCardIndex : ', 1);
       setCurrentCardIndex(1);
     }
 
@@ -356,15 +344,10 @@ export default function CardScreen({
         type: CardType.VIRTUAL,
         designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
       });
-      console.log('....... 2 updating currentCardIndex : ', 1);
       setCurrentCardIndex(1);
     }
     return actualCards;
   }, [currentCardProvider, userCardDetails.cards, cardProfile]);
-
-  useEffect(() => {
-    console.log('currentCardIndex : ', currentCardIndex);
-  }, [currentCardIndex]);
 
   const getTrackingDetails = async () => {
     const response = await getWithAuth(
@@ -450,7 +433,6 @@ const RenderCardActions = ({
   cardDesignData: CardDesign;
   isAccountLocked: boolean;
 }) => {
-  console.log('card in RenderCardActions : ', card);
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();

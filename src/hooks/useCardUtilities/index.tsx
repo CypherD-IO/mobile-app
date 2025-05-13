@@ -57,7 +57,6 @@ export default function useCardUtilities() {
       if (response.data) {
         const { data } = response;
         const tempProfile = await cardProfileModal(data);
-        console.log('tempProfile : : : ', tempProfile);
         return tempProfile;
       }
     } catch (e) {

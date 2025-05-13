@@ -220,17 +220,12 @@ export default function CypherCardScreen() {
     });
   };
 
-  useEffect(() => {
-    console.log('cardBalance : ', cardBalance);
-  }, [cardBalance]);
-
   const fetchCardBalance = async () => {
     setBalanceLoading(true);
     const url = `/v1/cards/${cardProvider}/card/${String(cardId)}/balance`;
     try {
       const response = await getWithAuth(url);
       if (!response.isError && response?.data && response.data.balance) {
-        console.log('response.data.balance : ', response.data.balance);
         setCardBalance(String(response.data.balance));
       } else {
         setCardBalance('NA');
@@ -262,7 +257,6 @@ export default function CypherCardScreen() {
 
   const getCardDesignValues = async () => {
     const response = await getWithAuth('/v1/cards/designs');
-    console.log('response of getCardDesignValues : ', response);
     if (!response.isError) {
       const cardDesignValues: CardDesign = response.data;
       setCardDesignData(cardDesignValues);

@@ -27,6 +27,7 @@ import {
   GlobalContext,
 } from '../../../../../core/globalContext';
 import { CardProviders } from '../../../../../constants/enum';
+import { showToast } from '../../../../utilities/toastUtility';
 
 const NameOnCard = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -49,7 +50,6 @@ const NameOnCard = () => {
         const response = await getWithAuth(
           `/v1/cards/${CardProviders.REAP_CARD}/user-data`,
         );
-        console.log('response of fetchUserData : ', response);
         if (!response.isError && response.data) {
           setFirstName(response.data.firstName || '');
           setLastName(response.data.lastName || '');
@@ -90,13 +90,13 @@ const NameOnCard = () => {
       const response = await postWithAuth(`/v1/cards/virtual-preferred-name`, {
         name: selectedName,
       });
-      console.log('response of setting preferred name : ', response);
       if (!response.isError && response.data) {
         navigation.navigate(screenTitle.CARD_CREATION, { name: selectedName });
       } else {
-        console.log('error in setting preferred name : ', response);
+        showToast('Could not set preferred name', 'error');
       }
     } catch (error) {
+      showToast('Could not set preferred name', 'error');
       console.error('Error setting preferred name:', error);
     }
   };
@@ -109,8 +109,6 @@ const NameOnCard = () => {
     const trimmedName = name.slice(0, MAX_NAME_LENGTH);
     // Check if name already exists in options
     const nameExists = nameOptions.some(option => option.name === trimmedName);
-
-    console.log('nameExists : ', nameExists, trimmedName);
 
     if (!nameExists) {
       const newNameOption = {

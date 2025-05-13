@@ -67,7 +67,6 @@ export default function DebitCardScreen(props: RouteProps) {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
-    console.log('profile data : ', data);
     if (data) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
@@ -117,30 +116,10 @@ export default function DebitCardScreen(props: RouteProps) {
               currentCardProfile = await refreshProfile();
             }
 
-            console.log(
-              'currentCardProfile ::::::::::::::: ',
-              currentCardProfile,
-            );
-
-            console.log(
-              'P N : ',
-              get(currentCardProfile, [provider, 'preferredName']),
-            );
-
-            console.log(
-              'cards : ',
-              get(currentCardProfile, [provider, 'cards']),
-            );
-
             if (
               currentCardProfile &&
               has(currentCardProfile, provider as string)
             ) {
-              console.log(
-                'cards : ',
-                get(currentCardProfile, [provider, 'cards']),
-              );
-
               // if hiddencard is not present and the application is completed, then show the card screen
               // if the status is completed and the preferred name is already, then show the card screen
               const isCardApplicationCompleted =
@@ -153,13 +132,6 @@ export default function DebitCardScreen(props: RouteProps) {
                   CardApplicationStatus.COMPLETED &&
                   get(currentCardProfile, [provider, 'preferredName']) !==
                     undefined);
-
-              console.log(
-                'isCardApplicationCompleted : ',
-                isCardApplicationCompleted,
-                get(currentCardProfile, provider)?.applicationStatus,
-                get(currentCardProfile, [provider, 'preferredName']),
-              );
 
               if (isCardApplicationCompleted) {
                 props.navigation.reset({
@@ -174,7 +146,6 @@ export default function DebitCardScreen(props: RouteProps) {
                   ],
                 });
               } else if (shouldCheckApplication(currentCardProfile)) {
-                console.log('....... checking application');
                 await checkApplication(provider as CardProviders);
               } else {
                 props.navigation.reset({
@@ -187,7 +158,6 @@ export default function DebitCardScreen(props: RouteProps) {
                 });
               }
             } else {
-              console.log('rc object not found');
               const isReferralCodeApplied = await getReferralCode();
               if (isReferralCodeApplied) {
                 props.navigation.reset({

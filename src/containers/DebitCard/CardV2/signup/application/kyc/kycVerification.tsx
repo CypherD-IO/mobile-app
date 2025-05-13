@@ -25,12 +25,12 @@ import { CardProfile } from '../../../../../../models/cardProfile.model';
 import Loading from '../../../../../../components/v2/loading';
 import useCardUtilities from '../../../../../../hooks/useCardUtilities';
 import { get } from 'lodash';
-import KYCInProgressComponent from './kycInProgressComponent.tsx';
-import KYCCompletedComponent from './kycCompletedComponent.tsx';
-import KYCFailedComponent from './kycFailedComponent.tsx';
-import KYCAdditionalDocComponent from './additionalDocumentRequiredComponent.tsx';
-import KYCAdditionalReviewComponent from './additionalReviewComponent.tsx';
-import KYCIntroComponent from './kycIntroComponent.tsx';
+import KYCInProgressComponent from './kycInProgressComponent';
+import KYCCompletedComponent from './kycCompletedComponent';
+import KYCFailedComponent from './kycFailedComponent';
+import KYCAdditionalDocComponent from './additionalDocumentRequiredComponent';
+import KYCAdditionalReviewComponent from './additionalReviewComponent';
+import KYCIntroComponent from './kycIntroComponent';
 
 // Import components
 const KYCVerification = () => {
@@ -49,7 +49,6 @@ const KYCVerification = () => {
   const checkKYCStatus = async () => {
     try {
       const response = await getWithAuth('/v1/authentication/profile');
-      console.log('response : ', response);
       if (!response.isError) {
         const tempProfile = await cardProfileModal(response.data);
         const tempProvider = get(tempProfile, 'provider');
@@ -62,11 +61,6 @@ const KYCVerification = () => {
           '',
         );
         setKycStatus(applicationStatus);
-        console.log(
-          'tempProfile : : : ',
-          tempProfile,
-          get(tempProfile, [provider, 'isRainDeclined'], false),
-        );
         setIsRainDeclined(
           get(tempProfile, [provider, 'isRainDeclined'], false),
         );
@@ -146,16 +140,13 @@ const KYCVerification = () => {
   };
 
   const renderContent = () => {
-    console.log('kycStatus LLLL ', kycStatus);
     if (loading) {
       return <Loading />;
     }
 
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
-        console.log('render intro as kyc initiated');
         if (isRainDeclined) {
-          console.log('render additional doc : ', isRainDeclined);
           return <KYCAdditionalDocComponent onSubmitDocuments={handleNext} />;
         }
         return <KYCIntroComponent />;
@@ -169,7 +160,6 @@ const KYCVerification = () => {
       case CardApplicationStatus.COMPLETION_PENDING:
         return <KYCAdditionalReviewComponent />;
       default:
-        console.log('render intro as default PPPPPP ', kycStatus);
         return <KYCIntroComponent />;
     }
   };

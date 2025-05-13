@@ -197,7 +197,6 @@ export async function loadFromKeyChain(
   forceCloseOnFailure = false,
   showModal = () => {},
 ) {
-  console.log('loadFromKeyChain', key);
   try {
     // Retrieve the credentials
     let requestMessage = '';

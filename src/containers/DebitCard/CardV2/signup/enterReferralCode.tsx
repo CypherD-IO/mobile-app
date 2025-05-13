@@ -84,8 +84,6 @@ const EnterReferralCode = (): JSX.Element => {
         referralCode,
       });
 
-      console.log('response ref code : ', response);
-
       if (!response.error) {
         if (response.data.isValid) {
           await setReferralCodeAsync(referralCode);

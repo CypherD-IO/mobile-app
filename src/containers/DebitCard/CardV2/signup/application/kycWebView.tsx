@@ -56,10 +56,6 @@ const KYCWebView = () => {
         `/v1/cards/${provider}/application/kyc`,
       );
 
-      console.log('data', data);
-      console.log('error', error);
-      console.log('isError', isError);
-
       if (isError) {
         showModal('state', {
           type: 'error',
@@ -128,7 +124,6 @@ const KYCWebView = () => {
         navigation.navigate(screenTitle.KYC_VERIFICATION_INTRO);
       }
     }
-    console.log('navState', navState);
   };
 
   // if (isLoading || !kycUrl) {
