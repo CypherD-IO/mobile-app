@@ -25,12 +25,12 @@ import { CardProfile } from '../../../../../../models/cardProfile.model';
 import Loading from '../../../../../../components/v2/loading';
 import useCardUtilities from '../../../../../../hooks/useCardUtilities';
 import { get } from 'lodash';
-import KYCInProgressComponent from './kycInProgressComponent.tsx';
-import KYCCompletedComponent from './kycCompletedComponent.tsx';
-import KYCFailedComponent from './kycFailedComponent.tsx';
-import KYCAdditionalDocComponent from './additionalDocumentRequiredComponent.tsx';
-import KYCAdditionalReviewComponent from './additionalReviewComponent.tsx';
-import KYCIntroComponent from './kycIntroComponent.tsx';
+import KYCInProgressComponent from './KYCInProgressComponent';
+import KYCCompletedComponent from './KYCCompletedComponent';
+import KYCFailedComponent from './KYCFailedComponent';
+import KYCAdditionalDocComponent from './AdditionalDocumentRequiredComponent';
+import KYCAdditionalReviewComponent from './AdditionalReviewComponent';
+import KYCIntroComponent from './KYCIntroComponent';
 
 // Import components
 const KYCVerification = () => {
