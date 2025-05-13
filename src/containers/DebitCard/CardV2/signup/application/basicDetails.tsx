@@ -30,12 +30,10 @@ import { useFormContext } from './FormContext';
 const BasicDetailsSchema = Yup.object().shape({
   firstName: Yup.string()
     .required('First name is required')
-    .max(27, 'Your Firstname & lastname should be no longer than 27 characters')
-    .matches(/^\S*$/, 'No space allowed'),
+    .matches(/^[A-Za-z\s]+$/, 'Only alphabets and spaces are allowed'),
   lastName: Yup.string()
     .required('Last name is required')
-    .max(27, 'Your Firstname & lastname should be no longer than 27 characters')
-    .matches(/^\S*$/, 'No space allowed'),
+    .matches(/^[A-Za-z\s]+$/, 'Only alphabets and spaces are allowed'),
   dateOfBirth: Yup.string()
     .required('Date of birth is required')
     .test('isValidAge', 'You must be at least 18 years old', dateOfBirth => {
@@ -197,18 +195,17 @@ const BasicDetails = (): JSX.Element => {
                 containerClassName='mb-[4px]'
                 labelClassName='text-[14px] text-n200'
                 inputClassName='py-[16px] px-[12px] rounded-[8px] bg-n20 font-semibold border-[1px] border-transparent mt-[2px] focus:border-base400'
-                placeholder='Your email address'
                 autoCapitalize='none'
                 ref={emailRef}
                 returnKeyType={'done' as ReturnKeyTypeOptions}
                 onSubmitEditing={() => emailRef.current?.blur()}
               />
 
-              <CyDText className='text-n200 text-[12px] mb-[17px]'>
+              {/* <CyDText className='text-n200 text-[12px] mb-[17px]'>
                 {t(
                   'An email address is necessary for verification, updates and further communication',
                 )}
-              </CyDText>
+              </CyDText> */}
             </KeyboardAwareScrollView>
 
             {/* Footer */}

@@ -68,7 +68,6 @@ import { DecimalHelper } from '../../../utils/decimalHelper';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
-  currentCardIndex: number;
 }
 
 const cardId = CARD_IDS.HIDDEN_CARD;

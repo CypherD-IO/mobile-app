@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
+  useRoute,
+  RouteProp,
 } from '@react-navigation/native';
 import {
   CyDView,
@@ -12,172 +14,226 @@ import {
   CyDMaterialDesignIcons,
   CyDLottieView,
   CyDImage,
+  CyDImageBackground,
 } from '../../../../../styles/tailwindComponents';
 import { screenTitle } from '../../../../../constants';
 import AppImages from '../../../../../../assets/images/appImages';
-import { Share, StyleSheet, Platform } from 'react-native';
+import { Share, StyleSheet } from 'react-native';
 import Button from '../../../../../components/v2/button';
-import { ButtonType } from '../../../../../constants/enum';
-import WebView from 'react-native-webview';
+import { ButtonType, GlobalContextType } from '../../../../../constants/enum';
+import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
+import ViewShot, { captureRef } from 'react-native-view-shot';
+import Toast from 'react-native-toast-message';
+import {
+  GlobalContext,
+  GlobalContextDef,
+} from '../../../../../core/globalContext';
+import useCardUtilities from '../../../../../hooks/useCardUtilities';
 
-const SPLINE_HTML = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@0.9.506/build/spline-viewer.js"></script>
-    <style>
-      body { margin: 0; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
-      spline-viewer { width: 100%; height: 100%; }
-    </style>
-  </head>
-  <body>
-    <spline-viewer url="https://prod.spline.design/AIAexIIoEQLgOX9e/scene.splinecode"></spline-viewer>
-  </body>
-</html>
-`;
+interface RouteParams {
+  name: string;
+}
 
 const CardCreation = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [isLoading, setIsLoading] = useState(true);
-  const [isSplineLoaded, setIsSplineLoaded] = useState(false);
+  const name = route.params?.name || '';
+  const viewRef = useRef<any>(null);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
-    // Show loading state for 5 seconds or until Spline loads, whichever is longer
+    // Show loading state for 8 seconds
     const timer = setTimeout(() => {
-      if (isSplineLoaded) {
-        setIsLoading(false);
-      }
-    }, 5000);
+      setIsLoading(false);
+    }, 4000);
 
     return () => clearTimeout(timer);
-  }, [isSplineLoaded]);
+  }, []);
 
-  const handleShare = () => {
-    Share.share({
-      message: 'Check out my new Cypher Card!',
-    }).catch(error => {
-      console.error('Error sharing:', error);
-    });
+  const refreshProfile = async () => {
+    try {
+      const data = await getWalletProfile(globalContext.globalState.token);
+      if (data) {
+        globalContext.globalDispatch({
+          type: GlobalContextType.CARD_PROFILE,
+          cardProfile: data,
+        });
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      return null;
+    }
   };
 
-  const handleStartUsing = () => {
-    navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+  const handleShare = async () => {
+    try {
+      // Wait a moment to ensure UI is properly rendered
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Capture the screen
+      const uri = await captureRef(viewRef, {
+        format: 'jpg',
+        quality: 0.9,
+        result: 'base64',
+      });
+
+      // Prepare the share message
+      const shareImage = {
+        title: 'My Cypher Card',
+        message:
+          "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n" +
+          '    💳 Google Pay & Apple Pay support\n' +
+          '    💰 Lowest ever 0% Forex Markup\n' +
+          '    💲 0% Loading Fee for USDC\n' +
+          '    🌍 Use your crypto anywhere, just like a regular card',
+        url: `data:image/jpeg;base64,${uri}`,
+      };
+
+      // Share the image
+      await Share.share(shareImage);
+    } catch (error: any) {
+      // Only show error if it's not user cancellation
+      if (error.message !== 'User did not share') {
+        Toast.show({
+          type: 'error',
+          text1: 'Share failed',
+          text2: 'Unable to share card details',
+        });
+      }
+    }
   };
 
-  const handleSplineLoad = () => {
-    setIsSplineLoaded(true);
-    // Only hide loading if 5 seconds have passed
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 0);
+  const handleStartUsing = async () => {
+    try {
+      setIsButtonLoading(true);
+
+      // Refresh the profile data before navigating
+      await refreshProfile();
+
+      // Navigate to debit card screen
+      navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error loading card details',
+        text2: 'Please try again. If the problem persists, contact support.',
+      });
+    } finally {
+      setIsButtonLoading(false);
+    }
   };
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-black'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       {/* Back button */}
-      <CyDView className='px-4 py-2'>
-        <CyDTouchView
-          onPress={() => navigation.goBack()}
-          className='w-[32px] h-[32px] bg-n40 rounded-full flex items-center justify-center'>
-          <CyDMaterialDesignIcons
-            name='arrow-left'
-            size={20}
-            className='text-base400'
-          />
-        </CyDTouchView>
-      </CyDView>
+      <CardApplicationHeader />
 
       {/* Main content */}
-      <CyDView className='flex-1 justify-between'>
-        {/* Spline animation container */}
-        <CyDView className='flex-1'>
-          {/* Show card image while Spline loads */}
-          {!isSplineLoaded && (
-            <CyDView className='absolute z-10 w-full h-full items-center justify-center'>
-              <CyDImage
-                source={AppImages.CYPHER_VIRTUAL_CARD}
-                className='w-[90%] aspect-[380/239] rounded-[12px]'
-                resizeMode='contain'
+      <ViewShot ref={viewRef} style={styles.container}>
+        <CyDView className='flex-1 justify-between p-4 bg-n0'>
+          {/* Card image container */}
+          <CyDView className='flex-1 items-center justify-center'>
+            <CyDImageBackground
+              source={AppImages.CYPHER_VIRTUAL_CARD}
+              className='w-full aspect-[380/239] rounded-[12px]'
+              resizeMode='contain'>
+              <CyDView className='flex-1 p-5'>
+                <CyDView className='mt-auto'>
+                  <CyDText className='text-white font-semibold text-[16px]'>
+                    {name}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            </CyDImageBackground>
+          </CyDView>
+
+          {/* Status section - always visible but content changes */}
+          <CyDView className='flex-row justify-center items-center mb-4'>
+            {isLoading ? (
+              <>
+                <CyDLottieView
+                  source={AppImages.LOADING_SPINNER}
+                  autoPlay
+                  loop
+                  style={styles.loader}
+                />
+                <CyDText className='text-[20px] font-[500] ml-2'>
+                  Creating card
+                </CyDText>
+              </>
+            ) : (
+              <>
+                <CyDImage
+                  source={AppImages.CHECK_MARK_GREEN_CURLY_BG}
+                  className='w-[28px] h-[28px] rounded-full items-center justify-center mr-2'
+                  resizeMode='contain'
+                />
+                <CyDText className='font-[500] text-[20px]'>
+                  Card Created
+                </CyDText>
+              </>
+            )}
+          </CyDView>
+
+          {/* Buttons section - always in layout but opacity changes */}
+          <CyDView
+            className='items-center mb-4'
+            style={isLoading ? styles.hiddenButtons : styles.visibleButtons}>
+            <CyDView className='w-full px-4'>
+              <CyDTouchView
+                onPress={() => {
+                  handleShare().catch(err => {
+                    console.error('Error sharing card:', err);
+                  });
+                }}
+                disabled={isLoading}
+                className='bg-base200 rounded-full py-[14px] mb-4 flex-row justify-center items-center'>
+                <CyDMaterialDesignIcons
+                  name={'share-variant'}
+                  size={16}
+                  className='text-base400 text-white mr-[6px]'
+                />
+                <CyDText className='text-[18px] text-white'>Share</CyDText>
+              </CyDTouchView>
+
+              <Button
+                title='Start Using'
+                onPress={() => {
+                  void handleStartUsing();
+                }}
+                disabled={isLoading}
+                loading={isButtonLoading}
+                type={ButtonType.PRIMARY}
+                style='rounded-full'
+                paddingY={14}
               />
             </CyDView>
-          )}
-          <WebView
-            source={{ html: SPLINE_HTML }}
-            style={styles.webview}
-            scrollEnabled={false}
-            bounces={false}
-            onLoad={handleSplineLoad}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            originWhitelist={['*']}
-          />
+          </CyDView>
         </CyDView>
-
-        {/* Status section */}
-        <CyDView className='items-center mb-8'>
-          {isLoading ? (
-            <>
-              <CyDLottieView
-                source={AppImages.LOADER_TRANSPARENT}
-                autoPlay
-                loop
-                style={styles.loader}
-              />
-              <CyDText className='text-white text-lg mt-2'>
-                Creating card
-              </CyDText>
-            </>
-          ) : (
-            <>
-              <CyDView className='flex-row items-center mb-4'>
-                <CyDView className='w-6 h-6 bg-green-500 rounded-full items-center justify-center mr-2'>
-                  <CyDMaterialDesignIcons
-                    name='check'
-                    size={16}
-                    className='text-white'
-                  />
-                </CyDView>
-                <CyDText className='text-white text-lg'>Card Created</CyDText>
-              </CyDView>
-
-              {/* Buttons */}
-              <CyDView className='w-full px-4'>
-                <CyDTouchView
-                  onPress={handleShare}
-                  className='bg-n40 rounded-lg py-3 mb-4 flex-row justify-center items-center'>
-                  <CyDMaterialDesignIcons
-                    name='share'
-                    size={20}
-                    className='text-white mr-2'
-                  />
-                  <CyDText className='text-white text-base'>Share</CyDText>
-                </CyDTouchView>
-
-                <Button
-                  title='Start Using'
-                  onPress={handleStartUsing}
-                  type={ButtonType.PRIMARY}
-                  style='h-[48px]'
-                />
-              </CyDView>
-            </>
-          )}
-        </CyDView>
-      </CyDView>
+      </ViewShot>
     </CyDSafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  webview: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
   loader: {
-    width: 40,
-    height: 40,
+    width: 28,
+    height: 28,
+  },
+  hiddenButtons: {
+    opacity: 0,
+    pointerEvents: 'none',
+  },
+  visibleButtons: {
+    opacity: 1,
+  },
+  container: {
+    flex: 1,
   },
 });
 

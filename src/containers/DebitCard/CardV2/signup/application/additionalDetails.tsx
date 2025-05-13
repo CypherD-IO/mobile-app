@@ -188,7 +188,7 @@ const AdditionalDetails = (): JSX.Element => {
                 </CyDText>
                 <CyDText className='text-[14px] font-medium text-n200'>
                   {t(
-                    'This input helps us get to know our users better and ensures the cypher stays secure for everyone.',
+                    'These details help us personalize your card experience and maintain the highest security standards for all Cypher users.',
                   )}
                 </CyDText>
               </CyDView>

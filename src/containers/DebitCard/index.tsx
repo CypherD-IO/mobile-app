@@ -9,6 +9,7 @@ import {
   CardApplicationStatus,
   CardProviders,
   GlobalContextType,
+  CardStatus,
 } from '../../constants/enum';
 import Loading from '../../components/v2/loading';
 import { screenTitle } from '../../constants';
@@ -66,7 +67,7 @@ export default function DebitCardScreen(props: RouteProps) {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
-
+    console.log('profile data : ', data);
     if (data) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
@@ -115,15 +116,52 @@ export default function DebitCardScreen(props: RouteProps) {
             if (!currentCardProfile) {
               currentCardProfile = await refreshProfile();
             }
+
+            console.log(
+              'currentCardProfile ::::::::::::::: ',
+              currentCardProfile,
+            );
+
+            console.log(
+              'P N : ',
+              get(currentCardProfile, [provider, 'preferredName']),
+            );
+
+            console.log(
+              'cards : ',
+              get(currentCardProfile, [provider, 'cards']),
+            );
+
             if (
               currentCardProfile &&
               has(currentCardProfile, provider as string)
             ) {
-              const cardApplicationStatus =
-                get(currentCardProfile, provider)?.applicationStatus ===
-                CardApplicationStatus.COMPLETED;
+              console.log(
+                'cards : ',
+                get(currentCardProfile, [provider, 'cards']),
+              );
 
-              if (cardApplicationStatus) {
+              // if hiddencard is not present and the application is completed, then show the card screen
+              // if the status is completed and the preferred name is already, then show the card screen
+              const isCardApplicationCompleted =
+                (get(currentCardProfile, provider)?.applicationStatus ===
+                  CardApplicationStatus.COMPLETED &&
+                  !get(currentCardProfile, [provider, 'cards'])?.some(
+                    card => card.status === CardStatus.HIDDEN,
+                  )) ||
+                (get(currentCardProfile, provider)?.applicationStatus ===
+                  CardApplicationStatus.COMPLETED &&
+                  get(currentCardProfile, [provider, 'preferredName']) !==
+                    undefined);
+
+              console.log(
+                'isCardApplicationCompleted : ',
+                isCardApplicationCompleted,
+                get(currentCardProfile, provider)?.applicationStatus,
+                get(currentCardProfile, [provider, 'preferredName']),
+              );
+
+              if (isCardApplicationCompleted) {
                 props.navigation.reset({
                   index: 0,
                   routes: [
@@ -136,6 +174,7 @@ export default function DebitCardScreen(props: RouteProps) {
                   ],
                 });
               } else if (shouldCheckApplication(currentCardProfile)) {
+                console.log('....... checking application');
                 await checkApplication(provider as CardProviders);
               } else {
                 props.navigation.reset({
@@ -148,15 +187,15 @@ export default function DebitCardScreen(props: RouteProps) {
                 });
               }
             } else {
+              console.log('rc object not found');
               const isReferralCodeApplied = await getReferralCode();
               if (isReferralCodeApplied) {
                 props.navigation.reset({
                   index: 0,
                   routes: [
                     {
-                      name: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+                      name: screenTitle.ENTER_REFERRAL_CODE,
                       params: {
-                        toPage: screenTitle.CARD_APPLICATION,
                         referralCodeFromLink: isReferralCodeApplied,
                       },
                     },
@@ -168,10 +207,6 @@ export default function DebitCardScreen(props: RouteProps) {
                   routes: [
                     {
                       name: screenTitle.CARD_APPLICATION_WELCOME,
-                      params: {
-                        deductAmountNow: false,
-                        toPage: screenTitle.CARD_APPLICATION,
-                      },
                     },
                   ],
                 });

@@ -22,7 +22,7 @@ const CardApplicationFooter: React.FC<CardApplicationFooterProps> = ({
   buttonConfig,
 }) => {
   return (
-    <CyDView className='pb-3 bg-n0'>
+    <CyDView className='pb-[24px] bg-n0'>
       {/* Progress Indicator */}
       <CyDView className='flex-row items-center gap-[5px] mb-6'>
         {Array.from({ length: totalSteps }).map((_, index) => (

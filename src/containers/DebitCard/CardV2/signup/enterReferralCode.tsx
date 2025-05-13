@@ -4,6 +4,8 @@ import {
   ParamListBase,
   useNavigation,
   useIsFocused,
+  RouteProp,
+  useRoute,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -34,11 +36,17 @@ import ReferralSuccessModal from '../../../../components/v2/ReferralSuccessModal
 import CardApplicationHeader from '../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../components/v2/CardApplicationFooter';
 
+interface RouteParams {
+  referralCodeFromLink?: string;
+}
+
 const EnterReferralCode = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const insets = useSafeAreaInsets();
-  const [currentStep] = useState<number>(1);
-  const [referralCode, setReferralCode] = useState<string>('');
+  const [referralCode, setReferralCode] = useState<string>(
+    route.params?.referralCodeFromLink || '',
+  );
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const totalSteps = 3;
@@ -222,9 +230,13 @@ const EnterReferralCode = (): JSX.Element => {
         totalSteps={3}
         currentSectionProgress={40}
         buttonConfig={{
-          title: 'Skip',
-          onPress: async () => {
-            await handleSkip();
+          title: isEmpty(referralCode) ? 'Skip' : 'Next',
+          onPress: () => {
+            if (isEmpty(referralCode)) {
+              void handleSkip();
+            } else {
+              void onSubmitReferralCode();
+            }
           },
         }}
       />

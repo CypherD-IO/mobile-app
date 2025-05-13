@@ -25,15 +25,14 @@ import { CardProfile } from '../../../../../../models/cardProfile.model';
 import Loading from '../../../../../../components/v2/loading';
 import useCardUtilities from '../../../../../../hooks/useCardUtilities';
 import { get } from 'lodash';
+import KYCInProgressComponent from './kycInProgressComponent.tsx';
+import KYCCompletedComponent from './kycCompletedComponent.tsx';
+import KYCFailedComponent from './kycFailedComponent.tsx';
+import KYCAdditionalDocComponent from './additionalDocumentRequiredComponent.tsx';
+import KYCAdditionalReviewComponent from './additionalReviewComponent.tsx';
+import KYCIntroComponent from './kycIntroComponent.tsx';
 
 // Import components
-import KYCIntroComponent from './KYCIntroComponent';
-import KYCInProgressComponent from './KYCInProgressComponent';
-import KYCCompletedComponent from './KYCCompletedComponent';
-import KYCFailedComponent from './KYCFailedComponent';
-import KYCAdditionalDocComponent from './AdditionalDocumentRequiredComponent';
-import KYCAdditionalReviewComponent from './AdditionalReviewComponent';
-
 const KYCVerification = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { getWithAuth } = useAxios();
@@ -45,10 +44,12 @@ const KYCVerification = () => {
   const [kycStatus, setKycStatus] = useState<CardApplicationStatus | null>(
     null,
   );
+  const [isRainDeclined, setIsRainDeclined] = useState(false);
 
   const checkKYCStatus = async () => {
     try {
       const response = await getWithAuth('/v1/authentication/profile');
+      console.log('response : ', response);
       if (!response.isError) {
         const tempProfile = await cardProfileModal(response.data);
         const tempProvider = get(tempProfile, 'provider');
@@ -61,6 +62,14 @@ const KYCVerification = () => {
           '',
         );
         setKycStatus(applicationStatus);
+        console.log(
+          'tempProfile : : : ',
+          tempProfile,
+          get(tempProfile, [provider, 'isRainDeclined'], false),
+        );
+        setIsRainDeclined(
+          get(tempProfile, [provider, 'isRainDeclined'], false),
+        );
       }
     } catch (error) {
       console.error('Error checking KYC status:', error);
@@ -99,6 +108,9 @@ const KYCVerification = () => {
   const getProgress = () => {
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
+        if (isRainDeclined) {
+          return 60;
+        }
         return 40;
       case CardApplicationStatus.KYC_PENDING:
       case CardApplicationStatus.COMPLETION_PENDING:
@@ -114,7 +126,7 @@ const KYCVerification = () => {
   };
 
   const getButtonTitle = () => {
-    if (kycStatus === CardApplicationStatus.KYC_INITIATED) {
+    if (kycStatus === CardApplicationStatus.KYC_INITIATED && !isRainDeclined) {
       return 'Start';
     }
     return 'Next';
@@ -124,7 +136,7 @@ const KYCVerification = () => {
     const isNextEnabled =
       kycStatus === CardApplicationStatus.KYC_SUCCESSFUL ||
       kycStatus === CardApplicationStatus.COMPLETED ||
-      kycStatus === CardApplicationStatus.KYC_INITIATED;
+      (kycStatus === CardApplicationStatus.KYC_INITIATED && !isRainDeclined);
 
     return {
       title: getButtonTitle(),
@@ -134,12 +146,18 @@ const KYCVerification = () => {
   };
 
   const renderContent = () => {
+    console.log('kycStatus LLLL ', kycStatus);
     if (loading) {
       return <Loading />;
     }
 
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
+        console.log('render intro as kyc initiated');
+        if (isRainDeclined) {
+          console.log('render additional doc : ', isRainDeclined);
+          return <KYCAdditionalDocComponent onSubmitDocuments={handleNext} />;
+        }
         return <KYCIntroComponent />;
       case CardApplicationStatus.KYC_PENDING:
         return <KYCInProgressComponent onRefresh={handleRefresh} />;
@@ -149,15 +167,18 @@ const KYCVerification = () => {
       case CardApplicationStatus.KYC_FAILED:
         return <KYCFailedComponent />;
       case CardApplicationStatus.COMPLETION_PENDING:
-        return <KYCAdditionalDocComponent />;
+        return <KYCAdditionalReviewComponent />;
       default:
+        console.log('render intro as default PPPPPP ', kycStatus);
         return <KYCIntroComponent />;
     }
   };
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
-      <CardApplicationHeader />
+    <CyDSafeAreaView className='flex-1 bg-n0'>
+      <CardApplicationHeader
+        onBackPress={() => navigation.navigate(screenTitle.PORTFOLIO)}
+      />
       {renderContent()}
       <CardApplicationFooter
         currentStep={2}

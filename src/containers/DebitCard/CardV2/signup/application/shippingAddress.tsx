@@ -77,23 +77,23 @@ const ShippingAddress = (): JSX.Element => {
   const [isPhoneCountrySet, setIsPhoneCountrySet] = useState<boolean>(false);
 
   const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>({
-    name: 'INDIA',
-    dialCode: '+91',
-    flag: '🇮🇳',
-    Iso2: 'IN',
-    Iso3: 'IND',
-    currency: 'INR',
+    name: 'United States',
+    dialCode: '+1',
+    flag: '🇺🇸',
+    Iso2: 'US',
+    Iso3: 'USA',
+    currency: 'USD',
   });
 
   const [selectedPhoneCountry, setSelectedPhoneCountry] = useState<
     ICountry | undefined
   >({
-    name: 'INDIA',
-    dialCode: '+91',
-    flag: '🇮🇳',
-    Iso2: 'IN',
-    Iso3: 'IND',
-    currency: 'INR',
+    name: 'United States',
+    dialCode: '+1',
+    flag: '🇺🇸',
+    Iso2: 'US',
+    Iso3: 'USA',
+    currency: 'USD',
   });
 
   const currentStep = 1;
@@ -200,7 +200,7 @@ const ShippingAddress = (): JSX.Element => {
               keyboardShouldPersistTaps='handled'>
               {/* Title */}
               <CyDText className='text-[32px] my-6'>
-                {t('Shipping Address')}
+                {t('Billing Address')}
               </CyDText>
 
               {/* Country Selection */}
@@ -233,7 +233,7 @@ const ShippingAddress = (): JSX.Element => {
               {/* Address Fields */}
               <CyDView className='mb-6'>
                 <CyDText className='text-[14px] text-n200 mb-1'>
-                  {t('Shipping Address')}
+                  {t('BILLING_ADDRESS_TITLE')}
                 </CyDText>
                 <CyDView>
                   <CyDTextInput
@@ -301,7 +301,7 @@ const ShippingAddress = (): JSX.Element => {
                 </CyDText>
                 <CyDView className='flex-row'>
                   <CyDTouchView
-                    className='h-[52px] px-4 rounded-lg bg-n20 flex-row items-center justify-center mr-2 w-[90px]'
+                    className='h-[62px] px-4 rounded-lg bg-n20 flex-row items-center justify-center mr-2 w-[90px]'
                     onPress={() => setSelectPhoneCountryModalVisible(true)}>
                     <CyDText>{selectedPhoneCountry?.dialCode}</CyDText>
                     <CyDIcons

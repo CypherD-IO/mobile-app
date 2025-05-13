@@ -157,8 +157,10 @@ const EmailVerification = (): JSX.Element => {
   const isValid = otp.length === 4;
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
-      <CardApplicationHeader />
+    <CyDSafeAreaView className='flex-1 bg-n0'>
+      <CardApplicationHeader
+        onBackPress={() => navigation.navigate(screenTitle.PORTFOLIO)}
+      />
 
       <CyDView className='flex-1 px-[20px]'>
         {/* Title */}
@@ -172,7 +174,6 @@ const EmailVerification = (): JSX.Element => {
             <CyDText className='text-[14px] font-bold text-n200'>
               Enter the code we&apos;ve sent to{' '}
             </CyDText>
-            {/* TODO: Remove this after testing */}
             <CyDText className='text-[14px] text-base400 font-bold'>
               {email}
             </CyDText>

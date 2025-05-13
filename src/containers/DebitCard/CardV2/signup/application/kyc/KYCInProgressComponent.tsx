@@ -8,12 +8,18 @@ import {
   CyDMaterialDesignIcons,
 } from '../../../../../../styles/tailwindComponents';
 import AppImages from '../../../../../../../assets/images/appImages';
-
+import { screenTitle } from '../../../../../../constants';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 interface Props {
   onRefresh: () => void;
 }
 
 const KYCInProgressComponent = ({ onRefresh }: Props) => {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   return (
     <CyDScrollView className='flex-1 px-5'>
       {/* Main Image */}
@@ -58,10 +64,14 @@ const KYCInProgressComponent = ({ onRefresh }: Props) => {
       {/* External Browser Note */}
       <CyDView className='mt-6'>
         <CyDText className='text-n200 text-[14px]'>
-          If you haven&apos;t finished the KYC process in the external browser,
-          just click the button below to continue.
+          If you haven&apos;t finished the KYC process, just click the button
+          below to continue.
         </CyDText>
-        <CyDTouchView className='flex-row items-center justify-between bg-n20 rounded-[8px] px-4 py-[15px] mt-2 border-[1px] border-n40'>
+        <CyDTouchView
+          className='flex-row items-center justify-between bg-n20 rounded-[8px] px-4 py-[15px] mt-2 border-[1px] border-n40'
+          onPress={() => {
+            navigation.navigate(screenTitle.KYC_WEBVIEW);
+          }}>
           <CyDView className='flex-row items-center gap-1'>
             <CyDMaterialDesignIcons
               name='face-recognition'

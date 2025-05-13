@@ -84,7 +84,7 @@ export default function CypherCardScreen() {
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile: CardProfile | undefined =
     globalContext?.globalState?.cardProfile;
-  const [cardBalance, setCardBalance] = useState('');
+  const [cardBalance, setCardBalance] = useState('0');
   const [currentCardIndex] = useState(0); // Not setting anywhere.
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [
@@ -173,7 +173,7 @@ export default function CypherCardScreen() {
       });
     }
     //
-    setCardBalance('');
+    setCardBalance('0');
     if (cardId !== CARD_IDS.HIDDEN_CARD) {
       await fetchCardBalance();
       void fetchRecentTransactions();
@@ -195,9 +195,7 @@ export default function CypherCardScreen() {
   }, [cardProvider]);
 
   useEffect(() => {
-    if (isFocused && cardId !== CARD_IDS.HIDDEN_CARD) {
-      void getCardDesignValues();
-    }
+    void getCardDesignValues();
   }, [isFocused, cardId]);
 
   const refreshProfile = async () => {
@@ -222,12 +220,17 @@ export default function CypherCardScreen() {
     });
   };
 
+  useEffect(() => {
+    console.log('cardBalance : ', cardBalance);
+  }, [cardBalance]);
+
   const fetchCardBalance = async () => {
     setBalanceLoading(true);
     const url = `/v1/cards/${cardProvider}/card/${String(cardId)}/balance`;
     try {
       const response = await getWithAuth(url);
       if (!response.isError && response?.data && response.data.balance) {
+        console.log('response.data.balance : ', response.data.balance);
         setCardBalance(String(response.data.balance));
       } else {
         setCardBalance('NA');
@@ -259,6 +262,7 @@ export default function CypherCardScreen() {
 
   const getCardDesignValues = async () => {
     const response = await getWithAuth('/v1/cards/designs');
+    console.log('response of getCardDesignValues : ', response);
     if (!response.isError) {
       const cardDesignValues: CardDesign = response.data;
       setCardDesignData(cardDesignValues);
@@ -484,93 +488,60 @@ export default function CypherCardScreen() {
 
         {/* balance and add funds/activate card */}
         <CyDView className={'h-[60px] mt-[24px]'}>
-          {cardId !== CARD_IDS.HIDDEN_CARD ? (
-            <CyDView className='flex flex-row justify-between items-center'>
-              <CyDView>
-                <CyDText className={'font-semibold text-[10px]'}>
-                  {t<string>('TOTAL_BALANCE') + ' (USD)'}
-                </CyDText>
-                <CyDView className='flex flex-row justify-between items-center'>
-                  {!balanceLoading ? (
-                    <CyDTouchView onPress={() => fetchCardBalance().catch}>
-                      <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                        <CyDText
-                          className={clsx('font-bold text-[28px]', {
-                            'text-red400':
-                              shouldShowLocked() || shouldShowActionNeeded(),
-                          })}>
-                          {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
-                        </CyDText>
-                        <CyDMaterialDesignIcons
-                          name='refresh'
-                          size={20}
-                          className='text-base400'
-                        />
-                      </CyDView>
-                    </CyDTouchView>
-                  ) : (
-                    <CyDLottieView
-                      source={AppImages.LOADER_TRANSPARENT}
-                      autoPlay
-                      loop
-                      style={style.loaderStyle}
-                    />
-                  )}
-                </CyDView>
-              </CyDView>
-              <CyDView className={'h-[36px] w-[42%]'}>
-                <Button
-                  icon={
-                    <CyDMaterialDesignIcons
-                      name='plus'
-                      size={20}
-                      className='text-black mr-[4px]'
-                    />
-                  }
-                  disabled={shouldBlockAction()}
-                  onPress={() => {
-                    onPressFundCard();
-                  }}
-                  style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                  // imageStyle={'mr-[4px] h-[12px] w-[12px]'}
-                  title={t('ADD_FUNDS')}
-                  titleStyle='text-[14px] text-black font-extrabold'
-                />
+          <CyDView className='flex flex-row justify-between items-center'>
+            <CyDView>
+              <CyDText className={'font-semibold text-[10px]'}>
+                {t<string>('TOTAL_BALANCE') + ' (USD)'}
+              </CyDText>
+              <CyDView className='flex flex-row justify-between items-center'>
+                {!balanceLoading ? (
+                  <CyDTouchView onPress={() => fetchCardBalance().catch}>
+                    <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
+                      <CyDText
+                        className={clsx('font-bold text-[28px]', {
+                          'text-red400':
+                            shouldShowLocked() || shouldShowActionNeeded(),
+                        })}>
+                        {(cardBalance !== 'NA' ? '$ ' : '') +
+                          (cardBalance ?? 0)}
+                      </CyDText>
+                      <CyDMaterialDesignIcons
+                        name='refresh'
+                        size={20}
+                        className='text-base400'
+                      />
+                    </CyDView>
+                  </CyDTouchView>
+                ) : (
+                  <CyDLottieView
+                    source={AppImages.LOADER_TRANSPARENT}
+                    autoPlay
+                    loop
+                    style={style.loaderStyle}
+                  />
+                )}
               </CyDView>
             </CyDView>
-          ) : (
-            <CyDView className='flex flex-row justify-between items-center'>
-              <CyDView>
-                <CyDText className={'font-bold  text-[18px]'}>
-                  {t<string>('ACTIVATE_CARD')}
-                </CyDText>
-                <CyDText
-                  className={
-                    'font-bold text-subTextColor text-[12px] mt-[2px]'
-                  }>
-                  {t<string>('LOAD_YOUR_CARD_TO_ACTIVATE_IT')}
-                </CyDText>
-              </CyDView>
-              <CyDView className={'h-[36px] w-[42%]'}>
-                <Button
-                  icon={
-                    <CyDMaterialDesignIcons
-                      name='plus'
-                      size={20}
-                      className='text-black mr-[4px]'
-                    />
-                  }
-                  disabled={shouldBlockAction()}
-                  onPress={() => {
-                    onPressFundCard();
-                  }}
-                  style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                  title={t('ADD_FUNDS')}
-                  titleStyle='text-[14px] text-black font-extrabold'
-                />
-              </CyDView>
+            <CyDView className={'h-[36px] w-[42%]'}>
+              <Button
+                icon={
+                  <CyDMaterialDesignIcons
+                    name='plus'
+                    size={20}
+                    className='text-black mr-[4px]'
+                  />
+                }
+                disabled={shouldBlockAction()}
+                onPress={() => {
+                  onPressFundCard();
+                }}
+                style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
+                // imageStyle={'mr-[4px] h-[12px] w-[12px]'}
+                title={t('ADD_FUNDS')}
+                titleStyle='text-[14px] text-black font-extrabold'
+              />
             </CyDView>
-          )}
+          </CyDView>
         </CyDView>
       </CyDView>
 
@@ -671,45 +642,77 @@ export default function CypherCardScreen() {
             get(cardDesignData, ['feeDetails', 'metal'], 100) === 0 && (
               <GetMetalCardModal onGetAdditionalCard={onGetAdditionalCard} />
             )}
-          <CyDView className='mx-[12px] my-[12px]'>
-            <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
-              {t<string>('RECENT_TRANSACTIONS')}
-            </CyDText>
-            {recentTransactions.length ? (
-              <CyDView className='border-[1px] border-n40 rounded-[22px] pt-[12px]'>
-                {recentTransactions.map((transaction, index) => {
-                  return <CardTransactionItem item={transaction} key={index} />;
-                })}
+          {cardId === CARD_IDS.HIDDEN_CARD ? (
+            <CyDView className='mx-[16px] mt-[16px]'>
+              <CyDView className='border-[1px] border-n40 rounded-[16px] p-[16px]'>
+                <CyDText className='text-[20px] font-[500] mb-[8px]'>
+                  {t<string>('LOAD_YOUR_CARD')}
+                </CyDText>
+                <CyDText className='text-[14px] font-[400] mb-[16px] text-n200'>
+                  {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
+                </CyDText>
                 <CyDTouchView
-                  className='bg-n0 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
-                  onPress={() =>
-                    navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
-                      navigation,
-                      cardProvider,
-                    })
-                  }>
-                  <CyDText className='text-[14px] font-bold'>
-                    {t<string>('VIEW_ALL_TRANSACTIONS')}
-                  </CyDText>
-                  <CyDMaterialDesignIcons
-                    name='chevron-right'
-                    size={24}
-                    className='text-base400'
-                  />
+                  className='bg-n30 rounded-[8px] px-[10px] py-[15px]'
+                  onPress={onPressFundCard}>
+                  <CyDView className='flex flex-row justify-between items-center'>
+                    <CyDText className='text-[14px] font-[500]'>
+                      {t<string>('LOAD_YOUR_CARD')}
+                    </CyDText>
+                    <CyDMaterialDesignIcons
+                      name='arrow-right-thin'
+                      size={24}
+                      className='text-base400'
+                    />
+                  </CyDView>
                 </CyDTouchView>
               </CyDView>
-            ) : (
-              <CyDView className='h-full bg-n0 border-x border-n40 w-full justify-start items-center py-[10%]'>
-                <CyDFastImage
-                  source={AppImages.NO_TRANSACTIONS_YET}
-                  className='h-[150px] w-[150px]'
-                  resizeMode='contain'
-                />
-              </CyDView>
-            )}
-          </CyDView>
+            </CyDView>
+          ) : (
+            <CyDView className='mx-[16px] mt-[16px]'>
+              <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
+                {t<string>('RECENT_TRANSACTIONS')}
+              </CyDText>
+              {recentTransactions.length ? (
+                <CyDView className='border-[1px] border-n40 rounded-[22px] pt-[12px]'>
+                  {recentTransactions.map((transaction, index) => {
+                    return (
+                      <CardTransactionItem item={transaction} key={index} />
+                    );
+                  })}
+                  <CyDTouchView
+                    className='bg-n0 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
+                    onPress={() =>
+                      navigation.navigate(
+                        screenTitle.CARD_TRANSACTIONS_SCREEN,
+                        {
+                          navigation,
+                          cardProvider,
+                        },
+                      )
+                    }>
+                    <CyDText className='text-[14px] font-bold'>
+                      {t<string>('VIEW_ALL_TRANSACTIONS')}
+                    </CyDText>
+                    <CyDMaterialDesignIcons
+                      name='chevron-right'
+                      size={24}
+                      className='text-base400'
+                    />
+                  </CyDTouchView>
+                </CyDView>
+              ) : (
+                <CyDView className='border-[1px] border-n40 rounded-[22px] py-[24px] justify-start items-center'>
+                  <CyDFastImage
+                    source={AppImages.NO_TRANSACTIONS_YET}
+                    className='h-[150px] w-[150px]'
+                    resizeMode='contain'
+                  />
+                </CyDView>
+              )}
+            </CyDView>
+          )}
           {cardProfile && isLegacyCardClosed(cardProfile) && (
-            <CyDView className='mx-[12px] my-[12px]'>
+            <CyDView className='mx-[16px] mt-[16px]'>
               <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                 {t<string>('OTHERS')}
               </CyDText>
@@ -734,7 +737,7 @@ export default function CypherCardScreen() {
           )}
 
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
-            <CyDView className='mx-[12px] mt-[13px] bg-p10 p-6 rounded-xl'>
+            <CyDView className='mx-[16px] mt-[16px] bg-p10 p-6 rounded-xl'>
               <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
                 <CyDText className='font-extrabold text-[20px]'>
                   {'Cypher'}

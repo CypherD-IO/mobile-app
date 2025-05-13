@@ -17,12 +17,16 @@ import {
   GlobalContextDef,
 } from '../../../../../core/globalContext';
 import { CardProfile } from '../../../../../models/cardProfile.model';
-import { CardProviders } from '../../../../../constants/enum';
+import {
+  CardProviders,
+  GlobalContextType,
+} from '../../../../../constants/enum';
 import useAxios from '../../../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal';
 import { t } from 'i18next';
 import { screenTitle } from '../../../../../constants';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
+import useCardUtilities from '../../../../../hooks/useCardUtilities';
 
 interface RouteParams {
   fromScreen?: string;
@@ -33,9 +37,10 @@ const KYCWebView = () => {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
-  const cardProfile = globalState.cardProfile as CardProfile;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile = globalContext.globalState.cardProfile as CardProfile;
   const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+  const { getWalletProfile } = useCardUtilities();
 
   const [kycUrl, setKycUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -92,12 +97,37 @@ const KYCWebView = () => {
     }
   };
 
-  const handleNavigationStateChange = (navState: any) => {
+  const refreshProfile = async () => {
+    try {
+      const data = await getWalletProfile(globalContext.globalState.token);
+      if (data) {
+        globalContext.globalDispatch({
+          type: GlobalContextType.CARD_PROFILE,
+          cardProfile: data,
+        });
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      return null;
+    }
+  };
+
+  const handleNavigationStateChange = async (navState: any) => {
     // Here we can handle navigation state changes
     // For example, detect completion or specific URLs to navigate back
-    // if (navState.url.includes('kyc-success')) {
-    //   navigation.navigate(screenTitle.KYC_VERIFICATION);
-    // }
+    if (navState.url.includes('app.cypherhq.io')) {
+      try {
+        // Refresh the profile data before navigating
+        await refreshProfile();
+
+        navigation.navigate(screenTitle.KYC_VERIFICATION_INTRO);
+      } catch (error) {
+        console.error('Error during navigation:', error);
+        navigation.navigate(screenTitle.KYC_VERIFICATION_INTRO);
+      }
+    }
     console.log('navState', navState);
   };
 
@@ -106,7 +136,7 @@ const KYCWebView = () => {
   // }
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       <CyDView className='flex-1'>
         <CardApplicationHeader />
 
@@ -131,7 +161,7 @@ const KYCWebView = () => {
           renderLoading={() => {
             return <Loading />;
           }}
-          // onNavigationStateChange={handleNavigationStateChange}
+          onNavigationStateChange={handleNavigationStateChange}
           // mediaPlaybackRequiresUserAction={true}
           // javaScriptEnabled={true}
           // domStorageEnabled={true}

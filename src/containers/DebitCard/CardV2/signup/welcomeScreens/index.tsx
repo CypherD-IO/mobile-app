@@ -25,10 +25,6 @@ export default function WelcomeSceens() {
         routes: [
           {
             name: screenTitle.CARD_APPLICATION_WELCOME,
-            params: {
-              deductAmountNow: false,
-              toPage: screenTitle.CARD_APPLICATION,
-            },
           },
         ],
       });

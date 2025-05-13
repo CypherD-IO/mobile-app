@@ -55,7 +55,8 @@ const ChangeEmailModal = ({
     <CyDModalLayout
       isModalVisible={isVisible}
       setModalVisible={onClose}
-      style={[styles.modalLayout, { marginBottom: keyboardHeight }]}
+      style={styles.modalLayout}
+      avoidKeyboard={true}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
       <CyDView className='bg-n0 rounded-t-[20px] p-[25px] pb-[30px] min-h-[300px]'>

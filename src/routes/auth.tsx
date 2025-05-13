@@ -35,11 +35,6 @@ import FirstLoadCard from '../containers/DebitCard/CardV2/firstLoadCard';
 import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
 import ManageSubscription from '../containers/DebitCard/CardV2/manageSubscription';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
-import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
-import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardInfo';
-import IHaveReferralCodeScreen from '../containers/DebitCard/CardV2/signup/iHaveReferralCodeScreen';
-import KYCVerficicationV2 from '../containers/DebitCard/CardV2/signup/kycVerification';
-import OTPVerification from '../containers/DebitCard/CardV2/signup/otpVerification';
 import TelegramSetup from '../containers/DebitCard/CardV2/signup/telegramSetup';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
@@ -117,13 +112,7 @@ import BasicDetails from '../containers/DebitCard/CardV2/signup/application/basi
 import ShippingAddress from '../containers/DebitCard/CardV2/signup/application/shippingAddress';
 import AdditionalDetails from '../containers/DebitCard/CardV2/signup/application/additionalDetails';
 import EmailVerification from '../containers/DebitCard/CardV2/signup/application/emailVerification';
-import KYCVerificationIntro from '../containers/DebitCard/CardV2/signup/application/kycVerificationIntro';
 import KYCWebView from '../containers/DebitCard/CardV2/signup/application/kycWebView';
-import KYCVerificationInProgress from '../containers/DebitCard/CardV2/signup/application/kycVerificationInProgress';
-import AdditionalDocumentRequired from '../containers/DebitCard/CardV2/signup/application/additionalDocumentRequired';
-import AdditionalReview from '../containers/DebitCard/CardV2/signup/application/additionalReview';
-import VerificationCompleted from '../containers/DebitCard/CardV2/signup/application/verificationCompleted';
-import VerificationFailed from '../containers/DebitCard/CardV2/signup/application/verificationFailed';
 import NameOnCard from '../containers/DebitCard/CardV2/signup/application/nameOnCard';
 import CardCreation from '../containers/DebitCard/CardV2/signup/application/cardCreation';
 import CardApplicationStack from './CardApplicationStack';
@@ -638,11 +627,6 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.KYC_VERIFICATION}
-        component={KYCVerficicationV2}
-        options={() => ({ headerShown: false })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.CARD_SCREEN}
         component={CypherCardScreen}
         options={{
@@ -903,22 +887,8 @@ export function DebitCardStackScreen({ route }) {
         }}
       />
       <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION}
-        component={OTPVerification}
-        options={({ navigation }) => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.TELEGRAM_SETUP}
         component={TelegramSetup}
-        options={({ navigation }) => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.GET_YOUR_CARD}
-        component={GetYourCardInfo}
         options={({ navigation }) => ({
           headerShown: false,
         })}
@@ -987,41 +957,6 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.KYC_VERIFICATION_IN_PROGRESS}
-        component={KYCVerificationInProgress}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.ADDITIONAL_DOCUMENT_REQUIRED}
-        component={AdditionalDocumentRequired}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.ADDITIONAL_REVIEW}
-        component={AdditionalReview}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.VERIFICATION_COMPLETED}
-        component={VerificationCompleted}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.VERIFICATION_FAILED}
-        component={VerificationFailed}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.NAME_ON_CARD}
         component={NameOnCard}
         options={({ navigation }): NativeStackNavigationOptions => ({
@@ -1034,20 +969,6 @@ export function DebitCardStackScreen({ route }) {
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.CARD_APPLICATION}
-        component={CardApplicationV2}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
-        component={IHaveReferralCodeScreen}
-        options={{
-          headerShown: false,
-        }}
       />
       <FundCardStack.Screen
         name={screenTitle.MIGRATE_FUNDS}

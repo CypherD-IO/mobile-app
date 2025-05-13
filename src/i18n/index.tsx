@@ -1068,6 +1068,7 @@ const resources = {
       AUTOLOAD_SETUP_SUCCESS: 'Auto Load has been setup successfully',
       BROWSER: 'Browser',
       LOAD_TO_ACTIVATE: 'Load to Activate',
+      ADD_FUNDS_TO_ACTIVATE: 'Add Funds to Activate',
       LOAD_YOUR_CARD_TO_ACTIVATE_IT: 'Load your card to activate it',
       FETCH_SKIP_API_ERROR: 'Unable to fetch data at the moment.',
       TOKEN: 'Token',
@@ -1648,6 +1649,11 @@ const resources = {
       CAMPAIGN_NAME_PLACEHOLDER: 'Enter the name of your campaign',
       CAMPAIGN_EXAMPLE: 'e.g. DubaiToken2049',
       REFERRAL_CODE_REQUIRED: 'Referral code is required',
+      LOAD_YOUR_CARD: 'Load your card',
+      LOAD_YOUR_CARD_DESCRIPTION:
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
+      LOAD_YOUR_CARD_DESCRIPTION_2:
+        'Load up your Cypher card and get ready to dive into the action! With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
     },
   },
 };

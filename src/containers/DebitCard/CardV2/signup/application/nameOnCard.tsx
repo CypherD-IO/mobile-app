@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -20,6 +20,13 @@ import { screenTitle } from '../../../../../constants';
 import AppImages from '../../../../../../assets/images/appImages';
 import PreferredNameModal from '../../../physicalCardUpgradation/preferredNameModal';
 import { useTranslation } from 'react-i18next';
+import useAxios from '../../../../../core/HttpRequest';
+import { CardProfile } from '../../../../../models/cardProfile.model';
+import {
+  GlobalContextDef,
+  GlobalContext,
+} from '../../../../../core/globalContext';
+import { CardProviders } from '../../../../../constants/enum';
 
 const NameOnCard = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -29,57 +36,108 @@ const NameOnCard = () => {
   const [nameOptions, setNameOptions] = useState<
     Array<{ id: number; name: string }>
   >([]);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
   const { t } = useTranslation();
-
-  // Mock user data - replace with actual user data source
-  const firstName = 'Walter';
-  const lastName = 'White';
+  const { postWithAuth, getWithAuth } = useAxios();
+  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const MAX_NAME_LENGTH = 27;
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getWithAuth(
+          `/v1/cards/${CardProviders.REAP_CARD}/user-data`,
+        );
+        console.log('response of fetchUserData : ', response);
+        if (!response.isError && response.data) {
+          setFirstName(response.data.firstName || '');
+          setLastName(response.data.lastName || '');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    void fetchUserData();
+  }, []);
+
+  useEffect(() => {
     // Initialize name options with combinations
-    const initialOptions = [
+    const nameCombinations = [
       `${firstName} ${lastName}`.slice(0, MAX_NAME_LENGTH),
       firstName?.slice(0, MAX_NAME_LENGTH),
       lastName?.slice(0, MAX_NAME_LENGTH),
       `${lastName} ${firstName}`.slice(0, MAX_NAME_LENGTH),
-    ]
-      .filter(name => name.trim() !== '')
-      .map((name, index) => ({
-        id: index + 1,
-        name,
-      }));
+    ].filter(name => name.trim() !== '');
+
+    // Use Set to remove duplicates while preserving order
+    const uniqueNames = Array.from(new Set(nameCombinations));
+
+    const initialOptions = uniqueNames.map((name, index) => ({
+      id: index + 1,
+      name,
+    }));
+
     setNameOptions(initialOptions);
   }, [firstName, lastName]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const selectedName = nameOptions.find(
       opt => opt.id === selectedNameId,
     )?.name;
-    navigation.navigate(screenTitle.CARD_CREATION);
-    // TODO: Navigate to next screen with selected name
-    console.log('Selected name:', selectedName);
+    try {
+      const response = await postWithAuth(`/v1/cards/virtual-preferred-name`, {
+        name: selectedName,
+      });
+      console.log('response of setting preferred name : ', response);
+      if (!response.isError && response.data) {
+        navigation.navigate(screenTitle.CARD_CREATION, { name: selectedName });
+      } else {
+        console.log('error in setting preferred name : ', response);
+      }
+    } catch (error) {
+      console.error('Error setting preferred name:', error);
+    }
   };
 
   const handleCustomName = () => {
     setIsPreferredNameModalVisible(true);
   };
 
+  const addCustomName = (name: string) => {
+    const trimmedName = name.slice(0, MAX_NAME_LENGTH);
+    // Check if name already exists in options
+    const nameExists = nameOptions.some(option => option.name === trimmedName);
+
+    console.log('nameExists : ', nameExists, trimmedName);
+
+    if (!nameExists) {
+      const newNameOption = {
+        id: nameOptions.length + 1,
+        name: trimmedName,
+      };
+      setNameOptions(prevOptions => [...prevOptions, newNameOption]);
+      setSelectedNameId(newNameOption.id);
+    } else {
+      // If name exists, just select the existing option
+      const existingOption = nameOptions.find(
+        option => option.name === trimmedName,
+      );
+      if (existingOption) {
+        setSelectedNameId(existingOption.id);
+      }
+    }
+    setIsPreferredNameModalVisible(false);
+  };
+
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       <CardApplicationHeader />
       <PreferredNameModal
         isModalVisible={isPreferredNameModalVisible}
         setShowModal={setIsPreferredNameModalVisible}
-        onSetPreferredName={(name: string) => {
-          const newNameOption = {
-            id: nameOptions.length + 1,
-            name: name.slice(0, MAX_NAME_LENGTH),
-          };
-          setNameOptions(prevOptions => [...prevOptions, newNameOption]);
-          setSelectedNameId(newNameOption.id);
-          setIsPreferredNameModalVisible(false);
-        }}
+        onSetPreferredName={addCustomName}
       />
 
       <CyDScrollView className='flex-1 px-5'>
@@ -107,7 +165,7 @@ const NameOnCard = () => {
         </CyDText>
 
         {/* Name Options */}
-        <CyDView className='my-4 bg-white rounded-[12px] border-[1px] border-n40'>
+        <CyDView className='my-4 bg-n0 rounded-[12px] border-[1px] border-n40'>
           {nameOptions.map((option, index) => (
             <CyDTouchView
               key={option.id}
@@ -152,10 +210,12 @@ const NameOnCard = () => {
       <CardApplicationFooter
         currentStep={3}
         totalSteps={3}
-        currentSectionProgress={100}
+        currentSectionProgress={80}
         buttonConfig={{
           title: 'Next',
-          onPress: handleNext,
+          onPress: () => {
+            void handleNext();
+          },
         }}
       />
     </CyDSafeAreaView>
