@@ -28,8 +28,8 @@ import { get } from 'lodash';
 import KYCInProgressComponent from './KYCInProgressComponent';
 import KYCCompletedComponent from './KYCCompletedComponent';
 import KYCFailedComponent from './KYCFailedComponent';
-import KYCAdditionalDocComponent from './AdditionalDocumentRequiredComponent';
-import KYCAdditionalReviewComponent from './AdditionalReviewComponent';
+import AdditionalDocumentRequiredComponent from './AdditionalDocumentRequiredComponent';
+import AdditionalReviewComponent from './AdditionalReviewComponent';
 import KYCIntroComponent from './KYCIntroComponent';
 
 // Import components
@@ -147,7 +147,11 @@ const KYCVerification = () => {
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
         if (isRainDeclined) {
-          return <KYCAdditionalDocComponent onSubmitDocuments={handleNext} />;
+          return (
+            <AdditionalDocumentRequiredComponent
+              onSubmitDocuments={handleNext}
+            />
+          );
         }
         return <KYCIntroComponent />;
       case CardApplicationStatus.KYC_PENDING:
@@ -158,7 +162,7 @@ const KYCVerification = () => {
       case CardApplicationStatus.KYC_FAILED:
         return <KYCFailedComponent />;
       case CardApplicationStatus.COMPLETION_PENDING:
-        return <KYCAdditionalReviewComponent />;
+        return <AdditionalReviewComponent />;
       default:
         return <KYCIntroComponent />;
     }
