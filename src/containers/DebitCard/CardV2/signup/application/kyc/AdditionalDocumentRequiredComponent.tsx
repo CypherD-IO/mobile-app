@@ -8,6 +8,7 @@ import {
   CyDMaterialDesignIcons,
 } from '../../../../../../styles/tailwindComponents';
 import AppImages from '../../../../../../../assets/images/appImages';
+import { t } from 'i18next';
 
 interface AdditionalDocumentRequiredComponentProps {
   onSubmitDocuments?: () => void;
@@ -28,7 +29,9 @@ const AdditionalDocumentRequiredComponent = ({
       </CyDView>
 
       {/* Title and Subtitle */}
-      <CyDText className='text-[30px]'>Additional Document Required</CyDText>
+      <CyDText className='text-[30px]'>
+        {t('ADDITIONAL_DOCUMENT_REQUIRED')}
+      </CyDText>
       <CyDText className='text-[14px] font-medium text-n200 mt-[6px]'>
         Could you share a few more details so we can wrap up your verification?
       </CyDText>
@@ -48,8 +51,7 @@ const AdditionalDocumentRequiredComponent = ({
           </CyDView>
         </CyDView>
         <CyDText className='text-[14px] text-p400 mt-1'>
-          Please upload the requested documents to help us process your
-          application faster.
+          {t('ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION')}
         </CyDText>
 
         {/* Upload Button */}

@@ -366,7 +366,7 @@ const ShippingAddress = (): JSX.Element => {
               totalSteps={totalSteps}
               currentSectionProgress={80}
               buttonConfig={{
-                title: 'Next',
+                title: t('NEXT'),
                 onPress: () => handleSubmit(),
                 disabled: !isValid,
               }}

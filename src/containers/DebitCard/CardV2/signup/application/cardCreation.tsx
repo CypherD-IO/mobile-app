@@ -45,12 +45,10 @@ const CardCreation = () => {
   const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
-    // Show loading state for 8 seconds
-    const timer = setTimeout(() => {
+    // Show loading state for 4 seconds
+    setTimeout(() => {
       setIsLoading(false);
     }, 4000);
-
-    return () => clearTimeout(timer);
   }, []);
 
   const refreshProfile = async () => {

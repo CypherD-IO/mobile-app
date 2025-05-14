@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -62,25 +62,24 @@ const StepItem = ({ step, isLast }: StepItemProps) => {
 const ApplicationWelcome = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
-  const [currentStep] = useState<number>(1);
 
   const steps: StepData[] = [
     {
       id: 1,
-      title: t('Introduce Yourself'),
-      description: t('Share a few basic details to help us get to know you.'),
+      title: t('INTRODUCE_YOURSELF'),
+      description: t('INTRODUCE_YOURSELF_DESCRIPTION'),
       icon: AppImages.CARD_APP_INTRO_ICON,
     },
     {
       id: 2,
-      title: t('Verify Your Identity'),
-      description: t('Upload a valid ID to complete your KYC verification.'),
+      title: t('VERIFY_YOUR_IDENTITY'),
+      description: t('VERIFY_YOUR_IDENTITY_DESCRIPTION'),
       icon: AppImages.CARD_APP_ID_VERIFICATION_ICON,
     },
     {
       id: 3,
-      title: t('Get Your Card & Activate'),
-      description: t('Receive your card and activate it in just a few taps!'),
+      title: t('GET_YOUR_CARD_AND_ACTIVATE'),
+      description: t('GET_YOUR_CARD_AND_ACTIVATE_DESCRIPTION'),
       icon: AppImages.CARD_APP_ACTIVATE_CARD_ICON,
     },
   ];
@@ -99,9 +98,9 @@ const ApplicationWelcome = (): JSX.Element => {
       {/* Content */}
       <CyDScrollView className='flex-1 px-4'>
         <CyDView className='py-6'>
-          <CyDText className='text-[32px]'>{t('Get your Cypher card')}</CyDText>
+          <CyDText className='text-[32px]'>{t('GET_YOUR_CYPHER_CARD')}</CyDText>
           <CyDText className='text-[32px] mb-4'>
-            {t('in under 5 minutes')}
+            {t('IN_UNDER_5_MINUTES')}
           </CyDText>
         </CyDView>
 
@@ -123,7 +122,7 @@ const ApplicationWelcome = (): JSX.Element => {
         totalSteps={3}
         currentSectionProgress={20}
         buttonConfig={{
-          title: 'Next',
+          title: t('NEXT'),
           onPress: handleNext,
         }}
       />

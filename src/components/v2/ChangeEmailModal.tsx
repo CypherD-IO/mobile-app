@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
   CyDView,
   CyDText,
@@ -24,27 +24,6 @@ const ChangeEmailModal = ({
 }: ChangeEmailModalProps) => {
   const { t } = useTranslation();
   const [newEmail, setNewEmail] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      e => {
-        setKeyboardHeight(e.endCoordinates.height);
-      },
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        setKeyboardHeight(0);
-      },
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
 
   const handleUpdate = async () => {
     await onUpdate(newEmail);

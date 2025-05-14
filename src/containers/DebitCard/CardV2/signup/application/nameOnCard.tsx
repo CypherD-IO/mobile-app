@@ -211,7 +211,7 @@ const NameOnCard = () => {
         totalSteps={3}
         currentSectionProgress={80}
         buttonConfig={{
-          title: 'Next',
+          title: t('NEXT'),
           onPress: () => {
             void handleNext();
           },

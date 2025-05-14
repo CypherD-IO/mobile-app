@@ -17,6 +17,7 @@ import { ReturnKeyTypeOptions } from 'react-native';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
+import { t } from 'i18next';
 
 // Validation schema for the basic details form
 const BasicDetailsSchema = Yup.object().shape({
@@ -45,7 +46,7 @@ const BasicDetailsSchema = Yup.object().shape({
 
       return age >= 18;
     }),
-  email: Yup.string().email('Invalid email').required('Email is required'),
+  email: Yup.string().email(t('INVALID_EMAIL')).required(t('EMAIL_REQUIRED')),
 });
 
 interface FormValues {
@@ -124,7 +125,7 @@ const BasicDetails = (): JSX.Element => {
               {/* Form Fields */}
               <FormikTextInput
                 name='firstName'
-                label='First Name'
+                label={t('FIRST_NAME_INIT_CAPS')}
                 containerClassName='mb-[4px]'
                 labelClassName='text-[14px] text-n200'
                 inputClassName='py-[16px] px-[12px] rounded-[8px] bg-n20 font-semibold border-[1px] border-transparent mt-[2px] focus:border-base400'
@@ -135,7 +136,7 @@ const BasicDetails = (): JSX.Element => {
 
               <FormikTextInput
                 name='lastName'
-                label='Last Name'
+                label={t('LAST_NAME_INIT_CAPS')}
                 containerClassName='mb-[4px]'
                 labelClassName='text-[14px] text-n200'
                 inputClassName='py-[16px] px-[12px] rounded-[8px] bg-n20 font-semibold border-[1px] border-transparent mt-[2px] focus:border-base400'
@@ -146,7 +147,7 @@ const BasicDetails = (): JSX.Element => {
 
               <FormikDateInput
                 name='dateOfBirth'
-                label='Date of Birth'
+                label={t('DATE_OF_BIRTH')}
                 placeholder='DD - MM - YYYY'
                 containerClassName='mb-[4px]'
                 labelClassName='text-[14px] text-n200'
@@ -157,7 +158,7 @@ const BasicDetails = (): JSX.Element => {
 
               <FormikTextInput
                 name='email'
-                label='Email Address'
+                label={t('EMAIL_ADDRESS_INIT_CAPS')}
                 containerClassName='mb-[4px]'
                 labelClassName='text-[14px] text-n200'
                 inputClassName='py-[16px] px-[12px] rounded-[8px] bg-n20 font-semibold border-[1px] border-transparent mt-[2px] focus:border-base400'
@@ -180,7 +181,7 @@ const BasicDetails = (): JSX.Element => {
               totalSteps={totalSteps}
               currentSectionProgress={60}
               buttonConfig={{
-                title: 'Next',
+                title: t('NEXT'),
                 onPress: () => handleSubmit(),
                 disabled: !isValid,
               }}

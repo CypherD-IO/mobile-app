@@ -234,7 +234,7 @@ const AdditionalDetails = (): JSX.Element => {
               totalSteps={3}
               currentSectionProgress={100}
               buttonConfig={{
-                title: 'Next',
+                title: t('NEXT'),
                 onPress: () => handleSubmit(),
                 loading: isSubmitting,
                 disabled: !isValid,
