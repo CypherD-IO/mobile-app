@@ -896,6 +896,7 @@ const resources = {
       SET_SMS_NOTIFICATION_TOGGLE_TRUE_OTP:
         'Enter the OTP received on your phone',
       EMAIL_ADDRESS: 'Email address',
+      EMAIL_ADDRESS_INIT_CAPS: 'Email Address',
       CURRENT_PHONE_NUMBER: 'Current Phone Number:',
       CONTACT_DETAILS_UPDATION_SUCCESSFUL:
         'Contact details updated successfully',
@@ -1068,6 +1069,7 @@ const resources = {
       AUTOLOAD_SETUP_SUCCESS: 'Auto Load has been setup successfully',
       BROWSER: 'Browser',
       LOAD_TO_ACTIVATE: 'Load to Activate',
+      ADD_FUNDS_TO_ACTIVATE: 'Add Funds to Activate',
       LOAD_YOUR_CARD_TO_ACTIVATE_IT: 'Load your card to activate it',
       FETCH_SKIP_API_ERROR: 'Unable to fetch data at the moment.',
       TOKEN: 'Token',
@@ -1648,6 +1650,26 @@ const resources = {
       CAMPAIGN_NAME_PLACEHOLDER: 'Enter the name of your campaign',
       CAMPAIGN_EXAMPLE: 'e.g. DubaiToken2049',
       REFERRAL_CODE_REQUIRED: 'Referral code is required',
+      LOAD_YOUR_CARD: 'Load your card',
+      LOAD_YOUR_CARD_DESCRIPTION:
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
+      LOAD_YOUR_CARD_DESCRIPTION_2:
+        'Load up your Cypher card and get ready to dive into the action! With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
+      NEXT: 'Next',
+      ADDITIONAL_DOCUMENT_REQUIRED: 'Additional Document Required',
+      ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION:
+        'Please upload the requested documents to help us process your application faster.',
+      IN_UNDER_5_MINUTES: 'In under 5 minutes',
+      GET_YOUR_CYPHER_CARD: 'Get your Cypher card',
+      VERIFY_YOUR_IDENTITY: 'Verify your identity',
+      VERIFY_YOUR_IDENTITY_DESCRIPTION:
+        'Upload a valid ID to complete your KYC verification.',
+      GET_YOUR_CARD_AND_ACTIVATE: 'Get your card and activate',
+      GET_YOUR_CARD_AND_ACTIVATE_DESCRIPTION:
+        'Receive your card and activate it in just a few taps!',
+      INTRODUCE_YOURSELF_DESCRIPTION:
+        'Share a few basic details to help us get to know you.',
+      INTRODUCE_YOURSELF: 'Introduce yourself',
     },
   },
 };

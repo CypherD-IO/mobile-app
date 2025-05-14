@@ -183,7 +183,7 @@ function TabStack(props: TabStackProps) {
       }
 
       switch (data.screenToNavigate) {
-        case screenTitle.I_HAVE_REFERRAL_CODE_SCREEN:
+        case screenTitle.ENTER_REFERRAL_CODE:
           navigateToScreenInTab(screenTitle.CARD, {
             screen: data.screenToNavigate,
             params: data.params,

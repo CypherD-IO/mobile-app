@@ -9,6 +9,7 @@ import {
   CardApplicationStatus,
   CardProviders,
   GlobalContextType,
+  CardStatus,
 } from '../../constants/enum';
 import Loading from '../../components/v2/loading';
 import { screenTitle } from '../../constants';
@@ -66,7 +67,6 @@ export default function DebitCardScreen(props: RouteProps) {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
-
     if (data) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
@@ -115,15 +115,25 @@ export default function DebitCardScreen(props: RouteProps) {
             if (!currentCardProfile) {
               currentCardProfile = await refreshProfile();
             }
+
             if (
               currentCardProfile &&
               has(currentCardProfile, provider as string)
             ) {
-              const cardApplicationStatus =
-                get(currentCardProfile, provider)?.applicationStatus ===
-                CardApplicationStatus.COMPLETED;
+              // if hiddencard is not present and the application is completed, then show the card screen
+              // if the status is completed and the preferred name is already, then show the card screen
+              const isCardApplicationCompleted =
+                (get(currentCardProfile, provider)?.applicationStatus ===
+                  CardApplicationStatus.COMPLETED &&
+                  !get(currentCardProfile, [provider, 'cards'])?.some(
+                    card => card.status === CardStatus.HIDDEN,
+                  )) ||
+                (get(currentCardProfile, provider)?.applicationStatus ===
+                  CardApplicationStatus.COMPLETED &&
+                  get(currentCardProfile, [provider, 'preferredName']) !==
+                    undefined);
 
-              if (cardApplicationStatus) {
+              if (isCardApplicationCompleted) {
                 props.navigation.reset({
                   index: 0,
                   routes: [
@@ -142,7 +152,7 @@ export default function DebitCardScreen(props: RouteProps) {
                   index: 0,
                   routes: [
                     {
-                      name: screenTitle.KYC_VERIFICATION,
+                      name: screenTitle.KYC_VERIFICATION_INTRO,
                     },
                   ],
                 });
@@ -154,9 +164,8 @@ export default function DebitCardScreen(props: RouteProps) {
                   index: 0,
                   routes: [
                     {
-                      name: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+                      name: screenTitle.ENTER_REFERRAL_CODE,
                       params: {
-                        toPage: screenTitle.CARD_APPLICATION,
                         referralCodeFromLink: isReferralCodeApplied,
                       },
                     },
@@ -167,11 +176,7 @@ export default function DebitCardScreen(props: RouteProps) {
                   index: 0,
                   routes: [
                     {
-                      name: screenTitle.GET_YOUR_CARD,
-                      params: {
-                        deductAmountNow: false,
-                        toPage: screenTitle.CARD_APPLICATION,
-                      },
+                      name: screenTitle.CARD_APPLICATION_WELCOME,
                     },
                   ],
                 });
@@ -221,7 +226,7 @@ export default function DebitCardScreen(props: RouteProps) {
             index: 0,
             routes: [
               {
-                name: screenTitle.CARD_SIGNUP_OTP_VERIFICATION,
+                name: screenTitle.EMAIL_VERIFICATION,
               },
             ],
           });

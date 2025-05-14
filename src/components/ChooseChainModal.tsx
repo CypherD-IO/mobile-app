@@ -70,14 +70,6 @@ export function ChooseChainModal(props: {
                   {symbol}
                 </CyDText>
               </CyDView>
-              {item.backendName === ChainBackendNames.SOLANA && (
-                <CyDLottieView
-                  source={AppImages.NEW}
-                  autoPlay
-                  loop
-                  style={styles.lottieViewWidth}
-                />
-              )}
             </CyDView>
           </CyDView>
           {isSelected && (

@@ -42,6 +42,8 @@ export interface CardProfile {
     isPhysicalCardEligible: boolean;
     physicalCardUpgradationFee: number | string;
     isRcUpgradable?: boolean;
+    preferredName?: string;
+    isRainDeclined?: boolean;
   };
   [CardProviders.SOLID]?: {
     applicationStatus: CardApplicationStatus;

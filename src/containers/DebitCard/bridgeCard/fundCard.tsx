@@ -148,8 +148,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       contractAddress,
     } = selectedToken as Holding & IHyperLiquidHolding;
 
-    console.log(balanceDecimal, 'balanceDecimal');
-
     const nativeToken = await getNativeToken(chainDetails.backendName);
     const actualTokensRequired = limitDecimalPlaces(
       quote.tokensRequired,
@@ -1197,9 +1195,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         type={TokenModalType.CARD_LOAD}
         onCancel={() => {
           setIsChooseTokenVisible(false);
-          if (!selectedToken) {
-            navigation.goBack();
-          }
         }}
       />
 

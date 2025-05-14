@@ -34,6 +34,7 @@ interface Props {
   ];
   showDialCode?: boolean;
   showRadioButton?: boolean;
+  countryListFetchUrl?: string;
 }
 
 const ChooseCountryModal = ({
@@ -42,6 +43,7 @@ const ChooseCountryModal = ({
   selectedCountryState,
   showDialCode = true,
   showRadioButton = false,
+  countryListFetchUrl = 'https://public.cypherd.io/js/countryMaster.js',
 }: Props) => {
   const [selectedCountry, setSelectedCountry] = selectedCountryState;
   const [countryFilterText, setCountryFilter] = useState('');
@@ -64,7 +66,7 @@ const ChooseCountryModal = ({
   const getCountryData = async () => {
     try {
       const response = await axios.get(
-        `https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`,
+        `${countryListFetchUrl}?${String(new Date())}`,
       );
       if (response?.data) {
         const countryData = response.data;
