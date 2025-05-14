@@ -360,33 +360,44 @@ export default function Referrals() {
     }
   };
 
-  const createReferralCode = async () => {
+  const createReferralCode = async (payload: {
+    utm_source?: string;
+    utm_campaign?: string;
+    influencer?: string;
+    utm_medium: string;
+  }) => {
     setIsModalVisible(false);
     setCreateReferralCodeLoading(true);
     const response = await postWithAuth('/v1/cards/referral-v2', {
       referralCode: code,
+      ...payload,
     });
     setCreateReferralCodeLoading(false);
     if (!response.isError) {
-      showModal('state', {
-        type: 'success',
-        title: t('REFERRAL_CODE_CREATED'),
-        description: t('REFERRAL_CODE_CREATED_MESSAGE'),
-        onSuccess: () => {
-          hideModal();
-          void getReferralData();
-        },
-        onFailure: hideModal,
-      });
+      setTimeout(() => {
+        showModal('state', {
+          type: 'success',
+          title: t('REFERRAL_CODE_CREATED'),
+          description: t('REFERRAL_CODE_CREATED_MESSAGE'),
+          onSuccess: () => {
+            hideModal();
+            void getReferralData();
+          },
+          onFailure: hideModal,
+        });
+      }, 300);
     } else {
-      showModal('state', {
-        type: 'error',
-        title: t('REFERRAL_CODE_CREATION_FAILED'),
-        description:
-          response.error.message ?? t('REFERRAL_CODE_CREATION_FAILED_MESSAGE'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
+      setTimeout(() => {
+        showModal('state', {
+          type: 'error',
+          title: t('REFERRAL_CODE_CREATION_FAILED'),
+          description:
+            response.error.message ??
+            t('REFERRAL_CODE_CREATION_FAILED_MESSAGE'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }, 300);
     }
   };
 

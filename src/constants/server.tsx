@@ -42,6 +42,7 @@ export enum ChainBackendNames {
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   SOLANA = 'SOLANA',
+  HYPERLIQUID = 'HYPERLIQUID',
 }
 
 export enum FundWalletAddressType {
@@ -141,6 +142,18 @@ export const CHAIN_ARBITRUM: Chain = {
   nativeTokenLogoUrl:
     'https://public.cypherd.io/assets/blockchains/arbitrum/info/logo.png',
   chainIdNumber: 42161,
+};
+
+export const CHAIN_HYPERLIQUID: Chain = {
+  chainName: 'ethereum',
+  name: 'Hyperliquid',
+  symbol: 'HYPERLIQUID',
+  id: 21,
+  logo_url: AppImages.HYPERLIQUID,
+  backendName: ChainBackendNames.HYPERLIQUID,
+  chain_id: 'hyperliquid',
+  native_token_address: 'hyperliquid-native',
+  chainIdNumber: 0,
 };
 
 export const OwlracleChainCodes = {
@@ -309,6 +322,7 @@ export const PURE_COSMOS_CHAINS = ['cosmos', 'osmosis', 'noble', 'coreum'];
 
 export const ALL_CHAINS: Chain[] = [
   CHAIN_ETH,
+  CHAIN_HYPERLIQUID,
   CHAIN_POLYGON,
   CHAIN_NOBLE,
   CHAIN_AVALANCHE,
@@ -326,6 +340,7 @@ export const ALL_CHAINS: Chain[] = [
 
 export const EVM_CHAINS: Chain[] = [
   CHAIN_ETH,
+  CHAIN_HYPERLIQUID,
   CHAIN_POLYGON,
   CHAIN_BASE,
   CHAIN_BSC,
@@ -430,6 +445,7 @@ export const ALL_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...ALL_CHAINS];
 export const ALL_FUNDABLE_CHAINS = [
   CHAIN_COLLECTION,
   CHAIN_ETH,
+  CHAIN_HYPERLIQUID,
   CHAIN_POLYGON,
   CHAIN_SOLANA,
   CHAIN_NOBLE,
@@ -465,6 +481,7 @@ export enum ChainNames {
 export enum ChainNameMapping {
   BSC = 'bsc',
   ETH = 'eth',
+  HYPERLIQUID = 'hyperliquid',
   POLYGON = 'polygon',
   AVALANCHE = 'avalanche',
   OPTIMISM = 'optimism',
@@ -535,6 +552,7 @@ export const ChainNameToContactsChainNameMapping = {
 
 export const NativeTokenMapping: Record<AllChainsEnum, string> = {
   ETH: 'ETH',
+  HYPERLIQUID: 'ETH',
   POLYGON: 'MATIC',
   AVALANCHE: 'AVAX',
   ARBITRUM: 'ETH',

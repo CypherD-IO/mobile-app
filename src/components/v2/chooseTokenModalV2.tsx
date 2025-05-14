@@ -7,13 +7,9 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-import {
-  Holding,
-  IHyperLiquidHolding,
-  IHyperLiquidHoldings,
-} from '../../core/portfolio';
+import { Holding } from '../../core/portfolio';
 import { SwapToken } from '../../models/swapToken.interface';
-import { TokenModalType } from '../../constants/enum';
+import { HyperLiquidAccount, TokenModalType } from '../../constants/enum';
 import {
   ALL_FUNDABLE_CHAINS,
   Chain,
@@ -32,7 +28,6 @@ import {
   CyDFlatList,
   CyDScrollView,
   CyDLottieView,
-  CyDIcons,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { endsWith, capitalize } from 'lodash';
@@ -66,7 +61,7 @@ interface TokenModal {
 interface TokenHoldings {
   originalHoldings: Holding[];
   filteredHoldings: Array<Holding | SupportedToken>;
-  hyperliquidBalances: IHyperLiquidHoldings[];
+  hyperliquidHoldings: Holding[];
 }
 
 interface SupportedToken extends Omit<Holding, 'totalValue' | 'balance'> {
@@ -257,15 +252,19 @@ const RenderToken = React.memo(
               <SvgUri
                 width='32'
                 height='32'
-                className='w-[32px] h-[32px]'
+                className='w-[32px] h-[32px] rounded-full'
                 uri={item.logoUrl}
               />
             ) : (
               <CyDFastImage
-                source={{
-                  uri: item.logoUrl,
-                }}
-                className={'w-[32px] h-[32px]'}
+                source={
+                  item.logoUrl
+                    ? {
+                        uri: item.logoUrl,
+                      }
+                    : AppImages.UNKNOWN_TXN_TOKEN
+                }
+                className={'w-[32px] h-[32px] rounded-full'}
               />
             )}
 
@@ -446,7 +445,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
   const [totalHoldings, setTotalHoldings] = useState<TokenHoldings>({
     originalHoldings: [],
     filteredHoldings: [],
-    hyperliquidBalances: [],
+    hyperliquidHoldings: [],
   });
   const [selectedChain, setSelectedChain] = useState<Chain>(
     ALL_FUNDABLE_CHAINS[0],
@@ -490,7 +489,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
         setTotalHoldings({
           originalHoldings: tokenList,
           filteredHoldings: [],
-          hyperliquidBalances: [],
+          hyperliquidHoldings: [],
         });
       } else {
         // Otherwise fetch holdings
@@ -517,10 +516,13 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       });
 
       // Then override with holdings where they exist (to show actual balances)
-      totalHoldings.originalHoldings.forEach(token => {
-        const key = getTokenKey(token);
-        uniqueTokens.set(key, token);
-      });
+      // Only include holdings that have isFundable flag set to true
+      totalHoldings.originalHoldings
+        .filter(token => token.isFundable)
+        .forEach(token => {
+          const key = getTokenKey(token);
+          uniqueTokens.set(key, token);
+        });
 
       setCombinedTokensList(Array.from(uniqueTokens.values()));
     } else {
@@ -635,7 +637,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       setTotalHoldings({
         originalHoldings: valuedTokens,
         filteredHoldings: [], // Start empty, will be populated by combinedTokens effect
-        hyperliquidBalances: localPortfolio?.hyperliquidBalances ?? [],
+        hyperliquidHoldings: localPortfolio?.hyperliquid?.totalHoldings ?? [],
       });
     } catch (error) {
       showModal('state', {
@@ -749,8 +751,10 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       onSelectingToken: (token: Holding | SwapToken) => void;
     }) => {
       if (
-        !totalHoldings?.hyperliquidBalances ||
-        totalHoldings.hyperliquidBalances.length === 0
+        !totalHoldings?.hyperliquidHoldings ||
+        totalHoldings.hyperliquidHoldings.length === 0 ||
+        selectedChain.chainName !== 'all' ||
+        searchText.length > 0
       ) {
         return null;
       }
@@ -758,7 +762,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
         action: 'see hyperliquid tokens',
       });
       return (
-        <CyDView className='bg-black p-[16px] mt-[4px] mb-[12px] mx-[12px] rounded-[8px]'>
+        <CyDView className='bg-black p-[16px] mt-[4px] mb-[12px] mx-[6px] rounded-[8px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='flex flex-row items-center justify-center'>
               <CyDFastImage
@@ -779,91 +783,55 @@ export default function ChooseTokenModalV2(props: TokenModal) {
               </CyDText>
             </CyDView>
           </CyDView>
-          <CyDScrollView className='max-h-[220px]'>
-            <CyDView className='mt-[22px]'>
-              {(
-                totalHoldings.hyperliquidBalances.find(
-                  position => position.accountType === 'perpetual',
-                )?.tokens ?? []
-              ).map((token: IHyperLiquidHolding) => (
-                <CyDTouchView
-                  className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                  key={token.symbol}
-                  onPress={() => {
-                    logAnalytics('hyperliquid', {
-                      action: 'click perp token',
-                      token: token.symbol,
-                    });
-                    onSelectingToken(token);
-                  }}>
-                  <CyDView className='flex flex-row items-center'>
-                    <CyDIcons
-                      name='wallet'
-                      size={18}
-                      className='text-green250'
-                    />
-                    <CyDText className='text-[12px] text-white font-bold ml-[4px]'>
-                      {token.name}
+
+          <CyDView className=''>
+            {totalHoldings.hyperliquidHoldings.map((token: Holding) => (
+              <CyDTouchView
+                className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
+                key={token.symbol}
+                onPress={() => {
+                  logAnalytics('hyperliquid', {
+                    action: 'click spot token',
+                    token: token.symbol,
+                  });
+                  onSelectingToken(token);
+                }}>
+                <CyDView className='flex flex-row items-center'>
+                  <CyDFastImage
+                    source={
+                      token.logoUrl
+                        ? { uri: token.logoUrl }
+                        : AppImages.UNKNOWN_TXN_TOKEN
+                    }
+                    className='w-[18px] h-[18px] rounded-full'
+                    resizeMode='contain'
+                  />
+                  <CyDView className='flex flex-row ml-[4px]'>
+                    <CyDText className='text-[12px] text-white font-bold'>
+                      {token.symbol}
                     </CyDText>
-                  </CyDView>
-                  <CyDView>
-                    <CyDText
-                      className={
-                        'font-semibold text-[16px] text-white text-right mr-[2px]'
-                      }>
-                      {formatCurrency(token.totalValue)}
-                    </CyDText>
-                  </CyDView>
-                </CyDTouchView>
-              ))}
-            </CyDView>
-            <CyDView className=''>
-              {(
-                totalHoldings.hyperliquidBalances.find(
-                  position => position.accountType === 'spot',
-                )?.tokens ?? []
-              ).map((token: IHyperLiquidHolding) => (
-                <CyDTouchView
-                  className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                  key={token.symbol}
-                  onPress={() => {
-                    logAnalytics('hyperliquid', {
-                      action: 'click spot token',
-                      token: token.symbol,
-                    });
-                    onSelectingToken(token);
-                  }}>
-                  <CyDView className='flex flex-row items-center'>
-                    <CyDFastImage
-                      source={{ uri: token.logoUrl }}
-                      className='w-[18px] h-[18px]'
-                      resizeMode='contain'
-                    />
-                    <CyDView className='flex flex-row ml-[4px]'>
-                      <CyDText className='text-[12px] text-white font-bold'>
-                        {token.symbol}
-                      </CyDText>
+                    {token.accountType === HyperLiquidAccount.SPOT && (
                       <CyDText className='text-[10px] text-green250 ml-[4px] font-bold'>
                         spot
                       </CyDText>
-                    </CyDView>
+                    )}
                   </CyDView>
-                  <CyDView>
-                    <CyDText
-                      className={
-                        'font-semibold text-[16px] text-white text-right mr-[2px]'
-                      }>
-                      {formatCurrency(token.totalValue)}
-                    </CyDText>
-                  </CyDView>
-                </CyDTouchView>
-              ))}
-            </CyDView>
-          </CyDScrollView>
+                </CyDView>
+                <CyDView>
+                  <CyDText
+                    className={
+                      'font-semibold text-[16px] text-white text-right mr-[2px]'
+                    }>
+                    {formatCurrency(token.totalValue)}
+                  </CyDText>
+                </CyDView>
+              </CyDTouchView>
+            ))}
+          </CyDView>
         </CyDView>
       );
     },
-    [totalHoldings.hyperliquidBalances],
+    [totalHoldings.hyperliquidHoldings, selectedChain, searchText],
   );
 
   return (
@@ -957,8 +925,6 @@ export default function ChooseTokenModalV2(props: TokenModal) {
               </CyDView>
             </CyDView>
 
-            <RenderHyperLiquidPosition onSelectingToken={onSelectingToken} />
-
             <CyDView className='bg-n0 p-[12px] pt-[0px] flex-1'>
               <CyDView
                 className={clsx(
@@ -992,45 +958,52 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                   />
                 </CyDView>
               ) : (
-                <CyDFlatList
-                  data={paginatedTokens}
-                  keyExtractor={getTokenKey}
-                  initialNumToRender={10}
-                  maxToRenderPerBatch={10}
-                  windowSize={5}
-                  removeClippedSubviews={true}
-                  updateCellsBatchingPeriod={50}
-                  onEndReachedThreshold={0.5}
-                  onEndReached={loadMoreTokens}
-                  onScroll={handleScroll}
-                  scrollEventThrottle={16}
-                  renderItem={({
-                    item,
-                  }: {
-                    item: Holding | SupportedToken;
-                  }) => (
-                    <RenderToken
-                      item={item}
-                      selected={selectedToken}
-                      setSelected={setSelectedToken}
-                      onSelectingToken={onSelectingToken}
-                      setModalVisible={setIsChooseTokenModalVisible}
-                      minTokenValueLimit={minTokenValueLimit}
-                      minTokenValueEth={minTokenValueEth}
-                      setErrorMessage={setErrorMessage}
-                      type={type}
-                    />
-                  )}
-                  showsVerticalScrollIndicator={true}
-                  ListFooterComponent={
-                    pagination.isLoading ? ListFooterLoader : null
-                  }
-                  ListEmptyComponent={
-                    <EmptyListMessage
-                      noTokensAvailableMessage={noTokensAvailableMessage}
-                    />
-                  }
-                />
+                <>
+                  <CyDFlatList
+                    data={paginatedTokens}
+                    keyExtractor={getTokenKey}
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    windowSize={5}
+                    ListHeaderComponent={
+                      <RenderHyperLiquidPosition
+                        onSelectingToken={onSelectingToken}
+                      />
+                    }
+                    removeClippedSubviews={true}
+                    updateCellsBatchingPeriod={50}
+                    onEndReachedThreshold={0.5}
+                    onEndReached={loadMoreTokens}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                    renderItem={({
+                      item,
+                    }: {
+                      item: Holding | SupportedToken;
+                    }) => (
+                      <RenderToken
+                        item={item}
+                        selected={selectedToken}
+                        setSelected={setSelectedToken}
+                        onSelectingToken={onSelectingToken}
+                        setModalVisible={setIsChooseTokenModalVisible}
+                        minTokenValueLimit={minTokenValueLimit}
+                        minTokenValueEth={minTokenValueEth}
+                        setErrorMessage={setErrorMessage}
+                        type={type}
+                      />
+                    )}
+                    showsVerticalScrollIndicator={false}
+                    ListFooterComponent={
+                      pagination.isLoading ? ListFooterLoader : null
+                    }
+                    ListEmptyComponent={
+                      <EmptyListMessage
+                        noTokensAvailableMessage={noTokensAvailableMessage}
+                      />
+                    }
+                  />
+                </>
               )}
             </CyDView>
           </Animated.View>

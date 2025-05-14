@@ -241,7 +241,9 @@ export default function CardDescription() {
 
       <CyDView className='flex-1 flex flex-col justify-between'>
         <CyDView className='flex-1 px-[16px]'>
-          <CyDScrollView className='h-full'>
+          <CyDScrollView
+            className='h-full'
+            showsVerticalScrollIndicator={false}>
             <CyDView className='bg-n0 rounded-xl'>
               <CyDView className='px-[24px] py-[12px]'>
                 <CyDText className='text-[13px] font-medium text-n200'>

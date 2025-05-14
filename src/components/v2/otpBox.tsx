@@ -12,12 +12,14 @@ interface OTPVerificationProps {
   pinCount?: number;
   onOTPFilled: (otp: string) => void;
   value: string; // Add this line
+  otpInputStyle?: string;
 }
 
 const OTPInput: React.FC<OTPVerificationProps> = ({
   pinCount = 6,
   onOTPFilled,
   value, // Add this line
+  otpInputStyle,
 }) => {
   const [otp, setOtp] = useState<string[]>(value.split('').slice(0, pinCount));
   const inputRefs = useRef<TextInput[]>([]);
@@ -77,7 +79,10 @@ const OTPInput: React.FC<OTPVerificationProps> = ({
             key={index}
             ref={ref => ref && (inputRefs.current[index] = ref)}
             // style={styles.input}
-            className='w-[50px] h-[64px] text-center align-center border-[1px] border-[#C2C7D0] text-[24px] font-bold mr-[6px] rounded-[8px]'
+            className={
+              otpInputStyle ??
+              'w-[50px] h-[64px] text-center align-center border-[1px] border-[#C2C7D0] text-[24px] font-bold mr-[6px] rounded-[8px]'
+            }
             value={digit}
             onChangeText={text => handleChange(text, index)}
             onKeyPress={e => handleKeyPress(e, index)}

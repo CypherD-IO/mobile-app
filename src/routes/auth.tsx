@@ -35,11 +35,6 @@ import FirstLoadCard from '../containers/DebitCard/CardV2/firstLoadCard';
 import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
 import ManageSubscription from '../containers/DebitCard/CardV2/manageSubscription';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
-import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
-import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardInfo';
-import IHaveReferralCodeScreen from '../containers/DebitCard/CardV2/signup/iHaveReferralCodeScreen';
-import KYCVerficicationV2 from '../containers/DebitCard/CardV2/signup/kycVerification';
-import OTPVerification from '../containers/DebitCard/CardV2/signup/otpVerification';
 import TelegramSetup from '../containers/DebitCard/CardV2/signup/telegramSetup';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
@@ -66,7 +61,7 @@ import DebitCardScreen from '../containers/DebitCard/index';
 import AddDeliveryAddress from '../containers/DebitCard/physicalCardUpgradation/addDeliveryAddress';
 import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/checkout';
 import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradation/confirmation';
-import NameOnCard from '../containers/DebitCard/physicalCardUpgradation/nameOnCard';
+import NameOnCardScreen from '../containers/DebitCard/physicalCardUpgradation/nameOnCard';
 import OrderSteps from '../containers/DebitCard/physicalCardUpgradation/orderSteps';
 import VerifyShippingAddress from '../containers/DebitCard/physicalCardUpgradation/verifyShippingAddress';
 import CoinbasePay from '../containers/FundCardScreen/cbpay';
@@ -111,6 +106,17 @@ import {
 import SelectAdditionalCardType from '../containers/DebitCard/CardV2/additionalCard/selectAdditionalCardType';
 import CardDescription from '../containers/DebitCard/CardV2/additionalCard/cardDescription';
 import CardControls from '../containers/DebitCard/bridgeCard/cardControls';
+import ApplicationWelcome from '../containers/DebitCard/CardV2/signup/applicationWelcome';
+import EnterReferralCode from '../containers/DebitCard/CardV2/signup/enterReferralCode';
+import BasicDetails from '../containers/DebitCard/CardV2/signup/application/basicDetails';
+import ShippingAddress from '../containers/DebitCard/CardV2/signup/application/shippingAddress';
+import AdditionalDetails from '../containers/DebitCard/CardV2/signup/application/additionalDetails';
+import EmailVerification from '../containers/DebitCard/CardV2/signup/application/emailVerification';
+import KYCWebView from '../containers/DebitCard/CardV2/signup/application/kycWebView';
+import NameOnCard from '../containers/DebitCard/CardV2/signup/application/nameOnCard';
+import CardCreation from '../containers/DebitCard/CardV2/signup/application/cardCreation';
+import CardApplicationStack from './CardApplicationStack';
+import KYCVerification from '../containers/DebitCard/CardV2/signup/application/kyc/kycVerification';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -621,11 +627,6 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.KYC_VERIFICATION}
-        component={KYCVerficicationV2}
-        options={() => ({ headerShown: false })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.CARD_SCREEN}
         component={CypherCardScreen}
         options={{
@@ -852,7 +853,7 @@ export function DebitCardStackScreen({ route }) {
       />
       <FundCardStack.Screen
         name={screenTitle.NAME_ON_CARD_SCREEN}
-        component={NameOnCard}
+        component={NameOnCardScreen}
         options={({ navigation }) => ({
           headerShown: false,
         })}
@@ -886,13 +887,6 @@ export function DebitCardStackScreen({ route }) {
         }}
       />
       <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION}
-        component={OTPVerification}
-        options={({ navigation }) => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.TELEGRAM_SETUP}
         component={TelegramSetup}
         options={({ navigation }) => ({
@@ -900,25 +894,81 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.GET_YOUR_CARD}
-        component={GetYourCardInfo}
-        options={({ navigation }) => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.CARD_APPLICATION}
-        component={CardApplicationV2}
+        name={screenTitle.BASIC_DETAILS}
+        component={BasicDetails}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
-        component={IHaveReferralCodeScreen}
-        options={{
+        name={screenTitle.CARD_APPLICATION_WELCOME}
+        component={ApplicationWelcome}
+        options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
-        }}
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SHIPPING_ADDRESS}
+        component={ShippingAddress}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.ADDITIONAL_DETAILS}
+        component={AdditionalDetails}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.EMAIL_VERIFICATION}
+        component={EmailVerification}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.CARD_FAQ_SCREEN}
+        component={SocialMediaScreen}
+        options={({ navigation }) => ({
+          header: () => (
+            <CustomHeader
+              title={''}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.KYC_VERIFICATION_INTRO}
+        component={KYCVerification}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.KYC_WEBVIEW}
+        component={KYCWebView}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.NAME_ON_CARD}
+        component={NameOnCard}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.CARD_CREATION}
+        component={CardCreation}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
       />
       <FundCardStack.Screen
         name={screenTitle.MIGRATE_FUNDS}
@@ -992,6 +1042,20 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.ADDITIONAL_CARD_DESCRIPTION}
         component={CardDescription}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.ENTER_REFERRAL_CODE}
+        component={EnterReferralCode}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name='CardApplicationStack'
+        component={CardApplicationStack}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}

@@ -10,14 +10,14 @@ import clsx from 'clsx';
 import { t } from 'i18next';
 import { get, round } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, Keyboard } from 'react-native';
+import { ActivityIndicator, Keyboard, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../../components/v2/button';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { screenTitle } from '../../../constants';
 import {
   CardFeePercentage,
-  CYPHER_PLAN_ID_NAME_MAPPING,
   MINIMUM_TRANSFER_AMOUNT_ETH,
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
@@ -25,7 +25,6 @@ import {
 import {
   CARD_IDS,
   CardProviders,
-  CypherPlanId,
   TokenModalType,
 } from '../../../constants/enum';
 import {
@@ -39,7 +38,7 @@ import {
 } from '../../../constants/server';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
-import { Holding } from '../../../core/portfolio';
+import { Holding, IHyperLiquidHolding } from '../../../core/portfolio';
 import {
   formatAmount,
   getViemPublicClient,
@@ -66,14 +65,36 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
-import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
-  currentCardIndex: number;
 }
 
 const cardId = CARD_IDS.HIDDEN_CARD;
+
+const CustomKeyboard = ({
+  onKeyPress,
+}: {
+  onKeyPress: (key: string) => void;
+}) => {
+  const renderKey = (key: string) => (
+    <TouchableOpacity
+      key={key}
+      onPress={() => onKeyPress(key)}
+      className='flex-1 h-[60px] bg-n20 rounded-[8px] flex-row justify-center items-center mx-[4px] my-[4px]'>
+      <CyDText className='text-[24px] font-bold'>{key}</CyDText>
+    </TouchableOpacity>
+  );
+
+  return (
+    <CyDView className='bg-n30 p-[8px] rounded-t-[16px]'>
+      <CyDView className='flex-row'>{['1', '2', '3'].map(renderKey)}</CyDView>
+      <CyDView className='flex-row'>{['4', '5', '6'].map(renderKey)}</CyDView>
+      <CyDView className='flex-row'>{['7', '8', '9'].map(renderKey)}</CyDView>
+      <CyDView className='flex-row'>{['.', '0', '⌫'].map(renderKey)}</CyDView>
+    </CyDView>
+  );
+};
 
 export default function FirstLoadCard() {
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
@@ -103,7 +124,9 @@ export default function FirstLoadCard() {
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(true);
-  const [selectedToken, setSelectedToken] = useState<Holding>();
+  const [selectedToken, setSelectedToken] = useState<
+    Holding & IHyperLiquidHolding
+  >();
   const [nativeToken, setNativeToken] = useState<Holding>();
   const [amount, setAmount] = useState('');
   const [usdAmount, setUsdAmount] = useState('');
@@ -148,19 +171,6 @@ export default function FirstLoadCard() {
   const isLoadCardDisabled = () => {
     if (selectedToken) {
       const { backendName } = selectedToken.chainDetails;
-      // const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
-      // const hasInSufficientGas =
-      //   (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
-      //     nativeTokenBalance <=
-      //       get(gasFeeReservation, backendName as ChainBackendNames)) ||
-      //   (selectedToken?.symbol === nativeTokenSymbol &&
-      //     Number(cryptoAmount) >
-      //       Number(
-      //         (
-      //           nativeTokenBalance -
-      //           get(gasFeeReservation, backendName as ChainBackendNames)
-      //         ).toFixed(6),
-      //       ));
       return (
         DecimalHelper.isLessThan(usdAmount, minTokenValueLimit) ||
         !selectedToken ||
@@ -168,7 +178,6 @@ export default function FirstLoadCard() {
           cryptoAmount,
           selectedToken.balanceDecimal,
         ) ||
-        // hasInSufficientGas ||
         (backendName === CHAIN_ETH.backendName &&
           DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH))
       );
@@ -355,6 +364,9 @@ export default function FirstLoadCard() {
           amount: DecimalHelper.toNumber(amountInCrypto),
           tokenAddress: contractAddress,
           amountInCrypto: true,
+          ...(selectedToken?.isHyperliquid && {
+            hyperliquidTradeType: selectedToken?.accountType,
+          }),
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
@@ -710,6 +722,9 @@ export default function FirstLoadCard() {
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
           amountInCrypto: isCryptoInput,
+          ...(selectedToken?.isHyperliquid && {
+            hyperliquidTradeType: selectedToken?.accountType,
+          }),
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
@@ -769,6 +784,7 @@ export default function FirstLoadCard() {
           coinId: coinGeckoId,
           tokenAddress: denom,
           amountInCrypto: isCryptoInput,
+          isCosmosV2: true,
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
@@ -1059,6 +1075,16 @@ export default function FirstLoadCard() {
     return 'h-[60px]';
   };
 
+  const handleKeyPress = (key: string) => {
+    if (key === '⌫') {
+      setAmount(prev => prev.slice(0, -1));
+    } else if (key === '.' && amount.includes('.')) {
+      // Prevent multiple decimal points
+    } else {
+      setAmount(prev => prev + key);
+    }
+  };
+
   return (
     <CyDView className='bg-n20 flex-1' style={{ paddingTop: insect.top }}>
       <ChooseTokenModalV2
@@ -1159,7 +1185,7 @@ export default function FirstLoadCard() {
                         </CyDView>
                       )}
                       <CyDTextInput
-                        keyboardType='decimal-pad'
+                        keyboardType='none'
                         returnKeyType='done'
                         onChangeText={text => {
                           onEnterAmount(text);
@@ -1282,6 +1308,8 @@ export default function FirstLoadCard() {
                 </CyDView>
               </CyDView>
             </CyDView>
+
+            {selectedToken && <CustomKeyboard onKeyPress={handleKeyPress} />}
           </CyDKeyboardAwareScrollView>
         </CyDView>
 

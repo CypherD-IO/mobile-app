@@ -615,3 +615,29 @@ export const getRainTerms = async () => {
     Sentry.captureException(error);
   }
 };
+
+export const setProcessedReferrerCode = async (code: string) => {
+  try {
+    await AsyncStorage.setItem('PROCESSED_REFERRER_CODE', code);
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
+  }
+};
+
+export const getProcessedReferrerCode = async () => {
+  try {
+    const code = await AsyncStorage.getItem('PROCESSED_REFERRER_CODE');
+    return code;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const removeProcessedReferrerCode = async () => {
+  try {
+    await AsyncStorage.removeItem('PROCESSED_REFERRER_CODE');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};

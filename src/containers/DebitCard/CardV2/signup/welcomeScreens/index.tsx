@@ -24,11 +24,7 @@ export default function WelcomeSceens() {
         index: 0,
         routes: [
           {
-            name: screenTitle.GET_YOUR_CARD,
-            params: {
-              deductAmountNow: false,
-              toPage: screenTitle.CARD_APPLICATION,
-            },
+            name: screenTitle.CARD_APPLICATION_WELCOME,
           },
         ],
       });

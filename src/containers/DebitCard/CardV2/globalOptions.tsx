@@ -281,7 +281,9 @@ export default function GlobalOptions() {
             {t('ACCOUNT_OPTIONS')}
           </CyDText>
         </CyDView>
-        <CyDScrollView className='flex-1 bg-n20 '>
+        <CyDScrollView
+          className='flex-1 bg-n20'
+          showsVerticalScrollIndicator={false}>
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView
               className={clsx(

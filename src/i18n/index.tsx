@@ -896,6 +896,7 @@ const resources = {
       SET_SMS_NOTIFICATION_TOGGLE_TRUE_OTP:
         'Enter the OTP received on your phone',
       EMAIL_ADDRESS: 'Email address',
+      EMAIL_ADDRESS_INIT_CAPS: 'Email Address',
       CURRENT_PHONE_NUMBER: 'Current Phone Number:',
       CONTACT_DETAILS_UPDATION_SUCCESSFUL:
         'Contact details updated successfully',
@@ -1068,6 +1069,7 @@ const resources = {
       AUTOLOAD_SETUP_SUCCESS: 'Auto Load has been setup successfully',
       BROWSER: 'Browser',
       LOAD_TO_ACTIVATE: 'Load to Activate',
+      ADD_FUNDS_TO_ACTIVATE: 'Add Funds to Activate',
       LOAD_YOUR_CARD_TO_ACTIVATE_IT: 'Load your card to activate it',
       FETCH_SKIP_API_ERROR: 'Unable to fetch data at the moment.',
       TOKEN: 'Token',
@@ -1218,6 +1220,24 @@ const resources = {
       CREATE_REFERRAL_CODE: 'Create New Referral Code',
       CREATE_REFERRAL_CODE_SUB:
         'You can create personalized invite codes that you can share with friends, family, or on social media.',
+      NEW_INVITE_CODE: 'New Invite code',
+      YOUR_CUSTOM_INVITE_CODE: 'Your custom invite code',
+      ADD_CUSTOM_ATTRIBUTION: 'Add Custom Attribution',
+      ATTRIBUTION_PLACEHOLDER: 'Enter custom attribution',
+      CUSTOM_ATTRIBUTION_INFO:
+        'Helps Cypher track where your referrals come from and how each code performs. These insights allow us to make our rewards program more rewarding for popular referral channels.',
+      CHANNEL: 'Channel',
+      WHERE_YOU_ARE_PLANNING_TO_USE_CODE:
+        'Where you are planning to use the code',
+      CONTENT_TYPE: 'Content Type',
+      SELECT_CONTENT_TYPE: 'Select the type of content',
+      SPECIFY_OTHER_CONTENT_TYPE: 'Specify other content type',
+      REGION: 'Region',
+      REGION_PLACEHOLDER: 'The Demographic you are planning to cover',
+      REGION_EXAMPLE: 'Eg: USA, Asia, All Regions',
+      TARGET_AUDIENCE: 'Target Audience',
+      SELECT_TARGET_AUDIENCE: 'Which type of user are you expecting?',
+      SPECIFY_OTHER_TARGET_AUDIENCE: 'Specify other target audience',
       REFERRAL_CODE: 'Referral Code',
       REFERRAL_CODE_CREATED: 'Referral Code Created',
       REFERRAL_CODE_CREATED_MESSAGE:
@@ -1404,7 +1424,6 @@ const resources = {
       MCC_CODE_COPIED: 'MCC Code copied',
       MERCHANT_ID_COPIED: 'Merchant ID copied',
       RETRY_KYC: 'Retry KYC',
-      CHANNEL: 'Channel',
       DECLINED: 'Declined',
       DEBITED: 'Debited',
       CREDITED: 'Credited',
@@ -1600,7 +1619,7 @@ const resources = {
         'Transaction approved successfully. Please retry the transaction.',
       TXN_DISPUTED_SUCCESS_DESCRIPTION: 'Transaction disputed successfully',
       TRANSACTION_DECLINE_HANDLING_MESSAGE:
-        'This transaction was declined as a precaution. Was this transaction made by you? ',
+        'To approve this merchant, confirm if the transaction was initiated by you and RETRY the transaction',
       THIS_WAS_ME: 'This Was Me',
       THIS_ISNT_ME: "This Wasn't Me",
       UNEXCPECTED_ERROR: 'Unexpected Error',
@@ -1623,6 +1642,34 @@ const resources = {
       UPDATE_CHANNEL_SETTINGS: 'Update Channel Settings',
       NO_THANKS: 'No Thanks',
       PORTFOLIO: 'Portfolio',
+      CHANNEL_EXAMPLE: 'e.g. YouTube, X, Instagram, Blog, etc.',
+      USERNAME: 'Username / Social Media Handle',
+      USERNAME_PLACEHOLDER: 'Your username or social media handle',
+      USERNAME_EXAMPLE: 'e.g. vitalik.eth (X username)',
+      CAMPAIGN_NAME: 'Campaign Name',
+      CAMPAIGN_NAME_PLACEHOLDER: 'Enter the name of your campaign',
+      CAMPAIGN_EXAMPLE: 'e.g. DubaiToken2049',
+      REFERRAL_CODE_REQUIRED: 'Referral code is required',
+      LOAD_YOUR_CARD: 'Load your card',
+      LOAD_YOUR_CARD_DESCRIPTION:
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
+      LOAD_YOUR_CARD_DESCRIPTION_2:
+        'Load up your Cypher card and get ready to dive into the action! With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
+      NEXT: 'Next',
+      ADDITIONAL_DOCUMENT_REQUIRED: 'Additional Document Required',
+      ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION:
+        'Please upload the requested documents to help us process your application faster.',
+      IN_UNDER_5_MINUTES: 'In under 5 minutes',
+      GET_YOUR_CYPHER_CARD: 'Get your Cypher card',
+      VERIFY_YOUR_IDENTITY: 'Verify your identity',
+      VERIFY_YOUR_IDENTITY_DESCRIPTION:
+        'Upload a valid ID to complete your KYC verification.',
+      GET_YOUR_CARD_AND_ACTIVATE: 'Get your card and activate',
+      GET_YOUR_CARD_AND_ACTIVATE_DESCRIPTION:
+        'Receive your card and activate it in just a few taps!',
+      INTRODUCE_YOURSELF_DESCRIPTION:
+        'Share a few basic details to help us get to know you.',
+      INTRODUCE_YOURSELF: 'Introduce yourself',
     },
   },
 };
