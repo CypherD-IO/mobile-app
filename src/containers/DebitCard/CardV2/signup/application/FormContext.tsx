@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { ApplicationData } from './basicDetails';
+import { ApplicationData } from '../../../../../models/applicationData.interface';
 
 interface FormContextType {
   formState: ApplicationData;

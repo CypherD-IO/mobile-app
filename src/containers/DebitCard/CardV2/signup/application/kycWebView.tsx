@@ -204,22 +204,24 @@ const KYCWebView = () => {
           />
         )} */}
         {isLoading && <Loading />}
-        <WebView
-          source={{ uri: kycUrl }}
-          onLoadStart={() => setIsLoading(true)}
-          onLoadEnd={() => setIsLoading(false)}
-          renderLoading={() => {
-            return <Loading />;
-          }}
-          onNavigationStateChange={handleNavigationStateChange}
-          allowsInlineMediaPlayback={true}
-          mediaPlaybackRequiresUserAction={false}
-          javaScriptEnabled={true}
-          allowsFullscreenVideo={false}
-          // mediaPlaybackRequiresUserAction={true}
-          // javaScriptEnabled={true}
-          // domStorageEnabled={true}
-        />
+        {!!kycUrl && (
+          <WebView
+            source={{ uri: kycUrl }}
+            onLoadStart={() => setIsLoading(true)}
+            onLoadEnd={() => setIsLoading(false)}
+            renderLoading={() => {
+              return <Loading />;
+            }}
+            onNavigationStateChange={handleNavigationStateChange}
+            allowsInlineMediaPlayback={true}
+            mediaPlaybackRequiresUserAction={false}
+            javaScriptEnabled={true}
+            allowsFullscreenVideo={false}
+            // mediaPlaybackRequiresUserAction={true}
+            // javaScriptEnabled={true}
+            // domStorageEnabled={true}
+          />
+        )}
       </CyDView>
     </CyDSafeAreaView>
   );

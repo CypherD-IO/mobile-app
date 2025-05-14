@@ -1,25 +1,17 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  CyDView,
-  CyDText,
-  CyDTouchView,
-  CyDIcons,
-  CyDMaterialDesignIcons,
-} from '../../../../../styles/tailwindComponents';
+import { CyDView, CyDText } from '../../../../../styles/tailwindComponents';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useTranslation } from 'react-i18next';
 import { screenTitle } from '../../../../../constants';
-import Button from '../../../../../components/v2/button';
 import FormikTextInput from '../../../../../components/v2/formikInput';
 import FormikDateInput from '../../../../../components/v2/formikDatePicker';
-import { OCCUPATION_LABEL_TO_CODE_MAP } from '../../../../../constants/data';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ReturnKeyTypeOptions } from 'react-native';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
@@ -63,28 +55,6 @@ interface FormValues {
   email: string;
 }
 
-// Full application form interface
-export interface ApplicationData {
-  // Basic Details
-  firstName: string;
-  lastName: string;
-  email: string;
-  dateOfBirth: string;
-  // Shipping Address
-  line1: string;
-  line2: string;
-  postalCode: string;
-  country: string;
-  city: string;
-  state: string;
-  phone: string;
-  dialCode: string;
-  // Additional Details
-  expectedMonthlyVolume: string;
-  annualSalary: string;
-  occupation: string;
-}
-
 const BasicDetails = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
@@ -98,10 +68,6 @@ const BasicDetails = (): JSX.Element => {
   const lastNameRef = useRef<any>(null);
   const dobRef = useRef<any>(null);
   const emailRef = useRef<any>(null);
-
-  const handleBack = () => {
-    navigation.goBack();
-  };
 
   const handleSubmit = (values: FormValues) => {
     // Update form state

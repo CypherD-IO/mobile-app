@@ -55,6 +55,7 @@ const NameOnCard = () => {
           setLastName(response.data.lastName || '');
         }
       } catch (error) {
+        showToast('Could not fetch user data', 'error');
         console.error('Error fetching user data:', error);
       }
     };

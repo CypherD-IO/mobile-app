@@ -6,10 +6,6 @@ import {
 } from '../../../../../../styles/tailwindComponents';
 import AppImages from '../../../../../../../assets/images/appImages';
 
-interface Props {
-  onStart: () => void;
-}
-
 const KYCIntroComponent = () => {
   return (
     <CyDView className='flex-1 px-5'>

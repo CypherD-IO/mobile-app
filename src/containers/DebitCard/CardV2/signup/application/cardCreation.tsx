@@ -206,7 +206,7 @@ const CardCreation = () => {
                 onPress={() => {
                   void handleStartUsing();
                 }}
-                disabled={isLoading}
+                disabled={isLoading || isButtonLoading}
                 loading={isButtonLoading}
                 type={ButtonType.PRIMARY}
                 style='rounded-full'

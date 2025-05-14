@@ -7,7 +7,7 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import clsx from 'clsx';
-import { ReturnKeyTypeOptions } from 'react-native';
+import { ReturnKeyTypeOptions, TextInput } from 'react-native';
 
 interface FormikTextInputProps {
   name: string;
@@ -67,7 +67,7 @@ const parseInputValue = (text: string, keyboardType: string | undefined) => {
   return text;
 };
 
-const FormikTextInput = forwardRef<any, FormikTextInputProps>(
+const FormikTextInput = forwardRef<TextInput, FormikTextInputProps>(
   (
     {
       name,

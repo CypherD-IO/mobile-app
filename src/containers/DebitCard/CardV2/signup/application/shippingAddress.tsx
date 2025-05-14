@@ -3,7 +3,6 @@ import {
   NavigationProp,
   ParamListBase,
   useNavigation,
-  useRoute,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -12,20 +11,17 @@ import {
   CyDTouchView,
   CyDIcons,
   CyDMaterialDesignIcons,
-  CyDScrollView,
   CyDTextInput,
 } from '../../../../../styles/tailwindComponents';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useTranslation } from 'react-i18next';
 import { screenTitle } from '../../../../../constants';
-import Button from '../../../../../components/v2/button';
 import ChooseCountryModal from '../../../../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../../../../models/cardApplication.model';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
-import { ApplicationData } from './basicDetails';
 import { useFormContext } from './FormContext';
 
 // Validation schema for the shipping address form

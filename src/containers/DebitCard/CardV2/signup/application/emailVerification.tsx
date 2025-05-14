@@ -108,7 +108,7 @@ const EmailVerification = (): JSX.Element => {
         showToast(t('EMAIL_UPDATE_SUCCESS'), 'success');
         await triggerOTP(OTPType.EMAIL); // Trigger new OTP for the new email
       } else {
-        showToast(response.error ?? t('EMAIL_UPDATE_FAILED'), 'error');
+        showToast(response.error?.message ?? t('EMAIL_UPDATE_FAILED'), 'error');
       }
     } catch (error) {
       showToast(t('UNEXPECTED_ERROR'), 'error');

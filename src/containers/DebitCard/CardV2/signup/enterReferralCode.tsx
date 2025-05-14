@@ -45,11 +45,10 @@ const EnterReferralCode = (): JSX.Element => {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const insets = useSafeAreaInsets();
   const [referralCode, setReferralCode] = useState<string>(
-    route.params?.referralCodeFromLink || '',
+    route.params?.referralCodeFromLink ?? '',
   );
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const totalSteps = 3;
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { postWithAuth } = useAxios();
@@ -84,7 +83,7 @@ const EnterReferralCode = (): JSX.Element => {
         referralCode,
       });
 
-      if (!response.error) {
+      if (!response.isError) {
         if (response.data.isValid) {
           await setReferralCodeAsync(referralCode);
           setShowSuccessModal(true);
@@ -211,7 +210,7 @@ const EnterReferralCode = (): JSX.Element => {
                   void onSubmitReferralCode();
                 }
               }}
-              disabled={isEmpty(referralCode)}
+              disabled={isEmpty(referralCode) || loading}
               loading={loading}
               type={ButtonType.PRIMARY}
               style='ml-2 px-4 w-[94px]'
@@ -232,7 +231,7 @@ const EnterReferralCode = (): JSX.Element => {
           onPress: () => {
             if (isEmpty(referralCode)) {
               void handleSkip();
-            } else {
+            } else if (!loading) {
               void onSubmitReferralCode();
             }
           },

@@ -1,15 +1,13 @@
-import React, { useState, useContext, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
-  useRoute,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDView,
   CyDText,
-  CyDTouchView,
   CyDMaterialDesignIcons,
 } from '../../../../../styles/tailwindComponents';
 import { Formik, FormikProps } from 'formik';
@@ -22,16 +20,11 @@ import { OCCUPATION_LABEL_TO_CODE_MAP } from '../../../../../constants/data';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
-import { ApplicationData } from './basicDetails';
+import { ApplicationData } from '../../../../../models/applicationData.interface';
 import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal';
 import useAxios from '../../../../../core/HttpRequest';
 import { getReferralCode } from '../../../../../core/asyncStorage';
 import { CardProviders } from '../../../../../constants/enum';
-import {
-  GlobalContext,
-  GlobalContextDef,
-} from '../../../../../core/globalContext';
-import clsx from 'clsx';
 import { omit } from 'lodash';
 import { useFormContext } from './FormContext';
 
@@ -48,31 +41,13 @@ interface FormValues {
   expectedMonthlySpend?: string;
 }
 
-const AnnualIncomeOptions = [
-  { label: '$0 - $50,000', value: '$0 - $50,000' },
-  { label: '$50,000 - $100,000', value: '$50,000 - $100,000' },
-  { label: '$100,000 - $250,000', value: '$100,000 - $250,000' },
-  { label: '$250,000 - $500,000', value: '$250,000 - $500,000' },
-  { label: '$500,000+', value: '$500,000+' },
-];
-
-const MonthlySpendOptions = [
-  { label: '$0 - $1,000', value: '$0 - $1,000' },
-  { label: '$1,000 - $5,000', value: '$1,000 - $5,000' },
-  { label: '$5,000 - $10,000', value: '$5,000 - $10,000' },
-  { label: '$10,000 - $25,000', value: '$10,000 - $25,000' },
-  { label: '$25,000+', value: '$25,000+' },
-];
-
 const AdditionalDetails = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
   const { formState, setFormState } = useFormContext();
 
   const handleSubmit = async (values: FormValues) => {
@@ -192,61 +167,6 @@ const AdditionalDetails = (): JSX.Element => {
                   )}
                 </CyDText>
               </CyDView>
-
-              {/* Terms and Consent */}
-              {/* <CyDView className='mb-4'>
-                <CyDView className='flex flex-row items-center mb-2'>
-                  <CyDTouchView
-                    className='flex flex-row items-center p-[8px] -m-[8px]'
-                    onPress={() => setAcceptTerms(!acceptTerms)}>
-                    <CyDView
-                      className={clsx(
-                        'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base100',
-                        {
-                          'bg-p150 border-p150': acceptTerms,
-                        },
-                      )}>
-                      {acceptTerms && (
-                        <CyDMaterialDesignIcons
-                          name='check-bold'
-                          size={16}
-                          className='text-n0'
-                        />
-                      )}
-                    </CyDView>
-                  </CyDTouchView>
-                  <CyDText className='text-[14px] text-n400 ml-2'>
-                    {t('I accept the terms and conditions')}
-                  </CyDText>
-                </CyDView> */}
-
-              {/* {
-                  <CyDView className='flex flex-row items-center'>
-                    <CyDTouchView
-                      className='flex flex-row items-center p-[8px] -m-[8px]'
-                      onPress={() => setAcceptConsent(!acceptConsent)}>
-                      <CyDView
-                        className={clsx(
-                          'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base100',
-                          {
-                            'bg-p150 border-p150': acceptConsent,
-                          },
-                        )}>
-                        {acceptConsent && (
-                          <CyDMaterialDesignIcons
-                            name='check-bold'
-                            size={16}
-                            className='text-n0'
-                          />
-                        )}
-                      </CyDView>
-                    </CyDTouchView>
-                    <CyDText className='text-[14px] text-n400 ml-2'>
-                      {t('I consent to the processing of my personal data')}
-                    </CyDText>
-                  </CyDView>
-                } 
-              </CyDView> */}
 
               {/* Form Fields */}
               <CyDView className='mb-4'>
