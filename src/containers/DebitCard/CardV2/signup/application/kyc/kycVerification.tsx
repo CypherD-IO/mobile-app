@@ -108,6 +108,7 @@ const KYCVerification = () => {
         return 40;
       case CardApplicationStatus.KYC_PENDING:
       case CardApplicationStatus.COMPLETION_PENDING:
+      case CardApplicationStatus.KYC_EXPIRED:
         return 60;
       case CardApplicationStatus.KYC_SUCCESSFUL:
       case CardApplicationStatus.COMPLETED:
@@ -143,7 +144,6 @@ const KYCVerification = () => {
     if (loading) {
       return <Loading />;
     }
-
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
         if (isRainDeclined) {
@@ -162,6 +162,7 @@ const KYCVerification = () => {
       case CardApplicationStatus.KYC_FAILED:
         return <KYCFailedComponent />;
       case CardApplicationStatus.COMPLETION_PENDING:
+      case CardApplicationStatus.KYC_EXPIRED:
         return <AdditionalReviewComponent />;
       default:
         return <KYCIntroComponent />;

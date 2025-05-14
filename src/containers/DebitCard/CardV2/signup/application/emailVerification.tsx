@@ -156,6 +156,13 @@ const EmailVerification = (): JSX.Element => {
 
   const isValid = otp.length === 4;
 
+  const handleLegalPress = () => {
+    navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
+      uri: 'https://cypherhq.io/legal/',
+      title: 'Terms of Service',
+    });
+  };
+
   return (
     <CyDSafeAreaView className='flex-1 bg-n0'>
       <CardApplicationHeader
@@ -222,6 +229,20 @@ const EmailVerification = (): JSX.Element => {
               />
             </CyDView>
           )}
+        </CyDTouchView>
+      </CyDView>
+
+      <CyDView className='flex flex-row items-center mb-[16px] mx-[16px]'>
+        <CyDText className='text-n200 text-[12px]'>
+          {t('By continuing, you agree to our ')}
+        </CyDText>
+        <CyDTouchView
+          onPress={() => {
+            handleLegalPress();
+          }}>
+          <CyDText className='text-blue300 text-[12px] font-medium'>
+            {t('Terms of Service')}
+          </CyDText>
         </CyDTouchView>
       </CyDView>
 

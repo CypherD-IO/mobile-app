@@ -1195,9 +1195,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         type={TokenModalType.CARD_LOAD}
         onCancel={() => {
           setIsChooseTokenVisible(false);
-          if (!selectedToken) {
-            navigation.goBack();
-          }
         }}
       />
 

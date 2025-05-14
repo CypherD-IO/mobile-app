@@ -152,6 +152,18 @@ const ShippingAddress = (): JSX.Element => {
     setIsPhoneCountrySet(true);
   };
 
+  // Helper function to render error message
+  const renderErrorMessage = (errorMsg: string) => (
+    <CyDView className='flex-row items-center mb-1'>
+      <CyDMaterialDesignIcons
+        name='information-outline'
+        size={14}
+        className='text-red200 mr-1'
+      />
+      <CyDText className='text-red200 text-[13px]'>{errorMsg}</CyDText>
+    </CyDView>
+  );
+
   return (
     <CyDView
       className='flex-1 bg-n0'
@@ -294,6 +306,25 @@ const ShippingAddress = (): JSX.Element => {
                 </CyDView>
               </CyDView>
 
+              {/* Address Fields Error Messages */}
+              <CyDView className='mb-2'>
+                {touched.line1 && errors.line1
+                  ? renderErrorMessage(errors.line1)
+                  : null}
+                {touched.line2 && errors.line2
+                  ? renderErrorMessage(errors.line2)
+                  : null}
+                {touched.city && errors.city
+                  ? renderErrorMessage(errors.city)
+                  : null}
+                {touched.state && errors.state
+                  ? renderErrorMessage(errors.state)
+                  : null}
+                {touched.postalCode && errors.postalCode
+                  ? renderErrorMessage(errors.postalCode)
+                  : null}
+              </CyDView>
+
               {/* Phone Number */}
               <CyDView className='mb-4'>
                 <CyDText className='text-[14px] text-n200 mb-1'>
@@ -325,21 +356,12 @@ const ShippingAddress = (): JSX.Element => {
                 </CyDView>
               </CyDView>
 
-              {/* Error Messages */}
-              {Object.keys(errors).map(key =>
-                touched[key] && errors[key] ? (
-                  <CyDView key={key} className='flex-row items-center mb-1'>
-                    <CyDMaterialDesignIcons
-                      name='information-outline'
-                      size={14}
-                      className='text-red200 mr-1'
-                    />
-                    <CyDText className='text-red200 text-[13px]'>
-                      {errors[key]}
-                    </CyDText>
-                  </CyDView>
-                ) : null,
-              )}
+              {/* Phone Number Error Message */}
+              <CyDView className='mb-2'>
+                {touched.phoneNumber && errors.phoneNumber
+                  ? renderErrorMessage(errors.phoneNumber)
+                  : null}
+              </CyDView>
             </KeyboardAwareScrollView>
 
             {/* Footer */}
