@@ -34,7 +34,7 @@ import { screenTitle } from '../../constants/index';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
-import { logAnalytics } from '../../core/analytics';
+import { logAnalyticsToFirebase } from '../../core/analytics';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import {
   NavigationProp,
@@ -90,7 +90,11 @@ export default function Options() {
   const [ens, setEns] = useState(false);
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } =
     hdWalletContext.state;
   const activityContext = useContext<any>(ActivityContext);
@@ -146,7 +150,7 @@ export default function Options() {
       const profileData = await getWalletProfile(
         globalContext.globalState.token,
       );
-      const ens = await resolveDomain(ethereum.address, CHAIN_ETH.backendName);
+      const ens = await resolveDomain(ethereumAddress, CHAIN_ETH.backendName);
       if (get(profileData, ['child'])) {
         setTitle(t('LINKED_WALLET'));
       } else if (ens) {
@@ -295,7 +299,7 @@ export default function Options() {
             <OptionsContainer
               sentryLabel={'browser'}
               onPress={() => {
-                logAnalytics('broswerClick', {});
+                logAnalyticsToFirebase('broswerClick', {});
                 navigation.navigate(C.screenTitle.BROWSER);
               }}
               title={t('BROWSER')}

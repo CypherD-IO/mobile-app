@@ -16,7 +16,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
   } catch (e) {
     Sentry.captureException(e);
   }
-  return Promise.resolve();
+return Promise.resolve();
 });
 
 AppRegistry.registerComponent(appName, () => App);

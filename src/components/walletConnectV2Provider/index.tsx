@@ -1,15 +1,11 @@
 import React, {
-  createContext,
   useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from 'react';
-import {
-  HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import {
   createWeb3Wallet,
   web3WalletPair,
@@ -19,17 +15,13 @@ import useWalletConnectEventsManager from '../../hooks/useWalletConnectV2EventsM
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
 import { WagmiConfigBuilder } from '../wagmiConfigBuilder';
-
-const walletConnectInitialValue = {
-  initialized: false,
-};
-
-// export const WalletConnectContext = createContext(walletConnectInitialValue);
+import { get } from 'lodash';
 
 export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereum = get(hdWalletContext, 'state.wallet.ethereum', undefined);
+  const ethereumAddress = get(ethereum, 'address', '');
   const isInitializationInProgress = useRef<boolean>(false);
   const projectId = String(Config.WALLET_CONNECT_PROJECTID);
 
@@ -59,13 +51,12 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     if (
       !isWeb3WalletInitialized &&
       !isInitializationInProgress.current &&
-      ethereum.address &&
-      ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+      ethereumAddress
     ) {
       isInitializationInProgress.current = true;
       void onInitialize();
     }
-  }, [isWeb3WalletInitialized, ethereum.address]);
+  }, [isWeb3WalletInitialized, ethereumAddress]);
 
   const { url: initialUrl } = useInitialIntentURL();
 
@@ -96,7 +87,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     ) {
       void initiateWalletConnection();
     }
-  }, [initialUrl, isWeb3WalletInitialized, ethereum.wallets.length]);
+  }, [initialUrl, isWeb3WalletInitialized, ethereum?.wallets]);
 
   return (
     // <WalletConnectContext.Provider

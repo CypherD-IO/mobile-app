@@ -35,6 +35,7 @@ import {
 } from '@react-navigation/native';
 import { screenTitle } from '../../constants';
 import { sleepFor } from '../../core/util';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const REPORT_ISSUES = Object.entries(ComplaintReason).map(([key, value]) => ({
   value: key,
@@ -139,12 +140,15 @@ export default function ReportTransactionModal({
         screen_name: 'ReportTransactionModal',
         screen_class: 'ReportTransactionModal',
       });
-      void analytics().logEvent('report_transaction_modal_opened', {
-        transaction_id: transaction.id,
-        transaction_amount: transaction.amount,
-        merchant_name:
-          transaction.metadata?.merchant?.merchantName ?? 'Unknown',
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.REPORT_TRANSACTION_MODAL_OPENED,
+        {
+          transaction_id: transaction.id,
+          transaction_amount: transaction.amount,
+          merchant_name:
+            transaction.metadata?.merchant?.merchantName ?? 'Unknown',
+        },
+      );
     }
   }, [isModalVisible, transaction]);
 
@@ -192,13 +196,16 @@ export default function ReportTransactionModal({
       setIsSubmitting(true);
 
       // Track submission attempt
-      void analytics().logEvent('report_transaction_submit_attempt', {
-        transaction_id: transaction.id,
-        reason: selectedIssue,
-        has_description: Boolean(description.trim()),
-        has_purchase_description: Boolean(purchaseDescription.trim()),
-        files_count: uploadedFiles.length,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.REPORT_TRANSACTION_SUBMIT_ATTEMPT,
+        {
+          transaction_id: transaction.id,
+          reason: selectedIssue,
+          has_description: Boolean(description.trim()),
+          has_purchase_description: Boolean(purchaseDescription.trim()),
+          files_count: uploadedFiles.length,
+        },
+      );
 
       const formData = new FormData();
 
@@ -242,13 +249,16 @@ export default function ReportTransactionModal({
 
       if (!response.isError) {
         // Track successful submission
-        void analytics().logEvent('report_transaction_submit_success', {
-          transaction_id: transaction.id,
-          reason: selectedIssue,
-          merchant_name:
-            transaction.metadata?.merchant?.merchantName ?? 'Unknown',
-          merchantId: transaction.metadata?.merchant?.merchantId ?? 'Unknown',
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.REPORT_TRANSACTION_SUBMIT_SUCCESS,
+          {
+            transaction_id: transaction.id,
+            reason: selectedIssue,
+            merchant_name:
+              transaction.metadata?.merchant?.merchantName ?? 'Unknown',
+            merchantId: transaction.metadata?.merchant?.merchantId ?? 'Unknown',
+          },
+        );
 
         showModal('state', {
           type: 'success',
@@ -259,11 +269,14 @@ export default function ReportTransactionModal({
         });
       } else {
         // Track submission error
-        void analytics().logEvent('report_transaction_submit_error', {
-          transaction_id: transaction.id,
-          reason: selectedIssue,
-          error_message: response.error?.message || 'Unknown error',
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.REPORT_TRANSACTION_SUBMIT_ERROR,
+          {
+            transaction_id: transaction.id,
+            reason: selectedIssue,
+            error_message: response.error?.message || 'Unknown error',
+          },
+        );
 
         showModal('state', {
           type: 'error',
@@ -277,10 +290,13 @@ export default function ReportTransactionModal({
       }
     } catch (error) {
       // Track submission exception
-      void analytics().logEvent('report_transaction_submit_exception', {
-        transaction_id: transaction.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.REPORT_TRANSACTION_SUBMIT_EXCEPTION,
+        {
+          transaction_id: transaction.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      );
 
       showModal('state', {
         type: 'error',
@@ -299,20 +315,26 @@ export default function ReportTransactionModal({
     setIsDropdownOpen(false);
 
     // Track issue selection
-    void analytics().logEvent('report_transaction_issue_selected', {
-      transaction_id: transaction.id,
-      issue_type: value,
-      issue_label: REPORT_ISSUES.find(issue => issue.value === value)?.label,
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.REPORT_TRANSACTION_ISSUE_SELECTED,
+      {
+        transaction_id: transaction.id,
+        issue_type: value,
+        issue_label: REPORT_ISSUES.find(issue => issue.value === value)?.label,
+      },
+    );
   };
 
   const handleFileSelect = async () => {
     try {
       // Track file selection attempt
-      void analytics().logEvent('report_transaction_file_select_attempt', {
-        transaction_id: transaction.id,
-        current_files_count: uploadedFiles.length,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.REPORT_TRANSACTION_FILE_SELECT_ATTEMPT,
+        {
+          transaction_id: transaction.id,
+          current_files_count: uploadedFiles.length,
+        },
+      );
 
       // Check if we can add more files
       if (uploadedFiles.length >= MAX_FILES) {
@@ -323,10 +345,13 @@ export default function ReportTransactionModal({
         });
 
         // Track max files error
-        void analytics().logEvent('report_transaction_max_files_error', {
-          transaction_id: transaction.id,
-          max_files: MAX_FILES,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.REPORT_TRANSACTION_MAX_FILES_ERROR,
+          {
+            transaction_id: transaction.id,
+            max_files: MAX_FILES,
+          },
+        );
 
         return;
       }
@@ -348,10 +373,13 @@ export default function ReportTransactionModal({
       });
 
       // Track files selected
-      void analytics().logEvent('report_transaction_files_selected', {
-        transaction_id: transaction.id,
-        files_count: results.length,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.REPORT_TRANSACTION_FILES_SELECTED,
+        {
+          transaction_id: transaction.id,
+          files_count: results.length,
+        },
+      );
 
       results.forEach(file => {
         // Skip files with missing required data
@@ -363,9 +391,12 @@ export default function ReportTransactionModal({
           });
 
           // Track invalid file error
-          void analytics().logEvent('report_transaction_invalid_file_error', {
-            transaction_id: transaction.id,
-          });
+          void logAnalyticsToFirebase(
+            AnalyticEvent.REPORT_TRANSACTION_INVALID_FILE_ERROR,
+            {
+              transaction_id: transaction.id,
+            },
+          );
 
           return;
         }
@@ -386,12 +417,15 @@ export default function ReportTransactionModal({
           });
 
           // Track file size error
-          void analytics().logEvent('report_transaction_file_size_error', {
-            transaction_id: transaction.id,
-            file_name: file.name,
-            file_size: file.size,
-            max_size: MAX_FILE_SIZE,
-          });
+          void logAnalyticsToFirebase(
+            AnalyticEvent.REPORT_TRANSACTION_FILE_SIZE_ERROR,
+            {
+              transaction_id: transaction.id,
+              file_name: file.name,
+              file_size: file.size,
+              max_size: MAX_FILE_SIZE,
+            },
+          );
 
           return;
         }
@@ -411,12 +445,15 @@ export default function ReportTransactionModal({
         setUploadedFiles(prev => [...prev, newFile]);
 
         // Track file added
-        void analytics().logEvent('report_transaction_file_added', {
-          transaction_id: transaction.id,
-          file_name: file.name,
-          file_size: file.size,
-          file_type: fileType,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.REPORT_TRANSACTION_FILE_ADDED,
+          {
+            transaction_id: transaction.id,
+            file_name: file.name,
+            file_size: file.size,
+            file_type: fileType,
+          },
+        );
 
         // Simulate upload complete after 1 second
         setTimeout(() => {
@@ -427,10 +464,13 @@ export default function ReportTransactionModal({
       });
     } catch (err) {
       // Track file selection error
-      void analytics().logEvent('report_transaction_file_selection_error', {
-        transaction_id: transaction.id,
-        error: err instanceof Error ? err.message : 'Unknown error',
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.REPORT_TRANSACTION_FILE_SELECTION_ERROR,
+        {
+          transaction_id: transaction.id,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        },
+      );
 
       Toast.show({
         type: 'error',
@@ -447,11 +487,14 @@ export default function ReportTransactionModal({
 
     // Track file deleted
     if (fileToDelete) {
-      void analytics().logEvent('report_transaction_file_deleted', {
-        transaction_id: transaction.id,
-        file_name: fileToDelete.name,
-        file_size: fileToDelete.size,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.REPORT_TRANSACTION_FILE_DELETED,
+        {
+          transaction_id: transaction.id,
+          file_name: fileToDelete.name,
+          file_size: fileToDelete.size,
+        },
+      );
     }
   };
 

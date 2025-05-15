@@ -70,7 +70,9 @@ export default function PinValidation() {
         await removePin(hdWallet, pin);
       }
       callback?.();
-      navigation.setParams(setPinAuthentication(true));
+      if (setPinAuthentication) {
+        setPinAuthentication(true);
+      }
     } else {
       if (retries > 1) {
         setWrongPin(true);

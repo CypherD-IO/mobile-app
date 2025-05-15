@@ -2,7 +2,6 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import {
   useNavigation,
   useRoute,
-  useIsFocused,
   NavigationProp,
   ParamListBase,
   RouteProp,
@@ -13,7 +12,6 @@ import clsx from 'clsx';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
-import analytics from '@react-native-firebase/analytics';
 
 import {
   CyDImage,
@@ -35,7 +33,6 @@ import {
   CardProviders,
   CardType,
   SpendLimitType,
-  HigherSpendingLimitStatus,
   ON_OPEN_NAVIGATE,
   CardStatus,
   CypherPlanId,
@@ -49,11 +46,11 @@ import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCou
 import { ICountry } from '../../../models/cardApplication.model';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
 import { screenTitle } from '../../../constants';
-import HigherSpendingLimitStatusModal from '../../../components/v2/higherSpendingLimitStatusModal';
 import Loading from '../../../components/v2/loading';
 import SaveChangesModal from '../../../components/v2/saveChangesModal';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { countryMaster } from '../../../../assets/datasets/countryMaster';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 
 interface RouteParams {
   cardId: string;
@@ -301,7 +298,7 @@ export default function CardControls() {
           },
         }));
         // Log analytics event
-        void analytics().logEvent('card_channel_toggle', {
+        void logAnalyticsToFirebase(AnalyticEvent.CARD_CHANNEL_TOGGLE, {
           channel,
           enabled: !originalChannelControl,
           cardId,
@@ -355,7 +352,7 @@ export default function CardControls() {
         }));
 
         // Log analytics event
-        void analytics().logEvent('card_limit_change', {
+        void logAnalyticsToFirebase(AnalyticEvent.CARD_LIMIT_CHANGE, {
           type,
           newLimit,
           cardId,
@@ -405,13 +402,16 @@ export default function CardControls() {
       });
 
       if (!response.isError) {
-        void analytics().logEvent('card_controls_request_higher_limit_submit', {
-          card_id: selectedCardId,
-          card_type: selectedCard?.type,
-          reason,
-          dailyLimit,
-          monthlyLimit,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.CARD_CONTROLS_REQUEST_HIGHER_LIMIT_SUBMIT,
+          {
+            card_id: selectedCardId,
+            card_type: selectedCard?.type,
+            reason,
+            dailyLimit,
+            monthlyLimit,
+          },
+        );
         showModal('state', {
           type: 'success',
           title: t('LIMIT_INCREASE_REQUEST_SUBMITTED'),
@@ -542,10 +542,13 @@ export default function CardControls() {
           countries: countryCodes,
         }));
 
-        void analytics().logEvent('card_controls_update_countries', {
-          card_id: selectedCardId,
-          card_type: selectedCard?.type,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.CARD_CONTROLS_UPDATE_COUNTRIES,
+          {
+            card_id: selectedCardId,
+            card_type: selectedCard?.type,
+          },
+        );
 
         // Fetch updated limits after successful country update
         await fetchCardLimits();
@@ -588,7 +591,7 @@ export default function CardControls() {
 
           if (!response.isError) {
             // Log analytics event
-            void analytics().logEvent('card_settings_reset', {
+            void logAnalyticsToFirebase(AnalyticEvent.CARD_SETTINGS_RESET, {
               cardId,
               cardProvider: currentCardProvider,
             });
@@ -954,8 +957,8 @@ export default function CardControls() {
                     <CyDTouchView
                       className='flex flex-row items-center bg-n20 rounded-[15px] px-[12px] py-[8px]'
                       onPress={() => {
-                        void analytics().logEvent(
-                          'card_controls_explore_premium',
+                        void logAnalyticsToFirebase(
+                          AnalyticEvent.CARD_CONTROLS_EXPLORE_PREMIUM,
                           {
                             card_id: selectedCardId,
                             card_type: selectedCard?.type,
@@ -1022,7 +1025,7 @@ export default function CardControls() {
                 </CyDView>
                 <CyDSwitch
                   value={channelControls.atm}
-                  onValueChange={() => handleChannelToggle('atm')}
+                  onValueChange={async () => await handleChannelToggle('atm')}
                 />
               </CyDView>
 
@@ -1037,7 +1040,9 @@ export default function CardControls() {
                 </CyDView>
                 <CyDSwitch
                   value={channelControls.online}
-                  onValueChange={() => handleChannelToggle('online')}
+                  onValueChange={async () =>
+                    await handleChannelToggle('online')
+                  }
                 />
               </CyDView>
 
@@ -1080,7 +1085,9 @@ export default function CardControls() {
                 </CyDView>
                 <CyDSwitch
                   value={channelControls.merchantOutlet}
-                  onValueChange={() => handleChannelToggle('merchantOutlet')}
+                  onValueChange={async () =>
+                    await handleChannelToggle('merchantOutlet')
+                  }
                 />
               </CyDView>
 
@@ -1122,7 +1129,9 @@ export default function CardControls() {
                 </CyDView>
                 <CyDSwitch
                   value={channelControls.applePay}
-                  onValueChange={() => handleChannelToggle('applePay')}
+                  onValueChange={async () =>
+                    await handleChannelToggle('applePay')
+                  }
                 />
               </CyDView>
             </CyDView>
@@ -1136,10 +1145,13 @@ export default function CardControls() {
               <CyDTouchView
                 className='flex flex-row items-center justify-between py-[16px]'
                 onPress={() => {
-                  void analytics().logEvent('card_controls_select_country', {
-                    card_id: selectedCardId,
-                    card_type: selectedCard?.type,
-                  });
+                  void logAnalyticsToFirebase(
+                    AnalyticEvent.CARD_CONTROLS_SELECT_COUNTRY,
+                    {
+                      card_id: selectedCardId,
+                      card_type: selectedCard?.type,
+                    },
+                  );
                   setIsCountryModalVisible(true);
                 }}>
                 <CyDView className='flex flex-row items-center gap-x-[12px]'>
@@ -1232,7 +1244,9 @@ export default function CardControls() {
         type={SpendLimitType.DAILY}
         currentLimit={cardLimits?.advL?.d ?? 0}
         maxLimit={cardLimits?.cydL?.d ?? cardLimits?.maxLimit.d ?? 0}
-        onChangeLimit={newLimit => handleLimitChange('daily', newLimit)}
+        onChangeLimit={async newLimit =>
+          await handleLimitChange('daily', newLimit)
+        }
         onRequestHigherLimit={handleRequestHigherLimit}
       />
 
@@ -1243,7 +1257,9 @@ export default function CardControls() {
         type={SpendLimitType.MONTHLY}
         currentLimit={cardLimits?.advL?.m ?? 0}
         maxLimit={cardLimits?.cydL?.m ?? cardLimits?.maxLimit.m ?? 0}
-        onChangeLimit={newLimit => handleLimitChange('monthly', newLimit)}
+        onChangeLimit={async newLimit =>
+          await handleLimitChange('monthly', newLimit)
+        }
         onRequestHigherLimit={handleRequestHigherLimit}
       />
 
