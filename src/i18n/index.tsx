@@ -1135,7 +1135,7 @@ const resources = {
       ORDER_YOUR_METAL_CARD: 'Order your Metal Card',
       USDC_TOKEN: 'USDC token',
       OTHER_TOKENS: 'Other tokens',
-      FOREX_MARKUP_NON_USD: 'Forex Markup (Non USD)',
+      FOREX_MARKUP_NON_USD: 'Forex Markup (Non USD)*',
       CRYPTO_LOAD_FEE: 'Crypto load fee',
       CHARGE_BACK_COVER: 'Chargeback Cover',
       ATM_FEE: 'ATM Withdraw Fee',
@@ -1151,6 +1151,8 @@ const resources = {
       COMPARISION_NOTE_2: '(2) Shipping Charges Apply for add on cards',
       COMPARISION_NOTE_3:
         '(3) Lower liquidity tokens may incur crypto load fees of up to 3%.',
+      COMPARISION_NOTE_4:
+        '(4) Cypher charges a 1% forex markup fee for standard users and 0% for premium users. However, please note that your bank may apply an additional fee ranging from 0.25% to 1%, which is not controlled or charged by Cypher.',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
