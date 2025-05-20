@@ -225,10 +225,14 @@ export default function OnBoardOpotions() {
         await googleLogin(provider);
       }
     } catch (error) {
+      let errorMessage = parseErrorMessage(error);
+      if (errorMessage === 'login flow failed with error type cancel') {
+        errorMessage = 'Login cancelled';
+      }
       showModal('state', {
         type: 'error',
         title: 'Unable to login',
-        description: parseErrorMessage(error),
+        description: errorMessage,
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -346,36 +350,76 @@ export default function OnBoardOpotions() {
           </CyDText>
           <CyDText className='mt-[2px] text-n200 text-[12px]'>
             {
-              'You will be able to access the wallet based on the \nchain you pick below.'
+              'You will be able to access the wallet based on the \nnetwork you pick below.'
             }
           </CyDText>
           <CyDView className='mt-[24px] bg-n0 rounded-[8px] p-[16px]'>
-            <CyDTouchView
-              className='flex flex-row items-center justify-between '
-              onPress={() => {
-                setProviderType(ProviderType.ETHEREUM);
-              }}>
-              <CyDView className='flex flex-row items-center gap-x-[4px]'>
-                <CyDImage
-                  source={AppImages.ETHEREUM}
-                  className='w-[24px] h-[24px]'
-                />
-                <CyDText className='text-[16px] font-semibold'>
-                  {'Ethereum'}
+            <CyDView>
+              <CyDTouchView
+                className='flex flex-row items-center justify-between '
+                onPress={() => {
+                  setProviderType(ProviderType.ETHEREUM);
+                }}>
+                <CyDView className='flex flex-row items-center gap-x-[4px]'>
+                  <CyDView className='w-[30px] h-[30px] rounded-[8px] bg-[#4575F7] flex items-center justify-center'>
+                    <CyDImage
+                      source={AppImages.ETHEREUM}
+                      className='w-[30px] h-[30px]'
+                    />
+                  </CyDView>
+                  <CyDText className='text-[16px] font-semibold'>
+                    {'Ethereum (EVM)'}
+                  </CyDText>
+                </CyDView>
+                <CyDView className='w-[24px] h-[24px] rounded-full'>
+                  {providerType !== ProviderType.ETHEREUM ? (
+                    <CyDView className='w-[20px] h-[20px] rounded-full bg-n30' />
+                  ) : (
+                    <CyDMaterialDesignIcons
+                      name='check-circle'
+                      size={20}
+                      className='text-[#ECAB00]'
+                    />
+                  )}
+                </CyDView>
+              </CyDTouchView>
+
+              <CyDView>
+                <CyDText className='text-[12px] font-normal text-base400 mt-[16px]'>
+                  {'You can card load, send and receive tokens from 7 Network'}
                 </CyDText>
-              </CyDView>
-              <CyDView className='w-[24px] h-[24px] rounded-full'>
-                {providerType !== ProviderType.ETHEREUM ? (
-                  <CyDView className='w-[20px] h-[20px] rounded-full bg-n30' />
-                ) : (
-                  <CyDMaterialDesignIcons
-                    name='check-circle'
-                    size={20}
-                    className='text-[#ECAB00]'
+                <CyDView className='flex flex-row items-center gap-x-[6px] mt-[6px]'>
+                  <CyDImage
+                    source={AppImages.POLYGON}
+                    className='w-[24px] h-[24px]'
                   />
-                )}
+                  <CyDImage
+                    source={AppImages.BASE_LOGO}
+                    className='w-[24px] h-[24px]'
+                  />
+                  <CyDImage
+                    source={AppImages.ARBITRUM}
+                    className='w-[24px] h-[24px]'
+                  />
+                  <CyDImage
+                    source={AppImages.OPTIMISM}
+                    className='w-[24px] h-[24px]'
+                  />
+                  <CyDImage
+                    source={AppImages.BINANCE}
+                    className='w-[24px] h-[24px]'
+                  />
+                  <CyDImage
+                    source={AppImages.AVALANCHE}
+                    className='w-[24px] h-[24px]'
+                  />
+                  <CyDImage
+                    source={AppImages.ZKSYNC_ERA_LOGO}
+                    className='w-[24px] h-[24px]'
+                  />
+                </CyDView>
               </CyDView>
-            </CyDTouchView>
+            </CyDView>
 
             <CyDView className='h-[1px] bg-n40 w-full my-[16px]' />
 
@@ -385,10 +429,12 @@ export default function OnBoardOpotions() {
                 setProviderType(ProviderType.SOLANA);
               }}>
               <CyDView className='flex flex-row items-center gap-x-[4px]'>
-                <CyDImage
-                  source={AppImages.SOLANA_LOGO}
-                  className='w-[24px] h-[24px]'
-                />
+                <CyDView className='w-[30px] h-[30px] rounded-[8px] bg-base400 flex items-center justify-center'>
+                  <CyDImage
+                    source={AppImages.SOLANA_LOGO}
+                    className='w-[24px] h-[24px]'
+                  />
+                </CyDView>
                 <CyDText className='text-[16px] font-semibold'>
                   {'Solana'}
                 </CyDText>
@@ -588,8 +634,8 @@ export default function OnBoardOpotions() {
             </CyDText>
             <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
               <CyDTextInput
-                className='flex-1 text-[14px] text-base400 py-[16px] pl-[12px] rounded-[8px]'
-                placeholder='Enter your email address'
+                className='flex-1 text-[18px] text-base400 py-[16px] pl-[12px] rounded-[8px] font-normal'
+                placeholder='Email address'
                 placeholderTextColor={'#8993A4'}
                 value={email}
                 onChangeText={setEmail}
@@ -604,15 +650,14 @@ export default function OnBoardOpotions() {
               />
               {email.length > 0 && (
                 <TouchableOpacity
+                  className='rounded-[5px] bg-n30 px-[12px] py-[9px] mx-[6px]'
                   onPress={() => {
                     setSocialLoginMethod(SocialLoginMethod.EMAIL);
                     setIsProviderSelectionModalVisible(true);
                   }}>
-                  <CyDMaterialDesignIcons
-                    name='arrow-right-circle'
-                    size={17}
-                    className='text-n200 pr-[12px]'
-                  />
+                  <CyDText className='text-[16px] font-normal'>
+                    {'Next'}
+                  </CyDText>
                 </TouchableOpacity>
               )}
             </CyDView>

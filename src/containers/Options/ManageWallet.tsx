@@ -1,28 +1,25 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { BackHandler } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { HdWalletContext } from '../../core/util';
-import AppImages from '../../../assets/images/appImages';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import { HdWalletContext } from '../../core/util';
 import {
-  CyDView,
-  CyDTouchView,
-  CyDText,
   CyDFlatList,
-  CyDImageBackground,
   CyDIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
 } from '../../styles/tailwindComponents';
 
-import { HDWallet } from '../../reducers/hdwallet_reducer';
-import useConnectionManager from '../../hooks/useConnectionManager';
-import { ConnectionTypes } from '../../constants/enum';
-import { IconNames } from '../../customFonts';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
 import { t } from 'i18next';
+import { ConnectionTypes } from '../../constants/enum';
+import { IconNames } from '../../customFonts';
+import useConnectionManager from '../../hooks/useConnectionManager';
+import { HDWallet } from '../../reducers/hdwallet_reducer';
 
 interface IManageWalletData {
   index: number;
