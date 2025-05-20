@@ -91,7 +91,10 @@ export default function useWeb3Auth() {
   };
 
   const getChainIdHex = (chainName: ChainBackendNames): string => {
-    const chainIds: Record<SupportedChains, string> = {
+    const chainIds: Record<
+      Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>,
+      string
+    > = {
       [ChainBackendNames.ETH]: '0x1',
       [ChainBackendNames.POLYGON]: '0x89',
       [ChainBackendNames.BSC]: '0x38',
@@ -102,11 +105,18 @@ export default function useWeb3Auth() {
       [ChainBackendNames.SOLANA]: '0x1',
       [ChainBackendNames.ZKSYNC_ERA]: '0x144',
     };
-    return chainIds[chainName as SupportedChains] || '0x1';
+    return (
+      chainIds[
+        chainName as Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>
+      ] || '0x1'
+    );
   };
 
   const getDisplayName = (chainName: ChainBackendNames): string => {
-    const displayNames: Record<SupportedChains, string> = {
+    const displayNames: Record<
+      Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>,
+      string
+    > = {
       [ChainBackendNames.ETH]: 'Ethereum Mainnet',
       [ChainBackendNames.POLYGON]: 'Polygon Mainnet',
       [ChainBackendNames.BSC]: 'BNB Smart Chain',
@@ -117,11 +127,18 @@ export default function useWeb3Auth() {
       [ChainBackendNames.SOLANA]: 'Solana',
       [ChainBackendNames.ZKSYNC_ERA]: 'zkSync Era',
     };
-    return displayNames[chainName as SupportedChains] || chainName;
+    return (
+      displayNames[
+        chainName as Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>
+      ] || chainName
+    );
   };
 
   const getBlockExplorer = (chainName: ChainBackendNames): string => {
-    const explorers: Record<SupportedChains, string> = {
+    const explorers: Record<
+      Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>,
+      string
+    > = {
       [ChainBackendNames.ETH]: 'https://etherscan.io',
       [ChainBackendNames.POLYGON]: 'https://polygonscan.com',
       [ChainBackendNames.BSC]: 'https://bscscan.com',
@@ -132,11 +149,18 @@ export default function useWeb3Auth() {
       [ChainBackendNames.SOLANA]: 'https://explorer.solana.com',
       [ChainBackendNames.ZKSYNC_ERA]: 'https://explorer.zksync.io',
     };
-    return explorers[chainName as SupportedChains] || '';
+    return (
+      explorers[
+        chainName as Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>
+      ] || ''
+    );
   };
 
   const getTicker = (chainName: ChainBackendNames): string => {
-    const tickers: Record<SupportedChains, string> = {
+    const tickers: Record<
+      Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>,
+      string
+    > = {
       [ChainBackendNames.ETH]: 'ETH',
       [ChainBackendNames.POLYGON]: 'MATIC',
       [ChainBackendNames.BSC]: 'BNB',
@@ -147,11 +171,18 @@ export default function useWeb3Auth() {
       [ChainBackendNames.SOLANA]: 'SOL',
       [ChainBackendNames.ZKSYNC_ERA]: 'ETH',
     };
-    return tickers[chainName as SupportedChains] || 'ETH';
+    return (
+      tickers[
+        chainName as Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>
+      ] || 'ETH'
+    );
   };
 
   const getTickerName = (chainName: ChainBackendNames): string => {
-    const tickerNames: Record<SupportedChains, string> = {
+    const tickerNames: Record<
+      Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>,
+      string
+    > = {
       [ChainBackendNames.ETH]: 'ETH',
       [ChainBackendNames.POLYGON]: 'MATIC',
       [ChainBackendNames.BSC]: 'BNB',
@@ -162,7 +193,11 @@ export default function useWeb3Auth() {
       [ChainBackendNames.SOLANA]: 'SOL',
       [ChainBackendNames.ZKSYNC_ERA]: 'ETH',
     };
-    return tickerNames[chainName as SupportedChains] || 'ETH';
+    return (
+      tickerNames[
+        chainName as Exclude<SupportedChains, ChainBackendNames.HYPERLIQUID>
+      ] || 'ETH'
+    );
   };
 
   const baseChainConfig = getChainConfig(ChainBackendNames.BASE);
@@ -178,22 +213,24 @@ export default function useWeb3Auth() {
       priority: 1,
       mandatory: true,
     },
-    backUpShareFactor: {
+
+    passkeysFactor: {
       enable: true,
       priority: 2,
       mandatory: false,
     },
-    authenticatorFactor: {
+
+    deviceShareFactor: {
       enable: true,
       priority: 3,
       mandatory: false,
     },
-    deviceShareFactor: {
+    authenticatorFactor: {
       enable: true,
       priority: 4,
       mandatory: false,
     },
-    passkeysFactor: {
+    backUpShareFactor: {
       enable: true,
       priority: 5,
       mandatory: false,
