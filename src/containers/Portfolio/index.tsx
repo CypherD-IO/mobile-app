@@ -1,5 +1,4 @@
 import notifee, { EventType } from '@notifee/react-native';
-import analytics from '@react-native-firebase/analytics';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
@@ -7,7 +6,7 @@ import { ParamListBase, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { isEmpty } from 'lodash';
+import { get, isEmpty } from 'lodash';
 import moment from 'moment';
 import React, {
   useCallback,
@@ -41,11 +40,11 @@ import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContex
 import CyDTokenValue from '../../components/v2/tokenValue';
 import { QUICK_ACTION_NOTIFICATION_CATEGORY_IDS } from '../../constants/data';
 import {
+  ConnectionTypes,
   CypherDeclineCodes,
   GlobalContextType,
   GlobalModalType,
   RPCODES,
-  TokenOverviewTabIndices,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
@@ -54,11 +53,7 @@ import {
   ChainBackendNames,
   NotificationEvents,
 } from '../../constants/server';
-import {
-  getHideBalanceStatus,
-  getIBC,
-  getPortfolioData,
-} from '../../core/asyncStorage';
+import { getHideBalanceStatus, getIBC } from '../../core/asyncStorage';
 import { GlobalContext } from '../../core/globalContext';
 import useAxios from '../../core/HttpRequest';
 import {
@@ -91,8 +86,9 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
-import { DecimalHelper } from '../../utils/decimalHelper';
 import Loading from '../../components/v2/loading';
+import useConnectionManager from '../../hooks/useConnectionManager';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface PortfolioProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
@@ -113,6 +109,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     BridgeContext,
   ) as BridgeContextDef;
   const { getWithAuth } = useAxios();
+  const { deleteSocialAuthWalletIfSessionExpired, connectionType } =
+    useConnectionManager();
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
@@ -158,7 +156,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   const jwtToken = globalStateContext?.globalState.token;
-  const ethereum = hdWallet?.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const windowWidth = useWindowDimensions().width;
 
   const handleBackButton = () => {
@@ -351,6 +353,18 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }, [selectedChain]);
 
+  useEffect(() => {
+    if (
+      connectionType &&
+      [
+        ConnectionTypes.SOCIAL_LOGIN_EVM,
+        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
+      ].includes(connectionType)
+    ) {
+      void deleteSocialAuthWalletIfSessionExpired();
+    }
+  }, [connectionType, isFocused]);
+
   const getBridgeData = async () => {
     bridgeDispatch({
       type: BridgeReducerAction.FETCHING,
@@ -390,13 +404,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   async function handlePushNotification(
     remoteMessage: FirebaseMessagingTypes.RemoteMessage | null,
   ) {
-    if (ethereum) {
-      const localPortfolio = await getPortfolioData(ethereum);
+    if (ethereumAddress) {
+      // const localPortfolio = await getPortfolioData(ethereumAddress);
       if (remoteMessage?.data) {
         switch (remoteMessage.data.title) {
           case NotificationEvents.DAPP_BROWSER_OPEN: {
-            void analytics().logEvent(`DAPP_${remoteMessage.data.title}`, {
-              from: ethereum.address,
+            void logAnalyticsToFirebase(`DAPP_${remoteMessage.data.title}`, {
+              from: ethereumAddress,
             });
             navigation.navigate(C.screenTitle.OPTIONS, {
               params: { url: remoteMessage.data.url ?? '' },
@@ -405,8 +419,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.ACTIVITY_UPDATE: {
-            void analytics().logEvent('activity_cta', {
-              from: ethereum.address,
+            void logAnalyticsToFirebase('activity_cta', {
+              from: ethereumAddress,
             });
             navigation.navigate(C.screenTitle.OPTIONS, {
               screen: C.screenTitle.ACTIVITIES,
@@ -414,8 +428,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.ADDRESS_ACTIVITY_WEBHOOK: {
-            void analytics().logEvent('address_activity_cta', {
-              from: ethereum.address,
+            void logAnalyticsToFirebase('address_activity_cta', {
+              from: ethereumAddress,
             });
             const url = remoteMessage.data.url;
             if (url) {
@@ -424,8 +438,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.CARD_APPLICATION_UPDATE: {
-            void analytics().logEvent('card_application_cta', {
-              from: ethereum.address,
+            void logAnalyticsToFirebase('card_application_cta', {
+              from: ethereumAddress,
             });
             const url = remoteMessage.data.url;
             if (url) {
@@ -449,9 +463,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             }
 
             if (categoryId && declineCode) {
-              void analytics().logEvent('card_decline_add_txn_cta', {
-                from: ethereum.address,
-              });
+              void logAnalyticsToFirebase(
+                AnalyticEvent.CARD_DECLINE_ADD_TXN_CTA,
+                {
+                  from: ethereumAddress,
+                },
+              );
 
               if (cardId && provider) {
                 if (
@@ -478,8 +495,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
               break;
             } else {
-              void analytics().logEvent('card_txn_cta', {
-                from: ethereum.address,
+              void logAnalyticsToFirebase(AnalyticEvent.CARD_TXN_CTA, {
+                from: ethereumAddress,
               });
               if (url) {
                 navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
@@ -531,7 +548,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         data={tempTotalHoldings}
         scrollEnabled={false}
         renderItem={renderPortfolioItem as ListRenderItem<unknown>}
-        getItemLayout={(data, index) => ({
+        getItemLayout={(_data, index) => ({
           length: 60,
           offset: 60 * index,
           index,
@@ -569,6 +586,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     portfolioBalance,
     isPortfolioRefreshing,
     isVerifyCoinChecked,
+    selectedChain,
   ]);
 
   const RenderDefiScene = useMemo(() => {
@@ -610,7 +628,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         />
       </CyDView>
     );
-  }, [selectedChain, filterModalVisible, setFilterModalVisible]);
+  }, [selectedChain.chainIdNumber, filterModalVisible, setFilterModalVisible]);
 
   const scenesData = [
     {

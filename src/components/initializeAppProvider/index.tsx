@@ -7,13 +7,8 @@ import {
   GlobalModalType,
   PinPresentStates,
 } from '../../constants/enum';
-import PinAuthRoute from '../../routes/pinAuthRoute';
-import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
-import {
-  HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { WalletConnectV2Provider } from '../walletConnectV2Provider';
 import { SPLASH_SCREEN_TIMEOUT } from '../../constants/timeOuts';
 import SplashScreen from 'react-native-lottie-splash-screen';
@@ -39,17 +34,43 @@ import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 import { useInstallReferrer } from '../../hooks/useInstallReferrer';
 import { setReferralCodeAsync } from '../../core/asyncStorage';
+import { get } from 'lodash';
 
 import {
   requestUserPermission,
   showNotification,
 } from '../../notification/pushNotification';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
+import { screenTitle } from '../../constants';
+import PinAuthRoute from '../../routes/pinAuthRoute';
+import { logAnalyticsToFirebase } from '../../core/analytics';
+
+interface UseInitializerReturn {
+  initializeSentry: () => void;
+  exitIfJailBroken: () => Promise<void>;
+  fetchRPCEndpointsFromServer: (globalDispatch: any) => Promise<any>;
+  loadActivitiesFromAsyncStorage: () => Promise<void>;
+  setPinAuthenticationStateValue: () => Promise<boolean>;
+  setPinPresentStateValue: () => Promise<PinPresentStates>;
+  loadExistingWallet: (dispatch: any, state?: any) => Promise<void>;
+  getHosts: (
+    setForcedUpdate: React.Dispatch<React.SetStateAction<boolean>>,
+    setTamperedSignMessageModal: React.Dispatch<React.SetStateAction<boolean>>,
+    setUpdateModal: React.Dispatch<React.SetStateAction<boolean>>,
+    setShowDefaultAuthRemoveModal: React.Dispatch<
+      React.SetStateAction<boolean>
+    >,
+  ) => Promise<void>;
+  checkForUpdatesAndShowModal: (
+    setUpdateModal: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => Promise<void>;
+  checkAPIAccessibility: () => Promise<boolean>;
+  initializeWeb3Auth: () => Promise<void>;
+}
 
 export const InitializeAppProvider = ({
   children,
 }: {
-  navigationRef: any;
   children: React.ReactNode;
 }) => {
   const {
@@ -63,21 +84,37 @@ export const InitializeAppProvider = ({
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
-  } = useInitializer();
+    initializeWeb3Auth,
+  } = useInitializer() as UseInitializerReturn;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [pinAuthentication, setPinAuthentication] = useState(false);
   const [pinPresent, setPinPresent] = useState(PinPresentStates.NOTSET);
   const [showDefaultAuthRemoveModal, setShowDefaultAuthRemoveModal] =
     useState<boolean>(false);
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
-
   const [updateModal, setUpdateModal] = useState<boolean>(false);
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
     useState<boolean>(false);
   const { isReadOnlyWallet } = hdWallet.state;
-  const { ethereum } = hdWallet.state.wallet;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
+  const solanaAddress = get(hdWallet, 'state.wallet.solana.address', undefined);
+  const ethCurrentIndex = get(
+    hdWallet,
+    'state.wallet.ethereum.currentIndex',
+    -1,
+  );
+  const solCurrentIndex = get(hdWallet, 'state.wallet.solana.currentIndex', -1);
+  const address =
+    ethereumAddress && ethereumAddress.trim().length > 0
+      ? ethereumAddress
+      : solanaAddress;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
+
   const { showModal, hideModal } = useGlobalModalContext();
   const [isJoinDiscordModalVisible, setIsJoinDiscordModalVisible] =
     useState<boolean>(false);
@@ -128,9 +165,6 @@ export const InitializeAppProvider = ({
         setTimeout(() => {
           SplashScreen.hide();
         }, SPLASH_SCREEN_TIMEOUT);
-
-        setPinAuthentication(await setPinAuthenticationStateValue());
-        setPinPresent(await setPinPresentStateValue());
       }
     };
 
@@ -141,7 +175,7 @@ export const InitializeAppProvider = ({
     if (referrerData?.referral) {
       void setReferralCodeAsync(referrerData.referral);
 
-      if (isAuthenticated && ethereum?.address) {
+      if (isAuthenticated && ethereumAddress) {
         showModal('success', {
           title: t('REFERRAL_CODE_FOUND'),
           description: t('REFERRAL_CODE_APPLIED', {
@@ -153,10 +187,41 @@ export const InitializeAppProvider = ({
         });
       }
     }
-  }, [referrerData, isAuthenticated, ethereum?.address]);
+  }, [referrerData, isAuthenticated, ethereumAddress]);
 
   useEffect(() => {
-    if (ethereum.address) {
+    if (referrerData?.referral) {
+      void setReferralCodeAsync(referrerData.referral);
+
+      if (isAuthenticated && ethereumAddress) {
+        showModal('success', {
+          title: t('REFERRAL_CODE_FOUND'),
+          description: t('REFERRAL_CODE_APPLIED', {
+            code: referrerData.referral,
+          }),
+          onSuccess: () => {
+            hideModal();
+          },
+        });
+      }
+    }
+  }, [referrerData, isAuthenticated, ethereumAddress]);
+
+  useEffect(() => {
+    const setPinAuthenticationState = async () => {
+      const pinPresentStateValue = await setPinPresentStateValue();
+      const pinAuthenticationStateValue =
+        await setPinAuthenticationStateValue();
+
+      setPinPresent(pinPresentStateValue);
+      setPinAuthentication(pinAuthenticationStateValue);
+    };
+    void setPinAuthenticationState();
+  }, [solCurrentIndex, ethCurrentIndex]);
+
+  useEffect(() => {
+    if (address) {
+      void initializeWeb3Auth();
       void getHosts(
         setForcedUpdate,
         setTamperedSignMessageModal,
@@ -164,22 +229,22 @@ export const InitializeAppProvider = ({
         setShowDefaultAuthRemoveModal,
       );
     }
-  }, [ethereum.address]);
+  }, [address]);
 
   useEffect(() => {
-    if (ethereum.address === undefined && pinAuthentication) {
+    if (!ethereumAddress && !solanaAddress && pinAuthentication) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
     }
   }, [pinAuthentication]);
 
   useEffect(() => {
     const discordTokenFromUrl = initialUrl?.split('discordToken=')[1];
-    if (isAuthenticated && ethereum?.address && discordTokenFromUrl) {
+    if (isAuthenticated && ethereumAddress && discordTokenFromUrl) {
       setDiscordToken(discordTokenFromUrl);
       setIsJoinDiscordModalVisible(true);
       updateUrl('https://app.cypherhq.io');
     }
-  }, [isAuthenticated, ethereum?.address, initialUrl]);
+  }, [isAuthenticated, ethereumAddress, initialUrl]);
 
   // Handle attribution data
   useEffect(() => {
@@ -235,37 +300,46 @@ export const InitializeAppProvider = ({
   }, [referrerData, analytics]);
 
   const RenderNavStack = useCallback(() => {
-    if (ethereum.address === undefined) {
-      if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
-        return (
-          <Loading
-          // loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-          />
-        );
+    if (ethCurrentIndex === -1 && solCurrentIndex === -1) {
+      if (pinPresent === PinPresentStates.NOTSET) {
+        if (pinAuthentication) {
+          return <OnBoardingStack />;
+        }
+        return <Loading />;
+      } else if (pinPresent === PinPresentStates.FALSE) {
+        if (pinAuthentication) {
+          return <OnBoardingStack />;
+        } else {
+          return (
+            <PinAuthRoute
+              setPinAuthentication={setPinAuthentication}
+              initialScreen={screenTitle.SET_PIN}
+            />
+          );
+        }
       } else {
         return (
           <PinAuthRoute
             setPinAuthentication={setPinAuthentication}
-            initialScreen={
-              pinPresent === PinPresentStates.TRUE
-                ? C.screenTitle.PIN_VALIDATION
-                : C.screenTitle.SET_PIN
-            }
+            initialScreen={screenTitle.PIN_VALIDATION}
           />
         );
       }
     } else {
-      if (ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      if (!ethereumAddress && !solanaAddress) {
         return <OnBoardingStack />;
       } else {
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading />;
         }
-        return children;
+        return <>{children}</>;
       }
     }
   }, [
-    ethereum.address,
+    ethCurrentIndex,
+    solCurrentIndex,
+    ethereumAddress,
+    solanaAddress,
     pinAuthentication,
     pinPresent,
     hdWallet.state.reset,
@@ -309,7 +383,7 @@ export const InitializeAppProvider = ({
               disabled={forcedUpdate}
               onPress={() => {
                 setUpdateModal(false);
-                void analytics().logEvent('update_later', {});
+                logAnalyticsToFirebase('update_later', {});
               }}
             />
           </DialogFooter>

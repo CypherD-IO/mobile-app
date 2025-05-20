@@ -62,7 +62,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
-import { AnalyticEvent, logAnalytics } from '../../../core/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import Loading from '../../../components/v2/loading';
 
 interface CardSecrets {
@@ -867,7 +867,7 @@ const RenderCardActions = ({
           title={'Get New Card'}
           style='px-[28px] w-[300px] mt-[24px]'
           onPress={() => {
-            logAnalytics(AnalyticEvent.GET_NEW_CARD, {
+            logAnalyticsToFirebase(AnalyticEvent.GET_NEW_CARD, {
               from: 'card_stack',
               type: 'new_card',
               address: cardProfile.primaryEthAddress,

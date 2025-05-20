@@ -20,11 +20,16 @@ import Loading from '../v2/loading';
 import { HdWalletContext } from '../../core/util';
 import { getConnectionType } from '../../core/asyncStorage';
 import { ConnectionTypes } from '../../constants/enum';
+import { get } from 'lodash';
 
 export const WagmiConfigBuilder: React.FC = ({ children }) => {
   const [wagmiConfig, setWagmiConfig] = useState<any>();
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const { ethereum } = hdWalletContext.state.wallet;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const chains = [
     mainnet,
     polygon,
@@ -50,7 +55,7 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
 
   useEffect(() => {
     void buildWagmiConfig();
-  }, [ethereum.address]);
+  }, [ethereumAddress]);
 
   const buildWagmiConfig = async () => {
     const connectionType = await getConnectionType();

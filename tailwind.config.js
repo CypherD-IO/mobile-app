@@ -173,9 +173,12 @@ module.exports = {
         blue300: 'var(--color-blue300)',
         rewardsBlue: '#0057FF',
         rewardsYellow: '#ffb800',
+        goldText: '#FBE19D',
       },
       fontFamily: {
         manrope: ['Manrope'],
+        nord: ['Cypher Nord'],
+
       },
       fontWeight: {
         thin: '100',

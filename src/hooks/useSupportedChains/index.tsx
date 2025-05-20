@@ -15,8 +15,8 @@ export default function useSupportedChains() {
   );
 
   const setConnectionTypeValue = async () => {
-    const connectionType = await getConnectionType();
-    setConnectionType(connectionType as ConnectionTypes);
+    const _connectionType = await getConnectionType();
+    setConnectionType(_connectionType as ConnectionTypes);
   };
 
   useEffect(() => {

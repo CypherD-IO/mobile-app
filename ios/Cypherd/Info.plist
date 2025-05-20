@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.09.4</string>
+	<string>3.09.5</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -40,6 +40,12 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>wc</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app.cypherhq.web3auth</string>
 			</array>
 		</dict>
 	</array>
@@ -104,6 +110,7 @@
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
 		<string>CydFont.ttf</string>
+		<string>CypherNord.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

@@ -79,14 +79,14 @@ export const ButtonWithOutImage = ({
 
 export const AddressBookContainer = ({
   chain,
-  wallet = { address: '' },
+  address,
   bGC,
   logo,
   navigation,
   addressTypeQRCode,
 }: {
   chain: string;
-  wallet: { address: string };
+  address: string | undefined;
   bGC: string;
   logo: AppImages;
   navigation: any;
@@ -97,7 +97,7 @@ export const AddressBookContainer = ({
 
   return (
     <>
-      {wallet?.address !== '' && (
+      {address && (
         <CyDView className='flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-n40'>
           <CyDView className='flex flex-row w-[80%] items-center'>
             <CyDView
@@ -112,16 +112,14 @@ export const AddressBookContainer = ({
             <CyDView className='flex-wrap w-[90%]'>
               <CyDText className='font-bold'>{chain.toUpperCase()}</CyDText>
               <CyDText>
-                {wallet === undefined
-                  ? 'Importing...'
-                  : wallet.address.substring(0, 8) +
-                    '...' +
-                    wallet.address.substring(wallet.address.length - 8)}
+                {address.substring(0, 8) +
+                  '...' +
+                  address.substring(address.length - 8)}
               </CyDText>
             </CyDView>
           </CyDView>
           <CyDView className='flex flex-row justify-between items-center w-[16%]'>
-            {wallet?.address !== '' && (
+            {address !== '' && (
               <CyDTouchView
                 onPress={() => {
                   navigation.navigate(C.screenTitle.QRCODE, {
@@ -132,10 +130,10 @@ export const AddressBookContainer = ({
               </CyDTouchView>
             )}
 
-            {wallet?.address !== '' && (
+            {address !== '' && (
               <CyDTouchView
                 onPress={() => {
-                  copyToClipboard(wallet.address);
+                  copyToClipboard(address);
                   showToast(`${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`);
                   sendFirebaseEvent(hdWalletContext, 'copy_address');
                 }}>

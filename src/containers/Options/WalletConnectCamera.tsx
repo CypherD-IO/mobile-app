@@ -3,7 +3,6 @@ import * as C from '../../constants/index';
 import AppImages from './../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
-import analytics from '@react-native-firebase/analytics';
 import { FlatList } from 'react-native';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -27,7 +26,7 @@ import {
   web3WalletPair,
   web3wallet,
 } from '../../core/walletConnectV2Utils';
-import { has } from 'lodash';
+import { get, has } from 'lodash';
 import moment from 'moment';
 import clsx from 'clsx';
 import Button from '../../components/v2/button';
@@ -43,6 +42,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface RouteParams {
   walletConnectURI: string;
@@ -57,7 +57,11 @@ export default function WalletConnectCamera() {
     useContext<walletConnectContextDef>(WalletConnectContext);
 
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
 
   const [walletConnectURI, setWalletConnectURI] = useState(
     route?.params?.walletConnectURI ?? '',
@@ -136,8 +140,8 @@ export default function WalletConnectCamera() {
     if (link.startsWith('wc')) {
       loading.current = true;
       void connectWallet(link);
-      void analytics().logEvent('wallet_connect_url_scan', {
-        fromEthAddress: ethereum.address,
+      void logAnalyticsToFirebase(AnalyticEvent.WALLET_CONNECT_URL_SCAN, {
+        fromEthAddress: ethereumAddress,
       });
     } else {
       showModal('state', {

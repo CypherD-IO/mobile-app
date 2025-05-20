@@ -1,27 +1,25 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { BackHandler } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { HdWalletContext } from '../../core/util';
-import AppImages from '../../../assets/images/appImages';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import { HdWalletContext } from '../../core/util';
 import {
-  CyDView,
-  CyDTouchView,
-  CyDText,
   CyDFlatList,
-  CyDImageBackground,
   CyDIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
 } from '../../styles/tailwindComponents';
 
-import { HDWallet } from '../../reducers/hdwallet_reducer';
-import useConnectionManager from '../../hooks/useConnectionManager';
-import { ConnectionTypes } from '../../constants/enum';
-import { IconNames } from '../../customFonts';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { t } from 'i18next';
+import { ConnectionTypes } from '../../constants/enum';
+import { IconNames } from '../../customFonts';
+import useConnectionManager from '../../hooks/useConnectionManager';
+import { HDWallet } from '../../reducers/hdwallet_reducer';
 
 interface IManageWalletData {
   index: number;
@@ -35,7 +33,6 @@ interface IManageWalletData {
 
 const renderSettingsData = (
   item: IManageWalletData,
-  navigation: any,
   hdWalletContext: { state: HDWallet },
 ) => {
   return (
@@ -63,60 +60,95 @@ const renderSettingsData = (
   );
 };
 
+const getManageWalletData = (
+  connectionType: ConnectionTypes | undefined,
+  deleteWallet: any,
+  navigation: any,
+) => {
+  if (!connectionType) {
+    return [];
+  }
+  switch (connectionType) {
+    case ConnectionTypes.WALLET_CONNECT:
+      return [
+        {
+          index: 0,
+          title: t('CONNECT_ANOTHER_WALLET'),
+          logo: 'wallet' as const,
+          callback: () => {
+            void deleteWallet({ navigation, importNewWallet: true });
+          },
+          firebaseEvent: 'import_another_wallet',
+        },
+        {
+          index: 1,
+          title: t('DISCONNECT_WALLET'),
+          logo: 'delete' as const,
+          callback: () => {
+            void deleteWallet({ navigation });
+          },
+          firebaseEvent: 'delete_wallet',
+        },
+      ];
+    case ConnectionTypes.SOCIAL_LOGIN_EVM:
+    case ConnectionTypes.SOCIAL_LOGIN_SOLANA:
+      return [
+        {
+          index: 0,
+          title: t('SIGN_OUT'),
+          logo: 'delete' as const,
+          callback: () => {
+            void deleteWallet({ navigation });
+          },
+          firebaseEvent: 'delete_wallet',
+        },
+      ];
+    case ConnectionTypes.PRIVATE_KEY:
+    case ConnectionTypes.SEED_PHRASE:
+      return [
+        {
+          index: 0,
+          title: t('IMPORT_WALLET_MSG'),
+          logo: 'wallet' as const,
+          callback: () => {
+            void deleteWallet({ navigation, importNewWallet: true });
+          },
+          firebaseEvent: 'import_another_wallet',
+        },
+        {
+          index: 1,
+          title: t('DELTE_WALLET'),
+          logo: 'delete' as const,
+          callback: () => {
+            void deleteWallet({ navigation });
+          },
+          firebaseEvent: 'delete_wallet',
+        },
+      ];
+    default:
+      return [];
+  }
+};
 export default function ManageWallet() {
-  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const { connectionType, deleteWallet } = useConnectionManager();
-  const [connectionTypeValue, setConnectionTypeValue] =
-    useState(connectionType);
+  const { connectionType: storedConnectionType, deleteWallet } =
+    useConnectionManager();
+  const [connectionTypeValue, setConnectionTypeValue] = useState<
+    ConnectionTypes | undefined
+  >(storedConnectionType ?? undefined);
 
   useEffect(() => {
-    setConnectionTypeValue(connectionType);
-  }, [connectionType]);
+    if (storedConnectionType) {
+      setConnectionTypeValue(storedConnectionType);
+    }
+  }, [storedConnectionType]);
 
-  const manageWalletData: IManageWalletData[] =
-    connectionTypeValue === ConnectionTypes.WALLET_CONNECT
-      ? [
-          {
-            index: 0,
-            title: t('CONNECT_ANOTHER_WALLET'),
-            logo: 'wallet' as const,
-            callback: () => {
-              void deleteWallet({ navigation });
-            },
-            firebaseEvent: 'import_another_wallet',
-          },
-          {
-            index: 1,
-            title: t('DISCONNECT_WALLET'),
-            logo: 'delete' as const,
-            callback: () => {
-              void deleteWallet({ navigation });
-            },
-            firebaseEvent: 'delete_wallet',
-          },
-        ]
-      : [
-          {
-            index: 0,
-            title: t('IMPORT_WALLET_MSG'),
-            logo: 'wallet' as const,
-            callback: () => {
-              void deleteWallet({ navigation, importNewWallet: true });
-            },
-            firebaseEvent: 'import_another_wallet',
-          },
-          {
-            index: 1,
-            title: t('DELTE_WALLET'),
-            logo: 'delete' as const,
-            callback: () => {
-              void deleteWallet({ navigation });
-            },
-            firebaseEvent: 'delete_wallet',
-          },
-        ];
+  const manageWalletData: IManageWalletData[] = getManageWalletData(
+    connectionTypeValue,
+    deleteWallet,
+    navigation,
+  );
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -134,9 +166,7 @@ export default function ManageWallet() {
     <CyDView className={'bg-n20 h-full '}>
       <CyDFlatList
         data={manageWalletData}
-        renderItem={({ item }) =>
-          renderSettingsData(item, navigation, hdWalletContext)
-        }
+        renderItem={({ item }) => renderSettingsData(item, hdWalletContext)}
         keyExtractor={item => item.index}
       />
     </CyDView>
