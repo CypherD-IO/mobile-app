@@ -6,7 +6,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { useIsFocused } from '@react-navigation/native';
 import clsx from 'clsx';
 import { debounce } from 'lodash';
-import {
+import React, {
   useCallback,
   useContext,
   useEffect,

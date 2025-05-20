@@ -23,6 +23,7 @@ import { AddressDerivationPath, Bech32Prefixes } from '../constants/data';
 import { ConnectionTypes } from '../constants/enum';
 import { setConnectionType } from './asyncStorage';
 import { addHexPrefix } from './util';
+import { HDKey } from 'micro-ed25519-hdkey';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
@@ -98,7 +99,7 @@ export const generateWalletFromMnemonic = async (
   addressIndex = addressIndex === -1 ? 0 : addressIndex;
   void setConnectionType(ConnectionTypes.SEED_PHRASE);
 
-  const seed = await bip39.mnemonicToSeed(mnemonic);
+  const seed = bip39.mnemonicToSeedSync(mnemonic);
 
   const hdNode = HDNodeWallet.fromSeed(seed);
 
@@ -139,10 +140,10 @@ export const generateWalletFromMnemonic = async (
     getBytes(coreumRipemd160Hash),
   );
 
+  const hd = HDKey.fromMasterSeed(seed.toString('hex'));
   const solanaPath = `${AddressDerivationPath.SOLANA}${String(addressIndex)}'/0'`;
-  const solanaPrivateKey = derivePath(solanaPath, seed.toString('hex')).key;
-  const solanaKeypair = Keypair.fromSeed(Uint8Array.from(solanaPrivateKey));
-  const solanaAddress = solanaKeypair.publicKey.toBase58();
+  const keypair = Keypair.fromSeed(hd.derive(solanaPath).privateKey);
+  const solanaAddress = keypair.publicKey.toBase58();
 
   return {
     accounts: [
@@ -290,7 +291,7 @@ export const generateSolanaWallet = async (
   mnemonic: string,
   bip44HDPath = `m/44'/501'/0'/0'`,
 ): Promise<IAccountDetailWithChain> => {
-  const seed = await bip39.mnemonicToSeed(mnemonic);
+  const seed = bip39.mnemonicToSeedSync(mnemonic);
   const derivedSeed = derivePath(bip44HDPath, seed.toString('hex')).key;
   const keypair = Keypair.fromSeed(derivedSeed);
   const address = keypair.publicKey.toBase58();

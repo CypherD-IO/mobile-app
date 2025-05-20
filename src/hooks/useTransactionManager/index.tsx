@@ -14,7 +14,6 @@ import {
   Keypair,
   PublicKey,
   SystemProgram,
-  Transaction,
   TransactionInstruction,
   TransactionMessage,
   TransactionSignature,
@@ -74,6 +73,7 @@ import useCosmosSigner from '../useCosmosSigner';
 import useEthSigner from '../useEthSigner';
 import useGasService from '../useGasService';
 import useSolanaSigner from '../useSolana';
+import useAxios from '../../core/HttpRequest';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -86,6 +86,7 @@ export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
+  const { postToOtherSource } = useAxios();
 
   const {
     estimateGasForEvm,
@@ -976,103 +977,197 @@ export default function useTransactionManager() {
     }
   };
 
-  async function fetchPriorityFees(connection: Connection) {
-    const fees = await connection.getRecentPrioritizationFees();
-    if (fees.length === 0) {
-      return 0;
+  const getPriorityFeeFromHelius = async (
+    rpc: string,
+    accountKeys: PublicKey[],
+  ): Promise<{ isError: boolean; priorityFeeEstimate?: number }> => {
+    const response = await postToOtherSource(rpc, {
+      jsonrpc: '2.0',
+      id: '1',
+      method: 'getPriorityFeeEstimate',
+      params: [
+        {
+          accountKeys,
+        },
+      ],
+    });
+
+    if (response.isError) {
+      return { isError: true };
     }
 
-    // Sort fees in ascending order
-    const sortedFees = fees
-      .map(fee => fee.prioritizationFee)
-      .sort((a, b) => a - b);
+    return {
+      isError: false,
+      priorityFeeEstimate: response.data.result.priorityFeeEstimate,
+    };
+  };
 
-    // Calculate the index for 80th percentile
-    const index = Math.ceil(sortedFees.length * 0.8) - 1;
+  async function fetchPriorityFees(
+    connection: Connection,
+    rpc: string,
+    fromKeypair: Keypair,
+    accounts: PublicKey[] = [],
+  ) {
+    try {
+      const MAX_PRIORITY_FEE = 1_000_000;
 
-    // Return the 80th percentile value using lodash get
-    return get(sortedFees, index, 0);
+      const priorityFeeFromHelius = await getPriorityFeeFromHelius(
+        rpc,
+        accounts,
+      );
+
+      if (!priorityFeeFromHelius.isError) {
+        return Math.min(
+          priorityFeeFromHelius.priorityFeeEstimate ?? 0,
+          MAX_PRIORITY_FEE,
+        );
+      }
+
+      // Get fees with all relevant accounts
+      const fees = await connection.getRecentPrioritizationFees({
+        lockedWritableAccounts: [
+          fromKeypair.publicKey,
+          SystemProgram.programId,
+          ...accounts,
+        ],
+      });
+
+      if (fees.length === 0) {
+        return 0;
+      }
+
+      // Filter out zero fees and sort in ascending order
+      const validFees = fees
+        .filter(fee => fee.prioritizationFee > 0)
+        .map(fee => fee.prioritizationFee)
+        .sort((a, b) => a - b);
+
+      if (validFees.length === 0) {
+        return 0;
+      }
+
+      // Calculate the 75th percentile for important transactions
+      const index = Math.ceil(validFees.length * 0.75) - 1;
+      const priorityFee = validFees[index];
+
+      // Validate priority fee is within reasonable bounds
+      // Max 1 lamport per compute unit (1,000,000 microLamports)
+
+      return Math.min(priorityFee, MAX_PRIORITY_FEE);
+    } catch (error) {
+      return 0;
+    }
   }
 
   const simulateSolanaTxn = async ({
     connection,
     fromKeypair,
-    instructions = [],
+    instructions,
   }: {
     connection: Connection;
     fromKeypair: Keypair;
-    instructions?: TransactionInstruction[];
+    instructions: TransactionInstruction;
   }) => {
     try {
       const { blockhash } = await connection.getLatestBlockhash('finalized');
-      const messageV0 = new TransactionMessage({
-        payerKey: fromKeypair.publicKey,
-        recentBlockhash: blockhash,
-        instructions,
-      }).compileToV0Message();
 
-      const transaction = new VersionedTransaction(messageV0);
-      const simulation = await connection.simulateTransaction(transaction, {
-        replaceRecentBlockhash: true,
-        commitment: 'finalized',
-      });
+      const simulationInstructions = [
+        ComputeBudgetProgram.setComputeUnitLimit({
+          units: 500_000,
+        }),
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: 1n,
+        }),
+        instructions,
+      ];
+
+      // Create transaction for simulation
+      const simulationTransaction = new VersionedTransaction(
+        new TransactionMessage({
+          instructions: simulationInstructions,
+          payerKey: fromKeypair.publicKey,
+          recentBlockhash: blockhash,
+        }).compileToV0Message(),
+      );
+
+      // Simulate transaction to get compute unit estimate
+      const simulation = await connection.simulateTransaction(
+        simulationTransaction,
+      );
 
       if (simulation.value.err) {
-        throw new Error(
-          `Simulating from rpc failed, reason: ${parseErrorMessage(simulation.value.err)}`,
-        );
+        const errorMessage =
+          simulation.value.logs?.join('\n') ??
+          parseErrorMessage(simulation.value.err);
+        throw new Error(`Simulation failed: ${errorMessage}`);
       }
 
       const baseUnits = simulation.value.unitsConsumed ?? 200000;
       return Math.ceil(baseUnits * 1.2); // Add 20% buffer
     } catch (e: unknown) {
-      throw new Error(
-        `Simulation failed Unexpected error: ${parseErrorMessage(e)}`,
-      );
+      const errorMessage = parseErrorMessage(e);
+      throw new Error(`Simulation failed: ${errorMessage}`);
     }
   };
 
   const sendTransactionWithPriorityFee = async (
     connection: Connection,
-    transaction: Transaction,
+    transaction: TransactionInstruction,
     fromKeypair: Keypair,
-    amountToSend?: bigint,
+    accounts: PublicKey[] = [],
+    rpc: string,
   ) => {
     const { blockhash } = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = fromKeypair.publicKey;
 
-    const priorityFee = await fetchPriorityFees(connection);
-
-    const estimatedComputeUnits = await simulateSolanaTxn({
+    const estimatedUnits = await simulateSolanaTxn({
       connection,
-      instructions: transaction.instructions,
       fromKeypair,
+      instructions: transaction,
     });
 
-    transaction.instructions.unshift(
-      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee }),
-    );
-
-    transaction.instructions.unshift(
+    // Create final transaction with compute budget instructions
+    const computeUnitLimitInstruction =
       ComputeBudgetProgram.setComputeUnitLimit({
-        units: estimatedComputeUnits + 1000,
-      }),
-    );
+        units: estimatedUnits,
+      });
 
-    const feeCalculator = await connection.getFeeForMessage(
-      transaction.compileMessage(),
+    const priorityFee = await fetchPriorityFees(
+      connection,
+      rpc,
+      fromKeypair,
+      accounts,
     );
+    // Validate priority fee is within reasonable bounds
 
-    const requiredFeeLamports = feeCalculator.value ?? 5000;
+    let computeUnitPriceInstruction;
+    if (priorityFee > 0) {
+      // priority fee instruction
+      computeUnitPriceInstruction = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: priorityFee,
+      });
+    }
+    // Build transaction with all instructions
+    const messageV0 = new TransactionMessage({
+      payerKey: fromKeypair.publicKey,
+      recentBlockhash: blockhash,
+      instructions: [
+        ...(computeUnitPriceInstruction ? [computeUnitPriceInstruction] : []),
+        computeUnitLimitInstruction,
+        transaction,
+      ],
+    }).compileToV0Message();
+
+    // Calculate fee
+    const fees = await connection.getFeeForMessage(messageV0);
+    const requiredFeeLamports = fees.value ?? 5000;
 
     await checkBalance(connection, fromKeypair.publicKey, requiredFeeLamports);
 
-    transaction.sign(fromKeypair);
+    const newTransaction = new VersionedTransaction(messageV0);
+    newTransaction.sign([fromKeypair]);
 
-    const signature = await connection.sendRawTransaction(
-      transaction.serialize(),
-    );
+    // Send and confirm transaction
+    const signature = await connection.sendTransaction(newTransaction);
 
     return signature;
   };
@@ -1082,32 +1177,31 @@ export default function useTransactionManager() {
     toAddress,
     connection,
     fromKeypair,
+    rpc,
   }: {
     amountToSend: string;
     toAddress: string;
     connection: Connection;
     fromKeypair: Keypair;
+    rpc: string;
   }) => {
     const toPublicKey = new PublicKey(toAddress);
 
     const fromPublicKey = fromKeypair.publicKey;
     const lamportsToSend = parseUnits(amountToSend, 9);
 
-    const transaction = new Transaction();
-
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: fromPublicKey,
-        toPubkey: toPublicKey,
-        lamports: lamportsToSend,
-      }),
-    );
+    const transferInstruction = SystemProgram.transfer({
+      fromPubkey: fromPublicKey,
+      toPubkey: toPublicKey,
+      lamports: lamportsToSend,
+    });
 
     const resp = await sendTransactionWithPriorityFee(
       connection,
-      transaction,
+      transferInstruction,
       fromKeypair,
-      lamportsToSend,
+      [],
+      rpc,
     );
 
     return resp;
@@ -1120,6 +1214,7 @@ export default function useTransactionManager() {
     contractDecimals = 9,
     connection,
     fromKeypair,
+    rpc,
   }: {
     amountToSend: string;
     toAddress: string;
@@ -1127,6 +1222,7 @@ export default function useTransactionManager() {
     contractDecimals: number;
     connection: Connection;
     fromKeypair: Keypair;
+    rpc: string;
   }) => {
     const toPublicKey = new PublicKey(toAddress);
     const mintPublicKey = new PublicKey(mintAddress);
@@ -1147,24 +1243,26 @@ export default function useTransactionManager() {
       toPublicKey,
     );
 
-    const transaction = new Transaction();
-
-    transaction.add(
-      createTransferInstruction(
-        fromTokenAccount.address,
-        toTokenAccount.address,
-        fromKeypair.publicKey,
-        lamportsToSend,
-        [],
-        TOKEN_PROGRAM_ID,
-      ),
+    const transferInstruction = createTransferInstruction(
+      fromTokenAccount.address,
+      toTokenAccount.address,
+      fromKeypair.publicKey,
+      lamportsToSend,
+      [],
+      TOKEN_PROGRAM_ID,
     );
 
     const resp = await sendTransactionWithPriorityFee(
       connection,
-      transaction,
+      transferInstruction,
       fromKeypair,
-      lamportsToSend,
+      [
+        TOKEN_PROGRAM_ID,
+        fromTokenAccount.address,
+        toTokenAccount.address,
+        mintPublicKey,
+      ],
+      rpc,
     );
 
     return resp;
@@ -1244,6 +1342,7 @@ export default function useTransactionManager() {
           toAddress,
           connection,
           fromKeypair,
+          rpc: solanRpc,
         });
       } else {
         signature = await sendSPLTokens({
@@ -1253,6 +1352,7 @@ export default function useTransactionManager() {
           contractDecimals,
           connection,
           fromKeypair,
+          rpc: solanRpc,
         });
       }
       const response = await confirmTransactionWithRetry({

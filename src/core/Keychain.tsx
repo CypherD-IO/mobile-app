@@ -66,11 +66,11 @@ import { cosmosConfig } from '../constants/cosmosConfig';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as bip39 from 'bip39';
-import { derivePath } from 'ed25519-hd-key';
 import { Keypair } from '@solana/web3.js';
 import { createWalletClient, Hex, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mainnet } from 'viem/chains';
+import { HDKey } from 'micro-ed25519-hdkey';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 10;
@@ -533,14 +533,20 @@ export const getSolanaWallet = async (hdWallet: any) => {
 
     if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
       const seed = bip39.mnemonicToSeedSync(seedPhrase);
-      const path = `m/44'/501'/${String(
-        hdWallet?.state?.choosenWalletIndex > 0
-          ? hdWallet?.state?.choosenWalletIndex
-          : 0,
-      )}'/0'`;
 
-      const derivedKey = derivePath(path, seed.toString('hex')).key;
-      const keypair = Keypair.fromSeed(derivedKey);
+      if (!seed) {
+        throw new Error('Invalid seed');
+      }
+
+      const hd = HDKey.fromMasterSeed(seed.toString('hex'));
+
+      const path =
+        hdWallet?.state?.choosenWalletIndex > 0
+          ? `m/44'/501'/${String(hdWallet?.state?.choosenWalletIndex)}'/0'`
+          : "m/44'/501'/0'/0'";
+
+      const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
+
       return keypair;
     }
   } catch (e) {
