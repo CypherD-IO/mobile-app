@@ -21,6 +21,7 @@ jobs:
       WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+      HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -55,6 +56,7 @@ jobs:
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
           echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
           echo "RA_PUB_KEY=${{ secrets.RA_PUB_KEY }}" >> .env
+          echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
 
       - name: Update version name and code (main)
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
