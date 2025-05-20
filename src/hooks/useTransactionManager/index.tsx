@@ -74,6 +74,7 @@ import useEthSigner from '../useEthSigner';
 import useGasService from '../useGasService';
 import useSolanaSigner from '../useSolana';
 import useAxios from '../../core/HttpRequest';
+import Config from 'react-native-config';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -978,19 +979,26 @@ export default function useTransactionManager() {
   };
 
   const getPriorityFeeFromHelius = async (
-    rpc: string,
     accountKeys: PublicKey[],
   ): Promise<{ isError: boolean; priorityFeeEstimate?: number }> => {
-    const response = await postToOtherSource(rpc, {
-      jsonrpc: '2.0',
-      id: '1',
-      method: 'getPriorityFeeEstimate',
-      params: [
-        {
-          accountKeys,
-        },
-      ],
-    });
+    const heliusApiKey = String(Config.HELIUS_API_KEY);
+    if (!heliusApiKey) {
+      return { isError: true };
+    }
+
+    const response = await postToOtherSource(
+      `https://mainnet.helius-rpc.com/?api-key=${heliusApiKey}`,
+      {
+        jsonrpc: '2.0',
+        id: '1',
+        method: 'getPriorityFeeEstimate',
+        params: [
+          {
+            accountKeys,
+          },
+        ],
+      },
+    );
 
     if (response.isError) {
       return { isError: true };
@@ -1004,17 +1012,13 @@ export default function useTransactionManager() {
 
   async function fetchPriorityFees(
     connection: Connection,
-    rpc: string,
     fromKeypair: Keypair,
     accounts: PublicKey[] = [],
   ) {
     try {
       const MAX_PRIORITY_FEE = 1_000_000;
 
-      const priorityFeeFromHelius = await getPriorityFeeFromHelius(
-        rpc,
-        accounts,
-      );
+      const priorityFeeFromHelius = await getPriorityFeeFromHelius(accounts);
 
       if (!priorityFeeFromHelius.isError) {
         return Math.min(
@@ -1115,7 +1119,6 @@ export default function useTransactionManager() {
     transaction: TransactionInstruction,
     fromKeypair: Keypair,
     accounts: PublicKey[] = [],
-    rpc: string,
   ) => {
     const { blockhash } = await connection.getLatestBlockhash();
 
@@ -1133,7 +1136,6 @@ export default function useTransactionManager() {
 
     const priorityFee = await fetchPriorityFees(
       connection,
-      rpc,
       fromKeypair,
       accounts,
     );
@@ -1177,13 +1179,11 @@ export default function useTransactionManager() {
     toAddress,
     connection,
     fromKeypair,
-    rpc,
   }: {
     amountToSend: string;
     toAddress: string;
     connection: Connection;
     fromKeypair: Keypair;
-    rpc: string;
   }) => {
     const toPublicKey = new PublicKey(toAddress);
 
@@ -1201,7 +1201,6 @@ export default function useTransactionManager() {
       transferInstruction,
       fromKeypair,
       [],
-      rpc,
     );
 
     return resp;
@@ -1214,7 +1213,6 @@ export default function useTransactionManager() {
     contractDecimals = 9,
     connection,
     fromKeypair,
-    rpc,
   }: {
     amountToSend: string;
     toAddress: string;
@@ -1222,7 +1220,6 @@ export default function useTransactionManager() {
     contractDecimals: number;
     connection: Connection;
     fromKeypair: Keypair;
-    rpc: string;
   }) => {
     const toPublicKey = new PublicKey(toAddress);
     const mintPublicKey = new PublicKey(mintAddress);
@@ -1262,7 +1259,6 @@ export default function useTransactionManager() {
         toTokenAccount.address,
         mintPublicKey,
       ],
-      rpc,
     );
 
     return resp;
@@ -1342,7 +1338,6 @@ export default function useTransactionManager() {
           toAddress,
           connection,
           fromKeypair,
-          rpc: solanRpc,
         });
       } else {
         signature = await sendSPLTokens({
@@ -1352,7 +1347,6 @@ export default function useTransactionManager() {
           contractDecimals,
           connection,
           fromKeypair,
-          rpc: solanRpc,
         });
       }
       const response = await confirmTransactionWithRetry({
