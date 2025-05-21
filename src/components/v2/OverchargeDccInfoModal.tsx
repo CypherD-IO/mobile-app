@@ -45,7 +45,9 @@ export default function OverchargeDccInfoModal({
       action: 'dcc_overcharge_info_modal_understood',
       label: 'overcharged_transaction_info_section',
     });
-    void setOverchargeDccInfoModalShown(transactionId ?? '');
+    if (transactionId) {
+      void setOverchargeDccInfoModalShown(transactionId);
+    }
     handleClose();
   };
 

@@ -13,6 +13,7 @@ import {
   getSymbolFromCurrency,
   getChainIconFromChainName,
   getExplorerUrlFromChainName,
+  isPotentiallyDccOvercharged,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -55,7 +56,7 @@ import {
   ICardTransaction,
   ICardSubObjectMerchant,
 } from '../../../models/card.model';
-import { capitalize, get, startCase, truncate } from 'lodash';
+import { capitalize, get, isEmpty, startCase, truncate } from 'lodash';
 import { t } from 'i18next';
 import { CardProfile } from '../../../models/cardProfile.model';
 import Toast from 'react-native-toast-message';
@@ -1238,19 +1239,17 @@ const OverchargedTransactionInfoSection = () => {
         </CyDView>
         <CyDView className='bg-red20 px-[12px] py-[4px] rounded-full'>
           <CyDText className='text-[12px] font-semibold text-red400'>
-            {t('Overcharged by Merchant')}
+            {t('OVERCHARGED_BY_MERCHANT_TEXT')}
           </CyDText>
         </CyDView>
       </CyDView>
 
       <CyDText className='text-[14px] font-semibold text-base400 mb-[6px]'>
-        {t('Potential High Forex Fee:')}
+        {t('POTENTIAL_HIGH_FOREX_FEE')}
       </CyDText>
 
       <CyDText className='text-[14px] text-n200 mb-[16px]'>
-        {t(
-          'High forex markup fee of 5% - 15% charged by the merchant. To avoid such high charges, always choose the local currency at the card terminal or during ATM withdrawals.',
-        )}
+        {t('HIGH_FOREX_FEE_INFO_TEXT_1')}
       </CyDText>
 
       <CyDTouchView
@@ -1564,12 +1563,7 @@ export default function TransactionDetails() {
     });
   }, []);
 
-  const isOvercharged =
-    transaction.metadata?.merchant?.merchantCountry &&
-    transaction.metadata.merchant.merchantCountry !== 'US' &&
-    !transaction.fxCurrencySymbol &&
-    transaction.type === CardTransactionTypes.DEBIT &&
-    transaction.tStatus !== ReapTxnStatus.DECLINED;
+  const isOvercharged = isPotentiallyDccOvercharged(transaction);
 
   return (
     <>

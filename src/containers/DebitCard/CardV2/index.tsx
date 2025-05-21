@@ -72,6 +72,7 @@ import {
   setOverchargeDccInfoModalShown,
 } from '../../../core/asyncStorage';
 import OverchargeDccInfoModal from '../../../components/v2/OverchargeDccInfoModal';
+import { isPotentiallyDccOvercharged } from '../../../core/util';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -211,21 +212,17 @@ export default function CypherCardScreen() {
   const checkForOverchargeDccInfo = async (
     transactions: ICardTransaction[],
   ) => {
-    const overchargeTransactions = transactions.filter(
-      transaction =>
-        transaction.type === CardTransactionTypes.DEBIT &&
-        !transaction.fxCurrencySymbol &&
-        transaction.metadata?.merchant?.merchantCountry !== 'US' &&
-        transaction.tStatus !== ReapTxnStatus.DECLINED,
+    const overchargeTransactions = transactions.filter(transaction =>
+      isPotentiallyDccOvercharged(transaction),
     );
     const lastOverchargeTransactionIdStored =
       await getOverchargeDccInfoModalShown();
     if (
       lastOverchargeTransactionIdStored !== 'true' &&
-      lastOverchargeTransactionIdStored !== overchargeTransactions[0].id &&
+      lastOverchargeTransactionIdStored !== overchargeTransactions[0]?.id &&
       overchargeTransactions.length > 0
     ) {
-      setOverchargeDccInfoTransactionId(overchargeTransactions[0].id);
+      setOverchargeDccInfoTransactionId(overchargeTransactions[0]?.id);
       setIsOverchargeDccInfoModalOpen(true);
     }
   };

@@ -18,6 +18,7 @@ import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtilit
 import {
   formatToLocalDate,
   getSymbolFromCurrency,
+  isPotentiallyDccOvercharged,
   limitDecimalPlaces,
 } from '../../core/util';
 import { ICardTransaction } from '../../models/card.model';
@@ -188,10 +189,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center w-full'>
           {item.metadata?.merchant?.merchantCountry &&
-            item.metadata.merchant.merchantCountry !== 'US' &&
-            !item.fxCurrencySymbol &&
-            item.type === CardTransactionTypes.DEBIT &&
-            item.tStatus !== ReapTxnStatus.DECLINED && (
+            isPotentiallyDccOvercharged(item) && (
               <CyDView className='bg-p10 rounded-full flex flex-row items-center px-[12px] py-[6px] mt-[8px] w-full'>
                 <CyDMaterialDesignIcons
                   name='exclamation'
