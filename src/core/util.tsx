@@ -34,7 +34,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get, omit } from 'lodash';
+import { find, get, isEmpty, omit } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
@@ -45,7 +45,9 @@ import { t } from 'i18next';
 import {
   AnalyticsType,
   CardProviders,
+  CardTransactionTypes,
   CypherPlanId,
+  ReapTxnStatus,
   SignMessageValidationType,
 } from '../constants/enum';
 import {
@@ -83,7 +85,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { CardProfile } from '../models/cardProfile.model';
 import { CardDesign } from '../models/cardDesign.interface';
 import { CYPHER_CARD_IMAGES } from '../../assets/images/appImages';
-import { Card } from '../models/card.model';
+import { Card, ICardTransaction } from '../models/card.model';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1301,3 +1303,15 @@ export const getCardImage = (card: Card, provider: CardProviders) => {
 export const toBase64 = (bytes: Uint8Array): string => {
   return Buffer.from(bytes).toString('base64');
 };
+
+export function isPotentiallyDccOvercharged(txn: ICardTransaction): boolean {
+  const country = txn.metadata?.merchant?.merchantCountry;
+  return (
+    Boolean(country) &&
+    country !== 'US' &&
+    !isEmpty(country) &&
+    !txn.fxCurrencySymbol &&
+    txn.type === CardTransactionTypes.DEBIT &&
+    txn.tStatus !== ReapTxnStatus.DECLINED
+  );
+}

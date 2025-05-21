@@ -639,6 +639,12 @@ const CYPHER_VIRTUAL_CARD = {
 const CHECK_MARK_GREEN_CURLY_BG = {
   uri: `${S3_BUCKET_URL_ICONS}/checkMarkGreenCurlyBg.png`,
 };
+const DCC_POS_TERMINAL = {
+  uri: `${S3_BUCKET_URL_ICONS}/dccPosTerminal.png`,
+};
+const CARDS_WITH_EXCLAMATION = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardsWithExclamation.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -914,6 +920,8 @@ export const AppImagesMap = {
     CARD_APP_VERIFICATION_FAILED_ICON,
     CYPHER_VIRTUAL_CARD,
     CHECK_MARK_GREEN_CURLY_BG,
+    DCC_POS_TERMINAL,
+    CARDS_WITH_EXCLAMATION,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1193,6 +1201,8 @@ enum AppImages {
   CARD_APP_VERIFICATION_FAILED_ICON = 'CARD_APP_VERIFICATION_FAILED_ICON',
   CYPHER_VIRTUAL_CARD = 'CYPHER_VIRTUAL_CARD',
   CHECK_MARK_GREEN_CURLY_BG = 'CHECK_MARK_GREEN_CURLY_BG',
+  DCC_POS_TERMINAL = 'DCC_POS_TERMINAL',
+  CARDS_WITH_EXCLAMATION = 'CARDS_WITH_EXCLAMATION',
 }
 
 export default AppImages;

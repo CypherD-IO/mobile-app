@@ -641,3 +641,20 @@ export const removeProcessedReferrerCode = async () => {
     Sentry.captureException(error);
   }
 };
+
+export const setOverchargeDccInfoModalShown = async (id: string) => {
+  try {
+    await AsyncStorage.setItem('OVERCHARGE_DCC_INFO_MODAL_SHOWN', id ?? 'true');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getOverchargeDccInfoModalShown = async () => {
+  try {
+    const id = await AsyncStorage.getItem('OVERCHARGE_DCC_INFO_MODAL_SHOWN');
+    return id;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};

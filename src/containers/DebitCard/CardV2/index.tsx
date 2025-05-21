@@ -22,6 +22,7 @@ import {
   CypherPlanId,
   GlobalContextType,
   PhysicalCardType,
+  ReapTxnStatus,
 } from '../../../constants/enum';
 import CardScreen from '../bridgeCard/card';
 import {
@@ -65,7 +66,13 @@ import SelectPlanModal from '../../../components/selectPlanModal';
 import moment from 'moment';
 import analytics from '@react-native-firebase/analytics';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
-import { getRainTerms } from '../../../core/asyncStorage';
+import {
+  getOverchargeDccInfoModalShown,
+  getRainTerms,
+  setOverchargeDccInfoModalShown,
+} from '../../../core/asyncStorage';
+import OverchargeDccInfoModal from '../../../components/v2/OverchargeDccInfoModal';
+import { isPotentiallyDccOvercharged } from '../../../core/util';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -97,6 +104,8 @@ export default function CypherCardScreen() {
   const [recentTransactions, setRecentTransactions] = useState<
     ICardTransaction[]
   >([]);
+  const [overchargeDccInfoTransactionId, setOverchargeDccInfoTransactionId] =
+    useState<string | undefined>(undefined);
   const [filter, setFilter] = useState<{
     types: CardTransactionTypes[];
     dateRange: DateRange;
@@ -141,6 +150,8 @@ export default function CypherCardScreen() {
     year: '2025-01-01',
     timePeriod: '3 months',
   });
+  const [isOverchargeDccInfoModalOpen, setIsOverchargeDccInfoModalOpen] =
+    useState(false);
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -198,6 +209,24 @@ export default function CypherCardScreen() {
     void getCardDesignValues();
   }, [isFocused, cardId]);
 
+  const checkForOverchargeDccInfo = async (
+    transactions: ICardTransaction[],
+  ) => {
+    const overchargeTransactions = transactions.filter(transaction =>
+      isPotentiallyDccOvercharged(transaction),
+    );
+    const lastOverchargeTransactionIdStored =
+      await getOverchargeDccInfoModalShown();
+    if (
+      lastOverchargeTransactionIdStored !== 'true' &&
+      lastOverchargeTransactionIdStored !== overchargeTransactions[0]?.id &&
+      overchargeTransactions.length > 0
+    ) {
+      setOverchargeDccInfoTransactionId(overchargeTransactions[0]?.id);
+      setIsOverchargeDccInfoModalOpen(true);
+    }
+  };
+
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
     setPlanInfo(get(data, ['planInfo'], null));
@@ -237,14 +266,15 @@ export default function CypherCardScreen() {
     setBalanceLoading(false);
   };
   const fetchRecentTransactions = async () => {
-    const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=5`;
+    const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10`;
     const response = await getWithAuth(txnURL);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
       txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
         return a.date < b.date ? 1 : -1;
       });
-      setRecentTransactions(txnsToSet);
+      await checkForOverchargeDccInfo(txnsToSet);
+      setRecentTransactions(txnsToSet.slice(0, 5));
     }
   };
 
@@ -361,6 +391,11 @@ export default function CypherCardScreen() {
             navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
           }, MODAL_HIDE_TIMEOUT_250);
         }}
+      />
+      <OverchargeDccInfoModal
+        isModalVisible={isOverchargeDccInfoModalOpen}
+        setModalVisible={setIsOverchargeDccInfoModalOpen}
+        transactionId={overchargeDccInfoTransactionId}
       />
 
       <SelectPlanModal
