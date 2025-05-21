@@ -1203,6 +1203,72 @@ const getTransactionDisplayProps = (
   }
 };
 
+const OverchargedTransactionInfoSection = () => {
+  const { t } = useTranslation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  // Handler for know more click
+  const handleKnowMore = () => {
+    // Log analytics
+    void analytics().logEvent('dcc_know_more_clicked', {
+      category: 'transaction_detail',
+      action: 'dcc_know_more_clicked',
+      label: 'overcharged_transaction_info_section',
+    });
+
+    // Open the help article in external browser
+    navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
+      uri: 'https://help.cypherhq.io/en/articles/11133566-forex-transactions',
+      title: 'Help Center',
+    });
+  };
+
+  return (
+    <CyDView className='bg-p10 p-[16px]'>
+      <CyDView className='flex flex-row items-center justify-between mb-[12px]'>
+        <CyDView className='flex flex-row items-center'>
+          <CyDMaterialDesignIcons
+            name='exclamation'
+            size={18}
+            className='text-red400 mr-[4px]'
+          />
+          <CyDText className='text-[14px] font-bold tracking-[2px]'>
+            {t('ATTENTION')}
+          </CyDText>
+        </CyDView>
+        <CyDView className='bg-red20 px-[12px] py-[4px] rounded-full'>
+          <CyDText className='text-[12px] font-semibold text-red400'>
+            {t('Overcharged by Merchant')}
+          </CyDText>
+        </CyDView>
+      </CyDView>
+
+      <CyDText className='text-[14px] font-semibold text-base400 mb-[6px]'>
+        {t('Potential High Forex Fee:')}
+      </CyDText>
+
+      <CyDText className='text-[14px] text-n200 mb-[16px]'>
+        {t(
+          'High forex markup fee of 5% - 15% charged by the merchant. To avoid such high charges, always choose the local currency at the card terminal or during ATM withdrawals.',
+        )}
+      </CyDText>
+
+      <CyDTouchView
+        className='bg-n0 rounded-[8px] p-[16px] flex flex-row justify-between items-center'
+        onPress={handleKnowMore}>
+        <CyDText className='font-medium text-[16px] text-base400'>
+          {t('Know More')}
+        </CyDText>
+        <CyDMaterialDesignIcons
+          name='arrow-right'
+          size={20}
+          className='text-base400'
+        />
+      </CyDTouchView>
+    </CyDView>
+  );
+};
+
 export default function TransactionDetails() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { transaction }: { transaction: ICardTransaction } = route.params;
@@ -1498,6 +1564,13 @@ export default function TransactionDetails() {
     });
   }, []);
 
+  const isOvercharged =
+    transaction.metadata?.merchant?.merchantCountry &&
+    transaction.metadata.merchant.merchantCountry !== 'US' &&
+    !transaction.fxCurrencySymbol &&
+    transaction.type === CardTransactionTypes.DEBIT &&
+    transaction.tStatus !== ReapTxnStatus.DECLINED;
+
   return (
     <>
       <SelectPlanModal
@@ -1659,6 +1732,7 @@ export default function TransactionDetails() {
                   </CyDView>
                 )}
               </CyDView>
+              {isOvercharged && <OverchargedTransactionInfoSection />}
               <CyDView className='flex flex-col flex-1 justify-between bg-n0'>
                 <CyDView className='w-full bg-n0 px-[25px] mt-[24px] mb-[60px]'>
                   <TransactionDetail

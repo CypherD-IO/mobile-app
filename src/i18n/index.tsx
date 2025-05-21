@@ -1670,6 +1670,19 @@ const resources = {
       INTRODUCE_YOURSELF_DESCRIPTION:
         'Share a few basic details to help us get to know you.',
       INTRODUCE_YOURSELF: 'Introduce yourself',
+      ATTENTION: 'ATTENTION',
+      OVERCHARGED_BY_MERCHANT: "You've been overcharged by merchant",
+      OVERCHARGE_DCC_INFO_TEXT_1:
+        'We’ve noticed that many of your recent transactions are incurring high foreign exchange fees likely because USD or HKD is being selected instead of the local currency.',
+      PRO_TIP: 'Pro tip:',
+      DURING_A_TRANSACTION_OR_ATM_WITHDRAWAL:
+        'During a transaction or ATM withdrawal:',
+      ALWAYS_CHOOSE_TO_PAY_IN_THE_LOCAL_CURRENCY:
+        'Always choose to pay in the local currency.',
+      AVOID_USING_HKD_OR_USD_IN_TRANSACTIONS:
+        'Avoid using Hong Kong Dollars (HKD) or United States Dollars (USD) in transactions.',
+      I_UNDERSTOOD: 'I, Understood',
+      KNOW_MORE: 'Know More',
     },
   },
 };
