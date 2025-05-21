@@ -13,47 +13,6 @@ import {
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
-import clsx from 'clsx';
-
-function Section1({ handleContinue }: { handleContinue: () => void }) {
-  const inset = useSafeAreaInsets();
-
-  return (
-    <CyDView
-      className={clsx('flex-1 bg-[#FFBF15] pb-[40px]')}
-      style={{
-        paddingTop: inset.top,
-      }}>
-      <CyDView className=' flex-1 ml-[24px]'>
-        <CyDText className='text-[22px] font-bold text-black mt-[24px]'>
-          {'Cypher'}
-        </CyDText>
-        <CyDView className='flex-1 justify-center'>
-          <CyDText className='text-[44px] font-medium text-goldText'>
-            {'Get Ready to'}
-          </CyDText>
-          <CyDText className='text-white leading-[120%] text-[44px] font-medium'>
-            {'Supercharge your'}
-          </CyDText>
-          <CyDText className='text-goldText leading-[120%] text-[44px] font-medium'>
-            {'Crypto Spending'}
-          </CyDText>
-          <CyDText className='text-goldText leading-[120%] text-[44px] font-medium'>
-            {'journey'}
-          </CyDText>
-        </CyDView>
-      </CyDView>
-
-      <CyDTouchView
-        className='bg-white mx-[16px] py-[14px] rounded-[30px]'
-        onPress={handleContinue}>
-        <CyDText className='text-[20px] font-bold text-center text-black'>
-          {'Continue'}
-        </CyDText>
-      </CyDTouchView>
-    </CyDView>
-  );
-}
 
 function Section2({ handleContinue }: { handleContinue: () => void }) {
   const inset = useSafeAreaInsets();
@@ -70,7 +29,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
             </CyDText>
             <CyDText className='text-[18px] font-medium text-white mt-[12px]'>
               {
-                'You can support over 16+ chains and more than 1000+ tokens! Keep an eye on DeFi, NFTs, and easily send or receive from any wallet.'
+                'Access 20+ chains, manage 1000+ tokens, and send, receive, or swap assets seamlessly.'
               }
             </CyDText>
           </CyDView>
@@ -98,11 +57,11 @@ function Section3({ handleContinue }: { handleContinue: () => void }) {
         <CyDView className=' flex-1 justify-between'>
           <CyDView className='px-[24px]'>
             <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
-              {'VISA Powered \nCrypto card '}
+              {'Zero-Fee Crypto Card'}
             </CyDText>
             <CyDText className='text-[18px] font-medium text-white mt-[20px]'>
               {
-                'Use your crypto at over 60 million places worldwide without worrying about currency conversion!'
+                'Make crypto your everyday currency with Cypher . Instantly top up from any wallet using 1,000+ tokens across 25+ chains. Spend globally!'
               }
             </CyDText>
           </CyDView>
@@ -124,7 +83,7 @@ const OnBoardingGetStarted = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleContinue = () => {
-    if (currentIndex < 2) {
+    if (currentIndex < 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
       // Navigate to the next screen or handle completion
@@ -134,9 +93,8 @@ const OnBoardingGetStarted = () => {
 
   return (
     <>
-      {currentIndex === 0 && <Section1 handleContinue={handleContinue} />}
-      {currentIndex === 1 && <Section2 handleContinue={handleContinue} />}
-      {currentIndex === 2 && <Section3 handleContinue={handleContinue} />}
+      {currentIndex === 0 && <Section2 handleContinue={handleContinue} />}
+      {currentIndex === 1 && <Section3 handleContinue={handleContinue} />}
     </>
   );
 };
