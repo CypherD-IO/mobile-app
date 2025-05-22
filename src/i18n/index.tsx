@@ -114,7 +114,9 @@ const resources = {
       DELETE_WALLET_SUB:
         'This action will delete your current wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
       DELETE_WALLET_SUB_SOCIAL:
-        'This action will delete your current wallet. \nYou can login the with the same social account to restore the wallet.',
+        'This action will delete your current wallet. \nYou can login the with the same social account to restore the wallet.\n',
+      SOCIAL_AUTH_MFA_REMINDER:
+        'Please make sure you have access to the MFA that you have setup during signup. Lossing access to the MFA will result in loss of access to your wallet. For safety purposes you can backup the private key of your wallet before signing out.',
       SEED_PHARSE_SUB:
         'You are copying seed phrase. Please be careful in storing the phrase in a secure location. If someone else gets access to this then they will have access to your wallet.',
       REMOVE_WALL_ACC:

@@ -226,8 +226,8 @@ export default function OnBoardOpotions() {
       }
     } catch (error) {
       let errorMessage = parseErrorMessage(error);
-      if (errorMessage === 'login flow failed with error type cancel') {
-        errorMessage = 'Login cancelled';
+      if (errorMessage.includes('login flow failed with error type cancel')) {
+        errorMessage = '';
       }
       showModal('state', {
         type: 'error',

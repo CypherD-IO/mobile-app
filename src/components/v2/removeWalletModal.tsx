@@ -37,9 +37,14 @@ export default function RemoveWalletModal(store: {
           </CyDText>
         )}
         {isSocialLogin && (
-          <CyDText className='mt-[12px] text-center font-bold'>
-            {t('DELETE_WALLET_SUB_SOCIAL')}
-          </CyDText>
+          <CyDView>
+            <CyDText className='mt-[12px] text-center font-medium'>
+              {t('DELETE_WALLET_SUB_SOCIAL')}
+            </CyDText>
+            <CyDText className='mt-[12px] text-center font-medium text-[10px]'>
+              {t('SOCIAL_AUTH_MFA_REMINDER')}
+            </CyDText>
+          </CyDView>
         )}
         {connectionType !== ConnectionTypes.WALLET_CONNECT &&
           !isSocialLogin && (
