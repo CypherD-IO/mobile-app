@@ -253,7 +253,7 @@ export default function useWeb3Auth() {
       web3AuthEvm: new Web3Auth(WebBrowser, EncryptedStorage, {
         clientId,
         redirectUrl,
-        network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+        network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
         privateKeyProvider: ethereumPrivateKeyProvider,
         sessionTime: 30 * 24 * 60 * 60,
         mfaSettings,
@@ -261,7 +261,7 @@ export default function useWeb3Auth() {
       web3AuthSolana: new Web3Auth(WebBrowser, EncryptedStorage, {
         clientId,
         redirectUrl,
-        network: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+        network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
         privateKeyProvider: solanaPrivateKeyProvider,
         sessionTime: 30 * 24 * 60 * 60,
         mfaSettings,
