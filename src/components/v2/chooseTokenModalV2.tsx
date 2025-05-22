@@ -46,6 +46,7 @@ import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
 import { logAnalytics } from '../../core/analytics';
+import { formatCurrencyWithSuffix } from '../../core/util';
 
 interface TokenModal {
   tokenList?: Holding[];
@@ -72,6 +73,20 @@ interface SupportedToken extends Omit<Holding, 'totalValue' | 'balance'> {
   balance: string;
   contractAddress: string;
   coingeckoId: string;
+  isInfLimit: boolean;
+  maxQuoteLimit: number;
+}
+
+interface ISupportedToken {
+  coingeckoId: string;
+  tokenAddress: string;
+  decimals: number;
+  symbol: string;
+  name: string;
+  logo: string;
+  chain: string;
+  isInfLimit: boolean;
+  maxQuoteLimit: number;
 }
 
 interface PaginationState {
@@ -313,12 +328,16 @@ const RenderToken = React.memo(
                   className={'text-n200 text-[12px] font-nunito font-regular'}>
                   {item.chainDetails.name}
                 </CyDText>
-                {type === TokenModalType.CARD_LOAD && (
+                {item.isInfLimit && (
                   <>
                     <CyDView className='h-[6px] w-[6px] rounded-full bg-n200 mx-[6px]' />
                     <CyDView className='px-2 bg-green400 rounded-full'>
                       <CyDText className='text-white text-[10px] font-medium'>
-                        {t('LOAD_UP_TO', { maxLoadLimit: '100K' })}
+                        {t('LOAD_UP_TO', {
+                          maxLoadLimit: formatCurrencyWithSuffix(
+                            item.maxQuoteLimit,
+                          ),
+                        })}
                       </CyDText>
                     </CyDView>
                   </>
@@ -450,7 +469,9 @@ const getTokenKey = (item: Holding | SupportedToken) => {
   const address =
     item.contractAddress ||
     (COSMOS_CHAINS.includes(item.chainDetails.chainName) ? item.denom : '');
-  const key = `${chainId}-${address}`;
+  const symbol = item.symbol || '';
+  const accountType = (item as any).accountType || '';
+  const key = `${chainId}-${address}-${symbol}-${accountType}`;
   return key;
 };
 
@@ -549,7 +570,13 @@ export default function ChooseTokenModalV2(props: TokenModal) {
         .filter(token => token.isFundable)
         .forEach(token => {
           const key = getTokenKey(token);
-          uniqueTokens.set(key, token);
+          // If token already exists in the Map, merge properties
+          const existingToken = uniqueTokens.get(key);
+          const mergedToken = {
+            ...existingToken,
+            ...token,
+          };
+          uniqueTokens.set(key, mergedToken);
         });
 
       setCombinedTokensList(Array.from(uniqueTokens.values()));
@@ -624,24 +651,28 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       setIsLoading(true);
       const response = await getWithoutAuth('/v1/portfolio/supported-tokens');
       if (response.data) {
-        const transformedTokens: SupportedToken[] = response.data.map(token => {
-          const chainDetails = getChainDetails(token.chain);
+        const transformedTokens: SupportedToken[] = response.data.map(
+          (token: ISupportedToken) => {
+            const chainDetails = getChainDetails(token.chain);
 
-          return {
-            // Use token.tokenAddress instead of undefined
-            contractAddress: token.tokenAddress || token.address || '', // Fallback to empty string if both are undefined
-            symbol: token.symbol,
-            name: token.name,
-            logoUrl: token.logo,
-            decimals: token.decimals,
-            balanceDecimal: '0',
-            balance: '0',
-            totalValue: '0',
-            isSupported: true,
-            chainDetails,
-            coingeckoId: token.coingeckoId,
-          };
-        });
+            return {
+              // Use token.tokenAddress instead of undefined
+              contractAddress: token.tokenAddress || token.address || '', // Fallback to empty string if both are undefined
+              symbol: token.symbol,
+              name: token.name,
+              logoUrl: token.logo,
+              decimals: token.decimals,
+              balanceDecimal: '0',
+              balance: '0',
+              totalValue: '0',
+              isSupported: true,
+              chainDetails,
+              coingeckoId: token.coingeckoId,
+              isInfLimit: token.isInfLimit,
+              maxQuoteLimit: token.maxQuoteLimit,
+            };
+          },
+        );
 
         setSupportedTokens(transformedTokens);
       }
@@ -816,7 +847,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
             {totalHoldings.hyperliquidHoldings.map((token: Holding) => (
               <CyDTouchView
                 className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                key={token.symbol}
+                key={`${token.symbol}-${token.accountType || ''}`}
                 onPress={() => {
                   logAnalytics('hyperliquid', {
                     action: 'click spot token',

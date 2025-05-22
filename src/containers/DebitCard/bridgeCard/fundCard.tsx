@@ -1314,18 +1314,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     (selectedToken?.symbol ?? ' '))}
             </CyDText>
 
-            <CyDView className='flex flex-row bg-green20 ml-3 mt-[8px] rounded-full justify-between items-center px-3 py-1 w-fit gap-x-1 m'>
-              <CyDMaterialDesignIcons
-                name='check-circle'
-                size={16}
-                className='text-green400'
-              />
-              <CyDText className='text-green400 text-sm'>
-                {t('MAX_LOAD_LIMIT', {
-                  maxLoadLimit: formatCurrencyWithSuffix(100000),
-                })}
-              </CyDText>
-            </CyDView>
+            {selectedToken?.isInfLimit && (
+              <CyDView className='flex flex-row bg-green20 ml-3 mt-[8px] rounded-full justify-between items-center px-3 py-1 w-fit gap-x-1 m'>
+                <CyDMaterialDesignIcons
+                  name='check-circle'
+                  size={16}
+                  className='text-green400'
+                />
+
+                <CyDText className='text-green400 text-sm'>
+                  {t('MAX_LOAD_LIMIT', {
+                    maxLoadLimit: formatCurrencyWithSuffix(
+                      selectedToken?.maxQuoteLimit,
+                    ),
+                  })}
+                </CyDText>
+              </CyDView>
+            )}
             <RenderWarningMessage />
             {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
                 <CyDView className='mb-[2px]'>
