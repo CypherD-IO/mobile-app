@@ -221,6 +221,7 @@ export default function SelectPlanModal({
           '/v1/cards/rc/plan/deduct',
           {
             planId: newlyOptedPlan,
+            forgoMetalCard: true,
           },
         );
         const resp = await getWalletProfile(globalState.token);
@@ -732,6 +733,15 @@ export default function SelectPlanModal({
                 </CyDText>
               </CyDText>
             </CyDTouchView>
+            <CyDText className='px-[12px] text-[14px] my-[8px]'>
+              <CyDText className='font-bold underline'>
+                {t('IMPORTANT')}:
+              </CyDText>{' '}
+              {t('METAL_OUT_OF_STOCK')}
+            </CyDText>
+            <CyDText className='px-[12px] text-[14px] my-[8px]'>
+              {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
+            </CyDText>
 
             <Button
               title={t('GET_PREMIUM')}
