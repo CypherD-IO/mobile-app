@@ -1687,6 +1687,7 @@ const resources = {
       OVERCHARGED_BY_MERCHANT_TEXT: 'Overcharged by Merchant',
       HIGH_FOREX_FEE_INFO_TEXT_1:
         'High forex markup fee of 5% - 15% charged by the merchant. To avoid such high charges, always choose the local currency at the card terminal or during ATM withdrawals.',
+      OVERCHARGED: 'Overcharged',
     },
   },
 };

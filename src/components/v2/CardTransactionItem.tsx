@@ -173,37 +173,35 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                 </CyDText>
               </CyDView>
             ) : (
-              <CyDText
-                className={clsx('font-[600] text-[14px] mr-[5px]', {
-                  'text-successTextGreen':
-                    type === CardTransactionTypes.CREDIT ||
-                    type === CardTransactionTypes.REFUND,
-                })}>
-                {getTransactionSign(type)}
-                {getSymbolFromCurrency(fxCurrencySymbol ?? 'USD') ??
-                  fxCurrencySymbol}{' '}
-                {limitDecimalPlaces(fxCurrencyValue ?? amount, 2)}{' '}
-              </CyDText>
+              <>
+                <CyDView className='flex flex-row items-center mb-[2px]'>
+                  <CyDText
+                    className={clsx('font-[600] text-[14px] mr-[5px]', {
+                      'text-successTextGreen':
+                        type === CardTransactionTypes.CREDIT ||
+                        type === CardTransactionTypes.REFUND,
+                    })}>
+                    {getTransactionSign(type)}
+                    {getSymbolFromCurrency(fxCurrencySymbol ?? 'USD') ??
+                      fxCurrencySymbol}{' '}
+                    {limitDecimalPlaces(fxCurrencyValue ?? amount, 2)}{' '}
+                  </CyDText>
+                </CyDView>
+                {isPotentiallyDccOvercharged(item) && (
+                  <CyDView className='flex flex-row items-center w-fit rounded-full bg-red20 px-[4px] py-[2px]'>
+                    <CyDMaterialDesignIcons
+                      name='alert-circle'
+                      size={12}
+                      className='text-red400 mr-[2px]'
+                    />
+                    <CyDText className='text-[10px] font-semibold text-red400'>
+                      {t('OVERCHARGED')}
+                    </CyDText>
+                  </CyDView>
+                )}
+              </>
             )}
           </CyDView>
-        </CyDView>
-        <CyDView className='flex flex-row justify-between items-center w-full'>
-          {item.metadata?.merchant?.merchantCountry &&
-            isPotentiallyDccOvercharged(item) && (
-              <CyDView className='bg-p10 rounded-full flex flex-row items-center px-[12px] py-[6px] mt-[8px] w-full'>
-                <CyDMaterialDesignIcons
-                  name='exclamation'
-                  size={14}
-                  className='text-red400 mr-[2px]'
-                />
-                <CyDText className='font-bold text-[12px] mr-[2px]'>
-                  {t('ATTENTION')}:
-                </CyDText>
-                <CyDText className='text-[12px] flex-1 flex-wrap'>
-                  {t('OVERCHARGED_BY_MERCHANT')}
-                </CyDText>
-              </CyDView>
-            )}
         </CyDView>
       </CyDTouchView>
     </>
