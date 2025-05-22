@@ -1590,7 +1590,8 @@ const resources = {
         'I certify that the information i have provided is accurate and that i will abide by all the rules and requirements related to my Cypher Card.',
       RAIN_SOLICITATION:
         'I acknowledge that applying for the Cypher Card does not constitute unauthorized solicitation',
-      CARD_OUT_OF_STOCK: 'Not yet available for your region',
+      CARD_OUT_OF_STOCK:
+        'Next batch is under production. Will be available soon',
       CONFIRM_REPORT_TRANSACTION:
         'Are you sure you want to report this transaction?',
       CARD_WILL_BE_FROZEN_WARNING:
@@ -1687,6 +1688,11 @@ const resources = {
       OVERCHARGED_BY_MERCHANT_TEXT: 'Overcharged by Merchant',
       HIGH_FOREX_FEE_INFO_TEXT_1:
         'High forex markup fee of 5% - 15% charged by the merchant. To avoid such high charges, always choose the local currency at the card terminal or during ATM withdrawals.',
+      METAL_OUT_OF_STOCK:
+        'Our new batch of metal cards is now in production! You’ll be able to order your free Premium metal card in 4–6 weeks. We’ll notify you as soon as it’s ready.',
+      YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY:
+        'Your Premium benefits begin right away.',
+      IMPORTANT: 'Important',
     },
   },
 };
