@@ -1073,12 +1073,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const RenderWarningMessage = useCallback(() => {
     if (selectedToken) {
-      console.log('selectedToken', selectedToken.accountType, selectedToken);
-      console.log('usdAmount', usdAmount);
-      console.log(
-        'decimal less than : ',
-        DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_HL_SPOT),
-      );
       const { symbol, backendName } = selectedToken.chainDetails;
       if (symbol && backendName) {
         let errorMessage = '';
@@ -1100,7 +1094,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           selectedToken.accountType === 'spot' &&
           DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_HL_SPOT)
         ) {
-          console.log('usdAmount', usdAmount, MINIMUM_TRANSFER_AMOUNT_HL_SPOT);
           errorMessage = `${t<string>('MINIMUM_AMOUNT_HL_SPOT')} $${MINIMUM_TRANSFER_AMOUNT_HL_SPOT}`;
         } else if (
           !usdAmount ||

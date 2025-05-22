@@ -1696,8 +1696,6 @@ const resources = {
       YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY:
         'Your Premium benefits begin right away.',
       IMPORTANT: 'Important',
-      OVERCHARGE_DCC_INFO_TEXT_2:
-        '💡 Pro tip: Choosing to pay in the local currency at stores or ATMs helps you avoid extra charges of up to 10–15%.',
       MAX_LOAD_LIMIT: 'You can load up to ${{maxLoadLimit}} in a single load.',
       LOAD_UP_TO: 'Load up to ${{maxLoadLimit}}',
       MINIMUM_AMOUNT_HL_SPOT:
