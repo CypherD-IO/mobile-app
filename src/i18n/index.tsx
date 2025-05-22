@@ -1657,7 +1657,7 @@ const resources = {
       LOAD_YOUR_CARD_DESCRIPTION:
         'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
-        'Load up your Cypher card and get ready to dive into the action! With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
+        'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
       NEXT: 'Next',
       ADDITIONAL_DOCUMENT_REQUIRED: 'Additional Document Required',
       ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION:
