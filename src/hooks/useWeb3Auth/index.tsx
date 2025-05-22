@@ -256,7 +256,7 @@ export default function useWeb3Auth() {
         network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
         privateKeyProvider: ethereumPrivateKeyProvider,
         sessionTime: 30 * 24 * 60 * 60,
-        mfaSettings,
+        // mfaSettings,
       }),
       web3AuthSolana: new Web3Auth(WebBrowser, EncryptedStorage, {
         clientId,
@@ -264,7 +264,7 @@ export default function useWeb3Auth() {
         network: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
         privateKeyProvider: solanaPrivateKeyProvider,
         sessionTime: 30 * 24 * 60 * 60,
-        mfaSettings,
+        // mfaSettings,
       }),
     };
   }, [baseChainConfig, solanaChainConfig, clientId, redirectUrl]);
