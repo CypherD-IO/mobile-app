@@ -1676,7 +1676,7 @@ const resources = {
       ATTENTION: 'ATTENTION',
       OVERCHARGED_BY_MERCHANT: "You've been overcharged by merchant",
       OVERCHARGE_DCC_INFO_TEXT_1:
-        'We’ve noticed that many of your recent transactions are incurring high foreign exchange fees likely because USD or HKD is being selected instead of the local currency.',
+        "We've noticed that many of your recent transactions are incurring high foreign exchange fees likely because USD or HKD is being selected instead of the local currency.",
       PRO_TIP: 'Pro tip:',
       DURING_A_TRANSACTION_OR_ATM_WITHDRAWAL:
         'During a transaction or ATM withdrawal:',
@@ -1696,6 +1696,12 @@ const resources = {
       YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY:
         'Your Premium benefits begin right away.',
       IMPORTANT: 'Important',
+      OVERCHARGE_DCC_INFO_TEXT_2:
+        '💡 Pro tip: Choosing to pay in the local currency at stores or ATMs helps you avoid extra charges of up to 10–15%.',
+      MAX_LOAD_LIMIT: 'You can load up to ${{maxLoadLimit}} in a single load.',
+      LOAD_UP_TO: 'Load up to ${{maxLoadLimit}}',
+      MINIMUM_AMOUNT_HL_SPOT:
+        'Minimum amount for Hyper Liquid Spot Token is ${{minAmount}}',
     },
   },
 };
