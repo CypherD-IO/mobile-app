@@ -663,7 +663,10 @@ export default function SelectPlanModal({
                   {t('COMPARISION_NOTE_3')}
                 </CyDText>
                 <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                  {t('COMPARISION_NOTE_4')}
+                  {t('COMPARISION_NOTE_4', {
+                    forexMarkupStandard: freePlanData?.fxMarkup,
+                    forexMarkupPremium: proPlanData?.fxMarkup,
+                  })}
                 </CyDText>
               </CyDTouchView>
             </CyDScrollView>

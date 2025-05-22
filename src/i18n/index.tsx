@@ -1152,7 +1152,7 @@ const resources = {
       COMPARISION_NOTE_3:
         '(3) Lower liquidity tokens may incur crypto load fees of up to 3%.',
       COMPARISION_NOTE_4:
-        '(4) Cypher charges a 1% forex markup for standard users and 0% for premium users. However, other financial institutions involved in processsing the transaction may charge extra fees of 0.25% to 1%, which are not controlled by Cypher.',
+        '(4) Cypher charges a {{forexMarkupStandard}}% forex markup for standard users and {{forexMarkupPremium}}% for premium users. However, other financial institutions involved in processsing the transaction may charge extra fees of 0.25% to 1%, which are not controlled by Cypher.',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
