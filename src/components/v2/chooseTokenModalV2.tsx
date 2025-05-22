@@ -35,6 +35,7 @@ import { SvgUri } from 'react-native-svg';
 import clsx from 'clsx';
 import { StyleSheet, Animated, StatusBar, Platform } from 'react-native';
 import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import usePortfolio from '../../hooks/usePortfolio';
 import { useGlobalModalContext } from './GlobalModal';
 import useAxios from '../../core/HttpRequest';
@@ -45,6 +46,7 @@ import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
 import { logAnalytics } from '../../core/analytics';
+import { formatCurrencyWithSuffix } from '../../core/util';
 
 interface TokenModal {
   tokenList?: Holding[];
@@ -52,6 +54,7 @@ interface TokenModal {
   setIsChooseTokenModalVisible: Dispatch<SetStateAction<boolean>>;
   minTokenValueLimit?: number;
   minTokenValueEth?: number;
+  minTokenValueHlSpot?: number;
   onSelectingToken: (token: Holding | SwapToken) => void;
   type?: TokenModalType;
   onCancel?: () => void;
@@ -70,6 +73,20 @@ interface SupportedToken extends Omit<Holding, 'totalValue' | 'balance'> {
   balance: string;
   contractAddress: string;
   coingeckoId: string;
+  isInfLimit: boolean;
+  maxQuoteLimit: number;
+}
+
+interface ISupportedToken {
+  coingeckoId: string;
+  tokenAddress: string;
+  decimals: number;
+  symbol: string;
+  name: string;
+  logo: string;
+  chain: string;
+  isInfLimit: boolean;
+  maxQuoteLimit: number;
 }
 
 interface PaginationState {
@@ -187,6 +204,7 @@ const RenderToken = React.memo(
     setModalVisible,
     minTokenValueLimit = 0,
     minTokenValueEth = 0,
+    minTokenValueHlSpot = 0,
     onSelectingToken,
     setErrorMessage,
     type,
@@ -197,18 +215,29 @@ const RenderToken = React.memo(
     setModalVisible: (visible: boolean) => void;
     minTokenValueLimit?: number;
     minTokenValueEth?: number;
+    minTokenValueHlSpot?: number;
     onSelectingToken: (token: Holding | SwapToken) => void;
     setErrorMessage: (errorMessage: string) => void;
     type?: TokenModalType;
   }) => {
-    const isEthereumToken =
-      type === TokenModalType.CARD_LOAD &&
-      item.chainDetails.chain_id === CHAIN_ETH.chain_id;
+    const { t } = useTranslation();
+    const getMinimumTokenValue = (token: Holding | SupportedToken) => {
+      if (
+        type === TokenModalType.CARD_LOAD &&
+        token.chainDetails.chain_id === CHAIN_ETH.chain_id
+      ) {
+        return minTokenValueEth;
+      } else if (
+        type === TokenModalType.CARD_LOAD &&
+        token.accountType === 'spot'
+      ) {
+        return minTokenValueHlSpot;
+      }
+      return minTokenValueLimit;
+    };
 
     // minvalue for eth is $50 check
-    const minimumValue = isEthereumToken
-      ? minTokenValueEth
-      : minTokenValueLimit;
+    const minimumValue = getMinimumTokenValue(item);
     const isDisabled = Number(item.totalValue) < minimumValue;
     const isSelected =
       item.symbol === selected?.symbol &&
@@ -294,10 +323,26 @@ const RenderToken = React.memo(
                   {item.name}
                 </CyDText>
               </CyDView>
-              <CyDText
-                className={'text-n200 text-[12px] font-nunito font-regular'}>
-                {item.chainDetails.name}
-              </CyDText>
+              <CyDView className='flex flex-row items-center'>
+                <CyDText
+                  className={'text-n200 text-[12px] font-nunito font-regular'}>
+                  {item.chainDetails.name}
+                </CyDText>
+                {item.isInfLimit && (
+                  <>
+                    <CyDView className='h-[6px] w-[6px] rounded-full bg-n200 mx-[6px]' />
+                    <CyDView className='px-2 bg-green400 rounded-full'>
+                      <CyDText className='text-white text-[10px] font-medium'>
+                        {t('LOAD_UP_TO', {
+                          maxLoadLimit: formatCurrencyWithSuffix(
+                            item.maxQuoteLimit,
+                          ),
+                        })}
+                      </CyDText>
+                    </CyDView>
+                  </>
+                )}
+              </CyDView>
             </CyDView>
           </CyDView>
         </CyDView>
@@ -334,6 +379,7 @@ const RenderToken = React.memo(
         nextProps.selected?.chainDetails.name &&
       prevProps.minTokenValueLimit === nextProps.minTokenValueLimit &&
       prevProps.minTokenValueEth === nextProps.minTokenValueEth &&
+      prevProps.minTokenValueHlSpot === nextProps.minTokenValueHlSpot &&
       prevProps.type === nextProps.type
     );
   },
@@ -423,7 +469,9 @@ const getTokenKey = (item: Holding | SupportedToken) => {
   const address =
     item.contractAddress ||
     (COSMOS_CHAINS.includes(item.chainDetails.chainName) ? item.denom : '');
-  const key = `${chainId}-${address}`;
+  const symbol = item.symbol || '';
+  const accountType = (item as any).accountType || '';
+  const key = `${chainId}-${address}-${symbol}-${accountType}`;
   return key;
 };
 
@@ -434,6 +482,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     tokenList,
     minTokenValueLimit = 0,
     minTokenValueEth = 0,
+    minTokenValueHlSpot = 0,
     onSelectingToken,
     type = TokenModalType.PORTFOLIO,
     noTokensAvailableMessage = t('NO_TOKENS_FOUND'),
@@ -521,7 +570,13 @@ export default function ChooseTokenModalV2(props: TokenModal) {
         .filter(token => token.isFundable)
         .forEach(token => {
           const key = getTokenKey(token);
-          uniqueTokens.set(key, token);
+          // If token already exists in the Map, merge properties
+          const existingToken = uniqueTokens.get(key);
+          const mergedToken = {
+            ...existingToken,
+            ...token,
+          };
+          uniqueTokens.set(key, mergedToken);
         });
 
       setCombinedTokensList(Array.from(uniqueTokens.values()));
@@ -596,24 +651,28 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       setIsLoading(true);
       const response = await getWithoutAuth('/v1/portfolio/supported-tokens');
       if (response.data) {
-        const transformedTokens: SupportedToken[] = response.data.map(token => {
-          const chainDetails = getChainDetails(token.chain);
+        const transformedTokens: SupportedToken[] = response.data.map(
+          (token: ISupportedToken) => {
+            const chainDetails = getChainDetails(token.chain);
 
-          return {
-            // Use token.tokenAddress instead of undefined
-            contractAddress: token.tokenAddress || token.address || '', // Fallback to empty string if both are undefined
-            symbol: token.symbol,
-            name: token.name,
-            logoUrl: token.logo,
-            decimals: token.decimals,
-            balanceDecimal: '0',
-            balance: '0',
-            totalValue: '0',
-            isSupported: true,
-            chainDetails,
-            coingeckoId: token.coingeckoId,
-          };
-        });
+            return {
+              // Use token.tokenAddress instead of undefined
+              contractAddress: token.tokenAddress || token.address || '', // Fallback to empty string if both are undefined
+              symbol: token.symbol,
+              name: token.name,
+              logoUrl: token.logo,
+              decimals: token.decimals,
+              balanceDecimal: '0',
+              balance: '0',
+              totalValue: '0',
+              isSupported: true,
+              chainDetails,
+              coingeckoId: token.coingeckoId,
+              isInfLimit: token.isInfLimit,
+              maxQuoteLimit: token.maxQuoteLimit,
+            };
+          },
+        );
 
         setSupportedTokens(transformedTokens);
       }
@@ -788,7 +847,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
             {totalHoldings.hyperliquidHoldings.map((token: Holding) => (
               <CyDTouchView
                 className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                key={token.symbol}
+                key={`${token.symbol}-${token.accountType || ''}`}
                 onPress={() => {
                   logAnalytics('hyperliquid', {
                     action: 'click spot token',
@@ -989,6 +1048,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                         setModalVisible={setIsChooseTokenModalVisible}
                         minTokenValueLimit={minTokenValueLimit}
                         minTokenValueEth={minTokenValueEth}
+                        minTokenValueHlSpot={minTokenValueHlSpot}
                         setErrorMessage={setErrorMessage}
                         type={type}
                       />

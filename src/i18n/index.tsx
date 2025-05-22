@@ -1657,7 +1657,7 @@ const resources = {
       LOAD_YOUR_CARD_DESCRIPTION:
         'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
-        'Load up your Cypher card and get ready to dive into the action! With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
+        'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
       NEXT: 'Next',
       ADDITIONAL_DOCUMENT_REQUIRED: 'Additional Document Required',
       ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION:
@@ -1676,7 +1676,7 @@ const resources = {
       ATTENTION: 'ATTENTION',
       OVERCHARGED_BY_MERCHANT: "You've been overcharged by merchant",
       OVERCHARGE_DCC_INFO_TEXT_1:
-        'We’ve noticed that many of your recent transactions are incurring high foreign exchange fees likely because USD or HKD is being selected instead of the local currency.',
+        "We've noticed that many of your recent transactions are incurring high foreign exchange fees likely because USD or HKD is being selected instead of the local currency.",
       PRO_TIP: 'Pro tip:',
       DURING_A_TRANSACTION_OR_ATM_WITHDRAWAL:
         'During a transaction or ATM withdrawal:',
@@ -1696,6 +1696,10 @@ const resources = {
       YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY:
         'Your Premium benefits begin right away.',
       IMPORTANT: 'Important',
+      MAX_LOAD_LIMIT: 'You can load up to ${{maxLoadLimit}} in a single load.',
+      LOAD_UP_TO: 'Load up to ${{maxLoadLimit}}',
+      MINIMUM_AMOUNT_HL_SPOT:
+        'Minimum amount for Hyper Liquid Spot Token is ${{minAmount}}',
     },
   },
 };

@@ -1315,3 +1315,17 @@ export function isPotentiallyDccOvercharged(txn: ICardTransaction): boolean {
     txn.tStatus !== ReapTxnStatus.DECLINED
   );
 }
+
+// Format currency with K, M, B suffixes
+export const formatCurrencyWithSuffix = (value: number): string => {
+  if (value >= 1000000000) {
+    return `${Math.round((value / 1000000000) * 10) / 10}B`;
+  }
+  if (value >= 1000000) {
+    return `${Math.round((value / 1000000) * 10) / 10}M`;
+  }
+  if (value >= 1000) {
+    return `${Math.round(value / 1000)}K`;
+  }
+  return `${value}`;
+};

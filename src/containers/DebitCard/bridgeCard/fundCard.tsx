@@ -15,6 +15,7 @@ import { screenTitle } from '../../../constants';
 import {
   CardFeePercentage,
   MINIMUM_TRANSFER_AMOUNT_ETH,
+  MINIMUM_TRANSFER_AMOUNT_HL_SPOT,
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
@@ -48,6 +49,7 @@ import {
   limitDecimalPlaces,
   parseErrorMessage,
   validateAmount,
+  formatCurrencyWithSuffix,
 } from '../../../core/util';
 import {
   CyDImage,
@@ -93,7 +95,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
-  const minTokenValueEth = 50;
+  const minTokenValueEth = MINIMUM_TRANSFER_AMOUNT_ETH;
+  const minTokenValueHlSpot = MINIMUM_TRANSFER_AMOUNT_HL_SPOT;
   const [selectedToken, setSelectedToken] = useState<
     Holding & IHyperLiquidHolding
   >();
@@ -1087,18 +1090,28 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         ) {
           errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
         } else if (
+          usdAmount &&
+          selectedToken.accountType === 'spot' &&
+          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_HL_SPOT)
+        ) {
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_HL_SPOT')} $${MINIMUM_TRANSFER_AMOUNT_HL_SPOT}`;
+        } else if (
           !usdAmount ||
           DecimalHelper.isLessThan(usdAmount, minTokenValueLimit)
         ) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
+          } else if (selectedToken.accountType === 'spot') {
+            errorMessage = `${t<string>('MINIMUM_AMOUNT_HL_SPOT', {
+              minAmount: String(MINIMUM_TRANSFER_AMOUNT_HL_SPOT),
+            })}`;
           } else {
             errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
           }
         }
 
         return (
-          <CyDView className='my-[8px]'>
+          <CyDView className='mt-[8px]'>
             <CyDText className='text-center text-red300 font-medium text-wrap'>
               {errorMessage}
             </CyDText>
@@ -1188,6 +1201,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
         minTokenValueEth={minTokenValueEth}
+        minTokenValueHlSpot={minTokenValueHlSpot}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);
@@ -1293,6 +1307,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     (selectedToken?.symbol ?? ' '))}
             </CyDText>
 
+            {selectedToken?.isInfLimit && (
+              <CyDView className='flex flex-row bg-green20 ml-3 mt-[8px] rounded-full justify-between items-center px-3 py-1 w-fit gap-x-1 m'>
+                <CyDMaterialDesignIcons
+                  name='check-circle'
+                  size={16}
+                  className='text-green400'
+                />
+
+                <CyDText className='text-green400 text-sm'>
+                  {t('MAX_LOAD_LIMIT', {
+                    maxLoadLimit: formatCurrencyWithSuffix(
+                      selectedToken?.maxQuoteLimit,
+                    ),
+                  })}
+                </CyDText>
+              </CyDView>
+            )}
             <RenderWarningMessage />
             {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
                 <CyDView className='mb-[2px]'>
@@ -1319,7 +1350,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='flex flex-row justify-evenly items-center'>
+        <CyDView className='flex flex-row justify-evenly items-center  mt-[12px]'>
           <CyDTouchView
             onPress={() => {
               onEnterAmount(suggestedAmounts.low);
