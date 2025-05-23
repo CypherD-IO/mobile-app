@@ -3,6 +3,7 @@ import React, {
   SetStateAction,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import {
@@ -40,6 +41,8 @@ import {
 } from '@react-navigation/native';
 import { parseErrorMessage } from '../core/util';
 import { CardDesign } from '../models/cardDesign.interface';
+import { IPlanData } from '../models/planData.interface';
+import Loading from '../containers/Loading';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -76,7 +79,7 @@ export default function SelectPlanModal({
     GlobalContext,
   ) as GlobalContextDef;
 
-  const { getWalletProfile } = useCardUtilities();
+  const { getWalletProfile, getPlanData } = useCardUtilities();
   const { getWithAuth, patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const [loading, setLoading] = useState(false);
@@ -103,23 +106,21 @@ export default function SelectPlanModal({
   const [showComparision, setShowComparision] = useState(false);
   const [consentModalVisible, setConsentModalVisible] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [planData, setPlanData] = useState<IPlanData | undefined>(undefined);
 
-  const planData = globalState.planInfo;
-  const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
-  const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
+  const freePlanData = useMemo(
+    () => get(planData, ['default', CypherPlanId.BASIC_PLAN]),
+    [planData],
+  );
+
+  const proPlanData = useMemo(
+    () => get(planData, ['default', CypherPlanId.PRO_PLAN]),
+    [planData],
+  );
+
   const [cardDesignData, setCardDesignData] = useState<CardDesign | undefined>(
     undefined,
   );
-
-  const forexSpend = useSharedValue(3000);
-  const forexMin = useSharedValue(0);
-  const forexMax = useSharedValue(10000);
-  const nonUsdcLoad = useSharedValue(1000);
-  const nonUsdcMin = useSharedValue(0);
-  const nonUsdcMax = useSharedValue(10000);
-  const usdcLoad = useSharedValue(5000);
-  const usdcMin = useSharedValue(0);
-  const usdcMax = useSharedValue(10000);
 
   useEffect(() => {
     if (openComparePlans) {
@@ -128,7 +129,14 @@ export default function SelectPlanModal({
   }, [openComparePlans]);
 
   useEffect(() => {
-    void getCardDesignValues();
+    const fetchPlanData = async () => {
+      setLoading(true);
+      const planDataValue = await getPlanData(globalState.token);
+      setPlanData(planDataValue);
+      await getCardDesignValues();
+      setLoading(false);
+    };
+    void fetchPlanData();
   }, []);
 
   useEffect(() => {
@@ -153,14 +161,14 @@ export default function SelectPlanModal({
       let proPlanCost = get(proPlanData, 'cost', 199);
 
       // Calculate costs for free plan
-      freePlanCost += annualLoadUSDC * (freePlanData.usdcFee / 100);
-      freePlanCost += annualLoadNonUSDC * (freePlanData.nonUsdcFee / 100);
-      freePlanCost += annualSpendNonUSD * (freePlanData.fxFeePc / 100);
-      if (isChecked.physicalCard) freePlanCost += freePlanData.physicalCardFee;
+      freePlanCost += annualLoadUSDC * (freePlanData?.usdcFee / 100);
+      freePlanCost += annualLoadNonUSDC * (freePlanData?.nonUsdcFee / 100);
+      freePlanCost += annualSpendNonUSD * (freePlanData?.fxFeePc / 100);
+      if (isChecked.physicalCard) freePlanCost += freePlanData?.physicalCardFee;
 
       // Calculate costs for pro plan
-      proPlanCost += annualLoadNonUSDC * (proPlanData.nonUsdcFee / 100);
-      proPlanCost += annualSpendNonUSD * (proPlanData.fxFeePc / 100);
+      proPlanCost += annualLoadNonUSDC * (proPlanData?.nonUsdcFee / 100);
+      proPlanCost += annualSpendNonUSD * (proPlanData?.fxFeePc / 100);
 
       // Calculate savings
       const savings = freePlanCost - proPlanCost;
@@ -293,7 +301,9 @@ export default function SelectPlanModal({
     }
   };
 
-  return (
+  return loading ? (
+    <Loading loadingText='' />
+  ) : (
     <CyDModalLayout
       isModalVisible={isModalVisible}
       style={styles.modalLayout}
@@ -1151,9 +1161,9 @@ export default function SelectPlanModal({
                   </CyDView>
                 </CyDView> */}
 
-                <CyDText className='my-[12px] font-semibold text-[14px] text-center'>
+                {/* <CyDText className='my-[12px] font-semibold text-[14px] text-center'>
                   Premium Benefits
-                </CyDText>
+                </CyDText> */}
 
                 <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
                   <CyDView>

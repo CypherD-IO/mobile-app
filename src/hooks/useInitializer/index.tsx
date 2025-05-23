@@ -404,12 +404,6 @@ export default function useInitializer() {
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
     });
-
-    const pData: IPlanDetails = await getPlanData(token);
-    globalContext.globalDispatch({
-      type: GlobalContextType.PLAN_INFO,
-      planInfo: pData,
-    });
   };
 
   const getAuthTokenData = async (
