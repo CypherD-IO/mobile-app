@@ -3,6 +3,7 @@ import React, {
   SetStateAction,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import {
@@ -39,6 +40,9 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { parseErrorMessage } from '../core/util';
+import { CardDesign } from '../models/cardDesign.interface';
+import { IPlanData } from '../models/planData.interface';
+import Loading from '../containers/Loading';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -75,7 +79,7 @@ export default function SelectPlanModal({
     GlobalContext,
   ) as GlobalContextDef;
 
-  const { getWalletProfile } = useCardUtilities();
+  const { getWalletProfile, getPlanData } = useCardUtilities();
   const { getWithAuth, patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const [loading, setLoading] = useState(false);
@@ -102,26 +106,38 @@ export default function SelectPlanModal({
   const [showComparision, setShowComparision] = useState(false);
   const [consentModalVisible, setConsentModalVisible] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [planData, setPlanData] = useState<IPlanData | undefined>(undefined);
 
-  const planData = globalState.planInfo;
-  const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
-  const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
+  const freePlanData = useMemo(
+    () => get(planData, ['default', CypherPlanId.BASIC_PLAN]),
+    [planData],
+  );
 
-  const forexSpend = useSharedValue(3000);
-  const forexMin = useSharedValue(0);
-  const forexMax = useSharedValue(10000);
-  const nonUsdcLoad = useSharedValue(1000);
-  const nonUsdcMin = useSharedValue(0);
-  const nonUsdcMax = useSharedValue(10000);
-  const usdcLoad = useSharedValue(5000);
-  const usdcMin = useSharedValue(0);
-  const usdcMax = useSharedValue(10000);
+  const proPlanData = useMemo(
+    () => get(planData, ['default', CypherPlanId.PRO_PLAN]),
+    [planData],
+  );
+
+  const [cardDesignData, setCardDesignData] = useState<CardDesign | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (openComparePlans) {
       setShowComparision(true);
     }
   }, [openComparePlans]);
+
+  useEffect(() => {
+    const fetchPlanData = async () => {
+      setLoading(true);
+      const planDataValue = await getPlanData(globalState.token);
+      setPlanData(planDataValue);
+      await getCardDesignValues();
+      setLoading(false);
+    };
+    void fetchPlanData();
+  }, []);
 
   useEffect(() => {
     calculateValue();
@@ -145,14 +161,14 @@ export default function SelectPlanModal({
       let proPlanCost = get(proPlanData, 'cost', 199);
 
       // Calculate costs for free plan
-      freePlanCost += annualLoadUSDC * (freePlanData.usdcFee / 100);
-      freePlanCost += annualLoadNonUSDC * (freePlanData.nonUsdcFee / 100);
-      freePlanCost += annualSpendNonUSD * (freePlanData.fxFeePc / 100);
-      if (isChecked.physicalCard) freePlanCost += freePlanData.physicalCardFee;
+      freePlanCost += annualLoadUSDC * (freePlanData?.usdcFee / 100);
+      freePlanCost += annualLoadNonUSDC * (freePlanData?.nonUsdcFee / 100);
+      freePlanCost += annualSpendNonUSD * (freePlanData?.fxFeePc / 100);
+      if (isChecked.physicalCard) freePlanCost += freePlanData?.physicalCardFee;
 
       // Calculate costs for pro plan
-      proPlanCost += annualLoadNonUSDC * (proPlanData.nonUsdcFee / 100);
-      proPlanCost += annualSpendNonUSD * (proPlanData.fxFeePc / 100);
+      proPlanCost += annualLoadNonUSDC * (proPlanData?.nonUsdcFee / 100);
+      proPlanCost += annualSpendNonUSD * (proPlanData?.fxFeePc / 100);
 
       // Calculate savings
       const savings = freePlanCost - proPlanCost;
@@ -189,6 +205,14 @@ export default function SelectPlanModal({
         Sentry.captureException(error);
         return 0;
       }
+    }
+  };
+
+  const getCardDesignValues = async () => {
+    const response = await getWithAuth('/v1/cards/designs');
+    if (!response.isError) {
+      const cardDesignValues: CardDesign = response.data;
+      setCardDesignData(cardDesignValues);
     }
   };
 
@@ -277,7 +301,9 @@ export default function SelectPlanModal({
     }
   };
 
-  return (
+  return loading ? (
+    <Loading loadingText='' />
+  ) : (
     <CyDModalLayout
       isModalVisible={isModalVisible}
       style={styles.modalLayout}
@@ -594,15 +620,15 @@ export default function SelectPlanModal({
                     <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                     {/* daily limit */}
                     <CyDText className='text-[12px] font-medium  text-center mt-[10px] h-[18px]'>
-                      {`$${freePlanData?.dailyLimit}`}
+                      {`$${freePlanData?.dailyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* montly limit */}
                     <CyDText className='text-[12px] font-medium  pl-[12px] text-center  mt-[10px] h-[18px]'>
-                      {`$${freePlanData?.monthlyLimit}`}
+                      {`$${freePlanData?.monthlyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* higher limit */}
                     <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
-                      {'🚫'}
+                      {'✅'}
                     </CyDText>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* countries supported */}
@@ -625,15 +651,15 @@ export default function SelectPlanModal({
                     <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                     {/* daily limit */}
                     <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
-                      {`$${proPlanData?.dailyLimit}`}
+                      {`$${proPlanData?.dailyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* montly limit */}
                     <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
-                      {`$${proPlanData?.monthlyLimit}`}
+                      {`$${proPlanData?.monthlyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* higher limit */}
                     <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
-                      {'✅ *'}
+                      {'✅'}
                     </CyDText>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* countries supported */}
@@ -739,15 +765,19 @@ export default function SelectPlanModal({
                 </CyDText>
               </CyDText>
             </CyDTouchView>
-            <CyDText className='px-[12px] text-[14px] my-[8px]'>
-              <CyDText className='font-bold underline'>
-                {t('IMPORTANT')}:
-              </CyDText>{' '}
-              {t('METAL_OUT_OF_STOCK')}
-            </CyDText>
-            <CyDText className='px-[12px] text-[14px] my-[8px]'>
-              {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
-            </CyDText>
+            {!get(cardDesignData, ['metal', 0, 'isStockAvailable'], true) && (
+              <>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  <CyDText className='font-bold underline'>
+                    {t('IMPORTANT')}:
+                  </CyDText>{' '}
+                  {t('METAL_OUT_OF_STOCK')}
+                </CyDText>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
+                </CyDText>
+              </>
+            )}
 
             <Button
               title={t('GET_PREMIUM')}
@@ -1131,9 +1161,9 @@ export default function SelectPlanModal({
                   </CyDView>
                 </CyDView> */}
 
-                <CyDText className='my-[12px] font-semibold text-[14px] text-center'>
+                {/* <CyDText className='my-[12px] font-semibold text-[14px] text-center'>
                   Premium Benefits
-                </CyDText>
+                </CyDText> */}
 
                 <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
                   <CyDView>

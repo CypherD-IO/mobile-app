@@ -1142,12 +1142,12 @@ const resources = {
       USAGE_DETAILS: 'Usage deatils',
       DAILY_LIMIT: 'Daily Limit',
       MONTHYL_LIMIT: 'Monthly Limit',
-      HIGHER_LIMIT: 'Higher Limit',
+      HIGHER_LIMIT: 'Higher Limit*',
       CARD_SPENDING_LIMIT: 'Card Spending limit',
       COUNTRIES_SUPPORTED: 'Countries supported',
       MERCHANTS_SUPPORTED: 'Merchants supported',
       COMPARISION_NOTE_1:
-        '(1) Users can request a higher spending limit. If you have specific requirements, reach out to support increasing your limit.',
+        '(1) Higher spending limit can be requested from the card control panel',
       COMPARISION_NOTE_2: '(2) Shipping Charges Apply for add on cards',
       COMPARISION_NOTE_3:
         '(3) Lower liquidity tokens may incur crypto load fees of up to 3%.',

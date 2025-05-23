@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import {
   CyDFastImage,
   CyDIcons,
@@ -39,6 +39,9 @@ import { MODAL_HIDE_TIMEOUT } from '../../../../core/Http';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import SelectPlanModal from '../../../../components/selectPlanModal';
 import { AnalyticEvent, logAnalytics } from '../../../../core/analytics';
+import useCardUtilities from '../../../../hooks/useCardUtilities';
+import { IPlanData } from '../../../../models/planData.interface';
+import Loading from '../../../../containers/Loading';
 
 interface RouteParams {
   cardMetaData: CardDesignCardMetaData;
@@ -152,19 +155,35 @@ export default function CardDescription() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const { showModal, hideModal } = useGlobalModalContext();
+  const { getPlanData } = useCardUtilities();
 
   const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
   const [openComparePlans, setOpenComparePlans] = useState(false);
+  const [planData, setPlanData] = useState<IPlanData | null>(null);
 
   const cardProfile: CardProfile | undefined = globalState?.cardProfile;
-  const planData = globalState.planInfo;
-  const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
+  const proPlanData = useMemo(
+    () => get(planData, ['default', CypherPlanId.PRO_PLAN]),
+    [planData],
+  );
+  const [loading, setLoading] = useState(false);
 
   const { currentCardProvider, cardMetaData, cardType, price, cardBalance } =
     route.params;
   const isPremiumPlan =
     get(cardProfile, ['planInfo', 'planId'], '') === CypherPlanId.PRO_PLAN;
   const cardId = get(cardProfile, [currentCardProvider, 'cards', 0, 'cardId']);
+
+  useEffect(() => {
+    void loadPlanData();
+  }, []);
+
+  const loadPlanData = async () => {
+    setLoading(true);
+    const data = await getPlanData(globalState.token);
+    setPlanData(data);
+    setLoading(false);
+  };
 
   const onPressFundCard = () => {
     navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
@@ -208,7 +227,9 @@ export default function CardDescription() {
     }
   };
 
-  return (
+  return loading ? (
+    <Loading loadingText='' />
+  ) : (
     <CyDView className='bg-n20 flex-1' style={{ paddingTop: top }}>
       <CyDTouchView
         onPress={() => navigation.goBack()}
@@ -337,7 +358,7 @@ export default function CardDescription() {
             <>
               <CyDView className='bg-p10 shadow-lg rounded-t-[18px] pb-[32px] px-[16px] pt-[16px]'>
                 <CyDText className='text-[12px] font-bold text-center mx-[20px]'>
-                  {`Unlock this metal card with our premium plan! Sign up now for just $${proPlanData.cost} and get the metal card for free.`}
+                  {`Unlock this metal card with our premium plan! Sign up now for just $${proPlanData?.cost} and get the metal card for free.`}
                 </CyDText>
                 <CyDView className='mt-[12px] flex flex-row justify-evenly items-center'>
                   <CyDTouchView
