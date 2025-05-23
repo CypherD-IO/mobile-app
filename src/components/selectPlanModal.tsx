@@ -620,15 +620,15 @@ export default function SelectPlanModal({
                     <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                     {/* daily limit */}
                     <CyDText className='text-[12px] font-medium  text-center mt-[10px] h-[18px]'>
-                      {`$${freePlanData?.dailyLimit}`}
+                      {`$${freePlanData?.dailyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* montly limit */}
                     <CyDText className='text-[12px] font-medium  pl-[12px] text-center  mt-[10px] h-[18px]'>
-                      {`$${freePlanData?.monthlyLimit}`}
+                      {`$${freePlanData?.monthlyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* higher limit */}
                     <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
-                      {'🚫'}
+                      {'✅'}
                     </CyDText>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* countries supported */}
@@ -651,15 +651,15 @@ export default function SelectPlanModal({
                     <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                     {/* daily limit */}
                     <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
-                      {`$${proPlanData?.dailyLimit}`}
+                      {`$${proPlanData?.dailyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* montly limit */}
                     <CyDText className='text-[12px] font-medium  pl-[12px] text-center mt-[10px] h-[18px]'>
-                      {`$${proPlanData?.monthlyLimit}`}
+                      {`$${proPlanData?.monthlyLimit?.toLocaleString('en-US')}`}
                     </CyDText>
                     {/* higher limit */}
                     <CyDText className='text-[12px] font-medium mt-[10px]  text-center pl-[12px] h-[18px]'>
-                      {'✅ *'}
+                      {'✅'}
                     </CyDText>
                     <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                     {/* countries supported */}
