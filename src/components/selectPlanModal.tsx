@@ -39,6 +39,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { parseErrorMessage } from '../core/util';
+import { CardDesign } from '../models/cardDesign.interface';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -106,6 +107,9 @@ export default function SelectPlanModal({
   const planData = globalState.planInfo;
   const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
   const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
+  const [cardDesignData, setCardDesignData] = useState<CardDesign | undefined>(
+    undefined,
+  );
 
   const forexSpend = useSharedValue(3000);
   const forexMin = useSharedValue(0);
@@ -122,6 +126,10 @@ export default function SelectPlanModal({
       setShowComparision(true);
     }
   }, [openComparePlans]);
+
+  useEffect(() => {
+    void getCardDesignValues();
+  }, []);
 
   useEffect(() => {
     calculateValue();
@@ -189,6 +197,14 @@ export default function SelectPlanModal({
         Sentry.captureException(error);
         return 0;
       }
+    }
+  };
+
+  const getCardDesignValues = async () => {
+    const response = await getWithAuth('/v1/cards/designs');
+    if (!response.isError) {
+      const cardDesignValues: CardDesign = response.data;
+      setCardDesignData(cardDesignValues);
     }
   };
 
@@ -739,15 +755,19 @@ export default function SelectPlanModal({
                 </CyDText>
               </CyDText>
             </CyDTouchView>
-            <CyDText className='px-[12px] text-[14px] my-[8px]'>
-              <CyDText className='font-bold underline'>
-                {t('IMPORTANT')}:
-              </CyDText>{' '}
-              {t('METAL_OUT_OF_STOCK')}
-            </CyDText>
-            <CyDText className='px-[12px] text-[14px] my-[8px]'>
-              {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
-            </CyDText>
+            {!get(cardDesignData, ['metal', 0, 'isStockAvailable'], true) && (
+              <>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  <CyDText className='font-bold underline'>
+                    {t('IMPORTANT')}:
+                  </CyDText>{' '}
+                  {t('METAL_OUT_OF_STOCK')}
+                </CyDText>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
+                </CyDText>
+              </>
+            )}
 
             <Button
               title={t('GET_PREMIUM')}
