@@ -237,6 +237,7 @@ export enum GlobalModalType {
   STATE = 'state',
   PROMPT_IMPORT_WALLET = 'promptImportWallet',
   REMOVE_WALLET = 'removeWallet',
+  REMOVE_SOCIAL_AUTH_WALLET = 'removeSocialAuthWallet',
   WALLET_CONNECT_V2_PAIRING = 'walletConnectV2Pairing',
   WALLET_CONNECT_V2_SIGNING = 'walletConnectV2Signing',
   WALLET_CONNECT_V2_TYPED_SIGNING = 'walletConnectV2TypedSigning',
@@ -344,6 +345,8 @@ export enum ConnectionTypes {
   PRIVATE_KEY = 'privateKey',
   WALLET_CONNECT = 'walletConnect',
   WALLET_CONNECT_WITHOUT_SIGN = 'walletConnectWithoutSign',
+  SOCIAL_LOGIN_EVM = 'socialLoginEvm',
+  SOCIAL_LOGIN_SOLANA = 'socialLoginSolana',
 }
 
 export enum CARD_ALERT_TYPES {
@@ -364,6 +367,8 @@ export enum CARD_NOTIFICATION_TYPES {
 export enum SECRET_TYPES {
   MENEMONIC = 'mnemonic',
   PRIVATE_KEY = 'privateKey',
+  SOCIAL_LOGIN_EVM = 'socialLoginEvm',
+  SOCIAL_LOGIN_SOLANA = 'socialLoginSolana',
 }
 
 export enum CardReferralStatus {
@@ -508,4 +513,10 @@ export enum HyperLiquidAccount {
 export enum HyperLiquidTransfers {
   SPOT_TRANSFER = 'spotTransfer',
   PERPETUAL_TRANSFER = 'internalTransfer',
+}
+export enum EcosystemsEnum {
+  COSMOS = 'cosmos',
+  EVM = 'evm',
+  TRON = 'tron',
+  SOLANA = 'solana',
 }

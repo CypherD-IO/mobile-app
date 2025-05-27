@@ -1,4 +1,62 @@
-import React, { useContext, useEffect, useState } from 'react';
+import Intercom from '@intercom/intercom-react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import clsx from 'clsx';
+import { get, isEmpty } from 'lodash';
+import moment from 'moment';
+import { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import AppImages from '../../../../assets/images/appImages';
+import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
+import CardProviderSwitch from '../../../components/cardProviderSwitch';
+import GradientText from '../../../components/gradientText';
+import SelectPlanModal from '../../../components/selectPlanModal';
+import CardTransactionItem from '../../../components/v2/CardTransactionItem';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import OverchargeDccInfoModal from '../../../components/v2/OverchargeDccInfoModal';
+import Button from '../../../components/v2/button';
+import Loading from '../../../components/v2/loading';
+import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
+import { screenTitle } from '../../../constants';
+import {
+  DateRange,
+  STATUSES,
+  TYPES,
+  initialCardTxnDateRange,
+} from '../../../constants/cardPageV2';
+import {
+  ACCOUNT_STATUS,
+  ButtonType,
+  CARD_IDS,
+  CardApplicationStatus,
+  CardProviders,
+  CardTransactionStatuses,
+  CardTransactionTypes,
+  CypherPlanId,
+  GlobalContextType,
+} from '../../../constants/enum';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
+import useAxios from '../../../core/HttpRequest';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import {
+  getOverchargeDccInfoModalShown,
+  getRainTerms,
+} from '../../../core/asyncStorage';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import { isPotentiallyDccOvercharged } from '../../../core/util';
+import useCardUtilities from '../../../hooks/useCardUtilities';
+import { Card, ICardTransaction } from '../../../models/card.model';
+import { CardDesign } from '../../../models/cardDesign.interface';
+import { CardProfile } from '../../../models/cardProfile.model';
 import {
   CyDFastImage,
   CyDLottieView,
@@ -9,70 +67,8 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import AppImages from '../../../../assets/images/appImages';
-import {
-  ACCOUNT_STATUS,
-  ButtonType,
-  CARD_IDS,
-  CardApplicationStatus,
-  CardDesignType,
-  CardProviders,
-  CardTransactionStatuses,
-  CardTransactionTypes,
-  CypherPlanId,
-  GlobalContextType,
-  PhysicalCardType,
-  ReapTxnStatus,
-} from '../../../constants/enum';
 import CardScreen from '../bridgeCard/card';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useIsFocused,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import { useTranslation } from 'react-i18next';
-import Button from '../../../components/v2/button';
-import { screenTitle } from '../../../constants';
-import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
-import { CardProfile } from '../../../models/cardProfile.model';
-import { get, isEmpty } from 'lodash';
-import useAxios from '../../../core/HttpRequest';
-import * as Sentry from '@sentry/react-native';
-import CardTransactionItem from '../../../components/v2/CardTransactionItem';
 import CardTxnFilterModal from './CardTxnFilterModal';
-import { Card, ICardTransaction } from '../../../models/card.model';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import {
-  DateRange,
-  STATUSES,
-  TYPES,
-  initialCardTxnDateRange,
-} from '../../../constants/cardPageV2';
-import Loading from '../../../components/v2/loading';
-import { StyleSheet } from 'react-native';
-import CardProviderSwitch from '../../../components/cardProviderSwitch';
-import useCardUtilities from '../../../hooks/useCardUtilities';
-import clsx from 'clsx';
-import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
-import { CardDesign } from '../../../models/cardDesign.interface';
-import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
-import Intercom from '@intercom/intercom-react-native';
-import GradientText from '../../../components/gradientText';
-import LinearGradient from 'react-native-linear-gradient';
-import SelectPlanModal from '../../../components/selectPlanModal';
-import moment from 'moment';
-import analytics from '@react-native-firebase/analytics';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
-import {
-  getOverchargeDccInfoModalShown,
-  getRainTerms,
-  setOverchargeDccInfoModalShown,
-} from '../../../core/asyncStorage';
-import OverchargeDccInfoModal from '../../../components/v2/OverchargeDccInfoModal';
-import { isPotentiallyDccOvercharged } from '../../../core/util';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -845,7 +841,9 @@ export default function CypherCardScreen() {
                 type={ButtonType.DARK}
                 onPress={() => {
                   setPlanChangeModalVisible(true);
-                  void analytics().logEvent('explore_premium_card_page_cta');
+                  void logAnalyticsToFirebase(
+                    AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,
+                  );
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black'
                 titleStyle='text-[14px] text-white font-semibold'

@@ -36,6 +36,7 @@ import useAxios from '../../core/HttpRequest';
 import {
   ActivityContext,
   formatAmount,
+  getAvailableChains,
   getViemPublicClient,
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
@@ -63,7 +64,6 @@ import {
 import BridgeRoutePreview from './bridgePreview';
 import TokenSelectionV2 from './tokenSelection';
 
-import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { Transaction } from '@solana/web3.js';
 import clsx from 'clsx';
@@ -87,7 +87,11 @@ import Button from '../../components/v2/button';
 import SignatureModal from '../../components/v2/signatureModal';
 import CyDSkeleton from '../../components/v2/skeleton';
 import { screenTitle } from '../../constants';
-import { AnalyticsType, ButtonType } from '../../constants/enum';
+import {
+  AnalyticsType,
+  ButtonType,
+  ConnectionTypes,
+} from '../../constants/enum';
 import {
   ALL_CHAINS,
   CAN_ESTIMATE_L1_FEE_CHAINS,
@@ -127,6 +131,8 @@ import {
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
+import useConnectionManager from '../../hooks/useConnectionManager';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -204,6 +210,7 @@ const Bridge: React.FC = () => {
     swapTokens,
     checkIfAllowanceIsEnough,
   } = useTransactionManager();
+  const { connectionType } = useConnectionManager();
   const { getGasPrice } = useGasService();
   const globalStateContext = useContext(GlobalContext) as GlobalContextDef;
   const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
@@ -215,7 +222,8 @@ const Bridge: React.FC = () => {
   const { getNativeToken } = usePortfolio();
   const { refreshPortfolio } = usePortfolioRefresh();
   const slippage = 0.4;
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const ethereum = get(hdWallet, 'state.wallet.ethereum', '');
+  const ethereumAddress = get(ethereum, 'address', '');
 
   const [chainData, setChainData] = useState<SwapBridgeChainData[]>([]);
   const [tokenData, setTokenData] = useState<
@@ -307,8 +315,20 @@ const Bridge: React.FC = () => {
 
   const fetchChainData = async () => {
     const chainResult = await getWithAuth('/v1/swap/chains');
-    setChainData(chainResult.data);
-    setSelectedFromChain(chainResult.data[0]);
+    const availableChains = getAvailableChains(hdWallet);
+
+    const filteredChainData = bridgeState.chainData.filter(
+      (chain: SwapBridgeChainData) =>
+        availableChains.some(
+          availableChain =>
+            availableChain.chainIdNumber.toString() ===
+              chain.chainId.toLowerCase() ||
+            availableChain.chain_id.toString() === chain.chainId.toLowerCase(),
+        ),
+    );
+
+    setChainData(filteredChainData);
+
     bridgeDispatch({
       type: BridgeReducerAction.SUCCESS,
       payload: {
@@ -394,12 +414,27 @@ const Bridge: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (bridgeState.status === BridgeStatus.ERROR) void fetchData();
-      else {
+      if (bridgeState.status === BridgeStatus.ERROR) {
+        void fetchData();
+      } else {
         setIndex(0);
-        setChainData(bridgeState.chainData);
+        const availableChains = getAvailableChains(hdWallet);
+
+        const filteredChainData = bridgeState.chainData.filter(
+          (chain: SwapBridgeChainData) =>
+            availableChains.some(
+              availableChain =>
+                availableChain.chainIdNumber.toString() ===
+                  chain.chainId.toLowerCase() ||
+                availableChain.chain_id.toString() ===
+                  chain.chainId.toLowerCase(),
+            ),
+        );
+
+        setChainData(filteredChainData);
+        const chainDataSelected = filteredChainData[0];
         setTokenData(bridgeState.tokenData);
-        setChainData(bridgeState.chainData);
+
         if (routeParamsTokenData?.chainDetails) {
           const selectedChain = bridgeState.chainData.find(
             chain =>
@@ -409,7 +444,7 @@ const Bridge: React.FC = () => {
           );
           setSelectedFromChain(selectedChain ?? bridgeState.chainData[0]);
         } else {
-          setSelectedFromChain(bridgeState.chainData[0]);
+          setSelectedFromChain(chainDataSelected);
         }
       }
     }, []),
@@ -1063,7 +1098,7 @@ const Bridge: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        void analytics().logEvent('SWAP_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.SWAP_QUOTE_ERROR, {
           error: quoteError,
         });
         Sentry.captureException(quoteError);
@@ -1101,7 +1136,7 @@ const Bridge: React.FC = () => {
         // Handle other errors
 
         setError(quoteError?.message);
-        void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_QUOTE_ERROR, {
           error: quoteError,
         });
         Sentry.captureException(quoteError);
@@ -1177,7 +1212,7 @@ const Bridge: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_QUOTE_ERROR, {
           error: e,
         });
         Sentry.captureException(e);
@@ -1333,7 +1368,7 @@ const Bridge: React.FC = () => {
         onFailure: navigateToPortfolio,
       });
 
-      void analytics().logEvent('BRIDGE_SUCCESS');
+      void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_SUCCESS);
       void refreshPortfolio();
     } catch (e: unknown) {
       const errMsg = parseErrorMessage(e);
@@ -1355,7 +1390,7 @@ const Bridge: React.FC = () => {
       });
 
       if (!errMsg.includes('reject')) {
-        void analytics().logEvent('BRIDGE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.BRIDGE_ERROR, {
           error: e,
         });
         Sentry.captureException(e);
@@ -1399,7 +1434,7 @@ const Bridge: React.FC = () => {
               publicClient,
               evmTx,
               selectedFromToken,
-              walletAddress: ethereum.address as `0x${string}`,
+              walletAddress: ethereumAddress as `0x${string}`,
               setApproveModalVisible,
               showModalAndGetResponse,
               setApproveParams,
@@ -1726,7 +1761,7 @@ const Bridge: React.FC = () => {
         ? '0x0000000000000000000000000000000000000000'
         : selectedToToken.tokenContract,
       slippage,
-      walletAddress: ethereum.address,
+      walletAddress: ethereumAddress,
     };
 
     const response = await postWithAuth(
@@ -1777,7 +1812,7 @@ const Bridge: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        void analytics().logEvent('SWAP_QUOTE_ERROR', {
+        void logAnalyticsToFirebase(AnalyticEvent.SWAP_QUOTE_ERROR, {
           error: err,
         });
         Sentry.captureException(err);
@@ -1836,7 +1871,7 @@ const Bridge: React.FC = () => {
                     publicClient,
                     tokenContractAddress:
                       selectedFromToken.tokenContract as `0x${string}`,
-                    walletAddress: (ethereum.address ?? '') as `0x${string}`,
+                    walletAddress: (ethereumAddress ?? '') as `0x${string}`,
                     contractData,
                     chainDetails: fromChainDetails,
                     tokens: allowanceResp.tokens,
@@ -2003,7 +2038,7 @@ const Bridge: React.FC = () => {
               selectedToUsdAmount: usdAmountOut,
             },
           });
-          void analytics().logEvent('SWAP_SUCCESS');
+          void logAnalyticsToFirebase(AnalyticEvent.SWAP_SUCCESS);
           void refreshPortfolio();
         } else {
           activityContext.dispatch({
@@ -2040,7 +2075,7 @@ const Bridge: React.FC = () => {
               selectedToUsdAmount: usdAmountOut,
             },
           });
-          void analytics().logEvent('SWAP_ERROR', {
+          void logAnalyticsToFirebase(AnalyticEvent.SWAP_ERROR, {
             error: response.error,
           });
           Sentry.captureException(response.error);
@@ -2075,7 +2110,7 @@ const Bridge: React.FC = () => {
           selectedToUsdAmount: usdAmountOut,
         },
       });
-      void analytics().logEvent('SWAP_ERROR', {
+      void logAnalyticsToFirebase(AnalyticEvent.SWAP_ERROR, {
         error: err,
       });
       Sentry.captureException(err);
@@ -2363,7 +2398,7 @@ const Bridge: React.FC = () => {
           );
 
           const gasLimit = await publicClient.estimateGas({
-            account: ethereum.address as `0x${string}`,
+            account: ethereumAddress as `0x${string}`,
             to: approval.token_contract as `0x${string}`,
             value: parseEther('0'),
             data: contractData,
@@ -2377,7 +2412,7 @@ const Bridge: React.FC = () => {
           ) {
             gasFeeReserveRequired = await estimateReserveFeeForCustomContract({
               tokenData: nativeToken,
-              fromAddress: hdWallet.state.wallet.ethereum.address,
+              fromAddress: ethereumAddress,
               toAddress: get(approval, 'spender', ''),
               rpc: getWeb3Endpoint(selectedChainDetails, globalContext),
               gas: toHex(gasLimit),
@@ -2421,7 +2456,7 @@ const Bridge: React.FC = () => {
               contractData,
               chainDetails: selectedChainDetails,
               tokens: allowanceResp.tokens,
-              walletAddress: ethereum.address as `0x${string}`,
+              walletAddress: ethereumAddress as `0x${string}`,
               isErc20: !selectedFromToken.isNative,
             });
 

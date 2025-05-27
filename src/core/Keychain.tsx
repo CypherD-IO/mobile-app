@@ -43,11 +43,11 @@ import { isIOS } from '../misc/checkers';
 import {
   setSchemaVersion,
   getSchemaVersion,
-  clearAllData as clearAsyncStorage,
   getCyRootData,
   setCyRootData,
   removeCyRootData,
   setConnectionType,
+  getConnectionType,
 } from './asyncStorage';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
@@ -55,6 +55,7 @@ import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import {
   ConnectionTypes,
+  EcosystemsEnum,
   SECRET_TYPES,
   SignMessageValidationType,
 } from '../constants/enum';
@@ -67,9 +68,12 @@ import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as bip39 from 'bip39';
 import { Keypair } from '@solana/web3.js';
-import { createWalletClient, Hex, http } from 'viem';
+import { createWalletClient, custom, Hex, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mainnet } from 'viem/chains';
+import * as nacl from 'tweetnacl';
+import * as bs58 from 'bs58';
+import { get } from 'lodash';
 import { HDKey } from 'micro-ed25519-hdkey';
 
 // increase this when you want the CyRootData to be reconstructed
@@ -80,8 +84,8 @@ export async function saveCredentialsToKeychain(
   wallet: any,
   secretType: SECRET_TYPES,
 ) {
-  await clearAsyncStorage();
-  await removeCredentialsFromKeychain();
+  // await clearAsyncStorage();
+  // await removeCredentialsFromKeychain();
   if (secretType === SECRET_TYPES.MENEMONIC) {
     void setConnectionType(ConnectionTypes.SEED_PHRASE);
   } else if (secretType === SECRET_TYPES.PRIVATE_KEY) {
@@ -122,12 +126,11 @@ export async function saveCredentialsToKeychain(
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
       value: {
-        address: account.address,
-        // privateKey: account.privateKey,
+        address: account.address ?? '',
         chain: account.name,
-        publicKey: account.publicKey,
+        publicKey: account.publicKey ?? '',
         rawAddress: account.rawAddress,
-        algo: account.algo,
+        algo: account.algo ?? '',
       },
     });
   });
@@ -138,6 +141,8 @@ export async function removeCredentialsFromKeychain() {
   await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
   // Reset Private Key
   await removeFromKeyChain(CYPHERD_PRIVATE_KEY);
+  // Reset Pin Authentication
+  await removeFromKeyChain(PIN_AUTH);
   // Remove cypherD root data
   // await removeFromKeyChain(CYPHERD_ROOT_DATA);
   await removeCyRootData();
@@ -287,7 +292,11 @@ export async function loadRecoveryPhraseFromKeyChain(
     forceCloseOnFailure,
     showModal,
   );
-  if (mnemonic && (await isPinAuthenticated())) {
+  if (
+    mnemonic &&
+    mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+    (await isPinAuthenticated())
+  ) {
     mnemonic = decryptMnemonic(mnemonic, pin);
   }
   return mnemonic;
@@ -303,7 +312,11 @@ export async function loadPrivateKeyFromKeyChain(
     forceCloseOnFailure,
     showModal,
   );
-  if (privateKey && (await isPinAuthenticated())) {
+  if (
+    privateKey &&
+    privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+    (await isPinAuthenticated())
+  ) {
     privateKey = decryptMnemonic(privateKey, pin);
   }
   return privateKey;
@@ -323,28 +336,28 @@ export async function loadCyRootData(hdWallet: any) {
   // Update schemaVersion whenever adding a new address generation logic
 
   // Specifically for BUILD 2.48 (remove in subsequent builds)
-  if (await isPinAuthenticated()) {
-    const privateKeyFromKeychain = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
-    const privateKeyFromKeychainWithPinAuth = await loadPrivateKeyFromKeyChain(
-      false,
-      hdWallet.pinValue,
-    );
-    if (
-      privateKeyFromKeychain !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-      !privateKeyFromKeychainWithPinAuth
-    ) {
-      const unEncryptedPrivateKey = privateKeyFromKeychain;
-      if (unEncryptedPrivateKey) {
-        await saveToKeychain(
-          CYPHERD_PRIVATE_KEY,
-          CryptoJS.AES.encrypt(
-            unEncryptedPrivateKey,
-            hdWallet.pinValue,
-          ).toString(),
-        );
-      }
-    }
-  }
+  // if (await isPinAuthenticated()) {
+  //   const privateKeyFromKeychain = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
+  //   const privateKeyFromKeychainWithPinAuth = await loadPrivateKeyFromKeyChain(
+  //     false,
+  //     hdWallet.pinValue,
+  //   );
+  //   if (
+  //     privateKeyFromKeychain !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+  //     !privateKeyFromKeychainWithPinAuth
+  //   ) {
+  //     const unEncryptedPrivateKey = privateKeyFromKeychain;
+  //     if (unEncryptedPrivateKey) {
+  //       await saveToKeychain(
+  //         CYPHERD_PRIVATE_KEY,
+  //         CryptoJS.AES.encrypt(
+  //           unEncryptedPrivateKey,
+  //           hdWallet.pinValue,
+  //         ).toString(),
+  //       );
+  //     }
+  //   }
+  // }
 
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
@@ -393,7 +406,12 @@ export async function loadCyRootData(hdWallet: any) {
   const defaultData = constructRootData([
     {
       name: 'ethereum',
-      address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+      address: undefined,
+      publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+    },
+    {
+      name: 'solana',
+      address: undefined,
       publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
     },
   ]);
@@ -526,28 +544,41 @@ export async function getSignerClient(
 
 export const getSolanaWallet = async (hdWallet: any) => {
   try {
-    const seedPhrase = await loadRecoveryPhraseFromKeyChain(
-      false,
-      hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
-    );
+    const connectionType = await getConnectionType();
+    if (connectionType === ConnectionTypes.SEED_PHRASE) {
+      const seedPhrase = await loadRecoveryPhraseFromKeyChain(
+        false,
+        hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
+      );
 
-    if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
-      const seed = bip39.mnemonicToSeedSync(seedPhrase);
+      if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
+        const seed = bip39.mnemonicToSeedSync(seedPhrase);
 
-      if (!seed) {
-        throw new Error('Invalid seed');
+        if (!seed) {
+          throw new Error('Invalid seed');
+        }
+
+        const hd = HDKey.fromMasterSeed(seed.toString('hex'));
+
+        const path =
+          hdWallet?.state?.choosenWalletIndex > 0
+            ? `m/44'/501'/${String(hdWallet?.state?.choosenWalletIndex)}'/0'`
+            : "m/44'/501'/0'/0'";
+
+        const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
+        return keypair;
       }
-
-      const hd = HDKey.fromMasterSeed(seed.toString('hex'));
-
-      const path =
-        hdWallet?.state?.choosenWalletIndex > 0
-          ? `m/44'/501'/${String(hdWallet?.state?.choosenWalletIndex)}'/0'`
-          : "m/44'/501'/0'/0'";
-
-      const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
-
-      return keypair;
+    } else {
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        false,
+        hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
+      );
+      if (privateKey) {
+        const secret = privateKey.startsWith('0x')
+          ? Buffer.from(privateKey, 'hex')
+          : bs58.default.decode(privateKey);
+        return Keypair.fromSecretKey(secret);
+      }
     }
   } catch (e) {
     Sentry.captureException(e);
@@ -653,36 +684,68 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
 }
 
 export async function signIn(
-  ethereum: { address: string },
   hdWallet: HdWalletContextDef,
-  setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+  setShowDefaultAuthRemoveModal?: Dispatch<SetStateAction<boolean>>,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
+    const ethereumAddress = get(
+      hdWallet,
+      'state.wallet.ethereum.address',
+      undefined,
+    );
+    const solanaAddress = get(
+      hdWallet,
+      'state.wallet.solana.address',
+      undefined,
+    );
+    const address = ethereumAddress ?? solanaAddress ?? '';
+    let ecosystem = EcosystemsEnum.EVM;
+    if (solanaAddress) {
+      ecosystem = EcosystemsEnum.SOLANA;
+    }
+
     const { data } = await axios.get(
-      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+      `${ARCH_HOST}/v1/authentication/sign-message/${address}/${ecosystem}`,
     );
     const verifyMessage = data.message;
-    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
+    const validationResponse = isValidMessage(
+      address,
+      verifyMessage,
+      ecosystem,
+    );
     if (validationResponse.message === SignMessageValidationType.VALID) {
-      const walletClient = createWalletClient({
-        chain: mainnet,
-        transport: http(''),
-      });
       const privateKey = await loadPrivateKeyFromKeyChain(
         true,
         hdWallet.state.pinValue,
-        () => setShowDefaultAuthRemoveModal(true),
+        () => setShowDefaultAuthRemoveModal?.(true),
       );
       if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        const account = privateKeyToAccount(privateKey as Hex);
-        const signature = await walletClient.signMessage({
-          account,
-          message: verifyMessage,
-        });
+        let signature;
+        if (ecosystem === EcosystemsEnum.EVM) {
+          const walletClient = createWalletClient({
+            chain: mainnet,
+            transport: custom({ request: async () => undefined }), // no network calls
+          });
+          const account = privateKeyToAccount(privateKey as Hex);
+          signature = await walletClient.signMessage({
+            account,
+            message: verifyMessage,
+          });
+        } else if (ecosystem === EcosystemsEnum.SOLANA) {
+          const keypair = Keypair.fromSecretKey(
+            bs58.default.decode(privateKey),
+          );
+          const messageBytes = new TextEncoder().encode(verifyMessage);
+          const signatureBytes = nacl.sign.detached(
+            messageBytes,
+            keypair.secretKey,
+          );
+          signature = Array.from(signatureBytes);
+        }
 
         const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
+          `${ARCH_HOST}/v1/authentication/verify-message/${address}/${ecosystem}`,
           {
             signature,
           },

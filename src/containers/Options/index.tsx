@@ -34,7 +34,7 @@ import { screenTitle } from '../../constants/index';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
-import { logAnalytics } from '../../core/analytics';
+import { logAnalyticsToFirebase } from '../../core/analytics';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import {
   NavigationProp,
@@ -86,11 +86,8 @@ export default function Options() {
   const insets = useSafeAreaInsets();
 
   const [clickCount, setClickCount] = useState(0);
-  const [title, setTitle] = useState('');
-  const [ens, setEns] = useState(false);
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
   const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } =
     hdWalletContext.state;
   const activityContext = useContext<any>(ActivityContext);
@@ -99,11 +96,10 @@ export default function Options() {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
-  const { connectionType } = useConnectionManager();
+  const { connectionType, getSocialAuthProvider } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
-  const resolveDomain = useEns()[1];
-  const { getWalletProfile, isLegacyCardClosed } = useCardUtilities();
+  const { isLegacyCardClosed } = useCardUtilities();
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   useEffect(() => {
@@ -141,26 +137,6 @@ export default function Options() {
     return sortedAsc[sortedAsc.length - 1].datetime > lastVisited;
   };
 
-  useEffect(() => {
-    const getTitleValue = async () => {
-      const profileData = await getWalletProfile(
-        globalContext.globalState.token,
-      );
-      const ens = await resolveDomain(ethereum.address, CHAIN_ETH.backendName);
-      if (get(profileData, ['child'])) {
-        setTitle(t('LINKED_WALLET'));
-      } else if (ens) {
-        setTitle(ens);
-      } else if (isReadOnlyWallet) {
-        setTitle(t('WALLET'));
-      } else {
-        setTitle(t('MY_WALLET'));
-      }
-    };
-
-    void getTitleValue();
-  });
-
   // const referToFriend = () => {
   //   onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'))
   //     .then(() => {})
@@ -179,12 +155,6 @@ export default function Options() {
                 size={20}
                 className='text-base400 mr-[5px] self-center'
               />
-            )}
-
-            {ens && (
-              <CyDText className='text-[10px] font-semibold  bg-p50 px-[2px] mt-[3px] ml-[4px] pb-[25px]'>
-                {ens}
-              </CyDText>
             )}
           </CyDView>
 
@@ -295,7 +265,7 @@ export default function Options() {
             <OptionsContainer
               sentryLabel={'browser'}
               onPress={() => {
-                logAnalytics('broswerClick', {});
+                logAnalyticsToFirebase('broswerClick', {});
                 navigation.navigate(C.screenTitle.BROWSER);
               }}
               title={t('BROWSER')}

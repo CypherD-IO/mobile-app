@@ -4,7 +4,6 @@ import { NFTHolding } from '../../models/NFTHolding.interface';
 import {
   CyDFastImage,
   CyDIcons,
-  CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -13,7 +12,6 @@ import {
 import { Chain } from '../../constants/server';
 import { screenTitle } from '../../constants';
 import { getChain } from '../../core/util';
-import analytics from '@react-native-firebase/analytics';
 import {
   NavigationProp,
   ParamListBase,
@@ -22,7 +20,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDIconsPack } from '../../customFonts';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface RouteParams {
   nftHoldings: NFTHolding[];
@@ -35,7 +33,7 @@ export function NFTHoldingsScreen() {
   const { nftHoldings } = route.params;
 
   useEffect(() => {
-    void analytics().logEvent('visited_nft_holdings_screen');
+    void logAnalyticsToFirebase(AnalyticEvent.VISITED_NFT_HOLDINGS_SCREEN);
     const [nftHolding] = nftHoldings;
     navigation.setOptions({
       title:

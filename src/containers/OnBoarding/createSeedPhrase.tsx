@@ -1,7 +1,29 @@
-import * as React from 'react';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BackHandler, NativeModules, StyleSheet } from 'react-native';
+import bip39 from 'react-native-bip39';
+import Toast from 'react-native-toast-message';
+import Button from '../../components/v2/button';
+import Loading from '../../components/v2/loading';
+import CyDModalLayout from '../../components/v2/modal';
+import ReadOnlySeedPhraseBlock from '../../components/v2/readOnlySeedPhraseBlock';
+import { ButtonType, SECRET_TYPES, SeedPhraseType } from '../../constants/enum';
+import { generateWalletFromMnemonic } from '../../core/Address';
+import { setSkipSeedConfirmation } from '../../core/asyncStorage';
+import { INFO_WAITING_TIMEOUT } from '../../core/Http';
+import { saveCredentialsToKeychain } from '../../core/Keychain';
+import { HdWalletContext, shuffleSeedPhrase } from '../../core/util';
+import { isAndroid } from '../../misc/checkers';
 import {
   CyDIcons,
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
@@ -9,30 +31,19 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import { useTranslation } from 'react-i18next';
-import { useEffect, useState, useContext } from 'react';
-import bip39 from 'react-native-bip39';
-import ReadOnlySeedPhraseBlock from '../../components/v2/readOnlySeedPhraseBlock';
-import CyDModalLayout from '../../components/v2/modal';
-import { BackHandler, NativeModules, StyleSheet } from 'react-native';
-import { generateWalletFromMnemonic } from '../../core/Address';
-import Loading from '../../components/v2/loading';
-import { useIsFocused } from '@react-navigation/native';
-import { isAndroid } from '../../misc/checkers';
-import { HdWalletContext, shuffleSeedPhrase } from '../../core/util';
-import Toast from 'react-native-toast-message';
-import { INFO_WAITING_TIMEOUT } from '../../core/Http';
-import { saveCredentialsToKeychain } from '../../core/Keychain';
-import * as C from '../../constants';
-import { Colors } from '../../constants/theme';
-import Button from '../../components/v2/button';
-import { ButtonType, SECRET_TYPES, SeedPhraseType } from '../../constants/enum';
-import { setSkipSeedConfirmation } from '../../core/asyncStorage';
 
-function CreateSeedPhrase({ route, navigation }) {
+interface RouteParams {
+  seedPhraseType: SeedPhraseType;
+}
+
+function CreateSeedPhrase() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-  const { seedPhraseType } = route.params;
+
+  const { seedPhraseType = SeedPhraseType.TWELVE_WORDS } = route.params;
   const [seedPhrase, setSeedPhrase] = useState<string>('');
   const [wallet, setWallet] = useState<any>();
   const [loading, setLoading] = useState<boolean>(true);

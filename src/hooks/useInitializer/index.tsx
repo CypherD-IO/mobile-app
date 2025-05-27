@@ -42,7 +42,6 @@ import {
   ActivityContext,
   DUMMY_AUTH,
   HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   getPlatform,
   getPlatformVersion,
 } from '../../core/util';
@@ -55,6 +54,8 @@ import useValidSessionToken from '../useValidSessionToken';
 import { IPlanDetails } from '../../models/planDetails.interface';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import useWeb3Auth from '../useWeb3Auth';
+// import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -64,11 +65,13 @@ export default function useInitializer() {
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const ethereum = hdWallet.state.wallet.ethereum;
+  const solana = hdWallet.state.wallet.solana;
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile, getPlanData } = useCardUtilities();
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
@@ -84,8 +87,7 @@ export default function useInitializer() {
   const initializeSentry = () => {
     Sentry.init({
       dsn: Config.SENTRY_DSN,
-      // environment: 'staging',
-      environment: Config.ENVIROINMENT ?? 'staging',
+      environment: Config.ENVIRONMENT ?? 'staging',
       integrations: [
         new Sentry.ReactNativeTracing({
           routingInstrumentation,
@@ -153,10 +155,7 @@ export default function useInitializer() {
     [key: string]: string;
   }) {
     const devMode = await getDeveloperMode();
-    if (
-      !devMode &&
-      walletAddresses.ethereumAddress !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
+    if (!devMode && walletAddresses.ethereumAddress) {
       Intercom.loginUserWithUserAttributes({
         userId: walletAddresses.ethereumAddress,
       }).catch(() => {
@@ -276,12 +275,12 @@ export default function useInitializer() {
 
   const setPinPresentStateValue = async () => {
     const pinAuthenticated = await isPinAuthenticated();
+
     const hasBiometricEnabled = await isBiometricEnabled();
     if (!hasBiometricEnabled) {
       if (pinAuthenticated) {
         return PinPresentStates.TRUE;
       } else {
-        await loadCyRootData(hdWallet.state);
         return PinPresentStates.FALSE;
       }
     } else {
@@ -300,7 +299,6 @@ export default function useInitializer() {
         value: {
           chain: string;
           address: any;
-          // privateKey: any;
           publicKey: any;
           algo: any;
           rawAddress: Uint8Array | undefined;
@@ -309,14 +307,14 @@ export default function useInitializer() {
     },
     state = initialHdWalletState,
   ) => {
-    // const cyRootData = await loadCyRootDataFromKeyChain(state);
     const cyRootData = await loadCyRootData(state);
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {
         void Sentry.captureMessage('app load error for load existing wallet');
       } else if (
-        accounts.ethereum[0].address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+        accounts.ethereum?.[0]?.address ||
+        accounts.solana?.[0]?.address
       ) {
         const attributes = {};
         Object.keys(accounts).forEach((chainName: string) => {
@@ -324,7 +322,6 @@ export default function useInitializer() {
           chainAccountList.forEach(
             (addressDetail: {
               address: any;
-              // privateKey: any;
               publicKey: any;
               algo: any;
               rawAddress: { [s: string]: number } | ArrayLike<number>;
@@ -334,7 +331,6 @@ export default function useInitializer() {
                 value: {
                   chain: chainName,
                   address: addressDetail.address,
-                  // privateKey: addressDetail.privateKey,
                   publicKey: addressDetail.publicKey,
                   algo: addressDetail.algo,
                   rawAddress: addressDetail.rawAddress
@@ -347,7 +343,8 @@ export default function useInitializer() {
           );
         });
         await getToken(
-          get(attributes, 'ethereumAddress', ''),
+          get(attributes, 'ethereumAddress', '') ??
+            get(attributes, 'solanaAddress', ''),
           get(attributes, 'cosmosAddress'),
           get(attributes, 'osmosisAddress'),
           get(attributes, 'nobleAddress'),
@@ -368,8 +365,7 @@ export default function useInitializer() {
               type: 'ADD_ADDRESS',
               value: {
                 chain: 'ethereum',
-                address: _ethereum.address,
-                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                address: get(_ethereum, 'address', ''),
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -385,8 +381,17 @@ export default function useInitializer() {
               type: 'ADD_ADDRESS',
               value: {
                 chain: 'ethereum',
-                address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                address: undefined,
+                publicKey: '',
+                algo: '',
+                rawAddress: undefined,
+              },
+            });
+            dispatch({
+              type: 'ADD_ADDRESS',
+              value: {
+                chain: 'solana',
+                address: undefined,
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -410,16 +415,12 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
-    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ) => {
-    if (
-      ethereum?.address
-      // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
+    try {
       const isSessionTokenValid = await verifySessionToken();
       if (!isSessionTokenValid) {
         const signInResponse = await signIn(
-          ethereum,
           hdWallet,
           setShowDefaultAuthRemoveModal,
         );
@@ -471,6 +472,8 @@ export default function useInitializer() {
           isAuthenticated: true,
         });
       }
+    } catch (error) {
+      Sentry.captureException(error);
     }
   };
 
@@ -478,21 +481,53 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
-    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     const hosts = await initializeHostsFromAsync();
     if (hosts) {
-      if (
-        ethereum?.address &&
-        ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-        // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-      ) {
+      const address = ethereum?.address ?? solana?.address;
+      if (address) {
         void getAuthTokenData(
           setForcedUpdate,
           setTamperedSignMessageModal,
           setUpdateModal,
           setShowDefaultAuthRemoveModal,
         );
+      }
+    }
+  };
+
+  const initializeWeb3Auth = async () => {
+    const socialLoginAuthType = hdWallet.state.socialAuth?.connectionType;
+    if (
+      socialLoginAuthType &&
+      [
+        ConnectionTypes.SOCIAL_LOGIN_EVM,
+        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
+      ].includes(socialLoginAuthType)
+    ) {
+      let web3Auth;
+      switch (socialLoginAuthType) {
+        case ConnectionTypes.SOCIAL_LOGIN_EVM:
+          web3Auth = web3AuthEvm;
+          break;
+        case ConnectionTypes.SOCIAL_LOGIN_SOLANA:
+          web3Auth = web3AuthSolana;
+          break;
+      }
+      if (web3Auth && !web3Auth.connected) {
+        try {
+          await web3Auth.init();
+        } catch (e) {
+          Sentry.captureException(e);
+          return;
+        }
+        if (!web3Auth.connected) {
+          globalContext.globalDispatch({
+            type: GlobalContextType.IS_APP_AUTHENTICATED,
+            isAuthenticated: false,
+          });
+        }
       }
     }
   };
@@ -508,5 +543,6 @@ export default function useInitializer() {
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
+    initializeWeb3Auth,
   };
 }

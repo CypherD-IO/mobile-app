@@ -113,6 +113,10 @@ const resources = {
         'This action will delete your current wallet to replace with another wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
       DELETE_WALLET_SUB:
         'This action will delete your current wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
+      DELETE_WALLET_SUB_SOCIAL:
+        'This action will delete your current wallet. \nYou can login the with the same social account to restore the wallet.\n',
+      SOCIAL_AUTH_MFA_REMINDER:
+        'Please make sure you have access to the MFA that you have setup during signup. Lossing access to the MFA will result in loss of access to your wallet. For safety purposes you can backup the private key of your wallet before signing out.',
       SEED_PHARSE_SUB:
         'You are copying seed phrase. Please be careful in storing the phrase in a secure location. If someone else gets access to this then they will have access to your wallet.',
       REMOVE_WALL_ACC:
@@ -944,6 +948,9 @@ const resources = {
       DISCONNECT_WALLET: 'Disconnect wallet',
       DISCONNECT_WALLET_SUB:
         'Are you sure you want to disconnect from your wallet ?',
+      SESSION_EXPIRED: 'Session expired',
+      SESSION_EXPIRED_SUB:
+        'Your session has expired with email. \nPlease login again to access your wallet again',
       UNABLE_TO_CONNECT: 'Unable to connect',
       BROWSER_WALLET_CONNECT_ERROR:
         'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
@@ -1700,6 +1707,8 @@ const resources = {
       LOAD_UP_TO: 'Load up to ${{maxLoadLimit}}',
       MINIMUM_AMOUNT_HL_SPOT:
         'Minimum amount for Hyper Liquid Spot Token is ${{minAmount}}',
+      SIGN_OUT: 'Sign Out',
+      LOGIN_AGAIN: 'Login Again',
     },
   },
 };

@@ -22,6 +22,7 @@ import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
 import axios from 'axios';
 import analytics from '@react-native-firebase/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const SlideToConfirmV2 = ({
   approveUrl,
@@ -45,19 +46,23 @@ const SlideToConfirmV2 = ({
   const handleAccept = async () => {
     setAcceptLoading(true);
     setSwipeStatus('swiping');
-    void analytics().logEvent('transaction_approval_approve');
+    void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_APPROVAL_APPROVE);
     try {
       await axios.get(approveUrl);
       setIsError(false);
       setConfirmed(true);
       setSwipeStatus('approved');
-      void analytics().logEvent('transaction_approval_approve_success');
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_APPROVAL_APPROVE_SUCCESS,
+      );
       closeModal();
     } catch (error) {
       setIsError(true);
       setConfirmed(true);
       setSwipeStatus('failed');
-      void analytics().logEvent('transaction_approval_approve_failed');
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_APPROVAL_APPROVE_FAILED,
+      );
       setTimeout(() => {
         closeModal();
       }, 500);

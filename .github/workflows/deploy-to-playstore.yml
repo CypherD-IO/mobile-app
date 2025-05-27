@@ -22,6 +22,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
       HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+      WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -57,7 +58,7 @@ jobs:
           echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
           echo "RA_PUB_KEY=${{ secrets.RA_PUB_KEY }}" >> .env
           echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
-
+          echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env
       - name: Update version name and code (main)
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
         run: |

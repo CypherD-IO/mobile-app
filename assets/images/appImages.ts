@@ -18,8 +18,8 @@ const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
 const APP_LOGO = require('./appLogo.png');
 const CARD = require('./card.png');
-const ETHEREUM = require('./ethereum_logo.png');
-const BINANCE = require('./binance_coin_bnb_logo.png');
+const ETHEREUM = require('./ethereum.png');
+const BINANCE = require('./bnb.png');
 const ADDITIONAL_CARD = require('./getNewCard.png');
 // need dm image
 const SENDTO_EMPTY = require('./sento_Empty.png');
@@ -127,7 +127,7 @@ const TXN_DEFAULT_ERROR = require('./txn_default_error.png');
 const UNKNOWN_TXN_TOKEN = require('./unknownToken.png');
 const TXN_SELF_SUCCESS = require('./txn_self_success.png');
 const TXN_SELF_ERROR = require('./txn_self_error.png');
-const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
+const ZKSYNC_ERA_LOGO = require('./zk_sync_era.png');
 const BASE_LOGO = require('./base.png');
 const UPGRADE_TO_PHYSICAL_CARD_ARROW = require('./upgradeToPhysicalCardArrow.png');
 const SEND_INVITE_CODE_BG = require('./sendInviteCodeBg.png');
@@ -142,6 +142,10 @@ const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
 const ZRM_INTRO_1 = require('./zrmImage1.png');
 const ZRM_INTRO_2 = require('./zrmImage2.png');
 const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
+const CREATE_WALLET = require('./createWallet.png');
+const IMPORT_WALLET = require('./importWallet.png');
+const CONNECT_WALLET = require('./connectWallet.png');
+const GOOGLE_LOGO = require('./googleLogo.png');
 
 // ICONS FROM S3
 // const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -922,12 +926,20 @@ export const AppImagesMap = {
     CHECK_MARK_GREEN_CURLY_BG,
     DCC_POS_TERMINAL,
     CARDS_WITH_EXCLAMATION,
+    CREATE_WALLET,
+    IMPORT_WALLET,
+    CONNECT_WALLET,
+    GOOGLE_LOGO,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
 };
 
 enum AppImages {
+  CREATE_WALLET = 'CREATE_WALLET',
+  IMPORT_WALLET = 'IMPORT_WALLET',
+  CONNECT_WALLET = 'CONNECT_WALLET',
+  GOOGLE_LOGO = 'GOOGLE_LOGO',
   ADDITIONAL_CARD = 'ADDITIONAL_CARD',
   INTERNATIONAL_COUNTRIES_QUICK_ACTION = 'INTERNATIONAL_COUNTRIES_QUICK_ACTION',
   UNBLOCK_CARD_QUICK_ACTION = 'UNBLOCK_CARD_QUICK_ACTION',

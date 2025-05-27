@@ -27,7 +27,7 @@ import { screenTitle } from '../../constants';
 import { REFRESH_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { Dimensions, RefreshControl } from 'react-native';
 import { TokenTransaction } from '../../models/transaction.model';
-import analytics from '@react-native-firebase/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export function TokenTransactions({
   tokenData,
@@ -52,7 +52,7 @@ export function TokenTransactions({
   useEffect(() => {
     if (tokenData.chainDetails.chainName === ChainNames.ETH) {
       setLoading(true);
-      void analytics().logEvent('visited_transactions_page');
+      void logAnalyticsToFirebase(AnalyticEvent.VISITED_TRANSACTIONS_PAGE);
       void fetchData();
     }
   }, []);

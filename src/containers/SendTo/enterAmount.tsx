@@ -117,12 +117,16 @@ export default function EnterAmount(props: any) {
       const publicClient = getViemPublicClient(
         getWeb3Endpoint(tokenData.chainDetails, globalContext),
       );
-      const ethereum = hdWallet.state.wallet.ethereum;
+      const ethereumAddress = get(
+        hdWallet,
+        'state.wallet.ethereum.address',
+        undefined,
+      );
       gasEstimate = await estimateGasForEvm({
         publicClient,
         chain: tokenData.chainDetails.backendName,
-        fromAddress: ethereum.address as `0x${string}`,
-        toAddress: ethereum.address as `0x${string}`,
+        fromAddress: ethereumAddress as `0x${string}`,
+        toAddress: ethereumAddress as `0x${string}`,
         amountToSend,
         contractAddress: tokenData.contractAddress as `0x${string}`,
         contractDecimals: tokenData.contractDecimals,
@@ -254,13 +258,15 @@ export default function EnterAmount(props: any) {
         const publicClient = getViemPublicClient(
           getWeb3Endpoint(tokenData.chainDetails, globalContext),
         );
+        const ethereumAddress = get(
+          hdWallet,
+          'state.wallet.ethereum.address',
+          undefined,
+        );
         gasReservedForNativeToken = await estimateReserveFee({
           tokenData,
-          fromAddress: hdWallet.state.wallet.ethereum.address as `0x${string}`,
-          toAddress:
-            sendAddress !== ''
-              ? sendAddress
-              : hdWallet.state.wallet.ethereum.address,
+          fromAddress: ethereumAddress as `0x${string}`,
+          toAddress: sendAddress !== '' ? sendAddress : ethereumAddress,
           publicClient,
           rpc: getWeb3Endpoint(tokenData.chainDetails, globalContext),
         });

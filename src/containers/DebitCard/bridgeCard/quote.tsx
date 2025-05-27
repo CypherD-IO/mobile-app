@@ -56,7 +56,6 @@ import useAxios from '../../../core/HttpRequest';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
-import analytics from '@react-native-firebase/analytics';
 import { getConnectionType } from '../../../core/asyncStorage';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { clsx } from 'clsx';
@@ -69,6 +68,7 @@ import useHyperLiquid from '../../../hooks/useHyperLiquid';
 import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
 import { formatUnits } from 'viem';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 
 export default function CardQuote({
   navigation,
@@ -108,7 +108,11 @@ export default function CardQuote({
   const [planChangeModalVisible, setPlanChangeModalVisible] =
     useState<boolean>(false);
   const hdWallet = useContext<any>(HdWalletContext);
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const solana = hdWallet.state.wallet.solana;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
@@ -173,7 +177,7 @@ export default function CardQuote({
 
   const onCancel = () => {
     void intercomAnalyticsLog('cancel_transfer_token', {
-      from: ethereum.address,
+      from: ethereumAddress,
     });
     if (quoteExpiry && tokenExpiryTime !== 0) {
       clearInterval(expiryTimer);
@@ -265,7 +269,7 @@ export default function CardQuote({
           onFailure: hideModal,
         });
         const connectedType = await getConnectionType();
-        void analytics().logEvent('card_load', {
+        void logAnalyticsToFirebase(AnalyticEvent.CARD_LOAD, {
           connectionType: connectedType,
           chain: selectedToken.chainDetails.backendName,
           token: selectedToken.symbol,
@@ -815,7 +819,9 @@ export default function CardQuote({
               className='flex flex-row items-center gap-[4px]'
               onPress={() => {
                 setPlanChangeModalVisible(true);
-                void analytics().logEvent('explore_premium_load_card_cta');
+                void logAnalyticsToFirebase(
+                  AnalyticEvent.EXPLORE_PREMIUM_LOAD_CARD_CTA,
+                );
               }}>
               <CyDText className='font-extrabold text-[14px] underline'>
                 {'Explore'}

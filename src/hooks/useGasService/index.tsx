@@ -14,7 +14,6 @@ import {
 } from '@cosmjs/stargate';
 import { abis, addresses } from '@eth-optimism/contracts-ts';
 import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
-import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import {
   createTransferInstruction,
@@ -80,6 +79,7 @@ import {
   EvmGasEstimation,
   SolanaGasEstimation,
 } from '../../constants/type';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface GasServiceResult {
   gasFeeInCrypto: string;
@@ -161,7 +161,7 @@ export default function useGasService() {
           );
         });
         const afterRemovingOutliers = removeOutliers(percentileArr); // will return the sorted array
-        void analytics().logEvent('gas_optimisation', {
+        void logAnalyticsToFirebase(AnalyticEvent.GAS_OPTIMISATION, {
           after: afterRemovingOutliers,
           b4: percentileArr,
           chain,
