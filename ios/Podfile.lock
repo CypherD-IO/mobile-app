@@ -1027,6 +1027,7 @@ SPEC CHECKSUMS:
   lottie-ios: 8f97d3271e155c2d688875c29cd3c74908aef5f8
   lottie-react-native: 5d89c05930d4180a1e39b1757d46e6c0eec90255
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  OpenSSL-Universal: b60a3702c9fea8b3145549d421fdb018e53ab7b4
   Permission-Camera: 77c59d13303c1ce600ac9aee143fb9c2de8818bd
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
@@ -1049,13 +1050,15 @@ SPEC CHECKSUMS:
   react-native-blur: 4024ea270983c8b3575768b1d7ecc94c1374f8b3
   react-native-camera: 079d80421f0572d6b4e836908114d614d0adb553
   react-native-compat: 64e472883f490724b1f8ffb2e8c8dc412d6d18d8
-  react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
+  react-native-config: 644074ab88db883fcfaa584f03520ec29589d7df
   react-native-cookies: d648ab7025833b977c0b19e142503034f5f29411
   react-native-document-picker: 12ef8b536876630d97319ea1b429390dc97fc4b9
+  react-native-encrypted-storage: 569d114e329b1c2c2d9f8c84bcdbe4478dda2258
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-lottie-splash-screen: 2d84b1c81c176981d3e5e17df14da5a99a2f5082
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: 8d3447fe3c366333c082a844138336973140dffa
+  react-native-quick-crypto: 16805326b3d29e2d717edd5c12e173bc8a8a11da
   react-native-randombytes: 3c8f3e89d12487fd03a2f966c288d495415fc116
   react-native-render-html: 5afc4751f1a98621b3009432ef84c47019dcb2bd
   react-native-restart: df7caae89026a8ab2ecdd82839978f657701f51d
@@ -1063,6 +1066,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 1c298d1cee1e333d3f44ea6dc8dfca086bd06242
   react-native-vector-icons: 198081b1b25f218e2a97d157cd05518075ec7112
   react-native-view-shot: 247dc0fd1a3225df70029cae5a61dbfc35c3e8ae
+  react-native-web-browser: bc106e2b98f1fc95d12aa5c5c36180481efbbf23
   react-native-webview: b786deb5b6c97dbaf5c4deed5ad7d3bc1687b795
   React-NativeModulesApple: 0847f5c5c2a4ca66da4ed0bc6caebab6961fb3a4
   React-perflogger: 785b0063af5178298a61b54bb46aae9a19c7bbb5

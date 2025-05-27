@@ -473,7 +473,7 @@ export default function useInitializer() {
         });
       }
     } catch (error) {
-      console.log('error', error);
+      Sentry.captureException(error);
     }
   };
 

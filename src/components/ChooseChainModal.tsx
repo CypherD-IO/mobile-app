@@ -1,19 +1,18 @@
+import clsx from 'clsx';
 import React, { useContext } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../assets/images/appImages';
+import { FlatList, StyleSheet } from 'react-native';
+import { ALL_CHAINS, Chain } from '../constants/server';
 import { HdWalletContext, getAvailableChains } from '../core/util';
-import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
 import {
   CyDFastImage,
-  CyDLottieView,
   CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../styles/tailwindComponents';
 import CyDModalLayout from './v2/modal';
-import clsx from 'clsx';
+import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 
 export const WHERE_BROWSER = 'BROWSER';
 export const WHERE_PORTFOLIO = 'PORTFOLIO';
@@ -112,7 +111,7 @@ export function ChooseChainModal(props: {
         <FlatList
           data={
             where === WHERE_PORTFOLIO
-              ? getAvailableChains(hdWallet)
+              ? getAvailableChains(hdWallet as HdWalletContextDef)
               : ALL_CHAINS
           }
           renderItem={item => renderItem(item)}
@@ -133,9 +132,5 @@ const styles = StyleSheet.create({
   chainList: {
     height: '50%',
     marginTop: '10%',
-  },
-  lottieViewWidth: {
-    width: 34,
-    marginRight: 40,
   },
 });

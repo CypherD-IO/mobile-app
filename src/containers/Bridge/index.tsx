@@ -36,6 +36,7 @@ import useAxios from '../../core/HttpRequest';
 import {
   ActivityContext,
   formatAmount,
+  getAvailableChains,
   getViemPublicClient,
   getWeb3Endpoint,
   hasSufficientBalanceAndGasFee,
@@ -314,15 +315,20 @@ const Bridge: React.FC = () => {
 
   const fetchChainData = async () => {
     const chainResult = await getWithAuth('/v1/swap/chains');
-    if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
-      const solanaChainData = chainResult.data.filter(
-        (chain: SwapBridgeChainData) => chain.chainId === 'solana',
-      );
-      setChainData(solanaChainData);
-    } else {
-      setChainData(chainResult.data);
-      setSelectedFromChain(chainResult.data[0]);
-    }
+    const availableChains = getAvailableChains(hdWallet);
+
+    const filteredChainData = bridgeState.chainData.filter(
+      (chain: SwapBridgeChainData) =>
+        availableChains.some(
+          availableChain =>
+            availableChain.chainIdNumber.toString() ===
+              chain.chainId.toLowerCase() ||
+            availableChain.chain_id.toString() === chain.chainId.toLowerCase(),
+        ),
+    );
+
+    setChainData(filteredChainData);
+
     bridgeDispatch({
       type: BridgeReducerAction.SUCCESS,
       payload: {
@@ -412,17 +418,21 @@ const Bridge: React.FC = () => {
         void fetchData();
       } else {
         setIndex(0);
-        let chainDataSelected;
-        if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
-          const solanaChainData = bridgeState.chainData.filter(
-            (chain: SwapBridgeChainData) => chain.chainId === 'solana',
-          );
-          setChainData(solanaChainData);
-          chainDataSelected = solanaChainData[0];
-        } else {
-          setChainData(bridgeState.chainData);
-          chainDataSelected = bridgeState.chainData[0];
-        }
+        const availableChains = getAvailableChains(hdWallet);
+
+        const filteredChainData = bridgeState.chainData.filter(
+          (chain: SwapBridgeChainData) =>
+            availableChains.some(
+              availableChain =>
+                availableChain.chainIdNumber.toString() ===
+                  chain.chainId.toLowerCase() ||
+                availableChain.chain_id.toString() ===
+                  chain.chainId.toLowerCase(),
+            ),
+        );
+
+        setChainData(filteredChainData);
+        const chainDataSelected = filteredChainData[0];
         setTokenData(bridgeState.tokenData);
 
         if (routeParamsTokenData?.chainDetails) {

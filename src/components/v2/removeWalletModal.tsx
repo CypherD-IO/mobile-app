@@ -80,7 +80,7 @@ export default function RemoveWalletModal(store: {
           )}
       </CyDView>
     );
-  }, [hasConsent, setHasConsent]);
+  }, [hasConsent, setHasConsent, connectionType, isSocialLogin]);
   return (
     <CyDModalLayout
       setModalVisible={() => {
