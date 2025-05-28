@@ -55,7 +55,7 @@ import {
   ICardTransaction,
   ICardSubObjectMerchant,
 } from '../../../models/card.model';
-import { capitalize, get, isEmpty, startCase, truncate } from 'lodash';
+import { capitalize, get, startCase, truncate } from 'lodash';
 import { t } from 'i18next';
 import { CardProfile } from '../../../models/cardProfile.model';
 import Toast from 'react-native-toast-message';
@@ -1215,7 +1215,7 @@ const OverchargedTransactionInfoSection = () => {
   // Handler for know more click
   const handleKnowMore = () => {
     // Log analytics
-    void analytics().logEvent('dcc_know_more_clicked', {
+    void logAnalyticsToFirebase(AnalyticEvent.DCC_KNOW_MORE_CLICKED, {
       category: 'transaction_detail',
       action: 'dcc_know_more_clicked',
       label: 'overcharged_transaction_info_section',

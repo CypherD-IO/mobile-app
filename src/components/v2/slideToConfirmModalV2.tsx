@@ -13,16 +13,14 @@ import Animated, {
 } from 'react-native-reanimated';
 import clsx from 'clsx';
 import {
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDView,
 } from '../../styles/tailwindComponents';
-import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
 import axios from 'axios';
-import analytics from '@react-native-firebase/analytics';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import { parseErrorMessage } from '../../core/util';
 
 const SlideToConfirmV2 = ({
   approveUrl,
@@ -67,11 +65,12 @@ const SlideToConfirmV2 = ({
         closeModal();
       }, 500);
       setTimeout(() => {
+        const errorMessage = parseErrorMessage(error);
         showModal('state', {
           type: 'error',
           title: t('TRANSACTION_APPROVAL_FAILED'),
           description:
-            error?.message ?? t('TRANSACTION_APPROVAL_FAILED_REASON_NA'),
+            errorMessage ?? t('TRANSACTION_APPROVAL_FAILED_REASON_NA'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });

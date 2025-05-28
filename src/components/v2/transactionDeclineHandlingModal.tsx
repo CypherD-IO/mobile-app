@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { StyleSheet, Modal, Animated } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   CyDView,
@@ -10,7 +10,7 @@ import {
 } from '../../styles/tailwindComponents';
 import Button from './button';
 import { formatAmount, getSymbolFromCurrency } from '../../core/util';
-import { ButtonType, CardProviders } from '../../constants/enum';
+import { ButtonType } from '../../constants/enum';
 import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
 import { capitalize } from 'lodash';

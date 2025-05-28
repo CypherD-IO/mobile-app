@@ -87,6 +87,10 @@ export default function OnBoardOpotions() {
       setLoading(true);
       setIsProviderSelectionModalVisible(false);
       try {
+        logAnalyticsToFirebase(AnalyticEvent.INITIATE_SOCIAL_LOGIN, {
+          provider: providerType === ProviderType.ETHEREUM ? 'evm' : 'solana',
+          method: socialLoginMethod,
+        });
         await handleSocialLogin();
       } finally {
         setLoading(false);
@@ -129,6 +133,8 @@ export default function OnBoardOpotions() {
         }
         if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
           await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
+        } else {
+          throw new Error('Invalid Ethereum private key');
         }
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_EVM, {
           from:

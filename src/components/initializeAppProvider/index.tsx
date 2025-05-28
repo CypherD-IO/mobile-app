@@ -43,7 +43,7 @@ import {
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import { screenTitle } from '../../constants';
 import PinAuthRoute from '../../routes/pinAuthRoute';
-import { logAnalyticsToFirebase } from '../../core/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface UseInitializerReturn {
   initializeSentry: () => void;
@@ -278,7 +278,10 @@ export const InitializeAppProvider = ({
             }),
           };
 
-          void analytics().logEvent('install_attribution', installAttribution);
+          void logAnalyticsToFirebase(
+            AnalyticEvent.INSTALL_ATTRIBUTION,
+            installAttribution,
+          );
 
           // Save referral code to AsyncStorage if present
           if (referrerData.referral) {
@@ -287,10 +290,13 @@ export const InitializeAppProvider = ({
         }
         // For iOS: Only attribution token available, needs server-side resolution
         else if (Platform.OS === 'ios' && referrerData.attribution_token) {
-          void analytics().logEvent('ios_attribution_token_received', {
-            attribution_token: referrerData.attribution_token,
-            requires_server_resolution: true,
-          });
+          void logAnalyticsToFirebase(
+            AnalyticEvent.IOS_ATTRIBUTION_TOKEN_RECEIVED,
+            {
+              attribution_token: referrerData.attribution_token,
+              requires_server_resolution: true,
+            },
+          );
 
           // Note: Server needs to resolve the token and communicate back to the app
           // for any referral code handling
@@ -383,7 +389,7 @@ export const InitializeAppProvider = ({
               disabled={forcedUpdate}
               onPress={() => {
                 setUpdateModal(false);
-                logAnalyticsToFirebase('update_later', {});
+                logAnalyticsToFirebase(AnalyticEvent.UPDATE_LATER, {});
               }}
             />
           </DialogFooter>
