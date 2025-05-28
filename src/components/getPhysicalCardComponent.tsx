@@ -10,8 +10,10 @@ import AppImages from '../../assets/images/appImages';
 import { get } from 'lodash';
 import clsx from 'clsx';
 import { useNavigation } from '@react-navigation/native';
-import { CardType, CypherPlanId } from '../constants/enum';
+import { CardProviders, CardType, CypherPlanId } from '../constants/enum';
 import { screenTitle } from '../constants';
+import { CardProfile } from '../models/cardProfile.model';
+import { CardDesign } from '../models/cardDesign.interface';
 
 export const GetPhysicalCardComponent = ({
   cardProfile,
@@ -19,10 +21,10 @@ export const GetPhysicalCardComponent = ({
   cardDesignData,
   cardBalance,
 }: {
-  cardProfile: any;
-  cardProvider: string;
-  cardDesignData: any;
-  cardBalance: any;
+  cardProfile: CardProfile | undefined;
+  cardProvider: CardProviders;
+  cardDesignData: CardDesign | undefined;
+  cardBalance: string;
 }) => {
   const navigation = useNavigation<any>();
   const cards = get(cardProfile, [cardProvider, 'cards'], []);
@@ -39,7 +41,7 @@ export const GetPhysicalCardComponent = ({
     !cards.some((card: any) => card.type === CardType.PHYSICAL) &&
     !isMetalFreeCardEligible &&
     get(cardProfile, ['planInfo', 'planId'], '') !== CypherPlanId.PRO_PLAN &&
-    get(cardDesignData, ['allowedCount', CardType.PHYSICAL]) > 0 &&
+    get(cardDesignData, ['allowedCount', CardType.PHYSICAL], 0) > 0 &&
     get(cardDesignData, ['physical', 0, 'isStockAvailable'], false);
 
   const componentContent = showGetFirstPvcCard
