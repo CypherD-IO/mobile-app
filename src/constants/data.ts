@@ -52,6 +52,8 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
 
 export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;
 
+export const MINIMUM_TRANSFER_AMOUNT_HL_SPOT = 15;
+
 export const months = [
   {
     value: 'Jan',

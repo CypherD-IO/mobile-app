@@ -5,7 +5,6 @@
  * @flow
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import analytics from '@react-native-firebase/analytics';
 import { useIsFocused, useRoute } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
@@ -68,6 +67,7 @@ import {
   WebsiteInfo,
 } from '../../types/Browser';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 enum BROWSER_ERROR {
   SSL = 'ssl',
@@ -142,7 +142,11 @@ export default function Browser({ navigation }: any) {
   const [removeBookmarkMode, setRemoveBookmarkMode] = useState(false);
   const [inbuildPage, setInbuiltPage] = useState<PageType>('home');
   const [browserErrorCode, setBrowserErrorCode] = useState('');
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const { showModal, hideModal } = useGlobalModalContext();
   const [selectedDappChain, setSelectedDappChain] = useState<Chain>(CHAIN_ETH);
   const globalContext = useContext(GlobalContext);
@@ -316,7 +320,7 @@ export default function Browser({ navigation }: any) {
         contractAddress: nativeToken.contractAddress,
         tokenContractDecimals: nativeToken.contractDecimals,
       });
-    } else if (selectedChain.chainName === ChainNames.ETH) {
+    } else if (selectedChain.chainName === ChainNames.ETH && ethereumAddress) {
       const publicClient = getViemPublicClient(
         getWeb3Endpoint(selectedChain, globalContext),
       );
@@ -324,8 +328,8 @@ export default function Browser({ navigation }: any) {
       gasDetails = await estimateGasForEvm({
         publicClient,
         chain: selectedChain.backendName,
-        fromAddress: ethereum.address,
-        toAddress: ethereum.address,
+        fromAddress: ethereumAddress,
+        toAddress: ethereumAddress,
         amountToSend: String(nativeToken.balanceDecimal),
         contractAddress: nativeToken.contractAddress as `0x${string}`,
         contractDecimals: nativeToken.contractDecimals,
@@ -406,9 +410,10 @@ export default function Browser({ navigation }: any) {
       case CommunicationEvents.ANALYTICS: {
         const { chain, payload } = jsonObj;
 
-        analytics()
-          .logEvent('web3Instance_undefined_props', { ...payload, chain })
-          .catch(Sentry.captureException);
+        logAnalyticsToFirebase(AnalyticEvent.WEB3_INSTANCE_UNDEFINED_PROPS, {
+          ...payload,
+          chain,
+        });
         break;
       }
       case CommunicationEvents.WEB3: {
@@ -461,13 +466,11 @@ export default function Browser({ navigation }: any) {
       e?.nativeEvent?.text === undefined ? e : e.nativeEvent.text,
     );
     setSearch(upgradedURL);
-    analytics()
-      .logEvent('browser_addressbar', {
-        from: ethereum.address,
-        chain: hdWalletContext.state.selectedChain.name,
-        url: e?.nativeEvent?.text === undefined ? e : e.nativeEvent.text,
-      })
-      .catch(Sentry.captureException);
+    logAnalyticsToFirebase(AnalyticEvent.BROWSER_ADDRESSBAR, {
+      from: ethereumAddress,
+      chain: hdWalletContext.state.selectedChain.name,
+      url: e?.nativeEvent?.text === undefined ? e : e.nativeEvent.text,
+    });
   }
 
   // https://amanhimself.dev/blog/handle-navigation-in-webviews-react-native/
@@ -805,12 +808,10 @@ export default function Browser({ navigation }: any) {
                 setInbuiltPage('webview');
                 setFocus(false);
                 Keyboard.dismiss();
-                analytics()
-                  .logEvent('browser_recent_url_click', {
-                    url: item.url,
-                    from: 'browser',
-                  })
-                  .catch(Sentry.captureException);
+                logAnalyticsToFirebase(AnalyticEvent.BROWSER_RECENT_URL_CLICK, {
+                  url: item.url,
+                  from: 'browser',
+                });
               }}>
               <CyDFastImage
                 className='h-[18px] w-[18px]'
@@ -830,11 +831,9 @@ export default function Browser({ navigation }: any) {
           <CyDTouchView
             onPress={() => {
               clearHistory();
-              analytics()
-                .logEvent('browser_clear_history', {
-                  from: 'browser',
-                })
-                .catch(Sentry.captureException);
+              logAnalyticsToFirebase(AnalyticEvent.BROWSER_CLEAR_HISTORY, {
+                from: 'browser',
+              });
             }}>
             <CyDText className='text-[14px] p-3 text-center'>
               Clear browsing history
@@ -865,12 +864,13 @@ export default function Browser({ navigation }: any) {
                       handleTextInput(item.url);
                       setFocus(false);
                       setInbuiltPage('webview');
-                      analytics()
-                        .logEvent('browser_history_url_click', {
+                      logAnalyticsToFirebase(
+                        AnalyticEvent.BROWSER_HISTORY_URL_CLICK,
+                        {
                           url: item.url,
                           from: 'browser',
-                        })
-                        .catch(e => Sentry.captureException(e));
+                        },
+                      );
                     }}>
                     <CyDView className='flex flex-row items-center'>
                       <CyDFastImage
@@ -886,12 +886,13 @@ export default function Browser({ navigation }: any) {
                       sentry-label='browser_history_url_clear'
                       onPress={() => {
                         deleteHistory(item);
-                        analytics()
-                          .logEvent('browser_history_url_clear', {
+                        logAnalyticsToFirebase(
+                          AnalyticEvent.BROWSER_HISTORY_URL_CLEAR,
+                          {
                             url: item.url,
                             from: 'browser',
-                          })
-                          .catch(e => Sentry.captureException(e));
+                          },
+                        );
                       }}>
                       <CyDMaterialDesignIcons
                         name='close-circle'
@@ -960,12 +961,13 @@ export default function Browser({ navigation }: any) {
                       setFocus(false);
                       setInbuiltPage('webview');
                       // Change
-                      analytics()
-                        .logEvent('browser_favourite_url_click', {
+                      logAnalyticsToFirebase(
+                        AnalyticEvent.BROWSER_FAVOURITE_URL_CLICK,
+                        {
                           url: favourite.url,
                           from: 'browser',
-                        })
-                        .catch(Sentry.captureException);
+                        },
+                      );
                     }}
                     onLongPress={() => {
                       setRemoveBookmarkMode(true);
@@ -1042,14 +1044,13 @@ export default function Browser({ navigation }: any) {
                         handleTextInput(item.url);
                         setFocus(false);
                         setInbuiltPage('webview');
-                        analytics()
-                          .logEvent('browser_history_url_click', {
+                        logAnalyticsToFirebase(
+                          AnalyticEvent.BROWSER_HISTORY_URL_CLICK,
+                          {
                             url: item.url,
                             from: 'browser',
-                          })
-                          .catch(e => {
-                            Sentry.captureException(e);
-                          });
+                          },
+                        );
                       }}>
                       <CyDView className='flex flex-row items-center flex-1'>
                         <CyDFastImage
@@ -1068,14 +1069,13 @@ export default function Browser({ navigation }: any) {
                         sentry-label='browser_history_url_clear'
                         onPress={() => {
                           deleteHistory(item);
-                          analytics()
-                            .logEvent('browser_history_url_clear', {
+                          logAnalyticsToFirebase(
+                            AnalyticEvent.BROWSER_HISTORY_URL_CLEAR,
+                            {
                               url: item.url,
                               from: 'browser',
-                            })
-                            .catch(e => {
-                              Sentry.captureException(e);
-                            });
+                            },
+                          );
                         }}>
                         <CyDMaterialDesignIcons
                           name='close-circle'

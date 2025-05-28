@@ -7,11 +7,16 @@ import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { HdWalletContext } from '../../core/util';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { get } from 'lodash';
 
 export default function useIsSignable() {
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const navigation = useNavigation();
-  const { ethereum } = hdWalletContext.state.wallet;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    '',
+  );
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { showModal, hideModal } = useGlobalModalContext();
   const isSignableTransaction = (activityType: string, callback: any) => {
@@ -19,7 +24,7 @@ export default function useIsSignable() {
       setTimeout(() => {
         showModal(GlobalModalType.PROMPT_IMPORT_WALLET, {
           type: activityType,
-          address: ethereum.address,
+          address: ethereumAddress,
           description: '',
           onSuccess: () => {
             hideModal();

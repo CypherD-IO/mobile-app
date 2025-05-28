@@ -60,7 +60,11 @@ const BannerCarousel = () => {
   const [migrationCard, setMigrationCard] = useState<MigrationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const ethereumAddress = hdWallet?.state.wallet.ethereum.address;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
 
   // function to get the activities from the past one hour
   const getRecentActivities = () => {

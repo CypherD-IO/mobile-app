@@ -12,7 +12,6 @@ import {
 } from '../../constants/server';
 import { removeOutliers } from '../../misc/outliers';
 import * as Sentry from '@sentry/react-native';
-import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../../global';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { limitDecimalPlaces } from '../../core/util';
@@ -24,6 +23,7 @@ import {
   hexToBigInt,
   toHex,
 } from 'viem';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const minimumGasFee = '20';
 
@@ -63,7 +63,7 @@ async function getGasPriceLocallyUsingGasHistory(
       );
     });
     const afterRemovingOutliers = removeOutliers(percentileArr); // will return the sorted array
-    void analytics().logEvent('gas_optimisation', {
+    void logAnalyticsToFirebase(AnalyticEvent.GAS_OPTIMISATION, {
       after: afterRemovingOutliers,
       b4: percentileArr,
       chain: backendName,

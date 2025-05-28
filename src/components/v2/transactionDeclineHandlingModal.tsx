@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { StyleSheet, Modal, Animated } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   CyDView,
@@ -10,12 +10,13 @@ import {
 } from '../../styles/tailwindComponents';
 import Button from './button';
 import { formatAmount, getSymbolFromCurrency } from '../../core/util';
-import { ButtonType, CardProviders } from '../../constants/enum';
+import { ButtonType } from '../../constants/enum';
 import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
 import { capitalize } from 'lodash';
 import useAxios from '../../core/HttpRequest';
 import analytics from '@react-native-firebase/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface DeclineHandlingData {
   reason: string;
@@ -53,8 +54,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const SWIPE_THRESHOLD = 50;
-
 const TransactionDeclineHandlingModal: React.FC<
   TransactionDeclineHandlingModalProps
 > = ({ isModalVisible, data, closeModal }) => {
@@ -81,11 +80,14 @@ const TransactionDeclineHandlingModal: React.FC<
         screen_class: 'TransactionDeclineHandlingModal',
       });
 
-      void analytics().logEvent('transaction_decline_modal_viewed', {
-        transaction_id: txnId,
-        merchant: merchant,
-        reason: reason,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_DECLINE_MODAL_VIEWED,
+        {
+          transaction_id: txnId,
+          merchant,
+          reason,
+        },
+      );
     }
   }, [isModalVisible, txnId, merchant, reason]);
 
@@ -99,9 +101,9 @@ const TransactionDeclineHandlingModal: React.FC<
     }
 
     // Track approval action
-    void analytics().logEvent('transaction_decline_approve', {
+    void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_DECLINE_APPROVE, {
       transaction_id: txnId,
-      merchant: merchant,
+      merchant,
     });
 
     setIsLoading(true);
@@ -109,9 +111,12 @@ const TransactionDeclineHandlingModal: React.FC<
       const response = await getWithAuth(approveUrl);
       if (!response?.isError) {
         // Track successful approval
-        void analytics().logEvent('transaction_decline_approve_success', {
-          transaction_id: txnId,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.TRANSACTION_DECLINE_APPROVE_SUCCESS,
+          {
+            transaction_id: txnId,
+          },
+        );
 
         closeModal();
         setTimeout(() => {
@@ -125,10 +130,13 @@ const TransactionDeclineHandlingModal: React.FC<
         }, 500);
       } else {
         // Track approval failure
-        void analytics().logEvent('transaction_decline_approve_failed', {
-          transaction_id: txnId,
-          error: response?.error?.message || 'Unknown error',
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.TRANSACTION_DECLINE_APPROVE_FAILED,
+          {
+            transaction_id: txnId,
+            error: response?.error?.message || 'Unknown error',
+          },
+        );
 
         closeModal();
         setTimeout(() => {
@@ -144,9 +152,12 @@ const TransactionDeclineHandlingModal: React.FC<
       }
     } catch (error) {
       // Track exception
-      void analytics().logEvent('transaction_decline_approve_exception', {
-        transaction_id: txnId,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_DECLINE_APPROVE_EXCEPTION,
+        {
+          transaction_id: txnId,
+        },
+      );
 
       closeModal();
       setTimeout(() => {
@@ -169,10 +180,13 @@ const TransactionDeclineHandlingModal: React.FC<
     }
 
     // Track fraud report action
-    void analytics().logEvent('transaction_decline_report_fraud', {
-      transaction_id: txnId,
-      merchant: merchant,
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.TRANSACTION_DECLINE_REPORT_FRAUD,
+      {
+        transaction_id: txnId,
+        merchant,
+      },
+    );
 
     setIsLoading(true);
     closeModal();
@@ -182,16 +196,19 @@ const TransactionDeclineHandlingModal: React.FC<
         title: t('CONFIRM_REPORT_TRANSACTION'),
         description: t('CARD_WILL_BE_FROZEN_WARNING', {
           cardType: capitalize(cardType),
-          last4: last4,
+          last4,
         }),
         onSuccess: async () => {
           try {
             const response = await getWithAuth(reportUrl);
             if (!response?.isError) {
               // Track successful fraud report
-              void analytics().logEvent('transaction_decline_report_success', {
-                transaction_id: txnId,
-              });
+              void logAnalyticsToFirebase(
+                AnalyticEvent.TRANSACTION_DECLINE_REPORT_SUCCESS,
+                {
+                  transaction_id: txnId,
+                },
+              );
 
               showModal('state', {
                 type: 'success',
@@ -202,10 +219,13 @@ const TransactionDeclineHandlingModal: React.FC<
               });
             } else {
               // Track fraud report failure
-              void analytics().logEvent('transaction_decline_report_failed', {
-                transaction_id: txnId,
-                error: response?.error?.message || 'Unknown error',
-              });
+              void logAnalyticsToFirebase(
+                AnalyticEvent.TRANSACTION_DECLINE_REPORT_FAILED,
+                {
+                  transaction_id: txnId,
+                  error: response?.error?.message || 'Unknown error',
+                },
+              );
 
               showModal('state', {
                 type: 'error',
@@ -218,9 +238,12 @@ const TransactionDeclineHandlingModal: React.FC<
             }
           } catch (error) {
             // Track exception
-            void analytics().logEvent('transaction_decline_report_exception', {
-              transaction_id: txnId,
-            });
+            void logAnalyticsToFirebase(
+              AnalyticEvent.TRANSACTION_DECLINE_REPORT_EXCEPTION,
+              {
+                transaction_id: txnId,
+              },
+            );
 
             showModal('state', {
               type: 'error',
@@ -235,9 +258,12 @@ const TransactionDeclineHandlingModal: React.FC<
         },
         onFailure: () => {
           // Track user canceled confirmation
-          void analytics().logEvent('transaction_decline_report_canceled', {
-            transaction_id: txnId,
-          });
+          void logAnalyticsToFirebase(
+            AnalyticEvent.TRANSACTION_DECLINE_REPORT_CANCELED,
+            {
+              transaction_id: txnId,
+            },
+          );
 
           setIsLoading(false);
           hideModal();
@@ -248,9 +274,12 @@ const TransactionDeclineHandlingModal: React.FC<
 
   // Track close action
   const handleCloseModal = () => {
-    void analytics().logEvent('transaction_decline_modal_dismissed', {
-      transaction_id: txnId,
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.TRANSACTION_DECLINE_MODAL_DISMISSED,
+      {
+        transaction_id: txnId,
+      },
+    );
     closeModal();
   };
 

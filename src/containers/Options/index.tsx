@@ -5,21 +5,31 @@
  */
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, Linking } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import { CardProviders, ConnectionTypes } from '../../constants/enum';
 import * as C from '../../constants/index';
+import { screenTitle } from '../../constants/index';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { showToast } from '../../containers/utilities/toastUtility';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import { getDeveloperMode, setDeveloperMode } from '../../core/asyncStorage';
 import { GlobalContext } from '../../core/globalContext';
 import { ActivityContext, HdWalletContext } from '../../core/util';
-import useEns from '../../hooks/useEns';
+import useCardUtilities from '../../hooks/useCardUtilities';
+import useConnectionManager from '../../hooks/useConnectionManager';
 import { isAndroid } from '../../misc/checkers';
+import { CardProfile } from '../../models/cardProfile.model';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   CyDImage,
@@ -30,20 +40,6 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import { OptionsContainer } from '../Auth/Share';
-import { screenTitle } from '../../constants/index';
-import useConnectionManager from '../../hooks/useConnectionManager';
-import { get } from 'lodash';
-import { CHAIN_ETH } from '../../constants/server';
-import { logAnalytics } from '../../core/analytics';
-import useCardUtilities from '../../hooks/useCardUtilities';
-import {
-  NavigationProp,
-  ParamListBase,
-  useNavigation,
-} from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppImages from '../../../assets/images/appImages';
-import { CardProfile } from '../../models/cardProfile.model';
 
 export interface Section {
   sentryLabel: string;
@@ -86,11 +82,8 @@ export default function Options() {
   const insets = useSafeAreaInsets();
 
   const [clickCount, setClickCount] = useState(0);
-  const [title, setTitle] = useState('');
-  const [ens, setEns] = useState(false);
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
   const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } =
     hdWalletContext.state;
   const activityContext = useContext<any>(ActivityContext);
@@ -99,11 +92,10 @@ export default function Options() {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
-  const { connectionType } = useConnectionManager();
+  const { connectionType, getSocialAuthProvider } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
-  const resolveDomain = useEns()[1];
-  const { getWalletProfile, isLegacyCardClosed } = useCardUtilities();
+  const { isLegacyCardClosed } = useCardUtilities();
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   useEffect(() => {
@@ -141,26 +133,6 @@ export default function Options() {
     return sortedAsc[sortedAsc.length - 1].datetime > lastVisited;
   };
 
-  useEffect(() => {
-    const getTitleValue = async () => {
-      const profileData = await getWalletProfile(
-        globalContext.globalState.token,
-      );
-      const ens = await resolveDomain(ethereum.address, CHAIN_ETH.backendName);
-      if (get(profileData, ['child'])) {
-        setTitle(t('LINKED_WALLET'));
-      } else if (ens) {
-        setTitle(ens);
-      } else if (isReadOnlyWallet) {
-        setTitle(t('WALLET'));
-      } else {
-        setTitle(t('MY_WALLET'));
-      }
-    };
-
-    void getTitleValue();
-  });
-
   // const referToFriend = () => {
   //   onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'))
   //     .then(() => {})
@@ -179,12 +151,6 @@ export default function Options() {
                 size={20}
                 className='text-base400 mr-[5px] self-center'
               />
-            )}
-
-            {ens && (
-              <CyDText className='text-[10px] font-semibold  bg-p50 px-[2px] mt-[3px] ml-[4px] pb-[25px]'>
-                {ens}
-              </CyDText>
             )}
           </CyDView>
 
@@ -295,7 +261,7 @@ export default function Options() {
             <OptionsContainer
               sentryLabel={'browser'}
               onPress={() => {
-                logAnalytics('broswerClick', {});
+                logAnalyticsToFirebase(AnalyticEvent.BROWSER_CLICK, {});
                 navigation.navigate(C.screenTitle.BROWSER);
               }}
               title={t('BROWSER')}

@@ -13,15 +13,14 @@ import Animated, {
 } from 'react-native-reanimated';
 import clsx from 'clsx';
 import {
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDView,
 } from '../../styles/tailwindComponents';
-import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
 import axios from 'axios';
-import analytics from '@react-native-firebase/analytics';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import { parseErrorMessage } from '../../core/util';
 
 const SlideToConfirmV2 = ({
   approveUrl,
@@ -45,28 +44,33 @@ const SlideToConfirmV2 = ({
   const handleAccept = async () => {
     setAcceptLoading(true);
     setSwipeStatus('swiping');
-    void analytics().logEvent('transaction_approval_approve');
+    void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_APPROVAL_APPROVE);
     try {
       await axios.get(approveUrl);
       setIsError(false);
       setConfirmed(true);
       setSwipeStatus('approved');
-      void analytics().logEvent('transaction_approval_approve_success');
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_APPROVAL_APPROVE_SUCCESS,
+      );
       closeModal();
     } catch (error) {
       setIsError(true);
       setConfirmed(true);
       setSwipeStatus('failed');
-      void analytics().logEvent('transaction_approval_approve_failed');
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_APPROVAL_APPROVE_FAILED,
+      );
       setTimeout(() => {
         closeModal();
       }, 500);
       setTimeout(() => {
+        const errorMessage = parseErrorMessage(error);
         showModal('state', {
           type: 'error',
           title: t('TRANSACTION_APPROVAL_FAILED'),
           description:
-            error?.message ?? t('TRANSACTION_APPROVAL_FAILED_REASON_NA'),
+            errorMessage ?? t('TRANSACTION_APPROVAL_FAILED_REASON_NA'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });

@@ -18,8 +18,8 @@ const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
 const APP_LOGO = require('./appLogo.png');
 const CARD = require('./card.png');
-const ETHEREUM = require('./ethereum_logo.png');
-const BINANCE = require('./binance_coin_bnb_logo.png');
+const ETHEREUM = require('./ethereum.png');
+const BINANCE = require('./bnb.png');
 const ADDITIONAL_CARD = require('./getNewCard.png');
 // need dm image
 const SENDTO_EMPTY = require('./sento_Empty.png');
@@ -127,7 +127,7 @@ const TXN_DEFAULT_ERROR = require('./txn_default_error.png');
 const UNKNOWN_TXN_TOKEN = require('./unknownToken.png');
 const TXN_SELF_SUCCESS = require('./txn_self_success.png');
 const TXN_SELF_ERROR = require('./txn_self_error.png');
-const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
+const ZKSYNC_ERA_LOGO = require('./zk_sync_era.png');
 const BASE_LOGO = require('./base.png');
 const UPGRADE_TO_PHYSICAL_CARD_ARROW = require('./upgradeToPhysicalCardArrow.png');
 const SEND_INVITE_CODE_BG = require('./sendInviteCodeBg.png');
@@ -142,6 +142,10 @@ const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
 const ZRM_INTRO_1 = require('./zrmImage1.png');
 const ZRM_INTRO_2 = require('./zrmImage2.png');
 const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
+const CREATE_WALLET = require('./createWallet.png');
+const IMPORT_WALLET = require('./importWallet.png');
+const CONNECT_WALLET = require('./connectWallet.png');
+const GOOGLE_LOGO = require('./googleLogo.png');
 
 // ICONS FROM S3
 // const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -639,6 +643,18 @@ const CYPHER_VIRTUAL_CARD = {
 const CHECK_MARK_GREEN_CURLY_BG = {
   uri: `${S3_BUCKET_URL_ICONS}/checkMarkGreenCurlyBg.png`,
 };
+const DCC_POS_TERMINAL = {
+  uri: `${S3_BUCKET_URL_ICONS}/dccPosTerminal.png`,
+};
+const CARDS_WITH_EXCLAMATION = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardsWithExclamation.png`,
+};
+const GET_PVC_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/getPvcCard.png`,
+};
+const GET_METAL_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/getMetalCard.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -914,12 +930,24 @@ export const AppImagesMap = {
     CARD_APP_VERIFICATION_FAILED_ICON,
     CYPHER_VIRTUAL_CARD,
     CHECK_MARK_GREEN_CURLY_BG,
+    DCC_POS_TERMINAL,
+    CARDS_WITH_EXCLAMATION,
+    CREATE_WALLET,
+    IMPORT_WALLET,
+    CONNECT_WALLET,
+    GOOGLE_LOGO,
+    GET_PVC_CARD,
+    GET_METAL_CARD,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
 };
 
 enum AppImages {
+  CREATE_WALLET = 'CREATE_WALLET',
+  IMPORT_WALLET = 'IMPORT_WALLET',
+  CONNECT_WALLET = 'CONNECT_WALLET',
+  GOOGLE_LOGO = 'GOOGLE_LOGO',
   ADDITIONAL_CARD = 'ADDITIONAL_CARD',
   INTERNATIONAL_COUNTRIES_QUICK_ACTION = 'INTERNATIONAL_COUNTRIES_QUICK_ACTION',
   UNBLOCK_CARD_QUICK_ACTION = 'UNBLOCK_CARD_QUICK_ACTION',
@@ -1193,6 +1221,10 @@ enum AppImages {
   CARD_APP_VERIFICATION_FAILED_ICON = 'CARD_APP_VERIFICATION_FAILED_ICON',
   CYPHER_VIRTUAL_CARD = 'CYPHER_VIRTUAL_CARD',
   CHECK_MARK_GREEN_CURLY_BG = 'CHECK_MARK_GREEN_CURLY_BG',
+  DCC_POS_TERMINAL = 'DCC_POS_TERMINAL',
+  CARDS_WITH_EXCLAMATION = 'CARDS_WITH_EXCLAMATION',
+  GET_PVC_CARD = 'GET_PVC_CARD',
+  GET_METAL_CARD = 'GET_METAL_CARD',
 }
 
 export default AppImages;

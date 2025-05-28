@@ -4,7 +4,6 @@
  */
 import { estimateGas, getGasPriceFor } from './gasHelper';
 import * as Sentry from '@sentry/react-native';
-import analytics from '@react-native-firebase/analytics';
 import Toast from 'react-native-toast-message';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import { ALL_CHAINS, CHAIN_ETH } from '../../constants/server';
@@ -22,12 +21,13 @@ import {
 import { isHex } from 'web3-validator';
 import {
   createWalletClient,
-  fromHex,
   hexToString,
   http,
   SendTransactionParameters,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { get } from 'lodash';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const chainIdToChain = (chainId: number) =>
   ALL_CHAINS.find(chain => chain.chainIdNumber === chainId) ?? CHAIN_ETH;
@@ -55,6 +55,11 @@ export async function sendTransaction(
   rpc: string,
 ) {
   let isHashGenerated = false;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   try {
     const {
       params: [{ to, data, value }],
@@ -110,8 +115,8 @@ export async function sendTransaction(
             },
           });
 
-        void analytics().logEvent('transaction_submit', {
-          from: hdWalletContext.state.wallet.ethereum.address,
+        void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_SUBMIT, {
+          from: ethereumAddress,
           to: payload.params[0].to,
           gasPrice: finalGasPrice,
           data: payload.params[0].data,
@@ -174,7 +179,11 @@ export async function signTypedDataCypherD(
 }
 
 export async function personalSign(hdWalletContext, payload, webviewRef, rpc) {
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   let messageToSign = '';
   if (payload.method === 'personal_sign') {
     messageToSign = payload.params[0];
@@ -204,8 +213,8 @@ export async function personalSign(hdWalletContext, payload, webviewRef, rpc) {
       text2: 'Message Signed',
       position: 'bottom',
     });
-    await analytics().logEvent('transaction_personal_sign', {
-      from: ethereum.address,
+    await logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_PERSONAL_SIGN, {
+      from: ethereumAddress,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,
     });
@@ -223,13 +232,17 @@ export function parseWebviewPayload(
   pushModal,
   rpc,
 ) {
-  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
   const pushPermissionURL = `${PORTFOLIO_HOST}/v1/push/permissions`;
   const publicClient = getViemPublicClient(rpc);
 
   if (payload.method === 'wallet_pushPermission') {
-    const walletaddress = ethereum.address;
+    const walletaddress = ethereumAddress;
 
     const params = new URLSearchParams();
     params.append('wallet_address', walletaddress);
@@ -296,14 +309,14 @@ export function parseWebviewPayload(
     payload.method === 'eth_requestAccounts'
   ) {
     webviewRef.current.injectJavaScript(
-      `window.ethereum.sendResponse(${payload.id}, ["${ethereum.address}"])`,
+      `window.ethereum.sendResponse(${payload.id}, ["${ethereumAddress}"])`,
     );
   } else if (payload.method === 'eth_getBalance') {
     let tmpAddress;
     if (payload.params !== undefined) {
       tmpAddress = payload.params[0];
     } else {
-      tmpAddress = ethereum.address;
+      tmpAddress = ethereumAddress;
     }
     publicClient
       .getBalance(tmpAddress)
@@ -537,21 +550,21 @@ export function parseWebviewPayload(
     if (eip712Object.primaryType === 'Permit') {
       payloadMessage =
         'Approve ' +
-        eip712Object.message.value +
+        String(eip712Object.message.value) +
         ' ' +
-        eip712Object.domain.name +
+        String(eip712Object.domain.name) +
         ' \nuntil block number ' +
-        eip712Object.message.deadline +
+        String(eip712Object.message.deadline) +
         ' \nfor contract ' +
-        eip712Object.message.spender;
+        String(eip712Object.message.spender);
       signMessageTitleLocal = 'Approve';
     } else {
       payloadMessage = JSON.stringify(eip712Object.message);
       signMessageTitleLocal = 'Message';
     }
     signModal(payloadMessage, payload, signMessageTitleLocal);
-    void analytics().logEvent('eth_signtypeddata_v4', {
-      from: ethereum.address,
+    void logAnalyticsToFirebase(AnalyticEvent.ETH_SIGN_TYPED_DATA_V4, {
+      from: ethereumAddress,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,
       primary_type: eip712Object.primaryType,
@@ -593,8 +606,8 @@ export function parseWebviewPayload(
   } else if (payload.method === 'eth_getCode') {
     // To be implementated
   } else {
-    void analytics().logEvent('unknown_rpc_call', {
-      from: ethereum.address,
+    void logAnalyticsToFirebase(AnalyticEvent.UNKNOWN_RPC_CALL, {
+      from: ethereumAddress,
       method: payload.method,
       chain: hdWalletContext.state.selectedChain.name,
     });

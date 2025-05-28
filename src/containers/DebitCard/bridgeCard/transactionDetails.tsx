@@ -13,6 +13,7 @@ import {
   getSymbolFromCurrency,
   getChainIconFromChainName,
   getExplorerUrlFromChainName,
+  isPotentiallyDccOvercharged,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -30,7 +31,6 @@ import {
   CardTransactionTypes,
   CardProviders,
   ReapTxnStatus,
-  CardControlTypes,
   ButtonType,
   GlobalModalType,
   CardStatus,
@@ -72,9 +72,8 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
-import analytics from '@react-native-firebase/analytics';
 import ReportTransactionModal from '../../../components/v2/reportTransactionModal';
-import Loading from '../../../components/v2/loading';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -90,14 +89,10 @@ const getTransactionSign = (type: string) => {
   switch (type.toUpperCase()) {
     case TransactionFilterTypes.CREDIT:
       return '+';
-    case TransactionFilterTypes.DEBIT:
-      return '-';
-    case TransactionFilterTypes.WITHDRAWAL:
-      return '-';
     case TransactionFilterTypes.REFUND:
       return '+';
     default:
-      return '..';
+      return '';
   }
 };
 
@@ -373,10 +368,13 @@ const DeclinedTransactionActionItem = ({
     try {
       setIsThisWasMeLoading(true);
 
-      void analytics().logEvent('transaction_details_this_was_me', {
-        merchant_id: metadata?.merchantId,
-        merchant_name: metadata?.merchantName,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_DETAILS_THIS_WAS_ME,
+        {
+          merchant_id: metadata?.merchantId,
+          merchant_name: metadata?.merchantName,
+        },
+      );
 
       const merchantId = metadata?.merchantId;
       if (!merchantId) {
@@ -434,10 +432,13 @@ const DeclinedTransactionActionItem = ({
       throw new Error('Merchant ID is required');
     }
 
-    void analytics().logEvent('transaction_details_this_isnt_me', {
-      merchant_id: merchantId,
-      merchant_name: metadata?.merchantName,
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.TRANSACTION_DETAILS_THIS_ISNT_ME,
+      {
+        merchant_id: merchantId,
+        merchant_name: metadata?.merchantName,
+      },
+    );
 
     showModal('state', {
       type: 'warning',
@@ -1179,7 +1180,7 @@ const getTransactionDisplayProps = (
   } else if (type === CardTransactionTypes.DEBIT) {
     return {
       image: AppImages.DEBIT_TRANSACTION_ICON,
-      textColor: 'text-red150',
+      textColor: 'text-base400',
       imageText: 'Debited',
     };
   } else if (type === CardTransactionTypes.CREDIT) {
@@ -1201,6 +1202,70 @@ const getTransactionDisplayProps = (
       imageText: 'Credited',
     };
   }
+};
+
+const OverchargedTransactionInfoSection = () => {
+  const { t } = useTranslation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  // Handler for know more click
+  const handleKnowMore = () => {
+    // Log analytics
+    void logAnalyticsToFirebase(AnalyticEvent.DCC_KNOW_MORE_CLICKED, {
+      category: 'transaction_detail',
+      action: 'dcc_know_more_clicked',
+      label: 'overcharged_transaction_info_section',
+    });
+
+    // Open the help article in external browser
+    navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
+      uri: 'https://help.cypherhq.io/en/articles/11133566-forex-transactions',
+      title: 'Help Center',
+    });
+  };
+
+  return (
+    <CyDView className='bg-p10 p-[16px]'>
+      <CyDView className='flex flex-row items-center justify-between mb-[12px]'>
+        <CyDView className='flex flex-row items-center'>
+          <CyDMaterialDesignIcons
+            name='exclamation'
+            size={18}
+            className='text-red400 mr-[4px]'
+          />
+          <CyDText className='text-[14px] font-bold tracking-[2px]'>
+            {t('ATTENTION')}
+          </CyDText>
+        </CyDView>
+        <CyDView className='bg-p0 px-[12px] py-[4px] rounded-full'>
+          <CyDText className='text-[12px] font-semibold text-p400'>
+            {t('OVERCHARGED_BY_MERCHANT_TEXT')}
+          </CyDText>
+        </CyDView>
+      </CyDView>
+
+      <CyDText className='text-[14px] font-semibold text-base400 mb-[6px]'>
+        {t('POTENTIAL_HIGH_FOREX_FEE')}
+      </CyDText>
+
+      <CyDText className='text-[14px] text-n200 mb-[16px]'>
+        {t('HIGH_FOREX_FEE_INFO_TEXT_1')}
+      </CyDText>
+
+      <CyDTouchView
+        className='bg-n0 rounded-[8px] p-[16px] flex flex-row justify-between items-center'
+        onPress={handleKnowMore}>
+        <CyDText className='font-medium text-[16px] text-base400'>
+          {t('Know More')}
+        </CyDText>
+        <CyDMaterialDesignIcons
+          name='arrow-right'
+          size={20}
+          className='text-base400'
+        />
+      </CyDTouchView>
+    </CyDView>
+  );
 };
 
 export default function TransactionDetails() {
@@ -1284,7 +1349,7 @@ export default function TransactionDetails() {
   };
 
   const addIntlCountry = async (iso2: string, cardId?: string) => {
-    void analytics().logEvent('transaction_details_add_country', {
+    void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_DETAILS_ADD_COUNTRY, {
       country_code: iso2,
       card_id: cardId,
     });
@@ -1361,10 +1426,13 @@ export default function TransactionDetails() {
   };
 
   const activateCard = () => {
-    void analytics().logEvent('transaction_details_activate_card', {
-      card_type: cardDetails.type,
-      card_id: cardDetails.cardId,
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.TRANSACTION_DETAILS_ACTIVATE_CARD,
+      {
+        card_type: cardDetails.type,
+        card_id: cardDetails.cardId,
+      },
+    );
 
     hideModal();
     navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
@@ -1434,7 +1502,7 @@ export default function TransactionDetails() {
 
   async function shareTransaction() {
     try {
-      void analytics().logEvent('transaction_details_share', {
+      void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_DETAILS_SHARE, {
         transaction_id: transaction.id,
         transaction_type: transaction.type ?? '',
       });
@@ -1480,16 +1548,19 @@ export default function TransactionDetails() {
 
   const setIsMerchantDetailsModalVisible = (visible: boolean) => {
     if (visible) {
-      void analytics().logEvent('transaction_details_view_merchant', {
-        merchant_id: transaction?.metadata?.merchant?.merchantId,
-        merchant_name: transaction?.metadata?.merchant?.merchantName,
-      });
+      void logAnalyticsToFirebase(
+        AnalyticEvent.TRANSACTION_DETAILS_VIEW_MERCHANT,
+        {
+          merchant_id: transaction?.metadata?.merchant?.merchantId,
+          merchant_name: transaction?.metadata?.merchant?.merchantName,
+        },
+      );
     }
     setMerchantDetailsModalVisibleState(visible);
   };
 
   useEffect(() => {
-    void analytics().logEvent('transaction_details_viewed', {
+    void logAnalyticsToFirebase(AnalyticEvent.TRANSACTION_DETAILS_VIEWED, {
       transaction_id: transaction.id,
       transaction_type: transaction.type ?? '',
       transaction_status: transaction.tStatus,
@@ -1497,6 +1568,8 @@ export default function TransactionDetails() {
       is_declined: transaction.tStatus === ReapTxnStatus.DECLINED,
     });
   }, []);
+
+  const isOvercharged = isPotentiallyDccOvercharged(transaction);
 
   return (
     <>
@@ -1659,6 +1732,7 @@ export default function TransactionDetails() {
                   </CyDView>
                 )}
               </CyDView>
+              {isOvercharged && <OverchargedTransactionInfoSection />}
               <CyDView className='flex flex-col flex-1 justify-between bg-n0'>
                 <CyDView className='w-full bg-n0 px-[25px] mt-[24px] mb-[60px]'>
                   <TransactionDetail
@@ -1771,16 +1845,13 @@ export default function TransactionDetails() {
                       title={'Explore Premium'}
                       type={ButtonType.DARK}
                       onPress={() => {
-                        void analytics().logEvent(
-                          'transaction_details_explore_premium',
+                        void logAnalyticsToFirebase(
+                          AnalyticEvent.TRANSACTION_DETAILS_EXPLORE_PREMIUM,
                           {
                             transaction_id: transaction.id,
                             transaction_type: transaction.type ?? '',
                             premium_amount_saved: getPremiumAmount(),
                           },
-                        );
-                        void analytics().logEvent(
-                          'explore_premium_tn_detail_cta',
                         );
                         setPlanChangeModalVisible(true);
                       }}
@@ -1813,14 +1884,17 @@ export default function TransactionDetails() {
                 transaction.type === CardTransactionTypes.DEBIT &&
                 !transaction.title.toLowerCase().includes('withdrawal')
               ) {
-                void analytics().logEvent('transaction_details_report_issue', {
-                  transaction_id: transaction.id,
-                });
+                void logAnalyticsToFirebase(
+                  AnalyticEvent.TRANSACTION_DETAILS_REPORT_ISSUE,
+                  {
+                    transaction_id: transaction.id,
+                  },
+                );
                 setIsReportModalVisible(true);
                 sendFirebaseEvent(hdWalletContext, 'report_transaction_issue');
               } else {
-                void analytics().logEvent(
-                  'transaction_details_contact_support',
+                void logAnalyticsToFirebase(
+                  AnalyticEvent.TRANSACTION_DETAILS_CONTACT_SUPPORT,
                   {
                     transaction_id: transaction.id,
                   },

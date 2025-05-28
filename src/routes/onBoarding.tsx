@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { screenTitle } from '../constants/index';
-import OnBoarding from '../containers/OnBoarding';
 import EnterKeyScreen from '../containers/Auth/EnterKey';
 import QRScanner from '../containers/Qrcode/QRScanner';
 import CreateSeedPhrase from '../containers/OnBoarding/createSeedPhrase';
@@ -17,16 +16,17 @@ import {
   CyDView,
 } from '../styles/tailwindComponents';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OnBoardingGetStarted from '../containers/OnBoarding/getStarted';
+import OnBoardOpotions from '../containers/OnBoarding/onBoardOpotions';
 
 const Stack = createNativeStackNavigator();
 
-const CustomHeader = ({
-  title,
-  navigation,
-}: {
+interface CustomHeaderProps {
   title: string;
   navigation: NavigationProp<ParamListBase>;
-}) => {
+}
+
+const CustomHeader: React.FC<CustomHeaderProps> = ({ title, navigation }) => {
   const insets = useSafeAreaInsets();
   return (
     <CyDView
@@ -47,13 +47,38 @@ const CustomHeader = ({
   );
 };
 
-function OnBoardingStack(props: any) {
-  const initialScreen = props.initialScreen ?? screenTitle.ONBOARDING;
+const getHeaderOptions = (title: string) => {
+  return ({ navigation }: { navigation: NavigationProp<ParamListBase> }) => ({
+    header: () => <CustomHeader title={title} navigation={navigation} />,
+  });
+};
+
+interface OnBoardingStackProps {
+  initialScreen?: string;
+}
+
+function OnBoardingStack({
+  initialScreen = screenTitle.ONBOARDING_GET_STARTED,
+}: OnBoardingStackProps) {
   return (
     <Stack.Navigator initialRouteName={initialScreen}>
-      <Stack.Screen
+      {/* <Stack.Screen
         name={screenTitle.ONBOARDING}
         component={OnBoarding}
+        options={{
+          headerShown: false,
+        }}
+      /> */}
+      <Stack.Screen
+        name={screenTitle.ONBOARDING_GET_STARTED}
+        component={OnBoardingGetStarted}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name={screenTitle.ONBOARDING_OPTIONS}
+        component={OnBoardOpotions}
         options={{
           headerShown: false,
         }}
@@ -75,29 +100,17 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.ENTER_PRIVATE_KEY}
         component={EnterPrivateKey}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader title='Import Wallet' navigation={navigation} />
-          ),
-        })}
+        options={getHeaderOptions('Import Wallet')}
       />
       <Stack.Screen
         name={screenTitle.IMPORT_WALLET_OPTIONS}
         component={ImportWalletOptions}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader title='Import Wallet' navigation={navigation} />
-          ),
-        })}
+        options={getHeaderOptions('Import Wallet')}
       />
       <Stack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader title='SCAN QR CODE' navigation={navigation} />
-          ),
-        })}
+        options={getHeaderOptions('SCAN QR CODE')}
       />
       <Stack.Screen
         name={screenTitle.CREATE_SEED_PHRASE}
@@ -109,11 +122,7 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.TRACK_WALLET_SCREEN}
         component={TrackWallet}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader title='Track Any Wallet' navigation={navigation} />
-          ),
-        })}
+        options={getHeaderOptions('Track Any Wallet')}
       />
     </Stack.Navigator>
   );

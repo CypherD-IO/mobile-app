@@ -18,6 +18,7 @@ import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtilit
 import {
   formatToLocalDate,
   getSymbolFromCurrency,
+  isPotentiallyDccOvercharged,
   limitDecimalPlaces,
 } from '../../core/util';
 import { ICardTransaction } from '../../models/card.model';
@@ -51,14 +52,10 @@ const getTransactionSign = (type: string) => {
   switch (type.toUpperCase()) {
     case TransactionFilterTypes.CREDIT:
       return '+';
-    case TransactionFilterTypes.DEBIT:
-      return '-';
-    case TransactionFilterTypes.WITHDRAWAL:
-      return '-';
     case TransactionFilterTypes.REFUND:
       return '+';
     default:
-      return '..';
+      return '';
   }
 };
 
@@ -99,7 +96,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
       <CyDTouchView
         key={item.id}
         className={clsx(
-          'h-[70px] flex flex-row justify-between items-center p-[16px] border-b border-n40 rounded-[22px]',
+          'flex flex-col p-[16px] border-b border-n40 rounded-[22px]',
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');
@@ -107,82 +104,100 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
             transaction: item,
           });
         }}>
-        <CyDView
-          className={
-            'flex flex-row justify-start align-center items-center w-[65%]'
-          }>
-          <CyDView className='w-[28px] h-[28px] rounded-tl-[8px] rounded-br-[8px] items-center justify-center bg-n30'>
-            {iconUrl && iconUrl !== '' ? (
-              <CyDFastImage
-                source={{ uri: iconUrl }}
-                className={clsx('h-[14px] w-[14px]', {})}
-                resizeMode={'contain'}
-              />
-            ) : (
-              <CyDMaterialDesignIcons
-                name={getTransactionIndicator(type)}
-                size={16}
-                className={clsx('text-base400', {
-                  invert:
-                    type === CardTransactionTypes.CREDIT ||
-                    type === CardTransactionTypes.REFUND ||
-                    type === CardTransactionTypes.DEBIT,
-                })}
-              />
-            )}
-          </CyDView>
-          <CyDView className={'ml-[12px]'}>
-            <CyDText
-              className='font-[600] text-[13px] flex-wrap w-[200px]'
-              ellipsizeMode='tail'
-              numberOfLines={1}>
-              {title.replace(/\s+/g, ' ')}
-            </CyDText>
-            <CyDView className='flex flex-row items-center'>
-              <CyDText className='text-[11px] font-base150'>
-                {formatToLocalDate(moment.unix(createdAt).toISOString())}
-              </CyDText>
-              {getChannelIcon(wallet ?? channel ?? '').categoryIcon && (
-                <>
-                  <CyDView className='w-[4px] h-[4px] bg-base150 rounded-full mx-[4px]' />
-
-                  <CyDFastImage
-                    source={
-                      getChannelIcon(wallet ?? channel ?? '').categoryIcon
-                    }
-                    className='h-[16px] w-[16px]'
-                    resizeMode='contain'
-                  />
-                </>
+        <CyDView className='flex flex-row justify-between items-center w-full'>
+          <CyDView
+            className={
+              'flex flex-row justify-start align-center items-center w-[65%]'
+            }>
+            <CyDView className='w-[28px] h-[28px] rounded-tl-[8px] rounded-br-[8px] items-center justify-center bg-n30'>
+              {iconUrl && iconUrl !== '' ? (
+                <CyDFastImage
+                  source={{ uri: iconUrl }}
+                  className={clsx('h-[14px] w-[14px]', {})}
+                  resizeMode={'contain'}
+                />
+              ) : (
+                <CyDMaterialDesignIcons
+                  name={getTransactionIndicator(type)}
+                  size={16}
+                  className={clsx('text-base400', {
+                    invert:
+                      type === CardTransactionTypes.CREDIT ||
+                      type === CardTransactionTypes.REFUND ||
+                      type === CardTransactionTypes.DEBIT,
+                  })}
+                />
               )}
             </CyDView>
-          </CyDView>
-        </CyDView>
-        <CyDView className='flex justify-center items-end'>
-          {tStatus === ReapTxnStatus.DECLINED ? (
-            <CyDView className='flex flex-row items-center'>
-              <CyDMaterialDesignIcons
-                name='alert-circle'
-                size={20}
-                className='text-n200 mr-[2px]'
-              />
-              <CyDText className='text-[14px] font-weight-500 mr-[5px] text-n200'>
-                {t('DECLINED')}
+            <CyDView className={'ml-[12px]'}>
+              <CyDText
+                className='font-[600] text-[13px] flex-wrap w-[200px]'
+                ellipsizeMode='tail'
+                numberOfLines={1}>
+                {title.replace(/\s+/g, ' ')}
               </CyDText>
+              <CyDView className='flex flex-row items-center'>
+                <CyDText className='text-[11px] font-base150'>
+                  {formatToLocalDate(moment.unix(createdAt).toISOString())}
+                </CyDText>
+                {getChannelIcon(wallet ?? channel ?? '').categoryIcon && (
+                  <>
+                    <CyDView className='w-[4px] h-[4px] bg-base150 rounded-full mx-[4px]' />
+
+                    <CyDFastImage
+                      source={
+                        getChannelIcon(wallet ?? channel ?? '').categoryIcon
+                      }
+                      className='h-[16px] w-[16px]'
+                      resizeMode='contain'
+                    />
+                  </>
+                )}
+              </CyDView>
             </CyDView>
-          ) : (
-            <CyDText
-              className={clsx('font-[600] text-[14px] mr-[5px]', {
-                'text-successTextGreen':
-                  type === CardTransactionTypes.CREDIT ||
-                  type === CardTransactionTypes.REFUND,
-              })}>
-              {getTransactionSign(type)}
-              {getSymbolFromCurrency(fxCurrencySymbol ?? 'USD') ??
-                fxCurrencySymbol}{' '}
-              {limitDecimalPlaces(fxCurrencyValue ?? amount, 2)}{' '}
-            </CyDText>
-          )}
+          </CyDView>
+          <CyDView className='flex justify-center items-end'>
+            {tStatus === ReapTxnStatus.DECLINED ? (
+              <CyDView className='flex flex-row items-center'>
+                <CyDMaterialDesignIcons
+                  name='alert-circle'
+                  size={20}
+                  className='text-n200 mr-[2px]'
+                />
+                <CyDText className='text-[14px] font-weight-500 mr-[5px] text-n200'>
+                  {t('DECLINED')}
+                </CyDText>
+              </CyDView>
+            ) : (
+              <>
+                <CyDView className='flex flex-row items-center mb-[2px]'>
+                  <CyDText
+                    className={clsx('font-[600] text-[14px] mr-[5px]', {
+                      'text-successTextGreen':
+                        type === CardTransactionTypes.CREDIT ||
+                        type === CardTransactionTypes.REFUND,
+                    })}>
+                    {getTransactionSign(type)}
+                    {getSymbolFromCurrency(fxCurrencySymbol ?? 'USD') ??
+                      fxCurrencySymbol}{' '}
+                    {limitDecimalPlaces(fxCurrencyValue ?? amount, 2)}{' '}
+                  </CyDText>
+                </CyDView>
+                {isPotentiallyDccOvercharged(item) && (
+                  <CyDView className='flex flex-row items-center w-fit rounded-full bg-p0 px-[4px] py-[2px]'>
+                    <CyDMaterialDesignIcons
+                      name='alert-circle'
+                      size={12}
+                      className='text-p400 mr-[2px]'
+                    />
+                    <CyDText className='text-[10px] font-semibold text-p400'>
+                      {t('OVERCHARGED')}
+                    </CyDText>
+                  </CyDView>
+                )}
+              </>
+            )}
+          </CyDView>
         </CyDView>
       </CyDTouchView>
     </>

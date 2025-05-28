@@ -15,6 +15,7 @@ import { screenTitle } from '../../../constants';
 import {
   CardFeePercentage,
   MINIMUM_TRANSFER_AMOUNT_ETH,
+  MINIMUM_TRANSFER_AMOUNT_HL_SPOT,
   OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
   SlippageFactor,
 } from '../../../constants/data';
@@ -48,6 +49,7 @@ import {
   limitDecimalPlaces,
   parseErrorMessage,
   validateAmount,
+  formatCurrencyWithSuffix,
 } from '../../../core/util';
 import {
   CyDImage,
@@ -76,7 +78,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const ethereumAddress = get(
+    hdWallet,
+    'state.wallet.ethereum.address',
+    undefined,
+  );
   const wallet = hdWallet.state.wallet;
   const cardProfile = globalContext.globalState.cardProfile;
   const cards = get(cardProfile, currentCardProvider)?.cards;
@@ -93,7 +99,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
-  const minTokenValueEth = 50;
+  const minTokenValueEth = MINIMUM_TRANSFER_AMOUNT_ETH;
+  const minTokenValueHlSpot = MINIMUM_TRANSFER_AMOUNT_HL_SPOT;
   const [selectedToken, setSelectedToken] = useState<
     Holding & IHyperLiquidHolding
   >();
@@ -188,7 +195,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           gasDetails = await estimateGasForEvm({
             publicClient,
             chain: chainDetails.backendName,
-            fromAddress: ethereum.address,
+            fromAddress: ethereumAddress,
             toAddress: targetWalletAddress as `0x${string}`,
             amountToSend: actualTokensRequired,
             contractAddress: contractAddress as `0x${string}`,
@@ -338,7 +345,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         const amountToQuote = isCrpytoInput ? cryptoAmount : usdAmount;
         const payload = {
           ecosystem: 'evm',
-          address: ethereum.address,
+          address: ethereumAddress,
           chain: chainDetails.backendName,
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
@@ -382,7 +389,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -439,7 +446,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
             contractDecimals,
@@ -500,7 +507,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             chain: chainDetails.backendName,
             contractAddress,
             usdAmount,
-            ethAddress: ethereum.address,
+            ethAddress: ethereumAddress,
             contractDecimals,
           },
         };
@@ -572,7 +579,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       symbol: selectedTokenSymbol,
     } = selectedToken as Holding;
 
-    const nativeTokenSymbol =
+    const nativeTokenSymbol: string =
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
 
     let amountInCrypto = balanceDecimal;
@@ -626,22 +633,22 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             ) {
               const gasReservedForNativeToken = await estimateReserveFee({
                 tokenData: selectedToken,
-                fromAddress: hdWallet.state.wallet.ethereum.address,
-                toAddress: hdWallet.state.wallet.ethereum.address,
+                fromAddress: ethereumAddress,
+                toAddress: ethereumAddress,
                 publicClient,
                 rpc: getWeb3Endpoint(chainDetails, globalContext),
               });
 
               amountInCrypto = DecimalHelper.subtract(
                 balanceDecimal,
-                gasReservedForNativeToken,
+                gasReservedForNativeToken ?? '0',
               ).toString();
             } else {
               const gasDetails = await estimateGasForEvm({
                 publicClient,
                 chain: chainDetails.backendName,
-                fromAddress: ethereum.address,
-                toAddress: ethereum.address,
+                fromAddress: ethereumAddress,
+                toAddress: ethereumAddress,
                 amountToSend: amountInCrypto,
                 contractAddress: contractAddress as `0x${string}`,
                 contractDecimals,
@@ -689,7 +696,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         try {
           const payload = {
             ecosystem: 'evm',
-            address: ethereum.address,
+            address: ethereumAddress,
             chain: chainDetails.backendName,
             amount: DecimalHelper.toNumber(amountInCrypto),
             tokenAddress: contractAddress,
@@ -737,7 +744,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               chain: chainDetails.backendName,
               contractAddress,
               usdAmount,
-              ethAddress: ethereum.address,
+              ethAddress: ethereumAddress,
               contractDecimals,
             },
           };
@@ -855,7 +862,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               chain: chainDetails.backendName,
               contractAddress,
               usdAmount,
-              ethAddress: ethereum.address,
+              ethAddress: ethereumAddress,
               chainAddress: wallet[chainDetails.chainName].address,
               coinGeckoId,
               contractDecimals,
@@ -888,7 +895,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               fromAddress: wallet[chainDetails.chainName].address,
               toAddress: OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION,
             });
-            if (gasDetails) {
+            if (!gasDetails.isError) {
               const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
               amountInCrypto = DecimalHelper.subtract(
                 balanceDecimal,
@@ -973,7 +980,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               chain: chainDetails.backendName,
               contractAddress,
               usdAmount,
-              ethAddress: ethereum.address,
+              ethAddress: ethereumAddress,
               chainAddress: wallet[chainDetails.chainName].address,
               coinGeckoId,
               contractDecimals,
@@ -1087,18 +1094,28 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         ) {
           errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
         } else if (
+          usdAmount &&
+          selectedToken.accountType === 'spot' &&
+          DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_HL_SPOT)
+        ) {
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_HL_SPOT')} $${MINIMUM_TRANSFER_AMOUNT_HL_SPOT}`;
+        } else if (
           !usdAmount ||
           DecimalHelper.isLessThan(usdAmount, minTokenValueLimit)
         ) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
+          } else if (selectedToken.accountType === 'spot') {
+            errorMessage = `${t<string>('MINIMUM_AMOUNT_HL_SPOT', {
+              minAmount: String(MINIMUM_TRANSFER_AMOUNT_HL_SPOT),
+            })}`;
           } else {
             errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
           }
         }
 
         return (
-          <CyDView className='my-[8px]'>
+          <CyDView className='mt-[8px]'>
             <CyDText className='text-center text-red300 font-medium text-wrap'>
               {errorMessage}
             </CyDText>
@@ -1132,7 +1149,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     if (tempIsCryproInput) {
       const usdAmt = DecimalHelper.multiply(
         amount,
-        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
+        selectedToken?.isZeroFeeCardFunding ? 1 : (selectedToken?.price ?? 0),
       );
       setCryptoAmount(amount);
       setUsdAmount(
@@ -1146,7 +1163,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount,
           selectedToken?.isZeroFeeCardFunding ? 1 : multiplier,
         ),
-        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price,
+        selectedToken?.isZeroFeeCardFunding ? 1 : (selectedToken?.price ?? 0),
       );
       setCryptoAmount(cryptoAmt.toString());
       setUsdAmount(amount);
@@ -1188,6 +1205,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
         minTokenValueEth={minTokenValueEth}
+        minTokenValueHlSpot={minTokenValueHlSpot}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);
@@ -1293,6 +1311,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     (selectedToken?.symbol ?? ' '))}
             </CyDText>
 
+            {selectedToken?.isInfLimit && (
+              <CyDView className='flex flex-row bg-green20 ml-3 mt-[8px] rounded-full justify-between items-center px-3 py-1 w-fit gap-x-1 m'>
+                <CyDMaterialDesignIcons
+                  name='check-circle'
+                  size={16}
+                  className='text-green400'
+                />
+
+                <CyDText className='text-green400 text-sm'>
+                  {t('MAX_LOAD_LIMIT', {
+                    maxLoadLimit: formatCurrencyWithSuffix(
+                      selectedToken?.maxQuoteLimit,
+                    ),
+                  })}
+                </CyDText>
+              </CyDView>
+            )}
             <RenderWarningMessage />
             {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
                 <CyDView className='mb-[2px]'>
@@ -1319,7 +1354,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='flex flex-row justify-evenly items-center'>
+        <CyDView className='flex flex-row justify-evenly items-center  mt-[12px]'>
           <CyDTouchView
             onPress={() => {
               onEnterAmount(suggestedAmounts.low);

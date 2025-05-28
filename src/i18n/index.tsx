@@ -113,6 +113,10 @@ const resources = {
         'This action will delete your current wallet to replace with another wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
       DELETE_WALLET_SUB:
         'This action will delete your current wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
+      DELETE_WALLET_SUB_SOCIAL:
+        'This action will delete your current wallet. \nYou can login the with the same social account to restore the wallet.\n',
+      SOCIAL_AUTH_MFA_REMINDER:
+        'Please make sure you have access to the MFA that you have setup during signup. Lossing access to the MFA will result in loss of access to your wallet. For safety purposes you can backup the private key of your wallet before signing out.',
       SEED_PHARSE_SUB:
         'You are copying seed phrase. Please be careful in storing the phrase in a secure location. If someone else gets access to this then they will have access to your wallet.',
       REMOVE_WALL_ACC:
@@ -944,6 +948,9 @@ const resources = {
       DISCONNECT_WALLET: 'Disconnect wallet',
       DISCONNECT_WALLET_SUB:
         'Are you sure you want to disconnect from your wallet ?',
+      SESSION_EXPIRED: 'Session expired',
+      SESSION_EXPIRED_SUB:
+        'Your session has expired with email. \nPlease login again to access your wallet again',
       UNABLE_TO_CONNECT: 'Unable to connect',
       BROWSER_WALLET_CONNECT_ERROR:
         'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
@@ -1135,22 +1142,24 @@ const resources = {
       ORDER_YOUR_METAL_CARD: 'Order your Metal Card',
       USDC_TOKEN: 'USDC token',
       OTHER_TOKENS: 'Other tokens',
-      FOREX_MARKUP_NON_USD: 'Forex Markup (Non USD)',
+      FOREX_MARKUP_NON_USD: 'Forex Markup (Non USD)*',
       CRYPTO_LOAD_FEE: 'Crypto load fee',
       CHARGE_BACK_COVER: 'Chargeback Cover',
       ATM_FEE: 'ATM Withdraw Fee',
       USAGE_DETAILS: 'Usage deatils',
       DAILY_LIMIT: 'Daily Limit',
       MONTHYL_LIMIT: 'Monthly Limit',
-      HIGHER_LIMIT: 'Higher Limit',
+      HIGHER_LIMIT: 'Higher Limit*',
       CARD_SPENDING_LIMIT: 'Card Spending limit',
       COUNTRIES_SUPPORTED: 'Countries supported',
       MERCHANTS_SUPPORTED: 'Merchants supported',
       COMPARISION_NOTE_1:
-        '(1) Users can request a higher spending limit. If you have specific requirements, reach out to support increasing your limit.',
+        '(1) Higher spending limit can be requested from the card control panel',
       COMPARISION_NOTE_2: '(2) Shipping Charges Apply for add on cards',
       COMPARISION_NOTE_3:
         '(3) Lower liquidity tokens may incur crypto load fees of up to 3%.',
+      COMPARISION_NOTE_4:
+        '(4) Cypher charges a {{forexMarkupStandard}}% forex markup for standard users and {{forexMarkupPremium}}% for premium users. However, other financial institutions involved in processsing the transaction may charge extra fees of 0.25% to 1%, which are not controlled by Cypher.',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
@@ -1590,7 +1599,8 @@ const resources = {
         'I certify that the information i have provided is accurate and that i will abide by all the rules and requirements related to my Cypher Card.',
       RAIN_SOLICITATION:
         'I acknowledge that applying for the Cypher Card does not constitute unauthorized solicitation',
-      CARD_OUT_OF_STOCK: 'Not yet available for your region',
+      CARD_OUT_OF_STOCK:
+        'Next batch is under production. Will be available soon',
       CONFIRM_REPORT_TRANSACTION:
         'Are you sure you want to report this transaction?',
       CARD_WILL_BE_FROZEN_WARNING:
@@ -1654,7 +1664,7 @@ const resources = {
       LOAD_YOUR_CARD_DESCRIPTION:
         'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
-        'Load up your Cypher card and get ready to dive into the action! With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
+        'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
       NEXT: 'Next',
       ADDITIONAL_DOCUMENT_REQUIRED: 'Additional Document Required',
       ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION:
@@ -1670,6 +1680,39 @@ const resources = {
       INTRODUCE_YOURSELF_DESCRIPTION:
         'Share a few basic details to help us get to know you.',
       INTRODUCE_YOURSELF: 'Introduce yourself',
+      ATTENTION: 'ATTENTION',
+      OVERCHARGED_BY_MERCHANT: "You've been overcharged by merchant",
+      OVERCHARGE_DCC_INFO_TEXT_1:
+        "We've noticed that many of your recent transactions are incurring high foreign exchange fees likely because USD or HKD is being selected instead of the local currency.",
+      PRO_TIP: 'Pro tip:',
+      DURING_A_TRANSACTION_OR_ATM_WITHDRAWAL:
+        'During a transaction or ATM withdrawal:',
+      ALWAYS_CHOOSE_TO_PAY_IN_THE_LOCAL_CURRENCY:
+        'Always choose to pay in the local currency.',
+      AVOID_USING_HKD_OR_USD_IN_TRANSACTIONS:
+        'Avoid using Hong Kong Dollars (HKD) or United States Dollars (USD) in transactions.',
+      I_UNDERSTOOD: 'I Understood',
+      KNOW_MORE: 'Know More',
+      POTENTIAL_HIGH_FOREX_FEE: 'Potential High Forex Fee',
+      OVERCHARGED_BY_MERCHANT_TEXT: 'Overcharged by Merchant',
+      HIGH_FOREX_FEE_INFO_TEXT_1:
+        'High forex markup fee of 5% - 15% charged by the merchant. To avoid such high charges, always choose the local currency at the card terminal or during ATM withdrawals.',
+      OVERCHARGED: 'Overcharged',
+      METAL_OUT_OF_STOCK:
+        'Our new batch of metal cards is now in production! You’ll be able to order your free Premium metal card in 4–6 weeks. We’ll notify you as soon as it’s ready.',
+      YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY:
+        'Your Premium benefits begin right away.',
+      IMPORTANT: 'Important',
+      MAX_LOAD_LIMIT: 'You can load up to ${{maxLoadLimit}} in a single load.',
+      LOAD_UP_TO: 'Load up to ${{maxLoadLimit}}',
+      MINIMUM_AMOUNT_HL_SPOT:
+        'Minimum amount for Hyper Liquid Spot Token is ${{minAmount}}',
+      SIGN_OUT: 'Sign Out',
+      LOGIN_AGAIN: 'Login Again',
+      GET_FREE_METAL_CARD_TITLE: 'Ding dong! Your free metal card awaits !',
+      GET_FIRST_PVC_CARD_TITLE: 'Get your first PVC card',
+      GET_FIRST_PVC_CARD_BUTTON_TEXT: 'Order PVC Card',
+      GET_METAL_CARD_BUTTON_TEXT: 'Order Metal Card',
     },
   },
 };

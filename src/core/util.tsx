@@ -34,7 +34,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get, omit } from 'lodash';
+import { find, get, isEmpty, omit } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
@@ -45,7 +45,10 @@ import { t } from 'i18next';
 import {
   AnalyticsType,
   CardProviders,
+  CardTransactionTypes,
   CypherPlanId,
+  ReapTxnStatus,
+  EcosystemsEnum,
   SignMessageValidationType,
 } from '../constants/enum';
 import {
@@ -57,10 +60,12 @@ import {
   ANALYTICS_SUCCESS_URL,
   chainExplorerMapping,
   ChainNameToChainMapping,
+  MINIMUM_TRANSFER_AMOUNT_ETH,
+  MINIMUM_TRANSFER_AMOUNT_HL_SPOT,
 } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
-import { Holding } from './portfolio';
+import { Holding, IHyperLiquidHolding } from './portfolio';
 import Long from 'long';
 import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
@@ -77,13 +82,12 @@ import { DecimalHelper } from '../utils/decimalHelper';
 import { Common, Hardfork } from '@ethereumjs/common';
 import { TransactionFactory } from '@ethereumjs/tx';
 import crypto, { randomBytes } from 'crypto';
-import { mainnet } from 'viem/chains';
 import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { CardProfile } from '../models/cardProfile.model';
 import { CardDesign } from '../models/cardDesign.interface';
 import { CYPHER_CARD_IMAGES } from '../../assets/images/appImages';
-import { Card } from '../models/card.model';
+import { Card, ICardTransaction } from '../models/card.model';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -473,11 +477,7 @@ export const removeSolidProhibitedCountriesFromCountryMaster = () => {
 };
 
 export const isAddressSet = (address: string) => {
-  return (
-    address !== undefined &&
-    address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-    address !== IMPORTING
-  );
+  return address !== undefined && address !== IMPORTING;
 };
 
 export function copyToClipboard(text: string) {
@@ -992,9 +992,12 @@ export const isNativeToken = (tokenData: any) => {
 export const isValidMessage = (
   address: string,
   messageToBeValidated: string,
+  ecosystem: EcosystemsEnum = EcosystemsEnum.EVM,
 ) => {
   const messageToBeValidatedWith =
-    /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
+    ecosystem === EcosystemsEnum.EVM
+      ? /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i
+      : /^Cypher Wallet wants you to sign in with your Solana account: \nAddress: [1-9A-HJ-NP-Za-km-z]{32,44} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: [1-9A-HJ-NP-Za-km-z]{32,44} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
   const currentVersion = '1.0';
   const versionSubstring = messageToBeValidated
     .match(/Version: (.*)[^\\n]/g)
@@ -1300,4 +1303,47 @@ export const getCardImage = (card: Card, provider: CardProviders) => {
 
 export const toBase64 = (bytes: Uint8Array): string => {
   return Buffer.from(bytes).toString('base64');
+};
+
+export function isPotentiallyDccOvercharged(txn: ICardTransaction): boolean {
+  const country = txn.metadata?.merchant?.merchantCountry;
+  return (
+    Boolean(country) &&
+    country !== 'US' &&
+    !isEmpty(country) &&
+    !txn.fxCurrencySymbol &&
+    txn.type === CardTransactionTypes.DEBIT &&
+    txn.tStatus !== ReapTxnStatus.DECLINED &&
+    txn.amount !== 0
+  );
+}
+
+// Format currency with K, M, B suffixes
+export const formatCurrencyWithSuffix = (value: number): string => {
+  if (value == null || isNaN(value)) return '0';
+  if (value < 0) return `-${formatCurrencyWithSuffix(Math.abs(value))}`;
+  if (value >= 1000000000) {
+    return `${Math.round((value / 1000000000) * 10) / 10}B`;
+  }
+  if (value >= 1000000) {
+    return `${Math.round((value / 1000000) * 10) / 10}M`;
+  }
+  if (value >= 1000) {
+    return `${Math.round(value / 1000)}K`;
+  }
+  return `${value}`;
+};
+
+export const getMinimumCardLoadAmount = (
+  tokenData: Holding | IHyperLiquidHolding | undefined,
+) => {
+  // hyperliquid spot account $15
+  // eth $50
+  // all other $10
+
+  return tokenData?.accountType === 'spot'
+    ? MINIMUM_TRANSFER_AMOUNT_HL_SPOT
+    : tokenData?.chainDetails?.backendName === CHAIN_ETH.backendName
+      ? MINIMUM_TRANSFER_AMOUNT_ETH
+      : 10;
 };

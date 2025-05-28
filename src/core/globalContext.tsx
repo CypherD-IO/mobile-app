@@ -3,7 +3,6 @@ import React, { type Dispatch } from 'react';
 import { GlobalContextType } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
 import { CardProfile } from '../models/cardProfile.model';
-import { IPlanData } from '../models/planData.interface';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -14,7 +13,6 @@ export interface GlobalStateDef {
   cardProfile?: CardProfile;
   ibc?: boolean;
   isAuthenticated?: boolean;
-  planInfo: IPlanData;
 }
 
 export interface RPCDetail {
@@ -84,41 +82,6 @@ export const initialGlobalState: GlobalStateDef = {
   },
   token: '',
   isAuthenticated: false,
-  planInfo: {
-    default: {
-      basic_plan_v1: {
-        usdcFee: 0.5,
-        nonUsdcFee: 1,
-        fxFeePc: 1.5,
-        fxMarkup: 1,
-        physicalCardFee: 50,
-        chargeBackLimit: 0,
-        cost: 0,
-        dailyLimit: 2000,
-        monthlyLimit: 7000,
-        atmFee: 3,
-        maxPhysicalCards: 1,
-        extraPhysicalCardFee: 50,
-        extraVirtualCardFee: 10,
-      },
-      pro_plan_v1: {
-        usdcFee: 0,
-        nonUsdcFee: 0.5,
-        fxFeePc: 0.5,
-        fxMarkup: 0,
-        physicalCardFee: 0,
-        chargeBackLimit: 300,
-        cost: 199,
-        dailyLimit: 5000,
-        monthlyLimit: 20000,
-        atmFee: 3,
-        maxPhysicalCards: 4, // 1 + 3 physical cards
-        extraPhysicalCardFee: 50, // fee for any kind of extra physical card
-        extraVirtualCardFee: 10, // fee for any kind of extra virtual card
-      },
-    },
-    custom: {},
-  },
   cardProfile: undefined,
 };
 
@@ -128,7 +91,6 @@ interface GlobalReducerInput {
     | GlobalContextType.SIGN_IN
     | GlobalContextType.CARD_PROFILE
     | GlobalContextType.IS_APP_AUTHENTICATED
-    | GlobalContextType.PLAN_INFO
     | GlobalContextType.IBC
     | GlobalContextType.RESET_GLOBAL_STATE;
   rpc?: RpcResponseDetail;
@@ -136,7 +98,6 @@ interface GlobalReducerInput {
   cardProfile?: CardProfile;
   ibc?: boolean;
   isAuthenticated?: boolean;
-  planInfo?: IPlanData;
 }
 
 export const gloabalContextReducer = (
@@ -144,15 +105,8 @@ export const gloabalContextReducer = (
   input: GlobalReducerInput,
 ): GlobalStateDef => {
   if (input) {
-    const {
-      type,
-      rpc,
-      sessionToken,
-      cardProfile,
-      ibc,
-      isAuthenticated,
-      planInfo,
-    } = input;
+    const { type, rpc, sessionToken, cardProfile, ibc, isAuthenticated } =
+      input;
 
     if (type === GlobalContextType.RPC_UPDATE && rpc) {
       return { ...state, rpcEndpoints: rpc };
@@ -164,8 +118,6 @@ export const gloabalContextReducer = (
       return { ...state, ibc };
     } else if (type === GlobalContextType.IS_APP_AUTHENTICATED) {
       return { ...state, isAuthenticated };
-    } else if (type === GlobalContextType.PLAN_INFO) {
-      return { ...state, planInfo: planInfo ?? initialGlobalState.planInfo };
     } else if (type === GlobalContextType.RESET_GLOBAL_STATE) {
       return initialGlobalState;
     }

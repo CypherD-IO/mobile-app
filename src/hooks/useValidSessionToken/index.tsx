@@ -55,8 +55,6 @@ export default function useValidSessionToken() {
         // throw error
         return false;
       }
-      // }
-      return true;
     }
     return false;
   };
