@@ -89,14 +89,10 @@ const getTransactionSign = (type: string) => {
   switch (type.toUpperCase()) {
     case TransactionFilterTypes.CREDIT:
       return '+';
-    case TransactionFilterTypes.DEBIT:
-      return '-';
-    case TransactionFilterTypes.WITHDRAWAL:
-      return '-';
     case TransactionFilterTypes.REFUND:
       return '+';
     default:
-      return '..';
+      return '';
   }
 };
 
@@ -1184,7 +1180,7 @@ const getTransactionDisplayProps = (
   } else if (type === CardTransactionTypes.DEBIT) {
     return {
       image: AppImages.DEBIT_TRANSACTION_ICON,
-      textColor: 'text-red150',
+      textColor: 'text-base400',
       imageText: 'Debited',
     };
   } else if (type === CardTransactionTypes.CREDIT) {

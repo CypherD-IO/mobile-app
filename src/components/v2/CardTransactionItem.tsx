@@ -52,14 +52,10 @@ const getTransactionSign = (type: string) => {
   switch (type.toUpperCase()) {
     case TransactionFilterTypes.CREDIT:
       return '+';
-    case TransactionFilterTypes.DEBIT:
-      return '-';
-    case TransactionFilterTypes.WITHDRAWAL:
-      return '-';
     case TransactionFilterTypes.REFUND:
       return '+';
     default:
-      return '..';
+      return '';
   }
 };
 
