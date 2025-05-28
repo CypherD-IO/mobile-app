@@ -60,10 +60,12 @@ import {
   ANALYTICS_SUCCESS_URL,
   chainExplorerMapping,
   ChainNameToChainMapping,
+  MINIMUM_TRANSFER_AMOUNT_ETH,
+  MINIMUM_TRANSFER_AMOUNT_HL_SPOT,
 } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
-import { Holding } from './portfolio';
+import { Holding, IHyperLiquidHolding } from './portfolio';
 import Long from 'long';
 import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
@@ -1311,12 +1313,15 @@ export function isPotentiallyDccOvercharged(txn: ICardTransaction): boolean {
     !isEmpty(country) &&
     !txn.fxCurrencySymbol &&
     txn.type === CardTransactionTypes.DEBIT &&
-    txn.tStatus !== ReapTxnStatus.DECLINED
+    txn.tStatus !== ReapTxnStatus.DECLINED &&
+    txn.amount !== 0
   );
 }
 
 // Format currency with K, M, B suffixes
 export const formatCurrencyWithSuffix = (value: number): string => {
+  if (value == null || isNaN(value)) return '0';
+  if (value < 0) return `-${formatCurrencyWithSuffix(Math.abs(value))}`;
   if (value >= 1000000000) {
     return `${Math.round((value / 1000000000) * 10) / 10}B`;
   }
@@ -1327,4 +1332,18 @@ export const formatCurrencyWithSuffix = (value: number): string => {
     return `${Math.round(value / 1000)}K`;
   }
   return `${value}`;
+};
+
+export const getMinimumCardLoadAmount = (
+  tokenData: Holding | IHyperLiquidHolding | undefined,
+) => {
+  // hyperliquid spot account $15
+  // eth $50
+  // all other $10
+
+  return tokenData?.accountType === 'spot'
+    ? MINIMUM_TRANSFER_AMOUNT_HL_SPOT
+    : tokenData?.chainDetails?.backendName === CHAIN_ETH.backendName
+      ? MINIMUM_TRANSFER_AMOUNT_ETH
+      : 10;
 };

@@ -1241,8 +1241,8 @@ const OverchargedTransactionInfoSection = () => {
             {t('ATTENTION')}
           </CyDText>
         </CyDView>
-        <CyDView className='bg-red20 px-[12px] py-[4px] rounded-full'>
-          <CyDText className='text-[12px] font-semibold text-red400'>
+        <CyDView className='bg-p0 px-[12px] py-[4px] rounded-full'>
+          <CyDText className='text-[12px] font-semibold text-p400'>
             {t('OVERCHARGED_BY_MERCHANT_TEXT')}
           </CyDText>
         </CyDView>

@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import AppImages from '../../../../assets/images/appImages';
-import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
+import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
@@ -663,10 +663,13 @@ export default function CypherCardScreen() {
         )}
 
         <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
-          {get(cardDesignData, ['allowedCount', 'metal'], 0) > 0 &&
-            get(cardDesignData, ['feeDetails', 'metal'], 100) === 0 && (
-              <GetMetalCardModal onGetAdditionalCard={onGetAdditionalCard} />
-            )}
+          <GetPhysicalCardComponent
+            cardProfile={cardProfile}
+            cardProvider={cardProvider}
+            cardDesignData={cardDesignData}
+            cardBalance={cardBalance}
+          />
+
           {cardId === CARD_IDS.HIDDEN_CARD ? (
             <CyDView className='mx-[16px] mt-[16px]'>
               <CyDView className='border-[1px] border-n40 rounded-[16px] p-[16px]'>
@@ -698,7 +701,7 @@ export default function CypherCardScreen() {
                 {t<string>('RECENT_TRANSACTIONS')}
               </CyDText>
               {recentTransactions.length ? (
-                <CyDView className='border-[1px] border-n40 rounded-[22px] pt-[12px]'>
+                <CyDView className='border-[1px] border-n40 rounded-[8px] pt-[12px]'>
                   {recentTransactions.map((transaction, index) => {
                     return (
                       <CardTransactionItem item={transaction} key={index} />

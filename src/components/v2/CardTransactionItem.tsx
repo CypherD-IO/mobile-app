@@ -188,13 +188,13 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                   </CyDText>
                 </CyDView>
                 {isPotentiallyDccOvercharged(item) && (
-                  <CyDView className='flex flex-row items-center w-fit rounded-full bg-red20 px-[4px] py-[2px]'>
+                  <CyDView className='flex flex-row items-center w-fit rounded-full bg-p0 px-[4px] py-[2px]'>
                     <CyDMaterialDesignIcons
                       name='alert-circle'
                       size={12}
-                      className='text-red400 mr-[2px]'
+                      className='text-p400 mr-[2px]'
                     />
-                    <CyDText className='text-[10px] font-semibold text-red400'>
+                    <CyDText className='text-[10px] font-semibold text-p400'>
                       {t('OVERCHARGED')}
                     </CyDText>
                   </CyDView>
