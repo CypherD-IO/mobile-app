@@ -550,13 +550,13 @@ export function parseWebviewPayload(
     if (eip712Object.primaryType === 'Permit') {
       payloadMessage =
         'Approve ' +
-        eip712Object.message.value +
+        String(eip712Object.message.value) +
         ' ' +
-        eip712Object.domain.name +
+        String(eip712Object.domain.name) +
         ' \nuntil block number ' +
-        eip712Object.message.deadline +
+        String(eip712Object.message.deadline) +
         ' \nfor contract ' +
-        eip712Object.message.spender;
+        String(eip712Object.message.spender);
       signMessageTitleLocal = 'Approve';
     } else {
       payloadMessage = JSON.stringify(eip712Object.message);

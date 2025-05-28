@@ -1,25 +1,24 @@
-import React, { useState } from 'react';
-import { Linking, StyleSheet } from 'react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import CyDModalLayout from './modal';
+import { StyleSheet } from 'react-native';
+import AppImages from '../../../assets/images/appImages';
+import { screenTitle } from '../../constants';
+import { ButtonType } from '../../constants/enum';
+import { setOverchargeDccInfoModalShown } from '../../core/asyncStorage';
 import {
   CyDFastImage,
   CyDMaterialDesignIcons,
   CyDText,
-  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
 import Button from './button';
-import { ButtonType } from '../../constants/enum';
-import AppImages from '../../../assets/images/appImages';
-import { setOverchargeDccInfoModalShown } from '../../core/asyncStorage';
-import {
-  useNavigation,
-  ParamListBase,
-  NavigationProp,
-} from '@react-navigation/native';
-import { screenTitle } from '../../constants';
-import analytics from '@react-native-firebase/analytics';
+import CyDModalLayout from './modal';
+import React from 'react';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface OverchargeDccInfoModalProps {
   isModalVisible: boolean;
@@ -40,11 +39,14 @@ export default function OverchargeDccInfoModal({
 
   // Wrapper function to handle async promises in event handlers
   const handleIUnderstood = () => {
-    void analytics().logEvent('dcc_overcharge_info_modal_understood', {
-      category: 'transaction_detail',
-      action: 'dcc_overcharge_info_modal_understood',
-      label: 'overcharged_transaction_info_section',
-    });
+    void logAnalyticsToFirebase(
+      AnalyticEvent.DCC_OVERCHARGE_INFO_MODAL_UNDERSTOOD,
+      {
+        category: 'transaction_detail',
+        action: 'dcc_overcharge_info_modal_understood',
+        label: 'overcharged_transaction_info_section',
+      },
+    );
     if (transactionId) {
       void setOverchargeDccInfoModalShown(transactionId);
     }
@@ -139,7 +141,7 @@ export default function OverchargeDccInfoModal({
             type={ButtonType.PRIMARY}
             style='flex-1'
             onPress={() => {
-              void analytics().logEvent('dcc_know_more_clicked', {
+              void logAnalyticsToFirebase(AnalyticEvent.DCC_KNOW_MORE_CLICKED, {
                 category: 'transaction_detail',
                 action: 'dcc_know_more_clicked',
                 label: 'overcharged_transaction_info_section',

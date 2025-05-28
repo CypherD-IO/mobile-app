@@ -45,8 +45,8 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
-import { logAnalytics } from '../../core/analytics';
 import { formatCurrencyWithSuffix } from '../../core/util';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface TokenModal {
   tokenList?: Holding[];
@@ -817,7 +817,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
       ) {
         return null;
       }
-      logAnalytics('hyperliquid', {
+      logAnalyticsToFirebase(AnalyticEvent.HYPERLIQUID, {
         action: 'see hyperliquid tokens',
       });
       return (
@@ -847,9 +847,9 @@ export default function ChooseTokenModalV2(props: TokenModal) {
             {totalHoldings.hyperliquidHoldings.map((token: Holding) => (
               <CyDTouchView
                 className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                key={`${token.symbol}-${token.accountType || ''}`}
+                key={`${token.symbol}-${token.accountType ?? ''}`}
                 onPress={() => {
-                  logAnalytics('hyperliquid', {
+                  logAnalyticsToFirebase(AnalyticEvent.HYPERLIQUID, {
                     action: 'click spot token',
                     token: token.symbol,
                   });

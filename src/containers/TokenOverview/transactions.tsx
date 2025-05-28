@@ -52,7 +52,10 @@ export function TokenTransactions({
   useEffect(() => {
     if (tokenData.chainDetails.chainName === ChainNames.ETH) {
       setLoading(true);
-      void logAnalyticsToFirebase(AnalyticEvent.VISITED_TRANSACTIONS_PAGE);
+      void logAnalyticsToFirebase(AnalyticEvent.VISITED_TRANSACTIONS_PAGE, {
+        chain: tokenData.chainDetails.backendName,
+        token: tokenData.name,
+      });
       void fetchData();
     }
   }, []);

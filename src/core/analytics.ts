@@ -14,6 +14,7 @@ export const AnalyticEvent = {
   DEFAULT_CARD_CONTROLS: 'default_card_controls',
   GET_NEW_CARD: 'get_new_card',
   SOCIAL_LOGIN_EVM: 'social_login_evm',
+  INITIATE_SOCIAL_LOGIN: 'initiate_social_login',
   SOCIAL_LOGIN_SOLANA: 'social_login_solana',
   SIGN_WALLET_CONNECT_MSG: 'sign_wallet_connect_msg',
   SWAP_QUOTE_ERROR: 'SWAP_QUOTE_ERROR',
@@ -109,6 +110,14 @@ export const AnalyticEvent = {
   CARD_CONTROLS_UPDATE_COUNTRIES: 'card_controls_update_countries',
   CARD_CONTROLS_EXPLORE_PREMIUM: 'card_controls_explore_premium',
   CARD_CONTROLS_SELECT_COUNTRY: 'card_controls_select_country',
+  HYPERLIQUID: 'hyperliquid',
+  INSTALL_ATTRIBUTION: 'install_attribution',
+  IOS_ATTRIBUTION_TOKEN_RECEIVED: 'ios_attribution_token_received',
+  DCC_OVERCHARGE_INFO_MODAL_UNDERSTOOD: 'dcc_overcharge_info_modal_understood',
+  DCC_KNOW_MORE_CLICKED: 'dcc_know_more_clicked',
+  VISITED_TRANSACTIONS_PAGE: 'visited_transactions_page',
+  UPDATE_LATER: 'update_later',
+  BROWSER_CLICK: 'browser_click',
 };
 
 export const logAnalyticsToFirebase = (

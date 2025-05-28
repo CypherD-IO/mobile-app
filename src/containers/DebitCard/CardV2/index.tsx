@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { get, isEmpty } from 'lodash';
 import moment from 'moment';
-import { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
