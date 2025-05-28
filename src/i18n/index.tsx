@@ -1691,7 +1691,7 @@ const resources = {
         'Always choose to pay in the local currency.',
       AVOID_USING_HKD_OR_USD_IN_TRANSACTIONS:
         'Avoid using Hong Kong Dollars (HKD) or United States Dollars (USD) in transactions.',
-      I_UNDERSTOOD: 'I, Understood',
+      I_UNDERSTOOD: 'I Understood',
       KNOW_MORE: 'Know More',
       POTENTIAL_HIGH_FOREX_FEE: 'Potential High Forex Fee',
       OVERCHARGED_BY_MERCHANT_TEXT: 'Overcharged by Merchant',
@@ -1709,6 +1709,10 @@ const resources = {
         'Minimum amount for Hyper Liquid Spot Token is ${{minAmount}}',
       SIGN_OUT: 'Sign Out',
       LOGIN_AGAIN: 'Login Again',
+      GET_FREE_METAL_CARD_TITLE: 'Ding dong! Your free metal card awaits !',
+      GET_FIRST_PVC_CARD_TITLE: 'Get your first PVC card',
+      GET_FIRST_PVC_CARD_BUTTON_TEXT: 'Order PVC Card',
+      GET_METAL_CARD_BUTTON_TEXT: 'Order Metal Card',
     },
   },
 };

@@ -89,14 +89,10 @@ const getTransactionSign = (type: string) => {
   switch (type.toUpperCase()) {
     case TransactionFilterTypes.CREDIT:
       return '+';
-    case TransactionFilterTypes.DEBIT:
-      return '-';
-    case TransactionFilterTypes.WITHDRAWAL:
-      return '-';
     case TransactionFilterTypes.REFUND:
       return '+';
     default:
-      return '..';
+      return '';
   }
 };
 
@@ -1184,7 +1180,7 @@ const getTransactionDisplayProps = (
   } else if (type === CardTransactionTypes.DEBIT) {
     return {
       image: AppImages.DEBIT_TRANSACTION_ICON,
-      textColor: 'text-red150',
+      textColor: 'text-base400',
       imageText: 'Debited',
     };
   } else if (type === CardTransactionTypes.CREDIT) {
@@ -1241,8 +1237,8 @@ const OverchargedTransactionInfoSection = () => {
             {t('ATTENTION')}
           </CyDText>
         </CyDView>
-        <CyDView className='bg-red20 px-[12px] py-[4px] rounded-full'>
-          <CyDText className='text-[12px] font-semibold text-red400'>
+        <CyDView className='bg-p0 px-[12px] py-[4px] rounded-full'>
+          <CyDText className='text-[12px] font-semibold text-p400'>
             {t('OVERCHARGED_BY_MERCHANT_TEXT')}
           </CyDText>
         </CyDView>

@@ -45,6 +45,10 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
+<<<<<<< HEAD
+=======
+import { logAnalyticsToFirebase } from '../../core/analytics';
+>>>>>>> 45d5ba07 (feat: get physical card  CTA & fixes)
 import { formatCurrencyWithSuffix } from '../../core/util';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 

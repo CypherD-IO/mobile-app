@@ -649,6 +649,12 @@ const DCC_POS_TERMINAL = {
 const CARDS_WITH_EXCLAMATION = {
   uri: `${S3_BUCKET_URL_ICONS}/cardsWithExclamation.png`,
 };
+const GET_PVC_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/getPvcCard.png`,
+};
+const GET_METAL_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/getMetalCard.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -930,6 +936,8 @@ export const AppImagesMap = {
     IMPORT_WALLET,
     CONNECT_WALLET,
     GOOGLE_LOGO,
+    GET_PVC_CARD,
+    GET_METAL_CARD,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1215,6 +1223,8 @@ enum AppImages {
   CHECK_MARK_GREEN_CURLY_BG = 'CHECK_MARK_GREEN_CURLY_BG',
   DCC_POS_TERMINAL = 'DCC_POS_TERMINAL',
   CARDS_WITH_EXCLAMATION = 'CARDS_WITH_EXCLAMATION',
+  GET_PVC_CARD = 'GET_PVC_CARD',
+  GET_METAL_CARD = 'GET_METAL_CARD',
 }
 
 export default AppImages;
