@@ -1,18 +1,14 @@
-import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
+import { ButtonType } from '../../constants/enum';
 import {
-  CyDIcons,
-  CyDImage,
   CyDMaterialDesignIcons,
   CyDText,
-  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import CyDModalLayout from './modal';
-import AppImages from '../../../assets/images/appImages';
-import { useTranslation } from 'react-i18next';
 import Button from './button';
-import { ButtonType } from '../../constants/enum';
+import CyDModalLayout from './modal';
+import React from 'react';
 
 interface HiddenCardModalProps {
   isModalVisible: boolean;
