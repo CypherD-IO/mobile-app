@@ -210,7 +210,6 @@ const Bridge: React.FC = () => {
     swapTokens,
     checkIfAllowanceIsEnough,
   } = useTransactionManager();
-  const { connectionType } = useConnectionManager();
   const { getGasPrice } = useGasService();
   const globalStateContext = useContext(GlobalContext) as GlobalContextDef;
   const { state: bridgeState, dispatch: bridgeDispatch } = useContext(

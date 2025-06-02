@@ -113,7 +113,7 @@ export default function CardQuote({
     'state.wallet.ethereum.address',
     undefined,
   );
-  const solana = hdWallet.state.wallet.solana;
+  const solanaAddress = get(hdWallet, 'state.wallet.solana.address', '');
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
   const { sendEvmToken, sendSolanaTokens } = useTransactionManager();
@@ -491,7 +491,9 @@ export default function CardQuote({
                     selectedToken?.chainDetails?.chainName,
                     '',
                   )
-                : get(ethereum, 'address', ''),
+                : chainName === ChainNames.SOLANA
+                  ? solanaAddress
+                  : ethereumAddress,
             });
             void refreshPortfolio();
             void transferSentQuote(
@@ -516,8 +518,8 @@ export default function CardQuote({
                   )
                 : ChainBackendNames.SOLANA ===
                     selectedToken?.chainDetails?.chainName
-                  ? get(solana, 'address', '')
-                  : get(ethereum, 'address', ''),
+                  ? solanaAddress
+                  : ethereumAddress,
               ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
               ...(connectionType ? { connectionType } : {}),
             });
@@ -561,7 +563,7 @@ export default function CardQuote({
           selectedToken?.chainDetails?.chainName,
         )
           ? get(cosmosAddresses, selectedToken?.chainDetails?.chainName, '')
-          : get(ethereum, 'address', ''),
+          : ethereumAddress,
       });
       activityRef.current &&
         activityContext.dispatch({
