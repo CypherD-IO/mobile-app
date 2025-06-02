@@ -563,7 +563,9 @@ export default function CardQuote({
           selectedToken?.chainDetails?.chainName,
         )
           ? get(cosmosAddresses, selectedToken?.chainDetails?.chainName, '')
-          : ethereumAddress,
+          : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
+            ? solanaAddress
+            : ethereumAddress,
       });
       activityRef.current &&
         activityContext.dispatch({
