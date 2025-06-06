@@ -1,0 +1,123 @@
+name: Detox E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  detox-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Install Detox CLI
+        run: npm install -g detox-cli
+
+      - name: Install applesimutils
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+
+      - name: Build iOS app for testing
+        run: detox build --configuration ios.sim.debug
+
+      - name: Run Detox tests
+        run: detox test --configuration ios.sim.debug --cleanup
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detox-test-results
+          path: |
+            e2e/artifacts/
+            detox_*.log
+
+  detox-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Create Android emulator
+        run: |
+          echo "Creating AVD"
+          $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
+            --force \
+            --name Pixel_3a_API_30_x86 \
+            --device "pixel_3a" \
+            --package "system-images;android-30;google_apis;x86" \
+            --tag "google_apis" \
+            --abi "x86"
+
+      - name: Start Android emulator
+        run: |
+          echo "Starting emulator"
+          $ANDROID_HOME/emulator/emulator \
+            -avd Pixel_3a_API_30_x86 \
+            -no-window \
+            -gpu swiftshader_indirect \
+            -no-audio \
+            -no-boot-anim \
+            -camera-back none \
+            -camera-front none &
+
+      - name: Wait for emulator
+        run: |
+          echo "Waiting for emulator to start"
+          $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Detox CLI
+        run: npm install -g detox-cli
+
+      - name: Build Android app for testing
+        run: detox build --configuration android.emu.debug
+
+      - name: Run Detox tests
+        run: detox test --configuration android.emu.debug --cleanup
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detox-test-results-android
+          path: |
+            e2e/artifacts/
+            detox_*.log

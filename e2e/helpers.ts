@@ -231,27 +231,170 @@ export async function delay(ms: number): Promise<void> {
 }
 
 /**
+ * Debug helper to log visible elements when tests fail
+ * @param description Description of when this debug is being called
+ */
+export async function debugVisibleElements(description: string): Promise<void> {
+  console.log(`🔍 DEBUG: ${description}`);
+  console.log('Looking for common button patterns...');
+
+  // Try to find various button patterns
+  const buttonTexts = [
+    'CONFIRM',
+    'Confirm',
+    'CONTINUE',
+    'Continue',
+    'NEXT',
+    'Next',
+    'DONE',
+    'Done',
+  ];
+
+  for (const text of buttonTexts) {
+    try {
+      const buttonElement = element(by.text(text));
+      await waitFor(buttonElement).toBeVisible().withTimeout(1000);
+      console.log(`✅ Found button with text: "${text}"`);
+    } catch (e) {
+      console.log(`❌ No button found with text: "${text}"`);
+    }
+  }
+
+  // Try to find buttons by auto-generated testIDs
+  const buttonTestIds = [
+    'button-CONFIRM',
+    'button-Confirm',
+    'button-CONTINUE',
+    'button-Continue',
+    'confirm-button',
+    'continue-button',
+  ];
+
+  for (const testId of buttonTestIds) {
+    try {
+      const buttonElement = element(by.id(testId));
+      await waitFor(buttonElement).toExist().withTimeout(1000);
+      console.log(`✅ Found button with testID: "${testId}"`);
+    } catch (e) {
+      console.log(`❌ No button found with testID: "${testId}"`);
+    }
+  }
+
+  // Try to find buttons by type
+  try {
+    const buttons = element(by.type('RCTButton'));
+    await waitFor(buttons).toExist().withTimeout(1000);
+    console.log('✅ Found RCTButton elements');
+  } catch (e) {
+    console.log('❌ No RCTButton elements found');
+  }
+
+  // Try to find touchable elements (which the button actually uses)
+  try {
+    const touchables = element(by.type('RCTTouchableOpacity'));
+    await waitFor(touchables).toExist().withTimeout(1000);
+    console.log('✅ Found RCTTouchableOpacity elements');
+  } catch (e) {
+    console.log('❌ No RCTTouchableOpacity elements found');
+  }
+}
+
+/**
  * Check if we've reached the portfolio/main wallet screen
  * @returns true if portfolio screen is detected, false otherwise
  */
 export async function checkForPortfolioScreen(): Promise<boolean> {
+  console.log('Checking for portfolio screen indicators...');
+
   try {
-    // Look for typical elements on portfolio screen
-    const portfolioElement = element(by.text('PORTFOLIO'));
-    await waitFor(portfolioElement).toBeVisible().withTimeout(8000);
-    console.log('Successfully detected portfolio screen');
+    // Primary indicator: Total Balance text
+    const totalBalanceText = element(by.text('Total Balance'));
+    await waitFor(totalBalanceText).toBeVisible().withTimeout(8000);
+    console.log('✅ Found "Total Balance" text');
+
+    // Secondary indicator: Portfolio tab in bottom navigation
+    try {
+      const portfolioTab = element(by.text('Portfolio'));
+      await waitFor(portfolioTab).toBeVisible().withTimeout(3000);
+      console.log('✅ Found "Portfolio" tab in bottom navigation');
+    } catch (e) {
+      console.log('⚠️ Portfolio tab not found, but continuing...');
+    }
+
+    // Tertiary indicator: "Only verified coins" toggle (unique to this screen)
+    try {
+      const verifiedCoinsText = element(by.text('Only verified coins'));
+      await waitFor(verifiedCoinsText).toBeVisible().withTimeout(3000);
+      console.log('✅ Found "Only verified coins" text');
+    } catch (e) {
+      console.log('⚠️ Verified coins text not found, but continuing...');
+    }
+
+    // Quaternary indicator: Tokens tab (part of the main portfolio view)
+    try {
+      const tokensTab = element(by.text('Tokens'));
+      await waitFor(tokensTab).toBeVisible().withTimeout(3000);
+      console.log('✅ Found "Tokens" tab');
+    } catch (e) {
+      console.log('⚠️ Tokens tab not found, but continuing...');
+    }
+
+    console.log(
+      '🎉 Successfully detected portfolio screen - all primary indicators found',
+    );
     return true;
   } catch (e) {
-    console.log('Portfolio text not found, checking alternative indicators...');
+    console.log(
+      '❌ Primary indicator "Total Balance" not found, trying alternative approaches...',
+    );
 
     try {
-      const balanceText = element(by.text('Total Balance'));
-      await waitFor(balanceText).toBeVisible().withTimeout(5000);
-      console.log('Found balance indicator, on wallet main screen');
+      // Alternative 1: Look for the Hide button (next to balance)
+      const hideButton = element(by.text('Hide'));
+      await waitFor(hideButton).toBeVisible().withTimeout(5000);
+      console.log('✅ Found "Hide" button (alternative indicator)');
       return true;
     } catch (e) {
-      console.log('Could not confirm portfolio screen');
-      return false;
+      console.log('❌ Hide button not found either');
+    }
+
+    try {
+      // Alternative 2: Look for bottom navigation structure
+      const portfolioNav = element(by.text('Portfolio'));
+      const swapNav = element(by.text('Swap'));
+      await waitFor(portfolioNav).toBeVisible().withTimeout(3000);
+      await waitFor(swapNav).toBeVisible().withTimeout(3000);
+      console.log(
+        '✅ Found bottom navigation structure (alternative indicator)',
+      );
+      return true;
+    } catch (e) {
+      console.log('❌ Bottom navigation structure not found');
+    }
+
+    console.log('❌ Could not confirm portfolio screen with any indicators');
+    return false;
+  }
+}
+
+export async function debugAllElementsByType(types: string[]): Promise<void> {
+  console.log('=== DEBUGGING ELEMENTS BY TYPE ===');
+  for (const type of types) {
+    try {
+      const elements = element(by.type(type));
+      const attributes = await elements.getAttributes();
+      console.log(`${type}:`, JSON.stringify(attributes, null, 2));
+    } catch (error) {
+      console.log(
+        `${type}: No elements found or error:`,
+        (error as Error).message,
+      );
     }
   }
+  console.log('=== END DEBUG ===');
+}
+
+export async function setTestEnvironment(): Promise<void> {
+  // We'll inject the test flag through launch arguments instead
+  console.log('✅ Test environment will be set via launch args');
 }
