@@ -75,3 +75,6 @@ DEVELOPER_GUIDE.md
 android/app/google-services.json
 android/sentry.properties
 
+
+#e2e
+artifacts

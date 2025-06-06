@@ -6,8 +6,8 @@
     "android": "react-native run-android",
     "pod-install": "npx pod-install",
     "clean-android": "cd android && ./gradlew clean --refresh-dependencies && cd ..",
-    "ios": "react-native run-ios --simulator='iPhone 16 Pro'",
-    "start": "react-native run-ios --simulator='iPhone 16 Pro' && adb devices && react-native run-android",
+    "ios": "react-native run-ios --simulator='iPhone 16 Pro Max'",
+    "start": "react-native run-ios --simulator='iPhone 16 Pro Max' && adb devices && react-native run-android",
     "link": "react-native link",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
@@ -26,8 +26,10 @@
     "e2e:reset-sim": "bash scripts/reset-sim.sh",
     "e2e:clean-test:ios": "npm run e2e:reset-sim && npm run e2e:test:ios",
     "e2e:clean-test:ios:single": "npm run e2e:reset-sim && npm run e2e:test:ios:single",
-    "e2e:prepare": "chmod +x scripts/prepare-test-environment.sh && scripts/prepare-test-environment.sh",
-    "e2e:full-workflow": "npm run e2e:prepare && npm run e2e:build:ios && npm run e2e:clean-test:ios"
+    "e2e:prepare": "./scripts/prepare-test-environment.sh",
+    "e2e:full-workflow": "npm run e2e:prepare && npm run e2e:clean-test:ios",
+    "e2e:onboarding": "detox test --configuration ios.sim.debug e2e/onboardingFlow.test.ts",
+    "e2e:onboarding:clean": "npm run e2e:reset-sim && npm run e2e:onboarding"
   },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",

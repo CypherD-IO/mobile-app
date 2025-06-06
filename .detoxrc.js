@@ -36,7 +36,7 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 16 Pro',
+        type: 'iPhone 16 Pro Max',
       },
     },
     emulator: {
@@ -53,6 +53,7 @@ module.exports = {
       behavior: {
         launchApp: 'auto',
         permissions: { notifications: "YES", camera: "YES" },
+        launchArgs: { detoxTestMode: 'YES' },
       },
     },
     'ios.sim.release': {
@@ -61,15 +62,22 @@ module.exports = {
       behavior: {
         launchApp: 'auto',
         permissions: { notifications: "YES", camera: "YES" },
+        launchArgs: { detoxTestMode: 'YES' },
       },
     },
     'android.emu.debug': {
       device: 'emulator',
       app: 'android.debug',
+      behavior: {
+        launchArgs: { detoxTestMode: 'YES' },
+      },
     },
     'android.emu.release': {
       device: 'emulator',
       app: 'android.release',
+      behavior: {
+        launchArgs: { detoxTestMode: 'YES' },
+      },
     },
   },
 }; 
