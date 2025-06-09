@@ -196,7 +196,7 @@ function App() {
                 walletConnectState.connectors.indexOf(request.connector)
               ]
             : {},
-        address: ethereum?.wallets[0]?.address,
+        address: state.wallet?.ethereum?.wallets[0]?.address,
         payload: request.payload,
         dispatchFn: walletConnectDispatch,
         HdWalletContext: { state },
