@@ -1713,6 +1713,19 @@ const resources = {
       GET_FIRST_PVC_CARD_TITLE: 'Get your first PVC card',
       GET_FIRST_PVC_CARD_BUTTON_TEXT: 'Order PVC Card',
       GET_METAL_CARD_BUTTON_TEXT: 'Order Metal Card',
+      LOGIN_SIGN_UP: 'Log in or Sign up',
+      CREATE_OR_CONNECT_WALLET: 'Create or Connect Wallet',
+      CREATE_OR_CONNECT_WALLET_DESCRIPTION:
+        'Create a new wallet, import or connect with any of your existing wallet (MetaMask, Rainbow, etc.)',
+      CONTINUE_WITH_EMAIL: 'Continue with Email',
+      CONTINUE_WITH_EMAIL_DESCRIPTION:
+        'Use your email to create or login to a Cypher account.',
+      EMAIL: 'Email',
+      SIGN_IN_WITH_GOOGLE: 'Sign in with Google',
+      WATCH_WALLET_READ_ONLY: 'Watch Wallet (Read-Only)',
+      WATCH_WALLET_READ_ONLY_DESCRIPTION:
+        'Enter a wallet address to view the on-chain activity',
+      TRACK_WALLET: 'Track Wallet',
     },
   },
 };

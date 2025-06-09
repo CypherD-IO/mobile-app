@@ -551,16 +551,14 @@ export default function OnBoardOpotions() {
         </CyDText>
         <CyDKeyboardAwareScrollView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
           <CyDText className='text-[18px] font-semibold text-center'>
-            {'Log in or Sign up'}
+            {t('LOGIN_SIGN_UP')}
           </CyDText>
           <CyDView className='mt-[12px] mb-[32px]'>
             <CyDText className='text-[14px] font-semibold'>
-              {'Create or Connect Wallet'}
+              {t('CREATE_OR_CONNECT_WALLET')}
             </CyDText>
             <CyDText className='text-[12px] text-n200 mb-[12px] font-medium'>
-              {
-                'Create a new wallet, import or connect with any of your existing wallet (MetaMask, Rainbow, etc.)'
-              }
+              {t('CREATE_OR_CONNECT_WALLET_DESCRIPTION')}
             </CyDText>
             <CyDView className='bg-n0 p-[16px] rounded-[8px]'>
               {/* create wallet */}
@@ -637,15 +635,15 @@ export default function OnBoardOpotions() {
 
             <CyDView className='mt-[24px] mb-[12px]'>
               <CyDText className='text-[14px] font-semibold'>
-                {'Continue with Email'}
+                {t('CONTINUE_WITH_EMAIL')}
               </CyDText>
               <CyDText className='text-[12px] text-n200 font-medium'>
-                {'Use your email to create or login to a Cypher account.'}
+                {t('CONTINUE_WITH_EMAIL_DESCRIPTION')}
               </CyDText>
             </CyDView>
 
             <CyDText className='text-[12px] font-medium text-n200'>
-              {'Email'}
+              {t('EMAIL')}
             </CyDText>
             <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
               <CyDTextInput
@@ -693,10 +691,10 @@ export default function OnBoardOpotions() {
 
             <CyDView className='mt-[24px] mb-[12px]'>
               <CyDText className='text-[14px] font-semibold'>
-                {'Watch Wallet (Read-Only)'}
+                {t('WATCH_WALLET_READ_ONLY')}
               </CyDText>
               <CyDText className='text-[12px] text-n200 font-medium'>
-                {'Enter a wallet address to view the on-chain activity'}
+                {t('WATCH_WALLET_READ_ONLY_DESCRIPTION')}
               </CyDText>
             </CyDView>
 
@@ -711,7 +709,7 @@ export default function OnBoardOpotions() {
                 className='text-base400'
               />
               <CyDText className='text-[12px] font-medium text-base400'>
-                {'Track Wallet'}
+                {t('TRACK_WALLET')}
               </CyDText>
             </CyDTouchView>
           </CyDView>
