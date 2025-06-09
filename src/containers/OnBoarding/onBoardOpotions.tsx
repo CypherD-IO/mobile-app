@@ -553,7 +553,15 @@ export default function OnBoardOpotions() {
           <CyDText className='text-[18px] font-semibold text-center'>
             {'Log in or Sign up'}
           </CyDText>
-          <CyDView className='mt-[24px]'>
+          <CyDView className='mt-[12px] mb-[32px]'>
+            <CyDText className='text-[14px] font-semibold'>
+              {'Create or Connect Wallet'}
+            </CyDText>
+            <CyDText className='text-[12px] text-n200 mb-[12px] font-medium'>
+              {
+                'Create a new wallet, import or connect with any of your existing wallet (MetaMask, Rainbow, etc.)'
+              }
+            </CyDText>
             <CyDView className='bg-n0 p-[16px] rounded-[8px]'>
               {/* create wallet */}
               <CyDTouchView
@@ -627,16 +635,17 @@ export default function OnBoardOpotions() {
               </CyDTouchView>
             </CyDView>
 
-            <CyDView className='my-[16px] flex-row items-center justify-center gap-[4px]'>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
-              <CyDText className='text-[12px] font-medium text-n200'>
-                {'OR'}
+            <CyDView className='mt-[24px] mb-[12px]'>
+              <CyDText className='text-[14px] font-semibold'>
+                {'Continue with Email'}
               </CyDText>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
+              <CyDText className='text-[12px] text-n200 font-medium'>
+                {'Use your email to create or login to a Cypher account.'}
+              </CyDText>
             </CyDView>
 
             <CyDText className='text-[12px] font-medium text-n200'>
-              {'Login with Email'}
+              {'Email'}
             </CyDText>
             <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
               <CyDTextInput
@@ -682,16 +691,17 @@ export default function OnBoardOpotions() {
               </CyDText>
             </CyDTouchView>
 
-            <CyDView className='my-[16px] flex-row items-center justify-center gap-[4px]'>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
-              <CyDText className='text-[12px] font-medium text-n200'>
-                {'OR'}
+            <CyDView className='mt-[24px] mb-[12px]'>
+              <CyDText className='text-[14px] font-semibold'>
+                {'Watch Wallet (Read-Only)'}
               </CyDText>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
+              <CyDText className='text-[12px] text-n200 font-medium'>
+                {'Enter a wallet address to view the on-chain activity'}
+              </CyDText>
             </CyDView>
 
             <CyDTouchView
-              className='mt-[12px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px]'
+              className='mt-[12px] my-[24px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px]'
               onPress={() => {
                 navigation.navigate(screenTitle.TRACK_WALLET_SCREEN);
               }}>

@@ -65,7 +65,6 @@ interface UseInitializerReturn {
     setUpdateModal: React.Dispatch<React.SetStateAction<boolean>>,
   ) => Promise<void>;
   checkAPIAccessibility: () => Promise<boolean>;
-  initializeWeb3Auth: () => Promise<void>;
 }
 
 export const InitializeAppProvider = ({
@@ -84,7 +83,6 @@ export const InitializeAppProvider = ({
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
-    initializeWeb3Auth,
   } = useInitializer() as UseInitializerReturn;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [pinAuthentication, setPinAuthentication] = useState(false);
@@ -221,7 +219,6 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     if (address) {
-      void initializeWeb3Auth();
       void getHosts(
         setForcedUpdate,
         setTamperedSignMessageModal,

@@ -497,41 +497,6 @@ export default function useInitializer() {
     }
   };
 
-  const initializeWeb3Auth = async () => {
-    const socialLoginAuthType = hdWallet.state.socialAuth?.connectionType;
-    if (
-      socialLoginAuthType &&
-      [
-        ConnectionTypes.SOCIAL_LOGIN_EVM,
-        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
-      ].includes(socialLoginAuthType)
-    ) {
-      let web3Auth;
-      switch (socialLoginAuthType) {
-        case ConnectionTypes.SOCIAL_LOGIN_EVM:
-          web3Auth = web3AuthEvm;
-          break;
-        case ConnectionTypes.SOCIAL_LOGIN_SOLANA:
-          web3Auth = web3AuthSolana;
-          break;
-      }
-      if (web3Auth && !web3Auth.connected) {
-        try {
-          await web3Auth.init();
-        } catch (e) {
-          Sentry.captureException(e);
-          return;
-        }
-        if (!web3Auth.connected) {
-          globalContext.globalDispatch({
-            type: GlobalContextType.IS_APP_AUTHENTICATED,
-            isAuthenticated: false,
-          });
-        }
-      }
-    }
-  };
-
   return {
     initializeSentry,
     exitIfJailBroken,
@@ -543,6 +508,5 @@ export default function useInitializer() {
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
-    initializeWeb3Auth,
   };
 }
