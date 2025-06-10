@@ -10,10 +10,10 @@ module.exports = {
     },
   },
   apps: {
-    'ios.debug': {
+    'ios.sim.debug': {
       type: 'ios.app',
       binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app',
-      build: 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
+      build: 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 15,OS=17.5" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
     },
     'ios.release': {
       type: 'ios.app',
@@ -36,7 +36,8 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 16 Pro Max',
+        type: 'iPhone 15',
+        os: 'iOS 17.5'
       },
     },
     emulator: {
@@ -48,36 +49,20 @@ module.exports = {
   },
   configurations: {
     'ios.sim.debug': {
-      device: 'simulator',
-      app: 'ios.debug',
-      behavior: {
-        launchApp: 'auto',
-        permissions: { notifications: "YES", camera: "YES" },
-        launchArgs: { detoxTestMode: 'YES' },
-      },
+      app: 'ios.sim.debug',
+      device: 'simulator'
     },
     'ios.sim.release': {
-      device: 'simulator',
       app: 'ios.release',
-      behavior: {
-        launchApp: 'auto',
-        permissions: { notifications: "YES", camera: "YES" },
-        launchArgs: { detoxTestMode: 'YES' },
-      },
+      device: 'simulator'
     },
     'android.emu.debug': {
-      device: 'emulator',
       app: 'android.debug',
-      behavior: {
-        launchArgs: { detoxTestMode: 'YES' },
-      },
+      device: 'android.emu.debug'
     },
     'android.emu.release': {
-      device: 'emulator',
       app: 'android.release',
-      behavior: {
-        launchArgs: { detoxTestMode: 'YES' },
-      },
-    },
+      device: 'android.emu.release'
+    }
   },
 }; 

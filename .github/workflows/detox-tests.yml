@@ -9,6 +9,7 @@ jobs:
   e2e-ios:
     runs-on: macos-latest
     continue-on-error: true # Don't block PRs if tests fail
+    timeout-minutes: 45 # Prevent hanging builds
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
       ENVIROINMENT: ${{secrets.ENVIROINMENT}}
@@ -16,6 +17,8 @@ jobs:
       WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
       HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
       WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
+      CI: true
+      NODE_ENV: development
 
     steps:
       - name: Checkout code
@@ -48,10 +51,17 @@ jobs:
           echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
           echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env
 
+      - name: Check Xcode version
+        run: |
+          echo "=== Xcode Information ==="
+          xcodebuild -version
+          xcrun simctl list devices
+
       - name: Install CocoaPods dependencies
         run: |
+          echo "=== Installing CocoaPods dependencies ==="
           cd ios
-          pod install --repo-update
+          pod install --repo-update --verbose
 
       - name: Install Detox CLI
         run: npm install -g detox-cli
@@ -68,7 +78,14 @@ jobs:
           E2E_TEST_SEED_PHRASE: ${{ secrets.E2E_TEST_SEED_PHRASE }}
 
       - name: Build iOS app for testing
-        run: detox build --configuration ios.sim.debug
+        run: |
+          echo "=== Starting iOS Build ==="
+          echo "Current directory: $(pwd)"
+          echo "Available iOS simulators:"
+          xcrun simctl list devices iOS --json
+          echo "=== Building with Detox ==="
+          detox build --configuration ios.sim.debug --verbose
+        timeout-minutes: 20
 
       - name: Run E2E Tests - iOS
         run: npm run e2e:test:ios
@@ -86,6 +103,7 @@ jobs:
           path: |
             e2e/artifacts/
             detox_*.log
+            ios/build/Build/Logs/
           retention-days: 7
 
       - name: Report E2E Test Results
@@ -100,7 +118,6 @@ jobs:
           echo "- 👋 Onboarding Flow" >> $GITHUB_STEP_SUMMARY
           echo "- 📲 Import Wallet Flow" >> $GITHUB_STEP_SUMMARY
           echo "- 💳 Load Card Flow" >> $GITHUB_STEP_SUMMARY
-          echo "- ⚙️ Toggle Developer Mode" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Note:** E2E tests are informational and do not block PR merging." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
