@@ -38,7 +38,9 @@ jobs:
 
       - name: Create e2e environment file
         run: |
-          echo "TEST_SEED_PHRASE=abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" > e2e/.env.test
+          echo "TEST_SEED_PHRASE=${{ secrets.E2E_TEST_SEED_PHRASE }}" > e2e/.env.test
+        env:
+          E2E_TEST_SEED_PHRASE: ${{ secrets.E2E_TEST_SEED_PHRASE }}
 
       - name: Build iOS app for testing
         run: detox build --configuration ios.sim.debug
