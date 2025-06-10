@@ -1,5 +1,5 @@
-import { device, element, by, waitFor } from 'detox';
-import { resetAppCompletely, delay, findButton } from './helpers';
+import { element, by, waitFor } from 'detox';
+import { resetAppCompletely, delay, findButton } from '../helpers';
 
 // Helper: scroll down using swipe until target text is visible or max attempts reached
 async function scrollUntilVisible(text: string, maxScrolls = 10) {
@@ -11,7 +11,6 @@ async function scrollUntilVisible(text: string, maxScrolls = 10) {
       return true;
     } catch {
       // Use swipe instead of scroll for better compatibility
-      // Based on the Options screen structure, we swipe on the main container
       await element(by.type('RCTScrollView')).swipe('up', 'fast', 0.75);
       await delay(300);
     }
@@ -91,8 +90,7 @@ describe('Toggle Developer Mode Flow', () => {
         '✅ Successfully accessed Hosts & RPC screen - dev mode confirmed',
       );
 
-      // Since global.ts now automatically uses dev URL during testing,
-      // we can verify the current value should be the dev URL
+      // Verify the current value should be the dev URL
       const attributes: any = await archInput.getAttributes();
       console.log('ARCH Host URL:', attributes.value || attributes.text);
 

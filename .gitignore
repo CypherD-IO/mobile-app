@@ -70,6 +70,7 @@ DEVELOPER_GUIDE.md
 
 #vscode settings
 .env
+.env.test
 
 #android
 android/app/google-services.json

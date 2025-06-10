@@ -14,20 +14,54 @@ This directory contains end-to-end (E2E) tests for the CypherD mobile app using 
 
 ## Available Tests
 
-- `firstTest.test.ts`: Basic app launch test to verify the app loads correctly
-- `onboardingFlow.test.ts`: Test for the entire onboarding flow that creates a new wallet
-- `importWalletFlow.test.ts`: Test for importing a wallet using a seed phrase
-- `qrScannerFlow.test.ts`: Test for the QR scanner functionality
+The tests are numbered to run in sequence:
+
+- `00_firstTest.test.ts`: Basic app launch test to verify the app loads correctly
+- `01_onboardingFlow.test.ts`: Test for the entire onboarding flow that creates a new wallet
+- `02_importWalletFlow.test.ts`: Test for importing a wallet using a seed phrase
+- `03_loadCardFlow.test.ts`: Test for the complete load card flow
+- `04_toggleDevModeFlow.test.ts`: Test for enabling developer mode and verifying dev settings
+
+## Test Execution Order
+
+Tests are configured to run in alphabetical order using a custom Jest sequencer. This ensures:
+
+1. Basic app functionality is verified first
+2. Onboarding is tested before wallet operations
+3. Complex flows are tested after basic setup
 
 ## Helper Functions
 
 The `helpers.ts` file contains reusable functions for common test operations:
 
-- Handling permission dialogs
-- Navigating through onboarding screens
-- Finding UI elements with fallbacks for different labeling approaches
-- Resetting app state completely
-- Waiting for UI transitions
+- **App Management**: `resetAppCompletely()`, `handlePermissionDialog()`
+- **Navigation**: `navigateThroughOnboarding()`, `findButton()`
+- **Verification**: `checkForPortfolioScreen()`
+- **Utilities**: `delay()`, `debugVisibleElements()`, `debugAllVisibleElements()`
+- **Security**: `getSecureTestSeedPhrase()`, `secureLog()`, `performSecureOperation()`
+
+## Environment Variables Setup
+
+### For Local Development
+
+1. **Create a test environment file** (this file is already created):
+
+   ```bash
+   # e2e/.env.test
+   TEST_SEED_PHRASE=abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about
+   ```
+
+2. **The environment variables are automatically loaded** via:
+   - `e2e/jest.setup.js`: Loads `.env.test` file using dotenv
+   - `helpers.ts`: Has fallback dotenv loading for robustness
+
+### For CI/CD (GitHub Actions)
+
+Set environment variables in your CI/CD pipeline:
+
+```bash
+export TEST_SEED_PHRASE="your secure test seed phrase"
+```
 
 ## Running Tests
 
@@ -54,23 +88,25 @@ npm run e2e:test:android  # For Android
 To run a specific test file:
 
 ```bash
-npm run e2e:test:ios:single "importWalletFlow.test.ts"
+npm run e2e:test:ios:single "03_loadCardFlow.test.ts"
 ```
 
-### Complete Clean Test Workflow
+## Configuration
 
-To fully reset the simulator and run tests with a clean state:
+- **Jest Configuration**: `jest.config.js` - Main test runner configuration
+- **Jest Setup**: `jest.setup.js` - Loads environment variables from `.env.test`
+- **Test Sequencer**: `testSequencer.js` - Ensures alphabetical test execution
+- **Detox Configuration**: `../.detoxrc.js` - Main Detox configuration
+- **TypeScript**: `tsconfig.json` - TypeScript configuration for tests
+- **Environment**: `.env.test` - Test environment variables
 
-```bash
-npm run e2e:clean-test:ios  # Run all tests with clean simulator
-npm run e2e:clean-test:ios:single "importWalletFlow.test.ts"  # Run specific test with clean simulator
-```
+## Security Features
 
-For the complete workflow (prepare environment, build, clean simulator, and run all tests):
-
-```bash
-npm run e2e:full-workflow
-```
+- **Secure Seed Phrase Handling**: Uses environment variables for test seed phrases
+- **Log Sanitization**: Automatically redacts sensitive information from logs
+- **Secure Operations**: Wraps sensitive operations to prevent data exposure
+- **Multiple Environment Variable Support**: Tries multiple env var names for flexibility
+- **Fallback Safety**: Uses safe test mnemonic if no secure phrase is provided
 
 ## Troubleshooting
 
@@ -81,30 +117,38 @@ Tests are configured to pre-grant permissions and handle remaining permission di
 1. Make sure `applesimutils` is installed
 2. Check the Detox configuration in `.detoxrc.js` to ensure permissions are included
 
+### Environment Variable Issues
+
+If environment variables are not loading:
+
+1. **Check the `.env.test` file exists** in the `e2e/` directory
+2. **Verify dotenv is installed**: `npm list dotenv`
+3. **Check Jest setup**: Ensure `jest.setup.js` is configured in `jest.config.js`
+4. **Manual verification**: The `getSecureTestSeedPhrase()` function will log which env var it's using
+
 ### Simulator Issues
 
 If tests are failing due to simulator issues:
 
-1. Reset the simulator:
-
-   ```bash
-   npm run e2e:reset-sim
-   ```
-
-2. Check the iOS device ID in `scripts/prepare-test-environment.sh` matches your available simulator
+1. The tests automatically reset the simulator state
+2. Check the iOS device ID in `.detoxrc.js` matches your available simulator
 
 ### Flaky Tests
 
 If tests are inconsistent:
 
-- Increase timeouts in the wait statements
-- Add more delay between actions
-- Use the helper functions in `helpers.ts` which include fallback strategies
+- Tests include multiple fallback strategies for finding UI elements
+- Increase timeouts in the wait statements if needed
+- Use the helper functions which include retry logic
 
 ## Adding New Tests
 
-1. Create a new test file in the e2e directory
+1. Create a new test file with the appropriate number prefix (e.g., `05_newFeature.test.ts`)
 2. Use the helper functions from `helpers.ts` for common operations
 3. Include multiple fallback strategies for finding UI elements
 4. Use proper async/await and timeouts
-5. Add detailed logging with `console.log`
+5. Add detailed logging with `console.log` or `secureLog` for sensitive operations
+
+## Environment Variables
+
+- `TEST_SEED_PHRASE`: Secure seed phrase for wallet import tests (loaded from `.env.test` or system environment)

@@ -29,7 +29,11 @@
     "e2e:prepare": "./scripts/prepare-test-environment.sh",
     "e2e:full-workflow": "npm run e2e:prepare && npm run e2e:clean-test:ios",
     "e2e:onboarding": "detox test --configuration ios.sim.debug e2e/onboardingFlow.test.ts",
-    "e2e:onboarding:clean": "npm run e2e:reset-sim && npm run e2e:onboarding"
+    "e2e:onboarding:clean": "npm run e2e:reset-sim && npm run e2e:onboarding",
+    "e2e:import": "detox test --configuration ios.sim.debug e2e/importWalletFlow.test.ts",
+    "e2e:import:clean": "npm run e2e:reset-sim && npm run e2e:import",
+    "e2e:loadcard": "detox test --configuration ios.sim.debug e2e/loadCardFlow.test.ts",
+    "e2e:loadcard:clean": "npm run e2e:reset-sim && npm run e2e:loadcard"
   },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
@@ -218,6 +222,7 @@
     "@react-native/metro-config": "0.72.11",
     "@tsconfig/react-native": "3.0.2",
     "@types/crypto-js": "^4.1.1",
+    "@types/detox": "^18.1.0",
     "@types/jest": "^27.4.0",
     "@types/number-to-words": "^1.2.3",
     "@types/qs": "^6.9.7",
@@ -233,6 +238,7 @@
     "@walletconnect/types": "2.11.0",
     "babel-jest": "29.2.1",
     "detox": "^20.19.1",
+    "dotenv": "^16.5.0",
     "eslint": "^8.29.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-standard-with-typescript": "22.0.0",
@@ -248,9 +254,8 @@
     "react-native-version": "^4.0.0",
     "react-test-renderer": "18.2.0",
     "rn-nodeify": "^10.3.0",
-    "typescript": "^5.0.4",
-    "@types/detox": "^18.1.0",
-    "ts-jest": "^29.1.1"
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.0.4"
   },
   "reactNativePermissionsIOS": [
     "Camera"

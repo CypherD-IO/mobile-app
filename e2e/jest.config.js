@@ -9,7 +9,14 @@ module.exports = {
   reporters: ['detox/runners/jest/reporter'],
   testEnvironment: 'detox/runners/jest/testEnvironment',
   verbose: true,
+  // Force alphabetical test execution order with custom sequencer
+  testSequencer: '<rootDir>/e2e/testSequencer.js',
+  // Load environment variables for tests
+  setupFilesAfterEnv: ['<rootDir>/e2e/jest.setup.js'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: '<rootDir>/e2e/tsconfig.json'
+    }],
   },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 }; 
