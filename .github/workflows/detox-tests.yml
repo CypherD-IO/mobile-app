@@ -9,6 +9,13 @@ jobs:
   e2e-ios:
     runs-on: macos-latest
     continue-on-error: true # Don't block PRs if tests fail
+    env:
+      SENTRY_DSN: ${{secrets.SENTRY_DSN}}
+      ENVIROINMENT: ${{secrets.ENVIROINMENT}}
+      INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
+      WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
+      HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+      WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
 
     steps:
       - name: Checkout code
@@ -31,6 +38,15 @@ jobs:
         run: npm ci --legacy-peer-deps
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create .env file
+        run: |
+          echo "WALLET_CONNECT_PROJECTID=${{ secrets.WALLET_CONNECT_PROJECTID }}" >> .env
+          echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
+          echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
+          echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
+          echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
+          echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env
 
       - name: Install CocoaPods dependencies
         run: |
@@ -57,6 +73,10 @@ jobs:
       - name: Run E2E Tests - iOS
         run: npm run e2e:test:ios
         continue-on-error: true
+
+      - name: Clean up .env file
+        if: always()
+        run: rm -f .env
 
       - name: Upload iOS test results
         if: always()
