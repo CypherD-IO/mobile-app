@@ -62,11 +62,31 @@ jobs:
           echo "=== SDK Information ==="
           xcodebuild -showsdks | grep iOS
 
+      - name: Clear CocoaPods cache
+        run: |
+          echo "=== Clearing CocoaPods cache ==="
+          pod cache clean --all || true
+          cd ios
+          rm -f Podfile.lock || true
+
       - name: Install CocoaPods dependencies
         run: |
           echo "=== Installing CocoaPods dependencies ==="
           cd ios
           pod install --repo-update --verbose
+
+      - name: Verify deployment targets
+        run: |
+          echo "=== Verifying iOS deployment targets ==="
+          cd ios
+          # Check if any pods still have deployment target < 15.0
+          PODS_WITH_OLD_TARGET=$(grep -r "IPHONEOS_DEPLOYMENT_TARGET = 1[0-4]\." Pods/Pods.xcodeproj/project.pbxproj || echo "None found")
+          if [ "$PODS_WITH_OLD_TARGET" != "None found" ]; then
+            echo "⚠️  Found pods with old deployment targets:"
+            echo "$PODS_WITH_OLD_TARGET"
+          else
+            echo "✅ All pods have deployment target >= 15.0"
+          fi
 
       - name: Install Detox CLI
         run: npm install -g detox-cli
