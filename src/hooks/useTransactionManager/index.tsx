@@ -94,6 +94,7 @@ export default function useTransactionManager() {
     estimateGasForCosmos,
     estimateGasForCosmosIBC,
     getCosmosGasPrice,
+    estimateGasForSolana,
   } = useGasService();
   const { signEthTransaction, signApprovalEthereum, signTypedDataEth } =
     useEthSigner();
@@ -957,20 +958,24 @@ export default function useTransactionManager() {
   const checkBalance = async (
     connection: Connection,
     publicKey: PublicKey,
-    requiredLamports: number,
+    requiredLamports: string,
   ) => {
     const balance = await connection.getBalance(publicKey);
-    const readableRequiredLamports: number = DecimalHelper.toDecimal(
-      requiredLamports,
-      9,
-    ).toNumber();
+    const readableRequiredLamports: number = DecimalHelper.toNumber(
+      DecimalHelper.fromString(requiredLamports),
+    );
 
     const readableBalance: number = DecimalHelper.toDecimal(
       balance,
       9,
     ).toNumber();
 
-    if (balance < requiredLamports) {
+    if (
+      DecimalHelper.isLessThanOrEqualTo(
+        readableBalance,
+        readableRequiredLamports,
+      )
+    ) {
       throw new Error(
         `Insufficient balance. Required: ${readableRequiredLamports} SOL, Available: ${readableBalance} SOL.`,
       );
@@ -1018,7 +1023,6 @@ export default function useTransactionManager() {
       const MAX_PRIORITY_FEE = 1_000_000;
 
       const priorityFeeFromHelius = await getPriorityFeeFromHelius(accounts);
-
       if (!priorityFeeFromHelius.isError) {
         return Math.min(
           priorityFeeFromHelius.priorityFeeEstimate ?? 0,
@@ -1113,12 +1117,25 @@ export default function useTransactionManager() {
     }
   };
 
-  const sendTransactionWithPriorityFee = async (
-    connection: Connection,
-    transaction: TransactionInstruction,
-    fromKeypair: Keypair,
-    accounts: PublicKey[] = [],
-  ) => {
+  const sendTransactionWithPriorityFee = async ({
+    connection,
+    amountToSend,
+    transaction,
+    fromKeypair,
+    toAddress,
+    accounts = [],
+    contractAddress,
+    contractDecimals,
+  }: {
+    connection: Connection;
+    amountToSend: string;
+    transaction: TransactionInstruction;
+    fromKeypair: Keypair;
+    toAddress: string;
+    accounts?: PublicKey[];
+    contractAddress: string;
+    contractDecimals: number;
+  }) => {
     const { blockhash } = await connection.getLatestBlockhash();
 
     const estimatedUnits = await simulateSolanaTxn({
@@ -1159,10 +1176,25 @@ export default function useTransactionManager() {
     }).compileToV0Message();
 
     // Calculate fee
-    const fees = await connection.getFeeForMessage(messageV0);
-    const requiredFeeLamports = fees.value ?? 5000;
+    const gasDetails = await estimateGasForSolana({
+      amountToSend,
+      fromAddress: fromKeypair.publicKey.toBase58(),
+      toAddress,
+      contractAddress,
+      tokenContractDecimals: contractDecimals,
+    });
 
-    await checkBalance(connection, fromKeypair.publicKey, requiredFeeLamports);
+    if (gasDetails.isError) {
+      throw new Error(
+        'Solana: Failed to estimate gas while sending transaction',
+      );
+    }
+
+    await checkBalance(
+      connection,
+      fromKeypair.publicKey,
+      gasDetails.gasFeeInCrypto,
+    );
 
     const newTransaction = new VersionedTransaction(messageV0);
     newTransaction.sign([fromKeypair]);
@@ -1178,11 +1210,13 @@ export default function useTransactionManager() {
     toAddress,
     connection,
     fromKeypair,
+    contractAddress,
   }: {
     amountToSend: string;
     toAddress: string;
     connection: Connection;
     fromKeypair: Keypair;
+    contractAddress: string;
   }) => {
     const toPublicKey = new PublicKey(toAddress);
 
@@ -1195,12 +1229,16 @@ export default function useTransactionManager() {
       lamports: lamportsToSend,
     });
 
-    const resp = await sendTransactionWithPriorityFee(
+    const resp = await sendTransactionWithPriorityFee({
       connection,
-      transferInstruction,
+      amountToSend,
+      transaction: transferInstruction,
       fromKeypair,
-      [],
-    );
+      toAddress,
+      accounts: [],
+      contractAddress,
+      contractDecimals: 9,
+    });
 
     return resp;
   };
@@ -1212,6 +1250,7 @@ export default function useTransactionManager() {
     contractDecimals = 9,
     connection,
     fromKeypair,
+    contractAddress,
   }: {
     amountToSend: string;
     toAddress: string;
@@ -1219,6 +1258,7 @@ export default function useTransactionManager() {
     contractDecimals: number;
     connection: Connection;
     fromKeypair: Keypair;
+    contractAddress: string;
   }) => {
     const toPublicKey = new PublicKey(toAddress);
     const mintPublicKey = new PublicKey(mintAddress);
@@ -1248,17 +1288,21 @@ export default function useTransactionManager() {
       TOKEN_PROGRAM_ID,
     );
 
-    const resp = await sendTransactionWithPriorityFee(
+    const resp = await sendTransactionWithPriorityFee({
       connection,
-      transferInstruction,
+      amountToSend,
+      transaction: transferInstruction,
       fromKeypair,
-      [
+      toAddress,
+      accounts: [
         TOKEN_PROGRAM_ID,
         fromTokenAccount.address,
         toTokenAccount.address,
         mintPublicKey,
       ],
-    );
+      contractAddress,
+      contractDecimals,
+    });
 
     return resp;
   };
@@ -1337,6 +1381,7 @@ export default function useTransactionManager() {
           toAddress,
           connection,
           fromKeypair,
+          contractAddress,
         });
       } else {
         signature = await sendSPLTokens({
@@ -1346,6 +1391,7 @@ export default function useTransactionManager() {
           contractDecimals,
           connection,
           fromKeypair,
+          contractAddress,
         });
       }
       const response = await confirmTransactionWithRetry({

@@ -10,6 +10,7 @@ declare module 'react-native-config' {
     INTERCOM_APP_KEY: string;
     WALLET_CONNECT_PROJECTID: string;
     WEB3_AUTH_CLIENT_ID: string;
+    HELIUS_API_KEY: string;
   }
 
   export const Config: NativeConfig;

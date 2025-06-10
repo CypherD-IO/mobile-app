@@ -958,14 +958,12 @@ export default function useGasService() {
     toAddress,
     contractAddress,
     tokenContractDecimals = 9,
-    isMaxGasEstimation = false,
   }: {
     amountToSend: string;
     fromAddress: string;
     toAddress: string;
     contractAddress: string;
     tokenContractDecimals: number;
-    isMaxGasEstimation?: boolean;
   }): Promise<SolanaGasEstimation> => {
     let transferInstruction;
     const solanRpc = getSolanaRpc();
@@ -1015,7 +1013,7 @@ export default function useGasService() {
     const fee = feeCalculator.value ?? 5000;
     const totalAmountToBeReserved = DecimalHelper.add(fee, rentExempt);
     const feeInLamports = DecimalHelper.toDecimal(
-      isMaxGasEstimation ? fee : totalAmountToBeReserved,
+      totalAmountToBeReserved,
       9,
     ).toString();
     // const transaction = new VersionedTransaction(message);
