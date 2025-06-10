@@ -7,7 +7,7 @@ on:
 
 jobs:
   e2e-ios:
-    runs-on: macos-latest
+    runs-on: macos-14 # Use macos-14 for more consistent Xcode versions
     continue-on-error: true # Don't block PRs if tests fail
     timeout-minutes: 45 # Prevent hanging builds
     env:
@@ -51,11 +51,16 @@ jobs:
           echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
           echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env
 
-      - name: Check Xcode version
+      - name: Check Xcode version and available simulators
         run: |
           echo "=== Xcode Information ==="
           xcodebuild -version
-          xcrun simctl list devices
+          echo ""
+          echo "=== Available iOS Simulators ==="
+          xcrun simctl list devices iOS available --json | jq -r '.devices | to_entries[] | .key as $os | .value[] | select(.isAvailable == true) | "\($os): \(.name) (\(.udid))"'
+          echo ""
+          echo "=== SDK Information ==="
+          xcodebuild -showsdks | grep iOS
 
       - name: Install CocoaPods dependencies
         run: |
@@ -70,6 +75,45 @@ jobs:
         run: |
           brew tap wix/brew
           brew install applesimutils
+
+      - name: Setup iOS Simulator
+        run: |
+          echo "=== Setting up iOS Simulator ==="
+
+          # Find the best available iOS simulator
+          # First try to find iPhone 15 with any iOS 17.x version
+          IPHONE15_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 15" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+
+          if [ -n "$IPHONE15_SIMULATOR" ]; then
+            echo "Found existing iPhone 15 simulator: $IPHONE15_SIMULATOR"
+          else
+            echo "No iPhone 15 simulator found, checking for other iPhone models..."
+            # Fallback to iPhone 14 or iPhone 13
+            IPHONE_SIMULATOR=$(xcrun simctl list devices iPhone available | grep -E "iPhone (14|13)" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+            
+            if [ -n "$IPHONE_SIMULATOR" ]; then
+              echo "Found alternative iPhone simulator: $IPHONE_SIMULATOR"
+              # Update Detox config to use this simulator
+              DEVICE_NAME=$(echo "$IPHONE_SIMULATOR" | sed 's/ (.*//')
+              echo "Updating Detox config to use device: $DEVICE_NAME"
+              
+              # Create a temporary detox config
+              sed "s/iPhone 15/$DEVICE_NAME/g" .detoxrc.js > .detoxrc.temp.js
+              mv .detoxrc.temp.js .detoxrc.js
+            else
+              echo "Creating iPhone 15 simulator..."
+              # Find available iOS runtime
+              RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "17\.|16\." | head -1 | sed 's/.*iOS \([0-9\.]*\).*/\1/')
+              if [ -n "$RUNTIME" ]; then
+                echo "Using iOS runtime: $RUNTIME"
+                xcrun simctl create "iPhone 15" "iPhone 15" "iOS$RUNTIME" || true
+              fi
+            fi
+          fi
+
+          echo ""
+          echo "=== Final simulator list ==="
+          xcrun simctl list devices available
 
       - name: Create e2e environment file
         run: |
