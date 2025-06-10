@@ -30,6 +30,14 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Select Xcode version
+        run: |
+          echo "=== Selecting Xcode 16 for iOS 18 SDK ==="
+          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer || \
+          sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer || \
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version
+
       - name: Configure npm
         run: |
           echo "@cypherd-io:registry=https://npm.pkg.github.com/" > .npmrc
@@ -61,6 +69,21 @@ jobs:
           echo ""
           echo "=== SDK Information ==="
           xcodebuild -showsdks | grep iOS
+
+      - name: Fix Node.js path for React Native
+        run: |
+          echo "=== Fixing Node.js path for React Native scripts ==="
+          echo "Current Node.js path: $(which node)"
+          echo "Node.js version: $(node --version)"
+
+          # Create symlink to ensure React Native scripts can find Node
+          sudo mkdir -p /Users/local/.nvm/versions/node/v18.17.1/bin/
+          sudo ln -sf $(which node) /Users/local/.nvm/versions/node/v18.17.1/bin/node || true
+
+          # Also update .xcode.env files to use correct Node path
+          echo "export NODE_BINARY=$(which node)" > ios/.xcode.env.local
+
+          echo "✅ Node.js path configured for React Native"
 
       - name: Clear CocoaPods cache
         run: |
@@ -123,7 +146,7 @@ jobs:
             else
               echo "Creating iPhone 15 simulator..."
               # Find available iOS runtime
-              RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "17\.|16\." | head -1 | sed 's/.*iOS \([0-9\.]*\).*/\1/')
+              RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\.|16\." | head -1 | sed 's/.*iOS \([0-9\.]*\).*/\1/')
               if [ -n "$RUNTIME" ]; then
                 echo "Using iOS runtime: $RUNTIME"
                 xcrun simctl create "iPhone 15" "iPhone 15" "iOS$RUNTIME" || true

@@ -33,7 +33,9 @@
     "e2e:import": "detox test --configuration ios.sim.debug e2e/importWalletFlow.test.ts",
     "e2e:import:clean": "npm run e2e:reset-sim && npm run e2e:import",
     "e2e:loadcard": "detox test --configuration ios.sim.debug e2e/loadCardFlow.test.ts",
-    "e2e:loadcard:clean": "npm run e2e:reset-sim && npm run e2e:loadcard"
+    "e2e:loadcard:clean": "npm run e2e:reset-sim && npm run e2e:loadcard",
+    "check-build-readiness": "./scripts/test-build-readiness.sh",
+    "pre-commit-check": "./scripts/test-build-readiness.sh"
   },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
