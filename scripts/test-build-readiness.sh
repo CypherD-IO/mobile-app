@@ -56,9 +56,16 @@ fi
 echo ""
 echo "🔍 3. Checking iOS simulators..."
 IPHONE_SIMULATORS=$(xcrun simctl list devices iPhone available 2>/dev/null | grep -c "iPhone")
+IPHONE16_SIMULATORS=$(xcrun simctl list devices iPhone available 2>/dev/null | grep -c "iPhone 16" || echo "0")
 if [ "$IPHONE_SIMULATORS" -gt 0 ]; then
     echo "   Found $IPHONE_SIMULATORS iPhone simulator(s)"
-    check_result 0 "iPhone simulators available"
+    if [ "$IPHONE16_SIMULATORS" -gt 0 ]; then
+        echo "   Found $IPHONE16_SIMULATORS iPhone 16 simulator(s) (preferred for Detox)"
+        check_result 0 "iPhone simulators available (including iPhone 16)"
+    else
+        echo "   No iPhone 16 simulators found (recommended for Detox)"
+        check_result 0 "iPhone simulators available (consider adding iPhone 16)"
+    fi
 else
     check_result 1 "No iPhone simulators found" "Install iOS simulators via Xcode"
 fi

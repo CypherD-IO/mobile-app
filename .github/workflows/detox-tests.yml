@@ -123,40 +123,45 @@ jobs:
         run: |
           echo "=== Setting up iOS Simulator ==="
 
-          # Find the best available iOS simulator
-          # First try to find iPhone 15 with any iOS 17.x version
-          IPHONE15_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 15" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+          # Find the best available iOS simulator for Detox (iPhone 16 preferred)
+          echo "Looking for iPhone 16 simulators..."
+          IPHONE16_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | sed 's/^[[:space:]]*//' || echo "")
 
-          if [ -n "$IPHONE15_SIMULATOR" ]; then
-            echo "Found existing iPhone 15 simulator: $IPHONE15_SIMULATOR"
+          if [ -n "$IPHONE16_SIMULATOR" ]; then
+            echo "✅ Found iPhone 16 simulator: $IPHONE16_SIMULATOR"
+            DEVICE_NAME="iPhone 16"
           else
-            echo "No iPhone 15 simulator found, checking for other iPhone models..."
-            # Fallback to iPhone 14 or iPhone 13
-            IPHONE_SIMULATOR=$(xcrun simctl list devices iPhone available | grep -E "iPhone (14|13)" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+            echo "No iPhone 16 found, checking for iPhone 15 with specific iOS version..."
+            # Fallback to iPhone 15 with explicit OS version
+            IPHONE15_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 15" | grep -v "Plus\|Pro" | head -1 | sed 's/^[[:space:]]*//' || echo "")
             
-            if [ -n "$IPHONE_SIMULATOR" ]; then
-              echo "Found alternative iPhone simulator: $IPHONE_SIMULATOR"
-              # Update Detox config to use this simulator
-              DEVICE_NAME=$(echo "$IPHONE_SIMULATOR" | sed 's/ (.*//')
-              echo "Updating Detox config to use device: $DEVICE_NAME"
+            if [ -n "$IPHONE15_SIMULATOR" ]; then
+              echo "Found iPhone 15 simulator: $IPHONE15_SIMULATOR"
+              DEVICE_NAME="iPhone 15"
               
-              # Create a temporary detox config
-              sed "s/iPhone 15/$DEVICE_NAME/g" .detoxrc.js > .detoxrc.temp.js
-              mv .detoxrc.temp.js .detoxrc.js
+              # Update Detox config to use iPhone 15 with specific OS
+              echo "Updating Detox config for iPhone 15..."
+              sed -i.bak 's/iPhone 16/iPhone 15/g' .detoxrc.js
+              sed -i.bak 's/name=iPhone 16/name=iPhone 15,OS=17.5/g' .detoxrc.js
             else
-              echo "Creating iPhone 15 simulator..."
-              # Find available iOS runtime
+              echo "No suitable iPhone simulator found, creating one..."
+              # Find latest available iOS runtime
               RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\.|16\." | head -1 | sed 's/.*iOS \([0-9\.]*\).*/\1/')
               if [ -n "$RUNTIME" ]; then
-                echo "Using iOS runtime: $RUNTIME"
-                xcrun simctl create "iPhone 15" "iPhone 15" "iOS$RUNTIME" || true
+                echo "Creating iPhone 16 with iOS runtime: $RUNTIME"
+                xcrun simctl create "iPhone 16" "iPhone 16" "iOS$RUNTIME" || true
+                DEVICE_NAME="iPhone 16"
+              else
+                echo "❌ No suitable iOS runtime found"
+                exit 1
               fi
             fi
           fi
 
           echo ""
-          echo "=== Final simulator list ==="
-          xcrun simctl list devices available
+          echo "=== Selected device: $DEVICE_NAME ==="
+          echo "=== Available simulators after setup ==="
+          xcrun simctl list devices available | grep -E "iPhone (15|16)" | head -10
 
       - name: Create e2e environment file
         run: |

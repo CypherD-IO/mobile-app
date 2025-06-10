@@ -13,7 +13,7 @@ module.exports = {
     'ios.sim.debug': {
       type: 'ios.app',
       binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app',
-      build: 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 15" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
+      build: 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
     },
     'ios.release': {
       type: 'ios.app',
@@ -36,7 +36,7 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 15'
+        type: 'iPhone 16'
       },
     },
     emulator: {
