@@ -45,12 +45,6 @@ module.exports = {
         avdName: 'Pixel_6_Pro_API_33',
       },
     },
-    'emulator.ci': {
-      type: 'android.emulator',
-      device: {
-        avdName: 'test_emulator_api_33',
-      },
-    },
   },
   configurations: {
     'ios.sim.debug': {
@@ -81,13 +75,6 @@ module.exports = {
     'android.emu.release': {
       device: 'emulator',
       app: 'android.release',
-      behavior: {
-        launchArgs: { detoxTestMode: 'YES' },
-      },
-    },
-    'android.ci.debug': {
-      device: 'emulator.ci',
-      app: 'android.debug',
       behavior: {
         launchArgs: { detoxTestMode: 'YES' },
       },
