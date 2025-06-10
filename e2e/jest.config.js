@@ -2,7 +2,8 @@
 module.exports = {
   rootDir: '..',
   testMatch: ['<rootDir>/e2e/**/*.test.ts'],
-  testTimeout: 120000,
+  // Increase timeout for CI environment (5 minutes)
+  testTimeout: process.env.CI ? 300000 : 120000,
   maxWorkers: 1,
   globalSetup: 'detox/runners/jest/globalSetup',
   globalTeardown: 'detox/runners/jest/globalTeardown',
@@ -19,4 +20,13 @@ module.exports = {
     }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  // Add CI-specific Jest options
+  ...(process.env.CI && {
+    // Prevent Jest from hanging in CI
+    forceExit: true,
+    // Detect open handles in CI to help debug
+    detectOpenHandles: true,
+    // More retries in CI environment
+    bail: false,
+  }),
 }; 

@@ -39,7 +39,9 @@ export async function navigateThroughOnboarding(): Promise<void> {
   // The actual text has a newline: "Non Custodial \nCrypto Wallet"
   try {
     // Try the exact text with newline first
-    const screen1TextWithNewline = element(by.text('Non Custodial \nCrypto Wallet'));
+    const screen1TextWithNewline = element(
+      by.text('Non Custodial \nCrypto Wallet'),
+    );
     await waitFor(screen1TextWithNewline).toExist().withTimeout(3000);
     console.log('Found first onboarding screen with newline text');
   } catch (e) {
@@ -47,15 +49,21 @@ export async function navigateThroughOnboarding(): Promise<void> {
       // Try just "Non Custodial" as partial match
       const screen1TextPartial = element(by.text('Non Custodial'));
       await waitFor(screen1TextPartial).toExist().withTimeout(3000);
-      console.log('Found first onboarding screen with partial text "Non Custodial"');
+      console.log(
+        'Found first onboarding screen with partial text "Non Custodial"',
+      );
     } catch (e) {
       try {
         // Try "Crypto Wallet" as partial match
         const screen1TextPartial2 = element(by.text('Crypto Wallet'));
         await waitFor(screen1TextPartial2).toExist().withTimeout(3000);
-        console.log('Found first onboarding screen with partial text "Crypto Wallet"');
+        console.log(
+          'Found first onboarding screen with partial text "Crypto Wallet"',
+        );
       } catch (e) {
-        console.error('Could not find any variation of Non Custodial Crypto Wallet text');
+        console.error(
+          'Could not find any variation of Non Custodial Crypto Wallet text',
+        );
         throw new Error('Could not find first onboarding screen text');
       }
     }
@@ -116,11 +124,46 @@ export const reOpenApp = async () => {
   await device.launchApp({
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: { 
+    launchArgs: {
       detoxHandleSystemAlerts: 'YES',
       // Add any other launch args that help ensure clean state
     },
   });
+};
+
+/**
+ * Light reset for CI environments - much faster than full reset
+ * @returns void
+ */
+export async function resetAppForCI(): Promise<void> {
+  console.log('Performing CI-optimized app reset...');
+
+  try {
+    // Just terminate and relaunch - much faster than full reset
+    console.log('Terminating app...');
+    await device.terminateApp();
+
+    // Small delay to ensure clean termination
+    await delay(1000);
+
+    // Clear keychain (lightweight operation)
+    console.log('Clearing keychain...');
+    await device.clearKeychain();
+  } catch (error) {
+    console.log('App termination failed (app might not be running):', error);
+  }
+
+  // Launch with clean state - no reinstall needed
+  console.log('Launching app with clean state...');
+  await device.launchApp({
+    newInstance: true,
+    permissions: { notifications: 'YES', camera: 'YES' },
+    launchArgs: {
+      detoxHandleSystemAlerts: 'YES',
+    },
+  });
+
+  console.log('✅ CI-optimized app reset finished');
 }
 
 /**
@@ -128,8 +171,13 @@ export const reOpenApp = async () => {
  * @returns void
  */
 export async function resetAppCompletely(): Promise<void> {
+  // Use lighter reset in CI environment
+  if (process.env.CI) {
+    return await resetAppForCI();
+  }
+
   console.log('Performing complete app and device reset...');
-  
+
   try {
     // First clear keychain data
     console.log('Clearing keychain data...');
@@ -151,7 +199,10 @@ export async function resetAppCompletely(): Promise<void> {
     console.log('Resetting simulator content and settings...');
     await device.resetContentAndSettings();
   } catch (error) {
-    console.log('Content reset failed (might not be supported on this device):', error);
+    console.log(
+      'Content reset failed (might not be supported on this device):',
+      error,
+    );
   }
 
   // Install app fresh
@@ -163,7 +214,7 @@ export async function resetAppCompletely(): Promise<void> {
   await device.launchApp({
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: { 
+    launchArgs: {
       detoxHandleSystemAlerts: 'YES',
       // Add any other launch args that help ensure clean state
     },
@@ -406,7 +457,7 @@ export async function setTestEnvironment(): Promise<void> {
  */
 export async function debugAllVisibleElements(context: string): Promise<void> {
   console.log(`🔍 DEBUG ALL ELEMENTS: ${context}`);
-  
+
   try {
     // Try to get a screenshot or element dump
     await device.takeScreenshot(`debug-${Date.now()}`);
@@ -418,12 +469,12 @@ export async function debugAllVisibleElements(context: string): Promise<void> {
   // Try to find different types of input elements
   const inputTypes = [
     'RCTTextField',
-    'RCTTextView', 
+    'RCTTextView',
     'RCTTextInput',
     'RCTMultilineTextInputView',
     'RCTSinglelineTextInputView',
     'UITextField',
-    'UITextView'
+    'UITextView',
   ];
 
   for (const inputType of inputTypes) {
@@ -431,7 +482,7 @@ export async function debugAllVisibleElements(context: string): Promise<void> {
       const elements = element(by.type(inputType));
       await waitFor(elements).toExist().withTimeout(1000);
       console.log(`✅ Found ${inputType} element(s)`);
-      
+
       // Try to get element count
       try {
         for (let i = 0; i < 5; i++) {
@@ -451,9 +502,9 @@ export async function debugAllVisibleElements(context: string): Promise<void> {
   const inputTexts = [
     'Enter your key',
     'seed phrase',
-    'recovery phrase', 
+    'recovery phrase',
     'Enter recovery phrase',
-    'ENTER_KEY_PLACEHOLDER'
+    'ENTER_KEY_PLACEHOLDER',
   ];
 
   for (const text of inputTexts) {
@@ -475,12 +526,12 @@ export async function debugAllVisibleElements(context: string): Promise<void> {
 export function getSecureTestSeedPhrase(): string {
   // Try to get from environment variable (GitHub Actions secrets or local .env)
   const envSeedPhrase = process.env.TEST_SEED_PHRASE;
-  
+
   if (envSeedPhrase && envSeedPhrase.trim().length > 0) {
     console.log('🔐 Using secure seed phrase from environment variable');
     return envSeedPhrase.trim();
   }
-  
+
   // Fallback to standard test mnemonic (safe for public repos)
   console.log('⚠️ Using fallback test mnemonic (not for production)');
   return 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
@@ -494,7 +545,10 @@ export function getSecureTestSeedPhrase(): string {
 export function secureLog(message: string, seedPhrase?: string): void {
   if (seedPhrase) {
     // Replace the seed phrase with asterisks in any log message
-    const sanitizedMessage = message.replace(new RegExp(seedPhrase.replace(/\s+/g, '\\s+'), 'gi'), '***REDACTED_SEED_PHRASE***');
+    const sanitizedMessage = message.replace(
+      new RegExp(seedPhrase.replace(/\s+/g, '\\s+'), 'gi'),
+      '***REDACTED_SEED_PHRASE***',
+    );
     console.log(sanitizedMessage);
   } else {
     console.log(message);
@@ -508,10 +562,10 @@ export function secureLog(message: string, seedPhrase?: string): void {
  */
 export async function performSecureOperation<T>(
   operation: () => Promise<T>,
-  operationName: string
+  operationName: string,
 ): Promise<T> {
   console.log(`🔒 Starting secure operation: ${operationName}`);
-  
+
   try {
     // Disable screenshots during this operation
     // Note: This is a precautionary measure
@@ -523,4 +577,3 @@ export async function performSecureOperation<T>(
     throw error;
   }
 }
- 

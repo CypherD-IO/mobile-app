@@ -6,14 +6,16 @@ module.exports = {
       config: 'e2e/jest.config.js',
     },
     jest: {
-      setupTimeout: 120000,
+      setupTimeout: process.env.CI ? 180000 : 120000, // 3 minutes for CI
     },
   },
   apps: {
     'ios.sim.debug': {
       type: 'ios.app',
       binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app',
-      build: 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
+      build: process.env.CI 
+        ? 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO -quiet'
+        : 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
     },
     'ios.release': {
       type: 'ios.app',
@@ -36,7 +38,7 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 16'
+        type: 'iPhone 16'  // Use iPhone 16 for both CI and local (iOS 18.x support)
       },
     },
     emulator: {

@@ -121,36 +121,37 @@ jobs:
 
       - name: Setup iOS Simulator
         run: |
-          echo "=== Setting up iOS Simulator ==="
+          echo "=== Setting up iOS Simulator for E2E Tests ==="
 
-          # Find the best available iOS simulator for Detox (iPhone 16 preferred)
+          # For CI, we need iPhone 16 with iOS 18.x support (required for iOS 18 SDK)
           echo "Looking for iPhone 16 simulators..."
           IPHONE16_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | sed 's/^[[:space:]]*//' || echo "")
 
           if [ -n "$IPHONE16_SIMULATOR" ]; then
             echo "✅ Found iPhone 16 simulator: $IPHONE16_SIMULATOR"
             DEVICE_NAME="iPhone 16"
+            DEVICE_OS="18.x"
           else
-            echo "No iPhone 16 found, checking for iPhone 15 with specific iOS version..."
-            # Fallback to iPhone 15 with explicit OS version
+            echo "No iPhone 16 found, checking for iPhone 15..."
             IPHONE15_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 15" | grep -v "Plus\|Pro" | head -1 | sed 's/^[[:space:]]*//' || echo "")
             
             if [ -n "$IPHONE15_SIMULATOR" ]; then
               echo "Found iPhone 15 simulator: $IPHONE15_SIMULATOR"
               DEVICE_NAME="iPhone 15"
+              DEVICE_OS="17.5"
               
-              # Update Detox config to use iPhone 15 with specific OS
-              echo "Updating Detox config for iPhone 15..."
+              # Update Detox config for iPhone 15 fallback
               sed -i.bak 's/iPhone 16/iPhone 15/g' .detoxrc.js
-              sed -i.bak 's/name=iPhone 16/name=iPhone 15,OS=17.5/g' .detoxrc.js
+              echo "⚠️ Using iPhone 15 fallback - may not support iOS 18 SDK features"
             else
-              echo "No suitable iPhone simulator found, creating one..."
-              # Find latest available iOS runtime
-              RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\.|16\." | head -1 | sed 's/.*iOS \([0-9\.]*\).*/\1/')
+              echo "Creating iPhone 16 simulator..."
+              # Find a suitable iOS runtime for iPhone 16
+              RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\." | head -1 | sed 's/.*iOS \([0-9\.]*\).*/\1/')
               if [ -n "$RUNTIME" ]; then
                 echo "Creating iPhone 16 with iOS runtime: $RUNTIME"
                 xcrun simctl create "iPhone 16" "iPhone 16" "iOS$RUNTIME" || true
                 DEVICE_NAME="iPhone 16"
+                DEVICE_OS="$RUNTIME"
               else
                 echo "❌ No suitable iOS runtime found"
                 exit 1
@@ -159,9 +160,74 @@ jobs:
           fi
 
           echo ""
-          echo "=== Selected device: $DEVICE_NAME ==="
+          echo "=== Selected device: $DEVICE_NAME with iOS $DEVICE_OS ==="
           echo "=== Available simulators after setup ==="
           xcrun simctl list devices available | grep -E "iPhone (15|16)" | head -10
+
+          # Pre-boot the simulator to speed up tests
+          echo "Pre-booting simulator..."
+          DEVICE_ID=$(xcrun simctl list devices | grep "$DEVICE_NAME" | grep -v "unavailable" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
+          if [ -n "$DEVICE_ID" ]; then
+            xcrun simctl boot "$DEVICE_ID" || echo "Device might already be booted"
+            echo "✅ Simulator pre-booted successfully"
+          fi
+
+      - name: Optimize CI Environment for E2E Tests
+        run: |
+          echo "=== CI Environment Optimizations ==="
+
+          # Set CI flag for Detox configuration
+          echo "CI=true" >> $GITHUB_ENV
+
+          # Increase file descriptor limits for CI
+          ulimit -n 4096 || echo "Could not increase file descriptor limit"
+
+          # Clear any old simulators to free up resources
+          echo "Cleaning up old simulators..."
+          xcrun simctl delete unavailable || echo "No unavailable simulators to delete"
+
+          # Show system resources
+          echo "Available system resources:"
+          echo "  - CPU cores: $(sysctl -n hw.ncpu)"
+          echo "  - Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
+          echo "  - Disk space: $(df -h . | tail -1 | awk '{print $4}') available"
+
+          echo "✅ CI environment optimized"
+
+      - name: Build iOS app for testing (with retry)
+        run: |
+          echo "=== Starting iOS Build with Retry Logic ==="
+
+          # Function to retry build on failure
+          retry_build() {
+            local max_attempts=3
+            local attempt=1
+            
+            while [ $attempt -le $max_attempts ]; do
+              echo "Build attempt $attempt of $max_attempts..."
+              
+              if detox build --configuration ios.sim.debug --verbose; then
+                echo "✅ Build successful on attempt $attempt"
+                return 0
+              else
+                echo "❌ Build failed on attempt $attempt"
+                
+                if [ $attempt -lt $max_attempts ]; then
+                  echo "Cleaning up before retry..."
+                  cd ios && rm -rf build && cd ..
+                  sleep 30  # Wait before retry
+                fi
+                
+                attempt=$((attempt + 1))
+              fi
+            done
+            
+            echo "❌ Build failed after $max_attempts attempts"
+            return 1
+          }
+
+          retry_build
+        timeout-minutes: 25
 
       - name: Create e2e environment file
         run: |
@@ -169,18 +235,32 @@ jobs:
         env:
           E2E_TEST_SEED_PHRASE: ${{ secrets.E2E_TEST_SEED_PHRASE }}
 
-      - name: Build iOS app for testing
-        run: |
-          echo "=== Starting iOS Build ==="
-          echo "Current directory: $(pwd)"
-          echo "Available iOS simulators:"
-          xcrun simctl list devices iOS --json
-          echo "=== Building with Detox ==="
-          detox build --configuration ios.sim.debug --verbose
-        timeout-minutes: 20
-
       - name: Run E2E Tests - iOS
-        run: npm run e2e:test:ios
+        run: |
+          echo "=== Starting E2E Tests ==="
+
+          # Set CI environment variable for lighter resets
+          export CI=true
+
+          # Run tests with increased timeout and better error handling
+          npm run e2e:test:ios || {
+            echo "❌ E2E tests failed"
+            
+            # Capture simulator logs for debugging
+            echo "=== Capturing simulator logs ==="
+            DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 1" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
+            if [ -n "$DEVICE_ID" ]; then
+              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > simulator_logs.txt || echo "Could not capture logs"
+            fi
+            
+            # Take final screenshot
+            if [ -n "$DEVICE_ID" ]; then
+              xcrun simctl io "$DEVICE_ID" screenshot final_state.png || echo "Could not take screenshot"
+            fi
+            
+            exit 1
+          }
+        timeout-minutes: 30
         continue-on-error: true
 
       - name: Clean up .env file
@@ -196,6 +276,9 @@ jobs:
             e2e/artifacts/
             detox_*.log
             ios/build/Build/Logs/
+            simulator_logs.txt
+            final_state.png
+            e2e/screenshots/
           retention-days: 7
 
       - name: Report E2E Test Results
