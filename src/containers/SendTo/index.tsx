@@ -755,7 +755,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     setLoading(true);
     let response;
     if (chainDetails?.chainName === ChainNames.ETH) {
-      const ethereum = hdWalletContext.state.wallet.ethereum;
       fromAddress = ethereum.address;
       response = await sendEvmToken({
         chain: tokenData.chainDetails.backendName,
