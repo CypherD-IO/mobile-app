@@ -124,10 +124,51 @@ jobs:
 
           echo "✅ Node.js path configured for React Native"
 
+      - name: Setup Ruby and Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          working-directory: .
+
+      - name: Cache Ruby gems
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/bundle
+            ~/.gem
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
+
+      - name: Install Ruby dependencies
+        run: |
+          echo "=== Installing Ruby dependencies ==="
+
+          # Check Ruby and Bundler versions
+          echo "Ruby version: $(ruby --version)"
+          echo "Bundler version: $(bundle --version)"
+
+          # Configure bundler to use vendor/bundle for faster caching
+          bundle config set --local path 'vendor/bundle'
+          bundle config set --local deployment 'false'
+
+          # Install gems if not cached
+          if [ ! -d "vendor/bundle" ] || [ ! -f "vendor/bundle/.cache-complete" ]; then
+            echo "Installing Ruby gems..."
+            bundle install --jobs 4 --retry 3
+            touch vendor/bundle/.cache-complete
+          else
+            echo "✅ Ruby gems restored from cache"
+          fi
+
+          # Verify CocoaPods is available
+          bundle exec pod --version
+          echo "✅ CocoaPods is ready"
+
       - name: Clear CocoaPods cache
         run: |
           echo "=== Clearing CocoaPods cache ==="
-          pod cache clean --all || true
+          bundle exec pod cache clean --all || true
           cd ios
           rm -f Podfile.lock || true
 
