@@ -127,7 +127,7 @@ jobs:
       - name: Setup Ruby and Bundler
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: '3.0'
           bundler-cache: false # We'll handle caching manually for better control
           working-directory: .
 
@@ -137,9 +137,9 @@ jobs:
           path: |
             vendor/bundle
             ~/.gem
-          key: ${{ runner.os }}-gems-ruby3.1-${{ hashFiles('**/Gemfile.lock') }}
+          key: ${{ runner.os }}-gems-ruby3.0-v1-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-ruby3.1-
+            ${{ runner.os }}-gems-ruby3.0-v1-
 
       - name: Install Ruby dependencies
         run: |
@@ -149,27 +149,23 @@ jobs:
           echo "Ruby version: $(ruby --version)"
           echo "Bundler version: $(bundle --version)"
 
-          # Update Bundler to a modern version to avoid compatibility warnings
-          gem install bundler -v "~> 2.4.0" --no-document
+          # Update Bundler to a modern stable version
+          gem install bundler -v "2.4.22" --no-document
           echo "Updated Bundler version: $(bundle --version)"
 
-          # Configure bundler to use vendor/bundle for faster caching
+          # Configure bundler
           bundle config set --local path 'vendor/bundle'
           bundle config set --local deployment 'false'
-          bundle config set --local clean 'true'
+          bundle config set --local jobs 4
 
-          # Install gems if not cached
-          if [ ! -d "vendor/bundle" ] || [ ! -f "vendor/bundle/.cache-complete" ]; then
-            echo "Installing Ruby gems..."
-            bundle install --jobs 4 --retry 3
-            touch vendor/bundle/.cache-complete
-          else
-            echo "✅ Ruby gems restored from cache"
-          fi
+          # Install gems
+          echo "Installing Ruby gems..."
+          bundle install --retry 3
 
-          # Verify CocoaPods is available and check version
+          # Verify CocoaPods installation
+          echo "Verifying CocoaPods installation..."
           bundle exec pod --version
-          echo "✅ CocoaPods is ready with VisionOS support"
+          echo "✅ CocoaPods $(bundle exec pod --version) ready with VisionOS support"
 
       - name: Clear CocoaPods cache
         run: |
