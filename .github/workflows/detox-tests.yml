@@ -128,6 +128,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.1'
+          bundler-cache: false # We'll handle caching manually for better control
           working-directory: .
 
       - name: Cache Ruby gems
@@ -136,9 +137,9 @@ jobs:
           path: |
             vendor/bundle
             ~/.gem
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          key: ${{ runner.os }}-gems-ruby3.1-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-
+            ${{ runner.os }}-gems-ruby3.1-
 
       - name: Install Ruby dependencies
         run: |
@@ -148,9 +149,14 @@ jobs:
           echo "Ruby version: $(ruby --version)"
           echo "Bundler version: $(bundle --version)"
 
+          # Update Bundler to a modern version to avoid compatibility warnings
+          gem install bundler -v "~> 2.4.0" --no-document
+          echo "Updated Bundler version: $(bundle --version)"
+
           # Configure bundler to use vendor/bundle for faster caching
           bundle config set --local path 'vendor/bundle'
           bundle config set --local deployment 'false'
+          bundle config set --local clean 'true'
 
           # Install gems if not cached
           if [ ! -d "vendor/bundle" ] || [ ! -f "vendor/bundle/.cache-complete" ]; then
@@ -161,9 +167,9 @@ jobs:
             echo "✅ Ruby gems restored from cache"
           fi
 
-          # Verify CocoaPods is available
+          # Verify CocoaPods is available and check version
           bundle exec pod --version
-          echo "✅ CocoaPods is ready"
+          echo "✅ CocoaPods is ready with VisionOS support"
 
       - name: Clear CocoaPods cache
         run: |
@@ -184,12 +190,31 @@ jobs:
             echo "Cache miss or Podfile changed - installing pods..."
             rm -f Podfile.lock || true
             
-            # Fast pod install with optimizations
-            bundle exec pod install \
+            # Try pod install with better error handling
+            echo "Using CocoaPods $(bundle exec pod --version) with VisionOS support"
+            
+            if ! bundle exec pod install \
               --repo-update \
               --deployment \
               --verbose \
-              --clean-install
+              --clean-install; then
+              
+              echo "❌ Pod install failed. Checking for common issues..."
+              
+              # Check for VisionOS compatibility issues
+              if grep -r "visionos" ../node_modules/*/RN*.podspec 2>/dev/null || 
+                 grep -r "visionos" ../node_modules/@*/*/RN*.podspec 2>/dev/null; then
+                echo "⚠️ Found VisionOS references in podspecs"
+                echo "CocoaPods version: $(bundle exec pod --version)"
+                echo "This version should support VisionOS (1.13+ required)"
+              fi
+              
+              # List problematic podspecs
+              echo "Checking for problematic podspecs..."
+              find ../node_modules -name "*.podspec" -exec grep -l "visionos" {} \; 2>/dev/null || true
+              
+              exit 1
+            fi
             
             touch Pods/.cache-complete
           fi
