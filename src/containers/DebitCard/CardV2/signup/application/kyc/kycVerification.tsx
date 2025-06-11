@@ -16,6 +16,7 @@ import useAxios from '../../../../../../core/HttpRequest';
 import {
   CardApplicationStatus,
   CardProviders,
+  GlobalContextType,
 } from '../../../../../../constants/enum';
 import {
   GlobalContext,
@@ -37,7 +38,8 @@ const KYCVerification = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { getWithAuth } = useAxios();
   const { cardProfileModal } = useCardUtilities();
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const { globalState } = globalContext;
   const cardProfile = globalState.cardProfile as CardProfile;
   const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,12 @@ const KYCVerification = () => {
           [tempProvider, 'applicationStatus'],
           '',
         );
+        if (kycStatus === CardApplicationStatus.COMPLETED) {
+          globalContext.globalDispatch({
+            type: GlobalContextType.CARD_PROFILE,
+            cardProfile: tempProfile,
+          });
+        }
         setKycStatus(applicationStatus);
         setIsRainDeclined(
           get(tempProfile, [provider, 'isRainDeclined'], false),
