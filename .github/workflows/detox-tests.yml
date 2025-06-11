@@ -124,48 +124,18 @@ jobs:
 
           echo "✅ Node.js path configured for React Native"
 
-      - name: Setup Ruby and Bundler
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0'
-          bundler-cache: false # We'll handle caching manually for better control
-          working-directory: .
-
-      - name: Cache Ruby gems
-        uses: actions/cache@v4
-        with:
-          path: |
-            vendor/bundle
-            ~/.gem
-          key: ${{ runner.os }}-gems-ruby3.0-v1-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-ruby3.0-v1-
-
-      - name: Install Ruby dependencies
+      - name: Install Ruby gems (missing step)
         run: |
-          echo "=== Installing Ruby dependencies ==="
-
-          # Check Ruby and Bundler versions
+          echo "=== Installing Ruby gems (this was the missing step!) ==="
           echo "Ruby version: $(ruby --version)"
           echo "Bundler version: $(bundle --version)"
 
-          # Update Bundler to a modern stable version
-          gem install bundler -v "2.4.22" --no-document
-          echo "Updated Bundler version: $(bundle --version)"
+          # This was the missing step that caused the original error!
+          bundle install
 
-          # Configure bundler
-          bundle config set --local path 'vendor/bundle'
-          bundle config set --local deployment 'false'
-          bundle config set --local jobs 4
-
-          # Install gems
-          echo "Installing Ruby gems..."
-          bundle install --retry 3
-
-          # Verify CocoaPods installation
-          echo "Verifying CocoaPods installation..."
+          # Verify CocoaPods is available  
           bundle exec pod --version
-          echo "✅ CocoaPods $(bundle exec pod --version) ready with VisionOS support"
+          echo "✅ CocoaPods $(bundle exec pod --version) ready"
 
       - name: Clear CocoaPods cache
         run: |
