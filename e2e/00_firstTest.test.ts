@@ -1,17 +1,28 @@
 import { device, element, by, waitFor } from 'detox';
-import { handlePermissionDialog, resetAppCompletely, delay } from './helpers';
+import {
+  handlePermissionDialog,
+  resetAppCompletely,
+  delay,
+  debugVisibleElements,
+} from './helpers';
 
 describe('App Launch Tests', () => {
   beforeAll(async () => {
     await resetAppCompletely();
-  });
+  }, 60000); // 1 minute timeout for app reset
 
   it('should launch successfully and show onboarding screen', async () => {
     console.log('Running app launch and onboarding validation test');
 
-    // Wait for app to stabilize and handle any permission dialogs
-    await delay(3000);
+    // Wait longer for app to stabilize after reset (especially important in CI)
+    console.log('Waiting for app to stabilize...');
+    await delay(5000); // Increased from 3000
+
+    // Handle any permission dialogs
     await handlePermissionDialog();
+
+    // Additional wait after permission handling
+    await delay(2000);
 
     // Test specifically for the onboarding screen text
     console.log(
@@ -23,7 +34,7 @@ describe('App Launch Tests', () => {
       const onboardingTextWithNewline = element(
         by.text('Non Custodial \nCrypto Wallet'),
       );
-      await waitFor(onboardingTextWithNewline).toExist().withTimeout(10000);
+      await waitFor(onboardingTextWithNewline).toExist().withTimeout(15000); // Increased timeout
       console.log('✅ Found onboarding screen with newline text');
 
       // If we get here, the test passes
@@ -38,6 +49,10 @@ describe('App Launch Tests', () => {
       } catch (screenshotError) {
         console.log('Could not take screenshot:', screenshotError);
       }
+
+      // Log additional debugging info
+      console.log('❌ Test failed, attempting to log visible elements...');
+      await debugVisibleElements('onboarding screen detection failed');
 
       throw new Error(
         'Onboarding screen with "Non Custodial Crypto Wallet" text not found - app may not have launched correctly',

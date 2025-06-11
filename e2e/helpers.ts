@@ -132,95 +132,58 @@ export const reOpenApp = async () => {
 };
 
 /**
- * Light reset for CI environments - much faster than full reset
- * @returns void
- */
-export async function resetAppForCI(): Promise<void> {
-  console.log('Performing CI-optimized app reset...');
-
-  try {
-    // Just terminate and relaunch - much faster than full reset
-    console.log('Terminating app...');
-    await device.terminateApp();
-
-    // Small delay to ensure clean termination
-    await delay(1000);
-
-    // Clear keychain (lightweight operation)
-    console.log('Clearing keychain...');
-    await device.clearKeychain();
-  } catch (error) {
-    console.log('App termination failed (app might not be running):', error);
-  }
-
-  // Launch with clean state - no reinstall needed
-  console.log('Launching app with clean state...');
-  await device.launchApp({
-    newInstance: true,
-    permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: {
-      detoxHandleSystemAlerts: 'YES',
-    },
-  });
-
-  console.log('✅ CI-optimized app reset finished');
-}
-
-/**
- * Reset app state completely - uninstall, reinstall, and clean launch
+ * Reset app state completely - optimized for speed and reliability
  * @returns void
  */
 export async function resetAppCompletely(): Promise<void> {
-  // Use lighter reset in CI environment
-  if (process.env.CI) {
-    return await resetAppForCI();
-  }
-
-  console.log('Performing complete app and device reset...');
+  console.log('Performing fast app reset for E2E tests...');
 
   try {
-    // First clear keychain data
-    console.log('Clearing keychain data...');
-    await device.clearKeychain();
-  } catch (error) {
-    console.log('Keychain clear failed (might not be supported):', error);
-  }
-
-  try {
-    // Clear app data and documents
-    console.log('Clearing app data...');
-    await device.uninstallApp();
-  } catch (error) {
-    console.log('App uninstall failed:', error);
-  }
-
-  try {
-    // Reset simulator content and settings for complete clean state
-    console.log('Resetting simulator content and settings...');
-    await device.resetContentAndSettings();
+    // Step 1: Terminate app if running (fast operation)
+    console.log('Terminating app...');
+    await Promise.race([
+      device.terminateApp(),
+      new Promise((resolve, reject) =>
+        setTimeout(() => reject(new Error('Terminate timeout')), 10000),
+      ),
+    ]);
   } catch (error) {
     console.log(
-      'Content reset failed (might not be supported on this device):',
+      'App terminate failed or timed out (app might not be running):',
       error,
     );
   }
 
-  // Install app fresh
-  console.log('Installing app fresh...');
-  await device.installApp();
+  try {
+    // Step 2: Clear keychain (fast operation)
+    console.log('Clearing keychain...');
+    await Promise.race([
+      device.clearKeychain(),
+      new Promise((resolve, reject) =>
+        setTimeout(() => reject(new Error('Keychain timeout')), 15000),
+      ),
+    ]);
+  } catch (error) {
+    console.log('Keychain clear failed or timed out:', error);
+  }
 
-  // Launch with permissions pre-granted and clean state
+  // Step 3: Launch app with clean state (no uninstall/reinstall needed)
   console.log('Launching app with clean state...');
-  await device.launchApp({
-    newInstance: true,
-    permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: {
-      detoxHandleSystemAlerts: 'YES',
-      // Add any other launch args that help ensure clean state
-    },
-  });
+  try {
+    await device.launchApp({
+      newInstance: true,
+      permissions: { notifications: 'YES', camera: 'YES' },
+      launchArgs: {
+        detoxHandleSystemAlerts: 'YES',
+      },
+    });
 
-  console.log('✅ Complete app and device reset finished');
+    console.log('✅ Fast app reset completed successfully');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('App launch failed:', error);
+    throw new Error(`App reset failed: ${errorMessage}`);
+  }
 }
 
 /**
