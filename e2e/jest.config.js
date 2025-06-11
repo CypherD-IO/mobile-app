@@ -15,7 +15,7 @@ module.exports = {
   globalTeardown: 'detox/runners/jest/globalTeardown',
   reporters: ['detox/runners/jest/reporter'],
   testEnvironment: 'detox/runners/jest/testEnvironment',
-  verbose: true,
+  verbose: !process.env.CI, // Reduce verbosity in CI for performance
   
   // Use independent test sequencer (all tests can run in parallel)
   testSequencer: '<rootDir>/e2e/testSequencer.js',
@@ -26,14 +26,24 @@ module.exports = {
   // Transform configuration
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: '<rootDir>/e2e/tsconfig.json'
+      tsconfig: '<rootDir>/e2e/tsconfig.json',
+      // Performance optimizations for ts-jest
+      isolatedModules: true,
+      useESM: false,
     }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   
   // Force Jest to exit and detect open handles to prevent hanging
   forceExit: true,
-  detectOpenHandles: true,
+  detectOpenHandles: false, // Disable in CI to reduce overhead
+  
+  // Cache configuration for faster subsequent runs
+  cache: true,
+  cacheDirectory: '<rootDir>/node_modules/.cache/jest',
+  
+  // Performance optimizations
+  workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
   
   // CI-specific optimizations for parallel execution
   ...(process.env.CI && {
@@ -44,5 +54,8 @@ module.exports = {
     testNamePattern: process.env.E2E_TEST_PATTERN,
     // Optimize for parallel execution
     verbose: false, // Reduce log noise with multiple parallel tests
+    detectOpenHandles: false, // Disable to reduce CI overhead
+    // Reduce memory usage in CI
+    workerIdleMemoryLimit: '256MB',
   }),
 }; 
