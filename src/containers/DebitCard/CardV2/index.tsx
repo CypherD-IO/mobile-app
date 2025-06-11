@@ -227,13 +227,7 @@ export default function CypherCardScreen() {
     const data = await getWalletProfile(globalContext.globalState.token);
     setPlanInfo(get(data, ['planInfo'], null));
     if (cardProvider !== CardProviders.PAYCADDY) {
-      if (
-        selectedCard?.cardProvider === CardProviders.RAIN_CARD &&
-        cardId === CARD_IDS.HIDDEN_CARD
-      ) {
-        const rainTerms = await getRainTerms();
-        setIsTermsAndConditionsModalVisible(!rainTerms);
-      } else if (selectedCard?.cardProvider === CardProviders.REAP_CARD) {
+      if (selectedCard?.cardProvider === CardProviders.REAP_CARD) {
         setIsTermsAndConditionsModalVisible(
           !get(data, [cardProvider, 'termsAgreedOn'], 0),
         );

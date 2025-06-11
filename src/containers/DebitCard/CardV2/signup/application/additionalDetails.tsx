@@ -9,6 +9,7 @@ import {
   CyDView,
   CyDText,
   CyDMaterialDesignIcons,
+  CyDTouchView,
 } from '../../../../../styles/tailwindComponents';
 import { Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
@@ -27,6 +28,7 @@ import { getReferralCode } from '../../../../../core/asyncStorage';
 import { CardProviders } from '../../../../../constants/enum';
 import { omit } from 'lodash';
 import { useFormContext } from './FormContext';
+import clsx from 'clsx';
 
 // Validation schema for the additional details form
 const AdditionalDetailsSchema = Yup.object().shape({
@@ -49,7 +51,7 @@ const AdditionalDetails = (): JSX.Element => {
   const { postWithAuth } = useAxios();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { formState, setFormState } = useFormContext();
-
+  const [hasConsent, setHasConsent] = useState(false);
   const handleSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
@@ -125,6 +127,13 @@ const AdditionalDetails = (): JSX.Element => {
 
   // Initialize form values from applicationFormData
   const formikRef = React.useRef<FormikProps<FormValues>>(null);
+
+  const handleLegalPress = () => {
+    navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
+      uri: 'https://cypherhq.io/legal/',
+      title: 'Terms of Service',
+    });
+  };
 
   useEffect(() => {
     if (formState && formikRef.current) {
@@ -228,6 +237,38 @@ const AdditionalDetails = (): JSX.Element => {
               </CyDView>
             </KeyboardAwareScrollView>
 
+            <CyDView className='flex flex-row items-center p-[8px] mb-[16px] ml-[12px]'>
+              <CyDTouchView
+                className={clsx(
+                  'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base400',
+                  {
+                    'bg-p150 border-p150': hasConsent,
+                  },
+                )}
+                onPress={() => setHasConsent(!hasConsent)}>
+                {hasConsent && (
+                  <CyDMaterialDesignIcons
+                    name='check-bold'
+                    size={16}
+                    className='text-n0'
+                  />
+                )}
+              </CyDTouchView>
+              <CyDView className='flex flex-row items-center mx-[16px]'>
+                <CyDText className='text-n200 text-[12px]'>
+                  {t('By continuing, you agree to our ')}
+                </CyDText>
+                <CyDTouchView
+                  onPress={() => {
+                    handleLegalPress();
+                  }}>
+                  <CyDText className='text-blue300 text-[12px] font-medium'>
+                    {t('Terms of Service')}
+                  </CyDText>
+                </CyDTouchView>
+              </CyDView>
+            </CyDView>
+
             {/* Footer */}
             <CardApplicationFooter
               currentStep={1}
@@ -237,7 +278,7 @@ const AdditionalDetails = (): JSX.Element => {
                 title: t('NEXT'),
                 onPress: () => handleSubmit(),
                 loading: isSubmitting,
-                disabled: !isValid,
+                disabled: !isValid || !hasConsent,
               }}
             />
           </>
