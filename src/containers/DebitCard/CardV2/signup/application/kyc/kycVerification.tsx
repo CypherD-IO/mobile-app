@@ -62,7 +62,7 @@ const KYCVerification = () => {
           [tempProvider, 'applicationStatus'],
           '',
         );
-        if (kycStatus === CardApplicationStatus.COMPLETED) {
+        if (applicationStatus === CardApplicationStatus.COMPLETED) {
           globalContext.globalDispatch({
             type: GlobalContextType.CARD_PROFILE,
             cardProfile: tempProfile,
