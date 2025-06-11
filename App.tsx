@@ -70,7 +70,7 @@ import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
 
 // Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
-const isTesting = Config.IS_TESTING === 'true';
+const isTesting = String(Config.IS_TESTING) === 'true';
 
 if (isTesting) {
   // Only initialize early in test mode to prevent warnings

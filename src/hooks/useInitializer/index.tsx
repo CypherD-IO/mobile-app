@@ -86,7 +86,7 @@ export default function useInitializer() {
 
   const initializeSentry = () => {
     // Check if we're in testing mode
-    const isTesting = Config.IS_TESTING === 'true';
+    const isTesting = String(Config.IS_TESTING) === 'true';
 
     if (isTesting) {
       // In test mode, check if Sentry is already initialized (from App.tsx)
