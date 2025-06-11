@@ -2,13 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
   NavigationProp,
   ParamListBase,
+  useIsFocused,
   useNavigation,
 } from '@react-navigation/native';
 import {
   CyDView,
   CyDText,
   CyDSafeAreaView,
-  CyDImage,
   CyDScrollView,
   CyDTouchView,
   CyDMaterialDesignIcons,
@@ -21,13 +21,15 @@ import AppImages from '../../../../../../assets/images/appImages';
 import PreferredNameModal from '../../../physicalCardUpgradation/preferredNameModal';
 import { useTranslation } from 'react-i18next';
 import useAxios from '../../../../../core/HttpRequest';
-import { CardProfile } from '../../../../../models/cardProfile.model';
 import {
   GlobalContextDef,
   GlobalContext,
 } from '../../../../../core/globalContext';
-import { CardProviders } from '../../../../../constants/enum';
+import { CARD_IDS, CardProviders } from '../../../../../constants/enum';
 import { showToast } from '../../../../utilities/toastUtility';
+import TermsAndConditionsModal from '../../../../../components/v2/termsAndConditionsModal';
+import { getRainTerms } from '../../../../../core/asyncStorage';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../../../../core/Http';
 
 const NameOnCard = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -39,8 +41,14 @@ const NameOnCard = () => {
   >([]);
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
+  const [country, setCountry] = useState<string>('');
+  const [
+    isTermsAndConditionsModalVisible,
+    setIsTermsAndConditionsModalVisible,
+  ] = useState<boolean>(false);
   const { t } = useTranslation();
   const { postWithAuth, getWithAuth } = useAxios();
+  const isFocused = useIsFocused();
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const MAX_NAME_LENGTH = 27;
 
@@ -53,6 +61,7 @@ const NameOnCard = () => {
         if (!response.isError && response.data) {
           setFirstName(response.data.firstName || '');
           setLastName(response.data.lastName || '');
+          setCountry(response.data.country || '');
         }
       } catch (error) {
         showToast('Could not fetch user data', 'error');
@@ -62,6 +71,26 @@ const NameOnCard = () => {
 
     void fetchUserData();
   }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      void checkTermsAndConditions();
+    }
+  }, [globalState, isFocused]);
+
+  const checkTermsAndConditions = async () => {
+    const cardProvider = globalState.cardProfile?.provider;
+    const firstCard = globalState.cardProfile?.rc?.cards?.[0];
+    if (cardProvider !== CardProviders.PAYCADDY) {
+      if (
+        firstCard?.cardProvider === CardProviders.RAIN_CARD &&
+        firstCard?.cardId === CARD_IDS.HIDDEN_CARD
+      ) {
+        const rainTerms = await getRainTerms();
+        setIsTermsAndConditionsModalVisible(!rainTerms);
+      }
+    }
+  };
 
   useEffect(() => {
     // Initialize name options with combinations
@@ -137,6 +166,22 @@ const NameOnCard = () => {
         isModalVisible={isPreferredNameModalVisible}
         setShowModal={setIsPreferredNameModalVisible}
         onSetPreferredName={addCustomName}
+      />
+      <TermsAndConditionsModal
+        isModalVisible={isTermsAndConditionsModalVisible}
+        setIsModalVisible={setIsTermsAndConditionsModalVisible}
+        cardProvider={CardProviders.RAIN_CARD}
+        onAgree={() => {
+          setIsTermsAndConditionsModalVisible(false);
+          void checkTermsAndConditions();
+        }}
+        onCancel={() => {
+          setIsTermsAndConditionsModalVisible(false);
+          setTimeout(() => {
+            navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
+          }, MODAL_HIDE_TIMEOUT_250);
+        }}
+        country={country}
       />
 
       <CyDScrollView className='flex-1 px-5'>
