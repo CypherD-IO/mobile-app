@@ -17,6 +17,7 @@ jobs:
       HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
       WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
       CI: true
+      IS_TESTING: 'true'
       NODE_ENV: development
 
     steps:
@@ -231,7 +232,7 @@ jobs:
       - name: Create e2e environment file
         run: |
           echo "TEST_SEED_PHRASE=${{ secrets.E2E_TEST_SEED_PHRASE }}" > e2e/.env.test
-          # Suppress Sentry warnings in CI
+          # Create .env file for React Native Config with CI flags
           echo "CI=true" >> .env
           echo "IS_TESTING='true'" >> .env
         env:
@@ -289,9 +290,16 @@ jobs:
         run: |
           echo "=== Starting E2E Tests ==="
 
-          # Set CI environment variable for lighter resets
-          export CI=true
-          export IS_TESTING=true
+          # Configure Detox for detailed screenshot capture
+          export DETOX_ARTIFACTS_LOCATION="e2e/artifacts"
+          export DETOX_CAPTURE_VIEW_HIERARCHY="enabled"
+          export DETOX_TAKE_SCREENSHOTS="failing"
+          export DETOX_RECORD_VIDEOS="failing"
+
+          # Create artifacts directory structure
+          mkdir -p e2e/artifacts/screenshots
+          mkdir -p e2e/artifacts/logs
+          mkdir -p e2e/artifacts/videos
 
           # Verify Metro is still running
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
@@ -317,12 +325,27 @@ jobs:
             echo "=== Capturing simulator logs ==="
             DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 1" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
             if [ -n "$DEVICE_ID" ]; then
-              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > simulator_logs.txt || echo "Could not capture logs"
+              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > e2e/artifacts/logs/simulator_logs.txt || echo "Could not capture logs"
             fi
             
-            # Take final screenshot
+            # Take additional final screenshot with timestamp
             if [ -n "$DEVICE_ID" ]; then
-              xcrun simctl io "$DEVICE_ID" screenshot final_state.png || echo "Could not take screenshot"
+              TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+              xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/final_state_${TIMESTAMP}.png" || echo "Could not take screenshot"
+            fi
+            
+            # Organize screenshots by test suite
+            echo "=== Organizing test artifacts ==="
+            if [ -d "e2e/artifacts" ]; then
+              # Count screenshots and logs
+              SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" | wc -l)
+              LOG_COUNT=$(find e2e/artifacts -name "*.log" | wc -l)
+              echo "📸 Captured $SCREENSHOT_COUNT screenshots"
+              echo "📝 Captured $LOG_COUNT log files"
+              
+              # List all captured artifacts
+              echo "=== Captured artifacts ==="
+              find e2e/artifacts -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" | sort
             fi
             
             # Exit with the original test failure code
@@ -348,19 +371,77 @@ jobs:
         if: always()
         run: rm -f .env
 
+      - name: Generate detailed test report
+        if: always()
+        run: |
+          echo "=== Generating detailed test report ==="
+
+          # Create a detailed report file
+          REPORT_FILE="e2e/artifacts/test_report.md"
+          mkdir -p e2e/artifacts
+
+          echo "# E2E Test Report" > $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "**Run ID:** ${{ github.run_number }}" >> $REPORT_FILE
+          echo "**Commit:** ${{ github.sha }}" >> $REPORT_FILE
+          echo "**Branch:** ${{ github.ref_name }}" >> $REPORT_FILE
+          echo "**Timestamp:** $(date)" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+
+          # Check test results
+          if [ -d "e2e/artifacts" ]; then
+            echo "## Test Artifacts Summary" >> $REPORT_FILE
+            echo "" >> $REPORT_FILE
+            
+            # Count different types of artifacts
+            SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" 2>/dev/null | wc -l || echo "0")
+            VIDEO_COUNT=$(find e2e/artifacts -name "*.mp4" 2>/dev/null | wc -l || echo "0")
+            LOG_COUNT=$(find e2e/artifacts -name "*.log" 2>/dev/null | wc -l || echo "0")
+            
+            echo "- 📸 **Screenshots captured:** $SCREENSHOT_COUNT" >> $REPORT_FILE
+            echo "- 🎥 **Videos recorded:** $VIDEO_COUNT" >> $REPORT_FILE  
+            echo "- 📝 **Log files:** $LOG_COUNT" >> $REPORT_FILE
+            echo "" >> $REPORT_FILE
+            
+            # List all screenshots with details
+            if [ $SCREENSHOT_COUNT -gt 0 ]; then
+              echo "## Failed Test Screenshots" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              find e2e/artifacts -name "*.png" | sort | while read screenshot; do
+                filename=$(basename "$screenshot")
+                echo "- \`$filename\`" >> $REPORT_FILE
+              done
+              echo "" >> $REPORT_FILE
+            fi
+            
+            # List all videos
+            if [ $VIDEO_COUNT -gt 0 ]; then
+              echo "## Test Failure Videos" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              find e2e/artifacts -name "*.mp4" | sort | while read video; do
+                filename=$(basename "$video")
+                echo "- \`$filename\`" >> $REPORT_FILE
+              done
+              echo "" >> $REPORT_FILE
+            fi
+            
+            echo "✅ Detailed test report generated"
+          else
+            echo "⚠️ No artifacts directory found"
+          fi
+
       - name: Upload iOS test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-ios-results
+          name: e2e-ios-test-results-${{ github.run_number }}
           path: |
             e2e/artifacts/
+            e2e/screenshots/
             detox_*.log
             ios/build/Build/Logs/
-            simulator_logs.txt
-            final_state.png
-            e2e/screenshots/
-          retention-days: 7
+            *.log
+          retention-days: 30
 
       - name: Report E2E Test Results
         if: always()
@@ -375,6 +456,8 @@ jobs:
             echo "⚠️ **This PR cannot be merged until E2E tests pass.**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Please check the logs above for error details and fix the failing tests." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📸 **Screenshots and videos of failed tests are available in the artifacts.**" >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ **iOS E2E Tests PASSED**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
@@ -387,5 +470,7 @@ jobs:
           echo "- 👋 Onboarding Flow" >> $GITHUB_STEP_SUMMARY
           echo "- 📲 Import Wallet Flow" >> $GITHUB_STEP_SUMMARY
           echo "- 💳 Load Card Flow" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **Artifacts:** Screenshots, videos, and logs are organized by test case in the artifacts download." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "_Check the job logs above for detailed test results._" >> $GITHUB_STEP_SUMMARY

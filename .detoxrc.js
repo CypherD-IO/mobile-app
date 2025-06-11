@@ -9,6 +9,29 @@ module.exports = {
       setupTimeout: process.env.CI ? 180000 : 120000, // 3 minutes for CI
     },
   },
+  artifacts: {
+    rootDir: './e2e/artifacts',
+    pathBuilder: './e2e/config/pathbuilder.js',
+    plugins: {
+      log: process.env.CI ? 'failing' : 'none',
+      screenshot: {
+        shouldTakeAutomaticSnapshots: true,
+        keepOnlyFailedTestsArtifacts: process.env.CI ? false : true,
+        takeWhen: {
+          testStart: false,
+          testDone: process.env.CI ? true : false,
+          appNotReady: true,
+          testFailure: true,
+        },
+      },
+      video: process.env.CI ? {
+        android: 'failing',
+        simulator: 'failing',
+      } : 'none',
+      instruments: process.env.CI ? 'failing' : 'none',
+      uiHierarchy: process.env.CI ? 'failing' : 'none',
+    },
+  },
   apps: {
     'ios.sim.debug': {
       type: 'ios.app',
