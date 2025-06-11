@@ -172,7 +172,6 @@ jobs:
             
             if ! pod install \
               --repo-update \
-              --deployment \
               --verbose \
               --clean-install; then
               
