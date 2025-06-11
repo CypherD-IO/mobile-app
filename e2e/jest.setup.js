@@ -91,26 +91,67 @@ beforeAll(async () => {
   }
 }, 120000); // 2 minute timeout for setup
 
+// Clean up after each test to prevent hanging
+afterEach(async () => {
+  try {
+    // Give a moment for any pending operations to complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
+  } catch (error) {
+    console.log('Warning: Error during afterEach cleanup:', error);
+  }
+});
+
 // Global cleanup after all tests
 afterAll(async () => {
   console.log('🧹 Cleaning up E2E test environment...');
   
-  // Kill Metro process
+  // Kill Metro process with proper async handling
   if (metroProcess && !metroProcess.killed) {
     console.log('Stopping Metro bundler...');
-    metroProcess.kill('SIGTERM');
     
-    // Force kill if it doesn't stop gracefully
-    setTimeout(() => {
-      if (metroProcess && !metroProcess.killed) {
-        metroProcess.kill('SIGKILL');
-      }
-    }, 5000);
+    // Create a promise to handle the cleanup properly
+    await new Promise((resolve) => {
+      let isResolved = false;
+      
+      const resolveOnce = () => {
+        if (!isResolved) {
+          isResolved = true;
+          resolve();
+        }
+      };
+      
+      // Try graceful shutdown first
+      metroProcess.kill('SIGTERM');
+      
+      // Handle process exit
+      metroProcess.on('exit', resolveOnce);
+      metroProcess.on('error', resolveOnce);
+      
+      // Force kill after 3 seconds if not exited gracefully
+      setTimeout(() => {
+        if (!metroProcess.killed) {
+          console.log('Force killing Metro bundler...');
+          metroProcess.kill('SIGKILL');
+        }
+        // Always resolve after force kill attempt
+        setTimeout(resolveOnce, 1000);
+      }, 3000);
+    });
   }
 
   // Clean up PID file
   if (fs.existsSync('metro.pid')) {
     fs.unlinkSync('metro.pid');
+  }
+
+  // Clear any remaining timers or intervals
+  if (global.gc) {
+    global.gc();
   }
 
   console.log('✅ Cleanup completed');

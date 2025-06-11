@@ -20,13 +20,16 @@ module.exports = {
     }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  // Add CI-specific Jest options
+  // Force Jest to exit and detect open handles to prevent hanging
+  forceExit: true,
+  detectOpenHandles: true,
+  // Set maximum test suite runtime (10 minutes total)
+  maxConcurrency: 1,
+  // Additional options for preventing hangs
   ...(process.env.CI && {
-    // Prevent Jest from hanging in CI
-    forceExit: true,
-    // Detect open handles in CI to help debug
-    detectOpenHandles: true,
-    // More retries in CI environment
-    bail: false,
+    // More aggressive in CI
+    bail: 1, // Stop after first failure in CI
+    // Shorter timeout for CI to fail fast
+    testTimeout: 180000, // 3 minutes in CI
   }),
 }; 

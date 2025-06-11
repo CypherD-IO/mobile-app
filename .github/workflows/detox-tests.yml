@@ -238,6 +238,24 @@ jobs:
         env:
           E2E_TEST_SEED_PHRASE: ${{ secrets.E2E_TEST_SEED_PHRASE }}
 
+      - name: Verify environment variables
+        run: |
+          echo "=== Verifying IS_TESTING Environment Variable ==="
+          echo "Shell environment IS_TESTING: [$IS_TESTING]"
+          echo "Shell environment type check:"
+          if [ "$IS_TESTING" = "true" ]; then
+            echo "✅ IS_TESTING equals string 'true'"
+          else
+            echo "❌ IS_TESTING does not equal string 'true', value: [$IS_TESTING]"
+          fi
+
+          echo ""
+          echo ".env file contents:"
+          cat .env | grep IS_TESTING || echo "IS_TESTING not found in .env"
+
+          echo ""
+          echo "✅ Environment verification completed"
+
       - name: Start Metro Bundler for E2E Tests
         run: |
           echo "=== Starting Metro Bundler for E2E Tests ==="
@@ -310,8 +328,18 @@ jobs:
 
           # Run tests with increased timeout and better error handling
           set +e  # Don't exit immediately on error so we can capture logs
-          npm run e2e:test:ios
-          TEST_EXIT_CODE=$?
+
+          # Run tests with timeout to prevent hanging
+          timeout 25m npm run e2e:test:ios || TEST_EXIT_CODE=$?
+
+          # If timeout occurred, set appropriate exit code
+          if [ $? -eq 124 ]; then
+            echo "❌ E2E tests timed out after 25 minutes"
+            TEST_EXIT_CODE=124
+          elif [ -z "$TEST_EXIT_CODE" ]; then
+            TEST_EXIT_CODE=0
+          fi
+
           set -e  # Re-enable exit on error
 
           if [ $TEST_EXIT_CODE -ne 0 ]; then
@@ -353,19 +381,33 @@ jobs:
           else
             echo "✅ E2E tests passed successfully"
           fi
-        timeout-minutes: 35
+        timeout-minutes: 30
 
       - name: Stop Metro Bundler
         if: always()
         run: |
-          echo "=== Stopping Metro Bundler ==="
+          echo "=== Stopping Metro Bundler and cleaning up processes ==="
+
+          # Kill Metro bundler
           if [ -f metro.pid ]; then
             METRO_PID=$(cat metro.pid)
             kill $METRO_PID 2>/dev/null || echo "Metro process already stopped"
             rm metro.pid
           fi
-          # Also kill any remaining Metro processes
+
+          # Kill any remaining Metro processes
           pkill -f "react-native start" || echo "No Metro processes found"
+
+          # Kill any hanging Jest processes
+          pkill -f "jest.*e2e" || echo "No Jest E2E processes found"
+
+          # Kill any hanging Node processes related to testing
+          pkill -f "node.*detox" || echo "No Detox Node processes found"
+
+          # Give processes time to clean up
+          sleep 2
+
+          echo "✅ Process cleanup completed"
 
       - name: Clean up .env file
         if: always()
