@@ -85,18 +85,18 @@ export default function useInitializer() {
   };
 
   const initializeSentry = () => {
-    // Check if we're in testing mode
+    // Check if Sentry is already initialized (from App.tsx)
+    const sentryHub = Sentry.getCurrentHub();
+    const client = sentryHub.getClient();
+
+    if (client) {
+      return;
+    }
+
+    // Fallback initialization if somehow not done in App.tsx
     const isTesting = String(Config.IS_TESTING) === 'true';
 
     if (isTesting) {
-      // In test mode, check if Sentry is already initialized (from App.tsx)
-      const sentryHub = Sentry.getCurrentHub();
-      const client = sentryHub.getClient();
-
-      if (client) {
-        return;
-      }
-
       // Initialize Sentry but with all UI warnings and tracing disabled
       Sentry.init({
         dsn: Config.SENTRY_DSN,

@@ -70,23 +70,32 @@ import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
 
 // Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
-const isTesting = String(Config.IS_TESTING) === 'true';
 
-if (isTesting) {
-  // Only initialize early in test mode to prevent warnings
-  LogBox.ignoreLogs([
-    'App Start Span could not be finished',
-    'Sentry.wrap was called before Sentry.init',
-  ]);
+// Check multiple sources for testing flag
+const isTestingFromConfig = String(Config.IS_TESTING) === 'true';
+const isTestingFromEnv =
+  process.env.NODE_ENV === 'test' || process.env.CI === 'true';
+const isTesting = isTestingFromConfig || isTestingFromEnv;
 
-  // Initialize Sentry with minimal config for testing
-  Sentry.init({
-    dsn: Config.SENTRY_DSN,
-    enabled: false, // Disable Sentry in test mode
-    tracesSampleRate: 0,
-  });
-}
-// Note: Production mode will initialize Sentry later in useInitializer with full config
+// Aggressively suppress Sentry warnings regardless of testing mode - do this FIRST
+LogBox.ignoreLogs([
+  'App Start Span could not be finished',
+  'Sentry.wrap was called before Sentry.init',
+  'App Start Span could not be finished. `Sentry.wrap` was called before `Sentry.init`',
+  /App Start Span.*Sentry/,
+  /Sentry\.wrap.*before.*Sentry\.init/,
+]);
+
+// Always initialize Sentry early to prevent the warning, regardless of mode
+Sentry.init({
+  dsn: Config.SENTRY_DSN,
+  enabled: !isTesting, // Only enable in production
+  tracesSampleRate: isTesting ? 0 : 1.0,
+  enableAutoPerformanceTracing: !isTesting,
+  enableNativeCrashHandling: !isTesting,
+  autoSessionTracking: !isTesting,
+  beforeSend: isTesting ? () => null : undefined, // Drop all events in test mode
+});
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 

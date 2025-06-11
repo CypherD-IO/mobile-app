@@ -24,12 +24,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install GNU coreutils for timeout command
-        run: |
-          echo "=== Installing GNU coreutils for timeout command ==="
-          brew install coreutils
-          echo "✅ GNU coreutils installed"
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -335,14 +329,11 @@ jobs:
           # Run tests with increased timeout and better error handling
           set +e  # Don't exit immediately on error so we can capture logs
 
-          # Run tests with timeout to prevent hanging
-          gtimeout 25m npm run e2e:test:ios || TEST_EXIT_CODE=$?
+          # Run tests with Jest handling timeouts internally
+          npm run e2e:test:ios || TEST_EXIT_CODE=$?
 
-          # If timeout occurred, set appropriate exit code
-          if [ $? -eq 124 ]; then
-            echo "❌ E2E tests timed out after 25 minutes"
-            TEST_EXIT_CODE=124
-          elif [ -z "$TEST_EXIT_CODE" ]; then
+          # Capture the exit code
+          if [ -z "$TEST_EXIT_CODE" ]; then
             TEST_EXIT_CODE=0
           fi
 
