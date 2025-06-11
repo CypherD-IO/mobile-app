@@ -136,17 +136,22 @@ jobs:
           rm -f Gemfile.lock
           echo "Removed old Gemfile.lock to avoid Ruby/Bundler version conflicts"
 
-          # Install gems with CI's modern Ruby/Bundler
-          bundle install
+          # Ruby 3.3.8 has bundled gem conflicts with ActiveSupport through bundler
+          # Use global gem installation as a workaround
+          echo "Installing CocoaPods globally to avoid Ruby 3.3.8 bundled gem conflicts..."
+
+          # Install required gems globally 
+          gem install cocoapods -v '~> 1.15.0' --no-document
+          gem install activesupport -v '~> 7.0.8' --no-document
 
           # Verify CocoaPods is available  
-          bundle exec pod --version
-          echo "✅ CocoaPods $(bundle exec pod --version) ready with VisionOS support"
+          pod --version
+          echo "✅ CocoaPods $(pod --version) ready with VisionOS support"
 
       - name: Clear CocoaPods cache
         run: |
           echo "=== Clearing CocoaPods cache ==="
-          bundle exec pod cache clean --all || true
+          pod cache clean --all || true
           cd ios
           rm -f Podfile.lock || true
 
@@ -162,10 +167,10 @@ jobs:
             echo "Cache miss or Podfile changed - installing pods..."
             rm -f Podfile.lock || true
             
-            # Try pod install with better error handling
-            echo "Using CocoaPods $(bundle exec pod --version) with VisionOS support"
+            # Try pod install with better error handling (using global installation)
+            echo "Using CocoaPods $(pod --version) with VisionOS support"
             
-            if ! bundle exec pod install \
+            if ! pod install \
               --repo-update \
               --deployment \
               --verbose \
@@ -177,7 +182,7 @@ jobs:
               if grep -r "visionos" ../node_modules/*/RN*.podspec 2>/dev/null || 
                  grep -r "visionos" ../node_modules/@*/*/RN*.podspec 2>/dev/null; then
                 echo "⚠️ Found VisionOS references in podspecs"
-                echo "CocoaPods version: $(bundle exec pod --version)"
+                echo "CocoaPods version: $(pod --version)"
                 echo "This version should support VisionOS (1.13+ required)"
               fi
               

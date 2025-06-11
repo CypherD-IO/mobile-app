@@ -3,11 +3,12 @@ source 'https://rubygems.org'
 # You may use http://rbenv.org/ or https://rvm.io/ to install and use this version
 ruby ">= 2.6.10"
 
-# Load logger first for older Ruby compatibility
+# Note: In CI, we install CocoaPods globally to avoid Ruby 3.3.8 bundled gem conflicts
+# Local development can still use this Gemfile with bundler if needed
+
+# Explicit dependencies for Ruby compatibility across versions
 gem 'logger', '~> 1.4'
 
-# Use a stable version of CocoaPods that supports VisionOS
+# For local development environments that prefer bundler
 gem 'cocoapods', '~> 1.15.0'
-
-# Fix for ActiveSupport compatibility across Ruby versions
-gem 'activesupport', '~> 6.0.0'  # More compatible with older Ruby versions
+gem 'activesupport', '~> 7.0.8'
