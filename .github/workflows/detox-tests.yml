@@ -30,6 +30,37 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Cache iOS Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/build
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-ios-build-${{ hashFiles('ios/**/*.{h,m,swift}', '**/*.js', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-build-
+
       - name: Select Xcode version
         run: |
           echo "=== Selecting Xcode 16 for iOS 18 SDK ==="
@@ -46,7 +77,15 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: |
+          echo "=== Installing Node.js dependencies ==="
+          if [ ! -d "node_modules" ] || [ ! -f "node_modules/.cache-complete" ]; then
+            echo "Cache miss or incomplete - installing dependencies..."
+            npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
+            touch node_modules/.cache-complete
+          else
+            echo "✅ Dependencies restored from cache"
+          fi
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -96,7 +135,23 @@ jobs:
         run: |
           echo "=== Installing CocoaPods dependencies ==="
           cd ios
-          pod install --repo-update --verbose
+
+          # Check if pods are cached and valid
+          if [ -d "Pods" ] && [ -f "Pods/.cache-complete" ] && [ "Podfile.lock" -nt "Podfile" ]; then
+            echo "✅ CocoaPods restored from cache and up to date"
+          else
+            echo "Cache miss or Podfile changed - installing pods..."
+            rm -f Podfile.lock || true
+            
+            # Fast pod install with optimizations
+            bundle exec pod install \
+              --repo-update \
+              --deployment \
+              --verbose \
+              --clean-install
+            
+            touch Pods/.cache-complete
+          fi
 
       - name: Verify deployment targets
         run: |
@@ -119,72 +174,71 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
-      - name: Setup iOS Simulator
+      - name: Setup iOS Simulator (optimized)
         run: |
-          echo "=== Setting up iOS Simulator for E2E Tests ==="
+          echo "=== Fast iOS Simulator Setup ==="
 
-          # For CI, we need iPhone 16 with iOS 18.x support (required for iOS 18 SDK)
-          echo "Looking for iPhone 16 simulators..."
-          IPHONE16_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+          # Quick simulator check and setup
+          DEVICE_NAME="iPhone 16"
 
-          if [ -n "$IPHONE16_SIMULATOR" ]; then
-            echo "✅ Found iPhone 16 simulator: $IPHONE16_SIMULATOR"
-            DEVICE_NAME="iPhone 16"
-            DEVICE_OS="18.x"
-          else
-            echo "No iPhone 16 found, checking for iPhone 15..."
-            IPHONE15_SIMULATOR=$(xcrun simctl list devices iPhone available | grep "iPhone 15" | grep -v "Plus\|Pro" | head -1 | sed 's/^[[:space:]]*//' || echo "")
+          # Find available iPhone 16 simulator
+          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' || echo "")
+
+          if [ -n "$DEVICE_ID" ]; then
+            echo "✅ Found iPhone 16 simulator: $DEVICE_ID"
             
-            if [ -n "$IPHONE15_SIMULATOR" ]; then
-              echo "Found iPhone 15 simulator: $IPHONE15_SIMULATOR"
-              DEVICE_NAME="iPhone 15"
-              DEVICE_OS="17.5"
-              
-              # Update Detox config for iPhone 15 fallback
-              sed -i.bak 's/iPhone 16/iPhone 15/g' .detoxrc.js
-              echo "⚠️ Using iPhone 15 fallback - may not support iOS 18 SDK features"
+            # Check if already booted
+            if xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "Booted"; then
+              echo "✅ Simulator already running"
             else
-              echo "Creating iPhone 16 simulator..."
-              # Find a suitable iOS runtime for iPhone 16
-              RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\." | head -1 | sed 's/.*iOS \([0-9\.]*\).*/\1/')
-              if [ -n "$RUNTIME" ]; then
-                echo "Creating iPhone 16 with iOS runtime: $RUNTIME"
-                xcrun simctl create "iPhone 16" "iPhone 16" "iOS$RUNTIME" || true
-                DEVICE_NAME="iPhone 16"
-                DEVICE_OS="$RUNTIME"
-              else
-                echo "❌ No suitable iOS runtime found"
-                exit 1
-              fi
+              echo "Booting simulator..."
+              xcrun simctl boot "$DEVICE_ID" || echo "Boot command issued"
+              
+              # Quick wait for boot (max 30s)
+              for i in {1..30}; do
+                if xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "Booted"; then
+                  echo "✅ Simulator booted in ${i}s"
+                  break
+                fi
+                sleep 1
+              done
+            fi
+          else
+            echo "Creating iPhone 16 simulator..."
+            RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\." | head -1 | awk '{print $NF}')
+            if [ -n "$RUNTIME" ]; then
+              DEVICE_ID=$(xcrun simctl create "iPhone 16 CI" "iPhone 16" "$RUNTIME")
+              xcrun simctl boot "$DEVICE_ID"
+              echo "✅ Created and booted new simulator: $DEVICE_ID"
             fi
           fi
 
-          echo ""
-          echo "=== Selected device: $DEVICE_NAME with iOS $DEVICE_OS ==="
-          echo "=== Available simulators after setup ==="
-          xcrun simctl list devices available | grep -E "iPhone (15|16)" | head -10
-
-          # Pre-boot the simulator to speed up tests
-          echo "Pre-booting simulator..."
-          DEVICE_ID=$(xcrun simctl list devices | grep "$DEVICE_NAME" | grep -v "unavailable" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
-          if [ -n "$DEVICE_ID" ]; then
-            xcrun simctl boot "$DEVICE_ID" || echo "Device might already be booted"
-            echo "✅ Simulator pre-booted successfully"
-          fi
+          echo "SIMULATOR_DEVICE_ID=$DEVICE_ID" >> $GITHUB_ENV
 
       - name: Optimize CI Environment for E2E Tests
         run: |
           echo "=== CI Environment Optimizations ==="
 
-          # Set CI flag for Detox configuration
-          echo "CI=true" >> $GITHUB_ENV
+          # Set environment variables for performance
+          echo "CI_OPTIMIZED=true" >> $GITHUB_ENV
+          echo "DETOX_DISABLE_LOGS=true" >> $GITHUB_ENV
+          echo "RCT_NO_LAUNCH_PACKAGER=1" >> $GITHUB_ENV
 
           # Increase file descriptor limits for CI
           ulimit -n 4096 || echo "Could not increase file descriptor limit"
 
-          # Clear any old simulators to free up resources
+          # Clean up any old processes that might interfere
+          echo "Cleaning up background processes..."
+          pkill -f "Simulator" || echo "No Simulator processes to kill"
+          pkill -f "node.*react-native" || echo "No React Native processes to kill"
+          pkill -f "Metro" || echo "No Metro processes to kill"
+
+          # Clean up old simulators to free up resources
           echo "Cleaning up old simulators..."
           xcrun simctl delete unavailable || echo "No unavailable simulators to delete"
+
+          # Delete old simulator logs
+          rm -rf ~/Library/Logs/CoreSimulator/* || echo "Could not clean simulator logs"
 
           # Show system resources
           echo "Available system resources:"
@@ -192,42 +246,86 @@ jobs:
           echo "  - Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
           echo "  - Disk space: $(df -h . | tail -1 | awk '{print $4}') available"
 
-          echo "✅ CI environment optimized"
+          echo "✅ CI environment optimized for performance"
 
-      - name: Build iOS app for testing (with retry)
+      - name: Build iOS app for testing (optimized)
         run: |
-          echo "=== Starting iOS Build with Retry Logic ==="
+          echo "=== Starting Optimized iOS Build ==="
 
-          # Function to retry build on failure
-          retry_build() {
-            local max_attempts=3
-            local attempt=1
+          # Set build environment for speed
+          export XCODE_XCCONFIG_FILE=""
+          export RCT_NO_LAUNCH_PACKAGER=1
+          export SKIP_BUNDLING=1
+
+          # Function to build with optimizations
+          build_ios_optimized() {
+            echo "Building with optimization flags..."
             
-            while [ $attempt -le $max_attempts ]; do
-              echo "Build attempt $attempt of $max_attempts..."
-              
-              if detox build --configuration ios.sim.debug --verbose; then
-                echo "✅ Build successful on attempt $attempt"
-                return 0
-              else
-                echo "❌ Build failed on attempt $attempt"
-                
-                if [ $attempt -lt $max_attempts ]; then
-                  echo "Cleaning up before retry..."
-                  cd ios && rm -rf build && cd ..
-                  sleep 30  # Wait before retry
-                fi
-                
-                attempt=$((attempt + 1))
-              fi
-            done
-            
-            echo "❌ Build failed after $max_attempts attempts"
-            return 1
+            # Use xcodebuild directly for better control
+            xcodebuild \
+              -workspace ios/Cypherd.xcworkspace \
+              -scheme Cypherd \
+              -configuration Debug \
+              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -derivedDataPath ios/build \
+              -quiet \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              ONLY_ACTIVE_ARCH=YES \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              PROVISIONING_PROFILE="" \
+              build-for-testing
           }
 
-          retry_build
-        timeout-minutes: 25
+          # Check if we can use cached build
+          if [ -d "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" ]; then
+            echo "Checking if cached build is still valid..."
+            
+            # Simple check: if app exists and is recent, try to use it
+            LAST_MODIFIED=$(stat -f %m "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" 2>/dev/null || echo "0")
+            CURRENT_TIME=$(date +%s)
+            TIME_DIFF=$((CURRENT_TIME - LAST_MODIFIED))
+            
+            if [ $TIME_DIFF -lt 3600 ]; then  # Less than 1 hour old
+              echo "✅ Using cached build (less than 1 hour old)"
+              
+              # Quick verification build
+              if xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath ios/build -quiet build-for-testing; then
+                echo "✅ Cached build verified successfully"
+                exit 0
+              else
+                echo "❌ Cached build verification failed, doing full build..."
+              fi
+            fi
+          fi
+
+          # Full build with retry logic
+          echo "Performing full build..."
+          max_attempts=2
+          attempt=1
+
+          while [ $attempt -le $max_attempts ]; do
+            echo "Build attempt $attempt of $max_attempts..."
+            
+            if build_ios_optimized; then
+              echo "✅ Build successful on attempt $attempt"
+              exit 0
+            else
+              echo "❌ Build failed on attempt $attempt"
+              
+              if [ $attempt -lt $max_attempts ]; then
+                echo "Cleaning up before retry..."
+                rm -rf ios/build/Build || true
+                sleep 10
+              fi
+              
+              attempt=$((attempt + 1))
+            fi
+          done
+
+          echo "❌ Build failed after $max_attempts attempts"
+          exit 1
+        timeout-minutes: 20
 
       - name: Create e2e environment file
         run: |
@@ -304,22 +402,20 @@ jobs:
             echo "⚠️ No booted iPhone 16 simulator found"
           fi
 
-      - name: Run E2E Tests - iOS
+      - name: Run E2E Tests - Full Parallel Suite
         run: |
-          echo "=== Starting E2E Tests ==="
+          echo "=== Running All E2E Tests in Parallel ==="
+          echo "🚀 All tests are now independent and will run simultaneously with maxWorkers: 4"
 
-          # Configure Detox for detailed screenshot capture
+          # Set up test environment
           export DETOX_ARTIFACTS_LOCATION="e2e/artifacts"
           export DETOX_CAPTURE_VIEW_HIERARCHY="enabled"
           export DETOX_TAKE_SCREENSHOTS="failing"
           export DETOX_RECORD_VIDEOS="failing"
 
-          # Create artifacts directory structure
-          mkdir -p e2e/artifacts/screenshots
-          mkdir -p e2e/artifacts/logs
-          mkdir -p e2e/artifacts/videos
+          mkdir -p e2e/artifacts/{screenshots,logs,videos}
 
-          # Verify Metro is still running
+          # Verify Metro is running
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
             echo "❌ Metro bundler not running, restarting..."
             npx react-native start --reset-cache &
@@ -327,14 +423,14 @@ jobs:
           fi
 
           # Monitor system resources for CI debugging
-          echo "=== CI System Resources ==="
-          echo "CPU usage: $(top -l 1 | grep "CPU usage" | head -1)"
-          echo "Memory pressure: $(memory_pressure)"
+          echo "=== CI System Resources Before Tests ==="
+          echo "CPU cores available: $(sysctl -n hw.ncpu)"
+          echo "Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
           echo "Available disk space: $(df -h . | tail -1 | awk '{print $4}')"
 
           # Monitor simulator status
           echo "=== Simulator Status ==="
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 1" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' || echo "")
+          DEVICE_ID="$SIMULATOR_DEVICE_ID"
           if [ -n "$DEVICE_ID" ]; then
             echo "Active simulator: $DEVICE_ID"
             echo "Simulator state: $(xcrun simctl list devices | grep "$DEVICE_ID")"
@@ -342,13 +438,19 @@ jobs:
             echo "No active iPhone simulator found"
           fi
 
-          # Run tests with increased timeout and better error handling
+          # Run all tests in parallel with enhanced error handling
           set +e  # Don't exit immediately on error so we can capture logs
+
+          echo "🏃‍♂️ Starting parallel execution of all E2E tests..."
+          echo "Tests will run independently with the following configuration:"
+          echo "  - maxWorkers: 4 (full parallelization)"
+          echo "  - testTimeout: 6 minutes per test"
+          echo "  - Each test includes complete setup (independent)"
 
           # Add timeout monitoring in background
           (
-            sleep 300 # 5 minutes
-            echo "⚠️ E2E tests have been running for 5 minutes - this may indicate hanging"
+            sleep 1200 # 20 minutes total timeout for parallel execution
+            echo "⚠️ E2E tests have been running for 20 minutes - this may indicate hanging"
             if [ -n "$DEVICE_ID" ]; then
               echo "Taking diagnostic screenshot..."
               xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/timeout_diagnostic_$(date +%Y%m%d_%H%M%S).png" || echo "Could not take screenshot"
@@ -356,7 +458,7 @@ jobs:
           ) &
           TIMEOUT_PID=$!
 
-          # Run tests with Jest handling timeouts internally
+          # Run all tests in parallel (no pattern restrictions)
           npm run e2e:test:ios || TEST_EXIT_CODE=$?
 
           # Kill timeout monitor
@@ -378,9 +480,8 @@ jobs:
             
             # Capture simulator logs for debugging
             echo "=== Capturing simulator logs ==="
-            DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 1" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
             if [ -n "$DEVICE_ID" ]; then
-              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > e2e/artifacts/logs/simulator_logs.txt || echo "Could not capture logs"
+              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 10m > e2e/artifacts/logs/simulator_logs.txt || echo "Could not capture logs"
             fi
             
             # Take additional final screenshot with timestamp
@@ -406,9 +507,10 @@ jobs:
             # Exit with the original test failure code
             exit $TEST_EXIT_CODE
           else
-            echo "✅ E2E tests passed successfully"
+            echo "✅ All E2E tests passed successfully in parallel!"
+            echo "🎉 Parallel execution completed - all tests independent and successful"
           fi
-        timeout-minutes: 30
+        timeout-minutes: 25
 
       - name: Stop Metro Bundler
         if: always()

@@ -631,3 +631,112 @@ export async function performSecureOperation<T>(
     throw error;
   }
 }
+
+/**
+ * Complete wallet import flow - reusable for tests that need a wallet
+ * This function handles the entire import process and can be used by any test
+ */
+export async function completeWalletImport(): Promise<void> {
+  secureLog('🔄 Starting complete wallet import flow...');
+
+  // Navigate through onboarding
+  await navigateThroughOnboarding();
+
+  // Handle "Let's get started" screen
+  try {
+    const getStartedTextWithNewline = element(by.text("LET'S \nGET STARTED"));
+    await waitFor(getStartedTextWithNewline).toBeVisible().withTimeout(5000);
+    secureLog("Successfully found 'LET'S GET STARTED' text");
+  } catch (e) {
+    try {
+      const getStartedText = element(by.text("LET'S GET STARTED"));
+      await waitFor(getStartedText).toBeVisible().withTimeout(3000);
+      secureLog('Found "LET\'S GET STARTED" text without newline');
+    } catch (e) {
+      secureLog('Could not find "LET\'S GET STARTED" text, proceeding anyway');
+    }
+  }
+
+  // Click Import Wallet
+  const importWalletButton = await findButton(
+    'Import Wallet',
+    ['IMPORT WALLET', 'Import wallet'],
+    'import-wallet-button',
+  );
+  await importWalletButton.tap();
+  secureLog('Tapped Import Wallet button');
+  await delay(1000);
+
+  // Select Import Seed Phrase
+  const importSeedPhraseButton = await findButton(
+    'Import Seed Phrase',
+    ['Import seed phrase', 'IMPORT SEED PHRASE'],
+    'import-seed-phrase-button',
+  );
+  await importSeedPhraseButton.tap();
+  secureLog('Selected Import Seed Phrase');
+  await delay(2000);
+
+  // Enter recovery phrase
+  const TEST_RECOVERY_PHRASE = getSecureTestSeedPhrase();
+  await performSecureOperation(async () => {
+    try {
+      const multilineInput = element(
+        by.type('RCTMultilineTextInputView'),
+      ).atIndex(0);
+      await waitFor(multilineInput).toBeVisible().withTimeout(5000);
+      await multilineInput.tap();
+      await delay(500);
+      await multilineInput.replaceText(TEST_RECOVERY_PHRASE);
+      secureLog('Successfully entered recovery phrase', TEST_RECOVERY_PHRASE);
+    } catch (e) {
+      const uiTextView = element(by.type('UITextView')).atIndex(0);
+      await waitFor(uiTextView).toBeVisible().withTimeout(3000);
+      await uiTextView.tap();
+      await delay(500);
+      await uiTextView.replaceText(TEST_RECOVERY_PHRASE);
+      secureLog(
+        'Successfully entered recovery phrase using UITextView fallback',
+        TEST_RECOVERY_PHRASE,
+      );
+    }
+  }, 'Seed Phrase Entry');
+
+  await delay(1000);
+
+  // Submit recovery phrase
+  const submitButton = await findButton(
+    'Submit',
+    ['SUBMIT', 'submit'],
+    'submit-button',
+  );
+  await submitButton.tap();
+  secureLog('Tapped Submit button for recovery phrase');
+  await delay(3000);
+
+  // Submit on wallets screen
+  const finalSubmitButton = await findButton(
+    'Submit',
+    ['SUBMIT', 'submit'],
+    'final-submit-button',
+  );
+  await finalSubmitButton.tap();
+  secureLog('Tapped final Submit button on wallets screen');
+  await delay(5000);
+
+  // Verify we reached portfolio
+  const portfolioDetected = await checkForPortfolioScreen();
+  if (!portfolioDetected) {
+    throw new Error('Wallet import failed - could not reach portfolio screen');
+  }
+
+  secureLog('✅ Complete wallet import flow finished successfully');
+}
+
+/**
+ * Setup for tests that need a wallet - combines reset + import
+ */
+export async function setupTestWithWallet(): Promise<void> {
+  await resetAppCompletely();
+  await completeWalletImport();
+}

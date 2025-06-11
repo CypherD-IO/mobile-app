@@ -8,12 +8,17 @@ import {
   secureLog,
   performSecureOperation,
   reOpenApp,
+  setupTestWithWallet,
 } from './helpers';
 
 describe('Load Card Flow', () => {
-  beforeAll(async () => {
-    await reOpenApp();
-  });
+  beforeAll(
+    async () => {
+      // Setup test with a fresh wallet import (independent of other tests)
+      await setupTestWithWallet();
+    },
+    process.env.CI ? 360000 : 180000,
+  ); // Longer timeout for wallet setup
 
   it('should complete the load card flow and verify /deposit API call is made', async () => {
     try {

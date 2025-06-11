@@ -77,13 +77,39 @@ const isTestingFromEnv =
   process.env.NODE_ENV === 'test' || process.env.CI === 'true';
 const isTesting = isTestingFromConfig || isTestingFromEnv;
 
-// Aggressively suppress Sentry warnings regardless of testing mode - do this FIRST
+// Comprehensive warning suppression - especially critical during testing
+// This configuration suppresses common warnings that appear during E2E testing
+// Add new warning patterns here as needed
 LogBox.ignoreLogs([
+  // Sentry warnings
   'App Start Span could not be finished',
   'Sentry.wrap was called before Sentry.init',
   'App Start Span could not be finished. `Sentry.wrap` was called before `Sentry.init`',
   /App Start Span.*Sentry/,
   /Sentry\.wrap.*before.*Sentry\.init/,
+
+  // Navigation warnings (React Navigation) - specifically for serialization warnings
+  'Non-serializable values were found in the',
+  /Non-serializable values were found/,
+  'Serializable values only',
+  /Serializable values/,
+  /Non-serializable.*values/,
+  /serializable.*values/i,
+
+  // Promise rejection warnings
+  'Possible Unhandled Promise Rejection',
+  /Possible Unhandled Promise Rejection/,
+
+  // General testing warning suppression when in test mode
+  ...(isTesting
+    ? [
+        // Additional warnings to suppress during testing
+        'Warning:',
+        /Warning:/,
+        'VirtualizedLists should never be nested',
+        'Setting a timer for a long period',
+      ]
+    : []),
 ]);
 
 // Always initialize Sentry early to prevent the warning, regardless of mode
