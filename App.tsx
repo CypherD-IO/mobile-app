@@ -10,7 +10,7 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import './src/i18n';
-import { BackHandler, Keyboard, Linking } from 'react-native';
+import { BackHandler, Keyboard, Linking, LogBox } from 'react-native';
 import {
   HdWalletContext,
   ActivityContext,
@@ -19,6 +19,7 @@ import {
 import { hdWalletStateReducer, initialHdWalletState } from './src/reducers';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
+import { Config } from 'react-native-config';
 import {
   gloabalContextReducer,
   GlobalContext,
@@ -67,6 +68,25 @@ import { ThemeProvider } from './src/reducers/themeReducer';
 import { CyDView } from './src/styles/tailwindComponents';
 import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
+
+// Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
+const isTesting = Config.IS_TESTING === 'true';
+
+if (isTesting) {
+  // Only initialize early in test mode to prevent warnings
+  LogBox.ignoreLogs([
+    'App Start Span could not be finished',
+    'Sentry.wrap was called before Sentry.init',
+  ]);
+
+  // Initialize Sentry with minimal config for testing
+  Sentry.init({
+    dsn: Config.SENTRY_DSN,
+    enabled: false, // Disable Sentry in test mode
+    tracesSampleRate: 0,
+  });
+}
+// Note: Production mode will initialize Sentry later in useInitializer with full config
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 

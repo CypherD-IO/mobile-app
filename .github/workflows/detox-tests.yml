@@ -232,8 +232,59 @@ jobs:
       - name: Create e2e environment file
         run: |
           echo "TEST_SEED_PHRASE=${{ secrets.E2E_TEST_SEED_PHRASE }}" > e2e/.env.test
+          # Suppress Sentry warnings in CI
+          echo "CI=true" >> .env
+          echo "IS_TESTING='true'" >> .env
         env:
           E2E_TEST_SEED_PHRASE: ${{ secrets.E2E_TEST_SEED_PHRASE }}
+
+      - name: Start Metro Bundler for E2E Tests
+        run: |
+          echo "=== Starting Metro Bundler for E2E Tests ==="
+
+          # Start Metro bundler in background
+          npx react-native start --reset-cache &
+          METRO_PID=$!
+          echo "Metro PID: $METRO_PID"
+          echo $METRO_PID > metro.pid
+
+          # Wait for Metro to be ready
+          echo "Waiting for Metro bundler to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8081/status >/dev/null 2>&1; then
+              echo "✅ Metro bundler is ready"
+              break
+            fi
+            echo "Waiting for Metro... ($i/30)"
+            sleep 2
+          done
+
+          # Verify Metro is running
+          if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
+            echo "❌ Metro bundler failed to start"
+            exit 1
+          fi
+
+          echo "✅ Metro bundler started successfully"
+
+      - name: Prepare iOS Simulator for E2E Tests
+        run: |
+          echo "=== Preparing iOS Simulator ==="
+
+          # Wait a bit more for Metro to stabilize
+          sleep 10
+
+          # Pre-warm the bundle by hitting the bundle URL
+          echo "Pre-warming React Native bundle..."
+          curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true" > /dev/null || echo "Bundle pre-warm attempted"
+
+          # Ensure simulator is ready
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
+          if [ -n "$DEVICE_ID" ]; then
+            echo "✅ Simulator ready: $DEVICE_ID"
+          else
+            echo "⚠️ No booted iPhone 16 simulator found"
+          fi
 
       - name: Run E2E Tests - iOS
         run: |
@@ -241,10 +292,22 @@ jobs:
 
           # Set CI environment variable for lighter resets
           export CI=true
+          export IS_TESTING=true
+
+          # Verify Metro is still running
+          if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
+            echo "❌ Metro bundler not running, restarting..."
+            npx react-native start --reset-cache &
+            sleep 15
+          fi
 
           # Run tests with increased timeout and better error handling
           npm run e2e:test:ios || {
             echo "❌ E2E tests failed"
+            
+            # Capture Metro logs
+            echo "=== Metro bundler status ==="
+            curl -s http://localhost:8081/status || echo "Metro not responding"
             
             # Capture simulator logs for debugging
             echo "=== Capturing simulator logs ==="
@@ -260,8 +323,20 @@ jobs:
             
             exit 1
           }
-        timeout-minutes: 30
+        timeout-minutes: 35
         continue-on-error: true
+
+      - name: Stop Metro Bundler
+        if: always()
+        run: |
+          echo "=== Stopping Metro Bundler ==="
+          if [ -f metro.pid ]; then
+            METRO_PID=$(cat metro.pid)
+            kill $METRO_PID 2>/dev/null || echo "Metro process already stopped"
+            rm metro.pid
+          fi
+          # Also kill any remaining Metro processes
+          pkill -f "react-native start" || echo "No Metro processes found"
 
       - name: Clean up .env file
         if: always()

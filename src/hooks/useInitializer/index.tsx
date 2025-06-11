@@ -85,9 +85,50 @@ export default function useInitializer() {
   };
 
   const initializeSentry = () => {
+    // Check if we're in testing mode
+    const isTesting = Config.IS_TESTING === 'true';
+
+    if (isTesting) {
+      // In test mode, check if Sentry is already initialized (from App.tsx)
+      const sentryHub = Sentry.getCurrentHub();
+      const client = sentryHub.getClient();
+
+      if (client) {
+        return;
+      }
+
+      // Initialize Sentry but with all UI warnings and tracing disabled
+      Sentry.init({
+        dsn: Config.SENTRY_DSN,
+        environment: Config.ENVIRONMENT ?? 'staging',
+        debug: false, // Disable debug output to prevent console/UI warnings
+        enabled: false, // Completely disable Sentry in test mode
+        tracesSampleRate: 0, // Disable performance tracing (prevents "App Start Span" warnings)
+        maxBreadcrumbs: 0, // Disable breadcrumbs
+        attachStacktrace: false, // Disable stack trace attachment
+        autoSessionTracking: false, // Disable session tracking
+        enableAutoSessionTracking: false, // Disable auto session tracking
+        enableNativeCrashHandling: false, // Disable native crash handling
+        enableWatchdogTerminationTracking: false, // Disable watchdog tracking
+        enableAutoPerformanceTracing: false, // Disable auto performance tracing
+        beforeSend() {
+          // Drop all events in test mode
+          return null;
+        },
+        beforeBreadcrumb() {
+          // Drop all breadcrumbs in test mode
+          return null;
+        },
+        integrations: [], // No integrations in test mode
+      });
+      return;
+    }
+
+    // Production mode - always run full Sentry configuration
     Sentry.init({
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT ?? 'staging',
+      debug: false, // Keep debug off even in production to avoid console spam
       integrations: [
         new Sentry.ReactNativeTracing({
           routingInstrumentation,
@@ -311,7 +352,7 @@ export default function useInitializer() {
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {
-        void Sentry.captureMessage('app load error for load existing wallet');
+        Sentry.captureMessage('app load error for load existing wallet');
       } else if (
         accounts.ethereum?.[0]?.address ||
         accounts.solana?.[0]?.address
