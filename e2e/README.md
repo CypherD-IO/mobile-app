@@ -20,7 +20,6 @@ The tests are numbered to run in sequence:
 - `01_onboardingFlow.test.ts`: Test for the entire onboarding flow that creates a new wallet
 - `02_importWalletFlow.test.ts`: Test for importing a wallet using a seed phrase
 - `03_loadCardFlow.test.ts`: Test for the complete load card flow
-- `04_toggleDevModeFlow.test.ts`: Test for enabling developer mode and verifying dev settings
 
 ## Test Execution Order
 

@@ -1,7 +1,7 @@
 /** @type {import('@jest/types').Config.InitialOptions} */
 module.exports = {
   rootDir: '..',
-  testMatch: ['<rootDir>/e2e/**/*.test.ts'],
+  testMatch: ['<rootDir>/e2e/*.test.ts'],
   
   // Increase timeout for CI environment (individual tests may be longer now)
   testTimeout: process.env.CI ? 360000 : 180000, // 6 min CI, 3 min local (tests include import flow)
