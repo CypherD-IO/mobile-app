@@ -84,8 +84,6 @@ const AdditionalDetails = (): JSX.Element => {
           payload,
         );
 
-        console.log('payload', payload, error);
-
         if (isError) {
           showModal('state', {
             type: 'error',

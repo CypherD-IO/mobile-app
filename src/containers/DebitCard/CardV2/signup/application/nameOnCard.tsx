@@ -181,7 +181,7 @@ const NameOnCard = () => {
             navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
           }, MODAL_HIDE_TIMEOUT_250);
         }}
-        country={country}
+        country={country || undefined}
       />
 
       <CyDScrollView className='flex-1 px-5'>
