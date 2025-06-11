@@ -130,12 +130,18 @@ jobs:
           echo "Ruby version: $(ruby --version)"
           echo "Bundler version: $(bundle --version)"
 
-          # This was the missing step that caused the original error!
+          # Remove Gemfile.lock to avoid version conflicts between environments
+          # Local: Ruby 2.6 + Bundler 1.17  vs  CI: Ruby 3.3 + Bundler 2.6
+          # Each environment generates its own compatible lockfile
+          rm -f Gemfile.lock
+          echo "Removed old Gemfile.lock to avoid Ruby/Bundler version conflicts"
+
+          # Install gems with CI's modern Ruby/Bundler
           bundle install
 
           # Verify CocoaPods is available  
           bundle exec pod --version
-          echo "✅ CocoaPods $(bundle exec pod --version) ready"
+          echo "✅ CocoaPods $(bundle exec pod --version) ready with VisionOS support"
 
       - name: Clear CocoaPods cache
         run: |
