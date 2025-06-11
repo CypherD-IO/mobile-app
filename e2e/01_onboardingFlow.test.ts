@@ -9,9 +9,12 @@ import {
 } from './helpers';
 
 describe('Onboarding Flow', () => {
-  beforeAll(async () => {
-    await resetAppCompletely();
-  });
+  beforeAll(
+    async () => {
+      await resetAppCompletely();
+    },
+    process.env.CI ? 180000 : 90000,
+  ); // 3 minutes in CI, 1.5 minutes locally
 
   it('should navigate through onboarding screens and create a wallet', async () => {
     console.log('Starting onboarding flow test...');

@@ -326,11 +326,41 @@ jobs:
             sleep 15
           fi
 
+          # Monitor system resources for CI debugging
+          echo "=== CI System Resources ==="
+          echo "CPU usage: $(top -l 1 | grep "CPU usage" | head -1)"
+          echo "Memory pressure: $(memory_pressure)"
+          echo "Available disk space: $(df -h . | tail -1 | awk '{print $4}')"
+
+          # Monitor simulator status
+          echo "=== Simulator Status ==="
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 1" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' || echo "")
+          if [ -n "$DEVICE_ID" ]; then
+            echo "Active simulator: $DEVICE_ID"
+            echo "Simulator state: $(xcrun simctl list devices | grep "$DEVICE_ID")"
+          else
+            echo "No active iPhone simulator found"
+          fi
+
           # Run tests with increased timeout and better error handling
           set +e  # Don't exit immediately on error so we can capture logs
 
+          # Add timeout monitoring in background
+          (
+            sleep 300 # 5 minutes
+            echo "⚠️ E2E tests have been running for 5 minutes - this may indicate hanging"
+            if [ -n "$DEVICE_ID" ]; then
+              echo "Taking diagnostic screenshot..."
+              xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/timeout_diagnostic_$(date +%Y%m%d_%H%M%S).png" || echo "Could not take screenshot"
+            fi
+          ) &
+          TIMEOUT_PID=$!
+
           # Run tests with Jest handling timeouts internally
           npm run e2e:test:ios || TEST_EXIT_CODE=$?
+
+          # Kill timeout monitor
+          kill $TIMEOUT_PID 2>/dev/null || true
 
           # Capture the exit code
           if [ -z "$TEST_EXIT_CODE" ]; then

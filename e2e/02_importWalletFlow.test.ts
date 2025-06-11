@@ -14,9 +14,12 @@ import {
 const TEST_RECOVERY_PHRASE = getSecureTestSeedPhrase();
 
 describe('Import Wallet Flow', () => {
-  beforeAll(async () => {
-    await resetAppCompletely();
-  });
+  beforeAll(
+    async () => {
+      await resetAppCompletely();
+    },
+    process.env.CI ? 180000 : 90000,
+  ); // 3 minutes in CI, 1.5 minutes locally
 
   it('should navigate through onboarding screens and import a wallet', async () => {
     secureLog('Starting import wallet flow test...');

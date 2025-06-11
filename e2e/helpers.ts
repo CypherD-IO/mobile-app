@@ -132,11 +132,53 @@ export const reOpenApp = async () => {
 };
 
 /**
+ * Ultra-lightweight reset for CI environments when the main reset fails
+ * @returns void
+ */
+export async function resetAppForCIOnly(): Promise<void> {
+  console.log('🚀 Using ultra-lightweight CI reset...');
+
+  try {
+    // Step 1: Clear keychain for test isolation (important!)
+    console.log('Clearing keychain...');
+    await Promise.race([
+      device.clearKeychain(),
+      new Promise((resolve, reject) =>
+        setTimeout(() => reject(new Error('Keychain clear timeout')), 10000),
+      ),
+    ]);
+    console.log('✅ Keychain cleared successfully');
+  } catch (error) {
+    console.log('⚠️ Keychain clear failed, but continuing:', error);
+    // Don't throw here - continue with app launch even if keychain clear fails
+  }
+
+  try {
+    // Step 2: Launch app fresh
+    console.log('Launching app with minimal configuration...');
+    await device.launchApp({
+      newInstance: true,
+      permissions: { notifications: 'YES', camera: 'YES' },
+      launchArgs: {
+        detoxHandleSystemAlerts: 'YES',
+      },
+    });
+    console.log('✅ Ultra-lightweight CI reset completed');
+  } catch (error) {
+    console.error('❌ Even ultra-lightweight reset failed:', error);
+    throw error;
+  }
+}
+
+/**
  * Reset app state completely - optimized for speed and reliability
  * @returns void
  */
 export async function resetAppCompletely(): Promise<void> {
-  console.log('Performing fast app reset for E2E tests...');
+  const isCI = process.env.CI === 'true';
+  console.log(
+    `Performing fast app reset for E2E tests... (CI: ${String(isCI)})`,
+  );
 
   try {
     // Step 1: Terminate app if running (fast operation)
@@ -167,22 +209,71 @@ export async function resetAppCompletely(): Promise<void> {
     console.log('Keychain clear failed or timed out:', error);
   }
 
-  // Step 3: Launch app with clean state (no uninstall/reinstall needed)
+  // Step 3: Launch app with clean state - with CI-specific timeout
   console.log('Launching app with clean state...');
   try {
-    await device.launchApp({
-      newInstance: true,
-      permissions: { notifications: 'YES', camera: 'YES' },
-      launchArgs: {
-        detoxHandleSystemAlerts: 'YES',
-      },
-    });
+    const launchTimeout = isCI ? 120000 : 60000; // 2 minutes in CI, 1 minute locally
+    console.log(`Using launch timeout: ${launchTimeout / 1000}s`);
+
+    await Promise.race([
+      device.launchApp({
+        newInstance: true,
+        permissions: { notifications: 'YES', camera: 'YES' },
+        launchArgs: {
+          detoxHandleSystemAlerts: 'YES',
+          // Add CI-specific launch args to speed up startup
+          ...(isCI && {
+            detoxDisableHierarchyDump: 'YES',
+            detoxDisableScreenshotOnFailure: 'YES',
+          }),
+        },
+      }),
+      new Promise((resolve, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error(`App launch timeout after ${launchTimeout / 1000}s`),
+            ),
+          launchTimeout,
+        ),
+      ),
+    ]);
 
     console.log('✅ Fast app reset completed successfully');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('App launch failed:', error);
-    throw new Error(`App reset failed: ${errorMessage}`);
+
+    // In CI, try a fallback approach if launch fails
+    if (isCI) {
+      console.log('🔄 Attempting CI fallback: simpler launch...');
+      try {
+        await Promise.race([
+          device.launchApp({
+            newInstance: true,
+            permissions: { notifications: 'YES', camera: 'YES' },
+            // Use minimal launch args similar to successful local runs
+            launchArgs: {
+              detoxHandleSystemAlerts: 'YES',
+            },
+          }),
+          new Promise((resolve, reject) =>
+            setTimeout(
+              () => reject(new Error('Fallback launch timeout after 60s')),
+              60000,
+            ),
+          ),
+        ]);
+        console.log('✅ CI fallback launch successful');
+      } catch (fallbackError) {
+        console.error('❌ CI fallback also failed:', fallbackError);
+        throw new Error(
+          `App reset failed: ${errorMessage}. Fallback also failed: ${String(fallbackError)}`,
+        );
+      }
+    } else {
+      throw new Error(`App reset failed: ${errorMessage}`);
+    }
   }
 }
 

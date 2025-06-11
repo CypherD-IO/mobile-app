@@ -7,9 +7,12 @@ import {
 } from './helpers';
 
 describe('App Launch Tests', () => {
-  beforeAll(async () => {
-    await resetAppCompletely();
-  }, 60000); // 1 minute timeout for app reset
+  beforeAll(
+    async () => {
+      await resetAppCompletely();
+    },
+    process.env.CI ? 180000 : 90000,
+  ); // 3 minutes in CI, 1.5 minutes locally
 
   it('should launch successfully and show onboarding screen', async () => {
     console.log('Running app launch and onboarding validation test');

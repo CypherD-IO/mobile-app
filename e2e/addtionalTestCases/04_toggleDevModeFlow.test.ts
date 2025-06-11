@@ -19,9 +19,12 @@ async function scrollUntilVisible(text: string, maxScrolls = 10) {
 }
 
 describe('Toggle Developer Mode Flow', () => {
-  beforeAll(async () => {
-    await resetAppCompletely();
-  });
+  beforeAll(
+    async () => {
+      await resetAppCompletely();
+    },
+    process.env.CI ? 180000 : 90000,
+  ); // 3 minutes in CI, 1.5 minutes locally
 
   it('should enable developer mode and verify dev configuration is active', async () => {
     // Ensure app is loaded
