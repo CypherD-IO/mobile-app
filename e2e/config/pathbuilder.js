@@ -31,9 +31,22 @@ class CustomPathBuilder {
     const artifactExtension = path.extname(artifactBasename);
     const artifactNameWithoutExt = path.basename(artifactBasename, artifactExtension);
     
-    const finalName = `${cleanTest}_${timestamp}_${artifactNameWithoutExt}${artifactExtension}`;
+    // Sanitize the artifact name as well
+    const cleanArtifactName = this.sanitizeFilename(artifactNameWithoutExt);
     
-    return path.join(this.rootDir, statusDir, suiteDir, finalName);
+    const finalName = `${cleanTest}_${timestamp}_${cleanArtifactName}${artifactExtension}`;
+    
+    // Double-check the final path for any remaining invalid characters
+    const finalPath = path.join(this.rootDir, statusDir, suiteDir, finalName);
+    const safePath = this.sanitizePath(finalPath);
+    
+    // Debug logging to see what paths are being generated
+    if (process.env.CI) {
+      console.log(`[PathBuilder] Original artifact: ${artifactName}`);
+      console.log(`[PathBuilder] Generated path: ${safePath}`);
+    }
+    
+    return safePath;
   }
 
   buildPathForTestVideo(videoName, testSummary) {
@@ -56,14 +69,36 @@ class CustomPathBuilder {
   sanitizeFilename(name) {
     if (!name) return 'unknown';
     
-    // Replace problematic characters with underscores
+    // Replace all GitHub Actions artifact invalid characters with underscores
+    // Invalid: " : < > | * ? \r \n and other problematic characters
     return name
-      .replace(/[^a-zA-Z0-9\-_\s]/g, '_')
-      .replace(/\s+/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '')
+      .replace(/[<>:"|\*\?\r\n]/g, '_')  // Replace invalid characters with underscores
+      .replace(/[^a-zA-Z0-9\-_\s\.]/g, '_')  // Replace any other non-alphanumeric chars (keep dots for extensions)
+      .replace(/\s+/g, '_')  // Replace spaces with underscores
+      .replace(/_+/g, '_')   // Replace multiple underscores with single
+      .replace(/^_|_$/g, '') // Remove leading/trailing underscores
+      .replace(/^\.+|\.+$/g, '') // Remove leading/trailing dots
       .toLowerCase()
-      .substring(0, 50); // Limit length
+      .substring(0, 100); // Increase length limit but keep reasonable
+  }
+
+  sanitizePath(inputPath) {
+    // Split path into components, sanitize each component, then rejoin
+    const pathComponents = inputPath.split(path.sep);
+    const cleanComponents = pathComponents.map(component => {
+      // Don't sanitize empty components (from leading/trailing separators)
+      if (!component) return component;
+      
+      // Sanitize each path component while preserving extensions
+      return component
+        .replace(/[<>:"|\*\?\r\n]/g, '_')  // Replace invalid characters
+        .replace(/[^\w\-_\s\.]/g, '_')     // Keep word chars, hyphens, underscores, spaces, dots
+        .replace(/\s+/g, '_')              // Replace spaces with underscores
+        .replace(/_+/g, '_')               // Replace multiple underscores with single
+        .replace(/^_|_$/g, '');            // Remove leading/trailing underscores
+    });
+    
+    return cleanComponents.join(path.sep);
   }
 }
 
