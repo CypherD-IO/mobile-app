@@ -159,8 +159,11 @@ jobs:
           else
             echo "Cache miss or Podfile changed - installing pods..."
             
-            # Only remove Podfile.lock if we're doing a fresh install
-            rm -f Podfile.lock || true
+            # Only remove Podfile.lock if Podfile is newer (indicating changes)
+            if [ "Podfile" -nt "Podfile.lock" ]; then
+              echo "Podfile is newer than lock file - updating dependencies"
+              rm -f Podfile.lock || true
+            fi
             
             # Optimized pod install
             echo "Using CocoaPods $(pod --version) with VisionOS support"
@@ -273,6 +276,11 @@ jobs:
 
           # Delete old simulator logs
           rm -rf ~/Library/Logs/CoreSimulator/* || echo "Could not clean simulator logs"
+
+          # Clean up any stale Jest/Detox lockfiles to prevent race conditions
+          echo "Cleaning up stale lockfiles..."
+          find . -name "*.lock" -type f -mmin +60 -delete 2>/dev/null || echo "No stale lockfiles to clean"
+          find /tmp -name "*detox*" -type f -mmin +60 -delete 2>/dev/null || echo "No stale detox temp files"
 
           # Show system resources
           echo "Available system resources:"
@@ -452,7 +460,26 @@ jobs:
           export DETOX_RECORD_VIDEOS="none"  # Disable video recording to save time
           export DETOX_DISABLE_LOGS="true"   # Reduce logging overhead
 
+          # Prevent lockfile race conditions
+          export LOCKFILE_STALENESS_THRESHOLD=300000  # 5 minutes
+          export LOCKFILE_RETRIES=5
+          export LOCKFILE_COMPROMISE_THRESHOLD=10000   # 10 seconds
+          export PROPER_LOCKFILE_DISABLE_COMPROMISE=1
+
+          # File system optimizations
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          export UV_THREADPOOL_SIZE=128
+
+          # Jest-specific environment to prevent worker conflicts
+          export JEST_DETECT_OPEN_HANDLES=false
+          export JEST_FORCE_EXIT=true
+
           mkdir -p e2e/artifacts/{screenshots,logs}
+
+          # Clean up any existing lockfiles before starting
+          echo "Cleaning lockfiles before test execution..."
+          find . -name "*.lock" -type f -mmin +5 -delete 2>/dev/null || echo "No stale lockfiles to clean"
+          find node_modules/.cache -name "*.lock" -type f -delete 2>/dev/null || echo "No cache lockfiles to clean"
 
           # Verify Metro is running
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
@@ -485,6 +512,7 @@ jobs:
           echo "  - maxWorkers: 4 (full parallelization)"
           echo "  - testTimeout: 6 minutes per test"
           echo "  - Each test includes complete setup (independent)"
+          echo "  - Lockfile protection: enabled"
 
           # Add timeout monitoring in background (reduced timeout)
           (

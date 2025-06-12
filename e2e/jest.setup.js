@@ -9,6 +9,35 @@ dotenv.config({ path: envPath });
 
 let metroProcess = null;
 
+// Function to clean up stale lockfiles that can cause race conditions
+function cleanupStaleLockfiles() {
+  console.log('🧹 Cleaning up stale lockfiles...');
+  
+  const lockfilePatterns = [
+    '**/*.lock',
+    '**/package-lock.json.lock',
+    '**/yarn.lock.lock',
+    '**/node_modules/.cache/**/*.lock'
+  ];
+  
+  const { execSync } = require('child_process');
+  
+  try {
+    // Clean up any Jest cache lockfiles
+    execSync('find node_modules/.cache -name "*.lock" -type f -delete 2>/dev/null || true', { stdio: 'ignore' });
+    
+    // Clean up any Detox temp files
+    execSync('find /tmp -name "*detox*" -type f -mmin +5 -delete 2>/dev/null || true', { stdio: 'ignore' });
+    
+    // Clean up any Metro cache locks
+    execSync('find node_modules/@react-native-community/cli*/build -name "*.lock" -delete 2>/dev/null || true', { stdio: 'ignore' });
+    
+    console.log('✅ Lockfile cleanup completed');
+  } catch (error) {
+    console.log('⚠️ Lockfile cleanup had issues (continuing anyway):', error.message);
+  }
+}
+
 // Function to check if Metro is running
 async function isMetroRunning() {
   try {
@@ -36,9 +65,15 @@ async function waitForMetro(maxAttempts = 3) {
 beforeAll(async () => {
   console.log('🚀 Setting up E2E test environment...');
 
+  // Clean up any stale lockfiles first to prevent race conditions
+  cleanupStaleLockfiles();
+
   // Set environment variable for E2E testing
   process.env.IS_TESTING = 'true'; // Single variable for testing mode
   process.env.DETOX_DISABLE_POSTINSTALL = '1'; // Optimize Detox
+  
+  // Add process isolation to prevent lockfile conflicts
+  process.env.JEST_WORKER_ID = process.env.JEST_WORKER_ID || '1';
   
   // Check if Metro is already running
   if (await isMetroRunning()) {
@@ -51,7 +86,13 @@ beforeAll(async () => {
   // Start Metro bundler
   metroProcess = spawn('npx', ['react-native', 'start', '--reset-cache'], {
     stdio: ['ignore', 'pipe', 'pipe'],
-    detached: false
+    detached: false,
+    env: {
+      ...process.env,
+      // Prevent Metro from creating conflicting lockfiles
+      RCT_METRO_PORT: '8081',
+      REACT_NATIVE_PACKAGER_HOSTNAME: 'localhost'
+    }
   });
 
   // Save Metro PID for cleanup
@@ -148,6 +189,9 @@ afterAll(async () => {
   if (fs.existsSync('metro.pid')) {
     fs.unlinkSync('metro.pid');
   }
+
+  // Final lockfile cleanup
+  cleanupStaleLockfiles();
 
   // Clear any remaining timers or intervals
   if (global.gc) {

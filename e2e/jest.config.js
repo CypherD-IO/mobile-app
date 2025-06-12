@@ -45,6 +45,15 @@ module.exports = {
   // Performance optimizations
   workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
   
+  // File system optimizations to prevent lockfile race conditions
+  haste: {
+    retainAllFiles: false,
+    forceNodeFilesystemAPI: true,
+  },
+  
+  // Prevent file watching in CI (causes lockfile issues)
+  watchman: !process.env.CI,
+  
   // CI-specific optimizations for parallel execution
   ...(process.env.CI && {
     // Don't bail on first failure - let all parallel tests complete
@@ -57,5 +66,9 @@ module.exports = {
     detectOpenHandles: false, // Disable to reduce CI overhead
     // Reduce memory usage in CI
     workerIdleMemoryLimit: '256MB',
+    // Prevent file system race conditions
+    watchman: false,
+    // Use deterministic worker assignment to prevent lockfile conflicts
+    workerThreads: false, // Use processes instead of threads
   }),
 }; 
