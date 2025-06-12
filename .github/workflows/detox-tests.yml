@@ -222,10 +222,9 @@ jobs:
           mkdir -p ~/Library/Detox
           chmod 755 ~/Library/Detox
 
-          # Pre-create device registry to avoid race conditions
-          echo "{}" > ~/Library/Detox/device.registry.json
-          chmod 644 ~/Library/Detox/device.registry.json
-          echo "✅ Detox lockfile environment prepared"
+          # Let Detox create the device registry with proper structure
+          # Don't pre-create device.registry.json - let Detox initialize it correctly
+          echo "✅ Detox directory prepared (letting Detox create registry with correct structure)"
 
           # Increase file descriptor limits for CI
           ulimit -n 4096 || echo "Could not increase file descriptor limit"
