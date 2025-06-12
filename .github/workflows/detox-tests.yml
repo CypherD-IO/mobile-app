@@ -371,17 +371,18 @@ jobs:
           TEST_EXIT_CODE=1
 
           # Strategy 1: Moderate parallelization (2 workers) - Conservative approach
-          echo "🔄 Strategy 1: 2 workers (8-minute timeout)"
+          echo "🔄 Strategy 1: 2 workers (8-minute limit via step timeout)"
           export DETOX_MAX_WORKERS=2
           set +e
 
-          timeout 480 npm run e2e:test:ios  # 8 minutes
+          npm run e2e:test:ios
           TEST_EXIT_CODE=$?
 
           if [ $TEST_EXIT_CODE -eq 0 ]; then
             echo "✅ Tests passed with 2 workers!"
-          elif [ $TEST_EXIT_CODE -eq 124 ]; then
-            echo "⏰ Strategy 1 timed out, trying sequential..."
+          else
+            echo "❌ Strategy 1 failed with exit code: $TEST_EXIT_CODE"
+            echo "Trying sequential fallback..."
             
             # Quick cleanup before fallback
             pkill -f "jest.*e2e" || echo "No Jest processes"
@@ -389,23 +390,17 @@ jobs:
             sleep 3
             
             # Strategy 2: Sequential execution (1 worker) - Reliable fallback
-            echo "🔄 Strategy 2: Sequential execution (12-minute timeout)"
+            echo "🔄 Strategy 2: Sequential execution"
             export DETOX_MAX_WORKERS=1
             
-            timeout 720 npm run e2e:test:ios  # 12 minutes
+            npm run e2e:test:ios
             TEST_EXIT_CODE=$?
             
             if [ $TEST_EXIT_CODE -eq 0 ]; then
               echo "✅ Tests passed with sequential execution!"
-            elif [ $TEST_EXIT_CODE -eq 124 ]; then
-              echo "⏰ Strategy 2 also timed out"
-              TEST_EXIT_CODE=1
             else
               echo "❌ Strategy 2 failed with exit code: $TEST_EXIT_CODE"
             fi
-          else
-            echo "❌ Strategy 1 failed with exit code: $TEST_EXIT_CODE"
-            echo "Skipping fallback due to non-timeout failure"
           fi
 
           set -e
@@ -435,7 +430,7 @@ jobs:
             echo "✅ E2E tests completed successfully!"
             echo "🎉 Strategy: $(echo $DETOX_MAX_WORKERS) worker(s)"
           fi
-        timeout-minutes: 22
+        timeout-minutes: 20
 
       - name: Stop Metro Bundler
         if: always()
