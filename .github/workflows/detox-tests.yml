@@ -315,21 +315,14 @@ jobs:
           echo "=== Running All E2E Tests in Parallel ==="
           echo "🚀 Detox will handle app building and simulator management automatically"
 
-          # Set up test environment with optimizations and better isolation
+          # Set up test environment with optimizations
           export DETOX_ARTIFACTS_LOCATION="e2e/artifacts"
           export DETOX_CAPTURE_VIEW_HIERARCHY="enabled"
           export DETOX_TAKE_SCREENSHOTS="failing"
           export DETOX_RECORD_VIDEOS="none"  # Disable video recording to save time
           export DETOX_DISABLE_LOGS="true"   # Reduce logging overhead
 
-          # Prevent file locking conflicts
-          export FORCE_COLOR=0  # Disable colors to reduce file I/O
-          export CI_PARALLEL_SAFE=true
-          export NODE_OPTIONS="--max-old-space-size=4096"
-
-          # Create unique artifact directories per test run
-          export DETOX_ARTIFACTS_LOCATION="e2e/artifacts/run-$(date +%s)"
-          mkdir -p "$DETOX_ARTIFACTS_LOCATION"/{screenshots,logs}
+          mkdir -p e2e/artifacts/{screenshots,logs}
 
           # Verify Metro is running
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
@@ -351,7 +344,7 @@ jobs:
 
           echo "🏃‍♂️ Starting parallel execution of all E2E tests..."
           echo "Tests will run independently with the following configuration:"
-          echo "  - maxWorkers: 2 (reduced to prevent lockfile conflicts)"
+          echo "  - maxWorkers: 4 (full parallelization)"
           echo "  - testTimeout: 6 minutes per test"
           echo "  - Detox handles: simulator setup, app building, and installation"
 
@@ -362,7 +355,7 @@ jobs:
           ) &
           TIMEOUT_PID=$!
 
-          # Run all tests in parallel with better error handling
+          # Run all tests in parallel (no pattern restrictions)
           npm run e2e:test:ios || TEST_EXIT_CODE=$?
 
           # Kill timeout monitor
@@ -386,25 +379,25 @@ jobs:
             echo "=== Capturing any available simulator logs ==="
             xcrun simctl list devices | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' | while read DEVICE_ID; do
               if [ -n "$DEVICE_ID" ]; then
-                xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > "$DETOX_ARTIFACTS_LOCATION"/logs/simulator_logs.txt 2>/dev/null || echo "Could not capture logs"
+                xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > e2e/artifacts/logs/simulator_logs.txt 2>/dev/null || echo "Could not capture logs"
                 # Take screenshot of current state
                 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-                xcrun simctl io "$DEVICE_ID" screenshot "$DETOX_ARTIFACTS_LOCATION/screenshots/final_state_${TIMESTAMP}.png" || echo "Could not take screenshot"
+                xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/final_state_${TIMESTAMP}.png" || echo "Could not take screenshot"
               fi
             done
             
             # Organize screenshots by test suite
             echo "=== Organizing test artifacts ==="
-            if [ -d "$DETOX_ARTIFACTS_LOCATION" ]; then
+            if [ -d "e2e/artifacts" ]; then
               # Count screenshots and logs
-              SCREENSHOT_COUNT=$(find "$DETOX_ARTIFACTS_LOCATION" -name "*.png" 2>/dev/null | wc -l)
-              LOG_COUNT=$(find "$DETOX_ARTIFACTS_LOCATION" -name "*.log" 2>/dev/null | wc -l)
+              SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" 2>/dev/null | wc -l)
+              LOG_COUNT=$(find e2e/artifacts -name "*.log" 2>/dev/null | wc -l)
               echo "📸 Captured        ${SCREENSHOT_COUNT} screenshots"
               echo "📝 Captured        ${LOG_COUNT} log files"
               
               # List all captured artifacts
               echo "=== Captured artifacts ==="
-              find "$DETOX_ARTIFACTS_LOCATION" -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" 2>/dev/null | sort
+              find e2e/artifacts -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" 2>/dev/null | sort
             fi
             
             # Exit with the original test failure code
