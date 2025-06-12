@@ -30,13 +30,13 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Cache Node Modules
+      - name: Cache Node.js dependencies
         uses: actions/cache@v4
         with:
           path: |
             node_modules
             ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'package.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
@@ -57,7 +57,7 @@ jobs:
           path: |
             ios/build
             ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-ios-build-${{ hashFiles('ios/**/*.{h,m,swift}', 'src/**/*.{js,ts,tsx}', 'package.json', 'ios/Podfile.lock') }}
+          key: ${{ runner.os }}-ios-build-${{ hashFiles('ios/**/*.{h,m,swift}', 'src/**/*.{js,ts,tsx}', 'package.json', 'yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-ios-build-
 
@@ -81,12 +81,10 @@ jobs:
           echo "=== Installing Node.js dependencies ==="
           if [ ! -d "node_modules" ] || [ ! -f "node_modules/.cache-complete" ]; then
             echo "Cache miss or incomplete - installing dependencies..."
-            # Use npm ci with optimizations for speed
-            npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund --silent
+            npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
             touch node_modules/.cache-complete
           else
-            echo "✅ Dependencies restored from cache - skipping npm install"
-            ls -la node_modules/.cache-complete
+            echo "✅ Dependencies restored from cache"
           fi
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -138,14 +136,24 @@ jobs:
           rm -f Gemfile.lock
           echo "Removed old Gemfile.lock to avoid Ruby/Bundler version conflicts"
 
-          # Use faster installation method
-          echo "Installing CocoaPods globally with optimizations..."
-          gem install cocoapods -v '~> 1.15.0' --no-document --quiet
-          gem install activesupport -v '~> 7.0.8' --no-document --quiet
+          # Ruby 3.3.8 has bundled gem conflicts with ActiveSupport through bundler
+          # Use global gem installation as a workaround
+          echo "Installing CocoaPods globally to avoid Ruby 3.3.8 bundled gem conflicts..."
+
+          # Install required gems globally 
+          gem install cocoapods -v '~> 1.15.0' --no-document
+          gem install activesupport -v '~> 7.0.8' --no-document
 
           # Verify CocoaPods is available  
           pod --version
           echo "✅ CocoaPods $(pod --version) ready with VisionOS support"
+
+      - name: Clear CocoaPods cache
+        run: |
+          echo "=== Clearing CocoaPods cache ==="
+          pod cache clean --all || true
+          cd ios
+          rm -f Podfile.lock || true
 
       - name: Install CocoaPods dependencies
         run: |
@@ -153,25 +161,19 @@ jobs:
           cd ios
 
           # Check if pods are cached and valid
-          if [ -d "Pods" ] && [ -f "Pods/.cache-complete" ] && [ -f "Podfile.lock" ] && [ "Podfile.lock" -nt "Podfile" ]; then
-            echo "✅ CocoaPods restored from cache and up-to-date - skipping pod install"
-            pod --version
+          if [ -d "Pods" ] && [ -f "Pods/.cache-complete" ] && [ "Podfile.lock" -nt "Podfile" ]; then
+            echo "✅ CocoaPods restored from cache and up to date"
           else
             echo "Cache miss or Podfile changed - installing pods..."
+            rm -f Podfile.lock || true
             
-            # Only remove Podfile.lock if Podfile is newer (indicating changes)
-            if [ "Podfile" -nt "Podfile.lock" ]; then
-              echo "Podfile is newer than lock file - updating dependencies"
-              rm -f Podfile.lock || true
-            fi
-            
-            # Optimized pod install
+            # Try pod install with better error handling (using global installation)
             echo "Using CocoaPods $(pod --version) with VisionOS support"
             
             if ! pod install \
               --repo-update \
-              --clean-install \
-              --silent; then
+              --verbose \
+              --clean-install; then
               
               echo "❌ Pod install failed. Checking for common issues..."
               
@@ -183,11 +185,14 @@ jobs:
                 echo "This version should support VisionOS (1.13+ required)"
               fi
               
+              # List problematic podspecs
+              echo "Checking for problematic podspecs..."
+              find ../node_modules -name "*.podspec" -exec grep -l "visionos" {} \; 2>/dev/null || true
+              
               exit 1
             fi
             
             touch Pods/.cache-complete
-            echo "✅ Pod install completed successfully"
           fi
 
       - name: Verify deployment targets
@@ -277,11 +282,6 @@ jobs:
           # Delete old simulator logs
           rm -rf ~/Library/Logs/CoreSimulator/* || echo "Could not clean simulator logs"
 
-          # Clean up any stale Jest/Detox lockfiles to prevent race conditions
-          echo "Cleaning up stale lockfiles..."
-          find . -name "*.lock" -type f -mmin +60 -delete 2>/dev/null || echo "No stale lockfiles to clean"
-          find /tmp -name "*detox*" -type f -mmin +60 -delete 2>/dev/null || echo "No stale detox temp files"
-
           # Show system resources
           echo "Available system resources:"
           echo "  - CPU cores: $(sysctl -n hw.ncpu)"
@@ -299,34 +299,11 @@ jobs:
           export RCT_NO_LAUNCH_PACKAGER=1
           export SKIP_BUNDLING=1
 
-          # Check if we can use cached build
-          if [ -d "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" ]; then
-            echo "✅ Found cached iOS build - verifying..."
-            
-            # Check if app bundle is valid and recent
-            if [ -f "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app/Info.plist" ]; then
-              LAST_MODIFIED=$(stat -f %m "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" 2>/dev/null || echo "0")
-              CURRENT_TIME=$(date +%s)
-              TIME_DIFF=$((CURRENT_TIME - LAST_MODIFIED))
-              
-              if [ $TIME_DIFF -lt 7200 ]; then  # Less than 2 hours old
-                echo "✅ Using valid cached build (less than 2 hours old)"
-                echo "Build cache age: $((TIME_DIFF / 60)) minutes"
-                
-                # Quick verification that the app can be launched
-                if xcrun simctl list devices | grep -q "Booted"; then
-                  echo "✅ Cached build verified - ready for tests"
-                  exit 0
-                fi
-              fi
-            fi
-          fi
-
           # Function to build with optimizations
           build_ios_optimized() {
             echo "Building with optimization flags..."
             
-            # Use xcodebuild directly for better control with parallel builds
+            # Use xcodebuild directly for better control
             xcodebuild \
               -workspace ios/Cypherd.xcworkspace \
               -scheme Cypherd \
@@ -334,19 +311,38 @@ jobs:
               -destination 'platform=iOS Simulator,name=iPhone 16' \
               -derivedDataPath ios/build \
               -quiet \
-              -parallelizeTargets \
-              -jobs $(sysctl -n hw.ncpu) \
               COMPILER_INDEX_STORE_ENABLE=NO \
               ONLY_ACTIVE_ARCH=YES \
               CODE_SIGNING_REQUIRED=NO \
               CODE_SIGN_IDENTITY="" \
               PROVISIONING_PROFILE="" \
-              SWIFT_COMPILATION_MODE=singlefile \
               build-for-testing
           }
 
+          # Check if we can use cached build
+          if [ -d "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" ]; then
+            echo "Checking if cached build is still valid..."
+            
+            # Simple check: if app exists and is recent, try to use it
+            LAST_MODIFIED=$(stat -f %m "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" 2>/dev/null || echo "0")
+            CURRENT_TIME=$(date +%s)
+            TIME_DIFF=$((CURRENT_TIME - LAST_MODIFIED))
+            
+            if [ $TIME_DIFF -lt 3600 ]; then  # Less than 1 hour old
+              echo "✅ Using cached build (less than 1 hour old)"
+              
+              # Quick verification build
+              if xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath ios/build -quiet build-for-testing; then
+                echo "✅ Cached build verified successfully"
+                exit 0
+              else
+                echo "❌ Cached build verification failed, doing full build..."
+              fi
+            fi
+          fi
+
           # Full build with retry logic
-          echo "Performing optimized build..."
+          echo "Performing full build..."
           max_attempts=2
           attempt=1
 
@@ -362,7 +358,7 @@ jobs:
               if [ $attempt -lt $max_attempts ]; then
                 echo "Cleaning up before retry..."
                 rm -rf ios/build/Build || true
-                sleep 5
+                sleep 10
               fi
               
               attempt=$((attempt + 1))
@@ -371,7 +367,7 @@ jobs:
 
           echo "❌ Build failed after $max_attempts attempts"
           exit 1
-        timeout-minutes: 15
+        timeout-minutes: 20
 
       - name: Create e2e environment file
         run: |
@@ -451,44 +447,24 @@ jobs:
       - name: Run E2E Tests - Full Parallel Suite
         run: |
           echo "=== Running All E2E Tests in Parallel ==="
-          echo "🚀 All tests are now independent and will run with optimized parallelization"
+          echo "🚀 All tests are now independent and will run simultaneously with maxWorkers: 4"
 
-          # Set up test environment with optimizations
+          # Set up test environment
           export DETOX_ARTIFACTS_LOCATION="e2e/artifacts"
           export DETOX_CAPTURE_VIEW_HIERARCHY="enabled"
           export DETOX_TAKE_SCREENSHOTS="failing"
-          export DETOX_RECORD_VIDEOS="none"  # Disable video recording to save time
-          export DETOX_DISABLE_LOGS="true"   # Reduce logging overhead
+          export DETOX_RECORD_VIDEOS="failing"
 
-          # Prevent lockfile race conditions
-          export LOCKFILE_STALENESS_THRESHOLD=300000  # 5 minutes
-          export LOCKFILE_RETRIES=5
-          export LOCKFILE_COMPROMISE_THRESHOLD=10000   # 10 seconds
-          export PROPER_LOCKFILE_DISABLE_COMPROMISE=1
-
-          # File system optimizations
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          export UV_THREADPOOL_SIZE=128
-
-          # Jest-specific environment to prevent worker conflicts
-          export JEST_DETECT_OPEN_HANDLES=false
-          export JEST_FORCE_EXIT=true
-
-          mkdir -p e2e/artifacts/{screenshots,logs}
-
-          # Clean up any existing lockfiles before starting
-          echo "Cleaning lockfiles before test execution..."
-          find . -name "*.lock" -type f -mmin +5 -delete 2>/dev/null || echo "No stale lockfiles to clean"
-          find node_modules/.cache -name "*.lock" -type f -delete 2>/dev/null || echo "No cache lockfiles to clean"
+          mkdir -p e2e/artifacts/{screenshots,logs,videos}
 
           # Verify Metro is running
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
             echo "❌ Metro bundler not running, restarting..."
             npx react-native start --reset-cache &
-            sleep 10
+            sleep 15
           fi
 
-          # Monitor system resources for CI debugging (abbreviated)
+          # Monitor system resources for CI debugging
           echo "=== CI System Resources Before Tests ==="
           echo "CPU cores available: $(sysctl -n hw.ncpu)"
           echo "Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
@@ -498,10 +474,10 @@ jobs:
           echo "=== Simulator Status ==="
           DEVICE_ID="$SIMULATOR_DEVICE_ID"
           if [ -n "$DEVICE_ID" ]; then
-            SIMULATOR_STATE=$(xcrun simctl list devices | grep "$DEVICE_ID" | head -1)
-            echo "Active simulator: ${SIMULATOR_STATE:-Shutdown}"
+            echo "Active simulator: $DEVICE_ID"
+            echo "Simulator state: $(xcrun simctl list devices | grep "$DEVICE_ID")"
           else
-            echo "Active simulator: Shutdown"
+            echo "No active iPhone simulator found"
           fi
 
           # Run all tests in parallel with enhanced error handling
@@ -512,12 +488,11 @@ jobs:
           echo "  - maxWorkers: 4 (full parallelization)"
           echo "  - testTimeout: 6 minutes per test"
           echo "  - Each test includes complete setup (independent)"
-          echo "  - Lockfile protection: enabled"
 
-          # Add timeout monitoring in background (reduced timeout)
+          # Add timeout monitoring in background
           (
-            sleep 900 # 15 minutes total timeout for parallel execution
-            echo "⚠️ E2E tests have been running for 15 minutes - this may indicate hanging"
+            sleep 1200 # 20 minutes total timeout for parallel execution
+            echo "⚠️ E2E tests have been running for 20 minutes - this may indicate hanging"
             if [ -n "$DEVICE_ID" ]; then
               echo "Taking diagnostic screenshot..."
               xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/timeout_diagnostic_$(date +%Y%m%d_%H%M%S).png" || echo "Could not take screenshot"
@@ -543,12 +518,12 @@ jobs:
             
             # Capture Metro logs
             echo "=== Metro bundler status ==="
-            curl -s http://localhost:8081/status || echo "packager-status:running"
+            curl -s http://localhost:8081/status || echo "Metro not responding"
             
             # Capture simulator logs for debugging
             echo "=== Capturing simulator logs ==="
             if [ -n "$DEVICE_ID" ]; then
-              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > e2e/artifacts/logs/simulator_logs.txt 2>/dev/null || echo "Could not capture logs"
+              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 10m > e2e/artifacts/logs/simulator_logs.txt || echo "Could not capture logs"
             fi
             
             # Take additional final screenshot with timestamp
@@ -561,14 +536,14 @@ jobs:
             echo "=== Organizing test artifacts ==="
             if [ -d "e2e/artifacts" ]; then
               # Count screenshots and logs
-              SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" 2>/dev/null | wc -l)
-              LOG_COUNT=$(find e2e/artifacts -name "*.log" 2>/dev/null | wc -l)
-              echo "📸 Captured        ${SCREENSHOT_COUNT} screenshots"
-              echo "📝 Captured        ${LOG_COUNT} log files"
+              SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" | wc -l)
+              LOG_COUNT=$(find e2e/artifacts -name "*.log" | wc -l)
+              echo "📸 Captured $SCREENSHOT_COUNT screenshots"
+              echo "📝 Captured $LOG_COUNT log files"
               
               # List all captured artifacts
               echo "=== Captured artifacts ==="
-              find e2e/artifacts -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" 2>/dev/null | sort
+              find e2e/artifacts -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" | sort
             fi
             
             # Exit with the original test failure code

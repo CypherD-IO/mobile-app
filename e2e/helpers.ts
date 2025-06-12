@@ -180,167 +180,99 @@ export async function resetAppCompletely(): Promise<void> {
     `Performing fast app reset for E2E tests... (CI: ${String(isCI)})`,
   );
 
-  // Step 0: Brief stabilization wait in CI
-  if (isCI) {
-    console.log('Allowing simulator to stabilize...');
-    await delay(3000);
-  }
-
   try {
-    // Step 1: Terminate app if running (fast operation) with retry
+    // Step 1: Terminate app if running (fast operation)
     console.log('Terminating app...');
-    for (let i = 0; i < 2; i++) {
-      try {
-        await Promise.race([
-          device.terminateApp(),
-          new Promise((resolve, reject) =>
-            setTimeout(() => reject(new Error('Terminate timeout')), 8000),
-          ),
-        ]);
-        break; // Success, exit retry loop
-      } catch (error) {
-        console.log(
-          `App terminate attempt ${i + 1} failed:`,
-          error instanceof Error ? error.message : String(error),
-        );
-        if (i === 1) {
-          console.log(
-            'App terminate failed after retries (app might not be running)',
-          );
-        } else {
-          await delay(2000); // Wait before retry
-        }
-      }
-    }
+    await Promise.race([
+      device.terminateApp(),
+      new Promise((resolve, reject) =>
+        setTimeout(() => reject(new Error('Terminate timeout')), 10000),
+      ),
+    ]);
   } catch (error) {
-    console.log('App terminate error (continuing anyway):', error);
+    console.log(
+      'App terminate failed or timed out (app might not be running):',
+      error,
+    );
   }
 
   try {
-    // Step 2: Clear keychain (fast operation) with shorter timeout
+    // Step 2: Clear keychain (fast operation)
     console.log('Clearing keychain...');
     await Promise.race([
       device.clearKeychain(),
       new Promise((resolve, reject) =>
-        setTimeout(() => reject(new Error('Keychain timeout')), 10000),
+        setTimeout(() => reject(new Error('Keychain timeout')), 15000),
       ),
     ]);
   } catch (error) {
     console.log('Keychain clear failed or timed out:', error);
   }
 
-  // Step 3: Launch app with clean state - with enhanced retry logic
+  // Step 3: Launch app with clean state - with CI-specific timeout
   console.log('Launching app with clean state...');
-  const maxLaunchAttempts = isCI ? 3 : 2;
+  try {
+    const launchTimeout = isCI ? 120000 : 60000; // 2 minutes in CI, 1 minute locally
+    console.log(`Using launch timeout: ${launchTimeout / 1000}s`);
 
-  for (let attempt = 1; attempt <= maxLaunchAttempts; attempt++) {
-    try {
-      const launchTimeout =
-        attempt === 1 ? (isCI ? 90000 : 45000) : isCI ? 120000 : 60000;
-      const timeoutSeconds = Math.round(launchTimeout / 1000);
-      console.log(
-        `Launch attempt ${attempt}/${maxLaunchAttempts} - timeout: ${timeoutSeconds}s`,
-      );
-
-      await Promise.race([
-        device.launchApp({
-          newInstance: true,
-          permissions: { notifications: 'YES', camera: 'YES' },
-          launchArgs: {
-            detoxHandleSystemAlerts: 'YES',
-            // Progressive launch args - start simple
-            ...(attempt === 1 &&
-              {
-                // Minimal args for first attempt
-              }),
-            ...(attempt > 1 &&
-              isCI && {
-                // Add CI-specific optimizations only on retry
-                detoxDisableHierarchyDump: 'YES',
-                detoxDisableScreenshotOnFailure: 'YES',
-              }),
-          },
-        }),
-        new Promise((resolve, reject) =>
-          setTimeout(
-            () =>
-              reject(
-                new Error(
-                  `App launch timeout after ${timeoutSeconds}s (attempt ${attempt})`,
-                ),
-              ),
-            launchTimeout,
-          ),
+    await Promise.race([
+      device.launchApp({
+        newInstance: true,
+        permissions: { notifications: 'YES', camera: 'YES' },
+        launchArgs: {
+          detoxHandleSystemAlerts: 'YES',
+          // Add CI-specific launch args to speed up startup
+          ...(isCI && {
+            detoxDisableHierarchyDump: 'YES',
+            detoxDisableScreenshotOnFailure: 'YES',
+          }),
+        },
+      }),
+      new Promise((resolve, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error(`App launch timeout after ${launchTimeout / 1000}s`),
+            ),
+          launchTimeout,
         ),
-      ]);
+      ),
+    ]);
 
-      // Verify app is responsive after launch
-      console.log('Verifying app responsiveness...');
+    console.log('✅ Fast app reset completed successfully');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('App launch failed:', error);
+
+    // In CI, try a fallback approach if launch fails
+    if (isCI) {
+      console.log('🔄 Attempting CI fallback: simpler launch...');
       try {
         await Promise.race([
-          // Wait for any UI element to be available
-          waitFor(element(by.type('RCTView')).atIndex(0))
-            .toExist()
-            .withTimeout(15000),
+          device.launchApp({
+            newInstance: true,
+            permissions: { notifications: 'YES', camera: 'YES' },
+            // Use minimal launch args similar to successful local runs
+            launchArgs: {
+              detoxHandleSystemAlerts: 'YES',
+            },
+          }),
           new Promise((resolve, reject) =>
             setTimeout(
-              () => reject(new Error('App responsiveness timeout')),
-              15000,
+              () => reject(new Error('Fallback launch timeout after 60s')),
+              60000,
             ),
           ),
         ]);
-        console.log('✅ App is responsive');
-      } catch (responsiveError) {
-        console.log(
-          '⚠️ App responsiveness check failed, but continuing:',
-          responsiveError,
+        console.log('✅ CI fallback launch successful');
+      } catch (fallbackError) {
+        console.error('❌ CI fallback also failed:', fallbackError);
+        throw new Error(
+          `App reset failed: ${errorMessage}. Fallback also failed: ${String(fallbackError)}`,
         );
       }
-
-      console.log(
-        `✅ Fast app reset completed successfully (attempt ${attempt})`,
-      );
-      return; // Success, exit function
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error(`❌ App launch attempt ${attempt} failed:`, errorMessage);
-
-      if (attempt < maxLaunchAttempts) {
-        console.log(
-          `🔄 Retrying launch (attempt ${attempt + 1}/${maxLaunchAttempts})...`,
-        );
-
-        // Progressive backoff and cleanup between attempts
-        const waitTime = attempt * 3000 + (isCI ? 5000 : 2000);
-        const waitSeconds = Math.round(waitTime / 1000);
-        console.log(`Waiting ${waitSeconds}s before retry...`);
-        await delay(waitTime);
-
-        // Try to terminate again before retry
-        try {
-          await device.terminateApp();
-        } catch (terminateError) {
-          console.log('Could not terminate before retry (continuing)');
-        }
-
-        // On second failure in CI, try different approach
-        if (attempt === 2 && isCI) {
-          console.log('🔧 Trying alternative launch configuration...');
-        }
-      } else {
-        // Final attempt failed
-        console.error('❌ All app launch attempts failed');
-
-        // Provide better error context
-        const contextualError = new Error(
-          `App reset failed after ${maxLaunchAttempts} attempts. ` +
-            `Last error: ${errorMessage}. ` +
-            `This may indicate simulator issues, Metro bundler problems, or app build issues.`,
-        );
-
-        throw contextualError;
-      }
+    } else {
+      throw new Error(`App reset failed: ${errorMessage}`);
     }
   }
 }
