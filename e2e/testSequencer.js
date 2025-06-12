@@ -33,7 +33,7 @@ class IndependentTestSequencer extends TestSequencer {
       } else if (indexB !== -1) {
         return 1;
       } else {
-        return filenameA.localeCompare(filenameB);
+      return filenameA.localeCompare(filenameB);
       }
     });
     

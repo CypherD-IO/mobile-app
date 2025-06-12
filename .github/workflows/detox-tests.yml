@@ -147,13 +147,6 @@ jobs:
           pod --version
           echo "✅ CocoaPods $(pod --version) ready with VisionOS support"
 
-      - name: Clear CocoaPods cache
-        run: |
-          echo "=== Clearing CocoaPods cache ==="
-          pod cache clean --all || true
-          cd ios
-          rm -f Podfile.lock || true
-
       - name: Install CocoaPods dependencies
         run: |
           echo "=== Installing CocoaPods dependencies ==="
@@ -165,6 +158,8 @@ jobs:
             pod --version
           else
             echo "Cache miss or Podfile changed - installing pods..."
+            
+            # Only remove Podfile.lock if we're doing a fresh install
             rm -f Podfile.lock || true
             
             # Optimized pod install
@@ -213,47 +208,6 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
-      - name: Setup iOS Simulator (optimized)
-        run: |
-          echo "=== Fast iOS Simulator Setup ==="
-
-          # Quick simulator check and setup
-          DEVICE_NAME="iPhone 16"
-
-          # Find available iPhone 16 simulator
-          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' || echo "")
-
-          if [ -n "$DEVICE_ID" ]; then
-            echo "✅ Found iPhone 16 simulator: $DEVICE_ID"
-            
-            # Check if already booted
-            if xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "Booted"; then
-              echo "✅ Simulator already running"
-            else
-              echo "Booting simulator..."
-              xcrun simctl boot "$DEVICE_ID" || echo "Boot command issued"
-              
-              # Quick wait for boot (max 30s)
-              for i in {1..30}; do
-                if xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "Booted"; then
-                  echo "✅ Simulator booted in ${i}s"
-                  break
-                fi
-                sleep 1
-              done
-            fi
-          else
-            echo "Creating iPhone 16 simulator..."
-            RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\." | head -1 | awk '{print $NF}')
-            if [ -n "$RUNTIME" ]; then
-              DEVICE_ID=$(xcrun simctl create "iPhone 16 CI" "iPhone 16" "$RUNTIME")
-              xcrun simctl boot "$DEVICE_ID"
-              echo "✅ Created and booted new simulator: $DEVICE_ID"
-            fi
-          fi
-
-          echo "SIMULATOR_DEVICE_ID=$DEVICE_ID" >> $GITHUB_ENV
-
       - name: Optimize CI Environment for E2E Tests
         run: |
           echo "=== CI Environment Optimizations ==="
@@ -286,89 +240,6 @@ jobs:
           echo "  - Disk space: $(df -h . | tail -1 | awk '{print $4}') available"
 
           echo "✅ CI environment optimized for performance"
-
-      - name: Build iOS app for testing (optimized)
-        run: |
-          echo "=== Starting Optimized iOS Build ==="
-
-          # Set build environment for speed
-          export XCODE_XCCONFIG_FILE=""
-          export RCT_NO_LAUNCH_PACKAGER=1
-          export SKIP_BUNDLING=1
-
-          # Check if we can use cached build
-          if [ -d "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" ]; then
-            echo "✅ Found cached iOS build - verifying..."
-            
-            # Check if app bundle is valid and recent
-            if [ -f "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app/Info.plist" ]; then
-              LAST_MODIFIED=$(stat -f %m "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" 2>/dev/null || echo "0")
-              CURRENT_TIME=$(date +%s)
-              TIME_DIFF=$((CURRENT_TIME - LAST_MODIFIED))
-              
-              if [ $TIME_DIFF -lt 7200 ]; then  # Less than 2 hours old
-                echo "✅ Using valid cached build (less than 2 hours old)"
-                echo "Build cache age: $((TIME_DIFF / 60)) minutes"
-                
-                # Quick verification that the app can be launched
-                if xcrun simctl list devices | grep -q "Booted"; then
-                  echo "✅ Cached build verified - ready for tests"
-                  exit 0
-                fi
-              fi
-            fi
-          fi
-
-          # Function to build with optimizations
-          build_ios_optimized() {
-            echo "Building with optimization flags..."
-            
-            # Use xcodebuild directly for better control with parallel builds
-            xcodebuild \
-              -workspace ios/Cypherd.xcworkspace \
-              -scheme Cypherd \
-              -configuration Debug \
-              -destination 'platform=iOS Simulator,name=iPhone 16' \
-              -derivedDataPath ios/build \
-              -quiet \
-              -parallelizeTargets \
-              -jobs $(sysctl -n hw.ncpu) \
-              COMPILER_INDEX_STORE_ENABLE=NO \
-              ONLY_ACTIVE_ARCH=YES \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGN_IDENTITY="" \
-              PROVISIONING_PROFILE="" \
-              SWIFT_COMPILATION_MODE=singlefile \
-              build-for-testing
-          }
-
-          # Full build with retry logic
-          echo "Performing optimized build..."
-          max_attempts=2
-          attempt=1
-
-          while [ $attempt -le $max_attempts ]; do
-            echo "Build attempt $attempt of $max_attempts..."
-            
-            if build_ios_optimized; then
-              echo "✅ Build successful on attempt $attempt"
-              exit 0
-            else
-              echo "❌ Build failed on attempt $attempt"
-              
-              if [ $attempt -lt $max_attempts ]; then
-                echo "Cleaning up before retry..."
-                rm -rf ios/build/Build || true
-                sleep 5
-              fi
-              
-              attempt=$((attempt + 1))
-            fi
-          done
-
-          echo "❌ Build failed after $max_attempts attempts"
-          exit 1
-        timeout-minutes: 15
 
       - name: Create e2e environment file
         run: |
@@ -428,7 +299,7 @@ jobs:
 
       - name: Prepare iOS Simulator for E2E Tests
         run: |
-          echo "=== Preparing iOS Simulator ==="
+          echo "=== Preparing Metro Bundler for E2E Tests ==="
 
           # Wait a bit more for Metro to stabilize
           sleep 10
@@ -437,27 +308,28 @@ jobs:
           echo "Pre-warming React Native bundle..."
           curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true" > /dev/null || echo "Bundle pre-warm attempted"
 
-          # Ensure simulator is ready
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
-          if [ -n "$DEVICE_ID" ]; then
-            echo "✅ Simulator ready: $DEVICE_ID"
-          else
-            echo "⚠️ No booted iPhone 16 simulator found"
-          fi
+          echo "✅ Metro bundler prepared for tests"
 
       - name: Run E2E Tests - Full Parallel Suite
         run: |
           echo "=== Running All E2E Tests in Parallel ==="
-          echo "🚀 All tests are now independent and will run with optimized parallelization"
+          echo "🚀 Detox will handle app building and simulator management automatically"
 
-          # Set up test environment with optimizations
+          # Set up test environment with optimizations and better isolation
           export DETOX_ARTIFACTS_LOCATION="e2e/artifacts"
           export DETOX_CAPTURE_VIEW_HIERARCHY="enabled"
           export DETOX_TAKE_SCREENSHOTS="failing"
           export DETOX_RECORD_VIDEOS="none"  # Disable video recording to save time
           export DETOX_DISABLE_LOGS="true"   # Reduce logging overhead
 
-          mkdir -p e2e/artifacts/{screenshots,logs}
+          # Prevent file locking conflicts
+          export FORCE_COLOR=0  # Disable colors to reduce file I/O
+          export CI_PARALLEL_SAFE=true
+          export NODE_OPTIONS="--max-old-space-size=4096"
+
+          # Create unique artifact directories per test run
+          export DETOX_ARTIFACTS_LOCATION="e2e/artifacts/run-$(date +%s)"
+          mkdir -p "$DETOX_ARTIFACTS_LOCATION"/{screenshots,logs}
 
           # Verify Metro is running
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
@@ -472,37 +344,25 @@ jobs:
           echo "Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
           echo "Available disk space: $(df -h . | tail -1 | awk '{print $4}')"
 
-          # Monitor simulator status
-          echo "=== Simulator Status ==="
-          DEVICE_ID="$SIMULATOR_DEVICE_ID"
-          if [ -n "$DEVICE_ID" ]; then
-            SIMULATOR_STATE=$(xcrun simctl list devices | grep "$DEVICE_ID" | head -1)
-            echo "Active simulator: ${SIMULATOR_STATE:-Shutdown}"
-          else
-            echo "Active simulator: Shutdown"
-          fi
+          echo "=== Detox will automatically manage simulators and app building ==="
 
           # Run all tests in parallel with enhanced error handling
           set +e  # Don't exit immediately on error so we can capture logs
 
           echo "🏃‍♂️ Starting parallel execution of all E2E tests..."
           echo "Tests will run independently with the following configuration:"
-          echo "  - maxWorkers: 4 (full parallelization)"
+          echo "  - maxWorkers: 2 (reduced to prevent lockfile conflicts)"
           echo "  - testTimeout: 6 minutes per test"
-          echo "  - Each test includes complete setup (independent)"
+          echo "  - Detox handles: simulator setup, app building, and installation"
 
           # Add timeout monitoring in background (reduced timeout)
           (
             sleep 900 # 15 minutes total timeout for parallel execution
             echo "⚠️ E2E tests have been running for 15 minutes - this may indicate hanging"
-            if [ -n "$DEVICE_ID" ]; then
-              echo "Taking diagnostic screenshot..."
-              xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/timeout_diagnostic_$(date +%Y%m%d_%H%M%S).png" || echo "Could not take screenshot"
-            fi
           ) &
           TIMEOUT_PID=$!
 
-          # Run all tests in parallel (no pattern restrictions)
+          # Run all tests in parallel with better error handling
           npm run e2e:test:ios || TEST_EXIT_CODE=$?
 
           # Kill timeout monitor
@@ -522,30 +382,29 @@ jobs:
             echo "=== Metro bundler status ==="
             curl -s http://localhost:8081/status || echo "packager-status:running"
             
-            # Capture simulator logs for debugging
-            echo "=== Capturing simulator logs ==="
-            if [ -n "$DEVICE_ID" ]; then
-              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > e2e/artifacts/logs/simulator_logs.txt 2>/dev/null || echo "Could not capture logs"
-            fi
-            
-            # Take additional final screenshot with timestamp
-            if [ -n "$DEVICE_ID" ]; then
-              TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-              xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/final_state_${TIMESTAMP}.png" || echo "Could not take screenshot"
-            fi
+            # Capture simulator logs for debugging (Detox manages simulators)
+            echo "=== Capturing any available simulator logs ==="
+            xcrun simctl list devices | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' | while read DEVICE_ID; do
+              if [ -n "$DEVICE_ID" ]; then
+                xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > "$DETOX_ARTIFACTS_LOCATION"/logs/simulator_logs.txt 2>/dev/null || echo "Could not capture logs"
+                # Take screenshot of current state
+                TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+                xcrun simctl io "$DEVICE_ID" screenshot "$DETOX_ARTIFACTS_LOCATION/screenshots/final_state_${TIMESTAMP}.png" || echo "Could not take screenshot"
+              fi
+            done
             
             # Organize screenshots by test suite
             echo "=== Organizing test artifacts ==="
-            if [ -d "e2e/artifacts" ]; then
+            if [ -d "$DETOX_ARTIFACTS_LOCATION" ]; then
               # Count screenshots and logs
-              SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" 2>/dev/null | wc -l)
-              LOG_COUNT=$(find e2e/artifacts -name "*.log" 2>/dev/null | wc -l)
+              SCREENSHOT_COUNT=$(find "$DETOX_ARTIFACTS_LOCATION" -name "*.png" 2>/dev/null | wc -l)
+              LOG_COUNT=$(find "$DETOX_ARTIFACTS_LOCATION" -name "*.log" 2>/dev/null | wc -l)
               echo "📸 Captured        ${SCREENSHOT_COUNT} screenshots"
               echo "📝 Captured        ${LOG_COUNT} log files"
               
               # List all captured artifacts
               echo "=== Captured artifacts ==="
-              find e2e/artifacts -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" 2>/dev/null | sort
+              find "$DETOX_ARTIFACTS_LOCATION" -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" 2>/dev/null | sort
             fi
             
             # Exit with the original test failure code
