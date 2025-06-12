@@ -250,6 +250,29 @@ jobs:
 
           echo "✅ CI environment optimized for performance"
 
+      - name: Pre-build App for Detox (prevents parallel build conflicts)
+        run: |
+          echo "=== Pre-building App to Prevent Parallel Conflicts ==="
+
+          # Check if app already exists
+          APP_PATH="ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app"
+          if [ -f "$APP_PATH/Info.plist" ]; then
+            echo "✅ App binary already exists, skipping build"
+            ls -la "$APP_PATH"
+          else
+            echo "App binary not found, running single build to prevent parallel conflicts..."
+            # Use detox build once to avoid multiple workers building simultaneously
+            npx detox build --configuration ios.sim.debug
+            
+            if [ -f "$APP_PATH/Info.plist" ]; then
+              echo "✅ App built successfully"
+            else
+              echo "❌ Build failed - app binary still not found"
+              exit 1
+            fi
+          fi
+        timeout-minutes: 8
+
       - name: Create e2e environment file
         run: |
           echo "TEST_SEED_PHRASE=${{ secrets.E2E_TEST_SEED_PHRASE }}" > e2e/.env.test
@@ -319,10 +342,10 @@ jobs:
 
           echo "✅ Metro bundler prepared for tests"
 
-      - name: Run E2E Tests - Full Parallel Suite
+      - name: Run E2E Tests - Time-Optimized Strategy
         run: |
-          echo "=== Running All E2E Tests in Parallel ==="
-          echo "🚀 Detox will handle app building and simulator management automatically"
+          echo "=== Running E2E Tests with Time-Optimized Strategy ==="
+          echo "🚀 Optimized for 45-minute workflow timeout"
 
           # Set up test environment with optimizations
           export DETOX_ARTIFACTS_LOCATION="e2e/artifacts"
@@ -340,82 +363,79 @@ jobs:
             sleep 10
           fi
 
-          # Monitor system resources for CI debugging (abbreviated)
-          echo "=== CI System Resources Before Tests ==="
-          echo "CPU cores available: $(sysctl -n hw.ncpu)"
-          echo "Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
-          echo "Available disk space: $(df -h . | tail -1 | awk '{print $4}')"
+          # Monitor system resources (abbreviated for speed)
+          echo "=== CI System Resources ==="
+          echo "CPU: $(sysctl -n hw.ncpu) cores, Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024}')GB, Disk: $(df -h . | tail -1 | awk '{print $4}')"
 
-          echo "=== Detox will automatically manage simulators and app building ==="
+          # Time-optimized execution strategy
+          TEST_EXIT_CODE=1
 
-          # Run all tests in parallel with enhanced error handling
-          set +e  # Don't exit immediately on error so we can capture logs
+          # Strategy 1: Moderate parallelization (2 workers) - Conservative approach
+          echo "🔄 Strategy 1: 2 workers (8-minute timeout)"
+          export DETOX_MAX_WORKERS=2
+          set +e
 
-          echo "🏃‍♂️ Starting parallel execution of all E2E tests..."
-          echo "Tests will run independently with the following configuration:"
-          echo "  - maxWorkers: 4 (full parallelization)"
-          echo "  - testTimeout: 6 minutes per test"
-          echo "  - Detox handles: simulator setup, app building, and installation"
+          timeout 480 npm run e2e:test:ios  # 8 minutes
+          TEST_EXIT_CODE=$?
 
-          # Add timeout monitoring in background (reduced timeout)
-          (
-            sleep 900 # 15 minutes total timeout for parallel execution
-            echo "⚠️ E2E tests have been running for 15 minutes - this may indicate hanging"
-          ) &
-          TIMEOUT_PID=$!
-
-          # Run all tests in parallel (no pattern restrictions)
-          npm run e2e:test:ios || TEST_EXIT_CODE=$?
-
-          # Kill timeout monitor
-          kill $TIMEOUT_PID 2>/dev/null || true
-
-          # Capture the exit code
-          if [ -z "$TEST_EXIT_CODE" ]; then
-            TEST_EXIT_CODE=0
+          if [ $TEST_EXIT_CODE -eq 0 ]; then
+            echo "✅ Tests passed with 2 workers!"
+          elif [ $TEST_EXIT_CODE -eq 124 ]; then
+            echo "⏰ Strategy 1 timed out, trying sequential..."
+            
+            # Quick cleanup before fallback
+            pkill -f "jest.*e2e" || echo "No Jest processes"
+            pkill -f "node.*detox" || echo "No Detox processes"
+            sleep 3
+            
+            # Strategy 2: Sequential execution (1 worker) - Reliable fallback
+            echo "🔄 Strategy 2: Sequential execution (12-minute timeout)"
+            export DETOX_MAX_WORKERS=1
+            
+            timeout 720 npm run e2e:test:ios  # 12 minutes
+            TEST_EXIT_CODE=$?
+            
+            if [ $TEST_EXIT_CODE -eq 0 ]; then
+              echo "✅ Tests passed with sequential execution!"
+            elif [ $TEST_EXIT_CODE -eq 124 ]; then
+              echo "⏰ Strategy 2 also timed out"
+              TEST_EXIT_CODE=1
+            else
+              echo "❌ Strategy 2 failed with exit code: $TEST_EXIT_CODE"
+            fi
+          else
+            echo "❌ Strategy 1 failed with exit code: $TEST_EXIT_CODE"
+            echo "Skipping fallback due to non-timeout failure"
           fi
 
-          set -e  # Re-enable exit on error
+          set -e
 
           if [ $TEST_EXIT_CODE -ne 0 ]; then
-            echo "❌ E2E tests failed with exit code: $TEST_EXIT_CODE"
+            echo "❌ Tests failed. Exit code: $TEST_EXIT_CODE"
             
-            # Capture Metro logs
-            echo "=== Metro bundler status ==="
-            curl -s http://localhost:8081/status || echo "packager-status:running"
+            # Quick artifact capture
+            echo "=== Capturing artifacts ==="
+            curl -s http://localhost:8081/status || echo "Metro: unknown"
             
-            # Capture simulator logs for debugging (Detox manages simulators)
-            echo "=== Capturing any available simulator logs ==="
             xcrun simctl list devices | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' | while read DEVICE_ID; do
               if [ -n "$DEVICE_ID" ]; then
-                xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 5m > e2e/artifacts/logs/simulator_logs.txt 2>/dev/null || echo "Could not capture logs"
-                # Take screenshot of current state
                 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-                xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/final_state_${TIMESTAMP}.png" || echo "Could not take screenshot"
+                xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/final_${TIMESTAMP}.png" 2>/dev/null || echo "No screenshot"
               fi
             done
             
-            # Organize screenshots by test suite
-            echo "=== Organizing test artifacts ==="
             if [ -d "e2e/artifacts" ]; then
-              # Count screenshots and logs
               SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" 2>/dev/null | wc -l)
               LOG_COUNT=$(find e2e/artifacts -name "*.log" 2>/dev/null | wc -l)
-              echo "📸 Captured        ${SCREENSHOT_COUNT} screenshots"
-              echo "📝 Captured        ${LOG_COUNT} log files"
-              
-              # List all captured artifacts
-              echo "=== Captured artifacts ==="
-              find e2e/artifacts -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" 2>/dev/null | sort
+              echo "📸 Screenshots: ${SCREENSHOT_COUNT}, 📝 Logs: ${LOG_COUNT}"
             fi
             
-            # Exit with the original test failure code
             exit $TEST_EXIT_CODE
           else
-            echo "✅ All E2E tests passed successfully in parallel!"
-            echo "🎉 Parallel execution completed - all tests independent and successful"
+            echo "✅ E2E tests completed successfully!"
+            echo "🎉 Strategy: $(echo $DETOX_MAX_WORKERS) worker(s)"
           fi
-        timeout-minutes: 25
+        timeout-minutes: 22
 
       - name: Stop Metro Bundler
         if: always()

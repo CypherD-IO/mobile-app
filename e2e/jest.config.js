@@ -6,9 +6,11 @@ module.exports = {
   // Increase timeout for CI environment (individual tests may be longer now)
   testTimeout: process.env.CI ? 360000 : 180000, // 6 min CI, 3 min local (tests include import flow)
   
-  // Maximum parallel execution - all tests are now independent
-  // Use DETOX_MAX_WORKERS env var to override if lockfile issues persist
-  maxWorkers: process.env.DETOX_MAX_WORKERS ? parseInt(process.env.DETOX_MAX_WORKERS) : (process.env.CI ? 4 : 2),
+  // Dynamic parallel execution based on strategy
+  // DETOX_MAX_WORKERS overrides for progressive parallel strategy
+  maxWorkers: process.env.DETOX_MAX_WORKERS 
+    ? parseInt(process.env.DETOX_MAX_WORKERS) 
+    : (process.env.CI ? 2 : 1), // Default to 2 workers in CI, 1 locally (safer for Detox)
   maxConcurrency: 1, // Keep test cases within files sequential (safer for E2E)
   
   // Global setup and teardown
@@ -46,26 +48,26 @@ module.exports = {
   // Performance optimizations
   workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
   
-  // Better timeout handling for CI lockfile issues
+  // Enhanced timeout handling for Detox lockfile issues
   testEnvironmentOptions: {
-    teardownTimeout: process.env.CI ? 90000 : 30000, // Increase teardown timeout in CI to 1.5 minutes
+    teardownTimeout: process.env.CI ? 120000 : 30000, // 2 minutes in CI for cleanup
   },
   
-  // CI-specific optimizations for parallel execution
+  // CI-specific optimizations
   ...(process.env.CI && {
-    // Don't bail on first failure - let all parallel tests complete
+    // Don't bail on first failure - let all tests complete
     bail: false,
     // Longer timeout for tests that include full import flow
     testTimeout: 360000, // 6 minutes per test in CI
     testNamePattern: process.env.E2E_TEST_PATTERN,
     // Optimize for parallel execution
-    verbose: false, // Reduce log noise with multiple parallel tests
+    verbose: false, // Reduce log noise with multiple tests
     detectOpenHandles: false, // Disable to reduce CI overhead
     // Reduce memory usage in CI
     workerIdleMemoryLimit: '256MB',
-    // Extended teardown timeout for lockfile cleanup
+    // Extended teardown timeout for lockfile cleanup in CI
     testEnvironmentOptions: {
-      teardownTimeout: 120000, // 2 minutes for cleanup in CI to handle lockfile issues
+      teardownTimeout: 150000, // 2.5 minutes for cleanup in CI (extended for lockfile issues)
     },
   }),
 }; 
