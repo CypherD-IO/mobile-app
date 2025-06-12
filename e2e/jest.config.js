@@ -7,7 +7,8 @@ module.exports = {
   testTimeout: process.env.CI ? 360000 : 180000, // 6 min CI, 3 min local (tests include import flow)
   
   // Maximum parallel execution - all tests are now independent
-  maxWorkers: process.env.CI ? 4 : 2, // Use 4 workers in CI for full parallelization
+  // Use DETOX_MAX_WORKERS env var to override if lockfile issues persist
+  maxWorkers: process.env.DETOX_MAX_WORKERS ? parseInt(process.env.DETOX_MAX_WORKERS) : (process.env.CI ? 4 : 2),
   maxConcurrency: 1, // Keep test cases within files sequential (safer for E2E)
   
   // Global setup and teardown
@@ -45,6 +46,11 @@ module.exports = {
   // Performance optimizations
   workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
   
+  // Better timeout handling for CI lockfile issues
+  testEnvironmentOptions: {
+    teardownTimeout: process.env.CI ? 90000 : 30000, // Increase teardown timeout in CI to 1.5 minutes
+  },
+  
   // CI-specific optimizations for parallel execution
   ...(process.env.CI && {
     // Don't bail on first failure - let all parallel tests complete
@@ -57,5 +63,9 @@ module.exports = {
     detectOpenHandles: false, // Disable to reduce CI overhead
     // Reduce memory usage in CI
     workerIdleMemoryLimit: '256MB',
+    // Extended teardown timeout for lockfile cleanup
+    testEnvironmentOptions: {
+      teardownTimeout: 120000, // 2 minutes for cleanup in CI to handle lockfile issues
+    },
   }),
 }; 

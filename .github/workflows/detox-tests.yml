@@ -217,6 +217,16 @@ jobs:
           echo "DETOX_DISABLE_LOGS=true" >> $GITHUB_ENV
           echo "RCT_NO_LAUNCH_PACKAGER=1" >> $GITHUB_ENV
 
+          # Create Detox directories to prevent lockfile issues
+          echo "Setting up Detox environment..."
+          mkdir -p ~/Library/Detox
+          chmod 755 ~/Library/Detox
+
+          # Pre-create device registry to avoid race conditions
+          echo "{}" > ~/Library/Detox/device.registry.json
+          chmod 644 ~/Library/Detox/device.registry.json
+          echo "✅ Detox lockfile environment prepared"
+
           # Increase file descriptor limits for CI
           ulimit -n 4096 || echo "Could not increase file descriptor limit"
 
@@ -428,6 +438,11 @@ jobs:
 
           # Kill any hanging Node processes related to testing
           pkill -f "node.*detox" || echo "No Detox Node processes found"
+
+          # Clean up Detox lockfiles to prevent future issues
+          echo "Cleaning up Detox lockfiles..."
+          rm -f ~/Library/Detox/*.lock || echo "No Detox lockfiles to clean"
+          rm -f ~/Library/Detox/device.registry.json.lock || echo "No device registry lockfile"
 
           # Give processes time to clean up
           sleep 2
