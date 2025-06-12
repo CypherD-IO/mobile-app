@@ -1,4 +1,52 @@
-import { device, element, by, waitFor } from 'detox';
+import { device, element, by, waitFor, expect } from 'detox';
+
+/**
+ * Check if Metro bundler is accessible and ready
+ * @returns Promise<boolean> true if Metro is ready, false otherwise
+ */
+export async function checkMetroConnection(): Promise<boolean> {
+  try {
+    const response = await fetch('http://localhost:8081/status');
+    if (!response.ok) {
+      console.log('Metro status check failed:', response.status);
+      return false;
+    }
+
+    // Also check if bundle endpoint is accessible
+    const bundleResponse = await fetch(
+      'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
+      { method: 'HEAD' }, // Use HEAD to avoid downloading the full bundle
+    );
+
+    if (!bundleResponse.ok) {
+      console.log('Metro bundle endpoint check failed:', bundleResponse.status);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log('Metro connection failed:', error);
+    return false;
+  }
+}
+
+/**
+ * Enhanced app reset with Metro connection validation
+ */
+export async function resetAppWithMetroCheck(): Promise<void> {
+  // First verify Metro is ready
+  console.log('Checking Metro bundler connection before app reset...');
+  const isMetroReady = await checkMetroConnection();
+
+  if (!isMetroReady) {
+    console.log('⚠️ Metro bundler not ready, but proceeding with app reset...');
+  } else {
+    console.log('✅ Metro bundler is ready');
+  }
+
+  // Proceed with normal app reset
+  await resetAppCompletely();
+}
 
 /**
  * Handle iOS permission dialog by looking for permission text and clicking Allow
@@ -221,12 +269,20 @@ export async function resetAppCompletely(): Promise<void> {
         permissions: { notifications: 'YES', camera: 'YES' },
         launchArgs: {
           detoxHandleSystemAlerts: 'YES',
+          // Ensure Metro bundler connection for E2E tests
+          RCTDevLoadingViewGetLogLevel: '0', // Reduce loading view logs
+          'RCTBundleURLProvider.jsBundleURLForBundleRoot':
+            'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
           // Add CI-specific launch args to speed up startup
           ...(isCI && {
             detoxDisableHierarchyDump: 'YES',
             detoxDisableScreenshotOnFailure: 'YES',
           }),
         },
+        // Ensure the app connects to Metro bundler
+        url: isCI
+          ? 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false'
+          : undefined,
       }),
       new Promise((resolve, reject) =>
         setTimeout(
@@ -252,9 +308,11 @@ export async function resetAppCompletely(): Promise<void> {
           device.launchApp({
             newInstance: true,
             permissions: { notifications: 'YES', camera: 'YES' },
-            // Use minimal launch args similar to successful local runs
+            // Use minimal launch args similar to successful local runs but ensure Metro connection
             launchArgs: {
               detoxHandleSystemAlerts: 'YES',
+              'RCTBundleURLProvider.jsBundleURLForBundleRoot':
+                'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
             },
           }),
           new Promise((resolve, reject) =>

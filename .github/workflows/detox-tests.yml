@@ -400,30 +400,64 @@ jobs:
         run: |
           echo "=== Starting Metro Bundler for E2E Tests ==="
 
-          # Start Metro bundler in background
-          npx react-native start --reset-cache &
+          # Kill any existing Metro processes to avoid conflicts
+          pkill -f "node.*react-native.*start" || echo "No existing Metro processes found"
+          pkill -f "Metro" || echo "No existing Metro processes found"
+
+          # Clean Metro cache before starting
+          npx react-native start --reset-cache --port 8081 &
           METRO_PID=$!
           echo "Metro PID: $METRO_PID"
           echo $METRO_PID > metro.pid
 
-          # Wait for Metro to be ready
+          # Enhanced wait for Metro with better error handling
           echo "Waiting for Metro bundler to start..."
-          for i in {1..30}; do
+          MAX_ATTEMPTS=45  # 90 seconds total
+          ATTEMPT=0
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             if curl -s http://localhost:8081/status >/dev/null 2>&1; then
-              echo "✅ Metro bundler is ready"
-              break
+              echo "✅ Metro bundler is responding to status check"
+              
+              # Additional check: ensure bundle endpoint is also ready
+              if curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false" -o /dev/null; then
+                echo "✅ Metro bundler bundle endpoint is ready"
+                break
+              else
+                echo "Metro status OK but bundle not ready yet..."
+              fi
             fi
-            echo "Waiting for Metro... ($i/30)"
+            
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Waiting for Metro bundler... ($ATTEMPT/$MAX_ATTEMPTS)"
             sleep 2
           done
 
-          # Verify Metro is running
+          # Final verification
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
-            echo "❌ Metro bundler failed to start"
+            echo "❌ Metro bundler failed to start properly"
+            echo "Checking Metro process..."
+            ps aux | grep -i metro || echo "No Metro processes found"
+            echo "Checking Metro logs..."
+            jobs -l || echo "No background jobs"
             exit 1
           fi
 
-          echo "✅ Metro bundler started successfully"
+          echo "✅ Metro bundler started successfully and is ready for E2E tests"
+
+          # Pre-generate the bundle to speed up first app launch
+          echo "Pre-generating iOS bundle..."
+          curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false" > /tmp/ios_bundle_check.js
+          BUNDLE_SIZE=$(wc -c < /tmp/ios_bundle_check.js)
+          echo "iOS bundle size: $BUNDLE_SIZE bytes"
+
+          if [ $BUNDLE_SIZE -gt 1000 ]; then
+            echo "✅ iOS bundle generated successfully"
+          else
+            echo "⚠️ iOS bundle seems small, but continuing..."
+          fi
+
+          rm -f /tmp/ios_bundle_check.js
 
       - name: Prepare iOS Simulator for E2E Tests
         run: |
