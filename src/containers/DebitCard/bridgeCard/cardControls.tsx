@@ -1047,49 +1047,51 @@ export default function CardControls() {
               </CyDView>
 
               {/* Merchant Outlet */}
-              <CyDView className='flex flex-row items-center justify-between py-[16px] border-t border-n40'>
-                <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                  <CyDImage
-                    source={AppImages.MERCHANT_OUTLET_ICON}
-                    className='w-[32px] h-[32px]'
-                  />
-                  <CyDText className='text-[16px]'>Merchant Outlet</CyDText>
-                  <Tooltip
-                    isVisible={showMerchantOutletTooltip}
-                    content={
-                      <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
-                        <CyDText className='text-[14px] text-base400'>
-                          For in-store purchases where you physically present
-                          your card at retail locations, restaurants, and other
-                          point-of-sale terminals
-                        </CyDText>
-                      </CyDView>
+              {selectedCard?.type === CardType.PHYSICAL && (
+                <CyDView className='flex flex-row items-center justify-between py-[16px] border-t border-n40'>
+                  <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                    <CyDImage
+                      source={AppImages.MERCHANT_OUTLET_ICON}
+                      className='w-[32px] h-[32px]'
+                    />
+                    <CyDText className='text-[16px]'>Merchant Outlet</CyDText>
+                    <Tooltip
+                      isVisible={showMerchantOutletTooltip}
+                      content={
+                        <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
+                          <CyDText className='text-[14px] text-base400'>
+                            For in-store purchases where you physically present
+                            your card at retail locations, restaurants, and
+                            other point-of-sale terminals
+                          </CyDText>
+                        </CyDView>
+                      }
+                      onClose={() => setShowMerchantOutletTooltip(false)}
+                      placement='top'
+                      backgroundColor='transparent'
+                      useInteractionManager={true}
+                      contentStyle={{
+                        backgroundColor: 'transparent',
+                        borderWidth: 0,
+                      }}>
+                      <CyDTouchView
+                        onPress={() => setShowMerchantOutletTooltip(true)}>
+                        <CyDMaterialDesignIcons
+                          name='information-outline'
+                          size={16}
+                          className='text-n200'
+                        />
+                      </CyDTouchView>
+                    </Tooltip>
+                  </CyDView>
+                  <CyDSwitch
+                    value={channelControls.merchantOutlet}
+                    onValueChange={async () =>
+                      await handleChannelToggle('merchantOutlet')
                     }
-                    onClose={() => setShowMerchantOutletTooltip(false)}
-                    placement='top'
-                    backgroundColor='transparent'
-                    useInteractionManager={true}
-                    contentStyle={{
-                      backgroundColor: 'transparent',
-                      borderWidth: 0,
-                    }}>
-                    <CyDTouchView
-                      onPress={() => setShowMerchantOutletTooltip(true)}>
-                      <CyDMaterialDesignIcons
-                        name='information-outline'
-                        size={16}
-                        className='text-n200'
-                      />
-                    </CyDTouchView>
-                  </Tooltip>
+                  />
                 </CyDView>
-                <CyDSwitch
-                  value={channelControls.merchantOutlet}
-                  onValueChange={async () =>
-                    await handleChannelToggle('merchantOutlet')
-                  }
-                />
-              </CyDView>
+              )}
 
               {/* Apple Pay and Gpay */}
               <CyDView className='flex flex-row items-center justify-between py-[16px] border-t border-n40'>

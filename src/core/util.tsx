@@ -1314,7 +1314,8 @@ export function isPotentiallyDccOvercharged(txn: ICardTransaction): boolean {
     !txn.fxCurrencySymbol &&
     txn.type === CardTransactionTypes.DEBIT &&
     txn.tStatus !== ReapTxnStatus.DECLINED &&
-    txn.amount !== 0
+    txn.amount !== 0 &&
+    txn.channel !== 'ECOMMERCE'
   );
 }
 
