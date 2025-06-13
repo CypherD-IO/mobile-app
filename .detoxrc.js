@@ -82,11 +82,11 @@ module.exports = {
     },
     'android.emu.debug': {
       app: 'android.debug',
-      device: 'emulator'
+      device: 'android.emu.debug'
     },
     'android.emu.release': {
       app: 'android.release',
-      device: 'emulator'
+      device: 'android.emu.release'
     }
   },
 }; 
