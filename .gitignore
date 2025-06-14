@@ -60,6 +60,7 @@ yarn-error.log
 /ios/GoogleService-Info.plist
 /ios/sentry.properties
 /vendor/bundle/
+Gemfile.lock  # Avoid Ruby/Bundler version conflicts between local and CI
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
 # testing
@@ -70,8 +71,12 @@ DEVELOPER_GUIDE.md
 
 #vscode settings
 .env
+.env.test
 
 #android
 android/app/google-services.json
 android/sentry.properties
 
+
+#e2e
+artifacts

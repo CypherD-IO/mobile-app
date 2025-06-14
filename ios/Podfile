@@ -23,20 +23,14 @@ target 'Cypherd' do
     :hermes_enabled => false
   )
 
- 
-  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
-
-  pod 'react-native-randombytes', :path => '../node_modules/react-native-randombytes'
-
-  pod 'RNSentry', :path => '../node_modules/@sentry/react-native'
-
-  pod 'react-native-camera', :path => '../node_modules/react-native-camera'
-
-  pod 'react-native-view-shot', :path => '../node_modules/react-native-view-shot'
-
-  pod 'RNLocalize', :path => '../node_modules/react-native-localize'
-
-  pod 'react-native-compat', :path => '../node_modules/@walletconnect/react-native-compat'
+  # REMOVED DUPLICATE PODS - These are already auto-linked by React Native:
+  # - react-native-webview (auto-linked)
+  # - react-native-randombytes (auto-linked)  
+  # - RNSentry (auto-linked)
+  # - react-native-camera (auto-linked)
+  # - react-native-view-shot (auto-linked)
+  # - RNLocalize (auto-linked)
+  # - react-native-compat (auto-linked)
 
   # pod 'Firebase/Crashlytics'
 
@@ -55,11 +49,34 @@ target 'Cypherd' do
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
 
-    # Add this permissions specific code
+    # Comprehensive deployment target fix for all pod targets
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
+        
+        # Fix for bundle targets (code signing issues)
         if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
           config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        end
+        
+        # Set deployment target for ALL targets (including resource bundles)
+        # This ensures compatibility with GitHub Actions CI environment
+        current_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        minimum_target = '15.0'
+        
+        if current_target.nil? || Gem::Version.new(current_target) < Gem::Version.new(minimum_target)
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = minimum_target
+        end
+        
+        # Additional compatibility settings for newer Xcode versions
+        config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO' if config.name == 'Debug'
+      end
+    end
+    
+    # Fix for specific problematic pods that might need special handling
+    installer.pods_project.targets.each do |target|
+      if ['Sentry', 'Sentry-Sentry', 'RNCAsyncStorage-RNCAsyncStorage_resources'].include?(target.name)
+        target.build_configurations.each do |config|
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
         end
       end
     end

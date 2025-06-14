@@ -487,7 +487,7 @@ export default function OnBoardOpotions() {
         setModalVisible={setIsImportWalletModalVisible}>
         <CyDView className={'bg-n20 p-[16px] pb-[30px] rounded-t-[24px]'}>
           <CyDText className={'text-[20px] font-bold mt-[24px]'}>
-            {'Import Wallet Options '}
+            {'Import Wallet Options'}
           </CyDText>
           <CyDText className='mt-[2px] text-n200 text-[12px]'>
             {
