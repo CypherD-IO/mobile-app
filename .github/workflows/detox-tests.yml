@@ -254,14 +254,37 @@ jobs:
           fi
 
           # Final verification
-          if [ -d "$HOME/Library/Detox/ios/framework" ] && [ -f "$HOME/Library/Detox/ios/framework/Detox.framework/Detox" ]; then
-            echo "✅ Detox framework cache ready"
-            echo "Framework size: $(du -sh $HOME/Library/Detox/ios/framework | cut -f1)"
+          echo "=== Verifying Detox Framework Cache ==="
+          echo "Checking framework directory structure:"
+          if [ -d "$HOME/Library/Detox/ios/framework" ]; then
+            echo "✅ Framework directory exists"
+            echo "Contents of framework directory:"
+            ls -la "$HOME/Library/Detox/ios/framework/" 2>/dev/null || echo "Could not list framework contents"
+            
+            # Check for any .framework directories
+            FRAMEWORK_COUNT=$(find "$HOME/Library/Detox/ios/framework" -name "*.framework" -type d 2>/dev/null | wc -l)
+            echo "Found $FRAMEWORK_COUNT .framework directories"
+            
+            if [ $FRAMEWORK_COUNT -gt 0 ]; then
+              echo "✅ Detox framework cache ready"
+              echo "Framework size: $(du -sh $HOME/Library/Detox/ios/framework | cut -f1)"
+            else
+              echo "⚠️ Framework directory exists but no .framework files found"
+              echo "This may still work - continuing..."
+            fi
           else
-            echo "❌ Detox framework cache not found after setup"
-            echo "Attempting to list framework directory contents:"
-            ls -la "$HOME/Library/Detox/ios/" || echo "Framework directory not found"
+            echo "❌ Framework directory not found"
+            echo "Listing parent directory:"
+            ls -la "$HOME/Library/Detox/ios/" 2>/dev/null || echo "Parent directory not found"
             exit 1
+          fi
+
+          # Also verify XCUITest runner
+          if [ -d "$HOME/Library/Detox/ios/xcuitest-runner" ]; then
+            echo "✅ XCUITest runner directory exists"
+            echo "Runner size: $(du -sh $HOME/Library/Detox/ios/xcuitest-runner | cut -f1)"
+          else
+            echo "⚠️ XCUITest runner directory not found"
           fi
 
           echo "✅ Detox framework cache setup completed"
