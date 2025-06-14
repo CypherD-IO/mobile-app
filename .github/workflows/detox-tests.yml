@@ -216,6 +216,56 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
+      - name: Cache Detox Framework
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Detox/ios/framework
+            ~/Library/Detox/ios/xcuitest-runner
+          key: ${{ runner.os }}-detox-framework-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-detox-framework-
+
+      - name: Setup Detox Framework Cache
+        run: |
+          echo "=== Setting up Detox Framework Cache ==="
+
+          # Check if framework cache exists from previous cache restore
+          if [ -d "$HOME/Library/Detox/ios/framework" ] && [ -n "$(ls -A $HOME/Library/Detox/ios/framework 2>/dev/null)" ]; then
+            echo "✅ Detox framework cache restored from GitHub Actions cache"
+            
+            # Verify the cache is valid by checking for essential files
+            if [ -f "$HOME/Library/Detox/ios/framework/Detox.framework/Detox" ]; then
+              echo "✅ Framework cache validation successful - using cached version"
+            else
+              echo "⚠️ Framework cache incomplete - rebuilding..."
+              detox clean-framework-cache || echo "Clean cache failed"
+              detox build-framework-cache
+            fi
+          else
+            echo "Cache miss or empty - building Detox framework cache..."
+            
+            # Clean any corrupted framework cache first
+            detox clean-framework-cache || echo "No existing cache to clean"
+            
+            # Build the framework cache for iOS
+            echo "Building Detox framework cache..."
+            detox build-framework-cache
+          fi
+
+          # Final verification
+          if [ -d "$HOME/Library/Detox/ios/framework" ] && [ -f "$HOME/Library/Detox/ios/framework/Detox.framework/Detox" ]; then
+            echo "✅ Detox framework cache ready"
+            echo "Framework size: $(du -sh $HOME/Library/Detox/ios/framework | cut -f1)"
+          else
+            echo "❌ Detox framework cache not found after setup"
+            echo "Attempting to list framework directory contents:"
+            ls -la "$HOME/Library/Detox/ios/" || echo "Framework directory not found"
+            exit 1
+          fi
+
+          echo "✅ Detox framework cache setup completed"
+
       - name: Setup iOS Simulator (optimized)
         run: |
           echo "=== Fast iOS Simulator Setup ==="
