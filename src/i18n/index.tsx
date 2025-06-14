@@ -759,7 +759,7 @@ const resources = {
         'The requested chain is currently not supported. Please contact cypher support.',
       APPROVE_REQUEST: 'Approve Request',
       DEFAULT_AUTH_REMOVE:
-        'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Do you want to continue without authentication ?',
+        'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Clicking on "Proceed" will remove the exising wallet and you will be able to import the same wallet (if you have the seed phrase backed up) / create a new wallet without authentication.',
       PROCEED: 'PROCEED',
       DEFAULT_AUTH_REMOVE_TITLE: 'Authentication Removed',
       NO_CONTACTS_TEXT:
@@ -1699,7 +1699,7 @@ const resources = {
         'High forex markup fee of 5% - 15% charged by the merchant. To avoid such high charges, always choose the local currency at the card terminal or during ATM withdrawals.',
       OVERCHARGED: 'Overcharged',
       METAL_OUT_OF_STOCK:
-        'Our new batch of metal cards is now in production! You’ll be able to order your free Premium metal card in 4–6 weeks. We’ll notify you as soon as it’s ready.',
+        "Our new batch of metal cards is now in production! You'll be able to order your free Premium metal card in 4–6 weeks. We'll notify you as soon as it's ready.",
       YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY:
         'Your Premium benefits begin right away.',
       IMPORTANT: 'Important',
@@ -1726,6 +1726,20 @@ const resources = {
       WATCH_WALLET_READ_ONLY_DESCRIPTION:
         'Enter a wallet address to view the on-chain activity',
       TRACK_WALLET: 'Track Wallet',
+      CLOSE_APP: 'Close App',
+      BIOMETRIC_AUTH_CHANGED: 'Biometric Authentication Changed',
+      DELETE_WALLET_START_OVER: 'Delete Wallet & Start Over',
+      BIOMETRIC_AUTH_CHANGED_DESCRIPTION:
+        "We detected that your device's biometric authentication (FaceID/Fingerprint) has been modified or removed.",
+      BIOMETRIC_AUTH_TWO_OPTIONS: 'You have two options:',
+      BIOMETRIC_AUTH_OPTION_1_TITLE: 'Option 1: Restore Access',
+      BIOMETRIC_AUTH_OPTION_1_DESCRIPTION:
+        '• Go to your device Settings\n• Re-enable FaceID or Fingerprint authentication\n• Return to the app to access your existing wallet',
+      BIOMETRIC_AUTH_OPTION_2_TITLE: 'Option 2: Start Over',
+      BIOMETRIC_AUTH_OPTION_2_DESCRIPTION:
+        '• Delete current wallet data from this device\n• Import your existing wallet using your seed phrase\n• Or create a completely new wallet',
+      I_UNDERSTAND_THAT_CLICKING_DELETE_WALLET_START_OVER_WILL_PERMANENTLY_DELETE_MY_CURRENT_WALLET_DATA_AND_I_WILL_NEED_MY_SEED_PHRASE_TO_RECOVER_IT:
+        "I understand that clicking 'Delete Wallet & Start Over' will permanently delete my current wallet data and I will need my seed phrase to recover it.",
     },
   },
 };
