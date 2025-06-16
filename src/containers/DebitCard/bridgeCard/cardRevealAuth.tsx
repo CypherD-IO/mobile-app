@@ -159,7 +159,9 @@ export default function CardRevealAuthScreen() {
       triggerOTPParam,
     );
     if (
-      currentCardProvider === CardProviders.REAP_CARD &&
+      (card.cardProvider === CardProviders.REAP_CARD ||
+        card.cardProvider === CardProviders.RAIN_CARD ||
+        currentCardProvider === CardProviders.REAP_CARD) &&
       triggerOTPParam === 'verify/show-token'
     ) {
       try {

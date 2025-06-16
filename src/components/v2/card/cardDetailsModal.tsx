@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDImageBackground,
@@ -42,11 +42,6 @@ export default function CardDetailsModal({
   webviewUrl?: string;
   manageLimits?: () => void;
 }) {
-  const [showDetails, setShowDetails] = useState({
-    cardNumber: false,
-    expiry: false,
-    cvv: false,
-  });
   const [hideTimer, setHideTimer] = useState(0);
   const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
   const detailsAutoCloseTime = 60;
@@ -63,19 +58,9 @@ export default function CardDetailsModal({
     }
     if (!isModalVisible) {
       clearInterval(hideInterval);
-      setShowDetails({
-        cardNumber: false,
-        expiry: false,
-        cvv: false,
-      });
     }
     return () => {
       clearInterval(hideInterval);
-      setShowDetails({
-        cardNumber: false,
-        expiry: false,
-        cvv: false,
-      });
     };
   }, [isModalVisible]);
 
@@ -93,31 +78,116 @@ export default function CardDetailsModal({
     };
   };
 
-  const toggleCardDetail = (type: string) => {
-    switch (type) {
-      case 'cardNumber':
-        setShowDetails({
-          cardNumber: !showDetails.cardNumber,
-          expiry: false,
-          cvv: false,
-        });
-        break;
-      case 'expiry':
-        setShowDetails({
-          cardNumber: false,
-          expiry: !showDetails.expiry,
-          cvv: false,
-        });
-        break;
-      case 'cvv':
-        setShowDetails({
-          cardNumber: false,
-          expiry: false,
-          cvv: !showDetails.cvv,
-        });
-        break;
-    }
-  };
+  const RenderCardDetails = useCallback(
+    ({
+      card,
+      cardDetails,
+      webviewUrl,
+    }: {
+      card: Card;
+      cardDetails: {
+        cardNumber: string;
+        expiryMonth: string;
+        expiryYear: string;
+        cvv: string;
+      };
+      webviewUrl?: string;
+    }) => {
+      const copyToClipboard = (type: string) => {
+        switch (type) {
+          case 'cardNumber':
+            copyToClipboard(cardDetails.cardNumber);
+            break;
+          case 'expiry':
+            copyToClipboard(
+              cardDetails.expiryMonth + '/' + cardDetails.expiryYear,
+            );
+            break;
+          case 'cvv':
+            copyToClipboard(cardDetails.cvv);
+            break;
+        }
+        showToast('Copied to clipboard');
+      };
+      if (card.cardProvider === CardProviders.RAIN_CARD) {
+        return (
+          <CyDView className='w-full h-full flex flex-col justify-center p-[32px]'>
+            <CyDView className='mt-[-12px]'>
+              <CyDView className='flex flex-row items-center gap-[12px]'>
+                <CyDText className={clsx('text-[16px]')}>
+                  {cardDetails.cardNumber
+                    .match(/.{1,4}/g)
+                    ?.map((part, index) => (
+                      <CyDText key={index} className={clsx('text-[16px]')}>
+                        {part}
+                        {index < 3 ? ' ' : ''}
+                      </CyDText>
+                    ))}
+                </CyDText>
+                <CyDView className='flex flex-row items-center gap-[12px]'>
+                  <CyDTouchView onPress={() => copyToClipboard('cardNumber')}>
+                    <CyDMaterialDesignIcons
+                      name={'content-copy'}
+                      size={18}
+                      className='text-base400'
+                    />
+                  </CyDTouchView>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+            <CyDView className='flex flex-row items-center mt-[22px] gap-[54px]'>
+              <CyDView className='flex flex-row items-center gap-[8px]'>
+                <CyDText className='text-[12px] font-semibold'>Expiry</CyDText>
+                <CyDView className='flex flex-row justify-between items-center'>
+                  <CyDText className={clsx('text-[16px]')}>
+                    {cardDetails.expiryMonth + ' / ' + cardDetails.expiryYear}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+              <CyDView className='flex flex-row items-center gap-[8px]'>
+                <CyDText className='text-[12px] font-semibold'>CVV</CyDText>
+                <CyDView className='flex flex-row justify-between items-center'>
+                  <CyDText className={clsx('text-[16px]')}>
+                    {cardDetails.cvv}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+          </CyDView>
+        );
+      } else if (card.cardProvider === CardProviders.REAP_CARD && webviewUrl) {
+        return (
+          <CyDView className='w-full h-[220px] self-center'>
+            <WebView
+              renderLoading={() => {
+                return <Loading isTransparent={true} />;
+              }}
+              source={{ uri: webviewUrl }}
+              scalesPageToFit={true}
+              // eslint-disable-next-line react-native/no-inline-styles
+              style={{
+                height: '100%',
+                width: '100%',
+                backgroundColor: 'transparent',
+                padding: 12,
+                margin: 0,
+                borderRadius: 16,
+              }}
+              androidLayerType='software'
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              startInLoadingState={true}
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={true}
+            />
+          </CyDView>
+        );
+      }
+      return <></>;
+    },
+    [card.cardProvider, cardDetails, webviewUrl, isModalVisible],
+  );
 
   return (
     <CyDModalLayout
@@ -187,105 +257,6 @@ export default function CardDetailsModal({
     </CyDModalLayout>
   );
 }
-
-const RenderCardDetails = ({
-  card,
-  cardDetails,
-  webviewUrl,
-}: {
-  card: Card;
-  cardDetails: {
-    cardNumber: string;
-    expiryMonth: string;
-    expiryYear: string;
-    cvv: string;
-  };
-  webviewUrl?: string;
-}) => {
-  const copyToClipboard = (type: string) => {
-    switch (type) {
-      case 'cardNumber':
-        copyToClipboard(cardDetails.cardNumber);
-        break;
-      case 'expiry':
-        copyToClipboard(cardDetails.expiryMonth + '/' + cardDetails.expiryYear);
-        break;
-      case 'cvv':
-        copyToClipboard(cardDetails.cvv);
-        break;
-    }
-    showToast('Copied to clipboard');
-  };
-  if (card.cardProvider === CardProviders.RAIN_CARD) {
-    return (
-      <CyDView className='w-full h-full flex flex-col justify-center p-[32px]'>
-        <CyDView className='mt-[-12px]'>
-          <CyDView className='flex flex-row items-center gap-[12px]'>
-            <CyDText className={clsx('text-[20px]')}>
-              {cardDetails.cardNumber}
-            </CyDText>
-            <CyDView className='flex flex-row items-center gap-[12px]'>
-              <CyDTouchView onPress={() => copyToClipboard('cardNumber')}>
-                <CyDMaterialDesignIcons
-                  name={'content-copy'}
-                  size={18}
-                  className='text-base400'
-                />
-              </CyDTouchView>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-        <CyDView className='flex flex-row items-center mt-[22px] gap-[54px]'>
-          <CyDView className='flex flex-row items-center gap-[8px]'>
-            <CyDText className='text-[12px] font-semibold'>Expiry</CyDText>
-            <CyDView className='flex flex-row justify-between items-center'>
-              <CyDText className={clsx('text-[20px]')}>
-                {cardDetails.expiryMonth + ' / ' + cardDetails.expiryYear}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-          <CyDView className='flex flex-row items-center gap-[8px]'>
-            <CyDText className='text-[12px] font-semibold'>CVV</CyDText>
-            <CyDView className='flex flex-row justify-between items-center'>
-              <CyDText className={clsx('text-[20px]')}>
-                {cardDetails.cvv}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-      </CyDView>
-    );
-  } else if (card.cardProvider === CardProviders.REAP_CARD && webviewUrl) {
-    return (
-      <CyDView className='w-full h-[220px] self-center'>
-        <WebView
-          renderLoading={() => {
-            return <Loading isTransparent={true} />;
-          }}
-          source={{ uri: webviewUrl }}
-          scalesPageToFit={true}
-          // eslint-disable-next-line react-native/no-inline-styles
-          style={{
-            height: '100%',
-            width: '100%',
-            backgroundColor: 'transparent',
-            padding: 12,
-            margin: 0,
-            borderRadius: 16,
-          }}
-          androidLayerType='software'
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          allowFileAccess={true}
-          allowFileAccessFromFileURLs={true}
-          allowUniversalAccessFromFileURLs={true}
-        />
-      </CyDView>
-    );
-  }
-  return <></>;
-};
 
 const styles = StyleSheet.create({
   modalLayout: {

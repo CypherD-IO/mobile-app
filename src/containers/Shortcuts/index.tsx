@@ -42,6 +42,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import useAxios from '../../core/HttpRequest';
 
 interface IShortcutsData {
   index: number;
@@ -228,6 +229,7 @@ export default function ShortcutsModal() {
   );
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState<any>();
+  const { getFromOtherSource } = useAxios();
 
   const onSelectingShortCutItems = async (item: any) => {
     await logAnalyticsToFirebase(`shortcuts_button_${item.title}`);
@@ -552,8 +554,21 @@ export default function ShortcutsModal() {
     };
   }, [appState]);
 
-  const populateShortcutsData = () => {
+  const populateShortcutsData = async () => {
     const data = sortJSONArrayByKey(shortcutsData, 'index');
+    // disable exchange for GB
+    try {
+      const response = await getFromOtherSource('https://ipinfo.io/json');
+      if (response?.data) {
+        logAnalyticsToFirebase(AnalyticEvent.SHORTCUTS_BUTTON_CLICK, {
+          country: response?.data?.country,
+        });
+        if (response.data.country === 'GB') {
+          data.shift();
+          data.pop();
+        }
+      }
+    } catch (e) {}
     setSortedShortcutsData(data);
   };
 
