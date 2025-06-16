@@ -116,6 +116,7 @@ export default function ShortcutsModal() {
   >([]);
   const [isSignableTransaction] = useIsSignable();
 
+  // check populateShortcutsData if adding any options
   const emptyWalletShortcutsData: IShortcutsData[] = [
     {
       index: 0,
@@ -134,6 +135,7 @@ export default function ShortcutsModal() {
     },
   ];
 
+  // check populateShortcutsData if adding any options
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
     {
@@ -153,6 +155,7 @@ export default function ShortcutsModal() {
     },
   ];
 
+  // check populateShortcutsData if adding any options
   const buyOptionsData: IBuyOptionsData[] = [
     {
       index: 0,
@@ -189,6 +192,7 @@ export default function ShortcutsModal() {
     },
   ];
 
+  // check populateShortcutsData if adding any options
   const sellOptionsData: ISellOptionsData[] = [
     {
       index: 0,

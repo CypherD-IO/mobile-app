@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { CardProviders } from '../../../constants/enum';
 import WebView from 'react-native-webview';
 import Loading from '../loading';
+import { copyToClipboard as copyToClipboardUtil } from '../../../core/util';
 
 export default function CardDetailsModal({
   isModalVisible,
@@ -96,15 +97,15 @@ export default function CardDetailsModal({
       const copyToClipboard = (type: string) => {
         switch (type) {
           case 'cardNumber':
-            copyToClipboard(cardDetails.cardNumber);
+            copyToClipboardUtil(cardDetails.cardNumber);
             break;
           case 'expiry':
-            copyToClipboard(
+            copyToClipboardUtil(
               cardDetails.expiryMonth + '/' + cardDetails.expiryYear,
             );
             break;
           case 'cvv':
-            copyToClipboard(cardDetails.cvv);
+            copyToClipboardUtil(cardDetails.cvv);
             break;
         }
         showToast('Copied to clipboard');

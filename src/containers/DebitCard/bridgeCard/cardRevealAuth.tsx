@@ -161,7 +161,8 @@ export default function CardRevealAuthScreen() {
     if (
       (card.cardProvider === CardProviders.REAP_CARD ||
         card.cardProvider === CardProviders.RAIN_CARD ||
-        currentCardProvider === CardProviders.REAP_CARD) &&
+        currentCardProvider === CardProviders.REAP_CARD ||
+        currentCardProvider === CardProviders.RAIN_CARD) &&
       triggerOTPParam === 'verify/show-token'
     ) {
       try {
