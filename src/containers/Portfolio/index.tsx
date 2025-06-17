@@ -115,6 +115,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
   const [appState, setAppState] = useState<string>('');
+  const [backgroundTimestamp, setBackgroundTimestamp] = useState<number | null>(
+    null,
+  );
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
 
@@ -168,22 +171,55 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     return true;
   };
 
-  const appHandler = (changeType: string) => {
-    if (changeType === 'active' || changeType === 'background') {
-      if (hdWallet?.state.pinValue) {
-        setAppState(() => changeType);
+  const appHandler = useCallback(
+    (changeType: string) => {
+      if (changeType === 'active' || changeType === 'background') {
+        if (hdWallet?.state.pinValue) {
+          if (changeType === 'background') {
+            // Store timestamp when app goes to background
+            setBackgroundTimestamp(Date.now());
+          } else if (changeType === 'active') {
+            // Check grace period when app becomes active
+            const now = Date.now();
+            const gracePeriodMs = 2 * 60 * 1000; // 2 minutes in milliseconds
+
+            if (
+              backgroundTimestamp &&
+              now - backgroundTimestamp < gracePeriodMs
+            ) {
+              // Within grace period, don't show pin screen
+              setBackgroundTimestamp(null);
+              return;
+            }
+
+            // Grace period expired or no background timestamp, show pin screen
+            setBackgroundTimestamp(null);
+          }
+          setAppState(() => changeType);
+        }
       }
-    }
-  };
+    },
+    [hdWallet?.state.pinValue, backgroundTimestamp],
+  );
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', appHandler);
-    return () => subscription.remove();
-  }, []);
+    return () => {
+      subscription.remove();
+    };
+  }, [appHandler]);
 
   useEffect(() => {
     const isBackground = appState === 'background';
+    const isActive = appState === 'active';
+
     if (isBackground) {
+      // Don't navigate to PIN on background, just store timestamp (handled in appHandler)
+      return;
+    }
+
+    if (isActive) {
+      // Navigate to PIN screen when coming back to active (after grace period check)
       navigation.navigate(C.screenTitle.PIN, { lockScreen: true });
     }
   }, [appState]);
