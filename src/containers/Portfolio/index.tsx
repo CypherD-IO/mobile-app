@@ -115,9 +115,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
   const [appState, setAppState] = useState<string>('');
-  const [backgroundTimestamp, setBackgroundTimestamp] = useState<number | null>(
-    null,
-  );
+  const backgroundTimestampRef = useRef<number | null>(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
 
@@ -177,29 +175,29 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         if (hdWallet?.state.pinValue) {
           if (changeType === 'background') {
             // Store timestamp when app goes to background
-            setBackgroundTimestamp(Date.now());
+            backgroundTimestampRef.current = Date.now();
           } else if (changeType === 'active') {
             // Check grace period when app becomes active
             const now = Date.now();
             const gracePeriodMs = 2 * 60 * 1000; // 2 minutes in milliseconds
 
             if (
-              backgroundTimestamp &&
-              now - backgroundTimestamp < gracePeriodMs
+              backgroundTimestampRef.current &&
+              now - backgroundTimestampRef.current < gracePeriodMs
             ) {
               // Within grace period, don't show pin screen
-              setBackgroundTimestamp(null);
+              backgroundTimestampRef.current = null;
               return;
             }
 
             // Grace period expired or no background timestamp, show pin screen
-            setBackgroundTimestamp(null);
+            backgroundTimestampRef.current = null;
           }
           setAppState(() => changeType);
         }
       }
     },
-    [hdWallet?.state.pinValue, backgroundTimestamp],
+    [hdWallet?.state.pinValue],
   );
 
   useEffect(() => {
