@@ -18,7 +18,6 @@ import {
   NavigationProp,
   ParamListBase,
   RouteProp,
-  useIsFocused,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
@@ -30,7 +29,6 @@ import {
 import { Card } from '../../../models/card.model';
 import { t } from 'i18next';
 import { PinInput } from '../../../components/v2/pinInput';
-import { CyDIconsPack } from '../../../customFonts';
 
 interface RouteParams {
   onSuccess: () => void;
@@ -95,24 +93,23 @@ export default function CardUnlockAuth() {
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
-  const [timer, setTimer] = useState<NodeJS.Timer>();
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
   const { postWithAuth, patchWithAuth } = useAxios();
-  const isFocused = useIsFocused();
   const [otpValue, setOtpValue] = useState<string[]>(Array(4).fill(''));
   const [otpError, setOtpError] = useState<boolean>(false);
 
   useEffect(() => {
     void triggerOTP();
-  }, [isFocused]);
+  }, []);
 
+  // Cleanup timer on component unmount
   useEffect(() => {
-    if (resendInterval === 0) {
-      clearInterval(timer);
-    }
     return () => {
-      clearInterval(timer);
+      if (timer) {
+        clearInterval(timer);
+      }
     };
-  }, [resendInterval]);
+  }, [timer]);
 
   const triggerOTP = async () => {
     const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/${authType}`;
@@ -140,12 +137,19 @@ export default function CardUnlockAuth() {
     if (response) {
       setSendingOTP(false);
       let resendTime = resendOtpTime;
-      setTimer(
-        setInterval(() => {
-          resendTime--;
-          setResendInterval(resendTime);
-        }, 1000),
-      );
+      setResendInterval(resendTime);
+
+      const intervalId = setInterval(() => {
+        resendTime--;
+        setResendInterval(resendTime);
+
+        if (resendTime <= 0) {
+          clearInterval(intervalId);
+          setTimer(null);
+        }
+      }, 1000);
+
+      setTimer(intervalId);
     }
   };
 
