@@ -390,7 +390,10 @@ export default function CardScreen({
           />
           <RenderCardActions
             card={get(cardsWithUpgrade, currentCardIndex)}
-            cardProvider={currentCardProvider}
+            cardProvider={
+              get(cardsWithUpgrade, currentCardIndex)?.cardProvider ??
+              currentCardProvider
+            }
             navigation={navigation}
             refreshProfile={refreshProfile}
             onGetAdditionalCard={onGetAdditionalCard}
@@ -437,10 +440,13 @@ const RenderCardActions = ({
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   const { postWithAuth, patchWithAuth } = useAxios();
-  const [cardDetails, setCardDetails] =
-    useState<CardSecrets>(initialCardDetails);
-  const [showCardDetailsModal, setShowCardDetailsModal] =
-    useState<boolean>(false);
+  const [cardDetailsModal, setCardDetailsModal] = useState({
+    showCardDetailsModal: false,
+    card,
+    cardDetails: initialCardDetails,
+    webviewUrl: '',
+    userName: '',
+  });
   const [showHiddenCardModal, setShowHiddenCardModal] =
     useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
@@ -449,8 +455,6 @@ const RenderCardActions = ({
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(false);
   const { type, last4, status, cardId } = card;
   const isFocused = useIsFocused();
-  const [webviewUrl, setWebviewUrl] = useState('');
-  const [userName, setUserName] = useState('');
   const globalContext = useContext<any>(GlobalContext);
   const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
 
@@ -554,49 +558,42 @@ const RenderCardActions = ({
   };
 
   const validateReuseToken = async () => {
+    setIsFetchingCardDetails(true);
+    const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
     if (
-      cardProvider === CardProviders.REAP_CARD ||
-      card.type === CardType.VIRTUAL
+      (card.cardProvider || cardProfile.provider) === CardProviders.REAP_CARD &&
+      cardRevealReuseToken
     ) {
-      setIsFetchingCardDetails(true);
-      const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
-      if (cardProfile.provider && cardRevealReuseToken) {
-        const verifyReuseTokenUrl = `/v1/cards/${card.cardProvider}/card/${String(
-          cardId,
-        )}/verify/reuse-token`;
-        const payload = {
-          reuseToken: cardRevealReuseToken,
-          stylesheetUrl: `https://public.cypherd.io/css/${card.physicalCardType === PhysicalCardType.METAL ? 'cardRevealMobileOnMetal.css' : 'cardRevealMobileOnCard.css'}`,
-        };
-        try {
-          const response = await postWithAuth(verifyReuseTokenUrl, payload);
-          setIsFetchingCardDetails(false);
-          if (!response.isError) {
-            if (card.cardProvider === CardProviders.REAP_CARD) {
-              setWebviewUrl(trim(response.data.token, '"'));
-              setUserName(response.data.userName);
-              setShowCardDetailsModal(true);
-            } else {
-              void sendCardDetails(response.data);
-            }
+      const verifyReuseTokenUrl = `/v1/cards/${card.cardProvider}/card/${String(
+        cardId,
+      )}/verify/reuse-token`;
+      const payload = {
+        reuseToken: cardRevealReuseToken,
+        stylesheetUrl: `https://public.cypherd.io/css/${card.physicalCardType === PhysicalCardType.METAL ? 'cardRevealMobileOnMetal.css' : 'cardRevealMobileOnCard.css'}`,
+      };
+      try {
+        const response = await postWithAuth(verifyReuseTokenUrl, payload);
+        setIsFetchingCardDetails(false);
+        if (!response.isError) {
+          if (card.cardProvider === CardProviders.REAP_CARD) {
+            setCardDetailsModal({
+              ...cardDetailsModal,
+              showCardDetailsModal: true,
+              card,
+              webviewUrl: trim(response.data.token, '"'),
+              userName: response.data.userName,
+            });
           } else {
-            verifyWithOTP();
+            void sendCardDetails(response.data);
           }
-        } catch (e: any) {
+        } else {
           verifyWithOTP();
         }
-      } else {
+      } catch (e: any) {
         verifyWithOTP();
       }
     } else {
-      showModal('state', {
-        type: 'error',
-        title: ' ',
-        description:
-          'Reveal card feature for physical card has been disabled for your safety. Refer to your physical card for card details',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
+      verifyWithOTP();
     }
   };
 
@@ -640,9 +637,13 @@ const RenderCardActions = ({
         buffer,
       );
       const decryptedBuffer = decrypted.toString('utf8');
-      setWebviewUrl(trim(decryptedBuffer, '"'));
-      setUserName(userNameValue);
-      setShowCardDetailsModal(true);
+      setCardDetailsModal({
+        ...cardDetailsModal,
+        card,
+        showCardDetailsModal: true,
+        webviewUrl: trim(decryptedBuffer, '"'),
+        userName: userNameValue,
+      });
       setIsFetchingCardDetails(false);
       return decryptedBuffer;
     } catch (error) {}
@@ -655,6 +656,7 @@ const RenderCardActions = ({
     encryptedCvc,
     expirationMonth,
     expirationYear,
+    userNameValue,
   }: {
     secretKey: string;
     sessionId: string;
@@ -662,6 +664,7 @@ const RenderCardActions = ({
     encryptedCvc: { data: string; iv: string };
     expirationMonth: string;
     expirationYear: string;
+    userNameValue: string;
   }) => {
     try {
       setIsFetchingCardDetails(true);
@@ -681,8 +684,13 @@ const RenderCardActions = ({
         expiryYear: expirationYear,
         cardNumber: decryptedPan,
       };
-      setCardDetails(tempCardDetails);
-      setShowCardDetailsModal(true);
+      setCardDetailsModal({
+        ...cardDetailsModal,
+        card,
+        showCardDetailsModal: true,
+        cardDetails: tempCardDetails,
+        userName: userNameValue,
+      });
     } catch (error) {
       showModal('state', {
         type: 'error',
@@ -728,8 +736,12 @@ const RenderCardActions = ({
           expiryYear: result.expDate.slice(0, 4),
           cardNumber: result.pan.match(/.{1,4}/g).join(' '),
         };
-        setCardDetails(tempCardDetails);
-        setShowCardDetailsModal(true);
+        setCardDetailsModal({
+          ...cardDetailsModal,
+          card,
+          showCardDetailsModal: true,
+          cardDetails: tempCardDetails,
+        });
       }
     } else {
       showModal('state', {
@@ -940,13 +952,23 @@ const RenderCardActions = ({
   return (
     <CyDView className='w-full'>
       <CardDetailsModal
-        isModalVisible={showCardDetailsModal}
-        setShowModal={setShowCardDetailsModal}
-        card={card}
-        cardDetails={cardDetails}
-        webviewUrl={webviewUrl}
+        isModalVisible={cardDetailsModal.showCardDetailsModal}
+        setShowModal={(isModalVisible: boolean) => {
+          setCardDetailsModal({
+            ...cardDetailsModal,
+            cardDetails: initialCardDetails,
+            showCardDetailsModal: isModalVisible,
+          });
+        }}
+        card={cardDetailsModal.card}
+        cardDetails={cardDetailsModal.cardDetails}
+        webviewUrl={cardDetailsModal.webviewUrl}
         manageLimits={() => {
-          setShowCardDetailsModal(false);
+          setCardDetailsModal({
+            ...cardDetailsModal,
+            cardDetails: initialCardDetails,
+            showCardDetailsModal: false,
+          });
           setTimeout(() => {
             navigation.navigate(screenTitle.CARD_CONTROLS, {
               currentCardProvider: cardProvider,
@@ -954,7 +976,7 @@ const RenderCardActions = ({
             });
           }, MODAL_HIDE_TIMEOUT_250);
         }}
-        userName={userName}
+        userName={cardDetailsModal.userName}
       />
 
       <HiddenCardModal

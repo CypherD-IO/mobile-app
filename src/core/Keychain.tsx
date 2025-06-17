@@ -63,7 +63,6 @@ import { Dispatch, SetStateAction } from 'react';
 import { hostWorker } from '../global';
 import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
-import { cosmosConfig } from '../constants/cosmosConfig';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as bip39 from 'bip39';
@@ -75,6 +74,7 @@ import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
 import { get } from 'lodash';
 import { HDKey } from 'micro-ed25519-hdkey';
+import { cosmosConfig } from '../constants/cosmosConfig';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 10;
@@ -162,6 +162,7 @@ export async function _setInternetCredentialsOptions(
       await setInternetCredentials(key, key, value);
     }
   } catch (e) {
+    // TODO (user feedback): Give feedback to user.
     Sentry.captureException(e);
     Alert.alert(
       t('UNABLE_TO_CREATE_WALLET'),
@@ -202,16 +203,17 @@ export async function loadFromKeyChain(
   forceCloseOnFailure = false,
   showModal = () => {},
 ) {
+  // Retrieve the credentials
+  let requestMessage = '';
+  switch (key) {
+    case 'AUTHORIZE_WALLET_DELETION':
+      requestMessage = 'Requesting permission to delete the wallet';
+      break;
+    default:
+      requestMessage = 'Requesting access to continue using this app';
+  }
+
   try {
-    // Retrieve the credentials
-    let requestMessage = '';
-    switch (key) {
-      case 'AUTHORIZE_WALLET_DELETION':
-        requestMessage = 'Requesting permission to delete the wallet';
-        break;
-      default:
-        requestMessage = 'Requesting access to continue using this app';
-    }
     const credentials = await getInternetCredentials(key, {
       authenticationPrompt: {
         title: requestMessage,
@@ -224,10 +226,10 @@ export async function loadFromKeyChain(
       return _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
     }
   } catch (error: any) {
-    // TODO (user feedback): Give feedback to user.
+    // in iOS we are flexible with authentication methods as only 1 biometric is allowed in iOS, but in Android we show the default auth modal if the user is tying to access the keychain with a new biometric / passcode that the ones present at the time of saving the credentials.
     if (
       error.message === KeychainErrors.CODE_11 ||
-      error.message === KeychainErrors.USERNAME_OR_PASSPHRASE_NOT_CORRECT
+      error.message === KeychainErrors.CODE_8
     ) {
       showModal();
     } else if (error.message === KeychainErrors.CODE_1) {

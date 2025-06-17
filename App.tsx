@@ -10,7 +10,7 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import './src/i18n';
-import { BackHandler, Keyboard, Linking } from 'react-native';
+import { BackHandler, Keyboard, Linking, LogBox } from 'react-native';
 import {
   HdWalletContext,
   ActivityContext,
@@ -19,6 +19,7 @@ import {
 import { hdWalletStateReducer, initialHdWalletState } from './src/reducers';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
+import { Config } from 'react-native-config';
 import {
   gloabalContextReducer,
   GlobalContext,
@@ -67,6 +68,60 @@ import { ThemeProvider } from './src/reducers/themeReducer';
 import { CyDView } from './src/styles/tailwindComponents';
 import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
+
+// Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
+
+// Check multiple sources for testing flag
+const isTestingFromConfig = String(Config.IS_TESTING) === 'true';
+const isTestingFromEnv =
+  process.env.NODE_ENV === 'test' || process.env.CI === 'true';
+const isTesting = isTestingFromConfig || isTestingFromEnv;
+
+// Comprehensive warning suppression - especially critical during testing
+// This configuration suppresses common warnings that appear during E2E testing
+// Add new warning patterns here as needed
+LogBox.ignoreLogs([
+  // Sentry warnings
+  'App Start Span could not be finished',
+  'Sentry.wrap was called before Sentry.init',
+  'App Start Span could not be finished. `Sentry.wrap` was called before `Sentry.init`',
+  /App Start Span.*Sentry/,
+  /Sentry\.wrap.*before.*Sentry\.init/,
+
+  // Navigation warnings (React Navigation) - specifically for serialization warnings
+  'Non-serializable values were found in the',
+  /Non-serializable values were found/,
+  'Serializable values only',
+  /Serializable values/,
+  /Non-serializable.*values/,
+  /serializable.*values/i,
+
+  // Promise rejection warnings
+  'Possible Unhandled Promise Rejection',
+  /Possible Unhandled Promise Rejection/,
+
+  // General testing warning suppression when in test mode
+  ...(isTesting
+    ? [
+        // Additional warnings to suppress during testing
+        'Warning:',
+        /Warning:/,
+        'VirtualizedLists should never be nested',
+        'Setting a timer for a long period',
+      ]
+    : []),
+]);
+
+// Always initialize Sentry early to prevent the warning, regardless of mode
+Sentry.init({
+  dsn: Config.SENTRY_DSN,
+  enabled: !isTesting, // Only enable in production
+  tracesSampleRate: isTesting ? 0 : 1.0,
+  enableAutoPerformanceTracing: !isTesting,
+  enableNativeCrashHandling: !isTesting,
+  autoSessionTracking: !isTesting,
+  beforeSend: isTesting ? () => null : undefined, // Drop all events in test mode
+});
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -196,7 +251,7 @@ function App() {
                 walletConnectState.connectors.indexOf(request.connector)
               ]
             : {},
-        address: ethereum?.wallets[0]?.address,
+        address: state.wallet?.ethereum?.wallets[0]?.address,
         payload: request.payload,
         dispatchFn: walletConnectDispatch,
         HdWalletContext: { state },

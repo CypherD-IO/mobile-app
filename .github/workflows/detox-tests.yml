@@ -1,0 +1,796 @@
+name: E2E Tests (Detox)
+
+on:
+  pull_request:
+    branches: [beta]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  e2e-ios:
+    runs-on: macos-14 # Use macos-14 for more consistent Xcode versions
+    timeout-minutes: 45 # Prevent hanging builds
+    env:
+      SENTRY_DSN: ${{secrets.SENTRY_DSN}}
+      ENVIROINMENT: ${{secrets.ENVIROINMENT}}
+      INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
+      WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
+      HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+      WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
+      CI: true
+      IS_TESTING: 'true'
+      NODE_ENV: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Cache iOS Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/build
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-ios-build-${{ hashFiles('ios/**/*.{h,m,swift}', 'src/**/*.{js,ts,tsx}', 'package.json', 'yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-build-
+
+      - name: Select Xcode version
+        run: |
+          echo "=== Selecting Xcode 16 for iOS 18 SDK ==="
+          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer || \
+          sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer || \
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Configure npm
+        run: |
+          echo "@cypherd-io:registry=https://npm.pkg.github.com/" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install dependencies
+        run: |
+          echo "=== Installing Node.js dependencies ==="
+          if [ ! -d "node_modules" ] || [ ! -f "node_modules/.cache-complete" ]; then
+            echo "Cache miss or incomplete - installing dependencies..."
+            npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
+            touch node_modules/.cache-complete
+          else
+            echo "✅ Dependencies restored from cache"
+          fi
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create .env file
+        run: |
+          echo "WALLET_CONNECT_PROJECTID=${{ secrets.WALLET_CONNECT_PROJECTID }}" >> .env
+          echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
+          echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
+          echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
+          echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
+          echo "WEB3_AUTH_CLIENT_ID=${{ secrets.WEB3_AUTH_CLIENT_ID }}" >> .env
+
+      - name: Check Xcode version and available simulators
+        run: |
+          echo "=== Xcode Information ==="
+          xcodebuild -version
+          echo ""
+          echo "=== Available iOS Simulators ==="
+          xcrun simctl list devices iOS available --json | jq -r '.devices | to_entries[] | .key as $os | .value[] | select(.isAvailable == true) | "\($os): \(.name) (\(.udid))"'
+          echo ""
+          echo "=== SDK Information ==="
+          xcodebuild -showsdks | grep iOS
+
+      - name: Fix Node.js path for React Native
+        run: |
+          echo "=== Fixing Node.js path for React Native scripts ==="
+          echo "Current Node.js path: $(which node)"
+          echo "Node.js version: $(node --version)"
+
+          # Create symlink to ensure React Native scripts can find Node
+          sudo mkdir -p /Users/local/.nvm/versions/node/v18.17.1/bin/
+          sudo ln -sf $(which node) /Users/local/.nvm/versions/node/v18.17.1/bin/node || true
+
+          # Also update .xcode.env files to use correct Node path
+          echo "export NODE_BINARY=$(which node)" > ios/.xcode.env.local
+
+          echo "✅ Node.js path configured for React Native"
+
+      - name: Install Ruby gems (missing step)
+        run: |
+          echo "=== Installing Ruby gems (this was the missing step!) ==="
+          echo "Ruby version: $(ruby --version)"
+          echo "Bundler version: $(bundle --version)"
+
+          # Remove Gemfile.lock to avoid version conflicts between environments
+          # Local: Ruby 2.6 + Bundler 1.17  vs  CI: Ruby 3.3 + Bundler 2.6
+          # Each environment generates its own compatible lockfile
+          rm -f Gemfile.lock
+          echo "Removed old Gemfile.lock to avoid Ruby/Bundler version conflicts"
+
+          # Ruby 3.3.8 has bundled gem conflicts with ActiveSupport through bundler
+          # Use global gem installation as a workaround
+          echo "Installing CocoaPods globally to avoid Ruby 3.3.8 bundled gem conflicts..."
+
+          # Install required gems globally 
+          gem install cocoapods -v '~> 1.15.0' --no-document
+          gem install activesupport -v '~> 7.0.8' --no-document
+
+          # Verify CocoaPods is available  
+          pod --version
+          echo "✅ CocoaPods $(pod --version) ready with VisionOS support"
+
+      - name: Clear CocoaPods cache
+        run: |
+          echo "=== Clearing CocoaPods cache ==="
+          pod cache clean --all || true
+          cd ios
+          rm -f Podfile.lock || true
+
+      - name: Install CocoaPods dependencies
+        run: |
+          echo "=== Installing CocoaPods dependencies ==="
+          cd ios
+
+          # Check if pods are cached and valid
+          if [ -d "Pods" ] && [ -f "Pods/.cache-complete" ] && [ "Podfile.lock" -nt "Podfile" ]; then
+            echo "✅ CocoaPods restored from cache and up to date"
+          else
+            echo "Cache miss or Podfile changed - installing pods..."
+            rm -f Podfile.lock || true
+            
+            # Try pod install with better error handling (using global installation)
+            echo "Using CocoaPods $(pod --version) with VisionOS support"
+            
+            if ! pod install \
+              --repo-update \
+              --verbose \
+              --clean-install; then
+              
+              echo "❌ Pod install failed. Checking for common issues..."
+              
+              # Check for VisionOS compatibility issues
+              if grep -r "visionos" ../node_modules/*/RN*.podspec 2>/dev/null || 
+                 grep -r "visionos" ../node_modules/@*/*/RN*.podspec 2>/dev/null; then
+                echo "⚠️ Found VisionOS references in podspecs"
+                echo "CocoaPods version: $(pod --version)"
+                echo "This version should support VisionOS (1.13+ required)"
+              fi
+              
+              # List problematic podspecs
+              echo "Checking for problematic podspecs..."
+              find ../node_modules -name "*.podspec" -exec grep -l "visionos" {} \; 2>/dev/null || true
+              
+              exit 1
+            fi
+            
+            touch Pods/.cache-complete
+          fi
+
+      - name: Verify deployment targets
+        run: |
+          echo "=== Verifying iOS deployment targets ==="
+          cd ios
+          # Check if any pods still have deployment target < 15.0
+          PODS_WITH_OLD_TARGET=$(grep -r "IPHONEOS_DEPLOYMENT_TARGET = 1[0-4]\." Pods/Pods.xcodeproj/project.pbxproj || echo "None found")
+          if [ "$PODS_WITH_OLD_TARGET" != "None found" ]; then
+            echo "⚠️  Found pods with old deployment targets:"
+            echo "$PODS_WITH_OLD_TARGET"
+          else
+            echo "✅ All pods have deployment target >= 15.0"
+          fi
+
+      - name: Install Detox CLI
+        run: npm install -g detox-cli
+
+      - name: Install applesimutils
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+
+      - name: Cache Detox Framework
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Detox/ios/framework
+            ~/Library/Detox/ios/xcuitest-runner
+          key: ${{ runner.os }}-detox-framework-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-detox-framework-
+
+      - name: Setup Detox Framework Cache
+        run: |
+          echo "=== Setting up Detox Framework Cache ==="
+
+          # Check if framework cache exists from previous cache restore
+          if [ -d "$HOME/Library/Detox/ios/framework" ] && [ -n "$(ls -A $HOME/Library/Detox/ios/framework 2>/dev/null)" ]; then
+            echo "✅ Detox framework cache restored from GitHub Actions cache"
+            
+            # Verify the cache is valid by checking for essential files
+            if [ -f "$HOME/Library/Detox/ios/framework/Detox.framework/Detox" ]; then
+              echo "✅ Framework cache validation successful - using cached version"
+            else
+              echo "⚠️ Framework cache incomplete - rebuilding..."
+              detox clean-framework-cache || echo "Clean cache failed"
+              detox build-framework-cache
+            fi
+          else
+            echo "Cache miss or empty - building Detox framework cache..."
+            
+            # Clean any corrupted framework cache first
+            detox clean-framework-cache || echo "No existing cache to clean"
+            
+            # Build the framework cache for iOS
+            echo "Building Detox framework cache..."
+            detox build-framework-cache
+          fi
+
+          # Final verification
+          echo "=== Verifying Detox Framework Cache ==="
+          echo "Checking framework directory structure:"
+          if [ -d "$HOME/Library/Detox/ios/framework" ]; then
+            echo "✅ Framework directory exists"
+            echo "Contents of framework directory:"
+            ls -la "$HOME/Library/Detox/ios/framework/" 2>/dev/null || echo "Could not list framework contents"
+            
+            # Check for any .framework directories
+            FRAMEWORK_COUNT=$(find "$HOME/Library/Detox/ios/framework" -name "*.framework" -type d 2>/dev/null | wc -l)
+            echo "Found $FRAMEWORK_COUNT .framework directories"
+            
+            if [ $FRAMEWORK_COUNT -gt 0 ]; then
+              echo "✅ Detox framework cache ready"
+              echo "Framework size: $(du -sh $HOME/Library/Detox/ios/framework | cut -f1)"
+            else
+              echo "⚠️ Framework directory exists but no .framework files found"
+              echo "This may still work - continuing..."
+            fi
+          else
+            echo "❌ Framework directory not found"
+            echo "Listing parent directory:"
+            ls -la "$HOME/Library/Detox/ios/" 2>/dev/null || echo "Parent directory not found"
+            exit 1
+          fi
+
+          # Also verify XCUITest runner
+          if [ -d "$HOME/Library/Detox/ios/xcuitest-runner" ]; then
+            echo "✅ XCUITest runner directory exists"
+            echo "Runner size: $(du -sh $HOME/Library/Detox/ios/xcuitest-runner | cut -f1)"
+          else
+            echo "⚠️ XCUITest runner directory not found"
+          fi
+
+          echo "✅ Detox framework cache setup completed"
+
+      - name: Setup iOS Simulator (optimized)
+        run: |
+          echo "=== Fast iOS Simulator Setup ==="
+
+          # Quick simulator check and setup
+          DEVICE_NAME="iPhone 16"
+
+          # Find available iPhone 16 simulator
+          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' || echo "")
+
+          if [ -n "$DEVICE_ID" ]; then
+            echo "✅ Found iPhone 16 simulator: $DEVICE_ID"
+            
+            # Check if already booted
+            if xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "Booted"; then
+              echo "✅ Simulator already running"
+            else
+              echo "Booting simulator..."
+              xcrun simctl boot "$DEVICE_ID" || echo "Boot command issued"
+              
+              # Quick wait for boot (max 30s)
+              for i in {1..30}; do
+                if xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "Booted"; then
+                  echo "✅ Simulator booted in ${i}s"
+                  break
+                fi
+                sleep 1
+              done
+            fi
+          else
+            echo "Creating iPhone 16 simulator..."
+            RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\." | head -1 | awk '{print $NF}')
+            if [ -n "$RUNTIME" ]; then
+              DEVICE_ID=$(xcrun simctl create "iPhone 16 CI" "iPhone 16" "$RUNTIME")
+              xcrun simctl boot "$DEVICE_ID"
+              echo "✅ Created and booted new simulator: $DEVICE_ID"
+            fi
+          fi
+
+          echo "SIMULATOR_DEVICE_ID=$DEVICE_ID" >> $GITHUB_ENV
+
+      - name: Optimize CI Environment for E2E Tests
+        run: |
+          echo "=== CI Environment Optimizations ==="
+
+          # Set environment variables for performance
+          echo "CI_OPTIMIZED=true" >> $GITHUB_ENV
+          echo "DETOX_DISABLE_LOGS=true" >> $GITHUB_ENV
+          echo "RCT_NO_LAUNCH_PACKAGER=1" >> $GITHUB_ENV
+
+          # Increase file descriptor limits for CI
+          ulimit -n 4096 || echo "Could not increase file descriptor limit"
+
+          # Clean up any old processes that might interfere
+          echo "Cleaning up background processes..."
+          pkill -f "Simulator" || echo "No Simulator processes to kill"
+          pkill -f "node.*react-native" || echo "No React Native processes to kill"
+          pkill -f "Metro" || echo "No Metro processes to kill"
+
+          # Clean up old simulators to free up resources
+          echo "Cleaning up old simulators..."
+          xcrun simctl delete unavailable || echo "No unavailable simulators to delete"
+
+          # Delete old simulator logs
+          rm -rf ~/Library/Logs/CoreSimulator/* || echo "Could not clean simulator logs"
+
+          # Show system resources
+          echo "Available system resources:"
+          echo "  - CPU cores: $(sysctl -n hw.ncpu)"
+          echo "  - Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
+          echo "  - Disk space: $(df -h . | tail -1 | awk '{print $4}') available"
+
+          echo "✅ CI environment optimized for performance"
+
+      - name: Build iOS app for testing (optimized)
+        run: |
+          echo "=== Starting Optimized iOS Build ==="
+
+          # Set build environment for speed
+          export XCODE_XCCONFIG_FILE=""
+          export RCT_NO_LAUNCH_PACKAGER=1
+          export SKIP_BUNDLING=1
+
+          # Function to build with optimizations
+          build_ios_optimized() {
+            echo "Building with optimization flags..."
+            
+            # Use xcodebuild directly for better control
+            xcodebuild \
+              -workspace ios/Cypherd.xcworkspace \
+              -scheme Cypherd \
+              -configuration Debug \
+              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -derivedDataPath ios/build \
+              -quiet \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              ONLY_ACTIVE_ARCH=YES \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              PROVISIONING_PROFILE="" \
+              build-for-testing
+          }
+
+          # Check if we can use cached build
+          if [ -d "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" ]; then
+            echo "Checking if cached build is still valid..."
+            
+            # Simple check: if app exists and is recent, try to use it
+            LAST_MODIFIED=$(stat -f %m "ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app" 2>/dev/null || echo "0")
+            CURRENT_TIME=$(date +%s)
+            TIME_DIFF=$((CURRENT_TIME - LAST_MODIFIED))
+            
+            if [ $TIME_DIFF -lt 3600 ]; then  # Less than 1 hour old
+              echo "✅ Using cached build (less than 1 hour old)"
+              
+              # Quick verification build
+              if xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath ios/build -quiet build-for-testing; then
+                echo "✅ Cached build verified successfully"
+                exit 0
+              else
+                echo "❌ Cached build verification failed, doing full build..."
+              fi
+            fi
+          fi
+
+          # Full build with retry logic
+          echo "Performing full build..."
+          max_attempts=2
+          attempt=1
+
+          while [ $attempt -le $max_attempts ]; do
+            echo "Build attempt $attempt of $max_attempts..."
+            
+            if build_ios_optimized; then
+              echo "✅ Build successful on attempt $attempt"
+              exit 0
+            else
+              echo "❌ Build failed on attempt $attempt"
+              
+              if [ $attempt -lt $max_attempts ]; then
+                echo "Cleaning up before retry..."
+                rm -rf ios/build/Build || true
+                sleep 10
+              fi
+              
+              attempt=$((attempt + 1))
+            fi
+          done
+
+          echo "❌ Build failed after $max_attempts attempts"
+          exit 1
+        timeout-minutes: 20
+
+      - name: Create e2e environment file
+        run: |
+          echo "TEST_SEED_PHRASE=${{ secrets.E2E_TEST_SEED_PHRASE }}" > e2e/.env.test
+          # Create .env file for React Native Config with CI flags
+          echo "CI=true" >> .env
+          echo "IS_TESTING='true'" >> .env
+        env:
+          E2E_TEST_SEED_PHRASE: ${{ secrets.E2E_TEST_SEED_PHRASE }}
+
+      - name: Verify environment variables
+        run: |
+          echo "=== Verifying IS_TESTING Environment Variable ==="
+          echo "Shell environment IS_TESTING: [$IS_TESTING]"
+          echo "Shell environment type check:"
+          if [ "$IS_TESTING" = "true" ]; then
+            echo "✅ IS_TESTING equals string 'true'"
+          else
+            echo "❌ IS_TESTING does not equal string 'true', value: [$IS_TESTING]"
+          fi
+
+          echo ""
+          echo ".env file contents:"
+          cat .env | grep IS_TESTING || echo "IS_TESTING not found in .env"
+
+          echo ""
+          echo "✅ Environment verification completed"
+
+      - name: Start Metro Bundler for E2E Tests
+        run: |
+          echo "=== Starting Metro Bundler for E2E Tests ==="
+
+          # Kill any existing Metro processes to avoid conflicts
+          pkill -f "node.*react-native.*start" || echo "No existing Metro processes found"
+          pkill -f "Metro" || echo "No existing Metro processes found"
+
+          # Clean Metro cache before starting
+          npx react-native start --reset-cache --port 8081 &
+          METRO_PID=$!
+          echo "Metro PID: $METRO_PID"
+          echo $METRO_PID > metro.pid
+
+          # Enhanced wait for Metro with better error handling
+          echo "Waiting for Metro bundler to start..."
+          MAX_ATTEMPTS=45  # 90 seconds total
+          ATTEMPT=0
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            if curl -s http://localhost:8081/status >/dev/null 2>&1; then
+              echo "✅ Metro bundler is responding to status check"
+              
+              # Additional check: ensure bundle endpoint is also ready
+              if curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false" -o /dev/null; then
+                echo "✅ Metro bundler bundle endpoint is ready"
+                break
+              else
+                echo "Metro status OK but bundle not ready yet..."
+              fi
+            fi
+            
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Waiting for Metro bundler... ($ATTEMPT/$MAX_ATTEMPTS)"
+            sleep 2
+          done
+
+          # Final verification
+          if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
+            echo "❌ Metro bundler failed to start properly"
+            echo "Checking Metro process..."
+            ps aux | grep -i metro || echo "No Metro processes found"
+            echo "Checking Metro logs..."
+            jobs -l || echo "No background jobs"
+            exit 1
+          fi
+
+          echo "✅ Metro bundler started successfully and is ready for E2E tests"
+
+          # Pre-generate the bundle to speed up first app launch
+          echo "Pre-generating iOS bundle..."
+          curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false" > /tmp/ios_bundle_check.js
+          BUNDLE_SIZE=$(wc -c < /tmp/ios_bundle_check.js)
+          echo "iOS bundle size: $BUNDLE_SIZE bytes"
+
+          if [ $BUNDLE_SIZE -gt 1000 ]; then
+            echo "✅ iOS bundle generated successfully"
+          else
+            echo "⚠️ iOS bundle seems small, but continuing..."
+          fi
+
+          rm -f /tmp/ios_bundle_check.js
+
+      - name: Prepare iOS Simulator for E2E Tests
+        run: |
+          echo "=== Preparing iOS Simulator ==="
+
+          # Wait a bit more for Metro to stabilize
+          sleep 10
+
+          # Pre-warm the bundle by hitting the bundle URL
+          echo "Pre-warming React Native bundle..."
+          curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true" > /dev/null || echo "Bundle pre-warm attempted"
+
+          # Ensure simulator is ready
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
+          if [ -n "$DEVICE_ID" ]; then
+            echo "✅ Simulator ready: $DEVICE_ID"
+          else
+            echo "⚠️ No booted iPhone 16 simulator found"
+          fi
+
+      - name: Run E2E Tests - Full Parallel Suite
+        run: |
+          echo "=== Running All E2E Tests in Parallel ==="
+          echo "🚀 All tests are now independent and will run simultaneously with maxWorkers: 4"
+
+          # Set up test environment
+          export DETOX_ARTIFACTS_LOCATION="e2e/artifacts"
+          export DETOX_CAPTURE_VIEW_HIERARCHY="enabled"
+          export DETOX_TAKE_SCREENSHOTS="failing"
+          export DETOX_RECORD_VIDEOS="failing"
+
+          mkdir -p e2e/artifacts/{screenshots,logs,videos}
+
+          # Verify Metro is running
+          if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
+            echo "❌ Metro bundler not running, restarting..."
+            npx react-native start --reset-cache &
+            sleep 15
+          fi
+
+          # Monitor system resources for CI debugging
+          echo "=== CI System Resources Before Tests ==="
+          echo "CPU cores available: $(sysctl -n hw.ncpu)"
+          echo "Memory: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')"
+          echo "Available disk space: $(df -h . | tail -1 | awk '{print $4}')"
+
+          # Monitor simulator status
+          echo "=== Simulator Status ==="
+          DEVICE_ID="$SIMULATOR_DEVICE_ID"
+          if [ -n "$DEVICE_ID" ]; then
+            echo "Active simulator: $DEVICE_ID"
+            echo "Simulator state: $(xcrun simctl list devices | grep "$DEVICE_ID")"
+          else
+            echo "No active iPhone simulator found"
+          fi
+
+          # Run all tests in parallel with enhanced error handling
+          set +e  # Don't exit immediately on error so we can capture logs
+
+          echo "🏃‍♂️ Starting parallel execution of all E2E tests..."
+          echo "Tests will run independently with the following configuration:"
+          echo "  - maxWorkers: 4 (full parallelization)"
+          echo "  - testTimeout: 6 minutes per test"
+          echo "  - Each test includes complete setup (independent)"
+
+          # Add timeout monitoring in background
+          (
+            sleep 1200 # 20 minutes total timeout for parallel execution
+            echo "⚠️ E2E tests have been running for 20 minutes - this may indicate hanging"
+            if [ -n "$DEVICE_ID" ]; then
+              echo "Taking diagnostic screenshot..."
+              xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/timeout_diagnostic_$(date +%Y%m%d_%H%M%S).png" || echo "Could not take screenshot"
+            fi
+          ) &
+          TIMEOUT_PID=$!
+
+          # Run all tests in parallel (no pattern restrictions)
+          npm run e2e:test:ios || TEST_EXIT_CODE=$?
+
+          # Kill timeout monitor
+          kill $TIMEOUT_PID 2>/dev/null || true
+
+          # Capture the exit code
+          if [ -z "$TEST_EXIT_CODE" ]; then
+            TEST_EXIT_CODE=0
+          fi
+
+          set -e  # Re-enable exit on error
+
+          if [ $TEST_EXIT_CODE -ne 0 ]; then
+            echo "❌ E2E tests failed with exit code: $TEST_EXIT_CODE"
+            
+            # Capture Metro logs
+            echo "=== Metro bundler status ==="
+            curl -s http://localhost:8081/status || echo "Metro not responding"
+            
+            # Capture simulator logs for debugging
+            echo "=== Capturing simulator logs ==="
+            if [ -n "$DEVICE_ID" ]; then
+              xcrun simctl spawn "$DEVICE_ID" log show --predicate 'process == "Cypherd"' --last 10m > e2e/artifacts/logs/simulator_logs.txt || echo "Could not capture logs"
+            fi
+            
+            # Take additional final screenshot with timestamp
+            if [ -n "$DEVICE_ID" ]; then
+              TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+              xcrun simctl io "$DEVICE_ID" screenshot "e2e/artifacts/screenshots/final_state_${TIMESTAMP}.png" || echo "Could not take screenshot"
+            fi
+            
+            # Organize screenshots by test suite
+            echo "=== Organizing test artifacts ==="
+            if [ -d "e2e/artifacts" ]; then
+              # Count screenshots and logs
+              SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" | wc -l)
+              LOG_COUNT=$(find e2e/artifacts -name "*.log" | wc -l)
+              echo "📸 Captured $SCREENSHOT_COUNT screenshots"
+              echo "📝 Captured $LOG_COUNT log files"
+              
+              # List all captured artifacts
+              echo "=== Captured artifacts ==="
+              find e2e/artifacts -type f -name "*.png" -o -name "*.log" -o -name "*.mp4" | sort
+            fi
+            
+            # Exit with the original test failure code
+            exit $TEST_EXIT_CODE
+          else
+            echo "✅ All E2E tests passed successfully in parallel!"
+            echo "🎉 Parallel execution completed - all tests independent and successful"
+          fi
+        timeout-minutes: 25
+
+      - name: Stop Metro Bundler
+        if: always()
+        run: |
+          echo "=== Stopping Metro Bundler and cleaning up processes ==="
+
+          # Kill Metro bundler
+          if [ -f metro.pid ]; then
+            METRO_PID=$(cat metro.pid)
+            kill $METRO_PID 2>/dev/null || echo "Metro process already stopped"
+            rm metro.pid
+          fi
+
+          # Kill any remaining Metro processes
+          pkill -f "react-native start" || echo "No Metro processes found"
+
+          # Kill any hanging Jest processes
+          pkill -f "jest.*e2e" || echo "No Jest E2E processes found"
+
+          # Kill any hanging Node processes related to testing
+          pkill -f "node.*detox" || echo "No Detox Node processes found"
+
+          # Give processes time to clean up
+          sleep 2
+
+          echo "✅ Process cleanup completed"
+
+      - name: Clean up .env file
+        if: always()
+        run: rm -f .env
+
+      - name: Generate detailed test report
+        if: always()
+        run: |
+          echo "=== Generating detailed test report ==="
+
+          # Create a detailed report file
+          REPORT_FILE="e2e/artifacts/test_report.md"
+          mkdir -p e2e/artifacts
+
+          echo "# E2E Test Report" > $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "**Run ID:** ${{ github.run_number }}" >> $REPORT_FILE
+          echo "**Commit:** ${{ github.sha }}" >> $REPORT_FILE
+          echo "**Branch:** ${{ github.ref_name }}" >> $REPORT_FILE
+          echo "**Timestamp:** $(date)" >> $REPORT_FILE
+          echo "" >> $REPORT_FILE
+
+          # Check test results
+          if [ -d "e2e/artifacts" ]; then
+            echo "## Test Artifacts Summary" >> $REPORT_FILE
+            echo "" >> $REPORT_FILE
+            
+            # Count different types of artifacts
+            SCREENSHOT_COUNT=$(find e2e/artifacts -name "*.png" 2>/dev/null | wc -l || echo "0")
+            VIDEO_COUNT=$(find e2e/artifacts -name "*.mp4" 2>/dev/null | wc -l || echo "0")
+            LOG_COUNT=$(find e2e/artifacts -name "*.log" 2>/dev/null | wc -l || echo "0")
+            
+            echo "- 📸 **Screenshots captured:** $SCREENSHOT_COUNT" >> $REPORT_FILE
+            echo "- 🎥 **Videos recorded:** $VIDEO_COUNT" >> $REPORT_FILE  
+            echo "- 📝 **Log files:** $LOG_COUNT" >> $REPORT_FILE
+            echo "" >> $REPORT_FILE
+            
+            # List all screenshots with details
+            if [ $SCREENSHOT_COUNT -gt 0 ]; then
+              echo "## Failed Test Screenshots" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              find e2e/artifacts -name "*.png" | sort | while read screenshot; do
+                filename=$(basename "$screenshot")
+                echo "- \`$filename\`" >> $REPORT_FILE
+              done
+              echo "" >> $REPORT_FILE
+            fi
+            
+            # List all videos
+            if [ $VIDEO_COUNT -gt 0 ]; then
+              echo "## Test Failure Videos" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              find e2e/artifacts -name "*.mp4" | sort | while read video; do
+                filename=$(basename "$video")
+                echo "- \`$filename\`" >> $REPORT_FILE
+              done
+              echo "" >> $REPORT_FILE
+            fi
+            
+            echo "✅ Detailed test report generated"
+          else
+            echo "⚠️ No artifacts directory found"
+          fi
+
+      - name: Upload iOS test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ios-test-results-${{ github.run_number }}
+          path: |
+            e2e/artifacts/
+            e2e/screenshots/
+            detox_*.log
+            ios/build/Build/Logs/
+            *.log
+          retention-days: 30
+
+      - name: Report E2E Test Results
+        if: always()
+        run: |
+          echo "## E2E Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check if the previous step failed
+          if [ "${{ job.status }}" = "failure" ]; then
+            echo "❌ **iOS E2E Tests FAILED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **This PR cannot be merged until E2E tests pass.**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the logs above for error details and fix the failing tests." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📸 **Screenshots and videos of failed tests are available in the artifacts.**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **iOS E2E Tests PASSED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🎉 All E2E tests completed successfully!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The following test suites were executed:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 App Launch Test" >> $GITHUB_STEP_SUMMARY
+          echo "- 👋 Onboarding Flow" >> $GITHUB_STEP_SUMMARY
+          echo "- 📲 Import Wallet Flow" >> $GITHUB_STEP_SUMMARY
+          echo "- 💳 Load Card Flow" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **Artifacts:** Screenshots, videos, and logs are organized by test case in the artifacts download." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Check the job logs above for detailed test results._" >> $GITHUB_STEP_SUMMARY

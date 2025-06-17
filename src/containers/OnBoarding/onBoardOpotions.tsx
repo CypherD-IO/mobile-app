@@ -487,7 +487,7 @@ export default function OnBoardOpotions() {
         setModalVisible={setIsImportWalletModalVisible}>
         <CyDView className={'bg-n20 p-[16px] pb-[30px] rounded-t-[24px]'}>
           <CyDText className={'text-[20px] font-bold mt-[24px]'}>
-            {'Import Wallet Options '}
+            {'Import Wallet Options'}
           </CyDText>
           <CyDText className='mt-[2px] text-n200 text-[12px]'>
             {
@@ -551,9 +551,15 @@ export default function OnBoardOpotions() {
         </CyDText>
         <CyDKeyboardAwareScrollView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
           <CyDText className='text-[18px] font-semibold text-center'>
-            {'Log in or Sign up'}
+            {t('LOGIN_SIGN_UP')}
           </CyDText>
-          <CyDView className='mt-[24px]'>
+          <CyDView className='mt-[12px] mb-[32px]'>
+            <CyDText className='text-[14px] font-semibold'>
+              {t('CREATE_OR_CONNECT_WALLET')}
+            </CyDText>
+            <CyDText className='text-[12px] text-n200 mb-[12px] font-medium'>
+              {t('CREATE_OR_CONNECT_WALLET_DESCRIPTION')}
+            </CyDText>
             <CyDView className='bg-n0 p-[16px] rounded-[8px]'>
               {/* create wallet */}
               <CyDTouchView
@@ -627,16 +633,17 @@ export default function OnBoardOpotions() {
               </CyDTouchView>
             </CyDView>
 
-            <CyDView className='my-[16px] flex-row items-center justify-center gap-[4px]'>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
-              <CyDText className='text-[12px] font-medium text-n200'>
-                {'OR'}
+            <CyDView className='mt-[24px] mb-[12px]'>
+              <CyDText className='text-[14px] font-semibold'>
+                {t('CONTINUE_WITH_EMAIL')}
               </CyDText>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
+              <CyDText className='text-[12px] text-n200 font-medium'>
+                {t('CONTINUE_WITH_EMAIL_DESCRIPTION')}
+              </CyDText>
             </CyDView>
 
             <CyDText className='text-[12px] font-medium text-n200'>
-              {'Login with Email'}
+              {t('EMAIL')}
             </CyDText>
             <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
               <CyDTextInput
@@ -682,16 +689,17 @@ export default function OnBoardOpotions() {
               </CyDText>
             </CyDTouchView>
 
-            <CyDView className='my-[16px] flex-row items-center justify-center gap-[4px]'>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
-              <CyDText className='text-[12px] font-medium text-n200'>
-                {'OR'}
+            <CyDView className='mt-[24px] mb-[12px]'>
+              <CyDText className='text-[14px] font-semibold'>
+                {t('WATCH_WALLET_READ_ONLY')}
               </CyDText>
-              <CyDView className='flex-1 h-[1px] bg-n30' />
+              <CyDText className='text-[12px] text-n200 font-medium'>
+                {t('WATCH_WALLET_READ_ONLY_DESCRIPTION')}
+              </CyDText>
             </CyDView>
 
             <CyDTouchView
-              className='mt-[12px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px]'
+              className='mt-[12px] my-[24px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px]'
               onPress={() => {
                 navigation.navigate(screenTitle.TRACK_WALLET_SCREEN);
               }}>
@@ -701,7 +709,7 @@ export default function OnBoardOpotions() {
                 className='text-base400'
               />
               <CyDText className='text-[12px] font-medium text-base400'>
-                {'Track Wallet'}
+                {t('TRACK_WALLET')}
               </CyDText>
             </CyDTouchView>
           </CyDView>

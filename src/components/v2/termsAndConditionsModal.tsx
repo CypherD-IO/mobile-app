@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Linking, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
   CyDIcons,
   CyDMaterialDesignIcons,
@@ -20,8 +20,9 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import {
-  LEGAL_CYPHERHQ,
   RAIN_ACCOUNT_OPENING_PRIVACY_POLICY_URL,
+  RAIN_CARD_TERMS_INTL,
+  RAIN_CARD_TERMS_US,
   RAIN_E_SIGN_CONSENT_URL,
   TERMS_PRIVACY_POLICY_URL,
 } from '../../constants/data';
@@ -34,12 +35,14 @@ export default function TermsAndConditionsModal({
   onAgree,
   onCancel,
   cardProvider,
+  country = 'US',
 }: {
   isModalVisible: boolean;
   setIsModalVisible: (isModalVisible: boolean) => void;
   onAgree: () => void;
   onCancel: () => void;
   cardProvider: CardProviders;
+  country?: string;
 }) {
   const { t } = useTranslation();
   const { patchWithAuth } = useAxios();
@@ -66,6 +69,14 @@ export default function TermsAndConditionsModal({
       }
       setIsLoading(false);
     }
+  };
+
+  const handleLegalPress = (url: string) => {
+    setIsModalVisible(false);
+    navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
+      uri: url,
+      title: 'Terms of Service',
+    });
   };
 
   const RenderContent = useCallback(() => {
@@ -103,7 +114,7 @@ export default function TermsAndConditionsModal({
                 I accept the{' '}
                 <CyDText
                   className='text-blue-800'
-                  onPress={() => Linking.openURL(RAIN_E_SIGN_CONSENT_URL)}>
+                  onPress={() => handleLegalPress(RAIN_E_SIGN_CONSENT_URL)}>
                   E-Sign Consent
                 </CyDText>{' '}
               </CyDText>
@@ -140,7 +151,7 @@ export default function TermsAndConditionsModal({
                 <CyDText
                   className='text-blue-800'
                   onPress={() =>
-                    Linking.openURL(RAIN_ACCOUNT_OPENING_PRIVACY_POLICY_URL)
+                    handleLegalPress(RAIN_ACCOUNT_OPENING_PRIVACY_POLICY_URL)
                   }>
                   Account Opening Privacy Notice
                 </CyDText>{' '}
@@ -173,16 +184,22 @@ export default function TermsAndConditionsModal({
               </CyDTouchView>
 
               <CyDText className='px-[12px] text-[12px]'>
-                I accept the Cypher card{' '}
+                I accept the Cypher Card{' '}
                 <CyDText
                   className='text-blue-800'
-                  onPress={() => Linking.openURL(LEGAL_CYPHERHQ)}>
+                  onPress={() =>
+                    handleLegalPress(
+                      country === 'US'
+                        ? RAIN_CARD_TERMS_US
+                        : RAIN_CARD_TERMS_INTL,
+                    )
+                  }>
                   Terms and Conditions
                 </CyDText>{' '}
                 and{' '}
                 <CyDText
                   className='text-blue-800'
-                  onPress={() => Linking.openURL(TERMS_PRIVACY_POLICY_URL)}>
+                  onPress={() => handleLegalPress(TERMS_PRIVACY_POLICY_URL)}>
                   Privacy Policy
                 </CyDText>
               </CyDText>
@@ -338,7 +355,7 @@ export default function TermsAndConditionsModal({
         </CyDView>
       </CyDView>
     );
-  }, [setIsModalVisible, cardProvider, acceptRainTerms, hasConsent]);
+  }, [setIsModalVisible, cardProvider, acceptRainTerms, hasConsent, country]);
 
   return (
     <CyDModalLayout
