@@ -24,9 +24,10 @@ export default function Rewards() {
   const [loading, setLoading] = useState<boolean>(false);
   const { getWithAuth } = useAxios();
   const [rewardPoints, setRewardPoints] = useState({
-    total: 11564,
-    spend: 5064,
-    invites: 6500,
+    total: 0,
+    spend: 0,
+    invites: 0,
+    influencer: 0,
   });
 
   useEffect(() => {
@@ -41,17 +42,26 @@ export default function Rewards() {
       const spendRewards = Number(tempRewardPoints.userSpendRewards) || 0;
       const referralsSpendRewards =
         Number(tempRewardPoints.referralsSpendRewards) || 0;
+      const influencerRewards =
+        Number(tempRewardPoints.otherRewards?.influencerRewardPoints) || 0;
       const otherRewards =
         Object.entries(tempRewardPoints.otherRewards ?? {}).reduce(
-          (sum, [_, value]) => {
+          (sum, [key, value]) => {
+            // Exclude influencerRewardPoints from otherRewards as we're tracking it separately
+            if (key === 'influencerRewardPoints') return sum;
             return sum + Number(value ?? 0);
           },
           0,
         ) || 0;
       setRewardPoints({
-        total: spendRewards + referralsSpendRewards + otherRewards,
+        total:
+          spendRewards +
+          referralsSpendRewards +
+          otherRewards +
+          influencerRewards,
         spend: spendRewards,
         invites: referralsSpendRewards + otherRewards,
+        influencer: influencerRewards,
       });
     }
     setLoading(false);
@@ -123,8 +133,8 @@ export default function Rewards() {
                     {'Total Reward Balance'}
                   </CyDText>
                 </CyDView>
-                <CyDView className='flex flex-row items-center mt-[16px] gap-x-6'>
-                  <CyDView>
+                <CyDView className='flex flex-row flex-wrap items-center mt-[16px] gap-x-6 gap-y-4'>
+                  <CyDView className='min-w-[120px]'>
                     <CyDText className='text-[14px] font-bold text-n300'>
                       <LoaderWithText
                         value={rewardPoints.spend.toLocaleString()}
@@ -135,7 +145,7 @@ export default function Rewards() {
                       {'Rewards From Spend'}
                     </CyDText>
                   </CyDView>
-                  <CyDView>
+                  <CyDView className='min-w-[120px]'>
                     <CyDText className='text-[14px] font-bold text-n300'>
                       <LoaderWithText
                         value={rewardPoints.invites.toLocaleString()}
@@ -146,6 +156,19 @@ export default function Rewards() {
                       {'Rewards From Referral'}
                     </CyDText>
                   </CyDView>
+                  {rewardPoints.influencer > 0 && (
+                    <CyDView className='min-w-[120px]'>
+                      <CyDText className='text-[14px] font-bold text-n300'>
+                        <LoaderWithText
+                          value={rewardPoints.influencer.toLocaleString()}
+                          loaderSize={15}
+                        />
+                      </CyDText>
+                      <CyDText className='text-[12px] text-n200'>
+                        {'Influencer Reward Points'}
+                      </CyDText>
+                    </CyDView>
+                  )}
                 </CyDView>
               </CyDView>
             </CyDView>
@@ -203,7 +226,7 @@ export default function Rewards() {
                 />
                 <CyDView className='ml-[12px] flex flex-col ml-[50px]'>
                   <CyDText className='text-n90 text-[12px] font-bold'>
-                    {'We’re cooking something'}
+                    {"We're cooking something"}
                   </CyDText>
                   <CyDText className='text-[16px] font-bold'>
                     {'Coming Soon....'}
