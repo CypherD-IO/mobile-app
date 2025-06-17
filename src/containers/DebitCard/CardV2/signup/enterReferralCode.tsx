@@ -80,7 +80,7 @@ const EnterReferralCode = (): JSX.Element => {
     setLoading(true);
     try {
       const response = await postWithAuth('/v1/cards/referral-v2/validate', {
-        referralCode,
+        referralCode: referralCode.trim().toUpperCase(),
       });
 
       if (!response.isError) {

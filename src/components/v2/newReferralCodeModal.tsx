@@ -158,6 +158,13 @@ export default function NewReferralCodeModal({
     }
   }, [keyboardVisible, activeInput]);
 
+  // Expand modal when keyboard is shown
+  useEffect(() => {
+    if (keyboardVisible) {
+      animateToFullHeight();
+    }
+  }, [keyboardVisible]);
+
   const animateToFullHeight = () => {
     if (!isFullHeight) {
       setIsFullHeight(true);
@@ -283,10 +290,15 @@ export default function NewReferralCodeModal({
                         className='border border-n40 rounded-[8px] p-[12px] bg-n0 mt-[4px] flex-1'
                         placeholder={t('YOUR_CUSTOM_INVITE_CODE')}
                         value={values.code}
-                        onChangeText={handleChange('code')}
+                        onChangeText={text => {
+                          const upperCaseText = text.toUpperCase();
+                          handleChange('code')(upperCaseText);
+                          setCode(upperCaseText);
+                        }}
                         onBlur={handleBlur('code')}
                         autoFocus={false}
                         onFocus={() => setActiveInput('code')}
+                        autoCapitalize='characters'
                       />
                       <CyDTouchView
                         className='ml-[8px] p-[12px] border border-n40 rounded-[8px] bg-n0 mt-[4px]'
