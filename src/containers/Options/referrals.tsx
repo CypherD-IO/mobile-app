@@ -418,11 +418,6 @@ export default function Referrals() {
           className='w-[36px] h-[36px]'>
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
-        <CyDView className='flex-1 '>
-          <CyDText className='text-[16px] font-bold -ml-[16px] text-center'>
-            {t('REFERRALS')}
-          </CyDText>
-        </CyDView>
       </CyDView>
       <ScrollView className='mt-[16px]'>
         <CyDView className='flex flex-col px-[16px] mb-[24px]'>

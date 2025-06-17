@@ -43,6 +43,7 @@ import { parseErrorMessage } from '../core/util';
 import { CardDesign } from '../models/cardDesign.interface';
 import { IPlanData } from '../models/planData.interface';
 import Loading from '../containers/Loading';
+import Tooltip from 'react-native-walkthrough-tooltip';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -83,6 +84,7 @@ export default function SelectPlanModal({
   const { getWithAuth, patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const [loading, setLoading] = useState(false);
+  const [showUsdcTooltip, setShowUsdcTooltip] = useState(false);
 
   const [sliderValues, setSliderValues] = useState<{
     forex: number;
@@ -394,9 +396,40 @@ export default function SelectPlanModal({
                         {t('CRYPTO_LOAD_FEE')}
                       </CyDText>
                     </CyDView>
-                    <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                      {t('USDC_TOKEN')}
-                    </CyDText>
+                    <CyDView className='flex flex-row items-center mt-[10px] pl-[12px] h-[18px]'>
+                      <CyDText className='text-[12px] font-medium'>
+                        {t('USDC_TOKEN')}
+                      </CyDText>
+                      <Tooltip
+                        isVisible={showUsdcTooltip}
+                        content={
+                          <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
+                            <CyDText className='text-[14px] text-base400'>
+                              {t('USDC_LOAD_FEE_INFO', {
+                                premiumUSDCFee: proPlanData?.usdcFee,
+                                premiumNonUSDCFee: proPlanData?.nonUsdcFee,
+                                standardNonUSDCFee: freePlanData?.nonUsdcFee,
+                              })}
+                            </CyDText>
+                          </CyDView>
+                        }
+                        onClose={() => setShowUsdcTooltip(false)}
+                        placement='top'
+                        backgroundColor='transparent'
+                        useInteractionManager={true}
+                        contentStyle={{
+                          backgroundColor: 'transparent',
+                          borderWidth: 0,
+                        }}>
+                        <CyDTouchView onPress={() => setShowUsdcTooltip(true)}>
+                          <CyDMaterialDesignIcons
+                            name='information-outline'
+                            size={16}
+                            className='text-n200 ml-1'
+                          />
+                        </CyDTouchView>
+                      </Tooltip>
+                    </CyDView>
                     <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                       {t('OTHER_TOKENS')}
                     </CyDText>

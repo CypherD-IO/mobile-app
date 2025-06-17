@@ -1740,6 +1740,8 @@ const resources = {
         '• Delete current wallet data from this device\n• Import your existing wallet using your seed phrase\n• Or create a completely new wallet',
       I_UNDERSTAND_THAT_CLICKING_DELETE_WALLET_START_OVER_WILL_PERMANENTLY_DELETE_MY_CURRENT_WALLET_DATA_AND_I_WILL_NEED_MY_SEED_PHRASE_TO_RECOVER_IT:
         "I understand that clicking 'Delete Wallet & Start Over' will permanently delete my current wallet data and I will need my seed phrase to recover it.",
+      USDC_LOAD_FEE_INFO:
+        '{{premiumUSDCFee}}% USDC load fees for Premium users on Ethereum, Solana, Noble, Base, Polygon, Optimism, Arbitrum, Avalanche. USDC on BNB incurs {{premiumNonUSDCFee}}% (Premium) / {{standardNonUSDCFee}}% (Standard) fees.',
     },
   },
 };
