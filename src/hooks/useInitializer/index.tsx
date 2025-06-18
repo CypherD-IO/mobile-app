@@ -342,7 +342,6 @@ export default function useInitializer() {
           address: any;
           publicKey: any;
           algo: any;
-          rawAddress: Uint8Array | undefined;
         };
       }): void;
     },
@@ -362,10 +361,10 @@ export default function useInitializer() {
           const chainAccountList = accounts[chainName];
           chainAccountList.forEach(
             (addressDetail: {
-              address: any;
-              publicKey: any;
-              algo: any;
-              rawAddress: { [s: string]: number } | ArrayLike<number>;
+              address: string;
+              publicKey: string;
+              algo: string;
+              path: string;
             }) => {
               dispatch({
                 type: 'ADD_ADDRESS',
@@ -374,9 +373,7 @@ export default function useInitializer() {
                   address: addressDetail.address,
                   publicKey: addressDetail.publicKey,
                   algo: addressDetail.algo,
-                  rawAddress: addressDetail.rawAddress
-                    ? new Uint8Array(Object.values(addressDetail.rawAddress))
-                    : undefined,
+                  path: addressDetail.path,
                 },
               });
               set(attributes, `${chainName}Address`, addressDetail.address);
@@ -409,7 +406,6 @@ export default function useInitializer() {
                 address: get(_ethereum, 'address', ''),
                 publicKey: '',
                 algo: '',
-                rawAddress: undefined,
               },
             });
             Intercom.loginUserWithUserAttributes({
@@ -425,7 +421,6 @@ export default function useInitializer() {
                 address: undefined,
                 publicKey: '',
                 algo: '',
-                rawAddress: undefined,
               },
             });
             dispatch({
@@ -435,7 +430,6 @@ export default function useInitializer() {
                 address: undefined,
                 publicKey: '',
                 algo: '',
-                rawAddress: undefined,
               },
             });
           }

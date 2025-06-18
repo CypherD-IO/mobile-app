@@ -7,8 +7,8 @@ import { Dispatch } from 'react';
 export interface WalletKey {
   address: string | undefined;
   publicKey: Buffer | Uint8Array | string;
-  rawAddress?: string;
   algo?: string;
+  path?: string;
 }
 
 export class ChainWallet {
@@ -33,8 +33,14 @@ export class ChainWallet {
 
   public get publicKey(): Buffer | Uint8Array | string {
     return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
-      ? 'null'
+      ? ''
       : this.wallets[this.currentIndex].publicKey;
+  }
+
+  public get path(): string {
+    return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
+      ? ''
+      : (this.wallets[this.currentIndex].path ?? '');
   }
 }
 
@@ -66,6 +72,7 @@ type HdWalletAction =
         address: string;
         chain: string;
         publicKey: Buffer | Uint8Array | string;
+        path?: string;
       };
     }
   | {
@@ -74,8 +81,8 @@ type HdWalletAction =
         address: string;
         chain: string;
         publicKey: Buffer | Uint8Array | string;
-        rawAddress?: Uint8Array;
         algo?: string;
+        path?: string;
       };
     }
   | {
@@ -147,7 +154,7 @@ export function hdWalletStateReducer(
 ): HDWallet {
   switch (action.type) {
     case 'ADD_ADDRESS': {
-      const { address, chain, publicKey } = action.value;
+      const { address, chain, publicKey, path } = action.value;
 
       if (!address || address === 'IMPORTING' || !CHAIN_NAMES.includes(chain)) {
         return state;
@@ -162,7 +169,7 @@ export function hdWalletStateReducer(
 
       const updatedWallets = [
         ...existingChainWallet.wallets,
-        { address, publicKey },
+        { address, publicKey, path },
       ];
 
       const updatedWallet = {
@@ -180,7 +187,7 @@ export function hdWalletStateReducer(
       };
     }
     case 'LOAD_WALLET': {
-      const { address, chain, publicKey, rawAddress, algo } = action.value;
+      const { address, chain, publicKey, algo, path } = action.value;
 
       if (!isAddressSet(address) || !CHAIN_NAMES.includes(chain)) {
         return state;
@@ -195,8 +202,8 @@ export function hdWalletStateReducer(
             {
               address,
               publicKey,
-              rawAddress,
               algo,
+              path,
             },
           ],
         }),

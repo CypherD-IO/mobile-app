@@ -81,7 +81,7 @@ import Decimal from 'decimal.js';
 import { DecimalHelper } from '../utils/decimalHelper';
 import { Common, Hardfork } from '@ethereumjs/common';
 import { TransactionFactory } from '@ethereumjs/tx';
-import crypto, { randomBytes } from 'crypto';
+import crypto from 'crypto';
 import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { CardProfile } from '../models/cardProfile.model';
@@ -378,26 +378,6 @@ export const getTimeForDate = (
     minutes: min < 10 ? '0' + min.toString() : min.toString(),
     seconds: sec < 10 ? '0' + sec.toString() : sec.toString(),
   };
-};
-
-export const shuffleSeedPhrase = (array: string[]): string[] => {
-  let currentIndex = array.length;
-  let randomIndex;
-
-  // While there are remain elements to shuffle.
-  while (currentIndex !== 0) {
-    // Pick a remaining element.
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    // And swap it with the current element.
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
-  }
-
-  return array;
 };
 
 export const sortJSONArrayByKey = (array, key): [] => {

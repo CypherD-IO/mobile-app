@@ -11,14 +11,9 @@ import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 export const _generateWalletFromMnemonic = async (
   hdWalletContext: HdWalletContextDef,
   mnemonic: string,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  trk_event: string,
+  addressIndex: number,
 ) => {
-  const wallet = await generateWalletFromMnemonic(
-    mnemonic,
-    trk_event,
-    hdWalletContext.state.choosenWalletIndex,
-  );
+  const wallet = await generateWalletFromMnemonic(mnemonic, addressIndex);
   void saveCredentialsToKeychain(
     hdWalletContext,
     wallet,
@@ -26,13 +21,9 @@ export const _generateWalletFromMnemonic = async (
   );
 };
 
-export const createWallet = (hdWalletContext: HdWalletContextDef) => {
+export const createWallet = async (hdWalletContext: HdWalletContextDef) => {
   bip39.generateMnemonic().then(async (mnemonic: string) => {
-    await _generateWalletFromMnemonic(
-      hdWalletContext,
-      mnemonic,
-      'create_wallet',
-    );
+    await _generateWalletFromMnemonic(hdWalletContext, mnemonic, 0);
   });
 };
 
@@ -40,7 +31,11 @@ export const importWallet = async (
   hdWalletContext: HdWalletContextDef,
   mnemonic: string,
 ) => {
-  await _generateWalletFromMnemonic(hdWalletContext, mnemonic, 'import_wallet');
+  await _generateWalletFromMnemonic(
+    hdWalletContext,
+    mnemonic,
+    hdWalletContext.state.choosenWalletIndex,
+  );
 };
 
 export const importWalletFromEvmPrivateKey = async (
