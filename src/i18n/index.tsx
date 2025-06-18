@@ -1742,6 +1742,7 @@ const resources = {
         "I understand that clicking 'Delete Wallet & Start Over' will permanently delete my current wallet data and I will need my seed phrase to recover it.",
       USDC_LOAD_FEE_INFO:
         '{{premiumUSDCFee}}% USDC load fees for Premium users on Ethereum, Solana, Noble, Base, Polygon, Optimism, Arbitrum, Avalanche. USDC on BNB incurs {{premiumNonUSDCFee}}% (Premium) / {{standardNonUSDCFee}}% (Standard) fees.',
+      CYPHER_CARD_TERMS_CONDITIONS: 'Cypher Card Terms and Conditions',
     },
   },
 };

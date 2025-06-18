@@ -927,15 +927,14 @@ export const OSMOSIS_TO_ADDRESS_FOR_IBC_GAS_ESTIMATION =
   'osmo1xalq4sul7623pelmym39taknt0svyq63evw7zd';
 
 export const LEGAL_CYPHERHQ = 'https://cypherhq.io/legal';
-export const TERMS_PRIVACY_POLICY_URL =
-  'https://public.cypherd.io/docs/CypherD-Terms-Privacy-Policy.pdf';
+export const TERMS_PRIVACY_POLICY_URL = 'https://cypherhq.io/legal';
 export const RAIN_CARD_TERMS_INTL = 'https://cypherhq.io/legal-card-terms/';
 export const RAIN_CARD_TERMS_US = 'https://cypherhq.io/legal-card-terms-us/';
 
 export const RAIN_E_SIGN_CONSENT_URL =
   'https://cypherhq.io/legal-electronic-communications/';
 export const RAIN_ACCOUNT_OPENING_PRIVACY_POLICY_URL =
-  'https://cypherhq.io/legal/#privacy-policy';
+  'https://cypherhq.io/account-opening-privacy-policy-us/';
 
 export const chainExplorerMapping: Record<string, string> = {
   ETH: 'https://etherscan.io/tx/',

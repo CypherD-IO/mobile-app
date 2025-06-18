@@ -120,43 +120,45 @@ export default function TermsAndConditionsModal({
               </CyDText>
             </CyDView>
 
-            <CyDView className='flex flex-row w-full mt-[22px]'>
-              <CyDTouchView
-                className='flex flex-row items-center p-[8px] -m-[8px]'
-                onPress={() =>
-                  setAcceptRainTerms({
-                    ...acceptRainTerms,
-                    accountOpening: !acceptRainTerms.accountOpening,
-                  })
-                }>
-                <CyDView
-                  className={clsx(
-                    'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base400',
-                    {
-                      'bg-p150 border-p150': acceptRainTerms.accountOpening,
-                    },
-                  )}>
-                  {acceptRainTerms.accountOpening && (
-                    <CyDMaterialDesignIcons
-                      name='check-bold'
-                      size={16}
-                      className='text-n0'
-                    />
-                  )}
-                </CyDView>
-              </CyDTouchView>
-
-              <CyDText className='px-[12px] text-[12px]'>
-                I accept the{' '}
-                <CyDText
-                  className='text-blue-800'
+            {country === 'US' && (
+              <CyDView className='flex flex-row w-full mt-[22px]'>
+                <CyDTouchView
+                  className='flex flex-row items-center p-[8px] -m-[8px]'
                   onPress={() =>
-                    handleLegalPress(RAIN_ACCOUNT_OPENING_PRIVACY_POLICY_URL)
+                    setAcceptRainTerms({
+                      ...acceptRainTerms,
+                      accountOpening: !acceptRainTerms.accountOpening,
+                    })
                   }>
-                  Account Opening Privacy Notice
-                </CyDText>{' '}
-              </CyDText>
-            </CyDView>
+                  <CyDView
+                    className={clsx(
+                      'h-[20px] w-[20px] border-[1px] rounded-[4px] border-base400',
+                      {
+                        'bg-p150 border-p150': acceptRainTerms.accountOpening,
+                      },
+                    )}>
+                    {acceptRainTerms.accountOpening && (
+                      <CyDMaterialDesignIcons
+                        name='check-bold'
+                        size={16}
+                        className='text-n0'
+                      />
+                    )}
+                  </CyDView>
+                </CyDTouchView>
+
+                <CyDText className='px-[12px] text-[12px]'>
+                  I accept the{' '}
+                  <CyDText
+                    className='text-blue-800'
+                    onPress={() =>
+                      handleLegalPress(RAIN_ACCOUNT_OPENING_PRIVACY_POLICY_URL)
+                    }>
+                    Account Opening Privacy Notice
+                  </CyDText>{' '}
+                </CyDText>
+              </CyDView>
+            )}
             <CyDView className='flex flex-row w-full mt-[22px]'>
               <CyDTouchView
                 className='flex flex-row items-center p-[8px] -m-[8px]'
@@ -369,8 +371,11 @@ export default function TermsAndConditionsModal({
           'w-full bg-n0 p-[24px] pb-[48px] rounded-[22px] h-full',
         )}>
         <CyDSafeAreaView className='flex-1'>
-          <CyDView className='flex flex-row items-center'>
+          <CyDView className='flex flex-row items-start'>
             <CyDView className='flex w-full justify-center items-center'>
+              <CyDText className={'font-bold text-center text-[22px]'}>
+                {t('CYPHER_CARD')}
+              </CyDText>
               <CyDText className={'font-bold text-center text-[22px]'}>
                 {t('TERMS_CONDITIONS')}
               </CyDText>
