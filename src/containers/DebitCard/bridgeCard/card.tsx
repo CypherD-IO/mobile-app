@@ -390,10 +390,7 @@ export default function CardScreen({
           />
           <RenderCardActions
             card={get(cardsWithUpgrade, currentCardIndex)}
-            cardProvider={
-              get(cardsWithUpgrade, currentCardIndex)?.cardProvider ??
-              currentCardProvider
-            }
+            cardProvider={currentCardProvider}
             navigation={navigation}
             refreshProfile={refreshProfile}
             onGetAdditionalCard={onGetAdditionalCard}
