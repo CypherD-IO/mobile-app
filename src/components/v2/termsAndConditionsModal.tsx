@@ -272,7 +272,7 @@ export default function TermsAndConditionsModal({
               title={t('AGGREE_CONTINUE')}
               disabled={
                 !acceptRainTerms.eSign ||
-                !acceptRainTerms.accountOpening ||
+                (country === 'US' && !acceptRainTerms.accountOpening) ||
                 !acceptRainTerms.cypherTerms ||
                 !acceptRainTerms.infoConsent ||
                 !acceptRainTerms.unauthorizedSolicitation
