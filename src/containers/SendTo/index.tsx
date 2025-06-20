@@ -53,6 +53,7 @@ import {
   logAnalytics,
   parseErrorMessage,
   SendToAddressValidator,
+  extractAddressFromURI,
 } from '../../core/util';
 import useEns from '../../hooks/useEns';
 import useGasService from '../../hooks/useGasService';
@@ -113,6 +114,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
   const [isAddressValid, setIsAddressValid] = useState(true);
+  const [addressError, setAddressError] = useState<string>('');
   const [memo, setMemo] = useState<string>(t('SEND_TOKENS_MEMO'));
   const hdWalletContext = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
@@ -150,6 +152,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         nativeTokenSymbol: '',
       },
     });
+  const autoTriggerAttempted = useRef(false);
   const searchOptions = {
     isCaseSensitive: false,
     includeScore: true,
@@ -278,18 +281,52 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   useEffect(() => {
-    addressText !== '' &&
-      setIsAddressValid(
-        SendToAddressValidator(
-          chainDetails?.chainName,
-          chainDetails?.backendName,
-          addressText,
-        ),
+    if (addressText !== '') {
+      const isValid = SendToAddressValidator(
+        chainDetails?.chainName,
+        chainDetails?.backendName,
+        addressText,
       );
-    if (addressText === '') {
+      setIsAddressValid(isValid);
+
+      // Set appropriate error message if address is invalid
+      if (!isValid) {
+        let errorMessage = '';
+        switch (chainDetails?.chainName) {
+          case ChainNames.COSMOS:
+            errorMessage = t('NOT_VALID_COSMOS_ADDRESS');
+            break;
+          case ChainNames.OSMOSIS:
+            errorMessage = t('NOT_VALID_OSMOSIS_ADDRESS');
+            break;
+          case ChainNames.NOBLE:
+            errorMessage = t('NOT_VALID_NOBLE_ADDRESS');
+            break;
+          case ChainNames.COREUM:
+            errorMessage = t('NOT_VALID_COREUM_ADDRESS');
+            break;
+          case ChainNames.INJECTIVE:
+            errorMessage = t('NOT_VALID_INJECTIVE_ADDRESS');
+            break;
+          case ChainNames.ETH:
+            errorMessage = t('NOT_VALID_ETH_ADDRESS');
+            break;
+          case ChainNames.SOLANA:
+            errorMessage = t('NOT_VALID_SOLANA_ADDRESS');
+            break;
+          default:
+            errorMessage = t('INVALID_ADDRESS');
+            break;
+        }
+        setAddressError(errorMessage);
+      } else {
+        setAddressError('');
+      }
+    } else {
       setIsDropDown(false);
+      setAddressError('');
     }
-  }, [addressText]);
+  }, [addressText, chainDetails?.chainName, t]);
 
   useEffect(() => {
     if (isFocused) {
@@ -297,6 +334,30 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void fetchNativeTokenDetails();
     }
   }, [isFocused]);
+
+  // Auto-trigger send when address is pre-filled (from any source)
+  useEffect(() => {
+    if (
+      sendAddress &&
+      sendAddress !== '' &&
+      isAddressValid &&
+      isFocused &&
+      !loading &&
+      nativeTokenDetails && // Wait for native token details to load
+      Object.keys(addressDirectory).length > 0 && // Wait for address directory to load
+      !autoTriggerAttempted.current // Only trigger once
+    ) {
+      autoTriggerAttempted.current = true; // Mark as attempted
+      void submitSendTransaction();
+    }
+  }, [
+    sendAddress,
+    isAddressValid,
+    isFocused,
+    loading,
+    nativeTokenDetails,
+    addressDirectory,
+  ]);
 
   const fetchNativeTokenDetails = async () => {
     const nativeToken = await getNativeToken(chainDetails.backendName);
@@ -909,11 +970,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const onSuccess = async (readEvent: BarCodeReadEvent) => {
     let error = false;
     const content = readEvent.data;
-    // To handle metamask address: ethereum:0xBd1cD305900424CD4fAd1736a2B4d118c7CA935D@9001
-    const regEx = content.match(/(\b0x[a-fA-F0-9]{40}\b)/g);
-    // Check if multiple regEx occurences are matching like in case of scanning a coinbase QR
-    if (regEx?.length === 1 || regEx === null) {
-      const address = regEx && regEx.length === 1 ? regEx[0] : content;
+
+    // Extract address from URI schemes using utility function
+    const address = extractAddressFromURI(content);
+
+    // Validate the extracted address
+    if (address) {
       switch (chainDetails?.chainName) {
         case ChainNames.COSMOS:
           if (!isCosmosAddress(address)) {
@@ -993,7 +1055,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             showModal('state', {
               type: 'error',
               title: t('INVALID_ADDRESS'),
-              description: t('NOT_VALID_NOBLE_ADDRESS'),
+              description: t('NOT_VALID_SOLANA_ADDRESS'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -1005,6 +1067,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         setAddressText(address);
       }
     } else {
+      // No valid address could be extracted from the QR code
       showModal('state', {
         type: 'error',
         title: t('UNRECOGNIZED_QR_CODE'),
@@ -1031,9 +1094,30 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           tokenSendParams={tokenSendConfirmationParams.tokenSendParams}
         />
         <CyDView className='h-full mx-[20px] pt-[10px]'>
-          <CyDText className='text-[16px] font-semibold'>
-            {t<string>('ADDRESS')}
-          </CyDText>
+          {/* Address label with QR scanner icon */}
+          <CyDView className='flex flex-row justify-between items-center'>
+            <CyDText className='text-[16px] font-semibold'>
+              {t<string>('ADDRESS')}
+            </CyDText>
+            <CyDTouchView
+              className='flex flex-row justify-center items-center'
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+                  fromPage: QRScannerScreens.SEND,
+                  onSuccess,
+                });
+              }}>
+              <CyDMaterialDesignIcons
+                name='qrcode-scan'
+                size={20}
+                className='text-base400 mr-[5px]'
+              />
+              <CyDText className='text-[12px] font-medium text-base400'>
+                Scan
+              </CyDText>
+            </CyDTouchView>
+          </CyDView>
+          {/* Address input with paste icon */}
           <CyDView
             className={clsx(
               'flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-n40 rounded-[5px] px-[15px] py-[5px]',
@@ -1067,38 +1151,26 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
               className=''
               onPress={() => {
                 addressText === ''
-                  ? props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
-                      fromPage: QRScannerScreens.SEND,
-                      onSuccess,
-                    })
+                  ? void (async () => await fetchCopiedText())()
                   : setAddressText('');
               }}>
               <CyDMaterialDesignIcons
-                name={addressText === '' ? 'qrcode-scan' : 'close'}
+                name={addressText === '' ? 'content-paste' : 'close'}
                 size={20}
                 className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
+          {/* Display address validation error below input */}
+          {!isAddressValid && addressError && (
+            <CyDView className='w-full mt-[8px]'>
+              <CyDText className='text-red-500 text-[12px] font-medium text-left'>
+                {addressError}
+              </CyDText>
+            </CyDView>
+          )}
           {!isDropDown && (
             <CyDView className='flex-1 flex-col items-center'>
-              <CyDView
-                className={'flex flex-row w-[100%] justify-end mt-[15px]'}>
-                <CyDTouchView
-                  className={'flex flex-row justify-end items-start'}
-                  onPress={() => {
-                    void (async () => await fetchCopiedText())();
-                  }}>
-                  <CyDMaterialDesignIcons
-                    name={'content-copy'}
-                    size={14}
-                    className='text-base400 mr-[8px]'
-                  />
-                  <CyDText className={'text-[12px] font-bold'}>
-                    {t<string>('PASTE_CLIPBOARD')}
-                  </CyDText>
-                </CyDTouchView>
-              </CyDView>
               {isMemoNeeded() && (
                 <CyDView className='w-full mt-[25px]'>
                   <CyDText className='text-[16px] font-semibold'>
@@ -1172,8 +1244,17 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                 })();
               }}
               type={ButtonType.PRIMARY}
-              disabled={!isAddressValid || addressText === ''}
-              loading={loading}
+              disabled={
+                !isAddressValid ||
+                addressText === '' ||
+                !nativeTokenDetails ||
+                Object.keys(addressDirectory).length === 0
+              }
+              loading={
+                loading ||
+                !nativeTokenDetails ||
+                Object.keys(addressDirectory).length === 0
+              }
               style=' h-[60px] w-[90%]'
             />
           </CyDView>

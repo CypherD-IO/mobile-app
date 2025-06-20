@@ -48,12 +48,13 @@ import { DecimalHelper } from '../../utils/decimalHelper';
 import useGasService from '../../hooks/useGasService';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import ChooseTokenModalV2 from '../../components/v2/chooseTokenModalV2';
+import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
   const { route, navigation } = props;
-  const { sendAddress = '' } = route.params ?? {};
+  const { sendAddress = '', fromDeepLink = false } = route.params ?? {};
   const [tokenData, setTokenData] = useState<TokenMeta>(
     props?.route?.params?.tokenData,
   );
@@ -93,15 +94,23 @@ export default function EnterAmount(props: any) {
 
   useEffect(() => {
     if (isFocused) {
-      if (props.route.params?.tokenData) {
+      if (props?.route?.params?.tokenData) {
         setTokenData(props.route.params.tokenData);
       } else {
         setTimeout(() => {
           setIsChooseTokenVisible(true);
         }, CHOOSE_TOKEN_MODAL_TIMEOUT);
       }
+
+      // Track ethereum deep link analytics
+      if (fromDeepLink) {
+        void logAnalyticsToFirebase(AnalyticEvent.ETHEREUM_DEEPLINK_OPENED, {
+          destination_address: sendAddress,
+          has_token_preselected: !!props.route.params?.tokenData,
+        });
+      }
     }
-  }, [isFocused]);
+  }, [isFocused, fromDeepLink, sendAddress]);
 
   const getGasFee = async (
     chainName: string,
@@ -238,7 +247,22 @@ export default function EnterAmount(props: any) {
         valueForUsd: cryptoValue,
         tokenData,
         sendAddress,
+        fromDeepLink,
       });
+
+      // Track ethereum deep link send initiation
+      if (fromDeepLink) {
+        void logAnalyticsToFirebase(
+          AnalyticEvent.ETHEREUM_DEEPLINK_SEND_INITIATED,
+          {
+            destination_address: sendAddress,
+            token_symbol: tokenData.symbol,
+            token_chain: tokenData.chainDetails.chainName,
+            amount_crypto: cryptoValue,
+            amount_usd: usdValue,
+          },
+        );
+      }
     }
     setIsLoading(false);
   };
@@ -316,6 +340,7 @@ export default function EnterAmount(props: any) {
         tokenData,
         sendAddress,
         isMaxGasEstimation: true,
+        fromDeepLink,
       });
     } finally {
       setIsMaxLoading(false);
@@ -330,6 +355,17 @@ export default function EnterAmount(props: any) {
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           setTokenData(token);
+
+          // Track ethereum deep link token selection
+          if (fromDeepLink) {
+            void logAnalyticsToFirebase(
+              AnalyticEvent.ETHEREUM_DEEPLINK_TOKEN_SELECTED,
+              {
+                destination_address: sendAddress,
+                selected_token_symbol: token.symbol,
+              },
+            );
+          }
         }}
         setIsChooseTokenModalVisible={setIsChooseTokenVisible}
         onCancel={() => {

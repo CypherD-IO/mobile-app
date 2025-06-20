@@ -15,6 +15,7 @@ import {
   HdWalletContext,
   ActivityContext,
   referralLinkAnalytics,
+  extractAddressFromURI,
 } from './src/core/util';
 import { hdWalletStateReducer, initialHdWalletState } from './src/reducers';
 import analytics from '@react-native-firebase/analytics';
@@ -131,12 +132,47 @@ interface DeepLinkData {
     cardId?: string;
     currentCardProvider?: string;
     referralCode?: string;
+    referralCodeFromLink?: string;
+    sendAddress?: string;
+    fromDeepLink?: boolean;
   };
 }
 
 // Export this utility function for handling deep links
 export const handleDeepLink = async (url: string | null) => {
   if (!url) return null;
+
+  // Handle ethereum: URI scheme
+  if (url.startsWith('ethereum:')) {
+    // Extract address from ethereum:0x... format
+    const regEx = url.match(/(\b0x[a-fA-F0-9]{40}\b)/g);
+    const address = regEx && regEx.length > 0 ? regEx[0] : null;
+
+    if (address) {
+      return {
+        screenToNavigate: screenTitle.ENTER_AMOUNT,
+        params: {
+          sendAddress: address,
+          fromDeepLink: true,
+        },
+      };
+    }
+  }
+
+  // Handle solana: URI scheme using utility function
+  if (url.startsWith('solana:')) {
+    const address = extractAddressFromURI(url);
+
+    if (address) {
+      return {
+        screenToNavigate: screenTitle.ENTER_AMOUNT,
+        params: {
+          sendAddress: address,
+          fromDeepLink: true,
+        },
+      };
+    }
+  }
 
   if (url.includes('/card/referral/')) {
     const referralCode = url.split('/card/referral/')[1];
@@ -222,7 +258,12 @@ function App() {
   let renderContent: any = {};
 
   const linking: LinkingOptions<ReactNavigation.RootParamList> = {
-    prefixes: ['https://app.cypherhq.io', 'cypherwallet://'],
+    prefixes: [
+      'https://app.cypherhq.io',
+      'cypherwallet://',
+      'ethereum://',
+      'solana://',
+    ],
     config: {
       screens: {
         [screenTitle.PORTFOLIO]: '*',

@@ -76,8 +76,6 @@ if (
   isIOS() &&
   error.message === KeychainErrors.USERNAME_OR_PASSPHRASE_NOT_CORRECT
 ) {
-  console.log('iOS USERNAME_OR_PASSPHRASE_NOT_CORRECT error detected');
-
   // Check if biometric authentication is still available
   const isBiometricStillAvailable = await isBiometricEnabled();
 

@@ -10,10 +10,16 @@ import AppImages from '../../assets/images/appImages';
 import { get } from 'lodash';
 import clsx from 'clsx';
 import { useNavigation } from '@react-navigation/native';
-import { CardProviders, CardType, CypherPlanId } from '../constants/enum';
+import {
+  CardProviders,
+  CardStatus,
+  CardType,
+  CypherPlanId,
+} from '../constants/enum';
 import { screenTitle } from '../constants';
 import { CardProfile } from '../models/cardProfile.model';
 import { CardDesign } from '../models/cardDesign.interface';
+import { Card } from '../models/card.model';
 
 export const GetPhysicalCardComponent = ({
   cardProfile,
@@ -35,10 +41,17 @@ export const GetPhysicalCardComponent = ({
     ['metal', 0, 'isStockAvailable'],
     false,
   );
+  const hasHiddenCard = cards.some(
+    (card: Card) => card.status === CardStatus.HIDDEN,
+  );
   const isMetalFreeCardEligible =
-    metalCardCount > 0 && metalCardFee === 0 && metalCardStockAvailable;
+    !hasHiddenCard &&
+    metalCardCount > 0 &&
+    metalCardFee === 0 &&
+    metalCardStockAvailable;
   const showGetFirstPvcCard =
-    !cards.some((card: any) => card.type === CardType.PHYSICAL) &&
+    !hasHiddenCard &&
+    !cards.some((card: Card) => card.type === CardType.PHYSICAL) &&
     !isMetalFreeCardEligible &&
     get(cardProfile, ['planInfo', 'planId'], '') !== CypherPlanId.PRO_PLAN &&
     get(cardDesignData, ['allowedCount', CardType.PHYSICAL], 0) > 0 &&

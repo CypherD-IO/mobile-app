@@ -43,6 +43,26 @@
 			</array>
 		</dict>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.cypherd.ioswalletv1.ethereum</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ethereum</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.cypherd.ioswalletv1.solana</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>solana</string>
+			</array>
+		</dict>
+		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>app.cypherhq.web3auth</string>

@@ -118,6 +118,10 @@ export const AnalyticEvent = {
   VISITED_TRANSACTIONS_PAGE: 'visited_transactions_page',
   UPDATE_LATER: 'update_later',
   BROWSER_CLICK: 'browser_click',
+  ETHEREUM_DEEPLINK_OPENED: 'ethereum_deeplink_opened',
+  ETHEREUM_DEEPLINK_TOKEN_SELECTED: 'ethereum_deeplink_token_selected',
+  ETHEREUM_DEEPLINK_AMOUNT_ENTERED: 'ethereum_deeplink_amount_entered',
+  ETHEREUM_DEEPLINK_SEND_INITIATED: 'ethereum_deeplink_send_initiated',
 };
 
 export const logAnalyticsToFirebase = (
