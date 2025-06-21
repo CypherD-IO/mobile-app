@@ -79,7 +79,6 @@ export default function TrackWallet() {
                 address: ethAddress,
                 chain: 'ethereum',
                 publicKey: '',
-                rawAddress: '',
                 algo: '',
               },
             });

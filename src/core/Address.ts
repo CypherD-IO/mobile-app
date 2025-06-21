@@ -44,7 +44,7 @@ export interface IAccountDetail {
   address: string | undefined;
   algo?: string;
   publicKey: string;
-  rawAddress?: Uint8Array;
+  path: string;
 }
 
 export interface IAccountDetailWithChain extends IAccountDetail {
@@ -75,7 +75,7 @@ export const generateEthAddressFromSeedPhrase = async (mnemonic: string) => {
 export const generateMultipleWalletAddressesFromSeedPhrase = async (
   mnemonic: string,
   numberOfAddresses = 100,
-) => {
+): Promise<Array<{ address: string; index: number }>> => {
   return await new Promise((resolve, reject) => {
     const _mnemonic = EthersMnemonic.fromPhrase(mnemonic);
     const hdNode = HDNodeWallet.fromMnemonic(_mnemonic, "m/44'/60'/0'/0");
@@ -89,14 +89,12 @@ export const generateMultipleWalletAddressesFromSeedPhrase = async (
 
 export const generateWalletFromMnemonic = async (
   mnemonic: string,
-  trackingEventId: string,
   addressIndex = 0,
 ): Promise<{
   accounts: IAccountDetailWithChain[];
   mnemonic: string;
   privateKey: string;
 }> => {
-  addressIndex = addressIndex === -1 ? 0 : addressIndex;
   void setConnectionType(ConnectionTypes.SEED_PHRASE);
 
   const seed = bip39.mnemonicToSeedSync(mnemonic);
@@ -151,36 +149,43 @@ export const generateWalletFromMnemonic = async (
         name: 'ethereum',
         address: ethAddress.toLowerCase(),
         publicKey: ethPubKey,
+        path: ethPath,
       },
       {
         name: 'cosmos',
         address: cosmosAddress.toLowerCase(),
         publicKey: cosmosPubKey,
+        path: cosmosPath,
       },
       {
         name: 'osmosis',
         address: osmosisAddress.toLowerCase(),
         publicKey: cosmosPubKey,
+        path: cosmosPath,
       },
       {
         name: 'noble',
         address: nobleAddress.toLowerCase(),
         publicKey: cosmosPubKey,
+        path: cosmosPath,
       },
       {
         name: 'coreum',
         address: coreumAddress.toLowerCase(),
         publicKey: coreumPubKey,
+        path: coreumPath,
       },
       {
         name: 'solana',
         address: solanaAddress,
         publicKey: solanaAddress,
+        path: solanaPath,
       },
       {
         name: 'injective',
         address: getInjectiveAddress(ethAddress),
         publicKey: ethPubKey,
+        path: ethPath,
       },
     ],
     privateKey: ethPrivateKey,
@@ -239,8 +244,6 @@ export const generateCosmosWallet = async (
     Slip10RawIndex.normal(bip44HDPath.addressIndex),
   ];
 
-  const masterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
-
   const wallet = await Secp256k1HdWallet.fromMnemonic(mnemonic, {
     hdPaths: [mnemonicPath],
     prefix: chainConfig.prefix,
@@ -250,15 +253,11 @@ export const generateCosmosWallet = async (
   const { address, pubkey: publicKey } = account;
 
   const path = `m/44'/${chainConfig.coinType}'/${bip44HDPath.account}'/${bip44HDPath.change}/${bip44HDPath.addressIndex}`;
-  const privateKey = Mnemonic.generatePrivateKeyFromMasterSeed(
-    masterSeed,
-    path,
-  );
 
   return {
     name: chainName,
     address,
-    // privateKey: uintToHex(privateKey),
+    path,
     publicKey: uintToHex(publicKey),
   };
 };
@@ -271,13 +270,19 @@ export const generateRawAddressFromPubKeys = (publicKey: Uint8Array) => {
   return new Uint8Array(Buffer.from(hash, 'hex'));
 };
 
-export const generateWalletFromEthPrivateKey = async (privateKey: string) => {
+export const generateWalletFromEthPrivateKey = async (
+  privateKey: string,
+): Promise<{
+  accounts: IAccountDetailWithChain[];
+  privateKey: string;
+}> => {
   const ethersWallet = new Wallet(addHexPrefix(privateKey));
   const ethereumWallet = {
-    name: 'ethereum',
+    name: 'ethereum' as AddressChainNames,
     address: ethersWallet.address,
     privateKey: addHexPrefix(privateKey),
-    publicKey: ethersWallet.publicKey,
+    publicKey: ethersWallet.address,
+    path: '',
   };
 
   const accounts: IAccountDetailWithChain[] = [ethereumWallet];
@@ -288,12 +293,16 @@ export const generateWalletFromEthPrivateKey = async (privateKey: string) => {
 
 export const generateWalletFromSolanaPrivateKey = async (
   privateKey: string,
-) => {
+): Promise<{
+  accounts: IAccountDetailWithChain[];
+  privateKey: string;
+}> => {
   const keypair = Keypair.fromSecretKey(bs58.default.decode(privateKey));
   const solanaWallet = {
-    name: 'solana',
+    name: 'solana' as AddressChainNames,
     address: keypair.publicKey.toBase58(),
     publicKey: keypair.publicKey.toBase58(),
+    path: '',
   };
   const accounts: IAccountDetailWithChain[] = [solanaWallet];
   return { accounts, privateKey };

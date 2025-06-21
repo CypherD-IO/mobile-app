@@ -136,7 +136,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
         address,
         chain: 'ethereum',
         publicKey: '',
-        rawAddress: '',
         algo: '',
       },
     });
@@ -147,19 +146,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     void deleteWalletConfig();
     await removeConnectionType();
     setLoading(false);
-  };
-
-  const validateStaleConnection = async () => {
-    const connectionType = await getConnectionType();
-    if (
-      connectionType === ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN &&
-      isConnected
-    ) {
-      await disconnectAsync();
-      void setConnectionType('');
-    } else {
-      void verifySessionTokenAndSign();
-    }
   };
 
   const verifySessionTokenAndSign = async () => {

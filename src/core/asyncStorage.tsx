@@ -353,25 +353,6 @@ export const getContactBookData = async () => {
   }
 };
 
-export const setSkipSeedConfirmation = async (status: boolean) => {
-  try {
-    await AsyncStorage.setItem('SEED_PHRASE_CONFIRMED', String(status));
-  } catch (error) {
-    Sentry.captureException(error);
-  }
-};
-
-export const getSkipSeedConfirmation = async () => {
-  try {
-    const seedPhraseConfirmed = await AsyncStorage.getItem(
-      'SEED_PHRASE_CONFIRMED',
-    );
-    return seedPhraseConfirmed;
-  } catch (error) {
-    Sentry.captureException(error);
-  }
-};
-
 // The cardID is in the format <CARD_ID>:<DATE_TIME>
 export const getDismissedActivityCardIDs = async () => {
   try {
