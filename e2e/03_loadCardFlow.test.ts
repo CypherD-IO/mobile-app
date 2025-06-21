@@ -68,31 +68,13 @@ describe('Load Card Flow', () => {
       await delay(1500);
       secureLog('Successfully expanded Select Token modal');
 
-      // Step 4: Click on USDC Polygon token
-      secureLog('Step 4: Looking for USDC token with Polygon chain');
+      // Step 4: Click on first USDC token
+      secureLog('Step 4: Looking for first USDC token');
 
-      let usdcToken;
-      try {
-        usdcToken = element(by.text('USDC')).atIndex(2);
-      } catch (error) {
-        secureLog('USDC at index 2 not found, trying alternative approaches');
-        try {
-          usdcToken = element(by.text('USDC')).atIndex(1);
-        } catch (secondError) {
-          try {
-            const polygonElements = element(by.text('Polygon'));
-            usdcToken = polygonElements.atIndex(0);
-          } catch (thirdError) {
-            secureLog('All targeted approaches failed, debugging elements');
-            await debugAllVisibleElements('USDC token search');
-            usdcToken = element(by.text('USDC')).atIndex(0);
-          }
-        }
-      }
-
+      const usdcToken = element(by.text('USDC')).atIndex(0);
       await usdcToken.tap();
       await delay(2000);
-      secureLog('Successfully tapped USDC token with Polygon chain');
+      secureLog('Successfully tapped first USDC token');
 
       // Step 5: Verify Load Card screen is visible
       secureLog('Step 5: Verifying Load Card screen is visible');

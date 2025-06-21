@@ -556,6 +556,7 @@ export function findChainOfAddress(address: string) {
     if (isNobleAddress(address)) return 'noble';
     if (isCoreumAddress(address)) return 'coreum';
     if (isInjectiveAddress(address)) return 'injective';
+    if (isSolanaAddress(address)) return 'solana';
     if (
       Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
         ? isAddress(address) || isValidEns(address)
@@ -1327,4 +1328,43 @@ export const getMinimumCardLoadAmount = (
     : tokenData?.chainDetails?.backendName === CHAIN_ETH.backendName
       ? MINIMUM_TRANSFER_AMOUNT_ETH
       : 10;
+};
+
+export const extractAddressFromURI = (content: string): string => {
+  try {
+    if (!content || typeof content !== 'string') {
+      return '';
+    }
+
+    const trimmedContent = content.trim();
+    let extractedAddress = '';
+
+    // Handle ethereum: URI scheme (e.g., ethereum:0xBd1cD305900424CD4fAd1736a2B4d118c7CA935D@9001)
+    if (trimmedContent.startsWith('ethereum:')) {
+      const ethereumRegex = /(\b0x[a-fA-F0-9]{40}\b)/g;
+      const matches = trimmedContent.match(ethereumRegex);
+      extractedAddress = matches && matches.length > 0 ? matches[0] : '';
+    }
+    // Handle solana: URI scheme (e.g., solana:7ZSvadKmLuxp6Hr9wDFSDKVMyhScDbau7aReDEM3ET5h)
+    else if (trimmedContent.startsWith('solana:')) {
+      // Solana addresses are base58-encoded, 32-44 characters, excluding 0, O, I, l
+      const solanaRegex = /(\b[1-9A-HJ-NP-Za-km-z]{32,44}\b)/g;
+      const matches = trimmedContent.match(solanaRegex);
+      extractedAddress = matches && matches.length > 0 ? matches[0] : '';
+    }
+
+    // Handle other URI schemes or plain addresses
+    else {
+      extractedAddress = trimmedContent;
+    }
+
+    // Final validation to ensure we have a non-empty result
+    if (!extractedAddress) {
+      return '';
+    }
+
+    return extractedAddress;
+  } catch (error) {
+    return '';
+  }
 };

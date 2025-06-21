@@ -803,96 +803,6 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     }
   }, [isChooseTokenModalVisible]);
 
-  const RenderHyperLiquidPosition = useCallback(
-    ({
-      onSelectingToken,
-    }: {
-      onSelectingToken: (token: Holding | SwapToken) => void;
-    }) => {
-      if (
-        !totalHoldings?.hyperliquidHoldings ||
-        totalHoldings.hyperliquidHoldings.length === 0 ||
-        selectedChain.chainName !== 'all' ||
-        searchText.length > 0
-      ) {
-        return null;
-      }
-      logAnalyticsToFirebase(AnalyticEvent.HYPERLIQUID, {
-        action: 'see hyperliquid tokens',
-      });
-      return (
-        <CyDView className='bg-black p-[16px] mt-[4px] mb-[12px] mx-[6px] rounded-[8px]'>
-          <CyDView className='flex flex-row items-center justify-between'>
-            <CyDView className='flex flex-row items-center justify-center'>
-              <CyDFastImage
-                source={AppImages.HYPERLIQUID_LOGO}
-                className='w-[18px] h-[18px]'
-                resizeMode='contain'
-              />
-              <CyDText className='text-[12px] text-white font-bold ml-[4px]'>
-                Hyper
-                <CyDText className='text-[12px] text-white italic font-bold'>
-                  liquid
-                </CyDText>
-              </CyDText>
-            </CyDView>
-            <CyDView className='flex flex-row items-center justify-center'>
-              <CyDText className='text-[12px] text-green250 font-bold'>
-                {t('PORTFOLIO')}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className=''>
-            {totalHoldings.hyperliquidHoldings.map((token: Holding) => (
-              <CyDTouchView
-                className='flex flex-row items-center justify-between border-b-[0.2px] border-green250 py-[14px]'
-                key={`${token.symbol}-${token.accountType ?? ''}`}
-                onPress={() => {
-                  logAnalyticsToFirebase(AnalyticEvent.HYPERLIQUID, {
-                    action: 'click spot token',
-                    token: token.symbol,
-                  });
-                  onSelectingToken(token);
-                }}>
-                <CyDView className='flex flex-row items-center'>
-                  <CyDFastImage
-                    source={
-                      token.logoUrl
-                        ? { uri: token.logoUrl }
-                        : AppImages.UNKNOWN_TXN_TOKEN
-                    }
-                    className='w-[18px] h-[18px] rounded-full'
-                    resizeMode='contain'
-                  />
-                  <CyDView className='flex flex-row ml-[4px]'>
-                    <CyDText className='text-[12px] text-white font-bold'>
-                      {token.symbol}
-                    </CyDText>
-                    {token.accountType === HyperLiquidAccount.SPOT && (
-                      <CyDText className='text-[10px] text-green250 ml-[4px] font-bold'>
-                        spot
-                      </CyDText>
-                    )}
-                  </CyDView>
-                </CyDView>
-                <CyDView>
-                  <CyDText
-                    className={
-                      'font-semibold text-[16px] text-white text-right mr-[2px]'
-                    }>
-                    {formatCurrency(token.totalValue)}
-                  </CyDText>
-                </CyDView>
-              </CyDTouchView>
-            ))}
-          </CyDView>
-        </CyDView>
-      );
-    },
-    [totalHoldings.hyperliquidHoldings, selectedChain, searchText],
-  );
-
   return (
     <CyDModalLayout
       setModalVisible={handleModalClose}
@@ -1024,11 +934,6 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                     initialNumToRender={10}
                     maxToRenderPerBatch={10}
                     windowSize={5}
-                    ListHeaderComponent={
-                      <RenderHyperLiquidPosition
-                        onSelectingToken={onSelectingToken}
-                      />
-                    }
                     removeClippedSubviews={true}
                     updateCellsBatchingPeriod={50}
                     onEndReachedThreshold={0.5}

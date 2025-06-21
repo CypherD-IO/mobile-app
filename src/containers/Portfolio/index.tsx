@@ -61,7 +61,11 @@ import {
   Holding,
   WalletHoldings,
 } from '../../core/portfolio';
-import { HdWalletContext } from '../../core/util';
+import {
+  HdWalletContext,
+  findChainOfAddress,
+  extractAddressFromURI,
+} from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
 import { DeFiFilter } from '../../models/defi.interface';
 import { IPortfolioData } from '../../models/portfolioData.interface';
@@ -551,10 +555,52 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   const onWCSuccess = (e: BarCodeReadEvent) => {
     const link = e.data;
-    navigation.navigate(C.screenTitle.OPTIONS, {
-      params: { walletConnectURI: link },
-      screen: C.screenTitle.WALLET_CONNECT,
-    });
+    if (link.startsWith('wc')) {
+      navigation.navigate(C.screenTitle.OPTIONS, {
+        params: { walletConnectURI: link },
+        screen: C.screenTitle.WALLET_CONNECT,
+      });
+    } else {
+      // Extract address from URI schemes using utility function
+      const extractedAddress = extractAddressFromURI(link);
+
+      // Validate if the extracted string is a valid wallet address for any supported chain
+      if (extractedAddress) {
+        const detectedChain = findChainOfAddress(extractedAddress);
+
+        if (detectedChain) {
+          // Valid wallet address detected, navigate to enter_amount screen
+
+          // Log analytics for wallet address QR scan
+          void logAnalyticsToFirebase('qr_wallet_address_scanned', {
+            chain: detectedChain,
+            from: ethereumAddress,
+          });
+
+          navigation.navigate(C.screenTitle.ENTER_AMOUNT, {
+            sendAddress: extractedAddress,
+          });
+        } else {
+          // Not a valid wallet address, show error
+          showModal('state', {
+            type: 'error',
+            title: t('UNRECOGNIZED_QR_CODE'),
+            description: t('UNRECOGNIZED_QR_CODE_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }
+      } else {
+        // Could not extract any address from the scanned data
+        showModal('state', {
+          type: 'error',
+          title: t('UNRECOGNIZED_QR_CODE'),
+          description: t('UNRECOGNIZED_QR_CODE_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    }
   };
 
   const renderPortfolioItem: ListRenderItem<Holding> = ({ item, index }) => {

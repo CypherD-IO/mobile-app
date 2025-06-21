@@ -210,7 +210,7 @@ const resources = {
       QRSCAN_SEND: 'Send crypto by scanning a QR code',
       QRSCAN_IMPORT: 'Import wallet by scanning a QR code',
       QRSCAN_WALLET_CONNECT:
-        'Connect to dApps by scanning a QR code using Wallet Connect',
+        'Send crypto and connect to dapps by scanning a QR code',
       SIGNUP_CARD_WAITLIST_TITLE: 'Signup for Cypher Card',
       CTA_GET_INVITE_CODE: 'GET INVITE CODE',
       BENEFITS: 'Benefits',
@@ -327,7 +327,9 @@ const resources = {
       USE_PASSWORD_MANAGER: 'Use a password manager',
       NEVER_STORE_ON_INTERNET_DEVICES:
         'Never store your seed phrase on any device that is connected to the internet',
+      NOT_VALID_SOLANA_ADDRESS: 'Not a valid Solana address',
       NOT_VALID_ADDRESS: 'Not a valid address format',
+      NOT_VALID_ETH_ADDRESS: 'Not a valid Ethereum address',
       NOT_VALID_COSMOS_ADDRESS: 'Not a valid Cosmos address',
       NOT_VALID_OSMOSIS_ADDRESS: 'Not a valid Osmosis address',
       NOT_VALID_NOBLE_ADDRESS: 'Not a valid Noble address',

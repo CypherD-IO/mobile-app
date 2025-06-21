@@ -1,15 +1,16 @@
 import { getArchHost, setArchHost } from './core/asyncStorage';
 
 // Simple test detection - use dev URL if in development mode
-// This is the simplest and most reliable approach
 const getDefaultArchHost = () => {
   if (__DEV__) {
     console.log(
-      '🧪 Development mode detected - using dev ARCH_HOST for testing',
+      '🧪 Development mode detected - using ARCH_HOST: https://arch-dev.cypherd.io for testing',
     );
     return 'https://arch-dev.cypherd.io';
   } else {
-    console.log('🚀 Production build - using production ARCH_HOST');
+    console.log(
+      '🚀 Production build - using ARCH_HOST: https://arch.cypherhq.io',
+    );
     return 'https://arch.cypherhq.io';
   }
 };
