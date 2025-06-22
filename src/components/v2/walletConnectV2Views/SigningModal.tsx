@@ -374,6 +374,7 @@ export default function SigningModal({
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
       try {
         setAcceptingRequest(true);
+
         if (isMessageModalForSigningTypedData) {
           modalPayload?.resolve(true);
         } else {
@@ -382,12 +383,15 @@ export default function SigningModal({
             { title: '', host: '', origin: '', url: '' },
             chain,
           );
+
           const formattedRPCResponse = formatJsonRpcResult(id, response.result);
+
           await web3wallet?.respondSessionRequest({
             topic,
             response: formattedRPCResponse,
           });
         }
+
         setAcceptingRequest(false);
         hideModal();
       } catch (e) {
@@ -401,30 +405,33 @@ export default function SigningModal({
 
   async function handleReject() {
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
-      const { id } = requestEvent;
-      if (id) {
+      const requestId = (requestEvent as any)?.id;
+      if (requestId) {
         try {
           setRejectingRequest(true);
+
           if (isMessageModalForSigningTypedData) {
             modalPayload?.resolve(false);
           } else {
             const rejectionResponse = formatJsonRpcError(
-              id,
+              requestId,
               getSdkError('USER_REJECTED_METHODS').message,
             );
+
             await web3wallet?.respondSessionRequest({
               topic,
               response: rejectionResponse,
             });
           }
+
           setRejectingRequest(false);
-          (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
+          hideModal();
         } catch (e) {
           setRejectingRequest(false);
-          (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
+          hideModal();
         }
       } else {
-        (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
+        hideModal();
       }
     } else {
       modalPayload?.resolve(false);
