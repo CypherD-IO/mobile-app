@@ -279,7 +279,7 @@ export const generateWalletFromEthPrivateKey = async (
   const ethersWallet = new Wallet(addHexPrefix(privateKey));
   const ethereumWallet = {
     name: 'ethereum' as AddressChainNames,
-    address: ethersWallet.address,
+    address: ethersWallet.address.toLowerCase(),
     privateKey: addHexPrefix(privateKey),
     publicKey: ethersWallet.address,
     path: '',

@@ -9,7 +9,6 @@ import { hostWorker } from '../global';
 import axios from '../core/Http';
 import { isAddressSet } from '../core/util';
 import {
-  CardControlTypes,
   CypherDeclineCodes,
   GlobalModalType,
   NOTIFE_ACTIONS,
@@ -19,24 +18,33 @@ import {
 import { screenTitle } from '../constants';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 
-export const getToken = async (
-  walletAddress: string,
-  cosmosAddress?: string,
-  osmosisAddress?: string,
-  nobleAddress?: string,
-  coreumAddress?: string,
-) => {
+export const getToken = async ({
+  ethAddress,
+  cosmosAddress,
+  osmosisAddress,
+  nobleAddress,
+  coreumAddress,
+  solanaAddress,
+}: {
+  ethAddress: string;
+  cosmosAddress?: string;
+  osmosisAddress?: string;
+  nobleAddress?: string;
+  coreumAddress?: string;
+  solanaAddress?: string;
+}) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
     const fcmToken = await firebase.messaging().getToken();
-    if (isAddressSet(walletAddress)) {
+    if (isAddressSet(ethAddress)) {
       const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
       const payload = {
-        address: walletAddress,
+        address: ethAddress,
         cosmosAddress,
         osmosisAddress,
         nobleAddress,
         coreumAddress,
+        solanaAddress,
         fcmToken,
       };
       try {

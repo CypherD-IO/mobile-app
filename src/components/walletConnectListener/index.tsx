@@ -35,7 +35,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     undefined,
   );
   const { isConnected, address, connector } = useAccount();
-  const { disconnectAsync } = useDisconnect();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
