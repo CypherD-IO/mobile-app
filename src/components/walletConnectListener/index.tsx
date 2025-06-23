@@ -35,7 +35,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     undefined,
   );
   const { isConnected, address, connector } = useAccount();
-  const { disconnectAsync } = useDisconnect();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
@@ -136,7 +135,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
         address,
         chain: 'ethereum',
         publicKey: '',
-        rawAddress: '',
         algo: '',
       },
     });
@@ -147,19 +145,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     void deleteWalletConfig();
     await removeConnectionType();
     setLoading(false);
-  };
-
-  const validateStaleConnection = async () => {
-    const connectionType = await getConnectionType();
-    if (
-      connectionType === ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN &&
-      isConnected
-    ) {
-      await disconnectAsync();
-      void setConnectionType('');
-    } else {
-      void verifySessionTokenAndSign();
-    }
   };
 
   const verifySessionTokenAndSign = async () => {

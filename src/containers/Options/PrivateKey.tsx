@@ -146,11 +146,7 @@ export default function PrivateKey(props) {
           hdWalletContext.pinValue,
         );
         if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-          const path = `m/44'/501'/${String(
-            hdWalletContext?.state?.choosenWalletIndex > 0
-              ? hdWalletContext?.state?.choosenWalletIndex
-              : 0,
-          )}'/0'`;
+          const path = get(hdWalletContext, 'state.wallet.solana.path', '');
 
           const privKey = await generateSolanaPrivateKey(mnemonic, path);
           if (privKey && privKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {

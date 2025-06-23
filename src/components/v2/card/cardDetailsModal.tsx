@@ -16,7 +16,11 @@ import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
-import { CardProviders } from '../../../constants/enum';
+import {
+  CardDesignType,
+  CardProviders,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import WebView from 'react-native-webview';
 import Loading from '../loading';
 import { copyToClipboard as copyToClipboardUtil } from '../../../core/util';
@@ -115,11 +119,20 @@ export default function CardDetailsModal({
           <CyDView className='w-full h-full flex flex-col justify-center p-[32px]'>
             <CyDView className='mt-[-12px]'>
               <CyDView className='flex flex-row items-center gap-[12px]'>
-                <CyDText className={clsx('text-[16px]')}>
+                <CyDText
+                  className={clsx('text-[16px] text-black', {
+                    'text-white':
+                      card.physicalCardType === PhysicalCardType.METAL,
+                  })}>
                   {cardDetails.cardNumber
                     .match(/.{1,4}/g)
                     ?.map((part, index) => (
-                      <CyDText key={index} className={clsx('text-[16px]')}>
+                      <CyDText
+                        key={index}
+                        className={clsx('text-[16px] text-black', {
+                          'text-white':
+                            card.physicalCardType === PhysicalCardType.METAL,
+                        })}>
                         {part}
                         {index < 3 ? ' ' : ''}
                       </CyDText>
@@ -130,7 +143,10 @@ export default function CardDetailsModal({
                     <CyDMaterialDesignIcons
                       name={'content-copy'}
                       size={18}
-                      className='text-base400'
+                      className={clsx('text-[12px] font-semibold text-black', {
+                        'text-white':
+                          card.physicalCardType === PhysicalCardType.METAL,
+                      })}
                     />
                   </CyDTouchView>
                 </CyDView>
@@ -138,17 +154,37 @@ export default function CardDetailsModal({
             </CyDView>
             <CyDView className='flex flex-row items-center mt-[22px] gap-[54px]'>
               <CyDView className='flex flex-row items-center gap-[8px]'>
-                <CyDText className='text-[12px] font-semibold'>Expiry</CyDText>
+                <CyDText
+                  className={clsx('text-[12px] font-semibold text-black', {
+                    'text-white':
+                      card.physicalCardType === PhysicalCardType.METAL,
+                  })}>
+                  Expiry
+                </CyDText>
                 <CyDView className='flex flex-row justify-between items-center'>
-                  <CyDText className={clsx('text-[16px]')}>
+                  <CyDText
+                    className={clsx('text-[16px] text-black', {
+                      'text-white':
+                        card.physicalCardType === PhysicalCardType.METAL,
+                    })}>
                     {cardDetails.expiryMonth + ' / ' + cardDetails.expiryYear}
                   </CyDText>
                 </CyDView>
               </CyDView>
               <CyDView className='flex flex-row items-center gap-[8px]'>
-                <CyDText className='text-[12px] font-semibold'>CVV</CyDText>
+                <CyDText
+                  className={clsx('text-[12px] font-semibold text-black', {
+                    'text-white':
+                      card.physicalCardType === PhysicalCardType.METAL,
+                  })}>
+                  CVV
+                </CyDText>
                 <CyDView className='flex flex-row justify-between items-center'>
-                  <CyDText className={clsx('text-[16px]')}>
+                  <CyDText
+                    className={clsx('text-[16px] text-black', {
+                      'text-white':
+                        card.physicalCardType === PhysicalCardType.METAL,
+                    })}>
                     {cardDetails.cvv}
                   </CyDText>
                 </CyDView>

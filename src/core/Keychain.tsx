@@ -30,6 +30,7 @@ import * as Sentry from '@sentry/react-native';
 import {
   AddressChainNames,
   generateCosmosPrivateKey,
+  generateMultipleWalletAddressesFromSeedPhrase,
   generateWalletFromMnemonic,
   IAccountDetail,
   IAccountDetailWithChain,
@@ -67,7 +68,7 @@ import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as bip39 from 'bip39';
 import { Keypair } from '@solana/web3.js';
-import { createWalletClient, custom, Hex, http } from 'viem';
+import { createWalletClient, custom, Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mainnet } from 'viem/chains';
 import * as nacl from 'tweetnacl';
@@ -77,11 +78,15 @@ import { HDKey } from 'micro-ed25519-hdkey';
 import { cosmosConfig } from '../constants/cosmosConfig';
 
 // increase this when you want the CyRootData to be reconstructed
-const currentSchemaVersion = 10;
+const currentSchemaVersion = 11;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
-  wallet: any,
+  wallet: {
+    accounts: IAccountDetailWithChain[];
+    mnemonic?: string;
+    privateKey?: string;
+  },
   secretType: SECRET_TYPES,
 ) {
   // await clearAsyncStorage();
@@ -94,7 +99,7 @@ export async function saveCredentialsToKeychain(
 
   // Save Seed Phrase (master private key is not stored)
   if (await isPinAuthenticated()) {
-    if (secretType === SECRET_TYPES.MENEMONIC) {
+    if (secretType === SECRET_TYPES.MENEMONIC && wallet.mnemonic) {
       await saveToKeychain(
         CYPHERD_SEED_PHRASE_KEY,
         CryptoJS.AES.encrypt(
@@ -102,19 +107,22 @@ export async function saveCredentialsToKeychain(
           hdWalletContext.state.pinValue,
         ).toString(),
       );
+    } else if (secretType === SECRET_TYPES.PRIVATE_KEY && wallet.privateKey) {
+      await saveToKeychain(
+        CYPHERD_PRIVATE_KEY,
+        CryptoJS.AES.encrypt(
+          wallet.privateKey,
+          hdWalletContext.state.pinValue,
+        ).toString(),
+      );
     }
-    await saveToKeychain(
-      CYPHERD_PRIVATE_KEY,
-      CryptoJS.AES.encrypt(
-        wallet.privateKey,
-        hdWalletContext.state.pinValue,
-      ).toString(),
-    );
   } else {
-    if (secretType === SECRET_TYPES.MENEMONIC) {
+    if (secretType === SECRET_TYPES.MENEMONIC && wallet.mnemonic) {
       await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, wallet.mnemonic);
     }
-    await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
+    if (wallet.privateKey) {
+      await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
+    }
   }
   await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
   await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
@@ -126,11 +134,11 @@ export async function saveCredentialsToKeychain(
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
       value: {
-        address: account.address ?? '',
-        chain: account.name,
-        publicKey: account.publicKey ?? '',
-        rawAddress: account.rawAddress,
-        algo: account.algo ?? '',
+        address: get(account, 'address', ''),
+        chain: get(account, 'name', ''),
+        publicKey: get(account, 'publicKey', ''),
+        algo: get(account, 'algo', ''),
+        path: get(account, 'path', ''),
       },
     });
   });
@@ -201,7 +209,9 @@ export async function saveToKeychain(key: string, value: string, acl = true) {
 export async function loadFromKeyChain(
   key: string,
   forceCloseOnFailure = false,
-  showModal = () => {},
+  showModal: () => void = () => {
+    // Default empty function - no action needed
+  },
 ) {
   // Retrieve the credentials
   let requestMessage = '';
@@ -287,7 +297,9 @@ async function fingerprintHardwareAlert() {
 export async function loadRecoveryPhraseFromKeyChain(
   forceCloseOnFailure = false,
   pin = '',
-  showModal = () => {},
+  showModal: () => void = () => {
+    // Default empty function - no action needed
+  },
 ) {
   let mnemonic = await loadFromKeyChain(
     CYPHERD_SEED_PHRASE_KEY,
@@ -307,7 +319,9 @@ export async function loadRecoveryPhraseFromKeyChain(
 export async function loadPrivateKeyFromKeyChain(
   forceCloseOnFailure = false,
   pin = '',
-  showModal = () => {},
+  showModal: () => void = () => {
+    // Default empty function - no action needed
+  },
 ) {
   let privateKey = await loadFromKeyChain(
     CYPHERD_PRIVATE_KEY,
@@ -337,34 +351,12 @@ export async function isAuthenticatedForPrivateKey(
 export async function loadCyRootData(hdWallet: any) {
   // Update schemaVersion whenever adding a new address generation logic
 
-  // Specifically for BUILD 2.48 (remove in subsequent builds)
-  // if (await isPinAuthenticated()) {
-  //   const privateKeyFromKeychain = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
-  //   const privateKeyFromKeychainWithPinAuth = await loadPrivateKeyFromKeyChain(
-  //     false,
-  //     hdWallet.pinValue,
-  //   );
-  //   if (
-  //     privateKeyFromKeychain !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-  //     !privateKeyFromKeychainWithPinAuth
-  //   ) {
-  //     const unEncryptedPrivateKey = privateKeyFromKeychain;
-  //     if (unEncryptedPrivateKey) {
-  //       await saveToKeychain(
-  //         CYPHERD_PRIVATE_KEY,
-  //         CryptoJS.AES.encrypt(
-  //           unEncryptedPrivateKey,
-  //           hdWallet.pinValue,
-  //         ).toString(),
-  //       );
-  //     }
-  //   }
-  // }
-
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
+
   if (schemaVersion === currentSchemaVersion.toString()) {
     const cyData = await getCyRootData();
+
     if (cyData) {
       const parsedCyData = JSON.parse(cyData);
 
@@ -377,15 +369,46 @@ export async function loadCyRootData(hdWallet: any) {
     }
   }
 
+  // this will happen only in schema version 11
+
   const mnemonic = await loadRecoveryPhraseFromKeyChain(
     false,
     hdWallet.pinValue,
   );
   if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+    let addressIndex = 0;
+
+    /* have changed the schemaVersion to 11 here so that wallet get's re-created and stored in async storage, this is a fix for hd path import other than 0 */
+    /* ----------------- need to be done in version ios 3.09.9 and android 4.83  ----------------- */
+
+    const cyData = await getCyRootData();
+
+    if (cyData) {
+      const parsedCyData = JSON.parse(cyData);
+      const accounts = get(parsedCyData, 'accounts', null);
+
+      if (accounts) {
+        const multipleWalletAddresses =
+          await generateMultipleWalletAddressesFromSeedPhrase(mnemonic);
+
+        const ethereumAddress = get(accounts, 'ethereum.0.address', null);
+
+        if (ethereumAddress) {
+          const matchingEthRecord = multipleWalletAddresses.find(
+            (address: { address: string; index: number }) =>
+              address.address === ethereumAddress,
+          );
+
+          addressIndex = get(matchingEthRecord, 'index', 0);
+        }
+      }
+    }
+
+    /* ----------------- end of code to be removed once all have updated to verion ios 3.09.9 and android 4.83  ----------------- */
+
     const wallet = await generateWalletFromMnemonic(
       mnemonic,
-      'import_wallet',
-      hdWallet.choosenWalletIndex,
+      addressIndex, // by default for creating a wallet we use index 0
     );
     const rootData = constructRootData(wallet.accounts);
     await setCyRootData(rootData);
@@ -410,11 +433,13 @@ export async function loadCyRootData(hdWallet: any) {
       name: 'ethereum',
       address: undefined,
       publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+      path: '',
     },
     {
       name: 'solana',
       address: undefined,
       publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+      path: '',
     },
   ]);
 
@@ -424,13 +449,13 @@ export async function loadCyRootData(hdWallet: any) {
 function constructRootData(accounts: IAccountDetailWithChain[]) {
   const accountDetails: { [key in AddressChainNames]?: IAccountDetail[] } = {};
   accounts.forEach(account => {
-    const { address, algo, publicKey, rawAddress } = account;
+    const { address, algo, publicKey, path } = account;
     accountDetails[account.name] = [
       {
         address,
         algo,
         publicKey,
-        rawAddress,
+        path,
       },
     ];
   });
@@ -507,11 +532,14 @@ export async function getSignerClient(
   const wallets: Map<string, OfflineDirectSigner> = new Map();
   if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
     for (const wallet of accounts) {
+      const accountWallet = get(hdWallet, ['state', 'wallet', wallet], '');
+      const path = accountWallet.path;
+      const addressIndexDerived = getLastNumberFromPath(path);
       const chainConfig = cosmosConfig[wallet];
       const bip44HDPath = {
         account: 0,
         change: 0,
-        addressIndex: 0,
+        addressIndex: addressIndexDerived,
       };
       const mnemonicPath = [
         Slip10RawIndex.hardened(44),
@@ -562,10 +590,7 @@ export const getSolanaWallet = async (hdWallet: any) => {
 
         const hd = HDKey.fromMasterSeed(seed.toString('hex'));
 
-        const path =
-          hdWallet?.state?.choosenWalletIndex > 0
-            ? `m/44'/501'/${String(hdWallet?.state?.choosenWalletIndex)}'/0'`
-            : "m/44'/501'/0'/0'";
+        const path = get(hdWallet, 'state.wallet.solana.path', '');
 
         const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
         return keypair;
@@ -763,4 +788,22 @@ export async function signIn(
   } catch (error) {
     Sentry.captureException(error);
   }
+}
+
+// Utility function to extract the last number after the last slash
+export function getLastNumberFromPath(path: string): number {
+  if (!path) return 0;
+
+  // Split by '/' and get the last part
+  const parts = path.split('/');
+  const lastPart = parts[parts.length - 1];
+
+  // Extract the last number from the last part
+  const numberMatch = lastPart.match(/(\d+)$/);
+
+  if (numberMatch) {
+    return parseInt(numberMatch[1], 10);
+  }
+
+  return 0;
 }

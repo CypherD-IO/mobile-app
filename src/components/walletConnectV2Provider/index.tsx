@@ -29,23 +29,25 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
 
   const [isWeb3WalletInitialized, setIsWeb3WalletInitialized] =
     useState<boolean>(false);
+
   useWalletConnectEventsManager(isWeb3WalletInitialized);
 
   const onInitialize = useCallback(async () => {
-    // const resp = await getWithAuth('/v1/authentication/creds/wc'); //TO DO Eliminate sign message race condition (axios intercept)
-    // if (!resp.isError) {
-    //   const { data } = resp;
-    //   projectId = data.projectId;
-    // }
     try {
       if (projectId) {
         await createWeb3Wallet(projectId);
         setIsWeb3WalletInitialized(true);
+      } else {
+        console.error('[WalletConnectV2Provider] Missing projectId');
       }
     } catch (err: unknown) {
+      console.error(
+        '[WalletConnectV2Provider] Error during wallet initialization:',
+        err,
+      );
       Sentry.captureException(err);
     }
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     if (
@@ -56,13 +58,13 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
       isInitializationInProgress.current = true;
       void onInitialize();
     }
-  }, [isWeb3WalletInitialized, ethereumAddress]);
+  }, [isWeb3WalletInitialized, ethereumAddress, onInitialize]);
 
   const { url: initialUrl } = useInitialIntentURL();
 
   const initiateWalletConnection = async () => {
     if (initialUrl) {
-      let uri = initialUrl?.url ?? initialUrl;
+      let uri = initialUrl;
       if (uri?.includes('cypherwallet://')) {
         uri = uri?.replace('cypherwallet://', '');
       }
@@ -89,10 +91,5 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     }
   }, [initialUrl, isWeb3WalletInitialized, ethereum?.wallets]);
 
-  return (
-    // <WalletConnectContext.Provider
-    //   value={{ initialized: isWeb3WalletInitialized }}>
-    <WagmiConfigBuilder>{children}</WagmiConfigBuilder>
-    // </WalletConnectContext.Provider>
-  );
+  return <WagmiConfigBuilder>{children}</WagmiConfigBuilder>;
 };

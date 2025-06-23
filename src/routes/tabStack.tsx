@@ -214,6 +214,13 @@ function TabStack(props: TabStackProps) {
           });
           break;
 
+        case screenTitle.ENTER_AMOUNT:
+          navigateToScreenInTab(screenTitle.PORTFOLIO, {
+            screen: data.screenToNavigate,
+            params: data.params,
+          });
+          break;
+
         default:
           navigationRef.current.navigate(screenTitle.PORTFOLIO_SCREEN);
       }

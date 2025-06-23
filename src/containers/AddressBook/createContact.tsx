@@ -7,7 +7,11 @@ import {
   ChainNames,
   QRScannerScreens,
 } from '../../constants/server';
-import { generateRandomInt, isEthereumAddress } from '../../core/util';
+import {
+  generateRandomInt,
+  isEthereumAddress,
+  extractAddressFromURI,
+} from '../../core/util';
 import {
   CyDView,
   CyDText,
@@ -493,15 +497,23 @@ export const CreateContact = () => {
   };
 
   const onSuccess = (e: any, formProps, detail, addressIndex) => {
+    // Extract address from URI schemes using utility function
+    const extractedAddress = extractAddressFromURI(e.data);
+
+    if (!extractedAddress) {
+      return;
+    }
+
     const newFieldValue = formProps.values[detail].filter(
       (addressToBeQRd, indexOfAddress) => indexOfAddress !== addressIndex,
     );
     formProps.setFieldValue(`${detail}`, [
       ...newFieldValue.slice(0, addressIndex),
-      e.data,
+      extractedAddress,
       ...newFieldValue.slice(addressIndex),
     ]);
-    formProps.values[detail as keyof ContactInfo][addressIndex] = e.data;
+    formProps.values[detail as keyof ContactInfo][addressIndex] =
+      extractedAddress;
   };
 
   const setChooseChainFunction = ({ item }) => {
