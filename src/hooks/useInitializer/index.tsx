@@ -51,11 +51,8 @@ import DeviceInfo, { getVersion } from 'react-native-device-info';
 import useCardUtilities from '../useCardUtilities';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
-import { IPlanDetails } from '../../models/planDetails.interface';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
-import useWeb3Auth from '../useWeb3Auth';
-// import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -64,14 +61,13 @@ export default function useInitializer() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
-  const ethereum = hdWallet.state.wallet.ethereum;
-  const solana = hdWallet.state.wallet.solana;
+  const { ethereum, solana, cosmos, osmosis, noble, coreum } =
+    hdWallet.state.wallet;
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
   const { verifySessionToken } = useValidSessionToken();
-  const { getWalletProfile, getPlanData } = useCardUtilities();
-  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
+  const { getWalletProfile } = useCardUtilities();
 
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
@@ -380,14 +376,6 @@ export default function useInitializer() {
             },
           );
         });
-        await getToken(
-          get(attributes, 'ethereumAddress', '') ??
-            get(attributes, 'solanaAddress', ''),
-          get(attributes, 'cosmosAddress'),
-          get(attributes, 'osmosisAddress'),
-          get(attributes, 'nobleAddress'),
-          get(attributes, 'coreumAddress'),
-        );
         void registerIntercomUser(attributes);
       } else {
         void getReadOnlyWalletData().then(data => {
@@ -520,8 +508,7 @@ export default function useInitializer() {
   ) => {
     const hosts = await initializeHostsFromAsync();
     if (hosts) {
-      const address = ethereum?.address ?? solana?.address;
-      if (address) {
+      if (ethereum.address || solana.address) {
         void getAuthTokenData(
           setForcedUpdate,
           setTamperedSignMessageModal,
@@ -529,6 +516,14 @@ export default function useInitializer() {
           setShowDefaultAuthRemoveModal,
         );
       }
+      await getToken({
+        ethAddress: ethereum.address,
+        cosmosAddress: cosmos.address,
+        osmosisAddress: osmosis.address,
+        nobleAddress: noble.address,
+        coreumAddress: coreum.address,
+        solanaAddress: solana.address,
+      });
     }
   };
 
