@@ -655,6 +655,36 @@ const GET_PVC_CARD = {
 const GET_METAL_CARD = {
   uri: `${S3_BUCKET_URL_ICONS}/getMetalCard.png`,
 };
+const CYPR_TOKEN_SPIN = {
+  uri: `${S3_BUCKET_URL_ICONS}/cyprTokenSpin.mp4`,
+};
+const CYPR_TOKEN = {
+  uri: `${S3_BUCKET_URL_ICONS}/cyprToken.png`,
+};
+const SHOPPING_BAG_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/shoppingBagIconWhite.png`,
+};
+const SHOP_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/shopIconWhite.png`,
+};
+const PERSON_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/personIconWhite.png`,
+};
+const ANALYTICS_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/analyticsIconWhite.png`,
+};
+const CARD_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardIconWhite.png`,
+};
+const COIN_STACK_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/coinStackIconWhite.png`,
+};
+const PERCENTAGE_ICON_RED_BG = {
+  uri: `${S3_BUCKET_URL_ICONS}/percentageIconRedBg.png`,
+};
+const WALLET_CONNECT_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/walletConnectIcon.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -938,6 +968,16 @@ export const AppImagesMap = {
     GOOGLE_LOGO,
     GET_PVC_CARD,
     GET_METAL_CARD,
+    CYPR_TOKEN_SPIN,
+    CYPR_TOKEN,
+    SHOPPING_BAG_ICON_WHITE,
+    SHOP_ICON_WHITE,
+    PERSON_ICON_WHITE,
+    ANALYTICS_ICON_WHITE,
+    CARD_ICON_WHITE,
+    COIN_STACK_ICON_WHITE,
+    PERCENTAGE_ICON_RED_BG,
+    WALLET_CONNECT_ICON,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1225,6 +1265,16 @@ enum AppImages {
   CARDS_WITH_EXCLAMATION = 'CARDS_WITH_EXCLAMATION',
   GET_PVC_CARD = 'GET_PVC_CARD',
   GET_METAL_CARD = 'GET_METAL_CARD',
+  CYPR_TOKEN_SPIN = 'CYPR_TOKEN_SPIN',
+  CYPR_TOKEN = 'CYPR_TOKEN',
+  SHOPPING_BAG_ICON_WHITE = 'SHOPPING_BAG_ICON_WHITE',
+  SHOP_ICON_WHITE = 'SHOP_ICON_WHITE',
+  PERSON_ICON_WHITE = 'PERSON_ICON_WHITE',
+  ANALYTICS_ICON_WHITE = 'ANALYTICS_ICON_WHITE',
+  CARD_ICON_WHITE = 'CARD_ICON_WHITE',
+  COIN_STACK_ICON_WHITE = 'COIN_STACK_ICON_WHITE',
+  PERCENTAGE_ICON_RED_BG = 'PERCENTAGE_ICON_RED_BG',
+  WALLET_CONNECT_ICON = 'WALLET_CONNECT_ICON',
 }
 
 export default AppImages;
