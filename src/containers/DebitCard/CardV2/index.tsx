@@ -11,9 +11,9 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { get, isEmpty } from 'lodash';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import AppImages from '../../../../assets/images/appImages';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
@@ -69,6 +69,10 @@ import {
 } from '../../../styles/tailwindComponents';
 import CardScreen from '../bridgeCard/card';
 import CardTxnFilterModal from './CardTxnFilterModal';
+import MerchantSpendRewardWidget from '../../../components/v2/MerchantSpendRewardWidget';
+import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
+import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
+import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -148,6 +152,8 @@ export default function CypherCardScreen() {
   });
   const [isOverchargeDccInfoModalOpen, setIsOverchargeDccInfoModalOpen] =
     useState(false);
+  const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -261,7 +267,9 @@ export default function CypherCardScreen() {
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
       txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
-        return a.date < b.date ? 1 : -1;
+        return ((a as any).createdAt ?? 0) < ((b as any).createdAt ?? 0)
+          ? 1
+          : -1;
       });
       await checkForOverchargeDccInfo(txnsToSet);
       setRecentTransactions(txnsToSet.slice(0, 5));
@@ -351,6 +359,46 @@ export default function CypherCardScreen() {
       return true;
     }
     return false;
+  };
+
+  // Show merchant detail sheet
+  const showMerchantDetailSheet = (merchant: any) => {
+    console.log('Showing merchant detail for:', merchant?.name);
+
+    setSelectedMerchantData(merchant);
+
+    showBottomSheet({
+      id: 'merchant-detail',
+      title: String(merchant?.name || 'Merchant') + ' Rewards',
+      snapPoints: ['80%', '95%'],
+      showCloseButton: true,
+      scrollable: true,
+      content: (
+        <MerchantRewardDetailContent
+          merchantData={merchant}
+          onKnowMorePress={() => {
+            console.log('Know More pressed for:', merchant?.name);
+          }}
+          onRemoveBoosterPress={() => {
+            console.log('Remove booster pressed for:', merchant?.name);
+          }}
+        />
+      ),
+      onClose: () => {
+        console.log('Merchant detail modal closed');
+        setSelectedMerchantData(null);
+      },
+    });
+  };
+
+  const handleViewAllMerchants = () => {
+    console.log('Navigating to Merchant Reward List screen');
+    navigation.navigate(screenTitle.MERCHANT_REWARD_LIST);
+  };
+
+  const handleDirectMerchantPress = (merchant: any) => {
+    console.log('Direct merchant press:', merchant?.name);
+    showMerchantDetailSheet(merchant);
   };
 
   const onPressFundCard = () => {
@@ -564,7 +612,10 @@ export default function CypherCardScreen() {
         </CyDView>
       </CyDView>
 
-      <CyDScrollView showsVerticalScrollIndicator={false} className='bg-n20 '>
+      <CyDScrollView
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled // <-- add this
+        className='bg-n20 '>
         {cardId !== CARD_IDS.HIDDEN_CARD &&
           cardProvider === CardProviders.PAYCADDY && (
             <CyDView className='mx-[16px] my-[12px] bg-n0 rounded-[16px] p-[8px]'>
@@ -663,7 +714,11 @@ export default function CypherCardScreen() {
             cardDesignData={cardDesignData}
             cardBalance={cardBalance}
           />
-
+          <RewardProgressWidget />
+          <MerchantSpendRewardWidget
+            onViewAllPress={handleViewAllMerchants}
+            onMerchantPress={handleDirectMerchantPress}
+          />
           {cardId === CARD_IDS.HIDDEN_CARD ? (
             <CyDView className='mx-[16px] mt-[16px]'>
               <CyDView className='border-[1px] border-n40 rounded-[16px] p-[16px]'>
@@ -757,7 +812,6 @@ export default function CypherCardScreen() {
               </CyDTouchView>
             </CyDView>
           )}
-
           {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView className='mx-[16px] mt-[16px] bg-p10 p-6 rounded-xl'>
               <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>

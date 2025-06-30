@@ -35,6 +35,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import ReferralSuccessModal from '../../../../components/v2/ReferralSuccessModal';
 import CardApplicationHeader from '../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../components/v2/CardApplicationFooter';
+import OfferTagComponent from '../../../../components/v2/OfferTagComponent';
+import BoostedRewardInfoModal from '../../../../components/v2/BoostedRewardInfoModal';
 
 interface RouteParams {
   referralCodeFromLink?: string;
@@ -50,6 +52,8 @@ const EnterReferralCode = (): JSX.Element => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showBoostedRewardInfoModal, setShowBoostedRewardInfoModal] =
+    useState(false);
 
   const { postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -67,9 +71,12 @@ const EnterReferralCode = (): JSX.Element => {
 
   const handleSkip = async () => {
     await removeReferralCode();
-    navigation.navigate('CardApplicationStack', {
-      screen: screenTitle.BASIC_DETAILS,
-    });
+    navigation.navigate(screenTitle.OFFERS_AND_PROMOTION);
+  };
+
+  const handleBoostedRewardInfoModalClose = () => {
+    setShowBoostedRewardInfoModal(false);
+    navigation.navigate(screenTitle.OFFERS_AND_PROMOTION);
   };
 
   const handleLearnMore = () => {
@@ -86,7 +93,8 @@ const EnterReferralCode = (): JSX.Element => {
       if (!response.isError) {
         if (response.data.isValid) {
           await setReferralCodeAsync(referralCode);
-          setShowSuccessModal(true);
+          // setShowSuccessModal(true);
+          setShowBoostedRewardInfoModal(true);
         } else {
           showModal('state', {
             type: 'error',
@@ -122,9 +130,7 @@ const EnterReferralCode = (): JSX.Element => {
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     setTimeout(() => {
-      navigation.navigate('CardApplicationStack', {
-        screen: screenTitle.BASIC_DETAILS,
-      });
+      navigation.navigate(screenTitle.OFFERS_AND_PROMOTION);
     }, 300);
   };
 
@@ -137,6 +143,11 @@ const EnterReferralCode = (): JSX.Element => {
         isVisible={showSuccessModal}
         onClose={handleSuccessModalClose}
         referralCode={referralCode}
+      />
+
+      <BoostedRewardInfoModal
+        isVisible={showBoostedRewardInfoModal}
+        onContinue={handleBoostedRewardInfoModalClose}
       />
 
       {/* Modal for explaining how referrals work */}
@@ -157,8 +168,8 @@ const EnterReferralCode = (): JSX.Element => {
         {/* Gift Image */}
         <CyDView className='items-center justify-center py-[46px]'>
           <CyDImage
-            source={AppImages.CARD_APP_GIFT_ICON}
-            className='w-[151px] h-[169px]'
+            source={AppImages.REFERRAL_CODE_HERO}
+            className='w-[212px] h-[181px]'
             style={styles.giftImage}
           />
         </CyDView>
@@ -166,16 +177,16 @@ const EnterReferralCode = (): JSX.Element => {
         {/* Title and Description */}
         <CyDView className='mb-6'>
           <CyDText className='text-[32px] mb-[6px]'>
-            {t('Redeem a code')}
+            {t('Referral code')}
           </CyDText>
           <CyDText className='text-[14px] text-n200 mb-4'>
             {t(
-              "Got an invite code from a friend? Enter it below and redeem your 50 reward points instantly! Remember, you won't be able to do this later.",
+              "Got an invite code from a friend who referred you to Cypher? Just enter it below! Remember, you won't be able to do this later.",
             )}
           </CyDText>
 
           {/* Learn More Link */}
-          <CyDTouchView
+          {/* <CyDTouchView
             onPress={handleLearnMore}
             className='flex-row items-center mb-8'>
             <CyDText className='text-blue300 font-medium'>
@@ -186,7 +197,7 @@ const EnterReferralCode = (): JSX.Element => {
               size={20}
               className='text-blue300 ml-1'
             />
-          </CyDTouchView>
+          </CyDTouchView> */}
         </CyDView>
 
         {/* Referral Code Input */}
@@ -213,13 +224,45 @@ const EnterReferralCode = (): JSX.Element => {
               disabled={isEmpty(referralCode) || loading}
               loading={loading}
               type={ButtonType.PRIMARY}
-              style='ml-2 px-4 w-[94px]'
+              style='ml-2 px-4 w-[94px] rounded-full'
               paddingY={15}
               titleStyle='text-[16px] font-medium'
             />
           </CyDView>
         </CyDView>
+
+        <CyDView className='mb-[64px] flex flex-col p-[12px] bg-n20 rounded-[16px]'>
+          <CyDView className='flex flex-row items-center mb-2'>
+            <CyDImage
+              source={AppImages.REFERRAL_CODE_3D_ICON}
+              className='w-[32px] h-[32px] mr-[6px]'
+            />
+            <CyDView className='flex flex-1 flex-row items-center justify-between'>
+              <CyDText className='text-[20px]'>{t('Referral Rewards')}</CyDText>
+              <CyDTouchView
+                onPress={handleLearnMore}
+                className='flex-row items-center'>
+                <CyDText className='text-primaryText font-medium underline'>
+                  {t('Know more')}
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          </CyDView>
+          <CyDText className='text-[14px] text-n80 mb-[12px]'>
+            Unlock greater rewards with Cypher by using a referral code from
+            someone online
+          </CyDText>
+          <CyDTouchView
+            onPress={handleLearnMore}
+            className='flex-row items-center'>
+            <CyDText className='text-blue300 font-medium'>
+              {t('Get referral code')}
+            </CyDText>
+          </CyDTouchView>
+        </CyDView>
       </KeyboardAwareScrollView>
+
+      <OfferTagComponent position={{ bottom: 146, left: 16, right: 16 }} />
 
       {/* Footer */}
       <CardApplicationFooter

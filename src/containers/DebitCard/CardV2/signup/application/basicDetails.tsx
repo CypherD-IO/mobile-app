@@ -18,6 +18,7 @@ import CardApplicationHeader from '../../../../../components/v2/CardApplicationH
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
 import { t } from 'i18next';
+import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
 
 // Validation schema for the basic details form
 const BasicDetailsSchema = Yup.object().shape({
@@ -174,6 +175,10 @@ const BasicDetails = (): JSX.Element => {
                 )}
               </CyDText> */}
             </KeyboardAwareScrollView>
+
+            <OfferTagComponent
+              position={{ bottom: 146, left: 16, right: 16 }}
+            />
 
             {/* Footer */}
             <CardApplicationFooter

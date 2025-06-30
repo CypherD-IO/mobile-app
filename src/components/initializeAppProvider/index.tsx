@@ -308,6 +308,9 @@ export const InitializeAppProvider = ({
         if (pinAuthentication) {
           return <OnBoardingStack />;
         }
+        console.log('pinPresent :', pinPresent);
+        console.log('pinAuthentication :', pinAuthentication);
+
         return <Loading />;
       } else if (pinPresent === PinPresentStates.FALSE) {
         if (pinAuthentication) {
@@ -332,6 +335,8 @@ export const InitializeAppProvider = ({
       if (!ethereumAddress && !solanaAddress) {
         return <OnBoardingStack />;
       } else {
+        console.log('isReadOnlyWallet :', isReadOnlyWallet);
+        console.log('isAuthenticated :', isAuthenticated);
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading />;
         }

@@ -222,7 +222,7 @@ function TabStack(props: TabStackProps) {
           break;
 
         default:
-          navigationRef.current.navigate(screenTitle.PORTFOLIO_SCREEN);
+          navigationRef.current.navigate(screenTitle.CARD);
       }
       return true;
     },
@@ -425,7 +425,7 @@ function TabStack(props: TabStackProps) {
             <CyDView className='bg-n0 h-full rounded-t-[20px] shadow-xl shadow-n40' />
           ),
         })}
-        initialRouteName={screenTitle.PORTFOLIO}>
+        initialRouteName={screenTitle.CARD}>
         <Tab.Screen
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
