@@ -77,6 +77,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
 import { useColorScheme } from 'nativewind';
+import { GlobalBottomSheetProvider } from './src/components/v2/GlobalBottomSheetProvider';
 
 // Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
 
@@ -402,7 +403,7 @@ function App() {
     ],
     config: {
       screens: {
-        [screenTitle.PORTFOLIO]: '*',
+        [screenTitle.CARD]: '*',
       },
     },
     async getInitialURL() {

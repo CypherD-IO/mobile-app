@@ -29,6 +29,7 @@ import {
   getCountryObjectById,
 } from '../../../../../core/util';
 import { ApplicationData } from '../../../../../models/applicationData.interface';
+import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
 
 // Validation schema for the shipping address form
 const ShippingAddressSchema = Yup.object().shape({
@@ -401,6 +402,10 @@ const ShippingAddress = (): JSX.Element => {
                   : null}
               </CyDView>
             </KeyboardAwareScrollView>
+
+            <OfferTagComponent
+              position={{ bottom: 146, left: 16, right: 16 }}
+            />
 
             {/* Footer */}
             <CardApplicationFooter
