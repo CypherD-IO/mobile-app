@@ -724,6 +724,9 @@ const CYPR_TOKEN_WITH_BASE_CHAIN = {
 const REFERRAL_HERO_IMAGE = {
   uri: `${S3_BUCKET_URL_ICONS}/referralHeroImage.png`,
 };
+const CYPR_TOKEN_REWARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/cyprTokenReward.mp4`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -1030,6 +1033,7 @@ export const AppImagesMap = {
     SHOP_3D,
     CYPR_TOKEN_WITH_BASE_CHAIN,
     REFERRAL_HERO_IMAGE,
+    CYPR_TOKEN_REWARD,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1340,6 +1344,7 @@ enum AppImages {
   SHOP_3D = 'SHOP_3D',
   CYPR_TOKEN_WITH_BASE_CHAIN = 'CYPR_TOKEN_WITH_BASE_CHAIN',
   REFERRAL_HERO_IMAGE = 'REFERRAL_HERO_IMAGE',
+  CYPR_TOKEN_REWARD = 'CYPR_TOKEN_REWARD',
 }
 
 export default AppImages;
