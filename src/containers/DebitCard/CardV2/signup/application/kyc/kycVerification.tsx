@@ -90,7 +90,8 @@ const KYCVerification = () => {
       kycStatus === CardApplicationStatus.KYC_SUCCESSFUL ||
       kycStatus === CardApplicationStatus.COMPLETED
     ) {
-      navigation.navigate(screenTitle.NAME_ON_CARD);
+      // navigation.navigate(screenTitle.NAME_ON_CARD);
+      navigation.navigate(screenTitle.TOKEN_REWARD_EARNED);
     } else if (kycStatus === CardApplicationStatus.KYC_INITIATED) {
       navigation.navigate(screenTitle.KYC_WEBVIEW);
     }
@@ -108,6 +109,7 @@ const KYCVerification = () => {
   );
 
   const getProgress = () => {
+    console.log('kycStatus', kycStatus);
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
         if (isRainDeclined) {

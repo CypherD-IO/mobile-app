@@ -13,7 +13,7 @@ import { get, isEmpty } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Toast from 'react-native-toast-message';
 import AppImages from '../../../../assets/images/appImages';
@@ -72,6 +72,14 @@ import {
 } from '../../../styles/tailwindComponents';
 import CardScreen from '../bridgeCard/card';
 import CardTxnFilterModal from './CardTxnFilterModal';
+import MerchantSpendRewardWidget from '../../../components/v2/MerchantSpendRewardWidget';
+import RewardsEpochModal, {
+  IEpochInfo,
+  shouldShowRewardsEpochModal,
+} from '../../../components/v2/RewardsEpochModal';
+import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
+import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
+import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -364,6 +372,8 @@ export default function CypherCardScreen() {
     setIsActivityDetailsVisible(false);
     setSelectedActivity(null);
   };
+  const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -575,6 +585,46 @@ export default function CypherCardScreen() {
       return true;
     }
     return false;
+  };
+
+  // Show merchant detail sheet
+  const showMerchantDetailSheet = (merchant: any) => {
+    console.log('Showing merchant detail for:', merchant?.name);
+
+    setSelectedMerchantData(merchant);
+
+    showBottomSheet({
+      id: 'merchant-detail',
+      title: String(merchant?.name || 'Merchant') + ' Rewards',
+      snapPoints: ['80%', '95%'],
+      showCloseButton: true,
+      scrollable: true,
+      content: (
+        <MerchantRewardDetailContent
+          merchantData={merchant}
+          onKnowMorePress={() => {
+            console.log('Know More pressed for:', merchant?.name);
+          }}
+          onRemoveBoosterPress={() => {
+            console.log('Remove booster pressed for:', merchant?.name);
+          }}
+        />
+      ),
+      onClose: () => {
+        console.log('Merchant detail modal closed');
+        setSelectedMerchantData(null);
+      },
+    });
+  };
+
+  const handleViewAllMerchants = () => {
+    console.log('Navigating to Merchant Reward List screen');
+    navigation.navigate(screenTitle.MERCHANT_REWARD_LIST);
+  };
+
+  const handleDirectMerchantPress = (merchant: any) => {
+    console.log('Direct merchant press:', merchant?.name);
+    showMerchantDetailSheet(merchant);
   };
 
   const onPressFundCard = () => {

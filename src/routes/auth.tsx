@@ -79,8 +79,10 @@ import WalletConnectCamera from '../containers/Options/WalletConnectCamera';
 import AdvancedSettings from '../containers/Options/advancedSettings';
 import AppSettings from '../containers/Options/appSettings';
 import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
-import Referrals from '../containers/Options/referrals';
-import Rewards from '../containers/Options/rewards';
+import ImportWalletOptions from '../containers/Options/importWalletOptions';
+import OptionsScreen from '../containers/Options/index';
+import Referrals from '../containers/Referrals';
+import Rewards from '../containers/Rewards';
 import AppearanceSelector from '../containers/Options/theme';
 import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
@@ -107,6 +109,7 @@ import CardDescription from '../containers/DebitCard/CardV2/additionalCard/cardD
 import CardControls from '../containers/DebitCard/bridgeCard/cardControls';
 import ApplicationWelcome from '../containers/DebitCard/CardV2/signup/applicationWelcome';
 import EnterReferralCode from '../containers/DebitCard/CardV2/signup/enterReferralCode';
+import OffersAndPromotion from '../containers/DebitCard/CardV2/signup/offersAndPromotion';
 import BasicDetails from '../containers/DebitCard/CardV2/signup/application/basicDetails';
 import ShippingAddress from '../containers/DebitCard/CardV2/signup/application/shippingAddress';
 import AdditionalDetails from '../containers/DebitCard/CardV2/signup/application/additionalDetails';
@@ -121,6 +124,9 @@ import AirdropClaim from '../containers/airdrop/claim';
 import AirdropClaimSuccess from '../containers/airdrop/claimSuccess';
 import CountryTemporarilyUnsupported from '../containers/DebitCard/CardV2/signup/application/countryTemporarilyUnsupported';
 import OptionsHub from '../containers/Options';
+import TokenRewardEarned from '../containers/DebitCard/CardV2/signup/application/tokenRewardEarned';
+import ReferralsViewAll from '../containers/Rewards/ReferralsViewAll';
+import MerchantRewardListScreen from '../containers/DebitCard/CardV2/MerchantRewardListScreen';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -503,6 +509,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
         })}
       />
       <FundCardStack.Screen
+        name={screenTitle.MERCHANT_REWARD_LIST}
+        component={MerchantRewardListScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FundCardStack.Screen
         name={screenTitle.CARD_SCREEN}
         component={CypherCardScreen}
         options={{
@@ -742,6 +755,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
         })}
       />
       <FundCardStack.Screen
+        name={screenTitle.TOKEN_REWARD_EARNED}
+        component={TokenRewardEarned}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
         name={screenTitle.MIGRATE_FUNDS}
         component={MigratePCFunds}
         options={({ navigation }): NativeStackNavigationOptions => ({
@@ -778,6 +798,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.ENTER_REFERRAL_CODE}
         component={EnterReferralCode}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.OFFERS_AND_PROMOTION}
+        component={OffersAndPromotion}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}
@@ -925,6 +952,14 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.REWARDS}
         component={Rewards}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.REFERRALS_VIEW_ALL}
+        component={ReferralsViewAll}
         options={() => ({
           headerShown: false,
         })}
