@@ -136,6 +136,7 @@ export const screenTitle = {
   TOKEN_REWARD_EARNED: 'tokenRewardEarned',
   CARD_CREATION: 'cardCreation',
   REWARDS: 'Rewards',
+  CLAIM_REWARD: 'ClaimReward',
   REFERRALS_VIEW_ALL: 'ReferralsViewAll',
   MIGRATE_FUNDS: 'migrateFunds',
   REFERRALS: 'Referrals',

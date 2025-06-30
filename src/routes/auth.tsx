@@ -84,6 +84,7 @@ import OptionsScreen from '../containers/Options/index';
 import Referrals from '../containers/Referrals';
 // import Rewards from '../containers/Options/rewards';
 import Rewards from '../containers/Rewards';
+import ClaimReward from '../containers/Rewards/claimReward';
 import AppearanceSelector from '../containers/Options/theme';
 import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
@@ -1230,6 +1231,14 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.REWARDS}
         component={Rewards}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.CLAIM_REWARD}
+        component={ClaimReward}
         options={() => ({
           headerShown: false,
         })}

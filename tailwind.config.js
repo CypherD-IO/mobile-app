@@ -178,7 +178,7 @@ module.exports = {
       fontFamily: {
         manrope: ['Manrope'],
         nord: ['Cypher Nord'],
-
+        newyork: ['New York'],
       },
       fontWeight: {
         thin: '100',
