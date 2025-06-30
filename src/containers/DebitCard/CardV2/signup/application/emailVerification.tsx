@@ -27,6 +27,7 @@ import { showToast } from '../../../../utilities/toastUtility';
 import Loading from '../../../../../components/v2/loading';
 import OTPInput from '../../../../../components/v2/otpBox';
 import AppImages from '../../../../../../assets/images/appImages';
+import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
 
 const EmailVerification = (): JSX.Element => {
   const { t } = useTranslation();
@@ -211,7 +212,7 @@ const EmailVerification = (): JSX.Element => {
           className='flex flex-row items-center mt-[44px]'
           disabled={loading.otpLoading}>
           <CyDText className='text-blue300 font-medium'>
-            Didn&apos;t get a code?
+            Didn&apos;t receive the code?
           </CyDText>
           {loading.otpLoading && (
             <CyDView className='w-[20px] h-[20px]'>
@@ -224,6 +225,8 @@ const EmailVerification = (): JSX.Element => {
           )}
         </CyDTouchView>
       </CyDView>
+
+      <OfferTagComponent position={{ bottom: 146, left: 16, right: 16 }} />
 
       <CardApplicationFooter
         currentStep={2}

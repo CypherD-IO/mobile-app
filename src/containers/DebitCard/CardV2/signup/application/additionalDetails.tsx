@@ -29,6 +29,7 @@ import { CardProviders } from '../../../../../constants/enum';
 import { omit } from 'lodash';
 import { useFormContext } from './FormContext';
 import clsx from 'clsx';
+import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
 
 // Validation schema for the additional details form
 const AdditionalDetailsSchema = Yup.object().shape({
@@ -194,7 +195,7 @@ const AdditionalDetails = (): JSX.Element => {
                 <CyDText className='text-[14px] text-n200 mb-[4px]'>
                   Annual Income
                 </CyDText>
-                <CyDView className='relative'>
+                <CyDView className='relative mt-[-14px]'>
                   <CyDView className='absolute left-3 top-0 bottom-0 justify-center z-10'>
                     <CyDMaterialDesignIcons
                       name='currency-usd'
@@ -217,7 +218,7 @@ const AdditionalDetails = (): JSX.Element => {
                 <CyDText className='text-[14px] text-n200 mb-[4px]'>
                   Expected Monthly spend
                 </CyDText>
-                <CyDView className='relative'>
+                <CyDView className='relative mt-[-14px]'>
                   <CyDView className='absolute left-3 top-0 bottom-0 justify-center z-10'>
                     <CyDMaterialDesignIcons
                       name='currency-usd'
@@ -268,6 +269,10 @@ const AdditionalDetails = (): JSX.Element => {
                 </CyDTouchView>
               </CyDView>
             </CyDView>
+
+            <OfferTagComponent
+              position={{ bottom: 186, left: 16, right: 16 }}
+            />
 
             {/* Footer */}
             <CardApplicationFooter

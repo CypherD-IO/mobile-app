@@ -17,11 +17,13 @@ import {
   CyDImageBackground,
 } from '../../../../../styles/tailwindComponents';
 import { screenTitle } from '../../../../../constants';
-import AppImages from '../../../../../../assets/images/appImages';
+import AppImages, {
+  AppImagesMap,
+} from '../../../../../../assets/images/appImages';
 import { Share, StyleSheet } from 'react-native';
+import Video from 'react-native-video';
 import Button from '../../../../../components/v2/button';
 import { ButtonType, GlobalContextType } from '../../../../../constants/enum';
-import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import Toast from 'react-native-toast-message';
 import {
@@ -127,27 +129,28 @@ const CardCreation = () => {
   };
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
-      {/* Back button */}
-      <CardApplicationHeader />
-
+    <CyDSafeAreaView className='flex-1 bg-black'>
       {/* Main content */}
       <ViewShot ref={viewRef} style={styles.container}>
-        <CyDView className='flex-1 justify-between p-4 bg-n0'>
-          {/* Card image container */}
+        <CyDView className='flex-1 justify-between p-4 bg-black'>
+          {/* Card video container */}
           <CyDView className='flex-1 items-center justify-center'>
-            <CyDImageBackground
-              source={AppImages.CYPHER_VIRTUAL_CARD}
-              className='w-full aspect-[380/239] rounded-[12px]'
-              resizeMode='contain'>
-              <CyDView className='flex-1 p-5'>
-                <CyDView className='mt-auto'>
-                  <CyDText className='text-white font-semibold text-[16px]'>
-                    {name}
-                  </CyDText>
-                </CyDView>
-              </CyDView>
-            </CyDImageBackground>
+            <CyDView className='w-full aspect-[380/262] rounded-[12px] overflow-hidden relative'>
+              {/* Background Video */}
+              <Video
+                source={{
+                  uri: AppImagesMap.common.VIRTUAL_CARD_HORIZONTAL_SPIN.uri,
+                }}
+                style={styles.cardVideo}
+                resizeMode='cover'
+                repeat={true}
+                paused={false}
+                muted={true}
+                controls={false}
+                playInBackground={false}
+                playWhenInactive={false}
+              />
+            </CyDView>
           </CyDView>
 
           {/* Status section - always visible but content changes */}
@@ -160,7 +163,7 @@ const CardCreation = () => {
                   loop
                   style={styles.loader}
                 />
-                <CyDText className='text-[20px] font-[500] ml-2'>
+                <CyDText className='text-[20px] font-[500] ml-2 text-white'>
                   Creating card
                 </CyDText>
               </>
@@ -171,7 +174,7 @@ const CardCreation = () => {
                   className='w-[28px] h-[28px] rounded-full items-center justify-center mr-2'
                   resizeMode='contain'
                 />
-                <CyDText className='font-[500] text-[20px]'>
+                <CyDText className='font-[500] text-[20px] text-white'>
                   Card Created
                 </CyDText>
               </>
@@ -232,6 +235,15 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  cardVideo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
   },
 });
 

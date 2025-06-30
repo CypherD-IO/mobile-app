@@ -1270,6 +1270,14 @@ const resources = {
       ENTER_REFERRAL_CODE: 'Enter Referral Code',
       INVALID_REFERRAL_CODE: 'Invalid Referral Code',
       INVALID_REFERRAL_CODE_DESCRIPTION: 'Please enter a valid referral code',
+      REFERRAL_CODE_APPLIED: 'Referral Code Applied',
+      YOUR_REFERRAL_CODE_HAS_BEEN_APPLIED:
+        'Your referral code has been applied successfully',
+      COUPON_REMOVED: 'Coupon Removed',
+      YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED:
+        'Your referral code has been removed successfully',
+      QUESTIONS: 'Questions',
+      HOW_CAN_WE_HELP_YOU: 'How can we help you?',
       REFERRAL_CODE_APPLIED_SUCCESSFULLY: 'Referral Code Applied Successfully',
       REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
         "You've earned 50 reward points for applying the referral code. Continue to application.",
@@ -1747,6 +1755,7 @@ const resources = {
       USDC_LOAD_FEE_INFO:
         '{{premiumUSDCFee}}% USDC load fees for Premium users on Ethereum, Solana, Noble, Base, Polygon, Optimism, Arbitrum, Avalanche. USDC on BNB incurs {{premiumNonUSDCFee}}% (Premium) / {{standardNonUSDCFee}}% (Standard) fees.',
       CYPHER_CARD_TERMS_CONDITIONS: 'Cypher Card Terms and Conditions',
+      CARDS: 'Cards',
     },
   },
 };
