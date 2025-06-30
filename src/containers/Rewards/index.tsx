@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../../assets/images/appImages';
+import AppImages, { AppImagesMap } from '../../../assets/images/appImages';
 import {
   CyDSafeAreaView,
   CyDView,
@@ -11,11 +11,14 @@ import {
   CyDScrollView,
 } from '../../styles/tailwindComponents';
 import { Animated, Easing, StyleSheet } from 'react-native';
+import Video from 'react-native-video';
 import GradientText from '../../components/gradientText';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import { PieChart } from 'react-native-svg-charts';
 import { screenTitle } from '../../constants';
 import { useNavigation } from '@react-navigation/native';
+import Button from '../../components/v2/button';
+import { ButtonType } from '../../constants/enum';
 // NOTE: Import for ReferralsViewAll component (ready for navigation integration)
 // import ReferralsViewAll from './ReferralsViewAll';
 
@@ -374,11 +377,19 @@ export default function Rewards() {
         <CyDView className='flex-1 bg-n20'>
           {/* Token Summary */}
           <CyDView className='items-center pt-[24px] pb-[24px] rounded-b-[16px] bg-n0'>
-            <CyDImage
-              source={AppImages.CYPR_TOKEN}
-              resizeMode='contain'
-              className='h-[110px] w-[110px]'
-            />
+            <CyDView className='h-[110px] w-[110px]'>
+              <Video
+                source={{ uri: AppImagesMap.common.CYPR_TOKEN_REWARD.uri }}
+                style={styles.rewardTokenVideo}
+                resizeMode='cover'
+                repeat={true}
+                paused={false}
+                muted={true}
+                controls={false}
+                playInBackground={false}
+                playWhenInactive={false}
+              />
+            </CyDView>
 
             <GradientText
               textElement={
@@ -410,8 +421,34 @@ export default function Rewards() {
           </CyDView>
 
           <CyDView className='flex-1 bg-n20'>
+            <CyDView className='flex flex-row justify-between items-center p-4 rounded-[16px] bg-base400 mx-[16px] mt-[24px] mb-[16px]'>
+              <CyDView className='flex flex-col'>
+                <CyDView className='flex-row items-center mb-2'>
+                  <CyDImage
+                    source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                    className='w-[22px] h-[22px] mr-1'
+                    resizeMode='contain'
+                  />
+                  <CyDText className='text-n0 text-[20px] font-extrabold'>
+                    {tokenBalance.toFixed(2)}
+                  </CyDText>
+                </CyDView>
+                <CyDText className='text-[14px] font-medium text-n0'>
+                  {'Rewards available to claim'}
+                </CyDText>
+              </CyDView>
+              <Button
+                title={'Claim'}
+                onPress={() => {
+                  navigation.navigate(screenTitle.CLAIM_REWARD);
+                }}
+                type={ButtonType.PRIMARY}
+                style='rounded-full px-8'
+                paddingY={8}
+              />
+            </CyDView>
             {/* Action Cards */}
-            <CyDView className='flex-row justify-between mx-[16px] mt-[24px]'>
+            <CyDView className='flex-row justify-between mx-[16px]'>
               {/* Cypher Deposit */}
               <CyDTouchView
                 className='flex-1 bg-base40 rounded-[12px] p-[12px] mr-[8px]'
@@ -628,5 +665,9 @@ const styles = StyleSheet.create({
     top: 85, // Half of pie chart height (200/2)
     left: 85, // Half of pie chart width (200/2)
     transform: [{ translateX: -24 }, { translateY: -24 }], // Offset by half the content size to center perfectly
+  },
+  rewardTokenVideo: {
+    width: '100%',
+    height: '100%',
   },
 });
