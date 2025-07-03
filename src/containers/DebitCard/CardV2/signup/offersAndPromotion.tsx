@@ -19,7 +19,7 @@ import { screenTitle } from '../../../../constants';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
 import AppImages from '../../../../../assets/images/appImages';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { isEmpty } from 'lodash';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import useAxios from '../../../../core/HttpRequest';
@@ -33,6 +33,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import CardApplicationHeader from '../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../components/v2/CardApplicationFooter';
 import OfferTagComponent from '../../../../components/v2/OfferTagComponent';
+import BoostedRewardInfoModal from '../../../../components/v2/BoostedRewardInfoModal';
+import { useOnboardingReward } from '../../../../contexts/OnboardingRewardContext';
 
 const OffersAndPromotion = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -40,10 +42,16 @@ const OffersAndPromotion = (): JSX.Element => {
   const [referralCode, setReferralCode] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
+  const [showBoostedRewardInfoModal, setShowBoostedRewardInfoModal] =
+    useState(false);
+  const [votedCandidates, setVotedCandidates] = useState<
+    Array<{ name: string; logo: any }>
+  >([]);
 
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
+  const { totalRewardsPossible } = useOnboardingReward();
 
   useEffect(() => {
     const getReferralCodeFromAsync = async () => {
@@ -90,13 +98,26 @@ const OffersAndPromotion = (): JSX.Element => {
           setIsApplied(true);
           setReferralCode(referralCode.trim().toUpperCase());
 
-          showModal('state', {
-            type: 'success',
-            title: t('Referral Code Applied'),
-            description: t('Your referral code has been applied successfully'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
+          // fetch voted candidates
+          try {
+            const votedResp = await getWithAuth(
+              `/v1/cards/referral-v2/${referralCode.trim().toUpperCase()}/voted-candidates`,
+            );
+            console.log('votedResp in offers and promotion : ', votedResp);
+            if (!votedResp.isError && votedResp.data?.votedCandidates) {
+              const merchants = votedResp.data.votedCandidates.map(
+                (c: any) => ({
+                  name: c.merchantName,
+                  logo: c.logo ? { uri: c.logo } : '',
+                }),
+              );
+              setVotedCandidates(merchants);
+            }
+          } catch (err) {
+            console.log('Error fetching voted candidates', err);
+          }
+
+          setShowBoostedRewardInfoModal(true);
         } else {
           showModal('state', {
             type: 'error',
@@ -147,6 +168,11 @@ const OffersAndPromotion = (): JSX.Element => {
     }
   };
 
+  const handleBoostedRewardContinue = () => {
+    setShowBoostedRewardInfoModal(false);
+    handleNext();
+  };
+
   return (
     <CyDView className='flex-1 bg-n0'>
       {/* Status Bar Background */}
@@ -161,13 +187,20 @@ const OffersAndPromotion = (): JSX.Element => {
           buttonBgColor='n20'
         />
 
+        {/* Boosted Reward Modal */}
+        <BoostedRewardInfoModal
+          isVisible={showBoostedRewardInfoModal}
+          onContinue={handleBoostedRewardContinue}
+          votedCandidates={votedCandidates}
+        />
+
         {/* Content */}
         <KeyboardAwareScrollView
           className='flex-1 bg-n0'
           enableOnAndroid={true}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}>
-          <CyDView className='flex flex-col bg-base40 rounded-b-[16px] px-4 pt-4 mb-4'>
+          <CyDView className='flex flex-col bg-base40 rounded-b-[16px] px-4 pt-4 mb-4 pt-[200px] mt-[-200px]'>
             {/* Description Text */}
             <CyDText className='text-[14px] mb-6 leading-5'>
               Got a referral or promo code for Cypher? Enter it below! You
@@ -225,7 +258,7 @@ const OffersAndPromotion = (): JSX.Element => {
               </CyDView>
 
               {/* Coupon applied section */}
-              {isApplied && (
+              {/* {isApplied && (
                 <CyDView className='flex-row items-center justify-between mb-6'>
                   <CyDView className='flex-row items-center'>
                     <CyDMaterialDesignIcons
@@ -233,7 +266,7 @@ const OffersAndPromotion = (): JSX.Element => {
                       size={20}
                       className='text-green-600 mr-2'
                     />
-                    <CyDText className='text-white'>Coupon applied</CyDText>
+                    <CyDText>Coupon applied</CyDText>
                   </CyDView>
 
                   <CyDTouchView onPress={handleRemoveCoupon}>
@@ -242,7 +275,7 @@ const OffersAndPromotion = (): JSX.Element => {
                     </CyDText>
                   </CyDTouchView>
                 </CyDView>
-              )}
+              )} */}
             </CyDView>
           </CyDView>
 
@@ -271,10 +304,9 @@ const OffersAndPromotion = (): JSX.Element => {
                     className='text-white text-[18px] font-bold'
                     style={{
                       transform: [{ rotate: '-90deg' }],
-                      width: 40,
                       textAlign: 'center',
                     }}>
-                    500
+                    {totalRewardsPossible}
                   </CyDText>
 
                   {/* Token Icon */}
@@ -298,15 +330,16 @@ const OffersAndPromotion = (): JSX.Element => {
                 <CyDView className='flex-1 p-4 bg-base40 rounded-r-[16px]'>
                   <CyDView className='flex-row items-center justify-between mb-[12px]'>
                     <CyDText className='font-semibold text-[16px]'>
-                      NEWUSER500
+                      NEWUSER{totalRewardsPossible}
                     </CyDText>
-                    <CyDText className='text-base150 text-[16px] font-bold'>
+                    <CyDText className='text-green300 text-[14px] font-bold'>
                       Applied
                     </CyDText>
                   </CyDView>
 
-                  <CyDText className='text-yellow-300 text-[12px] font-semibold mb-[12px]'>
-                    Get 500 $CYPR when you spend $500
+                  <CyDText className='text-p100 text-[12px] font-semibold mb-[12px]'>
+                    Get {totalRewardsPossible} $CYPR when you spend $
+                    {totalRewardsPossible}
                   </CyDText>
 
                   {/* Custom Dotted Line */}
@@ -320,8 +353,8 @@ const OffersAndPromotion = (): JSX.Element => {
                   </CyDView>
 
                   <CyDText className='text-n200 text-[14px] mb-[10px]'>
-                    Get your guaranteed token upon signing up and enjoy a $500
-                    value!
+                    Get your guaranteed token upon signing up and enjoy a $
+                    {totalRewardsPossible} value!
                   </CyDText>
                   <CyDText className='font-bold text-n200'>know more</CyDText>
                 </CyDView>
@@ -330,7 +363,13 @@ const OffersAndPromotion = (): JSX.Element => {
           </CyDView>
         </KeyboardAwareScrollView>
 
-        <OfferTagComponent position={{ bottom: 146, left: 16, right: 16 }} />
+        <OfferTagComponent
+          position={{
+            bottom: Platform.OS === 'android' ? 118 : 146,
+            left: 16,
+            right: 16,
+          }}
+        />
 
         {/* Footer */}
         <CardApplicationFooter

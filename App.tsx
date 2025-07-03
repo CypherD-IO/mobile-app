@@ -70,6 +70,7 @@ import { CyDView } from './src/styles/tailwindComponents';
 import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
 import { GlobalBottomSheetProvider } from './src/components/v2/GlobalBottomSheetProvider';
+import { OnboardingRewardProvider } from './src/contexts/OnboardingRewardContext';
 
 // Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
 
@@ -420,39 +421,41 @@ function App() {
                             <GlobalModal>
                               <ThreeDSecureProvider>
                                 <InitializeAppProvider>
-                                  <TabStack
-                                    deepLinkData={deepLinkData}
-                                    setDeepLinkData={setDeepLinkData}
-                                  />
-                                  <Toast
-                                    config={toastConfig}
-                                    position={'bottom'}
-                                    bottomOffset={140}
-                                  />
-                                  {<ConfirmationModals />}
-                                  <WalletConnectModal
-                                    walletConnectModalVisible={
-                                      walletConnectModalData.displayWalletConnectModal
-                                    }
-                                    setWalletConnectModalVisible={
-                                      setWalletConnectModalVisible
-                                    }
-                                    renderContent={
-                                      walletConnectModalData.renderContent
-                                    }
-                                    walletConnectApproveRequest={
-                                      walletConnectApproveRequest
-                                    }
-                                    walletConnectRejectRequest={
-                                      walletConnectRejectRequest
-                                    }
-                                    dispatchActivity={dispatchActivity}
-                                    params={walletConnectModalData.params}
-                                    request={request}
-                                    walletConnectDispatch={
-                                      walletConnectDispatch
-                                    }
-                                  />
+                                  <OnboardingRewardProvider>
+                                    <TabStack
+                                      deepLinkData={deepLinkData}
+                                      setDeepLinkData={setDeepLinkData}
+                                    />
+                                    <Toast
+                                      config={toastConfig}
+                                      position={'bottom'}
+                                      bottomOffset={140}
+                                    />
+                                    {<ConfirmationModals />}
+                                    <WalletConnectModal
+                                      walletConnectModalVisible={
+                                        walletConnectModalData.displayWalletConnectModal
+                                      }
+                                      setWalletConnectModalVisible={
+                                        setWalletConnectModalVisible
+                                      }
+                                      renderContent={
+                                        walletConnectModalData.renderContent
+                                      }
+                                      walletConnectApproveRequest={
+                                        walletConnectApproveRequest
+                                      }
+                                      walletConnectRejectRequest={
+                                        walletConnectRejectRequest
+                                      }
+                                      dispatchActivity={dispatchActivity}
+                                      params={walletConnectModalData.params}
+                                      request={request}
+                                      walletConnectDispatch={
+                                        walletConnectDispatch
+                                      }
+                                    />
+                                  </OnboardingRewardProvider>
                                 </InitializeAppProvider>
                               </ThreeDSecureProvider>
                             </GlobalModal>

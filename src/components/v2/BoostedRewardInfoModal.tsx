@@ -30,6 +30,7 @@ interface ReferralBonusData {
 interface BoostedRewardInfoModalProps {
   isVisible: boolean;
   onContinue: () => void;
+  votedCandidates?: Array<{ name: string; logo: any }>;
 }
 
 /**
@@ -47,7 +48,8 @@ interface BoostedRewardInfoModalProps {
  */
 const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
   isVisible,
-  onContinue = () => {},
+  onContinue,
+  votedCandidates = [],
 }) => {
   // State for bonus data (will be populated by API call in future)
   const [bonusData, setBonusData] = useState<ReferralBonusData | null>(null);
@@ -138,91 +140,76 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
         <CyDView className='px-6 pt-12 pb-[12px]'>
           {/* Title */}
           <CyDText className='text-[20px] font-bold text-center mb-[10px]'>
-            You&apos;ve Been Referred
+            You&apos;ve been referred
           </CyDText>
 
-          {/* Subtitle */}
-          <CyDText className='text-[14px] text-center mb-8 leading-6'>
-            Here are your amazing referred bonus
-          </CyDText>
-
-          {/* Referral Bonus Card */}
-          <CyDText className='text-[14px] mb-[6px] font-medium'>
-            Referral Bonus
-          </CyDText>
-          <CyDView className='bg-base40 rounded-[12px] p-[12px] w-full mb-[30px]'>
-            {/* Card Header */}
-            <CyDView className='flex-row justify-between items-start mb-[16px]'>
-              <CyDView className='flex-1'>
-                <CyDText className='text-n70 text-[14px] mb-[2px]'>
-                  Upto
-                </CyDText>
-                <CyDText className='font-nord font-bold'>
-                  {bonusData?.rewardMultiplier ?? '4.5x'} Extra rewards
-                </CyDText>
-              </CyDView>
-
-              {/* Expiry Badge */}
-              <CyDView className='bg-red400 rounded-full px-3 py-1'>
-                <CyDText className='text-white text-[12px] font-semibold'>
-                  Expires in {bonusData?.expiryDate ?? 'June 29'}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-
-            <CyDView className='h-[1px] bg-n40 w-full ml-[-12px] mr-[-12px]' />
-
-            {/* Merchants Section */}
-            <CyDView className='mt-[16px]'>
-              <CyDText className='text-n70 text-[14px] mb-[12px] font-medium'>
-                On spends at
+          {votedCandidates.length > 0 ? (
+            <>
+              {/* Subtitle */}
+              <CyDText className='text-[14px] text-center mb-8 leading-6'>
+                Here are your amazing referred bonus
               </CyDText>
-
-              {/* Merchant List */}
-              <CyDView className='gap-y-[12px]'>
-                {bonusData?.merchants.map((merchant, index) => (
-                  <CyDView key={index} className='flex-row items-center'>
-                    <CyDView className='w-10 h-10 bg-n0 rounded-full items-center justify-center mr-4'>
-                      <CyDImage
-                        source={merchant.logo}
-                        className='w-6 h-6'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                    <CyDText className='text-[18px]'>{merchant.name}</CyDText>
+              {/* Referral Bonus Card */}
+              <CyDText className='text-[14px] mb-[6px] font-medium'>
+                Referral Bonus
+              </CyDText>
+              <CyDView className='bg-base40 rounded-[12px] p-[12px] w-full mb-[30px]'>
+                {/* Card Header */}
+                <CyDView className='flex-row justify-between items-start gap-x-[8px] mb-[16px]'>
+                  <CyDView className='flex-1'>
+                    <CyDText className='text-n70 text-[18px] font-medium'>
+                      Earn additional rewards by spending at
+                    </CyDText>
+                    {/* <CyDText className='font-nord font-bold'>
+                      {bonusData?.rewardMultiplier ?? '4.5x'} Extra rewards
+                    </CyDText> */}
                   </CyDView>
-                )) ?? (
-                  // Fallback merchants if data not loaded
-                  <>
-                    <CyDView className='flex-row items-center mb-3'>
-                      <CyDView className='w-10 h-10 bg-n0 rounded-full items-center justify-center mr-4'>
-                        <CyDImage
-                          source={AppImages.COINBASE}
-                          className='w-6 h-6'
-                          resizeMode='contain'
-                        />
+
+                  {/* Expiry Badge */}
+                  <CyDView className='bg-red400 rounded-full px-3 py-1'>
+                    <CyDText className='text-white text-[12px] font-semibold'>
+                      Expires in {bonusData?.expiryDate ?? 'June 29'}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+
+                <CyDView className='h-[1px] bg-n40 w-full ml-[-12px] mr-[-12px]' />
+
+                {/* Merchants Section */}
+                <CyDView className='mt-[16px]'>
+                  {/* <CyDText className='text-n70 text-[14px] mb-[12px] font-medium'>
+                    On spends at
+                  </CyDText> */}
+
+                  {/* Merchant List */}
+                  <CyDView className='gap-y-[12px]'>
+                    {votedCandidates.map((merchant, index) => (
+                      <CyDView key={index} className='flex-row items-center'>
+                        <CyDView className='w-10 h-10 rounded-full overflow-hidden bg-n0 mr-4'>
+                          <CyDImage
+                            source={
+                              typeof merchant.logo === 'string'
+                                ? { uri: merchant.logo }
+                                : merchant.logo
+                            }
+                            className='w-full h-full'
+                            resizeMode='cover'
+                          />
+                        </CyDView>
+                        <CyDText className='text-[18px]'>
+                          {merchant.name}
+                        </CyDText>
                       </CyDView>
-                      <CyDText className='text-[18px] font-medium'>
-                        Amazon
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='flex-row items-center'>
-                      <CyDView className='w-10 h-10 bg-n0 rounded-full items-center justify-center mr-4'>
-                        <CyDImage
-                          source={AppImages.ONMETA}
-                          className='w-6 h-6'
-                          resizeMode='contain'
-                        />
-                      </CyDView>
-                      <CyDText className='text-[18px] font-medium'>
-                        Grab
-                      </CyDText>
-                    </CyDView>
-                  </>
-                )}
+                    ))}
+                  </CyDView>
+                </CyDView>
               </CyDView>
-            </CyDView>
-          </CyDView>
+            </>
+          ) : (
+            <CyDText className='text-[14px] text-center mb-8 leading-6'>
+              Referral code is applied successfully.
+            </CyDText>
+          )}
 
           {/* Continue Button */}
           <Button
