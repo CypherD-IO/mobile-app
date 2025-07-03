@@ -107,7 +107,8 @@ export async function saveCredentialsToKeychain(
           hdWalletContext.state.pinValue,
         ).toString(),
       );
-    } else if (secretType === SECRET_TYPES.PRIVATE_KEY && wallet.privateKey) {
+    }
+    if (wallet.privateKey) {
       await saveToKeychain(
         CYPHERD_PRIVATE_KEY,
         CryptoJS.AES.encrypt(
