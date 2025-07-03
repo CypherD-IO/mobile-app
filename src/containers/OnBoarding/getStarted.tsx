@@ -14,10 +14,10 @@ import {
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import Video from 'react-native-video';
-import CypherTokenModal from '../../components/v2/cypherTokenModal';
-import ExclusiveOfferModal from '../../components/v2/exclusiveOfferModal';
+import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
+import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 
 const styles = StyleSheet.create({
   scrollContentContainer: {
@@ -39,10 +39,11 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
-        <CyDView className={`h-[55%] bg-[#000000] min-h-[300px] max-h-[480px]`}>
+        <CyDView className='bg-[#000000] justify-center items-center w-[412px] h-[464px]'>
           <CyDImage
             source={AppImages.ON_BOARDING_2}
             className='w-full h-full'
+            resizeMode='cover'
           />
         </CyDView>
         <CyDView className='bg-black flex-1'>
@@ -50,7 +51,7 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
             <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'Zero Fee,\nRewarding Crypto Card'}
             </CyDText>
-            <CyDText className='text-[16px] font-medium text-[#666666] mt-[20px]'>
+            <CyDText className='text-[16px] font-medium text-[#666] mt-[20px]'>
               {
                 'Make crypto your everyday currency with Cypher . Instantly top up from any wallet using 1,000+ tokens across 25+ chains. Spend globally!'
               }
@@ -83,10 +84,11 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
-        <CyDView className={`h-[55%] bg-[#000000] min-h-[300px] max-h-[480px]`}>
+        <CyDView className='bg-[#000000] justify-center items-center w-[412px] h-[464px]'>
           <CyDImage
             source={AppImages.ON_BOARDING_1}
             className='w-full h-full'
+            resizeMode='cover'
           />
         </CyDView>
         <CyDView className='bg-black flex-1'>
@@ -94,7 +96,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
             <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'Non Custodial \nCrypto Wallet'}
             </CyDText>
-            <CyDText className='text-[18px] font-medium text-[#666666] mt-[12px]'>
+            <CyDText className='text-[18px] font-medium text-[#666] mt-[12px]'>
               {
                 'Access 14+ chains, manage 1000+ tokens, and send, receive, or swap assets seamlessly.'
               }
@@ -153,12 +155,12 @@ function Section3({
             <CyDText className='text-[32px] font-bold text-white mt-[12px] font-nord'>
               {'Earn $CYPR\nTokens with Every\nPurchase!'}
             </CyDText>
-            <CyDText className='text-[18px] font-medium text-[#666666] mt-[12px]'>
+            <CyDText className='text-[18px] font-medium text-[#666] mt-[12px]'>
               {
                 'Get rewarded on every transaction and boost your rewards as you spend!'
               }
             </CyDText>
-            <CyDText className='text-[16px] font-medium text-[#666666] mt-[12px]'>
+            <CyDText className='text-[16px]  font-medium text-[#666] mt-[12px]'>
               {
                 'SCYPR is the reward and governance token used in the Cypher platform.'
               }
@@ -189,27 +191,38 @@ function Section3({
 const OnBoardingGetStarted = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showTokenModal, setShowTokenModal] = useState(false);
-  const [showExclusiveOfferModal, setShowExclusiveOfferModal] = useState(false);
+  const { showBottomSheet } = useGlobalBottomSheet();
 
+  /**
+   * Handles continue button press across sections
+   */
   const handleContinue = () => {
     if (currentIndex < 2) {
       // Move to next section (0 -> 1 -> 2)
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
     } else {
-      // Show exclusive offer modal after Section3 (index 2)
-      setShowExclusiveOfferModal(true);
+      navigation.navigate(screenTitle.ONBOARDING_OPTIONS);
     }
   };
 
-  const handleExclusiveOfferClose = () => {
-    try {
-      setShowExclusiveOfferModal(false);
-      setTimeout(() => {
-        navigation.navigate(screenTitle.ONBOARDING_OPTIONS);
-      }, 500);
-    } catch (error) {}
+  /**
+   * Handles showing the Cypher token details bottom sheet
+   */
+  const handleShowTokenDetails = () => {
+    console.log('Showing Cypher token details bottom sheet');
+
+    showBottomSheet({
+      id: 'cypher-token-details',
+      snapPoints: ['75%', Platform.OS === 'android' ? '100%' : '93%'],
+      showCloseButton: true,
+      scrollable: true,
+      content: <CypherTokenBottomSheetContent />,
+      onClose: () => {
+        console.log('Cypher token details bottom sheet closed');
+      },
+      backgroundColor: 'rgba(15, 15, 15, 0.95)',
+    });
   };
 
   return (
@@ -219,25 +232,9 @@ const OnBoardingGetStarted = () => {
       {currentIndex === 2 && (
         <Section3
           handleContinue={handleContinue}
-          onShowTokenDetails={() => setShowTokenModal(true)}
+          onShowTokenDetails={handleShowTokenDetails}
         />
       )}
-
-      <CypherTokenModal
-        isVisible={showTokenModal}
-        onClose={() => setShowTokenModal(false)}
-      />
-
-      <ExclusiveOfferModal
-        isVisible={showExclusiveOfferModal}
-        onClose={handleExclusiveOfferClose}
-        onSeeDetails={() => {
-          // Optional: Handle see details if needed
-          console.log(
-            'OnBoarding GetStarted - exclusive offer see details clicked',
-          );
-        }}
-      />
     </>
   );
 };

@@ -15,6 +15,7 @@ interface BottomSheetConfig {
   showCloseButton?: boolean;
   scrollable?: boolean;
   content: React.ReactNode;
+  backgroundColor?: string;
   onClose?: () => void;
   onOpen?: () => void;
 }
@@ -144,6 +145,7 @@ export const GlobalBottomSheetProvider: React.FC<
           snapPoints={config.snapPoints || ['80%', '95%']}
           initialSnapIndex={-1}
           title={config.title}
+          backgroundColor={config.backgroundColor}
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}
           onClose={() => handleBottomSheetClose(config.id)}

@@ -15,7 +15,6 @@ import { QRCode } from 'react-native-custom-qr-codes';
 import { AppImagesMap } from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import Loading from '../../components/v2/loading';
-import CyDModalLayout from '../../components/v2/modal';
 import { ButtonType, SECRET_TYPES, SeedPhraseType } from '../../constants/enum';
 import {
   generateWalletFromMnemonic,
@@ -33,6 +32,11 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
+import { setFirstLaunchAfterWalletCreation } from '../../core/asyncStorage';
+import { showToast } from '../../containers/utilities/toastUtility';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from '../../components/v2/toast';
+import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 
 interface RouteParams {
   seedPhraseType: SeedPhraseType;
@@ -77,7 +81,7 @@ function CreateSeedPhrase() {
   }>();
   const [loading, setLoading] = useState<boolean>(true);
   const [showSeedPhrase, setShowSeedPhrase] = useState<boolean>(false);
-  const [isQRVisible, setQRVisible] = useState<boolean>(false);
+  const { showBottomSheet } = useGlobalBottomSheet();
 
   const maskedSeedPhrase =
     seedPhraseType === SeedPhraseType.TWELVE_WORDS
@@ -131,6 +135,10 @@ function CreateSeedPhrase() {
    */
   const handleCopySeedPhrase = () => {
     copyToClipboard(seedPhrase);
+    Toast.show({
+      type: 'success',
+      text1: 'Copied to clipboard',
+    });
   };
 
   /**
@@ -145,11 +153,74 @@ function CreateSeedPhrase() {
           wallet,
           SECRET_TYPES.MENEMONIC,
         );
+        await setFirstLaunchAfterWalletCreation(true);
       } catch (error) {
         console.error('Error saving credentials:', error);
         // Handle error appropriately
       }
     }
+  };
+
+  /**
+   * Displays the seed phrase QR code inside a global bottom sheet
+   */
+  const handleShowQR = () => {
+    const ethAddress =
+      wallet?.accounts.find(a => a.name === 'ethereum')?.address ?? '';
+    const formattedAddress = ethAddress
+      ? `${ethAddress.slice(0, 6)}...${ethAddress.slice(-6)}`
+      : '';
+
+    showBottomSheet({
+      id: 'seed-phrase-qr',
+      snapPoints: ['60%', '90%'],
+      showCloseButton: true,
+      scrollable: true,
+      content: (
+        <CyDView className='bg-n20 px-[25px] pb-[54px] pt-[16px]'>
+          <CyDText className='font-bold text-[22px] text-center mb-[24px]'>
+            Recovery Phrase
+          </CyDText>
+
+          {/* Ethereum Address Display */}
+          {formattedAddress !== '' && (
+            <CyDView className='items-center'>
+              <CyDText className='text-n200 text-[14px] font-medium'>
+                {formattedAddress}
+              </CyDText>
+            </CyDView>
+          )}
+
+          <CyDView className='flex justify-center items-center mt-[16px] mb-[44px]'>
+            <CyDView className='rounded-[12px] p-[8px] bg-white'>
+              <QRCode
+                content={seedPhrase}
+                codeStyle='dot'
+                size={180}
+                logo={AppImagesMap.common.QR_LOGO}
+                logoSize={60}
+              />
+            </CyDView>
+          </CyDView>
+
+          {/* Security Warning */}
+          <CyDView className='bg-red400 rounded-[12px] p-[16px] mx-[8px] mb-[8px]'>
+            <CyDView className='flex-row items-start'>
+              <CyDMaterialDesignIcons
+                name='school'
+                size={24}
+                className='text-white mr-[12px] mt-[2px] flex-shrink-0'
+              />
+              <CyDText className='text-white text-[14px] flex-1 leading-[20px] font-medium'>
+                Please refrain from sharing this QR code with anyone or any
+                unknown applications. Anyone who has access to this QR code can
+                gain access to all of your assets.
+              </CyDText>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      ),
+    });
   };
 
   // Generate mnemonic on component mount
@@ -178,54 +249,7 @@ function CreateSeedPhrase() {
 
   return (
     <CyDSafeAreaView className='bg-n20 flex-1'>
-      {/* QR Code Modal */}
-      <CyDModalLayout
-        setModalVisible={() => {
-          setQRVisible(false);
-        }}
-        isModalVisible={isQRVisible}
-        style={styles.modalLayout}
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}
-        swipeDirection={['down']}
-        onSwipeComplete={() => setQRVisible(false)}
-        propagateSwipe={true}>
-        <CyDView className='bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'>
-          {/* Drag handle indicator */}
-          <CyDView className='h-[4px] w-[40px] bg-n40 rounded-[2px] self-center mb-[20px]' />
-
-          <CyDText className='font-bold text-[22px] text-center'>
-            Recovery Phrase QR Code
-          </CyDText>
-          <CyDView className='flex justify-center items-center my-[20px]'>
-            <CyDView className='rounded-[12px] p-[4px] bg-white'>
-              <QRCode
-                content={seedPhrase}
-                codeStyle='dot'
-                logo={AppImagesMap.common.QR_LOGO}
-                logoSize={60}
-              />
-            </CyDView>
-          </CyDView>
-
-          {/* Security Warning */}
-          <CyDView className='bg-red400 rounded-[12px] p-[16px] mx-[8px] mb-[8px]'>
-            <CyDView className='flex-row items-start'>
-              <CyDMaterialDesignIcons
-                name='school'
-                size={24}
-                className='text-white mr-[12px] mt-[2px] flex-shrink-0'
-              />
-              <CyDText className='text-white text-[14px] flex-1 leading-[20px] font-medium'>
-                Please refrain from sharing this QR code with anyone or any
-                unknown applications. Anyone who has access to this QR code can
-                gain access to all of your assets.
-              </CyDText>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-      </CyDModalLayout>
-
+      <Toast config={toastConfig} position={'bottom'} bottomOffset={140} />
       {loading ? (
         <Loading />
       ) : (
@@ -302,7 +326,7 @@ function CreateSeedPhrase() {
             {/* Action Buttons */}
             <CyDView className='flex-row justify-center px-[20px] mb-[30px]'>
               <CyDTouchView
-                onPress={() => setQRVisible(true)}
+                onPress={handleShowQR}
                 className='flex-row items-center justify-center bg-n0 border border-n40 rounded-[25px] py-[12px] px-[24px] mr-[12px] flex-1'>
                 <CyDMaterialDesignIcons
                   name='qrcode'
@@ -362,12 +386,5 @@ function CreateSeedPhrase() {
     </CyDSafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
-});
 
 export default CreateSeedPhrase;

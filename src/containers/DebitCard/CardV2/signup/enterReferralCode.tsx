@@ -20,7 +20,7 @@ import { screenTitle } from '../../../../constants';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
 import AppImages from '../../../../../assets/images/appImages';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Keyboard } from 'react-native';
 import { isEmpty } from 'lodash';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import HowReferralWorksModal from '../../../../components/v2/howReferralWorksModal';
@@ -54,10 +54,15 @@ const EnterReferralCode = (): JSX.Element => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showBoostedRewardInfoModal, setShowBoostedRewardInfoModal] =
     useState(false);
+  const [votedCandidates, setVotedCandidates] = useState<
+    Array<{ name: string; logo: any }>
+  >([]);
 
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
+
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     const setReferralCodeFromAsync = async () => {
@@ -68,6 +73,19 @@ const EnterReferralCode = (): JSX.Element => {
     };
     void setReferralCodeFromAsync();
   }, [isFocused]);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleSkip = async () => {
     await removeReferralCode();
@@ -90,17 +108,43 @@ const EnterReferralCode = (): JSX.Element => {
         referralCode: referralCode.trim().toUpperCase(),
       });
 
+      console.log('response : ', response);
+
       if (!response.isError) {
         if (response.data.isValid) {
           await setReferralCodeAsync(referralCode);
-          // setShowSuccessModal(true);
+
+          // Fetch voted candidates for this referrer
+          try {
+            const votedResp = await getWithAuth(
+              `/v1/cards/referral-v2/${referralCode.trim().toUpperCase()}/voted-candidates`,
+            );
+            console.log(
+              'votedResp : ',
+              votedResp,
+              votedResp.data.votedCandidates,
+            );
+            if (!votedResp.isError && votedResp.data?.votedCandidates) {
+              const merchants = votedResp.data.votedCandidates.map(
+                (c: any) => ({
+                  name: c.merchantName,
+                  logo: c.logo ? { uri: c.logo } : '', // fallback
+                }),
+              );
+              setVotedCandidates(merchants);
+            }
+          } catch (e) {
+            console.log('Error fetching voted candidates', e);
+          }
+
           setShowBoostedRewardInfoModal(true);
         } else {
           showModal('state', {
             type: 'error',
             title: t('INVALID_REFERRAL_CODE'),
             description:
-              response.error.message || t('INVALID_REFERRAL_CODE_DESCRIPTION'),
+              response?.error?.message ||
+              t('INVALID_REFERRAL_CODE_DESCRIPTION'),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -109,16 +153,17 @@ const EnterReferralCode = (): JSX.Element => {
         showModal('state', {
           type: 'error',
           title: t('INVALID_REFERRAL_CODE'),
-          description: response.error.message || t('PLEASE_CONTACT_SUPPORT'),
+          description: response?.error?.message || t('PLEASE_CONTACT_SUPPORT'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
       }
     } catch (error) {
+      console.log('error : ', error);
       showModal('state', {
         type: 'error',
         title: t('ERROR_IN_APPLYING_REFERRAL_CODE'),
-        description: t('PLEASE_CONTACT_SUPPORT'),
+        description: t('INVALID_REFERRAL_CODE_DESCRIPTION'),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -148,6 +193,7 @@ const EnterReferralCode = (): JSX.Element => {
       <BoostedRewardInfoModal
         isVisible={showBoostedRewardInfoModal}
         onContinue={handleBoostedRewardInfoModalClose}
+        votedCandidates={votedCandidates}
       />
 
       {/* Modal for explaining how referrals work */}
@@ -262,7 +308,15 @@ const EnterReferralCode = (): JSX.Element => {
         </CyDView>
       </KeyboardAwareScrollView>
 
-      <OfferTagComponent position={{ bottom: 146, left: 16, right: 16 }} />
+      {!(Platform.OS === 'android' && isKeyboardVisible) && (
+        <OfferTagComponent
+          position={{
+            bottom: Platform.OS === 'android' ? 118 : 146,
+            left: 16,
+            right: 16,
+          }}
+        />
+      )}
 
       {/* Footer */}
       <CardApplicationFooter

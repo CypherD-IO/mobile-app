@@ -18,7 +18,7 @@ import {
   CyDTouchView,
   CyDMaterialDesignIcons,
 } from '../../styles/tailwindComponents';
-import { useTheme } from '../../reducers/themeReducer';
+import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { StyleSheet, Platform, StatusBar } from 'react-native';
 
@@ -39,7 +39,7 @@ interface CyDBottomSheetProps {
   enableDynamicSizing?: boolean;
   enablePanDownToClose?: boolean;
   enableOverDrag?: boolean;
-  backgroundStyle?: object;
+  backgroundColor?: string;
   handleStyle?: object;
   handleIndicatorStyle?: object;
   backdropComponent?: React.ComponentType<BottomSheetDefaultBackdropProps>;
@@ -64,7 +64,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       enableDynamicSizing = false,
       enablePanDownToClose = true,
       enableOverDrag = true,
-      backgroundStyle,
+      backgroundColor,
       handleStyle,
       handleIndicatorStyle,
       backdropComponent,
@@ -83,7 +83,12 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
   ) => {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const { theme } = useTheme();
-    const colorScheme = useColorScheme();
+    const { colorScheme } = useColorScheme();
+
+    const isDarkMode =
+      theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+    console.log('isDarkMode', isDarkMode);
 
     // Memoize snap points
     const snapPointsMemo = useMemo(() => snapPoints, [snapPoints]);
@@ -118,15 +123,15 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
         console.log('Bottom sheet index changed to:', index);
 
         // Update status bar based on sheet state
-        if (Platform.OS === 'android') {
-          const isFullScreen = index === snapPointsMemo.length - 1;
-          const bgColor = isFullScreen
-            ? theme === 'dark'
-              ? '#000000ff'
-              : '#ffffffff'
-            : 'transparent';
-          StatusBar.setBackgroundColor(bgColor);
-        }
+        // if (Platform.OS === 'android') {
+        //   const isFullScreen = index === snapPointsMemo.length - 1;
+        //   const bgColor = isFullScreen
+        //     ? theme === 'dark'
+        //       ? '#000000ff'
+        //       : '#ffffffff'
+        //     : 'transparent';
+        //   StatusBar.setBackgroundColor(bgColor);
+        // }
 
         // Handle callbacks
         if (index === -1) {
@@ -164,46 +169,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       [backdropComponent],
     );
 
-    // Handle close button press
-    const handleClosePress = useCallback(() => {
-      bottomSheetRef.current?.close();
-    }, []);
-
-    // Dynamic background style based on theme
-    const dynamicBackgroundStyle = useMemo(() => {
-      const bgColor = theme === 'dark' ? '#1a1a1a' : '#ffffff';
-      console.log(
-        'CyDBottomSheet background style - theme:',
-        theme,
-        'bgColor:',
-        bgColor,
-      );
-      return {
-        backgroundColor: bgColor,
-        ...backgroundStyle,
-      };
-    }, [theme, backgroundStyle]);
-
-    // Dynamic handle style
-    const dynamicHandleStyle = useMemo(
-      () => ({
-        backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff',
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-        ...handleStyle,
-      }),
-      [theme, handleStyle],
-    );
-
-    // Dynamic handle indicator style
-    const dynamicHandleIndicatorStyle = useMemo(
-      () => ({
-        backgroundColor: theme === 'dark' ? '#666666' : '#d9d9d9',
-        ...handleIndicatorStyle,
-      }),
-      [theme, handleIndicatorStyle],
-    );
-
     const ContentWrapper = scrollable ? BottomSheetScrollView : BottomSheetView;
 
     return (
@@ -225,10 +190,17 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           enablePanDownToClose={enablePanDownToClose}
           enableOverDrag={enableOverDrag}
           backgroundStyle={{
-            backgroundColor: '#1a1a1a', // Force dark background
+            backgroundColor:
+              backgroundColor ?? (isDarkMode ? '#161616' : '#F5F6F7'), // Force dark background
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
           }}
+          handleIndicatorStyle={
+            handleIndicatorStyle ?? {
+              backgroundColor: isDarkMode ? '#444' : '#ccc',
+              width: 34,
+            }
+          }
           backdropComponent={renderBackdrop}
           onChange={handleSheetChanges}
           keyboardBehavior={keyboardBehavior}
@@ -252,7 +224,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
             }
             showsVerticalScrollIndicator={false}>
             {/* Header with title and close button */}
-            {(title ?? showCloseButton) && (
+            {title && (
               <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
                 <CyDView className='flex-1'>
                   {title && (
@@ -261,17 +233,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
                     </CyDText>
                   )}
                 </CyDView>
-                {/* {showCloseButton && (
-                  <CyDTouchView
-                    className='w-8 h-8 items-center justify-center rounded-full bg-n40'
-                    onPress={handleClosePress}>
-                    <CyDMaterialDesignIcons
-                      name='close'
-                      size={20}
-                      className='text-white'
-                    />
-                  </CyDTouchView>
-                )} */}
               </CyDView>
             )}
 
