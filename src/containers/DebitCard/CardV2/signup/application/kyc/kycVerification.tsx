@@ -32,6 +32,7 @@ import KYCFailedComponent from './KYCFailedComponent';
 import AdditionalDocumentRequiredComponent from './AdditionalDocumentRequiredComponent';
 import AdditionalReviewComponent from './AdditionalReviewComponent';
 import KYCIntroComponent from './KYCIntroComponent';
+import { useOnboardingReward } from '../../../../../../contexts/OnboardingRewardContext';
 
 // Import components
 const KYCVerification = () => {
@@ -47,6 +48,9 @@ const KYCVerification = () => {
     null,
   );
   const [isRainDeclined, setIsRainDeclined] = useState(false);
+
+  const { refreshStatus, hasSecuredSlot, totalRewardsPossible } =
+    useOnboardingReward();
 
   const checkKYCStatus = async () => {
     try {
@@ -90,9 +94,16 @@ const KYCVerification = () => {
       kycStatus === CardApplicationStatus.KYC_SUCCESSFUL ||
       kycStatus === CardApplicationStatus.COMPLETED
     ) {
-      // navigation.navigate(screenTitle.NAME_ON_CARD);
-      navigation.navigate(screenTitle.TOKEN_REWARD_EARNED);
+      if (hasSecuredSlot) {
+        navigation.navigate(screenTitle.TOKEN_REWARD_EARNED, {
+          rewardAmount: totalRewardsPossible,
+          tokenSymbol: '$CYPR',
+        });
+      } else {
+        navigation.navigate(screenTitle.NAME_ON_CARD);
+      }
     } else if (kycStatus === CardApplicationStatus.KYC_INITIATED) {
+      void refreshStatus();
       navigation.navigate(screenTitle.KYC_WEBVIEW);
     }
   };

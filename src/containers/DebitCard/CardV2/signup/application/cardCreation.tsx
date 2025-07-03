@@ -20,7 +20,7 @@ import { screenTitle } from '../../../../../constants';
 import AppImages, {
   AppImagesMap,
 } from '../../../../../../assets/images/appImages';
-import { Share, StyleSheet } from 'react-native';
+import { Share, StyleSheet, Vibration, NativeModules } from 'react-native';
 import Video from 'react-native-video';
 import Button from '../../../../../components/v2/button';
 import { ButtonType, GlobalContextType } from '../../../../../constants/enum';
@@ -31,6 +31,7 @@ import {
   GlobalContextDef,
 } from '../../../../../core/globalContext';
 import useCardUtilities from '../../../../../hooks/useCardUtilities';
+import LottieView from 'lottie-react-native';
 
 interface RouteParams {
   name: string;
@@ -46,10 +47,38 @@ const CardCreation = () => {
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { getWalletProfile } = useCardUtilities();
 
+  // Confetti animation refs and play tracking
+  const confettiRef = useRef<LottieView>(null);
+  const confettiPlaysCompleted = useRef<number>(0);
+
+  const triggerHaptic = () => {
+    const hapticAvailable = !!NativeModules.RNReactNativeHapticFeedback;
+    if (hapticAvailable) {
+      // Dynamically require to avoid unused import if module absent
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const ReactNativeHapticFeedback = require('react-native-haptic-feedback');
+      ReactNativeHapticFeedback.trigger('impactMedium', {
+        enableVibrateFallback: true,
+        ignoreAndroidSystemSettings: false,
+      });
+    } else {
+      Vibration.vibrate(30);
+    }
+  };
+
+  const handleConfettiFinish = () => {
+    confettiPlaysCompleted.current += 1;
+    if (confettiPlaysCompleted.current < 3 && confettiRef.current) {
+      confettiRef.current.play();
+      triggerHaptic();
+    }
+  };
+
   useEffect(() => {
     // Show loading state for 4 seconds
     setTimeout(() => {
       setIsLoading(false);
+      triggerHaptic(); // Initial haptic when confetti starts
     }, 4000);
   }, []);
 
@@ -217,6 +246,20 @@ const CardCreation = () => {
           </CyDView>
         </CyDView>
       </ViewShot>
+
+      {/* Confetti overlay after card is created */}
+      {!isLoading && (
+        <CyDView pointerEvents='none' style={styles.confetti}>
+          <LottieView
+            ref={confettiRef}
+            source={AppImagesMap.common.CONFETTI_ANIMATION}
+            autoPlay
+            loop={false}
+            onAnimationFinish={handleConfettiFinish}
+            style={StyleSheet.absoluteFill}
+          />
+        </CyDView>
+      )}
     </CyDSafeAreaView>
   );
 };
@@ -237,6 +280,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardVideo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  confetti: {
     position: 'absolute',
     top: 0,
     left: 0,

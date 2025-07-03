@@ -457,7 +457,7 @@ export default function Login(props) {
           </CyDView>
 
           {/* Info Section */}
-          <CyDTouchView className='flex-row items-center bg-base40 rounded-[8px] p-[16px] mb-[22px] mx-[16px]'>
+          <CyDView className='flex-row items-center bg-base40 rounded-[8px] p-[16px] mb-[22px] mx-[16px]'>
             <CyDMaterialDesignIcons
               name='school'
               size={24}
@@ -468,7 +468,7 @@ export default function Login(props) {
               settings or security section. Look for an option labeled 'Backup'
               or 'Recovery Phrase' to view or copy it.
             </CyDText>
-          </CyDTouchView>
+          </CyDView>
 
           {/* Continue Button */}
           <CyDView className='mb-[22px] mx-[16px]'>

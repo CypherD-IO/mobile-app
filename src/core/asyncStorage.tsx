@@ -638,3 +638,34 @@ export const getOverchargeDccInfoModalShown = async () => {
     Sentry.captureException(error);
   }
 };
+
+export const setFirstLaunchAfterWalletCreation = async (value: boolean) => {
+  try {
+    await AsyncStorage.setItem(
+      'FIRST_LAUNCH_AFTER_WALLET_CREATION',
+      JSON.stringify(value),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getFirstLaunchAfterWalletCreation = async (): Promise<boolean> => {
+  try {
+    const storedValue = await AsyncStorage.getItem(
+      'FIRST_LAUNCH_AFTER_WALLET_CREATION',
+    );
+    return storedValue != null ? JSON.parse(storedValue) : false;
+  } catch (error) {
+    Sentry.captureException(error);
+    return false;
+  }
+};
+
+export const removeFirstLaunchAfterWalletCreation = async () => {
+  try {
+    await AsyncStorage.removeItem('FIRST_LAUNCH_AFTER_WALLET_CREATION');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};

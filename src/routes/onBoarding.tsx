@@ -9,7 +9,7 @@ import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import { Keyboard } from 'react-native';
+import { Keyboard, Platform } from 'react-native';
 import {
   CyDIcons,
   CyDText,
@@ -43,7 +43,7 @@ const CustomHeader = ({
   return (
     <CyDView
       className={`flex-row ${textAlign === 'center' ? 'justify-between' : 'items-center'} pb-[10px] ${backgroundColor ?? 'bg-n20'}`}
-      style={{ paddingTop: insets.top }}>
+      style={{ paddingTop: Math.max(insets.top, 10) }}>
       <CyDTouchView
         className='px-[12px] mx-[4px]'
         onPress={() => {
@@ -133,7 +133,7 @@ function OnBoardingStack({
               navigation={navigation}
               keyboardHeight={0}
               textAlign='start'
-              backgroundColor='bg-n0'
+              backgroundColor='bg-n20'
             />
           ),
         })}
@@ -180,7 +180,7 @@ function OnBoardingStack({
               navigation={navigation}
               keyboardHeight={0}
               textAlign='start'
-              backgroundColor='bg-n0'
+              backgroundColor='bg-n20'
             />
           ),
         })}

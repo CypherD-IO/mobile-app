@@ -28,6 +28,7 @@ import Loading from '../../../../../components/v2/loading';
 import OTPInput from '../../../../../components/v2/otpBox';
 import AppImages from '../../../../../../assets/images/appImages';
 import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
+import { Platform } from 'react-native';
 
 const EmailVerification = (): JSX.Element => {
   const { t } = useTranslation();
@@ -226,7 +227,13 @@ const EmailVerification = (): JSX.Element => {
         </CyDTouchView>
       </CyDView>
 
-      <OfferTagComponent position={{ bottom: 146, left: 16, right: 16 }} />
+      <OfferTagComponent
+        position={{
+          bottom: Platform.OS === 'android' ? 118 : 146,
+          left: 16,
+          right: 16,
+        }}
+      />
 
       <CardApplicationFooter
         currentStep={2}

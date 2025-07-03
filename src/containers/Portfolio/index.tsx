@@ -6,7 +6,7 @@ import { ParamListBase, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { get, isEmpty } from 'lodash';
+import { get, isEmpty, has } from 'lodash';
 import moment from 'moment';
 import React, {
   useCallback,
@@ -45,6 +45,7 @@ import {
   GlobalContextType,
   GlobalModalType,
   RPCODES,
+  CardProviders,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
@@ -144,6 +145,19 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   let previousOpenedSwipeableRef: Swipeable | null;
 
   const { show3DSecureModal } = use3DSecure();
+
+  // Redirect logic for imported wallets that do not yet have an RC card
+  const hasRedirectedToCard = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (isFocused && !hasRedirectedToCard.current) {
+      const cardProfile = globalStateContext?.globalState?.cardProfile;
+      if (cardProfile && !has(cardProfile, CardProviders.REAP_CARD)) {
+        hasRedirectedToCard.current = true;
+        navigation.navigate(C.screenTitle.CARD);
+      }
+    }
+  }, [isFocused, globalStateContext?.globalState?.cardProfile]);
 
   const onSwipe = (key: number) => {
     if (

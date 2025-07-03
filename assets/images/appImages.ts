@@ -727,6 +727,10 @@ const REFERRAL_HERO_IMAGE = {
 const CYPR_TOKEN_REWARD = {
   uri: `${S3_BUCKET_URL_ICONS}/cyprTokenReward.mp4`,
 };
+const CONFETTI_ANIMATION = require('./confetti.json');
+const VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG = {
+  uri: `${S3_BUCKET_URL_ICONS}/virtualCardVerticalSpinWhiteBg.mp4`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -1034,6 +1038,8 @@ export const AppImagesMap = {
     CYPR_TOKEN_WITH_BASE_CHAIN,
     REFERRAL_HERO_IMAGE,
     CYPR_TOKEN_REWARD,
+    CONFETTI_ANIMATION,
+    VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1345,6 +1351,8 @@ enum AppImages {
   CYPR_TOKEN_WITH_BASE_CHAIN = 'CYPR_TOKEN_WITH_BASE_CHAIN',
   REFERRAL_HERO_IMAGE = 'REFERRAL_HERO_IMAGE',
   CYPR_TOKEN_REWARD = 'CYPR_TOKEN_REWARD',
+  CONFETTI_ANIMATION = 'CONFETTI_ANIMATION',
+  VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG = 'VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG',
 }
 
 export default AppImages;
