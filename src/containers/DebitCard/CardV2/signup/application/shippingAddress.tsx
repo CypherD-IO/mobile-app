@@ -30,6 +30,7 @@ import {
 } from '../../../../../core/util';
 import { ApplicationData } from '../../../../../models/applicationData.interface';
 import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
+import { Platform, Keyboard } from 'react-native';
 
 // Validation schema for the shipping address form
 const ShippingAddressSchema = Yup.object().shape({
@@ -79,6 +80,7 @@ const ShippingAddress = (): JSX.Element => {
     useState<boolean>(false);
   // Check if user has manually set phone country (persisted in form state)
   const isPhoneCountrySet = Boolean(formState.isPhoneCountryExplicitlySet);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   // Initialize selectedCountry and selectedPhoneCountry from form context if available
   const initialCountry: ICountry | undefined = useMemo(() => {
@@ -203,6 +205,19 @@ const ShippingAddress = (): JSX.Element => {
     </CyDView>
   );
 
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   return (
     <CyDView
       className='flex-1 bg-n0'
@@ -211,7 +226,7 @@ const ShippingAddress = (): JSX.Element => {
       <ChooseCountryModal
         isModalVisible={selectCountryModalVisible}
         setModalVisible={setSelectCountryModalVisible}
-        selectedCountryState={[selectedCountry, handleAddressCountrySelect]}
+        selectedCountryState={[selectedCountry, setSelectedCountry]}
         countryListFetchUrl={
           'https://public.cypherd.io/js/rcSupportedCountries.js'
         }
@@ -219,7 +234,7 @@ const ShippingAddress = (): JSX.Element => {
       <ChooseCountryModal
         isModalVisible={selectPhoneCountryModalVisible}
         setModalVisible={setSelectPhoneCountryModalVisible}
-        selectedCountryState={[selectedPhoneCountry, handlePhoneCountrySelect]}
+        selectedCountryState={[selectedPhoneCountry, setSelectedPhoneCountry]}
         countryListFetchUrl={
           'https://public.cypherd.io/js/rcSupportedCountries.js'
         }
@@ -403,9 +418,15 @@ const ShippingAddress = (): JSX.Element => {
               </CyDView>
             </KeyboardAwareScrollView>
 
-            <OfferTagComponent
-              position={{ bottom: 146, left: 16, right: 16 }}
-            />
+            {!(Platform.OS === 'android' && isKeyboardVisible) && (
+              <OfferTagComponent
+                position={{
+                  bottom: Platform.OS === 'android' ? 118 : 146,
+                  left: 16,
+                  right: 16,
+                }}
+              />
+            )}
 
             {/* Footer */}
             <CardApplicationFooter

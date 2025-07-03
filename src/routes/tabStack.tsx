@@ -37,6 +37,8 @@ import { useInstallReferrer } from '../hooks';
 import {
   getProcessedReferrerCode,
   setProcessedReferrerCode,
+  getFirstLaunchAfterWalletCreation,
+  setFirstLaunchAfterWalletCreation,
 } from '../core/asyncStorage';
 
 const Tab = createBottomTabNavigator();
@@ -87,6 +89,29 @@ function TabStack(props: TabStackProps) {
   // Use useNavigationContainerRef to get access to the navigation ref
   const navigationRef = useNavigationContainerRef();
   const routeNameRef = React.useRef<string | undefined>(undefined);
+
+  // Decide landing tab based on first-launch flag
+  const [initialTab, setInitialTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    const decideLandingTab = async () => {
+      try {
+        const isFirstLaunch = await getFirstLaunchAfterWalletCreation();
+        if (isFirstLaunch) {
+          setInitialTab(screenTitle.CARD);
+          // Reset the flag so subsequent launches open Portfolio
+          await setFirstLaunchAfterWalletCreation(false);
+        } else {
+          setInitialTab(screenTitle.PORTFOLIO);
+        }
+      } catch (e) {
+        // On error default to Portfolio to avoid blocking app load
+        setInitialTab(screenTitle.PORTFOLIO);
+      }
+    };
+
+    void decideLandingTab();
+  }, []);
 
   // Check for referral code from install referrer
   useEffect(() => {
@@ -340,7 +365,18 @@ function TabStack(props: TabStackProps) {
 
   useEffect(() => {
     const unsubscribe = navigationRef.current?.addListener('state', () => {
+      const previousRouteName = routeNameRef.current;
       const currentRouteName = getCurrentRouteName();
+
+      if (previousRouteName !== currentRouteName && currentRouteName) {
+        void analytics().logScreenView({
+          screen_name: currentRouteName,
+          screen_class: currentRouteName,
+        });
+        routeNameRef.current = currentRouteName;
+      }
+
+      // Update tab bar visibility based on the active route
       setShowTabBar(
         currentRouteName
           ? screensToHaveNavBar.includes(currentRouteName)
@@ -362,6 +398,10 @@ function TabStack(props: TabStackProps) {
     return theme === 'dark' ? '#FFFFFF' : '#000000';
   }, [theme, colorScheme]);
 
+  if (!initialTab) {
+    return <CyDView />;
+  }
+
   return (
     <NavigationContainer
       independent={true}
@@ -374,8 +414,7 @@ function TabStack(props: TabStackProps) {
       }}
       onStateChange={() => {
         const previousRouteName = routeNameRef.current;
-        const currentRoute = navigationRef.current?.getCurrentRoute();
-        const currentRouteName = currentRoute?.name;
+        const currentRouteName = getCurrentRouteName();
 
         if (previousRouteName !== currentRouteName && currentRouteName) {
           void analytics().logScreenView({
@@ -384,6 +423,13 @@ function TabStack(props: TabStackProps) {
           });
           routeNameRef.current = currentRouteName;
         }
+
+        // Update tab bar visibility based on the active route
+        setShowTabBar(
+          currentRouteName
+            ? screensToHaveNavBar.includes(currentRouteName)
+            : false,
+        );
       }}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -423,7 +469,7 @@ function TabStack(props: TabStackProps) {
             <CyDView className='bg-n0 h-full rounded-t-[20px] shadow-xl shadow-n40' />
           ),
         })}
-        initialRouteName={screenTitle.CARD}>
+        initialRouteName={initialTab}>
         <Tab.Screen
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
@@ -442,13 +488,13 @@ function TabStack(props: TabStackProps) {
         <Tab.Screen
           name={screenTitle.SHORTCUTS}
           component={PortfolioStackScreen}
-          options={({ route }) => ({
+          options={{
             tabBarButton: () => (
               <CyDView className={'scale-105'}>
                 <ShortcutsModal />
               </CyDView>
             ),
-          })}
+          }}
         />
         <Tab.Screen
           name={screenTitle.SWAP}

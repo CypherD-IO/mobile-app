@@ -16,68 +16,27 @@ import { logAnalyticsToFirebase, AnalyticEvent } from '../../core/analytics';
 
 interface ExclusiveOfferModalProps {
   isVisible: boolean;
-  onClose: () => void;
   onSeeDetails?: () => void;
   initialCountdownMinutes?: number; // Default to 59 minutes
+  rewardAmount?: number; // dynamic reward amount
+  onClickGotIt: () => void;
 }
 
 const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
   isVisible,
-  onClose,
+  onClickGotIt,
   onSeeDetails,
   initialCountdownMinutes = 59,
+  rewardAmount = 0,
 }) => {
   const { t } = useTranslation();
-  const [timeLeft, setTimeLeft] = useState({
-    minutes: initialCountdownMinutes,
-    seconds: 29,
-  });
-
-  // Countdown timer logic
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isVisible) {
-      interval = setInterval(() => {
-        setTimeLeft(prevTime => {
-          const { minutes, seconds } = prevTime;
-
-          if (minutes === 0 && seconds === 0) {
-            // Timer has ended
-            clearInterval(interval);
-            onClose();
-            return { minutes: 0, seconds: 0 };
-          }
-
-          if (seconds === 0) {
-            return { minutes: minutes - 1, seconds: 59 };
-          } else {
-            return { minutes, seconds: seconds - 1 };
-          }
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [isVisible, onClose]);
-
-  // Format time for display
-  const formatTime = (minutes: number, seconds: number) => {
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    const formattedSeconds = seconds.toString().padStart(2, '0');
-    return `${formattedMinutes}M:${formattedSeconds}S`;
-  };
 
   // Handle modal show analytics
   useEffect(() => {
     if (isVisible) {
       void logAnalyticsToFirebase(AnalyticEvent.EXCLUSIVE_OFFER_MODAL_VIEWED, {
         offer_type: 'signup_reward',
-        reward_amount: 100,
+        reward_amount: rewardAmount,
         currency: 'CYPR',
       });
     }
@@ -88,7 +47,7 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
       AnalyticEvent.EXCLUSIVE_OFFER_SEE_DETAILS_CLICKED,
       {
         offer_type: 'signup_reward',
-        reward_amount: 100,
+        reward_amount: rewardAmount,
         currency: 'CYPR',
       },
     );
@@ -101,23 +60,26 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
   const handleGotIt = () => {
     void logAnalyticsToFirebase(AnalyticEvent.EXCLUSIVE_OFFER_GOT_IT_CLICKED, {
       offer_type: 'signup_reward',
-      reward_amount: 100,
+      reward_amount: rewardAmount,
       currency: 'CYPR',
     });
 
-    onClose();
+    onClickGotIt();
   };
 
   return (
     <Modal
       isVisible={isVisible}
-      onBackdropPress={onClose}
-      onBackButtonPress={onClose}
+      onBackdropPress={() => {}}
+      onBackButtonPress={() => {}}
       backdropOpacity={0.9}
       useNativeDriver
       animationIn='slideInUp'
       animationOut='slideOutDown'
-      style={styles.modalStyle}>
+      style={styles.modalStyle}
+      hideModalContentWhileAnimating
+      useNativeDriverForBackdrop
+      statusBarTranslucent>
       {/* Background with blurred token imagery */}
       <CyDView className='flex-1 relative mt-[-400px]'>
         {/* Blurred background tokens */}
@@ -147,24 +109,25 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
               className='w-[32px] h-[32px] mr-[8px]'
               resizeMode='contain'
             />
-            <CyDText className='text-white text-[48px] font-bold'>100</CyDText>
+            <CyDText className='text-white text-[48px] font-bold'>
+              {rewardAmount}
+            </CyDText>
           </CyDView>
 
           {/* As Signup Reward */}
-          <CyDText className='text-[#6B788E] text-[16px] font-medium mb-[16px]'>
+          <CyDText className='text-n200 text-[16px] font-medium mb-[16px]'>
             As Signup Reward
           </CyDText>
 
           {/* Description */}
           <CyDText className='text-white text-[16px] text-center mb-[20px] leading-[22px] px-[16px]'>
             Join the Cypher Card today and enjoy a bonus of{'\n'}
-            100 $CYPR within if you sign up
+            {rewardAmount} $CYPR if you sign up within
           </CyDText>
 
-          {/* Countdown Timer */}
           <CyDView className='bg-[#333333] rounded-full px-[16px] py-[8px] mb-[20px] flex-row items-center'>
             <CyDText className='text-white text-[16px] font-medium'>
-              🕘 {formatTime(timeLeft.minutes, timeLeft.seconds)}
+              {'🕛 60M:00S'}
             </CyDText>
           </CyDView>
 

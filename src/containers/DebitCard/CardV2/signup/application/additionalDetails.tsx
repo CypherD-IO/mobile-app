@@ -34,6 +34,7 @@ import { useFormContext } from './FormContext';
 import clsx from 'clsx';
 import countryMaster from '../../../../../../assets/datasets/countryMaster';
 import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
+import { Platform } from 'react-native';
 
 // Validation schema for the additional details form
 const AdditionalDetailsSchema = Yup.object().shape({
@@ -303,7 +304,11 @@ const AdditionalDetails = (): JSX.Element => {
             </CyDView>
 
             <OfferTagComponent
-              position={{ bottom: 186, left: 16, right: 16 }}
+              position={{
+                bottom: Platform.OS === 'android' ? 158 : 186,
+                left: 16,
+                right: 16,
+              }}
             />
 
             {/* Footer */}

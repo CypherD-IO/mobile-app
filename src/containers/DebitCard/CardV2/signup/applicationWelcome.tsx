@@ -6,25 +6,27 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet, useColorScheme } from 'react-native';
 import Video from 'react-native-video';
 import { BlurView } from '@react-native-community/blur';
 import {
   CyDView,
   CyDText,
   CyDImage,
-  CyDScrollView,
   CyDTouchView,
-  CyDIcons,
 } from '../../../../styles/tailwindComponents';
 import { screenTitle } from '../../../../constants';
 import { t } from 'i18next';
 import AppImages, {
   AppImagesMap,
 } from '../../../../../assets/images/appImages';
-import CardApplicationHeader from '../../../../components/v2/CardApplicationHeader';
-import CardApplicationFooter from '../../../../components/v2/CardApplicationFooter';
 import OfferTagComponent from '../../../../components/v2/OfferTagComponent';
+import ExclusiveOfferModal from '../../../../components/v2/exclusiveOfferModal';
+import { useOnboardingReward } from '../../../../contexts/OnboardingRewardContext';
+import {
+  useTheme as useAppTheme,
+  Theme,
+} from '../../../../reducers/themeReducer';
 
 interface StepData {
   id: number;
@@ -43,16 +45,14 @@ const StepItem = ({ step, isLast }: StepItemProps) => {
     <CyDView>
       <CyDView className='flex-row px-4'>
         <CyDView className='mr-4'>
-          <CyDText className='text-[20px] font-semibold text-white'>
-            {step.id}
-          </CyDText>
+          <CyDText className='text-[20px] font-semibold'>{step.id}</CyDText>
         </CyDView>
 
         <CyDView className='flex-1 pr-2'>
-          <CyDText className='text-[20px] font-[500] mb-1 text-white'>
+          <CyDText className='text-[20px] font-[500] mb-1'>
             {step.title}
           </CyDText>
-          <CyDText className='text-[14px] text-gray-300'>
+          <CyDText className='text-[14px] text-n200'>
             {step.description}
           </CyDText>
         </CyDView>
@@ -63,7 +63,7 @@ const StepItem = ({ step, isLast }: StepItemProps) => {
       </CyDView>
       {!isLast && (
         <CyDView className='my-6 relative'>
-          <CyDView className='h-[1px] bg-white/20 absolute left-[-16px] right-[-16px]' />
+          <CyDView className='h-[1px] bg-n40 absolute left-[-16px] right-[-16px]' />
         </CyDView>
       )}
     </CyDView>
@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
   blurContainer: {
     paddingHorizontal: 16,
     paddingBottom: 24,
-    backgroundColor: 'rgba(22, 22, 22, 0.90)',
   },
 });
 
@@ -90,6 +89,37 @@ const ApplicationWelcome = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
   const [isVideoPaused, setIsVideoPaused] = useState(true);
+  const [showExclusiveOfferModal, setShowExclusiveOfferModal] = useState(false);
+  const {
+    isRewardSlotAvailable,
+    totalRewardsPossible,
+    createTracking,
+    deadline,
+  } = useOnboardingReward();
+
+  const { theme } = useAppTheme();
+  const colorScheme = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  // Dynamic background colour for the step container. Use a light translucent
+  // white in light-mode and a dark translucent black/grey in dark-mode so that
+  // the design matches platform conventions.
+  const containerBgColor = isDarkMode
+    ? 'rgba(22, 22, 22, 0.90)'
+    : 'rgba(255, 255, 255, 0.90)';
+
+  console.log('deadline : ', deadline);
+  console.log('isRewardSlotAvailable : ', isRewardSlotAvailable);
+
+  // Show modal once when reward slot is available
+  React.useEffect(() => {
+    if (isRewardSlotAvailable && !deadline) {
+      setTimeout(() => {
+        setShowExclusiveOfferModal(true);
+      }, 500);
+    }
+  }, [isRewardSlotAvailable, deadline]);
 
   // Handle video playback based on screen focus
   useFocusEffect(
@@ -139,12 +169,27 @@ const ApplicationWelcome = (): JSX.Element => {
     navigation.navigate(screenTitle.PORTFOLIO);
   };
 
+  const handleExclusiveOfferClose = () => {
+    // Ensure backend updates before closing the modal, without breaking the expected void return type
+    createTracking()
+      .catch(error => {
+        console.log('createTracking error', error);
+      })
+      .finally(() => {
+        setShowExclusiveOfferModal(false);
+      });
+  };
+
   return (
-    <CyDView className='flex-1 bg-black'>
+    <CyDView className='flex-1 bg-n0'>
       <CyDView className='flex-1' style={{ paddingTop: insets.top }}>
         {/* Background Video */}
         <Video
-          source={{ uri: AppImagesMap.common.VIRTUAL_CARD_VERTICAL_SPIN.uri }}
+          source={{
+            uri: isDarkMode
+              ? AppImagesMap.common.VIRTUAL_CARD_VERTICAL_SPIN.uri
+              : AppImagesMap.common.VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG.uri,
+          }}
           style={styles.videoContainer}
           resizeMode='cover'
           repeat={true}
@@ -164,12 +209,10 @@ const ApplicationWelcome = (): JSX.Element => {
 
         {/* Header */}
         <CyDView className='flex-row justify-between items-center px-4 py-2'>
-          <CyDText className='text-[32px] font-medium text-white'>
-            {t('CARDS')}
-          </CyDText>
+          <CyDText className='text-[32px] font-medium'>{t('CARDS')}</CyDText>
           <CyDTouchView onPress={handleBack}>
-            <CyDView className='flex-row items-center gap-1 bg-white/20 px-6 py-2 rounded-full'>
-              <CyDText className='text-white font-medium'>Skip</CyDText>
+            <CyDView className='flex-row items-center gap-1 bg-base40 px-6 py-2 rounded-full'>
+              <CyDText className='font-medium'>Skip</CyDText>
             </CyDView>
           </CyDTouchView>
         </CyDView>
@@ -178,52 +221,103 @@ const ApplicationWelcome = (): JSX.Element => {
         <CyDView className='flex-1' />
 
         {/* Bottom Content Container with Blur Effect */}
-        <BlurView
-          style={styles.blurContainer}
-          blurType='dark'
-          blurAmount={10}
-          reducedTransparencyFallbackColor='rgba(0, 0, 0, 0.7)'>
-          {/* Title */}
-          <CyDView className='mb-4 mt-6 items-center'>
-            <CyDText className='text-[22px] text-white font-bold'>
-              {t('GET_YOUR_CYPHER_CARD')}
-            </CyDText>
-            <CyDText className='text-[22px] mb-4 text-white font-bold'>
-              {t('IN_UNDER_5_MINUTES')}
-            </CyDText>
+        {Platform.OS === 'ios' ? (
+          <BlurView
+            style={[
+              styles.blurContainer,
+              { backgroundColor: containerBgColor },
+            ]}
+            blurType={isDarkMode ? 'dark' : 'light'}
+            blurAmount={10}
+            reducedTransparencyFallbackColor={containerBgColor}>
+            {/* Title */}
+            <CyDView className='mb-4 mt-6 items-center'>
+              <CyDText className='text-[22px] font-bold'>
+                {t('GET_YOUR_CYPHER_CARD')}
+              </CyDText>
+              <CyDText className='text-[22px] mb-4 font-bold'>
+                {t('IN_UNDER_5_MINUTES')}
+              </CyDText>
+            </CyDView>
+
+            {/* Steps */}
+            <CyDView className='mb-[60px]'>
+              {steps.map((step, index) => (
+                <StepItem
+                  key={step.id}
+                  step={step}
+                  isLast={index === steps.length - 1}
+                />
+              ))}
+            </CyDView>
+
+            {/* Offer Tag Component - using relative positioning within container */}
+            <OfferTagComponent position={{ bottom: 94, left: 16, right: 16 }} />
+
+            {/* Continue Button */}
+            <CyDTouchView
+              className='bg-[#F7C645] py-[14px] rounded-[30px]'
+              onPress={handleNext}>
+              <CyDText className='text-[20px] font-bold text-center text-black'>
+                {'Continue'}
+              </CyDText>
+            </CyDTouchView>
+          </BlurView>
+        ) : (
+          <CyDView
+            style={[
+              styles.blurContainer,
+              { backgroundColor: containerBgColor },
+            ]}>
+            {/* Title */}
+            <CyDView className='mb-4 mt-6 items-center'>
+              <CyDText className='text-[22px] font-bold'>
+                {t('GET_YOUR_CYPHER_CARD')}
+              </CyDText>
+              <CyDText className='text-[22px] mb-4 font-bold'>
+                {t('IN_UNDER_5_MINUTES')}
+              </CyDText>
+            </CyDView>
+
+            {/* Steps */}
+            <CyDView className='mb-[60px]'>
+              {steps.map((step, index) => (
+                <StepItem
+                  key={step.id}
+                  step={step}
+                  isLast={index === steps.length - 1}
+                />
+              ))}
+            </CyDView>
+
+            {/* Offer Tag Component - using relative positioning within container */}
+            <OfferTagComponent position={{ bottom: 94, left: 16, right: 16 }} />
+
+            {/* Continue Button */}
+            <CyDTouchView
+              className='bg-[#F7C645] py-[14px] rounded-[30px]'
+              onPress={handleNext}>
+              <CyDText className='text-[20px] font-bold text-center text-black'>
+                {'Continue'}
+              </CyDText>
+            </CyDTouchView>
           </CyDView>
-
-          {/* Steps */}
-          <CyDView className='mb-[60px]'>
-            {steps.map((step, index) => (
-              <StepItem
-                key={step.id}
-                step={step}
-                isLast={index === steps.length - 1}
-              />
-            ))}
-          </CyDView>
-
-          {/* Offer Tag Component - using relative positioning within container */}
-          <OfferTagComponent position={{ bottom: 94, left: 16, right: 16 }} />
-
-          {/* Continue Button */}
-          <CyDTouchView
-            className='bg-[#F7C645] py-[14px] rounded-[30px]'
-            onPress={handleNext}>
-            <CyDText className='text-[20px] font-bold text-center text-black'>
-              {'Continue'}
-            </CyDText>
-          </CyDTouchView>
-        </BlurView>
+        )}
       </CyDView>
 
       {/* Bottom Inset Background */}
       <CyDView
-        style={{
-          height: insets.bottom,
-          backgroundColor: 'rgba(22, 22, 22, 100)',
+        style={{ backgroundColor: containerBgColor, height: insets.bottom }}
+      />
+
+      {/* Exclusive Offer Modal */}
+      <ExclusiveOfferModal
+        isVisible={showExclusiveOfferModal}
+        onClickGotIt={handleExclusiveOfferClose}
+        onSeeDetails={() => {
+          console.log('Card signup - exclusive offer see details clicked');
         }}
+        rewardAmount={totalRewardsPossible}
       />
     </CyDView>
   );

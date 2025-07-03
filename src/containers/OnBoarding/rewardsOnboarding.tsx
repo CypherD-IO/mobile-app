@@ -42,7 +42,7 @@ import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import useWeb3Auth from '../../hooks/useWeb3Auth';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import useConnectionManager from '../../hooks/useConnectionManager';
-import ExclusiveOfferModal from '../../components/v2/exclusiveOfferModal';
+import useAxios from '../../core/HttpRequest';
 
 enum ProviderType {
   ETHEREUM = 'ethereum',
@@ -54,16 +54,87 @@ const enum SocialLoginMethod {
   GOOGLE = 'google',
 }
 
+// RewardCard Component
+interface RewardCardProps {
+  timeLeft: {
+    minutes: number;
+    seconds: number;
+  };
+  formatTime: (minutes: number, seconds: number) => string;
+  rewardAmount: number;
+  containerStyle?: string;
+}
+
+const RewardCard: React.FC<RewardCardProps> = ({
+  timeLeft,
+  formatTime,
+  rewardAmount,
+  containerStyle = 'bg-p100 rounded-[12px] p-[16px] mb-[40px]',
+}) => {
+  return (
+    <CyDView className={containerStyle}>
+      {/* Top Section */}
+      <CyDView className='mb-[20px]'>
+        <CyDText className='text-black text-[14px] font-bold mb-[4px]'>
+          Sign up Cypher card and claim
+        </CyDText>
+        <CyDView className='flex-row justify-between items-start'>
+          <CyDView className='flex-row items-center pr-[4px]'>
+            <CyDView className='mr-[8px] relative'>
+              <CyDImage
+                source={AppImages.CYPR_TOKEN}
+                className='w-[28px] h-[28px]'
+                resizeMode='contain'
+              />
+              <CyDImage
+                source={AppImages.BASE_LOGO}
+                className='absolute -bottom-[1px] -right-[3px] w-[14px] h-[14px]'
+                resizeMode='contain'
+              />
+            </CyDView>
+            <CyDText className='text-black text-[28px] font-bold'>
+              {rewardAmount}
+            </CyDText>
+          </CyDView>
+          <CyDText className='text-black text-[28px] font-bold mb-[1px]'>
+            🤑
+          </CyDText>
+        </CyDView>
+      </CyDView>
+
+      {/* Divider */}
+      <CyDView className='h-[1px] bg-p400 mb-[16px]' />
+
+      {/* Bottom Section */}
+      <CyDView className='flex-row justify-between items-center'>
+        <CyDText className='text-black text-[14px] font-bold flex-1 mr-[8px]'>
+          Sign up now and win a chance to unlock.
+        </CyDText>
+        {/* <CyDTouchView className='flex-row bg-p30 rounded-full py-[8px] px-[12px] items-center'>
+          <CyDMaterialDesignIcons
+            name='clock-outline'
+            size={20}
+            className='text-black mr-[3px]'
+          />
+          <CyDText className='text-black text-[14px] font-bold'>
+            {formatTime(timeLeft.minutes, timeLeft.seconds)}
+          </CyDText>
+        </CyDTouchView> */}
+      </CyDView>
+    </CyDView>
+  );
+};
+
 export default function RewardsOnboarding() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { showModal, hideModal } = useGlobalModalContext();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
   const { openWalletConnectModal } = useConnectionManager();
+  const { getWithoutAuth } = useAxios();
   const inset = useSafeAreaInsets();
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [showExclusiveOfferModal, setShowExclusiveOfferModal] = useState(false);
   const [showEmailScreen, setShowEmailScreen] = useState(false);
   const [showWalletScreen, setShowWalletScreen] = useState(false);
   const [email, setEmail] = useState('');
@@ -89,6 +160,30 @@ export default function RewardsOnboarding() {
     minutes: 59,
     seconds: 32,
   });
+
+  // Holds the total possible rewards fetched from public onboarding rewards API
+  const [totalPossibleRewards, setTotalPossibleRewards] = useState<number>(0);
+
+  // Fetch onboarding rewards info on component mount
+  useEffect(() => {
+    const fetchRewardsInfo = async () => {
+      try {
+        const res = await getWithoutAuth('/v1/cards/onboarding-rewards/info');
+        console.log('res : ', res);
+        const { data, isError, error } = res;
+        console.log('data : ', data);
+        console.log('isError : ', isError);
+        console.log('error : ', error);
+        if (!isError && data?.totalPossibleRewards !== undefined) {
+          setTotalPossibleRewards(data.totalPossibleRewards);
+        }
+      } catch (error) {
+        console.error('Failed to fetch onboarding rewards info:', error);
+      }
+    };
+
+    void fetchRewardsInfo();
+  }, []);
 
   // Countdown timer logic
   useEffect(() => {
@@ -128,12 +223,6 @@ export default function RewardsOnboarding() {
 
   const handleTrackAddress = () => {
     navigation.navigate(screenTitle.TRACK_WALLET_SCREEN);
-  };
-
-  const handleExclusiveOfferClose = () => {
-    setShowExclusiveOfferModal(false);
-    // Navigate to next step after closing modal
-    navigation.navigate(screenTitle.ONBOARDING_OPTIONS);
   };
 
   const handleBackFromEmail = () => {
@@ -188,8 +277,6 @@ export default function RewardsOnboarding() {
           method: socialLoginMethod,
         });
         await handleSocialLogin();
-        // Show exclusive offer modal after successful login
-        setShowExclusiveOfferModal(true);
       } finally {
         setLoading(false);
       }
@@ -480,174 +567,121 @@ export default function RewardsOnboarding() {
         </CyDModalLayout>
 
         <CyDView className='flex-1 bg-p300' style={{ paddingTop: inset.top }}>
-          {/* Header Section */}
-          <CyDView className='bg-p300 px-[24px] py-[20px]'>
-            {/* Title */}
-            <CyDText className='text-white text-[16px] font-bold mb-[20px]'>
-              Exclusive offer Just for you
-            </CyDText>
+          <CyDKeyboardAwareScrollView className='flex-1 bg-base40'>
+            {/* Header Section */}
+            <CyDView className='bg-p300 px-[24px] pt-[224px] pb-[24px] mt-[-200px]'>
+              {/* Title */}
+              <CyDText className='text-white text-[16px] font-bold mb-[20px]'>
+                Exclusive offer Just for you
+              </CyDText>
 
-            {/* Reward Card */}
-            <CyDView className='bg-p100 rounded-[12px] p-[16px] mb-[40px]'>
-              {/* Top Section */}
-              <CyDView className='mb-[20px]'>
-                <CyDText className='text-black text-[14px] font-bold mb-[4px]'>
-                  Sign up Cypher card and claim
-                </CyDText>
-                <CyDView className='flex-row justify-between items-start'>
-                  <CyDView className='flex-row items-center pr-[4px]'>
-                    <CyDView className='mr-[8px] relative'>
-                      <CyDImage
-                        source={AppImages.CYPR_TOKEN}
-                        className='w-[28px] h-[28px]'
-                        resizeMode='contain'
-                      />
-                      <CyDImage
-                        source={AppImages.BASE_LOGO}
-                        className='absolute -bottom-[1px] -right-[3px] w-[14px] h-[14px]'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                    <CyDText className='text-black text-[28px] font-bold'>
-                      100
-                    </CyDText>
-                  </CyDView>
-                  <CyDText className='text-black text-[28px] font-bold mb-[1px]'>
-                    🤑
-                  </CyDText>
-                </CyDView>
-              </CyDView>
+              {/* Reward Card */}
+              <RewardCard
+                timeLeft={timeLeft}
+                formatTime={formatTime}
+                rewardAmount={totalPossibleRewards}
+              />
+            </CyDView>
 
-              {/* Divider */}
-              <CyDView className='h-[1px] bg-p400 mb-[16px]' />
-
-              {/* Bottom Section */}
-              <CyDView className='flex-row justify-between items-center'>
-                <CyDText className='text-black text-[14px] font-bold flex-1 mr-[8px]'>
-                  Sign up with in, to claim the bonus.
-                </CyDText>
-                <CyDTouchView className='flex-row bg-p30 rounded-full py-[8px] px-[12px] items-center'>
+            <CyDView className='bg-base40 rounded-t-[32px] px-[16px] py-[24px] mt-[-24px]'>
+              {/* Email Form Section */}
+              <CyDView className='flex flex-col mb-[48px]'>
+                {/* Header */}
+                <CyDTouchView
+                  onPress={handleBackFromEmail}
+                  className='bg-n0 flex-row items-center mb-[8px] rounded-full py-[6px] px-[8px] self-start'>
                   <CyDMaterialDesignIcons
-                    name='clock-outline'
-                    size={20}
-                    className='text-black mr-[3px]'
+                    name='chevron-left'
+                    size={24}
+                    className='text-base400'
                   />
-                  <CyDText className='text-black text-[14px] font-bold'>
-                    {formatTime(timeLeft.minutes, timeLeft.seconds)}
+                  <CyDText className='text-base400 text-[16px] font-medium'>
+                    Back
                   </CyDText>
                 </CyDTouchView>
-              </CyDView>
-            </CyDView>
-          </CyDView>
 
-          {/* Email Form Section */}
-          <CyDKeyboardAwareScrollView className='flex-1 bg-base40 rounded-t-[32px] px-[24px] py-[32px]'>
-            <CyDView className='flex flex-col mb-[48px]'>
-              {/* Header */}
-              <CyDTouchView
-                onPress={handleBackFromEmail}
-                className='bg-n0 flex-row items-center mb-[8px] rounded-full py-[6px] px-[8px] self-start'>
-                <CyDMaterialDesignIcons
-                  name='chevron-left'
-                  size={24}
-                  className='text-base400'
-                />
-                <CyDText className='text-base400 text-[16px] font-medium'>
-                  Back
+                <CyDText className='text-base400 text-[28px] font-bold mb-[4px]'>
+                  Continue with Email
                 </CyDText>
-              </CyDTouchView>
-
-              <CyDText className='text-base400 text-[28px] font-bold mb-[4px]'>
-                Continue with Email
-              </CyDText>
-              <CyDText className='text-n200 text-[14px] mb-[32px]'>
-                {
-                  "We'll use this to sign you in or create an account for you if you don't have one yet"
-                }
-              </CyDText>
-
-              {/* Email Input */}
-              <CyDText className='text-n200 text-[12px] font-medium mb-[6px]'>
-                Email
-              </CyDText>
-              <CyDView className='bg-base40 rounded-[8px] mb-[12px]'>
-                <CyDTextInput
-                  className='text-primaryText bg-base40 text-[18px] py-[16px] px-[16px] rounded-[8px]'
-                  placeholder='Tonystark@dmail.com'
-                  placeholderTextColor='#8993A4'
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType='email-address'
-                  autoCapitalize='none'
-                  returnKeyType='done'
-                  onSubmitEditing={() => {
-                    handleEmailContinue();
-                    Keyboard.dismiss();
-                  }}
-                />
-              </CyDView>
-
-              {/* Continue Button */}
-              <CyDTouchView
-                onPress={handleEmailContinue}
-                className={`rounded-full py-[16px] px-[24px] mb-[24px] bg-n0`}>
-                <CyDText
-                  className={`text-[18px] font-bold text-center ${
-                    email.trim() ? 'text-primaryText' : 'text-n90'
-                  }`}>
-                  Continue
+                <CyDText className='text-n200 text-[14px] mb-[32px]'>
+                  {
+                    "We'll use this to sign you in or create an account for you if you don't have one yet"
+                  }
                 </CyDText>
-              </CyDTouchView>
 
-              {/* OR Divider */}
-              <CyDView className='flex-row items-center mb-[24px]'>
-                <CyDView className='flex-1 h-[1px] bg-n40' />
-                <CyDText className='text-n90 text-[14px] font-bold mx-[16px]'>
-                  OR
+                {/* Email Input */}
+                <CyDText className='text-n200 text-[12px] font-medium mb-[6px]'>
+                  Email
                 </CyDText>
-                <CyDView className='flex-1 h-[1px] bg-n40' />
-              </CyDView>
-
-              {/* Google Button */}
-              <CyDTouchView
-                onPress={handleGoogleLogin}
-                className='flex-row items-center justify-center bg-blue-600 rounded-full py-[16px] px-[24px] mb-[40px]'>
-                <CyDView className='bg-white rounded-full p-[1px] mr-[8px]'>
-                  <CyDImage
-                    source={AppImages.GOOGLE_LOGO}
-                    className='w-[20px] h-[20px]'
-                    resizeMode='contain'
+                <CyDView className='bg-base40 rounded-[8px] mb-[12px]'>
+                  <CyDTextInput
+                    className='text-primaryText bg-base40 text-[18px] py-[16px] px-[16px] rounded-[8px]'
+                    placeholder='Tonystark@dmail.com'
+                    placeholderTextColor='#8993A4'
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType='email-address'
+                    autoCapitalize='none'
+                    returnKeyType='done'
+                    onSubmitEditing={() => {
+                      handleEmailContinue();
+                      Keyboard.dismiss();
+                    }}
                   />
                 </CyDView>
-                <CyDText className='text-white text-[18px] font-bold'>
-                  Continue with Google
-                </CyDText>
-              </CyDTouchView>
 
-              {/* Security Audit */}
-              <CyDView className='flex-row items-center justify-center'>
-                <CyDIcons
-                  name='shield-tick'
-                  size={16}
-                  className='text-base400 mr-[6px]'
-                />
-                <CyDText className='text-base400 text-[12px] font-bold text-center'>
-                  {t('CYPHER_AUDIT_TEXT')}
-                </CyDText>
+                {/* Continue Button */}
+                <CyDTouchView
+                  onPress={handleEmailContinue}
+                  className={`rounded-full py-[16px] px-[24px] mb-[24px] bg-n0`}>
+                  <CyDText
+                    className={`text-[18px] font-bold text-center ${
+                      email.trim() ? 'text-primaryText' : 'text-n90'
+                    }`}>
+                    Continue
+                  </CyDText>
+                </CyDTouchView>
+
+                {/* OR Divider */}
+                <CyDView className='flex-row items-center mb-[24px]'>
+                  <CyDView className='flex-1 h-[1px] bg-n40' />
+                  <CyDText className='text-n90 text-[14px] font-bold mx-[16px]'>
+                    OR
+                  </CyDText>
+                  <CyDView className='flex-1 h-[1px] bg-n40' />
+                </CyDView>
+
+                {/* Google Button */}
+                <CyDTouchView
+                  onPress={handleGoogleLogin}
+                  className='flex-row items-center justify-center bg-blue-600 rounded-full py-[16px] px-[24px] mb-[40px]'>
+                  <CyDView className='bg-white rounded-full p-[1px] mr-[8px]'>
+                    <CyDImage
+                      source={AppImages.GOOGLE_LOGO}
+                      className='w-[20px] h-[20px]'
+                      resizeMode='contain'
+                    />
+                  </CyDView>
+                  <CyDText className='text-white text-[18px] font-bold'>
+                    Continue with Google
+                  </CyDText>
+                </CyDTouchView>
+
+                {/* Security Audit */}
+                <CyDView className='flex-row items-center justify-center'>
+                  <CyDIcons
+                    name='shield-tick'
+                    size={16}
+                    className='text-base400 mr-[6px]'
+                  />
+                  <CyDText className='text-base400 text-[12px] font-bold text-center'>
+                    {t('CYPHER_AUDIT_TEXT')}
+                  </CyDText>
+                </CyDView>
               </CyDView>
             </CyDView>
           </CyDKeyboardAwareScrollView>
         </CyDView>
-
-        {/* Exclusive Offer Modal */}
-        <ExclusiveOfferModal
-          isVisible={showExclusiveOfferModal}
-          onClose={handleExclusiveOfferClose}
-          onSeeDetails={() => {
-            console.log('Email screen - exclusive offer see details clicked');
-          }}
-          initialCountdownMinutes={timeLeft.minutes}
-        />
       </>
     );
   }
@@ -814,181 +848,138 @@ export default function RewardsOnboarding() {
         </CyDModalLayout>
 
         <CyDView className='flex-1 bg-p300' style={{ paddingTop: inset.top }}>
-          {/* Header Section */}
-          <CyDView className='bg-p300 px-[24px] py-[20px]'>
-            {/* Title */}
-            <CyDText className='text-white text-[16px] font-bold mb-[20px]'>
-              Exclusive offer Just for you
-            </CyDText>
+          <CyDKeyboardAwareScrollView className='flex-1 bg-base40'>
+            {/* Header Section */}
+            <CyDView className='bg-p300 px-[24px] pt-[224px] pb-[24px] mt-[-200px]'>
+              {/* Title */}
+              <CyDText className='text-white text-[16px] font-bold mb-[20px]'>
+                Exclusive offer Just for you
+              </CyDText>
 
-            {/* Reward Card */}
-            <CyDView className='bg-p100 rounded-[12px] p-[16px] mb-[40px]'>
-              {/* Top Section */}
-              <CyDView className='mb-[20px]'>
-                <CyDText className='text-black text-[14px] font-bold mb-[4px]'>
-                  Sign up Cypher card and claim
-                </CyDText>
-                <CyDView className='flex-row justify-between items-start'>
-                  <CyDView className='flex-row items-center pr-[4px]'>
-                    <CyDView className='mr-[8px] relative'>
-                      <CyDImage
-                        source={AppImages.CYPR_TOKEN}
-                        className='w-[28px] h-[28px]'
-                        resizeMode='contain'
-                      />
-                      <CyDImage
-                        source={AppImages.BASE_LOGO}
-                        className='absolute -bottom-[1px] -right-[3px] w-[14px] h-[14px]'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                    <CyDText className='text-black text-[28px] font-bold'>
-                      100
-                    </CyDText>
-                  </CyDView>
-                  <CyDText className='text-black text-[28px] font-bold mb-[1px]'>
-                    🤑
-                  </CyDText>
-                </CyDView>
-              </CyDView>
+              {/* Reward Card */}
+              <RewardCard
+                timeLeft={timeLeft}
+                formatTime={formatTime}
+                rewardAmount={totalPossibleRewards}
+              />
+            </CyDView>
 
-              {/* Divider */}
-              <CyDView className='h-[1px] bg-p400 mb-[16px]' />
-
-              {/* Bottom Section */}
-              <CyDView className='flex-row justify-between items-center'>
-                <CyDText className='text-black text-[14px] font-bold flex-1 mr-[8px]'>
-                  Sign up with in, to claim the bonus.
-                </CyDText>
-                <CyDTouchView className='flex-row bg-p30 rounded-full py-[8px] px-[12px] items-center'>
+            {/* Wallet Options Section */}
+            <CyDView className='bg-base40 rounded-t-[32px] px-[16px] py-[24px] mt-[-24px]'>
+              <CyDView className='flex flex-col mb-[48px]'>
+                {/* Back Button */}
+                <CyDTouchView
+                  onPress={handleBackFromWallet}
+                  className='bg-n0 flex-row items-center mb-[8px] rounded-full py-[6px] px-[8px] self-start'>
                   <CyDMaterialDesignIcons
-                    name='clock-outline'
-                    size={20}
-                    className='text-black mr-[3px]'
+                    name='chevron-left'
+                    size={24}
+                    className='text-base400'
                   />
-                  <CyDText className='text-black text-[14px] font-bold'>
-                    {formatTime(timeLeft.minutes, timeLeft.seconds)}
+                  <CyDText className='text-base400 text-[16px] font-medium'>
+                    Back
                   </CyDText>
                 </CyDTouchView>
-              </CyDView>
-            </CyDView>
-          </CyDView>
 
-          {/* Wallet Options Section */}
-          <CyDKeyboardAwareScrollView className='flex-1 bg-base40 rounded-t-[32px] px-[24px] py-[32px]'>
-            <CyDView className='flex flex-col mb-[48px]'>
-              {/* Back Button */}
-              <CyDTouchView
-                onPress={handleBackFromWallet}
-                className='bg-n0 flex-row items-center mb-[8px] rounded-full py-[6px] px-[8px] self-start'>
-                <CyDMaterialDesignIcons
-                  name='chevron-left'
-                  size={24}
-                  className='text-base400'
-                />
-                <CyDText className='text-base400 text-[16px] font-medium'>
-                  Back
+                {/* Header */}
+                <CyDText className='text-primaryText text-[28px] font-bold mb-[8px]'>
+                  Create or{'\n'}Connect Wallet
                 </CyDText>
-              </CyDTouchView>
+                <CyDText className='text-n200 text-[14px] mb-[32px]'>
+                  {
+                    "If you don't have a wallet yet, no worries! Creating a new one is quick and easy."
+                  }
+                </CyDText>
 
-              {/* Header */}
-              <CyDText className='text-primaryText text-[28px] font-bold mb-[8px]'>
-                Create or{'\n'}Connect Wallet
-              </CyDText>
-              <CyDText className='text-n200 text-[14px] mb-[32px]'>
-                {
-                  "If you don't have a wallet yet, no worries! Creating a new one is quick and easy."
-                }
-              </CyDText>
+                {/* Create New Wallet Button */}
+                <CyDTouchView
+                  onPress={handleCreateNewWallet}
+                  className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[16px]'>
+                  <CyDImage
+                    source={AppImages.CREATE_WALLET}
+                    className='w-[24px] h-[24px] mr-[12px]'
+                    resizeMode='contain'
+                  />
+                  <CyDView className='flex-1'>
+                    <CyDText className='text-primaryText text-[18px] font-medium'>
+                      Create New Wallet
+                    </CyDText>
+                  </CyDView>
+                  <CyDMaterialDesignIcons
+                    name='chevron-right'
+                    size={24}
+                    className='text-n200'
+                  />
+                </CyDTouchView>
 
-              {/* Create New Wallet Button */}
-              <CyDTouchView
-                onPress={handleCreateNewWallet}
-                className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[16px]'>
-                <CyDImage
-                  source={AppImages.CREATE_WALLET}
-                  className='w-[24px] h-[24px] mr-[12px]'
-                  resizeMode='contain'
-                />
-                <CyDView className='flex-1'>
-                  <CyDText className='text-primaryText text-[18px] font-medium'>
-                    Create New Wallet
+                {/* OR Divider */}
+                <CyDView className='flex-row items-center mb-[16px]'>
+                  <CyDView className='flex-1 h-[1px] bg-n40' />
+                  <CyDText className='text-n90 text-[10px] font-bold mx-[16px]'>
+                    OR
+                  </CyDText>
+                  <CyDView className='flex-1 h-[1px] bg-n40' />
+                </CyDView>
+
+                <CyDText className='text-n200 text-[14px] mb-[16px]'>
+                  {
+                    "If you've got a wallet, you can easily import it or wallet connect it right here."
+                  }
+                </CyDText>
+
+                {/* Import existing wallet Button */}
+                <CyDTouchView
+                  onPress={handleImportWallet}
+                  className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[16px]'>
+                  <CyDImage
+                    source={AppImages.IMPORT_WALLET}
+                    className='w-[24px] h-[24px] mr-[12px]'
+                    resizeMode='contain'
+                  />
+                  <CyDView className='flex-1'>
+                    <CyDText className='text-primaryText text-[18px] font-medium'>
+                      Import Existing Wallet
+                    </CyDText>
+                  </CyDView>
+                  <CyDMaterialDesignIcons
+                    name='chevron-right'
+                    size={24}
+                    className='text-n200'
+                  />
+                </CyDTouchView>
+
+                {/* Wallet Connect Button */}
+                <CyDTouchView
+                  onPress={handleConnectWallet}
+                  className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[40px]'>
+                  <CyDImage
+                    source={AppImages.WALLET_CONNECT_ICON}
+                    className='w-[24px] h-[24px] mr-[12px]'
+                    resizeMode='contain'
+                  />
+                  <CyDView className='flex-1'>
+                    <CyDText className='text-primaryText text-[18px] font-medium'>
+                      Wallet Connect
+                    </CyDText>
+                  </CyDView>
+                  <CyDMaterialDesignIcons
+                    name='chevron-right'
+                    size={24}
+                    className='text-n200'
+                  />
+                </CyDTouchView>
+
+                {/* Security Audit */}
+                <CyDView className='flex-row items-center justify-center'>
+                  <CyDIcons
+                    name='shield-tick'
+                    size={16}
+                    className='text-base400 mr-[6px]'
+                  />
+                  <CyDText className='text-base400 text-[12px] font-bold text-center'>
+                    {t('CYPHER_AUDIT_TEXT')}
                   </CyDText>
                 </CyDView>
-                <CyDMaterialDesignIcons
-                  name='chevron-right'
-                  size={24}
-                  className='text-n200'
-                />
-              </CyDTouchView>
-
-              {/* OR Divider */}
-              <CyDView className='flex-row items-center mb-[16px]'>
-                <CyDView className='flex-1 h-[1px] bg-n40' />
-                <CyDText className='text-n90 text-[10px] font-bold mx-[16px]'>
-                  OR
-                </CyDText>
-                <CyDView className='flex-1 h-[1px] bg-n40' />
-              </CyDView>
-
-              <CyDText className='text-n200 text-[14px] mb-[16px]'>
-                {
-                  "If you've got a wallet, you can easily import it or wallet connect it right here."
-                }
-              </CyDText>
-
-              {/* Import existing wallet Button */}
-              <CyDTouchView
-                onPress={handleImportWallet}
-                className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[16px]'>
-                <CyDImage
-                  source={AppImages.IMPORT_WALLET}
-                  className='w-[24px] h-[24px] mr-[12px]'
-                  resizeMode='contain'
-                />
-                <CyDView className='flex-1'>
-                  <CyDText className='text-primaryText text-[18px] font-medium'>
-                    Import Existing Wallet
-                  </CyDText>
-                </CyDView>
-                <CyDMaterialDesignIcons
-                  name='chevron-right'
-                  size={24}
-                  className='text-n200'
-                />
-              </CyDTouchView>
-
-              {/* Wallet Connect Button */}
-              <CyDTouchView
-                onPress={handleConnectWallet}
-                className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[40px]'>
-                <CyDImage
-                  source={AppImages.WALLET_CONNECT_ICON}
-                  className='w-[24px] h-[24px] mr-[12px]'
-                  resizeMode='contain'
-                />
-                <CyDView className='flex-1'>
-                  <CyDText className='text-primaryText text-[18px] font-medium'>
-                    Wallet Connect
-                  </CyDText>
-                </CyDView>
-                <CyDMaterialDesignIcons
-                  name='chevron-right'
-                  size={24}
-                  className='text-n200'
-                />
-              </CyDTouchView>
-
-              {/* Security Audit */}
-              <CyDView className='flex-row items-center justify-center'>
-                <CyDIcons
-                  name='shield-tick'
-                  size={16}
-                  className='text-base400 mr-[6px]'
-                />
-                <CyDText className='text-base400 text-[12px] font-bold text-center'>
-                  {t('CYPHER_AUDIT_TEXT')}
-                </CyDText>
               </CyDView>
             </CyDView>
           </CyDKeyboardAwareScrollView>
@@ -1000,172 +991,117 @@ export default function RewardsOnboarding() {
   return (
     <>
       <CyDView className='flex-1 bg-p300' style={{ paddingTop: inset.top }}>
-        <CyDView className='bg-p300'>
-          {/* Main Title */}
-          <CyDText className='text-white text-[32px] font-bold font-nord mx-[24px] mb-[24px] mt-[40px]'>
-            {"LET'S\nGET STARTED"}
-          </CyDText>
+        <CyDKeyboardAwareScrollView
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          className='bg-base40'>
+          <CyDView className='bg-p300 px-[24px] pb-[24px] pt-[200px] mt-[-200px]'>
+            {/* Main Title */}
+            <CyDText className='text-white text-[32px] font-bold font-nord mb-[24px] mt-[40px]'>
+              {"LET'S\nGET STARTED"}
+            </CyDText>
 
-          {/* Reward Card */}
-          <CyDView className='bg-p100 rounded-[12px] mx-[24px] mb-[24px] p-[16px]'>
-            {/* Top Section */}
-            <CyDView className='mb-[20px]'>
-              <CyDText className='text-black text-[14px] font-bold mb-[4px]'>
-                Sign up Cypher card and claim
-              </CyDText>
-              <CyDView className='flex-row justify-between items-start'>
-                <CyDView className='flex-row items-center pr-[4px]'>
-                  <CyDView className='mr-[8px] relative'>
-                    <CyDImage
-                      source={AppImages.CYPR_TOKEN}
-                      className='w-[28px] h-[28px]'
-                      resizeMode='contain'
-                    />
-                    <CyDImage
-                      source={AppImages.BASE_LOGO}
-                      className='absolute -bottom-[1px] -right-[3px] w-[14px] h-[14px]'
-                      resizeMode='contain'
-                    />
-                  </CyDView>
-                  <CyDText className='text-black text-[28px] font-bold'>
-                    100
+            {/* Reward Card */}
+            <RewardCard
+              timeLeft={timeLeft}
+              formatTime={formatTime}
+              rewardAmount={totalPossibleRewards}
+            />
+          </CyDView>
+
+          <CyDView className='bg-base40 rounded-t-[32px] px-[16px] py-[24px] mt-[-24px]'>
+            {/* Header Text */}
+            <CyDView className='flex flex-col mb-[48px]'>
+              <CyDView className='mb-[32px]'>
+                <CyDText className='text-base400 text-[28px] font-bold mb-[3px]'>
+                  Sign in or create{'\n'}an account
+                </CyDText>
+                <CyDText className='text-n200 text-[14px] font-bold'>
+                  Dive into the world of crypto spending and score some awesome
+                  rewards with Cypher!
+                </CyDText>
+              </CyDView>
+
+              {/* Continue with Email Button */}
+              <CyDTouchView
+                onPress={handleContinueWithEmail}
+                className='flex-row items-center bg-n0 border border-n40 rounded-full p-[16px] mb-[16px]'>
+                <CyDView className='flex-1 flex-row items-center'>
+                  <CyDMaterialDesignIcons
+                    name='email-outline'
+                    size={24}
+                    className='text-base400 mr-[6px]'
+                  />
+                  <CyDText className='text-base400 text-[18px] font-medium flex-1'>
+                    Continue with Email
                   </CyDText>
                 </CyDView>
-                <CyDText className='text-black text-[28px] font-bold mb-[1px]'>
-                  🤑
-                </CyDText>
-              </CyDView>
-            </CyDView>
-
-            {/* Divider */}
-            <CyDView className='h-[1px] bg-p400 mb-[16px]' />
-
-            {/* Bottom Section */}
-            <CyDView className='flex-row justify-between items-center'>
-              <CyDText className='text-black text-[14px] font-bold flex-1 mr-[8px]'>
-                Sign up with in, to claim the bonus.
-              </CyDText>
-              <CyDTouchView className='flex-row bg-p30 rounded-full py-[8px] px-[12px] items-center'>
                 <CyDMaterialDesignIcons
-                  name='clock-outline'
-                  size={20}
-                  className='text-black mr-[3px]'
-                />
-                <CyDText className='text-black text-[14px] font-bold'>
-                  {formatTime(timeLeft.minutes, timeLeft.seconds)}
-                </CyDText>
-              </CyDTouchView>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-
-        <CyDKeyboardAwareScrollView
-          className='flex-1 bg-base40 rounded-t-[32px] px-[16px] py-[24px]'
-          showsVerticalScrollIndicator={false}
-          bounces={true}>
-          {/* Header Text */}
-          <CyDView className='flex flex-col mb-[48px]'>
-            <CyDView className='mb-[32px]'>
-              <CyDText className='text-base400 text-[28px] font-bold mb-[3px]'>
-                Sign in or create{'\n'}an account
-              </CyDText>
-              <CyDText className='text-n200 text-[14px] font-bold'>
-                Dive into the world of crypto spending and score some awesome
-                rewards with Cypher!
-              </CyDText>
-            </CyDView>
-
-            {/* Continue with Email Button */}
-            <CyDTouchView
-              onPress={handleContinueWithEmail}
-              className='flex-row items-center bg-n0 border border-n40 rounded-full p-[16px] mb-[16px]'>
-              <CyDView className='flex-1 flex-row items-center'>
-                <CyDMaterialDesignIcons
-                  name='email-outline'
+                  name='arrow-right'
                   size={24}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+
+              {/* Continue with Wallets Button */}
+              <CyDTouchView
+                onPress={handleContinueWithWallets}
+                className='flex-row items-center bg-p40 border border-n40 rounded-full p-[16px] mb-[24px]'>
+                <CyDView className='flex-1 flex-row items-center mr-[12px]'>
+                  <CyDMaterialDesignIcons
+                    name='wallet-outline'
+                    size={24}
+                    className='text-black mr-[6px]'
+                  />
+                  <CyDText className='text-black text-[18px] font-medium flex-1'>
+                    Continue with Wallets
+                  </CyDText>
+                </CyDView>
+                <CyDMaterialDesignIcons
+                  name='arrow-right'
+                  size={24}
+                  className='text-black'
+                />
+              </CyDTouchView>
+
+              {/* OR Divider */}
+              <CyDView className='flex-row items-center mb-[24px]'>
+                <CyDView className='flex-1 h-[1px] bg-n40 mr-[7px]' />
+                <CyDText className='text-n90 text-[10px] font-bold mx-[8px]'>
+                  OR
+                </CyDText>
+                <CyDView className='flex-1 h-[1px] bg-n40' />
+              </CyDView>
+
+              {/* Track Address Section */}
+              <CyDView className='mb-[24px]'>
+                <CyDText className='text-n200 text-[12px] font-medium mb-[7px]'>
+                  Track Address
+                </CyDText>
+                <CyDTouchView
+                  onPress={handleTrackAddress}
+                  className='bg-n40 rounded-[8px] py-[14px] px-[12px]'>
+                  <CyDText className='text-n90 text-[18px]'>
+                    Enter the wallet address
+                  </CyDText>
+                </CyDTouchView>
+              </CyDView>
+
+              {/* Security Audit */}
+              <CyDView className='flex-row items-center justify-center px-[11px]'>
+                <CyDIcons
+                  name='shield-tick'
+                  size={16}
                   className='text-base400 mr-[6px]'
                 />
-                <CyDText className='text-base400 text-[18px] font-medium flex-1'>
-                  Continue with Email
+                <CyDText className='text-base400 text-[10px] font-bold text-center'>
+                  {t('CYPHER_AUDIT_TEXT')}
                 </CyDText>
               </CyDView>
-              <CyDMaterialDesignIcons
-                name='arrow-right'
-                size={24}
-                className='text-base400'
-              />
-            </CyDTouchView>
-
-            {/* Continue with Wallets Button */}
-            <CyDTouchView
-              onPress={handleContinueWithWallets}
-              className='flex-row items-center bg-p40 border border-n40 rounded-full p-[16px] mb-[24px]'>
-              <CyDView className='flex-1 flex-row items-center mr-[12px]'>
-                <CyDMaterialDesignIcons
-                  name='wallet-outline'
-                  size={24}
-                  className='text-black mr-[6px]'
-                />
-                <CyDText className='text-black text-[18px] font-medium flex-1'>
-                  Continue with Wallets
-                </CyDText>
-              </CyDView>
-              <CyDMaterialDesignIcons
-                name='arrow-right'
-                size={24}
-                className='text-black'
-              />
-            </CyDTouchView>
-
-            {/* OR Divider */}
-            <CyDView className='flex-row items-center mb-[24px]'>
-              <CyDView className='flex-1 h-[1px] bg-n40 mr-[7px]' />
-              <CyDText className='text-n90 text-[10px] font-bold mx-[8px]'>
-                OR
-              </CyDText>
-              <CyDView className='flex-1 h-[1px] bg-n40' />
-            </CyDView>
-
-            {/* Track Address Section */}
-            <CyDView className='mb-[24px]'>
-              <CyDText className='text-n200 text-[12px] font-medium mb-[7px]'>
-                Track Address
-              </CyDText>
-              <CyDTouchView
-                onPress={handleTrackAddress}
-                className='bg-n40 rounded-[8px] py-[14px] px-[12px]'>
-                <CyDText className='text-n90 text-[18px]'>
-                  Enter the wallet address
-                </CyDText>
-              </CyDTouchView>
-            </CyDView>
-
-            {/* Security Audit */}
-            <CyDView className='flex-row items-center justify-center px-[11px]'>
-              <CyDIcons
-                name='shield-tick'
-                size={16}
-                className='text-base400 mr-[6px]'
-              />
-              <CyDText className='text-base400 text-[10px] font-bold text-center'>
-                {t('CYPHER_AUDIT_TEXT')}
-              </CyDText>
             </CyDView>
           </CyDView>
         </CyDKeyboardAwareScrollView>
       </CyDView>
-
-      {/* Exclusive Offer Modal */}
-      <ExclusiveOfferModal
-        isVisible={showExclusiveOfferModal}
-        onClose={handleExclusiveOfferClose}
-        onSeeDetails={() => {
-          console.log(
-            'Rewards Onboarding - exclusive offer see details clicked',
-          );
-        }}
-        initialCountdownMinutes={timeLeft.minutes}
-      />
     </>
   );
 }
