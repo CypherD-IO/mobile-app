@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StatusBar } from 'react-native';
+import { SafeAreaView, ScrollView, StatusBar, Linking } from 'react-native';
 import {
   CyDIcons,
   CyDImage,
@@ -95,6 +95,20 @@ export default function Rewards() {
     );
   };
 
+  /**
+   * Opens the official Cypher tweet that explains Creator Reward Points.
+   * Handles potential failures gracefully and logs them for debugging purposes.
+   */
+  const openCreatorRewardTweet = async () => {
+    const tweetUrl = 'https://x.com/Cypher_HQ_/status/1937116108412301581';
+    try {
+      const supported = await Linking.canOpenURL(tweetUrl);
+      if (supported) {
+        await Linking.openURL(tweetUrl);
+      }
+    } catch (error) {}
+  };
+
   return (
     <>
       <SafeAreaView className='flex bg-n20 h-full'>
@@ -156,7 +170,7 @@ export default function Rewards() {
                       {'Rewards From Referral'}
                     </CyDText>
                   </CyDView>
-                  {rewardPoints.influencer > 0 && (
+                  {
                     <CyDView className='min-w-[120px]'>
                       <CyDText className='text-[14px] font-bold text-n300'>
                         <LoaderWithText
@@ -164,11 +178,24 @@ export default function Rewards() {
                           loaderSize={15}
                         />
                       </CyDText>
-                      <CyDText className='text-[12px] text-n200'>
-                        {'Influencer Reward Points'}
-                      </CyDText>
+                      <CyDView className='flex flex-row items-center'>
+                        <CyDText className='text-[12px] text-n200'>
+                          {'Creator Reward Points'}
+                        </CyDText>
+                        <CyDTouchView
+                          className='ml-[4px]'
+                          onPress={() => {
+                            void openCreatorRewardTweet();
+                          }}>
+                          <CyDMaterialDesignIcons
+                            name='open-in-new'
+                            size={14}
+                            className='text-n200'
+                          />
+                        </CyDTouchView>
+                      </CyDView>
                     </CyDView>
-                  )}
+                  }
                 </CyDView>
               </CyDView>
             </CyDView>
