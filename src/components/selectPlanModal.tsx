@@ -25,7 +25,12 @@ import { t } from 'i18next';
 import { GlobalContext, GlobalContextDef } from '../core/globalContext';
 import useCardUtilities from '../hooks/useCardUtilities';
 import { get } from 'lodash';
-import { ButtonType, CypherPlanId, GlobalContextType } from '../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  CypherPlanId,
+  GlobalContextType,
+} from '../constants/enum';
 import Button from './v2/button';
 import { useSharedValue } from 'react-native-reanimated';
 import clsx from 'clsx';
@@ -798,19 +803,24 @@ export default function SelectPlanModal({
                 </CyDText>
               </CyDText>
             </CyDTouchView>
-            {!get(cardDesignData, ['metal', 0, 'isStockAvailable'], true) && (
-              <>
-                <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                  <CyDText className='font-bold underline'>
-                    {t('IMPORTANT')}:
-                  </CyDText>{' '}
-                  {t('METAL_OUT_OF_STOCK')}
-                </CyDText>
-                <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                  {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
-                </CyDText>
-              </>
-            )}
+            {get(
+              cardDesignData,
+              ['metal', 0, 'provider'],
+              CardProviders.REAP_CARD,
+            ) === CardProviders.RAIN_CARD &&
+              !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true) && (
+                <>
+                  <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                    <CyDText className='font-bold underline'>
+                      {t('IMPORTANT')}:
+                    </CyDText>{' '}
+                    {t('METAL_OUT_OF_STOCK_WITH_EXTENTED_PREMIUM')}
+                  </CyDText>
+                  <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                    {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
+                  </CyDText>
+                </>
+              )}
 
             <Button
               title={t('GET_PREMIUM')}
