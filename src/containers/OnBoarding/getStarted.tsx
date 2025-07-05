@@ -51,7 +51,7 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
             <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'Zero Fee,\nRewarding Crypto Card'}
             </CyDText>
-            <CyDText className='text-[16px] font-medium text-[#666] mt-[20px]'>
+            <CyDText className='text-[16px] font-medium mt-[20px] !text-[#666666]'>
               {
                 'Make crypto your everyday currency with Cypher . Instantly top up from any wallet using 1,000+ tokens across 25+ chains. Spend globally!'
               }
@@ -96,7 +96,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
             <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
               {'Non Custodial \nCrypto Wallet'}
             </CyDText>
-            <CyDText className='text-[18px] font-medium text-[#666] mt-[12px]'>
+            <CyDText className='text-[18px] font-medium mt-[12px] !text-[#666666]'>
               {
                 'Access 14+ chains, manage 1000+ tokens, and send, receive, or swap assets seamlessly.'
               }
@@ -155,12 +155,12 @@ function Section3({
             <CyDText className='text-[32px] font-bold text-white mt-[12px] font-nord'>
               {'Earn $CYPR\nTokens with Every\nPurchase!'}
             </CyDText>
-            <CyDText className='text-[18px] font-medium text-[#666] mt-[12px]'>
+            <CyDText className='text-[18px] font-medium mt-[12px] !text-[#666666]'>
               {
                 'Get rewarded on every transaction and boost your rewards as you spend!'
               }
             </CyDText>
-            <CyDText className='text-[16px]  font-medium text-[#666] mt-[12px]'>
+            <CyDText className='text-[16px] font-medium mt-[12px] !text-[#666666]'>
               {
                 'SCYPR is the reward and governance token used in the Cypher platform.'
               }

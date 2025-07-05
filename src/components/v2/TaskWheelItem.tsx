@@ -26,15 +26,16 @@ const TaskWheelItem: React.FC<TaskWheelItemProps> = ({
   task,
   isSelected = false,
 }) => {
+  console.log('isSelected from TaskWheelItem : ', isSelected);
   return (
     <CyDView
-      className={`flex-row items-center justify-between px-4
-        ${isSelected ? 'bg-base250' : 'bg-transparent'}
-        `}>
+      className={`flex-row items-center px-4 py-2 overflow-hidden
+        ${isSelected ? 'bg-n20' : 'bg-transparent'}
+      `}>
       <CyDView className='flex-row items-center flex-1'>
         {/* Task Status Icon */}
         <CyDView
-          className={`w-6 h-6 rounded-full mr-3 items-center justify-center ${
+          className={`w-7 h-7 rounded-full mr-3 items-center justify-center ${
             task.completed
               ? isSelected
                 ? 'bg-green-500'
@@ -44,24 +45,31 @@ const TaskWheelItem: React.FC<TaskWheelItemProps> = ({
           {task.completed ? (
             <CyDMaterialDesignIcons
               name='check'
-              size={12}
+              size={14}
               className='text-white'
             />
           ) : isSelected ? (
-            <CyDView className='w-6 h-6 rounded-full border-[1.5px] border-dashed border-[#505050] bg-n0' />
+            <CyDView className='w-7 h-7 rounded-full border-[1.5px] border-dashed border-[#505050] bg-n0' />
           ) : (
-            <CyDView className='w-6 h-6 rounded-full bg-n0' />
+            <CyDView className='w-7 h-7 rounded-full bg-n0' />
           )}
         </CyDView>
 
-        {/* Task Title */}
-        <CyDText
-          className={`text-[14px] font-medium flex-1 ${
-            isSelected ? 'text-base400' : 'text-n300'
-          }`}
-          numberOfLines={1}>
-          {task.title}
-        </CyDText>
+        {/* Task Title & optional description */}
+        <CyDView className='flex-1 pr-2'>
+          <CyDText
+            className={`font-semibold ${
+              isSelected ? 'text-[16px]' : 'text-base300 text-[14px]'
+            }`}
+            numberOfLines={1}>
+            {task.title}
+          </CyDText>
+          {/* {task.description && isSelected && (
+            <CyDText className='text-base300 text-[12px]' numberOfLines={1}>
+              {task.description}
+            </CyDText>
+          )} */}
+        </CyDView>
       </CyDView>
 
       {isSelected && (
@@ -70,30 +78,33 @@ const TaskWheelItem: React.FC<TaskWheelItemProps> = ({
           <CyDView className='items-end'>
             <CyDText
               className={`text-[10px] mb-1 ${
-                isSelected ? 'text-base400' : 'text-n200'
+                isSelected ? 'text-base300' : 'text-n200'
               }`}>
               {task.completed ? "You've Earned" : 'You get'}
             </CyDText>
-            <CyDView className='bg-[rgba(255,185,0,0.07)] px-1 py-[2px]'>
+            <CyDView className='bg-[rgba(255,185,0,0.07)] px-1 py-[2px] rounded-[4px]'>
               <CyDText
-                className={`text-[14px] font-bold opacity-100 ${
-                  isSelected ? 'text-yellow-400' : 'text-p300'
+                className={`font-bold opacity-100 ${
+                  isSelected
+                    ? 'text-yellow-400 text-[16px]'
+                    : 'text-p300 text-[14px]'
                 }`}>
                 {task.reward} $CYPR
               </CyDText>
             </CyDView>
           </CyDView>
 
-          <CyDView className='flex flex-col items-center justify-center'>
+          {/* Up/Down chevrons */}
+          <CyDView className='flex flex-col items-center justify-center ml-2'>
             <CyDMaterialDesignIcons
               name='chevron-up'
-              size={24}
-              className='text-base400 opacity-50'
+              size={20}
+              className='text-base300 opacity-60'
             />
             <CyDMaterialDesignIcons
               name='chevron-down'
-              size={24}
-              className='text-base400 opacity-50'
+              size={20}
+              className='text-base300 opacity-60'
             />
           </CyDView>
         </>

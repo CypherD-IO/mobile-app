@@ -111,9 +111,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
       </CyDView>
 
       {/* Merchant Name */}
-      <CyDText className='text-white text-[14px] font-medium'>
-        {merchant.name}
-      </CyDText>
+      <CyDText className='text-[14px] font-medium'>{merchant.name}</CyDText>
     </CyDTouchView>
   );
 
@@ -129,9 +127,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
         </CyDView>
 
         <CyDView className='items-end'>
-          <CyDText className='text-white text-[20px]'>
-            {merchantData.baseReward}
-          </CyDText>
+          <CyDText className='text-[20px]'>{merchantData.baseReward}</CyDText>
           <CyDText className='text-n200 text-[12px] text-right font-medium'>
             {merchantData.baseRewardDescription}
           </CyDText>

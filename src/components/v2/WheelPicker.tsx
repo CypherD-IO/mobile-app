@@ -69,12 +69,6 @@ const WheelPicker: React.FC<WheelPickerProps> = ({
     [data],
   );
 
-  // Calculate padding so that the first / last item can scroll into the centre slot.
-  const contentContainerStyle = React.useMemo(
-    () => ({ paddingVertical: itemHeight * visibleRest }),
-    [itemHeight, visibleRest],
-  );
-
   const handleValueChanged: OriginalProps<WheelPickerItem>['onValueChanged'] =
     useCallback(
       ({ index }: { index: number }) => {
@@ -85,35 +79,42 @@ const WheelPicker: React.FC<WheelPickerProps> = ({
       [data, onChange, selectedIndex],
     );
 
+  const handleValueChanging = useCallback(
+    ({ index }: { index: number }) => {
+      if (index !== selectedIndex && data[index]) {
+        onChange(index, data[index]);
+      }
+    },
+    [data, onChange, selectedIndex],
+  );
+
   return (
     <WheelPickerOriginal
       data={pickerData}
-      value={pickerData[selectedIndex]}
+      value={data[selectedIndex]}
       itemHeight={itemHeight}
       visibleItemCount={visibleRest * 2 + 1}
       style={containerStyle}
-      // @ts-expect-error 3rd-party picker typings miss this prop
-      contentContainerStyle={contentContainerStyle}
       overlayItemStyle={selectedIndicatorStyle}
       keyExtractor={(_unusedItem: PickerItem<WheelPickerItem>, i: number) =>
         String(data[i]?.id ?? i)
       }
       renderItem={({
         item,
-        isSelected,
         index,
       }: {
         item: PickerItem<WheelPickerItem>;
-        isSelected: boolean;
+        isSelected?: boolean;
         index: number;
       }) =>
         React.cloneElement(item.value.component, {
-          isSelected,
-          index,
           ...item.value.component.props,
+          isSelected: index === selectedIndex,
+          index,
         })
       }
       onValueChanged={handleValueChanged}
+      {...({ onValueChanging: handleValueChanging } as any)}
     />
   );
 };

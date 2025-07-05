@@ -228,9 +228,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
               <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
                 <CyDView className='flex-1'>
                   {title && (
-                    <CyDText className='text-white text-[18px] font-bold'>
-                      {title}
-                    </CyDText>
+                    <CyDText className='text-[18px] font-bold'>{title}</CyDText>
                   )}
                 </CyDView>
               </CyDView>
