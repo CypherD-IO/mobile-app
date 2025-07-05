@@ -8,14 +8,54 @@ import React, {
 import { AppState, AppStateStatus } from 'react-native';
 import useAxios from '../core/HttpRequest';
 
+/**
+ * Detailed reward milestone structure returned by backend within
+ * `statusWiseRewards`. Keys like "kycPending", "firstLoad" etc. map to
+ * individual milestone objects.
+ */
+export interface RewardMilestone {
+  amount: number;
+  earned: boolean;
+  /** ISO string deadline when the milestone must be completed (optional). */
+  deadline?: string;
+  /** Time remaining in **milliseconds** returned by backend (optional). */
+  timeRemaining?: number;
+}
+
+export interface StatusWiseRewards {
+  // backend returns a dynamic object keyed by milestone name
+  [status: string]: RewardMilestone;
+}
+
 interface OnboardingRewardState {
-  deadline: string | null; // ISO timestamp returned by backend
-  remainingMs: number; // milliseconds remaining (after safety buffer)
-  totalRewardsPossible: number; // e.g., 3000 represents $30.00 worth of CYPR
+  /** Earliest deadline (currently KYC window) in ISO format. */
+  deadline: string | null;
+  /** Milliseconds remaining until `deadline` with a 30-sec safety buffer. */
+  remainingMs: number;
+
+  /** Maximum amount the user can earn in this onboarding programme. */
+  totalRewardsPossible: number;
+  /** How much user has **already** earned across milestones. */
+  totalRewardsEarned: number;
+
+  /** Backend provided split of milestone-wise rewards. */
+  statusWiseRewards: StatusWiseRewards;
+
+  /** Current milestone user is on – e.g. `KYC_PENDING`, `FIRST_LOAD`… */
+  currentStage: string | null;
+
+  /** Whether a free reward slot is still available in current epoch. */
   isRewardSlotAvailable: boolean;
+  /** Remaining slots returned by backend. */
   remainingSlots: number;
-  hasSecuredSlot: boolean; // raw backend flag
+  /** True once backend confirms slot is secure. */
+  hasSecuredSlot: boolean;
+
+  /** Programme activation flag from backend. */
   isActive: boolean;
+
+  /** Current epoch number (int) returned by backend. */
+  currentEpoch: number;
 }
 
 interface OnboardingRewardContextProps extends OnboardingRewardState {
@@ -27,10 +67,14 @@ const DEFAULT_STATE: OnboardingRewardState = {
   deadline: null,
   remainingMs: 0,
   totalRewardsPossible: 0,
+  totalRewardsEarned: 0,
+  statusWiseRewards: {},
+  currentStage: null,
   isRewardSlotAvailable: false,
   remainingSlots: 0,
   hasSecuredSlot: false,
   isActive: false,
+  currentEpoch: 0,
 };
 
 const OnboardingRewardContext =
@@ -57,15 +101,25 @@ export const OnboardingRewardProvider: React.FC<{
       if (!data) return;
       const kycDeadline = data?.statusWiseRewards?.kycPending?.deadline ?? null;
       const remainingMs = computeRemaining(kycDeadline);
+
       const remainingSlots =
         typeof data?.remainingSlots === 'number' ? data.remainingSlots : 0;
       const hasSlot = remainingSlots > 0;
       const backendSlot = Boolean(data?.hasSecuredSlot);
 
+      // Extract milestone split safely; fallback to empty object to maintain
+      // referential equality across renders when nothing is provided.
+      const milestoneSplit: StatusWiseRewards =
+        (data?.statusWiseRewards as StatusWiseRewards) ?? {};
+
       setState({
         deadline: kycDeadline,
         remainingMs,
         totalRewardsPossible: data?.totalRewardsPossible ?? 0,
+        totalRewardsEarned: data?.totalRewardsEarned ?? 0,
+        statusWiseRewards: milestoneSplit,
+        currentStage: data?.currentStage ?? null,
+        currentEpoch: data?.currentEpoch ?? 0,
         isRewardSlotAvailable: hasSlot,
         remainingSlots,
         hasSecuredSlot: backendSlot,

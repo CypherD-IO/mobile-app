@@ -26,7 +26,7 @@ import {
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
-  SwapStackScreen,
+  RewardsStackScreen,
 } from './auth';
 import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
@@ -68,7 +68,7 @@ const screensToHaveNavBar = [
   screenTitle.PORTFOLIO_SCREEN,
   screenTitle.DEBIT_CARD_SCREEN,
   screenTitle.OPTIONS_SCREEN,
-  screenTitle.SWAP_SCREEN,
+  screenTitle.REWARDS,
   screenTitle.CARD_SCREEN,
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,
@@ -440,8 +440,8 @@ function TabStack(props: TabStackProps) {
               iconSource = 'home-filled';
             } else if (route.name === screenTitle.CARD) {
               iconSource = 'card-filled';
-            } else if (route.name === screenTitle.SWAP) {
-              iconSource = 'swap-horizontal';
+            } else if (route.name === screenTitle.REWARDS) {
+              iconSource = 'offerIcon';
             } else if (route.name === screenTitle.OPTIONS) {
               iconSource = 'options';
             }
@@ -497,8 +497,8 @@ function TabStack(props: TabStackProps) {
           }}
         />
         <Tab.Screen
-          name={screenTitle.SWAP}
-          component={SwapStackScreen}
+          name={screenTitle.REWARDS}
+          component={RewardsStackScreen}
           options={{
             lazy: true,
             headerShown: false,

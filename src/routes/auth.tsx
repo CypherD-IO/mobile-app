@@ -133,6 +133,7 @@ const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
 const SwapStack = createNativeStackNavigator();
+const RewardsStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
 
 const CustomHeader = ({
@@ -904,6 +905,33 @@ export function SwapStackScreen({
         })}
       />
     </SwapStack.Navigator>
+  );
+}
+
+export function RewardsStackScreen() {
+  return (
+    <RewardsStack.Navigator initialRouteName={screenTitle.REWARDS}>
+      <RewardsStack.Screen
+        name={screenTitle.REWARDS}
+        component={Rewards}
+        options={{ headerShown: false }}
+      />
+      <RewardsStack.Screen
+        name={screenTitle.CLAIM_REWARD}
+        component={ClaimReward}
+        options={{ headerShown: false }}
+      />
+      <RewardsStack.Screen
+        name={screenTitle.REFERRALS_VIEW_ALL}
+        component={ReferralsViewAll}
+        options={{ headerShown: false }}
+      />
+      <RewardsStack.Screen
+        name={screenTitle.REFERRALS}
+        component={Referrals}
+        options={{ headerShown: false }}
+      />
+    </RewardsStack.Navigator>
   );
 }
 

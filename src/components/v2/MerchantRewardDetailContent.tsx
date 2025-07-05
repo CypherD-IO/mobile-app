@@ -243,7 +243,7 @@ const MerchantRewardDetailContent: React.FC<
         </CyDView>
 
         {/* Merchant Name */}
-        <CyDText className='text-white text-[24px] font-bold mb-3'>
+        <CyDText className='text-[24px] font-bold mb-3'>
           {currentMerchantData.name}
         </CyDText>
 
@@ -257,20 +257,18 @@ const MerchantRewardDetailContent: React.FC<
 
       {/* Your spend section */}
       <CyDView className='mb-6'>
-        <CyDText className='text-white text-[16px] font-semibold mb-4'>
+        <CyDText className='text-[16px] font-semibold mb-4'>
           Your spend on this merchant, earns
         </CyDText>
 
         {/* All Transaction reward */}
         <CyDView className='bg-base40 rounded-[12px] py-4 mb-3 '>
           <CyDView className='flex-row justify-between items-center mb-4 px-4'>
-            <CyDText className='text-white text-[14px] font-medium'>
+            <CyDText className='text-[14px] font-medium'>
               All Transaction reward
             </CyDText>
             <CyDView className='items-end'>
-              <CyDText className='text-white text-[14px] font-medium'>
-                1X Rewards
-              </CyDText>
+              <CyDText className='text-[14px] font-medium'>1X Rewards</CyDText>
               <CyDText className='text-n200 text-[12px]'>
                 {currentMerchantData.baseReward}
               </CyDText>
@@ -293,11 +291,11 @@ const MerchantRewardDetailContent: React.FC<
 
           {/* Merchant reward */}
           <CyDView className='flex-row justify-between items-center px-4'>
-            <CyDText className='text-white text-[14px] font-medium'>
+            <CyDText className='text-[14px] font-medium'>
               Merchant reward
             </CyDText>
             <CyDView className='items-end'>
-              <CyDText className='text-white text-[14px] font-medium'>
+              <CyDText className='text-[14px] font-medium'>
                 {currentMerchantData.multiplier} Rewards
               </CyDText>
               <CyDText className='text-n200 text-[12px]'>
@@ -309,49 +307,49 @@ const MerchantRewardDetailContent: React.FC<
       </CyDView>
 
       {/* Bonuses Section */}
-      <CyDView className='mb-6'>
-        <CyDText className='text-white text-[16px] font-semibold mb-4'>
-          Bonuses
-        </CyDText>
+      {currentMerchantData?.promotionalBonuses?.length > 0 && (
+        <CyDView className='mb-6'>
+          <CyDText className='text-[16px] font-semibold mb-4'>Bonuses</CyDText>
 
-        <CyDView className='bg-base40 rounded-[12px]'>
-          {currentMerchantData.promotionalBonuses?.map((bonus, index) => (
-            <CyDView
-              key={bonus.id}
-              className={`p-4 ${
-                index < currentMerchantData.promotionalBonuses.length - 1
-                  ? 'border-b border-base200'
-                  : ''
-              }`}>
-              <CyDView className='flex-row justify-between items-center'>
-                <CyDView className='flex-1'>
-                  <CyDText className='text-white text-[14px] font-medium mb-1'>
-                    {bonus.title}
-                  </CyDText>
-                  <CyDText className='text-n200 text-[12px]'>
-                    {bonus.date}
-                  </CyDText>
-                </CyDView>
-                <CyDView className='items-end'>
-                  <CyDView className='flex-row items-center'>
-                    <CyDImage
-                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                      className='w-6 h-6 mr-2'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-white text-[16px] font-semibold'>
-                      {bonus.amount}
+          <CyDView className='bg-base40 rounded-[12px]'>
+            {currentMerchantData.promotionalBonuses?.map((bonus, index) => (
+              <CyDView
+                key={bonus.id}
+                className={`p-4 ${
+                  index < currentMerchantData.promotionalBonuses.length - 1
+                    ? 'border-b border-base200'
+                    : ''
+                }`}>
+                <CyDView className='flex-row justify-between items-center'>
+                  <CyDView className='flex-1'>
+                    <CyDText className='text-[14px] font-medium mb-1'>
+                      {bonus.title}
+                    </CyDText>
+                    <CyDText className='text-n200 text-[12px]'>
+                      {bonus.date}
                     </CyDText>
                   </CyDView>
-                  <CyDText className='text-n200 text-[12px]'>
-                    Avgl Booster
-                  </CyDText>
+                  <CyDView className='items-end'>
+                    <CyDView className='flex-row items-center'>
+                      <CyDImage
+                        source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                        className='w-6 h-6 mr-2'
+                        resizeMode='contain'
+                      />
+                      <CyDText className='text-[16px] font-semibold'>
+                        {bonus.amount}
+                      </CyDText>
+                    </CyDView>
+                    <CyDText className='text-n200 text-[12px]'>
+                      Avgl Booster
+                    </CyDText>
+                  </CyDView>
                 </CyDView>
               </CyDView>
-            </CyDView>
-          ))}
+            ))}
+          </CyDView>
         </CyDView>
-      </CyDView>
+      )}
 
       {/* Merchant Boost Section */}
       <CyDView className='p-3 mb-3 rounded-[12px] bg-base40'>
@@ -402,119 +400,125 @@ const MerchantRewardDetailContent: React.FC<
       </CyDTouchView>
 
       {/* Recent Transactions */}
-      <CyDView className='mb-6'>
-        <CyDText className='text-white text-[16px] font-semibold mb-4'>
-          Recent Transaction on this Merchant
-        </CyDText>
+      {currentMerchantData.recentTransactions?.length > 0 && (
+        <CyDView className='mb-6'>
+          <CyDText className='text-[16px] font-semibold mb-4'>
+            Recent Transaction on this Merchant
+          </CyDText>
 
-        <CyDView className='bg-base40 rounded-[12px] overflow-hidden'>
-          {currentMerchantData.recentTransactions
-            ?.slice(0, 4)
-            .map((transaction, index) => (
-              <CyDView
-                key={transaction.id}
-                className={`p-4 flex-row items-center justify-between ${
-                  index < 3 ? 'border-b border-n20' : ''
-                }`}>
-                <CyDView className='flex-row items-center flex-1'>
-                  <CyDView className='w-10 h-10 bg-blue-500 rounded-full items-center justify-center mr-3'>
-                    <CyDMaterialDesignIcons
-                      name='store'
-                      size={20}
-                      className='text-white'
-                    />
-                  </CyDView>
-                  <CyDView className='flex-1'>
-                    <CyDText className='text-white text-[14px] font-medium mb-1'>
-                      {transaction.location}
-                    </CyDText>
-                    <CyDText className='text-n200 text-[12px]'>
-                      {transaction.date}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <CyDView className='items-end'>
-                  {transaction.type === 'bonus' ? (
-                    <CyDView className='flex-row items-center'>
-                      <CyDImage
-                        source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                        className='w-5 h-5 mr-1'
-                        resizeMode='contain'
+          <CyDView className='bg-base40 rounded-[12px] overflow-hidden'>
+            {currentMerchantData.recentTransactions
+              ?.slice(0, 4)
+              .map((transaction, index) => (
+                <CyDView
+                  key={transaction.id}
+                  className={`p-4 flex-row items-center justify-between ${
+                    index < 3 ? 'border-b border-n20' : ''
+                  }`}>
+                  <CyDView className='flex-row items-center flex-1'>
+                    <CyDView className='w-10 h-10 bg-blue-500 rounded-full items-center justify-center mr-3'>
+                      <CyDMaterialDesignIcons
+                        name='store'
+                        size={20}
+                        className='text-white'
                       />
-                      <CyDText className='text-white text-[16px] font-semibold'>
-                        {transaction.amount}
+                    </CyDView>
+                    <CyDView className='flex-1'>
+                      <CyDText className='text-[14px] font-medium mb-1'>
+                        {transaction.location}
+                      </CyDText>
+                      <CyDText className='text-n200 text-[12px]'>
+                        {transaction.date}
                       </CyDText>
                     </CyDView>
-                  ) : (
-                    <CyDText className='text-white text-[16px] font-semibold'>
-                      {transaction.amount}
-                    </CyDText>
-                  )}
+                  </CyDView>
+                  <CyDView className='items-end'>
+                    {transaction.type === 'bonus' ? (
+                      <CyDView className='flex-row items-center'>
+                        <CyDImage
+                          source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                          className='w-5 h-5 mr-1'
+                          resizeMode='contain'
+                        />
+                        <CyDText className='text-[16px] font-semibold'>
+                          {transaction.amount}
+                        </CyDText>
+                      </CyDView>
+                    ) : (
+                      <CyDText className='text-[16px] font-semibold'>
+                        {transaction.amount}
+                      </CyDText>
+                    )}
+                  </CyDView>
                 </CyDView>
-              </CyDView>
-            ))}
+              ))}
 
-          {/* View All Button */}
-          <CyDTouchView className='p-4 flex-row items-center justify-between bg-base200'>
-            <CyDText className='text-white text-[14px] font-medium'>
-              View All
-            </CyDText>
-            <CyDMaterialDesignIcons
-              name='chevron-right'
-              size={20}
-              className='text-white'
-            />
-          </CyDTouchView>
+            {/* View All Button */}
+            <CyDTouchView className='p-4 flex-row items-center justify-between bg-base200'>
+              <CyDText className='text-white text-[14px] font-medium'>
+                View All
+              </CyDText>
+              <CyDMaterialDesignIcons
+                name='chevron-right'
+                size={20}
+                className='text-white'
+              />
+            </CyDTouchView>
+          </CyDView>
         </CyDView>
-      </CyDView>
+      )}
 
       {/* Previous reward cycles earnings */}
-      <CyDView className='mb-6'>
-        <CyDText className='text-white text-[16px] font-semibold mb-4'>
-          Previous reward cycles earnings
-        </CyDText>
+      {currentMerchantData.rewardCycles?.length > 0 && (
+        <CyDView className='mb-6'>
+          <CyDText className='text-[16px] font-semibold mb-4'>
+            Previous reward cycles earnings
+          </CyDText>
 
-        <CyDView className='bg-base40 rounded-[12px] overflow-hidden'>
-          {currentMerchantData.rewardCycles?.slice(0, 5).map((cycle, index) => (
-            <CyDView
-              key={cycle.id}
-              className={`p-4 flex-row items-center justify-between ${
-                index < 4 ? 'border-b border-n20' : ''
-              }`}>
-              <CyDView className='flex-1'>
-                <CyDText className='text-white text-[14px] font-medium mb-1'>
-                  {cycle.name}
-                </CyDText>
-                <CyDText className='text-n200 text-[12px]'>
-                  {cycle.period}
-                </CyDText>
-              </CyDView>
-              <CyDView className='flex-row items-center'>
-                <CyDImage
-                  source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                  className='w-6 h-6 mr-2'
-                  resizeMode='contain'
-                />
-                <CyDText className='text-white text-[16px] font-semibold'>
-                  {cycle.amount}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-          ))}
+          <CyDView className='bg-base40 rounded-[12px] overflow-hidden'>
+            {currentMerchantData.rewardCycles
+              ?.slice(0, 5)
+              .map((cycle, index) => (
+                <CyDView
+                  key={cycle.id}
+                  className={`p-4 flex-row items-center justify-between ${
+                    index < 4 ? 'border-b border-n20' : ''
+                  }`}>
+                  <CyDView className='flex-1'>
+                    <CyDText className='text-[14px] font-medium mb-1'>
+                      {cycle.name}
+                    </CyDText>
+                    <CyDText className='text-n200 text-[12px]'>
+                      {cycle.period}
+                    </CyDText>
+                  </CyDView>
+                  <CyDView className='flex-row items-center'>
+                    <CyDImage
+                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                      className='w-6 h-6 mr-2'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='text-[16px] font-semibold'>
+                      {cycle.amount}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              ))}
 
-          {/* View All Button */}
-          <CyDTouchView className='p-4 flex-row items-center justify-between bg-base200'>
-            <CyDText className='text-white text-[14px] font-medium'>
-              View All
-            </CyDText>
-            <CyDMaterialDesignIcons
-              name='chevron-right'
-              size={20}
-              className='text-white'
-            />
-          </CyDTouchView>
+            {/* View All Button */}
+            <CyDTouchView className='p-4 flex-row items-center justify-between bg-base200'>
+              <CyDText className='text-white text-[14px] font-medium'>
+                View All
+              </CyDText>
+              <CyDMaterialDesignIcons
+                name='chevron-right'
+                size={20}
+                className='text-white'
+              />
+            </CyDTouchView>
+          </CyDView>
         </CyDView>
-      </CyDView>
+      )}
 
       {/* Disclaimer */}
       <CyDView className='mb-8'>

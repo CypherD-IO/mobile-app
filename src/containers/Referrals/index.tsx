@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Clipboard, Share, Dimensions } from 'react-native';
+import {
+  Clipboard,
+  Share,
+  Dimensions,
+  Platform,
+  useColorScheme,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   CyDSafeAreaView,
@@ -18,6 +24,8 @@ import { showToast } from '../../containers/utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 // @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
 import { QRCode } from 'react-native-custom-qr-codes';
+import { BlurView } from '@react-native-community/blur';
+import { Theme, useTheme } from '../../reducers/themeReducer';
 
 const { width } = Dimensions.get('window');
 
@@ -43,10 +51,11 @@ const QRCodeBottomSheetContent = ({
   friendEarnings: number;
 }) => {
   return (
-    <CyDView className='flex-1 bg-n0 px-4'>
+    <CyDView className='flex-1 bg-n20 px-4'>
+      <CyDText className='text-n0 font-semibold'>QR Code</CyDText>
       {/* QR Code Section */}
       <CyDView className='items-center mb-8'>
-        <CyDText className='text-n200 text-sm mb-6 text-center'>
+        <CyDText className='text-n200 text-sm mb-4 text-center'>
           Referral code
         </CyDText>
 
@@ -111,6 +120,11 @@ export default function Referrals() {
   const navigation = useNavigation();
   const { showBottomSheet } = useGlobalBottomSheet();
 
+  const { theme } = useTheme();
+  const colorScheme = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   // Dummy data - replace with API calls later
   const [referralData] = useState<ReferralData>({
     referralCode: 'UZUMYMW',
@@ -162,10 +176,10 @@ export default function Referrals() {
 
     showBottomSheet({
       id: 'referral-qr-code',
-      title: 'QR Code',
-      snapPoints: ['75%', '90%'],
+      snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '90%'],
       showCloseButton: true,
       scrollable: true,
+      backgroundColor: isDarkMode ? 'black' : 'white',
       content: (
         <QRCodeBottomSheetContent
           referralCode={referralData.referralCode}
@@ -205,18 +219,34 @@ export default function Referrals() {
 
   return (
     <CyDSafeAreaView className='flex-1 bg-n0'>
-      {/* Header */}
-      <CyDView className='flex-row justify-between items-center px-4 py-3 bg-n0'>
-        <CyDTouchView onPress={handleBack} className='p-2'>
-          <CyDIcons name='arrow-left' size={24} className='text-n200' />
-        </CyDTouchView>
+      {/* Background image */}
+      <CyDImage
+        source={isDarkMode ? AppImages.REWARD_BG : AppImages.REWARD_BG_LIGHT}
+        resizeMode='cover'
+        className='absolute top-0 left-0 w-full h-full'
+      />
+      {/* Grey translucent tint with blur */}
+      <BlurView
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
+        blurType={isDarkMode ? 'dark' : 'light'}
+        blurAmount={37}
+        reducedTransparencyFallbackColor={
+          isDarkMode ? 'rgba(15, 15, 15, 0.25)' : 'rgba(223,226,230,0.25)'
+        }
+      />
 
-        <CyDText className='text-white text-lg font-semibold'>
-          Invite friends
-        </CyDText>
+      {/* Header */}
+      <CyDView className='flex-row justify-between items-center px-4 pt-3'>
+        <CyDText className='text-[28px]'>Invite friends</CyDText>
 
         <CyDTouchView onPress={handleClose} className='p-2'>
-          <CyDIcons name='close' size={24} className='text-n200' />
+          <CyDIcons name='close' size={32} className='text-base400' />
         </CyDTouchView>
       </CyDView>
 
@@ -234,26 +264,29 @@ export default function Referrals() {
 
         {/* Title and Description */}
         <CyDView className='px-4 pb-6'>
-          <CyDText className='text-white text-2xl font-bold text-center mb-3'>
+          <CyDText className='text-[20px] font-semibold tracking-[-1px] text-center mb-2'>
             Earn Cypher tokens on referrals
           </CyDText>
-          <CyDText className='text-n200 text-base text-center leading-relaxed'>
+          <CyDText className='text-n200 text-center tracking-[-0.8px]'>
             when your invitee signs up and makes a purchase{'\n'}
             at your favorite merchant.
           </CyDText>
         </CyDView>
 
         {/* Referral Code Section */}
-        <CyDView className='mx-4 mb-6 bg-n20 rounded-2xl p-6'>
+        <CyDView
+          className={`mx-4 mb-6 rounded-2xl p-6 ${
+            isDarkMode ? 'bg-n20' : 'bg-n0'
+          }`}>
           <CyDText className='text-n200 text-[12px] text-center mb-2'>
             Referral code
           </CyDText>
           <CyDView className='flex-row items-center justify-center'>
-            <CyDText className='text-white text-[30px] font-bold tracking-wider mr-3'>
+            <CyDText className='text-[30px] font-bold tracking-wider mr-1'>
               {referralData.referralCode}
             </CyDText>
             <CyDTouchView onPress={handleCopyReferralCode} className='p-2'>
-              <CyDIcons name='copy' size={20} className='text-n200' />
+              <CyDIcons name='copy' size={20} className='text-base400' />
             </CyDTouchView>
           </CyDView>
         </CyDView>
@@ -262,8 +295,8 @@ export default function Referrals() {
         <CyDView className='flex-row gap-3 px-4 mb-[34px]'>
           <CyDTouchView
             onPress={handleInviteLink}
-            className='flex-1 bg-white rounded-full py-[12px] flex-row items-center justify-center gap-x-2'>
-            <CyDText className='text-black font-semibold'>Invite link</CyDText>
+            className='flex-1 bg-base400 rounded-full py-[12px] flex-row items-center justify-center gap-x-2'>
+            <CyDText className='text-n0 font-semibold'>Invite link</CyDText>
             <CyDMaterialDesignIcons
               name='link-variant'
               size={18}
@@ -273,8 +306,8 @@ export default function Referrals() {
 
           <CyDTouchView
             onPress={handleQRCode}
-            className='flex-1 bg-white rounded-full py-[12px] flex-row items-center justify-center gap-x-2'>
-            <CyDText className='text-black font-semibold'>QR Code</CyDText>
+            className='flex-1 bg-base400 rounded-full py-[12px] flex-row items-center justify-center gap-x-2'>
+            <CyDText className='text-n0 font-semibold'>QR Code</CyDText>
             <CyDMaterialDesignIcons
               name='qrcode-scan'
               size={18}
@@ -284,10 +317,18 @@ export default function Referrals() {
         </CyDView>
 
         {/* How it works Section */}
-        <CyDView className='mx-4 mb-6 bg-base40 rounded-[12px] py-4'>
-          <CyDView className='flex-row items-center mb-4 bg-n0 rounded-full p-1 px-2 self-start mx-4'>
-            <CyDText className='text-white font-semibold mr-[2px]'>💡</CyDText>
-            <CyDText className='text-white font-semibold'>
+        <CyDView
+          className={`mx-4 mb-6 rounded-[12px] py-4 ${
+            isDarkMode ? 'bg-base40' : 'bg-n0'
+          }`}>
+          <CyDView
+            className={`flex-row items-center mb-4 rounded-full p-1 px-2 self-start mx-4 ${
+              isDarkMode ? 'bg-n0' : 'bg-n30'
+            }`}>
+            <CyDText className='text-base400 font-semibold mr-[2px]'>
+              💡
+            </CyDText>
+            <CyDText className='text-base400 font-semibold'>
               How it works?
             </CyDText>
           </CyDView>
@@ -300,7 +341,7 @@ export default function Referrals() {
               </CyDText>
             </CyDView>
             <CyDView className='flex-1'>
-              <CyDText className='text-white font-semibold mb-1'>
+              <CyDText className='font-semibold mb-1'>
                 Share Your Invite Link
               </CyDText>
               <CyDText className='text-n200 text-sm'>
@@ -314,14 +355,10 @@ export default function Referrals() {
           {/* Step 2 */}
           <CyDView className='flex-row items-start px-4'>
             <CyDView className='flex-row items-center justify-center mr-3 h-8 w-8 bg-n0 rounded-full'>
-              <CyDText className='text-white font-semibold text-[12px]'>
-                💸
-              </CyDText>
+              <CyDText className='font-semibold text-[12px]'>💸</CyDText>
             </CyDView>
             <CyDView className='flex-1'>
-              <CyDText className='text-white font-semibold mb-1'>
-                They Join Cypher
-              </CyDText>
+              <CyDText className='font-semibold mb-1'>They Join Cypher</CyDText>
               <CyDText className='text-n200 text-sm mb-3'>
                 When they sign up, complete KYC, and make their{'\n'}
                 first card purchase — both of you earn CYPR tokens.
@@ -366,18 +403,19 @@ export default function Referrals() {
         </CyDView>
 
         {/* Additional Earnings Section */}
-        <CyDText className='text-white font-semibold mb-4'>
+        <CyDText className='font-semibold mx-4 mb-4'>
           Additional Earnings
         </CyDText>
-        <CyDView className='mx-4 mb-6 bg-base40 rounded-[12px] py-4'>
+        <CyDView
+          className={`mx-4 mb-6 rounded-[12px] py-4 ${
+            isDarkMode ? 'bg-base40' : 'bg-n0'
+          }`}>
           <CyDView className='flex-row items-start px-4'>
             <CyDView className='flex-row items-center justify-center mr-3 h-8 w-8 bg-n0 rounded-full'>
-              <CyDText className='text-white font-semibold text-[12px]'>
-                🛍️
-              </CyDText>
+              <CyDText className='font-semibold text-[12px]'>🛍️</CyDText>
             </CyDView>
             <CyDView className='flex-1'>
-              <CyDText className='text-white font-semibold mb-1'>
+              <CyDText className='font-semibold mb-1'>
                 Earn Even More When They Follow You
               </CyDText>
               <CyDText className='text-n200 text-[14px] mb-4'>

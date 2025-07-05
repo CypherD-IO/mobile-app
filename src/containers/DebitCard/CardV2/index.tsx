@@ -16,9 +16,9 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Toast from 'react-native-toast-message';
-import AppImages from '../../../../assets/images/appImages';
-import CardProviderSwitch from '../../../components/cardProviderSwitch';
+import AppImages, { AppImagesMap } from '../../../../assets/images/appImages';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
+import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import ActivityBottomBar from '../../../components/v2/ActivityBottomBar';
@@ -56,12 +56,14 @@ import { isPotentiallyDccOvercharged } from '../../../core/util';
 import useActivityPolling from '../../../hooks/useActivityPolling';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import { CardFundResponse } from '../../../models/activities.interface';
+import usePortfolio from '../../../hooks/usePortfolio';
 import { Card, ICardTransaction } from '../../../models/card.model';
 import { CardDesign } from '../../../models/cardDesign.interface';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { PlanInfo } from '../../../models/planInfo.interface';
 import {
   CyDFastImage,
+  CyDImage,
   CyDLottieView,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
@@ -80,6 +82,7 @@ import RewardsEpochModal, {
 import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
 import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
+import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -143,6 +146,7 @@ export default function CypherCardScreen() {
   );
   const { getWalletProfile, isLegacyCardClosed, getCardSpendStats } =
     useCardUtilities();
+  const { fetchPortfolio, getLocalPortfolio } = usePortfolio();
   const [spendStats, setSpendStats] = useState<{
     isPremiumPlan: boolean;
     amount: number;
@@ -374,6 +378,7 @@ export default function CypherCardScreen() {
   };
   const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+  const { refreshStatus: refreshOnboardingStatus } = useOnboardingReward();
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -413,6 +418,18 @@ export default function CypherCardScreen() {
       void fetchRecentTransactions();
       void getCardDesignValues();
     }
+
+    // Ensure portfolio data is available if user landed directly on Card tab
+    try {
+      const localPortfolio = await getLocalPortfolio();
+      if (!localPortfolio) {
+        // background fetch; we ignore result here as other screens will read from storage
+        void fetchPortfolio();
+      }
+    } catch (e) {
+      console.warn('Portfolio fetch failed in Card screen', e);
+    }
+
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
     }
@@ -421,6 +438,7 @@ export default function CypherCardScreen() {
   useEffect(() => {
     if (isFocused) {
       void onRefresh();
+      void refreshOnboardingStatus();
     }
   }, [isFocused, cardProvider]);
 
@@ -478,6 +496,7 @@ export default function CypherCardScreen() {
     }
     setBalanceLoading(false);
   };
+
   const fetchRecentTransactions = async () => {
     const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10`;
     const response = await getWithAuth(txnURL);
@@ -596,7 +615,7 @@ export default function CypherCardScreen() {
     showBottomSheet({
       id: 'merchant-detail',
       title: String(merchant?.name || 'Merchant') + ' Rewards',
-      snapPoints: ['80%', '95%'],
+      snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
       content: (
@@ -939,40 +958,68 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
-            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
+            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px]'>
+              {cardId === CARD_IDS.HIDDEN_CARD && (
+                <CyDView className='mx-[16px] mb-[16px]'>
+                  <LinearGradient
+                    colors={['#4575F7', '#3155B4']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={style.loadCardGradientContainer}>
+                    <CyDView>
+                      <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                        <CyDFastImage
+                          source={AppImages.FALLING_COINS_3D}
+                          className='h-[46px] w-[32px]'
+                          resizeMode='contain'
+                        />
+                        <CyDView className='flex flex-col flex-1'>
+                          <CyDText className='text-[20px] font-[500] mb-[4px] text-white'>
+                            {t<string>('LOAD_YOUR_CARD')}
+                          </CyDText>
+                          <CyDText className='text-[14px] font-[400] mb-[16px] text-white'>
+                            {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                      <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg mb-3'>
+                        {/* Left side - Icon (using the green offer code tag image) */}
+                        <CyDImage
+                          source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
+                          className='w-[28px] h-[28px] mr-2'
+                          resizeMode='contain'
+                        />
+
+                        {/* Offer text and timer */}
+                        <CyDView className='flex flex-1 flex-row items-center justify-between'>
+                          <CyDText className='text-white leading-tight'>
+                            Get 100 $CYPR as sign up bonus
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                      <CyDTouchView
+                        className='bg-[#D4E7F4] rounded-full px-[10px] py-[15px] items-center justify-center'
+                        onPress={onPressFundCard}>
+                        <CyDText className='text-[14px] font-bold text-black'>
+                          {'Load Card'}
+                        </CyDText>
+                      </CyDTouchView>
+                    </CyDView>
+                  </LinearGradient>
+                </CyDView>
+              )}
               <GetPhysicalCardComponent
                 cardProfile={cardProfile}
                 cardProvider={cardProvider}
                 cardDesignData={cardDesignData}
                 cardBalance={cardBalance}
               />
-
-              {cardId === CARD_IDS.HIDDEN_CARD ? (
-                <CyDView className='mx-[16px] mt-[16px]'>
-                  <CyDView className='border-[1px] border-n40 rounded-[16px] p-[16px]'>
-                    <CyDText className='text-[20px] font-[500] mb-[8px]'>
-                      {t<string>('LOAD_YOUR_CARD')}
-                    </CyDText>
-                    <CyDText className='text-[14px] font-[400] mb-[16px] text-n200'>
-                      {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
-                    </CyDText>
-                    <CyDTouchView
-                      className='bg-n30 rounded-[8px] px-[10px] py-[15px]'
-                      onPress={onPressFundCard}>
-                      <CyDView className='flex flex-row justify-between items-center'>
-                        <CyDText className='text-[14px] font-[500]'>
-                          {t<string>('LOAD_YOUR_CARD')}
-                        </CyDText>
-                        <CyDMaterialDesignIcons
-                          name='arrow-right-thin'
-                          size={24}
-                          className='text-base400'
-                        />
-                      </CyDView>
-                    </CyDTouchView>
-                  </CyDView>
-                </CyDView>
-              ) : (
+              <RewardProgressWidget />
+              <MerchantSpendRewardWidget
+                onViewAllPress={handleViewAllMerchants}
+                onMerchantPress={handleDirectMerchantPress}
+              />
+              {cardId !== CARD_IDS.HIDDEN_CARD && (
                 <CyDView className='mx-[16px] mt-[16px]'>
                   <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                     {t<string>('RECENT_TRANSACTIONS')}
@@ -1014,6 +1061,96 @@ export default function CypherCardScreen() {
                       />
                     </CyDView>
                   )}
+
+                  {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
+                    <CyDView className='mx-[16px] mt-[16px] bg-p10 p-6 rounded-xl'>
+                      <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
+                        <CyDText className='font-extrabold text-[20px]'>
+                          {'Cypher'}
+                        </CyDText>
+                        <GradientText
+                          textElement={
+                            <CyDText className='font-extrabold text-[20px]'>
+                              {'Premium'}
+                            </CyDText>
+                          }
+                          gradientColors={['#FA9703', '#F89408', '#F6510A']}
+                        />
+                      </CyDView>
+                      <CyDView className='mt-[16px]'>
+                        {spendStats.amount > 20 ? (
+                          <CyDView>
+                            <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                              <CyDText className='font-medium text-[14px] text-base200'>
+                                {'You could have saved'}
+                              </CyDText>
+
+                              <LinearGradient
+                                colors={['#FA9703', '#F7510A', '#FA9703']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                locations={[0, 0.5, 1]}
+                                style={style.gradientStyle}>
+                                <CyDText className='font-semibold text-[14px] text-white'>
+                                  {`$${spendStats.amount}`}
+                                </CyDText>
+                              </LinearGradient>
+                              <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                                {'in'}
+                              </CyDText>
+                            </CyDView>
+                            <CyDText className='font-medium text-[14px] text-base200 text-center'>
+                              {`last ${spendStats.timePeriod} and also get a free \nMetal card`}
+                            </CyDText>
+                          </CyDView>
+                        ) : (
+                          <CyDView className='self-center'>
+                            <CyDText className='font-medium text-[14px] text-center text-base200'>
+                              {'Save more on each transaction and'}
+                            </CyDText>
+                            <CyDText className='text-[14px] font-medium text-center text-base200'>
+                              {'get a free premium metal card'}
+                            </CyDText>
+                          </CyDView>
+                        )}
+                      </CyDView>
+                      <CyDView className='mt-[16px] flex flex-row justify-between items-center mx-[16px]'>
+                        <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                          <CyDMaterialDesignIcons
+                            name='check-bold'
+                            size={18}
+                            className='text-base400'
+                          />
+                          <CyDText className='font-semibold text-[12px]'>
+                            {'Zero Forex Markup'}
+                          </CyDText>
+                        </CyDView>
+                        <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
+                          <CyDMaterialDesignIcons
+                            name='check-bold'
+                            size={18}
+                            className='text-base400'
+                          />
+                          <CyDText className='font-semibold text-[12px]'>
+                            {'Zero USDC Load Fee'}
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+
+                      <Button
+                        title={'Explore Premium'}
+                        type={ButtonType.DARK}
+                        onPress={() => {
+                          setPlanChangeModalVisible(true);
+                          void logAnalyticsToFirebase(
+                            AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,
+                          );
+                        }}
+                        style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black'
+                        titleStyle='text-[14px] text-white font-semibold'
+                      />
+                    </CyDView>
+                  )}
                 </CyDView>
               )}
               {cardProfile && isLegacyCardClosed(cardProfile) && (
@@ -1043,9 +1180,8 @@ export default function CypherCardScreen() {
                   </CyDTouchView>
                 </CyDView>
               )}
-
               {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
-                <CyDView className='mx-[16px] mt-[16px] bg-p10 p-6 rounded-xl'>
+                <CyDView className='mx-[16px] bg-p10 p-6 rounded-xl'>
                   <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
                     <CyDText className='font-extrabold text-[20px]'>
                       {'Cypher'}
@@ -1171,5 +1307,9 @@ const style = StyleSheet.create({
     borderRadius: 100,
     paddingHorizontal: 7,
     paddingVertical: 4,
+  },
+  loadCardGradientContainer: {
+    borderRadius: 12,
+    padding: 16,
   },
 });

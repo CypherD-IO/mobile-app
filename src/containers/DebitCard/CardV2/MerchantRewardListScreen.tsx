@@ -14,6 +14,7 @@ import {
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
 import Fuse from 'fuse.js';
+import { Platform } from 'react-native';
 
 interface MerchantData {
   id: string;
@@ -159,7 +160,7 @@ const MerchantRewardListScreen: React.FC = () => {
     showBottomSheet({
       id: 'merchant-reward-detail',
       title: `${merchant.name} Rewards`,
-      snapPoints: ['70%', '95%'],
+      snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
       content: (
@@ -315,24 +316,17 @@ const MerchantRewardListScreen: React.FC = () => {
 
                 {/* Merchant Info */}
                 <CyDView className='flex-1'>
-                  <CyDText className='text-white text-[16px] font-semibold mb-1'>
+                  <CyDText className='text-[16px] font-semibold mb-1'>
                     {item.name ?? ''}
                   </CyDText>
                   <CyDText className='text-n200 text-[12px]'>
                     {item.category ?? ''}
                   </CyDText>
-                  {item.description && (
-                    <CyDText
-                      className='text-n200 text-[10px] mt-1'
-                      numberOfLines={1}>
-                      {item.description}
-                    </CyDText>
-                  )}
                 </CyDView>
               </CyDView>
 
               {/* Reward Multiplier */}
-              <CyDView className='items-end'>
+              <CyDView className='flex flex-row items-center'>
                 <CyDView className='bg-green400 rounded-full px-3 py-1 mb-1'>
                   <CyDText className='text-white text-[12px] font-bold'>
                     {item.multiplier ?? ''} Rewards
