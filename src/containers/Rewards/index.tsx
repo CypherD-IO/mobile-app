@@ -10,7 +10,13 @@ import {
   CyDMaterialDesignIcons,
   CyDScrollView,
 } from '../../styles/tailwindComponents';
-import { Animated, Easing, StyleSheet } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Platform,
+  StyleSheet,
+  useColorScheme,
+} from 'react-native';
 import Video from 'react-native-video';
 import GradientText from '../../components/gradientText';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
@@ -19,6 +25,8 @@ import { screenTitle } from '../../constants';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
+import { Theme, useTheme as useAppTheme } from '../../reducers/themeReducer';
+import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
 // NOTE: Import for ReferralsViewAll component (ready for navigation integration)
 // import ReferralsViewAll from './ReferralsViewAll';
 
@@ -280,6 +288,13 @@ export default function Rewards() {
   const [tokenBalance] = React.useState<number>(121.0);
   const [usedBooster] = React.useState<number>(0);
   const [unusedBooster] = React.useState<number>(0);
+  const { theme } = useAppTheme();
+  const colorScheme = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  console.log('isDarkMode :', isDarkMode);
 
   /* -------------------------------------------------------------------------- */
   /*                               Progress State                               */
@@ -329,7 +344,17 @@ export default function Rewards() {
     // TODO: Implement logic / navigation
   };
   const handleWhatIsCypherTokenPress = () => {
-    // TODO: Implement logic / navigation
+    showBottomSheet({
+      id: 'cypher-token-details',
+      snapPoints: ['75%', Platform.OS === 'android' ? '100%' : '93%'],
+      showCloseButton: true,
+      scrollable: true,
+      content: <CypherTokenBottomSheetContent />,
+      onClose: () => {
+        console.log('Cypher token details bottom sheet closed');
+      },
+      backgroundColor: 'rgba(15, 15, 15, 0.95)',
+    });
   };
   const handleViewAllReferralsPress = () => {
     // TODO: Navigate to ReferralsViewAll screen
@@ -347,7 +372,7 @@ export default function Rewards() {
     showBottomSheet({
       id: 'reward-trends',
       title: 'Reward Trends',
-      snapPoints: ['80%', '95%'],
+      snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
       content: <RewardTrendsContent />,
@@ -357,11 +382,14 @@ export default function Rewards() {
     });
   };
 
-  // NOTE: RENDER METHOD 🍎🍎🍎🍎🍎��
+  // NOTE: RENDER METHOD 🍎🍎🍎🍎🍎🍎
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
+    <CyDSafeAreaView className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}>
       {/* Header */}
-      <CyDView className='flex-row justify-between items-center mx-[24px] mt-[8px]'>
+      <CyDView
+        className={`flex-row justify-between items-center mx-[24px] mt-[8px] ${
+          isDarkMode ? 'text-white' : 'bg-n30'
+        }`}>
         <CyDText className='text-[28px] font-extrabold text-base400'>
           {t('REWARDS', 'Rewards')}
         </CyDText>
@@ -374,12 +402,19 @@ export default function Rewards() {
 
       <CyDScrollView className='flex-1'>
         {/* Body */}
-        <CyDView className='flex-1 bg-n20'>
+        <CyDView className='flex-1 bg-n20 pb-[48px]'>
           {/* Token Summary */}
-          <CyDView className='items-center pt-[24px] pb-[24px] rounded-b-[16px] bg-n0'>
+          <CyDView
+            className={`items-center pt-[24px] pb-[24px] rounded-b-[16px] ${
+              isDarkMode ? 'bg-black' : 'bg-n30'
+            }`}>
             <CyDView className='h-[110px] w-[110px]'>
               <Video
-                source={{ uri: AppImagesMap.common.CYPR_TOKEN_REWARD.uri }}
+                source={{
+                  uri: isDarkMode
+                    ? AppImagesMap.common.CYPR_TOKEN_REWARD.uri
+                    : AppImagesMap.common.CYPR_TOKEN_REWARD_LIGHT.uri,
+                }}
                 style={styles.rewardTokenVideo}
                 resizeMode='cover'
                 repeat={true}
@@ -397,7 +432,9 @@ export default function Rewards() {
                   {tokenBalance.toFixed(2)}
                 </CyDText>
               }
-              gradientColors={['#FFFFFF', '#999999']}
+              gradientColors={
+                isDarkMode ? ['#FFFFFF', '#999999'] : ['#959595', '#000000']
+              }
               useAngle
               angle={75}
             />
@@ -407,7 +444,10 @@ export default function Rewards() {
 
             {/* Know more */}
             <CyDTouchView onPress={handleKnowMorePress} className='mt-[32px]'>
-              <CyDView className='flex-row items-center bg-n30 rounded-[24px] px-[20px] py-[8px]'>
+              <CyDView
+                className={`flex-row items-center rounded-[24px] px-[20px] py-[8px] ${
+                  isDarkMode ? 'bg-n30' : 'bg-n50'
+                }`}>
                 <CyDText className='font-semibold text-[14px] mr-[5px]'>
                   {t('Know more')}
                 </CyDText>
@@ -450,7 +490,7 @@ export default function Rewards() {
             {/* Action Cards */}
             <CyDView className='flex-row justify-between mx-[16px]'>
               {/* Cypher Deposit */}
-              <CyDTouchView
+              <CyDView
                 className='flex-1 bg-base40 rounded-[12px] p-[12px] mr-[8px]'
                 onPress={handleDepositTokenPress}>
                 <CyDView className='flex-row justify-between items-center mb-4'>
@@ -462,11 +502,6 @@ export default function Rewards() {
                       Deposit
                     </CyDText>
                   </CyDView>
-                  <CyDMaterialDesignIcons
-                    name='chevron-right'
-                    size={24}
-                    className='text-base400'
-                  />
                 </CyDView>
 
                 <CyDImage
@@ -483,12 +518,14 @@ export default function Rewards() {
 
                 <CyDTouchView
                   onPress={handleDepositTokenPress}
-                  className='bg-base200 mt-[20px] py-[8px] rounded-full items-center'>
+                  className={`bg-base150 mt-[20px] py-[8px] rounded-full items-center ${
+                    isDarkMode ? 'bg-base200' : 'bg-n50'
+                  }`}>
                   <CyDText className='text-base100 text-[14px] '>
-                    {t('DEPOSIT_TOKEN', 'Deposit Token')}
+                    {'View More'}
                   </CyDText>
                 </CyDTouchView>
-              </CyDTouchView>
+              </CyDView>
 
               {/* Reward Booster */}
               <CyDView className='flex-1 bg-base40 rounded-[12px] p-[12px] ml-[8px]'>
@@ -571,10 +608,10 @@ export default function Rewards() {
                       key={referral.id}
                       className={`flex-row justify-between items-center py-[12px] px-[16px] ${
                         index < referralData.length - 1
-                          ? 'border-b border-base200'
+                          ? 'border-b border-n40'
                           : ''
                       }`}>
-                      <CyDText className='text-white text-[14px] font-medium flex-1'>
+                      <CyDText className='text-[14px] font-medium flex-1'>
                         {referral.address}
                       </CyDText>
                       <CyDView className='flex-row items-center'>
@@ -600,15 +637,17 @@ export default function Rewards() {
 
                   {/* View All Button */}
                   <CyDTouchView
-                    className='flex-row justify-between items-center py-[16px] mt-[8px] bg-base200 rounded-b-[12px] px-[16px]'
+                    className={`flex-row justify-between items-center py-[16px] mt-[8px] rounded-b-[12px] px-[16px] ${
+                      isDarkMode ? 'bg-base200' : 'bg-n40'
+                    }`}
                     onPress={handleViewAllReferralsPress}>
-                    <CyDText className='text-white text-[16px] font-medium'>
+                    <CyDText className='text-[16px] font-medium'>
                       View All
                     </CyDText>
                     <CyDMaterialDesignIcons
                       name='chevron-right'
                       size={20}
-                      className='text-white'
+                      className='text-base400'
                     />
                   </CyDTouchView>
                 </CyDView>
@@ -616,7 +655,9 @@ export default function Rewards() {
                 {/* Action Buttons */}
                 <CyDView className='flex-row mt-[16px] gap-x-[12px]'>
                   <CyDTouchView
-                    className='flex-1 bg-base200 rounded-[24px] py-[8px] flex-row items-center justify-center'
+                    className={`flex-1 rounded-[24px] py-[8px] flex-row items-center justify-center ${
+                      isDarkMode ? 'bg-base200' : 'bg-n40'
+                    }`}
                     onPress={() => {
                       // TODO: Implement invite friends functionality
                     }}>
@@ -631,11 +672,13 @@ export default function Rewards() {
                   </CyDTouchView>
 
                   <CyDTouchView
-                    className='flex-1 bg-base200 rounded-[24px] py-[8px] items-center justify-center'
+                    className={`flex-1 rounded-[24px] py-[8px] items-center justify-center ${
+                      isDarkMode ? 'bg-base200' : 'bg-n40'
+                    }`}
                     onPress={() => {
                       // TODO: Implement learn how referral works functionality
                     }}>
-                    <CyDText className='text-white text-[14px] font-medium'>
+                    <CyDText className='text-[14px] font-medium'>
                       Learn how referral works
                     </CyDText>
                   </CyDTouchView>

@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { floor, get, isEmpty, set } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, useWindowDimensions } from 'react-native';
+import { Keyboard, Platform, useWindowDimensions } from 'react-native';
 import Button from '../../../components/v2/button';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
@@ -133,7 +133,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const showInsufficientBalanceSheet = () => {
     showBottomSheet({
       id: 'insufficient-balance-sheet',
-      snapPoints: ['90%', '95%'],
+      snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
       content: (

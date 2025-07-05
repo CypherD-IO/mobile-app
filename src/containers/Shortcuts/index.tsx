@@ -139,6 +139,13 @@ export default function ShortcutsModal() {
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
     {
+      index: 2,
+      title: ShortcutsTitle.SWAP,
+      logo: AppImages.SWAP_SHORTCUT,
+      subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
+      screenTitle: screenTitle.SWAP,
+    },
+    {
       index: 3,
       title: ShortcutsTitle.SEND,
       logo: AppImages.SEND_SHORTCUT,
@@ -247,6 +254,9 @@ export default function ShortcutsModal() {
         setTimeout(() => setSellModalVisible(true), 250);
         break;
       case ShortcutsTitle.SEND:
+        navigation.navigate(item.screenTitle);
+        break;
+      case ShortcutsTitle.SWAP:
         navigation.navigate(item.screenTitle);
         break;
       case ShortcutsTitle.RECEIVE:
@@ -792,7 +802,6 @@ export default function ShortcutsModal() {
         }>
         <CyDLottieView
           source={AppImages.SHORTCUTS}
-          // ref={ref => setAnimation(ref)}
           autoPlay
           loop
           resizeMode={'contain'}

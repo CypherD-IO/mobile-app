@@ -712,7 +712,7 @@ const resources = {
       SWAP_TOKENS: 'Swap Tokens',
       SWAP: 'SWAP',
       SWAP_TITLE: 'Swap',
-      SWAP_SHORTCUTS_SUBTITLE: 'Swap tokens on same chain',
+      SWAP_SHORTCUTS_SUBTITLE: 'Swap tokens across chains',
       SWAP_SUCCESS: 'Swap Success',
       SWAP_SUCCESS_DESCRIPTION: 'Your tokens have been successfully swapped',
       SWAP_ERROR_DESCRIPTION: 'Swap Error. Please try again later',
@@ -1672,7 +1672,7 @@ const resources = {
       REFERRAL_CODE_REQUIRED: 'Referral code is required',
       LOAD_YOUR_CARD: 'Load your card',
       LOAD_YOUR_CARD_DESCRIPTION:
-        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
         'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
       NEXT: 'Next',

@@ -731,6 +731,18 @@ const CONFETTI_ANIMATION = require('./confetti.json');
 const VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG = {
   uri: `${S3_BUCKET_URL_ICONS}/virtualCardVerticalSpinWhiteBg.mp4`,
 };
+const FALLING_COINS_3D = {
+  uri: `${S3_BUCKET_URL_ICONS}/fallingCoins3d.png`,
+};
+const CYPR_TOKEN_REWARD_LIGHT = {
+  uri: `${S3_BUCKET_URL_ICONS}/cyprTokenRewardLight.mp4`,
+};
+const REWARD_BG = {
+  uri: `${S3_BUCKET_URL_ICONS}/rewardsBg.png`,
+};
+const REWARD_BG_LIGHT = {
+  uri: `${S3_BUCKET_URL_ICONS}/rewardsBgLight.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -1040,6 +1052,10 @@ export const AppImagesMap = {
     CYPR_TOKEN_REWARD,
     CONFETTI_ANIMATION,
     VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG,
+    FALLING_COINS_3D,
+    CYPR_TOKEN_REWARD_LIGHT,
+    REWARD_BG,
+    REWARD_BG_LIGHT,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1353,6 +1369,10 @@ enum AppImages {
   CYPR_TOKEN_REWARD = 'CYPR_TOKEN_REWARD',
   CONFETTI_ANIMATION = 'CONFETTI_ANIMATION',
   VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG = 'VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG',
+  FALLING_COINS_3D = 'FALLING_COINS_3D',
+  CYPR_TOKEN_REWARD_LIGHT = 'CYPR_TOKEN_REWARD_LIGHT',
+  REWARD_BG = 'REWARD_BG',
+  REWARD_BG_LIGHT = 'REWARD_BG_LIGHT',
 }
 
 export default AppImages;

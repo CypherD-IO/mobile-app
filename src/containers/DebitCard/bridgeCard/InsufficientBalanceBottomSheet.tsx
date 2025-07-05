@@ -108,23 +108,21 @@ const ChainSelector = ({
       {/* Selector Button */}
       <CyDTouchView
         ref={selectorRef}
-        className='flex flex-row items-center justify-between z-20 self-center px-[12px] py-[8px] bg-n60 rounded-[8px]'
+        className='flex flex-row items-center justify-between z-20 self-center px-[12px] py-[8px] rounded-[8px]'
         onPress={openDropdown}>
         <CyDView className='flex-row items-center'>
           <CyDFastImage
             source={selectedChain?.logo_url}
             className='w-[20px] h-[20px] mr-[8px]'
           />
-          <CyDText
-            className='text-white text-[16px] font-semibold'
-            numberOfLines={1}>
+          <CyDText className='text-[16px] font-semibold' numberOfLines={1}>
             {selectedChain?.name} Address
           </CyDText>
         </CyDView>
         <CyDMaterialDesignIcons
           name={showChainSelector ? 'chevron-up' : 'chevron-down'}
           size={18}
-          className='text-white ml-[8px]'
+          className='ml-[8px] text-base400'
         />
       </CyDTouchView>
 
@@ -344,7 +342,7 @@ const InsufficientBalanceBottomSheetContent: React.FC<
   return (
     <CyDScrollView className='flex-1 px-[16px]'>
       {/* Warning Banner */}
-      <CyDView className='bg-red400 rounded-[12px] p-[16px] mb-[32px] flex-row items-center'>
+      <CyDView className='bg-red400 rounded-[12px] mt-4 p-[16px] mb-[32px] flex-row items-center'>
         <CyDView className='flex-1'>
           <CyDView className='flex-row items-center mb-3'>
             <CyDMaterialDesignIcons
@@ -441,7 +439,7 @@ const InsufficientBalanceBottomSheetContent: React.FC<
             style='bg-n40 border border-n40 rounded-full px-[16px] py-[8px] mr-[8px]'
             title='Share Address'
             type={ButtonType.SECONDARY}
-            titleStyle='text-white text-[14px] ml-[8px]'
+            titleStyle='text-[14px] ml-[8px]'
           />
           <Button
             onPress={() => copyToClipboard(selectedChain.address)}
@@ -455,7 +453,7 @@ const InsufficientBalanceBottomSheetContent: React.FC<
             style='bg-n40 border border-n40 rounded-full px-[16px] py-[8px]'
             title={'Copy Address'}
             type={ButtonType.SECONDARY}
-            titleStyle='text-white text-[14px] ml-[8px]'
+            titleStyle='text-[14px] ml-[8px]'
           />
         </CyDView>
       </CyDView>

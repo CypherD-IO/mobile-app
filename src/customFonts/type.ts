@@ -93,4 +93,5 @@ export type IconNames =
   | 'apple-google-icon'
   | 'balance-scale'
   | 'help-circle-outline'
-  | 'arrow-forward';
+  | 'arrow-forward'
+  | 'offerIcon';
