@@ -11,6 +11,8 @@ import {
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
+import { Platform, useColorScheme } from 'react-native';
+import { Theme, useTheme } from '../../reducers/themeReducer';
 
 // NOTE: Interface for referral data structure
 interface ReferralItem {
@@ -165,9 +167,14 @@ const ReferralDetailContent = ({ referralId }: { referralId: string }) => {
   const { t } = useTranslation();
   const detailData = getDetailedReferralData(referralId);
 
+  const { theme } = useTheme();
+  const colorScheme = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   return (
-    <CyDScrollView className='flex-1 px-4 bg-n0'>
-      <CyDText className='text-white text-[20px] font-bold mb-4'>
+    <CyDScrollView className={`flex-1 px-4 ${isDarkMode ? 'bg-n0' : 'bg-n30'}`}>
+      <CyDText className='text-[20px] font-bold mb-4'>
         {detailData.address}
       </CyDText>
       {/* Header Section */}
@@ -179,7 +186,7 @@ const ReferralDetailContent = ({ referralId }: { referralId: string }) => {
               className='w-[34px] h-[34px] mr-1'
               resizeMode='contain'
             />
-            <CyDText className='text-white text-[22px] font-medium'>
+            <CyDText className='text-[22px] font-medium'>
               {detailData.totalRewards.toFixed(2)}
             </CyDText>
           </CyDView>
@@ -189,7 +196,7 @@ const ReferralDetailContent = ({ referralId }: { referralId: string }) => {
         </CyDView>
 
         <CyDView className='flex flex-col items-end bg-base40 rounded-[6px] px-4 py-2'>
-          <CyDText className='text-white text-[12px] font-medium'>
+          <CyDText className='text-[12px] font-medium'>
             {detailData.daysLeft} days Left
           </CyDText>
           <CyDText className='text-n200 text-[12px]'>
@@ -200,21 +207,22 @@ const ReferralDetailContent = ({ referralId }: { referralId: string }) => {
 
       {/* Signup Rewards Section */}
       <CyDView className='mb-6'>
-        <CyDText className='text-white text-[18px] font-bold mb-4'>
-          Signup Rewards
-        </CyDText>
+        <CyDText className='text-[18px] font-bold mb-4'>Signup Rewards</CyDText>
 
-        <CyDView className='bg-base40 rounded-[12px] p-4 mb-4'>
+        <CyDView
+          className={`rounded-[12px] p-4 mb-4 ${
+            isDarkMode ? 'bg-base40' : 'bg-n0'
+          }`}>
           <CyDView className='mb-3'>
             <CyDView className='flex-row items-center mb-4'>
               <CyDView className='w-6 h-6 bg-p150 rounded-full items-center justify-center mr-3'>
                 <CyDMaterialDesignIcons
                   name='check'
                   size={16}
-                  className='text-white'
+                  className='text-base400'
                 />
               </CyDView>
-              <CyDText className='text-white text-[16px] font-medium flex-1'>
+              <CyDText className='text-[16px] font-medium flex-1'>
                 Signed up for the cypher Card
               </CyDText>
             </CyDView>
@@ -254,31 +262,34 @@ const ReferralDetailContent = ({ referralId }: { referralId: string }) => {
       </CyDView>
 
       {/* Merchant Bonus Section */}
-      <CyDText className='text-white text-[18px] font-bold mb-4'>
-        Merchant Bonus
-      </CyDText>
-      <CyDView className='mb-6 bg-base40 rounded-[12px] p-4'>
+      <CyDText className='text-[18px] font-bold mb-4'>Merchant Bonus</CyDText>
+      <CyDView
+        className={`mb-6 rounded-[12px] p-4 ${isDarkMode ? 'bg-base40' : 'bg-n0'}`}>
         <CyDView className='flex-col mb-4'>
           <CyDImage
             source={AppImages.SHOP_3D}
             className='w-12 h-12'
             resizeMode='contain'
           />
-          <CyDText className='text-white text-[14px]'>
+          <CyDText className='text-[14px]'>
             {detailData.merchantBonus.description}
           </CyDText>
         </CyDView>
 
         {/* Merchant List */}
         {detailData.merchantBonus.merchants.map(merchant => (
-          <CyDView key={merchant.id} className='bg-n40 rounded-[12px] p-4 mb-4'>
+          <CyDView
+            key={merchant.id}
+            className={`rounded-[12px] p-4 mb-4 ${
+              isDarkMode ? 'bg-n40' : 'bg-n20'
+            }`}>
             <CyDView className='flex-row items-center mb-3'>
               <CyDImage
                 source={merchant.icon}
                 className='w-8 h-8 mr-3'
                 resizeMode='contain'
               />
-              <CyDText className='text-white text-[16px] font-medium'>
+              <CyDText className='text-[16px] font-medium'>
                 {merchant.name}
               </CyDText>
             </CyDView>
@@ -305,13 +316,13 @@ const ReferralDetailContent = ({ referralId }: { referralId: string }) => {
                       className='w-6 h-6 mr-1'
                       resizeMode='contain'
                     />
-                    <CyDText className='text-white text-[16px] font-medium'>
+                    <CyDText className='text-[16px] font-medium'>
                       {merchant.rewardRange}
                     </CyDText>
                   </CyDView>
                 </>
               ) : (
-                <CyDText className='text-white text-[14px] font-medium'>
+                <CyDText className='text-[14px] font-medium'>
                   {merchant.rewardRange}
                 </CyDText>
               )}
@@ -337,6 +348,11 @@ export default function ReferralsViewAll({
   const { t } = useTranslation();
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
 
+  const { theme } = useTheme();
+  const colorScheme = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   // NOTE: DUMMY FUNCTIONS 🍎🍎🍎🍎🍎🍎
   const handleBackPress = () => {
     if (navigation) {
@@ -349,9 +365,10 @@ export default function ReferralsViewAll({
     showBottomSheet({
       id: 'referral-detail',
       title: '', // No title needed as content has its own header
-      snapPoints: ['90%', '95%'],
+      snapPoints: ['90%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
+      backgroundColor: isDarkMode ? '#0D0D0D' : '#EBEDF0',
       content: <ReferralDetailContent referralId={referralId} />,
       onClose: () => {
         console.log('Referral detail bottom sheet closed');
@@ -373,7 +390,7 @@ export default function ReferralsViewAll({
         !isLast ? 'border-b border-n40' : ''
       }`}
       onPress={() => handleReferralItemPress(referral.id)}>
-      <CyDText className='text-white text-[16px] font-medium flex-1'>
+      <CyDText className='text-[16px] font-medium flex-1'>
         {referral.address}
       </CyDText>
       <CyDView className='flex-row items-center'>
@@ -402,10 +419,10 @@ export default function ReferralsViewAll({
           <CyDMaterialDesignIcons
             name='chevron-left'
             size={28}
-            className='text-white'
+            className='text-base400'
           />
         </CyDTouchView>
-        <CyDText className='text-white text-[20px] font-bold'>
+        <CyDText className='text-[20px] font-bold'>
           {t('REFERRALS', 'Referrals')}
         </CyDText>
       </CyDView>

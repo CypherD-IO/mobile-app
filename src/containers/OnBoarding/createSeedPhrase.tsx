@@ -1,11 +1,4 @@
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useIsFocused,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NativeModules, StyleSheet } from 'react-native';
@@ -33,7 +26,6 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import { setFirstLaunchAfterWalletCreation } from '../../core/asyncStorage';
-import { showToast } from '../../containers/utilities/toastUtility';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '../../components/v2/toast';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
@@ -66,7 +58,6 @@ const SeedPhraseWord = ({
 };
 
 function CreateSeedPhrase() {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
   const { t } = useTranslation();
@@ -173,7 +164,7 @@ function CreateSeedPhrase() {
 
     showBottomSheet({
       id: 'seed-phrase-qr',
-      snapPoints: ['60%', '90%'],
+      snapPoints: ['60%', '80%'],
       showCloseButton: true,
       scrollable: true,
       content: (

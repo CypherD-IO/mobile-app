@@ -10,6 +10,7 @@ import { Animated, Easing } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import WheelPicker from './WheelPicker';
 import TaskWheelItem from './TaskWheelItem';
+import { useOnboardingReward } from '../../contexts/OnboardingRewardContext';
 
 interface RewardProgressWidgetProps {
   onTaskPress?: (task: any) => void;
@@ -59,9 +60,7 @@ const BottomInfoSection = ({ task }: { task: any }) => {
             <CyDText className='text-n200 text-[12px] font-medium'>
               {'Spend '}
             </CyDText>
-            <CyDText className='text-white text-[20px] font-bold mx-1'>
-              {'$192'}
-            </CyDText>
+            <CyDText className='text-[20px] font-bold mx-1'>{'$192'}</CyDText>
             <CyDText className='text-n200 text-[12px] font-medium'>
               {' more to claim'}
             </CyDText>
@@ -139,59 +138,85 @@ const BottomInfoSection = ({ task }: { task: any }) => {
   );
 };
 
-const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
+const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
   onTaskPress,
 }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const {
+    statusWiseRewards,
+    totalRewardsPossible,
+    totalRewardsEarned,
+    currentStage,
+  } = useOnboardingReward();
 
-  // Dummy data structure matching the expected API response
+  // Map backend milestone keys → widget index
+  const stageToIndex: Record<string, number> = {
+    KYC_PENDING: 0,
+    FIRST_LOAD: 1,
+    FIRST_SPEND: 2,
+    COMPLETED: 3,
+  };
+
+  console.log('currentStage :', currentStage);
+  const derivedIndex = stageToIndex[currentStage ?? 'KYC_PENDING'] ?? 0;
+  console.log('derivedIndex :', derivedIndex);
+
+  // Keep internal index state in sync with backend stage changes
+  const [selectedIndex, setSelectedIndex] = useState(derivedIndex);
+
+  // Sync whenever currentStage updates
+  useEffect(() => {
+    setSelectedIndex(derivedIndex);
+  }, [derivedIndex]);
+
+  // Convenience helpers to read milestone data safely
+  const milestone = (key: string) => statusWiseRewards?.[key] ?? {};
+
+  const tasks = [
+    {
+      id: '1',
+      title: 'Sign up for your Cypher card',
+      completed: Boolean(milestone('kycPending').earned),
+      reward: milestone('kycPending').amount ?? 0,
+      status: milestone('kycPending').earned ? 'completed' : 'pending',
+      description: `🎉 Awesome! You just earned ${milestone('kycPending').amount} $CYPR for joining the cypher card platform!`,
+    },
+    {
+      id: '2',
+      title: 'Load your card',
+      completed: Boolean(milestone('firstLoad').earned),
+      reward: milestone('firstLoad').amount ?? 0,
+      status: milestone('firstLoad').earned ? 'completed' : 'pending',
+      description: `Load your card with a minimum of $200 and you'll get ${milestone('firstLoad').amount} $CYPR as bonus reward`,
+    },
+    {
+      id: '3',
+      title: 'Spend $200 in 15 days',
+      completed: Boolean(milestone('firstSpend').earned),
+      reward: milestone('firstSpend').amount ?? 0,
+      status: milestone('firstSpend').earned ? 'completed' : 'pending',
+      description: `Spend $200 in 15 days with any merchant and you'll get ${milestone('firstSpend').amount} $CYPR as bonus reward`,
+    },
+    {
+      id: '4',
+      title: 'Referral merchant reward',
+      completed: false,
+      reward: 200,
+      status: 'pending',
+      description:
+        'You get 200 $CYPR as bonus reward when you spend at these merchants',
+    },
+  ];
+
   const rewardData = {
-    totalBonus: 100,
-    maxBonus: 1500,
-    timeLeft: '15d 14h',
-    progressPercentage: 0.65, // 65% progress for the circular timer
-    tasks: [
-      {
-        id: '1',
-        title: 'Sign up for your Cypher card',
-        completed: true,
-        reward: 100,
-        status: 'completed',
-        description:
-          '🎉 Awesome! You just earned $100CYPR for joining the cypher card platform!',
-      },
-      {
-        id: '2',
-        title: 'Load your card',
-        completed: false,
-        reward: 150,
-        status: 'pending',
-        description:
-          "Cypher supports over 16 chains and more than 1000 tokens! Just load your card with a minimum of $200 and you'll get 150 $CYPR as bonus reward",
-      },
-      {
-        id: '3',
-        title: 'Spend $200 in 15 days',
-        completed: false,
-        reward: 200,
-        status: 'pending',
-        description:
-          "Spend $200 in 15 days with any merchant and you'll get 200 $CYPR as bonus reward",
-      },
-      {
-        id: '4',
-        title: 'Referral merchant reward',
-        completed: false,
-        reward: 200,
-        status: 'pending',
-        description:
-          'You get 200 $CYPR as bonus reward when you spend at these merchants',
-      },
-    ],
+    totalBonus: totalRewardsEarned,
+    maxBonus: totalRewardsPossible,
+    timeLeft: '15d 14h', // TODO derive from backend once available
+    progressPercentage: 0.65,
+    tasks,
   };
 
   // Prepare data for WheelPicker
-  const wheelData = rewardData.tasks.map((task, index) => ({
+  const wheelData = rewardData.tasks.map(task => ({
     id: task.id,
     component: <TaskWheelItem task={task} />,
     value: task,
@@ -218,7 +243,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   };
 
   return (
-    <CyDView className='bg-base40 my-4 mx-4 rounded-[12px] py-4'>
+    <CyDView className='bg-base40 mx-4 rounded-[12px] py-4'>
       {/* Header Section */}
       <CyDView className='flex-row justify-between items-start mb-4 px-4'>
         <CyDView className='flex-1'>
@@ -280,6 +305,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       {/* Custom Wheel Picker Section */}
       <CyDView>
         <WheelPicker
+          key={`wheel-${derivedIndex}`}
           data={wheelData}
           selectedIndex={selectedIndex}
           onChange={handleWheelChange}
@@ -302,4 +328,4 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   );
 };
 
-export default RewardProgressWidget;
+export default React.memo(RewardProgressWidgetComponent);
