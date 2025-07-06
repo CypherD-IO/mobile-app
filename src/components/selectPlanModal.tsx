@@ -135,6 +135,16 @@ export default function SelectPlanModal({
     }
   }, [openComparePlans]);
 
+  const isRainOutOfStock =
+    get(cardDesignData, ['metal', 0, 'provider'], CardProviders.REAP_CARD) ===
+      CardProviders.RAIN_CARD &&
+    !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true);
+
+  const isReapOutOfStock =
+    get(cardDesignData, ['metal', 0, 'provider'], CardProviders.REAP_CARD) ===
+      CardProviders.REAP_CARD &&
+    !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true);
+
   useEffect(() => {
     const fetchPlanData = async () => {
       setLoading(true);
@@ -803,24 +813,32 @@ export default function SelectPlanModal({
                 </CyDText>
               </CyDText>
             </CyDTouchView>
-            {get(
-              cardDesignData,
-              ['metal', 0, 'provider'],
-              CardProviders.REAP_CARD,
-            ) === CardProviders.RAIN_CARD &&
-              !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true) && (
-                <>
-                  <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                    <CyDText className='font-bold underline'>
-                      {t('IMPORTANT')}:
-                    </CyDText>{' '}
-                    {t('METAL_OUT_OF_STOCK_WITH_EXTENTED_PREMIUM')}
-                  </CyDText>
-                  <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                    {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
-                  </CyDText>
-                </>
-              )}
+            {isRainOutOfStock && (
+              <>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  <CyDText className='font-bold underline'>
+                    {t('IMPORTANT')}:
+                  </CyDText>{' '}
+                  {t('METAL_OUT_OF_STOCK_WITH_EXTENTED_PREMIUM')}
+                </CyDText>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
+                </CyDText>
+              </>
+            )}
+            {isReapOutOfStock && (
+              <>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  <CyDText className='font-bold underline'>
+                    {t('IMPORTANT')}:
+                  </CyDText>{' '}
+                  {t('METAL_OUT_OF_STOCK')}
+                </CyDText>
+                <CyDText className='px-[12px] text-[14px] my-[8px]'>
+                  {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
+                </CyDText>
+              </>
+            )}
 
             <Button
               title={t('GET_PREMIUM')}
