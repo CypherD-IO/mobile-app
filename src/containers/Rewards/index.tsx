@@ -283,7 +283,9 @@ const RewardTrendsContent = () => {
 export default function Rewards() {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
-  const navigation = useNavigation();
+  // NOTE: Casting navigation to `any` as we navigate to multiple stacks without strict typing.
+  // This prevents TypeScript linter errors while keeping the API unchanged.
+  const navigation: any = useNavigation();
   // Dummy state values – these will be replaced by API data in future iterations.
   const [tokenBalance] = React.useState<number>(121.0);
   const [usedBooster] = React.useState<number>(0);
@@ -361,6 +363,12 @@ export default function Rewards() {
     // This will be implemented when navigation is properly set up
     navigation.navigate(screenTitle.REFERRALS_VIEW_ALL);
     console.log('Navigate to View All Referrals screen');
+  };
+  const handleInviteFriendsPress = () => {
+    // Navigate to the Referrals page when the user taps "Invite Friends".
+    // This allows users to invite friends and track referral rewards.
+    navigation.navigate(screenTitle.REFERRALS);
+    console.log('Navigate to Referrals screen (Invite Friends)');
   };
 
   /* -------------------------------------------------------------------------- */
@@ -658,9 +666,7 @@ export default function Rewards() {
                     className={`flex-1 rounded-[24px] py-[8px] flex-row items-center justify-center ${
                       isDarkMode ? 'bg-base200' : 'bg-n40'
                     }`}
-                    onPress={() => {
-                      // TODO: Implement invite friends functionality
-                    }}>
+                    onPress={handleInviteFriendsPress}>
                     <CyDMaterialDesignIcons
                       name='account-group'
                       size={24}
