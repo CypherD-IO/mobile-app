@@ -1703,7 +1703,7 @@ const resources = {
       METAL_OUT_OF_STOCK:
         "Our new batch of metal cards is now in production! You'll be able to order your free Premium metal card in 4–6 weeks. We'll notify you as soon as it's ready.",
       METAL_OUT_OF_STOCK_WITH_EXTENTED_PREMIUM:
-        "Our metal cards are currently in production and will be available in 1–2 months. While you wait, enjoy an extended 15-month Premium membership (that's 25% more value!). We'll notify you immediately when your metal card is ready to order.",
+        "Our metal cards are currently in production and will be available in 1–2 months. While you wait, enjoy  15-months Premium membership (3 extra months for free!). We'll notify you immediately when your metal card is ready to order.",
       YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY:
         'Your Premium benefits begin right away.',
       IMPORTANT: 'Important',

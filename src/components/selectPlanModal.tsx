@@ -813,26 +813,13 @@ export default function SelectPlanModal({
                 </CyDText>
               </CyDText>
             </CyDTouchView>
-            {isRainOutOfStock && (
+            {(isRainOutOfStock || isReapOutOfStock) && (
               <>
                 <CyDText className='px-[12px] text-[14px] my-[8px]'>
                   <CyDText className='font-bold underline'>
                     {t('IMPORTANT')}:
                   </CyDText>{' '}
                   {t('METAL_OUT_OF_STOCK_WITH_EXTENTED_PREMIUM')}
-                </CyDText>
-                <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                  {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
-                </CyDText>
-              </>
-            )}
-            {isReapOutOfStock && (
-              <>
-                <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                  <CyDText className='font-bold underline'>
-                    {t('IMPORTANT')}:
-                  </CyDText>{' '}
-                  {t('METAL_OUT_OF_STOCK')}
                 </CyDText>
                 <CyDText className='px-[12px] text-[14px] my-[8px]'>
                   {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
