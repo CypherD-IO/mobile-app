@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Clipboard,
@@ -6,6 +6,7 @@ import {
   Dimensions,
   Platform,
   useColorScheme,
+  StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -26,6 +27,9 @@ import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvi
 import { QRCode } from 'react-native-custom-qr-codes';
 import { BlurView } from '@react-native-community/blur';
 import { Theme, useTheme } from '../../reducers/themeReducer';
+import useAxios from '../../core/HttpRequest';
+import NewReferralCodeModal from '../../components/v2/newReferralCodeModal';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 
 const { width } = Dimensions.get('window');
 
@@ -36,6 +40,17 @@ interface ReferralData {
   additionalUserEarnings: number;
   additionalFriendEarnings: number;
 }
+
+// Extracted styles to avoid inline-style linter warnings
+const styles = StyleSheet.create({
+  blurAbsolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+});
 
 /**
  * QR Code Bottom Sheet Content Component
@@ -52,7 +67,6 @@ const QRCodeBottomSheetContent = ({
 }) => {
   return (
     <CyDView className='flex-1 bg-n20 px-4'>
-      <CyDText className='text-n0 font-semibold'>QR Code</CyDText>
       {/* QR Code Section */}
       <CyDView className='items-center mb-8'>
         <CyDText className='text-n200 text-sm mb-4 text-center'>
@@ -81,7 +95,7 @@ const QRCodeBottomSheetContent = ({
             <CyDText className='text-black font-bold text-sm'>1</CyDText>
           </CyDView>
           <CyDView className='flex-1'>
-            <CyDText className='text-white font-semibold text-lg mb-2'>
+            <CyDText className='font-semibold text-lg mb-2'>
               They Join Cypher
             </CyDText>
             <CyDText className='text-n200 text-sm leading-relaxed'>
@@ -101,7 +115,7 @@ const QRCodeBottomSheetContent = ({
             <CyDText className='text-black font-bold text-sm'>2</CyDText>
           </CyDView>
           <CyDView className='flex-1'>
-            <CyDText className='text-white font-semibold text-lg mb-2'>
+            <CyDText className='font-semibold text-lg mb-2'>
               Earn Even More When They Follow you
             </CyDText>
             <CyDText className='text-n200 text-sm leading-relaxed'>
@@ -115,24 +129,129 @@ const QRCodeBottomSheetContent = ({
   );
 };
 
+/**
+ * Bottom-sheet content component that shows **all** referral codes with a copy-to-clipboard action.
+ */
+const ReferralCodesBottomSheetContent = ({
+  referralCodes,
+}: {
+  referralCodes: string[];
+}) => {
+  const { t } = useTranslation();
+
+  if (!referralCodes.length) {
+    return (
+      <CyDView className='flex-1 items-center justify-center p-6'>
+        <CyDText className='text-n200'>{t('NO_REFERRAL_CODES')}</CyDText>
+      </CyDView>
+    );
+  }
+
+  return (
+    <CyDScrollView className='flex-1 p-4 bg-n20'>
+      <CyDText className='text-[16px] font-semibold mb-4'>
+        {t('ALL_REFERRAL_CODES', 'All Referral Codes')}
+      </CyDText>
+
+      {referralCodes.map(code => (
+        <CyDView
+          key={code}
+          className='flex-row items-center justify-between bg-n0 rounded-[8px] px-4 py-3 mb-2'>
+          <CyDText className='text-[14px] font-medium'>{code}</CyDText>
+          <CyDTouchView
+            onPress={() => {
+              Clipboard.setString(code);
+              showToast(t('COPIED_TO_CLIPBOARD', 'Copied to clipboard'));
+            }}>
+            <CyDIcons name='copy' size={20} className='text-base400' />
+          </CyDTouchView>
+        </CyDView>
+      ))}
+    </CyDScrollView>
+  );
+};
+
 export default function Referrals() {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { showBottomSheet } = useGlobalBottomSheet();
+  const { postWithAuth, getWithAuth } = useAxios();
+  const { showModal, hideModal } = useGlobalModalContext();
 
   const { theme } = useTheme();
   const colorScheme = useColorScheme();
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  // Dummy data - replace with API calls later
+  /* ------------------------------------------------------------------------ */
+  /*                       Referral Data (fetched from API)                    */
+  /* ------------------------------------------------------------------------ */
+  const [referralCodes, setReferralCodes] = useState<string[]>([]);
+  const [isReferralCodesLoading, setIsReferralCodesLoading] = useState(false);
+
+  // Keep existing earnings placeholders – can be replaced with API later.
   const [referralData] = useState<ReferralData>({
-    referralCode: 'UZUMYMW',
+    referralCode: '',
     userEarnings: 50.0,
     friendEarnings: 100.0,
     additionalUserEarnings: 30.0,
     additionalFriendEarnings: 70.0,
   });
+
+  // New-code modal state
+  const [isNewCodeModalVisible, setIsNewCodeModalVisible] = useState(false);
+  const [code, setCode] = useState('');
+  const [createReferralCodeLoading, setCreateReferralCodeLoading] =
+    useState(false);
+
+  /**
+   * Fetch referral codes list from backend.
+   */
+  const fetchReferralCodes = async () => {
+    setIsReferralCodesLoading(true);
+    const response = await getWithAuth('/v1/cards/referral-v2');
+    console.log('response : : : ', response);
+    setIsReferralCodesLoading(false);
+
+    if (!response.isError && response.data?.referralCodes) {
+      setReferralCodes(response.data.referralCodes);
+    }
+  };
+
+  useEffect(() => {
+    void fetchReferralCodes();
+  }, []);
+
+  /**
+   * Create new referral code through backend then refresh list.
+   */
+  const createReferralCode = async (payload: {
+    utm_source?: string;
+    utm_campaign?: string;
+    influencer?: string;
+    utm_medium: string;
+  }) => {
+    setIsNewCodeModalVisible(false);
+    setCreateReferralCodeLoading(true);
+
+    const response = await postWithAuth('/v1/cards/referral-v2', {
+      referralCode: code,
+      ...payload,
+    });
+
+    setCreateReferralCodeLoading(false);
+
+    if (!response.isError) {
+      showToast(t('REFERRAL_CODE_CREATED', 'Referral code created'));
+      void fetchReferralCodes();
+    } else {
+      showToast(
+        response.error?.message ??
+          t('REFERRAL_CODE_CREATION_FAILED', 'Failed to create referral code'),
+        'error',
+      );
+    }
+  };
 
   /**
    * Handles copying referral code to clipboard
@@ -179,7 +298,7 @@ export default function Referrals() {
       snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '90%'],
       showCloseButton: true,
       scrollable: true,
-      backgroundColor: isDarkMode ? 'black' : 'white',
+      backgroundColor: isDarkMode ? '#161616' : '#F5F6F7',
       content: (
         <QRCodeBottomSheetContent
           referralCode={referralData.referralCode}
@@ -198,9 +317,27 @@ export default function Referrals() {
    * For users who want to enter someone else's referral code
    */
   const handleAddReferralCode = () => {
-    // TODO: Navigate to enter referral code screen
-    console.log('Navigate to enter referral code screen');
-    showToast(t('Enter referral code feature coming soon!'));
+    // Open the "New Code" modal so user can create their own referral code.
+    setIsNewCodeModalVisible(true);
+  };
+
+  /**
+   * Open bottom-sheet displaying all referral codes.
+   */
+  const handleViewAllReferralCodes = () => {
+    showBottomSheet({
+      id: 'all-referral-codes',
+      snapPoints: ['60%', Platform.OS === 'android' ? '100%' : '85%'],
+      showCloseButton: true,
+      scrollable: true,
+      backgroundColor: isDarkMode ? '#161616' : '#F5F6F7',
+      content: (
+        <ReferralCodesBottomSheetContent referralCodes={referralCodes} />
+      ),
+      onClose: () => {
+        console.log('Referral codes bottom sheet closed');
+      },
+    });
   };
 
   /**
@@ -227,13 +364,7 @@ export default function Referrals() {
       />
       {/* Grey translucent tint with blur */}
       <BlurView
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
+        style={styles.blurAbsolute}
         blurType={isDarkMode ? 'dark' : 'light'}
         blurAmount={37}
         reducedTransparencyFallbackColor={
@@ -283,13 +414,24 @@ export default function Referrals() {
           </CyDText>
           <CyDView className='flex-row items-center justify-center'>
             <CyDText className='text-[30px] font-bold tracking-wider mr-1'>
-              {referralData.referralCode}
+              {referralCodes[0] ?? '———'}
             </CyDText>
             <CyDTouchView onPress={handleCopyReferralCode} className='p-2'>
               <CyDIcons name='copy' size={20} className='text-base400' />
             </CyDTouchView>
           </CyDView>
         </CyDView>
+
+        {/* View All Referral Codes CTA */}
+        {referralCodes.length > 1 && (
+          <CyDTouchView
+            onPress={handleViewAllReferralCodes}
+            className='items-center mt-2'>
+            <CyDText className='text-blue-400 underline font-medium'>
+              {t('VIEW_ALL_REFERRAL_CODES', 'View All Referral Codes')}
+            </CyDText>
+          </CyDTouchView>
+        )}
 
         {/* Action Buttons */}
         <CyDView className='flex-row gap-3 px-4 mb-[34px]'>
@@ -474,6 +616,15 @@ export default function Referrals() {
           </CyDTouchView>
         </CyDView>
       </CyDScrollView>
+
+      {/* New Referral Code Modal */}
+      <NewReferralCodeModal
+        isModalVisible={isNewCodeModalVisible}
+        setIsModalVisible={setIsNewCodeModalVisible}
+        createReferralCode={createReferralCode}
+        code={code}
+        setCode={setCode}
+      />
     </CyDSafeAreaView>
   );
 }
