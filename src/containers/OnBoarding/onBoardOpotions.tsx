@@ -337,7 +337,7 @@ export default function OnBoardOpotions() {
           <CyDView className='flex flex-row items-center justify-center gap-x-[4px] mt-[24px]'>
             <CyDIcons name='shield-tick' size={20} className='text-base400' />
             <CyDText className='text-[12px] font-medium'>
-              {'Cypher Passed security audit'}
+              {t('CYPHER_AUDIT_TEXT')}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -472,7 +472,7 @@ export default function OnBoardOpotions() {
           <CyDView className='flex flex-row items-center justify-center gap-x-[4px] mt-[24px]'>
             <CyDIcons name='shield-tick' size={20} className='text-base400' />
             <CyDText className='text-[12px] font-medium'>
-              {'Cypher Passed security audit'}
+              {t('CYPHER_AUDIT_TEXT')}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -537,7 +537,7 @@ export default function OnBoardOpotions() {
           <CyDView className='flex flex-row items-center justify-center gap-x-[4px] mt-[24px]'>
             <CyDIcons name='shield-tick' size={20} className='text-base400' />
             <CyDText className='text-[12px] font-medium'>
-              {'Cypher Passed security audit'}
+              {t('CYPHER_AUDIT_TEXT')}
             </CyDText>
           </CyDView>
         </CyDView>

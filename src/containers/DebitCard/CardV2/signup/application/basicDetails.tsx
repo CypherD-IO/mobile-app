@@ -13,11 +13,12 @@ import { screenTitle } from '../../../../../constants';
 import FormikTextInput from '../../../../../components/v2/formikInput';
 import FormikDateInput from '../../../../../components/v2/formikDatePicker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { ReturnKeyTypeOptions } from 'react-native';
+import { Platform, ReturnKeyTypeOptions, Keyboard } from 'react-native';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
 import { t } from 'i18next';
+import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
 
 // Validation schema for the basic details form
 const BasicDetailsSchema = Yup.object().shape({
@@ -69,6 +70,22 @@ const BasicDetails = (): JSX.Element => {
   const lastNameRef = useRef<any>(null);
   const dobRef = useRef<any>(null);
   const emailRef = useRef<any>(null);
+
+  // Track keyboard visibility to hide offer tag when typing
+  const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleSubmit = (values: FormValues) => {
     // Update form state
@@ -174,6 +191,16 @@ const BasicDetails = (): JSX.Element => {
                 )}
               </CyDText> */}
             </KeyboardAwareScrollView>
+
+            {!(Platform.OS === 'android' && isKeyboardVisible) && (
+              <OfferTagComponent
+                position={{
+                  bottom: Platform.OS === 'android' ? 118 : 146,
+                  left: 16,
+                  right: 16,
+                }}
+              />
+            )}
 
             {/* Footer */}
             <CardApplicationFooter

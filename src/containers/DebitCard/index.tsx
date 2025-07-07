@@ -30,6 +30,7 @@ import CardProviderSwitch from '../../components/cardProviderSwitch';
 import CardWailtList from './cardWaitList';
 import { getReferralCode } from '../../core/asyncStorage';
 import { useFocusEffect } from '@react-navigation/native';
+import { OnboardingRewardProvider } from '../../contexts/OnboardingRewardContext';
 
 export interface RouteProps {
   navigation: {
@@ -242,18 +243,20 @@ export default function DebitCardScreen(props: RouteProps) {
   }
 
   return (
-    <CyDView className='flex-1'>
-      <CardProviderSwitch />
-      {isReadOnlyWallet && (
-        <CyDImageBackground
-          source={AppImages.READ_ONLY_CARD_BACKGROUND}
-          className='h-full items-center justify-center'>
-          <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
-            {t<string>('TRACK_WALLET_CYPHER_CARD')}
-          </CyDText>
-        </CyDImageBackground>
-      )}
-      {!isReadOnlyWallet && <CardWailtList navigation={props.navigation} />}
-    </CyDView>
+    <OnboardingRewardProvider>
+      <CyDView className='flex-1'>
+        <CardProviderSwitch />
+        {isReadOnlyWallet && (
+          <CyDImageBackground
+            source={AppImages.READ_ONLY_CARD_BACKGROUND}
+            className='h-full items-center justify-center'>
+            <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
+              {t<string>('TRACK_WALLET_CYPHER_CARD')}
+            </CyDText>
+          </CyDImageBackground>
+        )}
+        {!isReadOnlyWallet && <CardWailtList navigation={props.navigation} />}
+      </CyDView>
+    </OnboardingRewardProvider>
   );
 }
