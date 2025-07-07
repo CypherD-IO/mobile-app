@@ -129,21 +129,27 @@ export default function SelectPlanModal({
     undefined,
   );
 
+  const isRainOutOfStock = useMemo(() => {
+    return (
+      get(cardDesignData, ['metal', 0, 'provider'], CardProviders.REAP_CARD) ===
+        CardProviders.RAIN_CARD &&
+      !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true)
+    );
+  }, [cardDesignData]);
+
+  const isReapOutOfStock = useMemo(() => {
+    return (
+      get(cardDesignData, ['metal', 0, 'provider'], CardProviders.REAP_CARD) ===
+        CardProviders.REAP_CARD &&
+      !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true)
+    );
+  }, [cardDesignData]);
+
   useEffect(() => {
     if (openComparePlans) {
       setShowComparision(true);
     }
   }, [openComparePlans]);
-
-  const isRainOutOfStock =
-    get(cardDesignData, ['metal', 0, 'provider'], CardProviders.REAP_CARD) ===
-      CardProviders.RAIN_CARD &&
-    !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true);
-
-  const isReapOutOfStock =
-    get(cardDesignData, ['metal', 0, 'provider'], CardProviders.REAP_CARD) ===
-      CardProviders.REAP_CARD &&
-    !get(cardDesignData, ['metal', 0, 'isStockAvailable'], true);
 
   useEffect(() => {
     const fetchPlanData = async () => {
