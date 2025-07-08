@@ -65,6 +65,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
+import { formatUnits } from 'viem';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -911,10 +912,9 @@ export default function FirstLoadCard() {
       denom,
     } = selectedToken as Holding;
 
-    const actualTokensRequired = limitDecimalPlaces(
-      quote.tokensRequired,
-      contractDecimals,
-    );
+    const actualTokensRequired = quote?.cosmosSwap
+      ? formatUnits(BigInt(quote.cosmosSwap.amountIn), contractDecimals)
+      : limitDecimalPlaces(quote.tokensRequired, contractDecimals);
     if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
       setLoading(false);
       setIsMaxLoading(false);
