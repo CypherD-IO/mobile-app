@@ -64,6 +64,7 @@ import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
 import usePortfolio from '../../../hooks/usePortfolio';
 import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
+import { formatUnits } from 'viem';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -156,10 +157,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     } = selectedToken as Holding & IHyperLiquidHolding;
 
     const nativeToken = await getNativeToken(chainDetails.backendName);
-    const actualTokensRequired = limitDecimalPlaces(
-      quote.tokensRequired,
-      contractDecimals,
-    );
+    const actualTokensRequired = quote?.cosmosSwap
+      ? formatUnits(BigInt(quote.cosmosSwap.amountIn), contractDecimals)
+      : limitDecimalPlaces(quote.tokensRequired, contractDecimals);
+
     if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
       setLoading(false);
       setIsMaxLoading(false);
