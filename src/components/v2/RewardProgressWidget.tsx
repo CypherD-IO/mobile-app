@@ -11,6 +11,8 @@ import AppImages from '../../../assets/images/appImages';
 import WheelPicker from './WheelPicker';
 import TaskWheelItem from './TaskWheelItem';
 import { useOnboardingReward } from '../../contexts/OnboardingRewardContext';
+import { Theme, useTheme } from '../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface RewardProgressWidgetProps {
   onTaskPress?: (task: any) => void;
@@ -147,6 +149,10 @@ const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
     totalRewardsEarned,
     currentStage,
   } = useOnboardingReward();
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
   // Map backend milestone keys → widget index
   const stageToIndex: Record<string, number> = {
@@ -243,7 +249,10 @@ const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
   };
 
   return (
-    <CyDView className='bg-base40 mx-4 rounded-[12px] py-4'>
+    <CyDView
+      className={`mx-4 rounded-[12px] py-4 ${
+        isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
+      }`}>
       {/* Header Section */}
       <CyDView className='flex-row justify-between items-start mb-4 px-4'>
         <CyDView className='flex-1'>
@@ -278,7 +287,7 @@ const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
         </CyDView>
 
         {/* Timer Section - Circular Progress */}
-        <CyDView className='items-center'>
+        {/* <CyDView className='items-center'>
           <CyDView className='relative'>
             <CydProgessCircle
               className='w-[60px] h-[60px]'
@@ -297,7 +306,7 @@ const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
           <CyDText className='text-n200 text-[10px] text-center mt-2'>
             Time left
           </CyDText>
-        </CyDView>
+        </CyDView> */}
       </CyDView>
 
       <CyDView className='w-full h-[1px] bg-n20' />

@@ -6,6 +6,8 @@ import {
   CyDImage,
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
+import { Theme, useTheme } from '../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface MerchantSpendRewardWidgetProps {
   onViewAllPress?: () => void;
@@ -24,6 +26,12 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   onViewAllPress,
   onMerchantPress,
 }) => {
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   // Dummy merchant data
   const merchantData = {
     baseReward: '1X Rewards',
@@ -91,11 +99,19 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
       onPress={() => handleMerchantPress(merchant)}>
       {/* Merchant Icon with Multiplier Badge */}
       <CyDView className='relative mb-2'>
-        <CyDView className='w-16 h-16 bg-white rounded-full items-center justify-center'>
+        <CyDView
+          className={`w-16 h-16 bg-white rounded-full items-center justify-center border border-n40`}>
           {/* Placeholder for merchant icon - you can replace with actual images */}
-          <CyDText className='text-[12px] font-bold text-gray-800'>
-            {merchant.name}
-          </CyDText>
+          {merchant.icon ? (
+            <CyDImage
+              source={merchant.icon}
+              className='w-16 h-16 rounded-full'
+            />
+          ) : (
+            <CyDText className='text-[12px] font-bold text-gray-800'>
+              {merchant.name}
+            </CyDText>
+          )}
         </CyDView>
 
         {/* Multiplier Badge */}
@@ -116,7 +132,10 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   );
 
   return (
-    <CyDView className='bg-base40 my-4 mx-4 rounded-[12px] py-4'>
+    <CyDView
+      className={`my-4 mx-4 rounded-[12px] py-4 ${
+        isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
+      }`}>
       {/* Header Section */}
       <CyDView className='flex-row justify-between items-start mb-4 px-4'>
         <CyDView className='flex-1'>
@@ -161,9 +180,11 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
       {/* View All Button */}
       <CyDView className='px-4'>
         <CyDTouchView
-          className='bg-base200 rounded-[25px] py-3 items-center'
+          className={`bg-base200 rounded-[25px] py-3 items-center ${
+            isDarkMode ? 'bg-base200' : 'bg-n30'
+          }`}
           onPress={handleViewAllPress}>
-          <CyDText className='text-white text-[16px] font-medium'>
+          <CyDText className='text-[16px] font-medium'>
             View all Merchant bonus
           </CyDText>
         </CyDTouchView>

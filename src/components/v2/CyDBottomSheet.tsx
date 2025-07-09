@@ -53,6 +53,11 @@ interface CyDBottomSheetProps {
   keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
   keyboardBlurBehavior?: 'none' | 'restore';
   androidKeyboardInputMode?: 'adjustPan' | 'adjustResize';
+  /**
+   * Optional color for the top bar of the bottom sheet. Convenience over using
+   * `topBarStyle` when you only need to set a colour.
+   */
+  topBarColor?: string;
 }
 
 const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
@@ -78,6 +83,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       keyboardBehavior = 'interactive',
       keyboardBlurBehavior = 'restore',
       androidKeyboardInputMode = 'adjustResize',
+      topBarColor,
     },
     ref,
   ) => {
@@ -199,6 +205,16 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
             handleIndicatorStyle ?? {
               backgroundColor: isDarkMode ? '#444' : '#ccc',
               width: 34,
+            }
+          }
+          handleStyle={
+            handleStyle ?? {
+              backgroundColor:
+                topBarColor ??
+                backgroundColor ??
+                (isDarkMode ? '#161616' : '#F5F6F7'),
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
             }
           }
           backdropComponent={renderBackdrop}

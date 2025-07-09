@@ -614,10 +614,10 @@ export default function CypherCardScreen() {
 
     showBottomSheet({
       id: 'merchant-detail',
-      title: String(merchant?.name || 'Merchant') + ' Rewards',
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
+      backgroundColor: '#595959',
       content: (
         <MerchantRewardDetailContent
           merchantData={merchant}
