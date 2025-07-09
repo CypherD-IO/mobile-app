@@ -159,7 +159,7 @@ const MerchantRewardListScreen: React.FC = () => {
 
     showBottomSheet({
       id: 'merchant-reward-detail',
-      title: `${merchant.name} Rewards`,
+      backgroundColor: '#595959',
       snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,

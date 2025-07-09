@@ -34,6 +34,12 @@ const RewardTrendsContent = () => {
   // Dummy data for the donut chart - will be replaced with API data
   const [timeFilter, setTimeFilter] = React.useState('All time');
   const [totalRewards] = React.useState(100.0);
+  const { theme } = useAppTheme();
+  const colorScheme = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   const [chartData] = React.useState([
     {
       key: 'bonus',
@@ -120,7 +126,7 @@ const RewardTrendsContent = () => {
       key={transaction.merchant}
       className='flex-row justify-between items-center py-3 border-b border-n40'>
       <CyDView className='flex-1'>
-        <CyDText className='text-white text-[14px] font-medium'>
+        <CyDText className='text-[14px] font-medium'>
           {transaction.merchant}
         </CyDText>
         <CyDText className='text-n200 text-[12px]'>
@@ -146,7 +152,7 @@ const RewardTrendsContent = () => {
               className='w-4 h-4 mr-1'
               resizeMode='contain'
             />
-            <CyDText className='text-white text-[12px] font-medium'>
+            <CyDText className='text-[12px] font-medium'>
               {transaction.reward}
             </CyDText>
           </CyDView>
@@ -160,15 +166,15 @@ const RewardTrendsContent = () => {
       <CyDView className='bg-n20 px-4 mb-[12px]'>
         {/* Time Filter */}
         <CyDView className='flex-row justify-between items-center py-4'>
-          <CyDView />
+          <CyDText className='text-[22px] font-medium'>
+            {'Reward Trends'}
+          </CyDText>
           <CyDTouchView className='flex-row items-center rounded-lg px-3 py-2'>
-            <CyDText className='text-white text-[14px] mr-2'>
-              {timeFilter}
-            </CyDText>
+            <CyDText className='text-[14px] mr-2'>{timeFilter}</CyDText>
             <CyDMaterialDesignIcons
               name='chevron-down'
               size={16}
-              className='text-white'
+              className={`${isDarkMode ? 'text-white' : 'text-black'}`}
             />
           </CyDTouchView>
         </CyDView>
@@ -201,7 +207,7 @@ const RewardTrendsContent = () => {
                   />
                 </CyDView>
               </CyDView>
-              <CyDText className='text-white text-[24px] font-bold'>
+              <CyDText className='text-[24px] font-bold'>
                 {totalRewards.toFixed(2)}
               </CyDText>
             </CyDView>
@@ -219,8 +225,7 @@ const RewardTrendsContent = () => {
         <CyDView className='mb-6'>
           <CyDView className='flex-row justify-between items-center mb-3'>
             <CyDView className='flex-row items-center'>
-              <CyDView className='w-3 h-3 bg-p150 rounded-full mr-3' />
-              <CyDText className='text-white text-[14px]'>Bonus</CyDText>
+              <CyDText className='text-[14px]'>Bonus</CyDText>
             </CyDView>
             <CyDText className='text-p150 text-[14px] font-medium'>
               100.00 $CYPR
@@ -228,8 +233,7 @@ const RewardTrendsContent = () => {
           </CyDView>
           <CyDView className='flex-row justify-between items-center mb-3'>
             <CyDView className='flex-row items-center'>
-              <CyDView className='w-3 h-3 bg-blue200 rounded-full mr-3' />
-              <CyDText className='text-white text-[14px]'>From spends</CyDText>
+              <CyDText className='text-[14px]'>From spends</CyDText>
             </CyDView>
             <CyDText className='text-p150 text-[14px] font-medium'>
               0.0 $CYPR
@@ -237,10 +241,7 @@ const RewardTrendsContent = () => {
           </CyDView>
           <CyDView className='flex-row justify-between items-center mb-3'>
             <CyDView className='flex-row items-center'>
-              <CyDView className='w-3 h-3 bg-red300 rounded-full mr-3' />
-              <CyDText className='text-white text-[14px]'>
-                Merchant Spends
-              </CyDText>
+              <CyDText className='text-[14px]'>Merchant Spends</CyDText>
             </CyDView>
             <CyDText className='text-red300 text-[14px] font-medium'>
               0.0 $CYPR
@@ -248,10 +249,7 @@ const RewardTrendsContent = () => {
           </CyDView>
           <CyDView className='flex-row justify-between items-center mb-3'>
             <CyDView className='flex-row items-center'>
-              <CyDView className='w-3 h-3 bg-blue200 rounded-full mr-3' />
-              <CyDText className='text-white text-[14px]'>
-                Referrals Rewards
-              </CyDText>
+              <CyDText className='text-[14px]'>Referrals Rewards</CyDText>
             </CyDView>
             <CyDText className='text-blue200 text-[14px] font-medium'>
               0.0 $CYPR
@@ -262,7 +260,7 @@ const RewardTrendsContent = () => {
 
       {/* Reward Transaction Section */}
       <CyDView className='flex-1'>
-        <CyDText className='text-white text-[18px] font-bold mb-4 mx-4'>
+        <CyDText className='text-[18px] font-bold mb-4 mx-4'>
           Reward Transaction
         </CyDText>
 
@@ -379,7 +377,6 @@ export default function Rewards() {
   const showRewardTrendsBottomSheet = () => {
     showBottomSheet({
       id: 'reward-trends',
-      title: 'Reward Trends',
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
@@ -398,8 +395,8 @@ export default function Rewards() {
         className={`flex-row justify-between items-center mx-[24px] mt-[8px] ${
           isDarkMode ? 'text-white' : 'bg-n30'
         }`}>
-        <CyDText className='text-[28px] font-extrabold text-base400'>
-          {t('REWARDS', 'Rewards')}
+        <CyDText className='text-[32px] font-medium text-base400'>
+          {'Rewards'}
         </CyDText>
         <CyDTouchView onPress={handleWhatIsCypherTokenPress}>
           <CyDText className='text-blue200 font-medium text-[12px]'>
@@ -447,14 +444,14 @@ export default function Rewards() {
               angle={75}
             />
             <CyDText className='text-[12px] text-base150 tracking-[1px]'>
-              $CYPRXBASE
+              $CYPR X BASE
             </CyDText>
 
             {/* Know more */}
             <CyDTouchView onPress={handleKnowMorePress} className='mt-[32px]'>
               <CyDView
                 className={`flex-row items-center rounded-[24px] px-[20px] py-[8px] ${
-                  isDarkMode ? 'bg-n30' : 'bg-n50'
+                  isDarkMode ? 'bg-n30' : 'bg-n0'
                 }`}>
                 <CyDText className='font-semibold text-[14px] mr-[5px]'>
                   {t('Know more')}
