@@ -18,6 +18,7 @@ interface BottomSheetConfig {
   backgroundColor?: string;
   onClose?: () => void;
   onOpen?: () => void;
+  topBarColor?: string;
 }
 
 interface GlobalBottomSheetContextType {
@@ -145,6 +146,7 @@ export const GlobalBottomSheetProvider: React.FC<
           snapPoints={config.snapPoints || ['80%', '95%']}
           initialSnapIndex={-1}
           title={config.title}
+          topBarColor={config.topBarColor}
           backgroundColor={config.backgroundColor}
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}

@@ -6,7 +6,11 @@ import {
   CyDMaterialDesignIcons,
   CyDImage,
 } from '../../styles/tailwindComponents';
+import { BlurView } from '@react-native-community/blur';
+import { StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
+import { useColorScheme } from 'nativewind';
+import { Theme, useTheme } from '../../reducers/themeReducer';
 
 interface MerchantRewardDetailContentProps {
   merchantData?: MerchantDetailData;
@@ -17,6 +21,7 @@ interface MerchantRewardDetailContentProps {
 interface MerchantDetailData {
   id: string;
   name: string;
+  logo?: string; // Optional merchant logo URL
   multiplier: string;
   category: string;
   description: string;
@@ -75,10 +80,17 @@ const MerchantRewardDetailContent: React.FC<
     console.log('Remove booster pressed');
   },
 }) => {
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   // Dummy merchant detail data - will be replaced with API call later
   const defaultMerchantData: MerchantDetailData = {
     id: '1',
     name: 'Walmart',
+    logo: undefined, // Will be populated with actual logo URL
     multiplier: '5.2X',
     category: 'Retail',
     description:
@@ -214,6 +226,28 @@ const MerchantRewardDetailContent: React.FC<
   const currentMerchantData = merchantData ?? defaultMerchantData;
 
   /**
+   * Processes merchant name for display in the circle
+   * - If name has multiple words, takes first word only
+   * - If name is longer than 10 characters, truncates to 10
+   * - Returns processed name and appropriate font size
+   */
+  const processMerchantName = (name: string) => {
+    const firstWord = name.split(' ')[0];
+    const displayName =
+      firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
+
+    // Calculate font size based on name length
+    let fontSize = 20;
+    if (displayName.length >= 8) {
+      fontSize = 14;
+    } else if (displayName.length > 5) {
+      fontSize = 16;
+    }
+
+    return { displayName, fontSize };
+  };
+
+  /**
    * Handles know more button press
    */
   const handleKnowMorePress = () => {
@@ -229,40 +263,106 @@ const MerchantRewardDetailContent: React.FC<
     // TODO: Implement boost merchant functionality
   };
 
+  const { displayName, fontSize } = processMerchantName(
+    currentMerchantData.name,
+  );
+
+  // Style objects for dynamic styling
+  const overlayStyle = {
+    backgroundColor: 'rgba(13, 13, 13, 0.7)',
+  };
+
+  const merchantTextStyle = {
+    fontSize,
+  };
+
+  // Styles for blur effects
+  const styles = StyleSheet.create({
+    blurAbsolute: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+  });
+
   return (
-    <CyDView className='flex-1 bg-n0 px-4'>
-      {/* Header Section */}
-      <CyDView className='items-center py-6'>
-        {/* Merchant Icon */}
-        <CyDView className='w-16 h-16 bg-blue-500 rounded-full items-center justify-center mb-4'>
-          <CyDMaterialDesignIcons
-            name='store'
-            size={32}
-            className='text-white'
-          />
+    <CyDView
+      className={`flex-1 pb-14 -mb-10 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}>
+      {/* Header Section with Background */}
+      <CyDView className='items-center'>
+        {/* Background Image or Solid Color */}
+        {
+          <>
+            {/* Background banner */}
+            <CyDView className='w-full h-[126px] bg-white items-center justify-center relative'>
+              {/* Large faded merchant name acting as background image */}
+              <CyDText className='text-black font-bold text-center text-[80px]'>
+                {currentMerchantData.name}
+              </CyDText>
+
+              {/* Blur Effect overlaying the big text */}
+              <BlurView
+                style={styles.blurAbsolute}
+                blurType={'dark'}
+                blurAmount={8}
+                reducedTransparencyFallbackColor='rgba(255, 255, 255, 0.3)'
+                pointerEvents='none'
+              />
+
+              {/* Semi-transparent overlay (tint) */}
+              <CyDView
+                className='absolute inset-0'
+                style={overlayStyle}
+                pointerEvents='none'
+              />
+            </CyDView>
+          </>
+        }
+
+        {/* Merchant Logo Circle */}
+        <CyDView className='w-20 h-20 bg-white rounded-full items-center justify-center mb-2 shadow-lg z-20 absolute left-1/2 -translate-x-1/2 top-[86px]'>
+          {currentMerchantData.logo ? (
+            <CyDImage
+              source={{ uri: currentMerchantData.logo }}
+              className='w-16 h-16 rounded-full'
+              resizeMode='contain'
+            />
+          ) : (
+            <CyDText
+              className='text-black font-bold text-center'
+              style={merchantTextStyle}>
+              {displayName}
+            </CyDText>
+          )}
         </CyDView>
 
-        {/* Merchant Name */}
-        <CyDText className='text-[24px] font-bold mb-3'>
-          {currentMerchantData.name}
-        </CyDText>
+        {/* Content Container */}
+        <CyDView className='items-center justify-center py-10'>
+          {/* Merchant Name */}
+          <CyDText className='text-[24px] font-bold text-center px-4'>
+            {currentMerchantData.name}
+          </CyDText>
 
-        {/* Rewards Badge */}
-        {/* <CyDView className='bg-green400 rounded-full px-4 py-2'> */}
-        <CyDText className='text-green400 text-[16px] font-bold'>
-          {currentMerchantData.multiplier} Rewards
-        </CyDText>
-        {/* </CyDView> */}
+          {/* Rewards Badge */}
+          <CyDText className='text-green400 text-[18px] font-bold'>
+            {currentMerchantData.multiplier} Rewards
+          </CyDText>
+        </CyDView>
       </CyDView>
 
       {/* Your spend section */}
-      <CyDView className='mb-6'>
-        <CyDText className='text-[16px] font-semibold mb-4'>
+      <CyDView className='mb-6 mx-4 '>
+        <CyDText className='text-[12px] font-medium mb-2'>
           Your spend on this merchant, earns
         </CyDText>
 
         {/* All Transaction reward */}
-        <CyDView className='bg-base40 rounded-[12px] py-4 mb-3 '>
+        <CyDView
+          className={`bg-base40 rounded-[12px] py-4 mb-3 ${
+            isDarkMode ? 'bg-base40' : 'bg-n0'
+          }`}>
           <CyDView className='flex-row justify-between items-center mb-4 px-4'>
             <CyDText className='text-[14px] font-medium'>
               All Transaction reward
@@ -276,14 +376,19 @@ const MerchantRewardDetailContent: React.FC<
           </CyDView>
 
           <CyDView className='relative  mb-4'>
-            <CyDView className='h-[1px] bg-base200' />
+            <CyDView
+              className={`h-[1px] ${isDarkMode ? 'bg-base200' : 'bg-n40'}`}
+            />
             {/* Plus Icon */}
             <CyDView className='items-center absolute -top-4 left-1/2 -translate-x-1/2'>
-              <CyDView className='w-8 h-8 bg-white rounded-full items-center justify-center'>
+              <CyDView
+                className={`w-8 h-8 rounded-full items-center justify-center ${
+                  isDarkMode ? 'bg-white' : 'bg-black'
+                }`}>
                 <CyDMaterialDesignIcons
                   name='plus'
                   size={20}
-                  className='text-black'
+                  className={`text-black ${isDarkMode ? 'text-black' : 'text-white'}`}
                 />
               </CyDView>
             </CyDView>
@@ -308,16 +413,19 @@ const MerchantRewardDetailContent: React.FC<
 
       {/* Bonuses Section */}
       {currentMerchantData?.promotionalBonuses?.length > 0 && (
-        <CyDView className='mb-6'>
-          <CyDText className='text-[16px] font-semibold mb-4'>Bonuses</CyDText>
+        <CyDView className='mb-6 mx-4'>
+          <CyDText className='text-[12px] font-medium mb-2'>Bonuses</CyDText>
 
-          <CyDView className='bg-base40 rounded-[12px]'>
+          <CyDView
+            className={`bg-base40 rounded-[12px] ${
+              isDarkMode ? 'bg-base40' : 'bg-n0'
+            }`}>
             {currentMerchantData.promotionalBonuses?.map((bonus, index) => (
               <CyDView
                 key={bonus.id}
                 className={`p-4 ${
                   index < currentMerchantData.promotionalBonuses.length - 1
-                    ? 'border-b border-base200'
+                    ? `border-b ${isDarkMode ? 'border-base200' : 'border-n40'}`
                     : ''
                 }`}>
                 <CyDView className='flex-row justify-between items-center'>
@@ -352,7 +460,10 @@ const MerchantRewardDetailContent: React.FC<
       )}
 
       {/* Merchant Boost Section */}
-      <CyDView className='p-3 mb-3 rounded-[12px] bg-base40'>
+      <CyDView
+        className={`p-3 mb-4 rounded-[12px] bg-base40 mx-4 ${
+          isDarkMode ? 'bg-base40' : 'bg-n0'
+        }`}>
         <CyDText className='text-[14px] font-semibold mb-3'>
           Merchant Boost
         </CyDText>
@@ -391,22 +502,25 @@ const MerchantRewardDetailContent: React.FC<
         </CyDView>
       </CyDView>
 
-      <CyDTouchView
-        className='bg-base200 rounded-[25px] py-4 items-center mb-7'
+      {/* <CyDTouchView
+        className='bg-base200 rounded-[25px] py-4 items-center mb-7 mx-4'
         onPress={handleKnowMorePress}>
         <CyDText className='text-white text-[16px] font-medium'>
           Know More about {currentMerchantData.name}
         </CyDText>
-      </CyDTouchView>
+      </CyDTouchView> */}
 
       {/* Recent Transactions */}
       {currentMerchantData.recentTransactions?.length > 0 && (
-        <CyDView className='mb-6'>
-          <CyDText className='text-[16px] font-semibold mb-4'>
+        <CyDView className='mb-6 mx-4'>
+          <CyDText className='text-[12px] font-medium mb-2'>
             Recent Transaction on this Merchant
           </CyDText>
 
-          <CyDView className='bg-base40 rounded-[12px] overflow-hidden'>
+          <CyDView
+            className={`bg-base40 rounded-[12px] overflow-hidden ${
+              isDarkMode ? 'bg-base40' : 'bg-n0'
+            }`}>
             {currentMerchantData.recentTransactions
               ?.slice(0, 4)
               .map((transaction, index) => (
@@ -454,14 +568,15 @@ const MerchantRewardDetailContent: React.FC<
               ))}
 
             {/* View All Button */}
-            <CyDTouchView className='p-4 flex-row items-center justify-between bg-base200'>
-              <CyDText className='text-white text-[14px] font-medium'>
-                View All
-              </CyDText>
+            <CyDTouchView
+              className={`p-4 flex-row items-center justify-between ${
+                isDarkMode ? 'bg-base200' : 'bg-n40'
+              }`}>
+              <CyDText className='text-[14px] font-medium'>View All</CyDText>
               <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={20}
-                className='text-white'
+                className={`${isDarkMode ? 'text-white' : 'text-black'}`}
               />
             </CyDTouchView>
           </CyDView>
@@ -470,12 +585,15 @@ const MerchantRewardDetailContent: React.FC<
 
       {/* Previous reward cycles earnings */}
       {currentMerchantData.rewardCycles?.length > 0 && (
-        <CyDView className='mb-6'>
+        <CyDView className='mb-6 mx-4'>
           <CyDText className='text-[16px] font-semibold mb-4'>
             Previous reward cycles earnings
           </CyDText>
 
-          <CyDView className='bg-base40 rounded-[12px] overflow-hidden'>
+          <CyDView
+            className={`bg-base40 rounded-[12px] overflow-hidden ${
+              isDarkMode ? 'bg-base40' : 'bg-n0'
+            }`}>
             {currentMerchantData.rewardCycles
               ?.slice(0, 5)
               .map((cycle, index) => (
@@ -506,14 +624,15 @@ const MerchantRewardDetailContent: React.FC<
               ))}
 
             {/* View All Button */}
-            <CyDTouchView className='p-4 flex-row items-center justify-between bg-base200'>
-              <CyDText className='text-white text-[14px] font-medium'>
-                View All
-              </CyDText>
+            <CyDTouchView
+              className={`p-4 flex-row items-center justify-between ${
+                isDarkMode ? 'bg-base200' : 'bg-n40'
+              }`}>
+              <CyDText className='text-[14px] font-medium'>View All</CyDText>
               <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={20}
-                className='text-white'
+                className={`${isDarkMode ? 'text-white' : 'text-black'}`}
               />
             </CyDTouchView>
           </CyDView>
@@ -521,7 +640,7 @@ const MerchantRewardDetailContent: React.FC<
       )}
 
       {/* Disclaimer */}
-      <CyDView className='mb-8'>
+      <CyDView className='mb-8 mx-4'>
         <CyDText className='text-n200 text-[10px] leading-4'>
           Disclaimer: All third-party trademarks, including logos and brand
           names, are the property of their respective owners. Their inclusion

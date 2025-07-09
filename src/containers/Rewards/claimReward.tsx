@@ -18,6 +18,8 @@ import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
 import { showToast } from '../utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
+import { Theme, useTheme } from '../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface EarningBreakdown {
   id: string;
@@ -120,6 +122,12 @@ const ClaimReward: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { showBottomSheet } = useGlobalBottomSheet();
+
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
   // Dummy data - will be replaced with API data later
   const [claimData] = useState({
@@ -242,9 +250,12 @@ const ClaimReward: React.FC = () => {
    * Renders merchant avatar with name
    */
   const renderMerchantAvatar = (merchantName: string) => (
-    <CyDView className='w-10 h-10 bg-white rounded-full items-center justify-center mr-3'>
+    <CyDView
+      className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${
+        isDarkMode ? 'bg-white' : 'bg-n40'
+      }`}>
       <CyDText
-        className='text-black text-[8px] font-bold text-center'
+        className={`text-[8px] font-bold text-center text-black`}
         numberOfLines={2}>
         {merchantName.split(' ')[0]}
       </CyDText>
@@ -253,11 +264,24 @@ const ClaimReward: React.FC = () => {
 
   return (
     <>
-      <CyDSafeAreaView className='flex-1 bg-base400'>
+      {/* Top inset background – white in dark mode, black in light mode */}
+      <CyDView
+        style={{
+          height: insets.top,
+          backgroundColor: isDarkMode ? '#FFFFFF' : '#000000',
+        }}
+      />
+
+      <CyDSafeAreaView
+        className={`flex-1 ${isDarkMode ? 'bg-base400' : 'bg-n0'}`}>
         {/* Header */}
-        <CyDView className='flex-row justify-between items-center px-4 py-3 bg-white'>
-          <CyDText className='text-black text-lg font-semibold'>
-            Cypher <CyDText className='text-n200 font-normal'>REWARDS</CyDText>
+        <CyDView
+          className={`flex-row justify-between items-center px-4 py-3 ${isDarkMode ? 'bg-white' : 'bg-black'}`}>
+          <CyDText className='text-n0 text-lg font-semibold'>
+            Cypher{' '}
+            <CyDText className='text-n0 font-[300] tracking-[2px]'>
+              REWARDS
+            </CyDText>
           </CyDText>
 
           <CyDTouchView onPress={handleBack} className='p-2'>
@@ -270,11 +294,11 @@ const ClaimReward: React.FC = () => {
         </CyDView>
 
         <CyDScrollView
-          className='flex-1 bg-n0'
+          className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}
           showsVerticalScrollIndicator={false}>
           {/* Main Claim Section */}
-          <CyDView className='px-6 py-8 bg-base400 rounded-br-[36px]'>
-            <CyDText className='text-black text-[44px] font-[300] leading-tight mb-4'>
+          <CyDView className='px-6 py-8 bg-base400 rounded-br-[36px] pt-[200px] -mt-[200px]'>
+            <CyDText className='text-n0 text-[44px] font-[300] leading-tight mb-4'>
               You rewards are{'\n'}available to claim
             </CyDText>
 
@@ -285,13 +309,13 @@ const ClaimReward: React.FC = () => {
                 className='w-8 h-8 mr-3'
                 resizeMode='contain'
               />
-              <CyDText className='text-black text-[36px] font-bold font-newyork'>
+              <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
                 {claimData.totalRewards.toLocaleString()}
               </CyDText>
             </CyDView>
 
             {/* Date Range */}
-            <CyDText className='text-n200 text-[14px] mb-8'>
+            <CyDText className='text-n0 text-[14px] mb-11'>
               {claimData.dateRange}
             </CyDText>
 
@@ -319,10 +343,13 @@ const ClaimReward: React.FC = () => {
           </CyDView>
 
           {/* Content Container */}
-          <CyDView className='flex-1 bg-n0 px-4 gap-y-6'>
+          <CyDView className='flex-1 px-4 gap-y-6'>
             {/* Earning Breakdown */}
-            <CyDView className='p-4 bg-base40 mt-6 rounded-[12px]'>
-              <CyDText className='text-n200 text-[16px] font-medium mb-4'>
+            <CyDView
+              className={`p-4 mt-6 rounded-[12px] ${
+                isDarkMode ? 'bg-base40' : 'bg-n0'
+              }`}>
+              <CyDText className='text-[16px] font-medium mb-4'>
                 Earning breakdown
               </CyDText>
 
@@ -330,9 +357,7 @@ const ClaimReward: React.FC = () => {
                 <CyDView
                   key={item.id}
                   className='flex-row justify-between items-center py-3'>
-                  <CyDText className='text-white text-[14px]'>
-                    {item.type}
-                  </CyDText>
+                  <CyDText className='text-[14px]'>{item.type}</CyDText>
                   <CyDView
                     className={`px-1 py-[2px] rounded-[4px]`}
                     style={{ backgroundColor: item.bgColor }}>
@@ -347,14 +372,20 @@ const ClaimReward: React.FC = () => {
             </CyDView>
 
             {/* Reward on Merchants */}
-            <CyDView className='py-6 bg-base40 rounded-[12px]'>
-              <CyDText className='text-white text-[16px] font-medium mb-4 mx-4'>
+            <CyDView
+              className={`py-6 rounded-[12px] ${
+                isDarkMode ? 'bg-base40' : 'bg-n0'
+              }`}>
+              <CyDText className='text-[16px] font-medium mb-4 mx-4'>
                 Reward on Merchants
               </CyDText>
 
               {/* Total Earnings */}
-              <CyDView className='bg-base200 py-3 px-4 flex-row justify-between items-center'>
-                <CyDText className='text-n50 text-[14px] font-medium'>
+              <CyDView
+                className={`py-3 px-4 flex-row justify-between items-center ${
+                  isDarkMode ? 'bg-base200' : 'bg-n20'
+                }`}>
+                <CyDText className='text-[14px] font-medium'>
                   Total Earnings
                 </CyDText>
                 <CyDView className='flex-row items-center'>
@@ -363,9 +394,7 @@ const ClaimReward: React.FC = () => {
                     className='w-6 h-6 mr-2'
                     resizeMode='contain'
                   />
-                  <CyDText className='text-white text-[18px] font-bold'>
-                    997
-                  </CyDText>
+                  <CyDText className='text-[18px] font-bold'>997</CyDText>
                 </CyDView>
               </CyDView>
 
@@ -377,12 +406,12 @@ const ClaimReward: React.FC = () => {
                     index === merchantRewards.length - 1
                       ? 'border-b-0 pb-0'
                       : ''
-                  }`}>
+                  } ${isDarkMode ? 'border-base200' : 'border-n40'}`}>
                   {/* Merchant Header */}
                   <CyDView className='flex-row items-center mb-3'>
                     {renderMerchantAvatar(merchant.name)}
                     <CyDView className='flex-1'>
-                      <CyDText className='text-white text-[16px] font-medium mb-1'>
+                      <CyDText className='text-[16px] font-medium mb-1'>
                         {merchant.name}
                       </CyDText>
                       <CyDText
@@ -429,17 +458,29 @@ const ClaimReward: React.FC = () => {
 
             {/* Spend Performance */}
 
-            <CyDView className='py-4 bg-base40 rounded-[12px]'>
-              <CyDText className='text-white text-[16px] font-medium mb-4 mx-4'>
+            <CyDView
+              className={`py-4 rounded-[12px] ${
+                isDarkMode ? 'bg-base40' : 'bg-n0'
+              }`}>
+              <CyDText className='text-[16px] font-medium mb-4 mx-4'>
                 Spend Performance
               </CyDText>
 
               {/* Total Earnings */}
-              <CyDView className='bg-base200 py-3 px-4 flex-row justify-between items-center mb-3'>
-                <CyDText className='text-n50 text-[14px] font-medium'>
+              <CyDView
+                className={`bg-base200 py-3 px-4 flex-row justify-between items-center mb-3 ${
+                  isDarkMode ? 'bg-base200' : 'bg-n20'
+                }`}>
+                <CyDText
+                  className={`text-[14px] font-medium ${
+                    isDarkMode ? 'text-n50' : 'text-black'
+                  }`}>
                   Total Spend
                 </CyDText>
-                <CyDText className='text-white text-[18px] font-bold'>
+                <CyDText
+                  className={`text-[18px] font-bold ${
+                    isDarkMode ? 'text-white' : 'text-black'
+                  }`}>
                   {spendPerformance.totalSpend}
                 </CyDText>
               </CyDView>
@@ -448,7 +489,7 @@ const ClaimReward: React.FC = () => {
                 <CyDText className='text-n200 text-[14px]'>
                   Avg. Spend/ Transaction
                 </CyDText>
-                <CyDText className='text-white text-[14px] font-medium'>
+                <CyDText className='text-[14px] font-medium'>
                   {spendPerformance.avgSpendPerTransaction}
                 </CyDText>
               </CyDView>
@@ -463,7 +504,7 @@ const ClaimReward: React.FC = () => {
                     className='w-5 h-5 mr-2'
                     resizeMode='contain'
                   />
-                  <CyDText className='text-white text-[14px] font-medium'>
+                  <CyDText className='text-[14px] font-medium'>
                     {spendPerformance.tokensEarnedPer10Spend}
                   </CyDText>
                 </CyDView>
@@ -474,7 +515,10 @@ const ClaimReward: React.FC = () => {
       </CyDSafeAreaView>
 
       {/* Bottom Safe Area with n0 background */}
-      <CyDView className='bg-n0' style={{ height: insets.bottom }} />
+      <CyDView
+        className={`${isDarkMode ? 'bg-black' : 'bg-n30'}`}
+        style={{ height: insets.bottom }}
+      />
     </>
   );
 };
