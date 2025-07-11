@@ -83,6 +83,8 @@ import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
 import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -380,6 +382,12 @@ export default function CypherCardScreen() {
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
   const { refreshStatus: refreshOnboardingStatus } = useOnboardingReward();
 
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+  // isPremium = true; // Remove this test line
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   const onRefresh = async () => {
     void refreshProfile();
 
@@ -617,7 +625,7 @@ export default function CypherCardScreen() {
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
-      backgroundColor: '#595959',
+      backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
       content: (
         <MerchantRewardDetailContent
           merchantData={merchant}
@@ -958,9 +966,9 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
-            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px]'>
+            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
               {cardId === CARD_IDS.HIDDEN_CARD && (
-                <CyDView className='mx-[16px] mb-[16px]'>
+                <CyDView className='mx-[16px]'>
                   <LinearGradient
                     colors={['#4575F7', '#3155B4']}
                     start={{ x: 0, y: 0 }}
@@ -982,28 +990,6 @@ export default function CypherCardScreen() {
                           </CyDText>
                         </CyDView>
                       </CyDView>
-                      <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg mb-3'>
-                        {/* Left side - Icon (using the green offer code tag image) */}
-                        <CyDImage
-                          source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
-                          className='w-[28px] h-[28px] mr-2'
-                          resizeMode='contain'
-                        />
-
-                        {/* Offer text and timer */}
-                        <CyDView className='flex flex-1 flex-row items-center justify-between'>
-                          <CyDText className='text-white leading-tight'>
-                            Get 100 $CYPR as sign up bonus
-                          </CyDText>
-                        </CyDView>
-                      </CyDView>
-                      <CyDTouchView
-                        className='bg-[#D4E7F4] rounded-full px-[10px] py-[15px] items-center justify-center'
-                        onPress={onPressFundCard}>
-                        <CyDText className='text-[14px] font-bold text-black'>
-                          {'Load Card'}
-                        </CyDText>
-                      </CyDTouchView>
                     </CyDView>
                   </LinearGradient>
                 </CyDView>
@@ -1018,9 +1004,10 @@ export default function CypherCardScreen() {
               <MerchantSpendRewardWidget
                 onViewAllPress={handleViewAllMerchants}
                 onMerchantPress={handleDirectMerchantPress}
+                isPremium={planInfo?.planId === CypherPlanId.PRO_PLAN}
               />
               {cardId !== CARD_IDS.HIDDEN_CARD && (
-                <CyDView className='mx-[16px] mt-[16px]'>
+                <CyDView className='mx-[16px]'>
                   <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                     {t<string>('RECENT_TRANSACTIONS')}
                   </CyDText>
@@ -1032,21 +1019,21 @@ export default function CypherCardScreen() {
                         );
                       })}
                       <CyDTouchView
-                        className='bg-n0 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
+                        className='border-[1.2px] border-n20 flex flex-row justify-center items-center py-[16px] rounded-[16px]'
                         onPress={() =>
                           navigation.navigate(
                             screenTitle.CARD_TRANSACTIONS_SCREEN,
                             {
                               navigation,
-                              cardProvider,
+                              cardProvider: CardProviders.PAYCADDY,
                             },
                           )
                         }>
                         <CyDText className='text-[14px] font-bold'>
-                          {t<string>('VIEW_ALL_TRANSACTIONS')}
+                          {t<string>('LEGACY_CARD_TRANSACTIONS')}
                         </CyDText>
                         <CyDMaterialDesignIcons
-                          name='chevron-right'
+                          name='arrow-right-thin'
                           size={24}
                           className='text-base400'
                         />
@@ -1061,9 +1048,8 @@ export default function CypherCardScreen() {
                       />
                     </CyDView>
                   )}
-
                   {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
-                    <CyDView className='mx-[16px] mt-[16px] bg-p10 p-6 rounded-xl'>
+                    <CyDView className='mx-[16px] bg-p10 p-6 rounded-xl'>
                       <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
                         <CyDText className='font-extrabold text-[20px]'>
                           {'Cypher'}
@@ -1154,7 +1140,7 @@ export default function CypherCardScreen() {
                 </CyDView>
               )}
               {cardProfile && isLegacyCardClosed(cardProfile) && (
-                <CyDView className='mx-[16px] mt-[16px]'>
+                <CyDView className='mx-[16px]'>
                   <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                     {t<string>('OTHERS')}
                   </CyDText>
