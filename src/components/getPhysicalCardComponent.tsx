@@ -86,7 +86,7 @@ export const GetPhysicalCardComponent = ({
       };
 
   return showGetFirstPvcCard || isMetalFreeCardEligible ? (
-    <CyDView className='flex flex-col mt-4 mx-4 border border-[1px] border-n40 rounded-[8px] p-4'>
+    <CyDView className='flex flex-col mx-4 border border-[1px] border-n40 rounded-[8px] p-4'>
       <CyDView className='flex flex-row items-center justify-between mb-[6px] gap-2'>
         <CyDText className='break-words'>{componentContent.title}</CyDText>
         <CyDView
