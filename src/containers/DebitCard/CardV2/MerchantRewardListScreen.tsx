@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -9,139 +9,200 @@ import {
   CyDTextInput,
   CyDMaterialDesignIcons,
   CyDIcons,
-  CyDScrollView,
+  CyDImage,
 } from '../../../styles/tailwindComponents';
+import { ActivityIndicator, FlatList, Platform } from 'react-native';
+import useAxios from '../../../core/HttpRequest';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
 import Fuse from 'fuse.js';
-import { Platform } from 'react-native';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface MerchantData {
-  id: string;
-  name: string;
-  multiplier: string;
+  groupId: string;
+  candidateId: string;
+  brand: string;
+  canonicalName: string;
   category: string;
-  description?: string;
+  subcategory: string;
+  logoUrl?: string;
+  historicalMultiplier: {
+    current: number;
+    max: number;
+  };
+  votePercentage: number;
+  voteRank: number;
+  isActive: boolean;
+  isVerified: boolean;
+  hasActiveBribes: boolean;
+  metrics: {
+    averageTransactionSize: number;
+    totalSpend: number;
+    transactionCount: number;
+    uniqueSpenders: number;
+  };
 }
 
 const MerchantRewardListScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { showBottomSheet } = useGlobalBottomSheet();
+  const { getWithAuth } = useAxios();
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  const LIMIT = 20;
+  const offsetRef = useRef<string | undefined>(undefined);
+  const inFlightRef = useRef<boolean>(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const [searchText, setSearchText] = useState<string>('');
 
-  // Dummy merchant data - will be replaced with API call later
-  const merchantData: MerchantData[] = [
-    {
-      id: '1',
-      name: 'Uber',
-      multiplier: '5.2X',
-      category: 'Transportation',
-      description: 'Ride sharing and food delivery',
-    },
-    {
-      id: '2',
-      name: 'Amazon',
-      multiplier: '4.4X',
-      category: 'E-commerce',
-      description: 'Online shopping and marketplace',
-    },
-    {
-      id: '3',
-      name: 'Grab Taxi',
-      multiplier: '4X',
-      category: 'Transportation',
-      description: 'Southeast Asian ride-hailing service',
-    },
-    {
-      id: '4',
-      name: 'Walmart',
-      multiplier: '4X',
-      category: 'Retail',
-      description: 'Supermarket and retail chain',
-    },
-    {
-      id: '5',
-      name: 'Emmar Realities',
-      multiplier: '2.2X',
-      category: 'Real Estate',
-      description: 'Property development and management',
-    },
-    {
-      id: '6',
-      name: 'Trip.com',
-      multiplier: '2.4X',
-      category: 'Travel',
-      description: 'Online travel booking platform',
-    },
-    {
-      id: '7',
-      name: 'Lazadda',
-      multiplier: '1.2X',
-      category: 'E-commerce',
-      description: 'Southeast Asian e-commerce platform',
-    },
-    {
-      id: '8',
-      name: 'Marriott',
-      multiplier: '1.6X',
-      category: 'Hospitality',
-      description: 'International hotel chain',
-    },
-    {
-      id: '9',
-      name: 'Flipkart',
-      multiplier: '1.8X',
-      category: 'E-commerce',
-      description: 'Indian e-commerce marketplace',
-    },
-    {
-      id: '10',
-      name: 'Starbucks',
-      multiplier: '3.1X',
-      category: 'Food & Beverage',
-      description: 'Coffee shop chain',
-    },
-    {
-      id: '11',
-      name: "McDonald's",
-      multiplier: '2.8X',
-      category: 'Food & Beverage',
-      description: 'Fast food restaurant chain',
-    },
-    {
-      id: '12',
-      name: 'Netflix',
-      multiplier: '2.5X',
-      category: 'Entertainment',
-      description: 'Streaming service platform',
-    },
-  ];
+  const [state, setState] = useState<{
+    merchants: MerchantData[];
+    isLoading: boolean;
+    isLoadingMore: boolean;
+    isSearchingMore: boolean;
+    hasMore: boolean;
+  }>({
+    merchants: [],
+    isLoading: true,
+    isLoadingMore: false,
+    isSearchingMore: false,
+    hasMore: false,
+  });
 
-  /**
-   * Fuzzy search implementation for merchant filtering
-   * Uses Fuse.js for enhanced search experience
-   */
-  const filteredMerchants = useMemo(() => {
-    if (!searchText.trim()) {
-      return merchantData;
+  const [selectedMerchant, setSelectedMerchant] = useState<MerchantData | null>(
+    null,
+  );
+
+  const fetchMerchants = async (showLoading = true) => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
+    if (showLoading) {
+      setState(prev => ({
+        ...prev,
+        ...(offsetRef.current ? { isLoadingMore: true } : { isLoading: true }),
+      }));
     }
 
-    const fuse = new Fuse(merchantData, {
-      keys: ['name', 'category'],
+    try {
+      const params: any = {
+        limit: LIMIT,
+        sortBy: 'multiplier',
+        ...(offsetRef.current ? { offset: offsetRef.current } : {}),
+      };
+
+      const resp = await getWithAuth('/v1/cypher-protocol/merchants', params);
+      console.log('resp : : : : ', resp);
+      inFlightRef.current = false;
+
+      if (!resp.isError) {
+        const { items = [], nextOffset } = resp.data ?? {};
+        setState(prev => ({
+          ...prev,
+          merchants: offsetRef.current ? [...prev.merchants, ...items] : items,
+          isLoading: false,
+          isLoadingMore: false,
+          isSearchingMore: false,
+          hasMore: Boolean(nextOffset),
+        }));
+        offsetRef.current = nextOffset;
+      } else {
+        console.warn('Failed to fetch merchants', resp?.error);
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          isLoadingMore: false,
+          isSearchingMore: false,
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch merchants', err);
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        isLoadingMore: false,
+        isSearchingMore: false,
+      }));
+    }
+  };
+
+  useEffect(() => {
+    void fetchMerchants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Search helpers
+  const searchInBatch = (batch: MerchantData[], term: string) => {
+    if (!term.trim()) return batch;
+    const localFuse = new Fuse(batch, {
+      keys: ['brand', 'category'],
       threshold: 0.3,
       includeScore: true,
     });
+    return localFuse.search(term).map(r => r.item);
+  };
 
-    return fuse
-      .search(searchText)
-      .map(result => result.item)
-      .sort(
-        (a, b) =>
-          parseFloat(b.multiplier.replace('X', '')) -
-          parseFloat(a.multiplier.replace('X', '')),
-      );
-  }, [searchText, merchantData]);
+  const [filteredMerchants, setFilteredMerchants] = useState<MerchantData[]>(
+    [],
+  );
+
+  const progressiveSearch = async (term: string) => {
+    let currentResults = searchInBatch(state.merchants, term);
+    setFilteredMerchants(currentResults);
+
+    if (!term.trim()) {
+      setState(prev => ({ ...prev, isSearchingMore: false }));
+      return;
+    }
+
+    if (currentResults.length > 0 || !state.hasMore) {
+      setState(prev => ({ ...prev, isSearchingMore: false }));
+      return;
+    }
+
+    setState(prev => ({ ...prev, isSearchingMore: true }));
+
+    while (offsetRef.current) {
+      await fetchMerchants(false);
+      currentResults = searchInBatch(state.merchants, term);
+      setFilteredMerchants(currentResults);
+      if (currentResults.length > 0 || !offsetRef.current) break;
+    }
+
+    setState(prev => ({ ...prev, isSearchingMore: false }));
+  };
+
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!searchText.trim()) {
+      setFilteredMerchants(state.merchants);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      void progressiveSearch(searchText);
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText, state.merchants]);
+
+  useEffect(() => {
+    if (!searchText.trim()) setFilteredMerchants(state.merchants);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.merchants]);
 
   /**
    * Handles navigation back to previous screen
@@ -157,82 +218,28 @@ const MerchantRewardListScreen: React.FC = () => {
   const handleMerchantPress = (merchant: MerchantData) => {
     console.log('Merchant selected:', merchant);
 
+    setSelectedMerchant(merchant);
+
     showBottomSheet({
       id: 'merchant-reward-detail',
-      backgroundColor: '#595959',
+      backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
       snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
       content: (
         <MerchantRewardDetailContent
-          merchantData={{
-            id: merchant.id,
-            name: merchant.name,
-            multiplier: merchant.multiplier,
-            category: merchant.category,
-            description: merchant.description ?? '',
-            baseReward: '~ 4.5 - 6.7 $CYPR/$10 spent',
-            merchantReward: '~ 45 - 61 $CYPR/$10 spent',
-            boostedAmount: '4.19 veCypher',
-            boostedPercentage: '4.06(4.1%)',
-            boostedSince: '26 June, 2025',
-            nextMonthDecrease: '4.06(4.1%)',
-            promotionalBonuses: [
-              {
-                id: '1',
-                title: 'Promotional Bonus',
-                amount: '100.00',
-                token: 'CYPR',
-                date: '26 June, 2025 | 1:38 AM',
-              },
-              {
-                id: '2',
-                title: 'Promotional Bonus',
-                amount: '4.30',
-                token: 'USDC',
-                date: '26 June, 2025 | 1:38 AM',
-              },
-            ],
-            recentTransactions: [
-              {
-                id: '1',
-                location: `${merchant.name}, Illinois`,
-                amount: '$14.32',
-                date: 'Apr 24, 2024, 02:29 PM',
-                type: 'transaction' as const,
-              },
-            ],
-            rewardCycles: [
-              {
-                id: '1',
-                name: 'Reward Cycle 12',
-                period: 'Apr 24 to May 7 2025',
-                amount: '272.83',
-                token: 'CYPR',
-              },
-            ],
-            referralTransactions: [
-              {
-                id: '1',
-                hash: '0xAce....1111',
-                amount: '',
-                status: 'Pending',
-                date: 'Apr 24, 2024',
-              },
-            ],
-          }}
+          merchantData={merchant}
           onKnowMorePress={() => {
-            console.log('Know more pressed for:', merchant.name);
-            // TODO: Navigate to merchant info page or show additional details
+            console.log('Know more pressed for:', merchant.brand);
           }}
           onRemoveBoosterPress={() => {
-            console.log('Remove booster pressed for:', merchant.name);
-            // TODO: Implement remove booster functionality
+            console.log('Remove booster pressed for:', merchant.brand);
           }}
         />
       ),
       onClose: () => {
         console.log('Merchant detail bottom sheet closed');
+        setSelectedMerchant(null);
       },
     });
   };
@@ -245,117 +252,197 @@ const MerchantRewardListScreen: React.FC = () => {
     // TODO: Implement filter modal/bottom sheet
   };
 
+  /**
+   * Processes merchant name for display in the circle
+   * - If name has multiple words, takes first word only
+   * - If name is longer than 8 characters, truncates to 8
+   * - Returns processed name and appropriate font size
+   */
+  const processMerchantName = (name: string) => {
+    const firstWord = name.split(' ')[0];
+    const displayName =
+      firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
+
+    // Calculate font size based on name length
+    let fontSize = 16;
+    if (displayName.length >= 8) {
+      fontSize = 12;
+    } else if (displayName.length > 5) {
+      fontSize = 14;
+    }
+
+    return { displayName, fontSize };
+  };
+
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
+    <CyDSafeAreaView
+      className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
       {/* Header */}
-      <CyDView className='flex-row justify-between items-center px-4 py-3 bg-n0'>
+      <CyDView
+        className={`flex-row justify-between items-center px-4 pt-4 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
         <CyDTouchView onPress={handleBack} className='p-2'>
-          <CyDIcons name='arrow-left' size={24} className='text-n200' />
+          <CyDIcons
+            name='arrow-left'
+            size={24}
+            className={isDarkMode ? 'text-white' : 'text-black'}
+          />
         </CyDTouchView>
-        <CyDText className='text-white text-lg font-semibold'>
+        {/* <CyDText
+          className={`text-[20px] font-semibold ${isDarkMode ? 'text-white' : 'text-black'}`}>
           Merchant Rewards
-        </CyDText>
+        </CyDText> */}
         <CyDView className='w-10' />
       </CyDView>
 
       {/* Search Bar */}
       <CyDView className='px-4 py-3'>
-        <CyDView className='flex-row items-center border-[1px] border-n40 rounded-[8px] px-[12px] py-[8px]'>
+        <CyDView
+          className={`flex-row items-center rounded-[12px] px-3 py-2 bg-base40`}>
           <CyDMaterialDesignIcons
             name='magnify'
             size={20}
-            className='text-n200 mr-2'
+            className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
           />
           <CyDTextInput
-            className='flex-1 text-base400 py-[4px]'
+            className={`flex-1 text-[16px] !bg-base40 ${isDarkMode ? 'text-white' : 'text-black'}`}
             value={searchText}
             autoCapitalize='none'
             autoCorrect={false}
             onChangeText={setSearchText}
-            placeholderTextColor='#6B788E'
+            placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
             placeholder='Search Merchants'
           />
           {/* Filters Button */}
           <CyDTouchView
-            className='flex-row items-center ml-2 px-2 py-1'
+            className={`flex-row items-center ml-3 px-3 py-2 rounded-[8px] bg-base40`}
             onPress={handleFilterPress}>
             <CyDMaterialDesignIcons
               name='filter-variant'
               size={16}
-              className='text-n200 mr-1'
+              className={`mr-1 ${isDarkMode ? 'text-white' : 'text-black'}`}
             />
-            <CyDText className='text-n200 text-[12px] font-medium'>
+            <CyDText
+              className={`text-[12px] font-medium ${isDarkMode ? 'text-white' : 'text-black'}`}>
               Filters
             </CyDText>
             <CyDMaterialDesignIcons
               name='chevron-down'
               size={16}
-              className='text-n200 ml-1'
+              className={`ml-1 ${isDarkMode ? 'text-white' : 'text-black'}`}
             />
           </CyDTouchView>
         </CyDView>
       </CyDView>
 
       {/* Merchant List */}
-      <CyDScrollView className='flex-1 px-4'>
-        {filteredMerchants.length > 0 ? (
-          filteredMerchants.map((item, index) => (
-            <CyDTouchView
-              key={item.id}
-              className='flex-row items-center justify-between py-4 px-4 border-b border-n40'
-              onPress={() => handleMerchantPress(item)}>
-              <CyDView className='flex-row items-center flex-1'>
-                {/* Merchant Icon */}
-                <CyDView className='w-12 h-12 bg-white rounded-full items-center justify-center mr-3'>
+      <CyDView className='flex-1'>
+        {state.isLoading && !state.merchants.length ? (
+          <CyDView className='flex-1 items-center justify-center p-4'>
+            <ActivityIndicator
+              size='large'
+              color={isDarkMode ? '#ffffff' : '#000000'}
+            />
+          </CyDView>
+        ) : (
+          <FlatList
+            data={filteredMerchants}
+            renderItem={({ item }) => (
+              <CyDTouchView
+                className={`flex-row items-center justify-between py-4 px-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}
+                onPress={() => handleMerchantPress(item)}>
+                <CyDView className='flex-row items-center flex-1'>
+                  {/* Merchant Icon */}
+                  <CyDView className='w-12 h-12 bg-white rounded-full items-center justify-center mr-3 border border-gray-200'>
+                    {item.logoUrl ? (
+                      <CyDImage
+                        source={{ uri: item.logoUrl }}
+                        className='w-10 h-10 rounded-full'
+                        resizeMode='contain'
+                      />
+                    ) : (
+                      <CyDText
+                        className='font-bold text-gray-800'
+                        style={{
+                          fontSize: processMerchantName(item.brand).fontSize,
+                        }}>
+                        {processMerchantName(item.brand).displayName}
+                      </CyDText>
+                    )}
+                  </CyDView>
+
+                  {/* Merchant Info */}
+                  <CyDView className='flex-1'>
+                    <CyDText
+                      className={`text-[18px] font-semibold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                      {item.brand ?? ''}
+                    </CyDText>
+                    <CyDText
+                      className={`text-[14px] ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {item.category ?? ''}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+
+                {/* Reward Multiplier */}
+                <CyDView className='flex flex-row items-center'>
+                  <CyDView className='bg-green400 rounded-full px-3 py-1 mr-2'>
+                    <CyDText className='text-white text-[12px] font-bold'>
+                      {item.historicalMultiplier.current.toFixed(1)}X Rewards
+                    </CyDText>
+                  </CyDView>
                   <CyDMaterialDesignIcons
-                    name='store'
-                    size={24}
-                    className='text-gray-600'
+                    name='chevron-right'
+                    size={20}
+                    className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}
                   />
                 </CyDView>
-
-                {/* Merchant Info */}
-                <CyDView className='flex-1'>
-                  <CyDText className='text-[16px] font-semibold mb-1'>
-                    {item.name ?? ''}
+              </CyDTouchView>
+            )}
+            keyExtractor={item => item.candidateId}
+            onEndReached={() => {
+              if (
+                state.hasMore &&
+                !state.isLoadingMore &&
+                !state.isSearchingMore
+              ) {
+                void fetchMerchants();
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              state.isLoadingMore || state.isSearchingMore ? (
+                <CyDView className='items-center py-4'>
+                  <ActivityIndicator
+                    size='small'
+                    color={isDarkMode ? '#ffffff' : '#000000'}
+                  />
+                </CyDView>
+              ) : null
+            }
+            ListEmptyComponent={
+              filteredMerchants.length === 0 &&
+              !state.isLoading &&
+              !state.isSearchingMore ? (
+                <CyDView className='flex-1 items-center justify-center p-4'>
+                  <CyDMaterialDesignIcons
+                    name='store-outline'
+                    size={48}
+                    className={`mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                  />
+                  <CyDText
+                    className={`text-center text-[16px] font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    No merchants found
                   </CyDText>
-                  <CyDText className='text-n200 text-[12px]'>
-                    {item.category ?? ''}
+                  <CyDText
+                    className={`text-center text-[12px] mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                    Try adjusting your search terms
                   </CyDText>
                 </CyDView>
-              </CyDView>
-
-              {/* Reward Multiplier */}
-              <CyDView className='flex flex-row items-center'>
-                <CyDView className='bg-green400 rounded-full px-3 py-1 mb-1'>
-                  <CyDText className='text-white text-[12px] font-bold'>
-                    {item.multiplier ?? ''} Rewards
-                  </CyDText>
-                </CyDView>
-                <CyDMaterialDesignIcons
-                  name='chevron-right'
-                  size={20}
-                  className='text-n200'
-                />
-              </CyDView>
-            </CyDTouchView>
-          ))
-        ) : (
-          <CyDView className='flex-1 items-center justify-center p-4'>
-            <CyDMaterialDesignIcons
-              name='store-outline'
-              size={48}
-              className='text-n200 mb-2'
-            />
-            <CyDText className='text-center text-n200 text-[16px] font-medium'>
-              No merchants found
-            </CyDText>
-            <CyDText className='text-center text-n200 text-[12px] mt-1'>
-              Try adjusting your search terms
-            </CyDText>
-          </CyDView>
+              ) : null
+            }
+          />
         )}
-      </CyDScrollView>
+      </CyDView>
     </CyDSafeAreaView>
   );
 };

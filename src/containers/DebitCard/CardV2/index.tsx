@@ -76,6 +76,8 @@ import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
 import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -159,6 +161,12 @@ export default function CypherCardScreen() {
   const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
   const { refreshStatus: refreshOnboardingStatus } = useOnboardingReward();
+
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+  // isPremium = true; // Remove this test line
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -391,7 +399,7 @@ export default function CypherCardScreen() {
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
-      backgroundColor: '#595959',
+      backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
       content: (
         <MerchantRewardDetailContent
           merchantData={merchant}
@@ -726,9 +734,9 @@ export default function CypherCardScreen() {
           </CyDView>
         )}
 
-        <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px]'>
+        <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
           {cardId === CARD_IDS.HIDDEN_CARD && (
-            <CyDView className='mx-[16px] mb-[16px]'>
+            <CyDView className='mx-[16px]'>
               <LinearGradient
                 colors={['#4575F7', '#3155B4']}
                 start={{ x: 0, y: 0 }}
@@ -786,9 +794,10 @@ export default function CypherCardScreen() {
           <MerchantSpendRewardWidget
             onViewAllPress={handleViewAllMerchants}
             onMerchantPress={handleDirectMerchantPress}
+            isPremium={planInfo?.planId === CypherPlanId.PRO_PLAN}
           />
           {cardId !== CARD_IDS.HIDDEN_CARD && (
-            <CyDView className='mx-[16px] mt-[16px]'>
+            <CyDView className='mx-[16px]'>
               <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                 {t<string>('RECENT_TRANSACTIONS')}
               </CyDText>
@@ -832,7 +841,7 @@ export default function CypherCardScreen() {
             </CyDView>
           )}
           {cardProfile && isLegacyCardClosed(cardProfile) && (
-            <CyDView className='mx-[16px] mt-[16px]'>
+            <CyDView className='mx-[16px]'>
               <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                 {t<string>('OTHERS')}
               </CyDText>

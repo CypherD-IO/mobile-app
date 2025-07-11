@@ -18,108 +18,127 @@ import {
   useColorScheme,
 } from 'react-native';
 import Video from 'react-native-video';
+import useAxios from '../../core/HttpRequest';
 import GradientText from '../../components/gradientText';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import { PieChart } from 'react-native-svg-charts';
 import { screenTitle } from '../../constants';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
 import { Theme, useTheme as useAppTheme } from '../../reducers/themeReducer';
 import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
+import { DecimalHelper } from '../../utils/decimalHelper';
 // NOTE: Import for ReferralsViewAll component (ready for navigation integration)
 // import ReferralsViewAll from './ReferralsViewAll';
 
-const RewardTrendsContent = () => {
-  // Dummy data for the donut chart - will be replaced with API data
+interface RewardTrendsContentProps {
+  rewardsData: any | null;
+}
+
+const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
+  rewardsData,
+}) => {
+  // Time filter state – future enhancement will allow switching time frames
   const [timeFilter, setTimeFilter] = React.useState('All time');
-  const [totalRewards] = React.useState(100.0);
+
+  // Theme / color-scheme helpers (kept inside component to respect dynamic changes)
   const { theme } = useAppTheme();
   const colorScheme = useColorScheme();
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  const [chartData] = React.useState([
-    {
-      key: 'bonus',
-      value: 50,
-      svg: { fill: '#F7C645' },
-      arc: { outerRadius: '100%', cornerRadius: 4 },
-    }, // Yellow
-    {
-      key: 'spends',
-      value: 30,
-      svg: { fill: '#2685CA' },
-      arc: { outerRadius: '100%', cornerRadius: 4 },
-    }, // Blue
-    {
-      key: 'merchant',
-      value: 15,
-      svg: { fill: '#E25C5C' },
-      arc: { outerRadius: '100%', cornerRadius: 4 },
-    }, // Red
-    {
-      key: 'referrals',
-      value: 5,
-      svg: { fill: '#C2C7D0' },
-      arc: { outerRadius: '100%', cornerRadius: 4 },
-    }, // Gray
-  ]);
+  /* -------------------------------------------------------------------------- */
+  /*           Derived metrics from IUserRewardsResponse (all-time view)         */
+  /* -------------------------------------------------------------------------- */
 
-  // Dummy transaction data
-  const [transactionData] = React.useState([
-    {
-      id: '1',
-      date: '12 May 2024',
-      transactions: [
-        {
-          merchant: '7eleven cozumel',
-          amount: '$43.23',
-          status: 'Pending',
-          time: '02:29 PM',
-        },
-        {
-          merchant: 'Amazon india, Mumbai',
-          amount: '$117.23',
-          status: 'Pending',
-          time: '02:29 PM',
-        },
-        {
-          merchant: 'Wallmart, USA',
-          amount: '$92.23',
-          status: 'Pending',
-          time: '02:29 PM',
-        },
-      ],
-    },
-    {
-      id: '2',
-      date: '11 May 2024',
-      transactions: [
-        {
-          merchant: '7eleven cozumel',
-          amount: '$43.23',
-          status: 'Pending',
-          time: '02:29 PM',
-          reward: '322.11',
-        },
-        {
-          merchant: 'Amazon india, Mumbai',
-          amount: '$117.23',
-          status: 'Pending',
-          time: '02:29 PM',
-          reward: '220.11',
-        },
-        {
-          merchant: 'Uber, Illinois, USA',
-          amount: '$92.23',
-          status: 'Pending',
-          time: '02:29 PM',
-        },
-      ],
-    },
-  ]);
+  const totalRewards = React.useMemo(() => {
+    return parseFloat(
+      DecimalHelper.toDecimal(
+        rewardsData?.allTime?.totalEarned?.total ?? '0',
+        18,
+      ).toString(),
+    );
+  }, [rewardsData]);
+
+  const bonus = React.useMemo(() => {
+    return parseFloat(
+      DecimalHelper.toDecimal(
+        rewardsData?.allTime?.totalEarned?.bribes ?? '0',
+        18,
+      ).toString(),
+    );
+  }, [rewardsData]);
+
+  const fromSpends = React.useMemo(() => {
+    return parseFloat(
+      DecimalHelper.toDecimal(
+        rewardsData?.allTime?.totalEarned?.baseSpend ?? '0',
+        18,
+      ).toString(),
+    );
+  }, [rewardsData]);
+
+  const merchantSpends = React.useMemo(() => {
+    return parseFloat(
+      DecimalHelper.toDecimal(
+        rewardsData?.allTime?.totalEarned?.boostedSpend ?? '0',
+        18,
+      ).toString(),
+    );
+  }, [rewardsData]);
+
+  const referrals = React.useMemo(() => {
+    const baseRef = parseFloat(
+      DecimalHelper.toDecimal(
+        rewardsData?.allTime?.totalEarned?.baseReferral ?? '0',
+        18,
+      ).toString(),
+    );
+    const boostedRef = parseFloat(
+      DecimalHelper.toDecimal(
+        rewardsData?.allTime?.totalEarned?.boostedReferral ?? '0',
+        18,
+      ).toString(),
+    );
+    return baseRef + boostedRef;
+  }, [rewardsData]);
+
+  // Donut chart data (order matters for consistent colours)
+  const chartData = React.useMemo(
+    () => [
+      {
+        key: 'bonus',
+        value: bonus,
+        svg: { fill: '#F7C645' },
+        arc: { outerRadius: '100%', cornerRadius: 4 },
+      },
+      {
+        key: 'spends',
+        value: fromSpends,
+        svg: { fill: '#2685CA' },
+        arc: { outerRadius: '100%', cornerRadius: 4 },
+      },
+      {
+        key: 'merchant',
+        value: merchantSpends,
+        svg: { fill: '#E25C5C' },
+        arc: { outerRadius: '100%', cornerRadius: 4 },
+      },
+      {
+        key: 'referrals',
+        value: referrals,
+        svg: { fill: '#C2C7D0' },
+        arc: { outerRadius: '100%', cornerRadius: 4 },
+      },
+    ],
+    [bonus, fromSpends, merchantSpends, referrals],
+  );
+
+  // Transaction data – replace with actual data mapping later
+  // TODO: Map rewardsData.epochHistory into transactionData
+  const [transactionData] = React.useState<any[]>([]);
 
   const renderTransactionItem = (transaction: any) => (
     <CyDView
@@ -228,7 +247,7 @@ const RewardTrendsContent = () => {
               <CyDText className='text-[14px]'>Bonus</CyDText>
             </CyDView>
             <CyDText className='text-p150 text-[14px] font-medium'>
-              100.00 $CYPR
+              {bonus.toFixed(2)} $CYPR
             </CyDText>
           </CyDView>
           <CyDView className='flex-row justify-between items-center mb-3'>
@@ -236,7 +255,7 @@ const RewardTrendsContent = () => {
               <CyDText className='text-[14px]'>From spends</CyDText>
             </CyDView>
             <CyDText className='text-p150 text-[14px] font-medium'>
-              0.0 $CYPR
+              {fromSpends.toFixed(2)} $CYPR
             </CyDText>
           </CyDView>
           <CyDView className='flex-row justify-between items-center mb-3'>
@@ -244,7 +263,7 @@ const RewardTrendsContent = () => {
               <CyDText className='text-[14px]'>Merchant Spends</CyDText>
             </CyDView>
             <CyDText className='text-red300 text-[14px] font-medium'>
-              0.0 $CYPR
+              {merchantSpends.toFixed(2)} $CYPR
             </CyDText>
           </CyDView>
           <CyDView className='flex-row justify-between items-center mb-3'>
@@ -252,7 +271,7 @@ const RewardTrendsContent = () => {
               <CyDText className='text-[14px]'>Referrals Rewards</CyDText>
             </CyDView>
             <CyDText className='text-blue200 text-[14px] font-medium'>
-              0.0 $CYPR
+              {referrals.toFixed(2)} $CYPR
             </CyDText>
           </CyDView>
         </CyDView>
@@ -284,12 +303,47 @@ export default function Rewards() {
   // NOTE: Casting navigation to `any` as we navigate to multiple stacks without strict typing.
   // This prevents TypeScript linter errors while keeping the API unchanged.
   const navigation: any = useNavigation();
-  // Dummy state values – these will be replaced by API data in future iterations.
-  const [tokenBalance] = React.useState<number>(121.0);
-  const [usedBooster] = React.useState<number>(0);
-  const [unusedBooster] = React.useState<number>(0);
+  // Rewards data fetched from API and related states
+  const { getWithAuth } = useAxios();
+
+  const [rewardsData, setRewardsData] = React.useState<any | null>(null);
   const { theme } = useAppTheme();
   const colorScheme = useColorScheme();
+
+  const totalRewards = React.useMemo(() => {
+    return DecimalHelper.toDecimal(
+      rewardsData?.allTime?.totalEarned?.total,
+      18,
+    ).toString();
+  }, [rewardsData]);
+
+  const totalUnclaimed = React.useMemo(() => {
+    return DecimalHelper.toDecimal(
+      rewardsData?.allTime?.totalUnclaimed?.total,
+      18,
+    ).toString();
+  }, [rewardsData]);
+
+  const totalVotingPower = React.useMemo(() => {
+    return DecimalHelper.toDecimal(
+      rewardsData?.votingPower?.totalVotingPower,
+      18,
+    ).toString();
+  }, [rewardsData]);
+
+  const usedVotingPower = React.useMemo(() => {
+    return DecimalHelper.toDecimal(
+      rewardsData?.votingPower?.usedVotingPower,
+      18,
+    ).toString();
+  }, [rewardsData]);
+
+  const unusedVotingPower = React.useMemo(() => {
+    return DecimalHelper.toDecimal(
+      rewardsData?.votingPower?.freeVotingPower,
+      18,
+    ).toString();
+  }, [rewardsData]);
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
@@ -299,17 +353,57 @@ export default function Rewards() {
   /* -------------------------------------------------------------------------- */
   /*                               Progress State                               */
   /* -------------------------------------------------------------------------- */
-  // Animated value for reward booster progress (dummy 40% for now)
+  // Animated value for reward booster progress (0-1 range)
   const [progressAnimation] = React.useState(new Animated.Value(0));
 
-  useEffect(() => {
-    Animated.timing(progressAnimation, {
-      toValue: 0.4, // 40% complete – replace with real percentage later
-      duration: 1500,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
-  }, []);
+  /* -------------------------------------------------------------------------- */
+  /*                    Fetch User Rewards API & Progress Animation            */
+  /* -------------------------------------------------------------------------- */
+
+  // Fetch rewards data and animate progress bar every time screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchRewards = async () => {
+        try {
+          const response = await getWithAuth(
+            '/v1/cypher-protocol/user/rewards',
+          );
+          console.log('((((((((( response :', response, response.data.allTime);
+
+          console.log('voiting power ::: ', response.data.votingPower);
+
+          if (!response.isError) {
+            const data = response.data;
+            setRewardsData(data);
+          } else {
+            console.warn('Failed to fetch user rewards:', response.error);
+          }
+        } catch (err) {
+          console.error('Error fetching user rewards:', err);
+        }
+      };
+
+      void fetchRewards();
+    }, []),
+  );
+
+  // Animate progress bar whenever screen is focused and voting power data changes
+  useFocusEffect(
+    React.useCallback(() => {
+      const total = parseFloat(totalVotingPower);
+      const used = parseFloat(usedVotingPower);
+
+      if (Number.isFinite(total) && total > 0) {
+        const ratio = used / total; // 0-1
+        Animated.timing(progressAnimation, {
+          toValue: ratio,
+          duration: 1500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }).start();
+      }
+    }, [totalVotingPower, usedVotingPower, progressAnimation]),
+  );
 
   // NOTE: DUMMY REFERRAL DATA 🍎🍎🍎🍎🍎🍎
   const referralData = [
@@ -380,7 +474,7 @@ export default function Rewards() {
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
-      content: <RewardTrendsContent />,
+      content: <RewardTrendsContent rewardsData={rewardsData} />,
       onClose: () => {
         console.log('Reward trends bottom sheet closed');
       },
@@ -434,7 +528,7 @@ export default function Rewards() {
             <GradientText
               textElement={
                 <CyDText className='text-[44px] font-bold font-newyork'>
-                  {tokenBalance.toFixed(2)}
+                  {totalRewards}
                 </CyDText>
               }
               gradientColors={
@@ -475,7 +569,7 @@ export default function Rewards() {
                     resizeMode='contain'
                   />
                   <CyDText className='text-n0 text-[20px] font-extrabold'>
-                    {tokenBalance.toFixed(2)}
+                    {totalUnclaimed}
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-medium text-n0'>
@@ -495,7 +589,7 @@ export default function Rewards() {
             {/* Action Cards */}
             <CyDView className='flex-row justify-between mx-[16px]'>
               {/* Cypher Deposit */}
-              <CyDView
+              <CyDTouchView
                 className='flex-1 bg-base40 rounded-[12px] p-[12px] mr-[8px]'
                 onPress={handleDepositTokenPress}>
                 <CyDView className='flex-row justify-between items-center mb-4'>
@@ -530,7 +624,7 @@ export default function Rewards() {
                     {'View More'}
                   </CyDText>
                 </CyDTouchView>
-              </CyDView>
+              </CyDTouchView>
 
               {/* Reward Booster */}
               <CyDView className='flex-1 bg-base40 rounded-[12px] p-[12px] ml-[8px]'>
@@ -550,7 +644,7 @@ export default function Rewards() {
                     className='text-p150'
                   />
                   <CyDText className='text-[24px] font-extrabold ml-[4px]'>
-                    0
+                    {totalVotingPower}
                   </CyDText>
                   <CyDText className='text-[12px] text-n200 ml-[4px] mt-[6px]'>
                     veCypher
@@ -578,7 +672,7 @@ export default function Rewards() {
                     <CyDView className='h-[6px] w-[6px] bg-p150 rounded-full mr-[4px]' />
                     <CyDText className='text-[12px]'>Used</CyDText>
                   </CyDView>
-                  <CyDText className='text-[12px]'>{usedBooster}</CyDText>
+                  <CyDText className='text-[12px]'>{usedVotingPower}</CyDText>
                 </CyDView>
 
                 <CyDView className='flex-row justify-between mt-[4px]'>
@@ -586,7 +680,7 @@ export default function Rewards() {
                     <CyDView className='h-[6px] w-[6px] bg-green200 rounded-full mr-[4px]' />
                     <CyDText className='text-[12px]'>Un-used</CyDText>
                   </CyDView>
-                  <CyDText className='text-[12px]'>{unusedBooster}</CyDText>
+                  <CyDText className='text-[12px]'>{unusedVotingPower}</CyDText>
                 </CyDView>
 
                 <CyDTouchView
