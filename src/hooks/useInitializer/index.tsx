@@ -305,27 +305,18 @@ export default function useInitializer() {
     }
   };
 
-  const setPinAuthenticationStateValue = async () => {
+  const isDeviceBiometricEnabled = async (): Promise<boolean> => {
     const isBiometricPasscodeEnabled = await isBiometricEnabled();
-    return isBiometricPasscodeEnabled && !(await isPinAuthenticated()); //  for devices with biometreics enabled the pinAuthentication will be set true
+    return isBiometricPasscodeEnabled;
   };
 
-  const setPinPresentStateValue = async () => {
+  const pinAlreadySetStatus = async (): Promise<PinPresentStates> => {
     const pinAuthenticated = await isPinAuthenticated();
-
-    const hasBiometricEnabled = await isBiometricEnabled();
-    if (!hasBiometricEnabled) {
-      if (pinAuthenticated) {
-        return PinPresentStates.TRUE;
-      } else {
-        return PinPresentStates.FALSE;
-      }
+    if (pinAuthenticated) {
+      return PinPresentStates.TRUE;
     } else {
-      if (pinAuthenticated) {
-        return PinPresentStates.TRUE;
-      }
+      return PinPresentStates.FALSE;
     }
-    return PinPresentStates.NOTSET;
   };
 
   const loadExistingWallet = async (
@@ -409,6 +400,7 @@ export default function useInitializer() {
                 address: undefined,
                 publicKey: '',
                 algo: '',
+                path: '',
               },
             });
             dispatch({
@@ -418,6 +410,7 @@ export default function useInitializer() {
                 address: undefined,
                 publicKey: '',
                 algo: '',
+                path: '',
               },
             });
           }
@@ -532,8 +525,8 @@ export default function useInitializer() {
     exitIfJailBroken,
     fetchRPCEndpointsFromServer,
     loadActivitiesFromAsyncStorage,
-    setPinAuthenticationStateValue,
-    setPinPresentStateValue,
+    isDeviceBiometricEnabled,
+    pinAlreadySetStatus,
     loadExistingWallet,
     getHosts,
     checkForUpdatesAndShowModal,

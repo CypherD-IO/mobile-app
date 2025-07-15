@@ -24,23 +24,17 @@ export default function usePortfolio() {
   async function fetchPortfolio(isVerifyCoinChecked = true) {
     const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
     const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
-    const { cosmos, osmosis, noble, coreum, injective } = hdWallet.state.wallet;
-    const ethereumAddress = get(
-      hdWallet,
-      'state.wallet.ethereum.address',
-      undefined,
-    );
-    const solanaAddress = get(
-      hdWallet,
-      'state.wallet.solana.address',
-      undefined,
-    );
+    const { cosmos, osmosis, noble, coreum, injective, ethereum, solana } =
+      hdWallet.state.wallet;
+    const ethereumAddress = ethereum?.address;
+    const solanaAddress = solana?.address;
     const address = ethereumAddress ?? solanaAddress;
+
     if (address) {
       const addresses = [
         ethereumAddress,
-        cosmos?.wallets[cosmos?.currentIndex]?.address,
-        osmosis?.wallets[osmosis?.currentIndex]?.address,
+        cosmos?.address,
+        osmosis?.address,
         noble?.address,
         coreum?.address,
         injective?.address,
