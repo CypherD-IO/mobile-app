@@ -146,25 +146,25 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
       {
         key: 'bonus',
         value: bonus,
-        svg: { fill: '#F7C645' },
+        svg: { fill: '#6BB200' },
         arc: { outerRadius: '100%', cornerRadius: 4 },
       },
       {
         key: 'spends',
         value: fromSpends,
-        svg: { fill: '#2685CA' },
+        svg: { fill: '#F7C645' },
         arc: { outerRadius: '100%', cornerRadius: 4 },
       },
       {
         key: 'merchant',
         value: merchantSpends,
-        svg: { fill: '#E25C5C' },
+        svg: { fill: '#FF8C00' },
         arc: { outerRadius: '100%', cornerRadius: 4 },
       },
       {
         key: 'referrals',
         value: referrals,
-        svg: { fill: '#C2C7D0' },
+        svg: { fill: '#0749FF' },
         arc: { outerRadius: '100%', cornerRadius: 4 },
       },
     ],
@@ -232,11 +232,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
                 amount: txn.amount,
                 status: txn.tStatus,
                 time: moment(txn.date).format('h:mm A'),
-                reward: Boolean(
-                  txn.cypherRewards?.rewardsAllocation?.totalRewards &&
-                    Number(txn.cypherRewards.rewardsAllocation.totalRewards) >
-                      0,
-                ),
+                reward: txn.cypherRewards,
               })),
             }));
 
@@ -254,45 +250,76 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEpoch, cardProvider]);
 
-  const renderTransactionItem = (transaction: any) => (
-    <CyDView
-      key={transaction.id}
-      className='flex-row justify-between items-center py-3 border-b border-n40'>
-      <CyDView className='flex-1'>
-        <CyDText className='text-[14px] font-medium'>
-          {transaction.merchant}
-        </CyDText>
-        <CyDText className='text-n200 text-[12px]'>
-          {transaction.amount} • {transaction.status} • {transaction.time}
-        </CyDText>
-        {transaction.reward && (
-          <CyDText className='text-red300 text-[12px] mt-1'>
-            Earned additional reward
+  const renderTransactionItem = (transaction: any) => {
+    console.log('T R A N S A C T I O N : : : ', transaction);
+    console.log(
+      'boosted rewards condition : ',
+      transaction.reward?.rewardsAllocation?.boostedSpendRewards,
+      DecimalHelper.toDecimal(
+        transaction.reward?.rewardsAllocation?.boostedSpendRewards,
+        18,
+      ).toNumber() > 0,
+    );
+    return (
+      <CyDView
+        key={transaction.id}
+        className='flex-row justify-between items-center py-4 bg-base40 border-b border-n40 px-4'>
+        <CyDView className='flex-1'>
+          <CyDText className='text-[14px] font-medium'>
+            {transaction.merchant}
           </CyDText>
-        )}
-      </CyDView>
-      <CyDView className='items-end'>
-        <CyDView className='flex-row items-center'>
-          <CyDView className='w-2 h-2 bg-n200 rounded-full mr-2' />
           <CyDText className='text-n200 text-[12px]'>
-            {transaction.status}
+            ${transaction.amount} • {transaction.time}
           </CyDText>
+          {DecimalHelper.toDecimal(
+            transaction.reward?.rewardsAllocation?.boostedSpendRewards,
+            18,
+          ).toNumber() > 0 && (
+            <CyDView className='bg-orange-500/10 rounded-full px-3 py-[2px] mt-1 self-start'>
+              <CyDText className='text-orange500 text-[12px] font-bold'>
+                Boosted by{' '}
+                {transaction.merchant.length > 10
+                  ? transaction.merchant.slice(0, 10) + '...'
+                  : transaction.merchant}
+              </CyDText>
+            </CyDView>
+          )}
         </CyDView>
-        {transaction.reward && (
-          <CyDView className='flex-row items-center mt-1'>
-            <CyDImage
-              source={AppImages.CYPR_TOKEN}
-              className='w-4 h-4 mr-1'
-              resizeMode='contain'
-            />
-            <CyDText className='text-[12px] font-medium'>
-              {transaction.reward}
-            </CyDText>
-          </CyDView>
-        )}
+        <CyDView className='items-end'>
+          {DecimalHelper.toDecimal(
+            transaction.reward?.rewardsAllocation?.totalRewards,
+            18,
+          ).toNumber() === 0 &&
+            transaction.status === 'PENDING' && (
+              <CyDView className='flex-row items-center'>
+                <CyDView className='w-2 h-2 bg-n200 rounded-full mr-2' />
+                <CyDText className='text-n200 text-[12px]'>
+                  {transaction.status}
+                </CyDText>
+              </CyDView>
+            )}
+          {DecimalHelper.toDecimal(
+            transaction.reward?.rewardsAllocation?.totalRewards,
+            18,
+          ).toNumber() > 0 && (
+            <CyDView className='flex-row items-center mt-1'>
+              <CyDImage
+                source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                className='w-6 h-6 mr-1'
+                resizeMode='contain'
+              />
+              <CyDText className='text-[14px] font-bold'>
+                {DecimalHelper.toDecimal(
+                  transaction.reward.rewardsAllocation.totalRewards,
+                  18,
+                ).toFixed(2)}
+              </CyDText>
+            </CyDView>
+          )}
+        </CyDView>
       </CyDView>
-    </CyDView>
-  );
+    );
+  };
 
   /* -------------------------------------------------------------------------- */
   /*                            Badge colour helper                             */
@@ -309,20 +336,20 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   const getBadgeColors = (key: string) => {
     switch (key) {
       case 'bonus':
-        return { bg: 'rgba(247,198,69,0.15)', txt: '#F7C645' };
+        return { bg: 'rgba(107,178,0,0.15)', txt: '#6BB200' };
       case 'spends':
-        return { bg: 'rgba(38,133,202,0.15)', txt: '#2685CA' };
+        return { bg: 'rgba(247,198,69,0.15)', txt: '#F7C645' };
       case 'merchant':
-        return { bg: 'rgba(226,92,92,0.15)', txt: '#E25C5C' };
+        return { bg: 'rgba(255,140,0,0.15)', txt: '#FF8C00' };
       case 'referrals':
       default:
-        return { bg: 'rgba(194,199,208,0.15)', txt: '#C2C7D0' };
+        return { bg: 'rgba(7,73,255,0.15)', txt: '#0749FF' };
     }
   };
 
   return (
     <CyDView className='flex-1 bg-n0'>
-      <CyDView className='bg-n20 px-4 mb-[12px]'>
+      <CyDView className='bg-base40 px-4 mt-[-200px] pt-[200px]'>
         {/* Time Filter */}
         <CyDView className='flex-row justify-between items-center py-4'>
           <CyDText className='text-[22px] font-medium'>
@@ -493,14 +520,14 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
       </CyDView>
 
       {/* Reward Transaction Section */}
-      <CyDView className='flex-1'>
-        <CyDText className='text-[18px] font-bold mb-4 mx-4'>
+      <CyDView className='flex-1 mb-[40px]'>
+        <CyDText className='text-[18px] font-bold py-4 px-4 bg-n20'>
           Reward Transaction
         </CyDText>
 
         {transactionData.map(dayData => (
-          <CyDView key={dayData.id} className='mb-6 px-4'>
-            <CyDText className='text-n200 text-[12px] font-medium mb-3'>
+          <CyDView key={dayData.id}>
+            <CyDText className='text-n200 text-[12px] font-medium mt-[24px] mb-[8px] px-4'>
               {dayData.date}
             </CyDText>
             {dayData.transactions.map(renderTransactionItem)}
@@ -795,6 +822,8 @@ export default function Rewards() {
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
+      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      topBarColor: isDarkMode ? '#202020' : '#ECECEC',
       content: <RewardTrendsContent rewardsData={rewardsData} />,
       onClose: () => {
         console.log('Reward trends bottom sheet closed');

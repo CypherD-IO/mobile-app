@@ -529,7 +529,7 @@ const MerchantRewardDetailContent: React.FC<
           {(userBoostStatus?.hasBoost ??
             currentMerchantData?.userVoteData?.hasVoted ??
             false) && (
-            <CyDView className='absolute -top-3 bg-orange-500 rounded-full px-2 py-1 self-center z-10'>
+            <CyDView className='absolute -top-3 bg-orange500 rounded-full px-2 py-1 self-center z-10'>
               <CyDText className='text-white text-[10px] font-bold'>
                 BOOSTED
               </CyDText>
@@ -541,7 +541,7 @@ const MerchantRewardDetailContent: React.FC<
               (userBoostStatus?.hasBoost ??
               currentMerchantData?.userVoteData?.hasVoted ??
               false)
-                ? 'border-[4px] border-orange-500'
+                ? 'border-[4px] border-orange500'
                 : ''
             }`}>
             {currentMerchantData.logoUrl ? (
