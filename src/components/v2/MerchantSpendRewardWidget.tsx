@@ -35,6 +35,9 @@ interface MerchantData {
   voteRank: number;
   isActive: boolean;
   isVerified: boolean;
+  userVoteData: {
+    hasVoted: boolean;
+  };
 }
 
 const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
@@ -157,51 +160,65 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     return { displayName, fontSize };
   };
 
-  const renderMerchantCard = (merchant: MerchantData, index: number) => (
-    <CyDTouchView
-      // key={merchant.candidateId + index.toString()}
-      key={merchant.candidateId}
-      className='items-center mb-6 w-[100px]'
-      onPress={() => handleMerchantPress(merchant)}>
-      {/* Merchant Icon with Multiplier Badge */}
-      <CyDView className='relative mb-2'>
-        <CyDView
-          className={`w-16 h-16 bg-white rounded-full items-center justify-center border border-n40`}>
-          {/* Merchant logo */}
-          {merchant.logoUrl ? (
-            <CyDImage
-              source={
-                typeof merchant.logoUrl === 'string'
-                  ? { uri: merchant.logoUrl }
-                  : merchant.logoUrl
-              }
-              className='w-full h-full'
-              resizeMode='cover'
-            />
-          ) : (
-            <CyDText className='text-[12px] font-bold text-gray-800'>
-              {processMerchantName(merchant.brand).displayName}
+  const renderMerchantCard = (merchant: MerchantData, index: number) => {
+    // Check if user has voted for this merchant
+    const hasUserVoted = merchant.userVoteData?.hasVoted || false;
+
+    return (
+      <CyDTouchView
+        // key={merchant.candidateId + index.toString()}
+        key={merchant.candidateId}
+        className='items-center mb-6 w-[100px]'
+        onPress={() => handleMerchantPress(merchant)}>
+        {/* Merchant Icon with Multiplier Badge */}
+        <CyDView className='relative mb-2'>
+          <CyDView
+            className={`w-16 h-16 bg-white rounded-full items-center justify-center ${
+              hasUserVoted
+                ? 'border-[3px] border-orange-500 '
+                : isDarkMode
+                  ? ''
+                  : 'border-[1px] border-n40'
+            }`}>
+            {/* Merchant logo */}
+            {merchant.logoUrl ? (
+              <CyDImage
+                source={
+                  typeof merchant.logoUrl === 'string'
+                    ? { uri: merchant.logoUrl }
+                    : merchant.logoUrl
+                }
+                className='w-full h-full rounded-full'
+                resizeMode='cover'
+              />
+            ) : (
+              <CyDText className='text-[12px] font-bold text-gray-800'>
+                {processMerchantName(merchant.brand).displayName}
+              </CyDText>
+            )}
+          </CyDView>
+
+          {/* Multiplier Badge */}
+          <CyDView
+            className={`absolute -top-3 rounded-full px-2 py-1 self-center ${
+              hasUserVoted ? 'bg-orange-500' : 'bg-green400'
+            }`}>
+            <CyDText className='text-white text-[12px] font-bold'>
+              {merchant.historicalMultiplier.current.toFixed(1)}X
             </CyDText>
-          )}
+          </CyDView>
         </CyDView>
 
-        {/* Multiplier Badge */}
-        <CyDView className='absolute -top-3 bg-green400 rounded-full px-2 py-1 self-center'>
-          <CyDText className='text-white text-[12px] font-bold'>
-            {merchant.historicalMultiplier.current.toFixed(1)}X
-          </CyDText>
-        </CyDView>
-      </CyDView>
-
-      {/* Merchant Name */}
-      <CyDText
-        className={`text-[14px] font-medium`}
-        numberOfLines={1}
-        ellipsizeMode='tail'>
-        {merchant.brand}
-      </CyDText>
-    </CyDTouchView>
-  );
+        {/* Merchant Name */}
+        <CyDText
+          className={`text-[14px] font-medium`}
+          numberOfLines={1}
+          ellipsizeMode='tail'>
+          {merchant.brand}
+        </CyDText>
+      </CyDTouchView>
+    );
+  };
 
   return (
     <CyDView

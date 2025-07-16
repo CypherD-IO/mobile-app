@@ -109,8 +109,8 @@ const ApplicationWelcome = (): JSX.Element => {
     ? 'rgba(22, 22, 22, 0.90)'
     : 'rgba(255, 255, 255, 0.90)';
 
-  console.log('deadline : ', deadline);
-  console.log('isRewardSlotAvailable : ', isRewardSlotAvailable);
+  // console.log('deadline : ', deadline);
+  // console.log('isRewardSlotAvailable : ', isRewardSlotAvailable);
 
   // Show modal once when reward slot is available
   React.useEffect(() => {
@@ -165,8 +165,15 @@ const ApplicationWelcome = (): JSX.Element => {
     navigation.navigate(screenTitle.ENTER_REFERRAL_CODE);
   };
 
+  // Skip button handler – navigate to Portfolio and flag the source so
+  // Portfolio can suppress its automatic "redirect-to-card" logic.
   const handleBack = () => {
-    navigation.navigate(screenTitle.PORTFOLIO);
+    // Navigate to the Portfolio tab and explicitly target the first screen
+    // in its stack so that the nested screen receives our params.
+    (navigation as any).navigate(screenTitle.PORTFOLIO, {
+      screen: screenTitle.PORTFOLIO_SCREEN,
+      params: { fromCardWelcome: true },
+    });
   };
 
   const handleExclusiveOfferClose = () => {
@@ -181,7 +188,7 @@ const ApplicationWelcome = (): JSX.Element => {
   };
 
   return (
-    <CyDView className='flex-1 bg-n0'>
+    <CyDView className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n0'}`}>
       <CyDView className='flex-1' style={{ paddingTop: insets.top }}>
         {/* Background Video */}
         <Video

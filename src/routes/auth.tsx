@@ -127,6 +127,7 @@ import CountryTemporarilyUnsupported from '../containers/DebitCard/CardV2/signup
 import OptionsHub from '../containers/Options';
 import TokenRewardEarned from '../containers/DebitCard/CardV2/signup/application/tokenRewardEarned';
 import ReferralsViewAll from '../containers/Rewards/ReferralsViewAll';
+import AllReferralCodes from '../containers/Referrals/AllReferralCodes';
 import MerchantRewardListScreen from '../containers/DebitCard/CardV2/MerchantRewardListScreen';
 
 const PortfolioStack = createNativeStackNavigator();
@@ -1005,6 +1006,14 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.REFERRALS}
         component={Referrals}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.ALL_REFERRAL_CODES}
+        component={AllReferralCodes}
         options={() => ({
           headerShown: false,
         })}
