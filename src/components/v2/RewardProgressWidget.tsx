@@ -140,7 +140,7 @@ const BottomInfoSection = ({ task }: { task: any }) => {
   );
 };
 
-const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
+const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   onTaskPress,
 }) => {
   const {
@@ -202,15 +202,15 @@ const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
       status: milestone('firstSpend').earned ? 'completed' : 'pending',
       description: `Spend $200 in 15 days with any merchant and you'll get ${milestone('firstSpend').amount} $CYPR as bonus reward`,
     },
-    {
-      id: '4',
-      title: 'Referral merchant reward',
-      completed: false,
-      reward: 200,
-      status: 'pending',
-      description:
-        'You get 200 $CYPR as bonus reward when you spend at these merchants',
-    },
+    // {
+    //   id: '4',
+    //   title: 'Referral merchant reward',
+    //   completed: false,
+    //   reward: 200,
+    //   status: 'pending',
+    //   description:
+    //     'You get 200 $CYPR as bonus reward when you spend at these merchants',
+    // },
   ];
 
   const rewardData = {
@@ -337,4 +337,4 @@ const RewardProgressWidgetComponent: React.FC<RewardProgressWidgetProps> = ({
   );
 };
 
-export default React.memo(RewardProgressWidgetComponent);
+export default React.memo(RewardProgressWidget);

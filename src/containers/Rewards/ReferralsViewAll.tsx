@@ -13,94 +13,41 @@ import AppImages from '../../../assets/images/appImages';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import { Platform, useColorScheme } from 'react-native';
 import { Theme, useTheme } from '../../reducers/themeReducer';
+import { getMaskedAddress } from '../../core/util';
+import { ReferralOnboardingStatus } from '../../constants/enum';
+import ReferralDetailContent from '../../components/v2/ReferralDetailContent';
 
-// NOTE: Interface for referral data structure
-interface ReferralItem {
-  id: string;
+// Interfaces based on new referral summary response
+
+interface Referee {
   address: string;
-  reward?: string;
-  status: 'completed' | 'pending';
+  totalRewardsEarned: number;
+  onboardingStatus: string;
+  signupDate?: number;
+  epoch: number;
 }
 
-interface ReferralGroup {
-  month: string;
-  referrals: ReferralItem[];
+interface EpochGroup {
+  epoch: number;
+  epochStartTime: number;
+  epochEndTime: number;
+  referees: Referee[];
 }
 
-// NOTE: DUMMY REFERRAL DATA GROUPED BY MONTHS 🍎🍎🍎🍎🍎🍎
-const allReferralsData: ReferralGroup[] = [
-  {
-    month: 'May 2025',
-    referrals: [
-      {
-        id: '1',
-        address: '0xACE....1111',
-        status: 'pending',
-      },
-      {
-        id: '2',
-        address: '0xACE....1111',
-        status: 'pending',
-      },
-      {
-        id: '3',
-        address: '0xBFA....2233',
-        reward: '150.75',
-        status: 'completed',
-      },
-      {
-        id: '4',
-        address: '0x3D4....4cba',
-        status: 'pending',
-      },
-      {
-        id: '5',
-        address: '0x1C1....8f90',
-        reward: '200.00',
-        status: 'completed',
-      },
-    ],
-  },
-  {
-    month: 'Feb 2025',
-    referrals: [
-      {
-        id: '6',
-        address: '0xACE....1111',
-        reward: '112.23',
-        status: 'completed',
-      },
-      {
-        id: '7',
-        address: '0x4e....2efa',
-        status: 'pending',
-      },
-      {
-        id: '8',
-        address: '0xBFA....2233',
-        reward: '150.75',
-        status: 'completed',
-      },
-      {
-        id: '9',
-        address: '0xACE....1111',
-        reward: '112.23',
-        status: 'completed',
-      },
-      {
-        id: '10',
-        address: '0x4e....2efa',
-        status: 'pending',
-      },
-      {
-        id: '11',
-        address: '0xBFA....2233',
-        reward: '150.75',
-        status: 'completed',
-      },
-    ],
-  },
-];
+// Props expect navigation route param refereesByEpoch
+interface ReferralsViewAllRouteParams {
+  refereesByEpoch: Record<
+    string,
+    {
+      epochStartTime: number;
+      epochEndTime: number;
+      referees: any[];
+    }
+  >;
+  votedMerchants?: Array<
+    import('../../components/v2/ReferralDetailContent').VotedMerchant
+  >;
+}
 
 // NOTE: DUMMY DETAILED REFERRAL DATA 🍎🍎🍎🍎🍎🍎
 interface DetailedReferralData {
@@ -126,216 +73,43 @@ interface DetailedReferralData {
   };
 }
 
-const getDetailedReferralData = (referralId: string): DetailedReferralData => {
-  // NOTE: Dummy data - will be replaced with API call
-  return {
-    address: '0xACE....1111',
-    totalRewards: 100.0,
-    daysLeft: 14,
-    vestingDate: 'Jun 24, 2025',
-    signupRewards: {
-      cardSignup: {
-        completed: true,
-        reward: 50.0,
-      },
-    },
-    merchantBonus: {
-      description:
-        'Earn rewards when your friend uses their Cypher card at businesses where you activated for extra rewards.',
-      merchants: [
-        {
-          id: '1',
-          name: 'Walmart inc',
-          description: 'Rewards on Referral spending on Walmart',
-          rewardRange: '104 $CYPR - 2201 $CYPR',
-          icon: AppImages.SHOP_3D,
-        },
-        {
-          id: '2',
-          name: 'Safeway',
-          description: 'Rewards on Referral spending on Safeway',
-          rewardRange: '200',
-          icon: AppImages.SHOP_3D,
-        },
-      ],
-    },
-  };
-};
+// const getDetailedReferralData = (referralId: string): DetailedReferralData => {
+//   // NOTE: Dummy data - will be replaced with API call
+//   return {
+//     address: '0xACE....1111',
+//     totalRewards: 100.0,
+//     daysLeft: 14,
+//     vestingDate: 'Jun 24, 2025',
+//     signupRewards: {
+//       cardSignup: {
+//         completed: true,
+//         reward: 50.0,
+//       },
+//     },
+//     merchantBonus: {
+//       description:
+//         'Earn rewards when your friend uses their Cypher card at businesses where you activated for extra rewards.',
+//       merchants: [
+//         {
+//           id: '1',
+//           name: 'Walmart inc',
+//           description: 'Rewards on Referral spending on Walmart',
+//           rewardRange: '104 $CYPR - 2201 $CYPR',
+//           icon: AppImages.SHOP_3D,
+//         },
+//         {
+//           id: '2',
+//           name: 'Safeway',
+//           description: 'Rewards on Referral spending on Safeway',
+//           rewardRange: '200',
+//           icon: AppImages.SHOP_3D,
+//         },
+//       ],
+//     },
+//   };
+// };
 
 // NOTE: REFERRAL DETAIL BOTTOM SHEET CONTENT 🍎🍎🍎🍎🍎🍎
-const ReferralDetailContent = ({ referralId }: { referralId: string }) => {
-  const { t } = useTranslation();
-  const detailData = getDetailedReferralData(referralId);
-
-  const { theme } = useTheme();
-  const colorScheme = useColorScheme();
-  const isDarkMode =
-    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
-
-  return (
-    <CyDScrollView className={`flex-1 px-4 ${isDarkMode ? 'bg-n0' : 'bg-n30'}`}>
-      <CyDText className='text-[20px] font-bold mb-4'>
-        {detailData.address}
-      </CyDText>
-      {/* Header Section */}
-      <CyDView className='flex flex-row items-center justify-between py-6'>
-        <CyDView>
-          <CyDView className='flex-row items-center'>
-            <CyDImage
-              source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-              className='w-[34px] h-[34px] mr-1'
-              resizeMode='contain'
-            />
-            <CyDText className='text-[22px] font-medium'>
-              {detailData.totalRewards.toFixed(2)}
-            </CyDText>
-          </CyDView>
-          <CyDText className='text-n200 text-[12px]'>
-            Total rewards earned
-          </CyDText>
-        </CyDView>
-
-        <CyDView className='flex flex-col items-end bg-base40 rounded-[6px] px-4 py-2'>
-          <CyDText className='text-[12px] font-medium'>
-            {detailData.daysLeft} days Left
-          </CyDText>
-          <CyDText className='text-n200 text-[12px]'>
-            Vesting on {detailData.vestingDate}
-          </CyDText>
-        </CyDView>
-      </CyDView>
-
-      {/* Signup Rewards Section */}
-      <CyDView className='mb-6'>
-        <CyDText className='text-[18px] font-bold mb-4'>Signup Rewards</CyDText>
-
-        <CyDView
-          className={`rounded-[12px] p-4 mb-4 ${
-            isDarkMode ? 'bg-base40' : 'bg-n0'
-          }`}>
-          <CyDView className='mb-3'>
-            <CyDView className='flex-row items-center mb-4'>
-              <CyDView className='w-6 h-6 bg-p150 rounded-full items-center justify-center mr-3'>
-                <CyDMaterialDesignIcons
-                  name='check'
-                  size={16}
-                  className='text-base400'
-                />
-              </CyDView>
-              <CyDText className='text-[16px] font-medium flex-1'>
-                Signed up for the cypher Card
-              </CyDText>
-            </CyDView>
-
-            {/* Reward Earned Card */}
-            <CyDView className='bg-green-600 rounded-[12px] p-4'>
-              <CyDView className='flex-row items-center'>
-                <CyDText className='text-[28px] mr-2'>🎉</CyDText>
-                <CyDView className='mt-1'>
-                  <CyDText className='text-white text-[16px] font-medium flex-1'>
-                    Hurray! You have earned
-                  </CyDText>
-                  <CyDView className='flex-row items-center'>
-                    <CyDImage
-                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                      className='w-8 h-8 mr-2'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-white text-[20px] font-bold'>
-                      {detailData.signupRewards.cardSignup.reward.toFixed(2)}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-              </CyDView>
-            </CyDView>
-          </CyDView>
-
-          {/* <CyDView className='flex-row items-center mb-3'>
-            <CyDMaterialDesignIcons
-              name='check-circle'
-              size={16}
-              className='text-green-500 mr-2'
-            />
-            <CyDText className='text-green-500 text-[14px]'>Completed</CyDText>
-          </CyDView> */}
-        </CyDView>
-      </CyDView>
-
-      {/* Merchant Bonus Section */}
-      <CyDText className='text-[18px] font-bold mb-4'>Merchant Bonus</CyDText>
-      <CyDView
-        className={`mb-6 rounded-[12px] p-4 ${isDarkMode ? 'bg-base40' : 'bg-n0'}`}>
-        <CyDView className='flex-col mb-4'>
-          <CyDImage
-            source={AppImages.SHOP_3D}
-            className='w-12 h-12'
-            resizeMode='contain'
-          />
-          <CyDText className='text-[14px]'>
-            {detailData.merchantBonus.description}
-          </CyDText>
-        </CyDView>
-
-        {/* Merchant List */}
-        {detailData.merchantBonus.merchants.map(merchant => (
-          <CyDView
-            key={merchant.id}
-            className={`rounded-[12px] p-4 mb-4 ${
-              isDarkMode ? 'bg-n40' : 'bg-n20'
-            }`}>
-            <CyDView className='flex-row items-center mb-3'>
-              <CyDImage
-                source={merchant.icon}
-                className='w-8 h-8 mr-3'
-                resizeMode='contain'
-              />
-              <CyDText className='text-[16px] font-medium'>
-                {merchant.name}
-              </CyDText>
-            </CyDView>
-
-            <CyDText className='text-n200 text-[14px] mb-3'>
-              {merchant.description}
-            </CyDText>
-
-            <CyDView className='flex-row items-center'>
-              <CyDText className='text-n200 text-[14px] mr-2'>
-                Any referral spend at {merchant.name.split(' ')[0]}, gets you
-              </CyDText>
-            </CyDView>
-
-            <CyDView className='flex-row items-center mt-2'>
-              {merchant.id === '2' ? (
-                <>
-                  <CyDText className='text-n200 text-[14px] mr-2'>
-                    Earn up to
-                  </CyDText>
-                  <CyDView className='flex-row items-center'>
-                    <CyDImage
-                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                      className='w-6 h-6 mr-1'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-[16px] font-medium'>
-                      {merchant.rewardRange}
-                    </CyDText>
-                  </CyDView>
-                </>
-              ) : (
-                <CyDText className='text-[14px] font-medium'>
-                  {merchant.rewardRange}
-                </CyDText>
-              )}
-            </CyDView>
-          </CyDView>
-        ))}
-      </CyDView>
-
-      {/* Bottom padding for scrolling */}
-      <CyDView className='h-[40px]' />
-    </CyDScrollView>
-  );
-};
 
 interface ReferralsViewAllProps {
   // NOTE: Navigation prop will be added when integrated with navigation
@@ -344,7 +118,10 @@ interface ReferralsViewAllProps {
 
 export default function ReferralsViewAll({
   navigation,
-}: ReferralsViewAllProps) {
+  route,
+}: ReferralsViewAllProps & {
+  route?: { params?: ReferralsViewAllRouteParams };
+}) {
   const { t } = useTranslation();
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
 
@@ -353,7 +130,7 @@ export default function ReferralsViewAll({
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  // NOTE: DUMMY FUNCTIONS 🍎🍎🍎🍎🍎🍎
+  // Helper to shorten address
   const handleBackPress = () => {
     if (navigation) {
       navigation.goBack();
@@ -361,54 +138,115 @@ export default function ReferralsViewAll({
     // TODO: Implement navigation back logic
   };
 
-  const showReferralDetailBottomSheet = (referralId: string) => {
+  const votedMerchants = route?.params?.votedMerchants ?? [];
+
+  /* ------------------------- Bottom Sheet --------------------------- */
+
+  const showReferralDetailBottomSheet = (ref: Referee) => {
     showBottomSheet({
-      id: 'referral-detail',
-      title: '', // No title needed as content has its own header
-      snapPoints: ['90%', Platform.OS === 'android' ? '100%' : '95%'],
+      id: `referral-detail-${ref.address}-${performance.now()}`,
+      title: '',
+      snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
       backgroundColor: isDarkMode ? '#0D0D0D' : '#EBEDF0',
-      content: <ReferralDetailContent referralId={referralId} />,
-      onClose: () => {
-        console.log('Referral detail bottom sheet closed');
-      },
+      content: (
+        <ReferralDetailContent
+          referralDetail={ref}
+          votedMerchants={votedMerchants}
+        />
+      ),
     });
   };
 
-  const handleReferralItemPress = (referralId: string) => {
-    // Show detailed referral information in bottom sheet
-    showReferralDetailBottomSheet(referralId);
-    console.log('Referral item pressed:', referralId);
+  const epochGroups: EpochGroup[] = React.useMemo(() => {
+    const map = route?.params?.refereesByEpoch ?? {};
+    const groups: EpochGroup[] = [];
+    Object.entries(map).forEach(([epochKey, epochData]: [string, any]) => {
+      const epochNum = Number(epochKey);
+      const referees: Referee[] = (epochData.referees ?? []).map(
+        (ref: any) => ({
+          address: ref.address,
+          totalRewardsEarned: ref.totalRewardsEarned ?? 0,
+          onboardingStatus: ref.onboardingStatus ?? 'PENDING',
+          signupDate: ref.signupDate,
+          epoch: epochNum,
+        }),
+      );
+      groups.push({
+        epoch: epochNum,
+        epochStartTime: epochData.epochStartTime,
+        epochEndTime: epochData.epochEndTime,
+        referees,
+      });
+    });
+
+    // Sort descending by epoch
+    groups.sort((a, b) => b.epoch - a.epoch);
+    return groups;
+  }, [route?.params]);
+
+  // Helper – formats epoch start/end (seconds) to "Apr 24 to May 7 2025"
+  const formatEpochRange = (startSec: number, endSec: number): string => {
+    const startDate = new Date(startSec * 1000);
+    const endDate = new Date(endSec * 1000);
+
+    const startMonth = startDate.toLocaleString('default', { month: 'short' });
+    const endMonth = endDate.toLocaleString('default', { month: 'short' });
+    const startDay = startDate.getDate();
+    const endDay = endDate.getDate();
+    const endYear = endDate.getFullYear();
+    const startYear = startDate.getFullYear();
+
+    // If years are same -> "Apr 1 to Apr 14 2025" else "Apr 24 2024 to May 7 2025"
+    if (startYear === endYear) {
+      return `${startMonth} ${startDay} to ${endMonth} ${endDay} ${startYear}`;
+    }
+
+    return `${startMonth} ${startDay} ${startYear} to ${endMonth} ${endDay} ${endYear}`;
   };
 
-  // NOTE: RENDER REFERRAL ITEM COMPONENT 🍎🍎🍎🍎🍎🍎
-  const renderReferralItem = (referral: ReferralItem, isLast: boolean) => (
-    <CyDTouchView
-      key={referral.id}
-      className={`flex-row justify-between items-center py-[16px] px-[20px] ${
-        !isLast ? 'border-b border-n40' : ''
-      }`}
-      onPress={() => handleReferralItemPress(referral.id)}>
-      <CyDText className='text-[16px] font-medium flex-1'>
-        {referral.address}
-      </CyDText>
-      <CyDView className='flex-row items-center'>
-        {referral.status === 'completed' ? (
-          <CyDText className='text-blue200 text-[16px] font-medium mr-[8px]'>
-            {referral.reward} $CYPR
-          </CyDText>
-        ) : (
-          <CyDText className='text-n200 text-[16px] mr-[8px]'>Pending</CyDText>
-        )}
-        <CyDMaterialDesignIcons
-          name='chevron-right'
-          size={20}
-          className='text-n200'
-        />
-      </CyDView>
-    </CyDTouchView>
-  );
+  /* ------------------------- Handlers --------------------------- */
+
+  const handleReferralItemPress = (ref: Referee) => {
+    showReferralDetailBottomSheet(ref);
+  };
+
+  /* -------------------------------------------------------------------------- */
+  /*                                Renderers                                   */
+  /* -------------------------------------------------------------------------- */
+
+  const renderReferralItem = (ref: Referee, isLast: boolean) => {
+    console.log('R E F E R R A L  I T E M :', ref);
+    return (
+      <CyDTouchView
+        key={`${ref.address}-${ref.epoch}`}
+        className={`flex-row justify-between items-center py-[16px] px-[20px] ${
+          !isLast ? 'border-b border-n40' : ''
+        }`}
+        onPress={() => handleReferralItemPress(ref)}>
+        <CyDText className='text-[16px] font-medium flex-1'>
+          {getMaskedAddress(ref.address, 6)}
+        </CyDText>
+        <CyDView className='flex-row items-center'>
+          {ref.totalRewardsEarned > 0 ? (
+            <CyDText className='text-blue200 text-[16px] font-medium mr-[8px]'>
+              {ref.totalRewardsEarned} $CYPR
+            </CyDText>
+          ) : (
+            <CyDText className='text-n200 text-[16px] mr-[8px]'>
+              Pending
+            </CyDText>
+          )}
+          <CyDMaterialDesignIcons
+            name='chevron-right'
+            size={20}
+            className='text-n200'
+          />
+        </CyDView>
+      </CyDTouchView>
+    );
+  };
 
   // NOTE: RENDER METHOD 🍎🍎🍎🍎🍎🍎
   return (
@@ -429,21 +267,24 @@ export default function ReferralsViewAll({
 
       {/* Scrollable Content */}
       <CyDScrollView className='flex-1 bg-n0'>
-        {allReferralsData.map((group, groupIndex) => (
-          <CyDView key={group.month} className='mb-[32px]'>
+        {epochGroups.map((group, groupIndex) => (
+          <CyDView key={group.epoch} className='mb-[8px]'>
             {/* Month Header */}
-            <CyDView className='px-[20px] py-[12px]'>
-              <CyDText className='text-n200 text-[14px] font-medium'>
-                {group.month}
+            <CyDView className='flex flex-row justify-between px-[20px] py-[12px]'>
+              <CyDText className='text-[14px] font-medium'>
+                Reward Cycle {group.epoch}
+              </CyDText>
+              <CyDText className='text-n200 text-[12px]'>
+                {formatEpochRange(group.epochStartTime, group.epochEndTime)}
               </CyDText>
             </CyDView>
 
             {/* Referral Items for this month */}
             <CyDView className='bg-n20'>
-              {group.referrals.map((referral, index) =>
+              {group.referees.map((referral, index) =>
                 renderReferralItem(
                   referral,
-                  index === group.referrals.length - 1,
+                  index === group.referees.length - 1,
                 ),
               )}
             </CyDView>

@@ -36,6 +36,9 @@ interface MerchantData {
   isActive: boolean;
   isVerified: boolean;
   hasActiveBribes: boolean;
+  userVoteData: {
+    hasVoted: boolean;
+  };
   metrics: {
     averageTransactionSize: number;
     totalSpend: number;
@@ -352,22 +355,31 @@ const MerchantRewardListScreen: React.FC = () => {
                 onPress={() => handleMerchantPress(item)}>
                 <CyDView className='flex-row items-center flex-1'>
                   {/* Merchant Icon */}
-                  <CyDView className='w-12 h-12 bg-white rounded-full items-center justify-center mr-3 border border-gray-200'>
-                    {item.logoUrl ? (
-                      <CyDImage
-                        source={{ uri: item.logoUrl }}
-                        className='w-10 h-10 rounded-full'
-                        resizeMode='contain'
-                      />
-                    ) : (
-                      <CyDText
-                        className='font-bold text-gray-800'
-                        style={{
-                          fontSize: processMerchantName(item.brand).fontSize,
-                        }}>
-                        {processMerchantName(item.brand).displayName}
-                      </CyDText>
-                    )}
+                  <CyDView className='relative mr-3'>
+                    <CyDView
+                      className={`w-12 h-12 bg-white rounded-full items-center justify-center ${
+                        item.userVoteData?.hasVoted
+                          ? 'border-orange-500 border-[3px]'
+                          : isDarkMode
+                            ? ''
+                            : 'border-[1px] border-n40'
+                      }`}>
+                      {item.logoUrl ? (
+                        <CyDImage
+                          source={{ uri: item.logoUrl }}
+                          className='w-10 h-10 rounded-full'
+                          resizeMode='contain'
+                        />
+                      ) : (
+                        <CyDText
+                          className='font-bold text-gray-800'
+                          style={{
+                            fontSize: processMerchantName(item.brand).fontSize,
+                          }}>
+                          {processMerchantName(item.brand).displayName}
+                        </CyDText>
+                      )}
+                    </CyDView>
                   </CyDView>
 
                   {/* Merchant Info */}
@@ -385,7 +397,12 @@ const MerchantRewardListScreen: React.FC = () => {
 
                 {/* Reward Multiplier */}
                 <CyDView className='flex flex-row items-center'>
-                  <CyDView className='bg-green400 rounded-full px-3 py-1 mr-2'>
+                  <CyDView
+                    className={`rounded-full px-3 py-1 mr-2 ${
+                      item.userVoteData?.hasVoted
+                        ? 'bg-orange-500'
+                        : 'bg-green400'
+                    }`}>
                     <CyDText className='text-white text-[12px] font-bold'>
                       {item.historicalMultiplier.current.toFixed(1)}X Rewards
                     </CyDText>

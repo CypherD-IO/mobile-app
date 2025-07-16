@@ -132,44 +132,6 @@ const QRCodeBottomSheetContent = ({
 /**
  * Bottom-sheet content component that shows **all** referral codes with a copy-to-clipboard action.
  */
-const ReferralCodesBottomSheetContent = ({
-  referralCodes,
-}: {
-  referralCodes: string[];
-}) => {
-  const { t } = useTranslation();
-
-  if (!referralCodes.length) {
-    return (
-      <CyDView className='flex-1 items-center justify-center p-6'>
-        <CyDText className='text-n200'>{t('NO_REFERRAL_CODES')}</CyDText>
-      </CyDView>
-    );
-  }
-
-  return (
-    <CyDScrollView className='flex-1 p-4 bg-n20'>
-      <CyDText className='text-[16px] font-semibold mb-4'>
-        {t('ALL_REFERRAL_CODES', 'All Referral Codes')}
-      </CyDText>
-
-      {referralCodes.map(code => (
-        <CyDView
-          key={code}
-          className='flex-row items-center justify-between bg-n0 rounded-[8px] px-4 py-3 mb-2'>
-          <CyDText className='text-[14px] font-medium'>{code}</CyDText>
-          <CyDTouchView
-            onPress={() => {
-              Clipboard.setString(code);
-              showToast(t('COPIED_TO_CLIPBOARD', 'Copied to clipboard'));
-            }}>
-            <CyDIcons name='copy' size={20} className='text-base400' />
-          </CyDTouchView>
-        </CyDView>
-      ))}
-    </CyDScrollView>
-  );
-};
 
 export default function Referrals() {
   const { t } = useTranslation();
@@ -211,11 +173,13 @@ export default function Referrals() {
     setIsReferralCodesLoading(true);
     const response = await getWithAuth('/v1/cards/referral-v2');
     console.log('response : : : ', response);
+    console.log(
+      'response.data.referralCodes : : : ',
+      response.data.referralCodes,
+    );
     setIsReferralCodesLoading(false);
 
-    if (!response.isError && response.data?.referralCodes) {
-      setReferralCodes(response.data.referralCodes);
-    }
+    setReferralCodes(response.data.referralCodes); // Filter out any undefined/null values
   };
 
   useEffect(() => {
@@ -259,7 +223,12 @@ export default function Referrals() {
    */
   const handleCopyReferralCode = () => {
     try {
-      Clipboard.setString(referralData.referralCode);
+      const codeToCopy = referralCodes[0];
+      if (!codeToCopy) {
+        showToast(t('No referral code available'));
+        return;
+      }
+      Clipboard.setString(codeToCopy);
       showToast(t('Referral code copied to clipboard!'));
     } catch (error: any) {
       console.error('Error copying referral code:', error);
@@ -272,7 +241,13 @@ export default function Referrals() {
    * Opens native share dialog with referral information
    */
   const handleInviteLink = () => {
-    const shareMessage = `Join me on Cypher Wallet and use my referral code: ${referralData.referralCode}. We both earn Cypher tokens when you make your first purchase!`;
+    const codeToShare = referralCodes[0];
+    if (!codeToShare) {
+      showToast(t('No referral code available'));
+      return;
+    }
+
+    const shareMessage = `Join me on Cypher Wallet and use my referral code: ${codeToShare}. We both earn Cypher tokens when you make your first purchase!`;
 
     Share.share({
       message: shareMessage,
@@ -288,10 +263,13 @@ export default function Referrals() {
    * Shows QR code in bottom sheet modal
    */
   const handleQRCode = () => {
-    console.log(
-      'Showing QR Code for referral code:',
-      referralData.referralCode,
-    );
+    const codeForQR = referralCodes[0];
+    if (!codeForQR) {
+      showToast(t('No referral code available'));
+      return;
+    }
+
+    console.log('Showing QR Code for referral code:', codeForQR);
 
     showBottomSheet({
       id: 'referral-qr-code',
@@ -301,7 +279,7 @@ export default function Referrals() {
       backgroundColor: isDarkMode ? '#161616' : '#F5F6F7',
       content: (
         <QRCodeBottomSheetContent
-          referralCode={referralData.referralCode}
+          referralCode={codeForQR}
           userEarnings={referralData.userEarnings}
           friendEarnings={referralData.friendEarnings}
         />
@@ -322,21 +300,11 @@ export default function Referrals() {
   };
 
   /**
-   * Open bottom-sheet displaying all referral codes.
+   * Navigates to the All Referral Codes screen
    */
   const handleViewAllReferralCodes = () => {
-    showBottomSheet({
-      id: 'all-referral-codes',
-      snapPoints: ['60%', Platform.OS === 'android' ? '100%' : '85%'],
-      showCloseButton: true,
-      scrollable: true,
-      backgroundColor: isDarkMode ? '#161616' : '#F5F6F7',
-      content: (
-        <ReferralCodesBottomSheetContent referralCodes={referralCodes} />
-      ),
-      onClose: () => {
-        console.log('Referral codes bottom sheet closed');
-      },
+    (navigation as any).navigate(screenTitle.ALL_REFERRAL_CODES, {
+      referralCodes,
     });
   };
 
@@ -372,16 +340,16 @@ export default function Referrals() {
         }
       />
 
-      {/* Header */}
-      <CyDView className='flex-row justify-between items-center px-4 pt-3'>
-        <CyDText className='text-[28px]'>Invite friends</CyDText>
-
-        <CyDTouchView onPress={handleClose} className='p-2'>
-          <CyDIcons name='close' size={32} className='text-base400' />
-        </CyDTouchView>
-      </CyDView>
-
       <CyDScrollView className='flex-1'>
+        {/* Header (now scrollable) */}
+        <CyDView className='flex-row justify-between items-center px-4 pt-3'>
+          <CyDText className='text-[28px]'>Invite friends</CyDText>
+
+          <CyDTouchView onPress={handleClose} className='p-2'>
+            <CyDIcons name='close' size={32} className='text-base400' />
+          </CyDTouchView>
+        </CyDView>
+
         {/* Hero Image Section */}
         <CyDView className='px-4 pt-4 pb-6'>
           <CyDView className='rounded-2xl overflow-hidden'>
@@ -420,18 +388,17 @@ export default function Referrals() {
               <CyDIcons name='copy' size={20} className='text-base400' />
             </CyDTouchView>
           </CyDView>
+          {/* View All Referral Codes CTA */}
+          {referralCodes.length > 1 && (
+            <CyDTouchView
+              onPress={handleViewAllReferralCodes}
+              className='items-center mt-2'>
+              <CyDText className='text-blue-400 text-[14px] underline font-medium'>
+                {'Other Invite Codes'}
+              </CyDText>
+            </CyDTouchView>
+          )}
         </CyDView>
-
-        {/* View All Referral Codes CTA */}
-        {referralCodes.length > 1 && (
-          <CyDTouchView
-            onPress={handleViewAllReferralCodes}
-            className='items-center mt-2'>
-            <CyDText className='text-blue-400 underline font-medium'>
-              {t('VIEW_ALL_REFERRAL_CODES', 'View All Referral Codes')}
-            </CyDText>
-          </CyDTouchView>
-        )}
 
         {/* Action Buttons */}
         <CyDView className='flex-row gap-3 px-4 mb-[34px]'>

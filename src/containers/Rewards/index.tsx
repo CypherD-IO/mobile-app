@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages, { AppImagesMap } from '../../../assets/images/appImages';
 import {
@@ -16,19 +16,26 @@ import {
   Platform,
   StyleSheet,
   useColorScheme,
+  Modal,
 } from 'react-native';
 import Video from 'react-native-video';
+import { getMaskedAddress } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
+import moment from 'moment';
+import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { CardProfile } from '../../models/cardProfile.model';
 import GradientText from '../../components/gradientText';
+import ReferralDetailContent from '../../components/v2/ReferralDetailContent';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import { PieChart } from 'react-native-svg-charts';
 import { screenTitle } from '../../constants';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Button from '../../components/v2/button';
-import { ButtonType } from '../../constants/enum';
+import { ButtonType, CardProviders } from '../../constants/enum';
 import { Theme, useTheme as useAppTheme } from '../../reducers/themeReducer';
 import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import InviteFriendsBanner from '../../components/v2/inviteFriendsBanner';
 // NOTE: Import for ReferralsViewAll component (ready for navigation integration)
 // import ReferralsViewAll from './ReferralsViewAll';
 
@@ -39,8 +46,40 @@ interface RewardTrendsContentProps {
 const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   rewardsData,
 }) => {
-  // Time filter state – future enhancement will allow switching time frames
+  /* -------------------------------------------------------------------------- */
+  /*                         Time-filter drop-down logic                         */
+  /* -------------------------------------------------------------------------- */
+
+  // Visible label for the currently selected time window
   const [timeFilter, setTimeFilter] = React.useState('All time');
+  const [showOptions, setShowOptions] = React.useState(false);
+  const selectorRef = React.useRef<any>(null);
+  const [dropdownPos, setDropdownPos] = React.useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
+
+  // Build list of options based on epochs
+  const timeOptions: string[] = React.useMemo(() => {
+    const opts: string[] = ['All time'];
+    if (rewardsData?.epochs?.length) {
+      rewardsData.epochs.forEach((e: any) => {
+        // Using String(...) to satisfy eslint restrict-template-expressions rule
+        opts.push(`Reward Cycle ${String(e.epochNumber)}`);
+      });
+    }
+    return opts;
+  }, [rewardsData]);
+
+  // Resolve selected epoch object (undefined for all-time)
+  const selectedEpoch = React.useMemo(() => {
+    if (timeFilter === 'All time') return undefined;
+    const match = /Reward Cycle (\d+)/.exec(timeFilter);
+    const epochNum = match ? Number(match[1]) : undefined;
+    return rewardsData?.epochs?.find((e: any) => e.epochNumber === epochNum);
+  }, [timeFilter, rewardsData]);
 
   // Theme / color-scheme helpers (kept inside component to respect dynamic changes)
   const { theme } = useAppTheme();
@@ -50,60 +89,56 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
   /* -------------------------------------------------------------------------- */
-  /*           Derived metrics from IUserRewardsResponse (all-time view)         */
+  /*                   Derived metrics based on selected window                 */
   /* -------------------------------------------------------------------------- */
 
+  const breakdownSource = selectedEpoch
+    ? selectedEpoch.earned.breakdown
+    : (rewardsData?.allTime?.totalEarned ?? {});
+
   const totalRewards = React.useMemo(() => {
-    return parseFloat(
-      DecimalHelper.toDecimal(
-        rewardsData?.allTime?.totalEarned?.total ?? '0',
-        18,
-      ).toString(),
-    );
-  }, [rewardsData]);
+    const val = selectedEpoch
+      ? breakdownSource.total
+      : rewardsData?.allTime?.totalEarned?.total;
+    return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
+  }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const bonus = React.useMemo(() => {
-    return parseFloat(
-      DecimalHelper.toDecimal(
-        rewardsData?.allTime?.totalEarned?.bribes ?? '0',
-        18,
-      ).toString(),
-    );
-  }, [rewardsData]);
+    const val = selectedEpoch
+      ? breakdownSource.bribes
+      : rewardsData?.allTime?.totalEarned?.bribes;
+    return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
+  }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const fromSpends = React.useMemo(() => {
-    return parseFloat(
-      DecimalHelper.toDecimal(
-        rewardsData?.allTime?.totalEarned?.baseSpend ?? '0',
-        18,
-      ).toString(),
-    );
-  }, [rewardsData]);
+    const val = selectedEpoch
+      ? breakdownSource.baseSpend
+      : rewardsData?.allTime?.totalEarned?.baseSpend;
+    return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
+  }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const merchantSpends = React.useMemo(() => {
-    return parseFloat(
-      DecimalHelper.toDecimal(
-        rewardsData?.allTime?.totalEarned?.boostedSpend ?? '0',
-        18,
-      ).toString(),
-    );
-  }, [rewardsData]);
+    const val = selectedEpoch
+      ? breakdownSource.boostedSpend
+      : rewardsData?.allTime?.totalEarned?.boostedSpend;
+    return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
+  }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const referrals = React.useMemo(() => {
+    const baseRefVal = selectedEpoch
+      ? breakdownSource.baseReferral
+      : rewardsData?.allTime?.totalEarned?.baseReferral;
+    const boostedRefVal = selectedEpoch
+      ? breakdownSource.boostedReferral
+      : rewardsData?.allTime?.totalEarned?.boostedReferral;
     const baseRef = parseFloat(
-      DecimalHelper.toDecimal(
-        rewardsData?.allTime?.totalEarned?.baseReferral ?? '0',
-        18,
-      ).toString(),
+      DecimalHelper.toDecimal(baseRefVal ?? '0', 18).toString(),
     );
     const boostedRef = parseFloat(
-      DecimalHelper.toDecimal(
-        rewardsData?.allTime?.totalEarned?.boostedReferral ?? '0',
-        18,
-      ).toString(),
+      DecimalHelper.toDecimal(boostedRefVal ?? '0', 18).toString(),
     );
     return baseRef + boostedRef;
-  }, [rewardsData]);
+  }, [breakdownSource, selectedEpoch, rewardsData]);
 
   // Donut chart data (order matters for consistent colours)
   const chartData = React.useMemo(
@@ -136,13 +171,92 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     [bonus, fromSpends, merchantSpends, referrals],
   );
 
-  // Transaction data – replace with actual data mapping later
-  // TODO: Map rewardsData.epochHistory into transactionData
-  const [transactionData] = React.useState<any[]>([]);
+  // Transaction data state
+  const [transactionData, setTransactionData] = React.useState<any[]>([]);
+
+  /* -------------------------------------------------------------------------- */
+  /*                   Fetch Transactions for Reward Section                    */
+  /* -------------------------------------------------------------------------- */
+
+  // Access global context for card provider details
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile = (globalContext?.globalState?.cardProfile ?? {}) as
+    | CardProfile
+    | undefined;
+  const cardProvider: CardProviders =
+    (cardProfile?.provider as CardProviders) ?? CardProviders.REAP_CARD;
+
+  const { getWithAuth } = useAxios();
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        let url = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=5&includeRewards=true`;
+
+        console.log('S E L E C T E D E P O C H : : : ', selectedEpoch);
+
+        // Append epoch window if not all-time
+        if (selectedEpoch?.epochStartTime && selectedEpoch?.epochEndTime) {
+          url += `&startDate=${String(selectedEpoch.epochStartTime)}&endDate=${String(selectedEpoch.epochEndTime)}`;
+        }
+
+        console.log('U R L : : : ', url);
+
+        const resp = await getWithAuth(url);
+
+        console.log('R E S P : : : ', resp.data.transactions);
+
+        if (!resp.isError) {
+          const items = resp.data.transactions ?? [];
+
+          /* Group by calendar day for UI section */
+          const grouped: { [date: string]: any[] } = {};
+          items.forEach((txn: any) => {
+            const dateKey = moment(txn.date).format('MMM DD, YYYY');
+            if (!grouped[dateKey]) grouped[dateKey] = [];
+            grouped[dateKey].push(txn);
+          });
+
+          const transformed = Object.keys(grouped)
+            .sort(
+              (a, b) =>
+                moment(b, 'MMM DD, YYYY').valueOf() -
+                moment(a, 'MMM DD, YYYY').valueOf(),
+            )
+            .map((dateStr, idx) => ({
+              id: `day-${String(idx)}`,
+              date: dateStr,
+              transactions: grouped[dateStr].map((txn: any) => ({
+                id: txn.id,
+                merchant: txn.title ?? txn.merchant ?? 'Unknown',
+                amount: txn.amount,
+                status: txn.tStatus,
+                time: moment(txn.date).format('h:mm A'),
+                reward: Boolean(
+                  txn.cypherRewards?.rewardsAllocation?.totalRewards &&
+                    Number(txn.cypherRewards.rewardsAllocation.totalRewards) >
+                      0,
+                ),
+              })),
+            }));
+
+          setTransactionData(transformed);
+        } else {
+          setTransactionData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching reward transactions', error);
+        setTransactionData([]);
+      }
+    };
+
+    void fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEpoch, cardProvider]);
 
   const renderTransactionItem = (transaction: any) => (
     <CyDView
-      key={transaction.merchant}
+      key={transaction.id}
       className='flex-row justify-between items-center py-3 border-b border-n40'>
       <CyDView className='flex-1'>
         <CyDText className='text-[14px] font-medium'>
@@ -180,6 +294,32 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     </CyDView>
   );
 
+  /* -------------------------------------------------------------------------- */
+  /*                            Badge colour helper                             */
+  /* -------------------------------------------------------------------------- */
+
+  // Static style for dropdown menu container (avoid inline-style lint error)
+  const dropdownStaticStyle = {
+    position: 'absolute' as const,
+    right: 16,
+    width: 180,
+    maxHeight: 320,
+  };
+
+  const getBadgeColors = (key: string) => {
+    switch (key) {
+      case 'bonus':
+        return { bg: 'rgba(247,198,69,0.15)', txt: '#F7C645' };
+      case 'spends':
+        return { bg: 'rgba(38,133,202,0.15)', txt: '#2685CA' };
+      case 'merchant':
+        return { bg: 'rgba(226,92,92,0.15)', txt: '#E25C5C' };
+      case 'referrals':
+      default:
+        return { bg: 'rgba(194,199,208,0.15)', txt: '#C2C7D0' };
+    }
+  };
+
   return (
     <CyDView className='flex-1 bg-n0'>
       <CyDView className='bg-n20 px-4 mb-[12px]'>
@@ -188,15 +328,68 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
           <CyDText className='text-[22px] font-medium'>
             {'Reward Trends'}
           </CyDText>
-          <CyDTouchView className='flex-row items-center rounded-lg px-3 py-2'>
+          <CyDTouchView
+            ref={selectorRef}
+            className='flex-row items-center rounded-lg px-3 py-2'
+            onPress={() => {
+              if (selectorRef.current) {
+                selectorRef.current.measureInWindow(
+                  (x: number, y: number, width: number, height: number) => {
+                    setDropdownPos({ x, y, width, height });
+                    setShowOptions(prev => !prev);
+                  },
+                );
+              }
+            }}>
             <CyDText className='text-[14px] mr-2'>{timeFilter}</CyDText>
             <CyDMaterialDesignIcons
-              name='chevron-down'
+              name={showOptions ? 'chevron-up' : 'chevron-down'}
               size={16}
               className={`${isDarkMode ? 'text-white' : 'text-black'}`}
             />
           </CyDTouchView>
         </CyDView>
+
+        {/* Dropdown Modal */}
+        {showOptions && (
+          <Modal
+            visible={showOptions}
+            transparent
+            animationType='fade'
+            onRequestClose={() => setShowOptions(false)}>
+            <CyDTouchView
+              className='absolute top-0 left-0 right-0 bottom-0 bg-black/10'
+              onPress={() => setShowOptions(false)}
+              activeOpacity={1}>
+              {/* eslint-disable-next-line react-native/no-inline-styles */}
+              <CyDView
+                style={[
+                  dropdownStaticStyle,
+                  { top: dropdownPos.y + dropdownPos.height + 4 },
+                ]}
+                className='bg-base200 rounded-[12px] shadow-lg'>
+                <CyDScrollView nestedScrollEnabled>
+                  {timeOptions.map(option => (
+                    <CyDTouchView
+                      key={option}
+                      className='py-3 px-4 border-b border-n60'
+                      onPress={() => {
+                        setTimeFilter(option);
+                        setShowOptions(false);
+                      }}>
+                      <CyDText
+                        className={`text-[14px] ${
+                          option === timeFilter ? 'font-semibold' : ''
+                        }`}>
+                        {option}
+                      </CyDText>
+                    </CyDTouchView>
+                  ))}
+                </CyDScrollView>
+              </CyDView>
+            </CyDTouchView>
+          </Modal>
+        )}
 
         {/* Chart Section */}
         <CyDView className='items-center py-6'>
@@ -242,37 +435,59 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 
         {/* Reward Breakdown */}
         <CyDView className='mb-6'>
+          {/* Bonus row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDView className='flex-row items-center'>
-              <CyDText className='text-[14px]'>Bonus</CyDText>
+            <CyDText className='text-[14px]'>Bonus</CyDText>
+            <CyDView
+              style={{
+                backgroundColor: getBadgeColors('bonus').bg,
+              }}
+              className='px-1 py-[2px] rounded-[4px]'>
+              <CyDText
+                className='text-[14px] font-medium'
+                style={{ color: getBadgeColors('bonus').txt }}>
+                {bonus.toFixed(2)} $CYPR
+              </CyDText>
             </CyDView>
-            <CyDText className='text-p150 text-[14px] font-medium'>
-              {bonus.toFixed(2)} $CYPR
-            </CyDText>
           </CyDView>
+          {/* From spends row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDView className='flex-row items-center'>
-              <CyDText className='text-[14px]'>From spends</CyDText>
+            <CyDText className='text-[14px]'>From spends</CyDText>
+            <CyDView
+              style={{ backgroundColor: getBadgeColors('spends').bg }}
+              className='px-1 py-[2px] rounded-[4px]'>
+              <CyDText
+                className='text-[14px] font-medium'
+                style={{ color: getBadgeColors('spends').txt }}>
+                {fromSpends.toFixed(2)} $CYPR
+              </CyDText>
             </CyDView>
-            <CyDText className='text-p150 text-[14px] font-medium'>
-              {fromSpends.toFixed(2)} $CYPR
-            </CyDText>
           </CyDView>
+          {/* Merchant spends row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDView className='flex-row items-center'>
-              <CyDText className='text-[14px]'>Merchant Spends</CyDText>
+            <CyDText className='text-[14px]'>Merchant Spends</CyDText>
+            <CyDView
+              style={{ backgroundColor: getBadgeColors('merchant').bg }}
+              className='px-1 py-[2px] rounded-[4px]'>
+              <CyDText
+                className='text-[14px] font-medium'
+                style={{ color: getBadgeColors('merchant').txt }}>
+                {merchantSpends.toFixed(2)} $CYPR
+              </CyDText>
             </CyDView>
-            <CyDText className='text-red300 text-[14px] font-medium'>
-              {merchantSpends.toFixed(2)} $CYPR
-            </CyDText>
           </CyDView>
+          {/* Referrals row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDView className='flex-row items-center'>
-              <CyDText className='text-[14px]'>Referrals Rewards</CyDText>
+            <CyDText className='text-[14px]'>Referrals Rewards</CyDText>
+            <CyDView
+              style={{ backgroundColor: getBadgeColors('referrals').bg }}
+              className='px-1 py-[2px] rounded-[4px]'>
+              <CyDText
+                className='text-[14px] font-medium'
+                style={{ color: getBadgeColors('referrals').txt }}>
+                {referrals.toFixed(2)} $CYPR
+              </CyDText>
             </CyDView>
-            <CyDText className='text-blue200 text-[14px] font-medium'>
-              {referrals.toFixed(2)} $CYPR
-            </CyDText>
           </CyDView>
         </CyDView>
       </CyDView>
@@ -307,6 +522,22 @@ export default function Rewards() {
   const { getWithAuth } = useAxios();
 
   const [rewardsData, setRewardsData] = React.useState<any | null>(null);
+
+  // Referral summary state
+  const [referralSummary, setReferralSummary] = React.useState<any | null>(
+    null,
+  );
+
+  // Voted merchants list (user voted)
+  const [votedMerchants, setVotedMerchants] = React.useState<
+    Array<{
+      candidateId: string;
+      brand: string;
+      logoUrl?: string;
+      category?: string;
+      historicalMultiplier?: { current: number };
+    }>
+  >([]);
   const { theme } = useAppTheme();
   const colorScheme = useColorScheme();
 
@@ -368,7 +599,14 @@ export default function Rewards() {
           const response = await getWithAuth(
             '/v1/cypher-protocol/user/rewards',
           );
-          console.log('((((((((( response :', response, response.data.allTime);
+          console.log('((((((((( response :', response.data);
+
+          console.log(
+            ':":":":":":":": voted merchants : ',
+            response.data.votedMerchants,
+          );
+
+          console.log('@@@@@@@@ referralInfo : ', response.data.referralInfo);
 
           console.log('voiting power ::: ', response.data.votingPower);
 
@@ -405,27 +643,110 @@ export default function Rewards() {
     }, [totalVotingPower, usedVotingPower, progressAnimation]),
   );
 
-  // NOTE: DUMMY REFERRAL DATA 🍎🍎🍎🍎🍎🍎
-  const referralData = [
-    {
-      id: '1',
-      address: '0xACE....1111',
-      reward: '112.23',
-      status: 'completed',
-    },
-    {
-      id: '2',
-      address: '0xACE....beef',
-      reward: '112.23',
-      status: 'completed',
-    },
-    {
-      id: '3',
-      address: '0x2e3a....6d5f',
-      reward: null,
-      status: 'pending',
-    },
-  ];
+  /* -------------------------------------------------------------------------- */
+  /*                       Fetch Referral Summary on Focus                      */
+  /* -------------------------------------------------------------------------- */
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchReferralSummary = async () => {
+        try {
+          const resp = await getWithAuth(
+            '/v1/cards/referral-v2/rewards-summary',
+          );
+          console.log(
+            '~~~ referral summary resp',
+            resp.data,
+            '\n *] refereesByEpoch',
+            resp.data.refereesByEpoch,
+            '\n *] referees :',
+            resp.data.refereesByEpoch['10'].referees,
+          );
+          if (!resp.isError) {
+            setReferralSummary(resp.data);
+          } else {
+            console.warn('Failed to fetch referral summary', resp.error);
+          }
+        } catch (err) {
+          console.error('Error fetching referral summary', err);
+        }
+      };
+
+      void fetchReferralSummary();
+    }, []),
+  );
+
+  /* -------------------------------------------------------------------------- */
+  /*                       Fetch Voted Merchants on Focus                      */
+  /* -------------------------------------------------------------------------- */
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchVotedMerchants = async () => {
+        try {
+          const resp = await getWithAuth(
+            '/v1/cypher-protocol/merchants?onlyUserVoted=true',
+          );
+          if (!resp.isError) {
+            console.log('Voted merchants resp:', resp.data);
+            setVotedMerchants(resp.data?.items ?? []);
+          } else {
+            console.warn('Failed to fetch voted merchants', resp.error);
+          }
+        } catch (err) {
+          console.error('Error fetching voted merchants', err);
+        }
+      };
+
+      void fetchVotedMerchants();
+    }, []),
+  );
+
+  /* -------------------------------------------------------------------------- */
+  /*                           Derived referral list                            */
+  /* -------------------------------------------------------------------------- */
+  // Flatten referees across all epochs into a single array while keeping epoch info
+  const referees: Array<{
+    address: string;
+    totalRewardsEarned: number;
+    onboardingStatus: string;
+    signupDate?: number;
+    epoch: number;
+  }> = React.useMemo(() => {
+    if (!referralSummary?.refereesByEpoch) return [];
+
+    const flattened: Array<{
+      address: string;
+      totalRewardsEarned: number;
+      onboardingStatus: string;
+      signupDate?: number;
+      epoch: number;
+    }> = [];
+
+    Object.entries(referralSummary.refereesByEpoch).forEach(
+      ([epochKey, epochData]: [string, any]) => {
+        const epochNum = Number(epochKey);
+        const { referees: refList = [] } = epochData ?? {};
+        refList.forEach((ref: any) => {
+          flattened.push({
+            address: ref.address,
+            totalRewardsEarned: ref.totalRewardsEarned ?? 0,
+            onboardingStatus: ref.onboardingStatus ?? 'PENDING',
+            signupDate: ref.signupDate,
+            epoch: epochNum,
+          });
+        });
+      },
+    );
+
+    // Sort by signupDate descending (latest first)
+    flattened.sort((a, b) => (b.signupDate ?? 0) - (a.signupDate ?? 0));
+
+    return flattened;
+  }, [referralSummary]);
+
+  // First 5 referees for preview list
+  const previewReferees = referees.slice(0, 5);
 
   // NOTE: DUMMY FUNCTIONS 🍎🍎🍎🍎🍎🍎
   const handleKnowMorePress = () => {
@@ -451,10 +772,10 @@ export default function Rewards() {
     });
   };
   const handleViewAllReferralsPress = () => {
-    // TODO: Navigate to ReferralsViewAll screen
-    // This will be implemented when navigation is properly set up
-    navigation.navigate(screenTitle.REFERRALS_VIEW_ALL);
-    console.log('Navigate to View All Referrals screen');
+    navigation.navigate(screenTitle.REFERRALS_VIEW_ALL, {
+      refereesByEpoch: referralSummary?.refereesByEpoch ?? {},
+      votedMerchants,
+    });
   };
   const handleInviteFriendsPress = () => {
     // Navigate to the Referrals page when the user taps "Invite Friends".
@@ -478,6 +799,28 @@ export default function Rewards() {
       onClose: () => {
         console.log('Reward trends bottom sheet closed');
       },
+    });
+  };
+
+  const showReferralDetailBottomSheet = (ref: {
+    address: string;
+    totalRewardsEarned: number;
+    onboardingStatus: string;
+    signupDate?: number;
+    epoch: number;
+  }) => {
+    showBottomSheet({
+      id: `referral-detail-${ref.address}-${performance.now()}`,
+      snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
+      showCloseButton: true,
+      scrollable: true,
+      backgroundColor: isDarkMode ? '#0D0D0D' : '#EBEDF0',
+      content: (
+        <ReferralDetailContent
+          referralDetail={ref}
+          votedMerchants={votedMerchants}
+        />
+      ),
     });
   };
 
@@ -579,7 +922,9 @@ export default function Rewards() {
               <Button
                 title={'Claim'}
                 onPress={() => {
-                  navigation.navigate(screenTitle.CLAIM_REWARD);
+                  navigation.navigate(screenTitle.CLAIM_REWARD, {
+                    rewardsData: rewardsData,
+                  });
                 }}
                 type={ButtonType.PRIMARY}
                 style='rounded-full px-8'
@@ -589,9 +934,7 @@ export default function Rewards() {
             {/* Action Cards */}
             <CyDView className='flex-row justify-between mx-[16px]'>
               {/* Cypher Deposit */}
-              <CyDTouchView
-                className='flex-1 bg-base40 rounded-[12px] p-[12px] mr-[8px]'
-                onPress={handleDepositTokenPress}>
+              <CyDView className='flex-1 bg-base40 rounded-[12px] p-[12px] mr-[8px]'>
                 <CyDView className='flex-row justify-between items-center mb-4'>
                   <CyDView className='flex-row items-center'>
                     <CyDText className='font-bold text-[18px] mr-[2px]'>
@@ -624,7 +967,7 @@ export default function Rewards() {
                     {'View More'}
                   </CyDText>
                 </CyDTouchView>
-              </CyDTouchView>
+              </CyDView>
 
               {/* Reward Booster */}
               <CyDView className='flex-1 bg-base40 rounded-[12px] p-[12px] ml-[8px]'>
@@ -701,85 +1044,95 @@ export default function Rewards() {
 
               <CyDView className='mb-[40px]'>
                 {/* Referrals List */}
-                <CyDView className='bg-base40 rounded-[12px]'>
-                  {referralData.map((referral, index) => (
-                    <CyDView
-                      key={referral.id}
-                      className={`flex-row justify-between items-center py-[12px] px-[16px] ${
-                        index < referralData.length - 1
-                          ? 'border-b border-n40'
-                          : ''
-                      }`}>
-                      <CyDText className='text-[14px] font-medium flex-1'>
-                        {referral.address}
-                      </CyDText>
-                      <CyDView className='flex-row items-center'>
-                        {referral.status === 'completed' ? (
-                          <CyDText className='text-blue200 text-[14px] font-medium mr-[8px]'>
-                            {referral.reward} CYPR
+                {referees.length > 0 ? (
+                  <>
+                    <CyDView className='bg-base40 rounded-[12px]'>
+                      {previewReferees.map((referrer, index) => (
+                        <CyDTouchView
+                          key={`${referrer.address}-${index}`}
+                          className={`flex-row justify-between items-center py-[12px] px-[16px] ${
+                            index < previewReferees.length - 1
+                              ? 'border-b border-n40'
+                              : ''
+                          }`}
+                          onPress={() =>
+                            showReferralDetailBottomSheet(referrer)
+                          }>
+                          <CyDText className='text-[14px] font-medium flex-1'>
+                            {getMaskedAddress(referrer.address, 6)}
                           </CyDText>
-                        ) : (
-                          <CyDView className='bg-n60 rounded-[16px] px-[12px] py-[4px] mr-[8px]'>
-                            <CyDText className='text-n200 text-[12px]'>
-                              Pending
-                            </CyDText>
+                          <CyDView className='flex-row items-center'>
+                            {referrer.totalRewardsEarned > 0 ? (
+                              <CyDText className='text-blue200 text-[14px] font-medium mr-[8px]'>
+                                {referrer.totalRewardsEarned} CYPR
+                              </CyDText>
+                            ) : (
+                              <CyDView className='bg-n60 rounded-[16px] px-[12px] py-[4px] mr-[8px]'>
+                                <CyDText className='text-n200 text-[12px]'>
+                                  Pending
+                                </CyDText>
+                              </CyDView>
+                            )}
+                            <CyDMaterialDesignIcons
+                              name='chevron-right'
+                              size={16}
+                              className='text-n200'
+                            />
                           </CyDView>
-                        )}
-                        <CyDMaterialDesignIcons
-                          name='chevron-right'
-                          size={16}
-                          className='text-n200'
-                        />
-                      </CyDView>
+                        </CyDTouchView>
+                      ))}
+
+                      {/* View All Button */}
+                      {referees.length > 5 && (
+                        <CyDTouchView
+                          className={`flex-row justify-between items-center py-[16px] mt-[8px] rounded-b-[12px] px-[16px] ${
+                            isDarkMode ? 'bg-base200' : 'bg-n40'
+                          }`}
+                          onPress={handleViewAllReferralsPress}>
+                          <CyDText className='text-[16px] font-medium'>
+                            View All
+                          </CyDText>
+                          <CyDMaterialDesignIcons
+                            name='chevron-right'
+                            size={20}
+                            className='text-base400'
+                          />
+                        </CyDTouchView>
+                      )}
                     </CyDView>
-                  ))}
+                    {/* Action Buttons */}
+                    <CyDView className='flex-row mt-[16px] gap-x-[12px]'>
+                      <CyDTouchView
+                        className={`flex-1 rounded-[24px] py-[8px] flex-row items-center justify-center ${
+                          isDarkMode ? 'bg-base200' : 'bg-n40'
+                        }`}
+                        onPress={handleInviteFriendsPress}>
+                        <CyDMaterialDesignIcons
+                          name='account-group'
+                          size={24}
+                          className='text-base400 mr-[8px]'
+                        />
+                        <CyDText className='text-base100 text-[14px] font-medium'>
+                          Invite Friends
+                        </CyDText>
+                      </CyDTouchView>
 
-                  {/* View All Button */}
-                  <CyDTouchView
-                    className={`flex-row justify-between items-center py-[16px] mt-[8px] rounded-b-[12px] px-[16px] ${
-                      isDarkMode ? 'bg-base200' : 'bg-n40'
-                    }`}
-                    onPress={handleViewAllReferralsPress}>
-                    <CyDText className='text-[16px] font-medium'>
-                      View All
-                    </CyDText>
-                    <CyDMaterialDesignIcons
-                      name='chevron-right'
-                      size={20}
-                      className='text-base400'
-                    />
-                  </CyDTouchView>
-                </CyDView>
-
-                {/* Action Buttons */}
-                <CyDView className='flex-row mt-[16px] gap-x-[12px]'>
-                  <CyDTouchView
-                    className={`flex-1 rounded-[24px] py-[8px] flex-row items-center justify-center ${
-                      isDarkMode ? 'bg-base200' : 'bg-n40'
-                    }`}
-                    onPress={handleInviteFriendsPress}>
-                    <CyDMaterialDesignIcons
-                      name='account-group'
-                      size={24}
-                      className='text-base400 mr-[8px]'
-                    />
-                    <CyDText className='text-base100 text-[14px] font-medium'>
-                      Invite Friends
-                    </CyDText>
-                  </CyDTouchView>
-
-                  <CyDTouchView
-                    className={`flex-1 rounded-[24px] py-[8px] items-center justify-center ${
-                      isDarkMode ? 'bg-base200' : 'bg-n40'
-                    }`}
-                    onPress={() => {
-                      // TODO: Implement learn how referral works functionality
-                    }}>
-                    <CyDText className='text-[14px] font-medium'>
-                      Learn how referral works
-                    </CyDText>
-                  </CyDTouchView>
-                </CyDView>
+                      <CyDTouchView
+                        className={`flex-1 rounded-[24px] py-[8px] items-center justify-center ${
+                          isDarkMode ? 'bg-base200' : 'bg-n40'
+                        }`}
+                        onPress={() => {
+                          // TODO: Implement learn how referral works functionality
+                        }}>
+                        <CyDText className='text-[14px] font-medium'>
+                          Learn how referral works
+                        </CyDText>
+                      </CyDTouchView>
+                    </CyDView>
+                  </>
+                ) : (
+                  <InviteFriendsBanner />
+                )}
               </CyDView>
             </CyDView>
           </CyDView>
@@ -802,9 +1155,9 @@ const styles = StyleSheet.create({
     width: 200,
   },
   centerContent: {
-    top: 85, // Half of pie chart height (200/2)
-    left: 85, // Half of pie chart width (200/2)
-    transform: [{ translateX: -24 }, { translateY: -24 }], // Offset by half the content size to center perfectly
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   rewardTokenVideo: {
     width: '100%',

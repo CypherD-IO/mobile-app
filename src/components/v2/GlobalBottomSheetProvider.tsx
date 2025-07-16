@@ -6,7 +6,7 @@ import React, {
   useEffect,
 } from 'react';
 import { CyDBottomSheet, CyDBottomSheetRef } from './bottomSheet';
-import { Platform } from 'react-native';
+import { Platform, InteractionManager } from 'react-native';
 
 interface BottomSheetConfig {
   id: string;
@@ -57,20 +57,48 @@ export const GlobalBottomSheetProvider: React.FC<
   );
   const layoutReady = useRef<{ [key: string]: boolean }>({});
 
-  // Handle pending presentations after render
+  /**
+   * New, simpler presentation strategy:
+   * -----------------------------------
+   * Present the sheet immediately when its `ref` becomes available the first
+   * time after (re-)mount.  This guarantees there is no race between the
+   * layout and the `present()` call and removes the need for an intermediate
+   * queue.
+   */
   useEffect(() => {
-    if (pendingPresentations.length > 0) {
-      pendingPresentations.forEach(id => {
-        const ref = bottomSheetRefs.current[id];
-        if (ref) {
-          const delay = Platform.OS === 'android' ? 400 : 100;
-          setTimeout(() => {
-            ref.present();
-          }, delay);
-        }
-      });
-      setPendingPresentations([]);
+    if (pendingPresentations.length === 0) {
+      return;
     }
+
+    setPendingPresentations(prevQueue => {
+      const nextQueue: string[] = [];
+
+      prevQueue.forEach(id => {
+        const ref = bottomSheetRefs.current[id];
+
+        if (!ref) {
+          // Ref not ready yet -> keep it for the next render cycle
+          nextQueue.push(id);
+          console.log(
+            `GlobalBottomSheetProvider: ref for '${id}' not ready yet, will retry next frame`,
+          );
+          return;
+        }
+
+        const delay = Platform.OS === 'android' ? 400 : 100;
+
+        console.log(
+          `GlobalBottomSheetProvider: presenting bottom sheet '${id}' after ${delay}ms`,
+        );
+
+        setTimeout(() => {
+          // Protect against unmounted refs
+          bottomSheetRefs.current[id]?.present();
+        }, delay);
+      });
+
+      return nextQueue; // Only keep ids that still need to be presented
+    });
   }, [pendingPresentations, bottomSheets]);
 
   const showBottomSheet = (config: BottomSheetConfig) => {
@@ -88,13 +116,7 @@ export const GlobalBottomSheetProvider: React.FC<
       }
     });
 
-    // Mark for presentation after render and layout
-    setPendingPresentations(prev => {
-      if (!prev.includes(config.id)) {
-        return [...prev, config.id];
-      }
-      return prev;
-    });
+    // No queue needed any more.
   };
 
   const hideBottomSheet = (id: string) => {
@@ -120,8 +142,8 @@ export const GlobalBottomSheetProvider: React.FC<
     setBottomSheets(prev => prev.filter(sheet => sheet.id !== id));
 
     // Clean up ref
-    delete bottomSheetRefs.current[id];
-    delete layoutReady.current[id];
+    bottomSheetRefs.current[id] = null;
+    layoutReady.current[id] = false;
   };
 
   const contextValue: GlobalBottomSheetContextType = {
@@ -141,9 +163,38 @@ export const GlobalBottomSheetProvider: React.FC<
           ref={ref => {
             if (ref) {
               bottomSheetRefs.current[config.id] = ref;
+
+              // Present only once per mount
+              if (!layoutReady.current[config.id]) {
+                layoutReady.current[config.id] = true;
+
+                void InteractionManager.runAfterInteractions(() => {
+                  const present = () => {
+                    bottomSheetRefs.current[config.id]?.present();
+                  };
+
+                  // Delay by 2 animation frames to ensure layout/measurements complete
+                  requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                      console.log(
+                        `GlobalBottomSheetProvider: presenting bottom sheet '${config.id}' after double RAF`,
+                      );
+                      present();
+
+                      // Fallback retry after 120 ms in case first call is ignored (Android edge-case)
+                      setTimeout(() => {
+                        console.log(
+                          `GlobalBottomSheetProvider: retry present for '${config.id}' (fallback)`,
+                        );
+                        present();
+                      }, 120);
+                    });
+                  });
+                });
+              }
             }
           }}
-          snapPoints={config.snapPoints || ['80%', '95%']}
+          snapPoints={config.snapPoints ?? ['80%', '95%']}
           initialSnapIndex={-1}
           title={config.title}
           topBarColor={config.topBarColor}

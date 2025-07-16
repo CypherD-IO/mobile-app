@@ -8,12 +8,15 @@ import {
 } from '../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
+import { screenTitle } from '../../constants';
+import { useNavigation } from '@react-navigation/native';
 
 const InviteFriendsBanner = () => {
   const { t } = useTranslation();
+  const navigation = useNavigation();
 
   const onInvitePress = () => {
-    // TODO: Navigate to referrals / invite screen
+    navigation.navigate(screenTitle.REFERRALS);
   };
 
   return (

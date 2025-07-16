@@ -1271,6 +1271,7 @@ const OverchargedTransactionInfoSection = () => {
 export default function TransactionDetails() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { transaction }: { transaction: ICardTransaction } = route.params;
+  console.log('T R A N S A C T I O N : : : ', transaction);
   const { fxCurrencySymbol } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
@@ -1731,6 +1732,54 @@ export default function TransactionDetails() {
                     </CyDText>
                   </CyDView>
                 )}
+                {/* Rewards banner – shown when cypherRewards exist */}
+                {(() => {
+                  // Extract rewards data safely
+                  const cypherRewards: any = (transaction as any)
+                    ?.cypherRewards;
+                  const rewardsAlloc = get(
+                    cypherRewards,
+                    'rewardsAllocation',
+                    null,
+                  );
+
+                  if (!rewardsAlloc) return null;
+
+                  const totalRewards = Number(rewardsAlloc?.totalRewards ?? 0);
+                  if (totalRewards <= 0) return null;
+
+                  const boostedRewards = Number(
+                    rewardsAlloc?.boostedSpendRewards ?? 0,
+                  );
+                  const isBoosted = boostedRewards > 0;
+
+                  // Determine banner styles & text
+                  const bannerBg = isBoosted ? 'bg-orange-500' : 'bg-green400';
+                  const bannerText = isBoosted
+                    ? `You've earned boosted rewards from \n ${capitalize(
+                        transaction?.metadata?.merchant?.merchantName ?? '',
+                      )} Rewards`
+                    : 'You have earned';
+
+                  return (
+                    <CyDView
+                      className={`flex-row items-center justify-between rounded-[12px] px-[16px] py-[12px] mt-[16px] ${bannerBg} mx-[16px]`}>
+                      <CyDText className='text-white font-medium text-[14px] flex-1 mr-[8px]'>
+                        {bannerText}
+                      </CyDText>
+                      <CyDView className='flex-row items-center'>
+                        <CyDFastImage
+                          source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                          className='w-[24px] h-[24px] mr-[4px]'
+                          resizeMode='contain'
+                        />
+                        <CyDText className='text-white font-bold text-[18px]'>
+                          {limitDecimalPlaces(String(totalRewards), 2)}
+                        </CyDText>
+                      </CyDView>
+                    </CyDView>
+                  );
+                })()}
               </CyDView>
               {isOvercharged && <OverchargedTransactionInfoSection />}
               <CyDView className='flex flex-col flex-1 justify-between bg-n0'>

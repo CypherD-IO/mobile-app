@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -20,6 +20,7 @@ import { showToast } from '../utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 interface EarningBreakdown {
   id: string;
@@ -120,6 +121,7 @@ const ClaimRewardsBottomSheetContent = ({
 const ClaimReward: React.FC = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
+  const route = useRoute();
   const insets = useSafeAreaInsets();
   const { showBottomSheet } = useGlobalBottomSheet();
 
@@ -129,46 +131,77 @@ const ClaimReward: React.FC = () => {
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  // Dummy data - will be replaced with API data later
-  const [claimData] = useState({
-    totalRewards: 1671,
-    dateRange: 'From the last reward cycle 8 July - 23 July 2025',
-  });
+  // Get rewardsData from navigation params
+  const rewardsData = (route.params as any)?.rewardsData;
 
-  const [earningBreakdown] = useState<EarningBreakdown[]>([
-    {
-      id: '1',
-      type: 'Bonus',
-      amount: '100.00 $CYPR',
-      color: 'green400',
-      bgColor: 'rgba(34, 197, 94, 0.2)', // green-500 with 20% opacity
-      textColor: '#22c55e', // green-500
-    },
-    {
-      id: '2',
-      type: 'Basic Reward',
-      amount: '223.38 $CYPR',
-      color: 'yellow-400',
-      bgColor: 'rgba(250, 204, 21, 0.2)', // yellow-400 with 20% opacity
-      textColor: '#facc15', // yellow-400
-    },
-    {
-      id: '3',
-      type: 'Merchant Reward',
-      amount: '997.09 $CYPR',
-      color: 'red-400',
-      bgColor: 'rgba(248, 113, 113, 0.2)', // red-400 with 20% opacity
-      textColor: '#f87171', // red-400
-    },
-    {
-      id: '4',
-      type: 'Referrals Rewards',
-      amount: '212.32 $CYPR',
-      color: 'blue-400',
-      bgColor: 'rgba(96, 165, 250, 0.2)', // blue-400 with 20% opacity
-      textColor: '#60a5fa', // blue-400
-    },
-  ]);
+  // Calculate claim data from passed rewardsData
+  const claimData = React.useMemo(() => {
+    const totalUnclaimed = rewardsData?.allTime?.totalUnclaimed?.total ?? '0';
+    const totalRewardsNum = parseFloat(
+      DecimalHelper.toDecimal(totalUnclaimed, 18).toString(),
+    );
+
+    return {
+      totalRewards: totalRewardsNum,
+      dateRange: 'From all reward cycles',
+    };
+  }, [rewardsData]);
+
+  // Calculate earning breakdown from rewardsData
+  const earningBreakdown: EarningBreakdown[] = React.useMemo(() => {
+    const unclaimed = rewardsData?.allTime?.totalUnclaimed ?? {};
+
+    const bonus = parseFloat(
+      DecimalHelper.toDecimal(unclaimed.bribes ?? '0', 18).toString(),
+    );
+    const baseSpend = parseFloat(
+      DecimalHelper.toDecimal(unclaimed.baseSpend ?? '0', 18).toString(),
+    );
+    const boostedSpend = parseFloat(
+      DecimalHelper.toDecimal(unclaimed.boostedSpend ?? '0', 18).toString(),
+    );
+    const baseReferral = parseFloat(
+      DecimalHelper.toDecimal(unclaimed.baseReferral ?? '0', 18).toString(),
+    );
+    const boostedReferral = parseFloat(
+      DecimalHelper.toDecimal(unclaimed.boostedReferral ?? '0', 18).toString(),
+    );
+
+    return [
+      {
+        id: '1',
+        type: 'Bonus',
+        amount: `${bonus.toFixed(2)} $CYPR`,
+        color: 'green400',
+        bgColor: 'rgba(247,198,69,0.15)',
+        textColor: '#F7C645',
+      },
+      {
+        id: '2',
+        type: 'From spends',
+        amount: `${baseSpend.toFixed(2)} $CYPR`,
+        color: 'blue-400',
+        bgColor: 'rgba(38,133,202,0.15)',
+        textColor: '#2685CA',
+      },
+      {
+        id: '3',
+        type: 'Merchant Spends',
+        amount: `${boostedSpend.toFixed(2)} $CYPR`,
+        color: 'red-400',
+        bgColor: 'rgba(226,92,92,0.15)',
+        textColor: '#E25C5C',
+      },
+      {
+        id: '4',
+        type: 'Referrals Rewards',
+        amount: `${(baseReferral + boostedReferral).toFixed(2)} $CYPR`,
+        color: 'gray-400',
+        bgColor: 'rgba(194,199,208,0.15)',
+        textColor: '#C2C7D0',
+      },
+    ];
+  }, [rewardsData]);
 
   const [merchantRewards] = useState<MerchantReward[]>([
     {
@@ -240,6 +273,7 @@ const ClaimReward: React.FC = () => {
       content: (
         <ClaimRewardsBottomSheetContent totalRewards={claimData.totalRewards} />
       ),
+      topBarColor: isDarkMode ? '#000000' : '#FFFFFF',
       onClose: () => {
         console.log('Claim rewards bottom sheet closed');
       },
@@ -372,16 +406,16 @@ const ClaimReward: React.FC = () => {
             </CyDView>
 
             {/* Reward on Merchants */}
-            <CyDView
+            {/* <CyDView
               className={`py-6 rounded-[12px] ${
                 isDarkMode ? 'bg-base40' : 'bg-n0'
               }`}>
               <CyDText className='text-[16px] font-medium mb-4 mx-4'>
                 Reward on Merchants
-              </CyDText>
+              </CyDText> */}
 
-              {/* Total Earnings */}
-              <CyDView
+            {/* Total Earnings */}
+            {/* <CyDView
                 className={`py-3 px-4 flex-row justify-between items-center ${
                   isDarkMode ? 'bg-base200' : 'bg-n20'
                 }`}>
@@ -396,19 +430,19 @@ const ClaimReward: React.FC = () => {
                   />
                   <CyDText className='text-[18px] font-bold'>997</CyDText>
                 </CyDView>
-              </CyDView>
+              </CyDView> */}
 
-              {/* Merchant List */}
-              {merchantRewards.map((merchant, index) => (
+            {/* Merchant List */}
+            {/* {merchantRewards.map((merchant, index) => (
                 <CyDView
                   key={merchant.id}
                   className={`px-6 border-base200 border-b py-4 ${
                     index === merchantRewards.length - 1
                       ? 'border-b-0 pb-0'
                       : ''
-                  } ${isDarkMode ? 'border-base200' : 'border-n40'}`}>
-                  {/* Merchant Header */}
-                  <CyDView className='flex-row items-center mb-3'>
+                  } ${isDarkMode ? 'border-base200' : 'border-n40'}`}> */}
+            {/* Merchant Header */}
+            {/* <CyDView className='flex-row items-center mb-3'>
                     {renderMerchantAvatar(merchant.name)}
                     <CyDView className='flex-1'>
                       <CyDText className='text-[16px] font-medium mb-1'>
@@ -419,10 +453,10 @@ const ClaimReward: React.FC = () => {
                         {merchant.multiplier}
                       </CyDText>
                     </CyDView>
-                  </CyDView>
+                  </CyDView> */}
 
-                  {/* Merchant Details */}
-                  <CyDView>
+            {/* Merchant Details */}
+            {/* <CyDView>
                     <CyDView className='flex-row justify-between items-center mb-3'>
                       <CyDText className='text-n200 text-[14px]'>
                         Rewards earned
@@ -454,20 +488,20 @@ const ClaimReward: React.FC = () => {
                   </CyDView>
                 </CyDView>
               ))}
-            </CyDView>
+            </CyDView> */}
 
             {/* Spend Performance */}
 
-            <CyDView
+            {/* <CyDView
               className={`py-4 rounded-[12px] ${
                 isDarkMode ? 'bg-base40' : 'bg-n0'
               }`}>
               <CyDText className='text-[16px] font-medium mb-4 mx-4'>
                 Spend Performance
-              </CyDText>
+              </CyDText> */}
 
-              {/* Total Earnings */}
-              <CyDView
+            {/* Total Earnings */}
+            {/* <CyDView
                 className={`bg-base200 py-3 px-4 flex-row justify-between items-center mb-3 ${
                   isDarkMode ? 'bg-base200' : 'bg-n20'
                 }`}>
@@ -483,9 +517,9 @@ const ClaimReward: React.FC = () => {
                   }`}>
                   {spendPerformance.totalSpend}
                 </CyDText>
-              </CyDView>
+              </CyDView> */}
 
-              <CyDView className='flex-row justify-between items-center mb-3 px-4'>
+            {/* <CyDView className='flex-row justify-between items-center mb-3 px-4'>
                 <CyDText className='text-n200 text-[14px]'>
                   Avg. Spend/ Transaction
                 </CyDText>
@@ -509,7 +543,7 @@ const ClaimReward: React.FC = () => {
                   </CyDText>
                 </CyDView>
               </CyDView>
-            </CyDView>
+            </CyDView> */}
           </CyDView>
         </CyDScrollView>
       </CyDSafeAreaView>
