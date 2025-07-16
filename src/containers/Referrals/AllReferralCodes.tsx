@@ -89,6 +89,12 @@ export default function AllReferralCodes() {
     }
   };
 
+  const handleCopyLink = (codeToCopy: string) => {
+    const sharelink = `https://app.cypherhq.io/card/referral/${codeToCopy}`;
+    Clipboard.setString(sharelink);
+    showToast(t('COPIED_TO_CLIPBOARD', 'Copied to clipboard'));
+  };
+
   /**
    * Create new referral code through backend then refresh list.
    */
@@ -227,7 +233,7 @@ export default function AllReferralCodes() {
             <CyDView
               key={`${codeItem}-${index}`}
               className={`flex-row items-center justify-between rounded-[12px] px-4 py-4 mb-3 ${
-                isDarkMode ? 'bg-n40' : 'bg-n10'
+                isDarkMode ? 'bg-n40' : 'bg-n20'
               }`}>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-semibold mb-1'>
@@ -235,11 +241,23 @@ export default function AllReferralCodes() {
                 </CyDText>
               </CyDView>
 
-              <CyDTouchView
-                onPress={() => handleCopyCode(codeItem)}
-                className='p-2'>
-                <CyDIcons name='copy' size={20} className='text-base400' />
-              </CyDTouchView>
+              <CyDView className='flex-row items-center'>
+                <CyDTouchView
+                  onPress={() => handleCopyLink(codeItem)}
+                  className='p-2'>
+                  <CyDMaterialDesignIcons
+                    name='link-variant'
+                    size={20}
+                    className='text-base400'
+                  />
+                </CyDTouchView>
+
+                <CyDTouchView
+                  onPress={() => handleCopyCode(codeItem)}
+                  className='p-2'>
+                  <CyDIcons name='copy' size={20} className='text-base400' />
+                </CyDTouchView>
+              </CyDView>
             </CyDView>
           ))}
         </CyDView>
