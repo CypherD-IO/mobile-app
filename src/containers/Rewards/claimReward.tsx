@@ -173,32 +173,32 @@ const ClaimReward: React.FC = () => {
         type: 'Bonus',
         amount: `${bonus.toFixed(2)} $CYPR`,
         color: 'green400',
-        bgColor: 'rgba(247,198,69,0.15)',
-        textColor: '#F7C645',
+        bgColor: 'rgba(107,178,0,0.15)',
+        textColor: '#6BB200',
       },
       {
         id: '2',
         type: 'From spends',
         amount: `${baseSpend.toFixed(2)} $CYPR`,
         color: 'blue-400',
-        bgColor: 'rgba(38,133,202,0.15)',
-        textColor: '#2685CA',
+        bgColor: 'rgba(247,198,69,0.15)',
+        textColor: '#F7C645',
       },
       {
         id: '3',
         type: 'Merchant Spends',
         amount: `${boostedSpend.toFixed(2)} $CYPR`,
         color: 'red-400',
-        bgColor: 'rgba(226,92,92,0.15)',
-        textColor: '#E25C5C',
+        bgColor: 'rgba(255,140,0,0.15)',
+        textColor: '#FF8C00',
       },
       {
         id: '4',
         type: 'Referrals Rewards',
         amount: `${(baseReferral + boostedReferral).toFixed(2)} $CYPR`,
-        color: 'gray-400',
-        bgColor: 'rgba(194,199,208,0.15)',
-        textColor: '#C2C7D0',
+        color: 'blue-400',
+        bgColor: 'rgba(7,73,255,0.15)',
+        textColor: '#0749FF',
       },
     ];
   }, [rewardsData]);
@@ -383,14 +383,14 @@ const ClaimReward: React.FC = () => {
               className={`p-4 mt-6 rounded-[12px] ${
                 isDarkMode ? 'bg-base40' : 'bg-n0'
               }`}>
-              <CyDText className='text-[16px] font-medium mb-4'>
+              <CyDText className='text-[16px] font-medium mb-1'>
                 Earning breakdown
               </CyDText>
 
               {earningBreakdown.map(item => (
                 <CyDView
                   key={item.id}
-                  className='flex-row justify-between items-center py-3'>
+                  className='flex-row justify-between items-center mt-3'>
                   <CyDText className='text-[14px]'>{item.type}</CyDText>
                   <CyDView
                     className={`px-1 py-[2px] rounded-[4px]`}
