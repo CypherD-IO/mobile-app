@@ -1202,6 +1202,13 @@ export function RewardsStackScreen() {
         component={Referrals}
         options={{ headerShown: false }}
       />
+      <OptionsStack.Screen
+        name={screenTitle.ALL_REFERRAL_CODES}
+        component={AllReferralCodes}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
     </RewardsStack.Navigator>
   );
 }

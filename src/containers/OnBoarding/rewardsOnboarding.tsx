@@ -874,7 +874,7 @@ export default function RewardsOnboarding() {
                   <CyDMaterialDesignIcons
                     name='chevron-left'
                     size={24}
-                    className='text-base400'
+                    className='text-base400 ml-[-6px]'
                   />
                   <CyDText className='text-base400 text-[16px] font-medium'>
                     Back

@@ -394,12 +394,12 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
                   dropdownStaticStyle,
                   { top: dropdownPos.y + dropdownPos.height + 4 },
                 ]}
-                className='bg-base200 rounded-[12px] shadow-lg'>
+                className='bg-n20 rounded-[12px] shadow-lg max-h-[220px]'>
                 <CyDScrollView nestedScrollEnabled>
-                  {timeOptions.map(option => (
+                  {timeOptions.map((option, index) => (
                     <CyDTouchView
                       key={option}
-                      className='py-3 px-4 border-b border-n60'
+                      className={`py-3 px-4 ${timeOptions.length - 1 === index ? '' : 'border-b border-n40'}`}
                       onPress={() => {
                         setTimeFilter(option);
                         setShowOptions(false);

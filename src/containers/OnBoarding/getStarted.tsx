@@ -48,7 +48,7 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
         </CyDView>
         <CyDView className='bg-black flex-1'>
           <CyDView className='px-[24px] pt-[20px]'>
-            <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
+            <CyDText className='text-[32px] font-bold text-white mt-[12px] font-nord'>
               {'Zero Fee,\nRewarding Crypto Card'}
             </CyDText>
             <CyDText className='text-[16px] font-medium mt-[20px] !text-[#666666]'>
@@ -93,7 +93,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
         </CyDView>
         <CyDView className='bg-black flex-1'>
           <CyDView className='px-[24px] pt-[20px]'>
-            <CyDText className='text-[32px] font-bold text-white mt-[38px] font-nord'>
+            <CyDText className='text-[32px] font-bold text-white mt-[12px] font-nord'>
               {'Non Custodial \nCrypto Wallet'}
             </CyDText>
             <CyDText className='text-[18px] font-medium mt-[12px] !text-[#666666]'>
