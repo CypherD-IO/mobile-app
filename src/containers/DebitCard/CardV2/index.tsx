@@ -160,13 +160,19 @@ export default function CypherCardScreen() {
     useState(false);
   const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
-  const { refreshStatus: refreshOnboardingStatus } = useOnboardingReward();
+  const { refreshStatus: refreshOnboardingStatus, hasSecuredSlot } =
+    useOnboardingReward();
 
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   // isPremium = true; // Remove this test line
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  useEffect(() => {
+    console.log('C A R D  S C R E E N  M O U N T E D');
+    return () => console.log('C A R D  S C R E E N  U N M O U N T E D');
+  }, []);
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -289,7 +295,8 @@ export default function CypherCardScreen() {
   };
 
   const fetchRecentTransactions = async () => {
-    const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10`;
+    const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10&includeRewards=true`;
+    console.log('C A R D  I D :', cardId);
     const response = await getWithAuth(txnURL);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
@@ -790,7 +797,7 @@ export default function CypherCardScreen() {
             cardDesignData={cardDesignData}
             cardBalance={cardBalance}
           />
-          <RewardProgressWidget />
+          {hasSecuredSlot && <RewardProgressWidget />}
           <MerchantSpendRewardWidget
             onViewAllPress={handleViewAllMerchants}
             onMerchantPress={handleDirectMerchantPress}

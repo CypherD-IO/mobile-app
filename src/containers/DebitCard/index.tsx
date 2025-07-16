@@ -43,11 +43,16 @@ export interface RouteProps {
 }
 
 export default function DebitCardScreen(props: RouteProps) {
+  console.log('🔍 DEBIT CARD SCREEN - COMPONENT INITIALIZED');
   const { t } = useTranslation();
 
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
+
+  // State to control when UI should render actual content. Until redirect decisions are
+  // complete we just show <Loading /> to avoid flash of interim screens like wait-list.
+  const [redirectResolved, setRedirectResolved] = useState<boolean>(false);
   const { getWalletProfile, isLegacyCardClosed } = useCardUtilities();
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -98,12 +103,24 @@ export default function DebitCardScreen(props: RouteProps) {
   };
   setCardProvider();
 
+  // Ensure we invoke navigation.reset only once per mount to avoid double navigation flashes
+  const hasRedirected = React.useRef<boolean>(false);
+
   useFocusEffect(
     useCallback(() => {
+      // Return early on the very first focus to avoid immediate redirect that causes double navigation
+      // if (!isInitialFocusHandled.current) {
+      //   isInitialFocusHandled.current = true;
+      //   setLoading(false);
+      //   return;
+      // }
       let isMounted = true;
       let isLoading = false;
 
       const checkCardApplicationStatus = async () => {
+        console.log(
+          'C H E C K I N G  C A R D  A P P L I C A T I O N  S T A T U S',
+        );
         if (isLoading || !isMounted) return;
 
         if (!isReadOnlyWallet) {
@@ -116,6 +133,24 @@ export default function DebitCardScreen(props: RouteProps) {
             if (!currentCardProfile) {
               currentCardProfile = await refreshProfile();
             }
+
+            // If provider is still undefined we cannot make decisions – mark resolved
+            if (!provider) {
+              if (isMounted) {
+                setLoading(false);
+                setRedirectResolved(true);
+              }
+              return;
+            }
+
+            console.log(
+              'C U R R E N T  C A R D  P R O F I L E :',
+              currentCardProfile,
+            );
+            console.log(
+              'P R O V I D E R :',
+              has(currentCardProfile, provider as string),
+            );
 
             if (
               currentCardProfile &&
@@ -134,45 +169,61 @@ export default function DebitCardScreen(props: RouteProps) {
                   get(currentCardProfile, [provider, 'preferredName']) !==
                     undefined);
 
-              if (isCardApplicationCompleted) {
+              console.log(
+                'I S  C A R D  A P P L I C A T I O N  C O M P L E T E D :',
+                isCardApplicationCompleted,
+              );
+
+              if (isCardApplicationCompleted && !hasRedirected.current) {
+                hasRedirected.current = true;
+                console.log('[DebitCard] redirect ➜ CARD_SCREEN');
                 props.navigation.reset({
                   index: 0,
                   routes: [
                     {
                       name: screenTitle.CARD_SCREEN,
-                      params: {
-                        cardProvider: provider,
-                      },
+                      params: { cardProvider: provider },
                     },
                   ],
                 });
               } else if (shouldCheckApplication(currentCardProfile)) {
+                console.log('🔍 DEBIT CARD SCREEN - CHECKING APPLICATION');
                 await checkApplication(provider as CardProviders);
+                // No navigation here; mark resolved so UI can render loader/next screen
+                if (isMounted && !hasRedirected.current) {
+                  setRedirectResolved(true);
+                }
               } else {
-                props.navigation.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: screenTitle.KYC_VERIFICATION_INTRO,
-                    },
-                  ],
-                });
+                if (!hasRedirected.current) {
+                  hasRedirected.current = true;
+                  console.log('[DebitCard] redirect ➜ KYC_VERIFICATION_INTRO');
+                  props.navigation.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: screenTitle.KYC_VERIFICATION_INTRO,
+                      },
+                    ],
+                  });
+                }
               }
             } else {
               const isReferralCodeApplied = await getReferralCode();
-              if (isReferralCodeApplied) {
+              if (isReferralCodeApplied && !hasRedirected.current) {
+                hasRedirected.current = true;
+                console.log('[DebitCard] redirect ➜ ENTER_REFERRAL_CODE');
                 props.navigation.reset({
                   index: 0,
                   routes: [
                     {
                       name: screenTitle.ENTER_REFERRAL_CODE,
-                      params: {
-                        referralCodeFromLink: isReferralCodeApplied,
-                      },
+                      params: { referralCodeFromLink: isReferralCodeApplied },
                     },
                   ],
                 });
-              } else {
+              } else if (!isReferralCodeApplied && !hasRedirected.current) {
+                hasRedirected.current = true;
+                console.log('[DebitCard] redirect ➜ CARD_APPLICATION_WELCOME');
                 props.navigation.reset({
                   index: 0,
                   routes: [
@@ -182,12 +233,20 @@ export default function DebitCardScreen(props: RouteProps) {
                   ],
                 });
               }
+
+              // Reached end without redirect (edge-case)
+              if (isMounted && !hasRedirected.current) {
+                setRedirectResolved(true);
+              }
             }
           } catch (error) {
             Sentry.captureException(error);
           } finally {
             if (isMounted) {
               setLoading(false);
+              if (!hasRedirected.current) {
+                setRedirectResolved(true);
+              }
               isLoading = false;
             }
           }
@@ -238,7 +297,7 @@ export default function DebitCardScreen(props: RouteProps) {
     }
   };
 
-  if (loading) {
+  if (loading || !redirectResolved) {
     return <Loading />;
   }
 

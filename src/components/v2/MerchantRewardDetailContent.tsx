@@ -39,6 +39,9 @@ interface MerchantDetailData {
   isActive: boolean;
   isVerified: boolean;
   hasActiveBribes: boolean;
+  userVoteData: {
+    hasVoted: boolean;
+  };
   metrics: {
     averageTransactionSize: number;
     totalSpend: number;
@@ -224,15 +227,19 @@ const MerchantRewardDetailContent: React.FC<
       setLoading(true);
       setError(null);
 
+      console.log(
+        '%%%%%%%%%% merchantData.candidateId : ',
+        merchantData.candidateId,
+      );
+
       const detailsResponse = await getWithAuth(
         `/v1/cypher-protocol/merchants/${merchantData.candidateId}`,
       );
 
+      console.log('@@@@@@@@ detailsResponse : ', detailsResponse);
+
       // console.log('detailsResponse', detailsResponse);
-      console.log(
-        '@@@@@@@@ userSpecificData : ',
-        detailsResponse.data.userSpecificData,
-      );
+      console.log('@@@@@@@@ userSpecificData : ', detailsResponse.data);
 
       if (!detailsResponse.isError) {
         const data: MerchantDetailsResponseDto = detailsResponse.data;
@@ -518,19 +525,39 @@ const MerchantRewardDetailContent: React.FC<
 
         {/* Merchant Logo Circle */}
         <CyDView className='w-20 h-20 bg-white rounded-full items-center justify-center mb-2 shadow-lg z-20 absolute left-1/2 -translate-x-1/2 top-[86px]'>
-          {currentMerchantData.logoUrl ? (
-            <CyDImage
-              source={{ uri: currentMerchantData.logoUrl }}
-              className='w-16 h-16 rounded-full'
-              resizeMode='contain'
-            />
-          ) : (
-            <CyDText
-              className='text-black font-bold text-center'
-              style={merchantTextStyle}>
-              {displayName}
-            </CyDText>
+          {/* BOOSTED Badge */}
+          {(userBoostStatus?.hasBoost ??
+            currentMerchantData?.userVoteData?.hasVoted ??
+            false) && (
+            <CyDView className='absolute -top-3 bg-orange-500 rounded-full px-2 py-1 self-center z-10'>
+              <CyDText className='text-white text-[10px] font-bold'>
+                BOOSTED
+              </CyDText>
+            </CyDView>
           )}
+
+          <CyDView
+            className={`w-[76px] h-[76px] bg-white rounded-full items-center justify-center ${
+              (userBoostStatus?.hasBoost ??
+              currentMerchantData?.userVoteData?.hasVoted ??
+              false)
+                ? 'border-[4px] border-orange-500'
+                : ''
+            }`}>
+            {currentMerchantData.logoUrl ? (
+              <CyDImage
+                source={{ uri: currentMerchantData.logoUrl }}
+                className='w-full h-full rounded-full'
+                resizeMode='contain'
+              />
+            ) : (
+              <CyDText
+                className='text-black font-bold text-center'
+                style={merchantTextStyle}>
+                {displayName}
+              </CyDText>
+            )}
+          </CyDView>
         </CyDView>
 
         {/* Content Container */}

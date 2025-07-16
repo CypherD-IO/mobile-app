@@ -138,6 +138,7 @@ export const screenTitle = {
   REWARDS: 'Rewards',
   CLAIM_REWARD: 'ClaimReward',
   REFERRALS_VIEW_ALL: 'ReferralsViewAll',
+  ALL_REFERRAL_CODES: 'AllReferralCodes',
   MIGRATE_FUNDS: 'migrateFunds',
   REFERRALS: 'Referrals',
   CRYPTO_WITHDRAWAL: 'cryptoWithdrawal',
