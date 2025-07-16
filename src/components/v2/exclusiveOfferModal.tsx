@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-native-modal';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ActivityIndicator } from 'react-native';
 import {
   CyDView,
   CyDText,
@@ -19,7 +19,7 @@ interface ExclusiveOfferModalProps {
   onSeeDetails?: () => void;
   initialCountdownMinutes?: number; // Default to 59 minutes
   rewardAmount?: number; // dynamic reward amount
-  onClickGotIt: () => void;
+  onClickGotIt: () => Promise<void>;
 }
 
 const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
@@ -30,6 +30,7 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
   rewardAmount = 0,
 }) => {
   const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Handle modal show analytics
   useEffect(() => {
@@ -57,14 +58,25 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
     }
   };
 
-  const handleGotIt = () => {
-    void logAnalyticsToFirebase(AnalyticEvent.EXCLUSIVE_OFFER_GOT_IT_CLICKED, {
-      offer_type: 'signup_reward',
-      reward_amount: rewardAmount,
-      currency: 'CYPR',
-    });
+  const handleGotIt = async () => {
+    try {
+      setIsLoading(true);
 
-    onClickGotIt();
+      void logAnalyticsToFirebase(
+        AnalyticEvent.EXCLUSIVE_OFFER_GOT_IT_CLICKED,
+        {
+          offer_type: 'signup_reward',
+          reward_amount: rewardAmount,
+          currency: 'CYPR',
+        },
+      );
+
+      await onClickGotIt();
+    } catch (error) {
+      console.error('Error in handleGotIt:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -140,16 +152,27 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
 
           {/* Got It Button with checkmark */}
           <CyDTouchView
-            onPress={handleGotIt}
-            className='bg-white rounded-full py-[16px] px-[24px] w-[364px] flex-row items-center justify-center'>
-            <CyDMaterialDesignIcons
-              name='check'
-              size={24}
-              className='text-black mr-[8px]'
-            />
-            <CyDText className='text-black text-[18px] font-bold'>
-              Got it
-            </CyDText>
+            onPress={() => {
+              if (!isLoading) {
+                void handleGotIt();
+              }
+            }}
+            className={`bg-white rounded-full py-[16px] px-[24px] w-[364px] flex-row items-center justify-center `}
+            disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator size='small' color='#000000' />
+            ) : (
+              <>
+                <CyDMaterialDesignIcons
+                  name='check'
+                  size={24}
+                  className='text-black mr-[8px]'
+                />
+                <CyDText className='text-black text-[18px] font-bold'>
+                  {'Got it'}
+                </CyDText>
+              </>
+            )}
           </CyDTouchView>
         </CyDView>
       </CyDView>

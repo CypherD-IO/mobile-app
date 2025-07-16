@@ -593,7 +593,7 @@ export default function RewardsOnboarding() {
                   <CyDMaterialDesignIcons
                     name='chevron-left'
                     size={24}
-                    className='text-base400'
+                    className='text-base400 ml-[-6px]'
                   />
                   <CyDText className='text-base400 text-[16px] font-medium'>
                     Back
@@ -613,10 +613,10 @@ export default function RewardsOnboarding() {
                 <CyDText className='text-n200 text-[12px] font-medium mb-[6px]'>
                   Email
                 </CyDText>
-                <CyDView className='bg-base40 rounded-[8px] mb-[12px]'>
+                <CyDView className='bg-n20 rounded-[8px] mb-[12px]'>
                   <CyDTextInput
-                    className='text-primaryText bg-base40 text-[18px] py-[16px] px-[16px] rounded-[8px]'
-                    placeholder='Tonystark@dmail.com'
+                    className='text-primaryText bg-n20 text-[18px] py-[16px] px-[16px] rounded-[8px]'
+                    placeholder='johndoe@gmail.com'
                     placeholderTextColor='#8993A4'
                     value={email}
                     onChangeText={setEmail}
