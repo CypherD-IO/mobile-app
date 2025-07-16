@@ -91,6 +91,7 @@ export const themes: Record<
     '--color-blue100': '#519DD5',
     '--color-blue200': '#2685CA',
     '--color-blue300': '#0061A7',
+    '--color-orange500': '#FF8C00',
   }),
   [Theme.DARK]: vars({
     '--color-n0': '#0D0D0D',
@@ -156,6 +157,7 @@ export const themes: Record<
     '--color-blue100': '#66A9DA',
     '--color-blue200': '#3193D8',
     '--color-blue300': '#0070C0',
+    '--color-orange500': '#FF8C00',
   }),
 };
 

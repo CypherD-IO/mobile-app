@@ -175,7 +175,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
           <CyDView
             className={`w-16 h-16 bg-white rounded-full items-center justify-center ${
               hasUserVoted
-                ? 'border-[3px] border-orange-500 '
+                ? 'border-[3px] border-orange500 '
                 : isDarkMode
                   ? ''
                   : 'border-[1px] border-n40'
@@ -201,7 +201,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
           {/* Multiplier Badge */}
           <CyDView
             className={`absolute -top-3 rounded-full px-2 py-1 self-center ${
-              hasUserVoted ? 'bg-orange-500' : 'bg-green400'
+              hasUserVoted ? 'bg-orange500' : 'bg-green400'
             }`}>
             <CyDText className='text-white text-[12px] font-bold'>
               {merchant.historicalMultiplier.current.toFixed(1)}X

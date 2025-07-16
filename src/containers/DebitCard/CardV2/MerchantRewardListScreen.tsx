@@ -359,7 +359,7 @@ const MerchantRewardListScreen: React.FC = () => {
                     <CyDView
                       className={`w-12 h-12 bg-white rounded-full items-center justify-center ${
                         item.userVoteData?.hasVoted
-                          ? 'border-orange-500 border-[3px]'
+                          ? 'border-orange500 border-[3px]'
                           : isDarkMode
                             ? ''
                             : 'border-[1px] border-n40'
@@ -400,7 +400,7 @@ const MerchantRewardListScreen: React.FC = () => {
                   <CyDView
                     className={`rounded-full px-3 py-1 mr-2 ${
                       item.userVoteData?.hasVoted
-                        ? 'bg-orange-500'
+                        ? 'bg-orange500'
                         : 'bg-green400'
                     }`}>
                     <CyDText className='text-white text-[12px] font-bold'>

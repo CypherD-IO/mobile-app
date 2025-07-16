@@ -247,15 +247,9 @@ export default function Referrals() {
       return;
     }
 
-    const shareMessage = `Join me on Cypher Wallet and use my referral code: ${codeToShare}. We both earn Cypher tokens when you make your first purchase!`;
-
-    Share.share({
-      message: shareMessage,
-      title: 'Join Cypher Wallet',
-    }).catch((error: any) => {
-      console.error('Error sharing invite link:', error);
-      showToast(t('Failed to share invite link'));
-    });
+    const sharelink = `https://app.cypherhq.io/card/referral/${codeToShare}`;
+    Clipboard.setString(sharelink);
+    showToast(t('Referral code copied to clipboard!'));
   };
 
   /**

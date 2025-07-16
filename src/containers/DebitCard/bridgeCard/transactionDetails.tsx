@@ -1754,7 +1754,7 @@ export default function TransactionDetails() {
                   const isBoosted = boostedRewards > 0;
 
                   // Determine banner styles & text
-                  const bannerBg = isBoosted ? 'bg-orange-500' : 'bg-green400';
+                  const bannerBg = isBoosted ? 'bg-orange500' : 'bg-green400';
                   const bannerText = isBoosted
                     ? `You've earned boosted rewards from \n ${capitalize(
                         transaction?.metadata?.merchant?.merchantName ?? '',
