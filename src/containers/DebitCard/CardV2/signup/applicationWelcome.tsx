@@ -176,15 +176,10 @@ const ApplicationWelcome = (): JSX.Element => {
     });
   };
 
-  const handleExclusiveOfferClose = () => {
+  const handleExclusiveOfferClose = async () => {
     // Ensure backend updates before closing the modal, without breaking the expected void return type
-    createTracking()
-      .catch(error => {
-        console.log('createTracking error', error);
-      })
-      .finally(() => {
-        setShowExclusiveOfferModal(false);
-      });
+    await createTracking();
+    setShowExclusiveOfferModal(false);
   };
 
   return (
