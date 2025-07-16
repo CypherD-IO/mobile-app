@@ -63,9 +63,9 @@ export default function useConnectionManager() {
       await removeCredentialsFromKeychain();
     }
     await clearAllData();
-    hdWalletContext.dispatch({ type: 'RESET_WALLET' });
-    activityContext.dispatch({ type: ActivityReducerAction.RESET });
-    globalContext.globalDispatch({
+    await hdWalletContext.dispatch({ type: 'RESET_WALLET' });
+    await activityContext.dispatch({ type: ActivityReducerAction.RESET });
+    await globalContext.globalDispatch({
       type: GlobalContextType.RESET_GLOBAL_STATE,
     });
     return true;

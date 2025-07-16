@@ -50,8 +50,8 @@ interface UseInitializerReturn {
   exitIfJailBroken: () => Promise<void>;
   fetchRPCEndpointsFromServer: (globalDispatch: any) => Promise<any>;
   loadActivitiesFromAsyncStorage: () => Promise<void>;
-  setPinAuthenticationStateValue: () => Promise<boolean>;
-  setPinPresentStateValue: () => Promise<PinPresentStates>;
+  isDeviceBiometricEnabled: () => Promise<boolean>;
+  pinAlreadySetStatus: () => Promise<PinPresentStates>;
   loadExistingWallet: (dispatch: any, state?: any) => Promise<void>;
   getHosts: (
     setForcedUpdate: React.Dispatch<React.SetStateAction<boolean>>,
@@ -77,16 +77,16 @@ export const InitializeAppProvider = ({
     exitIfJailBroken,
     fetchRPCEndpointsFromServer,
     loadActivitiesFromAsyncStorage,
-    setPinAuthenticationStateValue,
-    setPinPresentStateValue,
+    pinAlreadySetStatus,
+    isDeviceBiometricEnabled,
     loadExistingWallet,
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
   } = useInitializer() as UseInitializerReturn;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const [pinAuthentication, setPinAuthentication] = useState(false);
-  const [pinPresent, setPinPresent] = useState(PinPresentStates.NOTSET);
+  const [authenticationEnabled, setAuthenticationEnabled] = useState(false);
+  const [pinSetStatus, setPinSetStatus] = useState(PinPresentStates.NOTSET);
   const [showDefaultAuthRemoveModal, setShowDefaultAuthRemoveModal] =
     useState<boolean>(false);
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
@@ -101,12 +101,6 @@ export const InitializeAppProvider = ({
     undefined,
   );
   const solanaAddress = get(hdWallet, 'state.wallet.solana.address', undefined);
-  const ethCurrentIndex = get(
-    hdWallet,
-    'state.wallet.ethereum.currentIndex',
-    -1,
-  );
-  const solCurrentIndex = get(hdWallet, 'state.wallet.solana.currentIndex', -1);
   const address =
     ethereumAddress && ethereumAddress.trim().length > 0
       ? ethereumAddress
@@ -120,6 +114,9 @@ export const InitializeAppProvider = ({
   const { referrerData } = useInstallReferrer();
   const [discordToken, setDiscordToken] = useState<string>('');
   usePortfolioRefresh();
+
+  // State to track if wallet data is still loading
+  const [walletLoading, setWalletLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -206,35 +203,6 @@ export const InitializeAppProvider = ({
   }, [referrerData, isAuthenticated, ethereumAddress]);
 
   useEffect(() => {
-    const setPinAuthenticationState = async () => {
-      const pinPresentStateValue = await setPinPresentStateValue();
-      const pinAuthenticationStateValue =
-        await setPinAuthenticationStateValue();
-
-      setPinPresent(pinPresentStateValue);
-      setPinAuthentication(pinAuthenticationStateValue);
-    };
-    void setPinAuthenticationState();
-  }, [solCurrentIndex, ethCurrentIndex]);
-
-  useEffect(() => {
-    if (address) {
-      void getHosts(
-        setForcedUpdate,
-        setTamperedSignMessageModal,
-        setUpdateModal,
-        setShowDefaultAuthRemoveModal,
-      );
-    }
-  }, [address]);
-
-  useEffect(() => {
-    if (!ethereumAddress && !solanaAddress && pinAuthentication) {
-      void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
-    }
-  }, [pinAuthentication]);
-
-  useEffect(() => {
     const discordTokenFromUrl = initialUrl?.split('discordToken=')[1];
     if (isAuthenticated && ethereumAddress && discordTokenFromUrl) {
       setDiscordToken(discordTokenFromUrl);
@@ -247,7 +215,7 @@ export const InitializeAppProvider = ({
   useEffect(() => {
     if (referrerData) {
       // Log attribution data to Firebase Analytics
-      if (analytics) {
+      if (analytics()) {
         // For Android: Full attribution data available
         if (Platform.OS === 'android') {
           const installAttribution = {
@@ -302,51 +270,77 @@ export const InitializeAppProvider = ({
     }
   }, [referrerData, analytics]);
 
+  useEffect(() => {
+    if (address) {
+      void getHosts(
+        setForcedUpdate,
+        setTamperedSignMessageModal,
+        setUpdateModal,
+        setShowDefaultAuthRemoveModal,
+      );
+    }
+  }, [address]);
+
+  useEffect(() => {
+    const setPinAuthenticationState = async () => {
+      const isDeviceBiometricEnabledValue = await isDeviceBiometricEnabled();
+      setAuthenticationEnabled(isDeviceBiometricEnabledValue);
+
+      const pinAlreadySetStatusValue = await pinAlreadySetStatus();
+      setPinSetStatus(pinAlreadySetStatusValue);
+    };
+    if (!ethereumAddress && !solanaAddress) {
+      void setPinAuthenticationState();
+    }
+  }, [ethereumAddress, solanaAddress]);
+
+  useEffect(() => {
+    if (authenticationEnabled) {
+      void loadExistingWallet(hdWallet.dispatch, hdWallet.state).finally(() => {
+        setWalletLoading(false);
+      });
+    }
+  }, [authenticationEnabled]);
+
   const RenderNavStack = useCallback(() => {
-    if (ethCurrentIndex === -1 && solCurrentIndex === -1) {
-      if (pinPresent === PinPresentStates.NOTSET) {
-        if (pinAuthentication) {
-          return <OnBoardingStack />;
-        }
-        return <Loading />;
-      } else if (pinPresent === PinPresentStates.FALSE) {
-        if (pinAuthentication) {
-          return <OnBoardingStack />;
-        } else {
-          return (
-            <PinAuthRoute
-              setPinAuthentication={setPinAuthentication}
-              initialScreen={screenTitle.SET_PIN}
-            />
-          );
-        }
-      } else {
-        return (
-          <PinAuthRoute
-            setPinAuthentication={setPinAuthentication}
-            initialScreen={screenTitle.PIN_VALIDATION}
-          />
-        );
-      }
-    } else {
-      if (!ethereumAddress && !solanaAddress) {
-        return <OnBoardingStack />;
-      } else {
-        if (!isReadOnlyWallet && !isAuthenticated) {
+    if (walletLoading && authenticationEnabled) {
+      return <Loading />;
+    }
+
+    if (authenticationEnabled) {
+      if (ethereumAddress ?? solanaAddress) {
+        if (!isAuthenticated) {
           return <Loading />;
         }
         return <>{children}</>;
+      } else {
+        return <OnBoardingStack />;
+      }
+    } else {
+      if (pinSetStatus === PinPresentStates.NOTSET) {
+        return <Loading />;
+      } else if (pinSetStatus === PinPresentStates.TRUE) {
+        return (
+          <PinAuthRoute
+            setPinAuthentication={setAuthenticationEnabled}
+            initialScreen={screenTitle.PIN_VALIDATION}
+          />
+        );
+      } else if (pinSetStatus === PinPresentStates.FALSE) {
+        return (
+          <PinAuthRoute
+            setPinAuthentication={setAuthenticationEnabled}
+            initialScreen={screenTitle.SET_PIN}
+          />
+        );
       }
     }
   }, [
-    ethCurrentIndex,
-    solCurrentIndex,
+    walletLoading,
     ethereumAddress,
     solanaAddress,
-    pinAuthentication,
-    pinPresent,
-    hdWallet.state.reset,
-    isReadOnlyWallet,
+    authenticationEnabled,
+    pinSetStatus,
     isAuthenticated,
   ]);
 
