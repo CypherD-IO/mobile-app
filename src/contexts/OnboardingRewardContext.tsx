@@ -61,6 +61,13 @@ interface OnboardingRewardState {
 interface OnboardingRewardContextProps extends OnboardingRewardState {
   refreshStatus: () => Promise<void>;
   createTracking: () => Promise<void>;
+  /**
+   * Cancels the internal one-second countdown interval so that downstream
+   * consumers no longer receive super-frequent context updates. Typical use-
+   * case is when the user has already initiated KYC and we no longer need to
+   * display the deadline timer.
+   */
+  stopTimer: () => void;
 }
 
 const DEFAULT_STATE: OnboardingRewardState = {
@@ -85,6 +92,7 @@ export const OnboardingRewardProvider: React.FC<{
 }> = ({ children }) => {
   const { getWithAuth, postWithAuth } = useAxios();
   const [state, setState] = useState<OnboardingRewardState>(DEFAULT_STATE);
+  const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Compute milliseconds remaining from deadline ISO string (minus 30-sec buffer)
   const computeRemaining = useCallback((deadlineIso: string | null): number => {
@@ -159,13 +167,29 @@ export const OnboardingRewardProvider: React.FC<{
 
   // Update remainingMs every second (if deadline exists)
   useEffect(() => {
-    const interval = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setState(prev => {
         if (prev.remainingMs <= 0) return prev;
         return { ...prev, remainingMs: Math.max(prev.remainingMs - 1000, 0) };
       });
     }, 1000);
-    return () => clearInterval(interval);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  /**
+   * Public helper to cancel the countdown interval. This is useful once the
+   * user starts the KYC process and the deadline timer no longer needs to run.
+   */
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   }, []);
 
   // Refresh when app comes back to foreground
@@ -183,6 +207,7 @@ export const OnboardingRewardProvider: React.FC<{
     ...state,
     refreshStatus,
     createTracking,
+    stopTimer,
   };
 
   return (

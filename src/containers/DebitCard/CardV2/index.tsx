@@ -1007,7 +1007,7 @@ export default function CypherCardScreen() {
                 cardDesignData={cardDesignData}
                 cardBalance={cardBalance}
               />
-              <RewardProgressWidget />
+              {hasSecuredSlot && <RewardProgressWidget />}
               <MerchantSpendRewardWidget
                 onViewAllPress={handleViewAllMerchants}
                 onMerchantPress={handleDirectMerchantPress}
@@ -1026,21 +1026,21 @@ export default function CypherCardScreen() {
                         );
                       })}
                       <CyDTouchView
-                        className='border-[1.2px] border-n20 flex flex-row justify-center items-center py-[16px] rounded-[16px]'
+                        className='bg-n0 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
                         onPress={() =>
                           navigation.navigate(
                             screenTitle.CARD_TRANSACTIONS_SCREEN,
                             {
                               navigation,
-                              cardProvider: CardProviders.PAYCADDY,
+                              cardProvider,
                             },
                           )
                         }>
                         <CyDText className='text-[14px] font-bold'>
-                          {t<string>('LEGACY_CARD_TRANSACTIONS')}
+                          {t<string>('VIEW_ALL_TRANSACTIONS')}
                         </CyDText>
                         <CyDMaterialDesignIcons
-                          name='arrow-right-thin'
+                          name='chevron-right'
                           size={24}
                           className='text-base400'
                         />
@@ -1052,95 +1052,6 @@ export default function CypherCardScreen() {
                         source={AppImages.NO_TRANSACTIONS_YET}
                         className='h-[150px] w-[150px]'
                         resizeMode='contain'
-                      />
-                    </CyDView>
-                  )}
-                  {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
-                    <CyDView className='mx-[16px] bg-p10 p-6 rounded-xl'>
-                      <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
-                        <CyDText className='font-extrabold text-[20px]'>
-                          {'Cypher'}
-                        </CyDText>
-                        <GradientText
-                          textElement={
-                            <CyDText className='font-extrabold text-[20px]'>
-                              {'Premium'}
-                            </CyDText>
-                          }
-                          gradientColors={['#FA9703', '#F89408', '#F6510A']}
-                        />
-                      </CyDView>
-                      <CyDView className='mt-[16px]'>
-                        {spendStats.amount > 20 ? (
-                          <CyDView>
-                            <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
-                              <CyDText className='font-medium text-[14px] text-base200'>
-                                {'You could have saved'}
-                              </CyDText>
-
-                              <LinearGradient
-                                colors={['#FA9703', '#F7510A', '#FA9703']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                locations={[0, 0.5, 1]}
-                                style={style.gradientStyle}>
-                                <CyDText className='font-semibold text-[14px] text-white'>
-                                  {`$${spendStats.amount}`}
-                                </CyDText>
-                              </LinearGradient>
-                              <CyDText className='font-medium text-[14px] text-base200 text-center'>
-                                {'in'}
-                              </CyDText>
-                            </CyDView>
-                            <CyDText className='font-medium text-[14px] text-base200 text-center'>
-                              {`last ${spendStats.timePeriod} and also get a free \nMetal card`}
-                            </CyDText>
-                          </CyDView>
-                        ) : (
-                          <CyDView className='self-center'>
-                            <CyDText className='font-medium text-[14px] text-center text-base200'>
-                              {'Save more on each transaction and'}
-                            </CyDText>
-                            <CyDText className='text-[14px] font-medium text-center text-base200'>
-                              {'get a free premium metal card'}
-                            </CyDText>
-                          </CyDView>
-                        )}
-                      </CyDView>
-                      <CyDView className='mt-[16px] flex flex-row justify-between items-center mx-[16px]'>
-                        <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
-                          <CyDMaterialDesignIcons
-                            name='check-bold'
-                            size={18}
-                            className='text-base400'
-                          />
-                          <CyDText className='font-semibold text-[12px]'>
-                            {'Zero Forex Markup'}
-                          </CyDText>
-                        </CyDView>
-                        <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
-                          <CyDMaterialDesignIcons
-                            name='check-bold'
-                            size={18}
-                            className='text-base400'
-                          />
-                          <CyDText className='font-semibold text-[12px]'>
-                            {'Zero USDC Load Fee'}
-                          </CyDText>
-                        </CyDView>
-                      </CyDView>
-
-                      <Button
-                        title={'Explore Premium'}
-                        type={ButtonType.DARK}
-                        onPress={() => {
-                          setPlanChangeModalVisible(true);
-                          void logAnalyticsToFirebase(
-                            AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,
-                          );
-                        }}
-                        style='h-[42px] py-[8px] px-[12px] rounded-[4px] mt-[16px] bg-black'
-                        titleStyle='text-[14px] text-white font-semibold'
                       />
                     </CyDView>
                   )}

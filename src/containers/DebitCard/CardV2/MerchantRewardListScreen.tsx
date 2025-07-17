@@ -313,10 +313,10 @@ const MerchantRewardListScreen: React.FC = () => {
             autoCorrect={false}
             onChangeText={setSearchText}
             placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
-            placeholder='Search Merchants'
+            placeholder='Search Merchants or Categories'
           />
           {/* Filters Button */}
-          <CyDTouchView
+          {/* <CyDTouchView
             className={`flex-row items-center ml-3 px-3 py-2 rounded-[8px] bg-base40`}
             onPress={handleFilterPress}>
             <CyDMaterialDesignIcons
@@ -333,7 +333,7 @@ const MerchantRewardListScreen: React.FC = () => {
               size={16}
               className={`ml-1 ${isDarkMode ? 'text-white' : 'text-black'}`}
             />
-          </CyDTouchView>
+          </CyDTouchView> */}
         </CyDView>
       </CyDView>
 

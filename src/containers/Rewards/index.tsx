@@ -521,9 +521,11 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 
       {/* Reward Transaction Section */}
       <CyDView className='flex-1 mb-[40px]'>
-        <CyDText className='text-[18px] font-bold py-4 px-4 bg-n20'>
-          Reward Transaction
-        </CyDText>
+        {transactionData.length > 0 && (
+          <CyDText className='text-[18px] font-bold py-4 px-4 bg-n20'>
+            Reward Transaction
+          </CyDText>
+        )}
 
         {transactionData.map(dayData => (
           <CyDView key={dayData.id}>
