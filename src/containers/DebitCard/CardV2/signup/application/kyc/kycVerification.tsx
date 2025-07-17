@@ -49,7 +49,7 @@ const KYCVerification = () => {
   );
   const [isRainDeclined, setIsRainDeclined] = useState(false);
 
-  const { refreshStatus, hasSecuredSlot, totalRewardsPossible } =
+  const { refreshStatus, hasSecuredSlot, totalRewardsPossible, stopTimer } =
     useOnboardingReward();
 
   const checkKYCStatus = async () => {
@@ -103,7 +103,14 @@ const KYCVerification = () => {
         navigation.navigate(screenTitle.NAME_ON_CARD);
       }
     } else if (kycStatus === CardApplicationStatus.KYC_INITIATED) {
+      // User is starting the KYC flow – cancel the onboarding reward countdown
+      // timer to avoid unnecessary renders while the KYC web-view is active.
+      stopTimer();
+
+      // Force-refresh onboarding status so that backend progress is pulled
+      // before the user exits the flow.
       void refreshStatus();
+
       navigation.navigate(screenTitle.KYC_WEBVIEW);
     }
   };

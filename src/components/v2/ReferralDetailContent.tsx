@@ -197,7 +197,7 @@ const ReferralDetailContent: React.FC<Props> = ({
                   </CyDText>
                 )}
 
-                <CyDView className='flex-row items-center'>
+                {/* <CyDView className='flex-row items-center'>
                   <CyDText className='text-n200 text-[14px] mr-2'>
                     {t('ANY_REFERRAL_SPEND', 'Any referral spend at')}{' '}
                     {merchant.brand}, {t('GETS_YOU', 'gets you')}
@@ -213,9 +213,9 @@ const ReferralDetailContent: React.FC<Props> = ({
                     />
                   </CyDView>
                   <CyDText className='text-[14px] font-medium'>
-                    {/* {(merchant.historicalMultiplier?.current ?? 1).toFixed(1)}X */}
+                    {(merchant.historicalMultiplier?.current ?? 1).toFixed(1)}X
                   </CyDText>
-                </CyDView>
+                </CyDView> */}
               </CyDView>
             ))}
           </CyDView>
