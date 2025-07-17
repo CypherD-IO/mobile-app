@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/native';
 import { useFormik } from 'formik';
 import { countBy } from 'lodash';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import * as yup from 'yup';
@@ -18,7 +18,6 @@ import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import {
   CyDIcons,
-  CyDImage,
   CyDKeyboardAwareScrollView,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
@@ -26,7 +25,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import { CyDIconsPack } from '../../../customFonts';
 
 export default function SetTelegramPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -58,6 +56,11 @@ export default function SetTelegramPin() {
 
   const verifyWithOTP = () => {
     navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
+      currentCardProvider: '',
+      card: {
+        cardProvider: '',
+        cardId: '',
+      },
       onSuccess: (data: any, cardProvider: CardProviders) => {
         void onPinSet();
       },
