@@ -315,9 +315,6 @@ const BannerCarouselItem = ({
           screen: screenTitle.ACTIVITIES,
         });
       }, 250);
-      navigation.navigate(screenTitle.OPTIONS, {
-        screen: screenTitle.ACTIVITIES,
-      });
     } else {
       // Use type assertion for BannerRecord when accessing BannerRecord-specific fields
       const bannerItem = item as BannerRecord;
