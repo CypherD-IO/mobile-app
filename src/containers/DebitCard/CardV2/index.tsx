@@ -744,51 +744,56 @@ export default function CypherCardScreen() {
         <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
           {cardId === CARD_IDS.HIDDEN_CARD && (
             <CyDView className='mx-[16px]'>
-              <LinearGradient
+              {/* <LinearGradient
                 colors={['#4575F7', '#3155B4']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
-                style={style.loadCardGradientContainer}>
-                <CyDView>
-                  <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                    <CyDFastImage
-                      source={AppImages.FALLING_COINS_3D}
-                      className='h-[46px] w-[32px]'
-                      resizeMode='contain'
-                    />
-                    <CyDView className='flex flex-col flex-1'>
-                      <CyDText className='text-[20px] font-[500] mb-[4px] text-white'>
-                        {t<string>('LOAD_YOUR_CARD')}
-                      </CyDText>
-                      <CyDText className='text-[14px] font-[400] mb-[16px] text-white'>
-                        {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-                  <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg mb-3'>
-                    {/* Left side - Icon (using the green offer code tag image) */}
-                    <CyDImage
-                      source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
-                      className='w-[28px] h-[28px] mr-2'
-                      resizeMode='contain'
-                    />
-
-                    {/* Offer text and timer */}
-                    <CyDView className='flex flex-1 flex-row items-center justify-between'>
-                      <CyDText className='text-white leading-tight'>
-                        Get 100 $CYPR as sign up bonus
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-                  <CyDTouchView
-                    className='bg-[#D4E7F4] rounded-full px-[10px] py-[15px] items-center justify-center'
-                    onPress={onPressFundCard}>
-                    <CyDText className='text-[14px] font-bold text-black'>
-                      {'Load Card'}
+                style={style.loadCardGradientContainer}> */}
+              <CyDView
+                className={`rounded-[12px] p-[16px] ${
+                  isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
+                }`}>
+                <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                  <CyDFastImage
+                    source={AppImages.FALLING_COINS_3D}
+                    className='h-[46px] w-[32px]'
+                    resizeMode='contain'
+                  />
+                  <CyDView className='flex flex-col flex-1'>
+                    <CyDText className='text-[20px] font-[500] mb-[4px]'>
+                      {t<string>('LOAD_YOUR_CARD')}
                     </CyDText>
-                  </CyDTouchView>
+                    <CyDText className='text-[14px] font-[400] mb-[16px]'>
+                      {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
+                    </CyDText>
+                  </CyDView>
                 </CyDView>
-              </LinearGradient>
+                <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 mb-3'>
+                  {/* Left side - Icon (using the green offer code tag image) */}
+                  <CyDImage
+                    source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
+                    className='w-[28px] h-[28px] mr-2'
+                    resizeMode='contain'
+                  />
+
+                  {/* Offer text and timer */}
+                  <CyDView className='flex flex-1 flex-row items-center justify-between'>
+                    <CyDText className='text-white leading-tight'>
+                      Get 100 $CYPR as sign up bonus
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <CyDTouchView
+                  className={`rounded-full px-[10px] py-[15px] items-center justify-center ${
+                    isDarkMode ? 'bg-base200' : 'bg-n40'
+                  }`}
+                  onPress={onPressFundCard}>
+                  <CyDText className='text-[14px] font-bold'>
+                    {'Load Card'}
+                  </CyDText>
+                </CyDTouchView>
+              </CyDView>
+              {/* </LinearGradient> */}
             </CyDView>
           )}
           <GetPhysicalCardComponent

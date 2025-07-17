@@ -357,10 +357,10 @@ export default function Referrals() {
 
         {/* Title and Description */}
         <CyDView className='px-4 pb-6'>
-          <CyDText className='text-[20px] font-semibold tracking-[-1px] text-center mb-2'>
+          <CyDText className='text-[20px] font-semibold text-center mb-2'>
             Earn Cypher tokens on referrals
           </CyDText>
-          <CyDText className='text-n200 text-center tracking-[-0.8px]'>
+          <CyDText className='text-n200 text-center'>
             when your invitee signs up and makes a purchase{'\n'}
             at your favorite merchant.
           </CyDText>
@@ -383,15 +383,21 @@ export default function Referrals() {
             </CyDTouchView>
           </CyDView>
           {/* View All Referral Codes CTA */}
-          {referralCodes.length > 1 && (
+          {
             <CyDTouchView
-              onPress={handleViewAllReferralCodes}
+              onPress={
+                referralCodes.length > 1
+                  ? handleViewAllReferralCodes
+                  : handleAddReferralCode
+              }
               className='items-center mt-2'>
               <CyDText className='text-blue-400 text-[14px] underline font-medium'>
-                {'Other Invite Codes'}
+                {referralCodes.length > 1
+                  ? 'Other Invite Codes'
+                  : 'Add Another Code'}
               </CyDText>
             </CyDTouchView>
-          )}
+          }
         </CyDView>
 
         {/* Action Buttons */}
@@ -468,34 +474,34 @@ export default function Referrals() {
               </CyDText>
 
               {/* Earnings Display */}
-              <CyDView className='flex-col gap-x-[12px]'>
-                <CyDView className='flex-row items-center gap-x-2'>
+              <CyDView className='flex-row gap-x-[8px]'>
+                <CyDView className='flex-col gap-y-[4px]'>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
                     You&apos;ll Earn:
                   </CyDText>
-                  <CyDView className='flex-row items-center'>
-                    <CyDImage
-                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                      className='w-6 h-6 mr-2'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-white font-semibold'>
-                      {referralData.userEarnings.toFixed(2)}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-
-                <CyDView className='flex-row items-center gap-x-2'>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
                     They Earn:
                   </CyDText>
+                </CyDView>
+
+                <CyDView className='flex-col gap-y-[4px]'>
                   <CyDView className='flex-row items-center'>
                     <CyDImage
                       source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                      className='w-6 h-6 mr-2'
+                      className='w-6 h-6 mr-1'
                       resizeMode='contain'
                     />
-                    <CyDText className='text-white font-semibold'>
+                    <CyDText className='font-semibold'>
+                      {referralData.userEarnings.toFixed(2)}
+                    </CyDText>
+                  </CyDView>
+                  <CyDView className='flex-row items-center'>
+                    <CyDImage
+                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                      className='w-6 h-6 mr-1'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='font-semibold'>
                       {referralData.friendEarnings.toFixed(2)}
                     </CyDText>
                   </CyDView>
@@ -522,7 +528,7 @@ export default function Referrals() {
                 Earn Even More When They Follow You
               </CyDText>
               <CyDText className='text-n200 text-[14px] mb-4'>
-                If your friend shops at the same place you &quot;Boosted{'\n'}a
+                If your friend shops at the same place you &quot;Boosted a
                 Merchant&quot; you both unlock bonus rewards.
               </CyDText>
 
@@ -531,34 +537,34 @@ export default function Referrals() {
               </CyDText>
 
               {/* Additional Earnings Display */}
-              <CyDView className='flex-col gap-x-[12px]'>
-                <CyDView className='flex-row items-center gap-x-2'>
+              <CyDView className='flex-row gap-x-[8px]'>
+                <CyDView className='flex-col gap-y-[4px]'>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
                     You&apos;ll Earn:
                   </CyDText>
-                  <CyDView className='flex-row items-center'>
-                    <CyDImage
-                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                      className='w-6 h-6 mr-2'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-white font-semibold'>
-                      {referralData.userEarnings.toFixed(2)}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-
-                <CyDView className='flex-row items-center gap-x-2'>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
                     They Earn:
                   </CyDText>
+                </CyDView>
+
+                <CyDView className='flex-col gap-y-[4px]'>
                   <CyDView className='flex-row items-center'>
                     <CyDImage
                       source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                      className='w-6 h-6 mr-2'
+                      className='w-6 h-6 mr-1'
                       resizeMode='contain'
                     />
-                    <CyDText className='text-white font-semibold'>
+                    <CyDText className='font-semibold'>
+                      {referralData.userEarnings.toFixed(2)}
+                    </CyDText>
+                  </CyDView>
+                  <CyDView className='flex-row items-center'>
+                    <CyDImage
+                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                      className='w-6 h-6 mr-1'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='font-semibold'>
                       {referralData.friendEarnings.toFixed(2)}
                     </CyDText>
                   </CyDView>
@@ -569,13 +575,13 @@ export default function Referrals() {
         </CyDView>
 
         {/* Footer Link */}
-        <CyDView className='mx-4 mb-8'>
+        {/* <CyDView className='mx-4 mb-8'>
           <CyDTouchView onPress={handleAddReferralCode}>
             <CyDText className='text-blue-400 text-center underline'>
               I want to add my referral code
             </CyDText>
           </CyDTouchView>
-        </CyDView>
+        </CyDView> */}
       </CyDScrollView>
 
       {/* New Referral Code Modal */}

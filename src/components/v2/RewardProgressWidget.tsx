@@ -58,7 +58,7 @@ const BottomInfoSection = ({ task }: { task: any }) => {
       )}
       {task.id === '3' && (
         <CyDView className='w-full'>
-          <CyDView className='flex-row items-center mb-1'>
+          {/* <CyDView className='flex-row items-center mb-1'>
             <CyDText className='text-n200 text-[12px] font-medium'>
               {'Spend '}
             </CyDText>
@@ -66,12 +66,12 @@ const BottomInfoSection = ({ task }: { task: any }) => {
             <CyDText className='text-n200 text-[12px] font-medium'>
               {' more to claim'}
             </CyDText>
-          </CyDView>
+          </CyDView> */}
 
           {/* Animated Progress Bar */}
-          <CyDView className='w-full mb-1'>
-            {/* Progress Bar Container */}
-            <CyDView className='w-full h-[10px] bg-n40 rounded-full overflow-hidden mb-1'>
+          {/* <CyDView className='w-full mb-1'> */}
+          {/* Progress Bar Container */}
+          {/* <CyDView className='w-full h-[10px] bg-n40 rounded-full overflow-hidden mb-1'>
               <Animated.View
                 style={{
                   height: '100%',
@@ -83,18 +83,18 @@ const BottomInfoSection = ({ task }: { task: any }) => {
                   }),
                 }}
               />
-            </CyDView>
+            </CyDView> */}
 
-            <CyDView className='flex-row justify-between items-center mb-1'>
+          {/* <CyDView className='flex-row justify-between items-center mb-1'>
               <CyDText className='text-n200 text-[10px] font-medium'>
                 $152 spent
               </CyDText>
-            </CyDView>
+            </CyDView> */}
 
-            <CyDText className='text-n200 text-[14px]'>
-              {task.description}
-            </CyDText>
-          </CyDView>
+          <CyDText className='text-n200 text-[14px]'>
+            {task.description}
+          </CyDText>
+          {/* </CyDView> */}
         </CyDView>
       )}
       {task.id === '4' && (
@@ -192,15 +192,15 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       completed: Boolean(milestone('firstLoad').earned),
       reward: milestone('firstLoad').amount ?? 0,
       status: milestone('firstLoad').earned ? 'completed' : 'pending',
-      description: `Load your card with a minimum of $200 and you'll get ${milestone('firstLoad').amount} $CYPR as bonus reward`,
+      description: `Load your card to avail ${milestone('firstLoad').amount} $CYPR as bonus reward`,
     },
     {
       id: '3',
-      title: 'Spend $200 in 15 days',
+      title: 'Make your first purchase',
       completed: Boolean(milestone('firstSpend').earned),
       reward: milestone('firstSpend').amount ?? 0,
       status: milestone('firstSpend').earned ? 'completed' : 'pending',
-      description: `Spend $200 in 15 days with any merchant and you'll get ${milestone('firstSpend').amount} $CYPR as bonus reward`,
+      description: `Make your first purchase with any merchant and you'll get ${milestone('firstSpend').amount} $CYPR as bonus reward`,
     },
     // {
     //   id: '4',

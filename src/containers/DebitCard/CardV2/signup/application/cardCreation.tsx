@@ -48,8 +48,7 @@ const CardCreation = () => {
   const { getWalletProfile } = useCardUtilities();
 
   // Confetti animation refs and play tracking
-  const confettiRef = useRef<LottieView>(null);
-  const confettiPlaysCompleted = useRef<number>(0);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const triggerHaptic = () => {
     const hapticAvailable = !!NativeModules.RNReactNativeHapticFeedback;
@@ -67,18 +66,16 @@ const CardCreation = () => {
   };
 
   const handleConfettiFinish = () => {
-    confettiPlaysCompleted.current += 1;
-    if (confettiPlaysCompleted.current < 3 && confettiRef.current) {
-      confettiRef.current.play();
-      triggerHaptic();
-    }
+    // Hide confetti overlay after first play
+    setShowConfetti(false);
   };
 
   useEffect(() => {
     // Show loading state for 4 seconds
     setTimeout(() => {
       setIsLoading(false);
-      triggerHaptic(); // Initial haptic when confetti starts
+      setShowConfetti(true); // Show confetti once loading completes
+      triggerHaptic();
     }, 4000);
   }, []);
 
@@ -248,10 +245,9 @@ const CardCreation = () => {
       </ViewShot>
 
       {/* Confetti overlay after card is created */}
-      {!isLoading && (
+      {showConfetti && (
         <CyDView pointerEvents='none' style={styles.confetti}>
           <LottieView
-            ref={confettiRef}
             source={AppImagesMap.common.CONFETTI_ANIMATION}
             autoPlay
             loop={false}

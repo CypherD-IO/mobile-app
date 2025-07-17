@@ -166,11 +166,11 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
                   </CyDView>
 
                   {/* Expiry Badge */}
-                  <CyDView className='bg-red400 rounded-full px-3 py-1'>
+                  {/* <CyDView className='bg-red400 rounded-full px-3 py-1'>
                     <CyDText className='text-white text-[12px] font-semibold'>
                       Expires in {bonusData?.expiryDate ?? 'June 29'}
                     </CyDText>
-                  </CyDView>
+                  </CyDView> */}
                 </CyDView>
 
                 <CyDView className='h-[1px] bg-n40 w-full ml-[-12px] mr-[-12px]' />

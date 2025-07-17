@@ -246,7 +246,7 @@ const ClaimReward: React.FC = () => {
    * Handles sharing reward information
    */
   const handleShare = () => {
-    const shareMessage = `🎉 I've earned ${claimData.totalRewards} $CYPR tokens through Cypher Rewards! 💰\\n\\nJoin me and start earning crypto rewards on every purchase with Cypher Card! 🚀`;
+    const shareMessage = `🎉 I've earned ${claimData.totalRewards} $CYPR tokens through Cypher Rewards! 💰Join me and start earning crypto rewards on every purchase with Cypher Card! 🚀`;
 
     Share.share({
       message: shareMessage,
