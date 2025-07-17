@@ -85,7 +85,8 @@ export const InitializeAppProvider = ({
     checkAPIAccessibility,
   } = useInitializer() as UseInitializerReturn;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const [authenticationEnabled, setAuthenticationEnabled] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [pinAuthenticated, setPinAuthenticated] = useState(false);
   const [pinSetStatus, setPinSetStatus] = useState(PinPresentStates.NOTSET);
   const [showDefaultAuthRemoveModal, setShowDefaultAuthRemoveModal] =
     useState<boolean>(false);
@@ -284,7 +285,7 @@ export const InitializeAppProvider = ({
   useEffect(() => {
     const setPinAuthenticationState = async () => {
       const isDeviceBiometricEnabledValue = await isDeviceBiometricEnabled();
-      setAuthenticationEnabled(isDeviceBiometricEnabledValue);
+      setBiometricEnabled(isDeviceBiometricEnabledValue);
 
       const pinAlreadySetStatusValue = await pinAlreadySetStatus();
       setPinSetStatus(pinAlreadySetStatusValue);
@@ -295,20 +296,30 @@ export const InitializeAppProvider = ({
   }, [ethereumAddress, solanaAddress]);
 
   useEffect(() => {
-    if (authenticationEnabled) {
+    if (
+      (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
+      pinAuthenticated
+    ) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state).finally(() => {
         setWalletLoading(false);
       });
     }
-  }, [authenticationEnabled]);
+  }, [biometricEnabled, pinAuthenticated, pinSetStatus]);
 
   const RenderNavStack = useCallback(() => {
-    if (walletLoading && authenticationEnabled) {
+    if (
+      walletLoading &&
+      biometricEnabled &&
+      pinSetStatus === PinPresentStates.FALSE
+    ) {
       return <Loading />;
     }
 
-    if (authenticationEnabled) {
-      if (ethereumAddress ?? solanaAddress) {
+    if (
+      (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
+      pinAuthenticated
+    ) {
+      if (ethereumAddress || solanaAddress) {
         if (!isAuthenticated) {
           return <Loading />;
         }
@@ -322,14 +333,14 @@ export const InitializeAppProvider = ({
       } else if (pinSetStatus === PinPresentStates.TRUE) {
         return (
           <PinAuthRoute
-            setPinAuthentication={setAuthenticationEnabled}
+            setPinAuthentication={setPinAuthenticated}
             initialScreen={screenTitle.PIN_VALIDATION}
           />
         );
       } else if (pinSetStatus === PinPresentStates.FALSE) {
         return (
           <PinAuthRoute
-            setPinAuthentication={setAuthenticationEnabled}
+            setPinAuthentication={setPinAuthenticated}
             initialScreen={screenTitle.SET_PIN}
           />
         );
@@ -339,7 +350,7 @@ export const InitializeAppProvider = ({
     walletLoading,
     ethereumAddress,
     solanaAddress,
-    authenticationEnabled,
+    biometricEnabled,
     pinSetStatus,
     isAuthenticated,
   ]);
