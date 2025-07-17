@@ -23,6 +23,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import Loading from '../../components/v2/loading';
 
 interface RouteParams {
   title: string;
@@ -43,6 +44,7 @@ export default function PinValidation() {
   const retryCount = 10;
   const [retries, setRetries] = useState(retryCount);
   const [wrongPin, setWrongPin] = useState(false); // state to show or hide the Wrong Pin text
+  const [reSettingToBiometric, setReSettingToBiometric] = useState(false);
   const hdWallet = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
 
@@ -67,7 +69,9 @@ export default function PinValidation() {
       setWrongPin(false);
       hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin } });
       if (await isBiometricEnabled()) {
+        setReSettingToBiometric(true);
         await removePin(hdWallet, pin);
+        setReSettingToBiometric(false);
       }
       callback?.();
       if (setPinAuthentication) {
@@ -165,8 +169,14 @@ export default function PinValidation() {
   return (
     <CyDSafeAreaView>
       <CyDView className={'h-full bg-n20 px-[20px] pt-[10px]'}>
-        <PINHeader />
-        <PIN />
+        {reSettingToBiometric ? (
+          <Loading blurBg />
+        ) : (
+          <>
+            <PINHeader />
+            <PIN />
+          </>
+        )}
       </CyDView>
     </CyDSafeAreaView>
   );
