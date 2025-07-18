@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import usePortfolio from '../usePortfolio';
 import * as Sentry from '@sentry/react-native';
 

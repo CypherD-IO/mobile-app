@@ -13,7 +13,12 @@ import {
 } from '../../../../reducers/activity_reducer';
 import useAxios from '../../../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
-import { useIsFocused } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import { hostWorker } from '../../../../global';
 import axios from '../../../../core/Http';
 import {
@@ -39,6 +44,7 @@ export type BridgeOrCardActivity = ExchangeTransaction | DebitCardTransaction;
 const BannerCarousel = () => {
   const { getWithAuth } = useAxios();
   const isFocused = useIsFocused();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const activityContext = useContext(ActivityContext);
   const hdWallet = useContext(HdWalletContext);
@@ -397,6 +403,7 @@ const BannerCarousel = () => {
           setDismissedActivityCards={setDismissedActivityCards}
           setDismissedStaticCards={setDismissedStaticCards}
           setDismissedMigrationCards={setDismissedMigrationCards}
+          navigation={navigation}
         />
       </CyDView>
     );

@@ -107,7 +107,8 @@ export async function saveCredentialsToKeychain(
           hdWalletContext.state.pinValue,
         ).toString(),
       );
-    } else if (secretType === SECRET_TYPES.PRIVATE_KEY && wallet.privateKey) {
+    }
+    if (wallet.privateKey) {
       await saveToKeychain(
         CYPHERD_PRIVATE_KEY,
         CryptoJS.AES.encrypt(
@@ -685,7 +686,9 @@ export const removePin = async (hdWallet: any, pin = '') => {
     await saveToKeychain(CYPHERD_PRIVATE_KEY, privateKey);
   }
   await removeFromKeyChain(PIN_AUTH);
+  await removeFromKeyChain(AUTHORIZE_WALLET_DELETION);
   await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
+  await removeFromKeyChain(DUMMY_AUTH);
   await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
   hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin: '' } });
 };

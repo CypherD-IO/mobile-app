@@ -17,7 +17,6 @@ import {
 import React, { memo, useMemo } from 'react';
 import { BannerRecord } from '../../../../models/bannerRecord.interface';
 import { BridgeOrCardActivity } from '.';
-import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { ALL_CHAINS } from '../../../../constants/server';
 import {
@@ -41,6 +40,7 @@ import {
 } from '../../../../core/asyncStorage';
 import { cloneDeep, get } from 'lodash';
 import { MigrationData } from '../../../../models/migrationData.interface';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 
 interface BannerCarouselItemProps {
   item: BannerRecord | BridgeOrCardActivity | MigrationData;
@@ -51,6 +51,7 @@ interface BannerCarouselItemProps {
   setDismissedActivityCards: React.Dispatch<React.SetStateAction<string[]>>;
   setDismissedStaticCards: React.Dispatch<React.SetStateAction<string[]>>;
   setDismissedMigrationCards: React.Dispatch<React.SetStateAction<string[]>>;
+  navigation: NavigationProp<ParamListBase>;
 }
 const BannerCarouselItem = ({
   item,
@@ -61,10 +62,10 @@ const BannerCarouselItem = ({
   setDismissedActivityCards,
   setDismissedStaticCards,
   setDismissedMigrationCards,
+  navigation,
 }: BannerCarouselItemProps) => {
   const isActivity = item ? 'transactionHash' in item : false;
   const { t } = useTranslation();
-  const navigation = useNavigation();
   const animatedStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       panX.value,
@@ -308,19 +309,27 @@ const BannerCarouselItem = ({
 
   const onBannerClick = () => {
     if (isActivity) {
-      navigation.navigate(screenTitle.OPTIONS, {
-        screen: screenTitle.ACTIVITIES,
-      });
-    } else {
-      const { redirectURI, title, appCta } = item;
-      if (redirectURI) {
+      navigation.navigate(screenTitle.OPTIONS);
+      setTimeout(() => {
         navigation.navigate(screenTitle.OPTIONS, {
-          screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-          params: {
-            title,
-            uri: redirectURI,
-          },
+          screen: screenTitle.ACTIVITIES,
         });
+      }, 250);
+    } else {
+      // Use type assertion for BannerRecord when accessing BannerRecord-specific fields
+      const bannerItem = item as BannerRecord;
+      const { redirectURI, title, appCta } = bannerItem;
+      if (redirectURI) {
+        navigation.navigate(screenTitle.OPTIONS);
+        setTimeout(() => {
+          navigation.navigate(screenTitle.OPTIONS, {
+            screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+            params: {
+              title,
+              uri: redirectURI,
+            },
+          });
+        }, 250);
       } else if (appCta) {
         // appCta = 'DEBIT_CARD/CARD_INVITE/CARD_SIGNUP';
         const screens = appCta.split('/');

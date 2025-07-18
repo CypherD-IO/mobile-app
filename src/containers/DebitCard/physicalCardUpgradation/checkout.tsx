@@ -284,7 +284,7 @@ export default function ShippingCheckout() {
         </CyDView>
       </CyDView>
     );
-  }, [profile, currentCardProvider, balance]);
+  }, [profile, currentCardProvider, balance, cardFee, cardType]);
 
   const RenderNameOnCard = useCallback(() => {
     return (

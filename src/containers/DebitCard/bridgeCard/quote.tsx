@@ -231,7 +231,7 @@ export default function CardQuote({
       if (!body.txnHash) {
         showModal('state', {
           type: 'error',
-          title: 'Unable to process your transaction',
+          title: 'Unable to fetch transaction hash',
           description: `Incase your transaction went through, please contact customer support with the quote_id: ${quoteId}`,
           onSuccess: hideModal,
           onFailure: hideModal,
@@ -276,6 +276,7 @@ export default function CardQuote({
           amountInUSD: tokenQuote.amount,
         });
       } else {
+        const errorMessage = parseErrorMessage(response.error);
         activityRef.current &&
           activityContext.dispatch({
             type: ActivityReducerAction.PATCH,
@@ -284,19 +285,20 @@ export default function CardQuote({
               status: ActivityStatus.FAILED,
               quoteId,
               transactionHash: txnHash,
-              reason: `Please contact customer support with the quote_id: ${quoteId}`,
+              reason: `${errorMessage}, Please contact customer support with the quote_id: ${quoteId}`,
             },
           });
         setLoading(false);
         showModal('state', {
           type: 'error',
           title: 'Error processing your txn',
-          description: `Please contact customer support with the quote_id: ${quoteId}`,
+          description: `${errorMessage}, Please contact customer support with the quote_id: ${quoteId}`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
       }
     } catch (error) {
+      const errorMessage = parseErrorMessage(error);
       activityRef.current &&
         activityContext.dispatch({
           type: ActivityReducerAction.PATCH,
@@ -305,7 +307,7 @@ export default function CardQuote({
             status: ActivityStatus.FAILED,
             quoteId,
             transactionHash: txnHash,
-            reason: `Please contact customer support with the quote_id: ${quoteId}`,
+            reason: `${errorMessage}, Please contact customer support with the quote_id: ${quoteId}`,
           },
         });
       Sentry.captureException(error);
@@ -313,7 +315,7 @@ export default function CardQuote({
       showModal('state', {
         type: 'error',
         title: 'Error processing your txn',
-        description: `Please contact customer support with the quote_id: ${quoteId}`,
+        description: `${errorMessage}, Please contact customer support with the quote_id: ${quoteId}`,
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -502,11 +504,12 @@ export default function CardQuote({
               response.hash,
             );
           } else {
+            const errorMessage = parseErrorMessage(response?.error);
             const connectionType = await getConnectionType();
             void logAnalytics({
               type: AnalyticsType.ERROR,
               chain: selectedToken?.chainDetails?.backendName ?? '',
-              message: parseErrorMessage(response?.error),
+              message: errorMessage,
               screen: route.name,
               address: PURE_COSMOS_CHAINS.includes(
                 selectedToken?.chainDetails?.chainName,
@@ -530,14 +533,14 @@ export default function CardQuote({
                   id: activityRef.current.id,
                   status: ActivityStatus.FAILED,
                   quoteId: tokenQuote.quoteId,
-                  reason: response?.error,
+                  reason: errorMessage,
                 },
               });
             setLoading(false);
             showModal('state', {
               type: 'error',
               title: 'Transaction Failed',
-              description: `${parseErrorMessage(response?.error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
+              description: `${errorMessage}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -554,6 +557,7 @@ export default function CardQuote({
         });
       }
     } catch (error) {
+      const errorMessage = parseErrorMessage(error);
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: selectedToken?.chainDetails?.backendName ?? '',
@@ -574,14 +578,14 @@ export default function CardQuote({
             id: activityRef.current.id,
             status: ActivityStatus.FAILED,
             quoteId: tokenQuote.quoteId,
-            reason: error,
+            reason: errorMessage,
           },
         });
       setLoading(false);
       showModal('state', {
         type: 'error',
         title: 'Transaction Failed',
-        description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
+        description: `${errorMessage}, Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
         onSuccess: hideModal,
         onFailure: hideModal,
       });
