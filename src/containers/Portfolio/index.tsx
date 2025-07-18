@@ -2,11 +2,15 @@ import notifee, { EventType } from '@notifee/react-native';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
-import { ParamListBase, useIsFocused } from '@react-navigation/native';
+import {
+  ParamListBase,
+  useIsFocused,
+  useRoute,
+} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { get, isEmpty } from 'lodash';
+import { get, isEmpty, has } from 'lodash';
 import moment from 'moment';
 import React, {
   useCallback,
@@ -45,6 +49,7 @@ import {
   GlobalContextType,
   GlobalModalType,
   RPCODES,
+  CardProviders,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
@@ -53,7 +58,11 @@ import {
   ChainBackendNames,
   NotificationEvents,
 } from '../../constants/server';
-import { getHideBalanceStatus, getIBC } from '../../core/asyncStorage';
+import {
+  getFirstLaunchAfterWalletCreation,
+  getHideBalanceStatus,
+  getIBC,
+} from '../../core/asyncStorage';
 import { GlobalContext } from '../../core/globalContext';
 import useAxios from '../../core/HttpRequest';
 import {
@@ -101,6 +110,13 @@ export interface PortfolioProps {
 export default function Portfolio({ navigation }: PortfolioProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
+  // Access navigation params to check if we arrived from the Card welcome screen.
+  const route = useRoute<any>();
+  // fromCardWelcome may be provided directly or nested (if additional params wrapper exists)
+  const fromCardWelcome: boolean =
+    route?.params?.fromCardWelcome ??
+    route?.params?.params?.fromCardWelcome ??
+    false;
   const globalStateContext = useContext(GlobalContext);
   const hdWallet = useContext(HdWalletContext);
   const [isPortfolioLoading, setIsPortfolioLoading] = useState<boolean>();
@@ -144,6 +160,37 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   let previousOpenedSwipeableRef: Swipeable | null;
 
   const { show3DSecureModal } = use3DSecure();
+
+  // Redirect logic for imported wallets that do not yet have an RC card
+  const hasRedirectedToCard = useRef<boolean>(false);
+
+  useEffect(() => {
+    const checkRedirectToCard = async () => {
+      console.log('F R O M  C A R D  W E L C O M E :', fromCardWelcome);
+      // Suppress redirect if user explicitly came from Card Welcome (skip flow)
+      if (isFocused && !hasRedirectedToCard.current && !fromCardWelcome) {
+        const cardProfile = globalStateContext?.globalState?.cardProfile;
+        const isFirstLaunch = await getFirstLaunchAfterWalletCreation();
+        if (
+          cardProfile &&
+          !has(cardProfile, CardProviders.REAP_CARD) &&
+          !isFirstLaunch
+        ) {
+          hasRedirectedToCard.current = true;
+          console.log(
+            'N A V I G A T I N G  T O  C A R D  F R O M  P O R T F O L I O',
+          );
+          navigation.navigate(C.screenTitle.CARD);
+        }
+      }
+    };
+
+    void checkRedirectToCard();
+  }, [
+    isFocused,
+    fromCardWelcome,
+    globalStateContext?.globalState?.cardProfile,
+  ]);
 
   const onSwipe = (key: number) => {
     if (

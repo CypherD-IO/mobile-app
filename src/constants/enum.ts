@@ -520,3 +520,11 @@ export enum EcosystemsEnum {
   TRON = 'tron',
   SOLANA = 'solana',
 }
+
+export enum ReferralOnboardingStatus {
+  SIGNED_UP = 'SIGNED_UP',
+  KYC_PENDING = 'KYC_PENDING',
+  KYC_VERIFIED = 'KYC_VERIFIED',
+  FIRST_LOAD = 'FIRST_LOAD',
+  FIRST_SPEND = 'FIRST_SPEND',
+}

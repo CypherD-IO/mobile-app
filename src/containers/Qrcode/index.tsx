@@ -80,6 +80,8 @@ export default function QRCodeGenerator() {
     '',
   );
 
+  console.log('ethereumAddress ^^^^^^^^^^^^ ', ethereumAddress);
+
   const getChainDataWithAddress = (
     walletAddressType: FundWalletAddressType,
   ) => {
