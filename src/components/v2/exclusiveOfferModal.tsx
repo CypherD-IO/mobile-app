@@ -13,11 +13,12 @@ import Button from './button';
 import { ButtonType } from '../../constants/enum';
 import { useTranslation } from 'react-i18next';
 import { logAnalyticsToFirebase, AnalyticEvent } from '../../core/analytics';
+import useAxios from '../../core/HttpRequest';
+import { get } from 'lodash';
 
 interface ExclusiveOfferModalProps {
   isVisible: boolean;
   onSeeDetails?: () => void;
-  initialCountdownMinutes?: number; // Default to 59 minutes
   rewardAmount?: number; // dynamic reward amount
   onClickGotIt: () => Promise<void>;
 }
@@ -26,11 +27,20 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
   isVisible,
   onClickGotIt,
   onSeeDetails,
-  initialCountdownMinutes = 59,
   rewardAmount = 0,
 }) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // ---------------- API HOOKS ------------------
+  const { getWithoutAuth } = useAxios();
+
+  // ---------------- TIMER STATE ----------------
+  // totalSeconds holds the fetched time limit (defaults to 59 mins)
+  const DEFAULT_LIMIT_SECONDS = 60 * 60;
+  const [totalSeconds, setTotalSeconds] = useState<number>(
+    DEFAULT_LIMIT_SECONDS,
+  );
 
   // Handle modal show analytics
   useEffect(() => {
@@ -43,20 +53,39 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
     }
   }, [isVisible]);
 
-  const handleSeeDetails = () => {
-    void logAnalyticsToFirebase(
-      AnalyticEvent.EXCLUSIVE_OFFER_SEE_DETAILS_CLICKED,
-      {
-        offer_type: 'signup_reward',
-        reward_amount: rewardAmount,
-        currency: 'CYPR',
-      },
-    );
+  /**
+   * Fetches onboarding rewards info to get the time limit.
+   * Logs errors with verbose comments as per repo standards.
+   */
+  const fetchRewardsInfo = async () => {
+    try {
+      const res = await getWithoutAuth('/v1/cards/onboarding-rewards/info');
+      const { data, isError } = res;
 
-    if (onSeeDetails) {
-      onSeeDetails();
+      console.log('data : ', data.rewardStages.kycPending.timeLimit);
+
+      if (!isError) {
+        // Extract time limit safely: rewardStages.kycPending.timeLimit (in seconds)
+        const timeLimitSeconds = get(
+          data,
+          ['rewardStages', 'kycPending', 'timeLimit'],
+          DEFAULT_LIMIT_SECONDS,
+        );
+
+        if (typeof timeLimitSeconds === 'number') {
+          setTotalSeconds(timeLimitSeconds);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch onboarding rewards info:', error);
     }
   };
+
+  useEffect(() => {
+    if (isVisible) {
+      void fetchRewardsInfo();
+    }
+  }, [isVisible, getWithoutAuth]);
 
   const handleGotIt = async () => {
     try {
@@ -79,11 +108,27 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
     }
   };
 
+  /**
+   * Utility to convert seconds to formatted string "MM:MSS".
+   */
+  const formatTime = (secondsRemaining: number) => {
+    const minutes = Math.floor(secondsRemaining / 60)
+      .toString()
+      .padStart(2, '0');
+    const seconds = (secondsRemaining % 60).toString().padStart(2, '0');
+    return `${minutes}M:${seconds}S`;
+  };
+
   return (
     <Modal
       isVisible={isVisible}
-      onBackdropPress={() => {}}
-      onBackButtonPress={() => {}}
+      // Intentionally disable outside touches & back button to force explicit action
+      onBackdropPress={() => {
+        // Disabled backdrop press – no action.
+      }}
+      onBackButtonPress={() => {
+        // Disabled back button – no action.
+      }}
       backdropOpacity={0.9}
       useNativeDriver
       animationIn='slideInUp'
@@ -98,7 +143,7 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
 
         {/* Modal Content with extreme curve */}
         <CyDView
-          className='absolute bottom-0 left-0 right-0 bg-[#202020] px-[24px] pt-[80px] pb-[40px] items-center min-h-[60vh]'
+          className='absolute bottom-0 left-0 right-0 bg-[#202020] px-[24px] pt-[80px] pb-[20px] items-center min-h-[60vh]'
           style={styles.modalContent}>
           {/* Percentage Badge - positioned at the top of semicircle */}
           <CyDView className='absolute -top-[35px] self-center z-10'>
@@ -137,18 +182,12 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
             {rewardAmount} $CYPR if you sign up within
           </CyDText>
 
-          <CyDView className='bg-[#333333] rounded-full px-[16px] py-[8px] mb-[20px] flex-row items-center'>
+          {/* Countdown Timer */}
+          <CyDView className='bg-[#333333] rounded-full px-[16px] py-[8px] mb-[24px] flex-row items-center'>
             <CyDText className='text-white text-[16px] font-medium'>
-              {'🕛 60M:00S'}
+              {`🕛 ${formatTime(totalSeconds)}`}
             </CyDText>
           </CyDView>
-
-          {/* See Details Button */}
-          <CyDTouchView onPress={handleSeeDetails} className='mb-[24px]'>
-            <CyDText className='text-white text-[18px] font-medium'>
-              See details
-            </CyDText>
-          </CyDTouchView>
 
           {/* Got It Button with checkmark */}
           <CyDTouchView

@@ -1,6 +1,24 @@
-import React from 'react';
-import { Image, ViewStyle, DimensionValue } from 'react-native';
-import { CyDText, CyDView } from '../../styles/tailwindComponents';
+import React, { useEffect } from 'react';
+import {
+  Image,
+  ViewStyle,
+  DimensionValue,
+  Keyboard,
+  Platform,
+  Dimensions,
+} from 'react-native';
+import {
+  CyDText,
+  CyDView,
+  CyDAnimatedView,
+} from '../../styles/tailwindComponents';
+import {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolate,
+  Extrapolate,
+} from 'react-native-reanimated';
 import { AppImagesMap } from '../../../assets/images/appImages';
 import { useOnboardingReward } from '../../contexts/OnboardingRewardContext';
 
@@ -44,45 +62,108 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
 
   const formatTime = (value: number) => String(value).padStart(2, '0');
 
-  if (remainingMs <= 0) {
-    return null;
-  }
+  const shouldHide = remainingMs <= 0;
 
   /**
-   * Create dynamic style object based on position props
-   * This allows flexible positioning of the floating banner
+   * Dynamic absolute positioning – keeps existing API unchanged.
    */
   const dynamicPositionStyle: ViewStyle = {
     position: 'absolute',
     zIndex: 50,
-    ...position, // Spread the position props directly into the style
+    ...position,
   };
 
+  /* ------------------------------------------------------------------
+   *  Animation setup (Android only – iOS retains current behaviour)
+   * ------------------------------------------------------------------ */
+
+  // Shared value driving horizontal slide
+  const translateX = useSharedValue(0);
+  // Dimensions for computing target offset
+  const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+  // Approximate width that should remain visible when collapsed – includes
+  // icon (28) + padding/margin (~20)
+  const COLLAPSED_WIDTH = 56;
+  const LEFT_MARGIN =
+    typeof position.left === 'number' ? position.left : 16; /* default 16px */
+
+  /**
+   * How far the banner needs to travel for the icon to reach the right margin
+   */
+  const TARGET_TRANSLATE_X =
+    SCREEN_WIDTH -
+    COLLAPSED_WIDTH -
+    LEFT_MARGIN; /* right margin ~= LEFT_MARGIN */
+
+  // Animate on keyboard visibility changes (Android only)
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      translateX.value = withTiming(TARGET_TRANSLATE_X, { duration: 300 });
+    });
+
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      translateX.value = withTiming(0, { duration: 300 });
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [TARGET_TRANSLATE_X, translateX]);
+
+  // Animated styles – banner slide
+  const bannerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+    };
+  });
+
+  // Animated styles – fade out text & timer as banner slides
+  const textAnimatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      translateX.value,
+      [0, TARGET_TRANSLATE_X * 0.5, TARGET_TRANSLATE_X],
+      [1, 0.3, 0],
+      Extrapolate.CLAMP,
+    );
+    return { opacity };
+  });
+
+  if (shouldHide) {
+    // Countdown finished – don't render the banner. Hooks have still run above.
+    return null;
+  }
+
   return (
-    <CyDView style={dynamicPositionStyle}>
+    <CyDAnimatedView style={[dynamicPositionStyle, bannerAnimatedStyle]}>
       <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg'>
-        {/* Left side - Icon (using the green offer code tag image) */}
+        {/* Left side - Icon */}
         <Image
           source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
           className='w-[28px] h-[28px] mr-2'
           resizeMode='contain'
         />
 
-        {/* Offer text and timer */}
-        <CyDView className='flex flex-1 flex-row items-center justify-between'>
-          <CyDText className='text-white leading-tight'>
+        {/* Offer text and timer (opacity animated) */}
+        <CyDAnimatedView
+          style={textAnimatedStyle}
+          className='flex flex-1 flex-row items-center justify-between'>
+          <CyDText className='text-white leading-tight mr-2'>
             Get {totalRewardsPossible} $CYPR as sign up bonus
           </CyDText>
 
           {/* Countdown timer */}
-          <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full w-[85px] px-2 py-1 items-center'>
+          <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full min-w-[90px] px-2 py-1 items-center'>
             <CyDText className='text-white font-bold text-[14px]'>
               {formatTime(minutes)}m: {formatTime(seconds)}s
             </CyDText>
           </CyDView>
-        </CyDView>
+        </CyDAnimatedView>
       </CyDView>
-    </CyDView>
+    </CyDAnimatedView>
   );
 };
 

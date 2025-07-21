@@ -20,7 +20,7 @@ import { screenTitle } from '../../../../constants';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
 import AppImages from '../../../../../assets/images/appImages';
-import { Platform, StyleSheet, Keyboard } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { isEmpty } from 'lodash';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import HowReferralWorksModal from '../../../../components/v2/howReferralWorksModal';
@@ -62,7 +62,7 @@ const EnterReferralCode = (): JSX.Element => {
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
 
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  // Removed keyboard visibility tracking as OfferTagComponent now animates itself
 
   useEffect(() => {
     const setReferralCodeFromAsync = async () => {
@@ -74,27 +74,18 @@ const EnterReferralCode = (): JSX.Element => {
     void setReferralCodeFromAsync();
   }, [isFocused]);
 
-  useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () =>
-      setKeyboardVisible(true),
-    );
-    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
-      setKeyboardVisible(false),
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
   const handleSkip = async () => {
     await removeReferralCode();
-    navigation.navigate(screenTitle.OFFERS_AND_PROMOTION);
+    navigation.navigate('CardApplicationStack', {
+      screen: screenTitle.BASIC_DETAILS,
+    });
   };
 
   const handleBoostedRewardInfoModalClose = () => {
     setShowBoostedRewardInfoModal(false);
-    navigation.navigate(screenTitle.OFFERS_AND_PROMOTION);
+    navigation.navigate('CardApplicationStack', {
+      screen: screenTitle.BASIC_DETAILS,
+    });
   };
 
   const handleLearnMore = () => {
@@ -175,7 +166,9 @@ const EnterReferralCode = (): JSX.Element => {
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     setTimeout(() => {
-      navigation.navigate(screenTitle.OFFERS_AND_PROMOTION);
+      navigation.navigate('CardApplicationStack', {
+        screen: screenTitle.BASIC_DETAILS,
+      });
     }, 300);
   };
 
@@ -277,7 +270,7 @@ const EnterReferralCode = (): JSX.Element => {
           </CyDView>
         </CyDView>
 
-        <CyDView className='mb-[64px] flex flex-col p-[12px] bg-n20 rounded-[16px]'>
+        {/* <CyDView className='mb-[64px] flex flex-col p-[12px] bg-n20 rounded-[16px]'>
           <CyDView className='flex flex-row items-center mb-2'>
             <CyDImage
               source={AppImages.REFERRAL_CODE_3D_ICON}
@@ -305,18 +298,16 @@ const EnterReferralCode = (): JSX.Element => {
               {t('Get referral code')}
             </CyDText>
           </CyDTouchView>
-        </CyDView>
+        </CyDView> */}
       </KeyboardAwareScrollView>
 
-      {!(Platform.OS === 'android' && isKeyboardVisible) && (
-        <OfferTagComponent
-          position={{
-            bottom: Platform.OS === 'android' ? 118 : 146,
-            left: 16,
-            right: 16,
-          }}
-        />
-      )}
+      <OfferTagComponent
+        position={{
+          bottom: Platform.OS === 'android' ? 118 : 146,
+          left: 16,
+          right: 16,
+        }}
+      />
 
       {/* Footer */}
       <CardApplicationFooter

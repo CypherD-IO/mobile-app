@@ -1065,16 +1065,16 @@ export default function RewardsOnboarding() {
               </CyDTouchView>
 
               {/* OR Divider */}
-              <CyDView className='flex-row items-center mb-[24px]'>
+              {/* <CyDView className='flex-row items-center mb-[24px]'>
                 <CyDView className='flex-1 h-[1px] bg-n40 mr-[7px]' />
                 <CyDText className='text-n90 text-[10px] font-bold mx-[8px]'>
                   OR
                 </CyDText>
                 <CyDView className='flex-1 h-[1px] bg-n40' />
-              </CyDView>
+              </CyDView> */}
 
               {/* Track Address Section */}
-              <CyDView className='mb-[24px]'>
+              {/* <CyDView className='mb-[24px]'>
                 <CyDText className='text-n200 text-[12px] font-medium mb-[7px]'>
                   Track Address
                 </CyDText>
@@ -1085,7 +1085,7 @@ export default function RewardsOnboarding() {
                     Enter the wallet address
                   </CyDText>
                 </CyDTouchView>
-              </CyDView>
+              </CyDView> */}
 
               {/* Security Audit */}
               <CyDView className='flex-row items-center justify-center px-[11px]'>

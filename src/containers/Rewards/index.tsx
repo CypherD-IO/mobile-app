@@ -53,6 +53,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   // Visible label for the currently selected time window
   const [timeFilter, setTimeFilter] = React.useState('All time');
   const [showOptions, setShowOptions] = React.useState(false);
+  const [isTokenVideoLoaded, setIsTokenVideoLoaded] = React.useState(false);
   const selectorRef = React.useRef<any>(null);
   const [dropdownPos, setDropdownPos] = React.useState({
     x: 0,
@@ -87,6 +88,9 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  // Dynamic background colour for video placeholder to avoid black flash.
+  const tokenVideoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
 
   /* -------------------------------------------------------------------------- */
   /*                   Derived metrics based on selected window                 */
@@ -567,6 +571,7 @@ export default function Rewards() {
       historicalMultiplier?: { current: number };
     }>
   >([]);
+  const [isTokenVideoLoaded, setIsTokenVideoLoaded] = React.useState(false);
   const { theme } = useAppTheme();
   const colorScheme = useColorScheme();
 
@@ -607,6 +612,9 @@ export default function Rewards() {
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  // Dynamic background colour for video placeholder to avoid black flash.
+  const tokenVideoBgColor = isDarkMode ? '#000000' : '#EBEDF0';
 
   console.log('isDarkMode :', isDarkMode);
 
@@ -881,14 +889,33 @@ export default function Rewards() {
             className={`items-center pt-[24px] pb-[24px] rounded-b-[16px] ${
               isDarkMode ? 'bg-black' : 'bg-n30'
             }`}>
-            <CyDView className='h-[110px] w-[110px]'>
+            <CyDView
+              className='h-[110px] w-[110px]'
+              style={{ backgroundColor: tokenVideoBgColor }}>
+              {/* Loading placeholder - always visible with proper background */}
+              {!isTokenVideoLoaded && (
+                <CyDView
+                  style={[
+                    styles.rewardTokenVideo,
+                    { backgroundColor: tokenVideoBgColor },
+                  ]}
+                />
+              )}
+
+              {/* Video - only show when loaded */}
               <Video
                 source={{
                   uri: isDarkMode
                     ? AppImagesMap.common.CYPR_TOKEN_REWARD.uri
                     : AppImagesMap.common.CYPR_TOKEN_REWARD_LIGHT.uri,
                 }}
-                style={styles.rewardTokenVideo}
+                style={[
+                  styles.rewardTokenVideo,
+                  {
+                    backgroundColor: tokenVideoBgColor,
+                  },
+                  isTokenVideoLoaded ? styles.videoVisible : styles.videoHidden,
+                ]}
                 resizeMode='cover'
                 repeat={true}
                 paused={false}
@@ -896,6 +923,13 @@ export default function Rewards() {
                 controls={false}
                 playInBackground={false}
                 playWhenInactive={false}
+                onLoad={() => {
+                  // Video loaded successfully, show it
+                  setIsTokenVideoLoaded(true);
+                }}
+                onError={error => {
+                  console.log('Token video playback error:', error);
+                }}
               />
             </CyDView>
 
@@ -1193,5 +1227,11 @@ const styles = StyleSheet.create({
   rewardTokenVideo: {
     width: '100%',
     height: '100%',
+  },
+  videoVisible: {
+    opacity: 1,
+  },
+  videoHidden: {
+    opacity: 0,
   },
 });

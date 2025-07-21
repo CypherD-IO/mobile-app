@@ -11,23 +11,105 @@ import {
   NavigationProp,
   ParamListBase,
   useNavigation,
+  useFocusEffect,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, BackHandler } from 'react-native';
 import Video from 'react-native-video';
 import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 
 const styles = StyleSheet.create({
-  scrollContentContainer: {
-    paddingBottom: 120, // Ensure enough space for the fixed bottom button
-  },
   videoContainer: {
     width: '100%',
     height: '100%',
   },
+  scrollContentContainer: {
+    paddingBottom: 180,
+  },
 });
+
+// Progress Indicator Component
+function ProgressIndicator({
+  currentIndex,
+  totalSections,
+}: {
+  currentIndex: number;
+  totalSections: number;
+}) {
+  return (
+    <CyDView className='flex-row justify-center items-center pt-4'>
+      {Array.from({ length: totalSections }).map((_, index) => {
+        const isActive = index === currentIndex;
+        const dotStyle = {
+          backgroundColor: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.3)',
+        };
+
+        return (
+          <CyDView
+            key={index}
+            className='w-2 h-2 rounded-full mx-1'
+            style={dotStyle}
+          />
+        );
+      })}
+    </CyDView>
+  );
+}
+
+// Bottom Navigation Component
+function BottomNavigation({
+  currentIndex,
+  totalSections,
+  onBack,
+  onContinue,
+}: {
+  currentIndex: number;
+  totalSections: number;
+  onBack: () => void;
+  onContinue: () => void;
+}) {
+  const showBackButton = currentIndex > 0;
+
+  return (
+    <CyDView className='absolute bottom-0 left-0 right-0 bg-black'>
+      {/* Progress Indicators */}
+      <ProgressIndicator
+        currentIndex={currentIndex}
+        totalSections={totalSections}
+      />
+
+      {/* Button Row */}
+      <CyDView
+        className={`flex-row items-center px-4 pb-10 pt-5 ${showBackButton ? 'justify-between' : ''}`}>
+        {/* Back Button or Spacer */}
+        {showBackButton ? (
+          <CyDTouchView
+            className='border-2 border-white/30 bg-transparent py-[12px] px-[14px] rounded-[30px] min-w-[100px]'
+            onPress={onBack}>
+            <CyDText className='text-white text-[16px] font-semibold text-center'>
+              {'Back'}
+            </CyDText>
+          </CyDTouchView>
+        ) : (
+          <></>
+        )}
+
+        {/* Continue Button */}
+        <CyDTouchView
+          className={`bg-white py-[14px] px-6 rounded-[30px] ${
+            showBackButton ? 'ml-3' : 'flex-1'
+          }`}
+          onPress={onContinue}>
+          <CyDText className='text-[16px] font-bold text-center text-black'>
+            {'Continue'}
+          </CyDText>
+        </CyDTouchView>
+      </CyDView>
+    </CyDView>
+  );
+}
 
 function Section1({ handleContinue }: { handleContinue: () => void }) {
   const inset = useSafeAreaInsets();
@@ -59,17 +141,6 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
           </CyDView>
         </CyDView>
       </CyDScrollView>
-
-      {/* Fixed Continue Button */}
-      <CyDView className='absolute bottom-0 left-0 right-0 bg-black px-[16px] pb-[40px] pt-[20px]'>
-        <CyDTouchView
-          className='bg-white py-[14px] rounded-[30px]'
-          onPress={handleContinue}>
-          <CyDText className='text-[20px] font-bold text-center text-black'>
-            {'Continue'}
-          </CyDText>
-        </CyDTouchView>
-      </CyDView>
     </CyDView>
   );
 }
@@ -104,17 +175,6 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
           </CyDView>
         </CyDView>
       </CyDScrollView>
-
-      {/* Fixed Continue Button */}
-      <CyDView className='absolute bottom-0 left-0 right-0 bg-black px-[16px] pb-[40px] pt-[20px]'>
-        <CyDTouchView
-          className='bg-white py-[14px] rounded-[30px]'
-          onPress={handleContinue}>
-          <CyDText className='text-[20px] font-bold text-center text-black'>
-            {'Continue'}
-          </CyDText>
-        </CyDTouchView>
-      </CyDView>
     </CyDView>
   );
 }
@@ -127,6 +187,7 @@ function Section3({
   onShowTokenDetails: () => void;
 }) {
   const inset = useSafeAreaInsets();
+  const videoContainerHeight = Platform.OS === 'android' ? 350 : 300;
 
   return (
     <CyDView className='flex-1 bg-black' style={{ paddingTop: inset.top }}>
@@ -135,22 +196,27 @@ function Section3({
         contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
         bounces={true}
-        scrollEventThrottle={16}>
+        scrollEventThrottle={16}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps='handled'>
         <CyDView
-          className={`h-[55%] bg-black min-h-[300px] justify-center items-center`}>
-          <Video
-            source={{ uri: AppImagesMap.common.CYPR_TOKEN_SPIN.uri }}
-            style={styles.videoContainer}
-            resizeMode='cover'
-            repeat={true}
-            paused={false}
-            muted={true}
-            controls={false}
-            playInBackground={false}
-            playWhenInactive={false}
-          />
+          className='bg-black justify-center items-center min-h-[300px]'
+          style={{ height: videoContainerHeight }}>
+          <CyDView className='w-full h-full' pointerEvents={'none'}>
+            <Video
+              source={{ uri: AppImagesMap.common.CYPR_TOKEN_SPIN.uri }}
+              style={styles.videoContainer}
+              resizeMode='cover'
+              repeat={true}
+              paused={false}
+              muted={true}
+              controls={false}
+              playInBackground={false}
+              playWhenInactive={false}
+            />
+          </CyDView>
         </CyDView>
-        <CyDView className='bg-black flex-1'>
+        <CyDView className='bg-black'>
           <CyDView className='px-[24px] pt-[20px]'>
             <CyDText className='text-[32px] font-bold text-white mt-[12px] font-nord'>
               {'Earn $CYPR\nTokens with Every\nPurchase!'}
@@ -162,7 +228,7 @@ function Section3({
             </CyDText>
             <CyDText className='text-[16px] font-medium mt-[12px] !text-[#666666]'>
               {
-                'SCYPR is the reward and governance token used in the Cypher platform.'
+                '$CYPR is the reward and governance token used in the Cypher platform.'
               }
             </CyDText>
             <CyDTouchView className='mt-[24px]' onPress={onShowTokenDetails}>
@@ -173,17 +239,6 @@ function Section3({
           </CyDView>
         </CyDView>
       </CyDScrollView>
-
-      {/* Fixed Continue Button */}
-      <CyDView className='absolute bottom-0 left-0 right-0 bg-black px-[16px] pb-[40px] pt-[20px]'>
-        <CyDTouchView
-          className='bg-white py-[14px] rounded-[30px]'
-          onPress={handleContinue}>
-          <CyDText className='text-[20px] font-bold text-center text-black'>
-            {'Continue'}
-          </CyDText>
-        </CyDTouchView>
-      </CyDView>
     </CyDView>
   );
 }
@@ -192,22 +247,46 @@ const OnBoardingGetStarted = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { showBottomSheet } = useGlobalBottomSheet();
+  const totalSections = 3;
 
   /**
    * Handles continue button press across sections
+   * Logs current state and navigates to next section or final destination
    */
   const handleContinue = () => {
-    if (currentIndex < 2) {
+    console.log('Continue pressed, current index:', currentIndex);
+    if (currentIndex < totalSections - 1) {
       // Move to next section (0 -> 1 -> 2)
       const nextIndex = currentIndex + 1;
+      console.log('Moving to next section:', nextIndex);
       setCurrentIndex(nextIndex);
     } else {
+      console.log('Navigating to onboarding options');
       navigation.navigate(screenTitle.ONBOARDING_OPTIONS);
     }
   };
 
   /**
+   * Handles back button press across sections
+   * Logs current state and navigates to previous section or exits onboarding
+   */
+  const handleBack = () => {
+    console.log('Back pressed, current index:', currentIndex);
+    if (currentIndex > 0) {
+      // Move to previous section (2 -> 1 -> 0)
+      const prevIndex = currentIndex - 1;
+      console.log('Moving to previous section:', prevIndex);
+      setCurrentIndex(prevIndex);
+    } else {
+      // If on first section, navigate back to previous screen
+      console.log('Navigating back from onboarding');
+      navigation.goBack();
+    }
+  };
+
+  /**
    * Handles showing the Cypher token details bottom sheet
+   * Displays comprehensive token information in a modal
    */
   const handleShowTokenDetails = () => {
     console.log('Showing Cypher token details bottom sheet');
@@ -225,8 +304,27 @@ const OnBoardingGetStarted = () => {
     });
   };
 
+  // Handle Android hardware back button
+  // Ensures consistent back navigation behavior across platforms
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        handleBack();
+        return true; // Prevent default back button behavior
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [currentIndex]),
+  );
+
   return (
     <>
+      {/* Sections */}
       {currentIndex === 0 && <Section1 handleContinue={handleContinue} />}
       {currentIndex === 1 && <Section2 handleContinue={handleContinue} />}
       {currentIndex === 2 && (
@@ -235,6 +333,14 @@ const OnBoardingGetStarted = () => {
           onShowTokenDetails={handleShowTokenDetails}
         />
       )}
+
+      {/* Fixed Bottom Navigation */}
+      <BottomNavigation
+        currentIndex={currentIndex}
+        totalSections={totalSections}
+        onBack={handleBack}
+        onContinue={handleContinue}
+      />
     </>
   );
 };

@@ -99,10 +99,7 @@ const ReferralDetailContent: React.FC<Props> = ({
                 <CyDView className='w-6 h-6 bg-n0 border border-n200 border-dashed rounded-full items-center justify-center mr-3' />
               )}
               <CyDText className='text-[16px] font-medium flex-1'>
-                {t(
-                  'FIRST_SPEND_COMPLETED',
-                  'Successfully completed first spend',
-                )}
+                {t('FIRST_SPEND_COMPLETED', 'Complete first spend')}
               </CyDText>
             </CyDView>
 
