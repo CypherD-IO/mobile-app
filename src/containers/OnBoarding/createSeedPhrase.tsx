@@ -1,7 +1,7 @@
 import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NativeModules } from 'react-native';
+import { NativeModules, StyleSheet } from 'react-native';
 // @ts-expect-error - Type declaration not available for react-native-bip39
 import bip39 from 'react-native-bip39';
 // @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
@@ -30,6 +30,7 @@ import { setFirstLaunchAfterWalletCreation } from '../../core/asyncStorage';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '../../components/v2/toast';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
+import { Height } from '@keplr-wallet/proto-types/ibc/core/client/v1/client';
 
 interface RouteParams {
   seedPhraseType: SeedPhraseType;
@@ -50,7 +51,7 @@ const SeedPhraseWord = ({
 
   return (
     <CyDView
-      className={`w-[33.33%] px-[4px] flex-row items-center justify-center ${isLastRow ? 'mb-0' : 'mb-[24px]'}`}>
+      className={`w-[33.33%] px-[4px] flex-row items-center justify-start ${isLastRow ? 'mb-0' : 'mb-[24px]'}`}>
       <CyDText className='text-primaryText text-[16px] font-normal text-center'>
         {index}. {word}
       </CyDText>
@@ -72,6 +73,7 @@ function CreateSeedPhrase() {
     privateKey: string;
   }>();
   const [loading, setLoading] = useState<boolean>(true);
+  const [isProceeding, setIsProceeding] = useState<boolean>(false);
   const [showSeedPhrase, setShowSeedPhrase] = useState<boolean>(false);
   const { showBottomSheet } = useGlobalBottomSheet();
 
@@ -138,6 +140,7 @@ function CreateSeedPhrase() {
    * This completes the wallet creation process
    */
   const proceedToPortfolio = async () => {
+    setIsProceeding(true);
     if (wallet) {
       try {
         await saveCredentialsToKeychain(
@@ -146,9 +149,12 @@ function CreateSeedPhrase() {
           SECRET_TYPES.MENEMONIC,
         );
         await setFirstLaunchAfterWalletCreation(true);
+        // After successful save, navigation or additional logic can occur here.
       } catch (error) {
         console.error('Error saving credentials:', error);
         // Handle error appropriately
+      } finally {
+        setIsProceeding(false);
       }
     }
   };
@@ -252,7 +258,11 @@ function CreateSeedPhrase() {
             {/* Header with Logo and Title */}
             <CyDView className='items-center pt-[36px] pb-[30px]'>
               <CyDView className='w-[64px] h-[64px] bg-blue-500 rounded-[12px] items-center justify-center mb-[24px]'>
-                <CyDIcons name='shield-tick' size={28} className='text-white' />
+                <CyDMaterialDesignIcons
+                  name='seed'
+                  size={32}
+                  className='text-white'
+                />
               </CyDView>
 
               <CyDText className='text-primaryText text-[18px] font-bold text-center px-[40px] leading-[26px]'>
@@ -351,12 +361,14 @@ function CreateSeedPhrase() {
             <CyDView className='px-[20px] mb-[20px]'>
               <Button
                 title='Continue'
+                loading={isProceeding}
                 onPress={() => {
                   void proceedToPortfolio();
                 }}
                 type={ButtonType.PRIMARY}
                 style='w-full rounded-[30px]'
                 titleStyle='text-[20px] font-bold'
+                loaderStyle={styles.loaderStyle}
                 paddingY={14}
               />
             </CyDView>
@@ -380,3 +392,9 @@ function CreateSeedPhrase() {
 }
 
 export default CreateSeedPhrase;
+
+const styles = StyleSheet.create({
+  loaderStyle: {
+    height: 32,
+  },
+});

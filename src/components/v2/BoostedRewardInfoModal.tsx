@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, FlatList } from 'react-native';
 import {
   CyDView,
   CyDText,
   CyDTouchView,
   CyDImage,
+  CyDScrollView,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import Button from './button';
 import AppImages from '../../../assets/images/appImages';
 import { ButtonType } from '../../constants/enum';
 import { t } from 'i18next';
+import { Theme, useTheme } from '../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 /**
  * Interface for referral bonus data (for future API integration)
@@ -54,6 +57,11 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
   // State for bonus data (will be populated by API call in future)
   const [bonusData, setBonusData] = useState<ReferralBonusData | null>(null);
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
   /**
    * Effect to fetch referral bonus data when modal becomes visible
@@ -113,6 +121,8 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
     onContinue();
   };
 
+  const stylesList = StyleSheet.create({ merchantList: { maxHeight: 200 } });
+
   return (
     <CyDModalLayout
       isModalVisible={isVisible}
@@ -130,7 +140,11 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
 
         <CyDView className='absolute -top-[47px] self-center z-10'>
           <CyDImage
-            source={AppImages.GREEN_CHECK_MARK_BLACK_BORDER}
+            source={
+              isDarkMode
+                ? AppImages.GREEN_CHECK_MARK_BLACK_BORDER
+                : AppImages.GREEN_CHECK_MARK_WHITE_BORDER
+            }
             className='w-[95px] h-[95px]'
             resizeMode='contain'
           />
@@ -182,26 +196,32 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
                   </CyDText> */}
 
                   {/* Merchant List */}
-                  <CyDView className='gap-y-[12px]'>
-                    {votedCandidates.map((merchant, index) => (
-                      <CyDView key={index} className='flex-row items-center'>
+                  <FlatList
+                    data={votedCandidates}
+                    keyExtractor={(_, index) => index.toString()}
+                    style={stylesList.merchantList}
+                    showsVerticalScrollIndicator={false}
+                    nestedScrollEnabled={true}
+                    scrollEnabled={true}
+                    bounces={true}
+                    scrollEventThrottle={16}
+                    renderItem={({ item }) => (
+                      <CyDView className='flex-row items-center mb-[12px]'>
                         <CyDView className='w-10 h-10 rounded-full overflow-hidden bg-n0 mr-4'>
                           <CyDImage
                             source={
-                              typeof merchant.logo === 'string'
-                                ? { uri: merchant.logo }
-                                : merchant.logo
+                              typeof item.logo === 'string'
+                                ? { uri: item.logo }
+                                : item.logo
                             }
                             className='w-full h-full'
                             resizeMode='cover'
                           />
                         </CyDView>
-                        <CyDText className='text-[18px]'>
-                          {merchant.name}
-                        </CyDText>
+                        <CyDText className='text-[18px]'>{item.name}</CyDText>
                       </CyDView>
-                    ))}
-                  </CyDView>
+                    )}
+                  />
                 </CyDView>
               </CyDView>
             </>

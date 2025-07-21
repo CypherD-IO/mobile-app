@@ -79,6 +79,16 @@ const styles = StyleSheet.create({
     width: 300,
     height: 520,
   },
+  video: {
+    width: '100%',
+    height: '100%',
+  },
+  videoVisible: {
+    opacity: 1,
+  },
+  videoHidden: {
+    opacity: 0,
+  },
   blurContainer: {
     paddingHorizontal: 16,
     paddingBottom: 24,
@@ -89,6 +99,7 @@ const ApplicationWelcome = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
   const [isVideoPaused, setIsVideoPaused] = useState(true);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [showExclusiveOfferModal, setShowExclusiveOfferModal] = useState(false);
   const {
     isRewardSlotAvailable,
@@ -109,6 +120,9 @@ const ApplicationWelcome = (): JSX.Element => {
     ? 'rgba(22, 22, 22, 0.90)'
     : 'rgba(255, 255, 255, 0.90)';
 
+  // Dynamic background colour for video placeholder to avoid black flash.
+  const videoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
+
   // console.log('deadline : ', deadline);
   // console.log('isRewardSlotAvailable : ', isRewardSlotAvailable);
 
@@ -124,7 +138,8 @@ const ApplicationWelcome = (): JSX.Element => {
   // Handle video playback based on screen focus
   useFocusEffect(
     React.useCallback(() => {
-      // Screen is focused - start video
+      // Screen is focused - reset loading state and start video
+      setIsVideoLoaded(false);
       setIsVideoPaused(true);
 
       // Small delay to ensure smooth transition
@@ -133,9 +148,10 @@ const ApplicationWelcome = (): JSX.Element => {
       }, 100);
 
       return () => {
-        // Screen is unfocused - pause video
+        // Screen is unfocused - pause video and reset loading state
         clearTimeout(timer);
         setIsVideoPaused(true); // Pause video (paused = true)
+        setIsVideoLoaded(false); // Reset loading state
       };
     }, []),
   );
@@ -186,28 +202,46 @@ const ApplicationWelcome = (): JSX.Element => {
     <CyDView className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n0'}`}>
       <CyDView className='flex-1' style={{ paddingTop: insets.top }}>
         {/* Background Video */}
-        <Video
-          source={{
-            uri: isDarkMode
-              ? AppImagesMap.common.VIRTUAL_CARD_VERTICAL_SPIN.uri
-              : AppImagesMap.common.VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG.uri,
-          }}
-          style={styles.videoContainer}
-          resizeMode='cover'
-          repeat={true}
-          paused={isVideoPaused}
-          muted={true}
-          controls={false}
-          playInBackground={false}
-          playWhenInactive={false}
-          onLoad={() => {
-            // Video loaded successfully, ensure it starts playing
-            setIsVideoPaused(false);
-          }}
-          onError={error => {
-            console.log('Video playback error:', error);
-          }}
-        />
+        <CyDView
+          style={[styles.videoContainer, { backgroundColor: videoBgColor }]}>
+          {/* Loading placeholder - always visible with proper background */}
+          {!isVideoLoaded && (
+            <CyDView
+              style={[styles.video, { backgroundColor: videoBgColor }]}
+            />
+          )}
+
+          {/* Video - only show when loaded */}
+          <Video
+            source={{
+              uri: isDarkMode
+                ? AppImagesMap.common.VIRTUAL_CARD_VERTICAL_SPIN.uri
+                : AppImagesMap.common.VIRTUAL_CARD_VERTICAL_SPIN_WHITE_BG.uri,
+            }}
+            style={[
+              styles.video,
+              {
+                backgroundColor: videoBgColor,
+              },
+              isVideoLoaded ? styles.videoVisible : styles.videoHidden,
+            ]}
+            resizeMode='cover'
+            repeat={true}
+            paused={isVideoPaused}
+            muted={true}
+            controls={false}
+            playInBackground={false}
+            playWhenInactive={false}
+            onLoad={() => {
+              // Video loaded successfully, show it and start playing
+              setIsVideoLoaded(true);
+              setIsVideoPaused(false);
+            }}
+            onError={error => {
+              console.log('Video playback error:', error);
+            }}
+          />
+        </CyDView>
 
         {/* Header */}
         <CyDView className='flex-row justify-between items-center px-4 py-2'>

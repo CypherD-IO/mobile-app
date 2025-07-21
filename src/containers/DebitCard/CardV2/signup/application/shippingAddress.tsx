@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import React, { useState, useRef } from 'react';
 import {
   NavigationProp,
@@ -24,7 +25,7 @@ import CardApplicationHeader from '../../../../../components/v2/CardApplicationH
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
 import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
-import { Platform, Keyboard } from 'react-native';
+import { Platform } from 'react-native';
 
 // Validation schema for the shipping address form
 const ShippingAddressSchema = Yup.object().shape({
@@ -73,7 +74,6 @@ const ShippingAddress = (): JSX.Element => {
   const [selectPhoneCountryModalVisible, setSelectPhoneCountryModalVisible] =
     useState<boolean>(false);
   const [isPhoneCountrySet, setIsPhoneCountrySet] = useState<boolean>(false);
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>({
     name: 'United States',
@@ -163,18 +163,7 @@ const ShippingAddress = (): JSX.Element => {
     </CyDView>
   );
 
-  React.useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () =>
-      setKeyboardVisible(true),
-    );
-    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
-      setKeyboardVisible(false),
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
+  // Removed keyboard visibility tracking; OfferTagComponent now handles its own animation
 
   return (
     <CyDView
@@ -376,15 +365,13 @@ const ShippingAddress = (): JSX.Element => {
               </CyDView>
             </KeyboardAwareScrollView>
 
-            {!(Platform.OS === 'android' && isKeyboardVisible) && (
-              <OfferTagComponent
-                position={{
-                  bottom: Platform.OS === 'android' ? 118 : 146,
-                  left: 16,
-                  right: 16,
-                }}
-              />
-            )}
+            <OfferTagComponent
+              position={{
+                bottom: Platform.OS === 'android' ? 118 : 146,
+                left: 16,
+                right: 16,
+              }}
+            />
 
             {/* Footer */}
             <CardApplicationFooter
@@ -393,7 +380,9 @@ const ShippingAddress = (): JSX.Element => {
               currentSectionProgress={80}
               buttonConfig={{
                 title: t('NEXT'),
-                onPress: () => handleSubmit(),
+                onPress: () => {
+                  handleSubmit();
+                },
                 disabled: !isValid,
               }}
             />

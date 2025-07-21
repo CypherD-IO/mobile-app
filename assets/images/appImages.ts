@@ -743,6 +743,9 @@ const REWARD_BG = {
 const REWARD_BG_LIGHT = {
   uri: `${S3_BUCKET_URL_ICONS}/rewardsBgLight.png`,
 };
+const GREEN_CHECK_MARK_WHITE_BORDER = {
+  uri: `${S3_BUCKET_URL_ICONS}/greenCheckMarkWhiteBorder.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -1056,6 +1059,7 @@ export const AppImagesMap = {
     CYPR_TOKEN_REWARD_LIGHT,
     REWARD_BG,
     REWARD_BG_LIGHT,
+    GREEN_CHECK_MARK_WHITE_BORDER,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1373,6 +1377,7 @@ enum AppImages {
   CYPR_TOKEN_REWARD_LIGHT = 'CYPR_TOKEN_REWARD_LIGHT',
   REWARD_BG = 'REWARD_BG',
   REWARD_BG_LIGHT = 'REWARD_BG_LIGHT',
+  GREEN_CHECK_MARK_WHITE_BORDER = 'GREEN_CHECK_MARK_WHITE_BORDER',
 }
 
 export default AppImages;

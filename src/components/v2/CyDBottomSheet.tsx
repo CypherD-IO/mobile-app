@@ -2,9 +2,8 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  useEffect,
-  forwardRef,
   useImperativeHandle,
+  forwardRef,
 } from 'react';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -20,7 +19,7 @@ import {
 } from '../../styles/tailwindComponents';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
-import { StyleSheet, Platform, StatusBar } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export interface CyDBottomSheetRef {
   present: () => void;
@@ -99,6 +98,12 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     // Memoize snap points
     const snapPointsMemo = useMemo(() => snapPoints, [snapPoints]);
 
+    // Track the previous index so we can differentiate between the initial `-1` callback that
+    // happens on mount and a genuine close event. This prevents the provider from interpreting
+    // the very first `-1` as a user-initiated dismissal, which could lead to the sheet being
+    // removed from the React tree before it has a chance to present.
+    const previousIndexRef = useRef<number | null>(null);
+
     // Expose methods through ref
     useImperativeHandle(
       ref,
@@ -128,27 +133,24 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       (index: number) => {
         console.log('Bottom sheet index changed to:', index);
 
-        // Update status bar based on sheet state
-        // if (Platform.OS === 'android') {
-        //   const isFullScreen = index === snapPointsMemo.length - 1;
-        //   const bgColor = isFullScreen
-        //     ? theme === 'dark'
-        //       ? '#000000ff'
-        //       : '#ffffffff'
-        //     : 'transparent';
-        //   StatusBar.setBackgroundColor(bgColor);
-        // }
+        const prevIndex = previousIndexRef.current;
+        previousIndexRef.current = index;
 
-        // Handle callbacks
-        if (index === -1) {
-          onClose?.();
-        } else if (index >= 0) {
+        // We only want to fire onOpen/onClose when we actually transition between states.
+        // 1. onOpen -> when we go from a closed state (-1) to any open index (>= 0)
+        // 2. onClose -> when we go from an open state (>= 0) to closed (-1)
+        if (index >= 0 && (prevIndex === -1 || prevIndex === null)) {
           onOpen?.();
         }
 
+        if (index === -1 && prevIndex !== -1 && prevIndex !== null) {
+          onClose?.();
+        }
+
+        // Always forward the raw value to the consumer
         onChange?.(index);
       },
-      [theme, snapPointsMemo.length, onClose, onOpen, onChange],
+      [onClose, onOpen, onChange],
     );
 
     // Custom backdrop component
