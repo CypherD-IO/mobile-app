@@ -136,7 +136,7 @@ export default function WithdrawHistory() {
                   <CyDText
                     className={clsx('text-[14px] font-semibold', {
                       'text-yellow-600': transaction.status === 'PENDING',
-                      'text-orange-500': transaction.status === 'IN_PROGRESS',
+                      'text-orange500': transaction.status === 'IN_PROGRESS',
                       'text-emerald-500': transaction.status === 'COMPLETED',
                       'text-red-500': transaction.status === 'FAILED',
                     })}>

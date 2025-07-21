@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import React, { useState, useRef } from 'react';
 import {
   NavigationProp,
@@ -23,6 +24,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
+import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
+import { Platform } from 'react-native';
 
 // Validation schema for the shipping address form
 const ShippingAddressSchema = Yup.object().shape({
@@ -134,16 +137,16 @@ const ShippingAddress = (): JSX.Element => {
   };
 
   // Handle address country selection
-  const handleAddressCountrySelect = (country: ICountry) => {
+  const handleAddressCountrySelect = (country?: ICountry) => {
     setSelectedCountry(country);
     // Only set phone country if it hasn't been explicitly set by user
-    if (!isPhoneCountrySet) {
+    if (!isPhoneCountrySet && country) {
       setSelectedPhoneCountry(country);
     }
   };
 
   // Handle phone country selection
-  const handlePhoneCountrySelect = (country: ICountry) => {
+  const handlePhoneCountrySelect = (country?: ICountry) => {
     setSelectedPhoneCountry(country);
     setIsPhoneCountrySet(true);
   };
@@ -160,6 +163,8 @@ const ShippingAddress = (): JSX.Element => {
     </CyDView>
   );
 
+  // Removed keyboard visibility tracking; OfferTagComponent now handles its own animation
+
   return (
     <CyDView
       className='flex-1 bg-n0'
@@ -168,7 +173,7 @@ const ShippingAddress = (): JSX.Element => {
       <ChooseCountryModal
         isModalVisible={selectCountryModalVisible}
         setModalVisible={setSelectCountryModalVisible}
-        selectedCountryState={[selectedCountry, handleAddressCountrySelect]}
+        selectedCountryState={[selectedCountry, setSelectedCountry]}
         countryListFetchUrl={
           'https://public.cypherd.io/js/rcSupportedCountries.js'
         }
@@ -176,7 +181,7 @@ const ShippingAddress = (): JSX.Element => {
       <ChooseCountryModal
         isModalVisible={selectPhoneCountryModalVisible}
         setModalVisible={setSelectPhoneCountryModalVisible}
-        selectedCountryState={[selectedPhoneCountry, handlePhoneCountrySelect]}
+        selectedCountryState={[selectedPhoneCountry, setSelectedPhoneCountry]}
         countryListFetchUrl={
           'https://public.cypherd.io/js/rcSupportedCountries.js'
         }
@@ -360,6 +365,14 @@ const ShippingAddress = (): JSX.Element => {
               </CyDView>
             </KeyboardAwareScrollView>
 
+            <OfferTagComponent
+              position={{
+                bottom: Platform.OS === 'android' ? 118 : 146,
+                left: 16,
+                right: 16,
+              }}
+            />
+
             {/* Footer */}
             <CardApplicationFooter
               currentStep={currentStep}
@@ -367,7 +380,9 @@ const ShippingAddress = (): JSX.Element => {
               currentSectionProgress={80}
               buttonConfig={{
                 title: t('NEXT'),
-                onPress: () => handleSubmit(),
+                onPress: () => {
+                  handleSubmit();
+                },
                 disabled: !isValid,
               }}
             />

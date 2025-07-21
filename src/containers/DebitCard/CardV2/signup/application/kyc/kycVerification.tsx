@@ -32,6 +32,7 @@ import KYCFailedComponent from './KYCFailedComponent';
 import AdditionalDocumentRequiredComponent from './AdditionalDocumentRequiredComponent';
 import AdditionalReviewComponent from './AdditionalReviewComponent';
 import KYCIntroComponent from './KYCIntroComponent';
+import { useOnboardingReward } from '../../../../../../contexts/OnboardingRewardContext';
 
 // Import components
 const KYCVerification = () => {
@@ -47,6 +48,9 @@ const KYCVerification = () => {
     null,
   );
   const [isRainDeclined, setIsRainDeclined] = useState(false);
+
+  const { refreshStatus, hasSecuredSlot, totalRewardsPossible, stopTimer } =
+    useOnboardingReward();
 
   const checkKYCStatus = async () => {
     try {
@@ -90,8 +94,23 @@ const KYCVerification = () => {
       kycStatus === CardApplicationStatus.KYC_SUCCESSFUL ||
       kycStatus === CardApplicationStatus.COMPLETED
     ) {
-      navigation.navigate(screenTitle.NAME_ON_CARD);
+      if (hasSecuredSlot) {
+        navigation.navigate(screenTitle.TOKEN_REWARD_EARNED, {
+          rewardAmount: totalRewardsPossible,
+          tokenSymbol: '$CYPR',
+        });
+      } else {
+        navigation.navigate(screenTitle.NAME_ON_CARD);
+      }
     } else if (kycStatus === CardApplicationStatus.KYC_INITIATED) {
+      // User is starting the KYC flow – cancel the onboarding reward countdown
+      // timer to avoid unnecessary renders while the KYC web-view is active.
+      stopTimer();
+
+      // Force-refresh onboarding status so that backend progress is pulled
+      // before the user exits the flow.
+      void refreshStatus();
+
       navigation.navigate(screenTitle.KYC_WEBVIEW);
     }
   };
@@ -108,6 +127,7 @@ const KYCVerification = () => {
   );
 
   const getProgress = () => {
+    console.log('kycStatus', kycStatus);
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
         if (isRainDeclined) {
