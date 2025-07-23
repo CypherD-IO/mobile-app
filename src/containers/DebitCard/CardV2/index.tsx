@@ -160,7 +160,7 @@ export default function CypherCardScreen() {
     useState(false);
   const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
-  const { refreshStatus: refreshOnboardingStatus, hasSecuredSlot } =
+  const { refreshStatus: refreshOnboardingStatus, statusWiseRewards } =
     useOnboardingReward();
 
   const { theme } = useTheme();
@@ -802,7 +802,9 @@ export default function CypherCardScreen() {
             cardDesignData={cardDesignData}
             cardBalance={cardBalance}
           />
-          {hasSecuredSlot && <RewardProgressWidget />}
+          {get(statusWiseRewards, ['kycPending', 'earned'], false) && (
+            <RewardProgressWidget />
+          )}
           <MerchantSpendRewardWidget
             onViewAllPress={handleViewAllMerchants}
             onMerchantPress={handleDirectMerchantPress}
