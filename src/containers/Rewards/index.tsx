@@ -544,7 +544,6 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   );
 };
 
-// NOTE: This screen currently renders static / dummy data.\n//       API integrations and real data mapping will be implemented later.\n//       All onPress handlers are placeholders.\n
 export default function Rewards() {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();

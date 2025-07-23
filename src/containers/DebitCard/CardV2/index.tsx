@@ -383,7 +383,7 @@ export default function CypherCardScreen() {
   };
   const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
-  const { refreshStatus: refreshOnboardingStatus, hasSecuredSlot } =
+  const { refreshStatus: refreshOnboardingStatus, statusWiseRewards } =
     useOnboardingReward();
 
   const { theme } = useTheme();
