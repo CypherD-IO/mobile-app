@@ -49,7 +49,7 @@ const KYCVerification = () => {
   );
   const [isRainDeclined, setIsRainDeclined] = useState(false);
 
-  const { refreshStatus, hasSecuredSlot, totalRewardsPossible, stopTimer } =
+  const { refreshStatus, statusWiseRewards, totalRewardsPossible, stopTimer } =
     useOnboardingReward();
 
   const checkKYCStatus = async () => {
@@ -94,9 +94,9 @@ const KYCVerification = () => {
       kycStatus === CardApplicationStatus.KYC_SUCCESSFUL ||
       kycStatus === CardApplicationStatus.COMPLETED
     ) {
-      if (hasSecuredSlot) {
+      if (get(statusWiseRewards, ['kycPending', 'earned'], false)) {
         navigation.navigate(screenTitle.TOKEN_REWARD_EARNED, {
-          rewardAmount: totalRewardsPossible,
+          rewardAmount: get(statusWiseRewards, ['kycPending', 'amount'], 0),
           tokenSymbol: '$CYPR',
         });
       } else {
