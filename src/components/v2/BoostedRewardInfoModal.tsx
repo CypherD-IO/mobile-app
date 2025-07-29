@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, FlatList } from 'react-native';
+import { Image, StyleSheet, ScrollView } from 'react-native';
 import {
   CyDView,
   CyDText,
   CyDTouchView,
   CyDImage,
-  CyDScrollView,
+  CyDTouchableWithoutFeedback,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import Button from './button';
@@ -55,64 +55,11 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
   votedCandidates = [],
 }) => {
   // State for bonus data (will be populated by API call in future)
-  const [bonusData, setBonusData] = useState<ReferralBonusData | null>(null);
-  const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
-
-  /**
-   * Effect to fetch referral bonus data when modal becomes visible
-   * Currently uses dummy data, will be replaced with actual API call
-   */
-  useEffect(() => {
-    if (isVisible) {
-      void fetchReferralBonusData();
-    }
-  }, [isVisible]);
-
-  /**
-   * Fetch referral bonus data from API
-   * TODO: Replace with actual API endpoint
-   */
-  const fetchReferralBonusData = async () => {
-    try {
-      setLoading(true);
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Dummy data matching the screenshot
-      const dummyData: ReferralBonusData = {
-        rewardMultiplier: '4.5x',
-        expiryDate: 'June 29',
-        merchants: [
-          {
-            name: 'Amazon',
-            logo: AppImages.COINBASE, // Using existing logo as placeholder
-          },
-          {
-            name: 'Grab',
-            logo: AppImages.ONMETA, // Using existing logo as placeholder
-          },
-        ],
-      };
-
-      setBonusData(dummyData);
-    } catch (error) {
-      console.error('Error fetching referral bonus data:', error);
-      // Set fallback data in case of error
-      setBonusData({
-        rewardMultiplier: '4.5x',
-        expiryDate: 'June 29',
-        merchants: [],
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   /**
    * Handle continue button press
@@ -121,7 +68,19 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
     onContinue();
   };
 
-  const stylesList = StyleSheet.create({ merchantList: { maxHeight: 200 } });
+  const stylesList = StyleSheet.create({
+    merchantList: {
+      height: 180, // Adjusted height for typical merchant list
+      backgroundColor: 'transparent',
+    },
+    merchantListContent: {
+      paddingBottom: 12, // Reduced padding since we have fewer items typically
+      minHeight: 160, // Ensure content is taller than container for scrolling
+    },
+  });
+
+  // Calculate if content should be scrollable
+  const shouldShowScrollIndicator = votedCandidates.length > 2;
 
   return (
     <CyDModalLayout
@@ -130,6 +89,9 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
       backdropOpacity={0.8}
       animationIn='slideInUp'
       animationOut='slideOutDown'
+      propagateSwipe={true}
+      swipeDirection={[]}
+      disableBackDropPress={false}
       setModalVisible={() => {
         // Only dismissible via Continue button - no action
       }}>
@@ -195,33 +157,49 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
                     On spends at
                   </CyDText> */}
 
-                  {/* Merchant List */}
-                  <FlatList
-                    data={votedCandidates}
-                    keyExtractor={(_, index) => index.toString()}
-                    style={stylesList.merchantList}
-                    showsVerticalScrollIndicator={false}
-                    nestedScrollEnabled={true}
-                    scrollEnabled={true}
-                    bounces={true}
-                    scrollEventThrottle={16}
-                    renderItem={({ item }) => (
-                      <CyDView className='flex-row items-center mb-[12px]'>
-                        <CyDView className='w-10 h-10 rounded-full overflow-hidden bg-n0 mr-4'>
-                          <CyDImage
-                            source={
-                              typeof item.logo === 'string'
-                                ? { uri: item.logo }
-                                : item.logo
-                            }
-                            className='w-full h-full'
-                            resizeMode='cover'
-                          />
-                        </CyDView>
-                        <CyDText className='text-[18px]'>{item.name}</CyDText>
-                      </CyDView>
-                    )}
-                  />
+                  {/* Enhanced Merchant List with Better Touch Handling */}
+                  {/* Community-Proven Modal Scroll Solution */}
+                  <CyDTouchableWithoutFeedback>
+                    <CyDView style={stylesList.merchantList}>
+                      <ScrollView
+                        showsVerticalScrollIndicator={shouldShowScrollIndicator}
+                        scrollEnabled={true}
+                        bounces={true}
+                        contentContainerStyle={stylesList.merchantListContent}
+                        nestedScrollEnabled={true}
+                        keyboardShouldPersistTaps='always'
+                        scrollEventThrottle={16}
+                        onScrollBeginDrag={() => {
+                          console.log(
+                            `Merchant list scrolling: ${votedCandidates.length} items`,
+                          );
+                        }}
+                        onScrollEndDrag={() => {
+                          console.log('Merchant list scroll ended');
+                        }}>
+                        {votedCandidates.map((item, index) => (
+                          <CyDTouchableWithoutFeedback key={index}>
+                            <CyDView className='flex-row items-center mb-[12px]'>
+                              <CyDView className='w-10 h-10 rounded-full overflow-hidden bg-n0 mr-4'>
+                                <CyDImage
+                                  source={
+                                    typeof item.logo === 'string'
+                                      ? { uri: item.logo }
+                                      : item.logo
+                                  }
+                                  className='w-full h-full'
+                                  resizeMode='cover'
+                                />
+                              </CyDView>
+                              <CyDText className='text-[18px]'>
+                                {item.name}
+                              </CyDText>
+                            </CyDView>
+                          </CyDTouchableWithoutFeedback>
+                        ))}
+                      </ScrollView>
+                    </CyDView>
+                  </CyDTouchableWithoutFeedback>
                 </CyDView>
               </CyDView>
             </>
