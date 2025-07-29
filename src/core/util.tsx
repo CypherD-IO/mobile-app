@@ -34,7 +34,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get, isEmpty, omit } from 'lodash';
+import { find, get, isEmpty, omit, omitBy } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
@@ -1181,7 +1181,24 @@ export function getCountryObjectById(countryId: string): ICountry | undefined {
       c?.Iso2?.toLowerCase() === countryId.toLowerCase() ||
       c?.Iso3?.toLowerCase() === countryId.toLowerCase(),
   );
-  return country;
+  return {
+    ...country,
+    flag: country?.unicode_flag,
+  };
+}
+
+export function getCountryObjectByDialCode(
+  dialCode: string,
+): ICountry | undefined {
+  const country = countryMaster.find(c => c?.dial_code === dialCode);
+  console.log('country in getCountryObjectByDialCode :::: ', {
+    ...country,
+    dialCode: country?.dial_code,
+  });
+  return {
+    ...omit(country, ['dial_code']),
+    dialCode: country?.dial_code,
+  };
 }
 
 export function getCountryNameById(countryId: string): string | undefined {

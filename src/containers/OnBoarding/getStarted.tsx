@@ -15,7 +15,7 @@ import {
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
-import { Platform, StyleSheet, BackHandler } from 'react-native';
+import { Platform, StyleSheet, BackHandler, PanResponder } from 'react-native';
 import Video from 'react-native-video';
 import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
@@ -304,6 +304,53 @@ const OnBoardingGetStarted = () => {
     });
   };
 
+  /**
+   * Pan responder for handling swipe gestures
+   * Left swipe -> next section, Right swipe -> previous section
+   * Includes thresholds to prevent accidental navigation
+   */
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      // Only respond to horizontal swipes with sufficient movement
+      const { dx, dy } = gestureState;
+      return Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 20;
+    },
+
+    onPanResponderMove: (evt, gestureState) => {
+      // Log gesture progress for debugging
+      // console.log('Swipe in progress:', gestureState.dx);
+    },
+
+    onPanResponderRelease: (evt, gestureState) => {
+      const { dx, vx } = gestureState;
+      const swipeThreshold = 100; // Minimum distance for swipe
+      const velocityThreshold = 0.5; // Minimum velocity for swipe
+
+      // Check if swipe meets minimum requirements
+      const isSignificantSwipe =
+        Math.abs(dx) > swipeThreshold || Math.abs(vx) > velocityThreshold;
+
+      if (isSignificantSwipe) {
+        if (dx > 0) {
+          // Right swipe - go to previous section
+          console.log('Right swipe detected, going to previous section');
+          handleBack();
+        } else {
+          // Left swipe - go to next section
+          console.log('Left swipe detected, going to next section');
+          handleContinue();
+        }
+      } else {
+        console.log('Swipe gesture too small, ignoring');
+      }
+    },
+
+    onPanResponderTerminate: () => {
+      // Handle gesture termination if needed
+      console.log('Swipe gesture terminated');
+    },
+  });
+
   // Handle Android hardware back button
   // Ensures consistent back navigation behavior across platforms
   useFocusEffect(
@@ -323,7 +370,7 @@ const OnBoardingGetStarted = () => {
   );
 
   return (
-    <>
+    <CyDView className='flex-1' {...panResponder.panHandlers}>
       {/* Sections */}
       {currentIndex === 0 && <Section1 handleContinue={handleContinue} />}
       {currentIndex === 1 && <Section2 handleContinue={handleContinue} />}
@@ -341,7 +388,7 @@ const OnBoardingGetStarted = () => {
         onBack={handleBack}
         onContinue={handleContinue}
       />
-    </>
+    </CyDView>
   );
 };
 

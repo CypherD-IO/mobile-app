@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -26,6 +26,11 @@ import CardApplicationFooter from '../../../../../components/v2/CardApplicationF
 import { useFormContext } from './FormContext';
 import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
 import { Platform } from 'react-native';
+import {
+  getCountryObjectByDialCode,
+  getCountryObjectById,
+} from '../../../../../core/util';
+import countryMaster from '../../../../../../assets/datasets/countryMaster';
 
 // Validation schema for the shipping address form
 const ShippingAddressSchema = Yup.object().shape({
@@ -75,25 +80,37 @@ const ShippingAddress = (): JSX.Element => {
     useState<boolean>(false);
   const [isPhoneCountrySet, setIsPhoneCountrySet] = useState<boolean>(false);
 
-  const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>({
-    name: 'United States',
-    dialCode: '+1',
-    flag: '🇺🇸',
-    Iso2: 'US',
-    Iso3: 'USA',
-    currency: 'USD',
-  });
+  // Initialise selectedCountry and selectedPhoneCountry from form context if available
+  const initialCountry: ICountry | undefined = useMemo(() => {
+    if (formState.country) {
+      return getCountryObjectById(formState.country);
+    }
+    return {
+      name: 'United States',
+      dialCode: '+1',
+      flag: '🇺🇸',
+      Iso2: 'US',
+      Iso3: 'USA',
+      currency: 'USD',
+      unicode_flag: '🇺🇸',
+    } as ICountry;
+  }, [formState.country]);
+
+  const initialPhoneCountry: ICountry | undefined = useMemo(() => {
+    console.log('formState.dialCode :::: ', formState.dialCode);
+    if (formState.dialCode) {
+      return getCountryObjectByDialCode(formState.dialCode);
+    }
+    return initialCountry; // default to address country
+  }, [formState.dialCode, initialCountry]);
+
+  const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>(
+    initialCountry,
+  );
 
   const [selectedPhoneCountry, setSelectedPhoneCountry] = useState<
     ICountry | undefined
-  >({
-    name: 'United States',
-    dialCode: '+1',
-    flag: '🇺🇸',
-    Iso2: 'US',
-    Iso3: 'USA',
-    currency: 'USD',
-  });
+  >(initialPhoneCountry);
 
   const currentStep = 1;
   const totalSteps = 3;
@@ -150,6 +167,25 @@ const ShippingAddress = (): JSX.Element => {
     setSelectedPhoneCountry(country);
     setIsPhoneCountrySet(true);
   };
+
+  // Persist selectedCountry to form context whenever it changes
+  useEffect(() => {
+    console.log('selectedCountry :::: ', selectedCountry);
+    if (selectedCountry?.Iso2) {
+      setFormState(prev => ({ ...prev, country: selectedCountry.Iso2 }));
+    }
+  }, [selectedCountry, setFormState]);
+
+  // Persist selectedPhoneCountry dial code to form context whenever it changes
+  useEffect(() => {
+    console.log('selectedPhoneCountry :::: ', selectedPhoneCountry);
+    if (selectedPhoneCountry?.dialCode) {
+      setFormState(prev => ({
+        ...prev,
+        dialCode: selectedPhoneCountry.dialCode,
+      }));
+    }
+  }, [selectedPhoneCountry, setFormState]);
 
   // Helper function to render error message
   const renderErrorMessage = (errorMsg: string) => (
