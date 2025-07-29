@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   NavigationProp,
@@ -24,13 +25,14 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
+import { ApplicationData } from '../../../../../models/applicationData.interface';
+import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
+import { Platform } from 'react-native';
 import {
   getCountryObjectByDialCode,
   getCountryObjectById,
 } from '../../../../../core/util';
-import { ApplicationData } from '../../../../../models/applicationData.interface';
-import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
-import { Platform } from 'react-native';
+import countryMaster from '../../../../../../assets/datasets/countryMaster';
 
 // Validation schema for the shipping address form
 const ShippingAddressSchema = Yup.object().shape({
