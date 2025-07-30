@@ -4,22 +4,23 @@
     {
       "icon": {
         "paths": [
-          "M189.184 394.021l213.105 294.832h22.122l-129.234-269.36c-16.947-19.928-42.207-32.571-70.415-32.571-12.213-0.015-24.307 2.395-35.578 7.099zM377.406 699.97l-215.567-298.233c-2.685-0.768-5.195-2.052-7.39-3.778-6.96-5.438-9.753-14.102-7.274-22.576 44.9-153.528 186.751-265.669 354.794-265.669s309.895 112.141 354.794 265.669c2.48 8.474-0.318 17.141-7.274 22.576-2.194 1.726-4.707 3.010-7.391 3.778l-215.567 298.233c0.644 1.803 0.973 3.705 0.973 5.617v217.596c0 9.22-7.519 16.739-16.739 16.739h-217.593c-9.22 0-16.739-7.519-16.739-16.739v-217.596c0-1.968 0.344-3.858 0.973-5.617zM601.648 688.852l213.105-294.832c-11.271-4.703-23.365-7.113-35.577-7.099-28.211 0-53.471 12.643-70.418 32.571l-129.232 269.36h22.122zM549.947 688.852h-5.947v85.226c0 9.22-7.519 16.739-16.735 16.739h-50.589c-9.22 0-16.739-7.519-16.739-16.739v-85.226h-5.943l-124.065-258.589c1.69-1.313 3.178-2.867 4.416-4.615 16.76-23.442 44.206-38.725 75.223-38.725s58.467 15.283 75.22 38.725c1.097 1.547 2.388 2.94 3.844 4.155v259.050h26.675v-259.050c1.456-1.214 2.747-2.608 3.844-4.155 16.757-23.442 44.208-38.725 75.22-38.725 31.016 0 58.467 15.283 75.224 38.725 1.236 1.748 2.725 3.302 4.414 4.615l-124.061 258.589z"
+          "M490.167 26.333c32.060-0.023 63.748 6.85 92.915 20.154s55.13 32.727 76.13 56.951c31.991-2.284 64.102 2.344 94.144 13.57 30.046 11.226 57.323 28.787 79.979 51.49 22.699 22.658 40.26 49.935 51.486 79.979s15.855 62.152 13.572 94.144c47.189 41.017 77.107 101.547 77.107 169.097 0.026 32.077-6.848 63.787-20.16 92.971-13.316 29.188-32.751 55.164-56.994 76.173 2.278 31.979-2.347 64.077-13.564 94.11-11.217 30.037-28.762 57.306-51.447 79.962-22.652 22.699-49.92 40.256-79.953 51.482-30.037 11.226-62.135 15.855-94.118 13.581-21.005 24.23-46.98 43.657-76.156 56.96s-60.873 20.173-92.941 20.143c-32.068 0.030-63.766-6.839-92.943-20.143s-55.149-32.73-76.153-56.96c-31.992 2.283-64.101-2.347-94.146-13.572s-57.321-28.787-79.977-51.49c-22.7-22.656-40.259-49.933-51.485-79.979-11.226-30.042-15.855-62.153-13.574-94.144-47.189-41.015-77.056-101.547-77.056-169.092-0.033-32.064 6.831-63.761 20.126-92.935 13.295-29.176 32.711-55.151 56.93-76.162-2.281-31.992 2.349-64.1 13.574-94.144s28.785-57.321 51.485-79.979c22.654-22.688 49.925-40.235 79.96-51.453s62.132-15.841 94.112-13.557c21.005-24.246 46.983-43.686 76.169-56.999s60.895-20.188 92.976-20.156zM665.882 388.716c6.596-7.077 10.185-16.437 10.014-26.109s-4.087-18.9-10.927-25.74c-6.839-6.84-16.068-10.758-25.741-10.929s-19.034 3.42-26.108 10.014l-298.669 298.668c-3.668 3.418-6.61 7.539-8.65 12.117s-3.138 9.523-3.226 14.537c-0.088 5.013 0.834 9.993 2.711 14.639 1.878 4.651 4.672 8.87 8.218 12.416s7.768 6.34 12.416 8.218c4.649 1.877 9.628 2.803 14.641 2.714s9.957-1.186 14.536-3.226c4.579-2.044 8.701-4.983 12.119-8.653l298.666-298.666zM378.167 343.667c-14.852 0-29.096 5.9-39.598 16.402s-16.402 24.746-16.402 39.598c0 14.852 5.9 29.095 16.402 39.599 10.502 10.5 24.746 16.401 39.598 16.401s29.096-5.901 39.598-16.401c10.502-10.505 16.403-24.747 16.403-39.599s-5.901-29.096-16.403-39.598c-10.502-10.502-24.746-16.402-39.598-16.402zM602.167 567.667c-14.852 0-29.099 5.901-39.599 16.401-10.5 10.505-16.401 24.747-16.401 39.599s5.901 29.094 16.401 39.599c10.5 10.5 24.747 16.401 39.599 16.401s29.094-5.901 39.599-16.401c10.5-10.505 16.401-24.747 16.401-39.599s-5.901-29.094-16.401-39.599c-10.505-10.5-24.747-16.401-39.599-16.401z"
         ],
         "attrs": [{}],
+        "width": 981,
         "isMulticolor": false,
         "isMulticolor2": false,
         "grid": 0,
-        "tags": ["Group 260 (1)"],
+        "tags": ["rewards_icon"],
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
         }
       },
       "attrs": [{}],
       "properties": {
-        "order": 110,
-        "id": 104,
-        "name": "airdrop-icon",
+        "order": 112,
+        "id": 100,
+        "name": "rewards-icon",
         "prevSize": 32,
         "code": 59737
       },
@@ -36,16 +37,16 @@
         "attrs": [{}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "grid": 0,
-        "tags": ["Group 260"],
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}, {}]
-        }
+        },
+        "tags": ["Group 260"],
+        "grid": 0
       },
       "attrs": [{}, {}],
       "properties": {
         "order": 108,
-        "id": 102,
+        "id": 1,
         "name": "sad-face",
         "prevSize": 32,
         "code": 59700
@@ -63,16 +64,16 @@
         "attrs": [{}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "grid": 0,
-        "tags": ["Group"],
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}, {}]
-        }
+        },
+        "tags": ["Group"],
+        "grid": 0
       },
       "attrs": [{}, {}],
       "properties": {
         "order": 107,
-        "id": 101,
+        "id": 2,
         "name": "happy-face",
         "prevSize": 32,
         "code": 59703
@@ -90,16 +91,16 @@
         "attrs": [{}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "grid": 0,
-        "tags": ["Figma Frame (1)"],
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}, {}]
-        }
+        },
+        "tags": ["Figma Frame (1)"],
+        "grid": 0
       },
       "attrs": [{}, {}],
       "properties": {
         "order": 13,
-        "id": 99,
+        "id": 3,
         "name": "edit-2",
         "prevSize": 32,
         "code": 59742
@@ -116,16 +117,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "grid": 0,
-        "tags": ["Untitled Frame"],
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Untitled Frame"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 12,
-        "id": 98,
+        "id": 4,
         "name": "nft-icon",
         "prevSize": 32,
         "code": 59674
@@ -142,16 +143,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "grid": 0,
-        "tags": ["Untitled Frame (2)"],
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Untitled Frame (2)"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 11,
-        "id": 97,
+        "id": 5,
         "name": "zap",
         "prevSize": 32,
         "code": 59675
@@ -168,16 +169,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "grid": 0,
-        "tags": ["Untitled Frame (1)"],
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Untitled Frame (1)"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 10,
-        "id": 96,
+        "id": 6,
         "name": "coins-stacked",
         "prevSize": 32,
         "code": 59692
@@ -204,7 +205,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 105,
-        "id": 0,
+        "id": 7,
         "name": "apple-google-icon",
         "prevSize": 32,
         "code": 59671
@@ -230,7 +231,7 @@
       "attrs": [{}],
       "properties": {
         "order": 104,
-        "id": 1,
+        "id": 8,
         "name": "balance-scale",
         "prevSize": 32,
         "code": 59672
@@ -256,7 +257,7 @@
       "attrs": [{}],
       "properties": {
         "order": 103,
-        "id": 2,
+        "id": 9,
         "name": "paypal-icon",
         "prevSize": 32,
         "code": 59673
@@ -283,7 +284,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 3,
-        "id": 3,
+        "id": 10,
         "name": "card-plus",
         "prevSize": 32,
         "code": 59670
@@ -309,7 +310,7 @@
       "attrs": [{}],
       "properties": {
         "order": 102,
-        "id": 4,
+        "id": 11,
         "name": "arrow-left",
         "prevSize": 32,
         "code": 59666
@@ -326,16 +327,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Frame"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Frame"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 99,
-        "id": 5,
+        "id": 12,
         "name": "notification",
         "prevSize": 32,
         "code": 59657
@@ -352,16 +353,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["share"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["share"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 98,
-        "id": 6,
+        "id": 13,
         "name": "share-filled",
         "prevSize": 32,
         "code": 59662
@@ -378,16 +379,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Range"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Range"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 2,
-        "id": 7,
+        "id": 14,
         "name": "bar-graph",
         "prevSize": 32,
         "code": 59648
@@ -405,16 +406,16 @@
         "attrs": [{}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Refresh"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}, {}]
-        }
+        },
+        "tags": ["Refresh"],
+        "grid": 0
       },
       "attrs": [{}, {}],
       "properties": {
         "order": 3,
-        "id": 8,
+        "id": 15,
         "name": "refresh",
         "prevSize": 32,
         "code": 59649
@@ -431,16 +432,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Secure"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Secure"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 4,
-        "id": 9,
+        "id": 16,
         "name": "shield",
         "prevSize": 32,
         "code": 59650
@@ -457,16 +458,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Settings-1"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Settings-1"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 5,
-        "id": 10,
+        "id": 17,
         "name": "disconnect",
         "prevSize": 32,
         "code": 59651
@@ -484,16 +485,16 @@
         "attrs": [{}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Settings-2"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}, {}]
-        }
+        },
+        "tags": ["Settings-2"],
+        "grid": 0
       },
       "attrs": [{}, {}],
       "properties": {
         "order": 6,
-        "id": 11,
+        "id": 18,
         "name": "connect",
         "prevSize": 32,
         "code": 59652
@@ -513,8 +514,6 @@
         "attrs": [{}, {}, {}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Settings"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [
             {},
@@ -522,12 +521,14 @@
             {},
             {}
           ]
-        }
+        },
+        "tags": ["Settings"],
+        "grid": 0
       },
       "attrs": [{}, {}, {}, {}],
       "properties": {
         "order": 7,
-        "id": 12,
+        "id": 19,
         "name": "delete",
         "prevSize": 32,
         "code": 59653
@@ -544,16 +545,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Share-1"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Share-1"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 8,
-        "id": 13,
+        "id": 20,
         "name": "share",
         "prevSize": 32,
         "code": 59654
@@ -570,16 +571,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Share"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Share"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 9,
-        "id": 14,
+        "id": 21,
         "name": "link",
         "prevSize": 32,
         "code": 59655
@@ -596,16 +597,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Shop"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Shop"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 10,
-        "id": 15,
+        "id": 22,
         "name": "shop",
         "prevSize": 32,
         "code": 59656
@@ -626,14 +627,14 @@
         ],
         "isMulticolor": true,
         "isMulticolor2": false,
-        "tags": ["Success"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [
             { "f": 1 },
             { "f": 5 }
           ]
-        }
+        },
+        "tags": ["Success"],
+        "grid": 0
       },
       "attrs": [
         { "fill": "rgb(5, 163, 152)" },
@@ -641,7 +642,7 @@
       ],
       "properties": {
         "order": 12,
-        "id": 16,
+        "id": 23,
         "name": "success",
         "prevSize": 32,
         "code": 59658,
@@ -660,16 +661,16 @@
         "attrs": [{}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Swap"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}, {}]
-        }
+        },
+        "tags": ["Swap"],
+        "grid": 0
       },
       "attrs": [{}, {}],
       "properties": {
         "order": 13,
-        "id": 17,
+        "id": 24,
         "name": "swap-vertical",
         "prevSize": 32,
         "code": 59660
@@ -688,16 +689,16 @@
         "attrs": [{}, {}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Swipe"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}, {}, {}]
-        }
+        },
+        "tags": ["Swipe"],
+        "grid": 0
       },
       "attrs": [{}, {}, {}],
       "properties": {
         "order": 14,
-        "id": 18,
+        "id": 25,
         "name": "swipe",
         "prevSize": 32,
         "code": 59661
@@ -718,14 +719,14 @@
         ],
         "isMulticolor": true,
         "isMulticolor2": false,
-        "tags": ["Verified"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [
             { "f": 4 },
             { "f": 5 }
           ]
-        }
+        },
+        "tags": ["Verified"],
+        "grid": 0
       },
       "attrs": [
         { "fill": "rgb(98, 177, 233)" },
@@ -733,7 +734,7 @@
       ],
       "properties": {
         "order": 16,
-        "id": 19,
+        "id": 26,
         "name": "verified",
         "prevSize": 32,
         "code": 59663,
@@ -751,16 +752,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Lock"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["Lock"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 17,
-        "id": 20,
+        "id": 27,
         "name": "lock",
         "prevSize": 32,
         "code": 59665
@@ -782,8 +783,6 @@
         "attrs": [{}, {}, {}, {}, {}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["Profile"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [
             {},
@@ -793,12 +792,14 @@
             {},
             {}
           ]
-        }
+        },
+        "tags": ["Profile"],
+        "grid": 0
       },
       "attrs": [{}, {}, {}, {}, {}, {}],
       "properties": {
         "order": 19,
-        "id": 21,
+        "id": 28,
         "name": "meter",
         "prevSize": 32,
         "code": 59667
@@ -815,16 +816,16 @@
         "attrs": [{}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["pumb"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [{}]
-        }
+        },
+        "tags": ["pumb"],
+        "grid": 0
       },
       "attrs": [{}],
       "properties": {
         "order": 100,
-        "id": 22,
+        "id": 29,
         "name": "gas",
         "prevSize": 32,
         "code": 59668
@@ -849,8 +850,6 @@
         "attrs": [{}, {}, {}, {}, {}, {}, {}, {}, {}],
         "isMulticolor": false,
         "isMulticolor2": false,
-        "tags": ["qr code"],
-        "grid": 0,
         "colorPermutations": {
           "10210210212399974125525525515163152153711001981772331": [
             {},
@@ -863,12 +862,14 @@
             {},
             {}
           ]
-        }
+        },
+        "tags": ["qr code"],
+        "grid": 0
       },
       "attrs": [{}, {}, {}, {}, {}, {}, {}, {}, {}],
       "properties": {
         "order": 21,
-        "id": 23,
+        "id": 30,
         "name": "qr-code",
         "prevSize": 32,
         "code": 59669
@@ -895,7 +896,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 23,
-        "id": 24,
+        "id": 31,
         "name": "arrow-down-left",
         "prevSize": 32,
         "code": 59676
@@ -922,7 +923,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 24,
-        "id": 25,
+        "id": 32,
         "name": "arrow-up-right",
         "prevSize": 32,
         "code": 59677
@@ -949,7 +950,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 25,
-        "id": 26,
+        "id": 33,
         "name": "lock-1",
         "prevSize": 32,
         "code": 59678
@@ -976,7 +977,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 26,
-        "id": 27,
+        "id": 34,
         "name": "wallet-connect",
         "prevSize": 32,
         "code": 59679
@@ -1012,7 +1013,7 @@
       ],
       "properties": {
         "order": 27,
-        "id": 28,
+        "id": 35,
         "name": "pos-machine",
         "prevSize": 32,
         "code": 59680
@@ -1039,7 +1040,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 28,
-        "id": 29,
+        "id": 36,
         "name": "trend-up-bold",
         "prevSize": 32,
         "code": 59681
@@ -1065,7 +1066,7 @@
       "attrs": [{ "fill": "rgb(239, 99, 74)" }],
       "properties": {
         "order": 29,
-        "id": 30,
+        "id": 37,
         "name": "heart",
         "prevSize": 32,
         "code": 59682
@@ -1103,7 +1104,7 @@
       "attrs": [{}, {}, {}, {}, {}, {}],
       "properties": {
         "order": 30,
-        "id": 31,
+        "id": 38,
         "name": "ibc",
         "prevSize": 32,
         "code": 59683
@@ -1129,7 +1130,7 @@
       "attrs": [{}],
       "properties": {
         "order": 31,
-        "id": 32,
+        "id": 39,
         "name": "information",
         "prevSize": 32,
         "code": 59684
@@ -1155,7 +1156,7 @@
       "attrs": [{}],
       "properties": {
         "order": 32,
-        "id": 33,
+        "id": 40,
         "name": "qr-scanner",
         "prevSize": 32,
         "code": 59685
@@ -1181,7 +1182,7 @@
       "attrs": [{}],
       "properties": {
         "order": 33,
-        "id": 34,
+        "id": 41,
         "name": "tick",
         "prevSize": 32,
         "code": 59686
@@ -1209,7 +1210,7 @@
       "attrs": [{}, {}, {}],
       "properties": {
         "order": 34,
-        "id": 35,
+        "id": 42,
         "name": "bar-graph-filled",
         "prevSize": 32,
         "code": 59687
@@ -1235,7 +1236,7 @@
       "attrs": [{}],
       "properties": {
         "order": 35,
-        "id": 36,
+        "id": 43,
         "name": "trend-up",
         "prevSize": 32,
         "code": 59688
@@ -1261,7 +1262,7 @@
       "attrs": [{}],
       "properties": {
         "order": 36,
-        "id": 37,
+        "id": 44,
         "name": "bookmark",
         "prevSize": 32,
         "code": 59689
@@ -1287,7 +1288,7 @@
       "attrs": [{}],
       "properties": {
         "order": 37,
-        "id": 38,
+        "id": 45,
         "name": "settings",
         "prevSize": 32,
         "code": 59690
@@ -1313,7 +1314,7 @@
       "attrs": [{ "fill": "rgb(102, 102, 102)" }],
       "properties": {
         "order": 38,
-        "id": 39,
+        "id": 46,
         "name": "google",
         "prevSize": 32,
         "code": 59691
@@ -1339,7 +1340,7 @@
       "attrs": [{}],
       "properties": {
         "order": 40,
-        "id": 40,
+        "id": 47,
         "name": "left-hand-pamp",
         "prevSize": 32,
         "code": 59693
@@ -1365,7 +1366,7 @@
       "attrs": [{}],
       "properties": {
         "order": 41,
-        "id": 41,
+        "id": 48,
         "name": "withdraw",
         "prevSize": 32,
         "code": 59694
@@ -1393,7 +1394,7 @@
       "attrs": [{}, {}, {}],
       "properties": {
         "order": 42,
-        "id": 42,
+        "id": 49,
         "name": "card-load-filled",
         "prevSize": 32,
         "code": 59695
@@ -1420,7 +1421,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 43,
-        "id": 43,
+        "id": 50,
         "name": "card-load",
         "prevSize": 32,
         "code": 59696
@@ -1446,7 +1447,7 @@
       "attrs": [{}],
       "properties": {
         "order": 44,
-        "id": 44,
+        "id": 51,
         "name": "left-hand-pamp-filled",
         "prevSize": 32,
         "code": 59697
@@ -1473,7 +1474,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 45,
-        "id": 45,
+        "id": 52,
         "name": "close",
         "prevSize": 32,
         "code": 59698
@@ -1499,7 +1500,7 @@
       "attrs": [{}],
       "properties": {
         "order": 46,
-        "id": 46,
+        "id": 53,
         "name": "account-plus",
         "prevSize": 32,
         "code": 59699
@@ -1525,7 +1526,7 @@
       "attrs": [{}],
       "properties": {
         "order": 48,
-        "id": 47,
+        "id": 54,
         "name": "chevron-left",
         "prevSize": 32,
         "code": 59701
@@ -1551,7 +1552,7 @@
       "attrs": [{}],
       "properties": {
         "order": 49,
-        "id": 48,
+        "id": 55,
         "name": "chevron-up",
         "prevSize": 32,
         "code": 59702
@@ -1577,8 +1578,8 @@
       "attrs": [{}],
       "properties": {
         "order": 51,
-        "id": 49,
-        "name": "Frame-14",
+        "id": 56,
+        "name": "globe",
         "prevSize": 32,
         "code": 59704
       },
@@ -1603,7 +1604,7 @@
       "attrs": [{}],
       "properties": {
         "order": 52,
-        "id": 50,
+        "id": 57,
         "name": "shield-tick",
         "prevSize": 32,
         "code": 59705
@@ -1629,7 +1630,7 @@
       "attrs": [{}],
       "properties": {
         "order": 53,
-        "id": 51,
+        "id": 58,
         "name": "home",
         "prevSize": 32,
         "code": 59706
@@ -1655,7 +1656,7 @@
       "attrs": [{}],
       "properties": {
         "order": 54,
-        "id": 52,
+        "id": 59,
         "name": "chevron-down",
         "prevSize": 32,
         "code": 59707
@@ -1681,7 +1682,7 @@
       "attrs": [{}],
       "properties": {
         "order": 55,
-        "id": 53,
+        "id": 60,
         "name": "chevron-right",
         "prevSize": 32,
         "code": 59708
@@ -1707,7 +1708,7 @@
       "attrs": [{}],
       "properties": {
         "order": 56,
-        "id": 54,
+        "id": 61,
         "name": "telegram",
         "prevSize": 32,
         "code": 59709
@@ -1733,7 +1734,7 @@
       "attrs": [{}],
       "properties": {
         "order": 57,
-        "id": 55,
+        "id": 62,
         "name": "wallet-multiple",
         "prevSize": 32,
         "code": 59710
@@ -1759,7 +1760,7 @@
       "attrs": [{}],
       "properties": {
         "order": 58,
-        "id": 56,
+        "id": 63,
         "name": "airplane",
         "prevSize": 32,
         "code": 59711
@@ -1785,7 +1786,7 @@
       "attrs": [{}],
       "properties": {
         "order": 59,
-        "id": 57,
+        "id": 64,
         "name": "merchant",
         "prevSize": 32,
         "code": 59712
@@ -1811,7 +1812,7 @@
       "attrs": [{}],
       "properties": {
         "order": 60,
-        "id": 58,
+        "id": 65,
         "name": "wireless-right",
         "prevSize": 32,
         "code": 59713
@@ -1838,7 +1839,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 61,
-        "id": 59,
+        "id": 66,
         "name": "atm-cash",
         "prevSize": 32,
         "code": 59714
@@ -1864,7 +1865,7 @@
       "attrs": [{ "fill": "rgb(53, 71, 100)" }],
       "properties": {
         "order": 62,
-        "id": 60,
+        "id": 67,
         "name": "credit",
         "prevSize": 32,
         "code": 59715
@@ -1890,7 +1891,7 @@
       "attrs": [{ "fill": "rgb(53, 71, 100)" }],
       "properties": {
         "order": 63,
-        "id": 61,
+        "id": 68,
         "name": "visa",
         "prevSize": 32,
         "code": 59716
@@ -1916,7 +1917,7 @@
       "attrs": [{}],
       "properties": {
         "order": 64,
-        "id": 62,
+        "id": 69,
         "name": "card",
         "prevSize": 32,
         "code": 59717
@@ -1942,7 +1943,7 @@
       "attrs": [{}],
       "properties": {
         "order": 65,
-        "id": 63,
+        "id": 70,
         "name": "freeze",
         "prevSize": 32,
         "code": 59718
@@ -1968,7 +1969,7 @@
       "attrs": [{}],
       "properties": {
         "order": 66,
-        "id": 64,
+        "id": 71,
         "name": "options-vertical",
         "prevSize": 32,
         "code": 59719
@@ -1994,7 +1995,7 @@
       "attrs": [{ "fill": "rgb(102, 102, 102)" }],
       "properties": {
         "order": 67,
-        "id": 65,
+        "id": 72,
         "name": "web-filled",
         "prevSize": 32,
         "code": 59720
@@ -2030,7 +2031,7 @@
       ],
       "properties": {
         "order": 68,
-        "id": 66,
+        "id": 73,
         "name": "apple",
         "prevSize": 32,
         "code": 59721
@@ -2056,7 +2057,7 @@
       "attrs": [{ "fill": "rgb(53, 71, 100)" }],
       "properties": {
         "order": 69,
-        "id": 67,
+        "id": 74,
         "name": "debit",
         "prevSize": 32,
         "code": 59722
@@ -2082,7 +2083,7 @@
       "attrs": [{ "fill": "rgb(53, 71, 100)" }],
       "properties": {
         "order": 70,
-        "id": 68,
+        "id": 75,
         "name": "key",
         "prevSize": 32,
         "code": 59723
@@ -2109,7 +2110,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 71,
-        "id": 69,
+        "id": 76,
         "name": "copy",
         "prevSize": 32,
         "code": 59724
@@ -2136,7 +2137,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 72,
-        "id": 70,
+        "id": 77,
         "name": "headphone",
         "prevSize": 32,
         "code": 59725
@@ -2163,7 +2164,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 73,
-        "id": 71,
+        "id": 78,
         "name": "wallet",
         "prevSize": 32,
         "code": 59726
@@ -2197,7 +2198,7 @@
       "attrs": [{}, {}, {}, {}],
       "properties": {
         "order": 74,
-        "id": 72,
+        "id": 79,
         "name": "note",
         "prevSize": 32,
         "code": 59727
@@ -2223,7 +2224,7 @@
       "attrs": [{ "fill": "rgb(102, 102, 102)" }],
       "properties": {
         "order": 75,
-        "id": 73,
+        "id": 80,
         "name": "wireless-left",
         "prevSize": 32,
         "code": 59728
@@ -2249,7 +2250,7 @@
       "attrs": [{}],
       "properties": {
         "order": 76,
-        "id": 74,
+        "id": 81,
         "name": "account-share",
         "prevSize": 32,
         "code": 59729
@@ -2275,7 +2276,7 @@
       "attrs": [{}],
       "properties": {
         "order": 77,
-        "id": 75,
+        "id": 82,
         "name": "web",
         "prevSize": 32,
         "code": 59730
@@ -2309,7 +2310,7 @@
       "attrs": [{}, {}, {}, {}],
       "properties": {
         "order": 78,
-        "id": 76,
+        "id": 83,
         "name": "swap-horizontal",
         "prevSize": 32,
         "code": 59731
@@ -2337,7 +2338,7 @@
       "attrs": [{}, {}, {}],
       "properties": {
         "order": 79,
-        "id": 77,
+        "id": 84,
         "name": "tools-wrench-screwdriver",
         "prevSize": 32,
         "code": 59732
@@ -2364,7 +2365,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 80,
-        "id": 78,
+        "id": 85,
         "name": "home-filled",
         "prevSize": 32,
         "code": 59733
@@ -2391,7 +2392,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 81,
-        "id": 79,
+        "id": 86,
         "name": "card-filled",
         "prevSize": 32,
         "code": 59734
@@ -2419,7 +2420,7 @@
       "attrs": [{}, {}, {}],
       "properties": {
         "order": 82,
-        "id": 80,
+        "id": 87,
         "name": "star",
         "prevSize": 32,
         "code": 59735
@@ -2446,7 +2447,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 83,
-        "id": 81,
+        "id": 88,
         "name": "eye",
         "prevSize": 32,
         "code": 59736
@@ -2472,7 +2473,7 @@
       "attrs": [{}],
       "properties": {
         "order": 85,
-        "id": 82,
+        "id": 89,
         "name": "eye-closed",
         "prevSize": 32,
         "code": 59738
@@ -2498,7 +2499,7 @@
       "attrs": [{}],
       "properties": {
         "order": 86,
-        "id": 83,
+        "id": 90,
         "name": "triangle-down",
         "prevSize": 32,
         "code": 59739
@@ -2524,7 +2525,7 @@
       "attrs": [{}],
       "properties": {
         "order": 87,
-        "id": 84,
+        "id": 91,
         "name": "edit",
         "prevSize": 32,
         "code": 59740
@@ -2551,7 +2552,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 88,
-        "id": 85,
+        "id": 92,
         "name": "debit-card",
         "prevSize": 32,
         "code": 59741
@@ -2603,7 +2604,7 @@
       "attrs": [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
       "properties": {
         "order": 90,
-        "id": 86,
+        "id": 93,
         "name": "connected",
         "prevSize": 32,
         "code": 59743
@@ -2637,7 +2638,7 @@
       "attrs": [{}, {}, {}, {}],
       "properties": {
         "order": 91,
-        "id": 87,
+        "id": 94,
         "name": "contactbook",
         "prevSize": 32,
         "code": 59744
@@ -2664,7 +2665,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 92,
-        "id": 88,
+        "id": 95,
         "name": "account",
         "prevSize": 32,
         "code": 59745
@@ -2691,7 +2692,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 93,
-        "id": 89,
+        "id": 96,
         "name": "search",
         "prevSize": 32,
         "code": 59746
@@ -2718,7 +2719,7 @@
       "attrs": [{}, {}],
       "properties": {
         "order": 94,
-        "id": 90,
+        "id": 97,
         "name": "activities",
         "prevSize": 32,
         "code": 59747
@@ -2746,7 +2747,7 @@
       "attrs": [{}, {}, {}],
       "properties": {
         "order": 95,
-        "id": 91,
+        "id": 98,
         "name": "addphoto",
         "prevSize": 32,
         "code": 59748
@@ -2784,7 +2785,7 @@
       "attrs": [{}, {}, {}, {}, {}, {}],
       "properties": {
         "order": 96,
-        "id": 92,
+        "id": 99,
         "name": "bridge",
         "prevSize": 32,
         "code": 59749

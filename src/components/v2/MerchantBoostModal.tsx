@@ -79,6 +79,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [view, setView] = useState<'selected' | 'add'>('selected');
+  const [error, setError] = useState<string | null>(null);
 
   // Infinite scroll state
   const merchantRetrievalOffset = useRef<string | undefined>();
@@ -110,12 +111,27 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
   );
   const remainingPower = floor(100 - totalAllocation, 0);
 
+  // --- Clear error when modal becomes visible ---
+  useEffect(() => {
+    if (isVisible) {
+      setError(null);
+    }
+  }, [isVisible]);
+
+  // --- Clear error when modal becomes visible ---
+  useEffect(() => {
+    if (isVisible) {
+      setError(null);
+    }
+  }, [isVisible]);
+
   // --- Fetch merchants from API (infinite scroll) ---
   const fetchMerchants = useCallback(
     async (reset = false) => {
       if (loading || (isEndReached && !reset)) return; // Prevent multiple simultaneous requests
 
       setLoading(true);
+      setError(null);
       try {
         const params: GetMerchantsQuery = {
           limit: DEFAULT_LIMIT,
@@ -124,7 +140,8 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
         };
 
         const res = await getWithAuth(`/v1/cypher-protocol/merchants`, params);
-        if (res.isError) throw new Error(res.error || 'Unknown error');
+        if (res.isError)
+          throw new Error(res.error || 'Failed to fetch merchants');
         const data: PaginatedMerchantsResponse = res.data;
 
         if (reset) {
@@ -150,7 +167,9 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
           }
         }
       } catch (e: any) {
-        console.error('Failed to fetch merchants:', e.message);
+        const errorMessage =
+          e.message || 'Failed to fetch merchants. Please try again.';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -236,9 +255,12 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
   // --- Confirm selection ---
   const handleConfirm = () => {
     setConfirming(true);
+    setError(null);
     const total = selected.reduce((sum, m) => sum + (m.allocation ?? 0), 0);
     if (total !== 100) {
-      console.error('Total allocation must be 100%');
+      setError(
+        'Total allocation must be exactly 100%. Please adjust your selections.',
+      );
       setConfirming(false);
       return;
     }
@@ -263,6 +285,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
     setIsFullHeight(false);
     heightAnim.setValue(80);
     setView('selected');
+    setError(null);
     setIsVisible(false);
   };
 
@@ -279,6 +302,17 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
       heightAnim.setValue(80);
     }
   }, [isVisible]);
+
+  // --- Render error message ---
+  const renderErrorMessage = () => {
+    if (!error) return null;
+
+    return (
+      <CyDView className='bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4'>
+        <CyDText className='text-red-400 text-sm text-center'>{error}</CyDText>
+      </CyDView>
+    );
+  };
 
   // --- Render selected merchants (with percentage editing) ---
   const renderSelectedMerchant = (item: MerchantWithAllocation) => (
@@ -316,7 +350,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
           <CyDView className='flex-row items-center'>
             <CyDView className='!bg-[#000000] rounded-[4px] px-[12px] py-[8px] flex-row items-center'>
               <CyDTextInput
-                className='!text-[#FFFFFF] !text-[16px] font-semibold !bg-[#000000]'
+                className='!text-[#FFFFFF] !text-[16px] font-semibold !bg-[#000000] p-0'
                 placeholder='00'
                 placeholderTextColor='#888888'
                 keyboardType='numeric'
@@ -334,7 +368,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
 
         {/* Chips */}
         <CyDView className='mt-[12px]'>
-          <CyDView className='flex-row justify-evenly gap-[8px]'>
+          <CyDView className='flex-row justify-evenly gap-[6px]'>
             {[10, 25, 50, 75, 100].map(percentage => (
               <CyDTouchView
                 key={percentage}
@@ -347,7 +381,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                 onPress={() => handleChipSelect(item.candidateId, percentage)}>
                 <CyDText
                   className={clsx(
-                    '!text-[14px] font-medium text-center !text-[#FFFFFF]',
+                    '!text-[13px] font-medium text-center !text-[#FFFFFF]',
                   )}>
                   {percentage}%
                 </CyDText>
@@ -441,6 +475,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                 onScroll={handleScroll}
                 scrollEventThrottle={16}>
                 <CyDTouchView className='' activeOpacity={1}>
+                  {renderErrorMessage()}
                   {selected.length === 0 ? (
                     <CyDText className='text-center mt-8'>
                       No merchants selected.
@@ -521,6 +556,8 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                   </CyDText>
                 </CyDView>
 
+                {renderErrorMessage()}
+
                 {loading && merchants.length === 0 ? (
                   <CyDView className='flex-1 items-center justify-center'>
                     <CyDMaterialDesignIcons
@@ -551,7 +588,9 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                     }}
                     ListEmptyComponent={
                       <CyDText className='text-center mt-8'>
-                        No merchants found.
+                        {error
+                          ? 'Failed to load merchants'
+                          : 'No merchants found.'}
                       </CyDText>
                     }
                     ListFooterComponent={

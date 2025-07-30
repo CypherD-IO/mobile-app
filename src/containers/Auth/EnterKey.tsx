@@ -47,6 +47,7 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import { Mnemonic } from 'ethers';
+import { getReadOnlyWalletData } from '../../core/asyncStorage';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎

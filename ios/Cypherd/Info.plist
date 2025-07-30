@@ -130,8 +130,8 @@
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
 		<string>CypherNord.ttf</string>
-		<string>CydFont.ttf</string>
 		<string>NewYork.ttf</string>
+		<string>CydFont.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

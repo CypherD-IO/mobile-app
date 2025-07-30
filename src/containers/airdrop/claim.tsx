@@ -16,7 +16,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AirdropData, AirdropInfo } from '../../models/airdrop.interface';
+import { AirdropInfo } from '../../models/airdrop.interface';
 import AppImages from '../../../assets/images/appImages';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { HdWalletContext, parseErrorMessage } from '../../core/util';
@@ -65,6 +65,7 @@ export default function AirdropClaim() {
 
   // Load default merchants on component mount
   useEffect(() => {
+    let isMounted = true;
     const loadDefaultMerchants = async () => {
       try {
         const params = {
@@ -74,7 +75,7 @@ export default function AirdropClaim() {
         };
 
         const res = await getWithAuth(`/v1/cypher-protocol/merchants`, params);
-        if (!res.isError && res.data.items.length >= 3) {
+        if (isMounted && !res.isError && res.data.items.length >= 3) {
           const defaultMerchants: MerchantWithAllocation[] = [
             { ...res.data.items[0], allocation: 50 }, // First merchant gets 50%
             { ...res.data.items[1], allocation: 25 }, // Second merchant gets 25%
@@ -83,6 +84,7 @@ export default function AirdropClaim() {
           setSelectedMerchants(defaultMerchants);
         }
       } catch (error) {
+        if (!isMounted) return;
         showModal('state', {
           type: 'error',
           title: 'Airdrop claim failed',
@@ -102,6 +104,10 @@ export default function AirdropClaim() {
     if (selectedMerchants.length === 0) {
       void loadDefaultMerchants();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [selectedMerchants.length, getWithAuth]);
 
   const renderSuccessTransaction = (hash: string, isTestnet: boolean) => {
@@ -535,7 +541,7 @@ export default function AirdropClaim() {
 
                 <CyDView className='flex flex-row items-center justify-between'>
                   <CyDView className='basis-[35%] flex flex-row items-center gap-x-[4px]'>
-                    <CyDIcons name='zap' size={32} color='#FFFFFF' />
+                    <CyDIcons name='zap' size={32} color='#F38200' />
                     <CyDText className='text-white font-medium !text-[16px] leading-[145%] tracking-[-0.6px]'>
                       {'Merchant Boost'}
                     </CyDText>

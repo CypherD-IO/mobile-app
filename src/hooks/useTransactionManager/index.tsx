@@ -207,9 +207,7 @@ export default function useTransactionManager() {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
       });
-      const receiptStatus = get(receipt, 'status');
-
-      if (receiptStatus === 'reverted') {
+      if (receipt.status === 'reverted') {
         throw new Error('Transaction reverted');
       }
 
@@ -600,8 +598,7 @@ export default function useTransactionManager() {
         hash,
       });
 
-      const receiptStatus = get(receipt, 'status');
-      if (receiptStatus === 'reverted') {
+      if (receipt.status === 'reverted') {
         throw new Error('Transaction reverted');
       }
 
@@ -959,8 +956,7 @@ export default function useTransactionManager() {
         hash,
       });
 
-      const receiptStatus = get(receipt, 'status');
-      if (receiptStatus === 'reverted') {
+      if (receipt.status === 'reverted') {
         throw new Error('Transaction reverted');
       }
 
@@ -1381,7 +1377,6 @@ export default function useTransactionManager() {
       let signature;
       const solanRpc = getSolanaRpc();
       const fromKeypair = await getSolanWallet();
-      console.log('🚀 ~ sendSolanaTokens ~ fromKeypair:', fromKeypair);
       if (!fromKeypair) {
         return {
           isError: true,

@@ -63,7 +63,7 @@ export default function AirdropEligibility() {
     });
   };
 
-  const fetchAirdropData = async () => {
+  const fetchAirdropData = useCallback(async () => {
     setIsLoading(true);
     const res = await getWithAuth(`/v1/airdrop/${airdropAddress}`);
     if (res.isError) {
@@ -76,12 +76,12 @@ export default function AirdropEligibility() {
       setAirdropData(data);
     }
     setIsLoading(false);
-  };
+  }, [airdropAddress, getWithAuth, onError]);
 
   useFocusEffect(
     useCallback(() => {
       void fetchAirdropData();
-    }, []),
+    }, [airdropAddress]),
   );
 
   if (isLoading) {

@@ -122,4 +122,5 @@ export type IconNames =
   | 'zap'
   | 'coins-stacked'
   | 'merchant'
+  | 'rewards-icon'
   | 'arrow-forward';
