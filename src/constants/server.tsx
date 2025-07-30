@@ -43,6 +43,7 @@ export enum ChainBackendNames {
   BASE = 'BASE',
   SOLANA = 'SOLANA',
   HYPERLIQUID = 'HYPERLIQUID',
+  BASE_SEPOLIA = 'BASE_SEPOLIA',
 }
 
 export enum FundWalletAddressType {
@@ -284,7 +285,7 @@ export const CHAIN_BASE_SEPOLIA: Chain = {
   symbol: 'ETH',
   id: 18,
   logo_url: AppImages.BASE_LOGO,
-  backendName: ChainBackendNames.BASE,
+  backendName: ChainBackendNames.BASE_SEPOLIA,
   chain_id: '0x14a34',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   nativeTokenLogoUrl:
@@ -403,6 +404,7 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.ARBITRUM,
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.BASE,
+  ChainBackendNames.BASE_SEPOLIA,
 ];
 
 export const COSMOS_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [

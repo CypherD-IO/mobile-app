@@ -44,7 +44,8 @@ export default function AirdropEligibility() {
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  const airdropAddress = cardProfile?.evmAddress ?? cardProfile.primaryAddress;
+  const airdropAddress: string =
+    cardProfile?.evmAddress ?? cardProfile.primaryAddress ?? '';
 
   const onError = (title: string, description: string) => {
     showModal('state', {
@@ -99,7 +100,7 @@ export default function AirdropEligibility() {
   }
 
   return (
-    <CyDView className='bg-[#0D0E12] flex-1'>
+    <CyDView className='!bg-[#0D0E12] flex-1'>
       <CyDImageBackground
         source={AppImages.MSITE_AIRDROP_ELIGIBILITY_BG}
         className='flex w-full'
@@ -119,23 +120,23 @@ export default function AirdropEligibility() {
             source={AppImages.AIRDROP_TOKEN_WIGGLE}
             className='w-[200px] h-[200px] self-center'
           />
-          <CyDText className='font-nord font-bold text-[32px] text-white leading-[120%] tracking-[-0.5px] text-center mt-6'>
+          <CyDText className='font-nord font-bold !text-[32px] text-white leading-[120%] tracking-[-0.5px] text-center mt-6'>
             {t('CYPR_AIRDROP')}
           </CyDText>
         </CyDView>
       </CyDImageBackground>
       <CyDView className='p-[24px] flex-1 flex justify-between'>
         <CyDView className='flex-1'>
-          <CyDText className='font-medium text-[22px] text-white text-center leading-[145%] tracking-[-1px]'>
+          <CyDText className='font-medium !text-[22px] text-white text-center leading-[145%] tracking-[-1px]'>
             {'Airdrop Eligibility'}
           </CyDText>
           <CyDView className='mt-[24px]'>
             <CyDView className='py-[12px]'>
-              <CyDText className='font-medium text-[16px] text-white leading-[145%] tracking-[-0.5px]'>
+              <CyDText className='font-medium !text-[16px] text-white leading-[145%] tracking-[-0.5px]'>
                 {'To wallet address'}
               </CyDText>
-              <CyDView className='mt-[12px] bg-[#2F3139] rounded-[8px] p-[16px]'>
-                <CyDText className='font-medium text-[14px] text-white leading-[145%] tracking-[-0.6px]'>
+              <CyDView className='mt-[12px] !bg-[#2F3139] rounded-[8px] p-[16px]'>
+                <CyDText className='font-medium !text-[14px] text-white leading-[145%] tracking-[-0.6px]'>
                   {airdropAddress}
                 </CyDText>
               </CyDView>
@@ -144,7 +145,7 @@ export default function AirdropEligibility() {
             {get(airdropData, 'airdrop.claimInfo.isClaimed', false) && (
               <CyDView
                 className={clsx(
-                  'rounded-[12px] mt-[6px] py-[12px] px-[16px] flex flex-row gap-x-[6px] bg-[#0E2713]',
+                  'rounded-[12px] mt-[6px] py-[12px] px-[16px] flex flex-row gap-x-[6px] !bg-[#0E2713]',
                 )}>
                 <CyDMaterialDesignIcons
                   name='parachute'
@@ -152,12 +153,12 @@ export default function AirdropEligibility() {
                   className='text-white'
                 />
                 <CyDView>
-                  <CyDText className='font-medium text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                  <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
                     {'You have claimed your airdrop rewards!'}
                   </CyDText>
                   <CyDText
                     className={clsx(
-                      'font-normal text-[#8CB59F] text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px]',
+                      'font-normal !text-[#8CB59F] !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px]',
                     )}>
                     {'Lock your tokens to earn more rewards.'}
                   </CyDText>
@@ -170,8 +171,8 @@ export default function AirdropEligibility() {
                 className={clsx(
                   'rounded-[12px] mt-[6px] py-[12px] px-[16px] flex flex-row gap-x-[12px]',
                   {
-                    'bg-[#0E2713]': airdropData.isEligible,
-                    'bg-[#C94848]': !airdropData.isEligible,
+                    '!bg-[#0E2713]': airdropData.isEligible,
+                    '!bg-[#C94848]': !airdropData.isEligible,
                   },
                 )}>
                 {airdropData.isEligible && (
@@ -189,14 +190,14 @@ export default function AirdropEligibility() {
                   />
                 )}
                 <CyDView>
-                  <CyDText className='font-medium text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                  <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
                     {airdropData.isEligible
                       ? t('AWESOME_YOU_QUALIFY_FOR_THE_AIRDROP')
                       : t('OOPS_YOU_DO_NOT_QUALIFY_FOR_THE_AIRDROP')}
                   </CyDText>
                   <CyDText
                     className={clsx(
-                      'font-normal text-white text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px]',
+                      'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px]',
                     )}>
                     {airdropData.isEligible
                       ? t('CONTINUE_TO_CLAIM_THE_AIRDROP_REWARDS')
@@ -211,14 +212,14 @@ export default function AirdropEligibility() {
         {airdropData.isEligible &&
           !get(airdropData, 'airdrop.claimInfo.isClaimed', false) && (
             <Button
-              title='Continue to claim'
+              title='Check your rewards'
               disabled={!airdropData.isEligible}
               onPress={() => {
                 navigation.navigate(screenTitle.AIRDROP_CLAIM, {
                   airdropData: airdropData.airdrop,
                 });
               }}
-              style='w-full rounded-full py-[16px] px-[16px] justify-between mb-[24px]'
+              style='w-full rounded-full py-[16px] px-[16px] justify-between mb-[24px] !bg-[#F9D26C]'
               type={ButtonType.PRIMARY}
               icon={
                 <CyDMaterialDesignIcons

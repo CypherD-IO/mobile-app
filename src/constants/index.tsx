@@ -1,4 +1,3 @@
-import React from 'react';
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
   ONBOARDING: 'OnBoarding',

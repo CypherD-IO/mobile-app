@@ -32,7 +32,7 @@ import useAxios from '../../core/HttpRequest';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { SuccessTransaction } from '../../components/v2/StateModal';
-import { CHAIN_BASE } from '../../constants/server';
+import { CHAIN_BASE, CHAIN_BASE_SEPOLIA } from '../../constants/server';
 import { t } from 'i18next';
 import { screenTitle } from '../../constants';
 import Loading from '../Loading';
@@ -104,13 +104,14 @@ export default function AirdropClaim() {
     }
   }, [selectedMerchants.length, getWithAuth]);
 
-  const renderSuccessTransaction = (hash: string) => {
+  const renderSuccessTransaction = (hash: string, isTestnet: boolean) => {
+    const chain = isTestnet ? CHAIN_BASE_SEPOLIA : CHAIN_BASE;
     return (
       <>
         <SuccessTransaction
           hash={hash}
-          symbol={CHAIN_BASE?.symbol ?? ''}
-          name={CHAIN_BASE?.name ?? ''}
+          symbol={chain?.symbol ?? ''}
+          name={chain?.name ?? ''}
           navigation={navigation}
           hideModal={hideModal}
         />
@@ -120,7 +121,13 @@ export default function AirdropClaim() {
 
   // --- Execute airdrop claim transaction ---
   const handleSignTransaction = useCallback(async () => {
-    if (!airdropData || selectedMerchants.length === 0) {
+    if (
+      !airdropData ||
+      selectedMerchants.length === 0 ||
+      !airdropData.claimInfo?.isClaimActive ||
+      airdropData.claimInfo?.isClaimed ||
+      !airdropData.claimInfo?.contractAddress
+    ) {
       showModal('state', {
         type: 'error',
         title: 'Airdrop claim failed',
@@ -189,6 +196,7 @@ export default function AirdropClaim() {
         nftTokenValue: totalNftValue,
         candidates,
         weights,
+        isTestnet: get(airdropData, 'claimInfo.isTestnet', true),
       });
 
       if (result.isError) {
@@ -201,15 +209,14 @@ export default function AirdropClaim() {
         });
       } else {
         showModal('state', {
-          type: 'custom',
+          type: 'success',
           title: t('CLAIM_SUCCESS'),
           modalImage: AppImages.CYPHER_SUCCESS,
-          description: renderSuccessTransaction(result?.hash),
+          description: renderSuccessTransaction(
+            result?.hash,
+            get(airdropData, 'claimInfo.isTestnet', true),
+          ),
           onSuccess: () => {
-            hideModal();
-            navigation.navigate(screenTitle.PORTFOLIO);
-          },
-          onFailure: () => {
             hideModal();
             navigation.navigate(screenTitle.PORTFOLIO);
           },
@@ -263,9 +270,9 @@ export default function AirdropClaim() {
   if (!airdropData) {
     return (
       <CyDView
-        className='bg-[#0D0E12] flex-1 p-[24px]'
+        className='!bg-[#0D0E12] flex-1 p-[24px]'
         style={{ paddingTop: top }}>
-        <CyDText className='text-white font-normal text-[32px] leading-[120%] tracking-[-0.5px]'>
+        <CyDText className='text-white font-normal !text-[32px] leading-[120%] tracking-[-0.5px]'>
           No airdrop data
         </CyDText>
       </CyDView>
@@ -282,24 +289,24 @@ export default function AirdropClaim() {
         }}
       />
       <CyDView
-        className='bg-[#0D0E12] flex-1 p-[24px]'
+        className='!bg-[#0D0E12] flex-1 p-[24px]'
         style={{ paddingTop: top }}>
         <CyDScrollView>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
             <CyDTouchView
               onPress={() => navigation.goBack()}
-              className='w-[24px] h-[24px] bg-[#6B788E] rounded-full flex items-center justify-center'>
+              className='w-[24px] h-[24px] !bg-[#6B788E] rounded-full flex items-center justify-center'>
               <CyDMaterialDesignIcons
                 name='arrow-left'
                 size={16}
                 className='text-white'
               />
             </CyDTouchView>
-            <CyDText className='text-white font-medium text-[18px] leading-[140%] tracking-[-0.8px]'>
+            <CyDText className='text-white font-medium !text-[18px] leading-[140%] tracking-[-0.8px]'>
               {t('AIRDROP')}
             </CyDText>
           </CyDView>
-          <CyDText className='text-white font-normal text-[32px] leading-[120%] tracking-[-0.5px] mt-[12px]'>
+          <CyDText className='text-white font-normal !text-[32px] leading-[120%] tracking-[-0.5px] mt-[12px]'>
             {t('AIRDROP_HEADER')}
           </CyDText>
 
@@ -312,18 +319,18 @@ export default function AirdropClaim() {
                     {planId === CypherPlanId.PRO_PLAN && (
                       <GradientText
                         textElement={
-                          <CyDText className='font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
+                          <CyDText className='font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
                             {t('PREMIUM')}
                           </CyDText>
                         }
                         gradientColors={['#FA9703', '#F89408', '#F6510A']}
                       />
                     )}
-                    <CyDText className='text-white font-semibold text-[14px] leading-[145%] tracking-[-0.6px]'>
+                    <CyDText className='text-white font-semibold !text-[14px] leading-[145%] tracking-[-0.6px]'>
                       {t('SPEND_REWARD')}
                     </CyDText>
                   </CyDView>
-                  <CyDText className='font-medium text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px] text-n200'>
+                  <CyDText className='font-medium !text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px] text-n200'>
                     {'for spending with card'}
                   </CyDText>
                 </CyDView>
@@ -333,21 +340,29 @@ export default function AirdropClaim() {
                       source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
                       className='w-[32px] h-[30px]'
                     />
-                    <CyDText className='text-white font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
+                    <CyDText className='text-white font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
                       {sum(
                         airdropData.tokenAllocation?.cypherCardRewards,
                       ).toLocaleString()}
                     </CyDText>
-                    <CyDText className='font-medium text-[14px] leading-[145%] tracking-[-0.6px] text-base150'>
+                    <CyDText className='font-medium !text-[14px] leading-[145%] tracking-[-0.6px] !text-base150'>
                       {t('CYPR')}
                     </CyDText>
                   </CyDView>
 
-                  {planId === CypherPlanId.PRO_PLAN && (
-                    <CyDText className='text-[#666666] font-medium text-[14px] text-right line-through'>
-                      {` ${'8,000'} ${t('CYPR')}`}
-                    </CyDText>
-                  )}
+                  {planId === CypherPlanId.PRO_PLAN &&
+                    sum(airdropData.tokenAllocation?.cypherCardRewards) >
+                      sum(
+                        airdropData.tokenAllocation
+                          ?.cypherCardRewardsBfMultiplier,
+                      ) && (
+                      <CyDText className='!text-base150 font-medium !text-[14px] text-right line-through'>
+                        {` ${sum(
+                          airdropData.tokenAllocation
+                            ?.cypherCardRewardsBfMultiplier,
+                        )} ${t('CYPR')}`}
+                      </CyDText>
+                    )}
                 </CyDView>
               </CyDView>
             )}
@@ -356,10 +371,10 @@ export default function AirdropClaim() {
             {sum(airdropData.tokenAllocation?.cypherOGRewards) > 0 && (
               <CyDView className='flex flex-row items-center justify-between mt-[16px]'>
                 <CyDView className='flex-1'>
-                  <CyDText className='text-white font-semibold text-[14px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='text-white font-semibold !text-[14px] leading-[145%] tracking-[-0.6px]'>
                     {t('CYPHER_OG_REWARDS')}
                   </CyDText>
-                  <CyDText className='text-[#6B788E] font-medium text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px]'>
+                  <CyDText className='text-n200 font-medium !text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px]'>
                     {t('CYPHER_OG_REWARDS_DESCRIPTION')}
                   </CyDText>
                 </CyDView>
@@ -368,12 +383,12 @@ export default function AirdropClaim() {
                     source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
                     className='w-[32px] h-[30px]'
                   />
-                  <CyDText className='text-white font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='text-white font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
                     {sum(
                       airdropData.tokenAllocation?.cypherOGRewards,
                     ).toLocaleString()}
                   </CyDText>
-                  <CyDText className='text-[#666666] font-medium text-[14px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='!text-base150 font-medium !text-[14px] leading-[145%] tracking-[-0.6px]'>
                     {t('CYPR')}
                   </CyDText>
                 </CyDView>
@@ -384,10 +399,10 @@ export default function AirdropClaim() {
             {sum(airdropData.tokenAllocation?.influencerRewards) > 0 && (
               <CyDView className='flex flex-row items-center justify-between mt-[16px]'>
                 <CyDView className='flex-1'>
-                  <CyDText className='text-white font-semibold text-[14px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='text-white font-semibold !text-[14px] leading-[145%] tracking-[-0.6px]'>
                     {t('INFLUENCER_REWARD')}
                   </CyDText>
-                  <CyDText className='text-[#6B788E] font-medium text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px]'>
+                  <CyDText className='text-n200 font-medium !text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px]'>
                     {t('INFLUENCER_REWARD_DESCRIPTION')}
                   </CyDText>
                 </CyDView>
@@ -396,12 +411,12 @@ export default function AirdropClaim() {
                     source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
                     className='w-[32px] h-[30px]'
                   />
-                  <CyDText className='text-white font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='text-white font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
                     {sum(
                       airdropData.tokenAllocation?.influencerRewards,
                     ).toLocaleString()}
                   </CyDText>
-                  <CyDText className='text-[#666666] font-medium text-[14px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='!text-base150 font-medium !text-[14px] leading-[145%] tracking-[-0.6px]'>
                     {t('CYPR')}
                   </CyDText>
                 </CyDView>
@@ -412,10 +427,10 @@ export default function AirdropClaim() {
             {sum(airdropData.tokenAllocation?.baseCommunityRewards) > 0 && (
               <CyDView className='flex flex-row items-center justify-between mt-[16px]'>
                 <CyDView className='flex-1'>
-                  <CyDText className='text-white font-semibold text-[14px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='text-white font-semibold !text-[14px] leading-[145%] tracking-[-0.6px]'>
                     {t('BASE_COMMUNITY_REWARD')}
                   </CyDText>
-                  <CyDText className='text-[#6B788E] font-medium text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px]'>
+                  <CyDText className='text-n200 font-medium !text-[12px] leading-[145%] tracking-[-0.6px] mt-[4px]'>
                     {t('BASE_COMMUNITY_REWARD_DESCRIPTION')}
                   </CyDText>
                 </CyDView>
@@ -424,28 +439,28 @@ export default function AirdropClaim() {
                     source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
                     className='w-[32px] h-[30px]'
                   />
-                  <CyDText className='text-white font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='text-white font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
                     {sum(
                       airdropData.tokenAllocation?.baseCommunityRewards,
                     ).toLocaleString()}
                   </CyDText>
-                  <CyDText className='text-[#666666] font-medium text-[14px] leading-[145%] tracking-[-0.6px]'>
+                  <CyDText className='!text-base150 font-medium !text-[14px] leading-[145%] tracking-[-0.6px]'>
                     {t('CYPR')}
                   </CyDText>
                 </CyDView>
               </CyDView>
             )}
 
-            <CyDView className='h-[1px] bg-[#2F3139] my-[24px] w-full' />
+            <CyDView className='h-[1px] !bg-[#2F3139] my-[24px] w-full' />
 
-            <CyDView className='flex flex-row items-center justify-between mt-[16px]'>
+            <CyDView className='flex flex-row items-center justify-between'>
               <CyDView className='basis-[35%] flex flex-row items-center gap-x-[4px]'>
                 <CyDMaterialDesignIcons
                   name='parachute'
                   size={32}
                   color='#FFFFFF'
                 />
-                <CyDText className='text-white font-semibold text-[14px] leading-[145%] tracking-[-0.6px]'>
+                <CyDText className='text-white font-semibold !text-[14px] leading-[145%] tracking-[-0.6px]'>
                   {'Total\nAirdrop Value'}
                 </CyDText>
               </CyDView>
@@ -454,10 +469,10 @@ export default function AirdropClaim() {
                   source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
                   className='w-[32px] h-[30px]'
                 />
-                <CyDText className='text-white font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
+                <CyDText className='text-white font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
                   {totalAirdropValue.toLocaleString()}
                 </CyDText>
-                <CyDText className='text-[#666666] font-medium text-[14px] leading-[145%] tracking-[-0.6px]'>
+                <CyDText className='!text-base150 font-medium !text-[14px] leading-[145%] tracking-[-0.6px]'>
                   $CYPR
                 </CyDText>
               </CyDView>
@@ -468,7 +483,7 @@ export default function AirdropClaim() {
             <CyDView className='flex flex-row items-center justify-between'>
               <CyDView className='basis-[35%] flex flex-row items-center gap-x-[4px]'>
                 <CyDIcons name='coins-stacked' size={42} color='#FFFFFF' />
-                <CyDText className='text-white font-semibold text-[14px] leading-[145%] tracking-[-0.6px]'>
+                <CyDText className='text-white font-semibold !text-[14px] leading-[145%] tracking-[-0.6px]'>
                   {'Claim as\nCYPR token'}
                 </CyDText>
               </CyDView>
@@ -477,46 +492,51 @@ export default function AirdropClaim() {
                   source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
                   className='w-[32px] h-[30px]'
                 />
-                <CyDText className='text-white font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
+                <CyDText className='text-white font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
                   {totalCyprAirdropValue.toLocaleString()}
                 </CyDText>
-                <CyDText className='text-[#666666] font-medium text-[14px] leading-[145%] tracking-[-0.6px]'>
+                <CyDText className='!text-base150 font-medium !text-[14px] leading-[145%] tracking-[-0.6px]'>
                   {t('CYPR')}
                 </CyDText>
               </CyDView>
             </CyDView>
 
-            <CyDView className='h-[1px] bg-[#2F3139] my-[24px] w-full' />
+            <CyDView className='h-[1px] !bg-[#2F3139] my-[24px] w-full' />
 
             <CyDView className='flex flex-row items-center justify-between'>
               <CyDView className='basis-[35%] flex flex-row items-center gap-x-[4px]'>
                 <CyDIcons name='nft-icon' size={42} color='#FFFFFF' />
-                <CyDText className='text-white font-semibold text-[14px] leading-[145%] tracking-[-0.6px]'>
+                <CyDText className='text-white font-semibold !text-[14px] leading-[145%] tracking-[-0.6px]'>
                   {'Claim as\nveCYPR'}
                 </CyDText>
               </CyDView>
-              <CyDView className='basis-[65%] flex flex-row items-center justify-end gap-x-[4px]'>
-                <CyDFastImage
-                  source={AppImages.CYPR_TOKEN_LOCKED}
-                  className='w-[32px] h-[30px]'
-                />
-                <CyDText className='text-white font-semibold text-[16px] leading-[145%] tracking-[-0.6px]'>
-                  {totalCyprAirdropValue.toLocaleString()}
-                </CyDText>
-                <CyDText className='text-[#666666] font-medium text-[14px] leading-[145%] tracking-[-0.6px]'>
-                  {t('CYPR')}
+              <CyDView>
+                <CyDView className='basis-[65%] flex flex-row items-center justify-end gap-x-[4px]'>
+                  <CyDFastImage
+                    source={AppImages.CYPR_TOKEN_LOCKED}
+                    className='w-[32px] h-[30px]'
+                  />
+                  <CyDText className='text-white font-semibold !text-[16px] leading-[145%] tracking-[-0.6px]'>
+                    {totalVeNftAirdropValue.toLocaleString()}
+                  </CyDText>
+                  <CyDText className='!text-base150 font-medium !text-[14px] leading-[145%] tracking-[-0.6px]'>
+                    {t('CYPR')}
+                  </CyDText>
+                </CyDView>
+                <CyDText className='!text-base150 font-medium !text-[12px] text-right leading-[145%] tracking-[-0.6px]'>
+                  {t('LOCKED_2_YRS')}
                 </CyDText>
               </CyDView>
             </CyDView>
 
             {airdropData?.claimInfo?.isClaimActive && (
               <>
-                <CyDView className='h-[1px] bg-[#2F3139] my-[24px] w-full' />
+                <CyDView className='h-[1px] !bg-[#2F3139] my-[24px] w-full' />
 
                 <CyDView className='flex flex-row items-center justify-between'>
                   <CyDView className='basis-[35%] flex flex-row items-center gap-x-[4px]'>
                     <CyDIcons name='zap' size={32} color='#FFFFFF' />
-                    <CyDText className='text-white font-medium text-[16px] leading-[145%] tracking-[-0.6px]'>
+                    <CyDText className='text-white font-medium !text-[16px] leading-[145%] tracking-[-0.6px]'>
                       {'Merchant Boost'}
                     </CyDText>
                   </CyDView>
@@ -524,8 +544,8 @@ export default function AirdropClaim() {
                     <Button
                       title='Edit Boost'
                       onPress={() => setIsMerchantBoostModalVisible(true)}
-                      style='rounded-full px-[16px] py-[6px] bg-[#6B788E]'
-                      titleStyle='text-[14px] font-semibold text-white'
+                      style='rounded-full px-[16px] py-[6px] !bg-[#6B788E]'
+                      titleStyle='!text-[14px] font-semibold text-white'
                     />
                   </CyDView>
                 </CyDView>
@@ -549,15 +569,15 @@ export default function AirdropClaim() {
                         ) : (
                           <CyDView className='w-[32px] h-[32px] rounded-full bg-blue20' />
                         )}
-                        <CyDText className='text-[16px] font-semibold text-white'>
+                        <CyDText className='!text-[16px] font-semibold text-white'>
                           {merchant.brand ?? merchant.canonicalName}
                         </CyDText>
                       </CyDView>
                       <CyDView className='flex-row items-center gap-x-[8px]'>
-                        <CyDText className='text-[14px] font-medium text-[#C2C7D0]'>
+                        <CyDText className='!text-[14px] font-medium !text-[#F1FDF7]'>
                           Boosting
                         </CyDText>
-                        <CyDText className='text-[16px] font-bold text-white'>
+                        <CyDText className='!text-[16px] font-bold !text-[#F1FDF7]'>
                           - {merchant.allocation}%
                         </CyDText>
                       </CyDView>
@@ -575,7 +595,7 @@ export default function AirdropClaim() {
                     size={20}
                     color='#C2C7D0'
                   />
-                  <CyDText className='text-[14px] text-[#C2C7D0] flex-1 leading-[20px]'>
+                  <CyDText className='!text-[14px] !text-base80 flex-1 leading-[20px]'>
                     {t('MERCHANT_BOOST_DESCRIPTION')}
                   </CyDText>
                 </CyDView>
@@ -587,12 +607,12 @@ export default function AirdropClaim() {
               {airdropData.claimInfo?.isClaimActive &&
                 !airdropData.claimInfo?.isClaimed && (
                   <CyDTouchView
-                    className='bg-[#F9D26C] rounded-full p-4 items-center flex-row justify-between'
+                    className='!bg-[#F9D26C] rounded-full py-2 px-3 items-center flex-row justify-between'
                     onPress={() => {
                       void handleSignTransaction();
                     }}
                     disabled={isTransactionLoading}>
-                    <CyDText className='text-lg font-bold text-black mr-2'>
+                    <CyDText className='text-[18px] font-semibold text-black'>
                       {isTransactionLoading ? 'Signing...' : 'Claim Airdrop'}
                     </CyDText>
                     <CyDMaterialDesignIcons

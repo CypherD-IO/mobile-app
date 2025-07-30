@@ -1774,6 +1774,8 @@ const resources = {
         'Continue to claim the airdrop rewards.',
       KEEP_SPENDING_FOR_EXCITING_REWARDS_ON_EVERY_SPEND:
         'Keep spending for exciting rewards on every spend.',
+      AIRDROP: 'Airdrop',
+      LOCKED_2_YRS: 'Locked for 2 years',
     },
   },
 };

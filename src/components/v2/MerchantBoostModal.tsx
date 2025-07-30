@@ -9,9 +9,9 @@ import {
   CyDFastImage,
   CyDTextInput,
   CyDIcons,
-  CyDScrollView,
   CyDMaterialDesignIcons,
   CyDFlatList,
+  CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindComponents';
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
@@ -284,7 +284,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
   const renderSelectedMerchant = (item: MerchantWithAllocation) => (
     <CyDView
       key={item.candidateId}
-      className='bg-[#202020] rounded-[12px] mb-[16px]'>
+      className='!bg-[#202020] rounded-[12px] mb-[16px]'>
       {/* Top section: Merchant info */}
       <CyDView className='flex-row items-center justify-between px-[16px] pt-[16px]'>
         <CyDView className='flex-row items-center flex-1 gap-x-[4px]'>
@@ -305,18 +305,18 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
         </CyDTouchView>
       </CyDView>
 
-      <CyDView className='h-[1px] bg-[#444444] w-full my-[16px]' />
+      <CyDView className='h-[1px] !bg-[#444444] w-full my-[16px]' />
 
       {/* Bottom section: Reward Booster */}
       <CyDView className='px-[16px] pb-[20px]'>
         <CyDView className='flex-row items-center justify-between'>
-          <CyDText className='text-[#F4F4F4] font-medium text-[14px]'>
+          <CyDText className='!text-[#F4F4F4] font-medium !text-[14px]'>
             Reward Booster
           </CyDText>
           <CyDView className='flex-row items-center'>
-            <CyDView className='bg-[#000000] rounded-[4px] px-[12px] py-[8px] flex-row items-center'>
+            <CyDView className='!bg-[#000000] rounded-[4px] px-[12px] py-[8px] flex-row items-center'>
               <CyDTextInput
-                className='text-[#FFFFFF] text-[16px] font-semibold bg-[#000000]'
+                className='!text-[#FFFFFF] !text-[16px] font-semibold !bg-[#000000]'
                 placeholder='00'
                 placeholderTextColor='#888888'
                 keyboardType='numeric'
@@ -325,7 +325,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                   handleCustomInput(item.candidateId, value)
                 }
               />
-              <CyDText className='text-[#FFFFFF] text-[16px] font-semibold'>
+              <CyDText className='!text-[#FFFFFF] !text-[16px] font-semibold'>
                 %
               </CyDText>
             </CyDView>
@@ -338,16 +338,16 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
             {[10, 25, 50, 75, 100].map(percentage => (
               <CyDTouchView
                 key={percentage}
-                className={clsx(
-                  'px-[12px] py-[6px] rounded-[4px] border bg-[#444444] flex-1',
-                  item.allocation === percentage
-                    ? 'bg-[#303030] border-[#666666]'
-                    : 'bg-[#444444] border-[#444444]',
-                )}
+                className={clsx('px-[12px] py-[6px] rounded-[4px] flex-1', {
+                  '!bg-[#303030] border !border-[#666666]':
+                    item.allocation === percentage,
+                  '!border-[#444444] border !bg-[#444444]':
+                    item.allocation !== percentage,
+                })}
                 onPress={() => handleChipSelect(item.candidateId, percentage)}>
                 <CyDText
                   className={clsx(
-                    'text-[14px] font-medium text-center text-[#FFFFFF]',
+                    '!text-[14px] font-medium text-center !text-[#FFFFFF]',
                   )}>
                   {percentage}%
                 </CyDText>
@@ -377,7 +377,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
         ) : (
           <CyDView className='w-[40px] h-[40px] rounded-full bg-n40 mr-2' />
         )}
-        <CyDText className='text-[20px] font-bold flex-1 text-white'>
+        <CyDText className='!text-[20px] font-bold flex-1 text-white'>
           {item.brand ?? item.canonicalName}
         </CyDText>
         <CyDText className='text-p50'>{isSelected ? '◉' : '○'}</CyDText>
@@ -417,7 +417,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
           {/* Content */}
           {view === 'selected' ? (
             <>
-              <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] self-center mt-[16px]' />
+              <CyDView className='w-[32px] h-[4px] !bg-[#d9d9d9] self-center mt-[16px]' />
               <CyDView className='flex-row items-center justify-between'>
                 <CyDView />
                 <CyDText className='text-xl font-bold text-white'>
@@ -429,13 +429,13 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
               </CyDView>
 
               <CyDTouchView
-                className='bg-[#515151] rounded-[12px] p-[12px] mt-[24px]'
+                className='!bg-[#515151] rounded-[12px] p-[12px] mt-[24px]'
                 onPress={() => setView('add')}>
                 <CyDText className='text-white font-bold text-center'>
                   + Add Merchant
                 </CyDText>
               </CyDTouchView>
-              <CyDScrollView
+              <CyDKeyboardAwareScrollView
                 className='flex-1 mt-[24px]'
                 contentContainerStyle={styles.scrollViewContent}
                 onScroll={handleScroll}
@@ -449,7 +449,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                     selected.map(renderSelectedMerchant)
                   )}
                 </CyDTouchView>
-              </CyDScrollView>
+              </CyDKeyboardAwareScrollView>
               <CyDView className='p-4'>
                 {remainingPower === 0 ? (
                   <CyDTouchView
@@ -476,7 +476,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
             </>
           ) : (
             <>
-              <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] self-center mt-[16px]' />
+              <CyDView className='w-[32px] h-[4px] !bg-[#d9d9d9] self-center mt-[16px]' />
               <CyDView className='flex-row items-center justify-between'>
                 <CyDView />
                 <CyDText className='text-xl font-bold text-white'>
@@ -485,14 +485,14 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                 <CyDView />
               </CyDView>
               <CyDView className='mt-[32px] flex-1'>
-                <CyDView className='flex-row items-center gap-x-[8px] bg-[#202020] rounded-[10px] p-[8px]'>
+                <CyDView className='flex-row items-center gap-x-[8px] !bg-[#202020] rounded-[10px] p-[8px]'>
                   <CyDMaterialDesignIcons
                     name='magnify'
                     size={24}
                     color='#C2C7D0'
                   />
                   <CyDTextInput
-                    className='flex-1 bg-[#202020] text-[#C2C7D0] text-[16px] font-normal'
+                    className='flex-1 !bg-[#202020] !text-[#C2C7D0] !text-[16px] font-normal'
                     value={search}
                     onChangeText={text => {
                       setSearch(text);
@@ -516,7 +516,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
 
                 <CyDView className='my-[16px] flex-row items-center gap-x-[6px]'>
                   <CyDIcons name='merchant' size={24} color='#C2C7D0' />
-                  <CyDText className='text-[#C2C7D0] text-[12px] font-medium'>
+                  <CyDText className='!text-[#C2C7D0] !text-[12px] font-medium'>
                     Merchants on Cypher
                   </CyDText>
                 </CyDView>
@@ -564,10 +564,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
                 )}
               </CyDView>
               <CyDView className='p-4'>
-                <Button
-                  title='Back to Selected'
-                  onPress={() => setView('selected')}
-                />
+                <Button title='Confirm' onPress={() => setView('selected')} />
               </CyDView>
             </>
           )}

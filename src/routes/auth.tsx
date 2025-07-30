@@ -477,6 +477,22 @@ export function PortfolioStackScreen() {
         })}
       />
 
+      <PortfolioStack.Screen
+        name={screenTitle.AIRDROP_ELIGIBILITY}
+        component={AirdropEligibility}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.AIRDROP_CLAIM}
+        component={AirdropClaim}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
       {/* <PortfolioStack.Screen
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
@@ -1614,21 +1630,6 @@ export function OptionsStackScreen({
               keyboardHeight={keyboardHeight}
             />
           ),
-        })}
-      />
-
-      <OptionsStack.Screen
-        name={screenTitle.AIRDROP_ELIGIBILITY}
-        component={AirdropEligibility}
-        options={({ navigation }) => ({
-          headerShown: false,
-        })}
-      />
-      <OptionsStack.Screen
-        name={screenTitle.AIRDROP_CLAIM}
-        component={AirdropClaim}
-        options={({ navigation }) => ({
-          headerShown: false,
         })}
       />
     </OptionsStack.Navigator>

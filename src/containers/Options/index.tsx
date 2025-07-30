@@ -167,15 +167,6 @@ export default function Options() {
             />
 
             <OptionsContainer
-              sentryLabel={'address-book'}
-              onPress={() => {
-                navigation.navigate(C.screenTitle.AIRDROP_ELIGIBILITY);
-              }}
-              title={t('AIRDROP')}
-              logo={'contactbook'}
-            />
-
-            <OptionsContainer
               sentryLabel={'activities'}
               onPress={() => {
                 navigation.navigate(C.screenTitle.ACTIVITIES);

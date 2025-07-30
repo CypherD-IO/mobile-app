@@ -207,7 +207,6 @@ export default function useTransactionManager() {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
       });
-      console.log('🚀 ~ executeTransferContract ~ receipt:', receipt);
       const receiptStatus = get(receipt, 'status');
 
       if (receiptStatus === 'reverted') {
@@ -1527,6 +1526,7 @@ export default function useTransactionManager() {
     nftTokenValue,
     candidates,
     weights,
+    isTestnet,
   }: {
     contractAddress: string;
     proof: string[];
@@ -1535,12 +1535,15 @@ export default function useTransactionManager() {
     nftTokenValue: bigint;
     candidates: string[];
     weights: number[];
+    isTestnet: boolean;
   }): Promise<TransactionResponse> => {
     try {
-      const chainConfig = get(ChainConfigMapping, 'base');
+      const chain = isTestnet ? 'base_sepolia' : 'base';
+      const chainConfig = get(ChainConfigMapping, chain);
 
       const publicClient = getViemPublicClient(
-        getWeb3Endpoint(chainConfig, globalContext),
+        // getWeb3Endpoint(chainConfig, globalContext),
+        'https://base-sepolia-rpc.publicnode.com',
       );
 
       // Define the contract ABI for the claim function

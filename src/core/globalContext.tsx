@@ -82,6 +82,9 @@ export const initialGlobalState: GlobalStateDef = {
     HYPERLIQUID: {
       primary: 'https://rpc.hyperliquid.xyz',
     },
+    BASE_SEPOLIA: {
+      primary: 'https://base-sepolia-rpc.publicnode.com',
+    },
   },
   token: '',
   isAuthenticated: false,

@@ -31,7 +31,6 @@ import {
   generateEthAddressFromSeedPhrase,
   generateMultipleWalletAddressesFromSeedPhrase,
 } from '../../core/Address';
-import { getReadOnlyWalletData } from '../../core/asyncStorage';
 import { importWallet } from '../../core/HdWallet';
 import useAxios from '../../core/HttpRequest';
 import { HdWalletContext, sleepFor } from '../../core/util';
@@ -47,7 +46,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import { mnemonicToAccount } from 'viem/accounts';
+import { Mnemonic } from 'ethers';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -114,15 +113,6 @@ export default function Login(props) {
     debouncedTextChange(text);
   };
 
-  function isValidMnemonic(mnemonic: string): boolean {
-    try {
-      mnemonicToAccount(mnemonic);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
   useEffect(() => {
     if (hdWalletContext.state.choosenWalletIndex !== -1) {
       setTimeout(() => {
@@ -153,7 +143,7 @@ export default function Login(props) {
       'state.wallet.ethereum.address',
       undefined,
     );
-    if (keyValue.length >= 12 && isValidMnemonic(keyValue.join(' '))) {
+    if (keyValue.length >= 12 && Mnemonic.isValidMnemonic(keyValue.join(' '))) {
       if (isReadOnlyWallet) {
         const data = await getReadOnlyWalletData();
         if (data) {
