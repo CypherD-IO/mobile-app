@@ -13,6 +13,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */; };
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
+		53F5B4608FE245BAB522F189 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C95D7F46F6DF4E8E8326C7EC /* CydFont.ttf */; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
 		62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A29F23708E9E4C56AAC109CA /* CypherNord.ttf */; };
@@ -22,7 +23,7 @@
 		86D7B40038CB43C1A9BA0329 /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A25717E7C02E454B955A69A4 /* Manrope-ExtraLight.ttf */; };
 		9051DFCC29A24E86A3C678EE /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */; };
 		B76522972792A50F002A2E46 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B76522962792A50F002A2E46 /* GoogleService-Info.plist */; };
-		CE9E0F3A317C49DAAC2543B6 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 72477196227C4FD09D60B1D5 /* CydFont.ttf */; };
+		C67147AE2A0F4311B4A06D66 /* NewYork.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BDBE8E1E797F466EA5505224 /* NewYork.ttf */; };
 		CFD1E93603024C288F7A5B12 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1D7A6FE1B6745E2A1FEC3CC /* Manrope-ExtraBold.ttf */; };
 		DA4EFF8144104B61B81880A0 /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E7A3B5BB16A41F9BE9CC0FB /* Manrope-Light.ttf */; };
 		E9978F60E5B01199651AF2FE /* libPods-Cypherd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */; };
@@ -65,7 +66,6 @@
 		5C433F6428E585ED00FA84F8 /* splash.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = splash.json; sourceTree = "<group>"; };
 		6449BD8EE34C403D8E1A3F0B /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		69B2D9D1A0834C91847AC860 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
-		72477196227C4FD09D60B1D5 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		7B69CC8348E34CA5B1F72BB9 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		7D992FCDCA1A451DBFBE582C /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Cypherd/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -80,7 +80,9 @@
 		BBEF5FBDD0887C603C753B82 /* Pods-Cypherd.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd.debug.xcconfig"; path = "Target Support Files/Pods-Cypherd/Pods-Cypherd.debug.xcconfig"; sourceTree = "<group>"; };
 		BCB0BC6E280DF93100441CE3 /* Cypherd.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Cypherd.entitlements; path = Cypherd/Cypherd.entitlements; sourceTree = "<group>"; };
 		BCD4DAD068D0B869A0FCD636 /* Pods-Cypherd-CypherdTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd-CypherdTests.release.xcconfig"; path = "Target Support Files/Pods-Cypherd-CypherdTests/Pods-Cypherd-CypherdTests.release.xcconfig"; sourceTree = "<group>"; };
+		BDBE8E1E797F466EA5505224 /* NewYork.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = NewYork.ttf; path = ../assets/fonts/NewYork.ttf; sourceTree = "<group>"; };
 		BE0EA44956C44C789908DC17 /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
+		C95D7F46F6DF4E8E8326C7EC /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		D85EC71D87BE43D8BF1C0222 /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 		DC96D072EC354EEEA96DDCAF /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
 		DE141B9D8B3542528157F3F8 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
@@ -153,8 +155,9 @@
 				D85EC71D87BE43D8BF1C0222 /* Manrope-Medium.ttf */,
 				3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */,
 				29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */,
-				72477196227C4FD09D60B1D5 /* CydFont.ttf */,
 				A29F23708E9E4C56AAC109CA /* CypherNord.ttf */,
+				C95D7F46F6DF4E8E8326C7EC /* CydFont.ttf */,
+				BDBE8E1E797F466EA5505224 /* NewYork.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -339,8 +342,9 @@
 				7A10E59221E64F2881B4F8EC /* Manrope-Medium.ttf in Resources */,
 				9051DFCC29A24E86A3C678EE /* Manrope-Regular.ttf in Resources */,
 				EC8AF5C1EF1942ADBFC836D3 /* Manrope-SemiBold.ttf in Resources */,
-				CE9E0F3A317C49DAAC2543B6 /* CydFont.ttf in Resources */,
 				62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */,
+				53F5B4608FE245BAB522F189 /* CydFont.ttf in Resources */,
+				C67147AE2A0F4311B4A06D66 /* NewYork.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -709,7 +713,7 @@
 				DEFINES_MODULE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -788,7 +792,7 @@
 				DEFINES_MODULE = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (

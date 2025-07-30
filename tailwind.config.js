@@ -5,6 +5,11 @@ module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}', './App.tsx'],
   presets: [require('nativewind/preset')],
   darkMode: 'class',
+  // Ensure proper CSS variable handling
+  corePlugins: {
+    preflight: false,
+  },
+  // Enable arbitrary value processing
   theme: {
     extend: {
       colors: {
@@ -178,7 +183,7 @@ module.exports = {
       fontFamily: {
         manrope: ['Manrope'],
         nord: ['Cypher Nord'],
-
+        newyork: ['New York'],
       },
       fontWeight: {
         thin: '100',

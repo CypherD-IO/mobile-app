@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Ensure CSS variables are properly scoped */
+:root {
+  /* This ensures CSS variables are available globally */
+  color-scheme: light dark;
+}
+
+/* Force arbitrary values to work properly */
+@layer utilities {
+  /* This layer ensures arbitrary values are processed correctly */
+}

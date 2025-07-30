@@ -278,6 +278,20 @@ export const CHAIN_BASE: Chain = {
   chainIdNumber: 8453,
 };
 
+export const CHAIN_BASE_SEPOLIA: Chain = {
+  chainName: 'ethereum',
+  name: 'Base Sepolia',
+  symbol: 'ETH',
+  id: 18,
+  logo_url: AppImages.BASE_LOGO,
+  backendName: ChainBackendNames.BASE,
+  chain_id: '0x14a34',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  chainIdNumber: 84532,
+};
+
 export const CHAIN_SOLANA: Chain = {
   chainName: 'solana',
   name: 'Solana',
@@ -513,6 +527,7 @@ export const ChainConfigMapping = {
   injective: CHAIN_INJECTIVE,
   zksync_era: CHAIN_ZKSYNC_ERA,
   base: CHAIN_BASE,
+  base_sepolia: CHAIN_BASE_SEPOLIA,
   solana: CHAIN_SOLANA,
 };
 

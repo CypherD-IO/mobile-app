@@ -1,3 +1,24 @@
+/**
+ * Custom Font Configuration
+ *
+ * This file contains type definitions for the custom icon font used in the Cypher mobile app.
+ * The font is generated using IcoMoon.io and contains all custom icons.
+ */
+
+/**
+ * Font family name for the custom icon font
+ *
+ * This constant should be used when referencing the custom font in styles
+ * to ensure consistency across the application.
+ */
+export const CUSTOM_FONT_FAMILY = 'CydFont' as const;
+
+/**
+ * Type definition for all available icon names in the custom font
+ *
+ * This type ensures type safety when using icon names throughout the application.
+ * When adding new icons, update this type to include the new icon names.
+ */
 export type IconNames =
   | 'account'
   | 'account-plus'
@@ -93,4 +114,12 @@ export type IconNames =
   | 'apple-google-icon'
   | 'balance-scale'
   | 'help-circle-outline'
+  | 'airdrop-icon'
+  | 'sad-face'
+  | 'happy-face'
+  | 'edit-2'
+  | 'nft-icon'
+  | 'zap'
+  | 'coins-stacked'
+  | 'merchant'
   | 'arrow-forward';

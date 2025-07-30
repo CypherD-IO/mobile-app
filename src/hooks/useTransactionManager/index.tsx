@@ -207,6 +207,12 @@ export default function useTransactionManager() {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
       });
+      console.log('🚀 ~ executeTransferContract ~ receipt:', receipt);
+      const receiptStatus = get(receipt, 'status');
+
+      if (receiptStatus === 'reverted') {
+        throw new Error('Transaction reverted');
+      }
 
       return {
         hash: receipt.transactionHash,
@@ -595,6 +601,11 @@ export default function useTransactionManager() {
         hash,
       });
 
+      const receiptStatus = get(receipt, 'status');
+      if (receiptStatus === 'reverted') {
+        throw new Error('Transaction reverted');
+      }
+
       if (receipt) {
         return { isError: false, hash: receipt.transactionHash };
       }
@@ -948,6 +959,11 @@ export default function useTransactionManager() {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
       });
+
+      const receiptStatus = get(receipt, 'status');
+      if (receiptStatus === 'reverted') {
+        throw new Error('Transaction reverted');
+      }
 
       return { isError: false, hash: receipt.transactionHash };
     } catch (e) {
@@ -1366,6 +1382,7 @@ export default function useTransactionManager() {
       let signature;
       const solanRpc = getSolanaRpc();
       const fromKeypair = await getSolanWallet();
+      console.log('🚀 ~ sendSolanaTokens ~ fromKeypair:', fromKeypair);
       if (!fromKeypair) {
         return {
           isError: true,
@@ -1501,6 +1518,81 @@ export default function useTransactionManager() {
     }
   };
 
+  // --- Execute airdrop claim contract call ---
+  const executeAirdropClaimContract = async ({
+    contractAddress,
+    proof,
+    rootId,
+    tokenAirdropValue,
+    nftTokenValue,
+    candidates,
+    weights,
+  }: {
+    contractAddress: string;
+    proof: string[];
+    rootId: number;
+    tokenAirdropValue: bigint;
+    nftTokenValue: bigint;
+    candidates: string[];
+    weights: number[];
+  }): Promise<TransactionResponse> => {
+    try {
+      const chainConfig = get(ChainConfigMapping, 'base');
+
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(chainConfig, globalContext),
+      );
+
+      // Define the contract ABI for the claim function
+      const airdropClaimAbi = [
+        {
+          inputs: [
+            { name: 'proof', type: 'bytes32[]' },
+            { name: 'rootId', type: 'uint256' },
+            { name: 'tokenAirdropValue', type: 'uint256' },
+            { name: 'nftTokenValue', type: 'uint256' },
+            { name: 'candidates', type: 'bytes32[]' },
+            { name: 'weights', type: 'uint256[]' },
+          ],
+          name: 'claim',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ];
+
+      // Encode the function data
+      const contractData = encodeFunctionData({
+        abi: airdropClaimAbi,
+        functionName: 'claim',
+        args: [
+          proof,
+          rootId,
+          tokenAirdropValue,
+          nftTokenValue,
+          candidates,
+          weights,
+        ],
+      });
+
+      // Execute the contract call
+      const resp = await executeTransferContract({
+        publicClient,
+        chain: chainConfig,
+        amountToSend: '0',
+        toAddress: contractAddress as `0x${string}`,
+        contractAddress: contractAddress as `0x${string}`,
+        contractDecimals: 18,
+        contractData,
+        isErc20: true,
+      });
+
+      return resp;
+    } catch (error) {
+      return { isError: true, error };
+    }
+  };
+
   return {
     sendEvmToken,
     sendCosmosToken,
@@ -1513,5 +1605,6 @@ export default function useTransactionManager() {
     sendSolanaTokens,
     executeTransferContract,
     signTypedData,
+    executeAirdropClaimContract,
   };
 }

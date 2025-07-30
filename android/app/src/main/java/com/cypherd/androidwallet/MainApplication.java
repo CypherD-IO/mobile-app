@@ -68,6 +68,7 @@ public class MainApplication extends Application implements ReactApplication {
     ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope);
     ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont);
     ReactFontManager.getInstance().addCustomFont(this, "Cypher Nord", R.font.nord);
+    ReactFontManager.getInstance().addCustomFont(this, "New York", R.font.newyork);
     SoLoader.init(this, /* native exopackage */ false);
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.

@@ -233,7 +233,7 @@ export default function SelectAdditionalCardType() {
       from: 'get_new_card_explore',
       type: cardType,
       price,
-      address: cardProfile?.primaryEthAddress,
+      address: cardProfile?.primaryAddress,
     });
     navigation.navigate(screenTitle.ADDITIONAL_CARD_DESCRIPTION, {
       cardMetaData: card,

@@ -1,6 +1,5 @@
 import {
   CardProviders,
-  CardTransactionTypes,
   PhysicalCardType,
   ReapTxnStatus,
 } from '../constants/enum';

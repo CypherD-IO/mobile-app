@@ -53,6 +53,7 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];

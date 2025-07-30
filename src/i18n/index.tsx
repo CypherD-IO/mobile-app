@@ -1747,6 +1747,33 @@ const resources = {
       USDC_LOAD_FEE_INFO:
         '{{premiumUSDCFee}}% USDC load fees for Premium users on Ethereum, Solana, Noble, Base, Polygon, Optimism, Arbitrum, Avalanche. USDC on BNB incurs {{premiumNonUSDCFee}}% (Premium) / {{standardNonUSDCFee}}% (Standard) fees.',
       CYPHER_CARD_TERMS_CONDITIONS: 'Cypher Card Terms and Conditions',
+      UNABLE_TO_FETCH_AIRDROP_DATA: 'Unable to fetch airdrop data',
+      CLAIM_SUCCESS: 'Claim Success',
+      AIRDROP_HEADER: 'Check out what your airdrop rewards look like!',
+      CYPR_TOKEN: 'CYPR Token',
+      SPEND_REWARD: 'Spend Reward',
+      CYPR: '$CYPR',
+      CYPHER_OG_REWARDS: 'Cypher OG Rewards',
+      CYPHER_OG_REWARDS_DESCRIPTION:
+        'since you have been a Cypher customer for long time.',
+      INFLUENCER_REWARD: 'Influencer Reward',
+      INFLUENCER_REWARD_DESCRIPTION:
+        'Thanks for being such a cool influencer for Cypher!',
+      BASE_COMMUNITY_REWARD: 'Base Community Reward',
+      BASE_COMMUNITY_REWARD_DESCRIPTION:
+        'We would love to have you in the Cypher community!',
+      MERCHANT_BOOST: 'Merchant Boost',
+      MERCHANT_BOOST_DESCRIPTION:
+        'With the earned veCypher you can boost a merchant reward while spending with cypher crypto card. This is a community effect, you can change the merchant boost on cypher dapp every 14 days once.',
+      CYPR_AIRDROP: '$CYPR Airdrop',
+      AWESOME_YOU_QUALIFY_FOR_THE_AIRDROP:
+        'Awesome! You qualify for the airdrop!',
+      OOPS_YOU_DO_NOT_QUALIFY_FOR_THE_AIRDROP:
+        'Oops, you do not qualify for the airdrop.',
+      CONTINUE_TO_CLAIM_THE_AIRDROP_REWARDS:
+        'Continue to claim the airdrop rewards.',
+      KEEP_SPENDING_FOR_EXCITING_REWARDS_ON_EVERY_SPEND:
+        'Keep spending for exciting rewards on every spend.',
     },
   },
 };

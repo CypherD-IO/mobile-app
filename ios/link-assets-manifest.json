@@ -3,7 +3,7 @@
   "data": [
     {
       "path": "assets/fonts/CydFont.ttf",
-      "sha1": "bdbbd32646bf0d5a0e11837ece7072017e464609"
+      "sha1": "5489769ed2163c22acc5f42d593d29095df0c344"
     },
     {
       "path": "assets/fonts/CypherNord.ttf",
@@ -36,6 +36,10 @@
     {
       "path": "assets/fonts/Manrope-SemiBold.ttf",
       "sha1": "e423e112f4832916b05308934c10aa84fd14c607"
+    },
+    {
+      "path": "assets/fonts/NewYork.ttf",
+      "sha1": "7ed6eb1ef3f96e9eb59c3359da53521e2c3ad9cb"
     }
   ]
 }

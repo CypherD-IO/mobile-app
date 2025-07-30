@@ -79,6 +79,9 @@ export const initialGlobalState: GlobalStateDef = {
       primary: 'https://api.mainnet-beta.solana.com',
       secondaryList: 'https://api.mainnet-beta.solana.com',
     },
+    HYPERLIQUID: {
+      primary: 'https://rpc.hyperliquid.xyz',
+    },
   },
   token: '',
   isAuthenticated: false,
