@@ -56,4 +56,5 @@ export interface AirdropInfo {
 export interface AirdropData {
   isEligible: boolean;
   airdrop?: AirdropInfo;
+  evmAddressLinked?: string;
 }

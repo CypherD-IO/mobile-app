@@ -147,7 +147,9 @@ export default function AirdropEligibility() {
                 </CyDText>
                 <CyDView className='mt-[12px] !bg-[#2F3139] rounded-[8px] p-[16px]'>
                   <CyDText className='font-medium !text-[14px] text-white leading-[145%] tracking-[-0.6px]'>
-                    {airdropAddress}
+                    {airdropData.evmAddressLinked
+                      ? airdropData.evmAddressLinked
+                      : airdropAddress}
                   </CyDText>
                 </CyDView>
               </CyDView>
@@ -182,7 +184,11 @@ export default function AirdropEligibility() {
                     'rounded-[12px] mt-[6px] py-[12px] px-[16px] flex flex-row gap-x-[12px]',
                     {
                       '!bg-[#0E2713]': airdropData.isEligible,
-                      '!bg-[#C94848]': !airdropData.isEligible,
+                      '!bg-[#C94848]':
+                        !airdropData.isEligible &&
+                        !airdropData.evmAddressLinked,
+                      '!bg-[#F38200]':
+                        !airdropData.isEligible && airdropData.evmAddressLinked,
                     },
                   )}>
                   {airdropData.isEligible && (
@@ -192,29 +198,66 @@ export default function AirdropEligibility() {
                       className='text-white'
                     />
                   )}
-                  {!airdropData.isEligible && (
+                  {!airdropData.isEligible && !airdropData.evmAddressLinked && (
                     <CyDMaterialDesignIcons
                       name='emoticon-sad-outline'
                       size={42}
                       className='text-white'
                     />
                   )}
+                  {!airdropData.isEligible && airdropData.evmAddressLinked && (
+                    <CyDMaterialDesignIcons
+                      name='autorenew'
+                      size={42}
+                      className='text-white'
+                    />
+                  )}
                   <CyDView className='flex-1'>
-                    <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
-                      {airdropData.isEligible
-                        ? t('AWESOME_YOU_QUALIFY_FOR_THE_AIRDROP')
-                        : t('OOPS_YOU_DO_NOT_QUALIFY_FOR_THE_AIRDROP')}
-                    </CyDText>
-                    <CyDText
-                      className={clsx(
-                        'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px] text-wrap',
-                      )}>
-                      {airdropData.isEligible
-                        ? t('CONTINUE_TO_CLAIM_THE_AIRDROP_REWARDS')
-                        : t(
+                    {airdropData.isEligible && (
+                      <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                        {t('AWESOME_YOU_QUALIFY_FOR_THE_AIRDROP')}
+                      </CyDText>
+                    )}
+                    {!airdropData.isEligible &&
+                      !airdropData.evmAddressLinked && (
+                        <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                          {t('OOPS_YOU_DO_NOT_QUALIFY_FOR_THE_AIRDROP')}
+                        </CyDText>
+                      )}
+                    {!airdropData.isEligible &&
+                      airdropData.evmAddressLinked && (
+                        <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                          {t('DIFFERENT_EVM_ADDRESS')}
+                        </CyDText>
+                      )}
+                    {airdropData.isEligible && (
+                      <CyDText
+                        className={clsx(
+                          'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px] text-wrap',
+                        )}>
+                        {t('CONTINUE_TO_CLAIM_THE_AIRDROP_REWARDS')}
+                      </CyDText>
+                    )}
+                    {!airdropData.isEligible &&
+                      !airdropData.evmAddressLinked && (
+                        <CyDText
+                          className={clsx(
+                            'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px] text-wrap',
+                          )}>
+                          {t(
                             'KEEP_SPENDING_FOR_EXCITING_REWARDS_ON_EVERY_SPEND',
                           )}
-                    </CyDText>
+                        </CyDText>
+                      )}
+                    {!airdropData.isEligible &&
+                      airdropData.evmAddressLinked && (
+                        <CyDText
+                          className={clsx(
+                            'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px] text-wrap',
+                          )}>
+                          {t('CHANGE_WALLET')}
+                        </CyDText>
+                      )}
                   </CyDView>
                 </CyDView>
               )}
