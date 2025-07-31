@@ -1756,6 +1756,15 @@ const resources = {
         '{{premiumUSDCFee}}% USDC load fees for Premium users on Ethereum, Solana, Noble, Base, Polygon, Optimism, Arbitrum, Avalanche. USDC on BNB incurs {{premiumNonUSDCFee}}% (Premium) / {{standardNonUSDCFee}}% (Standard) fees.',
       CYPHER_CARD_TERMS_CONDITIONS: 'Cypher Card Terms and Conditions',
       CARDS: 'Cards',
+      GET_YOUR_FIRST_TOKEN: 'Get your first token',
+      FUND_WALLET_DESCRIPTION:
+        'Fund your wallet by buying crypto or transferring from another wallet',
+      GET_TOKEN: 'Get Token',
+      BUY_CRYPTO: 'Buy Crypto',
+      BUY_CRYPTO_DESCRIPTION: 'Purchase with a debit card or bank account',
+      RECEIVE_CRYPTO: 'Receive Crypto',
+      RECEIVE_CRYPTO_DESCRIPTION:
+        'Receive crypto by scanning a QR code or sharing your address',
     },
   },
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   Image,
   ViewStyle,
@@ -11,6 +11,7 @@ import {
   CyDText,
   CyDView,
   CyDAnimatedView,
+  CyDMaterialDesignIcons,
 } from '../../styles/tailwindComponents';
 import {
   useSharedValue,
@@ -21,6 +22,7 @@ import {
 } from 'react-native-reanimated';
 import { AppImagesMap } from '../../../assets/images/appImages';
 import { useOnboardingReward } from '../../contexts/OnboardingRewardContext';
+import { get } from 'lodash';
 
 /**
  * Position interface for controlling the floating banner position
@@ -56,6 +58,11 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
   position = { top: 48, left: 16, right: 16 }, // Default position: top with side margins
 }) => {
   const { remainingMs, totalRewardsPossible } = useOnboardingReward();
+  const { statusWiseRewards } = useOnboardingReward();
+
+  const isEligible = useMemo(() => {
+    return get(statusWiseRewards, ['kycPending', 'earned'], false);
+  }, [statusWiseRewards]);
 
   const minutes = Math.floor(remainingMs / 60000);
   const seconds = Math.floor((remainingMs % 60000) / 1000);
@@ -141,26 +148,39 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
     <CyDAnimatedView style={[dynamicPositionStyle, bannerAnimatedStyle]}>
       <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg'>
         {/* Left side - Icon */}
-        <Image
-          source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
-          className='w-[28px] h-[28px] mr-2'
-          resizeMode='contain'
-        />
+        {isEligible ? (
+          <CyDMaterialDesignIcons
+            name='check-circle'
+            size={28}
+            color='white'
+            className='mr-2'
+          />
+        ) : (
+          <Image
+            source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
+            className='w-[28px] h-[28px] mr-2'
+            resizeMode='contain'
+          />
+        )}
 
         {/* Offer text and timer (opacity animated) */}
         <CyDAnimatedView
           style={textAnimatedStyle}
           className='flex flex-1 flex-row items-center justify-between'>
           <CyDText className='text-white leading-tight mr-2'>
-            Get {totalRewardsPossible} $CYPR as sign up bonus
+            {isEligible
+              ? 'You are eligible for the sign-up bonus'
+              : `Get ${totalRewardsPossible} $CYPR as sign up bonus`}
           </CyDText>
 
           {/* Countdown timer */}
-          <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full min-w-[90px] px-2 py-1 items-center'>
-            <CyDText className='text-white font-bold text-[14px]'>
-              {formatTime(minutes)}m: {formatTime(seconds)}s
-            </CyDText>
-          </CyDView>
+          {!isEligible && (
+            <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full min-w-[90px] px-2 py-1 items-center'>
+              <CyDText className='text-white font-bold text-[14px]'>
+                {formatTime(minutes)}m: {formatTime(seconds)}s
+              </CyDText>
+            </CyDView>
+          )}
         </CyDAnimatedView>
       </CyDView>
     </CyDAnimatedView>

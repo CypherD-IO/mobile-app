@@ -37,6 +37,7 @@ import {
   ChooseChainModal,
   WHERE_PORTFOLIO,
 } from '../../components/ChooseChainModal';
+import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
@@ -57,6 +58,13 @@ import {
   CHAIN_COLLECTION,
   ChainBackendNames,
   NotificationEvents,
+  CHAIN_ETH,
+  CHAIN_AVALANCHE,
+  CHAIN_POLYGON,
+  CHAIN_ARBITRUM,
+  CHAIN_BSC,
+  CHAIN_COSMOS,
+  FundWalletAddressType,
 } from '../../constants/server';
 import {
   getFirstLaunchAfterWalletCreation,
@@ -74,6 +82,7 @@ import {
   HdWalletContext,
   findChainOfAddress,
   extractAddressFromURI,
+  getAvailableChains,
 } from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
 import { DeFiFilter } from '../../models/defi.interface';
@@ -89,6 +98,7 @@ import {
   CyDFlatList,
   CyDImage,
   CyDLottieView,
+  CyDMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -100,11 +110,41 @@ import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
 import Loading from '../../components/v2/loading';
+import GetFirstTokenComponent from '../../components/v2/GetFirstTokenComponent';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import GetTokenBottomSheetContent from '../../components/v2/GetTokenBottomSheetContent';
+import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
+import { Theme, useTheme } from '../../reducers/themeReducer';
+import { colorScheme } from 'nativewind';
+import CyDModalLayout from '../../components/v2/modal';
 
 export interface PortfolioProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
+}
+
+interface IBuyOptionsData {
+  index: number;
+  title: string;
+  displayTitle: string;
+  logo: any;
+  supportedChains: Chain[];
+  currencyType: CurrencyTypes;
+  screenTitle: string;
+  supportedPaymentModes: string;
+  isVisibileInUI: boolean;
+}
+
+enum CurrencyTypes {
+  USD = 'USD',
+  INR = 'INR',
+  FIAT = 'FIAT',
+}
+
+enum BuyOptions {
+  ONMETA = 'ONMETA',
+  COINBASE = 'COINBASE',
+  TRANSFI = 'TRANSFI',
 }
 
 export default function Portfolio({ navigation }: PortfolioProps) {
@@ -138,6 +178,235 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const backgroundTimestampRef = useRef<number | null>(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+
+  // Buy modal states
+  const [buyModalVisible, setBuyModalVisible] = useState<boolean>(false);
+  const [buyChooseChainModalVisible, setBuyChooseChainModalVisible] =
+    useState<boolean>(false);
+  const [buyType, setBuyType] = useState<IBuyOptionsData>();
+  const [chainData, setChainData] = useState<Chain[]>([CHAIN_COLLECTION]);
+
+  // Receive modal states
+  const [chooseChainModal, setChooseChainModal] = useState<boolean>(false);
+  const [receiveSelectedChain, setReceiveSelectedChain] =
+    useState<Chain>(CHAIN_ETH);
+
+  const { theme } = useTheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  // Buy options data
+  const buyOptionsData: IBuyOptionsData[] = [
+    {
+      index: 0,
+      title: BuyOptions.ONMETA,
+      displayTitle: t('ONMETA_BUY_DISPLAY_TITLE') ?? 'OnMeta',
+      logo: AppImages.ONMETA,
+      supportedChains: [
+        CHAIN_ETH,
+        CHAIN_AVALANCHE,
+        CHAIN_POLYGON,
+        CHAIN_ARBITRUM,
+        CHAIN_BSC,
+      ],
+      currencyType: CurrencyTypes.INR,
+      screenTitle: C.screenTitle.ON_META,
+      supportedPaymentModes: 'UPI',
+      isVisibileInUI: true,
+    },
+    {
+      index: 1,
+      title: BuyOptions.COINBASE,
+      displayTitle: t('COINBASE_DISPLAY_TITLE') ?? 'Coinbase',
+      logo: AppImages.COINBASE,
+      supportedChains: [
+        CHAIN_ETH,
+        CHAIN_COSMOS,
+        CHAIN_AVALANCHE,
+        CHAIN_POLYGON,
+      ],
+      currencyType: CurrencyTypes.USD,
+      screenTitle: C.screenTitle.CB_PAY,
+      supportedPaymentModes: '',
+      isVisibileInUI: true,
+    },
+  ];
+
+  const handleShowGetTokenSheet = () => {
+    showBottomSheet({
+      id: 'getTokenOptions',
+      snapPoints: ['40%'],
+      showCloseButton: true,
+      scrollable: false,
+      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      content: (
+        <GetTokenBottomSheetContent
+          close={() => hideBottomSheet('getTokenOptions')}
+          onBuyPress={handleShowBuyModal}
+          onReceivePress={handleShowReceiveModal}
+        />
+      ),
+    });
+  };
+
+  const handleShowBuyModal = () => {
+    hideBottomSheet('getTokenOptions');
+    setTimeout(() => setBuyModalVisible(true), 250);
+  };
+
+  const handleShowReceiveModal = () => {
+    hideBottomSheet('getTokenOptions');
+    if (hdWallet) {
+      setChainData(getAvailableChains(hdWallet));
+    }
+    setTimeout(() => setChooseChainModal(true), 250);
+  };
+
+  const renderBuyPlatformItem = (item: IBuyOptionsData) => {
+    return (
+      item.isVisibileInUI && (
+        <CyDTouchView
+          className={'mb-[16px]'}
+          onPress={() => {
+            setBuyType(item);
+            setChainData(item.supportedChains);
+            setBuyModalVisible(false);
+            setTimeout(() => setBuyChooseChainModalVisible(true), 250);
+          }}>
+          <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
+            <CyDView className={'flex flex-row justify-between'}>
+              <CyDView className={'flex flex-row items-center'}>
+                <CyDImage
+                  source={item.logo}
+                  className={'w-[22px] h-[22px] mr-[6px]'}
+                />
+                <CyDText className={'font-bold text-[18px]'}>
+                  {item.displayTitle}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+            <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
+              {item.supportedChains.map(chain => (
+                <CyDView
+                  key={chain.backendName}
+                  className={'flex flex-row items-center mr-[12px] mb-[6px]'}>
+                  <CyDImage
+                    source={chain.logo_url}
+                    className={'w-[12px] h-[12px] mr-[4px]'}
+                  />
+                  <CyDText
+                    className={'text-subTextColor font-medium text-[12px]'}>
+                    {chain.name.toUpperCase()}
+                  </CyDText>
+                </CyDView>
+              ))}
+            </CyDView>
+            <CyDView className={'w-full h-[1px] bg-n40 my-[16px]'} />
+            {item.title !== BuyOptions.COINBASE &&
+              item.title !== BuyOptions.TRANSFI && (
+                <CyDView className='pl-[2px]'>
+                  <CyDText className={'text-subTextColor'}>
+                    {t('MODES_INIT_CAPS')} :{' '}
+                    <CyDText className={'font-black text-subTextColor'}>
+                      {item.supportedPaymentModes}
+                    </CyDText>
+                  </CyDText>
+                </CyDView>
+              )}
+          </CyDView>
+        </CyDTouchView>
+      )
+    );
+  };
+
+  const renderChainItem = (item: Chain) => {
+    return (
+      <CyDTouchView
+        className={'p-[20px] bg-n0 rounded-[18px] mb-[10px]'}
+        onPress={() => {
+          setBuyChooseChainModalVisible(false);
+          if (buyType) {
+            navigation.navigate(buyType.screenTitle, {
+              url: item.backendName,
+              operation: 'buy',
+            });
+          }
+        }}>
+        <CyDView className={'flex flex-row items-center justify-between'}>
+          <CyDView className='flex flex-row items-center'>
+            <CyDImage
+              source={item.logo_url}
+              className={'w-[18px] h-[18px] mr-[10px]'}
+            />
+            <CyDText className={'font-medium text-[17px] '}>
+              {item.name.toUpperCase()}
+            </CyDText>
+          </CyDView>
+          <CyDMaterialDesignIcons
+            name='open-in-new'
+            size={18}
+            className='text-base400 ml-[10px]'
+          />
+        </CyDView>
+      </CyDTouchView>
+    );
+  };
+
+  const onSelectingChain = ({ item }: { item: Chain }) => {
+    let addressTypeQRCode = FundWalletAddressType.EVM;
+    switch (item.backendName) {
+      case ChainBackendNames.POLYGON:
+        addressTypeQRCode = FundWalletAddressType.POLYGON;
+        break;
+      case ChainBackendNames.BSC:
+        addressTypeQRCode = FundWalletAddressType.BSC;
+        break;
+      case ChainBackendNames.AVALANCHE:
+        addressTypeQRCode = FundWalletAddressType.AVALANCHE;
+        break;
+      case ChainBackendNames.ARBITRUM:
+        addressTypeQRCode = FundWalletAddressType.ARBITRUM;
+        break;
+      case ChainBackendNames.OPTIMISM:
+        addressTypeQRCode = FundWalletAddressType.OPTIMISM;
+        break;
+      case ChainBackendNames.COSMOS:
+        addressTypeQRCode = FundWalletAddressType.COSMOS;
+        break;
+      case ChainBackendNames.OSMOSIS:
+        addressTypeQRCode = FundWalletAddressType.OSMOSIS;
+        break;
+      case ChainBackendNames.NOBLE:
+        addressTypeQRCode = FundWalletAddressType.NOBLE;
+        break;
+      case ChainBackendNames.COREUM:
+        addressTypeQRCode = FundWalletAddressType.COREUM;
+        break;
+      case ChainBackendNames.INJECTIVE:
+        addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+        break;
+      case ChainBackendNames.SOLANA:
+        addressTypeQRCode = FundWalletAddressType.SOLANA;
+        break;
+    }
+    setChooseChainModal(false);
+    setTimeout(
+      () =>
+        navigation.navigate(C.screenTitle.QRCODE, {
+          addressType: addressTypeQRCode,
+        }),
+      70,
+    );
+  };
+
+  /**
+   * Handle chain selection for receive flow
+   * Simplified callback that properly handles the chain selection
+   */
+  const handleReceiveChainSelection = (selectedChain: Chain) => {
+    onSelectingChain({ item: selectedChain?.item ?? selectedChain });
+  };
 
   const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
     chain: ChainBackendNames.ALL,
@@ -163,6 +432,21 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   // Redirect logic for imported wallets that do not yet have an RC card
   const hasRedirectedToCard = useRef<boolean>(false);
+
+  useEffect(() => {
+    console.log(
+      'P O R T F O L I O  B A L A N C E :',
+      portfolioBalance,
+      'Type:',
+      typeof portfolioBalance,
+    );
+    console.log(
+      'Should show GetFirstToken:',
+      portfolioBalance === '' ||
+        portfolioBalance === '0' ||
+        Number(portfolioBalance) === 0,
+    );
+  }, [portfolioBalance]);
 
   useEffect(() => {
     const checkRedirectToCard = async () => {
@@ -775,6 +1059,21 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   // Sections for SectionList
   const sections = [
+    ...(portfolioBalance === '' ||
+    portfolioBalance === '0' ||
+    Number(portfolioBalance) === 0
+      ? [
+          {
+            title: 'getFirstToken',
+            data: ['StaticView0'],
+            renderItem: () => (
+              <GetFirstTokenComponent
+                onGetTokenPress={handleShowGetTokenSheet}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       title: 'balance',
       data: ['StaticView1'],
@@ -887,6 +1186,119 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               )
             }
             contentContainerStyle={styles.sectionListContent}
+          />
+          {/* Bottom sheet managed by GlobalBottomSheetProvider; nothing to render here */}
+
+          {/* Buy coin modal */}
+          <CyDModalLayout
+            isModalVisible={buyModalVisible}
+            setModalVisible={setBuyModalVisible}
+            animationIn={'slideInUp'}
+            animationOut={'slideOutDown'}
+            style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+            <CyDView
+              className={
+                'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
+              }>
+              <CyDTouchView
+                onPress={() => setBuyModalVisible(false)}
+                className={'z-50 absolute top-[24px] right-[24px]'}>
+                <CyDMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+              <CyDText
+                className={'text-center font-bold text-[22px] mb-[14px]'}>
+                {'Choose platform to buy'}
+              </CyDText>
+              <CyDFlatList
+                data={buyOptionsData as IBuyOptionsData[]}
+                renderItem={({ item }: { item: IBuyOptionsData }) =>
+                  renderBuyPlatformItem(item)
+                }
+                keyExtractor={(item: IBuyOptionsData) => item.index.toString()}
+                showsVerticalScrollIndicator={true}
+              />
+            </CyDView>
+          </CyDModalLayout>
+
+          {/* Select chain in buy coin modal */}
+          <CyDModalLayout
+            isModalVisible={buyChooseChainModalVisible}
+            setModalVisible={setBuyChooseChainModalVisible}
+            animationIn={'slideInUp'}
+            animationOut={'slideOutDown'}
+            style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+            <CyDView
+              className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
+              <CyDView
+                className={'flex flex-row justify-between items-center '}>
+                <CyDTouchView
+                  onPress={() => {
+                    setBuyChooseChainModalVisible(false);
+                    setTimeout(() => setBuyModalVisible(true), 250);
+                  }}
+                  className={''}>
+                  <CyDMaterialDesignIcons
+                    name={'arrow-left'}
+                    size={24}
+                    className='text-base400'
+                  />
+                </CyDTouchView>
+                <CyDView className={'flex flex-row'}>
+                  {buyType && (
+                    <>
+                      <CyDImage
+                        source={buyType.logo}
+                        className={'w-[20px] h-[20px]'}
+                      />
+                      <CyDText
+                        className={
+                          'text-center font-bold text-[16px] ml-[6px]'
+                        }>
+                        {buyType.title}
+                      </CyDText>
+                    </>
+                  )}
+                </CyDView>
+                <CyDTouchView
+                  onPress={() => setBuyChooseChainModalVisible(false)}
+                  className={''}>
+                  <CyDMaterialDesignIcons
+                    name={'close'}
+                    size={24}
+                    className='text-base400'
+                  />
+                </CyDTouchView>
+              </CyDView>
+              <CyDText
+                className={'text-center font-bold text-[22px] my-[20px]'}>
+                {t('CHOOSE_CHAIN') ?? 'Choose Chain'}
+              </CyDText>
+              <CyDFlatList
+                data={chainData}
+                renderItem={({ item }) => renderChainItem(item)}
+                keyExtractor={item => item.backendName}
+                className={''}
+                showsVerticalScrollIndicator={true}
+              />
+            </CyDView>
+          </CyDModalLayout>
+
+          {/* Choose chain modal for receive */}
+          <ChooseChainModalV2
+            setModalVisible={setChooseChainModal}
+            isModalVisible={chooseChainModal}
+            data={chainData}
+            title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
+            selectedItem={receiveSelectedChain.name}
+            onPress={(item: Chain) => handleReceiveChainSelection(item)}
+            customStyle={{ justifyContent: 'flex-end', padding: 0 }}
+            isClosable={true}
+            animationOut={'slideOutDown'}
+            animationIn={'slideInUp'}
           />
         </>
       ) : null}
