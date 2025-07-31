@@ -41,12 +41,5 @@ module.exports = withNativeWind(
   mergeConfig(getDefaultConfig(__dirname), config),
   {
     input: './global.css',
-    // Proper configuration for CSS variable handling
-    outputCSS: true,
-    inlineRem: 16,
-    // Enable proper arbitrary value processing
-    experimental: {
-      optimizeUniversalDefaults: true,
-    },
   },
 );

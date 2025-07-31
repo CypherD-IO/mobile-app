@@ -5,10 +5,7 @@ module.exports = (api) => {
   return {
     comments: false,
     compact: true,
-    presets: [
-      ['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }], 
-      ['nativewind/babel', { mode: 'compileOnly' }]
-    ],
+    presets: [['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }], 'nativewind/babel'],
     plugins: [
       'react-native-reanimated/plugin',
       '@babel/plugin-transform-flow-strip-types',
