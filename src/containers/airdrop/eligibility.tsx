@@ -66,7 +66,7 @@ export default function AirdropEligibility() {
   const fetchAirdropData = useCallback(async () => {
     setIsLoading(true);
     const res = await getWithAuth(`/v1/airdrop/${airdropAddress}`);
-    if (!res.isError) {
+    if (res.isError) {
       onError(
         t('UNABLE_TO_FETCH_AIRDROP_DATA'),
         res.error ? parseErrorMessage(res.error) : t('CONTACT_CYPHERD_SUPPORT'),
