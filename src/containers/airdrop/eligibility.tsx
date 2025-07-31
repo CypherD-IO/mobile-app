@@ -54,11 +54,11 @@ export default function AirdropEligibility() {
       description,
       onSuccess: () => {
         hideModal();
-        navigation.navigate(screenTitle.OPTIONS_SCREEN);
+        navigation.navigate(screenTitle.PORTFOLIO);
       },
       onFailure: () => {
         hideModal();
-        navigation.navigate(screenTitle.OPTIONS_SCREEN);
+        navigation.navigate(screenTitle.PORTFOLIO);
       },
     });
   };
