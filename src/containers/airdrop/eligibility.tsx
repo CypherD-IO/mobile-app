@@ -12,10 +12,8 @@ import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { screenTitle } from '../../constants';
 import { ButtonType, IconPosition } from '../../constants/enum';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import useAxios from '../../core/HttpRequest';
 import { AirdropData } from '../../models/airdrop.interface';
-import { CardProfile } from '../../models/cardProfile.model';
 import {
   CyDImage,
   CyDImageBackground,
@@ -27,15 +25,18 @@ import {
 import Loading from '../Loading';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { t } from 'i18next';
-import { parseErrorMessage } from '../../core/util';
+import { HdWalletContext, parseErrorMessage } from '../../core/util';
 import { get } from 'lodash';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { isAddress } from 'viem';
 
 export default function AirdropEligibility() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { top } = useSafeAreaInsets();
 
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
-  const cardProfile = globalState.cardProfile as CardProfile;
+  const { state: hdWalletState } = useContext(
+    HdWalletContext,
+  ) as HdWalletContextDef;
   const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
 
@@ -44,8 +45,7 @@ export default function AirdropEligibility() {
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  const airdropAddress: string =
-    cardProfile?.evmAddress ?? cardProfile.primaryAddress ?? '';
+  const airdropAddress: string = hdWalletState.wallet.ethereum.address ?? '';
 
   const onError = (title: string, description: string) => {
     showModal('state', {
@@ -80,7 +80,11 @@ export default function AirdropEligibility() {
 
   useFocusEffect(
     useCallback(() => {
-      void fetchAirdropData();
+      if (isAddress(airdropAddress)) {
+        void fetchAirdropData();
+      } else {
+        onError(t('INVALID_ADDRESS'), t('IMPORT_CONNECT_EVM_ADDRESS'));
+      }
     }, [airdropAddress]),
   );
 

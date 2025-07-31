@@ -1776,6 +1776,7 @@ const resources = {
         'Keep spending for exciting rewards on every spend.',
       AIRDROP: 'Airdrop',
       LOCKED_2_YRS: 'Locked for 2 years',
+      IMPORT_CONNECT_EVM_ADDRESS: 'Import or connect an EVM address',
     },
   },
 };
