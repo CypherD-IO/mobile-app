@@ -1779,6 +1779,12 @@ const resources = {
       IMPORT_CONNECT_EVM_ADDRESS: 'Import or connect an EVM address',
       DIFFERENT_EVM_ADDRESS: 'You eligible EVM address is different',
       CHANGE_WALLET: 'Connect with the above mentioned wallet',
+      AIRDROP_ELIGIBILITY: 'Airdrop Eligibility',
+      TO_WALLET_ADDRESS: 'To wallet address',
+      ALREADY_CLAIMED: 'You have claimed your airdrop rewards!',
+      LOCK_TOKENS_TO_EARN_MORE_REWARDS:
+        'Lock your tokens to earn more rewards.',
+      CHECK_YOUR_REWARDS: 'Check your rewards',
     },
   },
 };

@@ -138,12 +138,12 @@ export default function AirdropEligibility() {
         <CyDView className='p-[24px] flex-1'>
           <CyDView className='flex-1'>
             <CyDText className='font-medium !text-[22px] text-white text-center leading-[145%] tracking-[-1px]'>
-              {'Airdrop Eligibility'}
+              {t('AIRDROP_ELIGIBILITY')}
             </CyDText>
             <CyDView className='mt-[24px]'>
               <CyDView className='py-[12px]'>
                 <CyDText className='font-medium !text-[16px] text-white leading-[145%] tracking-[-0.5px]'>
-                  {'To wallet address'}
+                  {t('TO_WALLET_ADDRESS')}
                 </CyDText>
                 <CyDView className='mt-[12px] !bg-[#2F3139] rounded-[8px] p-[16px]'>
                   <CyDText className='font-medium !text-[14px] text-white leading-[145%] tracking-[-0.6px]'>
@@ -166,13 +166,13 @@ export default function AirdropEligibility() {
                   />
                   <CyDView className='flex-1'>
                     <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
-                      {'You have claimed your airdrop rewards!'}
+                      {t('ALREADY_CLAIMED')}
                     </CyDText>
                     <CyDText
                       className={clsx(
                         'font-normal !text-[#8CB59F] !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px]',
                       )}>
-                      {'Lock your tokens to earn more rewards.'}
+                      {t('LOCK_TOKENS_TO_EARN_MORE_REWARDS')}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -267,7 +267,7 @@ export default function AirdropEligibility() {
           {airdropData.isEligible &&
             !get(airdropData, 'airdrop.claimInfo.isClaimed', false) && (
               <Button
-                title='Check your rewards'
+                title={t('CHECK_YOUR_REWARDS')}
                 disabled={!airdropData.isEligible}
                 onPress={() => {
                   navigation.navigate(screenTitle.AIRDROP_CLAIM, {
