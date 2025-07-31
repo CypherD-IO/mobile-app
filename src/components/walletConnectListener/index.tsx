@@ -132,7 +132,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
       value: {
-        address,
+        address: String(address).toLowerCase(),
         chain: 'ethereum',
         publicKey: '',
         algo: '',
@@ -149,7 +149,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const verifySessionTokenAndSign = async () => {
     setLoading(true);
-    const token = await getToken(String(address));
+    await getToken({ ethAddress: String(address).toLowerCase() });
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {
