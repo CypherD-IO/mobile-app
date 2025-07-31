@@ -54,9 +54,11 @@ export default function AirdropEligibility() {
       description,
       onSuccess: () => {
         hideModal();
+        navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
       },
       onFailure: () => {
         hideModal();
+        navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
       },
     });
   };
@@ -64,12 +66,11 @@ export default function AirdropEligibility() {
   const fetchAirdropData = useCallback(async () => {
     setIsLoading(true);
     const res = await getWithAuth(`/v1/airdrop/${airdropAddress}`);
-    if (res.isError) {
+    if (!res.isError) {
       onError(
         t('UNABLE_TO_FETCH_AIRDROP_DATA'),
         res.error ? parseErrorMessage(res.error) : t('CONTACT_CYPHERD_SUPPORT'),
       );
-      navigation.navigate(screenTitle.PORTFOLIO);
     } else {
       const data = res.data;
       setAirdropData(data);
@@ -83,7 +84,6 @@ export default function AirdropEligibility() {
         void fetchAirdropData();
       } else {
         onError(t('INVALID_ADDRESS'), t('IMPORT_CONNECT_EVM_ADDRESS'));
-        navigation.navigate(screenTitle.PORTFOLIO);
       }
     }, [airdropAddress]),
   );
