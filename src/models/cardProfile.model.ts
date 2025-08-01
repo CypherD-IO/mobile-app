@@ -1,27 +1,16 @@
 import {
   CardApplicationStatus,
   CardProviders,
-  CardStatus,
   CypherPlanId,
 } from '../constants/enum';
 import { Card } from './card.model';
 
 export interface CardProfile {
-  primaryEthAddress: string;
+  primaryAddress: string;
   fcmToken?: string;
   phone: string;
   email: string;
-  apto?: {
-    cardHolderId: string;
-    status: CardStatus;
-    cards?: Card[];
-  };
   provider?: CardProviders;
-  [CardProviders.BRIDGE_CARD]?: {
-    personId?: string;
-    applicationStatus: CardApplicationStatus;
-    cards?: Card[];
-  };
   isAutoloadConfigured: boolean;
   [CardProviders.PAYCADDY]?: {
     personId?: string;
@@ -45,12 +34,6 @@ export interface CardProfile {
     preferredName?: string;
     isRainDeclined?: boolean;
   };
-  [CardProviders.SOLID]?: {
-    applicationStatus: CardApplicationStatus;
-    cardStatus?: CardStatus;
-    personId: string;
-    cards?: Card[];
-  };
   lifetimeAmountUsd: number;
   physicalCardEligibilityLimit: number;
   children?: Array<{ address: string; label: string }>;
@@ -62,4 +45,5 @@ export interface CardProfile {
     metalCardEligible: boolean;
   };
   telegramId: string | null;
+  evmAddress?: string;
 }

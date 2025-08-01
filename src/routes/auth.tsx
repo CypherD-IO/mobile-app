@@ -117,6 +117,8 @@ import NameOnCard from '../containers/DebitCard/CardV2/signup/application/nameOn
 import CardCreation from '../containers/DebitCard/CardV2/signup/application/cardCreation';
 import CardApplicationStack from './CardApplicationStack';
 import KYCVerification from '../containers/DebitCard/CardV2/signup/application/kyc/kycVerification';
+import AirdropEligibility from '../containers/airdrop/eligibility';
+import AirdropClaim from '../containers/airdrop/claim';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -472,6 +474,22 @@ export function PortfolioStackScreen() {
               keyboardHeight={keyboardHeight}
             />
           ),
+        })}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.AIRDROP_ELIGIBILITY}
+        component={AirdropEligibility}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.AIRDROP_CLAIM}
+        component={AirdropClaim}
+        options={({ navigation }) => ({
+          headerShown: false,
         })}
       />
 

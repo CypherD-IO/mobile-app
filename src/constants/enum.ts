@@ -88,9 +88,6 @@ export enum OTPType {
 }
 
 export enum CardProviders {
-  SOLID = 'solid',
-  APTO = 'apto',
-  BRIDGE_CARD = 'bc',
   PAYCADDY = 'pc',
   REAP_CARD = 'rc',
   RAIN_CARD = 'ra',

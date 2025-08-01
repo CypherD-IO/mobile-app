@@ -79,6 +79,12 @@ export const initialGlobalState: GlobalStateDef = {
       primary: 'https://api.mainnet-beta.solana.com',
       secondaryList: 'https://api.mainnet-beta.solana.com',
     },
+    HYPERLIQUID: {
+      primary: 'https://rpc.hyperliquid.xyz',
+    },
+    BASE_SEPOLIA: {
+      primary: 'https://base-sepolia-rpc.publicnode.com',
+    },
   },
   token: '',
   isAuthenticated: false,

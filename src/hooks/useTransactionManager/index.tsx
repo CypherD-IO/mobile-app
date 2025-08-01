@@ -207,6 +207,9 @@ export default function useTransactionManager() {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
       });
+      if (receipt.status === 'reverted') {
+        throw new Error('Transaction reverted');
+      }
 
       return {
         hash: receipt.transactionHash,
@@ -595,6 +598,10 @@ export default function useTransactionManager() {
         hash,
       });
 
+      if (receipt.status === 'reverted') {
+        throw new Error('Transaction reverted');
+      }
+
       if (receipt) {
         return { isError: false, hash: receipt.transactionHash };
       }
@@ -948,6 +955,10 @@ export default function useTransactionManager() {
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
       });
+
+      if (receipt.status === 'reverted') {
+        throw new Error('Transaction reverted');
+      }
 
       return { isError: false, hash: receipt.transactionHash };
     } catch (e) {
@@ -1501,6 +1512,85 @@ export default function useTransactionManager() {
     }
   };
 
+  // --- Execute airdrop claim contract call ---
+  const executeAirdropClaimContract = async ({
+    contractAddress,
+    proof,
+    rootId,
+    tokenAirdropValue,
+    nftTokenValue,
+    candidates,
+    weights,
+    isTestnet,
+  }: {
+    contractAddress: string;
+    proof: string[];
+    rootId: number;
+    tokenAirdropValue: bigint;
+    nftTokenValue: bigint;
+    candidates: string[];
+    weights: number[];
+    isTestnet: boolean;
+  }): Promise<TransactionResponse> => {
+    try {
+      const chain = isTestnet ? 'base_sepolia' : 'base';
+      const chainConfig = get(ChainConfigMapping, chain);
+
+      const publicClient = getViemPublicClient(
+        // getWeb3Endpoint(chainConfig, globalContext),
+        'https://base-sepolia-rpc.publicnode.com',
+      );
+
+      // Define the contract ABI for the claim function
+      const airdropClaimAbi = [
+        {
+          inputs: [
+            { name: 'proof', type: 'bytes32[]' },
+            { name: 'rootId', type: 'uint256' },
+            { name: 'tokenAirdropValue', type: 'uint256' },
+            { name: 'nftTokenValue', type: 'uint256' },
+            { name: 'candidates', type: 'bytes32[]' },
+            { name: 'weights', type: 'uint256[]' },
+          ],
+          name: 'claim',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ];
+
+      // Encode the function data
+      const contractData = encodeFunctionData({
+        abi: airdropClaimAbi,
+        functionName: 'claim',
+        args: [
+          proof,
+          rootId,
+          tokenAirdropValue,
+          nftTokenValue,
+          candidates,
+          weights,
+        ],
+      });
+
+      // Execute the contract call
+      const resp = await executeTransferContract({
+        publicClient,
+        chain: chainConfig,
+        amountToSend: '0',
+        toAddress: contractAddress as `0x${string}`,
+        contractAddress: contractAddress as `0x${string}`,
+        contractDecimals: 18,
+        contractData,
+        isErc20: true,
+      });
+
+      return resp;
+    } catch (error) {
+      return { isError: true, error };
+    }
+  };
+
   return {
     sendEvmToken,
     sendCosmosToken,
@@ -1513,5 +1603,6 @@ export default function useTransactionManager() {
     sendSolanaTokens,
     executeTransferContract,
     signTypedData,
+    executeAirdropClaimContract,
   };
 }

@@ -1,4 +1,3 @@
-import bip39 from 'react-native-bip39';
 import { saveCredentialsToKeychain } from './Keychain';
 import {
   generateWalletFromMnemonic,
@@ -19,12 +18,6 @@ export const _generateWalletFromMnemonic = async (
     wallet,
     SECRET_TYPES.MENEMONIC,
   );
-};
-
-export const createWallet = async (hdWalletContext: HdWalletContextDef) => {
-  bip39.generateMnemonic().then(async (mnemonic: string) => {
-    await _generateWalletFromMnemonic(hdWalletContext, mnemonic, 0);
-  });
 };
 
 export const importWallet = async (
