@@ -1777,7 +1777,7 @@ const resources = {
       AIRDROP: 'Airdrop',
       LOCKED_2_YRS: 'Locked for 2 years',
       IMPORT_CONNECT_EVM_ADDRESS: 'Import or connect an EVM address',
-      DIFFERENT_EVM_ADDRESS: 'You eligible EVM address is different',
+      DIFFERENT_EVM_ADDRESS: 'Your eligible EVM address is different',
       CHANGE_WALLET: 'Connect with the above mentioned wallet',
       AIRDROP_ELIGIBILITY: 'Airdrop Eligibility',
       TO_WALLET_ADDRESS: 'To wallet address',
