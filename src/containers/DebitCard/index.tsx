@@ -30,6 +30,7 @@ import CardProviderSwitch from '../../components/cardProviderSwitch';
 import CardWailtList from './cardWaitList';
 import { getReferralCode } from '../../core/asyncStorage';
 import { useFocusEffect } from '@react-navigation/native';
+import countryMaster from '../../../assets/datasets/countryMaster';
 
 export interface RouteProps {
   navigation: {
@@ -142,6 +143,51 @@ export default function DebitCardScreen(props: RouteProps) {
                       params: {
                         cardProvider: provider,
                       },
+                    },
+                  ],
+                });
+              } else if (
+                get(currentCardProfile, [
+                  provider as CardProviders,
+                  'applicationStatus',
+                ]) === CardApplicationStatus.WAITLIST
+              ) {
+                console.log('waitlist');
+
+                const applicationResponse = await getWithAuth(
+                  `/v1/cards/${provider as string}/application`,
+                );
+                let countryParams = {
+                  countryCode: '',
+                  countryName: 'your country',
+                  countryFlag: '🌍',
+                  countryFlagUrl: '',
+                };
+
+                if (
+                  !applicationResponse.isError &&
+                  applicationResponse.data?.country
+                ) {
+                  const selectedCountry = countryMaster.find(
+                    country =>
+                      country.Iso2 === applicationResponse.data.country,
+                  );
+                  if (selectedCountry) {
+                    countryParams = {
+                      countryCode: applicationResponse.data.country,
+                      countryName: selectedCountry.name,
+                      countryFlag: selectedCountry.unicode_flag,
+                      countryFlagUrl: selectedCountry.flag ?? '',
+                    };
+                  }
+                }
+
+                props.navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: screenTitle.COUNTRY_TEMPORARILY_UNSUPPORTED,
+                      params: countryParams,
                     },
                   ],
                 });

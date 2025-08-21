@@ -150,6 +150,7 @@ export const screenTitle = {
   CARD_CONTROLS: 'CardControls',
   AIRDROP_ELIGIBILITY: 'AirdropEligibility',
   AIRDROP_CLAIM: 'AirdropClaim',
+  COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
 };
 
 export const fontsName = {
