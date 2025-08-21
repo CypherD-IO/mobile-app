@@ -1124,7 +1124,11 @@ export default function useTransactionManager() {
       return Math.ceil(baseUnits * 1.2); // Add 20% buffer
     } catch (e: unknown) {
       const errorMessage = parseErrorMessage(e);
-      throw new Error(errorMessage);
+      // Preserve original stack for Error instances; add context otherwise
+      if (e instanceof Error) {
+        throw e;
+      }
+      throw new Error(`simulateSolanaTxn: ${errorMessage}`);
     }
   };
 
@@ -1294,22 +1298,16 @@ export default function useTransactionManager() {
     const tokenBalance = await connection.getTokenAccountBalance(
       fromTokenAccount.address,
     );
-
-    // Handle cases where balance might be null or undefined
-    const currentBalance = tokenBalance.value.uiAmount ?? 0;
-
-    // Check if token account exists and has balance
-    if (!tokenBalance.value.amount || tokenBalance.value.amount === '0') {
+    const balanceRaw = BigInt(tokenBalance.value.amount ?? '0');
+    if (balanceRaw === 0n) {
       throw new Error(
-        `Token account has no balance or doesn't exist. Please ensure you have ${amountToSend} tokens.`,
+        `Insufficient token balance. Required: ${amountToSend}, Available: 0`,
       );
     }
-
-    // Convert amountToSend to the same precision as currentBalance for comparison
-    const amountToSendNumber = parseFloat(amountToSend);
-    if (currentBalance < amountToSendNumber) {
+    if (balanceRaw < lamportsToSend) {
+      const available = tokenBalance.value.uiAmountString ?? '0';
       throw new Error(
-        `Insufficient token balance. Required: ${amountToSend}, Available: ${currentBalance}`,
+        `Insufficient token balance. Required: ${amountToSend}, Available: ${available}`,
       );
     }
 

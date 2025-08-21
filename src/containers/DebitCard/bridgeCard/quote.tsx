@@ -332,11 +332,13 @@ export default function CardQuote({
       name,
     } = selectedToken;
     setLoading(true);
-    const actualTokensRequired = limitDecimalPlaces(
-      tokenQuote.tokensRequired,
-      contractDecimals,
-    );
+
+    let actualTokensRequired = '0';
     try {
+      actualTokensRequired = limitDecimalPlaces(
+        tokenQuote.tokensRequired,
+        contractDecimals,
+      );
       const { chainName } = chainDetails;
       const activityData: DebitCardTransaction = {
         id: genId(),
