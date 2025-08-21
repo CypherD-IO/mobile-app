@@ -1,11 +1,11 @@
 import React from 'react';
-import { ImageBackground, Platform } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
   useRoute,
   RouteProp,
+  useIsFocused,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -15,31 +15,17 @@ import {
   CyDMaterialDesignIcons,
 } from '../../../../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
-import { BlurView } from '@react-native-community/blur';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import Intercom from '@intercom/intercom-react-native';
 import { logAnalyticsToFirebase } from '../../../../../core/analytics';
 import { screenTitle } from '../../../../../constants';
-
-// Style constants to avoid inline styles
-const styles = {
-  fullFlex: { flex: 1 },
-  circularContainer: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  infoBox: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-};
+import useAxios from '../../../../../core/HttpRequest';
+import {
+  CardApplicationStatus,
+  CardProviders,
+} from '../../../../../constants/enum';
+import { get } from 'lodash';
 
 // Interface for navigation route parameters
 interface CountryUnsupportedRouteParams {
@@ -67,13 +53,12 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
     useRoute<RouteProp<{ params: CountryUnsupportedRouteParams }, 'params'>>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const isFocused = useIsFocused();
+  const { getWithAuth } = useAxios();
 
   // Get country information from navigation parameters
-  const {
-    countryName = 'your country',
-    countryFlag = '🌍',
-    countryFlagUrl = '',
-  } = route.params ?? {};
+  const { countryName = 'your country', countryFlag = '🌍' } =
+    route.params ?? {};
 
   /**
    * Handle back navigation to previous screen
@@ -96,7 +81,36 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
     void Intercom.present();
   };
 
-  console.log('countryFlagUrl :: ', countryFlagUrl);
+  // On focus: refresh profile and if applicationStatus is CREATED navigate to Email Verification
+  React.useEffect(() => {
+    const checkAndNavigate = async () => {
+      try {
+        const profileResponse = await getWithAuth('/v1/authentication/profile');
+        console.log(
+          'profileResponse ::: ',
+          get(profileResponse.data, [
+            CardProviders.REAP_CARD,
+            'applicationStatus',
+          ]),
+        );
+        if (!profileResponse.isError) {
+          const status = get(profileResponse.data, [
+            CardProviders.REAP_CARD,
+            'applicationStatus',
+          ]);
+          if (status === CardApplicationStatus.CREATED) {
+            navigation.navigate(screenTitle.EMAIL_VERIFICATION);
+          }
+        }
+      } catch {
+        // Silently ignore; screen will remain as-is if profile fetch fails
+      }
+    };
+
+    if (isFocused) {
+      void checkAndNavigate();
+    }
+  }, [isFocused]);
 
   return (
     <CyDView
@@ -105,20 +119,14 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
       {/* Header */}
       <CardApplicationHeader />
 
-      {/* Optional blurred vignette for subtle focus */}
-      <CyDView className='absolute inset-0 pointer-events-none'>
-        <CyDView className='flex-1 bg-white/50' />
-      </CyDView>
+      {/* Background overlay */}
+      <CyDView className='absolute inset-0 bg-white/50 pointer-events-none' />
 
       {/* Main Content */}
       <CyDView className='flex-1 justify-center items-center px-6 z-10'>
         {/* Circular Flag Container */}
-        <CyDView className='relative mb-8'>
-          {/* Main circular container with subtle shadow */}
-          <CyDView
-            className='w-32 h-32 rounded-full bg-n10 items-center justify-center'
-            style={styles.circularContainer}>
-            {/* Country Flag */}
+        <CyDView className='mb-8'>
+          <CyDView className='w-32 h-32 rounded-full bg-n10 items-center justify-center shadow-lg'>
             <CyDText className='text-6xl mt-[14px]'>{countryFlag}</CyDText>
           </CyDView>
         </CyDView>
@@ -134,9 +142,7 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
         </CyDText>
 
         {/* Info Box */}
-        <CyDView
-          className='bg-n20 rounded-[12px] px-4 py-3 flex-row items-start mb-12 w-full max-w-md'
-          style={styles.infoBox}>
+        <CyDView className='bg-n20 rounded-xl px-4 py-3 flex-row items-start mb-12 w-full max-w-md shadow-sm'>
           <CyDMaterialDesignIcons
             name='information'
             size={20}
@@ -146,7 +152,7 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
             <CyDText className='text-n800 font-semibold mb-1'>
               {t('Card services temporarily unavailable')}
             </CyDText>
-            <CyDText className='text-n400 text-[14px] leading-relaxed'>
+            <CyDText className='text-n400 text-sm leading-relaxed'>
               {t(
                 "We'll notify you once we support your country, you can then continue the application from where you left.",
               )}
