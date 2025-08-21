@@ -152,8 +152,6 @@ export default function DebitCardScreen(props: RouteProps) {
                   'applicationStatus',
                 ]) === CardApplicationStatus.WAITLIST
               ) {
-                console.log('waitlist');
-
                 const applicationResponse = await getWithAuth(
                   `/v1/cards/${provider as string}/application`,
                 );

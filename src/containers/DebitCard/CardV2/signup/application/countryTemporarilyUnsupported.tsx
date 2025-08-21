@@ -86,13 +86,7 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
     const checkAndNavigate = async () => {
       try {
         const profileResponse = await getWithAuth('/v1/authentication/profile');
-        console.log(
-          'profileResponse ::: ',
-          get(profileResponse.data, [
-            CardProviders.REAP_CARD,
-            'applicationStatus',
-          ]),
-        );
+
         if (!profileResponse.isError) {
           const status = get(profileResponse.data, [
             CardProviders.REAP_CARD,
@@ -161,14 +155,18 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
         </CyDView>
 
         {/* Support link */}
-        <CyDText className='text-n400 text-center text-base'>
-          {t('Have questions?')}{' '}
-          <CyDTouchView onPress={handleContactSupport}>
+        <CyDView className='flex-row justify-center items-center'>
+          <CyDText className='text-n400 text-center text-base'>
+            {t('Have questions?')}{' '}
+          </CyDText>
+          <CyDTouchView
+            onPress={handleContactSupport}
+            accessibilityRole='button'>
             <CyDText className='text-blue300 underline'>
               {t('Contact support')}
             </CyDText>
           </CyDTouchView>
-        </CyDText>
+        </CyDView>
       </CyDView>
       {/* Footer */}
       <CardApplicationFooter
