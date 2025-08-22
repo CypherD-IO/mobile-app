@@ -1124,7 +1124,11 @@ export default function useTransactionManager() {
       return Math.ceil(baseUnits * 1.2); // Add 20% buffer
     } catch (e: unknown) {
       const errorMessage = parseErrorMessage(e);
-      throw new Error(`Simulation failed: ${errorMessage}`);
+      // Preserve original stack for Error instances; add context otherwise
+      if (e instanceof Error) {
+        throw e;
+      }
+      throw new Error(`simulateSolanaTxn: ${errorMessage}`);
     }
   };
 
@@ -1290,6 +1294,23 @@ export default function useTransactionManager() {
       toPublicKey,
     );
 
+    // Check token balance before proceeding
+    const tokenBalance = await connection.getTokenAccountBalance(
+      fromTokenAccount.address,
+    );
+    const balanceRaw = BigInt(tokenBalance.value.amount ?? '0');
+    if (balanceRaw === 0n) {
+      throw new Error(
+        `Insufficient token balance. Required: ${amountToSend}, Available: 0`,
+      );
+    }
+    if (balanceRaw < lamportsToSend) {
+      const available = tokenBalance.value.uiAmountString ?? '0';
+      throw new Error(
+        `Insufficient token balance. Required: ${amountToSend}, Available: ${available}`,
+      );
+    }
+
     const transferInstruction = createTransferInstruction(
       fromTokenAccount.address,
       toTokenAccount.address,
@@ -1443,6 +1464,7 @@ export default function useTransactionManager() {
       });
       return { isError: true, error: result };
     } catch (e) {
+      console.log('🚀 ~ sendSolanaTokens ~ e:', parseErrorMessage(e));
       return {
         isError: true,
         error: e,

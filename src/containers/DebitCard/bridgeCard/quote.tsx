@@ -323,17 +323,19 @@ export default function CardQuote({
   };
 
   const sendTransaction = useCallback(async () => {
+    const {
+      contractAddress,
+      chainDetails,
+      contractDecimals,
+      denom,
+      symbol,
+      name,
+    } = selectedToken;
+    setLoading(true);
+
+    let actualTokensRequired = '0';
     try {
-      const {
-        contractAddress,
-        chainDetails,
-        contractDecimals,
-        denom,
-        symbol,
-        name,
-      } = selectedToken;
-      setLoading(true);
-      const actualTokensRequired = limitDecimalPlaces(
+      actualTokensRequired = limitDecimalPlaces(
         tokenQuote.tokensRequired,
         contractDecimals,
       );
@@ -742,12 +744,16 @@ export default function CardQuote({
                     selectedToken?.chainDetails?.chainName,
                     '',
                   )
-                : ChainBackendNames.SOLANA ===
-                    selectedToken?.chainDetails?.chainName
+                : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
                   ? solanaAddress
                   : ethereumAddress,
               ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
               ...(connectionType ? { connectionType } : {}),
+              other: {
+                amountToSend: actualTokensRequired,
+                contractAddress,
+                symbol: selectedToken.symbol,
+              },
             });
             activityRef.current &&
               activityContext.dispatch({
@@ -793,6 +799,12 @@ export default function CardQuote({
           : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
             ? solanaAddress
             : ethereumAddress,
+        ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
+        other: {
+          amountToSend: actualTokensRequired,
+          contractAddress,
+          symbol: selectedToken.symbol,
+        },
       });
       activityRef.current &&
         activityContext.dispatch({
