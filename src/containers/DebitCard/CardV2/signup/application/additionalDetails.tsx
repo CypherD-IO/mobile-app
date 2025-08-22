@@ -25,10 +25,14 @@ import { ApplicationData } from '../../../../../models/applicationData.interface
 import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal';
 import useAxios from '../../../../../core/HttpRequest';
 import { getReferralCode } from '../../../../../core/asyncStorage';
-import { CardProviders } from '../../../../../constants/enum';
-import { omit } from 'lodash';
+import {
+  CardApplicationStatus,
+  CardProviders,
+} from '../../../../../constants/enum';
+import { get, omit, find } from 'lodash';
 import { useFormContext } from './FormContext';
 import clsx from 'clsx';
+import countryMaster from '../../../../../../assets/datasets/countryMaster';
 
 // Validation schema for the additional details form
 const AdditionalDetailsSchema = Yup.object().shape({
@@ -48,7 +52,7 @@ const AdditionalDetails = (): JSX.Element => {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, getWithAuth } = useAxios();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { formState, setFormState } = useFormContext();
   const [hasConsent, setHasConsent] = useState(false);
@@ -95,6 +99,34 @@ const AdditionalDetails = (): JSX.Element => {
           });
         } else {
           // Navigate to OTP verification
+          const profileResponse = await getWithAuth(
+            '/v1/authentication/profile',
+          );
+          if (
+            get(profileResponse.data, [
+              CardProviders.REAP_CARD,
+              'applicationStatus',
+            ]) === CardApplicationStatus.WAITLIST
+          ) {
+            const selectedCountry = find(countryMaster, {
+              Iso2: formState.country,
+            });
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: screenTitle.COUNTRY_TEMPORARILY_UNSUPPORTED,
+                  params: {
+                    countryCode: formState.country,
+                    countryName: selectedCountry?.name ?? 'your country',
+                    countryFlag: selectedCountry?.unicode_flag ?? '🌍',
+                    countryFlagUrl: selectedCountry?.flag ?? '',
+                  },
+                },
+              ],
+            });
+            return;
+          }
           navigation.navigate(screenTitle.EMAIL_VERIFICATION);
         }
       }

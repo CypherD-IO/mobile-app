@@ -119,6 +119,7 @@ import CardApplicationStack from './CardApplicationStack';
 import KYCVerification from '../containers/DebitCard/CardV2/signup/application/kyc/kycVerification';
 import AirdropEligibility from '../containers/airdrop/eligibility';
 import AirdropClaim from '../containers/airdrop/claim';
+import CountryTemporarilyUnsupported from '../containers/DebitCard/CardV2/signup/application/countryTemporarilyUnsupported';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -933,6 +934,13 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.EMAIL_VERIFICATION}
         component={EmailVerification}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.COUNTRY_TEMPORARILY_UNSUPPORTED}
+        component={CountryTemporarilyUnsupported}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}
