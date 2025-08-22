@@ -9,7 +9,7 @@ import {
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NativeModules, StyleSheet } from 'react-native';
-import bip39 from 'react-native-bip39';
+import * as bip39 from 'bip39';
 import Button from '../../components/v2/button';
 import Loading from '../../components/v2/loading';
 import CyDModalLayout from '../../components/v2/modal';
@@ -68,8 +68,8 @@ function CreateSeedPhrase() {
   const generateMnemonic = async () => {
     const generatedSeedPhrase =
       seedPhraseType === SeedPhraseType.TWELVE_WORDS
-        ? await bip39.generateMnemonic()
-        : await bip39.generateMnemonic(256);
+        ? bip39.generateMnemonic(128)
+        : bip39.generateMnemonic(256);
     setSeedPhrase(generatedSeedPhrase);
   };
 

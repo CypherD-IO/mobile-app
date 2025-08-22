@@ -1,0 +1,306 @@
+import {
+  NavigationProp,
+  ParamListBase,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
+import clsx from 'clsx';
+import React, { useCallback, useContext, useState } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppImages from '../../../assets/images/appImages';
+import Button from '../../components/v2/button';
+import { screenTitle } from '../../constants';
+import { ButtonType, IconPosition } from '../../constants/enum';
+import useAxios from '../../core/HttpRequest';
+import { AirdropData } from '../../models/airdrop.interface';
+import {
+  CyDImage,
+  CyDImageBackground,
+  CyDMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindComponents';
+import Loading from '../Loading';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { t } from 'i18next';
+import { HdWalletContext, parseErrorMessage } from '../../core/util';
+import { get } from 'lodash';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { isAddress } from 'viem';
+
+export default function AirdropEligibility() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const { top } = useSafeAreaInsets();
+
+  const { state: hdWalletState } = useContext(
+    HdWalletContext,
+  ) as HdWalletContextDef;
+  const { getWithAuth } = useAxios();
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  const [airdropData, setAirdropData] = useState<AirdropData | undefined>(
+    undefined,
+  );
+  const [isLoading, setIsLoading] = useState(false);
+
+  const airdropAddress: string = hdWalletState.wallet.ethereum.address ?? '';
+
+  const onError = (title: string, description: string) => {
+    showModal('state', {
+      type: 'error',
+      title,
+      description,
+      onSuccess: () => {
+        hideModal();
+        navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
+      },
+      onFailure: () => {
+        hideModal();
+        navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
+      },
+    });
+  };
+
+  const fetchAirdropData = useCallback(async () => {
+    setIsLoading(true);
+    const res = await getWithAuth(`/v1/airdrop/${airdropAddress}`);
+    if (res.isError) {
+      onError(
+        t('UNABLE_TO_FETCH_AIRDROP_DATA'),
+        res.error ? parseErrorMessage(res.error) : t('CONTACT_CYPHERD_SUPPORT'),
+      );
+    } else {
+      const data = res.data;
+      setAirdropData(data);
+    }
+    setIsLoading(false);
+  }, [airdropAddress, getWithAuth, onError]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isAddress(airdropAddress)) {
+        void fetchAirdropData();
+      } else {
+        onError(t('INVALID_ADDRESS'), t('IMPORT_CONNECT_EVM_ADDRESS'));
+      }
+    }, [airdropAddress]),
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        <Loading
+          backgroundColor='bg-black'
+          loadingText='Checking your eligibility...'
+        />
+      </>
+    );
+  }
+
+  if (!airdropData) {
+    return <Loading backgroundColor='bg-black' loadingText='Loading...' />;
+  }
+
+  return (
+    <CyDView className='!bg-[#0D0E12] flex-1'>
+      <CyDImageBackground
+        source={AppImages.MSITE_AIRDROP_ELIGIBILITY_BG}
+        className='flex w-full'
+        style={styles.bottomRounded}>
+        <CyDView style={{ paddingTop: top }} className='p-[24px]'>
+          <CyDTouchView
+            onPress={() => navigation.goBack()}
+            className='w-[32px] h-[32px] bg-black rounded-full flex items-center justify-center mt-[12px]'>
+            <CyDMaterialDesignIcons
+              name='arrow-left'
+              size={20}
+              className='text-white'
+            />
+          </CyDTouchView>
+
+          <CyDImage
+            source={AppImages.AIRDROP_TOKEN_WIGGLE}
+            className='w-[200px] h-[200px] self-center'
+          />
+          <CyDText className='font-nord font-bold !text-[32px] text-white leading-[120%] tracking-[-0.5px] text-center mt-6'>
+            {t('CYPR_AIRDROP')}
+          </CyDText>
+        </CyDView>
+      </CyDImageBackground>
+
+      <ScrollView
+        className='flex-1'
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}>
+        <CyDView className='p-[24px] flex-1'>
+          <CyDView className='flex-1'>
+            <CyDText className='font-medium !text-[22px] text-white text-center leading-[145%] tracking-[-1px]'>
+              {t('AIRDROP_ELIGIBILITY')}
+            </CyDText>
+            <CyDView className='mt-[24px]'>
+              <CyDView className='py-[12px]'>
+                <CyDText className='font-medium !text-[16px] text-white leading-[145%] tracking-[-0.5px]'>
+                  {t('TO_WALLET_ADDRESS')}
+                </CyDText>
+                <CyDView className='mt-[12px] !bg-[#2F3139] rounded-[8px] p-[16px]'>
+                  <CyDText className='font-medium !text-[14px] text-white leading-[145%] tracking-[-0.6px]'>
+                    {airdropData.evmAddressLinked
+                      ? airdropData.evmAddressLinked
+                      : airdropAddress}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+
+              {get(airdropData, 'airdrop.claimInfo.isClaimed', false) && (
+                <CyDView
+                  className={clsx(
+                    'rounded-[12px] mt-[6px] py-[12px] px-[16px] flex flex-row gap-x-[6px] !bg-[#0E2713]',
+                  )}>
+                  <CyDMaterialDesignIcons
+                    name='parachute'
+                    size={42}
+                    className='text-white'
+                  />
+                  <CyDView className='flex-1'>
+                    <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                      {t('ALREADY_CLAIMED')}
+                    </CyDText>
+                    <CyDText
+                      className={clsx(
+                        'font-normal !text-[#8CB59F] !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px]',
+                      )}>
+                      {t('LOCK_TOKENS_TO_EARN_MORE_REWARDS')}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              )}
+
+              {!get(airdropData, 'airdrop.claimInfo.isClaimed', false) && (
+                <CyDView
+                  className={clsx(
+                    'rounded-[12px] mt-[6px] py-[12px] px-[16px] flex flex-row gap-x-[12px]',
+                    {
+                      '!bg-[#0E2713]': airdropData.isEligible,
+                      '!bg-[#C94848]':
+                        !airdropData.isEligible &&
+                        !airdropData.evmAddressLinked,
+                      '!bg-[#F38200]':
+                        !airdropData.isEligible && airdropData.evmAddressLinked,
+                    },
+                  )}>
+                  {airdropData.isEligible && (
+                    <CyDMaterialDesignIcons
+                      name='emoticon-excited-outline'
+                      size={42}
+                      className='text-white'
+                    />
+                  )}
+                  {!airdropData.isEligible && !airdropData.evmAddressLinked && (
+                    <CyDMaterialDesignIcons
+                      name='emoticon-sad-outline'
+                      size={42}
+                      className='text-white'
+                    />
+                  )}
+                  {!airdropData.isEligible && airdropData.evmAddressLinked && (
+                    <CyDMaterialDesignIcons
+                      name='autorenew'
+                      size={42}
+                      className='text-white'
+                    />
+                  )}
+                  <CyDView className='flex-1'>
+                    {airdropData.isEligible && (
+                      <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                        {t('AWESOME_YOU_QUALIFY_FOR_THE_AIRDROP')}
+                      </CyDText>
+                    )}
+                    {!airdropData.isEligible &&
+                      !airdropData.evmAddressLinked && (
+                        <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                          {t('OOPS_YOU_DO_NOT_QUALIFY_FOR_THE_AIRDROP')}
+                        </CyDText>
+                      )}
+                    {!airdropData.isEligible &&
+                      airdropData.evmAddressLinked && (
+                        <CyDText className='font-medium !text-[16px] text-white leading-[150%] tracking-[-0.8px]'>
+                          {t('DIFFERENT_EVM_ADDRESS')}
+                        </CyDText>
+                      )}
+                    {airdropData.isEligible && (
+                      <CyDText
+                        className={clsx(
+                          'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px] text-wrap',
+                        )}>
+                        {t('CONTINUE_TO_CLAIM_THE_AIRDROP_REWARDS')}
+                      </CyDText>
+                    )}
+                    {!airdropData.isEligible &&
+                      !airdropData.evmAddressLinked && (
+                        <CyDText
+                          className={clsx(
+                            'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px] text-wrap',
+                          )}>
+                          {t(
+                            'KEEP_SPENDING_FOR_EXCITING_REWARDS_ON_EVERY_SPEND',
+                          )}
+                        </CyDText>
+                      )}
+                    {!airdropData.isEligible &&
+                      airdropData.evmAddressLinked && (
+                        <CyDText
+                          className={clsx(
+                            'font-normal text-white !text-[14px] leading-[145%] tracking-[-0.6px] mt-[4px] text-wrap',
+                          )}>
+                          {t('CHANGE_WALLET')}
+                        </CyDText>
+                      )}
+                  </CyDView>
+                </CyDView>
+              )}
+            </CyDView>
+          </CyDView>
+
+          {airdropData.isEligible &&
+            !get(airdropData, 'airdrop.claimInfo.isClaimed', false) && (
+              <Button
+                title={t('CHECK_YOUR_REWARDS')}
+                disabled={!airdropData.isEligible}
+                onPress={() => {
+                  navigation.navigate(screenTitle.AIRDROP_CLAIM, {
+                    airdropData: airdropData.airdrop,
+                  });
+                }}
+                style='w-full rounded-full py-[16px] px-[16px] justify-between mb-[24px] !bg-[#F9D26C]'
+                type={ButtonType.PRIMARY}
+                icon={
+                  <CyDMaterialDesignIcons
+                    name='arrow-right-thin'
+                    size={24}
+                    className='text-black'
+                  />
+                }
+                iconPosition={IconPosition.RIGHT}
+              />
+            )}
+        </CyDView>
+      </ScrollView>
+    </CyDView>
+  );
+}
+
+// Use StyleSheet for performance and maintainability.
+// Only the bottom corners are rounded for the background container.
+const styles = StyleSheet.create({
+  bottomRounded: {
+    borderBottomLeftRadius: 16, // Rounds the bottom left corner
+    borderBottomRightRadius: 16, // Rounds the bottom right corner
+  },
+  scrollContent: {
+    flexGrow: 1, // Ensures content can expand to fill available space
+    justifyContent: 'space-between', // Distributes space between content and button
+  },
+});

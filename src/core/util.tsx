@@ -23,6 +23,7 @@ import {
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
   NON_EIP1599_CHAINS,
+  CHAIN_BASE_SEPOLIA,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -198,6 +199,8 @@ export function getExplorerUrl(
         return `https://explorer.zksync.io/tx/${hash}`;
       } else if (chainName === CHAIN_BASE.name) {
         return `https://basescan.org/tx/${hash}`;
+      } else if (chainName === CHAIN_BASE_SEPOLIA.name) {
+        return `https://sepolia.basescan.org/tx/${hash}`;
       }
       return `https://etherscan.io/tx/${hash}`;
     case CHAIN_AVALANCHE.symbol:

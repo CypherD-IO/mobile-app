@@ -217,7 +217,7 @@ export default function CardDescription() {
         from: 'get_new_card',
         type: cardType,
         price,
-        address: cardProfile?.primaryEthAddress,
+        address: cardProfile?.primaryAddress,
       });
       const screenName =
         cardType === CardType.VIRTUAL

@@ -879,7 +879,7 @@ const RenderCardActions = ({
             logAnalyticsToFirebase(AnalyticEvent.GET_NEW_CARD, {
               from: 'card_stack',
               type: 'new_card',
-              address: cardProfile.primaryEthAddress,
+              address: cardProfile.primaryAddress,
             });
             onGetAdditionalCard();
           }}

@@ -36,11 +36,6 @@ export default function useAxios() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
-  const ethereumAddress = get(
-    hdWalletContext,
-    'state.wallet.ethereum.address',
-    '',
-  );
 
   let token = globalContext.globalState.token;
 
@@ -143,7 +138,10 @@ export default function useAxios() {
       try {
         const reqBody = method !== 'GET' && JSON.stringify(body);
         if (method === 'GET') {
-          const { data, status } = await axiosInstance.get(url);
+          const { data, status } = await axiosInstance.get(url, {
+            params: body,
+            timeout,
+          });
           response.data = data;
           response.status = status;
         } else if (method === 'GET_WITHOUT_AUTH') {
@@ -257,10 +255,11 @@ export default function useAxios() {
 
   async function getWithAuth(
     url: string,
+    data?: any,
     config?: AxiosRequestConfig<object> | undefined,
     timeout = DEFAULT_AXIOS_TIMEOUT,
   ) {
-    return await request('GET', url, timeout, undefined, config);
+    return await request('GET', url, timeout, data, config);
   }
   async function getWithoutAuth(
     url: string,

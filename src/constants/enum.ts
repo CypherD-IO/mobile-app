@@ -51,6 +51,7 @@ export enum CardApplicationStatus {
   COMPLETION_PENDING = 'completion-pending',
   COMPLETED = 'completed',
   DECLINED = 'declined', // permanant decline state
+  WAITLIST = 'waitlist', // country temporarily not supported
 }
 
 export enum Web3Origin {
@@ -88,9 +89,6 @@ export enum OTPType {
 }
 
 export enum CardProviders {
-  SOLID = 'solid',
-  APTO = 'apto',
-  BRIDGE_CARD = 'bc',
   PAYCADDY = 'pc',
   REAP_CARD = 'rc',
   RAIN_CARD = 'ra',

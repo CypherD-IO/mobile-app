@@ -323,17 +323,19 @@ export default function CardQuote({
   };
 
   const sendTransaction = useCallback(async () => {
+    const {
+      contractAddress,
+      chainDetails,
+      contractDecimals,
+      denom,
+      symbol,
+      name,
+    } = selectedToken;
+    setLoading(true);
+
+    let actualTokensRequired = '0';
     try {
-      const {
-        contractAddress,
-        chainDetails,
-        contractDecimals,
-        denom,
-        symbol,
-        name,
-      } = selectedToken;
-      setLoading(true);
-      const actualTokensRequired = limitDecimalPlaces(
+      actualTokensRequired = limitDecimalPlaces(
         tokenQuote.tokensRequired,
         contractDecimals,
       );
@@ -420,6 +422,17 @@ export default function CardQuote({
                 const cosmosTx = get(tx, 'cosmos_tx');
                 if (cosmosTx) {
                   try {
+                    // Log the incoming cosmos transaction data for debugging
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message: 'Cosmos transaction data received',
+                      level: 'info',
+                      data: {
+                        hasCosmosTx: !!cosmosTx,
+                        chain: selectedToken.chainDetails.chain_id,
+                      },
+                    });
+
                     const transaction = await skipApiSignAndBroadcast({
                       cosmosTx,
                       chain: selectedToken.chainDetails.chain_id,
@@ -429,35 +442,247 @@ export default function CardQuote({
                       setCosmosModalVisible: () => {},
                       shouldBroadcast: false,
                     });
-                    const txRaw = TxRaw.fromPartial({
-                      bodyBytes: transaction.txn?.bodyBytes,
-                      authInfoBytes: transaction.txn?.authInfoBytes,
-                      signatures: transaction.txn?.signatures,
+
+                    // Log the transaction response from skipApiSignAndBroadcast
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message:
+                        'Transaction response from skipApiSignAndBroadcast',
+                      level: 'info',
+                      data: {
+                        isError: transaction.isError,
+                        hasTxn: !!transaction.txn,
+                        bodyBytesLength: transaction.txn?.bodyBytes?.length,
+                        authInfoBytesLength:
+                          transaction.txn?.authInfoBytes?.length,
+                        signaturesLength: transaction.txn?.signatures?.length,
+                        chainId: transaction.chainId,
+                      },
                     });
+
+                    // Validate transaction data before creating TxRaw
+                    if (!transaction.txn) {
+                      throw new Error(
+                        'Transaction object is null or undefined',
+                      );
+                    }
+
+                    if (
+                      !transaction.txn.bodyBytes ||
+                      transaction.txn.bodyBytes.length === 0
+                    ) {
+                      throw new Error(
+                        'Transaction bodyBytes is empty or undefined',
+                      );
+                    }
+
+                    if (
+                      !transaction.txn.authInfoBytes ||
+                      transaction.txn.authInfoBytes.length === 0
+                    ) {
+                      throw new Error(
+                        'Transaction authInfoBytes is empty or undefined',
+                      );
+                    }
+
+                    if (
+                      !transaction.txn.signatures ||
+                      transaction.txn.signatures.length === 0
+                    ) {
+                      throw new Error(
+                        'Transaction signatures is empty or undefined',
+                      );
+                    }
+
+                    // Log the raw transaction data before creating TxRaw
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message: 'Raw transaction data before TxRaw creation',
+                      level: 'info',
+                      data: {
+                        bodyBytesLength: transaction.txn.bodyBytes?.length,
+                        bodyBytesIsUint8Array:
+                          transaction.txn.bodyBytes instanceof Uint8Array,
+                        authInfoBytesLength:
+                          transaction.txn.authInfoBytes?.length,
+                        authInfoBytesIsUint8Array:
+                          transaction.txn.authInfoBytes instanceof Uint8Array,
+                        signaturesLength: transaction.txn.signatures?.length,
+                        signaturesIsArray: Array.isArray(
+                          transaction.txn.signatures,
+                        ),
+                        hasEmptySignatures: transaction.txn.signatures?.some(
+                          sig => !sig || sig.length === 0,
+                        ),
+                      },
+                    });
+
+                    const txRaw = TxRaw.fromPartial({
+                      bodyBytes: transaction.txn.bodyBytes,
+                      authInfoBytes: transaction.txn.authInfoBytes,
+                      signatures: transaction.txn.signatures,
+                    } as any);
+
+                    // Log the TxRaw object
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message: 'TxRaw object created',
+                      level: 'info',
+                      data: {
+                        hasBodyBytes: !!txRaw.bodyBytes,
+                        bodyBytesLength: txRaw.bodyBytes?.length,
+                        hasAuthInfoBytes: !!txRaw.authInfoBytes,
+                        authInfoBytesLength: txRaw.authInfoBytes?.length,
+                        hasSignatures: !!txRaw.signatures,
+                        signaturesLength: txRaw.signatures?.length,
+                        hasEmptySignatures: txRaw.signatures?.some(
+                          sig => !sig || sig.length === 0,
+                        ),
+                      },
+                    });
+
                     // Encode the transaction into Uint8Array
                     const signedTxBytes = TxRaw.encode(txRaw).finish();
 
+                    // Log the encoded transaction bytes
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message: 'Encoded transaction bytes',
+                      level: 'info',
+                      data: {
+                        signedTxBytesLength: signedTxBytes.length,
+                        isUint8Array: signedTxBytes instanceof Uint8Array,
+                        isEmpty: signedTxBytes.length === 0,
+                      },
+                    });
+
+                    // Validate encoded bytes
+                    if (!signedTxBytes || signedTxBytes.length === 0) {
+                      throw new Error('Encoded transaction bytes are empty');
+                    }
+
                     // Convert to Base64 for Skip API
                     const base64Tx = toBase64(signedTxBytes);
+
+                    // Log the base64 transaction
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message: 'Base64 transaction created',
+                      level: 'info',
+                      data: {
+                        base64TxLength: base64Tx.length,
+                        isEmpty: base64Tx.length === 0,
+                      },
+                    });
+
+                    // Log the API request payload
+                    const apiPayload = {
+                      tx: base64Tx,
+                      chain_id: tokenQuote.cosmosSwap?.sourceAssetChainId,
+                    };
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message: 'API request payload prepared',
+                      level: 'info',
+                      data: {
+                        txLength: apiPayload.tx.length,
+                        chainId: apiPayload.chain_id,
+                        hasChainId: !!apiPayload.chain_id,
+                        isEmpty: apiPayload.tx.length === 0,
+                      },
+                    });
+
                     const {
-                      isError,
-                      error: fetchError,
-                      data,
+                      isError: isSubmitError,
+                      error: submitError,
+                      data: submitData,
                     } = await postToOtherSource(
                       'https://api.skip.build/v2/tx/submit',
-                      {
-                        tx: base64Tx,
-                        chain_id: tokenQuote.cosmosSwap?.sourceAssetChainId,
-                      },
+                      apiPayload,
                     );
 
-                    if (!isError && data?.tx_hash) {
-                      response = { isError: false, hash: data.tx_hash };
+                    // Log the API response
+                    Sentry.addBreadcrumb({
+                      category: 'transaction',
+                      message: 'API response received',
+                      level: 'info',
+                      data: {
+                        isError: isSubmitError,
+                        hasData: !!submitData,
+                        hasTxHash: !!submitData?.tx_hash,
+                        errorType: submitError ? typeof submitError : null,
+                      },
+                    });
+
+                    if (!isSubmitError && submitData?.tx_hash) {
+                      response = { isError: false, hash: submitData.tx_hash };
                     } else {
-                      throw new Error(fetchError);
+                      // Capture specific "invalid empty transaction" error
+                      if (
+                        submitError &&
+                        typeof submitError === 'string' &&
+                        submitError.includes('invalid empty transaction')
+                      ) {
+                        Sentry.captureException(
+                          new Error('Invalid empty transaction detected'),
+                          {
+                            tags: {
+                              error_type: 'invalid_empty_transaction',
+                              chain_id:
+                                tokenQuote.cosmosSwap?.sourceAssetChainId,
+                              tx_length: base64Tx.length,
+                              has_signatures:
+                                txRaw.signatures && txRaw.signatures.length > 0,
+                              signatures_length: txRaw.signatures?.length,
+                              body_bytes_length: txRaw.bodyBytes?.length,
+                              auth_info_bytes_length:
+                                txRaw.authInfoBytes?.length,
+                            },
+                            extra: {
+                              submitError,
+                              transactionData: {
+                                hasTxn: !!transaction.txn,
+                                bodyBytesLength:
+                                  transaction.txn?.bodyBytes?.length,
+                                authInfoBytesLength:
+                                  transaction.txn?.authInfoBytes?.length,
+                                signaturesLength:
+                                  transaction.txn?.signatures?.length,
+                                hasEmptySignatures:
+                                  transaction.txn?.signatures?.some(
+                                    sig => !sig || sig.length === 0,
+                                  ),
+                              },
+                            },
+                          },
+                        );
+                      }
+                      throw new Error(submitError);
                     }
                   } catch (e) {
-                    const errorMessage = parseErrorMessage(`${e}`);
+                    // Log detailed error information
+                    Sentry.addBreadcrumb({
+                      category: 'error',
+                      message: 'Transaction error occurred',
+                      level: 'error',
+                      data: {
+                        errorType: typeof e,
+                        errorMessage: (e as any)?.message,
+                        errorName: (e as any)?.name,
+                        isError: e instanceof Error,
+                      },
+                    });
+
+                    const errorMessage = parseErrorMessage(e);
+                    Sentry.addBreadcrumb({
+                      category: 'error',
+                      message: 'Parsed error message',
+                      level: 'info',
+                      data: {
+                        parsedMessage: errorMessage,
+                      },
+                    });
+
                     if (
                       !errorMessage.includes(
                         'User denied transaction signature.',
@@ -519,12 +744,16 @@ export default function CardQuote({
                     selectedToken?.chainDetails?.chainName,
                     '',
                   )
-                : ChainBackendNames.SOLANA ===
-                    selectedToken?.chainDetails?.chainName
+                : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
                   ? solanaAddress
                   : ethereumAddress,
               ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
               ...(connectionType ? { connectionType } : {}),
+              other: {
+                amountToSend: actualTokensRequired,
+                contractAddress,
+                symbol: selectedToken.symbol,
+              },
             });
             activityRef.current &&
               activityContext.dispatch({
@@ -570,6 +799,12 @@ export default function CardQuote({
           : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
             ? solanaAddress
             : ethereumAddress,
+        ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
+        other: {
+          amountToSend: actualTokensRequired,
+          contractAddress,
+          symbol: selectedToken.symbol,
+        },
       });
       activityRef.current &&
         activityContext.dispatch({

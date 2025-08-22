@@ -1,4 +1,3 @@
-import React from 'react';
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
   ONBOARDING: 'OnBoarding',
@@ -149,6 +148,9 @@ export const screenTitle = {
   SELECT_ADDITIONAL_CARD: 'selectAdditionalCard',
   ADDITIONAL_CARD_DESCRIPTION: 'additionalCardDescription',
   CARD_CONTROLS: 'CardControls',
+  AIRDROP_ELIGIBILITY: 'AirdropEligibility',
+  AIRDROP_CLAIM: 'AirdropClaim',
+  COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
 };
 
 export const fontsName = {

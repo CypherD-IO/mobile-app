@@ -39,7 +39,7 @@ export const themes: Record<
     '--color-n80': '#98a1b0',
     '--color-n90': '#8993A4',
     '--color-n100': '#7a8699',
-    '--color-n200': '#6b788e',
+    '--color-n200': '#6B788E',
     '--color-n300': '#5d6b82',
     '--color-n400': '#505f79',
     '--color-n500': '#42526d',
