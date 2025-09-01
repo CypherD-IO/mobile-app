@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -23,6 +24,11 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
+import {
+  getCountryObjectByDialCode,
+  getCountryObjectById,
+} from '../../../../../core/util';
+import { ApplicationData } from '../../../../../models/applicationData.interface';
 
 // Validation schema for the shipping address form
 const ShippingAddressSchema = Yup.object().shape({
@@ -70,27 +76,39 @@ const ShippingAddress = (): JSX.Element => {
     useState<boolean>(false);
   const [selectPhoneCountryModalVisible, setSelectPhoneCountryModalVisible] =
     useState<boolean>(false);
-  const [isPhoneCountrySet, setIsPhoneCountrySet] = useState<boolean>(false);
+  // Check if user has manually set phone country (persisted in form state)
+  const isPhoneCountrySet = Boolean(formState.isPhoneCountryExplicitlySet);
 
-  const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>({
-    name: 'United States',
-    dialCode: '+1',
-    flag: '🇺🇸',
-    Iso2: 'US',
-    Iso3: 'USA',
-    currency: 'USD',
-  });
+  // Initialize selectedCountry and selectedPhoneCountry from form context if available
+  const initialCountry: ICountry | undefined = useMemo(() => {
+    if (formState.country) {
+      return getCountryObjectById(formState.country);
+    }
+    const defaultCountry: ICountry = {
+      name: 'United States',
+      dialCode: '+1',
+      flag: '🇺🇸',
+      Iso2: 'US',
+      Iso3: 'USA',
+      currency: 'USD',
+    };
+    return defaultCountry;
+  }, [formState.country]);
+
+  const initialPhoneCountry: ICountry | undefined = useMemo(() => {
+    if (formState.dialCode) {
+      return getCountryObjectByDialCode(formState.dialCode);
+    }
+    return initialCountry; // default to address country
+  }, [formState.dialCode, initialCountry]);
+
+  const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>(
+    initialCountry,
+  );
 
   const [selectedPhoneCountry, setSelectedPhoneCountry] = useState<
     ICountry | undefined
-  >({
-    name: 'United States',
-    dialCode: '+1',
-    flag: '🇺🇸',
-    Iso2: 'US',
-    Iso3: 'USA',
-    currency: 'USD',
-  });
+  >(initialPhoneCountry);
 
   const currentStep = 1;
   const totalSteps = 3;
@@ -134,19 +152,43 @@ const ShippingAddress = (): JSX.Element => {
   };
 
   // Handle address country selection
-  const handleAddressCountrySelect = (country: ICountry) => {
+  const handleAddressCountrySelect = (country: ICountry | undefined) => {
     setSelectedCountry(country);
     // Only set phone country if it hasn't been explicitly set by user
-    if (!isPhoneCountrySet) {
+    if (!isPhoneCountrySet && country) {
       setSelectedPhoneCountry(country);
     }
   };
 
   // Handle phone country selection
-  const handlePhoneCountrySelect = (country: ICountry) => {
+  const handlePhoneCountrySelect = (country: ICountry | undefined) => {
     setSelectedPhoneCountry(country);
-    setIsPhoneCountrySet(true);
+    // Mark that user has explicitly set phone country
+    setFormState((prev: ApplicationData) => ({
+      ...prev,
+      isPhoneCountryExplicitlySet: true,
+    }));
   };
+
+  // Persist selectedCountry to form context whenever it changes
+  useEffect(() => {
+    if (selectedCountry?.Iso2) {
+      setFormState((prev: ApplicationData) => ({
+        ...prev,
+        country: selectedCountry.Iso2,
+      }));
+    }
+  }, [selectedCountry, setFormState]);
+
+  // Persist selectedPhoneCountry dial code to form context whenever it changes
+  useEffect(() => {
+    if (selectedPhoneCountry?.dialCode) {
+      setFormState((prev: ApplicationData) => ({
+        ...prev,
+        dialCode: selectedPhoneCountry.dialCode,
+      }));
+    }
+  }, [selectedPhoneCountry, setFormState]);
 
   // Helper function to render error message
   const renderErrorMessage = (errorMsg: string) => (
