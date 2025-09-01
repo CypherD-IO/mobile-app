@@ -77,7 +77,7 @@ const AdditionalDetails = (): JSX.Element => {
       // Only proceed with API submission if all required fields are filled
       if (values.occupation) {
         const payload = {
-          ...omit(updatedFormState, 'dialCode'),
+          ...omit(updatedFormState, 'dialCode', 'isPhoneCountryExplicitlySet'),
           phone: updatedFormState.dialCode + updatedFormState.phone,
           ...(referralCode && { referralCodeV2: referralCode }),
         };

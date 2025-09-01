@@ -3,7 +3,7 @@ import { ApplicationData } from '../../../../../models/applicationData.interface
 
 interface FormContextType {
   formState: ApplicationData;
-  setFormState: (formState: ApplicationData) => void;
+  setFormState: React.Dispatch<React.SetStateAction<ApplicationData>>;
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined);

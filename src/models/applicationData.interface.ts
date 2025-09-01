@@ -13,6 +13,8 @@ export interface ApplicationData {
   state: string;
   phone: string;
   dialCode: string;
+  // Phone country selection tracking
+  isPhoneCountryExplicitlySet?: boolean;
   // Additional Details
   expectedMonthlyVolume: string;
   annualSalary: string;

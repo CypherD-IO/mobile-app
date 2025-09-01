@@ -1591,7 +1591,7 @@ export function OptionsStackScreen({
         options={({ navigation }) => ({
           header: () => (
             <CustomHeader
-              title={'Social Media'}
+              title={''}
               navigation={navigation}
               keyboardHeight={keyboardHeight}
             />

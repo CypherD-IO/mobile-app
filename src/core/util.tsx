@@ -1184,7 +1184,20 @@ export function getCountryObjectById(countryId: string): ICountry | undefined {
       c?.Iso2?.toLowerCase() === countryId.toLowerCase() ||
       c?.Iso3?.toLowerCase() === countryId.toLowerCase(),
   );
-  return country;
+  return {
+    ...country,
+    flag: country?.unicode_flag,
+  };
+}
+
+export function getCountryObjectByDialCode(
+  dialCode: string,
+): ICountry | undefined {
+  const country = countryMaster.find(c => c?.dial_code === dialCode);
+  return {
+    ...omit(country, ['dial_code']),
+    dialCode: country?.dial_code,
+  };
 }
 
 export function getCountryNameById(countryId: string): string | undefined {
