@@ -1,5 +1,7 @@
 package com.cypherd.androidwallet;
 import android.os.Bundle;
+import android.view.WindowManager;
+import android.os.Build;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
@@ -34,8 +36,21 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     // Fix: https://github.com/invertase/react-native-firebase/issues/3469#issuecomment-614990736
-      SplashScreen.show(this, R.id.lottie);
-      SplashScreen.setAnimationFinished(true);
-      super.onCreate(null);
- }
+    SplashScreen.show(this, R.id.lottie);
+    SplashScreen.setAnimationFinished(true);
+    
+    // Configure edge-to-edge display for proper SafeArea handling
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      // For Android 11+ (API 30+)
+      getWindow().setDecorFitsSystemWindows(false);
+    } else {
+      // For older Android versions
+      getWindow().setFlags(
+        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+      );
+    }
+    
+    super.onCreate(null);
+  }
 }

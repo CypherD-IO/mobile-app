@@ -10,7 +10,13 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import './src/i18n';
-import { BackHandler, Keyboard, Linking, LogBox } from 'react-native';
+import {
+  BackHandler,
+  Keyboard,
+  Linking,
+  LogBox,
+  StatusBar,
+} from 'react-native';
 import {
   HdWalletContext,
   ActivityContext,
@@ -65,10 +71,12 @@ import {
 } from './src/reducers/bridge.reducer';
 import { screenTitle } from './src/constants';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
-import { ThemeProvider } from './src/reducers/themeReducer';
+import { ThemeProvider, useTheme, Theme } from './src/reducers/themeReducer';
 import { CyDView } from './src/styles/tailwindComponents';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
+import { useColorScheme } from 'nativewind';
 
 // Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
 
@@ -206,6 +214,61 @@ export const handleDeepLink = async (url: string | null) => {
     }
   }
   return null;
+};
+
+/**
+ * Determines the appropriate StatusBar style based on the current theme context.
+ * This function handles the theme resolution logic to ensure proper contrast
+ * between the status bar content and the background.
+ *
+ * @param theme - The current theme setting (SYSTEM, LIGHT, or DARK)
+ * @param colorScheme - The device's color scheme preference (light/dark)
+ * @returns Object containing barStyle and backgroundColor for StatusBar
+ */
+const getStatusBarStyle = (
+  theme: Theme,
+  colorScheme: string | null | undefined,
+) => {
+  // Resolve the actual theme to use (SYSTEM theme resolves to device preference)
+  const resolvedTheme =
+    theme === Theme.SYSTEM
+      ? colorScheme === 'dark'
+        ? Theme.DARK
+        : Theme.LIGHT
+      : theme;
+
+  // Return appropriate StatusBar configuration based on resolved theme
+  if (resolvedTheme === Theme.DARK) {
+    return {
+      barStyle: 'light-content' as const, // Light text/icons for dark backgrounds
+      backgroundColor: 'transparent', // Maintain transparency for proper SafeArea behavior
+    };
+  } else {
+    return {
+      barStyle: 'dark-content' as const, // Dark text/icons for light backgrounds
+      backgroundColor: 'transparent', // Maintain transparency for proper SafeArea behavior
+    };
+  }
+};
+
+/**
+ * StatusBar component that dynamically adjusts based on theme context.
+ * This component must be rendered inside the ThemeProvider to access theme state.
+ */
+const ThemedStatusBar = () => {
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+
+  // Get the appropriate StatusBar configuration based on current theme
+  const statusBarConfig = getStatusBarStyle(theme, colorScheme);
+
+  return (
+    <StatusBar
+      barStyle={statusBarConfig.barStyle}
+      backgroundColor={statusBarConfig.backgroundColor}
+      translucent={true}
+    />
+  );
 };
 
 function App() {
@@ -368,101 +431,108 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <CyDView style={{ flex: 1, backgroundColor: 'white' }} className=''>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Sentry.TouchEventBoundary>
-            <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
-              ref={navigationRef}
-              linking={linking}
-              onReady={() => {
-                routeNameRef.current =
-                  navigationRef?.current?.getCurrentRoute()?.name;
-                routingInstrumentation.registerNavigationContainer(
-                  navigationRef,
-                );
-              }}
-              onStateChange={async () => {
-                const previousRouteName = routeNameRef.current;
-                const currentRouteName =
-                  navigationRef.current?.getCurrentRoute()?.name;
-                if (previousRouteName !== currentRouteName) {
-                  // Keyboard.dismiss();
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <CyDView style={{ flex: 1, backgroundColor: 'white' }} className=''>
+          {/* Configure StatusBar dynamically based on theme context for proper contrast and SafeArea behavior */}
+          <ThemedStatusBar />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Sentry.TouchEventBoundary>
+              <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
+                ref={navigationRef}
+                linking={linking}
+                onReady={() => {
+                  routeNameRef.current =
+                    navigationRef?.current?.getCurrentRoute()?.name;
+                  routingInstrumentation.registerNavigationContainer(
+                    navigationRef,
+                  );
+                }}
+                onStateChange={async () => {
+                  const previousRouteName = routeNameRef.current;
+                  const currentRouteName =
+                    navigationRef.current?.getCurrentRoute()?.name;
+                  if (previousRouteName !== currentRouteName) {
+                    // Keyboard.dismiss();
 
-                  void analytics().logScreenView({
-                    screen_name: currentRouteName,
-                    screen_class: currentRouteName,
-                  });
-                }
-                routeNameRef.current = currentRouteName;
-              }}>
-              <WalletConnectContext.Provider
-                value={{ walletConnectState, walletConnectDispatch }}>
-                <GlobalContext.Provider value={{ globalState, globalDispatch }}>
-                  <HdWalletContext.Provider value={{ state, dispatch }}>
-                    <ActivityContext.Provider
-                      value={{
-                        state: stateActivity,
-                        dispatch: dispatchActivity,
-                      }}>
-                      <ModalContext.Provider
+                    void analytics().logScreenView({
+                      screen_name: currentRouteName,
+                      screen_class: currentRouteName,
+                    });
+                  }
+                  routeNameRef.current = currentRouteName;
+                }}>
+                <WalletConnectContext.Provider
+                  value={{ walletConnectState, walletConnectDispatch }}>
+                  <GlobalContext.Provider
+                    value={{ globalState, globalDispatch }}>
+                    <HdWalletContext.Provider value={{ state, dispatch }}>
+                      <ActivityContext.Provider
                         value={{
-                          state: modalState,
-                          dispatch: modalDispatch,
+                          state: stateActivity,
+                          dispatch: dispatchActivity,
                         }}>
-                        <BridgeContext.Provider
+                        <ModalContext.Provider
                           value={{
-                            state: bridgeState,
-                            dispatch: bridgeDispatch,
+                            state: modalState,
+                            dispatch: modalDispatch,
                           }}>
-                          <GlobalModal>
-                            <ThreeDSecureProvider>
-                              <InitializeAppProvider>
-                                <TabStack
-                                  deepLinkData={deepLinkData}
-                                  setDeepLinkData={setDeepLinkData}
-                                />
-                                <Toast
-                                  config={toastConfig}
-                                  position={'bottom'}
-                                  bottomOffset={140}
-                                />
-                                {<ConfirmationModals />}
-                                <WalletConnectModal
-                                  walletConnectModalVisible={
-                                    walletConnectModalData.displayWalletConnectModal
-                                  }
-                                  setWalletConnectModalVisible={
-                                    setWalletConnectModalVisible
-                                  }
-                                  renderContent={
-                                    walletConnectModalData.renderContent
-                                  }
-                                  walletConnectApproveRequest={
-                                    walletConnectApproveRequest
-                                  }
-                                  walletConnectRejectRequest={
-                                    walletConnectRejectRequest
-                                  }
-                                  dispatchActivity={dispatchActivity}
-                                  params={walletConnectModalData.params}
-                                  request={request}
-                                  walletConnectDispatch={walletConnectDispatch}
-                                />
-                              </InitializeAppProvider>
-                            </ThreeDSecureProvider>
-                          </GlobalModal>
-                        </BridgeContext.Provider>
-                      </ModalContext.Provider>
-                    </ActivityContext.Provider>
-                  </HdWalletContext.Provider>
-                </GlobalContext.Provider>
-              </WalletConnectContext.Provider>
-            </NavigationContainer>
-          </Sentry.TouchEventBoundary>
-        </GestureHandlerRootView>
-      </CyDView>
-    </ThemeProvider>
+                          <BridgeContext.Provider
+                            value={{
+                              state: bridgeState,
+                              dispatch: bridgeDispatch,
+                            }}>
+                            <GlobalModal>
+                              <ThreeDSecureProvider>
+                                <InitializeAppProvider>
+                                  <TabStack
+                                    deepLinkData={deepLinkData}
+                                    setDeepLinkData={setDeepLinkData}
+                                  />
+                                  <Toast
+                                    config={toastConfig}
+                                    position={'bottom'}
+                                    bottomOffset={140}
+                                  />
+                                  {<ConfirmationModals />}
+                                  <WalletConnectModal
+                                    walletConnectModalVisible={
+                                      walletConnectModalData.displayWalletConnectModal
+                                    }
+                                    setWalletConnectModalVisible={
+                                      setWalletConnectModalVisible
+                                    }
+                                    renderContent={
+                                      walletConnectModalData.renderContent
+                                    }
+                                    walletConnectApproveRequest={
+                                      walletConnectApproveRequest
+                                    }
+                                    walletConnectRejectRequest={
+                                      walletConnectRejectRequest
+                                    }
+                                    dispatchActivity={dispatchActivity}
+                                    params={walletConnectModalData.params}
+                                    request={request}
+                                    walletConnectDispatch={
+                                      walletConnectDispatch
+                                    }
+                                  />
+                                </InitializeAppProvider>
+                              </ThreeDSecureProvider>
+                            </GlobalModal>
+                          </BridgeContext.Provider>
+                        </ModalContext.Provider>
+                      </ActivityContext.Provider>
+                    </HdWalletContext.Provider>
+                  </GlobalContext.Provider>
+                </WalletConnectContext.Provider>
+              </NavigationContainer>
+            </Sentry.TouchEventBoundary>
+          </GestureHandlerRootView>
+        </CyDView>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 

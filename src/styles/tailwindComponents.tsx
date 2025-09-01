@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  SafeAreaView,
   ImageBackground,
   Modal,
   RefreshControl,
@@ -22,6 +21,7 @@ import {
   ImageBackgroundProps,
   ScrollViewProps,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import FastImage, { FastImageProps } from 'react-native-fast-image';
 import { Dropdown } from 'react-native-element-dropdown';
 import Animated from 'react-native-reanimated';
