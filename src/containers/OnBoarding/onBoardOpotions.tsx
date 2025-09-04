@@ -138,8 +138,7 @@ export default function OnBoardOpotions() {
           throw new Error('Invalid Ethereum private key');
         }
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_EVM, {
-          from:
-            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
+          from: socialLoginMethod,
         });
       } else if (providerType === ProviderType.SOLANA) {
         _privateKey = (await provider.provider.request({
@@ -154,8 +153,7 @@ export default function OnBoardOpotions() {
           base58privatekey,
         );
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_SOLANA, {
-          from:
-            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
+          from: socialLoginMethod,
         });
       } else {
         return;

@@ -509,7 +509,9 @@ export default function useInitializer() {
           setShowDefaultAuthRemoveModal,
         );
       }
-      await getToken(ethereum.address ?? solana.address ?? '');
+      if (ethereum.address || solana.address) {
+        await getToken(ethereum.address ?? solana.address ?? '');
+      }
     }
   };
 

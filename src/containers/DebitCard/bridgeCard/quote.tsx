@@ -705,7 +705,13 @@ export default function CardQuote({
               contractAddress,
             });
           }
-          const connectionType = await getConnectionType();
+          let connectionType;
+          try {
+            connectionType = await getConnectionType();
+          } catch (e) {
+            Sentry.captureException(e);
+            connectionType = undefined;
+          }
           if (response && !response?.isError) {
             void logAnalytics({
               type: AnalyticsType.SUCCESS,

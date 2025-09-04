@@ -25,13 +25,13 @@ export const getToken = async (address: string) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const connectionType = await getConnectionType();
   let chain = AllChainsEnum.ETH;
-  if (connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM) {
+  if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
     chain = AllChainsEnum.SOLANA;
   }
 
   try {
     const fcmToken = await firebase.messaging().getToken();
-    if (isAddressSet(address)) {
+    if (address?.trim() && isAddressSet(address)) {
       const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
       const payload = {
         address,

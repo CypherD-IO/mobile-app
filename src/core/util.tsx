@@ -460,7 +460,7 @@ export const removeSolidProhibitedCountriesFromCountryMaster = () => {
 };
 
 export const isAddressSet = (address: string) => {
-  return address !== undefined && address !== IMPORTING;
+  return Boolean(address?.trim() && address !== IMPORTING);
 };
 
 export function copyToClipboard(text: string) {
