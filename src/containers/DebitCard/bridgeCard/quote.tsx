@@ -705,6 +705,13 @@ export default function CardQuote({
               contractAddress,
             });
           }
+          let connectionType;
+          try {
+            connectionType = await getConnectionType();
+          } catch (e) {
+            Sentry.captureException(e);
+            connectionType = undefined;
+          }
           if (response && !response?.isError) {
             void logAnalytics({
               type: AnalyticsType.SUCCESS,
@@ -721,6 +728,8 @@ export default function CardQuote({
                 : chainName === ChainNames.SOLANA
                   ? solanaAddress
                   : ethereumAddress,
+              ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
+              ...(connectionType ? { connectionType } : {}),
             });
             void refreshPortfolio();
             void transferSentQuote(
@@ -730,7 +739,6 @@ export default function CardQuote({
             );
           } else {
             const errorMessage = parseErrorMessage(response?.error);
-            const connectionType = await getConnectionType();
             void logAnalytics({
               type: AnalyticsType.ERROR,
               chain: selectedToken?.chainDetails?.backendName ?? '',

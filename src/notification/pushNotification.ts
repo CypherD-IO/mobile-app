@@ -9,6 +9,8 @@ import { hostWorker } from '../global';
 import axios from '../core/Http';
 import { isAddressSet } from '../core/util';
 import {
+  AllChainsEnum,
+  ConnectionTypes,
   CypherDeclineCodes,
   GlobalModalType,
   NOTIFE_ACTIONS,
@@ -17,35 +19,24 @@ import {
 } from '../constants/enum';
 import { screenTitle } from '../constants';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { getConnectionType } from '../core/asyncStorage';
 
-export const getToken = async ({
-  ethAddress,
-  cosmosAddress,
-  osmosisAddress,
-  nobleAddress,
-  coreumAddress,
-  solanaAddress,
-}: {
-  ethAddress: string;
-  cosmosAddress?: string;
-  osmosisAddress?: string;
-  nobleAddress?: string;
-  coreumAddress?: string;
-  solanaAddress?: string;
-}) => {
+export const getToken = async (address: string) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  const connectionType = await getConnectionType();
+  let chain = AllChainsEnum.ETH;
+  if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
+    chain = AllChainsEnum.SOLANA;
+  }
+
   try {
     const fcmToken = await firebase.messaging().getToken();
-    if (isAddressSet(ethAddress)) {
+    if (address?.trim() && isAddressSet(address)) {
       const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
       const payload = {
-        address: ethAddress,
-        cosmosAddress,
-        osmosisAddress,
-        nobleAddress,
-        coreumAddress,
-        solanaAddress,
+        address,
         fcmToken,
+        chain,
       };
       try {
         await axios.put(registerURL, payload);
