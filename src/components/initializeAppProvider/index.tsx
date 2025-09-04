@@ -95,7 +95,6 @@ export const InitializeAppProvider = ({
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
     useState<boolean>(false);
-  const { isReadOnlyWallet } = hdWallet.state;
   const ethereumAddress = get(
     hdWallet,
     'state.wallet.ethereum.address',
