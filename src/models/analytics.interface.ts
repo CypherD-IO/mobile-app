@@ -7,6 +7,8 @@ export interface SuccessAnalytics {
   address?: string;
   contractData?: string;
   category?: string;
+  quoteId?: string;
+  connectionType?: string;
 }
 
 export interface ErrorAnalytics {

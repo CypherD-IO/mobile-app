@@ -460,7 +460,7 @@ export const removeSolidProhibitedCountriesFromCountryMaster = () => {
 };
 
 export const isAddressSet = (address: string) => {
-  return address !== undefined && address !== IMPORTING;
+  return Boolean(address?.trim() && address !== IMPORTING);
 };
 
 export function copyToClipboard(text: string) {
@@ -714,7 +714,7 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
   const { type } = params;
   switch (type) {
     case AnalyticsType.SUCCESS: {
-      const { chain, txnHash, contractData, address } =
+      const { chain, txnHash, contractData, address, quoteId, connectionType } =
         params as SuccessAnalytics;
       const data = {
         chain,
@@ -722,6 +722,8 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
         other: {
           ...(contractData ? { contractData } : {}),
           ...(address ? { address } : {}),
+          ...(quoteId ? { quoteId } : {}),
+          ...(connectionType ? { connectionType } : {}),
         },
       };
       void axios.post(ANALYTICS_SUCCESS_URL, data);

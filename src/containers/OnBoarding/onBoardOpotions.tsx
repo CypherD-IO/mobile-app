@@ -9,7 +9,7 @@ import Web3Auth, {
 } from '@web3auth/react-native-sdk';
 import { t } from 'i18next';
 import React, { useContext, useState } from 'react';
-import { StyleSheet, TouchableOpacity, Keyboard } from 'react-native';
+import { StyleSheet, TouchableOpacity, Keyboard, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -53,6 +53,7 @@ enum ProviderType {
 const enum SocialLoginMethod {
   EMAIL = 'email',
   GOOGLE = 'google',
+  APPLE = 'apple',
 }
 
 export default function OnBoardOpotions() {
@@ -137,8 +138,7 @@ export default function OnBoardOpotions() {
           throw new Error('Invalid Ethereum private key');
         }
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_EVM, {
-          from:
-            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
+          from: socialLoginMethod,
         });
       } else if (providerType === ProviderType.SOLANA) {
         _privateKey = (await provider.provider.request({
@@ -153,8 +153,7 @@ export default function OnBoardOpotions() {
           base58privatekey,
         );
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_SOLANA, {
-          from:
-            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
+          from: socialLoginMethod,
         });
       } else {
         return;
@@ -205,6 +204,24 @@ export default function OnBoardOpotions() {
     }
   };
 
+  const appleLogin = async (provider: Web3Auth) => {
+    await provider.login({
+      loginProvider: LOGIN_PROVIDER.APPLE,
+      mfaLevel: MFA_LEVELS.MANDATORY,
+    });
+    try {
+      await generateWallet(provider);
+    } catch (error) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNEXPECTED_ERROR'),
+        description: parseErrorMessage(error),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
   const handleSocialLogin = async () => {
     try {
       let provider;
@@ -229,8 +246,11 @@ export default function OnBoardOpotions() {
         await handleEmailLogin(provider);
       } else if (socialLoginMethod === SocialLoginMethod.GOOGLE) {
         await googleLogin(provider);
+      } else if (socialLoginMethod === SocialLoginMethod.APPLE) {
+        await appleLogin(provider);
       }
     } catch (error) {
+      console.log('🚀 ~ handleSocialLogin ~ error:', error);
       let errorMessage = parseErrorMessage(error);
       if (errorMessage.includes('login flow failed with error type cancel')) {
         errorMessage = '';
@@ -674,20 +694,38 @@ export default function OnBoardOpotions() {
                 </TouchableOpacity>
               )}
             </CyDView>
-            <CyDTouchView
-              className='mt-[12px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px]'
-              onPress={() => {
-                setSocialLoginMethod(SocialLoginMethod.GOOGLE);
-                setIsProviderSelectionModalVisible(true);
-              }}>
-              <CyDImage
-                source={AppImages.GOOGLE_LOGO}
-                className='w-[17px] h-[17px]'
-              />
-              <CyDText className='text-[12px] font-medium text-base400'>
-                {'Sign in with Google'}
-              </CyDText>
-            </CyDTouchView>
+            <CyDView className='flex flex-row items-center justify-between w-full gap-x-[4px] flex-1'>
+              <CyDTouchView
+                className='mt-[12px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px] flex-1'
+                onPress={() => {
+                  setSocialLoginMethod(SocialLoginMethod.GOOGLE);
+                  setIsProviderSelectionModalVisible(true);
+                }}>
+                <CyDText className='text-[12px] font-medium text-base400'>
+                  {'Sign in with'}
+                </CyDText>
+                <CyDImage
+                  source={AppImages.GOOGLE_LOGO}
+                  className='w-[17px] h-[17px]'
+                />
+              </CyDTouchView>
+              {Platform.OS === 'ios' && (
+                <CyDTouchView
+                  className='mt-[12px] border border-n50 px-[12px] py-[16px] rounded-[8px] bg-n0 flex-row items-center justify-center gap-[4px] flex-1'
+                  onPress={() => {
+                    setSocialLoginMethod(SocialLoginMethod.APPLE);
+                    setIsProviderSelectionModalVisible(true);
+                  }}>
+                  <CyDText className='text-[12px] font-medium text-base400'>
+                    {'Sign in with'}
+                  </CyDText>
+                  <CyDImage
+                    source={AppImages.APPLE_LOGO_GRAY}
+                    className='w-[13px] h-[14px]'
+                  />
+                </CyDTouchView>
+              )}
+            </CyDView>
 
             <CyDView className='mt-[24px] mb-[12px]'>
               <CyDText className='text-[14px] font-semibold'>

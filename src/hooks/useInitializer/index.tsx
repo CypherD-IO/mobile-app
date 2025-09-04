@@ -509,14 +509,9 @@ export default function useInitializer() {
           setShowDefaultAuthRemoveModal,
         );
       }
-      await getToken({
-        ethAddress: ethereum.address,
-        cosmosAddress: cosmos.address,
-        osmosisAddress: osmosis.address,
-        nobleAddress: noble.address,
-        coreumAddress: coreum.address,
-        solanaAddress: solana.address,
-      });
+      if (ethereum.address || solana.address) {
+        await getToken(ethereum.address ?? solana.address ?? '');
+      }
     }
   };
 
