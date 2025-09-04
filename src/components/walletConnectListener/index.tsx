@@ -149,8 +149,8 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const verifySessionTokenAndSign = async () => {
     setLoading(true);
-    await getToken(String(address).toLowerCase());
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
+    await getToken(String(address).toLowerCase());
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {
       void signConnectionMessage();
