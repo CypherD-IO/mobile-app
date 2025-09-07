@@ -48,7 +48,7 @@ export default function AirdropClaim() {
   const { top } = useSafeAreaInsets();
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalState.cardProfile as CardProfile;
-  const planId = cardProfile.planInfo.planId;
+  const planId = cardProfile.planInfo?.planId;
   const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
 

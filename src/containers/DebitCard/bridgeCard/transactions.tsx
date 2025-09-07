@@ -43,11 +43,13 @@ import { CardProfile } from '../../../models/cardProfile.model';
 import {
   CyDFlatList,
   CyDMaterialDesignIcons,
+  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
 import CardTxnFilterModal from '../CardV2/CardTxnFilterModal';
+import PageHeader from '../../../components/PageHeader';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -292,113 +294,116 @@ export default function CardTransactions() {
   };
 
   return (
-    <CyDView className='h-full bg-n20'>
-      <CyDModalLayout
-        isModalVisible={exportOptionOpen}
-        setModalVisible={setExportOptionOpen}
-        style={styles.modalLayout}>
-        <CyDView
-          className={
-            'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative border border-n30'
-          }>
-          <CyDTouchView
-            onPress={() => setExportOptionOpen(false)}
-            className={'z-[50] self-end'}>
-            <CyDMaterialDesignIcons
-              name={'close'}
-              size={24}
-              className='text-base400'
-            />
-          </CyDTouchView>
-          <CyDText className={'mt-[10px] text-center text-[22px]'}>
-            {t('EXPORT_AS')}
-          </CyDText>
-          <CyDView className={'w-[100%]'}>
-            <Button
-              style='h-[54px] mt-[12px]'
-              title={t('PDF')}
+    <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
+      <PageHeader title={t('CARD_TRANSACTIONS')} navigation={navigation} />
+      <CyDView className='flex-1 bg-n20 pt-[24px]'>
+        <CyDModalLayout
+          isModalVisible={exportOptionOpen}
+          setModalVisible={setExportOptionOpen}
+          style={styles.modalLayout}>
+          <CyDView
+            className={
+              'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative border border-n30'
+            }>
+            <CyDTouchView
+              onPress={() => setExportOptionOpen(false)}
+              className={'z-[50] self-end'}>
+              <CyDMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
+              />
+            </CyDTouchView>
+            <CyDText className={'mt-[10px] text-center text-[22px]'}>
+              {t('EXPORT_AS')}
+            </CyDText>
+            <CyDView className={'w-[100%]'}>
+              <Button
+                style='h-[54px] mt-[12px]'
+                title={t('PDF')}
+                onPress={() => {
+                  void exportCardTransactions('pdf');
+                  setExportOptionOpen(false);
+                }}
+              />
+              <Button
+                style='h-[54px] mt-[15px]'
+                title={t('CSV')}
+                onPress={() => {
+                  void exportCardTransactions('csv');
+                  setExportOptionOpen(false);
+                }}
+                // type={ButtonType.SECONDARY}
+              />
+            </CyDView>
+          </CyDView>
+        </CyDModalLayout>
+        <CardTxnFilterModal
+          navigation={navigation}
+          modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
+          filterState={[filter, setFilter]}
+        />
+        <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
+          <CyDView className='flex flex-1 justify-center items-center'>
+            <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
+              {viewableTransactionsDate}
+            </CyDText>
+          </CyDView>
+          <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
+            <CyDTouchView
               onPress={() => {
-                void exportCardTransactions('pdf');
-                setExportOptionOpen(false);
-              }}
-            />
-            <Button
-              style='h-[54px] mt-[15px]'
-              title={t('CSV')}
+                setFilterModalVisible(true);
+              }}>
+              <CyDMaterialDesignIcons
+                name='filter-variant'
+                size={24}
+                className='text-base400'
+              />
+            </CyDTouchView>
+            <CyDTouchView
+              disabled={isExporting}
+              className={clsx({ 'opacity-40': isExporting })}
               onPress={() => {
-                void exportCardTransactions('csv');
-                setExportOptionOpen(false);
-              }}
-              // type={ButtonType.SECONDARY}
-            />
+                setExportOptionOpen(true);
+                // void exportCardTransactions();
+              }}>
+              <CyDMaterialDesignIcons
+                name='export-variant'
+                size={20}
+                className='text-base400'
+              />
+            </CyDTouchView>
           </CyDView>
         </CyDView>
-      </CyDModalLayout>
-      <CardTxnFilterModal
-        navigation={navigation}
-        modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
-        filterState={[filter, setFilter]}
-      />
-      <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
-        <CyDView className='flex flex-1 justify-center items-center'>
-          <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
-            {viewableTransactionsDate}
-          </CyDText>
-        </CyDView>
-        <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
-          <CyDTouchView
-            onPress={() => {
-              setFilterModalVisible(true);
-            }}>
-            <CyDMaterialDesignIcons
-              name='filter-variant'
-              size={24}
-              className='text-base400'
-            />
-          </CyDTouchView>
-          <CyDTouchView
-            disabled={isExporting}
-            className={clsx({ 'opacity-40': isExporting })}
-            onPress={() => {
-              setExportOptionOpen(true);
-              // void exportCardTransactions();
-            }}>
-            <CyDMaterialDesignIcons
-              name='export-variant'
-              size={20}
-              className='text-base400'
-            />
-          </CyDTouchView>
+        <CyDView className='flex-1'>
+          <CyDFlatList
+            data={filteredTransactions}
+            renderItem={renderTransaction as any}
+            keyExtractor={(_, index) => index.toString()}
+            onViewableItemsChanged={handleViewableItemsChanged.current}
+            refreshControl={
+              <RefreshControl
+                className={clsx({ 'bg-n0': isIOS() })}
+                refreshing={refreshing && !txnRetrievalOffset.current}
+                onRefresh={() => {
+                  void fetchTransactions(true);
+                }}
+                progressViewOffset={0}
+              />
+            }
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              <InfiniteScrollFooterLoader
+                refreshing={refreshing}
+                style={styles.infiniteScrollFooterLoaderStyle}
+              />
+            }
+            className='flex-1'
+          />
         </CyDView>
       </CyDView>
-      <CyDView className='flex-1'>
-        <CyDFlatList
-          data={filteredTransactions}
-          renderItem={renderTransaction as any}
-          keyExtractor={(_, index) => index.toString()}
-          onViewableItemsChanged={handleViewableItemsChanged.current}
-          refreshControl={
-            <RefreshControl
-              className={clsx({ 'bg-n0': isIOS() })}
-              refreshing={refreshing && !txnRetrievalOffset.current}
-              onRefresh={() => {
-                void fetchTransactions(true);
-              }}
-              progressViewOffset={0}
-            />
-          }
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            <InfiniteScrollFooterLoader
-              refreshing={refreshing}
-              style={styles.infiniteScrollFooterLoaderStyle}
-            />
-          }
-          className='flex-1'
-        />
-      </CyDView>
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
 

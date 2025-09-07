@@ -9,7 +9,8 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
-  CyDMaterialDesignIcons,
+  CyDSafeAreaView,
+  CyDIcons,
 } from '../../styles/tailwindComponents';
 import { useTranslation } from 'react-i18next';
 import { AppImagesMap } from '../../../assets/images/appImages';
@@ -21,6 +22,8 @@ import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { BackHandler, NativeModules } from 'react-native';
 import { QRCode } from 'react-native-custom-qr-codes';
+import { BlurView } from '@react-native-community/blur';
+import PageHeader from '../../components/PageHeader';
 import {
   CHAIN_COSMOS,
   CHAIN_ETH,
@@ -47,10 +50,25 @@ import {
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
+import { Theme, useTheme } from '../../reducers/themeReducer';
 
 function copyToClipboard(text: string) {
   Clipboard.setString(text);
 }
+
+const blurOverlayStyle = {
+  position: 'absolute' as const,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 8,
+};
+
+const modalStyle = {
+  justifyContent: 'flex-end' as const,
+  padding: 0,
+};
 
 export interface UserChain {
   id: number;
@@ -60,18 +78,25 @@ export interface UserChain {
   backendName: string;
 }
 
-export default function PrivateKey(props) {
+interface PrivateKeyProps {
+  navigation: any;
+}
+
+export default function PrivateKey(props: PrivateKeyProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const [showChainModal, setShowChainModal] = useState<boolean>(false);
-  const [showPrivateKey, setShowPrivateKey] = useState<boolean>(false);
   const [privateKey, setPrivateKey] = useState<string>(
     _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   );
+  const { theme } = useTheme();
+  const [showQR, setShowQR] = useState<boolean>(false);
+  const [isBlurred, setIsBlurred] = useState<boolean>(true);
   const { connectionType } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setConnectionTypeValue(connectionType);
@@ -117,6 +142,7 @@ export default function PrivateKey(props) {
 
   useEffect(() => {
     const loadPrivateKey = async () => {
+      setIsLoading(true);
       if (get(selectedChain, ['chainName']) === ChainNames.ETH) {
         const privKey = await loadPrivateKeyFromKeyChain(
           false,
@@ -154,6 +180,7 @@ export default function PrivateKey(props) {
           }
         }
       }
+      setIsLoading(false);
     };
 
     void loadPrivateKey();
@@ -164,19 +191,12 @@ export default function PrivateKey(props) {
     return true;
   };
 
-  const togglePrivateKey = () => {
-    setShowPrivateKey(!showPrivateKey);
+  const toggleQR = () => {
+    setShowQR(!showQR);
   };
 
-  const RenderQRCode = (chain: { item: UserChain }) => {
-    return selectedChain.backendName === chain.item.backendName ? (
-      <QRCode
-        content={privateKey}
-        codeStyle='dot'
-        logo={AppImagesMap.common.QR_LOGO}
-        logoSize={60}
-      />
-    ) : null;
+  const toggleBlur = () => {
+    setIsBlurred(!isBlurred);
   };
 
   useEffect(() => {
@@ -194,9 +214,8 @@ export default function PrivateKey(props) {
     };
   }, [isFocused]);
 
-  // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDScrollView className={'bg-n20 h-full w-full relative'}>
+    <CyDSafeAreaView className='bg-n0 flex-1'>
       <ChooseChainModal
         isModalVisible={showChainModal}
         data={data}
@@ -206,119 +225,167 @@ export default function PrivateKey(props) {
           setSelectedChain(item);
         }}
         selectedItem={selectedChain.name}
-        customStyle={{ justifyContent: 'flex-end', padding: 0 }}
+        customStyle={modalStyle}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
         isClosable={true}
       />
-      <CyDView className={'flex justify-center items-center w-full'}>
-        <CyDView
-          className={
-            'mt-[10px] bg-n0 rounded-[18px] mx-[20px] px-[20px] py-[15px]'
-          }>
-          <CyDText className={'text-[15px] text-center text-base200'}>
-            {t('PRIVATE_KEY_SUBTITLE')}
-          </CyDText>
-        </CyDView>
-        <CyDTouchView
-          className={
-            'bg-blue20 rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center my-5 mb-5 w-10/12 self-center'
-          }
-          onPress={() => {
-            setShowChainModal(true);
-          }}>
-          <CyDView
-            className={'flex flex-row justify-start items-center gap-[10px]'}>
-            <CyDView className={'flex flex-row justify-center items-center'}>
-              <CyDImage
-                source={selectedChain.logo_url}
-                className={'w-[22px] h-[22px] mr-[10px]'}
-              />
-              <CyDText className={'font-bold text-[18px]'}>
-                {t('CHAIN') + ':'}
-              </CyDText>
-            </CyDView>
-            <CyDText className={'text-[18px]'}>{selectedChain.name}</CyDText>
-          </CyDView>
-          <CyDMaterialDesignIcons
-            name={'menu-down'}
-            size={28}
-            className={'text-base400'}
-          />
-        </CyDTouchView>
-        <CyDView className={'flex items-center justify-center w-full'}>
-          {data.map(item => (
-            <RenderQRCode key={item.id} item={item} />
-          ))}
-          <CyDView className={'w-[85%] border-[0.5px] border-n40 mt-[20px]'} />
-          <CyDTouchView
-            className={'mt-[30px]'}
-            onPress={() => togglePrivateKey()}>
-            {showPrivateKey ? (
-              <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
-                  {t('HIDE_PRIVATE_KEY')}
-                </CyDText>
-                <CyDMaterialDesignIcons
-                  name='eye-outline'
-                  size={27}
-                  className='text-base400 ml-[7px]'
-                />
-              </CyDView>
-            ) : (
-              <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[15px] font-semibold'}>
-                  {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
-                </CyDText>
 
-                <CyDMaterialDesignIcons
-                  name={'eye-off-outline'}
-                  size={27}
-                  className='text-base400 ml-[7px] mt-[5px]'
+      {/* Header */}
+      <PageHeader title={'REVEAL_PRIVATE_KEY'} navigation={props.navigation} />
+
+      <CyDScrollView
+        className='flex-1 bg-n0'
+        showsVerticalScrollIndicator={false}>
+        <CyDView className='flex-1 px-6 py-6'>
+          <CyDView className='items-center mb-8'>
+            <CyDView className='w-[54px] h-[54px] bg-[#310072] rounded-[6px] items-center justify-center mb-6'>
+              <CyDIcons name='key' size={36} className='text-white' />
+            </CyDView>
+            <CyDText className='text-[16px] text-center font-medium text-base400 leading-[140%] tracking-[-0.8px] px-4'>
+              These key unlock your wallet,{'\n'}Keep them safe.
+            </CyDText>
+          </CyDView>
+
+          {/* Private Key Container or QR Code */}
+          {!showQR ? (
+            <CyDView className='bg-n20 rounded-[8px] p-6 mb-6 relative'>
+              {/* Chain Selection */}
+              <CyDTouchView
+                className='bg-n20 rounded-[8px] py-4 px-4 mb-6 flex-row items-center justify-center gap-x-[12px]'
+                onPress={() => setShowChainModal(true)}>
+                <CyDView className='flex-row items-center'>
+                  <CyDImage
+                    source={selectedChain.logo_url}
+                    className='w-6 h-6 mr-3'
+                  />
+                  <CyDText className='text-[20px] font-normal text-base400'>
+                    {selectedChain.name + 'Chain'}
+                  </CyDText>
+                </CyDView>
+                <CyDIcons
+                  name='chevron-down'
+                  size={24}
+                  className='text-base400'
                 />
+              </CyDTouchView>
+              <CyDText className='text-center font-medium text-[14px] mb-[10px]'>{`${selectedChain.name} Private Key`}</CyDText>
+              <CyDTouchView onPress={toggleBlur} className='relative'>
+                {/* Private Key Display */}
+                {isLoading && (
+                  <CyDView className='py-4'>
+                    <CyDText className='text-[14px] font-medium text-center text-base400 break-all'>
+                      {`Securely fetching your ${selectedChain.name} private key...`}
+                    </CyDText>
+                  </CyDView>
+                )}
+                {!isLoading && (
+                  <CyDView className='py-4'>
+                    <CyDText className='text-[14px] font-medium text-center text-base400 break-all'>
+                      {isBlurred ? '*****' : privateKey}
+                    </CyDText>
+                  </CyDView>
+                )}
+                {/* Blur Overlay */}
+                {isBlurred && (
+                  <CyDView className='absolute top-0 left-0 right-0 bottom-0 bg-n20 rounded-[8px] items-center justify-center'>
+                    <BlurView
+                      style={blurOverlayStyle}
+                      blurType={theme === Theme.DARK ? 'light' : 'dark'}
+                      blurAmount={4}
+                    />
+                    <CyDView className='items-center justify-center z-10'>
+                      <CyDText className='text-base font-semibold text-base400 text-center'>
+                        Click to show Private Key
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                )}
+              </CyDTouchView>
+            </CyDView>
+          ) : (
+            <CyDView className='bg-n20 rounded-[8px] p-6 mb-6 items-center'>
+              <CyDTouchView
+                className='bg-n20 rounded-[8px] py-4 px-4 mb-6 flex-row items-center justify-center gap-x-[12px]'
+                onPress={() => setShowChainModal(true)}>
+                <CyDView className='flex-row items-center'>
+                  <CyDImage
+                    source={selectedChain.logo_url}
+                    className='w-6 h-6 mr-3'
+                  />
+                  <CyDText className='text-[20px] font-normal text-base400'>
+                    {selectedChain.name + 'Chain'}
+                  </CyDText>
+                </CyDView>
+                <CyDIcons
+                  name='chevron-down'
+                  size={24}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+              <CyDText className='text-center font-medium text-[14px] mb-[10px]'>{`${selectedChain.name} Private Key`}</CyDText>
+              <CyDView className='bg-n0 p-6 rounded-xl shadow-lg'>
+                {isLoading && (
+                  <CyDView className='py-4'>
+                    <CyDText className='text-[14px] font-medium text-center text-base400 break-all'>
+                      {`Securely fetching your ${selectedChain.name} private key...`}
+                    </CyDText>
+                  </CyDView>
+                )}
+                {!isLoading && (
+                  <QRCode
+                    content={privateKey}
+                    codeStyle='dot'
+                    logo={AppImagesMap.common.QR_LOGO}
+                    logoSize={60}
+                  />
+                )}
               </CyDView>
-            )}
-            {!showPrivateKey && (
-              <CyDText
-                className={
-                  'text-[#1F1F1F] text-[16px] font-semibold mt-[15px]'
-                }>
-                {t('TAP_REVEAL_PRIVATE_KEY')}
-              </CyDText>
-            )}
-          </CyDTouchView>
-          {showPrivateKey && (
-            <CyDView
-              className={
-                'flex justify-center items-center mt-[15px] w-11/12 border-[1px] border-n40 px-[10px] py-[5px] rounded-[4px]'
-              }>
-              <CyDText
-                className={
-                  'text-addressColor text-[16px] text-center font-semibold'
-                }>
-                {privateKey}
-              </CyDText>
             </CyDView>
           )}
+
+          {/* Recommendation Message */}
+          <CyDView className='bg-n20 rounded-xl p-5 mb-8 flex-row items-start'>
+            <CyDIcons
+              name='information'
+              size={20}
+              className='text-base400 mr-3'
+            />
+            <CyDText className='flex-1 text-[12px] font-medium text-n200 text-base400 leading-[150%]'>
+              We recommend writing down this Key on paper and storing it
+              securely in a place only you can access.
+            </CyDText>
+          </CyDView>
+
+          {/* Action Buttons */}
+          <CyDView className='flex-row justify-between mb-8 gap-x-[8px]'>
+            <CyDTouchView
+              onPress={toggleQR}
+              className='flex-1 bg-n20 rounded-full p-[8px] flex-row items-center justify-center w-[156px]'>
+              <CyDIcons
+                name='qr-code'
+                size={20}
+                className='text-base400 mr-2'
+              />
+              <CyDText className='text-base font-semibold text-base400'>
+                {showQR ? 'Show Key' : 'Show QR'}
+              </CyDText>
+            </CyDTouchView>
+
+            <CyDTouchView
+              onPress={() => {
+                copyToClipboard(privateKey);
+                showToast(t('PRIVATE_KEY_COPY'));
+              }}
+              className='flex-1 bg-n20 rounded-full p-[8px] flex-row items-center justify-center w-[156px]'>
+              <CyDIcons name='copy' size={20} className='text-base400 mr-2' />
+              <CyDText className='text-base font-semibold text-base400'>
+                Copy Key
+              </CyDText>
+            </CyDTouchView>
+          </CyDView>
         </CyDView>
-        <CyDTouchView
-          className={
-            'flex flex-row items-center justify-center mt-[30px] h-[60px] w-3/4 border-[1px] border-n40 rounded-[12px]'
-          }
-          onPress={() => {
-            copyToClipboard(privateKey);
-            showToast(t('PRIVATE_KEY_COPY'));
-          }}>
-          <CyDMaterialDesignIcons
-            name={'content-copy'}
-            size={16}
-            className='text-base400 absolute left-[20]'
-          />
-          <CyDText className={'text-[16px] font-extrabold'}>
-            {t('COPY_TO_CLIPBOARD')}
-          </CyDText>
-        </CyDTouchView>
-      </CyDView>
-    </CyDScrollView>
+      </CyDScrollView>
+    </CyDSafeAreaView>
   );
 }

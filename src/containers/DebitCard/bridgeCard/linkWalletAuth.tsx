@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
+  CyDIcons,
   CyDLottieView,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import { useTranslation } from 'react-i18next';
 import OtpInput from '../../../components/v2/OTPInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -22,16 +22,31 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { t } from 'i18next';
+import PageHeader from '../../../components/PageHeader';
 
 interface RouteParams {
   onSuccess: () => void;
   linkedWalletToDelete: string;
 }
+
+const OTPHeader = () => {
+  return (
+    <CyDView>
+      <CyDText className={'text-[25px] font-extrabold'}>
+        {t<string>('ENTER_AUTHENTICATION_CODE')}
+      </CyDText>
+      <CyDText className={'text-[15px] font-bold'}>
+        {t<string>('CARD_SENT_OTP')}
+      </CyDText>
+    </CyDView>
+  );
+};
+
 export default function LinkWalletAuth() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
-  const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
@@ -115,22 +130,11 @@ export default function LinkWalletAuth() {
     }
   };
 
-  const OTPHeader = () => {
-    return (
-      <CyDView>
-        <CyDText className={'text-[25px] font-extrabold'}>
-          {t<string>('ENTER_AUTHENTICATION_CODE')}
-        </CyDText>
-        <CyDText className={'text-[15px] font-bold'}>
-          {t<string>('CARD_SENT_OTP')}
-        </CyDText>
-      </CyDView>
-    );
-  };
-
   return (
-    <CyDSafeAreaView className={'bg-n20'}>
-      <CyDView className={'h-full px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className={'bg-n0'} edges={['top']}>
+      <PageHeader title={t('UNLINK_WALLET_AUTH')} navigation={navigation} />
+
+      <CyDView className={'h-full px-[20px] pt-[10px] bg-n20'}>
         <OTPHeader />
         <CyDView>
           {!verifyingOTP && (
@@ -169,7 +173,7 @@ export default function LinkWalletAuth() {
             </CyDView>
           )}
           {verifyingOTP && (
-            <CyDView className='mt-[-200px]'>
+            <CyDView className=''>
               <Loading />
             </CyDView>
           )}

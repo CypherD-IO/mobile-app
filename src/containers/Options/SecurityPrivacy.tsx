@@ -9,10 +9,17 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import {
   CyDFlatList,
   CyDMaterialDesignIcons,
+  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
+import PageHeader from '../../components/PageHeader';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
 interface ISecurityPrivacyData {
   index: number;
@@ -20,8 +27,9 @@ interface ISecurityPrivacyData {
   logo: any;
 }
 
-export default function SecurityPrivacy(props) {
+export default function SecurityPrivacy() {
   const { t } = useTranslation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { connectionType } = useConnectionManager();
   const { isReadOnlyWallet } = hdWalletContext.state;
@@ -64,7 +72,7 @@ export default function SecurityPrivacy(props) {
   }
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 
@@ -83,13 +91,13 @@ export default function SecurityPrivacy(props) {
           className={'flex flex-row justify-between pl-[15px] py-[24px]'}
           onPress={() => {
             if (item.index === 0) {
-              props.navigation.navigate(C.screenTitle.PRIVATE_KEY);
+              navigation.navigate(C.screenTitle.PRIVATE_KEY);
               sendFirebaseEvent(hdWalletContext, 'reveal_private_key');
             } else if (item.index === 1) {
-              props.navigation.navigate(C.screenTitle.SEED_PHRASE);
+              navigation.navigate(C.screenTitle.SEED_PHRASE);
               sendFirebaseEvent(hdWalletContext, 'reveal_seed_phrase');
             } else if (item.index === 2) {
-              props.navigation.navigate(C.screenTitle.CHANGE_PIN);
+              navigation.navigate(C.screenTitle.CHANGE_PIN);
             }
           }}>
           <CyDView className={'flex flex-row items-center'}>
@@ -114,12 +122,15 @@ export default function SecurityPrivacy(props) {
   };
 
   return (
-    <CyDView className={'bg-n20 h-full'}>
-      <CyDFlatList
-        data={securityPrivacyData}
-        renderItem={({ item }) => renderSecurityPrivacyData(item)}
-        keyExtractor={item => item.index}
-      />
-    </CyDView>
+    <CyDSafeAreaView className={'bg-n0 h-full'}>
+      <PageHeader title={'SECURITY_PRIVACY'} navigation={navigation} />
+      <CyDView className='flex-1 bg-n20'>
+        <CyDFlatList
+          data={securityPrivacyData}
+          renderItem={({ item }) => renderSecurityPrivacyData(item)}
+          keyExtractor={item => item.index}
+        />
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

@@ -5,6 +5,8 @@ import {
   CyDImage,
   CyDLottieView,
   CyDMaterialDesignIcons,
+  CyDSafeAreaView,
+  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -18,6 +20,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { CyDIconsPack } from '../../customFonts';
+import PageHeader from '../../components/PageHeader';
 
 export default function Rewards() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -110,27 +113,12 @@ export default function Rewards() {
   };
 
   return (
-    <>
-      <SafeAreaView className='flex bg-n20 h-full'>
-        <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
-        <CyDView>
-          <CyDTouchView
-            onPress={() => {
-              navigation.goBack();
-            }}>
-            <CyDIcons
-              name='arrow-left'
-              size={24}
-              className='text-base400 ml-[16px] mb-[12px]'
-            />
-          </CyDTouchView>
-        </CyDView>
-        <ScrollView>
+    <CyDSafeAreaView className='flex bg-n0 h-full' edges={['top']}>
+      <PageHeader title={'CYPHER_REWARDS'} navigation={navigation} />
+      <CyDView className='flex-1 bg-n20 pt-[24px]'>
+        <CyDScrollView>
           <CyDView className='flex flex-col px-[16px] mb-[24px]'>
             <CyDView className='flex flex-col'>
-              <CyDText className='text-[28px] font-bold'>
-                Cypher Rewards
-              </CyDText>
               <CyDView className='flex flex-col mt-[12px] rounded-[16px] bg-n0 p-[16px]'>
                 <CyDImage
                   source={AppImages.REWARDS_YELLOW_STAR}
@@ -262,8 +250,8 @@ export default function Rewards() {
               </CyDView>
             </CyDView>
           </CyDView>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+        </CyDScrollView>
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

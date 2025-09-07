@@ -32,6 +32,7 @@ import { isAndroid } from '../../misc/checkers';
 import { CardProfile } from '../../models/cardProfile.model';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
+  CyDIcons,
   CyDImage,
   CyDMaterialDesignIcons,
   CyDScrollView,
@@ -92,16 +93,13 @@ export default function Options() {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
-  const { connectionType, getSocialAuthProvider } = useConnectionManager();
-  const [connectionTypeValue, setConnectionTypeValue] =
-    useState(connectionType);
+  const { connectionType: connectionTypeValue } = useConnectionManager();
   const { isLegacyCardClosed } = useCardUtilities();
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   useEffect(() => {
-    setConnectionTypeValue(connectionType);
     void fetchDevMode();
-  }, [connectionType]);
+  }, []);
 
   const fetchDevMode = async () => {
     const tempDevMode = await getDeveloperMode();
@@ -155,6 +153,7 @@ export default function Options() {
           </CyDView>
 
           <CyDView className='px-[32px]'>
+            <CyDIcons name='address-book' size={24} className='text-base400' />
             <OptionsContainer
               sentryLabel={'address-book'}
               onPress={() => {

@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import { t } from 'i18next';
 import { get } from 'lodash';
 import React, { useContext, useState } from 'react';
-import { Linking, StyleSheet } from 'react-native';
+import { Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppImages from '../../../../../assets/images/appImages';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
@@ -27,7 +27,6 @@ import useCardUtilities from '../../../../hooks/useCardUtilities';
 import {
   CyDIcons,
   CyDImage,
-  CyDLottieView,
   CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
@@ -35,7 +34,6 @@ import {
   CyDView,
 } from '../../../../styles/tailwindComponents';
 import { showToast } from '../../../utilities/toastUtility';
-import { CyDIconsPack } from '../../../../customFonts';
 
 interface RouteParams {
   showSetupLaterOption?: boolean;
@@ -108,11 +106,11 @@ export default function TelegramSetup() {
       style={{ paddingTop: insets.top }}>
       <CyDView className='p-[16px] flex-1'>
         {/* remove the CardProviderSwitch after sunsetting PC */}
-        <CyDView className='flex-row justify-center items-center'>
+        <CyDView className='flex-row justify-center items-center mb-[12px]'>
           <CardProviderSwitch />
         </CyDView>
 
-        <CyDView className='flex-row items-center my-[12px]'>
+        <CyDView className='flex-row items-center mb-[12px]'>
           {enableBackButton && (
             <CyDTouchView
               className=' mr-[10px]'
@@ -248,21 +246,15 @@ export default function TelegramSetup() {
             onPress={() => {
               void refreshProfile();
             }}>
-            {!isLoading && (
-              <CyDMaterialDesignIcons
-                name='refresh'
-                size={18}
-                className='text-base400'
-              />
-            )}
-            {isLoading && (
-              <CyDLottieView
-                source={AppImages.LOADER_TRANSPARENT}
-                autoPlay
-                loop
-                style={styles.lottie}
-              />
-            )}
+            <CyDMaterialDesignIcons
+              name='refresh'
+              size={18}
+              color={'white'}
+              className={clsx('text-base400', {
+                'animate-spin': isLoading,
+                'animate-none': !isLoading,
+              })}
+            />
             <CyDText className='font-manrope text-base400 ml-[4px] font-bold text-[12px]'>
               {t('REFRESH')}
             </CyDText>
@@ -292,16 +284,10 @@ export default function TelegramSetup() {
               }
             }}
             style={clsx('p-[3%]', showSetupLaterOption ? 'w-[48%]' : 'w-full')}
-            disabled={!isTelegramConnected}
+            disabled={!isTelegramConnected || isLoading}
           />
         </CyDView>
       </CyDView>
     </CyDView>
   );
 }
-
-const styles = StyleSheet.create({
-  lottie: {
-    width: 20,
-  },
-});

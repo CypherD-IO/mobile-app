@@ -23,6 +23,7 @@ import {
 } from '@react-navigation/native';
 import { ACCOUNT_STATUS, CardProviders } from '../../../constants/enum';
 import { t } from 'i18next';
+import PageHeader from '../../../components/PageHeader';
 
 interface RouteParams {
   onSuccess: () => void;
@@ -134,9 +135,13 @@ export default function LockdownModeAuth() {
     }
   };
 
+  if (verifyingOTP) {
+    return <Loading />;
+  }
   return (
-    <CyDSafeAreaView className=' bg-n20'>
-      <CyDView className={'h-full px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
+      <PageHeader title={t('LOCKDOWN_MODE')} navigation={navigation} />
+      <CyDView className={'h-full px-[20px] pt-[24px] bg-n20'}>
         <OTPHeader />
         <CyDView>
           {!verifyingOTP && (
@@ -172,11 +177,6 @@ export default function LockdownModeAuth() {
                   <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
                 )}
               </CyDTouchView>
-            </CyDView>
-          )}
-          {verifyingOTP && (
-            <CyDView className='mt-[-200px]'>
-              <Loading />
             </CyDView>
           )}
         </CyDView>

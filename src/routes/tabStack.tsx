@@ -9,7 +9,6 @@ import React, {
   useMemo,
   useState,
   useRef,
-  useLayoutEffect,
 } from 'react';
 import {
   Animated,
@@ -18,7 +17,6 @@ import {
   StyleSheet,
   Platform,
   ToastAndroid,
-  Alert,
 } from 'react-native';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
@@ -399,7 +397,7 @@ function TabStack(props: TabStackProps) {
             } else if (route.name === screenTitle.SWAP) {
               iconSource = 'swap-horizontal';
             } else if (route.name === screenTitle.OPTIONS) {
-              iconSource = 'tools-wrench-screwdriver';
+              iconSource = 'options';
             }
             return (
               <CyDIcons

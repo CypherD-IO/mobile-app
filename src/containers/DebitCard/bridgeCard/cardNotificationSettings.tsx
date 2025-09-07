@@ -17,13 +17,21 @@ import useAxios from '../../../core/HttpRequest';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
   CyDLottieView,
+  CyDSafeAreaView,
   CyDSwitch,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import clsx from 'clsx';
+import PageHeader from '../../../components/PageHeader';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -32,6 +40,7 @@ interface RouteParams {
 
 export default function CardNotificationSettings() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const RESENT_OTP_TIME = 30;
   const { currentCardProvider } = route.params;
@@ -306,72 +315,25 @@ export default function CardNotificationSettings() {
   };
 
   return (
-    <CyDView className='h-full bg-n20 pt-[30px]'>
-      {!isOTPTriggered && (
-        <>
-          <CyDView
-            className={clsx(
-              'flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-n40',
-              !isTelegramSetup && 'opacity-50',
-            )}>
-            <CyDView>
-              <CyDText className='text-[16px] font-bold'>
-                {t<string>('TELEGRAM_NOTIFICATION')}
-              </CyDText>
-            </CyDView>
-            {telegramSwitchLoading ? (
-              <CyDLottieView
-                style={styles.loader}
-                autoPlay
-                loop
-                source={AppImages.LOADER_TRANSPARENT}
-              />
-            ) : (
-              <CyDSwitch
-                onValueChange={() => {
-                  if (isTelegramSetup) {
-                    void handleToggleNotifications(
-                      CARD_NOTIFICATION_TYPES.TELEGRAM,
-                    );
-                  }
-                }}
-                value={currentNotificationOption.telegram}
-                disabled={!isTelegramSetup}
-              />
-            )}
-          </CyDView>
-          {/* )} */}
-
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
-            <CyDView>
-              <CyDText className='text-[16px] font-bold'>
-                {t<string>('EMAIL_NOTIFICATION')}
-              </CyDText>
-            </CyDView>
-            {emailSwitchLoading ? (
-              <CyDLottieView
-                style={styles.loader}
-                autoPlay
-                loop
-                source={AppImages.LOADER_TRANSPARENT}
-              />
-            ) : (
-              <CyDSwitch
-                onValueChange={() => {
-                  void handleToggleNotifications(CARD_NOTIFICATION_TYPES.EMAIL);
-                }}
-                value={currentNotificationOption.email}
-              />
-            )}
-          </CyDView>
-          {currentCardProvider === CardProviders.PAYCADDY && (
-            <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
+    <CyDSafeAreaView className={'h-full bg-n0'} edges={['top']}>
+      <PageHeader
+        title={t('CARD_NOTIFICATIONS_SETTINGS')}
+        navigation={navigation}
+      />
+      <CyDView className='flex-1 bg-n20 pt-[24px]'>
+        {!isOTPTriggered && (
+          <>
+            <CyDView
+              className={clsx(
+                'flex flex-row justify-between items-center mx-[20px] py-[16px] px-[12px] mb-[15px] border-n40 rounded-[8px] bg-n0',
+                !isTelegramSetup && 'opacity-50',
+              )}>
               <CyDView>
                 <CyDText className='text-[16px] font-bold'>
-                  {t<string>('SMS_NOTIFICATION')}
+                  {t<string>('TELEGRAM_NOTIFICATION')}
                 </CyDText>
               </CyDView>
-              {smsSwitchLoading ? (
+              {telegramSwitchLoading ? (
                 <CyDLottieView
                   style={styles.loader}
                   autoPlay
@@ -381,76 +343,134 @@ export default function CardNotificationSettings() {
               ) : (
                 <CyDSwitch
                   onValueChange={() => {
-                    void handleToggleNotifications(CARD_NOTIFICATION_TYPES.SMS);
+                    if (isTelegramSetup) {
+                      void handleToggleNotifications(
+                        CARD_NOTIFICATION_TYPES.TELEGRAM,
+                      );
+                    }
                   }}
-                  value={currentNotificationOption.sms}
+                  value={currentNotificationOption.telegram}
+                  disabled={!isTelegramSetup}
                 />
               )}
             </CyDView>
-          )}
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
-            <CyDView>
-              <CyDText className='text-[16px] font-bold'>
-                {t<string>('FCM_NOTIFICATION')}
-              </CyDText>
+
+            <CyDView className='flex flex-row justify-between items-center mx-[20px] py-[16px] px-[12px] mb-[15px] border-n40 rounded-[8px] bg-n0'>
+              <CyDView>
+                <CyDText className='text-[16px] font-bold'>
+                  {t<string>('EMAIL_NOTIFICATION')}
+                </CyDText>
+              </CyDView>
+              {emailSwitchLoading ? (
+                <CyDLottieView
+                  style={styles.loader}
+                  autoPlay
+                  loop
+                  source={AppImages.LOADER_TRANSPARENT}
+                />
+              ) : (
+                <CyDSwitch
+                  onValueChange={() => {
+                    void handleToggleNotifications(
+                      CARD_NOTIFICATION_TYPES.EMAIL,
+                    );
+                  }}
+                  value={currentNotificationOption.email}
+                />
+              )}
             </CyDView>
-            {fcmSwitchLoading ? (
-              <CyDLottieView
-                style={styles.loader}
-                autoPlay
-                loop
-                source={AppImages.LOADER_TRANSPARENT}
-              />
-            ) : (
-              <CyDSwitch
-                onValueChange={() => {
-                  void handleToggleNotifications(CARD_NOTIFICATION_TYPES.FCM);
-                }}
-                value={currentNotificationOption.fcm}
-              />
+
+            {currentCardProvider === CardProviders.PAYCADDY && (
+              <CyDView className='flex flex-row justify-between items-center mx-[20px] py-[16px] px-[12px] mb-[15px] border-n40 rounded-[8px] bg-n0'>
+                <CyDView>
+                  <CyDText className='text-[16px] font-bold'>
+                    {t<string>('SMS_NOTIFICATION')}
+                  </CyDText>
+                </CyDView>
+                {smsSwitchLoading ? (
+                  <CyDLottieView
+                    style={styles.loader}
+                    autoPlay
+                    loop
+                    source={AppImages.LOADER_TRANSPARENT}
+                  />
+                ) : (
+                  <CyDSwitch
+                    onValueChange={() => {
+                      void handleToggleNotifications(
+                        CARD_NOTIFICATION_TYPES.SMS,
+                      );
+                    }}
+                    value={currentNotificationOption.sms}
+                  />
+                )}
+              </CyDView>
             )}
-          </CyDView>
-        </>
-      )}
-      {isOTPTriggered && (
-        <CyDView className={'mx-[25px]'}>
-          <CyDText className={'text-[15px] mb-[12px] font-bold'}>
-            {t<string>('SET_SMS_NOTIFICATION_TOGGLE_TRUE_OTP')}
-          </CyDText>
-          <OtpInput
-            pinCount={6}
-            getOtp={otp => {
-              void onOTPEntry(otp);
-            }}
-            placeholder={t('ENTER_OTP')}
-          />
-          <CyDTouchView
-            className={'flex flex-row items-center mt-[18px]'}
-            disabled={sendingOTP || resendInterval !== 0}
-            onPress={() => {
-              void resendOTP();
-            }}>
-            <CyDText
-              className={
-                'font-bold underline decoration-solid underline-offset-4'
-              }>
-              {t<string>('RESEND_CODE_INIT_CAPS')}
+
+            <CyDView className='flex flex-row justify-between items-center mx-[20px] py-[16px] px-[12px] mb-[15px] border-n40 rounded-[8px] bg-n0'>
+              <CyDView>
+                <CyDText className='text-[16px] font-bold'>
+                  {t<string>('FCM_NOTIFICATION')}
+                </CyDText>
+              </CyDView>
+              {fcmSwitchLoading ? (
+                <CyDLottieView
+                  style={styles.loader}
+                  autoPlay
+                  loop
+                  source={AppImages.LOADER_TRANSPARENT}
+                />
+              ) : (
+                <CyDSwitch
+                  onValueChange={() => {
+                    void handleToggleNotifications(CARD_NOTIFICATION_TYPES.FCM);
+                  }}
+                  value={currentNotificationOption.fcm}
+                />
+              )}
+            </CyDView>
+          </>
+        )}
+        {isOTPTriggered && (
+          <CyDView className={'mx-[25px]'}>
+            <CyDText className={'text-[15px] mb-[12px] font-bold'}>
+              {t<string>('SET_SMS_NOTIFICATION_TOGGLE_TRUE_OTP')}
             </CyDText>
-            {sendingOTP && (
-              <CyDLottieView
-                source={AppImages.LOADER_TRANSPARENT}
-                autoPlay
-                loop
-                style={styles.lottie}
-              />
-            )}
-            {resendInterval !== 0 && (
-              <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
-            )}
-          </CyDTouchView>
-        </CyDView>
-      )}
-    </CyDView>
+            <OtpInput
+              pinCount={6}
+              getOtp={otp => {
+                void onOTPEntry(otp);
+              }}
+              placeholder={t('ENTER_OTP')}
+            />
+            <CyDTouchView
+              className={'flex flex-row items-center mt-[18px]'}
+              disabled={sendingOTP || resendInterval !== 0}
+              onPress={() => {
+                void resendOTP();
+              }}>
+              <CyDText
+                className={
+                  'font-bold underline decoration-solid underline-offset-4'
+                }>
+                {t<string>('RESEND_CODE_INIT_CAPS')}
+              </CyDText>
+              {sendingOTP && (
+                <CyDLottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
+              )}
+              {resendInterval !== 0 && (
+                <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
+              )}
+            </CyDTouchView>
+          </CyDView>
+        )}
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }
 

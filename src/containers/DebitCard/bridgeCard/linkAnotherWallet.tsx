@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { Formik } from 'formik';
+import { Formik, FormikProps } from 'formik';
 import { t } from 'i18next';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -13,7 +13,7 @@ import Button from '../../../components/v2/button';
 import { GlobalContextType } from '../../../constants/enum';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
-import { GlobalContext } from '../../../core/globalContext';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import {
   getChainNameFromAddress,
   parseErrorMessage,
@@ -24,6 +24,7 @@ import {
   CyDKeyboardAwareScrollView,
   CyDLottieView,
   CyDMaterialDesignIcons,
+  CyDSafeAreaView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -36,6 +37,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { isSolanaAddress } from '../../utilities/solanaUtilities';
+import PageHeader from '../../../components/PageHeader';
 
 export default function LinkAnotherWallet() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -50,7 +52,7 @@ export default function LinkAnotherWallet() {
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const { postWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
-  const globalContext = useContext<any>(GlobalContext);
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { cardProfileModal } = useCardUtilities();
 
   const RESENT_OTP_TIME = 30;
@@ -140,7 +142,7 @@ export default function LinkAnotherWallet() {
     const data: Record<string, string | number> = {
       child: formValues.address.toLowerCase(),
       label: formValues.walletName,
-      chain: getChainNameFromAddress(formValues.address),
+      chain: getChainNameFromAddress(formValues.address) as string,
       otp: '',
     };
 
@@ -180,12 +182,12 @@ export default function LinkAnotherWallet() {
 
   const labels = {
     address: {
-      label: t('ADDRESS_UPPERCASE'),
+      label: t('NEW_ADDRESS_TO_LINK'),
       placeHolder: t('LINK_ADDRESS_PLACEHOLDER'),
     },
     walletName: {
       label: t('WALLET_NAME_UPPERCASE'),
-      placeHolder: t('WALLET_NAME_PLACEHOLDER'),
+      placeHolder: t('WALLET_NAME'),
     },
   };
 
@@ -194,91 +196,122 @@ export default function LinkAnotherWallet() {
     await triggerOtp();
   };
 
-  const handleTextChange = (text, handleChange, field) => {
+  const handleTextChange = (
+    text: string,
+    handleChange: (field: string) => void,
+    field: string,
+  ) => {
     handleChange(field);
     const tempFormValues = { ...formValues };
-    tempFormValues[field] = trimWhitespace(text);
+    tempFormValues[field as keyof typeof formValues] = trimWhitespace(text);
     setFormValues(tempFormValues);
   };
 
   return (
-    <CyDView className={'bg-n20 w-full h-full'}>
+    <CyDSafeAreaView className={'h-full bg-n0'} edges={['top']}>
+      <PageHeader title={t('LINK_ANOTHER_WALLET')} navigation={navigation} />
+
       <Formik
         enableReinitialize={true}
         initialValues={formValues}
         validationSchema={formValidationSchema}
         onSubmit={onSubmitForm}>
         {formProps => (
-          <CyDView className='flex flex-1 h-full'>
-            <CyDKeyboardAwareScrollView className='flex flex-col w-full'>
-              <CyDView className='flex flex-1 h-full'>
-                {Object.keys(formValues).map((field, index) => {
-                  return (
-                    <CyDView
-                      className='flex-1 mt-[25px] self-center w-[87%]'
-                      key={index}>
-                      <CyDView className='flex flex-row justify-start gap-[10px]'>
-                        <CyDText className='font-bold '>
-                          {labels[field].label}
-                        </CyDText>
-                      </CyDView>
-                      <CyDView className='flex flex-row justify-between items-center w-[100%]'>
-                        <CyDTextInput
-                          className={clsx(
-                            'bg-n0 mt-[5px] w-[100%] border-[1px] border-n40 rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
-                            {
-                              'border-redOffColor':
-                                formProps.touched[field] &&
-                                formProps.errors[field],
-                            },
-                          )}
-                          value={formProps.values[field]}
-                          autoCapitalize='none'
-                          key={index}
-                          autoCorrect={false}
-                          onChangeText={text => {
-                            handleTextChange(
-                              text,
-                              formProps.handleChange,
-                              field,
-                              0,
-                            );
-                          }}
-                          placeholderTextColor={'#C5C5C5'}
-                          placeholder={labels[field].placeHolder}
-                        />
-                        {formProps.values[field] !== '' ? (
-                          <CyDTouchView
-                            className='left-[-32px]'
-                            onPress={() => {
-                              formProps.setFieldValue(`${field}`, '');
-                            }}>
-                            <CyDMaterialDesignIcons
-                              name={'close'}
-                              size={24}
-                              className='text-base400'
-                            />
-                          </CyDTouchView>
-                        ) : (
-                          <></>
-                        )}
-                      </CyDView>
-                      {formProps.touched[field] && formProps.errors[field] && (
-                        <CyDView className={'ml-[5px] mt-[6px] mb-[-11px]'}>
-                          <CyDText className={'text-redOffColor font-semibold'}>
-                            {formProps.errors[field]}
+          <CyDView className='flex-1 bg-n20'>
+            <CyDKeyboardAwareScrollView
+              className=''
+              contentContainerClassName='flex-grow pt-[24px]'
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps='handled'>
+              <CyDView className='px-[24px]'>
+                {/* Form Fields Container */}
+                <CyDView className=''>
+                  {Object.keys(formValues).map((field, index) => {
+                    return (
+                      <CyDView className='mt-[25px]' key={index}>
+                        <CyDView className='flex flex-row justify-start gap-[10px] mb-[5px]'>
+                          <CyDText className='font-bold text-base400'>
+                            {labels[field as keyof typeof labels].label}
                           </CyDText>
                         </CyDView>
-                      )}
-                    </CyDView>
-                  );
-                })}
-              </CyDView>
-              <CyDView className={'pt-[10px] self-center w-[87%]'}>
-                <CyDView>
+                        <CyDView className='flex flex-row justify-between items-center w-[100%]'>
+                          <CyDTextInput
+                            className={clsx(
+                              'bg-n0 w-[100%] border-[1px] border-n40 rounded-[10px] p-[16px] text-[16px] text-base400',
+                              {
+                                'border-redOffColor':
+                                  formProps.touched[
+                                    field as keyof typeof formValues
+                                  ] &&
+                                  formProps.errors[
+                                    field as keyof typeof formValues
+                                  ],
+                              },
+                            )}
+                            value={
+                              formProps.values[field as keyof typeof formValues]
+                            }
+                            autoCapitalize='none'
+                            key={index}
+                            autoCorrect={false}
+                            onChangeText={text => {
+                              handleTextChange(
+                                text,
+                                formProps.handleChange,
+                                field,
+                              );
+                            }}
+                            placeholderTextColor={'#C5C5C5'}
+                            placeholder={
+                              labels[field as keyof typeof labels].placeHolder
+                            }
+                          />
+                          {formProps.values[
+                            field as keyof typeof formValues
+                          ] !== '' ? (
+                            <CyDTouchView
+                              className='absolute right-[12px]'
+                              onPress={() => {
+                                void formProps.setFieldValue(`${field}`, '');
+                              }}>
+                              <CyDMaterialDesignIcons
+                                name={'close'}
+                                size={24}
+                                className='text-base400'
+                              />
+                            </CyDTouchView>
+                          ) : (
+                            <></>
+                          )}
+                        </CyDView>
+                        {formProps.touched[field as keyof typeof formValues] &&
+                          formProps.errors[
+                            field as keyof typeof formValues
+                          ] && (
+                            <CyDView className={'ml-[5px] mt-[6px] mb-[-11px]'}>
+                              <CyDText
+                                className={'text-redOffColor font-semibold'}>
+                                {
+                                  formProps.errors[
+                                    field as keyof typeof formValues
+                                  ]
+                                }
+                              </CyDText>
+                            </CyDView>
+                          )}
+                      </CyDView>
+                    );
+                  })}
+                </CyDView>
+
+                {/* OTP Section */}
+                <CyDView className='pt-[10px]'>
                   {isOTPTriggered && (
                     <CyDView className={'mt-[20px]'}>
-                      <CyDText className={'text-[15px] mb-[12px] font-bold'}>
+                      <CyDText
+                        className={
+                          'text-[15px] mb-[12px] font-bold text-base400'
+                        }>
                         {t<string>('UPDATE_CARD_DETAILS_OTP')}
                       </CyDText>
                       <OtpInput
@@ -296,7 +329,7 @@ export default function LinkAnotherWallet() {
                         }}>
                         <CyDText
                           className={
-                            'font-bold underline decoration-solid underline-offset-4'
+                            'font-bold underline decoration-solid underline-offset-4 text-base400'
                           }>
                           {t<string>('RESEND_CODE_INIT_CAPS')}
                         </CyDText>
@@ -309,7 +342,7 @@ export default function LinkAnotherWallet() {
                           />
                         )}
                         {resendInterval !== 0 && (
-                          <CyDText>
+                          <CyDText className='text-base400'>
                             {String(` in ${resendInterval} sec`)}
                           </CyDText>
                         )}
@@ -319,9 +352,11 @@ export default function LinkAnotherWallet() {
                 </CyDView>
               </CyDView>
             </CyDKeyboardAwareScrollView>
-            <CyDView className='w-full px-[24px] items-center mb-[20px]'>
+
+            {/* Fixed Button at Bottom */}
+            <CyDView className='w-full px-[24px] items-center py-[20px] bg-n20 mb-[20px]'>
               <Button
-                style='h-[60px] w-[90%]'
+                style='h-[60px] w-full'
                 title={t<string>(isOTPTriggered ? 'SUBMIT' : 'UPDATE')}
                 loading={isSubmitting}
                 onPress={() => {
@@ -333,7 +368,7 @@ export default function LinkAnotherWallet() {
           </CyDView>
         )}
       </Formik>
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
 
