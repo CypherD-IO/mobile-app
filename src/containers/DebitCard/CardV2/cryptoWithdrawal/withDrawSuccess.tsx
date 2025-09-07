@@ -27,7 +27,7 @@ export default function WithDrawSuccess() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
-  const { amount, card, currentCardProvider } = route.params ?? {};
+  const { amount } = route.params ?? {};
 
   return (
     <CyDView className='bg-n30 flex flex-col justify-between h-full'>

@@ -74,6 +74,7 @@ import RewardsEpochModal, {
   IEpochInfo,
   shouldShowRewardsEpochModal,
 } from '../../../components/v2/RewardsEpochModal';
+import Toast from 'react-native-toast-message';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -523,14 +524,12 @@ export default function CypherCardScreen() {
             <CyDTouchView
               className='bg-n40 rounded-full p-[8px] flex flex-row items-center'
               onPress={() => {
-                navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
-                  cardProvider,
-                  card: get(cardProfile, [
-                    cardProvider,
-                    'cards',
-                    currentCardIndex,
-                  ]),
+                Toast.show({
+                  type: 'info',
+                  text1: 'We have moved the options to the new screen',
+                  text2: 'You can access all the settings from here',
                 });
+                navigation.navigate(screenTitle.OPTIONS);
               }}>
               <CyDMaterialDesignIcons
                 name={'hammer-screwdriver'}

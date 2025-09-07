@@ -4,9 +4,11 @@ import {
   CyDText,
   CyDTouchView,
   CyDScrollView,
-  CyDMaterialDesignIcons,
+  CyDSafeAreaView,
+  CyDIcons,
 } from '../../styles/tailwindComponents';
 import { BackHandler, NativeModules } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 import { useTranslation } from 'react-i18next';
 import {
   copyToClipboard,
@@ -26,31 +28,39 @@ import {
 } from '@react-navigation/native';
 import { loadRecoveryPhraseFromKeyChain } from '../../core/Keychain';
 import Loading from '../../components/v2/loading';
+import PageHeader from '../../components/PageHeader';
+import { Theme, useTheme } from '../../reducers/themeReducer';
 
-const renderSeedPhrase = (text: string, index: number) => {
+const renderSeedPhrase = (text: string, index: number, isBlurred: boolean) => {
   return (
-    <CyDView
-      key={index}
-      className={
-        'flex flex-row items-center h-[50px] w-[31%] border-[1px] border-[#CCCCCC] rounded-[3px] px-[10px] mt-[10px]'
-      }>
-      <CyDText className={'text-[17px] text-center text-[#929292] '}>
-        {++index}
+    <CyDView key={index} className='w-1/3 py-[12px] px-[16px]'>
+      <CyDText className='text-[14px] font-medium text-left text-base400'>
+        {index + 1}. {isBlurred ? '*****' : text}
       </CyDText>
-      <CyDText className={'text-[17px] text-center ml-[5px]'}>{text}</CyDText>
     </CyDView>
   );
+};
+
+const blurOverlayStyle = {
+  position: 'absolute' as const,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 12,
 };
 
 export default function SeedPhrase() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
+  const { theme } = useTheme();
 
   const hdWalletContext = useContext<any>(HdWalletContext);
   const [seedPhrase, setSeedPhrase] = useState<string>('');
-  const [showSeedPhrase, setShowSeedPhrase] = useState<boolean>(false);
   const [isFetchingSeedPhrase, setFetchingSeedPhrase] = useState<boolean>(true);
+  const [showQR, setShowQR] = useState<boolean>(false);
+  const [isBlurred, setIsBlurred] = useState<boolean>(true);
 
   const onPressSeedPharse = () => {
     copyToClipboard(seedPhrase);
@@ -58,8 +68,12 @@ export default function SeedPhrase() {
     sendFirebaseEvent(hdWalletContext, 'copy_seed_phrase');
   };
 
-  const toggleSeedPharse = () => {
-    setShowSeedPhrase(!showSeedPhrase);
+  const toggleQR = () => {
+    setShowQR(!showQR);
+  };
+
+  const toggleBlur = () => {
+    setIsBlurred(!isBlurred);
   };
 
   const handleBackButton = () => {
@@ -102,91 +116,114 @@ export default function SeedPhrase() {
   }, [isFocused]);
 
   if (isFetchingSeedPhrase) return <Loading />;
+
+  const seedWords = seedPhrase ? seedPhrase.split(/\s+/).slice(0, 12) : [];
+
   return (
-    !isFetchingSeedPhrase && (
-      <CyDScrollView className={'bg-n20 h-full w-full relative '}>
-        <CyDView className={'flex justify-center items-center'}>
-          <CyDView
-            className={
-              'bg-n0 rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'
-            }>
-            <CyDText className={'text-[15px] text-center'}>
-              {t('SEED_PHRASE_SUBTITLE')}
+    <CyDSafeAreaView className='bg-n0 flex-1'>
+      {/* Header */}
+      <PageHeader title={'REVEAL_SEED_PHASE'} navigation={navigation} />
+
+      <CyDScrollView
+        className='flex-1 bg-n0'
+        showsVerticalScrollIndicator={false}>
+        <CyDView className='flex-1 px-6 py-6'>
+          <CyDView className='items-center mb-8'>
+            <CyDView className='w-[54px] h-[54px] bg-[#DB9D00] rounded-[6px] items-center justify-center mb-6'>
+              <CyDIcons name='seed' size={36} className='text-white' />
+            </CyDView>
+            <CyDText className='text-[16px] text-center font-medium text-base400 leading-[140%] tracking-[-0.8px] px-4'>
+              These words unlock your wallet,{'\n'}Keep them safe.
             </CyDText>
           </CyDView>
-          <CyDView className={'flex justify-center items-center my-[20px]'}>
-            <QRCode
-              content={seedPhrase}
-              codeStyle='dot'
-              logo={AppImagesMap.common.QR_LOGO}
-              logoSize={60}
-            />
-          </CyDView>
-          <CyDTouchView
-            className={'mt-[20px] mb-[30px]'}
-            onPress={() => toggleSeedPharse()}>
-            {showSeedPhrase ? (
-              <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
-                  {t('HIDE_SEED_PHRASE')}
-                </CyDText>
-                <CyDMaterialDesignIcons
-                  name={'eye-outline'}
-                  size={27}
-                  className='text-base400 ml-[7px]'
+
+          {/* Words Container or QR Code */}
+          {!showQR ? (
+            <CyDView className='bg-n20 rounded-[8px] p-6 mb-6 relative'>
+              <CyDTouchView onPress={toggleBlur} className='relative'>
+                {/* Words Grid */}
+                <CyDView className='flex-row flex-wrap'>
+                  {seedWords.map((word, index) =>
+                    renderSeedPhrase(word, index, isBlurred),
+                  )}
+                </CyDView>
+
+                {/* Blur Overlay */}
+                {isBlurred && (
+                  <CyDView className='absolute top-0 left-0 right-0 bottom-0 bg-n20 rounded-xl items-center justify-center'>
+                    <BlurView
+                      style={blurOverlayStyle}
+                      blurType={theme === Theme.DARK ? 'light' : 'dark'}
+                      blurAmount={4}
+                    />
+                    <CyDView className='items-center justify-center z-10'>
+                      <CyDView className='w-16 h-16 mb-4'>
+                        <CyDIcons
+                          name='shield'
+                          size={64}
+                          className='text-base400'
+                        />
+                      </CyDView>
+                      <CyDText className='text-base font-semibold text-base400 text-center'>
+                        Click to show Seed Phrase
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                )}
+              </CyDTouchView>
+            </CyDView>
+          ) : (
+            <CyDView className='bg-n20 rounded-xl p-6 mb-6 items-center'>
+              <CyDView className='bg-n0 p-6 rounded-xl shadow-lg'>
+                <QRCode
+                  content={seedPhrase}
+                  codeStyle='dot'
+                  logo={AppImagesMap.common.QR_LOGO}
+                  logoSize={60}
                 />
               </CyDView>
-            ) : (
-              <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDText className={'text-[15px] font-semibold'}>
-                  {'\u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24  \u2B24'}
-                </CyDText>
-                <CyDMaterialDesignIcons
-                  name={'eye-off-outline'}
-                  size={27}
-                  className='text-base400 ml-[7px] mt-[5px]'
-                />
-              </CyDView>
-            )}
-            {!showSeedPhrase && (
-              <CyDText
-                className={
-                  'text-[#1F1F1F] text-[16px] font-semibold mt-[20px]'
-                }>
-                {t('TAP_REVEAL_SEED_PHRASE')}
-              </CyDText>
-            )}
-          </CyDTouchView>
-          {showSeedPhrase && (
-            <CyDView
-              className={
-                'flex flex-row flex-wrap justify-evenly content-center w-11/12'
-              }>
-              {seedPhrase && seedPhrase.split(/\s+/).map(renderSeedPhrase)}
-              <CyDText
-                className={
-                  'text-[#1F1F1F] text-[16px] font-semibold mt-[40px]'
-                }>
-                {t('SEED_PHRASE_MESSAGE')}
-              </CyDText>
             </CyDView>
           )}
-          <CyDTouchView
-            className={
-              'flex flex-row items-center justify-center mt-[40px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px] mb-[50px]'
-            }
-            onPress={() => onPressSeedPharse()}>
-            <CyDMaterialDesignIcons
-              name={'content-copy'}
+
+          {/* Recommendation Message */}
+          <CyDView className='bg-n20 rounded-xl p-5 mb-8 flex-row items-start'>
+            <CyDIcons
+              name='information'
               size={20}
-              className='text-base400 absolute left-[20]'
+              className='text-base400 mr-3'
             />
-            <CyDText className={'text-[16px] font-extrabold'}>
-              {t('COPY_TO_CLIPBOARD')}
+            <CyDText className='flex-1 text-[12px] font-medium text-n200 text-base400 leading-[150%]'>
+              We recommend writing down this seed on paper and storing it
+              securely in a place only you can access.
             </CyDText>
-          </CyDTouchView>
+          </CyDView>
+
+          {/* Action Buttons */}
+          <CyDView className='flex-row justify-between mb-8 gap-x-[8px]'>
+            <CyDTouchView
+              onPress={toggleQR}
+              className='flex-1 bg-n20 rounded-full p-[8px] flex-row items-center justify-center w-[156px]'>
+              <CyDIcons
+                name='qr-code'
+                size={20}
+                className='text-base400 mr-3'
+              />
+              <CyDText className='text-base font-semibold text-base400'>
+                {showQR ? 'Show Words' : 'Show QR'}
+              </CyDText>
+            </CyDTouchView>
+
+            <CyDTouchView
+              onPress={onPressSeedPharse}
+              className='flex-1 bg-n20 rounded-full p-[8px] flex-row items-center justify-center w-[156px]'>
+              <CyDIcons name='copy' size={20} className='text-base400 mr-3' />
+              <CyDText className='text-base font-semibold text-base400'>
+                Copy Seed
+              </CyDText>
+            </CyDTouchView>
+          </CyDView>
         </CyDView>
       </CyDScrollView>
-    )
+    </CyDSafeAreaView>
   );
 }
