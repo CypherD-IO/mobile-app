@@ -10,7 +10,6 @@ const S3_BUCKET_URL_DAPPS = 'https://public.cypherd.io/assets/dapps';
 // need dm image
 const EMPTY = require('./emptyImg.png');
 const EMPTY_PERSON = require('./emptyPerson.png');
-const EMPTY_SEARCH = require('./emptySearch.jpg');
 const CYPHERD = require('./cypherD.png');
 const POLYGON = require('./polygon.png');
 const AVALANCHE = require('./avalanche.png');
@@ -765,7 +764,6 @@ const PROFILE_AVATAR = require('./profileAvatar.png');
 export const AppImagesMap = {
   common: {
     EMPTY_PERSON,
-    EMPTY_SEARCH,
     PROFILE_AVATAR,
     CYPR_TOKEN_LOCKED,
     AIRDROP_TOKEN_WIGGLE,
@@ -1089,7 +1087,6 @@ export const AppImagesMap = {
 
 enum AppImages {
   EMPTY_PERSON = 'EMPTY_PERSON',
-  EMPTY_SEARCH = 'EMPTY_SEARCH',
   PROFILE_AVATAR = 'PROFILE_AVATAR',
   CYPR_TOKEN_LOCKED = 'CYPR_TOKEN_LOCKED',
   AIRDROP_TOKEN_WIGGLE = 'AIRDROP_TOKEN_WIGGLE',
