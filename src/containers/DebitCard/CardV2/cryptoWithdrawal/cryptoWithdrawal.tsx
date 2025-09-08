@@ -68,6 +68,7 @@ export default function CryptoWithdrawal() {
     const url = `/v1/cards/crypto-withdrawal/eligibility`;
     try {
       const response = await getWithAuth(url);
+      console.log('🚀 ~ getAvailableAmount ~ response:', response);
       if (
         !response.isError &&
         response?.data &&
@@ -79,6 +80,7 @@ export default function CryptoWithdrawal() {
         setAvailableAmount('');
       }
     } catch (error) {
+      console.log('🚀 ~ getAvailableAmount ~ error:', error);
       Sentry.captureException(error);
       setAvailableAmount('');
     }
@@ -123,6 +125,7 @@ export default function CryptoWithdrawal() {
 
   useFocusEffect(
     useCallback(() => {
+      console.log('🚀 ~ useFocusEffect ~ useFocusEffect');
       void getAvailableAmount();
     }, []),
   );

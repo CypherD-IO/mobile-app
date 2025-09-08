@@ -106,7 +106,7 @@ const resources = {
       QUOTE_ID_COPY: 'Quote Id copied to clipboard',
       SEED_PHARSE_FETCH_FAILED: 'Fetching seed phrase failed.',
       PVT_KEY_FETCH_FAILED: 'Fetching private key failed.',
-      SUPPORT: 'SUPPORT',
+      SUPPORT: 'Support',
       FAQ: 'FAQ',
       IMPORT_ANOTHER_WALLET_TITLE: 'Import Another Wallet',
       DELTE_WALLET: 'Delete Wallet',
@@ -1826,6 +1826,9 @@ const resources = {
         'Anyone who scans this QR can access your funds. Proceed?',
       PRIVATE_KEY_REVEAL_TITLE: 'Reveal Private Key?',
       NO_ONE_IS_WATCHING_YOU: 'Make sure no one is watching you.',
+      SECURITY_OPTION_DISABLED: "Can't be accessed in wallet connect",
+      SECURITY_OPTION_DISABLED_DESCRIPTION:
+        'Access it in the wallet that you have connected from.',
     },
   },
 };

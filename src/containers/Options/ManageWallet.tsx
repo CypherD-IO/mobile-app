@@ -29,6 +29,7 @@ import { HDWallet, HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import PageHeader from '../../components/PageHeader';
 import { screenTitle } from '../../constants';
 import clsx from 'clsx';
+import Toast from 'react-native-toast-message';
 
 interface IManageWalletData {
   index: number;
@@ -139,11 +140,21 @@ const renderSecurityPrivacyData = (
   return (
     <CyDView className={'mb-[8px]'}>
       <CyDTouchView
-        disabled={isSecurityOptionDisabled}
-        className={
-          'flex flex-row justify-between items-center bg-n0 rounded-[12px] px-[16px] py-[16px]'
-        }
+        className={clsx(
+          'flex flex-row justify-between items-center bg-n0 rounded-[12px] px-[16px] py-[16px]',
+          {
+            'opacity-50': isSecurityOptionDisabled,
+          },
+        )}
         onPress={() => {
+          if (isSecurityOptionDisabled) {
+            Toast.show({
+              type: 'info',
+              text1: t('SECURITY_OPTION_DISABLED'),
+              text2: t('SECURITY_OPTION_DISABLED_DESCRIPTION'),
+            });
+            return;
+          }
           if (item.logo === 'seed') {
             navigation.navigate(screenTitle.SEED_PHRASE);
             sendFirebaseEvent(hdWalletContext, 'reveal_seed_phrase');

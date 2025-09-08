@@ -18,6 +18,7 @@ import GradientText from '../../components/gradientText';
 import {
   ButtonType,
   CardProviders,
+  CardStatus,
   CypherPlanId,
   GlobalContextType,
 } from '../../constants/enum';
@@ -106,6 +107,9 @@ export default function OptionsHub() {
   const cardProfile = globalState.cardProfile;
   const currentCardProvider = cardProfile?.provider;
   const card = cardProfile?.rc?.cards?.[0];
+  const hasHiddenCard = cardProfile?.rc?.cards?.some(
+    _card => _card.status === CardStatus.HIDDEN,
+  );
   const cardId = card?.cardId;
   const planInfo = cardProfile?.planInfo;
   const isPremiumUser = planInfo?.planId === CypherPlanId.PRO_PLAN;
@@ -151,16 +155,20 @@ export default function OptionsHub() {
           },
         ]
       : []),
-    {
-      icon: 'loop-object',
-      apiDependent: true,
-      title: t('AUTO_LOAD'),
-      onPress: () => {
-        isAutoloadConfigured
-          ? setIsAutoLoadOptionsVisible(true)
-          : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-      },
-    },
+    ...(!hasHiddenCard
+      ? [
+          {
+            icon: 'loop-object',
+            apiDependent: true,
+            title: t('AUTO_LOAD'),
+            onPress: () => {
+              isAutoloadConfigured
+                ? setIsAutoLoadOptionsVisible(true)
+                : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+            },
+          },
+        ]
+      : []),
     {
       icon: 'connect-link',
       apiDependent: true,
