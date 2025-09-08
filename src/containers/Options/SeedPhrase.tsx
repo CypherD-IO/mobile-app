@@ -183,10 +183,10 @@ export default function SeedPhrase() {
                         <CyDIcons
                           name='shield'
                           size={64}
-                          className={'text-n0'}
+                          className={'text-base400'}
                         />
                       </CyDView>
-                      <CyDText className='text-base font-semibold text-n0 text-center'>
+                      <CyDText className='text-base font-semibold text-base400 text-center'>
                         Click to show Seed Phrase
                       </CyDText>
                     </CyDView>

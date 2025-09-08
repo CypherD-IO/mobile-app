@@ -561,15 +561,9 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_TRANSACTIONS_SCREEN}
         component={CardTransactions}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Card Transactions'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{
+          headerShown: false,
+        }}
       />
 
       <FundCardStack.Screen
@@ -1239,12 +1233,6 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.THEME}
         component={AppearanceSelector}
-        options={{ headerShown: false }}
-      />
-
-      <OptionsStack.Screen
-        name={screenTitle.CARD_TRANSACTIONS_SCREEN}
-        component={CardTransactions}
         options={{ headerShown: false }}
       />
 
