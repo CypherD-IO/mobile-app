@@ -144,7 +144,7 @@ export default function SeedPhrase() {
   return (
     <CyDSafeAreaView className='bg-n0 flex-1'>
       {/* Header */}
-      <PageHeader title={'REVEAL_SEED_PHARSE'} navigation={navigation} />
+      <PageHeader title={'REVEAL_SEED_PHRASE'} navigation={navigation} />
 
       <CyDScrollView
         className='flex-1 bg-n0'

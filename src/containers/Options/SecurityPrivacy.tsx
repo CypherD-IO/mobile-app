@@ -55,7 +55,7 @@ export default function SecurityPrivacy() {
       ...securityPrivacyData,
       {
         index: 1,
-        title: t('REVEAL_SEED_PHARSE'),
+        title: t('REVEAL_SEED_PHRASE'),
         logo: 'eye',
       },
     ];
