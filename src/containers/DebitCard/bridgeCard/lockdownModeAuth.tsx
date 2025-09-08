@@ -140,7 +140,7 @@ export default function LockdownModeAuth() {
   }
   return (
     <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
-      <PageHeader title={t('LOCKDOWN_MODE')} navigation={navigation} />
+      <PageHeader title={'LOCKDOWN_MODE'} navigation={navigation} />
       <CyDView className={'h-full px-[20px] pt-[24px] bg-n20'}>
         <OTPHeader />
         <CyDView>

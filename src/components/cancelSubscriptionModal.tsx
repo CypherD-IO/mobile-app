@@ -30,11 +30,12 @@ export default function CancelSubscriptionModal({
    */
   const handleCancelSubscription = (): void => {
     void onCancelSubscription();
+    setShowModal(false);
   };
 
-  const expirationDate = moment
-    .unix(currentPlanInfo?.expiresOn ?? 0)
-    .format('MMMM DD, YYYY');
+  const expirationDate = currentPlanInfo?.expiresOn
+    ? moment.unix(currentPlanInfo?.expiresOn).format('MMMM DD, YYYY')
+    : '-';
 
   return (
     <CyDModalLayout
@@ -79,10 +80,7 @@ export default function CancelSubscriptionModal({
           </CyDView>
 
           <Button
-            onPress={() => {
-              handleCancelSubscription();
-              setShowModal(false);
-            }}
+            onPress={handleCancelSubscription}
             type={ButtonType.RED}
             title='Cancel Subscription'
             style='mt-[24px] rounded-full'

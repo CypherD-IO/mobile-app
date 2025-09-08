@@ -7,7 +7,7 @@ import {
   CyDSafeAreaView,
   CyDIcons,
 } from '../../styles/tailwindComponents';
-import { BackHandler, NativeModules } from 'react-native';
+import { Alert, BackHandler, NativeModules } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { useTranslation } from 'react-i18next';
 import {
@@ -69,11 +69,33 @@ export default function SeedPhrase() {
   };
 
   const toggleQR = () => {
-    setShowQR(!showQR);
+    if (!showQR) {
+      Alert.alert(t('SEED_QR_REVEAL_TITLE'), t('SEED_QR_REVEAL_DESC'), [
+        { text: t('CANCEL') ?? 'Cancel', style: 'cancel' },
+        {
+          text: t('PROCEED') ?? 'Proceed',
+          style: 'destructive',
+          onPress: () => setShowQR(true),
+        },
+      ]);
+      return;
+    }
+    setShowQR(false);
   };
 
   const toggleBlur = () => {
-    setIsBlurred(!isBlurred);
+    if (isBlurred) {
+      Alert.alert(t('SEED_REVEAL_TITLE'), t('NO_ONE_IS_WATCHING_YOU'), [
+        { text: t('CANCEL') ?? 'Cancel', style: 'cancel' },
+        {
+          text: t('PROCEED') ?? 'Proceed',
+          style: 'destructive',
+          onPress: () => setIsBlurred(false),
+        },
+      ]);
+      return;
+    }
+    setIsBlurred(true);
   };
 
   const handleBackButton = () => {
@@ -117,12 +139,12 @@ export default function SeedPhrase() {
 
   if (isFetchingSeedPhrase) return <Loading />;
 
-  const seedWords = seedPhrase ? seedPhrase.split(/\s+/).slice(0, 12) : [];
+  const seedWords = seedPhrase ? seedPhrase.trim().split(/\s+/) : [];
 
   return (
     <CyDSafeAreaView className='bg-n0 flex-1'>
       {/* Header */}
-      <PageHeader title={'REVEAL_SEED_PHASE'} navigation={navigation} />
+      <PageHeader title={'REVEAL_SEED_PHARSE'} navigation={navigation} />
 
       <CyDScrollView
         className='flex-1 bg-n0'
@@ -161,10 +183,10 @@ export default function SeedPhrase() {
                         <CyDIcons
                           name='shield'
                           size={64}
-                          className='text-base400'
+                          className={'text-n0'}
                         />
                       </CyDView>
-                      <CyDText className='text-base font-semibold text-base400 text-center'>
+                      <CyDText className='text-base font-semibold text-n0 text-center'>
                         Click to show Seed Phrase
                       </CyDText>
                     </CyDView>

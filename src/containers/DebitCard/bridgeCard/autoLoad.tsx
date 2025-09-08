@@ -25,7 +25,7 @@ import DatePickerModal from 'react-native-modal-datetime-picker';
 import Button from '../../../components/v2/button';
 import { ButtonType } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
-import { GlobalContext } from '../../../core/globalContext';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { EVM_CHAINS_TYPE } from '../../../constants/type';
 import { capitalize, get, map } from 'lodash';
@@ -53,8 +53,9 @@ export default function AutoLoad() {
     useState<boolean>(false);
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
-  const globalContext = useContext<any>(GlobalContext);
-  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile: CardProfile = globalContext.globalState
+    ?.cardProfile as CardProfile;
   const [supportedTokens, setSupportedTokens] = useState<Holding[]>();
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const { getLocalPortfolio } = usePortfolio();
@@ -132,7 +133,7 @@ export default function AutoLoad() {
   };
   return (
     <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
-      <PageHeader title={t('AUTO_LOAD')} navigation={navigation} />
+      <PageHeader title={'AUTO_LOAD'} navigation={navigation} />
       <CyDView className='flex-1 justify-between bg-n20 pt-[24px]'>
         <CyDKeyboardAwareScrollView>
           <ChooseTokenModalV2
@@ -185,7 +186,7 @@ export default function AutoLoad() {
           </CyDView>
           <CyDView className='flex flex-col bg-n0 my-[14px] mx-[16px] rounded-[12px]'>
             <CyDView className='flex flex-col p-[16px]'>
-              <CyDText>When the balance falls below:</CyDText>
+              <CyDText>{t('WHEN_BALANCE_GOES_BELOW')}</CyDText>
               <CyDView className='flex flex-row justify-start items-center mt-[8px]'>
                 <CyDView
                   className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
@@ -211,7 +212,7 @@ export default function AutoLoad() {
             </CyDView>
             <CyDView className='flex flex-col p-[16px]'>
               <CyDView className='flex flex-col pb-[32px] border-b-[1px] border-n40'>
-                <CyDText>Automatically top up:</CyDText>
+                <CyDText>{t('AUTOMATICALLY_TOP_UP')}</CyDText>
                 <CyDView className='flex flex-row justify-start items-center mt-[8px]'>
                   <CyDView
                     className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
@@ -238,7 +239,7 @@ export default function AutoLoad() {
                 </CyDView>
               </CyDView>
               <CyDView className='mt-[16px]'>
-                <CyDText>Auto Load using:</CyDText>
+                <CyDText>{t('AUTO_LOAD_USING')}</CyDText>
                 <CyDView className='flex flex-row justify-between items-center mt-[6px]'>
                   <CyDView className='flex flex-row items-center'>
                     <CyDImage
@@ -272,7 +273,9 @@ export default function AutoLoad() {
           </CyDView>
           <CyDView className='bg-n0 py-[22px] px-[16px] rounded-[12px] mx-[16px]'>
             <CyDView className='flex flex-row justify-between items-center'>
-              <CyDText className='font-bold text-[16px]'>Set Expiry</CyDText>
+              <CyDText className='font-bold text-[16px]'>
+                {t('SET_EXPIRY')}
+              </CyDText>
               <CyDView>
                 <CyDSwitch
                   onValueChange={() => {
@@ -285,7 +288,7 @@ export default function AutoLoad() {
             {autoLoadExpiry && (
               <CyDView className='flex flex-col pt-[12px] border-t-[1.5px] border-n40 mt-[18px]'>
                 <CyDView>
-                  <CyDText>Auto load until:</CyDText>
+                  <CyDText>{t('AUTO_LOAD_UNTIL')}</CyDText>
                   <CyDTouchView
                     className='flex flex-row justify-start items-center mt-[2px]'
                     onPress={() => {
@@ -306,7 +309,7 @@ export default function AutoLoad() {
                   </CyDTouchView>
                 </CyDView>
                 <CyDView className='mt-[16px]'>
-                  <CyDText>No.of times to auto load:</CyDText>
+                  <CyDText>{t('NO_OF_TIMES_TO_AUTO_LOAD')}</CyDText>
                   <CyDView className='flex flex-row justify-start items-center mt-[2px]'>
                     <CyDView
                       className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
@@ -336,7 +339,7 @@ export default function AutoLoad() {
         <CyDView className='w-full px-[24px] items-center py-[20px] bg-n20 mb-[20px]'>
           <Button
             type={ButtonType.PRIMARY}
-            title={t('PREVIEW')}
+            title={t('AUTO_LOAD_PREVIEW')}
             style={'h-[60px] w-full'}
             onPress={() => {
               navigation.navigate(screenTitle.PREVIEW_AUTO_LOAD_SCREEN, {

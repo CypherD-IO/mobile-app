@@ -8,7 +8,6 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import PageHeader from '../../components/PageHeader';
-import { t } from 'i18next';
 
 const uri = 'https://cypherhq.io/legal?redirect=true';
 
@@ -27,7 +26,7 @@ export default function LegalScreen() {
   }, []);
   return (
     <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
-      <PageHeader title={t('TERMS_AND_CONDITIONS')} navigation={navigation} />
+      <PageHeader title={'TERMS_AND_CONDITIONS'} navigation={navigation} />
       <CyDView className='flex-1 bg-n20'>
         <CyDView className={'h-full w-full bg-n20'}>
           <WebView source={{ uri }} backgroundColor={'transparent'} />

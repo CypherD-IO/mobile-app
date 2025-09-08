@@ -80,7 +80,6 @@ import WalletConnectCamera from '../containers/Options/WalletConnectCamera';
 import AdvancedSettings from '../containers/Options/advancedSettings';
 import AppSettings from '../containers/Options/appSettings';
 import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
-import OptionsScreen from '../containers/Options/index';
 import Referrals from '../containers/Options/referrals';
 import Rewards from '../containers/Options/rewards';
 import AppearanceSelector from '../containers/Options/theme';
@@ -121,7 +120,7 @@ import KYCVerification from '../containers/DebitCard/CardV2/signup/application/k
 import AirdropEligibility from '../containers/airdrop/eligibility';
 import AirdropClaim from '../containers/airdrop/claim';
 import CountryTemporarilyUnsupported from '../containers/DebitCard/CardV2/signup/application/countryTemporarilyUnsupported';
-import OptionsHub from '../containers/OptionsV2/optionsHub';
+import OptionsHub from '../containers/Options';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -499,14 +498,15 @@ export function PortfolioStackScreen() {
   );
 }
 
-export function DebitCardStackScreen({
-  route,
-}: {
-  route: NavigationProp<ParamListBase>;
-}) {
+type AnyRoute = RouteProp<
+  Record<string, { screenToNavigate?: string } | undefined>,
+  string
+>;
+
+export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
   const { keyboardHeight } = useKeyboard();
   const initialRouteName =
-    route.params?.screenToNavigate || screenTitle.DEBIT_CARD_SCREEN;
+    route.params?.screenToNavigate ?? screenTitle.DEBIT_CARD_SCREEN;
 
   return (
     <FundCardStack.Navigator initialRouteName={initialRouteName}>

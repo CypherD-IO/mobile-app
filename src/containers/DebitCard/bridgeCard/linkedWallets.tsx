@@ -63,7 +63,7 @@ export function LinkedWallets() {
   };
   return (
     <CyDSafeAreaView className={'h-full bg-n0'} edges={['top']}>
-      <PageHeader title={t('LINKED_WALLETS')} navigation={navigation} />
+      <PageHeader title={'LINKED_WALLETS'} navigation={navigation} />
 
       <CyDView className={'flex-1 bg-n20 pt-[24px] px-[16px]'}>
         <CyDTouchView
@@ -132,7 +132,7 @@ export function LinkedWallets() {
           </CyDScrollView>
         ) : (
           <CyDView className='h-[75%] flex flex-col w-[100%] justify-center items-center'>
-            <EmptyContent content={t('EMPTY_LINKED_WALLET')} />
+            <EmptyContent content={'EMPTY_LINKED_WALLET'} />
           </CyDView>
         )}
       </CyDView>

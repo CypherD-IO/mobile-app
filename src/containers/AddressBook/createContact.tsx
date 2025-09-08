@@ -680,9 +680,6 @@ export const CreateContact = () => {
                       return (
                         editContact ? editContactInfo : createContactInfo
                       )[detail].map((oneAddress, addressIndex) => {
-                        if (!formProps.values[detail]) {
-                          formProps.values[detail] = [''];
-                        }
                         return (
                           <CyDView
                             className='flex-1 mt-[25px] self-center w-[87%]'

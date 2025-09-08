@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import useAxios from '../../../core/HttpRequest';
 import { GlobalContextType } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
@@ -13,7 +13,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import { Formik } from 'formik';
+import { Formik, FormikProps } from 'formik';
 import Button from '../../../components/v2/button';
 import clsx from 'clsx';
 import { isAndroid } from '../../../misc/checkers';
@@ -66,6 +66,8 @@ export default function UpdateCardContactDetails({
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
   const { cardProfileModal } = useCardUtilities();
+
+  const formikRef = useRef<FormikProps<typeof userBasicDetails>>(null);
 
   const RESENT_OTP_TIME = 30;
 
@@ -250,7 +252,7 @@ export default function UpdateCardContactDetails({
 
   return (
     <CyDSafeAreaView className={'h-full bg-n0'} edges={['top']}>
-      <PageHeader title={t('UPDATE_CONTACT_DETAILS')} navigation={navigation} />
+      <PageHeader title={'UPDATE_CONTACT_DETAILS'} navigation={navigation} />
       <CyDView className='flex-1 bg-n20'>
         <CyDKeyboardAwareScrollView
           className='flex-1'
@@ -266,6 +268,7 @@ export default function UpdateCardContactDetails({
             ]}
           />
           <Formik
+            innerRef={formikRef}
             enableReinitialize={true}
             initialValues={userBasicDetails}
             validationSchema={userBasicDetailsValidationSchema}
@@ -419,23 +422,13 @@ export default function UpdateCardContactDetails({
 
         {/* Fixed Button at Bottom */}
         <CyDView className='w-full px-[30px] items-center py-[20px] bg-n20 mb-[20px]'>
-          <Formik
-            enableReinitialize={true}
-            initialValues={userBasicDetails}
-            validationSchema={userBasicDetailsValidationSchema}
-            onSubmit={values => updateDetails(values)}>
-            {formProps => (
-              <Button
-                title={t<string>(isOTPTriggered ? 'SUBMIT' : 'UPDATE')}
-                loading={isSubmitting}
-                onPress={() => {
-                  formProps.handleSubmit();
-                }}
-                style='h-[55px] w-full'
-                isPrivateKeyDependent={false}
-              />
-            )}
-          </Formik>
+          <Button
+            title={t<string>(isOTPTriggered ? 'SUBMIT' : 'UPDATE')}
+            loading={isSubmitting}
+            onPress={() => formikRef.current?.handleSubmit()}
+            style='h-[55px] w-full'
+            isPrivateKeyDependent={false}
+          />
         </CyDView>
       </CyDView>
     </CyDSafeAreaView>

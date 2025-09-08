@@ -295,7 +295,7 @@ export default function CardTransactions() {
 
   return (
     <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
-      <PageHeader title={t('CARD_TRANSACTIONS')} navigation={navigation} />
+      <PageHeader title={'CARD_TRANSACTIONS'} navigation={navigation} />
       <CyDView className='flex-1 bg-n20 pt-[24px]'>
         <CyDModalLayout
           isModalVisible={exportOptionOpen}

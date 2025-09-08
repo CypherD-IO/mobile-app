@@ -36,6 +36,8 @@ interface RouteParams {
   currentCardProvider: string;
 }
 
+const loaderStyle = { height: 25, width: 25 };
+
 export default function LockdownMode() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
@@ -145,24 +147,22 @@ export default function LockdownMode() {
             {t('LOCKDOWN_MODE_DESC_TEXT_3')}
           </CyDText>
           <CyDText className='text-[12px] mt-[24px] mx-[4px] text-center text-yellow-600'>
-            **{t('LOCKDOWN_MODE_DESC_TEXT_2')}
+            {`** ${t('LOCKDOWN_MODE_DESC_TEXT_2')}`}
           </CyDText>
           {isLockdownModeEnabled === ACCOUNT_STATUS.ACTIVE ? (
             <Button
               type={ButtonType.RED}
               title={t('TURN_ON_LOCKDOWN')}
               titleStyle='text-white text-[18px]'
-              style='w-full mt-[6px] rounded-[12px]'
+              style='w-full mt-[16px] rounded-[12px]'
               loading={loading}
-              loaderStyle={{ height: 25, width: 25 }}
+              loaderStyle={loaderStyle}
               onPress={() => {
                 setLoading(true);
                 showModal('state', {
                   type: 'warning',
-                  title: t('Are you sure ?'),
-                  description: t(
-                    'Enabling lockdown mode will block all the card functionalitites',
-                  ),
+                  title: t('ARE_YOU_SURE'),
+                  description: t('ENABLING_LOCKDOWN_MODE_DESCRIPTION'),
                   onSuccess: () => {
                     hideModal();
                     void handleClickLockDownMode();
@@ -176,9 +176,9 @@ export default function LockdownMode() {
               type={ButtonType.PRIMARY}
               title={t('DISABLE_LOCKDOWN')}
               titleStyle='text-black text-[18px]'
-              style='w-full mt-[6px] rounded-[12px]'
+              style='w-full mt-[16px] rounded-[12px]'
               loading={loading}
-              loaderStyle={{ height: 25, width: 25 }}
+              loaderStyle={loaderStyle}
               onPress={() => {
                 setLoading(true);
                 void verifyWithOTP();

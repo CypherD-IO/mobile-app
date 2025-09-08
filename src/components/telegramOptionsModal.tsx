@@ -44,10 +44,12 @@ export default function TelegramOptionsModal({
     try {
       if (globalContext) {
         const data = await getWalletProfile(globalContext.globalState.token);
-        globalContext.globalDispatch({
-          type: GlobalContextType.CARD_PROFILE,
-          cardProfile: data,
-        });
+        if (data && !(data instanceof Error)) {
+          globalContext.globalDispatch({
+            type: GlobalContextType.CARD_PROFILE,
+            cardProfile: data,
+          });
+        }
       }
     } catch (error) {
       console.error('Error refreshing profile:', error);

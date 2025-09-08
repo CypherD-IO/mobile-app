@@ -198,13 +198,16 @@ export default function LinkAnotherWallet() {
 
   const handleTextChange = (
     text: string,
-    handleChange: (field: string) => void,
+    setFieldValue: (
+      field: string,
+      value: any,
+      shouldValidate?: boolean,
+    ) => void,
     field: string,
   ) => {
-    handleChange(field);
-    const tempFormValues = { ...formValues };
-    tempFormValues[field as keyof typeof formValues] = trimWhitespace(text);
-    setFormValues(tempFormValues);
+    const trimmed = trimWhitespace(text);
+    setFieldValue(field, trimmed);
+    setFormValues(prev => ({ ...prev, [field]: trimmed }));
   };
 
   return (
@@ -257,7 +260,7 @@ export default function LinkAnotherWallet() {
                             onChangeText={text => {
                               handleTextChange(
                                 text,
-                                formProps.handleChange,
+                                formProps.setFieldValue,
                                 field,
                               );
                             }}

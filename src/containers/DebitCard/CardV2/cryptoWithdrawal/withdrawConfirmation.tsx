@@ -93,7 +93,7 @@ export default function WithdrawConfirmation() {
       className='flex flex-col justify-between h-full bg-n30'
       style={{ paddingTop: insets.top }}>
       <CyDView className='flex-1  px-[16px]'>
-        <PageHeader title={t('CONFIRM_WITHDRAWAL')} navigation={navigation} />
+        <PageHeader title={'CONFIRM_WITHDRAWAL'} navigation={navigation} />
 
         <CyDKeyboardAwareScrollView className='flex-1 bg-n30 mt-[12px]'>
           <CyDText className='font-bold text-[28px] text-base400 '>

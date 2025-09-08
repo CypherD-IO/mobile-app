@@ -309,7 +309,7 @@ export default function SelectPlanModal({
                     <CyDView className='flex flex-col w-[58%] bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
                       <CyDView className=' bg-n20 py-[16px] px-[12px] rounded-tl-[16px] h-[46px]'>
                         <CyDText className='text-[12px] font-medium '>
-                          {t('PLAN_COMAPRISION')}
+                          {t('PLAN_COMPARISON')}
                         </CyDText>
                       </CyDView>
                       <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
@@ -443,7 +443,7 @@ export default function SelectPlanModal({
                           {'✅ Plastic'}
                         </CyDText>
                         <CyDText className='text-[10px] font-medium  pl-[12px] h-[18px]'>
-                          {`${freePlanData?.physicalCardFee === 0 ? 'FREE' : `($${freePlanData?.physicalCardFee}`} fee)`}
+                          {`${freePlanData?.physicalCardFee === 0 ? 'FREE' : `($${freePlanData?.physicalCardFee} fee)`}`}
                         </CyDText>
                       </CyDView>
                       <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
@@ -573,7 +573,7 @@ export default function SelectPlanModal({
                         {t('DAILY_LIMIT')}
                       </CyDText>
                       <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
-                        {t('MONTHYL_LIMIT')}
+                        {t('MONTHLY_LIMIT')}
                       </CyDText>
                       <CyDText className='text-[12px] font-medium mt-[10px]  pl-[12px] h-[18px]'>
                         {t('HIGHER_LIMIT')}
@@ -670,16 +670,16 @@ export default function SelectPlanModal({
 
                   {/* Note */}
                   <CyDText className='text-n200 text-[12px] font-normal mt-[7px]'>
-                    {t('COMPARISION_NOTE_1')}
+                    {t('COMPARISON_NOTE_1')}
                   </CyDText>
                   <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                    {t('COMPARISION_NOTE_2')}
+                    {t('COMPARISON_NOTE_2')}
                   </CyDText>
                   <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                    {t('COMPARISION_NOTE_3')}
+                    {t('COMPARISON_NOTE_3')}
                   </CyDText>
                   <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
-                    {t('COMPARISION_NOTE_4', {
+                    {t('COMPARISON_NOTE_4', {
                       forexMarkupStandard: freePlanData?.fxMarkup,
                       forexMarkupPremium: proPlanData?.fxMarkup,
                     })}
@@ -740,10 +740,7 @@ export default function SelectPlanModal({
                   )}
                 </CyDView>
                 <CyDText className='px-[12px] text-[14px]'>
-                  By proceeding, I acknowledge and authorize a $199 USD
-                  deduction from my Cypher account for the premium upgrade and
-                  agree to the
-                  {/* {t('UPGRADE_PLAN_CONSENT')} */}
+                  {`By proceeding, I acknowledge and authorize a $${proPlanData?.cost} USD deduction from my Cypher account for the premium upgrade and agree to the`}
                   <CyDText
                     className='font-bold text-[14px] underline'
                     onPress={() => {

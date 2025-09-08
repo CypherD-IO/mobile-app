@@ -107,6 +107,7 @@ const resources = {
       SEED_PHARSE_FETCH_FAILED: 'Fetching seed phrase failed.',
       PVT_KEY_FETCH_FAILED: 'Fetching private key failed.',
       SUPPORT: 'SUPPORT',
+      FAQ: 'FAQ',
       IMPORT_ANOTHER_WALLET_TITLE: 'Import Another Wallet',
       DELTE_WALLET: 'Delete Wallet',
       SEED_PHARSE_TITLE: 'Copy Seed phrase',
@@ -272,6 +273,7 @@ const resources = {
       AVAILABLE_BALANCE: 'Available balance',
       MY_DELEGATION: 'My delegation',
       REWARD: 'Reward',
+      REWARDS: 'Reward',
       APPROVE: 'APPROVE',
       REJECT: 'REJECT',
       CANCEL_INIT_CAPS: 'Cancel',
@@ -960,6 +962,7 @@ const resources = {
         'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
       CONNECT_A_WALLET: 'Connect A Wallet',
       CARD_NOTIFICATION_SETTINGS: 'Notification Settings',
+      CARD_NOTIFICATION: 'Card Notification',
       TOGGLE_EMAIL_NOTIFICATION_SUCCESS:
         'Email Notification Status Update Success',
       EMAIL_NOTIFICATION_TURNED_ON:
@@ -992,7 +995,7 @@ const resources = {
       PRIVATE_KEY_IMPORT_SUB_MSG:
         'Enter your Ethereum private key to import your wallet into Cypher.',
       ENTER_PRIVATE_KEY_PLACEHOLDER: 'Enter your Ethereum private key',
-      BAD_PRIVATE_KEY_PHARSE: 'Bad private key',
+      BAD_PRIVATE_KEY: 'Bad private key',
       IMPORT_WALLET_USING_PRIVATE_KEY: 'Import With Private Key',
       CHOOSE_WALLET_INDEX_TEXT:
         'We found these wallets associated with your recovery phrase',
@@ -1141,7 +1144,7 @@ const resources = {
       OFFERS_AND_BENEFITS: 'Offers & Benefit',
       APPLY: 'Apply',
       ENTER_OFFER_CODE: 'Enter offer codes',
-      PLAN_COMAPRISION: 'Plan comparision',
+      PLAN_COMPARISON: 'Plan comparision',
       METAL_CARD: 'Metal card',
       ORDER_YOUR_METAL_CARD: 'Order your Metal Card',
       USDC_TOKEN: 'USDC token',
@@ -1152,17 +1155,17 @@ const resources = {
       ATM_FEE: 'ATM Withdraw Fee',
       USAGE_DETAILS: 'Usage deatils',
       DAILY_LIMIT: 'Daily Limit',
-      MONTHYL_LIMIT: 'Monthly Limit',
+      MONTHLY_LIMIT: 'Monthly Limit',
       HIGHER_LIMIT: 'Higher Limit*',
       CARD_SPENDING_LIMIT: 'Card Spending limit',
       COUNTRIES_SUPPORTED: 'Countries supported',
       MERCHANTS_SUPPORTED: 'Merchants supported',
-      COMPARISION_NOTE_1:
+      COMPARISON_NOTE_1:
         '(1) Higher spending limit can be requested from the card control panel',
-      COMPARISION_NOTE_2: '(2) Shipping Charges Apply for add on cards',
-      COMPARISION_NOTE_3:
+      COMPARISON_NOTE_2: '(2) Shipping Charges Apply for add on cards',
+      COMPARISON_NOTE_3:
         '(3) Lower liquidity tokens may incur crypto load fees of up to 3%.',
-      COMPARISION_NOTE_4:
+      COMPARISON_NOTE_4:
         '(4) Cypher charges a {{forexMarkupStandard}}% forex markup for standard users and {{forexMarkupPremium}}% for premium users. However, other financial institutions involved in processsing the transaction may charge extra fees of 0.25% to 1%, which are not controlled by Cypher.',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
@@ -1431,6 +1434,7 @@ const resources = {
       SET_CARD_PIN: 'Set Card PIN',
       INVALID_PARAMETERS: 'Invalid Parameters',
       MANAGE_PREMIUM: 'Manage Premium',
+      MANAGE_SUBSCRIPTION: 'Manage Subscription',
       MCC_CODE: 'MCC Code',
       MERCHANT_ID: 'ID',
       COUNTRY: 'Country',
@@ -1548,11 +1552,11 @@ const resources = {
       DOMESTIC_COUNTRY: 'Domestic Country',
       DAILY_AND_MONTHLY_USAGE_LIMIT: 'Daily and Monthly Usage Limit',
       DEFAULT_LIMIT: 'Default Limit',
-      MONTHLY_LIMIT: 'Monthly Limit',
       SETUP_LIMITS_DESC:
         'Set up your daily and monthly spending limits to manage expenses and stay in control.',
       SETUP_SPEND_CONTROL: 'Setup your Spend Control',
       EDIT_SPEND_CONTROL: 'Edit Spend Control',
+      TELEGRAM_BOT: 'Telegram Bot',
       TELEGRAM_BOT_DESC:
         'Get real-time notifications for card transactions and manage your card directly through Telegram.',
       APPLE_PAY_GOOGLE_PAY: 'Apple Pay / Google Pay',
@@ -1798,7 +1802,6 @@ const resources = {
       SOCIAL_MEDIA: 'Social Media',
       REVEAL_KEYS: 'Reveal Keys',
       WALLET_OPTIONS: 'Wallet Options',
-      REVEAL_SEED_PHASE: 'Reveal Seed Phase',
       IMPORT_PRIVATE_KEY: 'Import Private Key',
       CYPHER_REWARDS: 'Cypher Rewards',
       CANCEL_SUBSCRIPTION: 'Cancel Subscription',
@@ -1806,6 +1809,23 @@ const resources = {
       SUBSCRIPTION_CANCELLED_SUCCESSFULLY:
         'Subscription cancelled successfully',
       CONTINUE_SUBSCRIPTION: 'Continue Subscription',
+      THEME: 'Theme',
+      AUTOMATICALLY_TOP_UP: 'Automatically top up:',
+      NO_OF_TIMES_TO_AUTO_LOAD: 'No.of times to auto load:',
+      SET_EXPIRY: 'Set Expiry',
+      AUTO_LOAD_UNTIL: 'Auto load until:',
+      ARE_YOU_SURE: 'Are you sure?',
+      ENABLING_LOCKDOWN_MODE_DESCRIPTION:
+        'Enabling lockdown mode will block all the card functionalities',
+      SEED_QR_REVEAL_TITLE: 'Show Seed as QR?',
+      SEED_QR_REVEAL_DESC:
+        'Anyone who scans this QR can access your funds. Proceed?',
+      SEED_REVEAL_TITLE: 'Reveal Seed Phrase?',
+      PRIVATE_KEY_QR_REVEAL_TITLE: 'Show Private Key as QR?',
+      PRIVATE_KEY_QR_REVEAL_DESC:
+        'Anyone who scans this QR can access your funds. Proceed?',
+      PRIVATE_KEY_REVEAL_TITLE: 'Reveal Private Key?',
+      NO_ONE_IS_WATCHING_YOU: 'Make sure no one is watching you.',
     },
   },
 };
