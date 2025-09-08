@@ -771,7 +771,7 @@ export default function Browser() {
           )}
         </CyDView>
         {onFocus &&
-          !websiteInfo.origin.includes('cypherd.io') &&
+          !websiteInfo.origin.includes('cypherhq.io') &&
           websiteInfo.origin !== '' && (
             <CyDView
               className='flex flex-row items-center mt-2 mx-3 justify-between'
@@ -1116,7 +1116,7 @@ export default function Browser() {
         )}
         {loader && inbuildPage === 'webview' && (
           <CyDView className='flex flex-row items-center justify-center h-full w-full'>
-            <ActivityIndicator size='large' color='var(--color-base400)' />
+            <ActivityIndicator size='large' color='#444444' />
           </CyDView>
         )}
         <CyDView

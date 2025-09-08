@@ -151,7 +151,7 @@ export default function PreviewAutoLoad() {
   };
   return (
     <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
-      <PageHeader title={t('AUTO_LOAD_PREVIEW')} navigation={navigation} />
+      <PageHeader title={'AUTO_LOAD_PREVIEW'} navigation={navigation} />
       <CyDView className='flex-1 justify-between bg-n20 pt-[24px]'>
         <CyDView className={'mx-[16px]'}>
           <CyDView className='bg-n0 rounded-2xl flex flex-col justify-center items-center pb-[45px] pt-[32px]'>
@@ -186,18 +186,22 @@ export default function PreviewAutoLoad() {
               </CyDText>
             </CyDView>
           </CyDView>
-          <CyDView
-            className={'flex flex-row justify-between items-center py-[16px]'}>
-            <CyDText className={'font-bold text-[16px]'}>
-              {t('EXPIRES_ON')}
-            </CyDText>
+          {autoLoadExpiry && expiryDate && (
             <CyDView
-              className={'flex flex-col flex-wrap justify-between items-end'}>
-              <CyDText className={' font-medium text-[16px] '}>
-                {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
+              className={
+                'flex flex-row justify-between items-center py-[16px]'
+              }>
+              <CyDText className={'font-bold text-[16px]'}>
+                {t('EXPIRES_ON')}
               </CyDText>
+              <CyDView
+                className={'flex flex-col flex-wrap justify-between items-end'}>
+                <CyDText className={' font-medium text-[16px] '}>
+                  {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
+                </CyDText>
+              </CyDView>
             </CyDView>
-          </CyDView>
+          )}
 
           <CyDView
             className={'flex flex-row justify-between items-center py-[16px]'}>

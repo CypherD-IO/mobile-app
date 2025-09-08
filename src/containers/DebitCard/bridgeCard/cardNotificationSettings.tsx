@@ -317,7 +317,7 @@ export default function CardNotificationSettings() {
   return (
     <CyDSafeAreaView className={'h-full bg-n0'} edges={['top']}>
       <PageHeader
-        title={t('CARD_NOTIFICATIONS_SETTINGS')}
+        title={'CARD_NOTIFICATIONS_SETTINGS'}
         navigation={navigation}
       />
       <CyDView className='flex-1 bg-n20 pt-[24px]'>

@@ -50,9 +50,17 @@ export default function ManageSubscription() {
 
   const fetchPlanData = async () => {
     setFetchingPlanData(true);
-    const planDataValue = await getPlanData(globalState.token);
-    setPlanData(planDataValue);
-    setFetchingPlanData(false);
+    try {
+      const planDataValue = await getPlanData(globalState.token);
+      // Basic shape guard
+      if (planDataValue && (planDataValue as IPlanData).default) {
+        setPlanData(planDataValue as IPlanData);
+      } else {
+        setPlanData(undefined);
+      }
+    } finally {
+      setFetchingPlanData(false);
+    }
   };
   useEffect(() => {
     void fetchPlanData();

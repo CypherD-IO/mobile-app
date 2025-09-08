@@ -20,7 +20,7 @@ import {
 } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { BackHandler, NativeModules } from 'react-native';
+import { Alert, BackHandler, NativeModules } from 'react-native';
 import { QRCode } from 'react-native-custom-qr-codes';
 import { BlurView } from '@react-native-community/blur';
 import PageHeader from '../../components/PageHeader';
@@ -192,11 +192,37 @@ export default function PrivateKey(props: PrivateKeyProps) {
   };
 
   const toggleQR = () => {
-    setShowQR(!showQR);
+    if (!showQR) {
+      Alert.alert(
+        t('PRIVATE_KEY_QR_REVEAL_TITLE'),
+        t('PRIVATE_KEY_QR_REVEAL_DESC'),
+        [
+          { text: t('CANCEL') ?? 'Cancel', style: 'cancel' },
+          {
+            text: t('PROCEED') ?? 'Proceed',
+            style: 'destructive',
+            onPress: () => setShowQR(true),
+          },
+        ],
+      );
+      return;
+    }
+    setShowQR(false);
   };
 
   const toggleBlur = () => {
-    setIsBlurred(!isBlurred);
+    if (isBlurred) {
+      Alert.alert(t('SEED_REVEAL_TITLE'), t('NO_ONE_IS_WATCHING_YOU'), [
+        { text: t('CANCEL') ?? 'Cancel', style: 'cancel' },
+        {
+          text: t('PROCEED') ?? 'Proceed',
+          style: 'destructive',
+          onPress: () => setIsBlurred(false),
+        },
+      ]);
+      return;
+    }
+    setIsBlurred(true);
   };
 
   useEffect(() => {

@@ -144,13 +144,13 @@ const renderSecurityPrivacyData = (
           'flex flex-row justify-between items-center bg-n0 rounded-[12px] px-[16px] py-[16px]'
         }
         onPress={() => {
-          if (item.title.includes('Seed')) {
+          if (item.logo === 'seed') {
             navigation.navigate(screenTitle.SEED_PHRASE);
             sendFirebaseEvent(hdWalletContext, 'reveal_seed_phrase');
-          } else if (item.title.includes('Private')) {
+          } else if (item.logo === 'key') {
             navigation.navigate(screenTitle.PRIVATE_KEY);
             sendFirebaseEvent(hdWalletContext, 'reveal_private_key');
-          } else if (item.title.includes('Pin')) {
+          } else if (item.logo === 'settings') {
             navigation.navigate(screenTitle.CHANGE_PIN);
             sendFirebaseEvent(hdWalletContext, 'change_pin');
           }
@@ -160,9 +160,9 @@ const renderSecurityPrivacyData = (
             className={clsx(
               'flex items-center justify-center h-[36px] w-[36px] rounded-[6px]',
               {
-                '!bg-[#DB9D00]': item.title.includes('Seed'),
-                '!bg-[#310072]': item.title.includes('Private'),
-                '!bg-[#30C9C9]': item.title.includes('Pin'),
+                '!bg-[#DB9D00]': item.logo === 'seed',
+                '!bg-[#310072]': item.logo === 'key',
+                '!bg-[#30C9C9]': item.logo === 'settings',
               },
             )}>
             <CyDIcons name={item.logo} size={24} className='text-white' />

@@ -267,7 +267,7 @@ export default function QRCodeGenerator() {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
-      <PageHeader title={t('RECEIVE')} navigation={navigation} />
+      <PageHeader title={'RECEIVE'} navigation={navigation} />
       <CyDView className='bg-n20 pt-[24px]'>
         <CyDScrollView className='flex flex-start h-full w-full'>
           <CyDView className={''} ref={viewRef}>
@@ -302,26 +302,30 @@ export default function QRCodeGenerator() {
                   }>
                   {getMaskedAddress(selectedChain?.address)}
                 </CyDText>
-                <CyDView className='flex flex-row'>
-                  <CyDText className={'text-[14px] text-center font-extrabold'}>
-                    {selectedChain?.address.slice(
-                      0,
-                      selectedChain.chainName === 'ethereum' ? 8 : 12,
-                    )}
-                  </CyDText>
-                  <CyDText className={'text-[14px] text-center'}>
-                    {selectedChain?.address.slice(
-                      selectedChain.chainName === 'ethereum' ? 8 : 12,
-                      selectedChain?.address.length - 6,
-                    )}
-                  </CyDText>
-                  <CyDText className={'text-[14px] text-center font-extrabold'}>
-                    {selectedChain?.address.slice(
-                      selectedChain.address.length - 6,
-                      selectedChain.address.length,
-                    )}
-                  </CyDText>
-                </CyDView>
+                {Boolean(selectedChain.address) && (
+                  <CyDView className='flex flex-row'>
+                    <CyDText
+                      className={'text-[14px] text-center font-extrabold'}>
+                      {selectedChain.address.slice(
+                        0,
+                        selectedChain.chainName === 'ethereum' ? 8 : 12,
+                      )}
+                    </CyDText>
+                    <CyDText className={'text-[14px] text-center'}>
+                      {selectedChain.address.slice(
+                        selectedChain.chainName === 'ethereum' ? 8 : 12,
+                        Math.max(selectedChain.address.length - 6, 0),
+                      )}
+                    </CyDText>
+                    <CyDText
+                      className={'text-[14px] text-center font-extrabold'}>
+                      {selectedChain.address.slice(
+                        Math.max(selectedChain.address.length - 6, 0),
+                        selectedChain.address.length,
+                      )}
+                    </CyDText>
+                  </CyDView>
+                )}
               </CyDView>
               {!isCapturingDetails && selectedChain.address && (
                 <CyDView className='mt-[10px] justify-center items-center flex flex-row'>

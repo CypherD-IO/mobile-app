@@ -104,7 +104,7 @@ export default function WithdrawHistory() {
   return (
     <CyDView className='h-full bg-n0' style={{ paddingTop: insets.top }}>
       <PageHeader
-        title={t('WITHDRAW_HISTORY')}
+        title={'WITHDRAW_HISTORY'}
         navigation={navigation}
         onPress={() => {
           navigation.navigate(screenTitle.CRYPTO_WITHDRAWAL, {

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useLayoutEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   CyDText,
@@ -61,7 +61,7 @@ export default function Login() {
     return true;
   };
 
-  const onSuccess = async e => {
+  const onSuccess = async (e: any) => {
     const textValue = e.data;
     setPrivateKey(textValue);
   };
@@ -83,7 +83,7 @@ export default function Login() {
         if (data) {
           const readOnlyWalletData = JSON.parse(data);
           await deleteWithAuth(
-            `/v1/configuration/address/${ethereumAddress}/observer/${readOnlyWalletData.observerId}`,
+            `/v1/configuration/address/${ethereumAddress}/observer/${readOnlyWalletData?.observerId as string}`,
           );
         }
       }
@@ -92,11 +92,7 @@ export default function Login() {
         setLoading(false);
         setPrivateKey('');
         void setConnectionType(ConnectionTypes.PRIVATE_KEY);
-
-        const getCurrentRoute = navigation.getState().routes[0].name;
-        if (getCurrentRoute === screenTitle.OPTIONS_SCREEN) {
-          navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
-        } else setCreateWalletLoading(true);
+        setCreateWalletLoading(true);
       }, IMPORT_WALLET_TIMEOUT);
     } else {
       setBadKeyError(true);
@@ -118,21 +114,24 @@ export default function Login() {
 
   return (
     <CyDSafeAreaView className='flex-1 bg-n0'>
-      <CyDTouchView
-        className='flex flex-row items-center justify-between py-[16px] px-[16px] bg-n0'
-        onPress={() => {
-          navigation.goBack();
-        }}>
-        <CyDView className='pr-[16px]'>
-          <CyDMaterialDesignIcons
-            name='arrow-left'
-            size={24}
-            className='text-base400'
-          />
-        </CyDView>
-        <CyDText className='text-[18px] font-medium tracking-[-0.8px] text-base400'>
-          {t('IMPORT_PRIVATE_KEY')}
-        </CyDText>
+      <CyDView className='flex flex-row items-center justify-between py-[16px] px-[16px] bg-n0'>
+        <CyDTouchView
+          className='flex flex-row items-center gap-x-[16px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDView className='pr-[16px]'>
+            <CyDMaterialDesignIcons
+              name='arrow-left'
+              size={24}
+              className='text-base400'
+            />
+          </CyDView>
+
+          <CyDText className='text-[18px] font-medium tracking-[-0.8px] text-base400'>
+            {t('IMPORT_PRIVATE_KEY')}
+          </CyDText>
+        </CyDTouchView>
         <CyDTouchView
           onPress={() => {
             navigation.navigate(screenTitle.QR_CODE_SCANNER, {
@@ -146,7 +145,8 @@ export default function Login() {
             className='text-base400'
           />
         </CyDTouchView>
-      </CyDTouchView>
+      </CyDView>
+
       <CyDView className='flex-1 bg-n20'>
         <CyDScrollView className='flex-1 px-[20px]'>
           {createWalletLoading && <Loading />}
@@ -175,7 +175,7 @@ export default function Login() {
               </CyDView>
               {badKeyError && (
                 <CyDText className='text-[16px] text-errorTextRed text-center'>
-                  {t('BAD_PRIVATE_KEY_PHARSE')}
+                  {t('BAD_PRIVATE_KEY')}
                 </CyDText>
               )}
               <CyDView className={'flex flex-row justify-end w-full mt-[20px]'}>
