@@ -212,7 +212,7 @@ export default function ManageWallet() {
     if (connectionTypeValue === ConnectionTypes.SEED_PHRASE) {
       baseData.push({
         index: 0,
-        title: t('REVEAL_SEED_PHARSE'),
+        title: t('REVEAL_SEED_PHRASE'),
         logo: 'seed' as IconNames,
       });
     }
