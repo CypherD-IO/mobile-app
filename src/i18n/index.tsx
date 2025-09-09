@@ -1829,6 +1829,7 @@ const resources = {
       SECURITY_OPTION_DISABLED: "Can't be accessed in wallet connect",
       SECURITY_OPTION_DISABLED_DESCRIPTION:
         'Access it in the wallet that you have connected from.',
+      CARD_TRANSACTIONS: 'Card Transactions',
     },
   },
 };
