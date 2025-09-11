@@ -250,7 +250,6 @@ export default function OnBoardOpotions() {
         await appleLogin(provider);
       }
     } catch (error) {
-      console.log('🚀 ~ handleSocialLogin ~ error:', error);
       let errorMessage = parseErrorMessage(error);
       if (errorMessage.includes('login flow failed with error type cancel')) {
         errorMessage = '';

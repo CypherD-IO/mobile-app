@@ -1464,7 +1464,6 @@ export default function useTransactionManager() {
       });
       return { isError: true, error: result };
     } catch (e) {
-      console.log('🚀 ~ sendSolanaTokens ~ e:', parseErrorMessage(e));
       return {
         isError: true,
         error: e,

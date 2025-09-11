@@ -367,15 +367,7 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.ENTER_AMOUNT}
         component={EnterAmount}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('ENTER_AMOUNT')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
@@ -424,15 +416,7 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('RECEIVE')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
