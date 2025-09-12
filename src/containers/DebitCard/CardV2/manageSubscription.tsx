@@ -35,7 +35,7 @@ export default function ManageSubscription() {
   const currentPlanInfo = cardProfile?.planInfo;
   const currentCardProvider = cardProfile?.provider;
   const { getPlanData, getWalletProfile } = useCardUtilities();
-  const { deleteWithAuth } = useAxios();
+  const { postWithAuth } = useAxios();
 
   const [fetchingPlanData, setFetchingPlanData] = useState(false);
   const [planData, setPlanData] = useState<IPlanData | undefined>(undefined);
@@ -92,9 +92,9 @@ export default function ManageSubscription() {
   const handleCancelSubscription = async (): Promise<void> => {
     setIsCancelling(true);
     try {
-      // TODO: Replace with actual cancel subscription API endpoint
-      const response = await deleteWithAuth(
-        `/v1/cards/${currentCardProvider ?? ''}/plan/toggle/auto-renewal`,
+      const response = await postWithAuth(
+        `/v1/cards/${currentCardProvider ?? ''}/plan/toggle/auto-renewal'`,
+        {},
       );
 
       if (!response.isError) {
@@ -133,7 +133,7 @@ export default function ManageSubscription() {
     <CyDSafeAreaView
       className='flex flex-col justify-between h-full bg-n0'
       edges={['top']}>
-      <PageHeader title={t('MANAGE_PREMIUM')} navigation={navigation} />
+      <PageHeader title={'MANAGE_PREMIUM'} navigation={navigation} />
 
       <CyDView className='flex-1 bg-n20 px-[16px]'>
         {currentPlanInfo && planData && proPlanData && !fetchingPlanData ? (

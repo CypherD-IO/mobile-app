@@ -294,14 +294,16 @@ export default function QRCodeGenerator() {
                     {selectedChain.name} {t<string>('ADDRESS_NOT_ACCESSIBLE')}
                   </CyDText>
                 )}
-                <CyDText
-                  className={
-                    isCapturingDetails
-                      ? 'text-[20px] font-extrabold text-center mt-[20px]'
-                      : 'mt-[20px] text-[20px] font-extrabold text-center'
-                  }>
-                  {getMaskedAddress(selectedChain?.address)}
-                </CyDText>
+                {Boolean(selectedChain.address) && (
+                  <CyDText
+                    className={
+                      isCapturingDetails
+                        ? 'text-[20px] font-extrabold text-center mt-[20px]'
+                        : 'mt-[20px] text-[20px] font-extrabold text-center'
+                    }>
+                    {getMaskedAddress(selectedChain?.address)}
+                  </CyDText>
+                )}
                 {Boolean(selectedChain.address) && (
                   <CyDView className='flex flex-row'>
                     <CyDText

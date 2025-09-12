@@ -122,6 +122,8 @@ export default function CardQuote({
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth, postToOtherSource, patchWithAuth, deleteWithAuth } =
     useAxios();
+  const { postWithAuth, postToOtherSource, patchWithAuth, deleteWithAuth } =
+    useAxios();
   const { refreshPortfolio } = usePortfolioRefresh();
   const planInfo = globalState?.cardProfile?.planInfo;
   const [
@@ -221,7 +223,7 @@ export default function CardQuote({
       );
       return;
     }
-    const transferSentUrl = `/v1/funding/deposit`;
+    const transferSentUrl = `/v1/funding/quote/deposit`;
     const body = {
       address,
       quoteUUID: quoteId,
@@ -719,6 +721,11 @@ export default function CardQuote({
               tokenQuote.quoteId,
               response.hash,
             );
+            void transferSentQuote(
+              tokenQuote.fromAddress,
+              tokenQuote.quoteId,
+              response.hash,
+            );
             void logAnalytics({
               type: AnalyticsType.SUCCESS,
               txnHash: response?.hash,
@@ -774,9 +781,7 @@ export default function CardQuote({
                   reason: errorMessage,
                 },
               });
-            await deleteWithAuth(
-              `/v1/funding/quoteTicket/${tokenQuote.quoteId}`,
-            );
+            await deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
             setLoading(false);
             showModal('state', {
               type: 'error',
@@ -843,12 +848,10 @@ export default function CardQuote({
     try {
       if (tokenQuote.quoteId) {
         setLoading(true);
-        const response = await patchWithAuth(
-          `/v1/funding/${cardProvider}/card/quoteTicket`,
-          {
-            quoteId: tokenQuote.quoteId,
-          },
-        );
+        const response = await patchWithAuth(`/v1/funding/quote`, {
+          quoteId: tokenQuote.quoteId,
+          provider: cardProvider,
+        });
         if (response.isError) {
           throw response.error;
         }

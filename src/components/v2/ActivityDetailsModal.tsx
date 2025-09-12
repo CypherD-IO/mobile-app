@@ -13,11 +13,11 @@ import { CardFundResponse } from '../../models/activities.interface';
 import { ActivityStatus, AnalyticsType } from '../../constants/enum';
 import clsx from 'clsx';
 import { capitalize } from 'lodash';
-import useAxios from '../../core/HttpRequest';
 import Intercom from '@intercom/intercom-react-native';
 import Toast from 'react-native-toast-message';
 import { logAnalytics, parseErrorMessage } from '../../core/util';
 import Clipboard from '@react-native-clipboard/clipboard';
+import useAxios from '../../core/HttpRequest';
 
 interface ActivityDetailsModalProps {
   /** Whether the modal is visible */
@@ -64,21 +64,24 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
     React.useState<boolean>(false);
   const [expeditionRequestSuccess, setExpeditionRequestSuccess] =
     React.useState<boolean>(false);
-  const [expeditionTimestamp, setExpeditionTimestamp] = React.useState<
-    number | null
-  >(null);
   const [remainingTime, setRemainingTime] = React.useState<number>(0);
+  const [fetchingStatusTime, setFetchingStatusTime] = React.useState<number>(0);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const fetchingStatusTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const previousDelayExpiresOnRef = React.useRef<number | null>(null);
   const { postWithAuth } = useAxios();
-
   /**
-   * Cleanup timer on component unmount or when modal closes
+   * Cleanup timer on component unmount
    */
   React.useEffect(() => {
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+      }
+      if (fetchingStatusTimerRef.current) {
+        clearInterval(fetchingStatusTimerRef.current);
+        fetchingStatusTimerRef.current = null;
       }
     };
   }, []);
@@ -89,61 +92,139 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   React.useEffect(() => {
     if (!isVisible) {
       setExpeditionRequestSuccess(false);
-      setExpeditionTimestamp(null);
       setRemainingTime(0);
+      setFetchingStatusTime(0);
+      previousDelayExpiresOnRef.current = null;
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+      }
+      if (fetchingStatusTimerRef.current) {
+        clearInterval(fetchingStatusTimerRef.current);
+        fetchingStatusTimerRef.current = null;
       }
     }
   }, [isVisible]);
 
   /**
-   * Start countdown timer when expedition request is successful
+   * Start/update timer only when USER_REPORTED status or delayExpiresOn value actually changes
+   * This prevents unnecessary timer resets when data refreshes but expires time is the same
    */
   React.useEffect(() => {
-    if (expeditionRequestSuccess && expeditionTimestamp) {
-      const updateTimer = () => {
-        const now = moment().unix();
-        const expeditionTime = moment.unix(expeditionTimestamp);
-        const endTime = expeditionTime.add(20, 'minutes').unix();
-        const remaining = endTime - now;
+    const currentActivityData = getCurrentActivity();
 
-        if (remaining <= 0) {
-          setRemainingTime(0);
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-        } else {
-          setRemainingTime(remaining);
-        }
-      };
+    if (
+      currentActivityData &&
+      currentActivityData.activityStatus === ActivityStatus.USER_REPORTED &&
+      currentActivityData.delayExpiresOn
+    ) {
+      const currentDelayExpiresOn = currentActivityData.delayExpiresOn;
+      const previousDelayExpiresOn = previousDelayExpiresOnRef.current;
 
-      // Update immediately
-      updateTimer();
-
-      // Set up interval to update every second
-      timerRef.current = setInterval(updateTimer, 1000);
-
-      return () => {
+      // Only restart timer if delayExpiresOn value has actually changed
+      if (currentDelayExpiresOn !== previousDelayExpiresOn) {
+        // Clear existing timer
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
         }
+
+        // Update the ref with new value
+        previousDelayExpiresOnRef.current = currentDelayExpiresOn;
+
+        const updateTimer = () => {
+          const now = moment().unix();
+          const remaining = currentDelayExpiresOn - now;
+          const newRemainingTime = remaining > 0 ? remaining : 0;
+          setRemainingTime(newRemainingTime);
+
+          // Stop timer when it reaches 0
+          if (newRemainingTime === 0 && timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        };
+
+        // Update immediately
+        updateTimer();
+
+        // Only start interval if there's time remaining
+        if (currentDelayExpiresOn > moment().unix()) {
+          timerRef.current = setInterval(updateTimer, 1000);
+        }
+      }
+      // If delayExpiresOn hasn't changed, let the existing timer continue running
+    } else {
+      // Clear timer if not in USER_REPORTED status or no delayExpiresOn
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setRemainingTime(0);
+      previousDelayExpiresOnRef.current = null;
+    }
+  }, [activity, ongoingActivities, completedActivities, failedActivities]);
+
+  /**
+   * Handle fetching status timer (10-second countdown after reporting transaction)
+   */
+  React.useEffect(() => {
+    if (fetchingStatusTime > 0) {
+      fetchingStatusTimerRef.current = setInterval(() => {
+        setFetchingStatusTime(prev => {
+          if (prev <= 1) {
+            // Timer reached 0, clear the interval
+            if (fetchingStatusTimerRef.current) {
+              clearInterval(fetchingStatusTimerRef.current);
+              fetchingStatusTimerRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => {
+        if (fetchingStatusTimerRef.current) {
+          clearInterval(fetchingStatusTimerRef.current);
+          fetchingStatusTimerRef.current = null;
+        }
       };
     }
-  }, [expeditionRequestSuccess, expeditionTimestamp]);
+  }, [fetchingStatusTime]);
 
-  if (!activity) {
-    return null;
-  }
+  /**
+   * Stop fetching status timer when status changes to USER_REPORTED
+   */
+  React.useEffect(() => {
+    const currentActivityData = getCurrentActivity();
+    if (
+      currentActivityData &&
+      currentActivityData.activityStatus === ActivityStatus.USER_REPORTED &&
+      fetchingStatusTime > 0
+    ) {
+      // Status changed to USER_REPORTED, stop the fetching timer
+      setFetchingStatusTime(0);
+      if (fetchingStatusTimerRef.current) {
+        clearInterval(fetchingStatusTimerRef.current);
+        fetchingStatusTimerRef.current = null;
+      }
+    }
+  }, [
+    activity,
+    ongoingActivities,
+    completedActivities,
+    failedActivities,
+    fetchingStatusTime,
+  ]);
 
   /**
    * Gets the current activity data, preferring live data from ongoing, completed, or failed activities
    * Falls back to the original activity prop if not found in any array
    */
-  const getCurrentActivity = (): CardFundResponse => {
+  const getCurrentActivity = (): CardFundResponse | null => {
+    if (!activity) return null;
+
     // Try to find the activity in the ongoing activities array for live updates
     const liveOngoingActivity = ongoingActivities.find(
       ongoing => ongoing.freshdeskId === activity.freshdeskId,
@@ -170,6 +251,10 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
 
   const currentActivity = getCurrentActivity();
 
+  if (!currentActivity) {
+    return null;
+  }
+
   const currenTime = moment().unix();
   const quoteAfter15mins = moment
     .unix(currentActivity.createdOn)
@@ -187,35 +272,34 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
     try {
       setIsSubmittingRequest(true);
 
-      // const requestData = {
-      //   quoteId: currentActivity.quoteId,
-      //   ...(txnHash.trim() && { hash: txnHash.trim() }),
-      // };
-
-      // const response = await postWithAuth(
-      //   '/v1/funding/alertQuoteTicket',
-      //   requestData,
-      // );
-      const response = {
-        isError: false,
+      const requestData = {
+        quoteId: currentActivity.quoteId,
+        ...(txnHash.trim() && { hash: txnHash.trim() }),
       };
+
+      const response = await postWithAuth(
+        '/v1/funding/quote/alert',
+        requestData,
+      );
 
       if (!response.isError) {
         setTxnHash('');
         setExpeditionRequestSuccess(true);
-        setExpeditionTimestamp(moment().unix());
+        // Start 10-second fetching status timer
+        setFetchingStatusTime(10);
+        // Note: Main timer will be handled by USER_REPORTED status from activity updates
       } else {
         void logAnalytics({
           type: AnalyticsType.ERROR,
-          chain: activity.chain,
-          message: `Load Report failed: ${parseErrorMessage(response.error)}`,
+          chain: currentActivity.chain,
+          message: `Load Report failed: ${parseErrorMessage('API Error')}`,
           screen: 'Activity Status modal',
-          address: activity.masterAddress,
+          address: currentActivity.masterAddress,
           other: {
-            masterAddress: activity.masterAddress,
-            fromAddress: activity.fromAddress,
-            token: activity.tokenSymbol,
-            tokensRequired: activity.tokensRequired,
+            masterAddress: currentActivity.masterAddress,
+            fromAddress: currentActivity.fromAddress,
+            token: currentActivity.tokenSymbol,
+            tokensRequired: currentActivity.tokensRequired,
           },
         });
         Toast.show({
@@ -277,6 +361,25 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   };
 
   /**
+   * Handles copying quote ID to clipboard
+   */
+  const handleCopyQuoteId = async (): Promise<void> => {
+    try {
+      void Clipboard.setString(currentActivity.quoteId);
+      Toast.show({
+        text1: 'Quote ID copied to clipboard',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Error copying quote ID:', error);
+      Toast.show({
+        text1: 'Failed to copy quote ID',
+        type: 'error',
+      });
+    }
+  };
+
+  /**
    * Formats timestamp for display
    */
   const formatTimestamp = (timestamp: number): string => {
@@ -293,10 +396,22 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   };
 
   /**
+   * Formats quote ID to show first 6 and last 6 characters
+   */
+  const formatQuoteId = (quoteId: string): string => {
+    if (quoteId.length <= 12) {
+      return quoteId; // If quote ID is short, show it fully
+    }
+    const first6 = quoteId.substring(0, 6);
+    const last6 = quoteId.substring(quoteId.length - 6);
+    return `${first6}...${last6}`;
+  };
+
+  /**
    * Gets the appropriate step information based on activity status
    */
   const getStepInfo = () => {
-    const status = currentActivity.status;
+    const status = currentActivity.activityStatus;
 
     // Define all possible steps with their base configuration
     const steps = [
@@ -316,7 +431,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
           status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
           status === ActivityStatus.COMPLETED ||
           status === ActivityStatus.FAILED ||
-          status === ActivityStatus.DELAYED,
+          status === ActivityStatus.DELAYED ||
+          status === ActivityStatus.USER_REPORTED,
         inProgress: status === ActivityStatus.ONCHAIN_TRANSACTION_INITIATED,
         failed: false,
         subtitle: undefined,
@@ -327,8 +443,11 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
         completed:
           status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
           status === ActivityStatus.DELAYED ||
-          status === ActivityStatus.COMPLETED,
-        inProgress: status === ActivityStatus.IN_PROGRESS,
+          status === ActivityStatus.COMPLETED ||
+          (status === ActivityStatus.USER_REPORTED && remainingTime > 0),
+        inProgress:
+          status === ActivityStatus.IN_PROGRESS ||
+          status === ActivityStatus.USER_REPORTED,
         failed: status === ActivityStatus.FAILED,
         subtitle: undefined,
       },
@@ -361,9 +480,16 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
    * Gets the title for step 3 based on activity status
    */
   const getStep3Title = (): string => {
+    const status = currentActivity.activityStatus;
+
+    // Handle USER_REPORTED status as always verifying (loading)
+    if (status === ActivityStatus.USER_REPORTED) {
+      return `Verifying on ${capitalize(currentActivity.chain)} Network`;
+    }
+
     const isCompleted =
-      currentActivity.status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
-      currentActivity.status === ActivityStatus.COMPLETED;
+      status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
+      status === ActivityStatus.COMPLETED;
 
     return isCompleted
       ? `Transaction verified on ${capitalize(currentActivity.chain)} Network`
@@ -374,7 +500,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
    * Gets the title for step 4 based on activity status
    */
   const getStep4Title = (): string => {
-    switch (currentActivity.status) {
+    switch (currentActivity.activityStatus) {
       case ActivityStatus.COMPLETED:
         return 'Card load Successful';
       case ActivityStatus.FAILED:
@@ -393,7 +519,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
    */
   const getStep4Subtitle = (): string | undefined => {
     if (
-      currentActivity.status === ActivityStatus.DELAYED &&
+      currentActivity.activityStatus === ActivityStatus.DELAYED &&
       currentActivity.delayDuration
     ) {
       return `ETA: ${parseInt(currentActivity.delayDuration, 10) / 60}m`;
@@ -443,16 +569,18 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                 <CyDView className='items-center mr-4'>
                   <CyDView
                     className={clsx(
-                      'w-10 h-10 rounded-full items-center justify-center',
+                      'w-10 h-10 rounded-full items-center justify-center bg-n40',
                       {
                         'bg-[#006A31]':
                           step.completed &&
-                          currentActivity.status === ActivityStatus.COMPLETED,
-                        'bg-yellow-500':
+                          currentActivity.activityStatus ===
+                            ActivityStatus.COMPLETED,
+                        'bg-[#F7C645]':
                           step.completed &&
-                          currentActivity.status !== ActivityStatus.COMPLETED,
-                        'bg-red-500': step.failed,
-                        'bg-white':
+                          currentActivity.activityStatus !==
+                            ActivityStatus.COMPLETED,
+                        'bg-[#E84E4C]': step.failed,
+                        'bg-[#00843E]':
                           step.inProgress && !step.completed && !step.failed,
                         'bg-n40':
                           !step.completed && !step.failed && !step.inProgress,
@@ -462,26 +590,27 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                       <CyDMaterialDesignIcons
                         name='loading'
                         size={16}
-                        className='!text-base400 animate-spin'
+                        color={'white'}
+                        className='animate-spin '
                       />
                     ) : step.failed ? (
                       <CyDMaterialDesignIcons
                         name='close'
                         size={16}
                         color={'white'}
-                        className='text-base400'
+                        // className='text-base400'
                       />
                     ) : step.completed ? (
                       <CyDMaterialDesignIcons
                         name='check'
                         size={16}
-                        color={'white'}
+                        className='text-base400'
                       />
                     ) : (
                       <CyDText
                         className={clsx(
                           'text-[16px] font-bold',
-                          'text-base200',
+                          'text-base400',
                         )}>
                         {step.step}
                       </CyDText>
@@ -490,14 +619,16 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                   {/* Vertical Line */}
                   {index < getStepInfo().length - 1 && (
                     <CyDView
-                      className={clsx('w-[2px] h-[42px]', {
+                      className={clsx('w-[2px] h-[42px] bg-n40', {
                         'bg-[#006A31]':
                           step.completed &&
-                          currentActivity.status === ActivityStatus.COMPLETED,
-                        'bg-yellow-300':
+                          currentActivity.activityStatus ===
+                            ActivityStatus.COMPLETED,
+                        'bg-[#F7C645]':
                           step.completed &&
-                          currentActivity.status !== ActivityStatus.COMPLETED,
-                        'bg-red-500': step.failed && !step.completed,
+                          currentActivity.activityStatus !==
+                            ActivityStatus.COMPLETED,
+                        'bg-[#E84E4C]': step.failed && !step.completed,
                         'bg-n40':
                           (step.inProgress &&
                             !step.completed &&
@@ -511,22 +642,44 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                 {/* Step Content */}
                 <CyDView className=' pt-2'>
                   <CyDText
-                    className={clsx('text-[16px] font-medium mb-1', {
-                      'text-base100': step.completed || step.inProgress,
-                      'text-red-500': step.failed && !step.completed,
-                      'text-base200':
-                        !step.completed && !step.failed && !step.inProgress,
-                    })}>
+                    className={clsx(
+                      'text-[16px] font-medium mb-1 text-base200',
+                      {
+                        'text-base100': step.completed || step.inProgress,
+                        'text-[#E84E4C]': step.failed && !step.completed,
+                        'text-base200':
+                          !step.completed && !step.failed && !step.inProgress,
+                      },
+                    )}>
                     {step.title}
                   </CyDText>
                   {step.subtitle && (
                     <CyDText
                       className={clsx('text-[12px]', {
                         'text-base200': !step.failed,
-                        'text-red-400': step.failed,
+                        'text-[#E84E4C]': step.failed,
                       })}>
                       {step.subtitle}
                     </CyDText>
+                  )}
+
+                  {/* Quote ID for Step 1 */}
+                  {step.step === 1 && (
+                    <CyDTouchView
+                      className='mt-2 flex-row items-center'
+                      onPress={() => {
+                        void handleCopyQuoteId();
+                      }}>
+                      <CyDText className='text-[12px] text-n200'>
+                        Quote ID: {formatQuoteId(currentActivity.quoteId)}
+                      </CyDText>
+                      <CyDMaterialDesignIcons
+                        name='content-copy'
+                        size={14}
+                        color='#9CA3AF'
+                        className='ml-2'
+                      />
+                    </CyDTouchView>
                   )}
                 </CyDView>
               </CyDView>
@@ -535,60 +688,101 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
         </CyDView>
 
         {/* Footer - Only show if activity is not completed */}
-        {currentActivity.status !== ActivityStatus.COMPLETED && (
+        {currentActivity.activityStatus !== ActivityStatus.COMPLETED && (
           <>
             {/* Failed status - show contact support */}
-            {currentActivity.status === ActivityStatus.FAILED && (
-              <CyDView className='p-6 border-t border-n40'>
-                <CyDTouchView
-                  onPress={handleContactSupport}
-                  className='bg-red-500 rounded-full py-3 px-4 items-center mb-3'>
-                  <CyDText className='text-white font-medium text-[14px]'>
-                    Contact Support
-                  </CyDText>
-                </CyDTouchView>
-              </CyDView>
-            )}
-
-            {/* Expedition request successful - show countdown timer */}
-            {expeditionRequestSuccess && remainingTime > 0 && (
-              <CyDView className='p-4 bg-n20 border-t border-n40'>
-                {/* <CyDView className='bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4'> */}
-                <CyDView className='flex-row items-center justify-between mb-2'>
-                  <CyDText className='text-[16px] font-semibold flex-1 '>
-                    {'Your funding is our top priority'}
-                  </CyDText>
-                  <CyDView className='bg-p100 border border-base400 rounded-[8px] p-[6px] w-[120px]'>
-                    <CyDText className='text-[12px] font-bold'>
-                      Resolving in {formatRemainingTime(remainingTime)}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <CyDText className='text-[14px] text-n200'>
-                  We have received your request and the team is currently
-                  working on it, will update you soon.
+            {currentActivity.activityStatus === ActivityStatus.FAILED && (
+              <CyDView className='p-4 border-t border-n40 '>
+                <CyDText className='text-[32px] font-semibold'>😐</CyDText>
+                <CyDText className='text-[14px] font-normal'>
+                  {'We apologize for the delay in completing your funding.'}
                 </CyDText>
-                {/* </CyDView> */}
-              </CyDView>
-            )}
-
-            {/* Timer expired but activity not completed - show contact support */}
-            {expeditionRequestSuccess && remainingTime === 0 && (
-              <CyDView className='p-6 border-t border-n40'>
+                <CyDText className='text-[12px] font-normal mt-[8px] text-n200'>
+                  {
+                    "Reach out to our support team for a quicker resolution. We understand that delays can be frustrating, but rest assured, the funds that have passed through the blockchain are secure with us, so there's no need to worry."
+                  }
+                </CyDText>
                 <CyDTouchView
                   onPress={handleContactSupport}
-                  className='bg-red-500 rounded-full py-3 px-4 items-center mb-3'>
-                  <CyDText className='text-white font-medium text-[14px]'>
+                  className='bg-p50 rounded-full py-[10px] px-[24px] items-center mt-4'>
+                  <CyDText className='font-medium text-[16px] text-black'>
                     Contact Support
                   </CyDText>
                 </CyDTouchView>
               </CyDView>
             )}
+
+            {/* Show "Reported your txn" when expedition request is successful but status not yet USER_REPORTED */}
+            {expeditionRequestSuccess &&
+              currentActivity.activityStatus !==
+                ActivityStatus.USER_REPORTED && (
+                <CyDView className='p-4 bg-n20 border-t border-n40'>
+                  <CyDText className='text-[16px] font-semibold text-base100 mb-2'>
+                    Your funding is our top priority
+                  </CyDText>
+                  {fetchingStatusTime > 0 ? (
+                    <CyDText className='text-[14px] text-n200'>
+                      Fetching your report status in {fetchingStatusTime}s
+                    </CyDText>
+                  ) : (
+                    <CyDText className='text-[14px] text-n200'>
+                      We have received your transaction report and will update
+                      you soon.
+                    </CyDText>
+                  )}
+                </CyDView>
+              )}
+
+            {/* USER_REPORTED status with timer - show countdown timer */}
+            {currentActivity.activityStatus === ActivityStatus.USER_REPORTED &&
+              remainingTime > 0 && (
+                <CyDView className='p-4 bg-n20 border-t border-n40'>
+                  <CyDView className='flex-row items-center justify-between mb-2'>
+                    <CyDText className='text-[16px] font-semibold flex-1'>
+                      Your funding is our top priority
+                    </CyDText>
+                    <CyDView className='bg-p100 border border-base400 rounded-[8px] p-[6px] w-[130px]'>
+                      <CyDText className='text-[12px] text-black font-bold text-center'>
+                        Resolving in {formatRemainingTime(remainingTime)}
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                  <CyDText className='text-[14px] text-n200'>
+                    We have received your request and the team is currently
+                    working on it, will update you soon.
+                  </CyDText>
+                </CyDView>
+              )}
+
+            {/* USER_REPORTED status but timer expired - show contact support */}
+            {currentActivity.activityStatus === ActivityStatus.USER_REPORTED &&
+              remainingTime === 0 && (
+                <CyDView className='p-4 border-t border-n40 '>
+                  <CyDText className='text-[32px] font-semibold'>😐</CyDText>
+                  <CyDText className='text-[14px] font-normal'>
+                    {'We apologize for the delay in completing your funding.'}
+                  </CyDText>
+                  <CyDText className='text-[12px] font-normal mt-[8px] text-n200'>
+                    {
+                      "Reach out to our support team for a quicker resolution. We understand that delays can be frustrating, but rest assured, the funds that have passed through the blockchain are secure with us, so there's no need to worry."
+                    }
+                  </CyDText>
+                  <CyDTouchView
+                    onPress={handleContactSupport}
+                    className='bg-p50 rounded-full py-[10px] px-[24px] items-center mt-4'>
+                    <CyDText className='font-medium text-[16px] text-black'>
+                      Contact Support
+                    </CyDText>
+                  </CyDTouchView>
+                </CyDView>
+              )}
 
             {/* Delayed but no expedition request yet - show original UI */}
             {isDelayed &&
               !expeditionRequestSuccess &&
-              currentActivity.status !== ActivityStatus.FAILED && (
+              currentActivity.activityStatus !== ActivityStatus.FAILED &&
+              currentActivity.activityStatus !==
+                ActivityStatus.USER_REPORTED && (
                 <>
                   <CyDView className='p-4 bg-n20 flex flex-row items-start gap-x-[4px]'>
                     <CyDView className='flex-1 pr-2'>

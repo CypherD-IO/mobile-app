@@ -102,7 +102,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           {!isCompleted && !isFailed && onKnowMore && (
             <CyDTouchView
               onPress={onKnowMore}
-              className={clsx('rounded-[8px] p-[6px] border border-white', {
+              className={clsx('rounded-[8px] p-[6px] border', {
                 'border-black': isDelayed,
                 'border-white': !isDelayed,
               })}>
@@ -173,8 +173,8 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
     const combined = [
       ...ongoingCardActivities.map(activity => ({
         ...activity,
-        isCompleted: activity.status === ActivityStatus.COMPLETED,
-        isFailed: activity.status === ActivityStatus.FAILED,
+        isCompleted: activity.activityStatus === ActivityStatus.COMPLETED,
+        isFailed: activity.activityStatus === ActivityStatus.FAILED,
       })),
       ...fundingsCompletedInLast5Mins.map(activity => ({
         ...activity,
@@ -210,16 +210,19 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
 
     // Check actual activity status
     if (
-      currentActivity.status === ActivityStatus.FAILED ||
+      currentActivity.activityStatus === ActivityStatus.FAILED ||
       currentActivity.isFailed
     ) {
       return '!bg-red-600';
     } else if (
-      currentActivity.status === ActivityStatus.COMPLETED ||
+      currentActivity.activityStatus === ActivityStatus.COMPLETED ||
       currentActivity.isCompleted
     ) {
       return '!bg-[#006A31]';
-    } else if (currentActivity.status === ActivityStatus.DELAYED || isDelayed) {
+    } else if (
+      currentActivity.activityStatus === ActivityStatus.DELAYED ||
+      isDelayed
+    ) {
       return '!bg-p100';
     } else {
       return '!bg-[#006A31]'; // Default green for ongoing
@@ -287,7 +290,7 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
     );
 
     // Also check if activity has failed status (even if still in ongoing array)
-    const hasFailedStatus = item.status === ActivityStatus.FAILED;
+    const hasFailedStatus = item.activityStatus === ActivityStatus.FAILED;
 
     const currenTime = moment().unix();
     const quoteAfter15mins = moment.unix(item.createdOn).add(15, 'minutes');

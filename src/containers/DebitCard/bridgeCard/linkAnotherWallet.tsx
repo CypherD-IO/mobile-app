@@ -142,7 +142,7 @@ export default function LinkAnotherWallet() {
     const data: Record<string, string | number> = {
       child: formValues.address.toLowerCase(),
       label: formValues.walletName,
-      chain: getChainNameFromAddress(formValues.address) as string,
+      chain: getChainNameFromAddress(formValues.address) ?? '',
       otp: '',
     };
 
@@ -212,7 +212,7 @@ export default function LinkAnotherWallet() {
 
   return (
     <CyDSafeAreaView className={'h-full bg-n0'} edges={['top']}>
-      <PageHeader title={t('LINK_ANOTHER_WALLET')} navigation={navigation} />
+      <PageHeader title={'LINK_ANOTHER_WALLET'} navigation={navigation} />
 
       <Formik
         enableReinitialize={true}

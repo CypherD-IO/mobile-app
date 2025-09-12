@@ -1,40 +1,55 @@
 import {
   ActivityStatus,
-  AllChainsEnum,
   CypherCardPrograms,
   FdActionType,
   FdCardProviders,
 } from '../constants/enum';
+import { ALL_CHAINS_TYPE } from '../constants/type';
+
+// import { CypherCardPrograms, CypherB2BCardPrograms } from '../enums/card.enums';
+// import { ActivityStatus } from '../enums/chain.enum';
+
+export type FdActionRequestBase = {
+  masterAddress: string;
+  programId: CypherCardPrograms;
+  freshdeskId: number;
+  activityStatus:
+    | ActivityStatus.CREATED
+    | ActivityStatus.PENDING
+    | ActivityStatus.IN_PROGRESS
+    | ActivityStatus.DELAYED
+    | ActivityStatus.COMPLETED
+    | ActivityStatus.FAILED
+    | ActivityStatus.INSTANT_SWAP_INITIATED
+    | ActivityStatus.INSTANT_SWAP_COMPLETED
+    | ActivityStatus.CRYPTO_REVERSAL_INITIATED
+    | ActivityStatus.CRYPTO_REVERSAL_COMPLETED
+    | ActivityStatus.ONCHAIN_TRANSACTION_INITIATED
+    | ActivityStatus.USER_REPORTED
+    | ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN;
+  requesterId?: number;
+  email?: string;
+  externalId?: string;
+} & ({ requestId: string } | { quoteId: string });
 
 /**
- * Base response interface containing common fields for all FdActionType responses
- * All specific FdActionType responses extend this interface
+ * Base response type containing common fields for all FdActionType responses
+ * Extends FdActionRequestBase to inherit common request fields and adds response-specific fields
+ * All specific FdActionType responses extend this type
  */
-export interface BaseFdActionResponse {
+export type BaseFdActionResponse = FdActionRequestBase & {
   /** Timestamp when the action was created */
   createdOn: number;
 
-  /** Current status of the action */
-  status: ActivityStatus;
-
   /** Type of FD action */
   fdActionType: FdActionType;
-
-  /** Freshdesk ticket ID associated with this action */
-  freshdeskId: number;
-
-  /** Master wallet address */
-  masterAddress: string;
-
-  /** Program ID */
-  programId: CypherCardPrograms;
-}
+};
 
 /**
  * Response type for MIGRATION actions
  * Contains migration-specific fields in addition to common fields
  */
-export interface MigrationResponse extends BaseFdActionResponse {
+export type MigrationResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.MIGRATION;
 
   /** Source card provider being migrated from */
@@ -48,17 +63,17 @@ export interface MigrationResponse extends BaseFdActionResponse {
 
   /** Whether the migration is completed */
   isCompleted: boolean;
-}
+};
 
 /**
  * Response type for CRYPTO_WITHDRAWAL actions
  * Contains withdrawal-specific fields in addition to common fields
  */
-export interface CryptoWithdrawalResponse extends BaseFdActionResponse {
+export type CryptoWithdrawalResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.CRYPTO_WITHDRAWAL;
 
   /** Blockchain network for the withdrawal */
-  chain: AllChainsEnum;
+  chain: ALL_CHAINS_TYPE;
 
   /** Amount requested for withdrawal */
   requestedAmount: number;
@@ -86,20 +101,20 @@ export interface CryptoWithdrawalResponse extends BaseFdActionResponse {
 
   /** Whether crypto withdrawal is completed */
   isWithdrawalCompleted: boolean;
-}
+};
 
 /**
  * Response type for CARD_FUND actions
  * Contains card funding-specific fields in addition to common fields
  */
-export interface CardFundResponse extends BaseFdActionResponse {
+export type CardFundResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.CARD_FUND;
 
   /** Quote ID for the funding request */
   quoteId: string;
 
   /** Blockchain network */
-  chain: AllChainsEnum;
+  chain: ALL_CHAINS_TYPE;
 
   /** Funding amount in fiat */
   amount: number;
@@ -124,13 +139,19 @@ export interface CardFundResponse extends BaseFdActionResponse {
 
   /** Delay duration if delayed */
   delayDuration?: string;
-}
+
+  /** Delay set on */
+  delaySetOn?: number;
+
+  /** Delay expires on */
+  delayExpiresOn?: number;
+};
 
 /**
  * Response type for CARD_CLOSURE actions
  * Contains card closure-specific fields in addition to common fields
  */
-export interface CardClosureResponse extends BaseFdActionResponse {
+export type CardClosureResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.CARD_CLOSURE;
 
   /** Card provider */
@@ -156,13 +177,13 @@ export interface CardClosureResponse extends BaseFdActionResponse {
 
   /** Card balance at closure time */
   balance?: number;
-}
+};
 
 /**
  * Response type for CARD_SHIPPING actions
  * Contains card shipping-specific fields in addition to common fields
  */
-export interface CardShippingResponse extends BaseFdActionResponse {
+export type CardShippingResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.CARD_SHIPPING;
 
   /** Shipping address */
@@ -185,13 +206,13 @@ export interface CardShippingResponse extends BaseFdActionResponse {
 
   /** Whether shipping is completed */
   isShipped: boolean;
-}
+};
 
 /**
  * Response type for PLAN_UPDATE actions
  * Contains plan update-specific fields in addition to common fields
  */
-export interface PlanUpdateResponse extends BaseFdActionResponse {
+export type PlanUpdateResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.PLAN_UPDATE;
 
   /** Previous plan ID */
@@ -205,13 +226,13 @@ export interface PlanUpdateResponse extends BaseFdActionResponse {
 
   /** Effective date of plan change */
   effectiveDate?: Date;
-}
+};
 
 /**
  * Response type for TXN_COMPLAIN actions
  * Contains transaction complaint-specific fields in addition to common fields
  */
-export interface TransactionComplainResponse extends BaseFdActionResponse {
+export type TransactionComplainResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.TXN_COMPLAIN;
 
   /** Disputed transaction ID */
@@ -238,13 +259,13 @@ export interface TransactionComplainResponse extends BaseFdActionResponse {
     id?: string;
     category?: string;
   };
-}
+};
 
 /**
  * Response type for CARD_LIMIT_UPDATE actions
  * Contains card limit update-specific fields in addition to common fields
  */
-export interface CardLimitUpdateResponse extends BaseFdActionResponse {
+export type CardLimitUpdateResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.CARD_LIMIT_UPDATE;
 
   /** Previous spending limit */
@@ -261,13 +282,13 @@ export interface CardLimitUpdateResponse extends BaseFdActionResponse {
 
   /** Effective date of limit change */
   effectiveDate?: Date;
-}
+};
 
 /**
  * Response type for CARD_WALLET_CHANGE_REQUEST actions
  * Contains wallet change request-specific fields in addition to common fields
  */
-export interface CardWalletChangeResponse extends BaseFdActionResponse {
+export type CardWalletChangeResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.CARD_WALLET_CHANGE_REQUEST;
 
   /** Previous wallet address */
@@ -287,13 +308,13 @@ export interface CardWalletChangeResponse extends BaseFdActionResponse {
 
   /** Effective date of wallet change */
   effectiveDate?: Date;
-}
+};
 
 /**
  * Response type for OTHERS actions
  * Contains generic fields for miscellaneous actions in addition to common fields
  */
-export interface OthersResponse extends BaseFdActionResponse {
+export type OthersResponse = BaseFdActionResponse & {
   fdActionType: FdActionType.OTHERS;
 
   /** Description of the action */
@@ -304,7 +325,7 @@ export interface OthersResponse extends BaseFdActionResponse {
 
   /** Whether the action is resolved */
   isResolved: boolean;
-}
+};
 
 /**
  * Union type representing all possible FdActionType responses
@@ -322,19 +343,19 @@ export type ActivityResponse =
   | CardWalletChangeResponse
   | OthersResponse;
 
-export class PaginatedActivityResponse {
+export interface PaginatedActivityResponse {
   /** Array of activity responses */
-  items!: ActivityResponse[];
+  items: ActivityResponse[];
 
   /** Number of items returned in this response */
-  count!: number;
+  count: number;
 
   /** Current offset */
-  offset!: string | undefined;
+  offset?: string;
 
   /** Limit used for this query */
-  limit!: number;
+  limit: number;
 
   /** Whether there are more items available */
-  hasMore!: boolean;
+  hasMore: boolean;
 }

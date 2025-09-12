@@ -149,7 +149,7 @@ export const useActivityPolling = (
    */
   const isActivityCompleted = useCallback(
     (activity: CardFundResponse): boolean => {
-      return activity.status === ActivityStatus.COMPLETED;
+      return activity.activityStatus === ActivityStatus.COMPLETED;
     },
     [],
   );
@@ -161,7 +161,7 @@ export const useActivityPolling = (
    */
   const isActivityFailed = useCallback(
     (activity: CardFundResponse): boolean => {
-      return activity.status === ActivityStatus.FAILED;
+      return activity.activityStatus === ActivityStatus.FAILED;
     },
     [],
   );
