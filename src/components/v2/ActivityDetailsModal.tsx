@@ -107,18 +107,48 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   }, [isVisible]);
 
   /**
+   * Gets the current activity data, preferring live data from ongoing, completed, or failed activities
+   * Falls back to the original activity prop if not found in any array
+   * Memoized to prevent unnecessary recalculations
+   */
+  const currentActivity = React.useMemo((): CardFundResponse | null => {
+    if (!activity) return null;
+
+    // Try to find the activity in the ongoing activities array for live updates
+    const liveOngoingActivity = ongoingActivities.find(
+      ongoing => ongoing.freshdeskId === activity.freshdeskId,
+    );
+
+    // If not found in ongoing, try to find in completed activities
+    const liveCompletedActivity = completedActivities.find(
+      completed => completed.freshdeskId === activity.freshdeskId,
+    );
+
+    // If not found in completed, try to find in failed activities
+    const liveFailedActivity = failedActivities.find(
+      failed => failed.freshdeskId === activity.freshdeskId,
+    );
+
+    // Return live activity if found in any array, otherwise fallback to original activity
+    return (
+      liveOngoingActivity ??
+      liveCompletedActivity ??
+      liveFailedActivity ??
+      activity
+    );
+  }, [activity, ongoingActivities, completedActivities, failedActivities]);
+
+  /**
    * Start/update timer only when USER_REPORTED status or delayExpiresOn value actually changes
    * This prevents unnecessary timer resets when data refreshes but expires time is the same
    */
   React.useEffect(() => {
-    const currentActivityData = getCurrentActivity();
-
     if (
-      currentActivityData &&
-      currentActivityData.activityStatus === ActivityStatus.USER_REPORTED &&
-      currentActivityData.delayExpiresOn
+      currentActivity &&
+      currentActivity.activityStatus === ActivityStatus.USER_REPORTED &&
+      currentActivity.delayExpiresOn
     ) {
-      const currentDelayExpiresOn = currentActivityData.delayExpiresOn;
+      const currentDelayExpiresOn = currentActivity.delayExpiresOn;
       const previousDelayExpiresOn = previousDelayExpiresOnRef.current;
 
       // Only restart timer if delayExpiresOn value has actually changed
@@ -163,7 +193,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
       setRemainingTime(0);
       previousDelayExpiresOnRef.current = null;
     }
-  }, [activity, ongoingActivities, completedActivities, failedActivities]);
+  }, [currentActivity?.activityStatus, currentActivity?.delayExpiresOn]);
 
   /**
    * Handle fetching status timer (10-second countdown after reporting transaction)
@@ -197,10 +227,9 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
    * Stop fetching status timer when status changes to USER_REPORTED
    */
   React.useEffect(() => {
-    const currentActivityData = getCurrentActivity();
     if (
-      currentActivityData &&
-      currentActivityData.activityStatus === ActivityStatus.USER_REPORTED &&
+      currentActivity &&
+      currentActivity.activityStatus === ActivityStatus.USER_REPORTED &&
       fetchingStatusTime > 0
     ) {
       // Status changed to USER_REPORTED, stop the fetching timer
@@ -210,46 +239,132 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
         fetchingStatusTimerRef.current = null;
       }
     }
-  }, [
-    activity,
-    ongoingActivities,
-    completedActivities,
-    failedActivities,
-    fetchingStatusTime,
-  ]);
+  }, [currentActivity?.activityStatus, fetchingStatusTime]);
 
   /**
-   * Gets the current activity data, preferring live data from ongoing, completed, or failed activities
-   * Falls back to the original activity prop if not found in any array
+   * Formats timestamp for display
    */
-  const getCurrentActivity = (): CardFundResponse | null => {
-    if (!activity) return null;
-
-    // Try to find the activity in the ongoing activities array for live updates
-    const liveOngoingActivity = ongoingActivities.find(
-      ongoing => ongoing.freshdeskId === activity.freshdeskId,
-    );
-
-    // If not found in ongoing, try to find in completed activities
-    const liveCompletedActivity = completedActivities.find(
-      completed => completed.freshdeskId === activity.freshdeskId,
-    );
-
-    // If not found in completed, try to find in failed activities
-    const liveFailedActivity = failedActivities.find(
-      failed => failed.freshdeskId === activity.freshdeskId,
-    );
-
-    // Return live activity if found in any array, otherwise fallback to original activity
-    return (
-      liveOngoingActivity ??
-      liveCompletedActivity ??
-      liveFailedActivity ??
-      activity
-    );
+  const formatTimestamp = (timestamp: number): string => {
+    return moment.unix(timestamp).format('MMM DD, YYYY, h:mm A');
   };
 
-  const currentActivity = getCurrentActivity();
+  /**
+   * Gets the appropriate step information based on activity status
+   * Memoized to prevent unnecessary recalculations and console logs
+   */
+  const getStepInfo = React.useMemo(() => {
+    const status = currentActivity?.activityStatus;
+
+    // Define all possible steps with their base configuration
+    const steps = [
+      {
+        step: 1,
+        title: 'Quotation Created',
+        completed: true, // Step 1 is always complete
+        inProgress: false,
+        failed: false,
+        subtitle: currentActivity
+          ? formatTimestamp(currentActivity.createdOn)
+          : '',
+      },
+      {
+        step: 2,
+        title: 'Token Transfer Initiated',
+        completed:
+          status === ActivityStatus.IN_PROGRESS ||
+          status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
+          status === ActivityStatus.COMPLETED ||
+          status === ActivityStatus.FAILED ||
+          status === ActivityStatus.DELAYED ||
+          status === ActivityStatus.USER_REPORTED,
+        inProgress: status === ActivityStatus.ONCHAIN_TRANSACTION_INITIATED,
+        failed: false,
+        subtitle: undefined,
+      },
+      {
+        step: 3,
+        title: (() => {
+          // Handle USER_REPORTED status as always verifying (loading)
+          if (status === ActivityStatus.USER_REPORTED) {
+            return `Verifying on ${capitalize(
+              currentActivity?.chain ?? '',
+            )} Network`;
+          }
+
+          const isCompleted =
+            status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
+            status === ActivityStatus.COMPLETED;
+
+          return isCompleted
+            ? `Transaction verified on ${capitalize(
+                currentActivity?.chain ?? '',
+              )} Network`
+            : `Verifying on ${capitalize(
+                currentActivity?.chain ?? '',
+              )} Network`;
+        })(),
+        completed:
+          status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
+          status === ActivityStatus.DELAYED ||
+          status === ActivityStatus.COMPLETED ||
+          (status === ActivityStatus.USER_REPORTED && remainingTime > 0),
+        inProgress:
+          status === ActivityStatus.IN_PROGRESS ||
+          status === ActivityStatus.USER_REPORTED,
+        failed: status === ActivityStatus.FAILED,
+        subtitle: undefined,
+      },
+      {
+        step: 4,
+        title: (() => {
+          switch (currentActivity?.activityStatus) {
+            case ActivityStatus.COMPLETED:
+              return 'Card load Successful';
+            case ActivityStatus.FAILED:
+              return 'Card load Failed';
+            case ActivityStatus.DELAYED:
+              return 'Unusual delay in load';
+            case ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN:
+              return 'Card load in progress';
+            default:
+              return 'Card load in progress';
+          }
+        })(),
+        completed: status === ActivityStatus.COMPLETED,
+        inProgress: status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN,
+        failed: status === ActivityStatus.FAILED,
+        subtitle: (() => {
+          if (
+            currentActivity?.activityStatus === ActivityStatus.DELAYED &&
+            currentActivity?.delayDuration
+          ) {
+            return `ETA: ${parseInt(currentActivity.delayDuration, 10) / 60}m`;
+          }
+          return undefined;
+        })(),
+      },
+    ];
+
+    // Filter out steps that shouldn't be shown based on status
+    // if (status === ActivityStatus.COMPLETED) {
+    //   // For completed status, show all steps as completed
+    //   return steps.map(step => ({
+    //     ...step,
+    //     completed: true,
+    //     inProgress: false,
+    //     failed: false,
+    //     title: step.step === 4 ? 'Card load Successful' : step.title,
+    //   }));
+    // }
+
+    return steps;
+  }, [
+    currentActivity?.activityStatus,
+    currentActivity?.createdOn,
+    currentActivity?.delayDuration,
+    currentActivity?.chain,
+    remainingTime,
+  ]);
 
   if (!currentActivity) {
     return null;
@@ -380,13 +495,6 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   };
 
   /**
-   * Formats timestamp for display
-   */
-  const formatTimestamp = (timestamp: number): string => {
-    return moment.unix(timestamp).format('MMM DD, YYYY, h:mm A');
-  };
-
-  /**
    * Formats remaining time for countdown display
    */
   const formatRemainingTime = (seconds: number): string => {
@@ -405,126 +513,6 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
     const first6 = quoteId.substring(0, 6);
     const last6 = quoteId.substring(quoteId.length - 6);
     return `${first6}...${last6}`;
-  };
-
-  /**
-   * Gets the appropriate step information based on activity status
-   */
-  const getStepInfo = () => {
-    const status = currentActivity.activityStatus;
-
-    // Define all possible steps with their base configuration
-    const steps = [
-      {
-        step: 1,
-        title: 'Quotation Created',
-        completed: true, // Step 1 is always complete
-        inProgress: false,
-        failed: false,
-        subtitle: formatTimestamp(currentActivity.createdOn),
-      },
-      {
-        step: 2,
-        title: 'Token Transfer Initiated',
-        completed:
-          status === ActivityStatus.IN_PROGRESS ||
-          status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
-          status === ActivityStatus.COMPLETED ||
-          status === ActivityStatus.FAILED ||
-          status === ActivityStatus.DELAYED ||
-          status === ActivityStatus.USER_REPORTED,
-        inProgress: status === ActivityStatus.ONCHAIN_TRANSACTION_INITIATED,
-        failed: false,
-        subtitle: undefined,
-      },
-      {
-        step: 3,
-        title: getStep3Title(),
-        completed:
-          status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
-          status === ActivityStatus.DELAYED ||
-          status === ActivityStatus.COMPLETED ||
-          (status === ActivityStatus.USER_REPORTED && remainingTime > 0),
-        inProgress:
-          status === ActivityStatus.IN_PROGRESS ||
-          status === ActivityStatus.USER_REPORTED,
-        failed: status === ActivityStatus.FAILED,
-        subtitle: undefined,
-      },
-      {
-        step: 4,
-        title: getStep4Title(),
-        completed: status === ActivityStatus.COMPLETED,
-        inProgress: status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN,
-        failed: status === ActivityStatus.FAILED,
-        subtitle: getStep4Subtitle(),
-      },
-    ];
-
-    // Filter out steps that shouldn't be shown based on status
-    if (status === ActivityStatus.COMPLETED) {
-      // For completed status, show all steps as completed
-      return steps.map(step => ({
-        ...step,
-        completed: true,
-        inProgress: false,
-        failed: false,
-        title: step.step === 4 ? 'Card load Successful' : step.title,
-      }));
-    }
-
-    return steps;
-  };
-
-  /**
-   * Gets the title for step 3 based on activity status
-   */
-  const getStep3Title = (): string => {
-    const status = currentActivity.activityStatus;
-
-    // Handle USER_REPORTED status as always verifying (loading)
-    if (status === ActivityStatus.USER_REPORTED) {
-      return `Verifying on ${capitalize(currentActivity.chain)} Network`;
-    }
-
-    const isCompleted =
-      status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
-      status === ActivityStatus.COMPLETED;
-
-    return isCompleted
-      ? `Transaction verified on ${capitalize(currentActivity.chain)} Network`
-      : `Verifying on ${capitalize(currentActivity.chain)} Network`;
-  };
-
-  /**
-   * Gets the title for step 4 based on activity status
-   */
-  const getStep4Title = (): string => {
-    switch (currentActivity.activityStatus) {
-      case ActivityStatus.COMPLETED:
-        return 'Card load Successful';
-      case ActivityStatus.FAILED:
-        return 'Card load Failed';
-      case ActivityStatus.DELAYED:
-        return 'Unusual delay in load';
-      case ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN:
-        return 'Card load in progress';
-      default:
-        return 'Card load in progress';
-    }
-  };
-
-  /**
-   * Gets the subtitle for step 4 based on activity status
-   */
-  const getStep4Subtitle = (): string | undefined => {
-    if (
-      currentActivity.activityStatus === ActivityStatus.DELAYED &&
-      currentActivity.delayDuration
-    ) {
-      return `ETA: ${parseInt(currentActivity.delayDuration, 10) / 60}m`;
-    }
-    return undefined;
   };
 
   return (
@@ -563,13 +551,13 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
 
           {/* Steps Timeline */}
           <CyDView className=''>
-            {getStepInfo().map((step, index) => (
+            {getStepInfo.map((step, index) => (
               <CyDView key={step.step} className='flex-row items-start'>
                 {/* Step Circle */}
                 <CyDView className='items-center mr-4'>
                   <CyDView
                     className={clsx(
-                      'w-10 h-10 rounded-full items-center justify-center bg-n40',
+                      'w-10 h-10 rounded-full items-center justify-center',
                       {
                         'bg-[#006A31]':
                           step.completed &&
@@ -598,13 +586,17 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                         name='close'
                         size={16}
                         color={'white'}
-                        // className='text-base400'
                       />
                     ) : step.completed ? (
                       <CyDMaterialDesignIcons
                         name='check'
                         size={16}
-                        className='text-base400'
+                        color={
+                          currentActivity.activityStatus ===
+                          ActivityStatus.COMPLETED
+                            ? 'white'
+                            : 'black'
+                        }
                       />
                     ) : (
                       <CyDText
@@ -617,9 +609,9 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                     )}
                   </CyDView>
                   {/* Vertical Line */}
-                  {index < getStepInfo().length - 1 && (
+                  {index < getStepInfo.length - 1 && (
                     <CyDView
-                      className={clsx('w-[2px] h-[42px] bg-n40', {
+                      className={clsx('w-[2px] h-[42px]', {
                         'bg-[#006A31]':
                           step.completed &&
                           currentActivity.activityStatus ===
@@ -642,15 +634,12 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                 {/* Step Content */}
                 <CyDView className=' pt-2'>
                   <CyDText
-                    className={clsx(
-                      'text-[16px] font-medium mb-1 text-base200',
-                      {
-                        'text-base100': step.completed || step.inProgress,
-                        'text-[#E84E4C]': step.failed && !step.completed,
-                        'text-base200':
-                          !step.completed && !step.failed && !step.inProgress,
-                      },
-                    )}>
+                    className={clsx('text-[16px] font-medium mb-1', {
+                      'text-base100': step.completed || step.inProgress,
+                      'text-[#E84E4C]': step.failed && !step.completed,
+                      'text-base200':
+                        !step.completed && !step.failed && !step.inProgress,
+                    })}>
                     {step.title}
                   </CyDText>
                   {step.subtitle && (

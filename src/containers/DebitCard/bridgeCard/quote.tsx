@@ -122,8 +122,6 @@ export default function CardQuote({
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth, postToOtherSource, patchWithAuth, deleteWithAuth } =
     useAxios();
-  const { postWithAuth, postToOtherSource, patchWithAuth, deleteWithAuth } =
-    useAxios();
   const { refreshPortfolio } = usePortfolioRefresh();
   const planInfo = globalState?.cardProfile?.planInfo;
   const [

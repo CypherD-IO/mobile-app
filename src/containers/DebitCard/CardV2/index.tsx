@@ -13,7 +13,7 @@ import { get, isEmpty } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, AppState, AppStateStatus } from 'react-native';
+import { StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Toast from 'react-native-toast-message';
 import AppImages from '../../../../assets/images/appImages';
@@ -356,51 +356,47 @@ export default function CypherCardScreen() {
   };
 
   const onRefresh = async () => {
-    // void refreshProfile();
+    void refreshProfile();
 
-    // const spendStatsFromAPI = await getCardSpendStats();
-    // if (spendStatsFromAPI) {
-    //   const premiumDataStats = spendStatsFromAPI?.projectedSavings;
-    //   let amount = 0;
-    //   if (premiumDataStats?.isPremiumPlan) {
-    //     amount =
-    //       Number(premiumDataStats?.projectedFxFeeSaved ?? 0) +
-    //       Number(premiumDataStats?.projectedLoadFeeSaved ?? 0);
-    //   } else {
-    //     amount =
-    //       Number(premiumDataStats?.projectedFxFeeLost ?? 0) +
-    //       Number(premiumDataStats?.projectedLoadFeeLost ?? 0);
-    //   }
+    const spendStatsFromAPI = await getCardSpendStats();
+    if (spendStatsFromAPI) {
+      const premiumDataStats = spendStatsFromAPI?.projectedSavings;
+      let amount = 0;
+      if (premiumDataStats?.isPremiumPlan) {
+        amount =
+          Number(premiumDataStats?.projectedFxFeeSaved ?? 0) +
+          Number(premiumDataStats?.projectedLoadFeeSaved ?? 0);
+      } else {
+        amount =
+          Number(premiumDataStats?.projectedFxFeeLost ?? 0) +
+          Number(premiumDataStats?.projectedLoadFeeLost ?? 0);
+      }
 
-    //   // Calculate months between current date and target year using moment
-    //   const targetDate = moment(premiumDataStats?.year);
-    //   const currentDate = moment();
-    //   const monthsDiff = Math.abs(currentDate.diff(targetDate, 'months'));
-    //   const timePeriod = `${monthsDiff} months`;
+      // Calculate months between current date and target year using moment
+      const targetDate = moment(premiumDataStats?.year);
+      const currentDate = moment();
+      const monthsDiff = Math.abs(currentDate.diff(targetDate, 'months'));
+      const timePeriod = `${monthsDiff} months`;
 
-    //   setSpendStats({
-    //     ...spendStats,
-    //     amount,
-    //     isPremiumPlan: premiumDataStats?.isPremiumPlan,
-    //     year: premiumDataStats?.year,
-    //     timePeriod,
-    //   });
-    // }
+      setSpendStats({
+        ...spendStats,
+        amount,
+        isPremiumPlan: premiumDataStats?.isPremiumPlan,
+        year: premiumDataStats?.year,
+        timePeriod,
+      });
+    }
 
-    // setCardBalance('0');
-    // if (cardId !== CARD_IDS.HIDDEN_CARD) {
-    //   await fetchCardBalance();
-    //   void fetchRecentTransactions();
-    //   void getCardDesignValues();
-    // }
+    setCardBalance('0');
+    if (cardId !== CARD_IDS.HIDDEN_CARD) {
+      await fetchCardBalance();
+      void fetchRecentTransactions();
+      void getCardDesignValues();
+    }
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
     }
   };
-
-  // Note: fetchOngoingCardActivities is no longer needed
-  // Ongoing activities are fetched via the useActivityPolling hook
-  // Completed activities are populated when ongoing activities complete
 
   useEffect(() => {
     if (isFocused) {
