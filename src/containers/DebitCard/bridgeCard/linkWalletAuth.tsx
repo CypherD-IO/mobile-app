@@ -132,7 +132,7 @@ export default function LinkWalletAuth() {
 
   return (
     <CyDSafeAreaView className={'bg-n0'} edges={['top']}>
-      <PageHeader title={t('UNLINK_WALLET_AUTH')} navigation={navigation} />
+      <PageHeader title={'UNLINK_WALLET_AUTH'} navigation={navigation} />
 
       <CyDView className={'h-full px-[20px] pt-[10px] bg-n20'}>
         <OTPHeader />

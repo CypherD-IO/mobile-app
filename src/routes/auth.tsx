@@ -297,43 +297,19 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('TRAN_DETAIL')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
         name={screenTitle.NFTS_DETAIL}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('NFT_DETAIL')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
         name={screenTitle.GEN_WEBVIEW}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('GEN_WEBVIEW')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
@@ -367,15 +343,7 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.ENTER_AMOUNT}
         component={EnterAmount}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('ENTER_AMOUNT')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
@@ -424,15 +392,7 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('RECEIVE')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
@@ -655,15 +615,7 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title='Explorer'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
       <FundCardStack.Screen
         name={screenTitle.ORDER_STEPS_SCREEN}

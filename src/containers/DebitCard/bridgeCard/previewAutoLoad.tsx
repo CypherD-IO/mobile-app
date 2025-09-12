@@ -186,7 +186,7 @@ export default function PreviewAutoLoad() {
               </CyDText>
             </CyDView>
           </CyDView>
-          {autoLoadExpiry && expiryDate && (
+          {autoLoadExpiry && expiryDate && moment(expiryDate).isValid() && (
             <CyDView
               className={
                 'flex flex-row justify-between items-center py-[16px]'

@@ -119,6 +119,7 @@ export default function TelegramOptionsModal({
       description: 'Permanently disconnect telegram from your card',
       image: 'link-off' as const,
       action: () => {
+        if (isDisconnecting) return;
         void disconnectTelegram();
       },
     },
@@ -152,6 +153,10 @@ export default function TelegramOptionsModal({
             <CyDTouchView
               key={index}
               onPress={action}
+              disabled={
+                (index === 0 && isResettingPin) ||
+                (index === 1 && isDisconnecting)
+              }
               className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-n0 rounded-[6px] mx-[12px]'>
               {(index === 0 && isResettingPin) ||
               (index === 1 && isDisconnecting) ? (

@@ -87,8 +87,8 @@ export default function TransDetail({
 
   return (
     <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
-      <PageHeader title={''} navigation={navigation} />
-      <CyDView className='flex-row items-center justify-center m-[10px] flex-1 bg-n20 pt-[24px]'>
+      <PageHeader title={'DETAILS'} navigation={navigation} />
+      <CyDView className='flex-row items-center justify-center m-[10px] flex-1 bg-n20'>
         <WebView
           injectedJavaScriptBeforeContentLoaded={injectedCode}
           ref={webviewRef}

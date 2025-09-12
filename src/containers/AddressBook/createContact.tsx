@@ -590,10 +590,7 @@ export const CreateContact = () => {
         onSubmit={async values => await onSubmitContact(values)}>
         {formProps => (
           <CyDView className='flex flex-1'>
-            <PageHeader
-              title={t('CREATE_NEW_CONTACT')}
-              navigation={navigation}
-            />
+            <PageHeader title={'CREATE_NEW_CONTACT'} navigation={navigation} />
             <CyDView className='flex flex-1 h-full bg-n20'>
               <CyDScrollView className='flex flex-col w-full'>
                 <CyDView className='flex flex-1 h-full'>

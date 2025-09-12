@@ -273,7 +273,7 @@ const resources = {
       AVAILABLE_BALANCE: 'Available balance',
       MY_DELEGATION: 'My delegation',
       REWARD: 'Reward',
-      REWARDS: 'Reward',
+      REWARDS: 'Rewards',
       APPROVE: 'APPROVE',
       REJECT: 'REJECT',
       CANCEL_INIT_CAPS: 'Cancel',
@@ -592,7 +592,6 @@ const resources = {
       ID_TYPE: 'Id Type',
       IBC_SUCCESS: 'IBC Success',
       CTA_JOIN_WAITLIST: 'JOIN WAITLIST',
-      TRANSACTION_DETAILS: 'Transaction Details',
       MERCHANT_DETAILS: 'Merchant Details',
       TOKEN_DETAILS: 'Token Details',
       CURRENCY_CONVERSION_DETAILS: 'Currency Conversion Details',
@@ -1144,7 +1143,7 @@ const resources = {
       OFFERS_AND_BENEFITS: 'Offers & Benefit',
       APPLY: 'Apply',
       ENTER_OFFER_CODE: 'Enter offer codes',
-      PLAN_COMPARISON: 'Plan comparision',
+      PLAN_COMPARISON: 'Plan comparison',
       METAL_CARD: 'Metal card',
       ORDER_YOUR_METAL_CARD: 'Order your Metal Card',
       USDC_TOKEN: 'USDC token',
@@ -1166,7 +1165,7 @@ const resources = {
       COMPARISON_NOTE_3:
         '(3) Lower liquidity tokens may incur crypto load fees of up to 3%.',
       COMPARISON_NOTE_4:
-        '(4) Cypher charges a {{forexMarkupStandard}}% forex markup for standard users and {{forexMarkupPremium}}% for premium users. However, other financial institutions involved in processsing the transaction may charge extra fees of 0.25% to 1%, which are not controlled by Cypher.',
+        '(4) Cypher charges a {{forexMarkupStandard}}% forex markup for standard users and {{forexMarkupPremium}}% for premium users. However, other financial institutions involved in processing the transaction may charge extra fees of 0.25% to 1%, which are not controlled by Cypher.',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
@@ -1830,6 +1829,7 @@ const resources = {
       SECURITY_OPTION_DISABLED_DESCRIPTION:
         'Access it in the wallet that you have connected from.',
       CARD_TRANSACTIONS: 'Card Transactions',
+      DETAILS: 'Details',
     },
   },
 };

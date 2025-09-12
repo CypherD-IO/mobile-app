@@ -1195,7 +1195,7 @@ export default function Activites() {
   return (
     <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
       <PageHeader title={'ACTIVITIES'} navigation={navigation} />
-      <CyDView className='bg-n20 flex-1'>
+      <CyDView className='bg-n20 flex-1 pt-[24px]'>
         {activityContext.state.activityObjects.length === 0 ||
         activities.length === 0 ? (
           <CyDView className='flex flex-1 justify-center items-center'>

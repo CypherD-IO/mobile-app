@@ -240,6 +240,11 @@ export default function PrivateKey(props: PrivateKeyProps) {
     };
   }, [isFocused]);
 
+  const handleCopyPrivateKey = () => {
+    copyToClipboard(privateKey);
+    showToast(t('PRIVATE_KEY_COPY'));
+  };
+
   return (
     <CyDSafeAreaView className='bg-n0 flex-1'>
       <ChooseChainModal
@@ -399,10 +404,7 @@ export default function PrivateKey(props: PrivateKeyProps) {
             </CyDTouchView>
 
             <CyDTouchView
-              onPress={() => {
-                copyToClipboard(privateKey);
-                showToast(t('PRIVATE_KEY_COPY'));
-              }}
+              onPress={handleCopyPrivateKey}
               className='flex-1 bg-n20 rounded-full p-[8px] flex-row items-center justify-center w-[156px]'>
               <CyDIcons name='copy' size={20} className='text-base400 mr-2' />
               <CyDText className='text-base font-semibold text-base400'>

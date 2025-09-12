@@ -128,7 +128,7 @@ export default function SecurityPrivacy() {
         <CyDFlatList
           data={securityPrivacyData}
           renderItem={({ item }) => renderSecurityPrivacyData(item)}
-          keyExtractor={item => item.index}
+          keyExtractor={item => String(item.index)}
         />
       </CyDView>
     </CyDSafeAreaView>

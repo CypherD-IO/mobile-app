@@ -73,11 +73,13 @@ export default function CancelSubscriptionModal({
           </CyDView>
 
           {/* Expiration Info */}
-          <CyDView className='mt-[16px] p-[12px] bg-n20 rounded-[6px]'>
-            <CyDText className='text-[14px] font-medium text-orange700'>
-              Your subscription will remain active until {expirationDate}
-            </CyDText>
-          </CyDView>
+          {Boolean(currentPlanInfo?.expiresOn) && (
+            <CyDView className='mt-[16px] p-[12px] bg-n20 rounded-[6px]'>
+              <CyDText className='text-[14px] font-medium text-orange700'>
+                Your subscription will remain active until {expirationDate}
+              </CyDText>
+            </CyDView>
+          )}
 
           <Button
             onPress={handleCancelSubscription}

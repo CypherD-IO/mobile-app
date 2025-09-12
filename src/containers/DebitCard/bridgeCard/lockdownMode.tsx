@@ -129,7 +129,7 @@ export default function LockdownMode() {
 
   return (
     <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
-      <PageHeader title={t('LOCKDOWN_MODE')} navigation={navigation} />
+      <PageHeader title={'LOCKDOWN_MODE'} navigation={navigation} />
       <CyDView className='flex-1 bg-n20 pt-[24px]'>
         <CyDView className='mt-[28px] rounded-[16px] bg-n0 items-center mx-[16px] py-[24px] px-[24px]'>
           <CyDView className='rounded-lg h-[112px] w-[112px] my-[24px] bg-n20 flex flex-row items-center justify-center'>
@@ -167,7 +167,10 @@ export default function LockdownMode() {
                     hideModal();
                     void handleClickLockDownMode();
                   },
-                  onFailure: hideModal,
+                  onFailure: () => {
+                    hideModal();
+                    setLoading(false);
+                  },
                 });
               }}
             />
