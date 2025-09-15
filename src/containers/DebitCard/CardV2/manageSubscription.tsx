@@ -93,7 +93,7 @@ export default function ManageSubscription() {
     setIsCancelling(true);
     try {
       const response = await postWithAuth(
-        `/v1/cards/${currentCardProvider ?? ''}/plan/toggle/auto-renewal'`,
+        `/v1/cards/${currentCardProvider ?? ''}/plan/toggle/auto-renewal`,
         {},
       );
 
@@ -190,7 +190,7 @@ export default function ManageSubscription() {
                 )}
                 onPress={() => setShowCancelModal(true)}
                 disabled={isCancelling}>
-                <CyDText className='text-[18px] font-medium tracking-[-0.6px] leading-[145%] text-red200'>
+                <CyDText className='text-[14px] font-medium tracking-[-0.6px] leading-[145%] text-red200'>
                   {t('CANCEL_SUBSCRIPTION')}
                 </CyDText>
                 {isCancelling && (
@@ -216,7 +216,7 @@ export default function ManageSubscription() {
                   void handleCancelSubscription();
                 }}
                 disabled={isCancelling}>
-                <CyDText className='text-[18px] font-medium tracking-[-0.6px] leading-[145%] text-green200'>
+                <CyDText className='text-[14px] font-medium tracking-[-0.6px] leading-[145%] text-green200'>
                   {t('CONTINUE_SUBSCRIPTION')}
                 </CyDText>
                 {isCancelling && (
