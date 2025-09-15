@@ -166,6 +166,18 @@ export const useActivityPolling = (
     [],
   );
 
+  /**
+   * Checks if an activity is closed
+   * @param activity - The activity to check
+   * @returns True if the activity is closed, false otherwise
+   */
+  const isActivityClosed = useCallback(
+    (activity: CardFundResponse): boolean => {
+      return activity.activityStatus === ActivityStatus.CLOSED;
+    },
+    [],
+  );
+
   // Use the generic polling hook with activity-specific configuration
   const pollingResult = useGenericPolling<CardFundResponse>({
     enabled,
@@ -175,9 +187,13 @@ export const useActivityPolling = (
     getItemId: getActivityId,
     isItemCompleted: isActivityCompleted,
     isItemFailed: isActivityFailed,
+    isItemClosed: isActivityClosed,
     onDataUpdate: setOngoingActivities,
     onItemCompleted: onActivityCompleted,
     onItemFailed: onActivityFailed,
+    onItemClosed: (_closedActivity: CardFundResponse) => {
+      // CLOSED activities are simply removed from ongoing activities - no additional action needed
+    },
     currentData: ongoingActivities,
     logPrefix: 'Activities',
   });

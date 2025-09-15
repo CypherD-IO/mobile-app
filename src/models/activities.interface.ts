@@ -20,6 +20,7 @@ export type FdActionRequestBase = {
     | ActivityStatus.DELAYED
     | ActivityStatus.COMPLETED
     | ActivityStatus.FAILED
+    | ActivityStatus.CLOSED
     | ActivityStatus.INSTANT_SWAP_INITIATED
     | ActivityStatus.INSTANT_SWAP_COMPLETED
     | ActivityStatus.CRYPTO_REVERSAL_INITIATED

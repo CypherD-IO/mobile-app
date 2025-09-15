@@ -16,12 +16,16 @@ export interface GenericPollingConfig<T> {
   isItemCompleted: (item: T) => boolean;
   /** Function to check if an item has failed (optional) */
   isItemFailed?: (item: T) => boolean;
+  /** Function to check if an item is closed (optional) */
+  isItemClosed?: (item: T) => boolean;
   /** Callback when data is updated */
   onDataUpdate: (data: T[]) => void;
   /** Callback when an item is completed */
   onItemCompleted?: (completedItem: T) => void;
   /** Callback when an item has failed */
   onItemFailed?: (failedItem: T) => void;
+  /** Callback when an item is closed (optional) */
+  onItemClosed?: (closedItem: T) => void;
   /** Function to merge new data with existing data (optional) */
   mergeData?: (existing: T[], newData: T[]) => T[];
   /** Current data array */
@@ -66,9 +70,11 @@ export const useGenericPolling = function <T>(
     getItemId,
     isItemCompleted,
     isItemFailed,
+    isItemClosed,
     onDataUpdate,
     onItemCompleted,
     onItemFailed,
+    onItemClosed,
     mergeData,
     currentData,
     logPrefix = 'Generic',
@@ -86,10 +92,12 @@ export const useGenericPolling = function <T>(
   const fetchItemUpdateRef = useRef(fetchItemUpdate);
   const isItemCompletedRef = useRef(isItemCompleted);
   const isItemFailedRef = useRef(isItemFailed);
+  const isItemClosedRef = useRef(isItemClosed);
   const getItemIdRef = useRef(getItemId);
   const onDataUpdateRef = useRef(onDataUpdate);
   const onItemCompletedRef = useRef(onItemCompleted);
   const onItemFailedRef = useRef(onItemFailed);
+  const onItemClosedRef = useRef(onItemClosed);
   const mergeDataRef = useRef(mergeData);
   const fetchInitialDataRef = useRef(fetchInitialData);
 
@@ -99,10 +107,12 @@ export const useGenericPolling = function <T>(
     fetchItemUpdateRef.current = fetchItemUpdate;
     isItemCompletedRef.current = isItemCompleted;
     isItemFailedRef.current = isItemFailed;
+    isItemClosedRef.current = isItemClosed;
     getItemIdRef.current = getItemId;
     onDataUpdateRef.current = onDataUpdate;
     onItemCompletedRef.current = onItemCompleted;
     onItemFailedRef.current = onItemFailed;
+    onItemClosedRef.current = onItemClosed;
     mergeDataRef.current = mergeData;
     fetchInitialDataRef.current = fetchInitialData;
   }, [
@@ -110,10 +120,12 @@ export const useGenericPolling = function <T>(
     fetchItemUpdate,
     isItemCompleted,
     isItemFailed,
+    isItemClosed,
     getItemId,
     onDataUpdate,
     onItemCompleted,
     onItemFailed,
+    onItemClosed,
     mergeData,
     fetchInitialData,
   ]);
@@ -206,6 +218,7 @@ export const useGenericPolling = function <T>(
             const stillActive: T[] = [];
             const completed: T[] = [];
             const failed: T[] = [];
+            const closed: T[] = [];
 
             updatedResults.forEach((result, index) => {
               const originalItem = currentItems[index];
@@ -217,6 +230,8 @@ export const useGenericPolling = function <T>(
                   completed.push(updatedItem);
                 } else if (isItemFailedRef.current?.(updatedItem)) {
                   failed.push(updatedItem);
+                } else if (isItemClosedRef.current?.(updatedItem)) {
+                  closed.push(updatedItem);
                 } else {
                   stillActive.push(updatedItem);
                 }
@@ -234,6 +249,10 @@ export const useGenericPolling = function <T>(
 
             if (failed.length > 0 && onItemFailedRef.current) {
               failed.forEach(onItemFailedRef.current);
+            }
+
+            if (closed.length > 0 && onItemClosedRef.current) {
+              closed.forEach(onItemClosedRef.current);
             }
           } catch (error) {
             console.error(`Error polling ${logPrefix} statuses:`, error);

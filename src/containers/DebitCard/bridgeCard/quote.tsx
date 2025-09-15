@@ -719,11 +719,6 @@ export default function CardQuote({
               tokenQuote.quoteId,
               response.hash,
             );
-            void transferSentQuote(
-              tokenQuote.fromAddress,
-              tokenQuote.quoteId,
-              response.hash,
-            );
             void logAnalytics({
               type: AnalyticsType.SUCCESS,
               txnHash: response?.hash,
@@ -779,7 +774,14 @@ export default function CardQuote({
                   reason: errorMessage,
                 },
               });
-            await deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
+
+            if (
+              !errorMessage.includes(
+                "User didn't sign / decline the transaction request",
+              )
+            ) {
+              await deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
+            }
             setLoading(false);
             showModal('state', {
               type: 'error',

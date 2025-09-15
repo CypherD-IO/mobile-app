@@ -548,6 +548,7 @@ export enum ActivityStatus {
   CRYPTO_REVERSAL_COMPLETED = 'CRYPTO_REVERSAL_COMPLETED',
   DELAYED = 'DELAYED',
   SUCCESS = 'SUCCESS',
+  CLOSED = 'CLOSED',
 }
 
 export enum CypherCardPrograms {

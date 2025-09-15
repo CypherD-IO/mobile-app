@@ -62,6 +62,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   const [txnHash, setTxnHash] = React.useState<string>('');
   const [isSubmittingRequest, setIsSubmittingRequest] =
     React.useState<boolean>(false);
+  const [isClosingTicket, setIsClosingTicket] = React.useState<boolean>(false);
   const [expeditionRequestSuccess, setExpeditionRequestSuccess] =
     React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = React.useState<number>(0);
@@ -69,7 +70,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
   const fetchingStatusTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const previousDelayExpiresOnRef = React.useRef<number | null>(null);
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, deleteWithAuth } = useAxios();
   /**
    * Cleanup timer on component unmount
    */
@@ -145,7 +146,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   React.useEffect(() => {
     if (
       currentActivity &&
-      currentActivity.activityStatus === ActivityStatus.USER_REPORTED &&
+      (currentActivity.activityStatus === ActivityStatus.USER_REPORTED ||
+        currentActivity.activityStatus === ActivityStatus.DELAYED) &&
       currentActivity.delayExpiresOn
     ) {
       const currentDelayExpiresOn = currentActivity.delayExpiresOn;
@@ -229,7 +231,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   React.useEffect(() => {
     if (
       currentActivity &&
-      currentActivity.activityStatus === ActivityStatus.USER_REPORTED &&
+      (currentActivity.activityStatus === ActivityStatus.USER_REPORTED ||
+        currentActivity.activityStatus === ActivityStatus.DELAYED) &&
       fetchingStatusTime > 0
     ) {
       // Status changed to USER_REPORTED, stop the fetching timer
@@ -250,7 +253,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
 
   /**
    * Gets the appropriate step information based on activity status
-   * Memoized to prevent unnecessary recalculations and console logs
+   * Memoized to prevent unnecessary recalculations
    */
   const getStepInfo = React.useMemo(() => {
     const status = currentActivity?.activityStatus;
@@ -285,7 +288,10 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
         step: 3,
         title: (() => {
           // Handle USER_REPORTED status as always verifying (loading)
-          if (status === ActivityStatus.USER_REPORTED) {
+          if (
+            status === ActivityStatus.USER_REPORTED ||
+            status === ActivityStatus.DELAYED
+          ) {
             return `Verifying on ${capitalize(
               currentActivity?.chain ?? '',
             )} Network`;
@@ -331,17 +337,11 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
           }
         })(),
         completed: status === ActivityStatus.COMPLETED,
-        inProgress: status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN,
+        inProgress:
+          status === ActivityStatus.TRANSACTION_VERIFIED_ON_CHAIN ||
+          status === ActivityStatus.DELAYED,
         failed: status === ActivityStatus.FAILED,
-        subtitle: (() => {
-          if (
-            currentActivity?.activityStatus === ActivityStatus.DELAYED &&
-            currentActivity?.delayDuration
-          ) {
-            return `ETA: ${parseInt(currentActivity.delayDuration, 10) / 60}m`;
-          }
-          return undefined;
-        })(),
+        subtitle: undefined,
       },
     ];
 
@@ -361,6 +361,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   }, [
     currentActivity?.activityStatus,
     currentActivity?.createdOn,
+    currentActivity?.delayExpiresOn,
     currentActivity?.delayDuration,
     currentActivity?.chain,
     remainingTime,
@@ -373,9 +374,13 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   const currenTime = moment().unix();
   const quoteAfter15mins = moment
     .unix(currentActivity.createdOn)
-    .add(15, 'minutes');
+    .add(10, 'minutes');
 
-  const isDelayed = moment.unix(currenTime).isAfter(quoteAfter15mins);
+  const isDelayed =
+    moment.unix(currenTime).isAfter(quoteAfter15mins) ||
+    (currentActivity.activityStatus === ActivityStatus.DELAYED &&
+      currentActivity.delayExpiresOn &&
+      currentActivity.delaySetOn);
 
   /**
    * Handles the "Request Team" button press for delayed activities
@@ -407,7 +412,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: currentActivity.chain,
-          message: `Load Report failed: ${parseErrorMessage('API Error')}`,
+          message: `Load Report failed: ${parseErrorMessage(response.error)}`,
           screen: 'Activity Status modal',
           address: currentActivity.masterAddress,
           other: {
@@ -431,6 +436,46 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
       });
     } finally {
       setIsSubmittingRequest(false);
+    }
+  };
+
+  const handleCloseTicket = async (): Promise<void> => {
+    setIsClosingTicket(true);
+    try {
+      const response = await deleteWithAuth(
+        `/v1/funding/quote/${currentActivity.quoteId}`,
+      );
+      if (!response.isError) {
+        setIsClosingTicket(false);
+        setIsVisible(false);
+      } else {
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: currentActivity.chain,
+          message: `Close ticket failed: ${parseErrorMessage(response.error)}`,
+          screen: 'Activity Status modal',
+          address: currentActivity.masterAddress,
+          other: {
+            masterAddress: currentActivity.masterAddress,
+            fromAddress: currentActivity.fromAddress,
+            token: currentActivity.tokenSymbol,
+            tokensRequired: currentActivity.tokensRequired,
+          },
+        });
+        Toast.show({
+          text1: 'Failed to submit expedite request',
+          text2: 'Contact support to expedite your request',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        text1: 'Failed to close ticket',
+        text2: 'Contact support to close your ticket',
+        type: 'error',
+      });
+    } finally {
+      setIsClosingTicket(false);
     }
   };
 
@@ -723,7 +768,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
               )}
 
             {/* USER_REPORTED status with timer - show countdown timer */}
-            {currentActivity.activityStatus === ActivityStatus.USER_REPORTED &&
+            {(currentActivity.activityStatus === ActivityStatus.USER_REPORTED ||
+              currentActivity.activityStatus === ActivityStatus.DELAYED) &&
               remainingTime > 0 && (
                 <CyDView className='p-4 bg-n20 border-t border-n40'>
                   <CyDView className='flex-row items-center justify-between mb-2'>
@@ -770,8 +816,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
             {isDelayed &&
               !expeditionRequestSuccess &&
               currentActivity.activityStatus !== ActivityStatus.FAILED &&
-              currentActivity.activityStatus !==
-                ActivityStatus.USER_REPORTED && (
+              currentActivity.activityStatus !== ActivityStatus.USER_REPORTED &&
+              remainingTime === 0 && (
                 <>
                   <CyDView className='p-4 bg-n20 flex flex-row items-start gap-x-[4px]'>
                     <CyDView className='flex-1 pr-2'>
@@ -846,6 +892,31 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                       )}
                     </CyDView>
                   </CyDView>
+
+                  {currentActivity.activityStatus ===
+                    ActivityStatus.ONCHAIN_TRANSACTION_INITIATED && (
+                    <CyDView className='p-4 bg-n20 flex flex-row items-start gap-x-[4px] border-t border-n40'>
+                      <CyDView className='flex-1 pr-2'>
+                        <CyDText className='text-[14px]'>
+                          {
+                            'If you did not initiate the transaction or if your on-chain transaction failed, you can close this funding ticket.'
+                          }
+                        </CyDText>
+                      </CyDView>
+                      <CyDTouchView
+                        onPress={() => {
+                          void handleCloseTicket();
+                        }}
+                        disabled={isClosingTicket}
+                        className={clsx(
+                          'rounded-lg p-[6px] shrink-0 bg-red40',
+                        )}>
+                        <CyDText className='font-medium text-[14px]'>
+                          {isClosingTicket ? 'Closing...' : 'Close ticket'}
+                        </CyDText>
+                      </CyDTouchView>
+                    </CyDView>
+                  )}
                 </>
               )}
           </>

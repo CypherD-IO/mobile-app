@@ -90,10 +90,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
               'text-white': !isDelayed,
             })}>
             {isCompleted
-              ? `Your card is loaded with $${activity.amount.toFixed(2)} USDC!`
+              ? `$${activity.amount.toFixed(2)} has been added to your card balance`
               : isFailed
-                ? `Card load failed for $${activity.amount.toFixed(2)}`
-                : `Loading is in progress for $${activity.amount.toFixed(2)}`}
+                ? `$${activity.amount.toFixed(2)} card load failed`
+                : `Processing your $${activity.amount.toFixed(2)} load`}
           </CyDText>
         </CyDView>
 
@@ -203,10 +203,10 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
     }
 
     const currenTime = moment().unix();
-    const quoteAfter15mins = moment
+    const quoteAfter10mins = moment
       .unix(currentActivity.createdOn)
-      .add(15, 'minutes');
-    const isDelayed = moment.unix(currenTime).isAfter(quoteAfter15mins);
+      .add(10, 'minutes');
+    const isDelayed = moment.unix(currenTime).isAfter(quoteAfter10mins);
 
     // Check actual activity status
     if (
@@ -293,9 +293,11 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
     const hasFailedStatus = item.activityStatus === ActivityStatus.FAILED;
 
     const currenTime = moment().unix();
-    const quoteAfter15mins = moment.unix(item.createdOn).add(15, 'minutes');
+    const quoteAfter10mins = moment.unix(item.createdOn).add(10, 'minutes');
 
-    const isDelayed = moment.unix(currenTime).isAfter(quoteAfter15mins);
+    const isDelayed =
+      moment.unix(currenTime).isAfter(quoteAfter10mins) ||
+      item.activityStatus === ActivityStatus.DELAYED;
 
     return (
       <ActivityCard

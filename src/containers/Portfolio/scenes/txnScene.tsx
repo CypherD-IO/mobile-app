@@ -238,7 +238,7 @@ const TxnScene = ({
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { address: ethereumAddress }: { address: string } =
     hdWalletContext.state.wallet.ethereum;
-  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
+  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&isUnmarshalQuery?=false`;
 
   const [filter, setFilter] = useState({
     types: TRANSACTION_TYPES,
