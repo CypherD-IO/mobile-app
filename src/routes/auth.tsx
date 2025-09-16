@@ -349,15 +349,20 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.SEND_TO}
         component={SendTo}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('SEND_TO')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={
+          {
+            headerShown: false,
+          }
+          //   ({ navigation, route }) => ({
+          //   header: () => (
+          //     <CustomHeader
+          //       title={t('SEND_TO')}
+          //       navigation={navigation}
+          //       keyboardHeight={keyboardHeight}
+          //     />
+          //   ),
+          // })
+        }
       />
 
       <PortfolioStack.Screen
