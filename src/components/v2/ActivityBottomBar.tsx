@@ -347,7 +347,7 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
     <CyDView
       className={clsx(backgroundColor, 'rounded-t-[18px]', {
         'pb-[68px]': isIOS(),
-        'mb-[56px]': isAndroid(),
+        'pb-[80px]': isAndroid(),
       })}>
       <FlatList
         ref={flatListRef}

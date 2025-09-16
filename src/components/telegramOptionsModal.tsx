@@ -125,21 +125,26 @@ export default function TelegramOptionsModal({
     },
   ];
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   return (
     <CyDModalLayout
       isModalVisible={isModalVisible}
-      setModalVisible={setShowModal}
+      setModalVisible={handleCloseModal}
+      onModalHide={handleCloseModal}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-n20 mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
+      <CyDView className='bg-n20 rounded-t-[16px] max-h-[80%] pb-[32px]'>
         <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-n0 px-[16px] pb-[16px] pt-[32px]'>
           <CyDText className='text-[16px] font-semibold font-manrope'>
             Telegram Bot
           </CyDText>
-          <CyDTouchView onPress={() => setShowModal(false)}>
+          <CyDTouchView onPress={handleCloseModal}>
             <CyDMaterialDesignIcons
               name={'close'}
               size={24}

@@ -475,8 +475,8 @@ export default TabStack;
 
 const styles = StyleSheet.create({
   elevatedBackground: {
-    height: isIOS() ? 88 : 76,
-    paddingBottom: isIOS() ? 26 : 14,
+    height: isIOS() ? 88 : 90,
+    paddingBottom: isIOS() ? 28 : 30,
     paddingTop: 10,
     paddingHorizontal: 21,
     borderTopLeftRadius: 26,

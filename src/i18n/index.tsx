@@ -173,7 +173,6 @@ const resources = {
       RETRY: 'Click to retry',
       NOTIFICATION_PREFERENCES: 'Notification Preferences',
       MANAGE_WALLET: 'Manage Wallet',
-      SECURITY_PRIVACY: 'Security and Privacy',
       BEEFY_FINANCE: 'Beefy Finance',
       KOGE_FINANCE: 'Koge Finance',
       ORBITAL_APES: 'Orbital Apes',
@@ -518,7 +517,7 @@ const resources = {
       RESETTING_PIN: 'RESETTING PIN',
       RESET_PIN_DESCRIPTION:
         'After resetting the PIN, you will be prompted to re-enter your Recovery Phrase ( 12 words ) to confirm your identity.',
-      CHANGE_PIN: 'CHANGE PIN',
+      CHANGE_PIN: 'Change Pin',
       CHANGE_PIN_TITLE: 'Enter your Old PIN',
       PIN_SET_SUCCESSFUL: 'PIN SUCCESSFULLY SET',
       PIN_SET_SUCCESSFUL_DESCRIPTION: 'Your new PIN has been set successfully.',

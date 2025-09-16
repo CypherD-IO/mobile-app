@@ -29,7 +29,6 @@ import {
 import { loadRecoveryPhraseFromKeyChain } from '../../core/Keychain';
 import Loading from '../../components/v2/loading';
 import PageHeader from '../../components/PageHeader';
-import { Theme, useTheme } from '../../reducers/themeReducer';
 
 const renderSeedPhrase = (text: string, index: number, isBlurred: boolean) => {
   return (
@@ -41,20 +40,10 @@ const renderSeedPhrase = (text: string, index: number, isBlurred: boolean) => {
   );
 };
 
-const blurOverlayStyle = {
-  position: 'absolute' as const,
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  borderRadius: 12,
-};
-
 export default function SeedPhrase() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-  const { theme } = useTheme();
 
   const hdWalletContext = useContext<any>(HdWalletContext);
   const [seedPhrase, setSeedPhrase] = useState<string>('');
@@ -173,11 +162,6 @@ export default function SeedPhrase() {
                 {/* Blur Overlay */}
                 {isBlurred && (
                   <CyDView className='absolute top-0 left-0 right-0 bottom-0 bg-n20 rounded-xl items-center justify-center'>
-                    <BlurView
-                      style={blurOverlayStyle}
-                      blurType={theme === Theme.DARK ? 'light' : 'dark'}
-                      blurAmount={4}
-                    />
                     <CyDView className='items-center justify-center z-10'>
                       <CyDView className='w-16 h-16 mb-4'>
                         <CyDIcons

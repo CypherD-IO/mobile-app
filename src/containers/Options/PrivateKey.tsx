@@ -22,7 +22,6 @@ import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Alert, BackHandler, NativeModules } from 'react-native';
 import { QRCode } from 'react-native-custom-qr-codes';
-import { BlurView } from '@react-native-community/blur';
 import PageHeader from '../../components/PageHeader';
 import {
   CHAIN_COSMOS,
@@ -50,20 +49,10 @@ import {
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
-import { Theme, useTheme } from '../../reducers/themeReducer';
 
 function copyToClipboard(text: string) {
   Clipboard.setString(text);
 }
-
-const blurOverlayStyle = {
-  position: 'absolute' as const,
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  borderRadius: 8,
-};
 
 const modalStyle = {
   justifyContent: 'flex-end' as const,
@@ -90,7 +79,6 @@ export default function PrivateKey(props: PrivateKeyProps) {
   const [privateKey, setPrivateKey] = useState<string>(
     _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   );
-  const { theme } = useTheme();
   const [showQR, setShowQR] = useState<boolean>(false);
   const [isBlurred, setIsBlurred] = useState<boolean>(true);
   const { connectionType } = useConnectionManager();
@@ -320,11 +308,6 @@ export default function PrivateKey(props: PrivateKeyProps) {
                 {/* Blur Overlay */}
                 {isBlurred && (
                   <CyDView className='absolute top-0 left-0 right-0 bottom-0 bg-n20 rounded-[8px] items-center justify-center'>
-                    <BlurView
-                      style={blurOverlayStyle}
-                      blurType={theme === Theme.DARK ? 'light' : 'dark'}
-                      blurAmount={4}
-                    />
                     <CyDView className='items-center justify-center z-10'>
                       <CyDText className='text-base font-semibold text-base400 text-center'>
                         Click to show Private Key

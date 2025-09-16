@@ -9,6 +9,7 @@ import { StyleSheet } from 'react-native';
 import moment from 'moment';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
+import { isAndroid } from '../misc/checkers';
 
 interface CancelSubscriptionModalProps {
   isModalVisible: boolean;
@@ -46,7 +47,7 @@ export default function CancelSubscriptionModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-n0 mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
+      <CyDView className='bg-n0 rounded-t-[16px] max-h-[80%] pb-[32px]'>
         {/* Warning Section */}
         <CyDView className='mx-[12px] mt-[12px] bg-n0 rounded-[8px] p-[16px]'>
           <CyDMaterialDesignIcons

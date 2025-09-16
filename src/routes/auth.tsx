@@ -1003,12 +1003,6 @@ export function OptionsStackScreen({
       />
 
       <OptionsStack.Screen
-        name={screenTitle.SECURITY_PRIVACY}
-        component={SecurityPrivacy}
-        options={{ headerShown: false }}
-      />
-
-      <OptionsStack.Screen
         name={screenTitle.SEED_PHRASE}
         component={SeedPhrase}
         options={{ headerShown: false }}
@@ -1035,43 +1029,19 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.CHANGE_PIN}
         component={ChangePin}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('CHANGE_PIN')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.CONFIRM_CHANGE_PIN}
         component={ConfirmPin}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('CONFIRM_PIN')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.SET_CHANGE_PIN}
         component={SetPin}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('SET_PIN')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen

@@ -18,6 +18,8 @@ import Toast from 'react-native-toast-message';
 import { logAnalytics, parseErrorMessage } from '../../core/util';
 import Clipboard from '@react-native-clipboard/clipboard';
 import useAxios from '../../core/HttpRequest';
+import { isAndroid } from '../../misc/checkers';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ActivityDetailsModalProps {
   /** Whether the modal is visible */
@@ -569,7 +571,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
       animationOut={'slideOutDown'}
       useNativeDriver={true}
       style={styles.modalLayout}>
-      <CyDSafeAreaView className='bg-n20 rounded-[16px]' edges={['bottom']}>
+      <CyDView className='bg-n0 rounded-t-[16px]'>
         {/* Header */}
         <CyDView className='flex-row justify-between items-center p-6 border-b border-n40 bg-n0'>
           <CyDText className='text-[20px] font-bold text-base100'>
@@ -921,7 +923,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
               )}
           </>
         )}
-      </CyDSafeAreaView>
+      </CyDView>
     </CyDModalLayout>
   );
 };

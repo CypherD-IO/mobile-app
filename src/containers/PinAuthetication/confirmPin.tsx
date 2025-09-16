@@ -20,6 +20,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import PageHeader from '../../components/PageHeader';
 
 interface RouteParams {
   setPinAuthentication: (value: boolean) => void;
@@ -104,7 +105,7 @@ export default function ConfirmPin() {
         text2: t('PIN_SET_SUCCESSFUL_DESCRIPTION'),
         position: 'bottom',
       });
-      navigation.navigate(screenTitle.SECURITY_PRIVACY);
+      navigation.navigate(screenTitle.MANAGE_WALLET);
     };
   }
 
@@ -133,9 +134,12 @@ export default function ConfirmPin() {
   };
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-n20 px-[20px] pt-[10px]'}>
-        <PINHeader />
+    <CyDSafeAreaView edges={['top']} className='flex-1 bg-n0'>
+      <PageHeader
+        title={t<string>('CONFIRM_PIN_TITLE')}
+        navigation={navigation}
+      />
+      <CyDView className={'h-full bg-n20 p-[24px]'}>
         <PIN />
       </CyDView>
     </CyDSafeAreaView>
