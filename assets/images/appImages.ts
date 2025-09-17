@@ -758,6 +758,10 @@ const MSITE_AIRDROP_ELIGIBILITY_BG = {
 const AIRDROP_TOKEN_WIGGLE = {
   uri: `${S3_BUCKET_URL_DAPPS}/airdropWiggle.gif`,
 };
+const TREASURE_CHEST = {
+  uri: `${S3_BUCKET_URL_ICONS}/treasureChest.png`,
+};
+
 export const AppImagesMap = {
   common: {
     CYPR_TOKEN_LOCKED,
@@ -1075,6 +1079,7 @@ export const AppImagesMap = {
     REWARD_BG,
     REWARD_BG_LIGHT,
     GREEN_CHECK_MARK_WHITE_BORDER,
+    TREASURE_CHEST,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1397,6 +1402,7 @@ enum AppImages {
   REWARD_BG = 'REWARD_BG',
   REWARD_BG_LIGHT = 'REWARD_BG_LIGHT',
   GREEN_CHECK_MARK_WHITE_BORDER = 'GREEN_CHECK_MARK_WHITE_BORDER',
+  TREASURE_CHEST = 'TREASURE_CHEST',
 }
 
 export default AppImages;
