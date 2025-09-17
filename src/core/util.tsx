@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 import * as React from 'react';
+import { SvgUri } from 'react-native-svg';
+import { CyDImage } from '../styles/tailwindComponents';
 import { Platform } from 'react-native';
 import {
   CHAIN_ETH,
@@ -354,6 +356,82 @@ export const isValidSSN = (ssn: string): boolean => {
   }
 
   return !SSN_BLACKLIST.includes(ssn.replace(/\D/g, ''));
+};
+
+// =====================
+// Remote image utilities
+// =====================
+
+/**
+ * Detect if a remote URL likely points to an SVG asset.
+ */
+export const isSvgUrl = (url: string): boolean => {
+  try {
+    const lower = url?.toLowerCase?.() ?? '';
+    return lower.endsWith('.svg') || lower.includes('.svg');
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Build a proxy URL for remote images that may have hotlink protection.
+ * Uses images.weserv.nl as a generic, reliable proxy/CDN layer.
+ */
+export const toProxyUrl = (url: string): string => {
+  const withoutProtocol = url.replace(/^https?:\/\//i, '');
+  const encoded = encodeURIComponent(withoutProtocol);
+  return `https://images.weserv.nl/?url=${encoded}&w=128&h=128&fit=contain&dpr=2`;
+};
+
+/**
+ * A small component that renders an SVG or bitmap remote image with a proxy fallback.
+ */
+export const RemoteLogo: React.FC<{
+  uri: string;
+  className?: string;
+  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center' | 'repeat';
+}> = ({ uri, className, resizeMode = 'cover' }) => {
+  const [mode, setMode] = React.useState<'svg' | 'img' | 'none'>(
+    isSvgUrl(uri) ? 'svg' : 'img',
+  );
+  const [currentUri, setCurrentUri] = React.useState<string>(uri);
+  const [usedProxy, setUsedProxy] = React.useState<boolean>(false);
+
+  if (mode === 'svg') {
+    return (
+      <SvgUri
+        uri={currentUri}
+        width={'100%'}
+        height={'100%'}
+        onError={() => {
+          // Fall back to bitmap renderer on SVG parse/fetch failure
+          setMode('img');
+        }}
+      />
+    );
+  }
+
+  if (mode === 'img') {
+    return (
+      <CyDImage
+        source={{ uri: currentUri }}
+        className={className}
+        resizeMode={resizeMode}
+        onError={() => {
+          if (!usedProxy) {
+            const proxy = toProxyUrl(uri);
+            setUsedProxy(true);
+            setCurrentUri(proxy);
+          } else {
+            setMode('none');
+          }
+        }}
+      />
+    );
+  }
+
+  return null;
 };
 
 export const isValidPassportNumber = (ppn: string): boolean => {

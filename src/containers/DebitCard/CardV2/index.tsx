@@ -69,6 +69,11 @@ import {
 } from '../../../styles/tailwindComponents';
 import CardScreen from '../bridgeCard/card';
 import CardTxnFilterModal from './CardTxnFilterModal';
+import MerchantSpendRewardWidget from '../../../components/v2/MerchantSpendRewardWidget';
+import RewardsEpochModal, {
+  IEpochInfo,
+  shouldShowRewardsEpochModal,
+} from '../../../components/v2/RewardsEpochModal';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -148,9 +153,13 @@ export default function CypherCardScreen() {
   });
   const [isOverchargeDccInfoModalOpen, setIsOverchargeDccInfoModalOpen] =
     useState(false);
+  const [epochInfo, setEpochInfo] = useState<IEpochInfo | null>(null);
+  const [isRewardsEpochModalVisible, setIsRewardsEpochModalVisible] =
+    useState(false);
 
   const onRefresh = async () => {
     void refreshProfile();
+    void fetchEpochInfo();
     const spendStatsFromAPI = await getCardSpendStats();
     if (spendStatsFromAPI) {
       const premiumDataStats = spendStatsFromAPI?.projectedSavings;
@@ -220,6 +229,42 @@ export default function CypherCardScreen() {
     ) {
       setOverchargeDccInfoTransactionId(overchargeTransactions[0]?.id);
       setIsOverchargeDccInfoModalOpen(true);
+    }
+  };
+
+  /**
+   * Fetch epoch information and show modal if epoch is active (endTime > now)
+   */
+  const fetchEpochInfo = async (): Promise<void> => {
+    try {
+      const response = await getWithAuth('/v1/testnet-protocol/epoch-info');
+      if (!response.isError && response.data) {
+        const epochData: IEpochInfo = response.data;
+        setEpochInfo(epochData);
+
+        // Check if epoch is still active (endTime > current time)
+        const now = new Date();
+        const endTime = new Date(epochData.endTime);
+
+        if (endTime > now) {
+          // Check if modal should be shown based on dismissal timestamp
+          const shouldShow = await shouldShowRewardsEpochModal();
+
+          if (shouldShow) {
+            setIsRewardsEpochModalVisible(true);
+
+            // Analytics: modal shown
+            void logAnalyticsToFirebase('rewards_epoch_modal_shown', {
+              epochNumber: epochData.epochNumber,
+              daysRemaining: Math.ceil(
+                (endTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+              ),
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch epoch info:', error);
     }
   };
 
@@ -393,6 +438,12 @@ export default function CypherCardScreen() {
         setIsModalVisible={setPlanChangeModalVisible}
         cardProvider={cardProvider}
         cardId={cardId}
+      />
+
+      <RewardsEpochModal
+        isModalVisible={isRewardsEpochModalVisible}
+        setModalVisible={setIsRewardsEpochModalVisible}
+        epochInfo={epochInfo}
       />
 
       {(shouldShowLocked() ||
@@ -657,6 +708,8 @@ export default function CypherCardScreen() {
         )}
 
         <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
+          <MerchantSpendRewardWidget />
+
           <GetPhysicalCardComponent
             cardProfile={cardProfile}
             cardProvider={cardProvider}
