@@ -514,7 +514,7 @@ export default function WalletConnectCamera() {
   };
 
   return (
-    <CyDSafeAreaView className={'bg-n20 h-full w-full'}>
+    <CyDSafeAreaView className={'bg-n0 h-full w-full'}>
       <CyDView className='flex flex-row items-center py-[16px] px-[16px] justify-between'>
         <CyDTouchView
           className=''

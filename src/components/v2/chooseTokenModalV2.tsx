@@ -46,7 +46,6 @@ import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
 import { formatCurrencyWithSuffix } from '../../core/util';
-import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface TokenModal {
   tokenList?: Holding[];

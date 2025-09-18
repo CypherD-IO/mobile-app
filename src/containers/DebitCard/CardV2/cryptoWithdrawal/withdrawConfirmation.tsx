@@ -27,6 +27,7 @@ import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import { StyleSheet } from 'react-native';
 import { Card } from '../../../../models/card.model';
 import Tooltip from 'react-native-walkthrough-tooltip';
+import PageHeader from '../../../../components/PageHeader';
 
 interface RouteParams {
   amount: string;
@@ -92,13 +93,7 @@ export default function WithdrawConfirmation() {
       className='flex flex-col justify-between h-full bg-n30'
       style={{ paddingTop: insets.top }}>
       <CyDView className='flex-1  px-[16px]'>
-        <CyDTouchView
-          className=''
-          onPress={() => {
-            navigation.goBack();
-          }}>
-          <CyDIcons name='arrow-left' size={24} className='text-base400' />
-        </CyDTouchView>
+        <PageHeader title={'CONFIRM_WITHDRAWAL'} navigation={navigation} />
 
         <CyDKeyboardAwareScrollView className='flex-1 bg-n30 mt-[12px]'>
           <CyDText className='font-bold text-[28px] text-base400 '>

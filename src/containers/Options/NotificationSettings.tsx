@@ -13,6 +13,11 @@ import {
 } from '../../styles/tailwindComponents';
 import Loading from '../../components/v2/loading';
 import { get } from 'lodash';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
 export interface NotificationList {
   id: string;
@@ -23,8 +28,9 @@ export interface NotificationPreferences {
   [key: string]: boolean;
 }
 
-export default function NotificationSettings(props) {
+export default function NotificationSettings() {
   const { t } = useTranslation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -41,7 +47,7 @@ export default function NotificationSettings(props) {
     useState<NotificationPreferences>({});
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 

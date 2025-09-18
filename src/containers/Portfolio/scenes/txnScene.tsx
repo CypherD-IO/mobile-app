@@ -271,7 +271,7 @@ const TxnScene = ({
   const fetchTxn = async (forceRefresh = false) => {
     try {
       const txnURL = forceRefresh
-        ? `${getTransactionsUrl}?forceRefresh=true`
+        ? `${getTransactionsUrl}&forceRefresh=true`
         : getTransactionsUrl;
       const response = await axios.get(txnURL);
       setTransactions(response.data.transactions);

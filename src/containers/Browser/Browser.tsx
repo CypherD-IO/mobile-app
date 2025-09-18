@@ -5,7 +5,13 @@
  * @flow
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useIsFocused, useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
 import clsx from 'clsx';
@@ -68,6 +74,7 @@ import {
 } from '../../types/Browser';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import PageHeader from '../../components/PageHeader';
 
 enum BROWSER_ERROR {
   SSL = 'ssl',
@@ -89,7 +96,8 @@ const webviewErrorCodesMapping: Record<string, { error: string; image: any }> =
     default: { error: BROWSER_ERROR.OTHER, image: AppImages.BROWSER_404 },
   };
 
-export default function Browser({ navigation }: any) {
+export default function Browser() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<any>();
   const { params } = route;
   const [chooseChain, setChooseChain] = useState<boolean>(false);
@@ -562,482 +570,313 @@ export default function Browser({ navigation }: any) {
   if (fetchingInjection) return <Loading />;
 
   return (
-    <CyDSafeAreaView className='bg-n20 flex-1'>
-      <ChooseChainModal
-        isModalVisible={chooseChain}
-        onPress={() => {
-          setChooseChain(false);
-        }}
-        where={WHERE_BROWSER}
-        selectedChain={selectedDappChain ?? CHAIN_ETH}
-        setSelectedChain={setSelectedDappChain}
-      />
-      <MoreViewModal
-        isModalVisible={moreView}
-        onPress={() => {
-          setMoreview(false);
-        }}
-        onHome={() => {
-          setInbuiltPage('home');
-        }}
-        onHistory={() => {
-          setInbuiltPage('history');
-        }}
-        onBookmark={() => {
-          setInbuiltPage('bookmarks');
-        }}
-      />
-      <CyDView className='bg-n0 h-[45px] mt-1 flex flex-row justify-between items-center p-3'>
-        <CyDView className='flex flex-row items-center'>
-          {!onFocus && (
-            <CyDTouchView
-              onPress={() => {
-                handleBackButton();
-              }}>
-              <CyDMaterialDesignIcons
-                name='chevron-left'
-                size={24}
-                className='text-base400'
-              />
-            </CyDTouchView>
-          )}
-          {!onFocus && (
-            <CyDTouchView
-              className=''
-              onPress={() => {
-                handleForwardButton();
-              }}>
-              <CyDMaterialDesignIcons
-                name='chevron-right'
-                size={24}
-                className='text-base400'
-              />
-            </CyDTouchView>
-          )}
-
-          {!onFocus && (
-            <CyDTouchView
-              className=''
-              onPress={() => {
-                handleReload();
-              }}>
-              <CyDMaterialDesignIcons
-                name='refresh'
-                size={20}
-                className='text-base400'
-              />
-            </CyDTouchView>
-          )}
-        </CyDView>
-
-        <CyDView
-          className={clsx(
-            'h-[30px] flex flex-row items-center bg-n20 px-2 rounded-lg',
-            {
-              'w-[80%]': onFocus,
-              'w-[63%]': !onFocus,
-            },
-          )}>
-          {!onFocus &&
-            (inbuildPage === 'webview' || inbuildPage === 'webviewError') && (
-              <CyDView className='ml-[2px]' sentry-label='browser-search-erase'>
-                {isSslSecure && (
-                  <CyDMaterialDesignIcons
-                    name='lock'
-                    size={14}
-                    className='text-base400'
-                  />
-                )}
-                {!isSslSecure && (
-                  <CyDFastImage
-                    className='h-4 w-4'
-                    resizeMode='contain'
-                    source={AppImages.BROWSER_SSL}
-                  />
-                )}
-              </CyDView>
-            )}
-          {onFocus && (
-            <CyDTouchView sentry-label='browser-search-erase'>
-              <CyDMaterialDesignIcons
-                name='magnify'
-                size={20}
-                className='text-base400 mr-1'
-              />
-            </CyDTouchView>
-          )}
-          <CyDTextInput
-            returnKeyType='go'
-            autoCapitalize='none'
-            onSubmitEditing={(e: any) => {
-              Keyboard.dismiss();
-              handleTextInput(e);
-            }}
-            onChangeText={(text: string) => {
-              setInputText(text);
-              setCurrentUrl(text);
-              setInbuiltPage('webview');
-              if (
-                PURE_COSMOS_CHAINS.includes(
-                  hdWalletContext.state.selectedChain.chainName,
-                )
-              ) {
-                hdWalletContext.dispatch({
-                  type: 'CHOOSE_CHAIN',
-                  value: { selectedChain: CHAIN_ETH },
-                });
-              }
-            }}
-            onFocus={() => {
-              setFocus(true);
-            }}
-            placeholder='Search or enter address'
-            placeholderTextColor='#777777'
-            onBlur={() => setFocus(false)}
-            value={getValueForWebsiteInput()}
-            autoCorrect={false}
-            className={clsx('flex-1 text-base400 bg-n20 mx-2 p-2', {
-              'text-left': onFocus,
-              'text-center': !onFocus,
-              'w-[80%]': onFocus,
-              'w-[63%]': !onFocus,
-            })}
-            selectTextOnFocus={true}
-          />
-          <CyDTouchView
-            sentry-label='browser-search-erase'
-            onPress={() => {
-              setCurrentUrl('');
-              setInputText('');
-            }}>
-            {onFocus && (
-              <CyDMaterialDesignIcons
-                name='close-circle'
-                size={20}
-                className='text-base400'
-              />
-            )}
-          </CyDTouchView>
-        </CyDView>
-
-        {onFocus && (
-          <CyDTouchView
-            className=''
-            onPress={() => {
-              Keyboard.dismiss();
-              setFocus(false);
-            }}>
-            <CyDText>Cancel</CyDText>
-          </CyDTouchView>
-        )}
-
-        {!onFocus && (
-          <CyDTouchView
-            sentry-label='browser-chain-choose'
-            onPress={() => {
-              setChooseChain(true);
-            }}>
-            <CyDFastImage
-              resizeMode='contain'
-              className='h-[24px] w-[24px]'
-              source={hdWalletContext.state.selectedChain.logo_url}
-            />
-          </CyDTouchView>
-        )}
-        {!onFocus && (
-          <CyDTouchView
-            sentry-label='browser-more-button'
-            onPress={() => {
-              setMoreview(true);
-            }}>
-            <CyDMaterialDesignIcons
-              name={'dots-vertical'}
-              size={24}
-              className={'text-base400'}
-            />
-          </CyDTouchView>
-        )}
-      </CyDView>
-      {onFocus &&
-        !websiteInfo.origin.includes('cypherd.io') &&
-        websiteInfo.origin !== '' && (
-          <CyDView
-            className='flex flex-row items-center mt-2 mx-3 justify-between'
-            sentry-label='browser-current-url-bookmark'>
-            <CyDView className='flex flex-row items-center'>
-              <CyDView className='w-[20px] h-[20px]'>
-                <CyDFastImage
-                  className='h-[18px] w-[18px]'
-                  source={{
-                    uri: `https://www.google.com/s2/favicons?domain=${websiteInfo.host}&sz=32`,
-                  }}
+    <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
+      <PageHeader title={'BROWSER'} navigation={navigation} />
+      <CyDView className='flex-1 bg-n20'>
+        <ChooseChainModal
+          isModalVisible={chooseChain}
+          onPress={() => {
+            setChooseChain(false);
+          }}
+          where={WHERE_BROWSER}
+          selectedChain={selectedDappChain ?? CHAIN_ETH}
+          setSelectedChain={setSelectedDappChain}
+        />
+        <MoreViewModal
+          isModalVisible={moreView}
+          onPress={() => {
+            setMoreview(false);
+          }}
+          onHome={() => {
+            setInbuiltPage('home');
+          }}
+          onHistory={() => {
+            setInbuiltPage('history');
+          }}
+          onBookmark={() => {
+            setInbuiltPage('bookmarks');
+          }}
+        />
+        <CyDView className='bg-n0 h-[45px] flex flex-row justify-between items-center p-3'>
+          <CyDView className='flex flex-row items-center'>
+            {!onFocus && (
+              <CyDTouchView
+                onPress={() => {
+                  handleBackButton();
+                }}>
+                <CyDMaterialDesignIcons
+                  name='chevron-left'
+                  size={24}
+                  className='text-base400'
                 />
-              </CyDView>
-              <CyDView>
-                <CyDText className=' text-[14px]'>{websiteInfo.title}</CyDText>
-                <CyDText className='text-[10px]'>{websiteInfo.origin}</CyDText>
-              </CyDView>
-            </CyDView>
-            <CyDTouchView onPress={onBookMark} className=''>
-              <CyDMaterialDesignIcons
-                name={
-                  isBookmarkedAlready(websiteInfo.url)
-                    ? 'bookmark'
-                    : 'bookmark-outline'
+              </CyDTouchView>
+            )}
+            {!onFocus && (
+              <CyDTouchView
+                className=''
+                onPress={() => {
+                  handleForwardButton();
+                }}>
+                <CyDMaterialDesignIcons
+                  name='chevron-right'
+                  size={24}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+            )}
+
+            {!onFocus && (
+              <CyDTouchView
+                className=''
+                onPress={() => {
+                  handleReload();
+                }}>
+                <CyDMaterialDesignIcons
+                  name='refresh'
+                  size={20}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+            )}
+          </CyDView>
+
+          <CyDView
+            className={clsx(
+              'h-[30px] flex flex-row items-center bg-n20 px-2 rounded-lg',
+              {
+                'w-[80%]': onFocus,
+                'w-[63%]': !onFocus,
+              },
+            )}>
+            {!onFocus &&
+              (inbuildPage === 'webview' || inbuildPage === 'webviewError') && (
+                <CyDView
+                  className='ml-[2px]'
+                  sentry-label='browser-search-erase'>
+                  {isSslSecure && (
+                    <CyDMaterialDesignIcons
+                      name='lock'
+                      size={14}
+                      className='text-base400'
+                    />
+                  )}
+                  {!isSslSecure && (
+                    <CyDFastImage
+                      className='h-4 w-4'
+                      resizeMode='contain'
+                      source={AppImages.BROWSER_SSL}
+                    />
+                  )}
+                </CyDView>
+              )}
+            {onFocus && (
+              <CyDTouchView sentry-label='browser-search-erase'>
+                <CyDMaterialDesignIcons
+                  name='magnify'
+                  size={20}
+                  className='text-base400 mr-1'
+                />
+              </CyDTouchView>
+            )}
+            <CyDTextInput
+              returnKeyType='go'
+              autoCapitalize='none'
+              onSubmitEditing={(e: any) => {
+                Keyboard.dismiss();
+                handleTextInput(e);
+              }}
+              onChangeText={(text: string) => {
+                setInputText(text);
+                setCurrentUrl(text);
+                setInbuiltPage('webview');
+                if (
+                  PURE_COSMOS_CHAINS.includes(
+                    hdWalletContext.state.selectedChain.chainName,
+                  )
+                ) {
+                  hdWalletContext.dispatch({
+                    type: 'CHOOSE_CHAIN',
+                    value: { selectedChain: CHAIN_ETH },
+                  });
                 }
-                size={20}
-                className='text-base400'
-              />
+              }}
+              onFocus={() => {
+                setFocus(true);
+              }}
+              placeholder='Search or enter address'
+              placeholderTextColor='#777777'
+              onBlur={() => setFocus(false)}
+              value={getValueForWebsiteInput()}
+              autoCorrect={false}
+              className={clsx('flex-1 text-base400 bg-n20 mx-2 p-2', {
+                'text-left': onFocus,
+                'text-center': !onFocus,
+                'w-[80%]': onFocus,
+                'w-[63%]': !onFocus,
+              })}
+              selectTextOnFocus={true}
+            />
+            <CyDTouchView
+              sentry-label='browser-search-erase'
+              onPress={() => {
+                setCurrentUrl('');
+                setInputText('');
+              }}>
+              {onFocus && (
+                <CyDMaterialDesignIcons
+                  name='close-circle'
+                  size={20}
+                  className='text-base400'
+                />
+              )}
             </CyDTouchView>
           </CyDView>
-        )}
-      {onFocus && searchData.length > 0 && (
-        <CyDText className='text-base ml-2 mt-2'>Recent Searches</CyDText>
-      )}
-      {onFocus && (
-        <CyDView className='h-full'>
-          {searchData.map(item => (
+
+          {onFocus && (
             <CyDTouchView
-              key={item.url}
-              sentry-label='browser-recent-search-url '
-              className='mt-2 flex flex-row items-center justify-start mx-3'
+              className=''
               onPress={() => {
-                setInputText(item.url);
-                setCurrentUrl(item.url);
-                handleTextInput(item.url);
-                setInbuiltPage('webview');
-                setFocus(false);
                 Keyboard.dismiss();
-                logAnalyticsToFirebase(AnalyticEvent.BROWSER_RECENT_URL_CLICK, {
-                  url: item.url,
+                setFocus(false);
+              }}>
+              <CyDText>Cancel</CyDText>
+            </CyDTouchView>
+          )}
+
+          {!onFocus && (
+            <CyDTouchView
+              sentry-label='browser-chain-choose'
+              onPress={() => {
+                setChooseChain(true);
+              }}>
+              <CyDFastImage
+                resizeMode='contain'
+                className='h-[24px] w-[24px]'
+                source={hdWalletContext.state.selectedChain.logo_url}
+              />
+            </CyDTouchView>
+          )}
+          {!onFocus && (
+            <CyDTouchView
+              sentry-label='browser-more-button'
+              onPress={() => {
+                setMoreview(true);
+              }}>
+              <CyDMaterialDesignIcons
+                name={'dots-vertical'}
+                size={24}
+                className={'text-base400'}
+              />
+            </CyDTouchView>
+          )}
+        </CyDView>
+        {onFocus &&
+          !websiteInfo.origin.includes('cypherhq.io') &&
+          websiteInfo.origin !== '' && (
+            <CyDView
+              className='flex flex-row items-center mt-2 mx-3 justify-between'
+              sentry-label='browser-current-url-bookmark'>
+              <CyDView className='flex flex-row items-center'>
+                <CyDView className='w-[20px] h-[20px]'>
+                  <CyDFastImage
+                    className='h-[18px] w-[18px]'
+                    source={{
+                      uri: `https://www.google.com/s2/favicons?domain=${websiteInfo.host}&sz=32`,
+                    }}
+                  />
+                </CyDView>
+                <CyDView>
+                  <CyDText className=' text-[14px]'>
+                    {websiteInfo.title}
+                  </CyDText>
+                  <CyDText className='text-[10px]'>
+                    {websiteInfo.origin}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+              <CyDTouchView onPress={onBookMark} className=''>
+                <CyDMaterialDesignIcons
+                  name={
+                    isBookmarkedAlready(websiteInfo.url)
+                      ? 'bookmark'
+                      : 'bookmark-outline'
+                  }
+                  size={20}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+            </CyDView>
+          )}
+        {onFocus && searchData.length > 0 && (
+          <CyDText className='text-base ml-2 mt-2'>Recent Searches</CyDText>
+        )}
+        {onFocus && (
+          <CyDView className='h-full'>
+            {searchData.map(item => (
+              <CyDTouchView
+                key={item.url}
+                sentry-label='browser-recent-search-url '
+                className='mt-2 flex flex-row items-center justify-start mx-3'
+                onPress={() => {
+                  setInputText(item.url);
+                  setCurrentUrl(item.url);
+                  handleTextInput(item.url);
+                  setInbuiltPage('webview');
+                  setFocus(false);
+                  Keyboard.dismiss();
+                  logAnalyticsToFirebase(
+                    AnalyticEvent.BROWSER_RECENT_URL_CLICK,
+                    {
+                      url: item.url,
+                      from: 'browser',
+                    },
+                  );
+                }}>
+                <CyDFastImage
+                  className='h-[18px] w-[18px]'
+                  source={{ uri: item.image }}
+                />
+                <CyDView>
+                  <CyDText className='text-[14px]'>{item.name}</CyDText>
+                  <CyDText className='text-[10px]'>{item.origin}</CyDText>
+                </CyDView>
+              </CyDTouchView>
+            ))}
+          </CyDView>
+        )}
+
+        {inbuildPage === 'history' && !onFocus ? (
+          <CyDScrollView className='h-full'>
+            <CyDTouchView
+              onPress={() => {
+                clearHistory();
+                logAnalyticsToFirebase(AnalyticEvent.BROWSER_CLEAR_HISTORY, {
                   from: 'browser',
                 });
               }}>
-              <CyDFastImage
-                className='h-[18px] w-[18px]'
-                source={{ uri: item.image }}
-              />
-              <CyDView>
-                <CyDText className='text-[14px]'>{item.name}</CyDText>
-                <CyDText className='text-[10px]'>{item.origin}</CyDText>
-              </CyDView>
+              <CyDText className='text-[14px] p-3 text-center'>
+                Clear browsing history
+              </CyDText>
             </CyDTouchView>
-          ))}
-        </CyDView>
-      )}
 
-      {inbuildPage === 'history' && !onFocus ? (
-        <CyDScrollView className='h-full'>
-          <CyDTouchView
-            onPress={() => {
-              clearHistory();
-              logAnalyticsToFirebase(AnalyticEvent.BROWSER_CLEAR_HISTORY, {
-                from: 'browser',
-              });
-            }}>
-            <CyDText className='text-[14px] p-3 text-center'>
-              Clear browsing history
-            </CyDText>
-          </CyDTouchView>
-
-          <CyDView className='border-b border-n40 mb-5' />
-          {browserHistory.length === 0 ? (
-            <CyDView>
-              <CyDText className='text-[22px]'>
-                Start using the browser to view history here
-              </CyDText>
-            </CyDView>
-          ) : (
-            spliceHistoryByTime().map(historybt => (
-              <CyDView key={historybt.dateString} className='mx-3'>
-                <CyDText className='text-[12px]'>
-                  {historybt.dateString}
+            <CyDView className='border-b border-n40 mb-5' />
+            {browserHistory.length === 0 ? (
+              <CyDView>
+                <CyDText className='text-[22px]'>
+                  Start using the browser to view history here
                 </CyDText>
-                {historybt.entry.map(item => (
-                  <CyDTouchView
-                    key={item.url}
-                    sentry-label='browser-history-url'
-                    className='flex flex-row items-center justify-between mt-4 w-full'
-                    onPress={() => {
-                      setInputText(item.url);
-                      setCurrentUrl(item.url);
-                      handleTextInput(item.url);
-                      setFocus(false);
-                      setInbuiltPage('webview');
-                      logAnalyticsToFirebase(
-                        AnalyticEvent.BROWSER_HISTORY_URL_CLICK,
-                        {
-                          url: item.url,
-                          from: 'browser',
-                        },
-                      );
-                    }}>
-                    <CyDView className='flex flex-row items-center'>
-                      <CyDFastImage
-                        className='h-[18px] w-[18px]'
-                        source={{ uri: item.image }}
-                      />
-                      <CyDView className='flex flex-col ml-[8px]'>
-                        <CyDText className='text-[14px]'>{item.name}</CyDText>
-                        <CyDText className='text-[10px]'>{item.origin}</CyDText>
-                      </CyDView>
-                    </CyDView>
-                    <CyDTouchView
-                      sentry-label='browser_history_url_clear'
-                      onPress={() => {
-                        deleteHistory(item);
-                        logAnalyticsToFirebase(
-                          AnalyticEvent.BROWSER_HISTORY_URL_CLEAR,
-                          {
-                            url: item.url,
-                            from: 'browser',
-                          },
-                        );
-                      }}>
-                      <CyDMaterialDesignIcons
-                        name='close-circle'
-                        size={20}
-                        className='text-base400 '
-                      />
-                    </CyDTouchView>
-                  </CyDTouchView>
-                ))}
               </CyDView>
-            ))
-          )}
-        </CyDScrollView>
-      ) : null}
-      {inbuildPage === 'webviewError' && (
-        <CyDView className='flex flex-col items-center justify-center h-[95px] w-full'>
-          <CyDFastImage
-            className='mt-[100px] h-[1]'
-            source={webviewErrorCodesMapping[browserErrorCode].image}
-          />
-          <CyDText className='text-[12px]'>{`Error: ${browserError}`}</CyDText>
-        </CyDView>
-      )}
-
-      {inbuildPage === 'bookmarks' && (
-        <CyDScrollView
-          className='h-full'
-          onTouchEnd={(e: any) => {
-            if (e.target === e.currentTarget) {
-              setRemoveBookmarkMode(false);
-              setInbuiltPage('webview');
-            }
-          }}>
-          <CyDView className='p-4'>
-            <CyDText className=''>{'bookmarks'.toLocaleUpperCase()}</CyDText>
-            {browserFavourites.length === 0 && (
-              <CyDText className='text-[12px] '>
-                Your bookmarks will be shown here
-              </CyDText>
-            )}
-            <CyDView className='flex flex-row flex-wrap mb-[30px] items-center justify-start m-[10px]'>
-              {browserFavourites.map(favourite => (
-                <CyDTouchView key={favourite.url} className=''>
-                  <CyDTouchView
-                    className='flex items-center justify-center bg-n0 border border-n40  w-[48px] h-[48px] rounded-md'
-                    // dynamic
-                    // dynamicWidthFix
-                    // dynamicHeightFix
-                    // height={48}
-                    // width={48}
-                    // alIT={'center'}
-                    // jC={'center'}
-                    // mL={10}
-                    // mT={10}
-                    // bGC={Colors.browserBookmarkBackground}
-                    // style={{
-                    //   color: Colors.primaryTextColor,
-                    //   borderWidth: 1,
-                    //   borderColor: 'gray',
-                    //   borderRadius: 22,
-                    // }}
-                    onPress={(e: any) => {
-                      setInputText(favourite.url);
-                      setCurrentUrl(favourite.url);
-                      handleTextInput(favourite.url);
-                      setFocus(false);
-                      setInbuiltPage('webview');
-                      // Change
-                      logAnalyticsToFirebase(
-                        AnalyticEvent.BROWSER_FAVOURITE_URL_CLICK,
-                        {
-                          url: favourite.url,
-                          from: 'browser',
-                        },
-                      );
-                    }}
-                    onLongPress={() => {
-                      setRemoveBookmarkMode(true);
-                    }}>
-                    <CyDFastImage
-                      className='h-[38px] w-[38px]'
-                      source={{ uri: favourite.image }}
-                    />
-                  </CyDTouchView>
-
-                  {removeBookmarkMode && (
-                    <CyDTouchView
-                      sentry-label='browser-search-erase'
-                      className='absolute right-[0px] top-[0px] rounded-full'
-                      // style={{
-                      //   position: 'absolute',
-                      //   tintColor: '#444444',
-                      //   left: 52,
-                      //   top: 5,
-                      //   backgroundColor: 'white',
-                      //   borderRadius: 50,
-                      // }}
-                      onPress={() => {
-                        deleteBookmark(favourite);
-                      }}>
-                      <CyDMaterialDesignIcons
-                        name='close-circle'
-                        size={20}
-                        className='text-base400 ml-[-20px]'
-                      />
-                    </CyDTouchView>
-                  )}
-
-                  <CyDView className='w-[60px] overflow-hidden mt-1'>
-                    <CyDText
-                      className='text-center text-[10px] truncate'
-                      numberOfLines={1}>
-                      {favourite.name}
-                    </CyDText>
-                  </CyDView>
-                </CyDTouchView>
-              ))}
-            </CyDView>
-          </CyDView>
-        </CyDScrollView>
-      )}
-
-      {!onFocus && inbuildPage === 'home' && (
-        <DynamicScrollView dynamic dynamicHeight height={100}>
-          {browserHistory.length === 0 ? (
-            <CyDView className='flex flex-row items-center justify-center'>
-              <CyDText className='text-[12px]'>
-                Start using the browser to view history here
-              </CyDText>
-            </CyDView>
-          ) : (
-            <>
-              <CyDText className=' text-left ml-3 mt-[10px] text-[15px] font-bold'>
-                {'history'.toLocaleUpperCase()}
-              </CyDText>
-              {spliceHistoryByTime().map(historybt => (
+            ) : (
+              spliceHistoryByTime().map(historybt => (
                 <CyDView key={historybt.dateString} className='mx-3'>
-                  <CyDText className='text-[12px] '>
+                  <CyDText className='text-[12px]'>
                     {historybt.dateString}
                   </CyDText>
                   {historybt.entry.map(item => (
                     <CyDTouchView
                       key={item.url}
                       sentry-label='browser-history-url'
-                      className='flex flex-row items-center mt-4 w-full'
+                      className='flex flex-row items-center justify-between mt-4 w-full'
                       onPress={() => {
                         setInputText(item.url);
                         setCurrentUrl(item.url);
@@ -1052,13 +891,12 @@ export default function Browser({ navigation }: any) {
                           },
                         );
                       }}>
-                      <CyDView className='flex flex-row items-center flex-1'>
+                      <CyDView className='flex flex-row items-center'>
                         <CyDFastImage
-                          className='h-[18px] w-[18px] mr-2'
-                          resizeMode='contain'
+                          className='h-[18px] w-[18px]'
                           source={{ uri: item.image }}
                         />
-                        <CyDView>
+                        <CyDView className='flex flex-col ml-[8px]'>
                           <CyDText className='text-[14px]'>{item.name}</CyDText>
                           <CyDText className='text-[10px]'>
                             {item.origin}
@@ -1080,81 +918,272 @@ export default function Browser({ navigation }: any) {
                         <CyDMaterialDesignIcons
                           name='close-circle'
                           size={20}
-                          className='text-base400 ml-3'
+                          className='text-base400 '
                         />
                       </CyDTouchView>
                     </CyDTouchView>
                   ))}
                 </CyDView>
-              ))}
-            </>
-          )}
-        </DynamicScrollView>
-      )}
-      {loader && inbuildPage === 'webview' && (
-        <CyDView className='flex flex-row items-center justify-center h-full w-full'>
-          <ActivityIndicator size='large' color='var(--color-base400)' />
-        </CyDView>
-      )}
-      <CyDView
-        className={clsx('flex-1 pb-[50px] bg-n20', { 'pb-[75px]': !isIOS() })}>
-        <WebView
-          key={webviewKey}
-          webviewDebuggingEnabled={true}
-          source={{ uri: search }}
-          ref={webviewRef}
-          startInLoadingState
-          onLoadStart={() => setLoader(true)}
-          onLoadEnd={() => setLoader(false)}
-          injectedJavaScriptBeforeContentLoaded={injectedCode}
-          mediaPlaybackRequiresUserAction={true}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          renderLoading={() => {
-            return <Loading />;
-          }}
-          style={{ marginTop: 0 }}
-          onNavigationStateChange={navState => {
-            setCanGoBack(navState.canGoBack);
-            setCurrentUrl(navState.url);
-          }}
-          onLoad={syntheticEvent => {
-            const { nativeEvent } = syntheticEvent;
-            const finalTitle = nativeEvent.title.replace('- Google Search', '');
-            setIsSslSecure(true);
-            if (nativeEvent.url !== null) {
-              const url = new URL(nativeEvent.url);
-              setInputText(url.hostname);
-              setCurrentUrl(nativeEvent.url);
-            } else {
-              setInputText(finalTitle);
-              setCurrentUrl(nativeEvent.url);
-            }
-          }}
-          onError={syntheticEvent => {
-            setInbuiltPage('webviewError');
-            const { code, description } = syntheticEvent.nativeEvent;
-            setBrowserError(description);
-            setBrowserErrorCode(
-              webviewErrorCodes.includes(`${code}`) ? `${code}` : 'default',
-            );
-            if (code) {
-              const mapping =
-                webviewErrorCodesMapping[
-                  Object.keys(webviewErrorCodesMapping).includes(
-                    code.toString(),
-                  )
-                    ? code.toString()
-                    : 'default'
-                ];
+              ))
+            )}
+          </CyDScrollView>
+        ) : null}
+        {inbuildPage === 'webviewError' && (
+          <CyDView className='flex flex-col items-center justify-center h-[95px] w-full'>
+            <CyDFastImage
+              className='mt-[100px] h-[1]'
+              source={webviewErrorCodesMapping[browserErrorCode].image}
+            />
+            <CyDText className='text-[12px]'>{`Error: ${browserError}`}</CyDText>
+          </CyDView>
+        )}
 
-              const isSSLError = mapping.error === BROWSER_ERROR.SSL;
-              setIsSslSecure(!isSSLError);
-            }
-          }}
-          onHttpError={Sentry.captureException}
-          onMessage={onWebviewMessage}
-        />
+        {inbuildPage === 'bookmarks' && (
+          <CyDScrollView
+            className='h-full'
+            onTouchEnd={(e: any) => {
+              if (e.target === e.currentTarget) {
+                setRemoveBookmarkMode(false);
+                setInbuiltPage('webview');
+              }
+            }}>
+            <CyDView className='p-4'>
+              <CyDText className=''>{'bookmarks'.toLocaleUpperCase()}</CyDText>
+              {browserFavourites.length === 0 && (
+                <CyDText className='text-[12px] '>
+                  Your bookmarks will be shown here
+                </CyDText>
+              )}
+              <CyDView className='flex flex-row flex-wrap mb-[30px] items-center justify-start m-[10px]'>
+                {browserFavourites.map(favourite => (
+                  <CyDTouchView key={favourite.url} className=''>
+                    <CyDTouchView
+                      className='flex items-center justify-center bg-n0 border border-n40  w-[48px] h-[48px] rounded-md'
+                      // dynamic
+                      // dynamicWidthFix
+                      // dynamicHeightFix
+                      // height={48}
+                      // width={48}
+                      // alIT={'center'}
+                      // jC={'center'}
+                      // mL={10}
+                      // mT={10}
+                      // bGC={Colors.browserBookmarkBackground}
+                      // style={{
+                      //   color: Colors.primaryTextColor,
+                      //   borderWidth: 1,
+                      //   borderColor: 'gray',
+                      //   borderRadius: 22,
+                      // }}
+                      onPress={(e: any) => {
+                        setInputText(favourite.url);
+                        setCurrentUrl(favourite.url);
+                        handleTextInput(favourite.url);
+                        setFocus(false);
+                        setInbuiltPage('webview');
+                        // Change
+                        logAnalyticsToFirebase(
+                          AnalyticEvent.BROWSER_FAVOURITE_URL_CLICK,
+                          {
+                            url: favourite.url,
+                            from: 'browser',
+                          },
+                        );
+                      }}
+                      onLongPress={() => {
+                        setRemoveBookmarkMode(true);
+                      }}>
+                      <CyDFastImage
+                        className='h-[38px] w-[38px]'
+                        source={{ uri: favourite.image }}
+                      />
+                    </CyDTouchView>
+
+                    {removeBookmarkMode && (
+                      <CyDTouchView
+                        sentry-label='browser-search-erase'
+                        className='absolute right-[0px] top-[0px] rounded-full'
+                        // style={{
+                        //   position: 'absolute',
+                        //   tintColor: '#444444',
+                        //   left: 52,
+                        //   top: 5,
+                        //   backgroundColor: 'white',
+                        //   borderRadius: 50,
+                        // }}
+                        onPress={() => {
+                          deleteBookmark(favourite);
+                        }}>
+                        <CyDMaterialDesignIcons
+                          name='close-circle'
+                          size={20}
+                          className='text-base400 ml-[-20px]'
+                        />
+                      </CyDTouchView>
+                    )}
+
+                    <CyDView className='w-[60px] overflow-hidden mt-1'>
+                      <CyDText
+                        className='text-center text-[10px] truncate'
+                        numberOfLines={1}>
+                        {favourite.name}
+                      </CyDText>
+                    </CyDView>
+                  </CyDTouchView>
+                ))}
+              </CyDView>
+            </CyDView>
+          </CyDScrollView>
+        )}
+
+        {!onFocus && inbuildPage === 'home' && (
+          <DynamicScrollView dynamic dynamicHeight height={100}>
+            {browserHistory.length === 0 ? (
+              <CyDView className='flex flex-row items-center justify-center'>
+                <CyDText className='text-[12px]'>
+                  Start using the browser to view history here
+                </CyDText>
+              </CyDView>
+            ) : (
+              <>
+                <CyDText className=' text-left ml-3 mt-[10px] text-[15px] font-bold'>
+                  {'history'.toLocaleUpperCase()}
+                </CyDText>
+                {spliceHistoryByTime().map(historybt => (
+                  <CyDView key={historybt.dateString} className='mx-3'>
+                    <CyDText className='text-[12px] '>
+                      {historybt.dateString}
+                    </CyDText>
+                    {historybt.entry.map(item => (
+                      <CyDTouchView
+                        key={item.url}
+                        sentry-label='browser-history-url'
+                        className='flex flex-row items-center mt-4 w-full'
+                        onPress={() => {
+                          setInputText(item.url);
+                          setCurrentUrl(item.url);
+                          handleTextInput(item.url);
+                          setFocus(false);
+                          setInbuiltPage('webview');
+                          logAnalyticsToFirebase(
+                            AnalyticEvent.BROWSER_HISTORY_URL_CLICK,
+                            {
+                              url: item.url,
+                              from: 'browser',
+                            },
+                          );
+                        }}>
+                        <CyDView className='flex flex-row items-center flex-1'>
+                          <CyDFastImage
+                            className='h-[18px] w-[18px] mr-2'
+                            resizeMode='contain'
+                            source={{ uri: item.image }}
+                          />
+                          <CyDView>
+                            <CyDText className='text-[14px]'>
+                              {item.name}
+                            </CyDText>
+                            <CyDText className='text-[10px]'>
+                              {item.origin}
+                            </CyDText>
+                          </CyDView>
+                        </CyDView>
+                        <CyDTouchView
+                          sentry-label='browser_history_url_clear'
+                          onPress={() => {
+                            deleteHistory(item);
+                            logAnalyticsToFirebase(
+                              AnalyticEvent.BROWSER_HISTORY_URL_CLEAR,
+                              {
+                                url: item.url,
+                                from: 'browser',
+                              },
+                            );
+                          }}>
+                          <CyDMaterialDesignIcons
+                            name='close-circle'
+                            size={20}
+                            className='text-base400 ml-3'
+                          />
+                        </CyDTouchView>
+                      </CyDTouchView>
+                    ))}
+                  </CyDView>
+                ))}
+              </>
+            )}
+          </DynamicScrollView>
+        )}
+        {loader && inbuildPage === 'webview' && (
+          <CyDView className='flex flex-row items-center justify-center h-full w-full'>
+            <ActivityIndicator size='large' color='#444444' />
+          </CyDView>
+        )}
+        <CyDView
+          className={clsx('flex-1 pb-[50px] bg-n20', {
+            'pb-[75px]': !isIOS(),
+          })}>
+          <WebView
+            key={webviewKey}
+            webviewDebuggingEnabled={true}
+            source={{ uri: search }}
+            ref={webviewRef}
+            startInLoadingState
+            onLoadStart={() => setLoader(true)}
+            onLoadEnd={() => setLoader(false)}
+            injectedJavaScriptBeforeContentLoaded={injectedCode}
+            mediaPlaybackRequiresUserAction={true}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            renderLoading={() => {
+              return <Loading />;
+            }}
+            style={{ marginTop: 0 }}
+            onNavigationStateChange={navState => {
+              setCanGoBack(navState.canGoBack);
+              setCurrentUrl(navState.url);
+            }}
+            onLoad={syntheticEvent => {
+              const { nativeEvent } = syntheticEvent;
+              const finalTitle = nativeEvent.title.replace(
+                '- Google Search',
+                '',
+              );
+              setIsSslSecure(true);
+              if (nativeEvent.url !== null) {
+                const url = new URL(nativeEvent.url);
+                setInputText(url.hostname);
+                setCurrentUrl(nativeEvent.url);
+              } else {
+                setInputText(finalTitle);
+                setCurrentUrl(nativeEvent.url);
+              }
+            }}
+            onError={syntheticEvent => {
+              setInbuiltPage('webviewError');
+              const { code, description } = syntheticEvent.nativeEvent;
+              setBrowserError(description);
+              setBrowserErrorCode(
+                webviewErrorCodes.includes(`${code}`) ? `${code}` : 'default',
+              );
+              if (code) {
+                const mapping =
+                  webviewErrorCodesMapping[
+                    Object.keys(webviewErrorCodesMapping).includes(
+                      code.toString(),
+                    )
+                      ? code.toString()
+                      : 'default'
+                  ];
+
+                const isSSLError = mapping.error === BROWSER_ERROR.SSL;
+                setIsSslSecure(!isSSLError);
+              }
+            }}
+            onHttpError={Sentry.captureException}
+            onMessage={onWebviewMessage}
+          />
+        </CyDView>
       </CyDView>
     </CyDSafeAreaView>
   );

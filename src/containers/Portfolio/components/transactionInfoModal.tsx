@@ -14,6 +14,8 @@ import {
   getMaskedAddress,
   copyToClipboard,
   formatAmount,
+  getExplorerUrlFromChainId,
+  getExplorerUrlFromBackendNames,
 } from '../../../core/util';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
@@ -335,7 +337,7 @@ export default function TransactionInfoModal({
               )}
               <CyDView className='flex flex-col ml-[5px] items-start'>
                 <CyDText className='text-[16px] mt-[2px] font-bold text-activityFontColor'>
-                  {token || t('UNKNOWN')}
+                  {token ?? t('UNKNOWN')}
                 </CyDText>
                 {blockchain && (
                   <CyDView className='flex flex-row justify-center items-center '>
@@ -429,7 +431,7 @@ export default function TransactionInfoModal({
                     onPress={() => {
                       setModalVisible(false);
                       navigationRef.navigate(C.screenTitle.TRANS_DETAIL, {
-                        url: `${chainExplorerMapping[blockchain]}${hash}`,
+                        url: getExplorerUrlFromBackendNames(blockchain, hash),
                       });
                     }}
                     className='text-[14px] w-[65%] text-blue-500 underline font-bold'>

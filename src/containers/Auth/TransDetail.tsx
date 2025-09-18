@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable react-native/no-inline-styles */
 /**
  * @format
@@ -14,7 +13,7 @@ import useWeb3 from '../../hooks/useWeb3';
 import { WebsiteInfo } from '../../types/Browser';
 import { CyDSafeAreaView, CyDView } from '../../styles/tailwindComponents';
 import Loading from '../../components/v2/loading';
-const { SafeAreaView, DynamicView } = require('../../styles');
+import PageHeader from '../../components/PageHeader';
 
 interface TransactionDetailProps {
   route: any;
@@ -87,7 +86,8 @@ export default function TransDetail({
   }, []);
 
   return (
-    <CyDSafeAreaView className='bg-n20 flex-1'>
+    <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
+      <PageHeader title={'DETAILS'} navigation={navigation} />
       <CyDView className='flex-row items-center justify-center m-[10px] flex-1 bg-n20'>
         <WebView
           injectedJavaScriptBeforeContentLoaded={injectedCode}

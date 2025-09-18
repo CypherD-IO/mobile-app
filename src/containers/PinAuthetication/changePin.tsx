@@ -9,8 +9,15 @@ import OtpInput from '../../components/v2/OTPInput';
 import { screenTitle } from '../../constants';
 import { validatePin } from '../../core/Keychain';
 import { BackHandler } from 'react-native';
+import PageHeader from '../../components/PageHeader';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function ChangePin({ route, navigation }) {
+export default function ChangePin() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [wrongPin, setWrongPin] = useState(false);
 
   const handleBackButton = () => {
@@ -32,19 +39,6 @@ export default function ChangePin({ route, navigation }) {
     } else {
       setWrongPin(true);
     }
-  };
-
-  const PINHeader = () => {
-    return (
-      <>
-        <CyDView>
-          <CyDText
-            className={'text-[30px] font-extrabold text-center pt-[60px]'}>
-            {t<string>('CHANGE_PIN_TITLE')}
-          </CyDText>
-        </CyDView>
-      </>
-    );
   };
 
   const PIN = () => {
@@ -71,9 +65,9 @@ export default function ChangePin({ route, navigation }) {
   };
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-n20 px-[20px] pt-[10px]'}>
-        <PINHeader />
+    <CyDSafeAreaView className='flex-1 bg-n0' edges={['top']}>
+      <PageHeader title={'CHANGE_PIN_TITLE'} navigation={navigation} />
+      <CyDView className={'h-full bg-n20 p-[24px]'}>
         <PIN />
       </CyDView>
     </CyDSafeAreaView>

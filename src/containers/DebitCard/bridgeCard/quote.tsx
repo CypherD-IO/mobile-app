@@ -120,7 +120,8 @@ export default function CardQuote({
   const { skipApiSignAndBroadcast } = useSkipApiBridge();
   const { transferOnHyperLiquid } = useHyperLiquid();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { postWithAuth, postToOtherSource } = useAxios();
+  const { postWithAuth, postToOtherSource, patchWithAuth, deleteWithAuth } =
+    useAxios();
   const { refreshPortfolio } = usePortfolioRefresh();
   const planInfo = globalState?.cardProfile?.planInfo;
   const [
@@ -220,7 +221,7 @@ export default function CardQuote({
       );
       return;
     }
-    const transferSentUrl = `/v1/cards/${cardProvider}/card/${cardId}/deposit`;
+    const transferSentUrl = `/v1/funding/quote/deposit`;
     const body = {
       address,
       quoteUUID: quoteId,
@@ -713,6 +714,11 @@ export default function CardQuote({
             connectionType = undefined;
           }
           if (response && !response?.isError) {
+            void transferSentQuote(
+              tokenQuote.fromAddress,
+              tokenQuote.quoteId,
+              response.hash,
+            );
             void logAnalytics({
               type: AnalyticsType.SUCCESS,
               txnHash: response?.hash,
@@ -732,11 +738,6 @@ export default function CardQuote({
               ...(connectionType ? { connectionType } : {}),
             });
             void refreshPortfolio();
-            void transferSentQuote(
-              tokenQuote.fromAddress,
-              tokenQuote.quoteId,
-              response.hash,
-            );
           } else {
             const errorMessage = parseErrorMessage(response?.error);
             void logAnalytics({
@@ -773,6 +774,14 @@ export default function CardQuote({
                   reason: errorMessage,
                 },
               });
+
+            if (
+              !errorMessage.includes(
+                "User didn't sign / decline the transaction request",
+              )
+            ) {
+              await deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
+            }
             setLoading(false);
             showModal('state', {
               type: 'error',
@@ -836,10 +845,34 @@ export default function CardQuote({
   }, []);
 
   const onLoadPress = async () => {
-    if (expiryTimer) {
-      clearInterval(expiryTimer);
+    try {
+      if (tokenQuote.quoteId) {
+        setLoading(true);
+        const response = await patchWithAuth(`/v1/funding/quote`, {
+          quoteId: tokenQuote.quoteId,
+          provider: cardProvider,
+        });
+        if (response.isError) {
+          throw response.error;
+        }
+        if (expiryTimer) {
+          clearInterval(expiryTimer);
+        }
+        await sendTransaction();
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+      setLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: parseErrorMessage(error),
+        description:
+          'Please contact customer support with the quote_id: ' +
+          tokenQuote.quoteId,
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
-    await sendTransaction();
   };
 
   return (

@@ -631,7 +631,7 @@ PODS:
     - React-perflogger (= 0.72.17)
   - RNCAsyncStorage (1.24.0):
     - React-Core
-  - RNCClipboard (1.15.0):
+  - RNCClipboard (1.16.3):
     - React-Core
   - RNCMaskedView (0.3.2):
     - RCT-Folly (= 2021.07.22.00)
@@ -1135,7 +1135,7 @@ SPEC CHECKSUMS:
   React-utils: 389181b1411d047f3d9c4913930b9e806d59d0b1
   ReactCommon: 561cfc1683ccdebe8a377b4616958ea6a1f62d91
   RNCAsyncStorage: b6410dead2732b5c72a7fdb1ecb5651bbcf4674b
-  RNCClipboard: dbcf25b8f666b4685c02eeb65be981d30198e505
+  RNCClipboard: f6679d470d0da2bce2a37b0af7b9e0bf369ecda5
   RNCMaskedView: a25bd07426ad99b0740043a1f329a7a742e62c02
   RNCPushNotificationIOS: 6c4ca3388c7434e4a662b92e4dfeeee858e6f440
   RNDateTimePicker: 47b54bf36a41c29d75ac62a05af1b38a9a721631

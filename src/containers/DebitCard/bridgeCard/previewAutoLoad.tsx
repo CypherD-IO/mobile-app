@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import useAxios from '../../../core/HttpRequest';
 import {
   CyDFastImage,
+  CyDSafeAreaView,
   CyDText,
   CyDView,
 } from '../../../styles/tailwindComponents';
@@ -11,13 +12,17 @@ import { CardProviders } from '../../../constants/enum';
 import { AutoLoad } from '../../../models/autoLoad.interface';
 import moment from 'moment';
 import useTransactionManager from '../../../hooks/useTransactionManager';
-import { HdWalletContext, limitDecimalPlaces } from '../../../core/util';
+import {
+  HdWalletContext,
+  limitDecimalPlaces,
+  parseErrorMessage,
+} from '../../../core/util';
 import { get } from 'lodash';
 import { COSMOS_CHAINS } from '../../../constants/server';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { screenTitle } from '../../../constants';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
-import { GlobalContext } from '../../../core/globalContext';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import {
   NavigationProp,
@@ -27,6 +32,8 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { parseUnits } from 'viem';
+import PageHeader from '../../../components/PageHeader';
+import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 
 export default function PreviewAutoLoad() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -40,14 +47,15 @@ export default function PreviewAutoLoad() {
     repeatFor,
     selectedToken,
   } = route.params;
-  const globalContext = useContext<any>(GlobalContext);
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { getWithAuth, postWithAuth } = useAxios();
   const { grantAutoLoad } = useTransactionManager();
-  const hdWallet = useContext<any>(HdWalletContext);
+  const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
   const [loading, setLoading] = useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
-  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const cardProfile: CardProfile = globalContext.globalState
+    .cardProfile as CardProfile;
   const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
 
   function onModalHide() {
@@ -131,91 +139,100 @@ export default function PreviewAutoLoad() {
           onFailure: hideModal,
         });
       }
+    } else {
+      setLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: parseErrorMessage(response.error),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
   };
   return (
-    <CyDView
-      className={
-        'flex-1 w-full bg-n20 pb-[30px] flex flex-col justify-between'
-      }>
-      <CyDView className={'mx-[16px]'}>
-        <CyDView className='bg-n0 rounded-2xl flex flex-col justify-center items-center pb-[45px] pt-[32px]'>
-          <CyDText className='text-[52px] font-bold text-mandarin'>
-            {'$' + amountToLoad}
-          </CyDText>
-          <CyDText className='text-[16px] mt-[4px]'>
-            {t('AMOUNT_TO_BE_LOADED_IN_CARD')}
-          </CyDText>
-          <CyDText className='mt-[16px] text-[32px] font-bold'>
-            {'$' + threshold}
-          </CyDText>
-          <CyDText className='text-[16px] mt-[4px]'>
-            {t('WHEN_BALANCE_GOES_BELOW')}
-          </CyDText>
-        </CyDView>
-        <CyDView
-          className={
-            'flex flex-row justify-between items-center mt-[40px] pb-[16px]'
-          }>
-          <CyDText className={'font-bold text-[16px]'}>
-            {t('AUTO_LOAD_USING')}
-          </CyDText>
-          <CyDView
-            className={'flex flex-row justify-center items-center pl-[25px]'}>
-            <CyDFastImage
-              source={{ uri: selectedToken?.logoUrl ?? '' }}
-              className={'w-[18px] h-[18px]'}
-            />
-            <CyDText className={'text-[16px] ml-[4px]'}>
-              {selectedToken.name}
+    <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
+      <PageHeader title={'AUTO_LOAD_PREVIEW'} navigation={navigation} />
+      <CyDView className='flex-1 justify-between bg-n20 pt-[24px]'>
+        <CyDView className={'mx-[16px]'}>
+          <CyDView className='bg-n0 rounded-2xl flex flex-col justify-center items-center pb-[45px] pt-[32px]'>
+            <CyDText className='text-[52px] font-bold text-mandarin'>
+              {'$' + amountToLoad}
+            </CyDText>
+            <CyDText className='text-[16px] mt-[4px]'>
+              {t('AMOUNT_TO_BE_LOADED_IN_CARD')}
+            </CyDText>
+            <CyDText className='mt-[16px] text-[32px] font-bold'>
+              {'$' + threshold}
+            </CyDText>
+            <CyDText className='text-[16px] mt-[4px]'>
+              {t('WHEN_BALANCE_GOES_BELOW')}
             </CyDText>
           </CyDView>
-        </CyDView>
-        <CyDView
-          className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDText className={'font-bold text-[16px]'}>
-            {t('EXPIRES_ON')}
-          </CyDText>
           <CyDView
-            className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={' font-medium text-[16px] '}>
-              {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
-            </CyDText>
-          </CyDView>
-        </CyDView>
-
-        <CyDView
-          className={'flex flex-row justify-between items-center py-[16px]'}>
-          <CyDView>
+            className={
+              'flex flex-row justify-between items-center mt-[40px] pb-[16px]'
+            }>
             <CyDText className={'font-bold text-[16px]'}>
-              {t('REPEAT_FOR')}
+              {t('AUTO_LOAD_USING')}
             </CyDText>
-            <CyDText className={'text-[12px] mt-[2px]'}>
-              {t('REPEAT_FOR_DESC')}
-            </CyDText>
+            <CyDView
+              className={'flex flex-row justify-center items-center pl-[25px]'}>
+              <CyDFastImage
+                source={{ uri: selectedToken?.logoUrl ?? '' }}
+                className={'w-[18px] h-[18px]'}
+              />
+              <CyDText className={'text-[16px] ml-[4px]'}>
+                {selectedToken.name}
+              </CyDText>
+            </CyDView>
           </CyDView>
+          {autoLoadExpiry && expiryDate && moment(expiryDate).isValid() && (
+            <CyDView
+              className={
+                'flex flex-row justify-between items-center py-[16px]'
+              }>
+              <CyDText className={'font-bold text-[16px]'}>
+                {t('EXPIRES_ON')}
+              </CyDText>
+              <CyDView
+                className={'flex flex-col flex-wrap justify-between items-end'}>
+                <CyDText className={' font-medium text-[16px] '}>
+                  {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+          )}
+
           <CyDView
-            className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText className={'font-medium text-[16px] '}>
-              {repeatFor}
-            </CyDText>
+            className={'flex flex-row justify-between items-center py-[16px]'}>
+            <CyDView>
+              <CyDText className={'font-bold text-[16px]'}>
+                {t('REPEAT_FOR')}
+              </CyDText>
+              <CyDText className={'text-[12px] mt-[2px]'}>
+                {t('REPEAT_FOR_DESC')}
+              </CyDText>
+            </CyDView>
+            <CyDView
+              className={'flex flex-col flex-wrap justify-between items-end'}>
+              <CyDText className={'font-medium text-[16px] '}>
+                {repeatFor}
+              </CyDText>
+            </CyDView>
           </CyDView>
         </CyDView>
+        <CyDView className='w-full px-[24px] items-center py-[20px] bg-n20 mb-[20px]'>
+          <Button
+            title={t<string>('SETUP_AUTO_LOAD_CAPS')}
+            loading={loading}
+            onPress={() => {
+              void onConfirm();
+            }}
+            isPrivateKeyDependent={true}
+            style={'h-[60px] w-full'}
+          />
+        </CyDView>
       </CyDView>
-      <CyDView
-        className={
-          'flex flex-row justify-center items-center px-[10px] mx-[16px]'
-        }>
-        <Button
-          title={t<string>('SETUP_AUTO_LOAD_CAPS')}
-          loading={loading}
-          onPress={() => {
-            void onConfirm();
-          }}
-          isPrivateKeyDependent={true}
-          style={'h-[60px] w-full'}
-        />
-      </CyDView>
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
