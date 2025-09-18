@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   useWindowDimensions,
   FlatList,
@@ -168,27 +168,88 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
-  // Combine all activities for the carousel - memoized to prevent unnecessary recalculations
-  const allActivities = React.useMemo(() => {
-    const combined = [
-      ...ongoingCardActivities.map(activity => ({
-        ...activity,
-        isCompleted: activity.activityStatus === ActivityStatus.COMPLETED,
-        isFailed: activity.activityStatus === ActivityStatus.FAILED,
-      })),
-      ...fundingsCompletedInLast5Mins.map(activity => ({
-        ...activity,
-        isCompleted: true,
-        isFailed: false,
-      })),
-      ...fundingsFailedInLast5Mins.map(activity => ({
-        ...activity,
-        isCompleted: false,
-        isFailed: true,
-      })),
-    ];
+  // Ticking "now" state to ensure delayed status updates over time
+  const [now, setNow] = useState(() => moment().unix());
 
-    return combined;
+  // Refs for cleanup tracking to prevent memory leaks
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Update "now" every 30 seconds to refresh delayed state calculations
+  useEffect(() => {
+    // Set up interval
+    intervalRef.current = setInterval(() => {
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setNow(moment().unix());
+      }
+    }, 30 * 1000); // 30 seconds
+
+    // Cleanup function - called on unmount or dependency change
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Component unmount cleanup effect - ensures no memory leaks
+  useEffect(() => {
+    // Mark component as mounted
+    isMountedRef.current = true;
+
+    // Return cleanup function for unmount
+    return () => {
+      // Mark component as unmounted to prevent setState calls
+      isMountedRef.current = false;
+
+      // Clear any remaining intervals
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []);
+
+  // Combine all activities for the carousel - memoized to prevent unnecessary recalculations
+  // Deduplicates activities to prevent duplicate items and unstable UI
+  const allActivities = React.useMemo(() => {
+    const idOf = (a: CardFundResponse): string | undefined =>
+      a?.quoteId ?? a?.freshdeskId?.toString?.();
+
+    const map = new Map<
+      string,
+      CardFundResponse & { isCompleted: boolean; isFailed: boolean }
+    >();
+    const push = (
+      items: CardFundResponse[],
+      flags: { isCompleted: boolean; isFailed: boolean },
+    ) => {
+      for (const a of items) {
+        const id = idOf(a);
+        if (!id || map.has(id)) continue;
+        map.set(id, { ...a, ...flags });
+      }
+    };
+
+    // Priority: ongoing (with live status), then recently completed, then failed
+    push(
+      ongoingCardActivities.map(a => ({
+        ...a,
+        isCompleted: a.activityStatus === ActivityStatus.COMPLETED,
+        isFailed: a.activityStatus === ActivityStatus.FAILED,
+      })) as Array<
+        CardFundResponse & { isCompleted: boolean; isFailed: boolean }
+      >,
+      // flags are already embedded above; no-op here
+      { isCompleted: false, isFailed: false },
+    );
+    push(fundingsCompletedInLast5Mins, { isCompleted: true, isFailed: false });
+    push(fundingsFailedInLast5Mins, { isCompleted: false, isFailed: true });
+
+    return Array.from(map.values());
   }, [
     ongoingCardActivities,
     fundingsCompletedInLast5Mins,
@@ -196,17 +257,17 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
   ]);
 
   // Determine background color based on current activity - memoized to prevent multiple calculations
+  // Now includes 'now' dependency to ensure delayed state updates over time
   const backgroundColor = React.useMemo(() => {
     const currentActivity = allActivities[currentIndex];
     if (!currentActivity) {
       return 'bg-[#006A31]'; // Default green
     }
 
-    const currenTime = moment().unix();
     const quoteAfter10mins = moment
       .unix(currentActivity.createdOn)
       .add(10, 'minutes');
-    const isDelayed = moment.unix(currenTime).isAfter(quoteAfter10mins);
+    const isDelayed = moment.unix(now).isAfter(quoteAfter10mins);
 
     // Check actual activity status
     if (
@@ -227,7 +288,7 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
     } else {
       return '!bg-[#006A31]'; // Default green for ongoing
     }
-  }, [allActivities, currentIndex]);
+  }, [allActivities, currentIndex, now]);
 
   // Don't render if no activities
   if (allActivities.length === 0) {
@@ -281,22 +342,26 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
       isFailed: boolean;
     };
   }) => {
+    // Helper function to get activity ID (same as in allActivities)
+    const getActivityId = (activity: CardFundResponse): string | undefined =>
+      activity?.quoteId ?? activity?.freshdeskId?.toString?.();
+    const itemId = getActivityId(item);
+
     // Determine if this activity should have a close button
     const isFromCompletedArray = fundingsCompletedInLast5Mins.some(
-      activity => activity.freshdeskId === item.freshdeskId,
+      activity => getActivityId(activity) === itemId,
     );
     const isFromFailedArray = fundingsFailedInLast5Mins.some(
-      activity => activity.freshdeskId === item.freshdeskId,
+      activity => getActivityId(activity) === itemId,
     );
 
     // Also check if activity has failed status (even if still in ongoing array)
     const hasFailedStatus = item.activityStatus === ActivityStatus.FAILED;
 
-    const currenTime = moment().unix();
     const quoteAfter10mins = moment.unix(item.createdOn).add(10, 'minutes');
 
     const isDelayed =
-      moment.unix(currenTime).isAfter(quoteAfter10mins) ||
+      moment.unix(now).isAfter(quoteAfter10mins) ||
       item.activityStatus === ActivityStatus.DELAYED;
 
     return (
@@ -306,10 +371,10 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
         isFailed={item.isFailed}
         isDelayed={isDelayed}
         onClose={
-          isFromCompletedArray
-            ? () => handleRemoveCompletedActivity(item.freshdeskId.toString())
-            : isFromFailedArray || hasFailedStatus
-              ? () => handleRemoveFailedActivity(item.freshdeskId.toString())
+          itemId && isFromCompletedArray
+            ? () => handleRemoveCompletedActivity(itemId)
+            : itemId && (isFromFailedArray || hasFailedStatus)
+              ? () => handleRemoveFailedActivity(itemId)
               : undefined // No close button for truly ongoing activities
         }
         onKnowMore={
@@ -358,7 +423,7 @@ const ActivityBottomBar: React.FC<ActivityBottomBarProps> = ({
         showsHorizontalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        keyExtractor={item => item.freshdeskId.toString()}
+        keyExtractor={item => item.quoteId ?? item.freshdeskId?.toString?.()}
       />
       {renderDotIndicators()}
     </CyDView>

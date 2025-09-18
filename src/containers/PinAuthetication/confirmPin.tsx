@@ -135,10 +135,7 @@ export default function ConfirmPin() {
 
   return (
     <CyDSafeAreaView edges={['top']} className='flex-1 bg-n0'>
-      <PageHeader
-        title={t<string>('CONFIRM_PIN_TITLE')}
-        navigation={navigation}
-      />
+      <PageHeader title={'CONFIRM_PIN_TITLE'} navigation={navigation} />
       <CyDView className={'h-full bg-n20 p-[24px]'}>
         <PIN />
       </CyDView>

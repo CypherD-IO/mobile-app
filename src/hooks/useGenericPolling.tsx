@@ -173,13 +173,11 @@ export const useGenericPolling = function <T>(
         try {
           const newData = await fetchInitialDataRef.current();
 
-          if (newData.length > 0) {
-            const currentItems = dataRef.current;
-            const mergeFunction = mergeDataRef.current ?? defaultMergeData;
-            const mergedData = mergeFunction(currentItems, newData);
-
-            onDataUpdateRef.current(mergedData);
-          }
+          const currentItems = dataRef.current;
+          const mergeFunction = mergeDataRef.current ?? defaultMergeData;
+          const mergedData =
+            newData.length > 0 ? mergeFunction(currentItems, newData) : newData;
+          onDataUpdateRef.current(mergedData);
         } catch (error) {
           console.error(`Error fetching ${logPrefix} data on focus:`, error);
         } finally {

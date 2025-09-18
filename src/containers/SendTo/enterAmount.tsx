@@ -440,11 +440,13 @@ export default function EnterAmount(props: any) {
                           'text-[40px]': valueForUsd.length > 5,
                         },
                       )}
-                      keyboardType='numeric'
+                      keyboardType='decimal-pad'
                       onChangeText={text => {
                         setValueForUsd(text);
                         if (enterCryptoAmount) {
-                          setCryptoValue(Number.isNaN(text) ? '0' : text);
+                          setCryptoValue(
+                            Number.isNaN(Number(text)) ? '0' : text,
+                          );
                           setUsdValue(
                             DecimalHelper.toString(
                               DecimalHelper.multiply(text, tokenData.price),

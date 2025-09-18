@@ -44,21 +44,6 @@ export default function SetPin() {
     };
   }
 
-  const PINHeader = () => {
-    return (
-      <>
-        <CyDView>
-          <CyDText
-            className={'text-[30px] font-extrabold text-center pt-[60px]'}>
-            {changePinValue
-              ? t<string>('SET_CHANGE_PIN_TITLE')
-              : t<string>('SET_PIN_TITLE')}
-          </CyDText>
-        </CyDView>
-      </>
-    );
-  };
-
   const PIN = () => {
     return (
       <CyDView>
@@ -89,11 +74,7 @@ export default function SetPin() {
   return (
     <CyDSafeAreaView edges={['top']} className='flex-1 bg-n0'>
       <PageHeader
-        title={
-          changePinValue
-            ? t<string>('SET_CHANGE_PIN_TITLE')
-            : t<string>('SET_PIN_TITLE')
-        }
+        title={changePinValue ? 'SET_CHANGE_PIN_TITLE' : 'SET_PIN_TITLE'}
         navigation={navigation}
       />
       <CyDView className={'h-full bg-n20 p-[24px]'}>

@@ -83,9 +83,9 @@ export const useActivityPolling = (
   const fetchQuoteStatus = useCallback(
     async (quoteId: string): Promise<CardFundResponse | null> => {
       try {
-        const response = (await getWithAuth(
+        const response: QuoteStatusResponse = await getWithAuth(
           `/v1/activities/status-v2/${FdActionType.CARD_FUND}/${quoteId}`,
-        )) as QuoteStatusResponse;
+        );
 
         if (!response.isError && response.data) {
           return response.data;
@@ -139,7 +139,7 @@ export const useActivityPolling = (
    * @returns String representation of the activity's unique identifier
    */
   const getActivityId = useCallback((activity: CardFundResponse): string => {
-    return activity.freshdeskId.toString();
+    return activity.quoteId.toString();
   }, []);
 
   /**

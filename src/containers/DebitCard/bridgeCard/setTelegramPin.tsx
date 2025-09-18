@@ -220,7 +220,7 @@ export default function SetTelegramPin() {
                 className='text-base400'
               />
               <CyDText className='text-base400 mt-[6px] font-bold text-[28px]'>
-                {'SET_TELEGRAM_PIN'}
+                {t('SET_TELEGRAM_PIN')}
               </CyDText>
               <CyDView className='mt-[6px]'>
                 <CyDText className={'text-[14px] font-medium text-n200'}>

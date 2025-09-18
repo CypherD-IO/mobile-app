@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { get, isEmpty } from 'lodash';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -169,6 +169,9 @@ export default function CypherCardScreen() {
   const [isActivityDetailsVisible, setIsActivityDetailsVisible] =
     useState(false);
 
+  // Ref to track timeout IDs for cleanup on unmount
+  const removalTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+
   /**
    * Handles when an ongoing activity is completed
    * Moves it to the completed activities list and sets up auto-removal after 5 minutes
@@ -194,16 +197,21 @@ export default function CypherCardScreen() {
     });
 
     // Auto-remove after 5 minutes (300,000ms)
-    setTimeout(
+    const timeoutId = setTimeout(
       () => {
         setFundingsCompletedInLast5Mins(prev =>
           prev.filter(
             activity => activity.freshdeskId !== completedActivity.freshdeskId,
           ),
         );
+        // Remove timeout ID from tracking set once executed
+        removalTimeoutsRef.current.delete(timeoutId);
       },
       5 * 60 * 1000,
     ); // 5 minutes
+
+    // Track timeout ID for cleanup on unmount
+    removalTimeoutsRef.current.add(timeoutId);
   };
 
   /**
@@ -229,16 +237,21 @@ export default function CypherCardScreen() {
     });
 
     // Auto-remove after 5 minutes (300,000ms)
-    setTimeout(
+    const timeoutId = setTimeout(
       () => {
         setFundingsFailedInLast5Mins(prev =>
           prev.filter(
             activity => activity.freshdeskId !== failedActivity.freshdeskId,
           ),
         );
+        // Remove timeout ID from tracking set once executed
+        removalTimeoutsRef.current.delete(timeoutId);
       },
       5 * 60 * 1000,
     ); // 5 minutes
+
+    // Track timeout ID for cleanup on unmount
+    removalTimeoutsRef.current.add(timeoutId);
   };
 
   /**
@@ -278,11 +291,18 @@ export default function CypherCardScreen() {
       });
     }, 60 * 1000); // Check every minute
 
-    return () => clearInterval(cleanupInterval);
+    return () => {
+      clearInterval(cleanupInterval);
+      // Clear all pending removal timeouts to prevent setState on unmounted component
+      removalTimeoutsRef.current.forEach(timeoutId => {
+        clearTimeout(timeoutId);
+      });
+      removalTimeoutsRef.current.clear();
+    };
   }, []);
 
   // Initialize activity polling hook
-  const { fetchActivities } = useActivityPolling({
+  useActivityPolling({
     ongoingActivities: ongoingCardActivities,
     setOngoingActivities: setOngoingCardActivities,
     onActivityCompleted: handleActivityCompleted,
@@ -291,57 +311,47 @@ export default function CypherCardScreen() {
     enabled: true,
   });
 
-  // App state detection to resume polling when app comes back from background
-  // useEffect(() => {
-  //   const handleAppStateChange = (nextAppState: AppStateStatus) => {
-  //     if (nextAppState === 'active') {
-  //       // Trigger immediate fetch when app becomes active
-  //       void fetchActivities();
-  //     }
-  //   };
-
-  //   const subscription = AppState.addEventListener(
-  //     'change',
-  //     handleAppStateChange,
-  //   );
-
-  //   return () => subscription?.remove();
-  // }, [fetchActivities]);
-
   /**
    * Handles removal of completed activities from the carousel
-   * Updates the state to remove the activity by freshdeskId
+   * Updates the state to remove the activity by quoteId (primary) or freshdeskId (fallback)
    */
   const handleRemoveCompletedActivity = (activityId: string): void => {
-    const freshdeskId = parseInt(activityId, 10);
     setFundingsCompletedInLast5Mins(prev =>
-      prev.filter(activity => activity.freshdeskId !== freshdeskId),
+      prev.filter(activity => {
+        const id = activity.quoteId ?? activity.freshdeskId?.toString();
+        return id !== activityId;
+      }),
     );
   };
 
   /**
    * Handles removal of failed activities from the carousel
-   * Updates the state to remove the activity by freshdeskId
+   * Updates the state to remove the activity by quoteId (primary) or freshdeskId (fallback)
    * Handles both activities in failed array and failed activities still in ongoing array
    */
   const handleRemoveFailedActivity = (activityId: string): void => {
-    const freshdeskId = parseInt(activityId, 10);
-
     // Check if the activity is in the failed array
-    const isInFailedArray = fundingsFailedInLast5Mins.some(
-      activity => activity.freshdeskId === freshdeskId,
-    );
+    const isInFailedArray = fundingsFailedInLast5Mins.some(activity => {
+      const id = activity.quoteId ?? activity.freshdeskId?.toString();
+      return id === activityId;
+    });
 
     if (isInFailedArray) {
       // Remove from failed array
       setFundingsFailedInLast5Mins(prev =>
-        prev.filter(activity => activity.freshdeskId !== freshdeskId),
+        prev.filter(activity => {
+          const id = activity.quoteId ?? activity.freshdeskId?.toString();
+          return id !== activityId;
+        }),
       );
     } else {
       // Activity might be in ongoing array with failed status
       // Remove from ongoing array
       setOngoingCardActivities(prev =>
-        prev.filter(activity => activity.freshdeskId !== freshdeskId),
+        prev.filter(activity => {
+          const id = activity.quoteId ?? activity.freshdeskId?.toString();
+          return id !== activityId;
+        }),
       );
     }
   };
@@ -359,7 +369,7 @@ export default function CypherCardScreen() {
    * Closes the activity details modal
    */
   const handleCloseActivityDetails = (): void => {
-    // setIsActivityDetailsVisible(false);
+    setIsActivityDetailsVisible(false);
     setSelectedActivity(null);
   };
 
@@ -774,7 +784,10 @@ export default function CypherCardScreen() {
                   </CyDText>
                   <CyDView className='flex flex-row justify-between items-center'>
                     {!balanceLoading ? (
-                      <CyDTouchView onPress={() => fetchCardBalance().catch}>
+                      <CyDTouchView
+                        onPress={() => {
+                          void fetchCardBalance();
+                        }}>
                         <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
                           <CyDText
                             className={clsx('font-bold text-[28px]', {

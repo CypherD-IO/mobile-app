@@ -238,7 +238,7 @@ const TxnScene = ({
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { address: ethereumAddress }: { address: string } =
     hdWalletContext.state.wallet.ethereum;
-  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&isUnmarshalQuery?=false`;
+  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
 
   const [filter, setFilter] = useState({
     types: TRANSACTION_TYPES,
@@ -271,7 +271,7 @@ const TxnScene = ({
   const fetchTxn = async (forceRefresh = false) => {
     try {
       const txnURL = forceRefresh
-        ? `${getTransactionsUrl}?forceRefresh=true`
+        ? `${getTransactionsUrl}&forceRefresh=true`
         : getTransactionsUrl;
       const response = await axios.get(txnURL);
       setTransactions(response.data.transactions);
