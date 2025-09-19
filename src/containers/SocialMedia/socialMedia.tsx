@@ -37,7 +37,7 @@ export default function SocialMediaScreen() {
   return (
     <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
       <PageHeader title={''} navigation={navigation} />
-      <CyDView className='flex-1 bg-n20 pt-[24px]'>
+      <CyDView className='flex-1 bg-n20'>
         {isLoading && <Loading />}
         <WebView
           source={{ uri }}
