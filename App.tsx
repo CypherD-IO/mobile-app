@@ -130,6 +130,9 @@ const scrubData = (key: string, value: any): any => {
   if (SENSITIVE_DATA_KEYS.includes(key)) {
     return '********'; // Replace with asterisks
   } else if (key === 'email') {
+    if (typeof value !== 'string' || !value.includes('@')) {
+      return '********';
+    }
     const domain: string = value.slice(value.indexOf('@'));
     return `****${domain}`; // Replace with asterisks before domain name
   } else {
