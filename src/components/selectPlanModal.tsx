@@ -16,10 +16,8 @@ import {
   CyDTouchView,
   CyDView,
 } from '../styles/tailwindComponents';
-import CyDModalLayout from './v2/modal';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Modal } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppImages from '../../assets/images/appImages';
 import { t } from 'i18next';
 import { GlobalContext, GlobalContextDef } from '../core/globalContext';
@@ -48,6 +46,7 @@ import { CardDesign } from '../models/cardDesign.interface';
 import { IPlanData } from '../models/planData.interface';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import Loading from './v2/loading';
+import CyDModalLayout from './v2/modal';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -81,7 +80,6 @@ export default function SelectPlanModal({
   onPlanChangeSuccess?: () => void;
   onClose?: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const { globalState, globalDispatch } = useContext(
@@ -262,23 +260,24 @@ export default function SelectPlanModal({
   };
 
   return (
-    <CyDModalLayout
-      isModalVisible={isModalVisible}
-      style={styles.modalLayout}
-      animationIn={'slideInUp'}
-      animationOut={'slideOutDown'}
-      useNativeDriver={true}
-      setModalVisible={setIsModalVisible}>
+    <Modal
+      visible={isModalVisible}
+      transparent={false}
+      animationType='slide'
+      presentationStyle='formSheet'
+      statusBarTranslucent={false}
+      onRequestClose={() => setIsModalVisible(false)}>
       {fetchingPlanData && <Loading />}
       {!fetchingPlanData && proPlanData && freePlanData && (
         <GestureHandlerRootView>
-          <CyDModalLayout
-            setModalVisible={setShowComparision}
-            isModalVisible={showComparision}
-            style={styles.modalLayout}
-            animationIn={'slideInUp'}
-            animationOut={'slideOutDown'}>
-            <CyDView className={'bg-n30 h-[90%] rounded-t-[20px] p-[16px]'}>
+          <Modal
+            visible={showComparision}
+            transparent={false}
+            animationType='slide'
+            presentationStyle='formSheet'
+            statusBarTranslucent={false}
+            onRequestClose={() => setShowComparision(false)}>
+            <CyDView className={'bg-n30 h-full p-[16px]'}>
               <CyDView className={'flex flex-row justify-between items-center'}>
                 <CyDText className='text-[18px] font-bold'>
                   {t('COMPARE_PLANS')}
@@ -687,7 +686,7 @@ export default function SelectPlanModal({
                 </CyDTouchView>
               </CyDScrollView>
             </CyDView>
-          </CyDModalLayout>
+          </Modal>
 
           <CyDModalLayout
             setModalVisible={setConsentModalVisible}
@@ -781,10 +780,8 @@ export default function SelectPlanModal({
             </CyDView>
           </CyDModalLayout>
 
-          <CyDView className='h-full mx-[2px] bg-n20'>
-            <CyDView
-              className='bg-n0 flex-1'
-              style={{ paddingTop: insets.top }}>
+          <CyDView className='h-full bg-n20'>
+            <CyDView className='bg-n0 flex-1'>
               <CyDView className='bg-n0 flex flex-row justify-between p-[16px] px-[16px]'>
                 <CyDView>
                   <CyDText className='font-extrabold text-[36px]'>
@@ -1282,6 +1279,6 @@ export default function SelectPlanModal({
           </CyDView>
         </GestureHandlerRootView>
       )}
-    </CyDModalLayout>
+    </Modal>
   );
 }

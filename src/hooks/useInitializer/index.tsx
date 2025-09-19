@@ -58,8 +58,7 @@ export default function useInitializer() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
-  const { ethereum, solana, cosmos, osmosis, noble, coreum } =
-    hdWallet.state.wallet;
+  const { ethereum, solana } = hdWallet.state.wallet;
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );

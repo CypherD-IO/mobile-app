@@ -9,7 +9,6 @@ import { StyleSheet } from 'react-native';
 import moment from 'moment';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
-import { isAndroid } from '../misc/checkers';
 
 interface CancelSubscriptionModalProps {
   isModalVisible: boolean;

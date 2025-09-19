@@ -74,7 +74,6 @@ import { NFTHoldingsScreen, NFTOverviewScreen } from '../containers/NFT';
 import ManageWallet from '../containers/Options/ManageWallet';
 import NotificationSettings from '../containers/Options/NotificationSettings';
 import PrivateKey from '../containers/Options/PrivateKey';
-import SecurityPrivacy from '../containers/Options/SecurityPrivacy';
 import SeedPhrase from '../containers/Options/SeedPhrase';
 import WalletConnectCamera from '../containers/Options/WalletConnectCamera';
 import AdvancedSettings from '../containers/Options/advancedSettings';
@@ -127,28 +126,6 @@ const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
 const SwapStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
-
-const defaultHeaderLeft = (
-  navigation: NavigationProp<ParamListBase>,
-  keyboardHeight: number,
-) => {
-  return (
-    <CyDTouchView
-      className=' px-[12px] bg-n20'
-      onPress={() => {
-        if (keyboardHeight) {
-          Keyboard.dismiss();
-          setTimeout(() => {
-            navigation.goBack();
-          }, 100);
-        } else {
-          navigation.goBack();
-        }
-      }}>
-      <CyDIcons name='arrow-left' size={24} className='text-base400' />
-    </CyDTouchView>
-  );
-};
 
 const CustomHeader = ({
   title,
@@ -799,9 +776,9 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name='CardApplicationStack'
         component={CardApplicationStack}
-        options={({ navigation }): NativeStackNavigationOptions => ({
+        options={{
           headerShown: false,
-        })}
+        }}
       />
     </FundCardStack.Navigator>
   );
