@@ -121,18 +121,88 @@ LogBox.ignoreLogs([
     : []),
 ]);
 
+// Initialize routing instrumentation before Sentry.init
+const routingInstrumentation = Sentry.reactNavigationIntegration();
+
+// Data scrubbing utility for sensitive information
+const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
+const scrubData = (key: string, value: any): any => {
+  if (SENSITIVE_DATA_KEYS.includes(key)) {
+    return '********'; // Replace with asterisks
+  } else if (key === 'email') {
+    const domain: string = value.slice(value.indexOf('@'));
+    return `****${domain}`; // Replace with asterisks before domain name
+  } else {
+    return value; // Don't scrub other data
+  }
+};
+
 // Always initialize Sentry early to prevent the warning, regardless of mode
 Sentry.init({
   dsn: Config.SENTRY_DSN,
   enabled: !isTesting, // Only enable in production
+  environment: Config.ENVIRONMENT ?? 'staging',
+  debug: false, // Keep debug off to avoid console spam
   tracesSampleRate: isTesting ? 0 : 1.0,
   enableAutoPerformanceTracing: !isTesting,
   enableNativeCrashHandling: !isTesting,
-  autoSessionTracking: !isTesting,
-  beforeSend: isTesting ? () => null : undefined, // Drop all events in test mode
+  enableAutoSessionTracking: !isTesting,
+  tracePropagationTargets: ['127.0.0.1', 'api.cypherd.io'],
+  beforeSend: isTesting
+    ? () => null
+    : (event, hint) => {
+        // Scrub sensitive data from events
+        if (event?.extra && typeof event.extra === 'object') {
+          for (const [key, value] of Object.entries(event.extra)) {
+            event.extra[key] = scrubData(key, value);
+          }
+        }
+        if (event?.request && typeof event.request === 'object') {
+          event.request.data = scrubData('requestBody', event.request.data);
+        }
+        if (event?.contexts?.app && typeof event.contexts.app === 'object') {
+          for (const [key, value] of Object.entries(event.contexts.app)) {
+            event.contexts.app[key] = scrubData(key, value);
+          }
+        }
+        if (event?.tags && typeof event.tags === 'object') {
+          for (const [key, value] of Object.entries(event.tags)) {
+            event.tags[key] = scrubData(key, value);
+          }
+        }
+        if (
+          event?.exception?.values &&
+          typeof event.exception.values === 'object'
+        ) {
+          for (const valueObj of event.exception.values) {
+            if (valueObj.type && SENSITIVE_DATA_KEYS.includes(valueObj.type)) {
+              valueObj.value = '********';
+            }
+          }
+        }
+        return event;
+      },
+  beforeBreadcrumb: isTesting
+    ? () => null
+    : (breadcrumb, hint) => {
+        if (breadcrumb.category === 'xhr') {
+          const requestUrl = JSON.stringify(hint?.xhr.__sentry_xhr__.url);
+          return {
+            ...breadcrumb,
+            data: {
+              requestUrl,
+            },
+          };
+        }
+        return breadcrumb;
+      },
+  integrations: [
+    // Initialize the ReactNavigation integration here
+    routingInstrumentation,
+    // Initialize React Native tracing integration
+    Sentry.reactNativeTracingIntegration(),
+  ],
 });
-
-const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
 interface DeepLinkData {
   screenToNavigate: string;
@@ -444,9 +514,8 @@ function App() {
                 onReady={() => {
                   routeNameRef.current =
                     navigationRef?.current?.getCurrentRoute()?.name;
-                  routingInstrumentation.registerNavigationContainer(
-                    navigationRef,
-                  );
+                  // Register navigation container with Sentry for performance tracking
+                  // In Sentry v7, the navigation integration is automatically registered
                 }}
                 onStateChange={async () => {
                   const previousRouteName = routeNameRef.current;
