@@ -2,12 +2,14 @@ import React, { useContext, useState, useEffect, useCallback } from 'react';
 import {
   CyDFastImage,
   CyDIcons,
+  CyDImage,
   CyDMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
+import { SvgUri } from 'react-native-svg';
 import {
   NavigationProp,
   ParamListBase,
@@ -23,7 +25,7 @@ import { HdWalletContext, parseErrorMessage } from '../../core/util';
 import { CardProfile } from '../../models/cardProfile.model';
 import GradientText from '../../components/gradientText';
 import { CypherPlanId } from '../../constants/enum';
-import { get, sum } from 'lodash';
+import { capitalize, endsWith, get, sum } from 'lodash';
 import Button from '../../components/v2/button';
 import MerchantBoostModal, {
   MerchantWithAllocation,
@@ -41,6 +43,19 @@ import TermsAndConditionsModal from '../../components/termsAndConditionsModal';
 interface RouteParams {
   airdropData: AirdropInfo;
 }
+
+const renderImage = (logoUrl: string) => {
+  const isSvg = endsWith(logoUrl, '.svg');
+  return isSvg ? (
+    <CyDView className='w-[32px] h-[32px] rounded-full bg-white overflow-hidden items-center justify-center mr-4'>
+      <SvgUri uri={logoUrl ?? ''} width={24} height={24} />
+    </CyDView>
+  ) : (
+    <CyDView className='w-[32px] h-[32px] rounded-full bg-white overflow-hidden items-center justify-center mr-4'>
+      <CyDImage source={{ uri: logoUrl ?? '' }} className='w-[24px] h-[24px]' />
+    </CyDView>
+  );
+};
 
 export default function AirdropClaim() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -556,12 +571,12 @@ export default function AirdropClaim() {
                   <CyDView className='basis-[35%] flex flex-row items-center gap-x-[4px]'>
                     <CyDIcons name='zap' size={32} color='#F38200' />
                     <CyDText className='text-white font-medium !text-[16px] leading-[145%] tracking-[-0.6px]'>
-                      {'Merchant Boost'}
+                      {'Boosts'}
                     </CyDText>
                   </CyDView>
                   <CyDView className='basis-[65%] flex flex-row items-center justify-end gap-x-[4px]'>
                     <Button
-                      title='Edit Boost'
+                      title='Change Merchants'
                       onPress={() => setIsMerchantBoostModalVisible(true)}
                       style='rounded-full px-[16px] py-[6px] !bg-[#6B788E]'
                       titleStyle='!text-[14px] font-semibold text-white'
@@ -573,46 +588,45 @@ export default function AirdropClaim() {
 
             {/* Merchant List */}
             {airdropData.claimInfo?.isClaimActive &&
-            selectedMerchants.length > 0 ? (
-              <CyDView className='mt-[16px]'>
-                {selectedMerchants.map((merchant, index) => (
-                  <CyDView
-                    key={merchant.candidateId}
-                    className='flex-row items-center justify-between py-[12px] border-b border-[#202020]'>
-                    <CyDView className='flex-row items-center flex-1 gap-x-[12px]'>
-                      {merchant.logoUrl ? (
-                        <CyDFastImage
-                          source={{ uri: merchant.logoUrl }}
-                          className='w-[32px] h-[32px] rounded-full bg-blue20'
-                        />
-                      ) : (
-                        <CyDView className='w-[32px] h-[32px] rounded-full bg-blue20' />
-                      )}
-                      <CyDText className='!text-[16px] font-semibold text-white'>
-                        {merchant.brand ?? merchant.canonicalName}
-                      </CyDText>
+              selectedMerchants.length > 0 && (
+                <CyDView className='mt-[16px]'>
+                  {selectedMerchants.map(merchant => (
+                    <CyDView
+                      key={merchant.candidateId}
+                      className='flex-row items-center justify-between py-[12px] border-b border-[#202020]'>
+                      <CyDView className='flex-row items-center flex-1'>
+                        {merchant.logoUrl ? (
+                          renderImage(merchant.logoUrl)
+                        ) : (
+                          <CyDView className='w-[32px] h-[32px] rounded-full bg-blue20' />
+                        )}
+                        <CyDText className='!text-[16px] font-semibold text-white'>
+                          {capitalize(merchant.canonicalName)}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className='flex-row items-center gap-x-[8px]'>
+                        <CyDText className='!text-[14px] font-medium !text-[#F1FDF7]'>
+                          Boosting
+                        </CyDText>
+                        <CyDText className='!text-[16px] font-bold !text-[#F1FDF7]'>
+                          - {merchant.allocation}%
+                        </CyDText>
+                      </CyDView>
                     </CyDView>
-                    <CyDView className='flex-row items-center gap-x-[8px]'>
-                      <CyDText className='!text-[14px] font-medium !text-[#F1FDF7]'>
-                        Boosting
-                      </CyDText>
-                      <CyDText className='!text-[16px] font-bold !text-[#F1FDF7]'>
-                        - {merchant.allocation}%
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-                ))}
-              </CyDView>
-            ) : (
-              <CyDView className='mt-[16px]'>
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <CyDView
-                    key={index}
-                    className='bg-n40 rounded-[12px] h-[40px] w-full animate-pulse mb-[6px]'
-                  />
-                ))}
-              </CyDView>
-            )}
+                  ))}
+                </CyDView>
+              )}
+            {airdropData.claimInfo?.isClaimActive &&
+              selectedMerchants.length === 0 && (
+                <CyDView className='mt-[16px]'>
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <CyDView
+                      key={index}
+                      className='bg-n40 rounded-[12px] h-[40px] w-full animate-pulse mb-[16px]'
+                    />
+                  ))}
+                </CyDView>
+              )}
 
             {/* Information Section */}
             {airdropData.claimInfo?.isClaimActive && (
