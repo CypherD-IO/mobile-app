@@ -712,12 +712,12 @@ PODS:
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
     - React-RCTImage
-  - RNSentry (5.35.0):
+  - RNSentry (7.1.0):
     - hermes-engine
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
     - React-hermes
-    - Sentry/HybridSDK (= 8.37.0)
+    - Sentry/HybridSDK (= 8.56.0)
   - RNShare (10.0.0):
     - React-Core
   - RNSVG (15.3.0):
@@ -728,7 +728,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.37.0)
+  - Sentry/HybridSDK (8.56.0)
   - SocketRocket (0.6.1)
   - transfi-ramp-react-native-sdk (0.1.8):
     - React-Core
@@ -1154,12 +1154,12 @@ SPEC CHECKSUMS:
   RNPermissions: 4249fc75f24d357e98c6cfc1f30edc1f7ed1cfb0
   RNReanimated: c1c395337d1f757941b0a2ad322188474b477ad4
   RNScreens: c09986e2086f03fb9fcaefbff7126fd3a2bb1cf5
-  RNSentry: 7215dbbe3426630b16eda0abfd0867e4591fbfb1
+  RNSentry: a3b7c71d0ee37a2dd253d3f280574e57c075ece0
   RNShare: bb447c554990f5fb7c717035e6f956bfa70c88c7
   RNSVG: e77adf5edb2302f0f10dd03a09e92bb9420d914e
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: ee060c09b2f7ec1240e95c766ab44c04c7bdb052
+  Sentry: 3d82977434c80381cae856c40b99c39e4be6bc11
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   transfi-ramp-react-native-sdk: 357ce93f5e1e1889c997ef4fb352237afc6c92b0
   Yoga: ef534101bb891fb09bae657417f34d399c1efe38
