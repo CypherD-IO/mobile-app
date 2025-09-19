@@ -119,13 +119,16 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
       totalSpend: merchant.totalSpend,
     });
     const redirectURI = 'https://app.cypherhq.io/#/rewards/leaderboard';
-    navigation.navigate(screenTitle.OPTIONS, {
-      screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-      params: {
-        title: 'Rewards Leaderboard',
-        uri: redirectURI,
-      },
-    });
+    navigation.navigate(screenTitle.OPTIONS);
+    setTimeout(() => {
+      navigation.navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+        params: {
+          title: 'Rewards Leaderboard',
+          uri: redirectURI,
+        },
+      });
+    }, 250);
     onMerchantPress?.(merchant);
   };
 
@@ -135,13 +138,16 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
       displayedCount: merchantData.merchants?.length ?? 0,
     });
     const redirectURI = 'https://app.cypherhq.io/#/rewards/leaderboard';
-    navigation.navigate(screenTitle.OPTIONS, {
-      screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-      params: {
-        title: 'Rewards Leaderboard',
-        uri: redirectURI,
-      },
-    });
+    navigation.navigate(screenTitle.OPTIONS);
+    setTimeout(() => {
+      navigation.navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+        params: {
+          title: 'Rewards Leaderboard',
+          uri: redirectURI,
+        },
+      });
+    }, 250);
     onViewAllPress?.();
   };
 

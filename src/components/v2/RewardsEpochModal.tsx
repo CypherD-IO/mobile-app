@@ -92,13 +92,16 @@ const RewardsEpochModal: React.FC<RewardsEpochModalProps> = ({
     });
 
     const redirectURI = 'https://app.cypherhq.io/#/rewards/leaderboard';
-    navigation.navigate(screenTitle.OPTIONS, {
-      screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-      params: {
-        title: 'Rewards Leaderboard',
-        uri: redirectURI,
-      },
-    });
+    navigation.navigate(screenTitle.OPTIONS);
+    setTimeout(() => {
+      navigation.navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+        params: {
+          title: 'Rewards Leaderboard',
+          uri: redirectURI,
+        },
+      });
+    }, 250);
 
     setModalVisible(false);
   };

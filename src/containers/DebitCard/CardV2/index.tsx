@@ -666,6 +666,12 @@ export default function CypherCardScreen() {
             cardId={cardId}
           />
 
+          <RewardsEpochModal
+            isModalVisible={isRewardsEpochModalVisible}
+            setModalVisible={setIsRewardsEpochModalVisible}
+            epochInfo={epochInfo}
+          />
+
           {(shouldShowLocked() ||
             shouldShowActionNeeded() ||
             shouldShowContactSupport()) && (
@@ -935,6 +941,8 @@ export default function CypherCardScreen() {
             )}
 
             <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
+              <MerchantSpendRewardWidget />
+
               <GetPhysicalCardComponent
                 cardProfile={cardProfile}
                 cardProvider={cardProvider}
