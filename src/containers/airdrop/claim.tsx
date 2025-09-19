@@ -36,6 +36,7 @@ import { CHAIN_BASE, CHAIN_BASE_SEPOLIA } from '../../constants/server';
 import { t } from 'i18next';
 import { screenTitle } from '../../constants';
 import Loading from '../Loading';
+import TermsAndConditionsModal from '../../components/termsAndConditionsModal';
 
 interface RouteParams {
   airdropData: AirdropInfo;
@@ -58,6 +59,8 @@ export default function AirdropClaim() {
     MerchantWithAllocation[]
   >([]);
   const [isTransactionLoading, setIsTransactionLoading] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 
   // Get transaction manager and wallet context
   const { executeAirdropClaimContract } = useTransactionManager();
@@ -246,6 +249,10 @@ export default function AirdropClaim() {
     hdWalletContext.state.selectedChain,
   ]);
 
+  const handleAcceptTerms = async () => {
+    setIsTermsAccepted(true);
+  };
+
   if (!airdropData) {
     return (
       <>
@@ -293,6 +300,12 @@ export default function AirdropClaim() {
         onConfirm={merchants => {
           setSelectedMerchants(merchants);
         }}
+      />
+      <TermsAndConditionsModal
+        isModalVisible={showTermsModal}
+        setShowModal={setShowTermsModal}
+        onAcceptTerms={handleAcceptTerms}
+        title='Privacy Policy & Terms'
       />
       <CyDView
         className='!bg-[#0D0E12] flex-1 p-[24px]'
@@ -560,37 +573,46 @@ export default function AirdropClaim() {
 
             {/* Merchant List */}
             {airdropData.claimInfo?.isClaimActive &&
-              selectedMerchants.length > 0 && (
-                <CyDView className='mt-[16px]'>
-                  {selectedMerchants.map((merchant, index) => (
-                    <CyDView
-                      key={merchant.candidateId}
-                      className='flex-row items-center justify-between py-[12px] border-b border-[#202020]'>
-                      <CyDView className='flex-row items-center flex-1 gap-x-[12px]'>
-                        {merchant.logoUrl ? (
-                          <CyDFastImage
-                            source={{ uri: merchant.logoUrl }}
-                            className='w-[32px] h-[32px] rounded-full bg-blue20'
-                          />
-                        ) : (
-                          <CyDView className='w-[32px] h-[32px] rounded-full bg-blue20' />
-                        )}
-                        <CyDText className='!text-[16px] font-semibold text-white'>
-                          {merchant.brand ?? merchant.canonicalName}
-                        </CyDText>
-                      </CyDView>
-                      <CyDView className='flex-row items-center gap-x-[8px]'>
-                        <CyDText className='!text-[14px] font-medium !text-[#F1FDF7]'>
-                          Boosting
-                        </CyDText>
-                        <CyDText className='!text-[16px] font-bold !text-[#F1FDF7]'>
-                          - {merchant.allocation}%
-                        </CyDText>
-                      </CyDView>
+            selectedMerchants.length > 0 ? (
+              <CyDView className='mt-[16px]'>
+                {selectedMerchants.map((merchant, index) => (
+                  <CyDView
+                    key={merchant.candidateId}
+                    className='flex-row items-center justify-between py-[12px] border-b border-[#202020]'>
+                    <CyDView className='flex-row items-center flex-1 gap-x-[12px]'>
+                      {merchant.logoUrl ? (
+                        <CyDFastImage
+                          source={{ uri: merchant.logoUrl }}
+                          className='w-[32px] h-[32px] rounded-full bg-blue20'
+                        />
+                      ) : (
+                        <CyDView className='w-[32px] h-[32px] rounded-full bg-blue20' />
+                      )}
+                      <CyDText className='!text-[16px] font-semibold text-white'>
+                        {merchant.brand ?? merchant.canonicalName}
+                      </CyDText>
                     </CyDView>
-                  ))}
-                </CyDView>
-              )}
+                    <CyDView className='flex-row items-center gap-x-[8px]'>
+                      <CyDText className='!text-[14px] font-medium !text-[#F1FDF7]'>
+                        Boosting
+                      </CyDText>
+                      <CyDText className='!text-[16px] font-bold !text-[#F1FDF7]'>
+                        - {merchant.allocation}%
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                ))}
+              </CyDView>
+            ) : (
+              <CyDView className='mt-[16px]'>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <CyDView
+                    key={index}
+                    className='bg-n40 rounded-[12px] h-[40px] w-full animate-pulse mb-[6px]'
+                  />
+                ))}
+              </CyDView>
+            )}
 
             {/* Information Section */}
             {airdropData.claimInfo?.isClaimActive && (
@@ -615,11 +637,21 @@ export default function AirdropClaim() {
                   <CyDTouchView
                     className='!bg-[#F9D26C] rounded-full py-2 px-3 items-center flex-row justify-between'
                     onPress={() => {
-                      void handleSignTransaction();
+                      if (!isTermsAccepted) {
+                        setShowTermsModal(true);
+                      } else {
+                        void handleSignTransaction();
+                      }
                     }}
-                    disabled={isTransactionLoading}>
+                    disabled={
+                      isTransactionLoading || selectedMerchants.length === 0
+                    }>
                     <CyDText className='text-[18px] font-semibold text-black'>
-                      {isTransactionLoading ? 'Signing...' : 'Claim Airdrop'}
+                      {isTransactionLoading
+                        ? 'Signing...'
+                        : isTermsAccepted
+                          ? 'Claim Airdrop'
+                          : 'Accept Terms'}
                     </CyDText>
                     <CyDMaterialDesignIcons
                       name='arrow-right'
