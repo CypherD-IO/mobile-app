@@ -119,12 +119,11 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
     }
   }, [isVisible]);
 
-  // --- Clear error when modal becomes visible ---
   useEffect(() => {
-    if (isVisible) {
-      setError(null);
-    }
-  }, [isVisible]);
+    return () => {
+      if (fetchDebounced.current) clearTimeout(fetchDebounced.current);
+    };
+  }, []);
 
   // --- Fetch merchants from API (infinite scroll) ---
   const fetchMerchants = useCallback(
@@ -423,7 +422,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
           <CyDView className='w-[32px] h-[32px] rounded-full bg-n40 mr-2' />
         )}
         <CyDText className='!text-[20px] font-bold flex-1 text-white'>
-          {item.brand ?? item.canonicalName}
+          {capitalize(item.canonicalName)}
         </CyDText>
         <CyDText className='text-p50'>{isSelected ? '◉' : '○'}</CyDText>
       </CyDTouchView>
