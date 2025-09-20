@@ -1,4 +1,8 @@
-import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
@@ -21,7 +25,6 @@ import { CreateContact } from '../containers/AddressBook/createContact';
 import { AddressBook } from '../containers/AddressBook/myAddress';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import EnterKeyScreen from '../containers/Auth/EnterKey';
-import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import TransDetail from '../containers/Auth/TransDetail';
 import Bridge from '../containers/Bridge';
 import BrowserScreen from '../containers/Browser/Browser';
@@ -32,7 +35,6 @@ import WithDrawSuccess from '../containers/DebitCard/CardV2/cryptoWithdrawal/wit
 import WithdrawConfirmation from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawConfirmation';
 import WithdrawHistory from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawHistory';
 import FirstLoadCard from '../containers/DebitCard/CardV2/firstLoadCard';
-import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
 import ManageSubscription from '../containers/DebitCard/CardV2/manageSubscription';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import TelegramSetup from '../containers/DebitCard/CardV2/signup/telegramSetup';
@@ -72,14 +74,11 @@ import { NFTHoldingsScreen, NFTOverviewScreen } from '../containers/NFT';
 import ManageWallet from '../containers/Options/ManageWallet';
 import NotificationSettings from '../containers/Options/NotificationSettings';
 import PrivateKey from '../containers/Options/PrivateKey';
-import SecurityPrivacy from '../containers/Options/SecurityPrivacy';
 import SeedPhrase from '../containers/Options/SeedPhrase';
 import WalletConnectCamera from '../containers/Options/WalletConnectCamera';
 import AdvancedSettings from '../containers/Options/advancedSettings';
 import AppSettings from '../containers/Options/appSettings';
 import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
-import ImportWalletOptions from '../containers/Options/importWalletOptions';
-import OptionsScreen from '../containers/Options/index';
 import Referrals from '../containers/Options/referrals';
 import Rewards from '../containers/Options/rewards';
 import AppearanceSelector from '../containers/Options/theme';
@@ -120,34 +119,13 @@ import KYCVerification from '../containers/DebitCard/CardV2/signup/application/k
 import AirdropEligibility from '../containers/airdrop/eligibility';
 import AirdropClaim from '../containers/airdrop/claim';
 import CountryTemporarilyUnsupported from '../containers/DebitCard/CardV2/signup/application/countryTemporarilyUnsupported';
+import OptionsHub from '../containers/Options';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
 const SwapStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
-
-const defaultHeaderLeft = (
-  navigation: NavigationProp<ParamListBase>,
-  keyboardHeight: number,
-) => {
-  return (
-    <CyDTouchView
-      className=' px-[12px] bg-n20'
-      onPress={() => {
-        if (keyboardHeight) {
-          Keyboard.dismiss();
-          setTimeout(() => {
-            navigation.goBack();
-          }, 100);
-        } else {
-          navigation.goBack();
-        }
-      }}>
-      <CyDIcons name='arrow-left' size={24} className='text-base400' />
-    </CyDTouchView>
-  );
-};
 
 const CustomHeader = ({
   title,
@@ -296,43 +274,19 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('TRAN_DETAIL')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
         name={screenTitle.NFTS_DETAIL}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('NFT_DETAIL')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
         name={screenTitle.GEN_WEBVIEW}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('GEN_WEBVIEW')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
@@ -366,29 +320,26 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.ENTER_AMOUNT}
         component={EnterAmount}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('ENTER_AMOUNT')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
         name={screenTitle.SEND_TO}
         component={SendTo}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('SEND_TO')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={
+          {
+            headerShown: false,
+          }
+          //   ({ navigation, route }) => ({
+          //   header: () => (
+          //     <CustomHeader
+          //       title={t('SEND_TO')}
+          //       navigation={navigation}
+          //       keyboardHeight={keyboardHeight}
+          //     />
+          //   ),
+          // })
+        }
       />
 
       <PortfolioStack.Screen
@@ -423,15 +374,7 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('RECEIVE')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <PortfolioStack.Screen
@@ -493,77 +436,19 @@ export function PortfolioStackScreen() {
           headerShown: false,
         })}
       />
-
-      {/* <PortfolioStack.Screen
-        name={screenTitle.LOCKDOWN_MODE}
-        component={LockdownMode}
-        options={({ navigation, route }) => ({
-          headerShown: false,
-        })} 
-      /> */}
-
-      {/* <PortfolioStack.Screen
-        name={screenTitle.LOCKDOWN_MODE_AUTH}
-        component={LockdownModeAuth}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      /> */}
-
-      {/* <PortfolioStack.Screen
-        name={screenTitle.CARD_UNLOCK_AUTH}
-        component={CardUnlockAuth}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      /> */}
-
-      {/* <PortfolioStack.Screen
-        name={screenTitle.CARD_ACTIAVTION_SCREEN}
-        component={ActivateCardScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      /> */}
     </PortfolioStack.Navigator>
   );
 }
 
-export function DebitCardStackScreen({ route }) {
+type AnyRoute = RouteProp<
+  Record<string, { screenToNavigate?: string } | undefined>,
+  string
+>;
+
+export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
   const { keyboardHeight } = useKeyboard();
-  const portfolioStackScreenHeaderTitleStyles: StyleProp<
-    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
-      color?: string | undefined;
-      backgroundColor?: string | undefined;
-    }
-  > = {
-    fontFamily: C.fontsName.FONT_BLACK,
-    fontSize: 20,
-    fontWeight: '800',
-  };
   const initialRouteName =
-    route.params?.screenToNavigate || screenTitle.DEBIT_CARD_SCREEN;
+    route.params?.screenToNavigate ?? screenTitle.DEBIT_CARD_SCREEN;
 
   return (
     <FundCardStack.Navigator initialRouteName={initialRouteName}>
@@ -571,33 +456,6 @@ export function DebitCardStackScreen({ route }) {
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
         options={{ headerShown: false }}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.LOCKDOWN_MODE}
-        component={LockdownMode}
-        options={({ navigation, route }) => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.TELEGRAM_PIN_SETUP}
-        component={SetTelegramPin}
-        options={() => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.LOCKDOWN_MODE_AUTH}
-        component={LockdownModeAuth}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Lockdown Mode'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
       />
       <FundCardStack.Screen
         name={screenTitle.CARD_UNLOCK_AUTH}
@@ -645,15 +503,9 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_TRANSACTIONS_SCREEN}
         component={CardTransactions}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Card Transactions'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{
+          headerShown: false,
+        }}
       />
 
       <FundCardStack.Screen
@@ -683,32 +535,6 @@ export function DebitCardStackScreen({ route }) {
           header: () => (
             <CustomHeader
               title='Load card'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.AUTO_LOAD_SCREEN}
-        component={AutoLoad}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Auto Load'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.PREVIEW_AUTO_LOAD_SCREEN}
-        component={PreviewAutoLoad}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Auto Load'
               navigation={navigation}
               keyboardHeight={keyboardHeight}
             />
@@ -751,71 +577,6 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.LINK_ANOTHER_WALLET}
-        component={LinkAnotherWallet}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Link Another Wallet'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.LINKED_WALLETS}
-        component={LinkedWallets}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Linked Wallets'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.LINK_WALLET_AUTH}
-        component={LinkWalletAuth}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title='Link Wallet'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.CARD_NOTIFICATION_SETTINGS}
-        component={CardNotificationSettings}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title='Notification Settings'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN}
-        component={UpdateCardContactDetails}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Update Contact Details'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
         options={({ navigation }) => ({
@@ -836,15 +597,7 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title='Explorer'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
       <FundCardStack.Screen
         name={screenTitle.ORDER_STEPS_SCREEN}
@@ -894,13 +647,6 @@ export function DebitCardStackScreen({ route }) {
         options={{
           headerShown: false,
         }}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.TELEGRAM_SETUP}
-        component={TelegramSetup}
-        options={({ navigation }) => ({
-          headerShown: false,
-        })}
       />
       <FundCardStack.Screen
         name={screenTitle.BASIC_DETAILS}
@@ -1000,48 +746,6 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
       <FundCardStack.Screen
-        name={screenTitle.CRYPTO_WITHDRAWAL}
-        component={CryptoWithdrawal}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.WITHDRAW_CONFIRMATION}
-        component={WithdrawConfirmation}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.WITHDRAW_SUCCESS}
-        component={WithDrawSuccess}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.WITHDRAW_HISTORY}
-        component={WithdrawHistory}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.GLOBAL_CARD_OPTIONS}
-        component={GlobalOptions}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.MANAGE_SUBSCRIPTION}
-        component={ManageSubscription}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.FIRST_LOAD_CARD}
         component={FirstLoadCard}
         options={({ navigation }): NativeStackNavigationOptions => ({
@@ -1072,9 +776,9 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name='CardApplicationStack'
         component={CardApplicationStack}
-        options={({ navigation }): NativeStackNavigationOptions => ({
+        options={{
           headerShown: false,
-        })}
+        }}
       />
     </FundCardStack.Navigator>
   );
@@ -1085,7 +789,6 @@ export function BrowserStackScreen({
 }: {
   navigation: NavigationProp<ParamListBase>;
 }) {
-  const { keyboardHeight } = useKeyboard();
   let backPressCount = 0;
   const handleBackButton = () => {
     navigation.navigate(screenTitle.PORTFOLIO);
@@ -1120,15 +823,7 @@ export function BrowserStackScreen({
       <BrowserStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
-        options={({ navigation: _navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerLeft: () => defaultHeaderLeft(_navigation, keyboardHeight),
-        })}
+        options={{ headerShown: false }}
       />
     </BrowserStack.Navigator>
   );
@@ -1208,22 +903,14 @@ export function OptionsStackScreen({
     <OptionsStack.Navigator initialRouteName={screenTitle.OPTIONS_SCREEN}>
       <OptionsStack.Screen
         name={screenTitle.OPTIONS_SCREEN}
-        component={OptionsScreen}
+        component={OptionsHub}
         options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.ACTIVITIES}
         component={ActivityScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Activities'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
@@ -1289,127 +976,49 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.MANAGE_WALLET}
         component={ManageWallet}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('MANAGE_WALLET')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-
-      <OptionsStack.Screen
-        name={screenTitle.SECURITY_PRIVACY}
-        component={SecurityPrivacy}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('SECURITY_PRIVACY')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.SEED_PHRASE}
         component={SeedPhrase}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('SEED_PHRASE')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.PRIVATE_KEY}
         component={PrivateKey}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('PRIVATE_KEY')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.NOTIFICATION_SETTINGS}
         component={NotificationSettings}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('NOTIFICATION_PREFERENCES')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.ADVANCED_SETTINGS}
         component={AdvancedSettings}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('ADVANCED_SETTINGS')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.CHANGE_PIN}
         component={ChangePin}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('CHANGE_PIN')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.CONFIRM_CHANGE_PIN}
         component={ConfirmPin}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('CONFIRM_PIN')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.SET_CHANGE_PIN}
         component={SetPin}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('SET_PIN')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
@@ -1421,15 +1030,7 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.CREATE_CONTACT}
         component={CreateContact}
-        options={({ navigation, route }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('CREATE_NEW_CONTACT')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
@@ -1449,15 +1050,7 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('RECEIVE')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
@@ -1474,24 +1067,10 @@ export function OptionsStackScreen({
         })}
       />
 
-      {/* <OptionsStack.Screen
-        name={screenTitle.IMPORT_ANOTHER_WALLET}
-        component={ImportAnotherWallet}
-        options={{ headerShown: false }}
-      /> */}
-
       <OptionsStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('TERMS_AND_CONDITIONS')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
@@ -1501,20 +1080,6 @@ export function OptionsStackScreen({
           header: () => (
             <CustomHeader
               title={'SCAN QR CODE'}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
-
-      <OptionsStack.Screen
-        name={screenTitle.IMPORT_WALLET_OPTIONS}
-        component={ImportWalletOptions}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('IMPORT_WALLET')}
               navigation={navigation}
               keyboardHeight={keyboardHeight}
             />
@@ -1543,20 +1108,6 @@ export function OptionsStackScreen({
           headerShown: false,
         })}
       />
-
-      <OptionsStack.Screen
-        name={screenTitle.ENTER_PRIVATE_KEY}
-        component={EnterPrivateKey}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={t('ENTER_PRIVATE_KEY')}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      />
       <OptionsStack.Screen
         name={screenTitle.WALLET_CONNECT}
         component={WalletConnectCamera}
@@ -1564,20 +1115,6 @@ export function OptionsStackScreen({
           headerShown: false,
         })}
       />
-
-      {/* <OptionsStack.Screen
-        name={screenTitle.DEBIT_CARD_SCREEN}
-        component={DebitCardScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={'Cypher Card'}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
-      /> */}
 
       <OptionsStack.Screen
         name={screenTitle.OPEN_LEGAL_SCREEN}
@@ -1588,57 +1125,123 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={''}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.BROWSER}
         component={BrowserStackScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={'Browser'}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{ headerShown: false }}
       />
 
       <OptionsStack.Screen
         name={screenTitle.THEME}
         component={AppearanceSelector}
+        options={{ headerShown: false }}
+      />
+
+      {/* new options route changes  */}
+
+      <OptionsStack.Screen
+        name={screenTitle.LOCKDOWN_MODE}
+        component={LockdownMode}
+        options={{ headerShown: false }}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.LOCKDOWN_MODE_AUTH}
+        component={LockdownModeAuth}
+        options={{ headerShown: false }}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.TELEGRAM_SETUP}
+        component={TelegramSetup}
         options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={'Theme'}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
+          headerShown: false,
         })}
       />
 
       <OptionsStack.Screen
-        name={screenTitle.CARD_TRANSACTIONS_SCREEN}
-        component={CardTransactions}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Card Transactions'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
+        name={screenTitle.TELEGRAM_PIN_SETUP}
+        component={SetTelegramPin}
+        options={() => ({
+          headerShown: false,
         })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.AUTO_LOAD_SCREEN}
+        component={AutoLoad}
+        options={{ headerShown: false }}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.PREVIEW_AUTO_LOAD_SCREEN}
+        component={PreviewAutoLoad}
+        options={{ headerShown: false }}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.CRYPTO_WITHDRAWAL}
+        component={CryptoWithdrawal}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.WITHDRAW_CONFIRMATION}
+        component={WithdrawConfirmation}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.WITHDRAW_SUCCESS}
+        component={WithDrawSuccess}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.WITHDRAW_HISTORY}
+        component={WithdrawHistory}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.MANAGE_SUBSCRIPTION}
+        component={ManageSubscription}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.LINK_ANOTHER_WALLET}
+        component={LinkAnotherWallet}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.LINKED_WALLETS}
+        component={LinkedWallets}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.LINK_WALLET_AUTH}
+        component={LinkWalletAuth}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.CARD_NOTIFICATION_SETTINGS}
+        component={CardNotificationSettings}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN}
+        component={UpdateCardContactDetails}
+        options={{ headerShown: false }}
       />
     </OptionsStack.Navigator>
   );

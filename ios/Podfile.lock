@@ -631,7 +631,7 @@ PODS:
     - React-perflogger (= 0.72.17)
   - RNCAsyncStorage (1.24.0):
     - React-Core
-  - RNCClipboard (1.15.0):
+  - RNCClipboard (1.16.3):
     - React-Core
   - RNCMaskedView (0.3.2):
     - RCT-Folly (= 2021.07.22.00)
@@ -712,12 +712,12 @@ PODS:
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
     - React-RCTImage
-  - RNSentry (5.35.0):
+  - RNSentry (7.1.0):
     - hermes-engine
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
     - React-hermes
-    - Sentry/HybridSDK (= 8.37.0)
+    - Sentry/HybridSDK (= 8.56.0)
   - RNShare (10.0.0):
     - React-Core
   - RNSVG (15.3.0):
@@ -728,7 +728,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.37.0)
+  - Sentry/HybridSDK (8.56.0)
   - SocketRocket (0.6.1)
   - transfi-ramp-react-native-sdk (0.1.8):
     - React-Core
@@ -1135,7 +1135,7 @@ SPEC CHECKSUMS:
   React-utils: 389181b1411d047f3d9c4913930b9e806d59d0b1
   ReactCommon: 561cfc1683ccdebe8a377b4616958ea6a1f62d91
   RNCAsyncStorage: b6410dead2732b5c72a7fdb1ecb5651bbcf4674b
-  RNCClipboard: dbcf25b8f666b4685c02eeb65be981d30198e505
+  RNCClipboard: f6679d470d0da2bce2a37b0af7b9e0bf369ecda5
   RNCMaskedView: a25bd07426ad99b0740043a1f329a7a742e62c02
   RNCPushNotificationIOS: 6c4ca3388c7434e4a662b92e4dfeeee858e6f440
   RNDateTimePicker: 47b54bf36a41c29d75ac62a05af1b38a9a721631
@@ -1154,12 +1154,12 @@ SPEC CHECKSUMS:
   RNPermissions: 4249fc75f24d357e98c6cfc1f30edc1f7ed1cfb0
   RNReanimated: c1c395337d1f757941b0a2ad322188474b477ad4
   RNScreens: c09986e2086f03fb9fcaefbff7126fd3a2bb1cf5
-  RNSentry: 7215dbbe3426630b16eda0abfd0867e4591fbfb1
+  RNSentry: a3b7c71d0ee37a2dd253d3f280574e57c075ece0
   RNShare: bb447c554990f5fb7c717035e6f956bfa70c88c7
   RNSVG: e77adf5edb2302f0f10dd03a09e92bb9420d914e
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: ee060c09b2f7ec1240e95c766ab44c04c7bdb052
+  Sentry: 3d82977434c80381cae856c40b99c39e4be6bc11
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   transfi-ramp-react-native-sdk: 357ce93f5e1e1889c997ef4fb352237afc6c92b0
   Yoga: ef534101bb891fb09bae657417f34d399c1efe38

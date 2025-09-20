@@ -42,6 +42,7 @@ import {
 import {
   CyDFastImage,
   CyDMaterialDesignIcons,
+  CyDSafeAreaView,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -62,6 +63,7 @@ import { endsWith, get, round } from 'lodash';
 import { SvgUri } from 'react-native-svg';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import PageHeader from '../../components/PageHeader';
 
 const IN_PROGRESS = 'IN_PROGRESS';
 const PENDING = 'PENDING';
@@ -1129,21 +1131,6 @@ export default function Activites() {
     }
   };
 
-  if (
-    activityContext.state.activityObjects.length === 0 ||
-    activities.length === 0
-  ) {
-    return (
-      <CyDView className='h-full w-full bg-n20 justify-center items-center'>
-        <CyDFastImage
-          className='h-[150px] w-[150px]'
-          resizeMode='contain'
-          source={AppImages.NO_ACTIVITIES}
-        />
-      </CyDView>
-    );
-  }
-
   const RenderActivity = ({ activity }: { activity: ActivityAny }) => {
     const { id, type } = activity;
     switch (type) {
@@ -1206,27 +1193,43 @@ export default function Activites() {
   };
 
   return (
-    <CyDScrollView className='bg-n20'>
-      <CyDView>
-        <ActivityInfoModal
-          setModalVisible={setShowCardInfo}
-          isModalVisible={showCardInfo}
-          params={cardInfoParams}
-        />
-        <ActivityBridgeInfoModal
-          setModalVisible={setShowBridgeInfo}
-          isModalVisible={showBridgeInfo}
-          params={bridgeInfoParams}
-          navigationRef={navigation}
-        />
-        <ActivitySendInfoModal
-          setModalVisible={setShowSendInfo}
-          isModalVisible={showSendInfo}
-          params={sendInfoParams}
-          navigationRef={navigation}
-        />
-        <RenderActivities />
+    <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
+      <PageHeader title={'ACTIVITIES'} navigation={navigation} />
+      <CyDView className='bg-n20 flex-1 pt-[24px]'>
+        {activityContext.state.activityObjects.length === 0 ||
+        activities.length === 0 ? (
+          <CyDView className='flex flex-1 justify-center items-center'>
+            <CyDFastImage
+              className='h-[150px] w-[150px]'
+              resizeMode='contain'
+              source={AppImages.NO_ACTIVITIES}
+            />
+          </CyDView>
+        ) : (
+          <CyDScrollView className=''>
+            <CyDView className='flex flex-1'>
+              <ActivityInfoModal
+                setModalVisible={setShowCardInfo}
+                isModalVisible={showCardInfo}
+                params={cardInfoParams}
+              />
+              <ActivityBridgeInfoModal
+                setModalVisible={setShowBridgeInfo}
+                isModalVisible={showBridgeInfo}
+                params={bridgeInfoParams}
+                navigationRef={navigation}
+              />
+              <ActivitySendInfoModal
+                setModalVisible={setShowSendInfo}
+                isModalVisible={showSendInfo}
+                params={sendInfoParams}
+                navigationRef={navigation}
+              />
+              <RenderActivities />
+            </CyDView>
+          </CyDScrollView>
+        )}
       </CyDView>
-    </CyDScrollView>
+    </CyDSafeAreaView>
   );
 }

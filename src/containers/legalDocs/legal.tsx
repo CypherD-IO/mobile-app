@@ -1,5 +1,5 @@
 import React from 'react';
-import { CyDView } from '../../styles/tailwindComponents';
+import { CyDSafeAreaView, CyDView } from '../../styles/tailwindComponents';
 import WebView from 'react-native-webview';
 import { BackHandler } from 'react-native';
 import {
@@ -7,6 +7,7 @@ import {
   NavigationProp,
   useNavigation,
 } from '@react-navigation/native';
+import PageHeader from '../../components/PageHeader';
 
 const uri = 'https://cypherhq.io/legal?redirect=true';
 
@@ -24,8 +25,13 @@ export default function LegalScreen() {
     };
   }, []);
   return (
-    <CyDView className={'h-full w-full bg-n20'}>
-      <WebView source={{ uri }} backgroundColor={'transparent'} />
-    </CyDView>
+    <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
+      <PageHeader title={'TERMS_AND_CONDITIONS'} navigation={navigation} />
+      <CyDView className='flex-1 bg-n20'>
+        <CyDView className={'h-full w-full bg-n20'}>
+          <WebView source={{ uri }} backgroundColor={'transparent'} />
+        </CyDView>
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

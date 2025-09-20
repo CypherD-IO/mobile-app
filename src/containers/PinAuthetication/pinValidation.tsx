@@ -24,6 +24,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import Loading from '../../components/v2/loading';
+import PageHeader from '../../components/PageHeader';
 
 interface RouteParams {
   title: string;
@@ -47,19 +48,6 @@ export default function PinValidation() {
   const [reSettingToBiometric, setReSettingToBiometric] = useState(false);
   const hdWallet = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
-
-  const PINHeader = () => {
-    return (
-      <>
-        <CyDView>
-          <CyDText
-            className={'text-[30px] font-extrabold text-center pt-[60px]'}>
-            {title}
-          </CyDText>
-        </CyDView>
-      </>
-    );
-  };
 
   let validatePinValue = async (pin: string) => {
     if (retries < 1) {
@@ -167,13 +155,13 @@ export default function PinValidation() {
   };
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-n20 px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView edges={['top']} className='flex-1 bg-n0'>
+      <PageHeader title={title} navigation={navigation} />
+      <CyDView className={'h-full bg-n20 p-[24px]'}>
         {reSettingToBiometric ? (
           <Loading blurBg />
         ) : (
           <>
-            <PINHeader />
             <PIN />
           </>
         )}

@@ -1,16 +1,13 @@
-/* eslint-disable react-native/no-raw-text */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import React, { useContext, useEffect, useState } from 'react';
-import { CyDImage, CyDText, CyDView } from '../../styles/tailwindComponents';
-import { HdWalletContext } from '../../core/util';
-import WebView from 'react-native-webview';
-import Loading from '../../components/v2/loading';
 import { useIsFocused } from '@react-navigation/native';
-import useAxios from '../../core/HttpRequest';
-import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { TransfiRampReactNativeSdkView } from 'transfi-ramp-react-native-sdk';
+import AppImages from '../../../assets/images/appImages';
+import useAxios from '../../core/HttpRequest';
+import { HdWalletContext } from '../../core/util';
+import { CyDImage, CyDText, CyDView } from '../../styles/tailwindComponents';
 
 export default function TransFiScreen({
   route,

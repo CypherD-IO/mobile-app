@@ -1,20 +1,33 @@
 import { StdFee } from '@cosmjs/stargate';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import { Hex } from 'viem';
 
-export type EVM_ONLY_CHAINS_TYPE =
+export type EVM_CHAINS_TYPE =
   | 'ETH'
   | 'POLYGON'
   | 'AVALANCHE'
   | 'ARBITRUM'
   | 'OPTIMISM'
-  | 'BSC';
+  | 'ZKSYNC_ERA'
+  | 'BASE'
+  | 'BSC'
+  | 'BASE_SEPOLIA';
 
-export type EVM_CHAINS_TYPE = EVM_ONLY_CHAINS_TYPE;
+export type COSMOS_CHAINS_TYPE =
+  | 'COSMOS'
+  | 'OSMOSIS'
+  | 'NOBLE'
+  | 'INJECTIVE'
+  | 'COREUM';
 
-export type COSMOS_CHAINS_TYPE = 'COSMOS' | 'OSMOSIS' | 'NOBLE';
+export type TRON_CHAIN_TYPE = 'TRON';
 
-export type ALL_CHAINS_TYPE = EVM_CHAINS_TYPE | COSMOS_CHAINS_TYPE;
+export type SOLANA_CHAIN_TYPE = 'SOLANA';
+
+export type ALL_CHAINS_TYPE =
+  | EVM_CHAINS_TYPE
+  | COSMOS_CHAINS_TYPE
+  | TRON_CHAIN_TYPE
+  | SOLANA_CHAIN_TYPE;
 
 export interface NavigationProps {
   navigation: NavigationProp<ParamListBase>;

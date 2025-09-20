@@ -20,7 +20,6 @@ export const screenTitle = {
   SWAP: 'Swap',
   OPTIONS_SCREEN: 'OptionsScreen',
   MANAGE_WALLET: 'ManageWallet',
-  SECURITY_PRIVACY: 'SecurityPrivacy',
   SEED_PHRASE: 'SeedPhrase',
   PRIVATE_KEY: 'PrivateKey',
   NOTIFICATION_SETTINGS: 'NotificationSettings',

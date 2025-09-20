@@ -1,14 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native';
 import {
   CyDIcons,
-  CyDImage,
   CyDMaterialDesignIcons,
+  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import AppImages from '../../../../assets/images/appImages';
 import { t } from 'i18next';
 import Button from '../../../components/v2/button';
 import {
@@ -31,11 +30,13 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { screenTitle } from '../../../constants';
-import { CyDIconsPack } from '../../../customFonts';
+import PageHeader from '../../../components/PageHeader';
 
 interface RouteParams {
   currentCardProvider: string;
 }
+
+const loaderStyle = { height: 25, width: 25 };
 
 export default function LockdownMode() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -127,88 +128,68 @@ export default function LockdownMode() {
   };
 
   return (
-    <>
-      <SafeAreaView className='bg-n20 flex-1'>
-        <CyDView className='flex flex-col h-full justify-between'>
-          <CyDView className='pb-[16px]'>
-            <CyDView className='flex flex-row mx-[20px] bg-n20'>
-              <CyDTouchView
-                onPress={() => {
-                  navigation.goBack();
-                }}>
-                <CyDIcons
-                  name='arrow-left'
-                  size={24}
-                  className='text-base400'
-                />
-              </CyDTouchView>
-              <CyDView className='w-[calc(100% - 40px)] mx-auto'>
-                <CyDText className='font-semibold text-base400 text-center -ml-[24px] text-[20px]'>
-                  {t('LOCKDOWN_MODE')}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-
-            <CyDView className='mt-[28px] rounded-[16px] bg-n0 items-center mx-[16px] py-[24px] px-[24px]'>
-              <CyDView className='rounded-lg h-[112px] w-[112px] my-[24px] bg-n20 flex flex-row items-center justify-center'>
-                <CyDMaterialDesignIcons
-                  name='hand-front-right'
-                  size={70}
-                  className='text-p100 self-center'
-                />
-              </CyDView>
-
-              <CyDText className='text-[16px] text-center'>
-                {t('LOCKDOWN_MODE_DESC_TEXT_1')}
-              </CyDText>
-              <CyDText className='text-[16px] mt-[16px] text-center'>
-                {t('LOCKDOWN_MODE_DESC_TEXT_3')}
-              </CyDText>
-              <CyDText className='text-[12px] mt-[24px] mx-[4px] text-center text-yellow-600'>
-                **{t('LOCKDOWN_MODE_DESC_TEXT_2')}
-              </CyDText>
-              {isLockdownModeEnabled === ACCOUNT_STATUS.ACTIVE ? (
-                <Button
-                  type={ButtonType.RED}
-                  title={t('TURN_ON_LOCKDOWN')}
-                  titleStyle='text-white text-[18px]'
-                  style='w-full mt-[6px] rounded-[12px]'
-                  loading={loading}
-                  loaderStyle={{ height: 25, width: 25 }}
-                  onPress={() => {
-                    setLoading(true);
-                    showModal('state', {
-                      type: 'warning',
-                      title: t('Are you sure ?'),
-                      description: t(
-                        'Enabling lockdown mode will block all the card functionalitites',
-                      ),
-                      onSuccess: () => {
-                        hideModal();
-                        void handleClickLockDownMode();
-                      },
-                      onFailure: hideModal,
-                    });
-                  }}
-                />
-              ) : (
-                <Button
-                  type={ButtonType.PRIMARY}
-                  title={t('DISABLE_LOCKDOWN')}
-                  titleStyle='text-black text-[18px]'
-                  style='w-full mt-[6px] rounded-[12px]'
-                  loading={loading}
-                  loaderStyle={{ height: 25, width: 25 }}
-                  onPress={() => {
-                    setLoading(true);
-                    void verifyWithOTP();
-                  }}
-                />
-              )}
-            </CyDView>
+    <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
+      <PageHeader title={'LOCKDOWN_MODE'} navigation={navigation} />
+      <CyDView className='flex-1 bg-n20 pt-[24px]'>
+        <CyDView className='mt-[28px] rounded-[16px] bg-n0 items-center mx-[16px] py-[24px] px-[24px]'>
+          <CyDView className='rounded-lg h-[112px] w-[112px] my-[24px] bg-n20 flex flex-row items-center justify-center'>
+            <CyDMaterialDesignIcons
+              name='hand-front-right'
+              size={70}
+              className='text-p100 self-center'
+            />
           </CyDView>
+
+          <CyDText className='text-[16px] text-center'>
+            {t('LOCKDOWN_MODE_DESC_TEXT_1')}
+          </CyDText>
+          <CyDText className='text-[16px] mt-[16px] text-center'>
+            {t('LOCKDOWN_MODE_DESC_TEXT_3')}
+          </CyDText>
+          <CyDText className='text-[12px] mt-[24px] mx-[4px] text-center text-yellow-600'>
+            {`** ${t('LOCKDOWN_MODE_DESC_TEXT_2')}`}
+          </CyDText>
+          {isLockdownModeEnabled === ACCOUNT_STATUS.ACTIVE ? (
+            <Button
+              type={ButtonType.RED}
+              title={t('TURN_ON_LOCKDOWN')}
+              titleStyle='text-white text-[18px]'
+              style='w-full mt-[16px] rounded-[12px]'
+              loading={loading}
+              loaderStyle={loaderStyle}
+              onPress={() => {
+                setLoading(true);
+                showModal('state', {
+                  type: 'warning',
+                  title: t('ARE_YOU_SURE'),
+                  description: t('ENABLING_LOCKDOWN_MODE_DESCRIPTION'),
+                  onSuccess: () => {
+                    hideModal();
+                    void handleClickLockDownMode();
+                  },
+                  onFailure: () => {
+                    hideModal();
+                    setLoading(false);
+                  },
+                });
+              }}
+            />
+          ) : (
+            <Button
+              type={ButtonType.PRIMARY}
+              title={t('DISABLE_LOCKDOWN')}
+              titleStyle='text-black text-[18px]'
+              style='w-full mt-[16px] rounded-[12px]'
+              loading={loading}
+              loaderStyle={loaderStyle}
+              onPress={() => {
+                setLoading(true);
+                void verifyWithOTP();
+              }}
+            />
+          )}
         </CyDView>
-      </SafeAreaView>
-    </>
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

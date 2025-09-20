@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/native';
 import { useFormik } from 'formik';
 import { countBy } from 'lodash';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import * as yup from 'yup';
@@ -25,6 +25,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
+import PageHeader from '../../../components/PageHeader';
 
 export default function SetTelegramPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -67,16 +68,6 @@ export default function SetTelegramPin() {
       triggerOTPParam: 'tg-set-pin',
       verifyOTPPayload: { pin: changePinFormik.values.pin.join('') },
     });
-  };
-
-  const ActivateCardHeader = () => {
-    return (
-      <CyDView className='mt-[6px]'>
-        <CyDText className={'text-[14px] font-medium text-n200'}>
-          {t<string>('SET_TELEGRAM_PIN_DESCRIPTION')}
-        </CyDText>
-      </CyDView>
-    );
   };
 
   const styles = StyleSheet.create({
@@ -216,19 +207,9 @@ export default function SetTelegramPin() {
   };
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n20'>
-      <CyDView className='flex-1 pb-[12px]'>
-        <CyDView className='flex flex-row items-center mx-[20px]'>
-          <CyDTouchView
-            onPress={() => {
-              navigation.goBack();
-            }}>
-            <CyDIcons name='arrow-left' size={24} className='text-base400' />
-          </CyDTouchView>
-          <CyDText className='text-base400 ml-[12px] text-[18px]'>
-            {t('SET_TELEGRAM_PIN')}
-          </CyDText>
-        </CyDView>
+    <CyDSafeAreaView className='h-full bg-n0' edges={['top']}>
+      <PageHeader title={'SET_TELEGRAM_PIN'} navigation={navigation} />
+      <CyDView className='flex-1 pt-[24px] pb-[12px] bg-n20'>
         <CyDKeyboardAwareScrollView
           contentContainerStyle={styles.contentContainerStyle}>
           <CyDView>
@@ -241,7 +222,11 @@ export default function SetTelegramPin() {
               <CyDText className='text-base400 mt-[6px] font-bold text-[28px]'>
                 {t('SET_TELEGRAM_PIN')}
               </CyDText>
-              <ActivateCardHeader />
+              <CyDView className='mt-[6px]'>
+                <CyDText className={'text-[14px] font-medium text-n200'}>
+                  {t<string>('SET_TELEGRAM_PIN_DESCRIPTION')}
+                </CyDText>
+              </CyDView>
               <CyDView className='mt-[24px]'>
                 <CyDText className={'text-[12px] text-n200'}>
                   {t<string>('NEW_PIN')}
@@ -323,7 +308,7 @@ export default function SetTelegramPin() {
             </CyDView>
           </CyDView>
         </CyDKeyboardAwareScrollView>
-        <CyDView className='w-full mb-[4px] mt-[12px] px-[20px]'>
+        <CyDView className='w-full px-[24px] items-center py-[20px] bg-n20 mb-[20px]'>
           <Button
             title={t('CONFIRM')}
             disabled={showErrors && !changePinFormik.isValid}

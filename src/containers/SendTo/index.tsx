@@ -94,6 +94,7 @@ import { isAddress } from 'web3-validator';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import usePortfolio from '../../hooks/usePortfolio';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
+import PageHeader from '../../components/PageHeader';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -1087,8 +1088,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDSafeAreaView className='flex-1 bg-n20'>
-      <CyDView>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
+      <PageHeader title={'SEND_TO'} navigation={props.navigation} />
+      <CyDView className='flex-1 bg-n20 pt-[24px]'>
         <TokenSendConfirmationModal
           isModalVisible={tokenSendConfirmationParams.isModalVisible}
           tokenSendParams={tokenSendConfirmationParams.tokenSendParams}
@@ -1127,8 +1129,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
               },
             )}>
             <CyDTextInput
-              className={clsx('w-[90%] pr-[0px] bg-n20', {
-                'py-[12px]': !(chainDetails?.chainName === ChainNames.ETH),
+              className={clsx('w-[90%] p-[12px] bg-n20', {
+                // 'py-[12px]': !(chainDetails?.chainName === ChainNames.ETH),
               })}
               value={addressText}
               autoCapitalize='none'

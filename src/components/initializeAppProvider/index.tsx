@@ -46,7 +46,6 @@ import PinAuthRoute from '../../routes/pinAuthRoute';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 interface UseInitializerReturn {
-  initializeSentry: () => void;
   exitIfJailBroken: () => Promise<void>;
   fetchRPCEndpointsFromServer: (globalDispatch: any) => Promise<any>;
   loadActivitiesFromAsyncStorage: () => Promise<void>;
@@ -73,7 +72,6 @@ export const InitializeAppProvider = ({
   children: React.ReactNode;
 }) => {
   const {
-    initializeSentry,
     exitIfJailBroken,
     fetchRPCEndpointsFromServer,
     loadActivitiesFromAsyncStorage,
@@ -120,7 +118,7 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     const initializeApp = async () => {
-      initializeSentry();
+      // Sentry is now initialized in App.tsx for v7 compatibility
 
       messaging().onMessage(response => {
         if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {

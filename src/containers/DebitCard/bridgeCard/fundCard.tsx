@@ -351,15 +351,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
           amountInCrypto: isCrpytoInput,
+          provider: currentCardProvider,
+          cardId,
         };
         if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
           set(payload, 'hyperliquidTradeType', selectedToken?.accountType);
           payload.chain = CHAIN_ARBITRUM.backendName;
         }
-        const response = await postWithAuth(
-          `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-          payload,
-        );
+        const response = await postWithAuth(`/v1/funding/quote`, payload);
 
         if (response?.data && !response.isError) {
           if (chainDetails.chainName != null) {
@@ -416,11 +415,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           tokenAddress: denom,
           amountInCrypto: isCrpytoInput,
           isCosmosV2: true,
+          provider: currentCardProvider,
+          cardId,
         };
-        const response = await postWithAuth(
-          `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-          payload,
-        );
+        const response = await postWithAuth(`/v1/funding/quote`, payload);
         if (!response.isError && response?.data) {
           if (chainDetails.chainName != null) {
             const quote = response.data;
@@ -473,11 +471,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: Number(amountToQuote),
           tokenAddress: contractAddress,
           amountInCrypto: isCrpytoInput,
+          provider: currentCardProvider,
+          cardId,
         };
-        const response = await postWithAuth(
-          `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-          payload,
-        );
+        const response = await postWithAuth(`/v1/funding/quote`, payload);
 
         if (response?.data && !response.isError) {
           if (chainDetails.chainName != null) {
@@ -702,15 +699,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amount: DecimalHelper.toNumber(amountInCrypto),
             tokenAddress: contractAddress,
             amountInCrypto: true,
+            provider: currentCardProvider,
+            cardId,
           };
           if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
             set(payload, 'hyperliquidTradeType', selectedToken?.accountType);
             payload.chain = CHAIN_ARBITRUM.backendName;
           }
-          const response = await postWithAuth(
-            `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-            payload,
-          );
+          const response = await postWithAuth(`/v1/funding/quote`, payload);
           if (!response.isError) {
             const quote: CardQuoteResponse = response.data;
             void showQuoteModal(quote, true);
@@ -824,11 +820,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             coinId: coinGeckoId,
             amountInCrypto: true,
             tokenAddress: contractAddress,
+            provider: currentCardProvider,
+            cardId,
           };
-          const response = await postWithAuth(
-            `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-            payload,
-          );
+          const response = await postWithAuth(`/v1/funding/quote`, payload);
           if (!response.isError) {
             const quote: CardQuoteResponse = response.data;
             void showQuoteModal(quote, true);
@@ -942,11 +937,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amountInCrypto: true,
             tokenAddress: denom,
             isCosmosV2: true,
+            provider: currentCardProvider,
+            cardId,
           };
-          const response = await postWithAuth(
-            `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
-            payload,
-          );
+          const response = await postWithAuth(`/v1/funding/quote`, payload);
           if (!response.isError) {
             const quote: CardQuoteResponse = response.data;
             void showQuoteModal(quote, true);

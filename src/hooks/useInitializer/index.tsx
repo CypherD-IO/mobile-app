@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction, useContext } from 'react';
 import * as Sentry from '@sentry/react-native';
-import { Config } from 'react-native-config';
 import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
 import {
@@ -55,133 +54,20 @@ import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
 
 export default function useInitializer() {
-  const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
-  const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
   const { getWithoutAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
-  const { ethereum, solana, cosmos, osmosis, noble, coreum } =
-    hdWallet.state.wallet;
+  const { ethereum, solana } = hdWallet.state.wallet;
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile } = useCardUtilities();
 
-  const scrubData = (key: string, value: any): any => {
-    if (SENSITIVE_DATA_KEYS.includes(key)) {
-      return '********'; // Replace with asterisks
-    } else if (key === 'email') {
-      const domain: string = value.slice(value.indexOf('@'));
-      return `****${domain}`; // Replace with asterisks before domain name
-    } else {
-      return value; // Don't scrub other data
-    }
-  };
+  // Data scrubbing is now handled in App.tsx Sentry initialization
 
-  const initializeSentry = () => {
-    // Check if Sentry is already initialized (from App.tsx)
-    const sentryHub = Sentry.getCurrentHub();
-    const client = sentryHub.getClient();
-
-    if (client) {
-      return;
-    }
-
-    // Fallback initialization if somehow not done in App.tsx
-    const isTesting = String(Config.IS_TESTING) === 'true';
-
-    if (isTesting) {
-      // Initialize Sentry but with all UI warnings and tracing disabled
-      Sentry.init({
-        dsn: Config.SENTRY_DSN,
-        environment: Config.ENVIRONMENT ?? 'staging',
-        debug: false, // Disable debug output to prevent console/UI warnings
-        enabled: false, // Completely disable Sentry in test mode
-        tracesSampleRate: 0, // Disable performance tracing (prevents "App Start Span" warnings)
-        maxBreadcrumbs: 0, // Disable breadcrumbs
-        attachStacktrace: false, // Disable stack trace attachment
-        autoSessionTracking: false, // Disable session tracking
-        enableAutoSessionTracking: false, // Disable auto session tracking
-        enableNativeCrashHandling: false, // Disable native crash handling
-        enableWatchdogTerminationTracking: false, // Disable watchdog tracking
-        enableAutoPerformanceTracing: false, // Disable auto performance tracing
-        beforeSend() {
-          // Drop all events in test mode
-          return null;
-        },
-        beforeBreadcrumb() {
-          // Drop all breadcrumbs in test mode
-          return null;
-        },
-        integrations: [], // No integrations in test mode
-      });
-      return;
-    }
-
-    // Production mode - always run full Sentry configuration
-    Sentry.init({
-      dsn: Config.SENTRY_DSN,
-      environment: Config.ENVIRONMENT ?? 'staging',
-      debug: false, // Keep debug off even in production to avoid console spam
-      integrations: [
-        new Sentry.ReactNativeTracing({
-          routingInstrumentation,
-          tracingOrigins: ['127.0.0.1', 'api.cypherd.io'],
-        }),
-      ],
-      tracesSampleRate: 1.0,
-      beforeSend(event, hint) {
-        if (event?.extra && typeof event.extra === 'object') {
-          // Scrub data in extra context
-          for (const [key, value] of Object.entries(event.extra)) {
-            event.extra[key] = scrubData(key, value);
-          }
-        }
-        if (event?.request && typeof event.request === 'object') {
-          // Scrub data in request body
-          event.request.data = scrubData('requestBody', event.request.data);
-        }
-        if (event?.contexts?.app && typeof event.contexts.app === 'object') {
-          // Scrub data in app info under contexts
-          for (const [key, value] of Object.entries(event.contexts.app)) {
-            event.contexts.app[key] = scrubData(key, value);
-          }
-        }
-        if (event?.tags && typeof event.tags === 'object') {
-          // Scrub data in tags
-          for (const [key, value] of Object.entries(event.tags)) {
-            event.tags[key] = scrubData(key, value);
-          }
-        }
-        if (
-          event?.exception?.values &&
-          typeof event.exception.values === 'object'
-        ) {
-          // Scrub data in exceptions
-          for (const valueObj of event.exception.values) {
-            if (valueObj.type && SENSITIVE_DATA_KEYS.includes(valueObj.type)) {
-              valueObj.value = '********';
-            }
-          }
-        }
-        return event;
-      },
-      beforeBreadcrumb: (breadcrumb, hint) => {
-        if (breadcrumb.category === 'xhr') {
-          const requestUrl = JSON.stringify(hint?.xhr.__sentry_xhr__.url);
-          return {
-            ...breadcrumb,
-            data: {
-              requestUrl,
-            },
-          };
-        }
-        return breadcrumb;
-      },
-    });
-  };
+  // Sentry initialization is now handled in App.tsx for v7 compatibility
 
   const checkAPIAccessibility = async () => {
     const response = await getWithoutAuth('/health');
@@ -516,7 +402,6 @@ export default function useInitializer() {
   };
 
   return {
-    initializeSentry,
     exitIfJailBroken,
     fetchRPCEndpointsFromServer,
     loadActivitiesFromAsyncStorage,

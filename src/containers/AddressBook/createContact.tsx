@@ -21,6 +21,7 @@ import {
   CyDFastImage,
   CyDIcons,
   CyDMaterialDesignIcons,
+  CyDSafeAreaView,
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import { Formik } from 'formik';
@@ -52,6 +53,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import PageHeader from '../../components/PageHeader';
 
 interface RouteParams {
   editContact: boolean;
@@ -553,7 +555,7 @@ export const CreateContact = () => {
   };
 
   return (
-    <CyDView className={'bg-n20 w-full h-full'}>
+    <CyDSafeAreaView className={'bg-n0 flex-1'} edges={['top']}>
       <ChooseChainModal
         setModalVisible={setChooseChainModalVisible}
         isModalVisible={chooseChainModalVisible}
@@ -587,98 +589,20 @@ export const CreateContact = () => {
         validationSchema={contactInfoValidationScheme}
         onSubmit={async values => await onSubmitContact(values)}>
         {formProps => (
-          <CyDView className='flex flex-1 h-full'>
-            <CyDScrollView className='flex flex-col w-full'>
-              <CyDView className='flex flex-1 h-full'>
-                {Object.keys(
-                  editContact ? editContactInfo : createContactInfo,
-                ).map((detail, index) => {
-                  if (detail === 'name') {
-                    return (
-                      <CyDView
-                        className='flex-1 mt-[25px] self-center w-[87%]'
-                        key={index}>
-                        <CyDView className='flex flex-row justify-start gap-[10px]'>
-                          <CyDText className='font-bold '>
-                            {labels[detail as keyof ContactInfo].label}
-                          </CyDText>
-                        </CyDView>
-                        <CyDView className='flex flex-row justify-between items-center w-[100%]'>
-                          <CyDTextInput
-                            className={clsx(
-                              'mt-[5px] w-[100%] border-[1px] border-base80 rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
-                              {
-                                'border-redOffColor':
-                                  formProps.touched[
-                                    detail as keyof ContactInfo
-                                  ] &&
-                                  formProps.errors[detail as keyof ContactInfo],
-                              },
-                            )}
-                            value={
-                              formProps.values[detail as keyof ContactInfo]
-                            }
-                            autoCapitalize='none'
-                            key={index}
-                            autoCorrect={false}
-                            onChangeText={text => {
-                              handleTextChange(
-                                text,
-                                formProps.handleChange,
-                                detail,
-                                0,
-                              );
-                            }}
-                            placeholderTextColor={'#C5C5C5'}
-                            placeholder={
-                              labels[detail as keyof ContactInfo].placeHolder
-                            }
-                          />
-                          {formProps.values[detail as keyof ContactInfo] !==
-                          '' ? (
-                            <CyDTouchView
-                              className='left-[-32px]'
-                              onPress={() => {
-                                formProps.setFieldValue(`${detail}`, '');
-                              }}>
-                              <CyDMaterialDesignIcons
-                                name={'close'}
-                                size={24}
-                                className='text-base400'
-                              />
-                            </CyDTouchView>
-                          ) : (
-                            <></>
-                          )}
-                        </CyDView>
-                        {formProps.touched[detail as keyof ContactInfo] &&
-                          formProps.errors[detail as keyof ContactInfo] && (
-                            <CyDView className={'ml-[5px] mt-[6px] mb-[-11px]'}>
-                              <CyDText
-                                className={'text-redOffColor font-semibold'}>
-                                {formProps.errors[detail as keyof ContactInfo]}
-                              </CyDText>
-                            </CyDView>
-                          )}
-                      </CyDView>
-                    );
-                  } else {
-                    return (editContact ? editContactInfo : createContactInfo)[
-                      detail
-                    ].map((oneAddress, addressIndex) => {
-                      if (!formProps.values[detail]) {
-                        formProps.values[detail] = [''];
-                      }
+          <CyDView className='flex flex-1'>
+            <PageHeader title={'CREATE_NEW_CONTACT'} navigation={navigation} />
+            <CyDView className='flex flex-1 h-full bg-n20'>
+              <CyDScrollView className='flex flex-col w-full'>
+                <CyDView className='flex flex-1 h-full'>
+                  {Object.keys(
+                    editContact ? editContactInfo : createContactInfo,
+                  ).map((detail, index) => {
+                    if (detail === 'name') {
                       return (
                         <CyDView
                           className='flex-1 mt-[25px] self-center w-[87%]'
-                          key={`${index}-${addressIndex}`}>
+                          key={index}>
                           <CyDView className='flex flex-row justify-start gap-[10px]'>
-                            <CyDFastImage
-                              source={labels[detail as keyof ContactInfo].logo}
-                              className='h-[18px] w-[18px]'
-                              resizeMode='contain'
-                            />
                             <CyDText className='font-bold '>
                               {labels[detail as keyof ContactInfo].label}
                             </CyDText>
@@ -686,7 +610,7 @@ export const CreateContact = () => {
                           <CyDView className='flex flex-row justify-between items-center w-[100%]'>
                             <CyDTextInput
                               className={clsx(
-                                'mt-[5px] w-[100%] border-[1px] border-base80 rounded-[10px] p-[12px] pr-[38px] text-[16px]',
+                                'mt-[5px] w-[100%] border-[1px] border-base80 rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
                                 {
                                   'border-redOffColor':
                                     formProps.touched[
@@ -694,29 +618,21 @@ export const CreateContact = () => {
                                     ] &&
                                     formProps.errors[
                                       detail as keyof ContactInfo
-                                    ] &&
-                                    formProps.touched[
-                                      detail as keyof ContactInfo
-                                    ][addressIndex] &&
-                                    formProps.errors[
-                                      detail as keyof ContactInfo
-                                    ][addressIndex],
+                                    ],
                                 },
                               )}
                               value={
-                                formProps.values[detail as keyof ContactInfo][
-                                  addressIndex
-                                ]
+                                formProps.values[detail as keyof ContactInfo]
                               }
                               autoCapitalize='none'
-                              key={`${index}-${addressIndex}`}
+                              key={index}
                               autoCorrect={false}
                               onChangeText={text => {
                                 handleTextChange(
                                   text,
                                   formProps.handleChange,
                                   detail,
-                                  addressIndex,
+                                  0,
                                 );
                               }}
                               placeholderTextColor={'#C5C5C5'}
@@ -724,51 +640,12 @@ export const CreateContact = () => {
                                 labels[detail as keyof ContactInfo].placeHolder
                               }
                             />
-                            {formProps.values[detail as keyof ContactInfo][
-                              addressIndex
-                            ] === '' ? (
+                            {formProps.values[detail as keyof ContactInfo] !==
+                            '' ? (
                               <CyDTouchView
                                 className='left-[-32px]'
                                 onPress={() => {
-                                  navigation.navigate(
-                                    screenTitle.QR_CODE_SCANNER,
-                                    {
-                                      fromPage: QRScannerScreens.SEND,
-                                      onSuccess: e => {
-                                        onSuccess(
-                                          e,
-                                          formProps,
-                                          detail,
-                                          addressIndex,
-                                        );
-                                      },
-                                    },
-                                  );
-                                }}>
-                                <CyDIcons
-                                  name={'qr-scanner'}
-                                  size={28}
-                                  className='text-base400'
-                                />
-                              </CyDTouchView>
-                            ) : (
-                              <CyDTouchView
-                                className='left-[-32px]'
-                                onPress={() => {
-                                  const newFieldValue = formProps.values[
-                                    detail
-                                  ].filter(
-                                    (addressToBeRemoved, indexOfAddress) =>
-                                      indexOfAddress !== addressIndex,
-                                  );
-                                  formProps.setFieldValue(`${detail}`, [
-                                    ...newFieldValue.slice(0, addressIndex),
-                                    '',
-                                    ...newFieldValue.slice(addressIndex),
-                                  ]);
-                                  formProps.values[detail as keyof ContactInfo][
-                                    addressIndex
-                                  ] = '';
+                                  formProps.setFieldValue(`${detail}`, '');
                                 }}>
                                 <CyDMaterialDesignIcons
                                   name={'close'}
@@ -776,70 +653,209 @@ export const CreateContact = () => {
                                   className='text-base400'
                                 />
                               </CyDTouchView>
+                            ) : (
+                              <></>
                             )}
                           </CyDView>
                           {formProps.touched[detail as keyof ContactInfo] &&
-                            formProps.errors[detail as keyof ContactInfo] &&
-                            formProps.touched[detail as keyof ContactInfo][
-                              addressIndex
-                            ] &&
-                            formProps.errors[detail as keyof ContactInfo][
-                              addressIndex
-                            ] && (
+                            formProps.errors[detail as keyof ContactInfo] && (
                               <CyDView
                                 className={'ml-[5px] mt-[6px] mb-[-11px]'}>
                                 <CyDText
                                   className={'text-redOffColor font-semibold'}>
-                                  {formProps.errors[
-                                    detail as keyof ContactInfo
-                                  ][addressIndex].length !== 1
-                                    ? formProps.errors[
-                                        detail as keyof ContactInfo
-                                      ][addressIndex]
-                                    : formProps.errors[
-                                        detail as keyof ContactInfo
-                                      ]}
+                                  {
+                                    formProps.errors[
+                                      detail as keyof ContactInfo
+                                    ]
+                                  }
                                 </CyDText>
                               </CyDView>
                             )}
                         </CyDView>
                       );
-                    });
-                  }
-                })}
-              </CyDView>
-              <CyDView
-                className={'flex flex-row w-[87%] self-center justify-between'}>
-                <CyDText
-                  className={'text-blue-700 font-bold py-[17px]'}
+                    } else {
+                      return (
+                        editContact ? editContactInfo : createContactInfo
+                      )[detail].map((oneAddress, addressIndex) => {
+                        return (
+                          <CyDView
+                            className='flex-1 mt-[25px] self-center w-[87%]'
+                            key={`${index}-${addressIndex}`}>
+                            <CyDView className='flex flex-row justify-start gap-[10px]'>
+                              <CyDFastImage
+                                source={
+                                  labels[detail as keyof ContactInfo].logo
+                                }
+                                className='h-[18px] w-[18px]'
+                                resizeMode='contain'
+                              />
+                              <CyDText className='font-bold '>
+                                {labels[detail as keyof ContactInfo].label}
+                              </CyDText>
+                            </CyDView>
+                            <CyDView className='flex flex-row justify-between items-center w-[100%]'>
+                              <CyDTextInput
+                                className={clsx(
+                                  'mt-[5px] w-[100%] border-[1px] border-base80 rounded-[10px] p-[12px] pr-[38px] text-[16px]',
+                                  {
+                                    'border-redOffColor':
+                                      formProps.touched[
+                                        detail as keyof ContactInfo
+                                      ] &&
+                                      formProps.errors[
+                                        detail as keyof ContactInfo
+                                      ] &&
+                                      formProps.touched[
+                                        detail as keyof ContactInfo
+                                      ][addressIndex] &&
+                                      formProps.errors[
+                                        detail as keyof ContactInfo
+                                      ][addressIndex],
+                                  },
+                                )}
+                                value={
+                                  formProps.values[detail as keyof ContactInfo][
+                                    addressIndex
+                                  ]
+                                }
+                                autoCapitalize='none'
+                                key={`${index}-${addressIndex}`}
+                                autoCorrect={false}
+                                onChangeText={text => {
+                                  handleTextChange(
+                                    text,
+                                    formProps.handleChange,
+                                    detail,
+                                    addressIndex,
+                                  );
+                                }}
+                                placeholderTextColor={'#C5C5C5'}
+                                placeholder={
+                                  labels[detail as keyof ContactInfo]
+                                    .placeHolder
+                                }
+                              />
+                              {formProps.values[detail as keyof ContactInfo][
+                                addressIndex
+                              ] === '' ? (
+                                <CyDTouchView
+                                  className='left-[-32px]'
+                                  onPress={() => {
+                                    navigation.navigate(
+                                      screenTitle.QR_CODE_SCANNER,
+                                      {
+                                        fromPage: QRScannerScreens.SEND,
+                                        onSuccess: e => {
+                                          onSuccess(
+                                            e,
+                                            formProps,
+                                            detail,
+                                            addressIndex,
+                                          );
+                                        },
+                                      },
+                                    );
+                                  }}>
+                                  <CyDIcons
+                                    name={'qr-scanner'}
+                                    size={28}
+                                    className='text-base400'
+                                  />
+                                </CyDTouchView>
+                              ) : (
+                                <CyDTouchView
+                                  className='left-[-32px]'
+                                  onPress={() => {
+                                    const newFieldValue = formProps.values[
+                                      detail
+                                    ].filter(
+                                      (addressToBeRemoved, indexOfAddress) =>
+                                        indexOfAddress !== addressIndex,
+                                    );
+                                    formProps.setFieldValue(`${detail}`, [
+                                      ...newFieldValue.slice(0, addressIndex),
+                                      '',
+                                      ...newFieldValue.slice(addressIndex),
+                                    ]);
+                                    formProps.values[
+                                      detail as keyof ContactInfo
+                                    ][addressIndex] = '';
+                                  }}>
+                                  <CyDMaterialDesignIcons
+                                    name={'close'}
+                                    size={24}
+                                    className='text-base400'
+                                  />
+                                </CyDTouchView>
+                              )}
+                            </CyDView>
+                            {formProps.touched[detail as keyof ContactInfo] &&
+                              formProps.errors[detail as keyof ContactInfo] &&
+                              formProps.touched[detail as keyof ContactInfo][
+                                addressIndex
+                              ] &&
+                              formProps.errors[detail as keyof ContactInfo][
+                                addressIndex
+                              ] && (
+                                <CyDView
+                                  className={'ml-[5px] mt-[6px] mb-[-11px]'}>
+                                  <CyDText
+                                    className={
+                                      'text-redOffColor font-semibold'
+                                    }>
+                                    {formProps.errors[
+                                      detail as keyof ContactInfo
+                                    ][addressIndex].length !== 1
+                                      ? formProps.errors[
+                                          detail as keyof ContactInfo
+                                        ][addressIndex]
+                                      : formProps.errors[
+                                          detail as keyof ContactInfo
+                                        ]}
+                                  </CyDText>
+                                </CyDView>
+                              )}
+                          </CyDView>
+                        );
+                      });
+                    }
+                  })}
+                </CyDView>
+                <CyDView
+                  className={
+                    'flex flex-row w-[87%] self-center justify-between'
+                  }>
+                  <CyDText
+                    className={'text-blue-700 font-bold py-[17px]'}
+                    onPress={() => {
+                      setChooseContactModalVisible(!chooseContactModalVisible);
+                    }}>
+                    {t('PLUS_ADD_TO_EXISTING_CONTACT')}
+                  </CyDText>
+                  <CyDText
+                    className={'text-blue-700 font-bold py-[17px]'}
+                    onPress={() => {
+                      setChooseChainModalVisible(!chooseChainModalVisible);
+                    }}>
+                    {t('PLUS_ADD_ADDRESS')}
+                  </CyDText>
+                </CyDView>
+              </CyDScrollView>
+              <CyDView className='w-full px-[24px] items-center mb-[20px]'>
+                <Button
+                  style='h-[60px] w-[90%]'
+                  title={t('SAVE')}
+                  loading={loading}
                   onPress={() => {
-                    setChooseContactModalVisible(!chooseContactModalVisible);
-                  }}>
-                  {t('PLUS_ADD_TO_EXISTING_CONTACT')}
-                </CyDText>
-                <CyDText
-                  className={'text-blue-700 font-bold py-[17px]'}
-                  onPress={() => {
-                    setChooseChainModalVisible(!chooseChainModalVisible);
-                  }}>
-                  {t('PLUS_ADD_ADDRESS')}
-                </CyDText>
+                    formProps.handleSubmit();
+                    void intercomAnalyticsLog('save_or_edit_contact');
+                  }}
+                />
               </CyDView>
-            </CyDScrollView>
-            <CyDView className='w-full px-[24px] items-center mb-[20px]'>
-              <Button
-                style='h-[60px] w-[90%]'
-                title={t('SAVE')}
-                loading={loading}
-                onPress={() => {
-                  formProps.handleSubmit();
-                  void intercomAnalyticsLog('save_or_edit_contact');
-                }}
-              />
             </CyDView>
           </CyDView>
         )}
       </Formik>
-    </CyDView>
+    </CyDSafeAreaView>
   );
 };

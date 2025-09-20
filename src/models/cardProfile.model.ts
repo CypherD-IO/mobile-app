@@ -1,9 +1,6 @@
-import {
-  CardApplicationStatus,
-  CardProviders,
-  CypherPlanId,
-} from '../constants/enum';
+import { CardApplicationStatus, CardProviders } from '../constants/enum';
 import { Card } from './card.model';
+import { PlanInfo } from './planInfo.interface';
 
 export interface CardProfile {
   primaryAddress: string;
@@ -38,12 +35,7 @@ export interface CardProfile {
   physicalCardEligibilityLimit: number;
   children?: Array<{ address: string; label: string }>;
   child?: string;
-  planInfo: {
-    planId: CypherPlanId;
-    updatedOn: number;
-    expiresOn: number;
-    metalCardEligible: boolean;
-  };
+  planInfo?: PlanInfo;
   telegramId: string | null;
   evmAddress?: string;
 }

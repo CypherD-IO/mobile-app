@@ -1,8 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import useAxios from '../../../core/HttpRequest';
 import { GlobalContextType } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import {
+  CyDIcons,
   CyDKeyboardAwareScrollView,
   CyDLottieView,
   CyDSafeAreaView,
@@ -12,7 +13,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import { Formik } from 'formik';
+import { Formik, FormikProps } from 'formik';
 import Button from '../../../components/v2/button';
 import clsx from 'clsx';
 import { isAndroid } from '../../../misc/checkers';
@@ -29,6 +30,7 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { StyleSheet } from 'react-native';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import PageHeader from '../../../components/PageHeader';
 
 export default function UpdateCardContactDetails({
   navigation,
@@ -64,6 +66,8 @@ export default function UpdateCardContactDetails({
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
   const { cardProfileModal } = useCardUtilities();
+
+  const formikRef = useRef<FormikProps<typeof userBasicDetails>>(null);
 
   const RESENT_OTP_TIME = 30;
 
@@ -247,9 +251,14 @@ export default function UpdateCardContactDetails({
   };
 
   return (
-    <CyDSafeAreaView className={'h-full bg-n20'}>
-      <CyDScrollView>
-        <CyDKeyboardAwareScrollView>
+    <CyDSafeAreaView className={'h-full bg-n0'} edges={['top']}>
+      <PageHeader title={'UPDATE_CONTACT_DETAILS'} navigation={navigation} />
+      <CyDView className='flex-1 bg-n20'>
+        <CyDKeyboardAwareScrollView
+          className='flex-1'
+          contentContainerClassName='flex-grow pt-[24px]'
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps='handled'>
           <ChooseCountryModal
             isModalVisible={selectCountryModalForDialCodeVisible}
             setModalVisible={setSelectCountryModalForDialCodeVisible}
@@ -259,14 +268,15 @@ export default function UpdateCardContactDetails({
             ]}
           />
           <Formik
+            innerRef={formikRef}
             enableReinitialize={true}
             initialValues={userBasicDetails}
             validationSchema={userBasicDetailsValidationSchema}
             onSubmit={values => updateDetails(values)}>
             {formProps => (
-              <CyDView className='mx-[30px]'>
+              <CyDView className='px-[30px]'>
                 <CyDView>
-                  <CyDText className='text-[16px] font-bold mt-[20px]'>
+                  <CyDText className='text-[16px] font-bold mt-[20px] text-base400'>
                     {t('CURRENT_PHONE_NUMBER')} {phoneNumber}
                   </CyDText>
                   <CyDView
@@ -329,12 +339,12 @@ export default function UpdateCardContactDetails({
                 </CyDView>
 
                 <CyDView className={'mt-[24px] '}>
-                  <CyDText className='text-[16px] font-bold mt-[20px]'>
+                  <CyDText className='text-[16px] font-bold mt-[20px] text-base400'>
                     {t('EMAIL_ADDRESS')}
                   </CyDText>
                   <CyDTextInput
                     className={clsx(
-                      ' border-[1px] border-n40 mt-[8px] p-[12px] text-[18px] rounded-md',
+                      ' border-[1px] border-n40 mt-[8px] p-[12px] text-[18px] rounded-md text-base400',
                       {
                         'border-redOffColor':
                           formProps.touched.email && formProps.errors.email,
@@ -362,7 +372,10 @@ export default function UpdateCardContactDetails({
                   <CyDView>
                     {isOTPTriggered && (
                       <CyDView className={'mt-[20px] pt-[10px]'}>
-                        <CyDText className={'text-[15px] mb-[12px] font-bold'}>
+                        <CyDText
+                          className={
+                            'text-[15px] mb-[12px] font-bold text-base400'
+                          }>
                           {t<string>('UPDATE_CARD_DETAILS_OTP')}
                         </CyDText>
                         <OtpInput
@@ -380,7 +393,7 @@ export default function UpdateCardContactDetails({
                           }}>
                           <CyDText
                             className={
-                              'font-bold underline decoration-solid underline-offset-4'
+                              'font-bold underline decoration-solid underline-offset-4 text-base400'
                             }>
                             {t<string>('RESEND_CODE_INIT_CAPS')}
                           </CyDText>
@@ -393,7 +406,7 @@ export default function UpdateCardContactDetails({
                             />
                           )}
                           {resendInterval !== 0 && (
-                            <CyDText>
+                            <CyDText className='text-base400'>
                               {String(` in ${resendInterval} sec`)}
                             </CyDText>
                           )}
@@ -402,20 +415,22 @@ export default function UpdateCardContactDetails({
                     )}
                   </CyDView>
                 </CyDView>
-                <Button
-                  title={t<string>(isOTPTriggered ? 'SUBMIT' : 'UPDATE')}
-                  loading={isSubmitting}
-                  onPress={() => {
-                    formProps.handleSubmit();
-                  }}
-                  style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-full'
-                  isPrivateKeyDependent={false}
-                />
               </CyDView>
             )}
           </Formik>
         </CyDKeyboardAwareScrollView>
-      </CyDScrollView>
+
+        {/* Fixed Button at Bottom */}
+        <CyDView className='w-full px-[30px] items-center py-[20px] bg-n20 mb-[20px]'>
+          <Button
+            title={t<string>(isOTPTriggered ? 'SUBMIT' : 'UPDATE')}
+            loading={isSubmitting}
+            onPress={() => formikRef.current?.handleSubmit()}
+            style='h-[55px] w-full'
+            isPrivateKeyDependent={false}
+          />
+        </CyDView>
+      </CyDView>
     </CyDSafeAreaView>
   );
 }

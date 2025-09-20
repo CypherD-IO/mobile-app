@@ -31,6 +31,7 @@ import { screenTitle } from '../../../../constants';
 import { CHAIN_BASE } from '../../../../constants/server';
 import { Card } from '../../../../models/card.model';
 import { CyDIconsPack } from '../../../../customFonts';
+import PageHeader from '../../../../components/PageHeader';
 
 interface RouteParams {
   amount: string;
@@ -102,24 +103,18 @@ export default function WithdrawHistory() {
 
   return (
     <CyDView className='h-full bg-n0' style={{ paddingTop: insets.top }}>
-      <CyDView className='flex flex-row items-center justify-between py-[16px] px-[16px] '>
-        <CyDView className='flex flex-row items-center justify-start'>
-          <CyDTouchView
-            className='pr-[16px]'
-            onPress={() => {
-              navigation.navigate(screenTitle.CRYPTO_WITHDRAWAL, {
-                card,
-                currentCardProvider,
-              });
-            }}>
-            <CyDIcons name='arrow-left' size={24} className='text-base400' />
-          </CyDTouchView>
-          <CyDText className='text-[16px] font-bold text-base400'>
-            {t('WITHDRAW_HISTORY')}
-          </CyDText>
-        </CyDView>
-      </CyDView>
-      <CyDKeyboardAwareScrollView className='flex-1 bg-n30 px-[16px]'>
+      <PageHeader
+        title={'WITHDRAW_HISTORY'}
+        navigation={navigation}
+        onPress={() => {
+          navigation.navigate(screenTitle.CRYPTO_WITHDRAWAL, {
+            card,
+            currentCardProvider,
+          });
+        }}
+      />
+
+      <CyDKeyboardAwareScrollView className='flex-1 bg-n20 px-[16px]'>
         {transactionData.map(transaction => {
           return (
             <CyDView
