@@ -204,30 +204,20 @@ export default function CardDescription() {
   }
 
   const onSelectCard = () => {
-    if (Number(cardBalance) < Number(price)) {
-      showModal('state', {
-        type: 'error',
-        title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${String(price)} balance to get this card. Please load now to get this card`,
-        onSuccess: onModalHide,
-        onFailure: hideModal,
-      });
-    } else {
-      logAnalyticsToFirebase(AnalyticEvent.GET_NEW_CARD, {
-        from: 'get_new_card',
-        type: cardType,
-        price,
-        address: cardProfile?.primaryAddress,
-      });
-      const screenName =
-        cardType === CardType.VIRTUAL
-          ? screenTitle.SHIPPING_CHECKOUT_SCREEN
-          : screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN;
-      navigation.navigate(screenName, {
-        currentCardProvider,
-        cardType,
-      });
-    }
+    logAnalyticsToFirebase(AnalyticEvent.GET_NEW_CARD, {
+      from: 'get_new_card',
+      type: cardType,
+      price,
+      address: cardProfile?.primaryAddress,
+    });
+    const screenName =
+      cardType === CardType.VIRTUAL
+        ? screenTitle.SHIPPING_CHECKOUT_SCREEN
+        : screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN;
+    navigation.navigate(screenName, {
+      currentCardProvider,
+      cardType,
+    });
   };
 
   return loading ? (
