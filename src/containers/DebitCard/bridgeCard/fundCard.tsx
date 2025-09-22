@@ -54,6 +54,7 @@ import {
 import {
   CyDImage,
   CyDMaterialDesignIcons,
+  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -1193,7 +1194,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         '': loading,
       })}>
       {isMaxLoading && <Loading blurBg={true} />}
-
       <ChooseTokenModalV2
         isChooseTokenModalVisible={isChooseTokenVisible}
         setIsChooseTokenModalVisible={setIsChooseTokenVisible}
@@ -1209,8 +1209,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           setIsChooseTokenVisible(false);
         }}
       />
-
-      <CyDView>
+      <CyDScrollView
+        className='flex flex-1'
+        keyboardShouldPersistTaps='handled'
+        showsVerticalScrollIndicator={false}>
         <RenderSelectedToken />
         <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
           <CyDView className={'w-full items-center'}>
@@ -1406,8 +1408,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             setValue={(amt: string) => onEnterAmount(amt)}
           />
         )}
-      </CyDView>
-      <CyDView>
+        <CyDView className='h-[140px]' />
+      </CyDScrollView>
+      <CyDView className='w-full'>
         <CyDView className=' pt-[16px] bg-n0 px-[16px] pb-[24px] rounded-t-[16px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <Button

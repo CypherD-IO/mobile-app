@@ -521,7 +521,7 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
         options={({ navigation }) => ({
           header: () => (
             <CustomHeader
-              title='Load card'
+              title='Load Card'
               navigation={navigation}
               keyboardHeight={keyboardHeight}
             />
@@ -534,7 +534,7 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
         options={({ navigation }) => ({
           header: () => (
             <CustomHeader
-              title='Load card'
+              title='Load Card'
               navigation={navigation}
               keyboardHeight={keyboardHeight}
             />

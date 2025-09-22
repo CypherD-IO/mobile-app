@@ -8,6 +8,7 @@ import {
   CyDScrollView,
   CyDMaterialDesignIcons,
   CyDIcons,
+  CyDTextInput,
 } from '../../../styles/tailwindComponents';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -34,7 +35,6 @@ import { isAndroid } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById, parseErrorMessage } from '../../../core/util';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { t } from 'i18next';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -45,6 +45,7 @@ interface RouteParams {
 }
 
 const RenderTitle = ({ cardType }: { cardType: CardType }) => {
+  const { t } = useTranslation();
   if (cardType === CardType.METAL) {
     return (
       <CyDText className='text-[28px] font-bold'>
@@ -80,8 +81,15 @@ export default function ShippingCheckout() {
   const [isVerifyingOTP, setIsVerifyingOTP] = useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const [preferredDesignId, setPreferredDesignId] = useState<string>('');
-  const [cardDesignDetails, setCardDesignDetails] = useState<any>();
   const [cardFee, setCardFee] = useState<number>(0);
+  const [offerCode, setOfferCode] = useState<string>('');
+  const [offerCodeData, setOfferCodeData] = useState<{
+    percentDiscount: number;
+    amountCharged: number;
+    offerValidTill: number;
+  } | null>(null);
+  const [isOfferDataLoading, setIsOfferDataLoading] = useState<boolean>(false);
+  const [offerError, setOfferError] = useState<string>('');
 
   useEffect(() => {
     void fetchProfileAndBalance();
@@ -92,18 +100,37 @@ export default function ShippingCheckout() {
     try {
       const response = await getWithAuth('/v1/cards/designs');
       if (!response.isError) {
-        // Set card design ID and details
+        // Set card design ID
         setPreferredDesignId(get(response.data, [cardType, 0, 'id'], ''));
-        setCardDesignDetails(get(response.data, cardType, {}));
-
         setCardFee(get(response.data, ['feeDetails', cardType], 0));
       }
     } catch (error) {
       Sentry.captureException(error);
       // Set default values in case of error
       setPreferredDesignId('');
-      setCardDesignDetails({});
       setCardFee(0);
+    }
+  };
+
+  const validateOfferCode = async (): Promise<void> => {
+    try {
+      setOfferError('');
+      setIsOfferDataLoading(true);
+      const response = await getWithAuth(
+        `/v1/cards/offer-code?offerCode=${offerCode}&cardType=${cardType}`,
+      );
+      if (!response.isError) {
+        setOfferCodeData(response.data);
+      } else {
+        setOfferError(
+          parseErrorMessage(response.error) ?? 'Invalid offer code',
+        );
+      }
+    } catch (error) {
+      setOfferError('Invalid offer code');
+      Sentry.captureException(error);
+    } finally {
+      setIsOfferDataLoading(false);
     }
   };
 
@@ -136,6 +163,7 @@ export default function ShippingCheckout() {
       payload = {
         preferredDesignId,
         otp: Number(otp),
+        ...(offerCodeData ? { offerCode } : {}),
       };
       url = `/v1/cards/${currentCardProvider}/generate/virtual`;
     } else {
@@ -147,6 +175,7 @@ export default function ShippingCheckout() {
         preferredCardName: preferredName,
         otp: Number(otp),
         preferredDesignId,
+        ...(offerCodeData ? { offerCode } : {}),
       };
       url = `/v1/cards/${currentCardProvider}/generate/physical`;
     }
@@ -232,6 +261,7 @@ export default function ShippingCheckout() {
       }
       return t('VIRTUAL_CARD');
     };
+    const totalAmount = offerCodeData?.amountCharged ?? cardFee;
     return (
       <CyDView className='flex flex-col bg-n0 rounded-[12px]'>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-base80'>
@@ -272,19 +302,44 @@ export default function ShippingCheckout() {
             </CyDSkeleton>
           </CyDView>
         </CyDView>
+        {offerCodeData && (
+          <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-base80'>
+            <CyDView className='flex flex-row gap-x-[12px] items-center'>
+              <CyDMaterialDesignIcons
+                name='party-popper'
+                size={24}
+                className='text-base400'
+              />
+              <CyDView>
+                <CyDText className='text-[14px] font-medium'>
+                  {`${t('OFFER_CODE')} (${offerCodeData.percentDiscount}%)`}
+                </CyDText>
+                <CyDText className='text-n100 text-[10px] font-medium'>
+                  {t('VALID_TILL') + ' '}
+                  {new Date(offerCodeData.offerValidTill).toDateString()}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+            <CyDView className='flex flex-row items-center'>
+              <CyDText className='font-bold text-[14px]'>
+                {`-$${Math.max(cardFee - offerCodeData.amountCharged, 0)}`}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+        )}
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[14px]'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
             <CyDText className='font-bold'>{t('TOTAL_AMOUNT')}</CyDText>
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
-              <CyDText className='font-bold'>${cardFee}</CyDText>
+              <CyDText className='font-bold'>${totalAmount}</CyDText>
             </CyDSkeleton>
           </CyDView>
         </CyDView>
       </CyDView>
     );
-  }, [profile, currentCardProvider, balance, cardFee, cardType]);
+  }, [profile, currentCardProvider, balance, cardFee, cardType, offerCodeData]);
 
   const RenderNameOnCard = useCallback(() => {
     return (
@@ -333,6 +388,40 @@ export default function ShippingCheckout() {
     );
   }, [balance]);
 
+  /**
+   * Handle primary CTA press (Confirm Shipping / Get Virtual Card).
+   * - Validates if user's balance is sufficient for the required amount.
+   * - If sufficient, opens OTP modal for verification.
+   * - If insufficient, shows an error modal with shortfall and navigates to load card flow.
+   */
+  const handlePrimaryCTA = useCallback(() => {
+    const requiredAmount: number = offerCodeData?.amountCharged ?? cardFee;
+    if (balance >= requiredAmount) {
+      setIsOTPModalVisible(true);
+      return;
+    }
+
+    const shortfall = Math.max(requiredAmount - balance, 0);
+    showModal('state', {
+      type: 'error',
+      title: t('INSUFFICIENT_BALANCE'),
+      description: `${t('YOU_ARE_SHORT_OF')} $${shortfall.toFixed(2)}. ${t(
+        'PLEASE_LOAD_YOUR_CARD',
+      )}`,
+      onSuccess: () => {
+        hideModal();
+        // Navigate to Load Card screen with required params
+        const loadParams = {
+          navigation,
+          currentCardProvider,
+          currentCardIndex: 0,
+        } as never;
+        navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, loadParams);
+      },
+      onFailure: hideModal,
+    });
+  }, [offerCodeData, cardFee, balance, navigation, showModal, hideModal, t]);
+
   return (
     <CyDView className='bg-n20 h-full' style={{ paddingTop: insets.top }}>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
@@ -344,7 +433,7 @@ export default function ShippingCheckout() {
         verifyOTP={(otp: string) => {
           void onConfirm(otp);
         }}
-        feeAmount={cardFee}
+        feeAmount={offerCodeData?.amountCharged ?? cardFee}
       />
       <CyDView className='flex flex-1 flex-col justify-between h-full'>
         <CyDView className='mx-[16px] flex-1'>
@@ -369,6 +458,50 @@ export default function ShippingCheckout() {
               </CyDText>
             </CyDView>
             <CyDView className='mb-[16px]'>
+              <CyDText className='text-n100 text-[12px]'>
+                {t('OFFER_CODE')}
+              </CyDText>
+              <CyDView className='flex flex-row justify-between items-center mt-[4px]'>
+                <CyDView className='w-[72%]'>
+                  <CyDTextInput
+                    placeholder={'EX: Token2049'}
+                    placeholderTextColor={'#A6AEBB'}
+                    value={offerCode}
+                    onChangeText={text => {
+                      if (offerCodeData) {
+                        setOfferCodeData(null);
+                      }
+                      if (offerError) {
+                        setOfferError('');
+                      }
+                      setOfferCode(text);
+                    }}
+                    autoCapitalize={'characters'}
+                    className='p-[12px] h-[46px] rounded-[8px] bg-n0 font-semibold border-[1px] border-n40 mt-[2px]'
+                  />
+                </CyDView>
+                <CyDView className='w-[24%]'>
+                  <Button
+                    onPress={() => {
+                      void validateOfferCode();
+                    }}
+                    loading={isOfferDataLoading}
+                    disabled={!!offerCodeData || offerCode.trim().length === 0}
+                    type={ButtonType.PRIMARY}
+                    title={offerCodeData ? t('APPLIED') : t('APPLY')}
+                    paddingY={8}
+                    style={'h-[46px] w-full'}
+                    titleStyle={'text-[14px] font-semibold'}
+                  />
+                </CyDView>
+              </CyDView>
+              {offerError ? (
+                <CyDText className='text-red200 text-[12px] mt-[4px]'>
+                  {offerError}
+                </CyDText>
+              ) : null}
+            </CyDView>
+            <CyDView className='mb-[16px]'>
               <RenderPaymentMethod />
             </CyDView>
             <RenderShippingCharges />
@@ -387,9 +520,7 @@ export default function ShippingCheckout() {
 
         <CyDView className={clsx('w-full bg-n0 pt-[16px] pb-[32px] px-[16px]')}>
           <Button
-            onPress={() => {
-              setIsOTPModalVisible(true);
-            }}
+            onPress={handlePrimaryCTA}
             loading={isVerifyingOTP}
             type={ButtonType.PRIMARY}
             title={

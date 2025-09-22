@@ -6,6 +6,7 @@ import {
   PaginatedActivityResponse,
 } from '../models/activities.interface';
 import { useGenericPolling, GenericPollingReturn } from './useGenericPolling';
+import moment from 'moment';
 
 // Strict TypeScript interfaces for activity polling
 export interface ActivityPollingConfig {
@@ -109,6 +110,7 @@ export const useActivityPolling = (
       const response = (await postWithAuth('/v1/activities/status-v2', {
         activityType: FdActionType.CARD_FUND,
         status: [ActivityStatus.IN_PROGRESS],
+        startDate: moment().subtract(1, 'day').toISOString(),
       })) as OngoingActivitiesResponse;
 
       if (!response.isError && response.data) {
