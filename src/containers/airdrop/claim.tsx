@@ -94,7 +94,7 @@ export default function AirdropClaim() {
 
   // Get transaction manager and wallet context
   const { executeAirdropClaimContract } = useTransactionManager();
-  const hdWalletContext = useContext<any>(HdWalletContext);
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
 
   // Load default merchants on component mount
   const loadDefaultMerchants = useCallback(async () => {
@@ -102,7 +102,6 @@ export default function AirdropClaim() {
     if (merchantsLoadedRef.current) {
       return;
     }
-
     try {
       merchantsLoadedRef.current = true;
       setMerchantsLoading(true);
@@ -111,17 +110,23 @@ export default function AirdropClaim() {
         offset: undefined,
         search: undefined,
       };
-
       const res = await getWithAuth(`/v1/cypher-protocol/merchants`, params);
-
       if (!res.isError && res.data.items.length >= 3) {
         const defaultMerchants: MerchantWithAllocation[] = [
           { ...res.data.items[0], allocation: 50 }, // First merchant gets 50%
           { ...res.data.items[1], allocation: 25 }, // Second merchant gets 25%
           { ...res.data.items[2], allocation: 25 }, // Third merchant gets 25%
         ];
-
         setSelectedMerchants(defaultMerchants);
+      } else {
+        merchantsLoadedRef.current = false;
+        showModal('state', {
+          type: 'error',
+          title: t('AIRDROP_CLAIM_FAILED'),
+          description: t('FAILED_TO_LOAD_MERCHANTS'),
+          onSuccess: () => hideModal(),
+          onFailure: () => hideModal(),
+        });
       }
       setMerchantsLoading(false);
     } catch (error) {
