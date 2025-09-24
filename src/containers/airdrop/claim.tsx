@@ -684,7 +684,11 @@ export default function AirdropClaim() {
                         void handleSignTransaction();
                       }
                     }}
-                    disabled={isTransactionLoading || merchantsLoading}>
+                    disabled={
+                      isTransactionLoading ||
+                      merchantsLoading ||
+                      selectedMerchants.length === 0
+                    }>
                     <CyDText className='text-[18px] font-semibold text-black'>
                       {isTransactionLoading
                         ? 'Signing...'
