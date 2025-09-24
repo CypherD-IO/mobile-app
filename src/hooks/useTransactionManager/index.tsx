@@ -1558,8 +1558,7 @@ export default function useTransactionManager() {
       const chainConfig = get(ChainConfigMapping, chain);
 
       const publicClient = getViemPublicClient(
-        // getWeb3Endpoint(chainConfig, globalContext),
-        'https://base-sepolia-rpc.publicnode.com',
+        getWeb3Endpoint(chainConfig, globalContext),
       );
 
       // Define the contract ABI for the claim function
@@ -1605,6 +1604,8 @@ export default function useTransactionManager() {
         contractData,
         isErc20: true,
       });
+
+      console.log('🚀 ~ executeAirdropClaimContract ~ resp:', resp);
 
       return resp;
     } catch (error) {

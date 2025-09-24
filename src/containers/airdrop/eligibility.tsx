@@ -76,7 +76,7 @@ export default function AirdropEligibility() {
       setAirdropData(data);
     }
     setIsLoading(false);
-  }, [airdropAddress, getWithAuth, onError]);
+  }, [airdropAddress, onError]);
 
   useFocusEffect(
     useCallback(() => {
