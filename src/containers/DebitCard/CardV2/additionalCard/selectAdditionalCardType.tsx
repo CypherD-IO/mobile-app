@@ -61,21 +61,17 @@ const RenderPrice = ({
   price: number;
   cardType: CardType;
 }) => {
-  if (cardType === CardType.METAL && price > 0) {
-    return <CyDText className='text-[13px] font-bold'>{'Coming soon'}</CyDText>;
-  } else {
-    if (price > 0) {
-      return (
-        <CyDText className='text-[16px] font-bold'>
-          {`$${price}`}
-          <CyDText className='text-[12px] font-normal text-base150'>
-            {'/card'}
-          </CyDText>
+  if (price > 0) {
+    return (
+      <CyDText className='text-[16px] font-bold'>
+        {`$${price}`}
+        <CyDText className='text-[12px] font-normal text-base150'>
+          {'/card'}
         </CyDText>
-      );
-    } else {
-      return <CyDText className='text-[13px] font-bold'>{'🎉  Free'}</CyDText>;
-    }
+      </CyDText>
+    );
+  } else {
+    return <CyDText className='text-[13px] font-bold'>{'🎉  Free'}</CyDText>;
   }
 };
 
