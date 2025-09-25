@@ -391,15 +391,7 @@ export default function CardDescription() {
                   <GetCardArrivingDuration cardType={cardType} />
                 </CyDView>
                 <CyDView className='w-full mt-[8px]'>
-                  <Button
-                    onPress={onSelectCard}
-                    title={
-                      cardType === CardType.METAL && price > 0
-                        ? t('COMING_SOON')
-                        : t('GET_THIS_CARD')
-                    }
-                    disabled={cardType === CardType.METAL && price > 0}
-                  />
+                  <Button onPress={onSelectCard} title={t('GET_THIS_CARD')} />
                 </CyDView>
               </CyDView>
             </>
