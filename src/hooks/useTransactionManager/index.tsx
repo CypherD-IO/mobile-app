@@ -1605,8 +1605,6 @@ export default function useTransactionManager() {
         isErc20: true,
       });
 
-      console.log('🚀 ~ executeAirdropClaimContract ~ resp:', resp);
-
       return resp;
     } catch (error) {
       return { isError: true, error };
