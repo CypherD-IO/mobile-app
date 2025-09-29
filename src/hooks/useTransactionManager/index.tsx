@@ -48,6 +48,7 @@ import {
 } from '../../constants/server';
 import {
   CheckAllowanceResponse,
+  ReadContractResponse,
   TransactionResponse,
 } from '../../constants/type';
 import { GlobalContext } from '../../core/globalContext';
@@ -215,6 +216,53 @@ export default function useTransactionManager() {
         hash: receipt.transactionHash,
         isError: false,
         gasFeeInCrypto: gasEstimateResponse.gasFeeInCrypto,
+      };
+    } catch (e) {
+      return { isError: true, error: e };
+    }
+  };
+
+  const executeReadContract = async <T = unknown,>({
+    publicClient,
+    contractAddress,
+    contractData,
+    abi,
+    functionName,
+    args,
+  }: {
+    publicClient: PublicClient;
+    contractAddress: `0x${string}`;
+    contractData?: `0x${string}`;
+    abi?: readonly unknown[];
+    functionName?: string;
+    args?: readonly unknown[];
+  }): Promise<ReadContractResponse<T>> => {
+    try {
+      let result: T;
+
+      if (contractData) {
+        // If contractData is provided, use it directly with a call
+        result = (await publicClient.call({
+          to: contractAddress,
+          data: contractData,
+        })) as T;
+      } else if (abi && functionName) {
+        // If ABI and function name are provided, use readContract
+        result = (await publicClient.readContract({
+          address: contractAddress,
+          abi,
+          functionName,
+          args: args ?? [],
+        })) as T;
+      } else {
+        throw new Error(
+          'Either contractData or (abi + functionName) must be provided',
+        );
+      }
+
+      return {
+        isError: false,
+        data: result,
       };
     } catch (e) {
       return { isError: true, error: e };
@@ -1611,6 +1659,54 @@ export default function useTransactionManager() {
     }
   };
 
+  const checkIfAirdropClaimed = async ({
+    contractAddress,
+    rootId,
+    claimant,
+    isTestnet,
+  }: {
+    contractAddress: string;
+    rootId: number;
+    claimant: string;
+    isTestnet: boolean;
+  }): Promise<ReadContractResponse<boolean>> => {
+    try {
+      const chain = isTestnet ? 'base_sepolia' : 'base';
+      const chainConfig = get(ChainConfigMapping, chain);
+
+      // Define the contract ABI for the claimed function
+      const airdropClaimAbi = [
+        {
+          inputs: [
+            { name: 'rootId', type: 'uint256' },
+            { name: 'claimant', type: 'address' },
+          ],
+          name: 'claimed',
+          outputs: [{ name: 'hasClaimed', type: 'bool' }],
+          stateMutability: 'view',
+          type: 'function',
+        },
+      ];
+
+      const publicClient = getViemPublicClient(
+        getWeb3Endpoint(chainConfig, globalContext),
+      );
+
+      // Use executeReadContract to read from the contract
+      const result = await executeReadContract<boolean>({
+        publicClient,
+        contractAddress: contractAddress as `0x${string}`,
+        abi: airdropClaimAbi,
+        functionName: 'claimed',
+        args: [rootId, claimant],
+      });
+
+      return result;
+    } catch (error) {
+      return { isError: true, error };
+    }
+  };
+
   return {
     sendEvmToken,
     sendCosmosToken,
@@ -1622,7 +1718,9 @@ export default function useTransactionManager() {
     swapTokens,
     sendSolanaTokens,
     executeTransferContract,
+    executeReadContract,
     signTypedData,
     executeAirdropClaimContract,
+    checkIfAirdropClaimed,
   };
 }
