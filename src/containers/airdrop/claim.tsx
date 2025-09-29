@@ -173,18 +173,23 @@ export default function AirdropClaim() {
   };
 
   const checkAlreadyClaimed = useCallback(async () => {
-    setIsLoading(true);
-    const res = await checkIfAirdropClaimed({
-      contractAddress: airdropData.claimInfo.contractAddress,
-      rootId: airdropData.merkleTree?.rootId ?? 0,
-      claimant: walletAddress,
-      isTestnet: airdropData.claimInfo.isTestnet,
-    });
-    setIsLoading(false);
-    if (!res.isError) {
-      setIsClaimed(res.data);
-    } else {
+    try {
+      setIsLoading(true);
+      const res = await checkIfAirdropClaimed({
+        contractAddress: airdropData.claimInfo.contractAddress,
+        rootId: airdropData.merkleTree?.rootId ?? 0,
+        claimant: walletAddress,
+        isTestnet: airdropData.claimInfo.isTestnet,
+      });
+      if (!res.isError) {
+        setIsClaimed(res.data);
+      } else {
+        setIsClaimed(false);
+      }
+    } catch (error) {
       setIsClaimed(false);
+    } finally {
+      setIsLoading(false);
     }
   }, [walletAddress]);
 
