@@ -204,6 +204,13 @@ export default function CardQuote({
     return addresses;
   };
 
+  const onHideModalNavigateCardsScreen = () => {
+    hideModal();
+    setTimeout(() => {
+      navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+    }, MODAL_HIDE_TIMEOUT_250);
+  };
+
   const transferSentQuote = async (
     address: string,
     quoteId: string,
@@ -234,8 +241,8 @@ export default function CardQuote({
           type: 'error',
           title: 'Unable to fetch transaction hash',
           description: `Incase your transaction went through, please contact customer support with the quote_id: ${quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          onSuccess: onHideModalNavigateCardsScreen,
+          onFailure: onHideModalNavigateCardsScreen,
         });
         return;
       }
@@ -294,8 +301,8 @@ export default function CardQuote({
           type: 'error',
           title: 'Error processing your txn',
           description: `${errorMessage}, Please contact customer support with the quote_id: ${quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          onSuccess: onHideModalNavigateCardsScreen,
+          onFailure: onHideModalNavigateCardsScreen,
         });
       }
     } catch (error) {
@@ -317,8 +324,8 @@ export default function CardQuote({
         type: 'error',
         title: 'Error processing your txn',
         description: `${errorMessage}, Please contact customer support with the quote_id: ${quoteId}`,
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onHideModalNavigateCardsScreen,
+        onFailure: onHideModalNavigateCardsScreen,
       });
     }
   };
@@ -787,8 +794,8 @@ export default function CardQuote({
               type: 'error',
               title: 'Transaction Failed',
               description: `${errorMessage}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-              onSuccess: hideModal,
-              onFailure: hideModal,
+              onSuccess: onHideModalNavigateCardsScreen,
+              onFailure: onHideModalNavigateCardsScreen,
             });
           }
         }
