@@ -89,6 +89,7 @@ export default function AirdropClaim() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
   const [isClaimed, setIsClaimed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Ref to track if merchants have been loaded to prevent double execution
   const merchantsLoadedRef = useRef(false);
@@ -172,12 +173,14 @@ export default function AirdropClaim() {
   };
 
   const checkAlreadyClaimed = useCallback(async () => {
+    setIsLoading(true);
     const res = await checkIfAirdropClaimed({
       contractAddress: airdropData.claimInfo.contractAddress,
       rootId: airdropData.merkleTree?.rootId ?? 0,
       claimant: walletAddress,
       isTestnet: airdropData.claimInfo.isTestnet,
     });
+    setIsLoading(false);
     if (!res.isError) {
       setIsClaimed(res.data);
     } else {
@@ -320,7 +323,7 @@ export default function AirdropClaim() {
     setIsTermsAccepted(true);
   };
 
-  if (!airdropData) {
+  if (!airdropData || isLoading) {
     return (
       <>
         <Loading backgroundColor='bg-black' loadingText='Loading...' />
