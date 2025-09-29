@@ -50,8 +50,8 @@ const GetTokenBottomSheetContent: React.FC<GetTokenBottomSheetContentProps> = ({
           onPress={handleBuyCrypto}
           className='bg-base40 rounded-[16px] pb-4 pt-2 px-6'>
           <CyDView className='items-center'>
-            <CyDIcons name='card-filled' className='text-white text-[40px]' />
-            <CyDText className='text-white font-semibold text-center mb-1'>
+            <CyDIcons name='card-filled' className='text-[40px]' />
+            <CyDText className='font-semibold text-center mb-1'>
               {t('BUY_CRYPTO') ?? 'Buy Crypto'}
             </CyDText>
             <CyDText className='text-n200 text-[14px] text-center'>
@@ -69,9 +69,9 @@ const GetTokenBottomSheetContent: React.FC<GetTokenBottomSheetContentProps> = ({
             <CyDMaterialDesignIcons
               name='wallet'
               size={30}
-              className='text-white my-[8px]'
+              className='my-[8px]'
             />
-            <CyDText className='text-white font-semibold text-center mb-1'>
+            <CyDText className='font-semibold text-center mb-1'>
               {t('RECEIVE_CRYPTO') ?? 'Receive Crypto'}
             </CyDText>
             <CyDText className='text-n200 text-[14px] text-center'>
