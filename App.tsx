@@ -512,51 +512,51 @@ function App() {
           {/* Configure StatusBar dynamically based on theme context for proper contrast and SafeArea behavior */}
           <ThemedStatusBar />
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <GlobalBottomSheetProvider>
-              <Sentry.TouchEventBoundary>
-                <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
-                  ref={navigationRef}
-                  linking={linking}
-                  onReady={() => {
-                    routeNameRef.current =
-                      navigationRef?.current?.getCurrentRoute()?.name;
-                    // Register navigation container with Sentry for performance tracking
-                    // In Sentry v7, the navigation integration is automatically registered
-                  }}
-                  onStateChange={async () => {
-                    const previousRouteName = routeNameRef.current;
-                    const currentRouteName =
-                      navigationRef.current?.getCurrentRoute()?.name;
-                    if (previousRouteName !== currentRouteName) {
-                      // Keyboard.dismiss();
+            <Sentry.TouchEventBoundary>
+              <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
+                ref={navigationRef}
+                linking={linking}
+                onReady={() => {
+                  routeNameRef.current =
+                    navigationRef?.current?.getCurrentRoute()?.name;
+                  // Register navigation container with Sentry for performance tracking
+                  // In Sentry v7, the navigation integration is automatically registered
+                }}
+                onStateChange={async () => {
+                  const previousRouteName = routeNameRef.current;
+                  const currentRouteName =
+                    navigationRef.current?.getCurrentRoute()?.name;
+                  if (previousRouteName !== currentRouteName) {
+                    // Keyboard.dismiss();
 
-                      void analytics().logScreenView({
-                        screen_name: currentRouteName,
-                        screen_class: currentRouteName,
-                      });
-                    }
-                    routeNameRef.current = currentRouteName;
-                  }}>
-                  <WalletConnectContext.Provider
-                    value={{ walletConnectState, walletConnectDispatch }}>
-                    <GlobalContext.Provider
-                      value={{ globalState, globalDispatch }}>
-                      <HdWalletContext.Provider value={{ state, dispatch }}>
-                        <ActivityContext.Provider
+                    void analytics().logScreenView({
+                      screen_name: currentRouteName,
+                      screen_class: currentRouteName,
+                    });
+                  }
+                  routeNameRef.current = currentRouteName;
+                }}>
+                <WalletConnectContext.Provider
+                  value={{ walletConnectState, walletConnectDispatch }}>
+                  <GlobalContext.Provider
+                    value={{ globalState, globalDispatch }}>
+                    <HdWalletContext.Provider value={{ state, dispatch }}>
+                      <ActivityContext.Provider
+                        value={{
+                          state: stateActivity,
+                          dispatch: dispatchActivity,
+                        }}>
+                        <ModalContext.Provider
                           value={{
-                            state: stateActivity,
-                            dispatch: dispatchActivity,
+                            state: modalState,
+                            dispatch: modalDispatch,
                           }}>
-                          <ModalContext.Provider
+                          <BridgeContext.Provider
                             value={{
-                              state: modalState,
-                              dispatch: modalDispatch,
+                              state: bridgeState,
+                              dispatch: bridgeDispatch,
                             }}>
-                            <BridgeContext.Provider
-                              value={{
-                                state: bridgeState,
-                                dispatch: bridgeDispatch,
-                              }}>
+                            <GlobalBottomSheetProvider>
                               <GlobalModal>
                                 <ThreeDSecureProvider>
                                   <InitializeAppProvider>
@@ -598,15 +598,15 @@ function App() {
                                   </InitializeAppProvider>
                                 </ThreeDSecureProvider>
                               </GlobalModal>
-                            </BridgeContext.Provider>
-                          </ModalContext.Provider>
-                        </ActivityContext.Provider>
-                      </HdWalletContext.Provider>
-                    </GlobalContext.Provider>
-                  </WalletConnectContext.Provider>
-                </NavigationContainer>
-              </Sentry.TouchEventBoundary>
-            </GlobalBottomSheetProvider>
+                            </GlobalBottomSheetProvider>
+                          </BridgeContext.Provider>
+                        </ModalContext.Provider>
+                      </ActivityContext.Provider>
+                    </HdWalletContext.Provider>
+                  </GlobalContext.Provider>
+                </WalletConnectContext.Provider>
+              </NavigationContainer>
+            </Sentry.TouchEventBoundary>
           </GestureHandlerRootView>
         </CyDView>
       </ThemeProvider>

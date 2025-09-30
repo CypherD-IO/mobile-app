@@ -515,6 +515,7 @@ export default function CypherCardScreen() {
     const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10&includeRewards=true`;
     console.log('C A R D  I D :', cardId);
     const response = await getWithAuth(txnURL);
+    console.log('R E S P : : : ', response);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
       txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
@@ -1007,7 +1008,9 @@ export default function CypherCardScreen() {
                 cardDesignData={cardDesignData}
                 cardBalance={cardBalance}
               />
-              {hasSecuredSlot && <RewardProgressWidget />}
+              {get(statusWiseRewards, ['kycPending', 'earned'], false) && (
+                <RewardProgressWidget />
+              )}
               <MerchantSpendRewardWidget
                 onViewAllPress={handleViewAllMerchants}
                 onMerchantPress={handleDirectMerchantPress}
