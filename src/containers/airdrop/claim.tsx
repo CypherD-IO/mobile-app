@@ -1,4 +1,10 @@
-import React, { useContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   CyDFastImage,
   CyDIcons,
@@ -39,6 +45,7 @@ import { t } from 'i18next';
 import { screenTitle } from '../../constants';
 import Loading from '../Loading';
 import TermsAndConditionsModal from '../../components/termsAndConditionsModal';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 interface RouteParams {
   airdropData: AirdropInfo;
@@ -65,8 +72,12 @@ export default function AirdropClaim() {
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalState.cardProfile as CardProfile;
   const planId = cardProfile.planInfo?.planId;
-  const { getWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
+  const { state: hdWalletState } = useContext(
+    HdWalletContext,
+  ) as HdWalletContextDef;
+  const walletAddress: string = hdWalletState.wallet.ethereum.address ?? '';
 
   const [isMerchantBoostModalVisible, setIsMerchantBoostModalVisible] =
     useState(false);
@@ -74,59 +85,77 @@ export default function AirdropClaim() {
     MerchantWithAllocation[]
   >([]);
   const [isTransactionLoading, setIsTransactionLoading] = useState(false);
+  const [merchantsLoading, setMerchantsLoading] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+  const [isClaimed, setIsClaimed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Ref to track if merchants have been loaded to prevent double execution
+  const merchantsLoadedRef = useRef(false);
 
   // Get transaction manager and wallet context
-  const { executeAirdropClaimContract } = useTransactionManager();
-  const hdWalletContext = useContext<any>(HdWalletContext);
+  const { executeAirdropClaimContract, checkIfAirdropClaimed } =
+    useTransactionManager();
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
 
   // Load default merchants on component mount
-  useEffect(() => {
-    let isMounted = true;
-    const loadDefaultMerchants = async () => {
-      try {
-        const params = {
-          limit: 3,
-          offset: undefined,
-          search: undefined,
-        };
-
-        const res = await getWithAuth(`/v1/cypher-protocol/merchants`, params);
-        if (isMounted && !res.isError && res.data.items.length >= 3) {
-          const defaultMerchants: MerchantWithAllocation[] = [
-            { ...res.data.items[0], allocation: 50 }, // First merchant gets 50%
-            { ...res.data.items[1], allocation: 25 }, // Second merchant gets 25%
-            { ...res.data.items[2], allocation: 25 }, // Third merchant gets 25%
-          ];
-          setSelectedMerchants(defaultMerchants);
-        }
-      } catch (error) {
-        if (!isMounted) return;
+  const loadDefaultMerchants = useCallback(async () => {
+    // Prevent double execution
+    if (merchantsLoadedRef.current) {
+      return;
+    }
+    try {
+      merchantsLoadedRef.current = true;
+      setMerchantsLoading(true);
+      const params = {
+        limit: 3,
+        offset: undefined,
+        search: undefined,
+      };
+      const res = await getWithAuth(`/v1/cypher-protocol/merchants`, params);
+      if (!res.isError && res.data.items.length >= 3) {
+        const defaultMerchants: MerchantWithAllocation[] = [
+          { ...res.data.items[0], allocation: 50 }, // First merchant gets 50%
+          { ...res.data.items[1], allocation: 25 }, // Second merchant gets 25%
+          { ...res.data.items[2], allocation: 25 }, // Third merchant gets 25%
+        ];
+        setSelectedMerchants(defaultMerchants);
+      } else {
+        merchantsLoadedRef.current = false;
         showModal('state', {
           type: 'error',
-          title: 'Airdrop claim failed',
-          description: 'Failed to load merchants',
-          onSuccess: () => {
-            hideModal();
-            navigation.goBack();
-          },
-          onFailure: () => {
-            hideModal();
-            navigation.goBack();
-          },
+          title: t('AIRDROP_CLAIM_FAILED'),
+          description: t('FAILED_TO_LOAD_MERCHANTS'),
+          onSuccess: () => hideModal(),
+          onFailure: () => hideModal(),
         });
       }
-    };
+      setMerchantsLoading(false);
+    } catch (error) {
+      merchantsLoadedRef.current = false; // Reset on error so it can be retried
+      setMerchantsLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: 'Airdrop claim failed',
+        description: 'Failed to load merchants',
+        onSuccess: () => {
+          hideModal();
+          navigation.goBack();
+        },
+        onFailure: () => {
+          hideModal();
+          navigation.goBack();
+        },
+      });
+    }
+  }, [getWithAuth, showModal, hideModal, navigation]);
 
-    if (selectedMerchants.length === 0) {
+  useEffect(() => {
+    if (selectedMerchants.length === 0 && !merchantsLoadedRef.current) {
       void loadDefaultMerchants();
     }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedMerchants.length, getWithAuth]);
+  }, [selectedMerchants.length, loadDefaultMerchants]);
 
   const renderSuccessTransaction = (hash: string, isTestnet: boolean) => {
     const chain = isTestnet ? CHAIN_BASE_SEPOLIA : CHAIN_BASE;
@@ -143,13 +172,38 @@ export default function AirdropClaim() {
     );
   };
 
+  const checkAlreadyClaimed = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await checkIfAirdropClaimed({
+        contractAddress: airdropData.claimInfo.contractAddress,
+        rootId: airdropData.merkleTree?.rootId ?? 0,
+        claimant: walletAddress,
+        isTestnet: airdropData.claimInfo.isTestnet,
+      });
+      if (!res.isError) {
+        setIsClaimed(res.data);
+      } else {
+        setIsClaimed(false);
+      }
+    } catch (error) {
+      setIsClaimed(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [walletAddress]);
+
+  useEffect(() => {
+    void checkAlreadyClaimed();
+  }, []);
+
   // --- Execute airdrop claim transaction ---
   const handleSignTransaction = useCallback(async () => {
     if (
       !airdropData ||
       selectedMerchants.length === 0 ||
       !airdropData.claimInfo?.isClaimActive ||
-      airdropData.claimInfo?.isClaimed ||
+      isClaimed ||
       !airdropData.claimInfo?.contractAddress
     ) {
       showModal('state', {
@@ -232,6 +286,10 @@ export default function AirdropClaim() {
           onFailure: hideModal,
         });
       } else {
+        await patchWithAuth(`/v1/airdrop/mark-claimed/${walletAddress}`, {
+          claimed: true,
+          hash: result?.hash ?? '',
+        });
         showModal('state', {
           type: 'success',
           title: t('CLAIM_SUCCESS'),
@@ -261,14 +319,16 @@ export default function AirdropClaim() {
     airdropData,
     selectedMerchants,
     executeAirdropClaimContract,
-    hdWalletContext.state.selectedChain,
+    showModal,
+    hideModal,
+    hdWalletContext.state.wallet?.ethereum?.address,
   ]);
 
   const handleAcceptTerms = async () => {
     setIsTermsAccepted(true);
   };
 
-  if (!airdropData) {
+  if (!airdropData || isLoading) {
     return (
       <>
         <Loading backgroundColor='bg-black' loadingText='Loading...' />
@@ -646,20 +706,23 @@ export default function AirdropClaim() {
 
             {/* Sign Transaction Button */}
             <CyDView className='mt-[16px]'>
-              {airdropData.claimInfo?.isClaimActive &&
-                !airdropData.claimInfo?.isClaimed && (
-                  <CyDTouchView
-                    className='!bg-[#F9D26C] rounded-full py-2 px-3 items-center flex-row justify-between'
-                    onPress={() => {
-                      if (!isTermsAccepted) {
-                        setShowTermsModal(true);
-                      } else {
-                        void handleSignTransaction();
-                      }
-                    }}
-                    disabled={
-                      isTransactionLoading || selectedMerchants.length === 0
-                    }>
+              {airdropData.claimInfo?.isClaimActive && (
+                <CyDTouchView
+                  className='!bg-[#F9D26C] rounded-full py-2 px-3 items-center flex-row justify-between'
+                  onPress={() => {
+                    if (!isTermsAccepted) {
+                      setShowTermsModal(true);
+                    } else {
+                      void handleSignTransaction();
+                    }
+                  }}
+                  disabled={
+                    isTransactionLoading ||
+                    merchantsLoading ||
+                    selectedMerchants.length === 0 ||
+                    isClaimed
+                  }>
+                  {!isClaimed && (
                     <CyDText className='text-[18px] font-semibold text-black'>
                       {isTransactionLoading
                         ? 'Signing...'
@@ -667,13 +730,21 @@ export default function AirdropClaim() {
                           ? 'Claim Airdrop'
                           : 'Accept Terms'}
                     </CyDText>
+                  )}
+                  {isClaimed && (
+                    <CyDText className='text-[16px] font-semibold text-black'>
+                      {'Already Claimed'}
+                    </CyDText>
+                  )}
+                  {!isClaimed && (
                     <CyDMaterialDesignIcons
                       name='arrow-right'
                       size={20}
                       color='#000000'
                     />
-                  </CyDTouchView>
-                )}
+                  )}
+                </CyDTouchView>
+              )}
             </CyDView>
           </CyDView>
         </CyDScrollView>
