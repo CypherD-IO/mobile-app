@@ -169,6 +169,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     try {
       const localPortfolio = await getLocalPortfolio();
       if (localPortfolio?.totalHoldings) {
+        console.log(
+          'localPortfolio.totalHoldings',
+          localPortfolio.totalHoldings[0],
+        );
         // Filter tokens that are fundable and have value > minimum required
         const fundableTokens = localPortfolio.totalHoldings.filter(token => {
           if (!token.isFundable || !token.isVerified) return false;

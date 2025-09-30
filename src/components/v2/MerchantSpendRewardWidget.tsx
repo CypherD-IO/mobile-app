@@ -253,7 +253,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
         </CyDView>
 
         {isPremium ? (
-          <>
+          <CyDView className='flex flex-col items-end'>
             {/* Premium gradient multiplier */}
             <GradientText
               textElement={
@@ -272,7 +272,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
             <CyDText className='text-[14px] line-through text-n200'>
               {epochData?.parameters?.tierMultipliers?.basic_plan_v1}X Rewards
             </CyDText>
-          </>
+          </CyDView>
         ) : (
           <CyDText className='text-[20px]'>
             {epochData?.parameters?.tierMultipliers?.basic_plan_v1}X Rewards
