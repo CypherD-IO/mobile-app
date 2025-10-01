@@ -12,6 +12,7 @@ import { useColorScheme } from 'react-native';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { ReferralOnboardingStatus } from '../../constants/enum';
 import { getMaskedAddress } from '../../core/util';
+import MerchantLogo from './MerchantLogo';
 
 export interface RefereeDetail {
   address: string;
@@ -23,7 +24,8 @@ export interface RefereeDetail {
 
 export interface VotedMerchant {
   candidateId: string;
-  brand: string;
+  canonicalName?: string;
+  brand?: string;
   logoUrl?: string;
   category?: string;
   historicalMultiplier?: {
@@ -170,21 +172,18 @@ const ReferralDetailContent: React.FC<Props> = ({
                   isDarkMode ? 'bg-n40' : 'bg-n20'
                 }`}>
                 <CyDView className='flex-row items-center mb-3'>
-                  {merchant.logoUrl ? (
-                    <CyDImage
-                      source={{ uri: merchant.logoUrl }}
-                      className='w-8 h-8 mr-3 rounded-full'
-                      resizeMode='contain'
-                    />
-                  ) : (
-                    <CyDView className='w-8 h-8 bg-n60 rounded-full items-center justify-center mr-3'>
-                      <CyDText className='text-[10px] font-bold'>
-                        {merchant.brand.slice(0, 2).toUpperCase()}
-                      </CyDText>
-                    </CyDView>
-                  )}
+                  <MerchantLogo
+                    merchant={{
+                      brand: merchant.brand ?? merchant.canonicalName,
+                      canonicalName: merchant.brand ?? merchant.canonicalName,
+                      logoUrl: merchant.logoUrl,
+                    }}
+                    size={32}
+                    showBorder={!isDarkMode}
+                  />
+                  <CyDView className='w-3' />
                   <CyDText className='text-[16px] font-medium'>
-                    {merchant.brand}
+                    {merchant.brand ?? merchant.canonicalName}
                   </CyDText>
                 </CyDView>
 

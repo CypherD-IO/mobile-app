@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Share } from 'react-native';
@@ -21,6 +21,11 @@ import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvi
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import useRewardsDistributor from '../../hooks/useRewardsDistributor';
+import { HdWalletContext } from '../../core/util';
+import { get } from 'lodash';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { screenTitle } from '../../constants';
 
 interface EarningBreakdown {
   id: string;
@@ -52,9 +57,15 @@ interface SpendPerformance {
  */
 const ClaimRewardsBottomSheetContent = ({
   totalRewards,
+  onClaimToWallet,
+  onClose,
 }: {
   totalRewards: number;
+  onClaimToWallet: () => Promise<void>;
+  onClose: () => void;
 }) => {
+  const [claiming, setClaiming] = useState(false);
+
   /**
    * Handle deposit and boost rewards
    */
@@ -65,10 +76,20 @@ const ClaimRewardsBottomSheetContent = ({
 
   /**
    * Handle claim to wallet
+   * Calls the parent function to execute the claim and closes the bottom sheet
    */
-  const handleClaimToWallet = () => {
-    console.log('Claim to wallet pressed');
-    // TODO: Implement claim to wallet functionality
+  const handleClaimToWallet = async () => {
+    setClaiming(true);
+    try {
+      await onClaimToWallet();
+      // Close the bottom sheet after successful claim
+      onClose();
+    } catch (error) {
+      // Keep bottom sheet open if there's an error so user can retry
+      console.error('Error in claim, keeping bottom sheet open:', error);
+    } finally {
+      setClaiming(false);
+    }
   };
 
   return (
@@ -93,8 +114,13 @@ const ClaimRewardsBottomSheetContent = ({
 
         {/* Claim to wallet */}
         <CyDTouchView
-          onPress={handleClaimToWallet}
-          className='bg-base40 rounded-[16px] px-6 pb-4 pt-2'>
+          onPress={() => {
+            void handleClaimToWallet();
+          }}
+          disabled={claiming}
+          className={`bg-base40 rounded-[16px] px-6 pb-4 pt-2 ${
+            claiming ? 'opacity-50' : ''
+          }`}>
           <CyDView className='items-center'>
             {/* <CyDIcons
               name='wallet-multiple'
@@ -103,13 +129,15 @@ const ClaimRewardsBottomSheetContent = ({
             <CyDMaterialDesignIcons
               name='wallet'
               size={30}
-              className='text-white my-[8px]'
+              className='text-base400 my-[8px]'
             />
-            <CyDText className='text-white font-semibold text-center mb-1'>
-              Claim to wallet
+            <CyDText className='font-semibold text-center mb-1'>
+              {claiming ? 'Claiming...' : 'Claim to wallet'}
             </CyDText>
             <CyDText className='text-n200 text-[14px] text-center'>
-              Claim the earned cypher token straight to your wallet
+              {claiming
+                ? 'Processing your claim transaction'
+                : 'Claim the earned cypher token straight to your wallet'}
             </CyDText>
           </CyDView>
         </CyDTouchView>
@@ -123,13 +151,18 @@ const ClaimReward: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
-  const { showBottomSheet } = useGlobalBottomSheet();
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+  const { showModal, hideModal } = useGlobalModalContext();
 
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  // Initialize Rewards Distributor hook (must be in parent component within WagmiProvider)
+  const { claimRewards } = useRewardsDistributor();
+  const hdWalletContext = useContext<any>(HdWalletContext);
 
   // Get rewardsData from navigation params
   const rewardsData = (route.params as any)?.rewardsData;
@@ -203,38 +236,6 @@ const ClaimReward: React.FC = () => {
     ];
   }, [rewardsData]);
 
-  const [merchantRewards] = useState<MerchantReward[]>([
-    {
-      id: '1',
-      name: 'Uber Services inc',
-      multiplier: '3.2X Rewards',
-      rewardsEarned: '322.09 $CYPR',
-      totalSpend: '$672.32',
-    },
-    {
-      id: '2',
-      name: 'Uber Services inc',
-      multiplier: '2.2X Rewards',
-      rewardsEarned: '322.09 $CYPR',
-      totalSpend: '$672.32',
-    },
-    {
-      id: '3',
-      name: 'Uber Services inc',
-      multiplier: 'Boosted • 5.2X Rewards',
-      rewardsEarned: '322.09 $CYPR',
-      referralRewards: '122.09 $CYPR',
-      totalSpend: '$672.32',
-      boosted: true,
-    },
-  ]);
-
-  const [spendPerformance] = useState<SpendPerformance>({
-    totalSpend: '$2,340',
-    avgSpendPerTransaction: '$123',
-    tokensEarnedPer10Spend: '6.11',
-  });
-
   /**
    * Handles back navigation
    */
@@ -260,41 +261,151 @@ const ClaimReward: React.FC = () => {
   };
 
   /**
+   * Handle claim to wallet transaction
+   * Executes the claim rewards transaction on Base Sepolia
+   */
+  const handleClaimToWalletTransaction = async () => {
+    console.log('🎁 Claim to wallet pressed');
+
+    try {
+      // Get user's Ethereum address from wallet context
+      const fromAddress = get(
+        hdWalletContext,
+        'state.wallet.ethereum.address',
+        '',
+      ) as `0x${string}`;
+
+      if (!fromAddress) {
+        console.error('❌ No Ethereum address found in wallet context');
+        showModal('state', {
+          type: 'error',
+          title: t('WALLET_NOT_FOUND') ?? 'Wallet Not Found',
+          description:
+            t('CONNECT_WALLET_FIRST') ??
+            'Please connect your wallet to claim rewards',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+
+      console.log('📍 User address:', fromAddress);
+
+      // Test parameters for claiming rewards
+      const testParams = {
+        proofs: [[]] as Array<Array<`0x${string}`>>, // Empty proof array for testing
+        rootIds: [0n], // Root ID 0
+        values: [100000n], // Value 100000
+        fromAddress,
+      };
+
+      console.log('📋 Test claim parameters:', {
+        proofs: testParams.proofs,
+        rootIds: testParams.rootIds.map(id => id.toString()),
+        values: testParams.values.map(v => v.toString()),
+        fromAddress: testParams.fromAddress,
+      });
+
+      // Execute claim
+      const result = await claimRewards(testParams);
+
+      console.log('🎉 Claim result:', result);
+
+      // Only consider successful if there's a valid transaction hash
+      if (result.success && result.hash && result.hash !== '0x') {
+        console.log('✅ Rewards claimed successfully!');
+        console.log('📜 Transaction hash:', result.hash);
+
+        // Calculate the total claimed amount in CYPR tokens
+        // Sum all values and convert from Wei to tokens (18 decimals)
+        const totalClaimedWei = testParams.values.reduce(
+          (sum, val) => sum + val,
+          0n,
+        );
+        const claimedAmount = Number(totalClaimedWei) / Math.pow(10, 18);
+
+        console.log('💰 Total claimed amount:', claimedAmount, '$CYPR');
+
+        // Navigate to TokenRewardEarned screen with claimed amount
+        const navigationParams = {
+          rewardAmount: claimedAmount,
+          tokenSymbol: '$CYPR',
+          message: 'Congrats! You have successfully claimed your rewards!',
+          transactionHash: result.hash,
+          fromRewardsClaim: true, // Flag to indicate coming from rewards claim
+        };
+
+        (navigation as any).navigate(
+          screenTitle.TOKEN_REWARD_EARNED,
+          navigationParams,
+        );
+
+        // TODO: Refresh rewards data from API after successful claim
+      } else {
+        // Show error modal if claim failed or no transaction hash
+        console.error('❌ Claim failed:', result.error);
+        showModal('state', {
+          type: 'error',
+          title: t('CLAIM_FAILED') ?? 'Claim Failed',
+          description:
+            result.error ??
+            t('CLAIM_FAILED_DESC') ??
+            'Failed to claim rewards. Please try again later.',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } catch (error) {
+      console.error('💥 Error in claim process:', error);
+
+      // Show error modal for exceptions
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (t('CLAIM_ERROR_DESC') ??
+            'An error occurred while claiming rewards. Please try again.');
+
+      showModal('state', {
+        type: 'error',
+        title: t('CLAIM_ERROR') ?? 'Claim Error',
+        description: errorMessage,
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
+  /**
    * Handles claim rewards action
+   * Shows bottom sheet with claim options
    */
   const handleClaimRewards = () => {
     console.log('Claim rewards pressed - total:', claimData.totalRewards);
 
+    const bottomSheetId = 'claim-rewards-options';
+
     showBottomSheet({
-      id: 'claim-rewards-options',
+      id: bottomSheetId,
       snapPoints: ['45%', '60%'],
       showCloseButton: true,
       scrollable: true,
       content: (
-        <ClaimRewardsBottomSheetContent totalRewards={claimData.totalRewards} />
+        <ClaimRewardsBottomSheetContent
+          totalRewards={claimData.totalRewards}
+          onClaimToWallet={handleClaimToWalletTransaction}
+          onClose={() => {
+            console.log('Closing claim rewards bottom sheet...');
+            hideBottomSheet(bottomSheetId);
+          }}
+        />
       ),
-      topBarColor: isDarkMode ? '#000000' : '#FFFFFF',
+      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
       onClose: () => {
         console.log('Claim rewards bottom sheet closed');
       },
     });
   };
-
-  /**
-   * Renders merchant avatar with name
-   */
-  const renderMerchantAvatar = (merchantName: string) => (
-    <CyDView
-      className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${
-        isDarkMode ? 'bg-white' : 'bg-n40'
-      }`}>
-      <CyDText
-        className={`text-[8px] font-bold text-center text-black`}
-        numberOfLines={2}>
-        {merchantName.split(' ')[0]}
-      </CyDText>
-    </CyDView>
-  );
 
   return (
     <>
@@ -306,107 +417,105 @@ const ClaimReward: React.FC = () => {
         }}
       />
 
-      <CyDSafeAreaView
-        className={`flex-1 ${isDarkMode ? 'bg-base400' : 'bg-n0'}`}>
-        {/* Header */}
-        <CyDView
-          className={`flex-row justify-between items-center px-4 py-3 ${isDarkMode ? 'bg-white' : 'bg-black'}`}>
-          <CyDText className='text-n0 text-lg font-semibold'>
-            Cypher{' '}
-            <CyDText className='text-n0 font-[300] tracking-[2px]'>
-              REWARDS
-            </CyDText>
+      {/* Header */}
+      <CyDView
+        className={`flex-row justify-between items-center px-4 py-3 ${isDarkMode ? 'bg-white' : 'bg-black'}`}>
+        <CyDText className='text-n0 text-lg font-semibold'>
+          Cypher{' '}
+          <CyDText className='text-n0 font-[300] tracking-[2px]'>
+            REWARDS
+          </CyDText>
+        </CyDText>
+
+        <CyDTouchView onPress={handleBack} className='p-2'>
+          <CyDMaterialDesignIcons
+            name='close'
+            size={24}
+            className='text-n200'
+          />
+        </CyDTouchView>
+      </CyDView>
+
+      <CyDScrollView
+        className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}
+        showsVerticalScrollIndicator={false}>
+        {/* Main Claim Section */}
+        <CyDView className='px-6 py-8 bg-base400 rounded-br-[36px] pt-[200px] -mt-[200px]'>
+          <CyDText className='text-n0 text-[44px] font-[300] leading-tight mb-4'>
+            Your rewards are{'\n'}available to claim
           </CyDText>
 
-          <CyDTouchView onPress={handleBack} className='p-2'>
-            <CyDMaterialDesignIcons
-              name='close'
-              size={24}
-              className='text-n200'
+          {/* Token Amount */}
+          <CyDView className='flex-row items-center mb-3'>
+            <CyDImage
+              source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+              className='w-8 h-8 mr-3'
+              resizeMode='contain'
             />
-          </CyDTouchView>
-        </CyDView>
-
-        <CyDScrollView
-          className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}
-          showsVerticalScrollIndicator={false}>
-          {/* Main Claim Section */}
-          <CyDView className='px-6 py-8 bg-base400 rounded-br-[36px] pt-[200px] -mt-[200px]'>
-            <CyDText className='text-n0 text-[44px] font-[300] leading-tight mb-4'>
-              You rewards are{'\n'}available to claim
+            <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
+              {claimData.totalRewards.toLocaleString()}
             </CyDText>
-
-            {/* Token Amount */}
-            <CyDView className='flex-row items-center mb-3'>
-              <CyDImage
-                source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                className='w-8 h-8 mr-3'
-                resizeMode='contain'
-              />
-              <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
-                {claimData.totalRewards.toLocaleString()}
-              </CyDText>
-            </CyDView>
-
-            {/* Date Range */}
-            <CyDText className='text-n0 text-[14px] mb-11'>
-              {claimData.dateRange}
-            </CyDText>
-
-            {/* Action Buttons */}
-            <CyDView className='flex-row gap-x-3'>
-              <CyDTouchView
-                onPress={handleShare}
-                className='bg-base80 rounded-full px-[30px] py-[14px] items-center'>
-                <CyDText className='text-black text-[20px] font-medium'>
-                  Share
-                </CyDText>
-              </CyDTouchView>
-
-              <CyDView className='flex-1'>
-                <Button
-                  title='Claim Rewards'
-                  titleStyle='text-[20px] font-medium'
-                  onPress={handleClaimRewards}
-                  type={ButtonType.PRIMARY}
-                  style='rounded-full'
-                  paddingY={14}
-                />
-              </CyDView>
-            </CyDView>
           </CyDView>
 
-          {/* Content Container */}
-          <CyDView className='flex-1 px-4 gap-y-6'>
-            {/* Earning Breakdown */}
-            <CyDView
-              className={`p-4 mt-6 rounded-[12px] ${
-                isDarkMode ? 'bg-base40' : 'bg-n0'
-              }`}>
-              <CyDText className='text-[16px] font-medium mb-1'>
-                Earning breakdown
+          {/* Date Range */}
+          <CyDText className='text-n0 text-[14px] mb-11'>
+            {claimData.dateRange}
+          </CyDText>
+
+          {/* Action Buttons */}
+          <CyDView className='flex-row gap-x-3'>
+            <CyDTouchView
+              onPress={handleShare}
+              className='bg-base80 rounded-full px-[30px] py-[14px] items-center'>
+              <CyDText className='text-black text-[20px] font-medium'>
+                Share
               </CyDText>
+            </CyDTouchView>
 
-              {earningBreakdown.map(item => (
-                <CyDView
-                  key={item.id}
-                  className='flex-row justify-between items-center mt-3'>
-                  <CyDText className='text-[14px]'>{item.type}</CyDText>
-                  <CyDView
-                    className={`px-1 py-[2px] rounded-[4px]`}
-                    style={{ backgroundColor: item.bgColor }}>
-                    <CyDText
-                      className={`text-[14px] font-medium`}
-                      style={{ color: item.textColor }}>
-                      {item.amount}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-              ))}
+            <CyDView className='flex-1'>
+              <Button
+                title='Claim Rewards'
+                titleStyle='text-[20px] font-medium'
+                onPress={handleClaimRewards}
+                type={ButtonType.PRIMARY}
+                style='rounded-full'
+                paddingY={14}
+              />
             </CyDView>
+          </CyDView>
+        </CyDView>
 
-            {/* Reward on Merchants */}
-            {/* <CyDView
+        {/* Content Container */}
+        <CyDView className='flex-1 px-4 gap-y-6'>
+          {/* Earning Breakdown */}
+          <CyDView
+            className={`p-4 mt-6 rounded-[12px] ${
+              isDarkMode ? 'bg-base40' : 'bg-n0'
+            }`}>
+            <CyDText className='text-[16px] font-medium mb-1'>
+              Earning breakdown
+            </CyDText>
+
+            {earningBreakdown.map(item => (
+              <CyDView
+                key={item.id}
+                className='flex-row justify-between items-center mt-3'>
+                <CyDText className='text-[14px]'>{item.type}</CyDText>
+                <CyDView
+                  className={`px-1 py-[2px] rounded-[4px]`}
+                  style={{ backgroundColor: item.bgColor }}>
+                  <CyDText
+                    className={`text-[14px] font-medium`}
+                    style={{ color: item.textColor }}>
+                    {item.amount}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            ))}
+          </CyDView>
+
+          {/* Reward on Merchants */}
+          {/* <CyDView
               className={`py-6 rounded-[12px] ${
                 isDarkMode ? 'bg-base40' : 'bg-n0'
               }`}>
@@ -414,8 +523,8 @@ const ClaimReward: React.FC = () => {
                 Reward on Merchants
               </CyDText> */}
 
-            {/* Total Earnings */}
-            {/* <CyDView
+          {/* Total Earnings */}
+          {/* <CyDView
                 className={`py-3 px-4 flex-row justify-between items-center ${
                   isDarkMode ? 'bg-base200' : 'bg-n20'
                 }`}>
@@ -432,8 +541,8 @@ const ClaimReward: React.FC = () => {
                 </CyDView>
               </CyDView> */}
 
-            {/* Merchant List */}
-            {/* {merchantRewards.map((merchant, index) => (
+          {/* Merchant List */}
+          {/* {merchantRewards.map((merchant, index) => (
                 <CyDView
                   key={merchant.id}
                   className={`px-6 border-base200 border-b py-4 ${
@@ -441,8 +550,8 @@ const ClaimReward: React.FC = () => {
                       ? 'border-b-0 pb-0'
                       : ''
                   } ${isDarkMode ? 'border-base200' : 'border-n40'}`}> */}
-            {/* Merchant Header */}
-            {/* <CyDView className='flex-row items-center mb-3'>
+          {/* Merchant Header */}
+          {/* <CyDView className='flex-row items-center mb-3'>
                     {renderMerchantAvatar(merchant.name)}
                     <CyDView className='flex-1'>
                       <CyDText className='text-[16px] font-medium mb-1'>
@@ -455,8 +564,8 @@ const ClaimReward: React.FC = () => {
                     </CyDView>
                   </CyDView> */}
 
-            {/* Merchant Details */}
-            {/* <CyDView>
+          {/* Merchant Details */}
+          {/* <CyDView>
                     <CyDView className='flex-row justify-between items-center mb-3'>
                       <CyDText className='text-n200 text-[14px]'>
                         Rewards earned
@@ -490,9 +599,9 @@ const ClaimReward: React.FC = () => {
               ))}
             </CyDView> */}
 
-            {/* Spend Performance */}
+          {/* Spend Performance */}
 
-            {/* <CyDView
+          {/* <CyDView
               className={`py-4 rounded-[12px] ${
                 isDarkMode ? 'bg-base40' : 'bg-n0'
               }`}>
@@ -500,8 +609,8 @@ const ClaimReward: React.FC = () => {
                 Spend Performance
               </CyDText> */}
 
-            {/* Total Earnings */}
-            {/* <CyDView
+          {/* Total Earnings */}
+          {/* <CyDView
                 className={`bg-base200 py-3 px-4 flex-row justify-between items-center mb-3 ${
                   isDarkMode ? 'bg-base200' : 'bg-n20'
                 }`}>
@@ -519,7 +628,7 @@ const ClaimReward: React.FC = () => {
                 </CyDText>
               </CyDView> */}
 
-            {/* <CyDView className='flex-row justify-between items-center mb-3 px-4'>
+          {/* <CyDView className='flex-row justify-between items-center mb-3 px-4'>
                 <CyDText className='text-n200 text-[14px]'>
                   Avg. Spend/ Transaction
                 </CyDText>
@@ -544,9 +653,8 @@ const ClaimReward: React.FC = () => {
                 </CyDView>
               </CyDView>
             </CyDView> */}
-          </CyDView>
-        </CyDScrollView>
-      </CyDSafeAreaView>
+        </CyDView>
+      </CyDScrollView>
 
       {/* Bottom Safe Area with n0 background */}
       <CyDView

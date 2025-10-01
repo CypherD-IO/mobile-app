@@ -6,6 +6,7 @@ import {
   CyDMaterialDesignIcons,
   CyDImage,
 } from '../../styles/tailwindComponents';
+import MerchantLogo from './MerchantLogo';
 import { BlurView } from '@react-native-community/blur';
 import { StyleSheet, ActivityIndicator } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
@@ -464,7 +465,10 @@ const MerchantRewardDetailContent: React.FC<
    * Handles know more button press
    */
   const handleKnowMorePress = () => {
-    console.log('Know More pressed for:', currentMerchantData.brand);
+    console.log(
+      'Know More pressed for:',
+      currentMerchantData.brand ?? currentMerchantData.canonicalName,
+    );
     onKnowMorePress();
   };
 
@@ -472,12 +476,15 @@ const MerchantRewardDetailContent: React.FC<
    * Handles boost this merchant button press
    */
   const handleBoostMerchant = () => {
-    console.log('Boost merchant pressed for:', currentMerchantData.brand);
+    console.log(
+      'Boost merchant pressed for:',
+      currentMerchantData.brand ?? currentMerchantData.canonicalName,
+    );
     // TODO: Implement boost merchant functionality
   };
 
   const { displayName, fontSize } = processMerchantName(
-    currentMerchantData.brand,
+    currentMerchantData.brand ?? currentMerchantData.canonicalName,
   );
 
   // Style objects for dynamic styling
@@ -501,7 +508,7 @@ const MerchantRewardDetailContent: React.FC<
             <CyDView className='w-full h-[126px] bg-white items-center justify-center relative'>
               {/* Large faded merchant name acting as background image */}
               <CyDText className='text-black font-bold text-center text-[80px]'>
-                {currentMerchantData.brand}
+                {currentMerchantData.brand ?? currentMerchantData.canonicalName}
               </CyDText>
 
               {/* Blur Effect overlaying the big text */}
@@ -536,35 +543,28 @@ const MerchantRewardDetailContent: React.FC<
             </CyDView>
           )}
 
-          <CyDView
-            className={`w-[76px] h-[76px] bg-white rounded-full items-center justify-center ${
-              (userBoostStatus?.hasBoost ??
+          <MerchantLogo
+            merchant={{
+              brand:
+                currentMerchantData.brand ?? currentMerchantData.canonicalName,
+              canonicalName: currentMerchantData.canonicalName,
+              logoUrl: currentMerchantData.logoUrl,
+            }}
+            size={76}
+            hasUserVoted={
+              userBoostStatus?.hasBoost ??
               currentMerchantData?.userVoteData?.hasVoted ??
-              false)
-                ? 'border-[4px] border-orange500'
-                : ''
-            }`}>
-            {currentMerchantData.logoUrl ? (
-              <CyDImage
-                source={{ uri: currentMerchantData.logoUrl }}
-                className='w-full h-full rounded-full'
-                resizeMode='contain'
-              />
-            ) : (
-              <CyDText
-                className='text-black font-bold text-center'
-                style={merchantTextStyle}>
-                {displayName}
-              </CyDText>
-            )}
-          </CyDView>
+              false
+            }
+            showBorder={true}
+          />
         </CyDView>
 
         {/* Content Container */}
         <CyDView className='items-center justify-center py-10'>
           {/* Merchant Name */}
           <CyDText className='text-[24px] font-bold text-center px-4'>
-            {currentMerchantData.brand}
+            {currentMerchantData.brand ?? currentMerchantData.canonicalName}
           </CyDText>
 
           {/* Rewards Badge */}

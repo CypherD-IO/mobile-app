@@ -28,6 +28,9 @@ interface RouteParams {
   rewardAmount?: number;
   tokenSymbol?: string;
   message?: string;
+  transactionHash?: string;
+  fromRewardsClaim?: boolean; // Flag to indicate if coming from rewards claim
+  onContinue?: () => void; // Optional callback for continue action
 }
 
 interface TokenRewardEarnedProps {
@@ -107,8 +110,32 @@ const TokenRewardEarned = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  /**
+   * Handle continue button press
+   * Supports custom callback, or defaults to navigation based on context
+   */
   const handleContinue = () => {
-    navigation.navigate(screenTitle.NAME_ON_CARD);
+    const customOnContinue = route.params?.onContinue;
+    const fromRewardsClaim = route.params?.fromRewardsClaim ?? false;
+
+    // If custom callback provided, use it
+    if (customOnContinue) {
+      console.log('✅ Executing custom continue callback');
+      customOnContinue();
+      return;
+    }
+
+    // Otherwise, navigate based on context
+    if (fromRewardsClaim) {
+      // Coming from rewards claim - go back to rewards screen
+      console.log('✅ Navigating back to Rewards screen');
+      navigation.goBack();
+      navigation.goBack();
+    } else {
+      // Coming from card signup - continue to name on card
+      console.log('✅ Navigating to Name on Card screen');
+      (navigation as any).navigate(screenTitle.NAME_ON_CARD);
+    }
   };
 
   return (

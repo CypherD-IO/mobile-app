@@ -1291,6 +1291,52 @@ const resources = {
       REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
         "You've earned 50 reward points for applying the referral code. Continue to application.",
       ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
+      // Referral Rewards Bottom Sheet
+      INVITE_FRIENDS_EARN_REWARDS: 'Invite friends, earn rewards',
+      REFERRAL_REWARDS_DESCRIPTION:
+        'Cypher Referral Rewards offers two reward layers: a signup reward for every sign-ups and a merchant reward for spending at your boosted merchants.',
+      REFERRAL_WORKS_INFO:
+        'Refer friends to earn rewards on their signups and spends!',
+      KNOW_MORE_REFERRAL_WORKS: 'know more referral works',
+      SIGNUP_REWARD_TEXT: "You'll earn $CYPR every time a friend signs up!",
+      MERCHANT_SPEND_REWARD_TEXT:
+        'You earn $CYPR when invited friends spend at their boosted merchants',
+      NO_OF_REFERRAL: 'No. of referral',
+      EARNING_FOR_SPEND_BY_FRIEND: 'Earning for spend by your friend',
+      NO_VOTED_MERCHANTS: 'No voted merchants found',
+      REWARD_EARNINGS_DISCLAIMER:
+        'Reward earnings applicable per referral, per spend on every boosted merchant',
+      ESTIMATES_DISCLAIMER:
+        '** The numbers shown are estimates based on the current market conditions and are subject to change.',
+      OTHER_INVITE_OPTIONS: 'Other invite options',
+      NO_INVITE_CODE_AVAILABLE: 'No invite code available',
+      INVITE_CODE_COPIED: 'Invite code copied!',
+      FAILED_TO_COPY_CODE: 'Failed to copy invite code',
+      // Booster Info Bottom Sheet
+      WHAT_IS_BOOSTER_TITLE: 'What is Booster?',
+      BOOSTER_VECYPR_EXPLANATION:
+        'veCYPR is your voting power token earned by locking $CYPR tokens. Use it to boost merchants and earn higher rewards. veCYPR decays over time as locks approach expiration.',
+      TIP: 'Tip',
+      BOOSTER_TIP: 'Use all your veCYPR to maximize merchant boost benefits.',
+      HOW_TO_GET_VECYPR: 'How to Get veCYPR',
+      HOW_TO_GET_VECYPR_DESC:
+        'Lock your CYPR tokens to receive veCYPR. The longer you lock, the more veCYPR you receive.',
+      BOOST_BENEFITS: 'Boost Benefits',
+      BOOST_BENEFITS_DESC:
+        'Boosting merchants increases your reward multiplier, allowing you to earn more $CYPR tokens on every transaction.',
+      UNDERSTANDING_DECAY: 'Understanding Decay',
+      UNDERSTANDING_DECAY_DESC:
+        'Your veCYPR balance gradually decreases as your lock period nears its end. Extend your lock or add more CYPR to maintain your voting power.',
+      // Claim Rewards Errors and Messages
+      WALLET_NOT_FOUND: 'Wallet Not Found',
+      CONNECT_WALLET_FIRST: 'Please connect your wallet to claim rewards',
+      CLAIM_FAILED: 'Claim Failed',
+      CLAIM_FAILED_DESC: 'Failed to claim rewards. Please try again later.',
+      CLAIM_ERROR: 'Claim Error',
+      CLAIM_ERROR_DESC:
+        'An error occurred while claiming rewards. Please try again.',
+      REWARDS_CLAIMED_SUCCESS: 'Rewards Claimed Successfully',
+      CLAIM_TRANSACTION_CONFIRMED: 'Your claim transaction has been confirmed',
       WITHDRAW_CRYPTO: 'Withdraw Crypto',
       AMOUNT_TO_BE_WITHDRAWN: 'Amount to be withdrawn',
       WITHDRAW_ERROR: 'Withdrawal Error',

@@ -3,8 +3,8 @@ import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CyDImage,
 } from '../../styles/tailwindComponents';
+import MerchantLogo from './MerchantLogo';
 // Removed AppImages import since merchant icons will be fetched from API
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
@@ -144,25 +144,21 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     onViewAllPress?.();
   };
 
+  // kept for potential future text-only usage: getMerchantLogoProps handles this now
   const processMerchantName = (name: string) => {
     const firstWord = name.split(' ')[0];
     const displayName =
       firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
-
-    // Calculate font size based on name length
     let fontSize = 20;
-    if (displayName.length >= 8) {
-      fontSize = 14;
-    } else if (displayName.length > 5) {
-      fontSize = 16;
-    }
-
+    if (displayName.length >= 8) fontSize = 14;
+    else if (displayName.length > 5) fontSize = 16;
     return { displayName, fontSize };
   };
 
   const renderMerchantCard = (merchant: MerchantData, index: number) => {
     // Check if user has voted for this merchant
     const hasUserVoted = merchant.userVoteData?.hasVoted || false;
+    console.log('hasUserVoted : ', hasUserVoted);
 
     return (
       <CyDTouchView
@@ -172,31 +168,16 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
         onPress={() => handleMerchantPress(merchant)}>
         {/* Merchant Icon with Multiplier Badge */}
         <CyDView className='relative mb-2'>
-          <CyDView
-            className={`w-16 h-16 bg-white rounded-full items-center justify-center ${
-              hasUserVoted
-                ? 'border-[3px] border-orange500 '
-                : isDarkMode
-                  ? ''
-                  : 'border-[1px] border-n40'
-            }`}>
-            {/* Merchant logo */}
-            {merchant.logoUrl ? (
-              <CyDImage
-                source={
-                  typeof merchant.logoUrl === 'string'
-                    ? { uri: merchant.logoUrl }
-                    : merchant.logoUrl
-                }
-                className='w-full h-full rounded-full'
-                resizeMode='cover'
-              />
-            ) : (
-              <CyDText className='text-[12px] font-bold text-gray-800'>
-                {processMerchantName(merchant.brand).displayName}
-              </CyDText>
-            )}
-          </CyDView>
+          <MerchantLogo
+            merchant={{
+              brand: merchant.brand ?? merchant.canonicalName,
+              canonicalName: merchant.canonicalName,
+              logoUrl: merchant.logoUrl,
+            }}
+            size={64}
+            hasUserVoted={hasUserVoted}
+            showBorder={!isDarkMode}
+          />
 
           {/* Multiplier Badge */}
           <CyDView
@@ -214,7 +195,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
           className={`text-[14px] font-medium`}
           numberOfLines={1}
           ellipsizeMode='tail'>
-          {merchant.brand}
+          {merchant.brand ?? merchant.canonicalName}
         </CyDText>
       </CyDTouchView>
     );
@@ -258,7 +239,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
             <GradientText
               textElement={
                 <CyDText className='text-[20px] font-bold'>
-                  {epochData?.parameters?.tierMultipliers?.pro_plan_v1}X Rewards
+                  {epochData?.parameters?.tierMultipliers?.pro}X Rewards
                 </CyDText>
               }
               gradientColors={[
@@ -270,12 +251,12 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
               ]}
             />
             <CyDText className='text-[14px] line-through text-n200'>
-              {epochData?.parameters?.tierMultipliers?.basic_plan_v1}X Rewards
+              {epochData?.parameters?.tierMultipliers?.basic}X Rewards
             </CyDText>
           </CyDView>
         ) : (
           <CyDText className='text-[20px]'>
-            {epochData?.parameters?.tierMultipliers?.basic_plan_v1}X Rewards
+            {epochData?.parameters?.tierMultipliers?.basic}X Rewards
           </CyDText>
         )}
       </CyDView>
