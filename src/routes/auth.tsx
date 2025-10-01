@@ -932,12 +932,17 @@ export function RewardsStackScreen() {
         component={Referrals}
         options={{ headerShown: false }}
       />
-      <OptionsStack.Screen
+      <RewardsStack.Screen
         name={screenTitle.ALL_REFERRAL_CODES}
         component={AllReferralCodes}
         options={() => ({
           headerShown: false,
         })}
+      />
+      <RewardsStack.Screen
+        name={screenTitle.TOKEN_REWARD_EARNED}
+        component={TokenRewardEarned}
+        options={{ headerShown: false }}
       />
     </RewardsStack.Navigator>
   );

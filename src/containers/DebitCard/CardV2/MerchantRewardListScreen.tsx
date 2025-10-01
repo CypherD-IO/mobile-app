@@ -11,6 +11,7 @@ import {
   CyDIcons,
   CyDImage,
 } from '../../../styles/tailwindComponents';
+import MerchantLogo from '../../../components/v2/MerchantLogo';
 import { ActivityIndicator, FlatList, Platform } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
@@ -145,7 +146,7 @@ const MerchantRewardListScreen: React.FC = () => {
   const searchInBatch = (batch: MerchantData[], term: string) => {
     if (!term.trim()) return batch;
     const localFuse = new Fuse(batch, {
-      keys: ['brand', 'category'],
+      keys: ['brand', 'canonicalName', 'category'],
       threshold: 0.3,
       includeScore: true,
     });
@@ -225,7 +226,8 @@ const MerchantRewardListScreen: React.FC = () => {
 
     showBottomSheet({
       id: 'merchant-reward-detail',
-      backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
+      topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
       snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
@@ -233,10 +235,16 @@ const MerchantRewardListScreen: React.FC = () => {
         <MerchantRewardDetailContent
           merchantData={merchant}
           onKnowMorePress={() => {
-            console.log('Know more pressed for:', merchant.brand);
+            console.log(
+              'Know more pressed for:',
+              merchant.brand ?? merchant.canonicalName,
+            );
           }}
           onRemoveBoosterPress={() => {
-            console.log('Remove booster pressed for:', merchant.brand);
+            console.log(
+              'Remove booster pressed for:',
+              merchant.brand ?? merchant.canonicalName,
+            );
           }}
         />
       ),
@@ -356,37 +364,23 @@ const MerchantRewardListScreen: React.FC = () => {
                 <CyDView className='flex-row items-center flex-1'>
                   {/* Merchant Icon */}
                   <CyDView className='relative mr-3'>
-                    <CyDView
-                      className={`w-12 h-12 bg-white rounded-full items-center justify-center ${
-                        item.userVoteData?.hasVoted
-                          ? 'border-orange500 border-[3px]'
-                          : isDarkMode
-                            ? ''
-                            : 'border-[1px] border-n40'
-                      }`}>
-                      {item.logoUrl ? (
-                        <CyDImage
-                          source={{ uri: item.logoUrl }}
-                          className='w-10 h-10 rounded-full'
-                          resizeMode='contain'
-                        />
-                      ) : (
-                        <CyDText
-                          className='font-bold text-gray-800'
-                          style={{
-                            fontSize: processMerchantName(item.brand).fontSize,
-                          }}>
-                          {processMerchantName(item.brand).displayName}
-                        </CyDText>
-                      )}
-                    </CyDView>
+                    <MerchantLogo
+                      merchant={{
+                        brand: item.brand ?? item.canonicalName,
+                        canonicalName: item.canonicalName,
+                        logoUrl: item.logoUrl,
+                      }}
+                      size={48}
+                      hasUserVoted={item.userVoteData?.hasVoted}
+                      showBorder={!isDarkMode}
+                    />
                   </CyDView>
 
                   {/* Merchant Info */}
                   <CyDView className='flex-1'>
                     <CyDText
                       className={`text-[18px] font-semibold ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                      {item.brand ?? ''}
+                      {item.brand ?? item.canonicalName}
                     </CyDText>
                     <CyDText
                       className={`text-[14px] ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>

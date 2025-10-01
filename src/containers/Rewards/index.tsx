@@ -19,11 +19,13 @@ import {
   Modal,
 } from 'react-native';
 import Video from 'react-native-video';
-import { getMaskedAddress } from '../../core/util';
+import { getMaskedAddress, HdWalletContext } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import moment from 'moment';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { CardProfile } from '../../models/cardProfile.model';
+import { get } from 'lodash';
 import GradientText from '../../components/gradientText';
 import ReferralDetailContent from '../../components/v2/ReferralDetailContent';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
@@ -36,11 +38,30 @@ import { Theme, useTheme as useAppTheme } from '../../reducers/themeReducer';
 import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import InviteFriendsBanner from '../../components/v2/inviteFriendsBanner';
+import { IUserProfileResponse } from '../../models/rewardsProfile.interface';
+import { IRewardsHistoryResponse } from '../../models/rewardsHistory.interface';
+import {
+  IVotingPowerResponse,
+  IEnrichedVotingPowerData,
+  IVeNFTDetails,
+} from '../../models/votingPower.interface';
+import ReferralRewardsBottomSheet from '../../components/v2/ReferralRewardsBottomSheet';
+import BoosterInfoBottomSheetContent from '../../components/v2/BoosterInfoBottomSheetContent';
 // NOTE: Import for ReferralsViewAll component (ready for navigation integration)
 // import ReferralsViewAll from './ReferralsViewAll';
 
+/**
+ * Combined rewards data structure for the component
+ * This aggregates data from multiple API endpoints
+ */
+interface ICombinedRewardsData {
+  userProfile: IUserProfileResponse | null;
+  rewardsHistory: IRewardsHistoryResponse | null;
+  votingPower: IEnrichedVotingPowerData | null;
+}
+
 interface RewardTrendsContentProps {
-  rewardsData: any | null;
+  rewardsData: ICombinedRewardsData | null;
 }
 
 const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
@@ -53,7 +74,6 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   // Visible label for the currently selected time window
   const [timeFilter, setTimeFilter] = React.useState('All time');
   const [showOptions, setShowOptions] = React.useState(false);
-  const [isTokenVideoLoaded, setIsTokenVideoLoaded] = React.useState(false);
   const selectorRef = React.useRef<any>(null);
   const [dropdownPos, setDropdownPos] = React.useState({
     x: 0,
@@ -62,11 +82,11 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     height: 0,
   });
 
-  // Build list of options based on epochs
+  // Build list of options based on epochs from rewards history
   const timeOptions: string[] = React.useMemo(() => {
     const opts: string[] = ['All time'];
-    if (rewardsData?.epochs?.length) {
-      rewardsData.epochs.forEach((e: any) => {
+    if (rewardsData?.rewardsHistory?.epochs?.length) {
+      rewardsData.rewardsHistory.epochs.forEach(e => {
         // Using String(...) to satisfy eslint restrict-template-expressions rule
         opts.push(`Reward Cycle ${String(e.epochNumber)}`);
       });
@@ -79,7 +99,9 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     if (timeFilter === 'All time') return undefined;
     const match = /Reward Cycle (\d+)/.exec(timeFilter);
     const epochNum = match ? Number(match[1]) : undefined;
-    return rewardsData?.epochs?.find((e: any) => e.epochNumber === epochNum);
+    return rewardsData?.rewardsHistory?.epochs?.find(
+      e => e.epochNumber === epochNum,
+    );
   }, [timeFilter, rewardsData]);
 
   // Theme / color-scheme helpers (kept inside component to respect dynamic changes)
@@ -90,51 +112,58 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
   // Dynamic background colour for video placeholder to avoid black flash.
-  const tokenVideoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
+  const rewardTrendsTokenVideoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
 
   /* -------------------------------------------------------------------------- */
   /*                   Derived metrics based on selected window                 */
   /* -------------------------------------------------------------------------- */
 
-  const breakdownSource = selectedEpoch
+  const breakdownSource = (selectedEpoch
     ? selectedEpoch.earned.breakdown
-    : (rewardsData?.allTime?.totalEarned ?? {});
+    : rewardsData?.userProfile?.allTime?.totalEarned) ?? {
+    baseSpend: '0',
+    boostedSpend: '0',
+    baseReferral: '0',
+    boostedReferral: '0',
+    bribes: '0',
+    total: '0',
+  };
 
   const totalRewards = React.useMemo(() => {
     const val = selectedEpoch
       ? breakdownSource.total
-      : rewardsData?.allTime?.totalEarned?.total;
+      : rewardsData?.userProfile?.allTime?.totalEarned?.total;
     return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
   }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const bonus = React.useMemo(() => {
     const val = selectedEpoch
       ? breakdownSource.bribes
-      : rewardsData?.allTime?.totalEarned?.bribes;
+      : rewardsData?.userProfile?.allTime?.totalEarned?.bribes;
     return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
   }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const fromSpends = React.useMemo(() => {
     const val = selectedEpoch
       ? breakdownSource.baseSpend
-      : rewardsData?.allTime?.totalEarned?.baseSpend;
+      : rewardsData?.userProfile?.allTime?.totalEarned?.baseSpend;
     return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
   }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const merchantSpends = React.useMemo(() => {
     const val = selectedEpoch
       ? breakdownSource.boostedSpend
-      : rewardsData?.allTime?.totalEarned?.boostedSpend;
+      : rewardsData?.userProfile?.allTime?.totalEarned?.boostedSpend;
     return parseFloat(DecimalHelper.toDecimal(val ?? '0', 18).toString());
   }, [breakdownSource, selectedEpoch, rewardsData]);
 
   const referrals = React.useMemo(() => {
     const baseRefVal = selectedEpoch
       ? breakdownSource.baseReferral
-      : rewardsData?.allTime?.totalEarned?.baseReferral;
+      : rewardsData?.userProfile?.allTime?.totalEarned?.baseReferral;
     const boostedRefVal = selectedEpoch
       ? breakdownSource.boostedReferral
-      : rewardsData?.allTime?.totalEarned?.boostedReferral;
+      : rewardsData?.userProfile?.allTime?.totalEarned?.boostedReferral;
     const baseRef = parseFloat(
       DecimalHelper.toDecimal(baseRefVal ?? '0', 18).toString(),
     );
@@ -183,10 +212,9 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   /* -------------------------------------------------------------------------- */
 
   // Access global context for card provider details
-  const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const cardProfile = (globalContext?.globalState?.cardProfile ?? {}) as
-    | CardProfile
-    | undefined;
+  const globalContextForCard = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile = globalContextForCard?.globalState
+    ?.cardProfile as CardProfile;
   const cardProvider: CardProviders =
     (cardProfile?.provider as CardProviders) ?? CardProviders.REAP_CARD;
 
@@ -195,13 +223,26 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        let url = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=5&includeRewards=true`;
+        // Determine transaction limit based on whether we're filtering to a specific epoch or all time
+        const transactionLimit = selectedEpoch ? 5 : 200;
+        let url = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=${transactionLimit}&includeRewards=true`;
 
         console.log('S E L E C T E D E P O C H : : : ', selectedEpoch);
 
-        // Append epoch window if not all-time
+        // Append epoch window if selected epoch exists
         if (selectedEpoch?.epochStartTime && selectedEpoch?.epochEndTime) {
           url += `&startDate=${String(selectedEpoch.epochStartTime)}&endDate=${String(selectedEpoch.epochEndTime)}`;
+        } else if (!selectedEpoch) {
+          // For "All time" selection, limit end date to current epoch's start time
+          // The current epoch is typically the most recent one (first in the array after sorting)
+          const currentEpoch = rewardsData?.rewardsHistory?.epochs?.[0];
+          if (currentEpoch?.epochStartTime) {
+            console.log(
+              'Using current epoch start time as end date:',
+              currentEpoch.epochStartTime,
+            );
+            url += `&endDate=${String(currentEpoch.epochStartTime)}`;
+          }
         }
 
         console.log('U R L : : : ', url);
@@ -211,11 +252,34 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
         console.log('R E S P : : : ', resp.data.transactions);
 
         if (!resp.isError) {
-          const items = resp.data.transactions ?? [];
+          const allTransactions = resp.data.transactions ?? [];
+
+          console.log('Total transactions received:', allTransactions.length);
+
+          // Filter transactions to include only:
+          // 1. DEBIT transactions
+          // 2. Settled transactions (isSettled === true)
+          // 3. Transactions with merchant name present in metadata
+          const filteredTransactions = allTransactions.filter((txn: any) => {
+            const isDebit = txn.type === 'DEBIT';
+            const isSettled = txn.isSettled === true;
+            const hasMerchantName = txn.metadata?.merchant?.merchantName;
+
+            console.log(
+              `Transaction ${String(txn.id)}: isDebit=${String(isDebit)}, isSettled=${String(isSettled)}, hasMerchantName=${String(!!hasMerchantName)}`,
+            );
+
+            return isDebit && isSettled && hasMerchantName;
+          });
+
+          console.log(
+            'Filtered transactions count:',
+            filteredTransactions.length,
+          );
 
           /* Group by calendar day for UI section */
           const grouped: { [date: string]: any[] } = {};
-          items.forEach((txn: any) => {
+          filteredTransactions.forEach((txn: any) => {
             const dateKey = moment(txn.date).format('MMM DD, YYYY');
             if (!grouped[dateKey]) grouped[dateKey] = [];
             grouped[dateKey].push(txn);
@@ -242,6 +306,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 
           setTransactionData(transformed);
         } else {
+          console.error('Error response from transactions API:', resp.error);
           setTransactionData([]);
         }
       } catch (error) {
@@ -252,7 +317,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 
     void fetchTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEpoch, cardProvider]);
+  }, [selectedEpoch, cardProvider, rewardsData]);
 
   const renderTransactionItem = (transaction: any) => {
     console.log('T R A N S A C T I O N : : : ', transaction);
@@ -553,7 +618,9 @@ export default function Rewards() {
   // Rewards data fetched from API and related states
   const { getWithAuth } = useAxios();
 
-  const [rewardsData, setRewardsData] = React.useState<any | null>(null);
+  // Combined rewards data from multiple API endpoints
+  const [rewardsData, setRewardsData] =
+    React.useState<ICombinedRewardsData | null>(null);
 
   // Referral summary state
   const [referralSummary, setReferralSummary] = React.useState<any | null>(
@@ -574,37 +641,56 @@ export default function Rewards() {
   const { theme } = useAppTheme();
   const colorScheme = useColorScheme();
 
+  // Bottom sheet hook for displaying modals
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+
+  // Get current ethereum address for voting power API
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const currentAddress: string = get(
+    hdWalletContext,
+    'state.wallet.ethereum.address',
+    '',
+  );
+
   const totalRewards = React.useMemo(() => {
     return DecimalHelper.toDecimal(
-      rewardsData?.allTime?.totalEarned?.total,
+      rewardsData?.userProfile?.allTime?.totalEarned?.total ?? '0',
       18,
     ).toString();
   }, [rewardsData]);
 
+  useEffect(() => {
+    console.log(
+      'rewardsData : ',
+      rewardsData,
+      rewardsData?.userProfile?.allTime?.totalEarned?.total,
+    );
+  }, [rewardsData]);
+
   const totalUnclaimed = React.useMemo(() => {
     return DecimalHelper.toDecimal(
-      rewardsData?.allTime?.totalUnclaimed?.total,
+      rewardsData?.userProfile?.allTime?.totalUnclaimed?.total ?? '0',
       18,
     ).toString();
   }, [rewardsData]);
 
   const totalVotingPower = React.useMemo(() => {
     return DecimalHelper.toDecimal(
-      rewardsData?.votingPower?.totalVotingPower,
+      rewardsData?.votingPower?.totalVotingPower ?? '0',
       18,
     ).toString();
   }, [rewardsData]);
 
   const usedVotingPower = React.useMemo(() => {
     return DecimalHelper.toDecimal(
-      rewardsData?.votingPower?.usedVotingPower,
+      rewardsData?.votingPower?.usedVotingPower ?? '0',
       18,
     ).toString();
   }, [rewardsData]);
 
   const unusedVotingPower = React.useMemo(() => {
     return DecimalHelper.toDecimal(
-      rewardsData?.votingPower?.freeVotingPower,
+      rewardsData?.votingPower?.freeVotingPower ?? '0',
       18,
     ).toString();
   }, [rewardsData]);
@@ -627,38 +713,226 @@ export default function Rewards() {
   /*                    Fetch User Rewards API & Progress Animation            */
   /* -------------------------------------------------------------------------- */
 
-  // Fetch rewards data and animate progress bar every time screen is focused
+  /**
+   * Helper function to calculate used and free voting power from veNFTs
+   * Used voting power is the sum of all votes across all veNFTs
+   * Free voting power is total voting power minus used voting power
+   */
+  const enrichVotingPowerData = (
+    votingPowerResponse: IVotingPowerResponse,
+  ): IEnrichedVotingPowerData => {
+    const { votingPower } = votingPowerResponse;
+    const {
+      totalVotingPower: vpTotal,
+      totalLockedAmount,
+      veNFTs,
+    } = votingPower;
+
+    // Calculate used voting power by summing all votes across all veNFTs
+    let usedVotingPowerBigInt = BigInt(0);
+    if (Array.isArray(veNFTs) && veNFTs.length > 0) {
+      // Type guard to check if veNFTs contains detailed NFT data
+      const hasDetailedNFTs =
+        'currentVotes' in veNFTs[0] && veNFTs[0].currentVotes !== undefined;
+
+      if (hasDetailedNFTs) {
+        const detailedVeNFTs = veNFTs as IVeNFTDetails[];
+        detailedVeNFTs.forEach(veNFT => {
+          if (veNFT.currentVotes && Array.isArray(veNFT.currentVotes)) {
+            veNFT.currentVotes.forEach(vote => {
+              usedVotingPowerBigInt += BigInt(vote.voteAmount ?? '0');
+            });
+          }
+        });
+      }
+    }
+
+    const usedVotingPowerStr = usedVotingPowerBigInt.toString();
+    const freeVotingPower = (
+      BigInt(vpTotal) - usedVotingPowerBigInt
+    ).toString();
+
+    return {
+      totalVotingPower: vpTotal,
+      totalLockedAmount,
+      veNFTs: veNFTs as IVeNFTDetails[],
+      endOfCurrentEpochTotalVotingPower:
+        'endOfCurrentEpochTotalVotingPower' in votingPower
+          ? votingPower.endOfCurrentEpochTotalVotingPower
+          : undefined,
+      currentEpochEndTimestamp:
+        'currentEpochEndTimestamp' in votingPower
+          ? votingPower.currentEpochEndTimestamp
+          : undefined,
+      usedVotingPower: usedVotingPowerStr,
+      freeVotingPower,
+    };
+  };
+
+  // Fetch rewards data from multiple endpoints and animate progress bar every time screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const fetchRewards = async () => {
         try {
-          const response = await getWithAuth(
-            '/v1/cypher-protocol/user/rewards',
-          );
-          console.log('((((((((( response :', response.data);
+          console.log('📊 Fetching rewards data from multiple endpoints...');
+          console.log('📊 Current address:', currentAddress);
 
+          // Fetch profile data first
           console.log(
-            ':":":":":":":": voted merchants : ',
-            response.data.votedMerchants,
+            '📡 Step 1: Fetching profile for address:',
+            currentAddress,
+          );
+          const profileUrl = `/v1/cypher-protocol/user/${currentAddress}/profile`;
+          console.log('📡 Profile URL:', profileUrl);
+
+          const userProfileResponse = await getWithAuth(profileUrl);
+          console.log('📥 Profile Response received:', userProfileResponse);
+          console.log(
+            '📥 Profile Response.data keys:',
+            Object.keys(userProfileResponse.data || {}),
           );
 
-          console.log('@@@@@@@@ referralInfo : ', response.data.referralInfo);
+          // Fetch rewards history second
+          console.log(
+            '📡 Step 2: Fetching rewards history for address:',
+            currentAddress,
+          );
+          const historyUrl = `/v1/cypher-protocol/user/${currentAddress}/rewards/history?limit=10`;
+          console.log('📡 History URL:', historyUrl);
 
-          console.log('voiting power ::: ', response.data.votingPower);
+          const rewardsHistoryResponse = await getWithAuth(historyUrl);
+          console.log(
+            '📥 Rewards History Response received:',
+            rewardsHistoryResponse,
+          );
+          console.log(
+            '📥 Rewards History Response.data keys:',
+            Object.keys(rewardsHistoryResponse.data || {}),
+          );
 
-          if (!response.isError) {
-            const data = response.data;
-            setRewardsData(data);
-          } else {
-            console.warn('Failed to fetch user rewards:', response.error);
+          // Fetch voting power data third
+          console.log(
+            '📡 Step 3: Fetching voting power for address:',
+            currentAddress,
+          );
+          const votingPowerUrl = `/v1/cypher-protocol/user/${currentAddress}/voting-power?includeEndOfEpoch=true&includeVeNFTDetails=true`;
+          console.log('📡 Voting Power URL:', votingPowerUrl);
+
+          const votingPowerResponse = await getWithAuth(votingPowerUrl);
+          console.log(
+            '📥 Voting Power Response received:',
+            votingPowerResponse,
+          );
+          console.log(
+            '📥 Voting Power Response.data keys:',
+            Object.keys(votingPowerResponse.data || {}),
+          );
+          console.log(
+            '📥 Voting Power Response.data.votingPower:',
+            votingPowerResponse.data?.votingPower,
+          );
+
+          // Check if all critical requests succeeded
+          if (userProfileResponse.isError) {
+            console.error(
+              '❌ Failed to fetch user profile:',
+              userProfileResponse.error,
+            );
+            return;
           }
+
+          if (votingPowerResponse.isError) {
+            console.error(
+              '❌ Failed to fetch voting power:',
+              votingPowerResponse.error,
+            );
+            return;
+          }
+
+          // Rewards history is optional - can proceed without it
+          if (rewardsHistoryResponse.isError) {
+            console.warn(
+              '⚠️ Failed to fetch rewards history (non-critical):',
+              rewardsHistoryResponse.error,
+            );
+          }
+
+          // Extract user profile data
+          const userProfile: IUserProfileResponse = userProfileResponse.data;
+          console.log('✅ User profile extracted:', userProfile);
+
+          // Extract rewards history data (with fallback)
+          let rewardsHistory: IRewardsHistoryResponse;
+          if (
+            !rewardsHistoryResponse.isError &&
+            rewardsHistoryResponse.data?.epochs
+          ) {
+            rewardsHistory = rewardsHistoryResponse.data;
+            console.log('✅ Rewards history extracted:', rewardsHistory);
+          } else {
+            console.warn(
+              '⚠️ Using empty rewards history (endpoint may not be deployed)',
+            );
+            rewardsHistory = {
+              epochs: [],
+              pagination: { hasMore: false },
+            };
+          }
+
+          // Extract and enrich voting power data
+          console.log('🔍 votingPowerResponse.data:', votingPowerResponse.data);
+          console.log(
+            '🔍 votingPowerResponse.data.votingPower:',
+            votingPowerResponse.data?.votingPower,
+          );
+
+          // The API returns { votingPower: {...} } wrapped structure
+          // Check if we have the nested structure or direct structure
+          let rawVotingPower: any;
+          if (votingPowerResponse.data?.votingPower) {
+            console.log('✅ Found nested votingPower structure');
+            rawVotingPower = votingPowerResponse.data.votingPower;
+          } else if (votingPowerResponse.data?.veNFTs) {
+            console.log('✅ Found direct voting power structure (has veNFTs)');
+            rawVotingPower = votingPowerResponse.data;
+          } else {
+            console.error(
+              '❌ Unexpected response structure from voting power endpoint!',
+            );
+            console.error('Response data:', votingPowerResponse.data);
+            // Create empty fallback structure
+            rawVotingPower = {
+              totalVotingPower: '0',
+              totalLockedAmount: '0',
+              veNFTs: [],
+            };
+          }
+
+          console.log('🔍 Raw voting power to enrich:', rawVotingPower);
+
+          // Enrich voting power data with calculated fields
+          const enrichedVotingPower = enrichVotingPowerData({
+            votingPower: rawVotingPower,
+          } as IVotingPowerResponse);
+          console.log('✅ Enriched Voting Power:', enrichedVotingPower);
+
+          // Combine all data into a single state object
+          const combinedData: ICombinedRewardsData = {
+            userProfile,
+            rewardsHistory,
+            votingPower: enrichedVotingPower,
+          };
+
+          console.log('✅ Combined rewards data:', combinedData);
+          setRewardsData(combinedData);
         } catch (err) {
-          console.error('Error fetching user rewards:', err);
+          console.error('💥 Error fetching rewards data:', err);
         }
       };
 
       void fetchRewards();
-    }, []),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentAddress]),
   );
 
   // Animate progress bar whenever screen is focused and voting power data changes
@@ -690,21 +964,31 @@ export default function Rewards() {
           const resp = await getWithAuth(
             '/v1/cards/referral-v2/rewards-summary',
           );
-          console.log(
-            '~~~ referral summary resp',
-            resp.data,
-            '\n *] refereesByEpoch',
-            resp.data.refereesByEpoch,
-            '\n *] referees :',
-            resp.data.refereesByEpoch['10'].referees,
-          );
-          if (!resp.isError) {
+
+          if (!resp.isError && resp.data) {
+            console.log('~~~ Referral summary response:', resp.data);
+
+            // Log refereesByEpoch structure safely
+            if (resp.data.refereesByEpoch) {
+              const epochKeys = Object.keys(resp.data.refereesByEpoch);
+              console.log('*] refereesByEpoch epochs:', epochKeys);
+
+              // Log first epoch data safely if exists
+              if (epochKeys.length > 0) {
+                const firstEpoch = epochKeys[0];
+                console.log(
+                  `*] Epoch ${firstEpoch} data:`,
+                  resp.data.refereesByEpoch[firstEpoch],
+                );
+              }
+            }
+
             setReferralSummary(resp.data);
           } else {
-            console.warn('Failed to fetch referral summary', resp.error);
+            console.warn('Failed to fetch referral summary:', resp.error);
           }
         } catch (err) {
-          console.error('Error fetching referral summary', err);
+          console.error('Error fetching referral summary:', err);
         }
       };
 
@@ -742,38 +1026,34 @@ export default function Rewards() {
   /*                           Derived referral list                            */
   /* -------------------------------------------------------------------------- */
   // Flatten referees across all epochs into a single array while keeping epoch info
-  const referees: Array<{
+  interface RefereeData {
     address: string;
     totalRewardsEarned: number;
     onboardingStatus: string;
     signupDate?: number;
     epoch: number;
-  }> = React.useMemo(() => {
+  }
+
+  const referees: RefereeData[] = React.useMemo(() => {
     if (!referralSummary?.refereesByEpoch) return [];
 
-    const flattened: Array<{
-      address: string;
-      totalRewardsEarned: number;
-      onboardingStatus: string;
-      signupDate?: number;
-      epoch: number;
-    }> = [];
+    const flattened: RefereeData[] = [];
 
-    Object.entries(referralSummary.refereesByEpoch).forEach(
-      ([epochKey, epochData]: [string, any]) => {
-        const epochNum = Number(epochKey);
-        const { referees: refList = [] } = epochData ?? {};
-        refList.forEach((ref: any) => {
-          flattened.push({
-            address: ref.address,
-            totalRewardsEarned: ref.totalRewardsEarned ?? 0,
-            onboardingStatus: ref.onboardingStatus ?? 'PENDING',
-            signupDate: ref.signupDate,
-            epoch: epochNum,
-          });
+    Object.entries<{ referees?: RefereeData[] }>(
+      referralSummary.refereesByEpoch,
+    ).forEach(([epochKey, epochData]) => {
+      const epochNum = Number(epochKey);
+      const refList = epochData?.referees ?? [];
+      refList.forEach(ref => {
+        flattened.push({
+          address: ref.address,
+          totalRewardsEarned: ref.totalRewardsEarned ?? 0,
+          onboardingStatus: ref.onboardingStatus ?? 'PENDING',
+          signupDate: ref.signupDate,
+          epoch: epochNum,
         });
-      },
-    );
+      });
+    });
 
     // Sort by signupDate descending (latest first)
     flattened.sort((a, b) => (b.signupDate ?? 0) - (a.signupDate ?? 0));
@@ -791,8 +1071,25 @@ export default function Rewards() {
   const handleDepositTokenPress = () => {
     // TODO: Implement logic / navigation
   };
+
+  /**
+   * Handle booster info button press
+   * Shows the booster information bottom sheet explaining veCYPR and boosting
+   */
   const handleBoosterInfoPress = () => {
-    // TODO: Implement logic / navigation
+    console.log('ℹ️ Opening Booster Info bottom sheet');
+    showBottomSheet({
+      id: 'booster-info',
+      snapPoints: ['65%', Platform.OS === 'android' ? '100%' : '95%'],
+      showCloseButton: true,
+      scrollable: true,
+      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      content: <BoosterInfoBottomSheetContent />,
+      onClose: () => {
+        console.log('✅ Booster info bottom sheet closed');
+      },
+    });
   };
   const handleWhatIsCypherTokenPress = () => {
     showBottomSheet({
@@ -820,10 +1117,39 @@ export default function Rewards() {
     console.log('Navigate to Referrals screen (Invite Friends)');
   };
 
+  /**
+   * Handle learn how referral works button press
+   * Shows the referral rewards bottom sheet with detailed information
+   */
+  const handleLearnReferralWorksPress = () => {
+    console.log('📖 Opening Referral Rewards bottom sheet');
+    showBottomSheet({
+      id: 'referral-rewards-info',
+      snapPoints: ['75%', Platform.OS === 'android' ? '100%' : '93%'],
+      showCloseButton: true,
+      scrollable: true,
+      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      content: (
+        <ReferralRewardsBottomSheet
+          onOpenInviteModal={() => {
+            console.log('🔗 Opening invite modal from referral rewards sheet');
+            // Close current bottom sheet and navigate to referrals page
+            hideBottomSheet('referral-rewards-info');
+            navigation.navigate(screenTitle.REFERRALS);
+          }}
+          votedMerchants={votedMerchants as any}
+        />
+      ),
+      onClose: () => {
+        console.log('✅ Referral rewards bottom sheet closed');
+      },
+    });
+  };
+
   /* -------------------------------------------------------------------------- */
   /*                        Reward Trends Bottom Sheet                         */
   /* -------------------------------------------------------------------------- */
-  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
 
   const showRewardTrendsBottomSheet = () => {
     showBottomSheet({
@@ -890,18 +1216,10 @@ export default function Rewards() {
             }`}>
             <CyDView
               className='h-[110px] w-[110px]'
-              style={{ backgroundColor: tokenVideoBgColor }}>
-              {/* Loading placeholder - always visible with proper background */}
-              {!isTokenVideoLoaded && (
-                <CyDView
-                  style={[
-                    styles.rewardTokenVideo,
-                    { backgroundColor: tokenVideoBgColor },
-                  ]}
-                />
-              )}
-
-              {/* Video - only show when loaded */}
+              style={{
+                backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+              }}>
+              {/* Video component - No placeholder needed */}
               <Video
                 source={{
                   uri: isDarkMode
@@ -911,9 +1229,8 @@ export default function Rewards() {
                 style={[
                   styles.rewardTokenVideo,
                   {
-                    backgroundColor: tokenVideoBgColor,
+                    backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
                   },
-                  isTokenVideoLoaded ? styles.videoVisible : styles.videoHidden,
                 ]}
                 resizeMode='cover'
                 repeat={true}
@@ -922,10 +1239,6 @@ export default function Rewards() {
                 controls={false}
                 playInBackground={false}
                 playWhenInactive={false}
-                onLoad={() => {
-                  // Video loaded successfully, show it
-                  setIsTokenVideoLoaded(true);
-                }}
                 onError={error => {
                   console.log('Token video playback error:', error);
                 }}
@@ -935,7 +1248,7 @@ export default function Rewards() {
             <GradientText
               textElement={
                 <CyDText className='text-[44px] font-bold font-newyork'>
-                  {totalRewards}
+                  {DecimalHelper.round(totalRewards, 2).toString()}
                 </CyDText>
               }
               gradientColors={
@@ -976,7 +1289,7 @@ export default function Rewards() {
                     resizeMode='contain'
                   />
                   <CyDText className='text-n0 text-[20px] font-extrabold'>
-                    {totalUnclaimed}
+                    {DecimalHelper.round(totalUnclaimed, 2).toString()}
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-medium text-n0'>
@@ -987,7 +1300,7 @@ export default function Rewards() {
                 title={'Claim'}
                 onPress={() => {
                   navigation.navigate(screenTitle.CLAIM_REWARD, {
-                    rewardsData: rewardsData,
+                    rewardsData,
                   });
                 }}
                 type={ButtonType.PRIMARY}
@@ -1051,7 +1364,7 @@ export default function Rewards() {
                     className='text-p150'
                   />
                   <CyDText className='text-[24px] font-extrabold ml-[4px]'>
-                    {totalVotingPower}
+                    {DecimalHelper.round(totalVotingPower, 2).toString()}
                   </CyDText>
                   <CyDText className='text-[12px] text-n200 ml-[4px] mt-[6px]'>
                     veCypher
@@ -1079,7 +1392,9 @@ export default function Rewards() {
                     <CyDView className='h-[6px] w-[6px] bg-p150 rounded-full mr-[4px]' />
                     <CyDText className='text-[12px]'>Used</CyDText>
                   </CyDView>
-                  <CyDText className='text-[12px]'>{usedVotingPower}</CyDText>
+                  <CyDText className='text-[12px]'>
+                    {DecimalHelper.round(usedVotingPower, 2).toString()}
+                  </CyDText>
                 </CyDView>
 
                 <CyDView className='flex-row justify-between mt-[4px]'>
@@ -1087,7 +1402,9 @@ export default function Rewards() {
                     <CyDView className='h-[6px] w-[6px] bg-green200 rounded-full mr-[4px]' />
                     <CyDText className='text-[12px]'>Un-used</CyDText>
                   </CyDView>
-                  <CyDText className='text-[12px]'>{unusedVotingPower}</CyDText>
+                  <CyDText className='text-[12px]'>
+                    {DecimalHelper.round(unusedVotingPower, 2).toString()}
+                  </CyDText>
                 </CyDView>
 
                 <CyDTouchView
@@ -1185,9 +1502,7 @@ export default function Rewards() {
                         className={`flex-1 rounded-[24px] py-[8px] items-center justify-center ${
                           isDarkMode ? 'bg-base200' : 'bg-n40'
                         }`}
-                        onPress={() => {
-                          // TODO: Implement learn how referral works functionality
-                        }}>
+                        onPress={handleLearnReferralWorksPress}>
                         <CyDText className='text-[14px] font-medium'>
                           Learn how referral works
                         </CyDText>
@@ -1226,11 +1541,5 @@ const styles = StyleSheet.create({
   rewardTokenVideo: {
     width: '100%',
     height: '100%',
-  },
-  videoVisible: {
-    opacity: 1,
-  },
-  videoHidden: {
-    opacity: 0,
   },
 });
