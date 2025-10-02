@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Share } from 'react-native';
+import { Share, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDSafeAreaView,
@@ -26,6 +26,7 @@ import { HdWalletContext } from '../../core/util';
 import { get } from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { screenTitle } from '../../constants';
+import useAxios from '../../core/HttpRequest';
 
 interface EarningBreakdown {
   id: string;
@@ -52,6 +53,42 @@ interface SpendPerformance {
   tokensEarnedPer10Spend: string;
 }
 
+enum ClaimStatus {
+  PENDING = 'PENDING',
+  CLAIMED = 'CLAIMED',
+  FAILED = 'FAILED',
+}
+
+interface ClaimRewardResponse {
+  epochNumber: number;
+  isEligible: boolean;
+  claimInfo?: {
+    claimAddress?: string;
+    amount: string[];
+    proof: string[][];
+    claimStatus: ClaimStatus;
+    rootId: number[];
+  };
+  rewardInfo?: {
+    totalRewardsInToken: number;
+    baseSpendAmount: number;
+    boostedSpendSplit: Array<{
+      parentMerchantId: string;
+      canonicalName: string;
+      logoUrl?: string;
+      spend: number;
+    }>;
+    boostedSpend: Record<string, string>;
+    boostedReferralAmount: number;
+  };
+  totalRewardsEarned: {
+    baseSpend: number;
+    boostedSpend: number;
+    boostedReferral: number;
+    total: number;
+  };
+}
+
 /**
  * Bottom Sheet Content for Claim Rewards Options
  */
@@ -59,19 +96,32 @@ const ClaimRewardsBottomSheetContent = ({
   totalRewards,
   onClaimToWallet,
   onClose,
+  navigation,
 }: {
   totalRewards: number;
   onClaimToWallet: () => Promise<void>;
   onClose: () => void;
+  navigation: any;
 }) => {
   const [claiming, setClaiming] = useState(false);
 
   /**
    * Handle deposit and boost rewards
+   * Navigates to social media screen with claim lock URL
    */
   const handleDepositAndBoost = () => {
     console.log('Deposit and boost rewards pressed');
-    // TODO: Implement deposit and boost functionality
+    const redirectURI = 'https://app.cypherhq.io/#/?claimLock=true';
+    navigation.navigate(screenTitle.OPTIONS);
+    setTimeout(() => {
+      navigation.navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+        params: {
+          title: 'Deposit and Boost',
+          uri: redirectURI,
+        },
+      });
+    }, 250);
   };
 
   /**
@@ -153,6 +203,7 @@ const ClaimReward: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
   const { showModal, hideModal } = useGlobalModalContext();
+  const { getWithAuth } = useAxios();
 
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
@@ -164,51 +215,45 @@ const ClaimReward: React.FC = () => {
   const { claimRewards } = useRewardsDistributor();
   const hdWalletContext = useContext<any>(HdWalletContext);
 
+  // State for claim reward data from API
+  const [claimRewardData, setClaimRewardData] =
+    useState<ClaimRewardResponse | null>(null);
+  const [loadingClaimData, setLoadingClaimData] = useState<boolean>(true);
+
   // Get rewardsData from navigation params
   const rewardsData = (route.params as any)?.rewardsData;
 
-  // Calculate claim data from passed rewardsData
+  // Calculate claim data from API response
   const claimData = React.useMemo(() => {
-    const totalUnclaimed = rewardsData?.allTime?.totalUnclaimed?.total ?? '0';
-    const totalRewardsNum = parseFloat(
-      DecimalHelper.toDecimal(totalUnclaimed, 18).toString(),
-    );
+    if (!claimRewardData) {
+      return {
+        totalRewards: 0,
+        dateRange: 'From all reward cycles',
+        isEligible: false,
+      };
+    }
+
+    const totalRewards = claimRewardData.totalRewardsEarned?.total ?? 0;
 
     return {
-      totalRewards: totalRewardsNum,
-      dateRange: 'From all reward cycles',
+      totalRewards,
+      dateRange: `Epoch ${claimRewardData.epochNumber}`,
+      isEligible: claimRewardData.isEligible,
     };
-  }, [rewardsData]);
+  }, [claimRewardData]);
 
-  // Calculate earning breakdown from rewardsData
+  // Calculate earning breakdown from API response
   const earningBreakdown: EarningBreakdown[] = React.useMemo(() => {
-    const unclaimed = rewardsData?.allTime?.totalUnclaimed ?? {};
+    if (!claimRewardData) {
+      return [];
+    }
 
-    const bonus = parseFloat(
-      DecimalHelper.toDecimal(unclaimed.bribes ?? '0', 18).toString(),
-    );
-    const baseSpend = parseFloat(
-      DecimalHelper.toDecimal(unclaimed.baseSpend ?? '0', 18).toString(),
-    );
-    const boostedSpend = parseFloat(
-      DecimalHelper.toDecimal(unclaimed.boostedSpend ?? '0', 18).toString(),
-    );
-    const baseReferral = parseFloat(
-      DecimalHelper.toDecimal(unclaimed.baseReferral ?? '0', 18).toString(),
-    );
-    const boostedReferral = parseFloat(
-      DecimalHelper.toDecimal(unclaimed.boostedReferral ?? '0', 18).toString(),
-    );
+    const rewards = claimRewardData.totalRewardsEarned;
+    const baseSpend = rewards?.baseSpend ?? 0;
+    const boostedSpend = rewards?.boostedSpend ?? 0;
+    const boostedReferral = rewards?.boostedReferral ?? 0;
 
     return [
-      {
-        id: '1',
-        type: 'Bonus',
-        amount: `${bonus.toFixed(2)} $CYPR`,
-        color: 'green400',
-        bgColor: 'rgba(107,178,0,0.15)',
-        textColor: '#6BB200',
-      },
       {
         id: '2',
         type: 'From spends',
@@ -227,14 +272,52 @@ const ClaimReward: React.FC = () => {
       },
       {
         id: '4',
-        type: 'Referrals Rewards',
-        amount: `${(baseReferral + boostedReferral).toFixed(2)} $CYPR`,
+        type: 'Referral Rewards',
+        amount: `${boostedReferral.toFixed(2)} $CYPR`,
         color: 'blue-400',
         bgColor: 'rgba(7,73,255,0.15)',
         textColor: '#0749FF',
       },
     ];
-  }, [rewardsData]);
+  }, [claimRewardData]);
+
+  /**
+   * Fetches claim reward data from API
+   * This provides the rootId, proof, and amounts needed for claiming
+   */
+  const fetchClaimRewardData = async () => {
+    try {
+      setLoadingClaimData(true);
+      console.log('📡 Fetching claim reward data...');
+
+      const response = await getWithAuth(
+        '/v1/cypher-protocol/user/claim-reward',
+      );
+
+      console.log('📊 Claim reward response:', response);
+
+      if (!response.isError && response.data) {
+        setClaimRewardData(response.data);
+        console.log('✅ Claim reward data loaded successfully');
+      } else {
+        console.error('❌ Failed to fetch claim reward data:', response.error);
+        showToast('Failed to load claim reward data');
+      }
+    } catch (error) {
+      console.error('💥 Error fetching claim reward data:', error);
+      showToast('Error loading claim reward data');
+    } finally {
+      setLoadingClaimData(false);
+    }
+  };
+
+  /**
+   * Fetch claim reward data on component mount
+   */
+  useEffect(() => {
+    void fetchClaimRewardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Handles back navigation
@@ -291,23 +374,62 @@ const ClaimReward: React.FC = () => {
 
       console.log('📍 User address:', fromAddress);
 
-      // Test parameters for claiming rewards
-      const testParams = {
-        proofs: [[]] as Array<Array<`0x${string}`>>, // Empty proof array for testing
-        rootIds: [0n], // Root ID 0
-        values: [100000n], // Value 100000
+      // Check if claim data is available
+      if (!claimRewardData?.claimInfo) {
+        console.error('❌ No claim data available');
+        showModal('state', {
+          type: 'error',
+          title: t('CLAIM_DATA_NOT_AVAILABLE') ?? 'Claim Data Not Available',
+          description:
+            t('CLAIM_DATA_NOT_AVAILABLE_DESC') ??
+            'Unable to retrieve claim information. Please try again.',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+
+      // Check eligibility
+      if (!claimRewardData.isEligible) {
+        console.warn('⚠️ User is not eligible to claim rewards');
+        showModal('state', {
+          type: 'error',
+          title: t('NOT_ELIGIBLE') ?? 'Not Eligible',
+          description:
+            t('NOT_ELIGIBLE_DESC') ??
+            'You are not eligible to claim rewards at this time.',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+
+      const { claimInfo } = claimRewardData;
+
+      // Convert proof and amount from API format to contract format
+      const proofs = claimInfo.proof.map(proofArray =>
+        proofArray.map(p => p),
+      ) as Array<Array<`0x${string}`>>;
+
+      const rootIds = claimInfo.rootId.map(id => BigInt(id));
+      const values = claimInfo.amount.map(amt => BigInt(amt));
+
+      const claimParams = {
+        proofs,
+        rootIds,
+        values,
         fromAddress,
       };
 
-      console.log('📋 Test claim parameters:', {
-        proofs: testParams.proofs,
-        rootIds: testParams.rootIds.map(id => id.toString()),
-        values: testParams.values.map(v => v.toString()),
-        fromAddress: testParams.fromAddress,
+      console.log('📋 Claim parameters:', {
+        proofs: claimParams.proofs,
+        rootIds: claimParams.rootIds.map(id => id.toString()),
+        values: claimParams.values.map(v => v.toString()),
+        fromAddress: claimParams.fromAddress,
       });
 
       // Execute claim
-      const result = await claimRewards(testParams);
+      const result = await claimRewards(claimParams);
 
       console.log('🎉 Claim result:', result);
 
@@ -318,7 +440,7 @@ const ClaimReward: React.FC = () => {
 
         // Calculate the total claimed amount in CYPR tokens
         // Sum all values and convert from Wei to tokens (18 decimals)
-        const totalClaimedWei = testParams.values.reduce(
+        const totalClaimedWei = claimParams.values.reduce(
           (sum, val) => sum + val,
           0n,
         );
@@ -340,7 +462,8 @@ const ClaimReward: React.FC = () => {
           navigationParams,
         );
 
-        // TODO: Refresh rewards data from API after successful claim
+        // Refresh claim reward data after successful claim
+        void fetchClaimRewardData();
       } else {
         // Show error modal if claim failed or no transaction hash
         console.error('❌ Claim failed:', result.error);
@@ -393,6 +516,7 @@ const ClaimReward: React.FC = () => {
         <ClaimRewardsBottomSheetContent
           totalRewards={claimData.totalRewards}
           onClaimToWallet={handleClaimToWalletTransaction}
+          navigation={navigation}
           onClose={() => {
             console.log('Closing claim rewards bottom sheet...');
             hideBottomSheet(bottomSheetId);
@@ -439,83 +563,95 @@ const ClaimReward: React.FC = () => {
       <CyDScrollView
         className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}
         showsVerticalScrollIndicator={false}>
-        {/* Main Claim Section */}
-        <CyDView className='px-6 py-8 bg-base400 rounded-br-[36px] pt-[200px] -mt-[200px]'>
-          <CyDText className='text-n0 text-[44px] font-[300] leading-tight mb-4'>
-            Your rewards are{'\n'}available to claim
-          </CyDText>
-
-          {/* Token Amount */}
-          <CyDView className='flex-row items-center mb-3'>
-            <CyDImage
-              source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-              className='w-8 h-8 mr-3'
-              resizeMode='contain'
+        {loadingClaimData ? (
+          <CyDView className='flex-1 items-center justify-center py-20'>
+            <ActivityIndicator
+              size='large'
+              color={isDarkMode ? '#ffffff' : '#000000'}
             />
-            <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
-              {claimData.totalRewards.toLocaleString()}
+            <CyDText className='text-n200 text-[16px] mt-4'>
+              Loading claim data...
             </CyDText>
           </CyDView>
-
-          {/* Date Range */}
-          <CyDText className='text-n0 text-[14px] mb-11'>
-            {claimData.dateRange}
-          </CyDText>
-
-          {/* Action Buttons */}
-          <CyDView className='flex-row gap-x-3'>
-            <CyDTouchView
-              onPress={handleShare}
-              className='bg-base80 rounded-full px-[30px] py-[14px] items-center'>
-              <CyDText className='text-black text-[20px] font-medium'>
-                Share
+        ) : (
+          <>
+            {/* Main Claim Section */}
+            <CyDView className='px-6 py-8 bg-base400 rounded-br-[36px] pt-[200px] -mt-[200px]'>
+              <CyDText className='text-n0 text-[44px] font-[300] leading-tight mb-4'>
+                Your rewards are{'\n'}available to claim
               </CyDText>
-            </CyDTouchView>
 
-            <CyDView className='flex-1'>
-              <Button
-                title='Claim Rewards'
-                titleStyle='text-[20px] font-medium'
-                onPress={handleClaimRewards}
-                type={ButtonType.PRIMARY}
-                style='rounded-full'
-                paddingY={14}
-              />
-            </CyDView>
-          </CyDView>
-        </CyDView>
+              {/* Token Amount */}
+              <CyDView className='flex-row items-center mb-3'>
+                <CyDImage
+                  source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                  className='w-8 h-8 mr-3'
+                  resizeMode='contain'
+                />
+                <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
+                  {claimData.totalRewards.toLocaleString()}
+                </CyDText>
+              </CyDView>
 
-        {/* Content Container */}
-        <CyDView className='flex-1 px-4 gap-y-6'>
-          {/* Earning Breakdown */}
-          <CyDView
-            className={`p-4 mt-6 rounded-[12px] ${
-              isDarkMode ? 'bg-base40' : 'bg-n0'
-            }`}>
-            <CyDText className='text-[16px] font-medium mb-1'>
-              Earning breakdown
-            </CyDText>
+              {/* Date Range */}
+              <CyDText className='text-n0 text-[14px] mb-11'>
+                {claimData.dateRange}
+              </CyDText>
 
-            {earningBreakdown.map(item => (
-              <CyDView
-                key={item.id}
-                className='flex-row justify-between items-center mt-3'>
-                <CyDText className='text-[14px]'>{item.type}</CyDText>
-                <CyDView
-                  className={`px-1 py-[2px] rounded-[4px]`}
-                  style={{ backgroundColor: item.bgColor }}>
-                  <CyDText
-                    className={`text-[14px] font-medium`}
-                    style={{ color: item.textColor }}>
-                    {item.amount}
+              {/* Action Buttons */}
+              <CyDView className='flex-row gap-x-3'>
+                <CyDTouchView
+                  onPress={handleShare}
+                  className='bg-base80 rounded-full px-[30px] py-[14px] items-center'>
+                  <CyDText className='text-black text-[20px] font-medium'>
+                    Share
                   </CyDText>
+                </CyDTouchView>
+
+                <CyDView className='flex-1'>
+                  <Button
+                    title='Claim Rewards'
+                    titleStyle='text-[20px] font-medium'
+                    onPress={handleClaimRewards}
+                    type={ButtonType.PRIMARY}
+                    style='rounded-full'
+                    paddingY={14}
+                  />
                 </CyDView>
               </CyDView>
-            ))}
-          </CyDView>
+            </CyDView>
 
-          {/* Reward on Merchants */}
-          {/* <CyDView
+            {/* Content Container */}
+            <CyDView className='flex-1 px-4 gap-y-6'>
+              {/* Earning Breakdown */}
+              <CyDView
+                className={`p-4 mt-6 rounded-[12px] ${
+                  isDarkMode ? 'bg-base40' : 'bg-n0'
+                }`}>
+                <CyDText className='text-[16px] font-medium mb-1'>
+                  Earning breakdown
+                </CyDText>
+
+                {earningBreakdown.map(item => (
+                  <CyDView
+                    key={item.id}
+                    className='flex-row justify-between items-center mt-3'>
+                    <CyDText className='text-[14px]'>{item.type}</CyDText>
+                    <CyDView
+                      className={`px-1 py-[2px] rounded-[4px]`}
+                      style={{ backgroundColor: item.bgColor }}>
+                      <CyDText
+                        className={`text-[14px] font-medium`}
+                        style={{ color: item.textColor }}>
+                        {item.amount}
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                ))}
+              </CyDView>
+
+              {/* Reward on Merchants */}
+              {/* <CyDView
               className={`py-6 rounded-[12px] ${
                 isDarkMode ? 'bg-base40' : 'bg-n0'
               }`}>
@@ -523,8 +659,8 @@ const ClaimReward: React.FC = () => {
                 Reward on Merchants
               </CyDText> */}
 
-          {/* Total Earnings */}
-          {/* <CyDView
+              {/* Total Earnings */}
+              {/* <CyDView
                 className={`py-3 px-4 flex-row justify-between items-center ${
                   isDarkMode ? 'bg-base200' : 'bg-n20'
                 }`}>
@@ -541,8 +677,8 @@ const ClaimReward: React.FC = () => {
                 </CyDView>
               </CyDView> */}
 
-          {/* Merchant List */}
-          {/* {merchantRewards.map((merchant, index) => (
+              {/* Merchant List */}
+              {/* {merchantRewards.map((merchant, index) => (
                 <CyDView
                   key={merchant.id}
                   className={`px-6 border-base200 border-b py-4 ${
@@ -550,8 +686,8 @@ const ClaimReward: React.FC = () => {
                       ? 'border-b-0 pb-0'
                       : ''
                   } ${isDarkMode ? 'border-base200' : 'border-n40'}`}> */}
-          {/* Merchant Header */}
-          {/* <CyDView className='flex-row items-center mb-3'>
+              {/* Merchant Header */}
+              {/* <CyDView className='flex-row items-center mb-3'>
                     {renderMerchantAvatar(merchant.name)}
                     <CyDView className='flex-1'>
                       <CyDText className='text-[16px] font-medium mb-1'>
@@ -564,8 +700,8 @@ const ClaimReward: React.FC = () => {
                     </CyDView>
                   </CyDView> */}
 
-          {/* Merchant Details */}
-          {/* <CyDView>
+              {/* Merchant Details */}
+              {/* <CyDView>
                     <CyDView className='flex-row justify-between items-center mb-3'>
                       <CyDText className='text-n200 text-[14px]'>
                         Rewards earned
@@ -599,9 +735,9 @@ const ClaimReward: React.FC = () => {
               ))}
             </CyDView> */}
 
-          {/* Spend Performance */}
+              {/* Spend Performance */}
 
-          {/* <CyDView
+              {/* <CyDView
               className={`py-4 rounded-[12px] ${
                 isDarkMode ? 'bg-base40' : 'bg-n0'
               }`}>
@@ -609,8 +745,8 @@ const ClaimReward: React.FC = () => {
                 Spend Performance
               </CyDText> */}
 
-          {/* Total Earnings */}
-          {/* <CyDView
+              {/* Total Earnings */}
+              {/* <CyDView
                 className={`bg-base200 py-3 px-4 flex-row justify-between items-center mb-3 ${
                   isDarkMode ? 'bg-base200' : 'bg-n20'
                 }`}>
@@ -628,7 +764,7 @@ const ClaimReward: React.FC = () => {
                 </CyDText>
               </CyDView> */}
 
-          {/* <CyDView className='flex-row justify-between items-center mb-3 px-4'>
+              {/* <CyDView className='flex-row justify-between items-center mb-3 px-4'>
                 <CyDText className='text-n200 text-[14px]'>
                   Avg. Spend/ Transaction
                 </CyDText>
@@ -653,7 +789,9 @@ const ClaimReward: React.FC = () => {
                 </CyDView>
               </CyDView>
             </CyDView> */}
-        </CyDView>
+            </CyDView>
+          </>
+        )}
       </CyDScrollView>
 
       {/* Bottom Safe Area with n0 background */}
