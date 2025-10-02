@@ -1068,8 +1068,22 @@ export default function Rewards() {
   const handleKnowMorePress = () => {
     showRewardTrendsBottomSheet();
   };
+  /**
+   * Handle deposit token button press
+   * Navigates to social media screen with locks URL
+   */
   const handleDepositTokenPress = () => {
-    // TODO: Implement logic / navigation
+    const redirectURI = 'https://app.cypherhq.io/#/?locks=true';
+    (navigation as any).navigate(screenTitle.OPTIONS);
+    setTimeout(() => {
+      (navigation as any).navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+        params: {
+          title: 'Deposit Tokens',
+          uri: redirectURI,
+        },
+      });
+    }, 250);
   };
 
   /**

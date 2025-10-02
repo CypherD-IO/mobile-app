@@ -8,7 +8,7 @@ import {
 } from '../../styles/tailwindComponents';
 import MerchantLogo from './MerchantLogo';
 import { BlurView } from '@react-native-community/blur';
-import { StyleSheet, ActivityIndicator } from 'react-native';
+import { StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { useColorScheme } from 'nativewind';
@@ -16,11 +16,14 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import useAxios from '../../core/HttpRequest';
 import { useGlobalBottomSheet } from '../v2/GlobalBottomSheetProvider';
 import { PieChart } from 'react-native-svg-charts';
+import { useNavigation } from '@react-navigation/native';
+import { screenTitle } from '../../constants';
 
 interface MerchantRewardDetailContentProps {
   merchantData?: MerchantDetailData;
   onKnowMorePress?: () => void;
   onRemoveBoosterPress?: () => void;
+  navigation?: any;
 }
 
 interface MerchantDetailData {
@@ -156,6 +159,7 @@ const MerchantRewardDetailContent: React.FC<
   MerchantRewardDetailContentProps
 > = ({
   merchantData,
+  navigation: navigationProp,
   onKnowMorePress = () => {
     console.log('Know more pressed');
   },
@@ -167,6 +171,8 @@ const MerchantRewardDetailContent: React.FC<
   const { colorScheme } = useColorScheme();
   const { getWithAuth } = useAxios();
   const { showBottomSheet } = useGlobalBottomSheet();
+  const navigationHook = useNavigation();
+  const navigation = navigationProp ?? navigationHook;
 
   console.log('**************** merchantData', merchantData?.candidateId);
 
@@ -474,13 +480,25 @@ const MerchantRewardDetailContent: React.FC<
 
   /**
    * Handles boost this merchant button press
+   * Navigates to social media screen with candidate ID parameter
    */
   const handleBoostMerchant = () => {
     console.log(
       'Boost merchant pressed for:',
       currentMerchantData.brand ?? currentMerchantData.canonicalName,
     );
-    // TODO: Implement boost merchant functionality
+    const candidateId = currentMerchantData.candidateId;
+    const redirectURI = `https://app.cypherhq.io/#/?candidateId=${candidateId}`;
+    navigation.navigate(screenTitle.OPTIONS);
+    setTimeout(() => {
+      navigation.navigate(screenTitle.OPTIONS, {
+        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+        params: {
+          title: 'Boost Merchant',
+          uri: redirectURI,
+        },
+      });
+    }, 250);
   };
 
   const { displayName, fontSize } = processMerchantName(
