@@ -633,6 +633,7 @@ export default function CypherCardScreen() {
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
+      topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
       backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
       content: (
         <MerchantRewardDetailContent

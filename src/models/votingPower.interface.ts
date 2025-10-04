@@ -113,3 +113,4 @@ export interface IEnrichedVotingPowerData {
   freeVotingPower: string;
 }
 
+

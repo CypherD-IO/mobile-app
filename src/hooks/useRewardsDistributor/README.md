@@ -285,3 +285,4 @@ For issues or questions:
 2. Verify contract address and chain ID are correct
 3. Ensure you have valid Merkle proofs
 4. Check Sentry for captured exceptions
+
