@@ -1,60 +1,56 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CyDImage,
 } from '../../styles/tailwindComponents';
+import MerchantLogo from './MerchantLogo';
+// Removed AppImages import since merchant icons will be fetched from API
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useAxios from '../../core/HttpRequest';
 import { ActivityIndicator } from 'react-native';
-import {
-  useFocusEffect,
-  useNavigation,
-  NavigationProp,
-} from '@react-navigation/native';
-import { screenTitle } from '../../constants';
-import { capitalize, startCase } from 'lodash';
-import { RemoteLogo } from '../../core/util';
-import { logAnalyticsToFirebase } from '../../core/analytics';
+import { useFocusEffect } from '@react-navigation/native';
+import GradientText from '../gradientText';
 
 interface MerchantSpendRewardWidgetProps {
   onViewAllPress?: () => void;
-  onMerchantPress?: (merchant: MerchantData) => void;
+  onMerchantPress?: (merchant: any) => void;
+  isPremium?: boolean; // Indicates if user has Pro plan
 }
 
 interface MerchantData {
-  id: string;
-  name: string;
-  logo?: string;
-  rewardMultiplier: number;
-  totalAllocated: number;
-  totalSpend: number;
-}
-
-interface SpendLeaderboardEntry {
-  parentMerchantId?: string;
-  candidateId?: string;
-  brand?: string;
-  canonicalName?: string;
+  groupId: string;
+  candidateId: string;
+  brand: string;
+  canonicalName: string;
+  category: string;
+  subcategory: string;
   logoUrl?: string;
-  rewardMultiplier?: number;
-  tokenAllocation?: number;
-  currentEpochSpend?: number;
+  historicalMultiplier: {
+    current: number;
+    max: number;
+  };
+  votePercentage: number;
+  voteRank: number;
+  isActive: boolean;
+  isVerified: boolean;
+  userVoteData: {
+    hasVoted: boolean;
+  };
 }
 
 const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   onViewAllPress,
   onMerchantPress,
+  isPremium,
 }) => {
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
+  // isPremium = true; // Remove this test line
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
-  const { getWithAuth } = useAxios();
-  const navigation =
-    useNavigation<NavigationProp<Record<string, object | undefined>>>();
+  const { getWithAuth, getWithoutAuth } = useAxios();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [merchantData, setMerchantData] = useState<{
@@ -63,30 +59,39 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     merchants: [],
   });
 
+  // Base reward string (e.g., "1X Rewards" or "2X Rewards")
+  const [epochData, setEpochData] = useState<any>(null);
+
   /**
-   * Fetches top merchants by reward multiplier using spend leaderboard API.
+   * Fetches top merchants by reward multiplier.
+   * NOTE: Replace the endpoint below with the actual backend endpoint once finalised.
    */
-  const fetchTopMerchants = useCallback(async (): Promise<void> => {
+  const fetchTopMerchants = useCallback(async () => {
     try {
       setLoading(true);
-      const resp = await getWithAuth('/v1/testnet-protocol/spend-leaderboard');
+      console.log('~~~ fetching top merchants and epoch details');
+      // Adjust the endpoint & params as per backend specification
+      const resp = await getWithAuth(
+        '/v1/cypher-protocol/merchants?sortBy=multiplier&limit=6',
+      );
+
+      console.log('~~~ resp merchants', resp);
+      console.log('~~~ resp merchants list : ', resp.data.items);
+
       const { isError, data } = resp;
 
       if (!isError && data) {
-        const items: SpendLeaderboardEntry[] =
-          (data as SpendLeaderboardEntry[]) ?? [];
-        const processedMerchants: MerchantData[] = items
-          .slice(0, 6)
-          .map(entry => ({
-            id: (entry.parentMerchantId ?? entry.candidateId ?? '').toString(),
-            name: startCase(
-              capitalize(entry.brand ?? entry.canonicalName ?? ''),
-            ),
-            logo: entry.logoUrl,
-            rewardMultiplier: Number(entry.rewardMultiplier ?? 0),
-            totalAllocated: Math.round(entry.tokenAllocation ?? 0),
-            totalSpend: Math.round(entry.currentEpochSpend ?? 0),
-          }));
+        // Expected response shape (update if backend differs):
+        // {
+        //   baseReward: string;
+        //   baseRewardDescription: string;
+        //   merchants: MerchantData[];
+        // }
+
+        const processedMerchants: MerchantData[] = (data?.items ?? []).slice(
+          0,
+          6,
+        );
 
         setMerchantData(prev => ({
           ...prev,
@@ -100,117 +105,87 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // stable reference – avoids re-creating on every render
+
+  // Fetch epoch details once (and if premium flag changes)
+  useEffect(() => {
+    const fetchEpoch = async () => {
+      try {
+        const epochResp = await getWithoutAuth('/v1/cypher-protocol/epoch');
+        console.log(
+          '~~~ epochResp : ',
+          epochResp.data.parameters.tierMultipliers,
+        );
+        setEpochData(epochResp.data);
+      } catch (err) {
+        console.warn('Failed to fetch epoch details', err);
+      }
+    };
+
+    void fetchEpoch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPremium]);
 
   // Fetch every time the screen gains focus (also runs on first mount)
   useFocusEffect(
     useCallback(() => {
       void fetchTopMerchants();
-    }, []),
+    }, [fetchTopMerchants]),
   );
 
-  const handleMerchantPress = (merchant: MerchantData): void => {
-    // Analytics: merchant clicked
-    void logAnalyticsToFirebase('merchant_rewards_merchant_click', {
-      id: merchant.id,
-      name: merchant.name,
-      multiplier: merchant.rewardMultiplier,
-      totalAllocated: merchant.totalAllocated,
-      totalSpend: merchant.totalSpend,
-    });
-    const redirectURI = 'https://app.cypherhq.io/#/rewards/leaderboard';
-    navigation.navigate(screenTitle.OPTIONS);
-    setTimeout(() => {
-      navigation.navigate(screenTitle.OPTIONS, {
-        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-        params: {
-          title: 'Rewards Leaderboard',
-          uri: redirectURI,
-        },
-      });
-    }, 250);
+  const handleMerchantPress = (merchant: MerchantData) => {
+    console.log('Merchant pressed:', merchant);
     onMerchantPress?.(merchant);
   };
 
-  const handleViewAllPress = (): void => {
-    // Analytics: view all clicked
-    void logAnalyticsToFirebase('merchant_rewards_view_all_click', {
-      displayedCount: merchantData.merchants?.length ?? 0,
-    });
-    const redirectURI = 'https://app.cypherhq.io/#/rewards/leaderboard';
-    navigation.navigate(screenTitle.OPTIONS);
-    setTimeout(() => {
-      navigation.navigate(screenTitle.OPTIONS, {
-        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-        params: {
-          title: 'Rewards Leaderboard',
-          uri: redirectURI,
-        },
-      });
-    }, 250);
+  const handleViewAllPress = () => {
+    console.log('View all merchant bonus pressed');
     onViewAllPress?.();
   };
 
-  const processMerchantName = (
-    name: string,
-  ): { displayName: string; fontSize: number } => {
+  // kept for potential future text-only usage: getMerchantLogoProps handles this now
+  const processMerchantName = (name: string) => {
     const firstWord = name.split(' ')[0];
     const displayName =
       firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
-
-    // Calculate font size based on name length
     let fontSize = 20;
-    if (displayName.length >= 8) {
-      fontSize = 14;
-    } else if (displayName.length > 5) {
-      fontSize = 16;
-    }
-
+    if (displayName.length >= 8) fontSize = 14;
+    else if (displayName.length > 5) fontSize = 16;
     return { displayName, fontSize };
   };
 
-  const renderMerchantCard = (
-    merchant: MerchantData,
-    index: number,
-  ): JSX.Element => {
+  const renderMerchantCard = (merchant: MerchantData, index: number) => {
+    // Check if user has voted for this merchant
+    const hasUserVoted = merchant.userVoteData?.hasVoted || false;
+    console.log('hasUserVoted : ', hasUserVoted);
+
     return (
       <CyDTouchView
-        key={merchant.id || index.toString()}
+        // key={merchant.candidateId + index.toString()}
+        key={merchant.candidateId}
         className='items-center mb-6 w-[100px]'
         onPress={() => handleMerchantPress(merchant)}>
         {/* Merchant Icon with Multiplier Badge */}
         <CyDView className='relative mb-2'>
-          <CyDView
-            className={`w-16 h-16 bg-white p-1 rounded-full items-center justify-center ${
-              isDarkMode ? '' : 'border-[1px] border-n40'
-            }`}>
-            {/* Merchant logo */}
-            {merchant.logo ? (
-              typeof merchant.logo === 'string' ? (
-                <RemoteLogo
-                  uri={merchant.logo}
-                  className='w-full h-full rounded-full'
-                  resizeMode='cover'
-                />
-              ) : (
-                <CyDImage
-                  source={merchant.logo}
-                  className='w-full h-full rounded-full'
-                  resizeMode='cover'
-                />
-              )
-            ) : (
-              <CyDText className='text-[12px] font-bold text-gray-800'>
-                {processMerchantName(merchant.name).displayName}
-              </CyDText>
-            )}
-          </CyDView>
+          <MerchantLogo
+            merchant={{
+              brand: merchant.brand ?? merchant.canonicalName,
+              canonicalName: merchant.canonicalName,
+              logoUrl: merchant.logoUrl,
+            }}
+            size={64}
+            hasUserVoted={hasUserVoted}
+            showBorder={!isDarkMode}
+          />
 
           {/* Multiplier Badge */}
           <CyDView
-            className={`absolute -top-3 rounded-full px-2 py-1 self-center bg-green400`}>
+            className={`absolute -top-3 rounded-full px-2 py-1 self-center ${
+              hasUserVoted ? 'bg-orange500' : 'bg-green400'
+            }`}>
             <CyDText className='text-white text-[12px] font-bold'>
-              {Number(merchant.rewardMultiplier ?? 0).toFixed(1)}X
+              {merchant.historicalMultiplier.current.toFixed(1)}X
             </CyDText>
           </CyDView>
         </CyDView>
@@ -220,26 +195,70 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
           className={`text-[14px] font-medium`}
           numberOfLines={1}
           ellipsizeMode='tail'>
-          {merchant.name}
+          {merchant.brand ?? merchant.canonicalName}
         </CyDText>
       </CyDTouchView>
     );
   };
 
   return (
-    <CyDView className='mx-4 rounded-[12px] py-4 mt-4 bg-n0 border border-n40'>
+    <CyDView
+      className={`mx-4 rounded-[12px] py-4 ${
+        isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
+      }`}>
       {/* Header Section */}
-      <CyDView className='flex-row justify-between items-center mb-4 px-4'>
+      <CyDView className='flex-row justify-between items-center  mb-4 px-4'>
         <CyDView className='flex-1'>
-          <CyDText className='text-[14px] font-medium tracking-[2px]'>
-            SPEND REWARDS
-          </CyDText>
-          <CyDText className='text-n200 text-[10px] font-medium'>
-            Earn rewards every time you spend with your Cypher card at the
-            merchants below. Your rewards are earned in testnet $CYPR and can be
-            claimed in USDC at the end of each 2-week Reward Cycle.
+          {isPremium && (
+            <GradientText
+              textElement={
+                <CyDText className='text-[14px] font-extrabold'>
+                  Premium
+                </CyDText>
+              }
+              gradientColors={[
+                '#FA9703',
+                '#ECD821',
+                '#F7510A',
+                '#ECD821',
+                '#F48F0F',
+                '#F7510A',
+                '#F89408',
+              ]}
+            />
+          )}
+          <CyDText className='text-n200 text-[14px]'>REWARDS</CyDText>
+          <CyDText className='text-n200 text-[12px] font-medium'>
+            On all Transaction
           </CyDText>
         </CyDView>
+
+        {isPremium ? (
+          <CyDView className='flex flex-col items-end'>
+            {/* Premium gradient multiplier */}
+            <GradientText
+              textElement={
+                <CyDText className='text-[20px] font-bold'>
+                  {epochData?.parameters?.tierMultipliers?.pro}X Rewards
+                </CyDText>
+              }
+              gradientColors={[
+                '#F89408',
+                '#FA9703',
+                '#ECD821',
+                '#FA9703',
+                '#F6510A',
+              ]}
+            />
+            <CyDText className='text-[14px] line-through text-n200'>
+              {epochData?.parameters?.tierMultipliers?.basic}X Rewards
+            </CyDText>
+          </CyDView>
+        ) : (
+          <CyDText className='text-[20px]'>
+            {epochData?.parameters?.tierMultipliers?.basic}X Rewards
+          </CyDText>
+        )}
       </CyDView>
 
       <CyDView className='w-full h-[1px] bg-n40 mb-4' />
@@ -247,7 +266,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
       {/* Additional Rewards Section */}
       <CyDView className='px-4 mb-[20px]'>
         <CyDText className='text-n200 text-[14px] font-medium text-center'>
-          Merchant spend rewards
+          Additional rewards on merchants
         </CyDText>
       </CyDView>
 
@@ -282,7 +301,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
           }`}
           onPress={handleViewAllPress}>
           <CyDText className='text-[16px] font-medium'>
-            View all Merchants
+            View all Merchant bonus
           </CyDText>
         </CyDTouchView>
       </CyDView>

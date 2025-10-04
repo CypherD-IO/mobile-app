@@ -984,3 +984,12 @@ export const OCCUPATION_LABEL_TO_CODE_MAP: Record<string, string> = {
   Retired: 'RETIRED',
   'Other / Not Listed': 'OTHERXX',
 };
+
+export const ASYNC_STORAGE_KEYS_TO_PRESERVE: string[] = [
+  /*
+   * ARCH_HOST stores the base URL for the backend (Arch) service and must persist
+   * between app sessions—even when the user opts to clear all local data.
+   * Add additional keys here in future if they should be retained across resets.
+   */
+  'ARCH_HOST',
+];

@@ -713,7 +713,7 @@ const resources = {
       SWAP_TOKENS: 'Swap Tokens',
       SWAP: 'SWAP',
       SWAP_TITLE: 'Swap',
-      SWAP_SHORTCUTS_SUBTITLE: 'Swap tokens on same chain',
+      SWAP_SHORTCUTS_SUBTITLE: 'Swap tokens across chains',
       SWAP_SUCCESS: 'Swap Success',
       SWAP_SUCCESS_DESCRIPTION: 'Your tokens have been successfully swapped',
       SWAP_ERROR_DESCRIPTION: 'Swap Error. Please try again later',
@@ -1279,10 +1279,64 @@ const resources = {
       ENTER_REFERRAL_CODE: 'Enter Referral Code',
       INVALID_REFERRAL_CODE: 'Invalid Referral Code',
       INVALID_REFERRAL_CODE_DESCRIPTION: 'Please enter a valid referral code',
+      REFERRAL_CODE_APPLIED: 'Referral Code Applied',
+      YOUR_REFERRAL_CODE_HAS_BEEN_APPLIED:
+        'Your referral code has been applied successfully',
+      COUPON_REMOVED: 'Coupon Removed',
+      YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED:
+        'Your referral code has been removed successfully',
+      QUESTIONS: 'Questions',
+      HOW_CAN_WE_HELP_YOU: 'How can we help you?',
       REFERRAL_CODE_APPLIED_SUCCESSFULLY: 'Referral Code Applied Successfully',
       REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
         "You've earned 50 reward points for applying the referral code. Continue to application.",
       ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
+      // Referral Rewards Bottom Sheet
+      INVITE_FRIENDS_EARN_REWARDS: 'Invite friends, earn rewards',
+      REFERRAL_REWARDS_DESCRIPTION:
+        'Cypher Referral Rewards offers two reward layers: a signup reward for every sign-ups and a merchant reward for spending at your boosted merchants.',
+      REFERRAL_WORKS_INFO:
+        'Refer friends to earn rewards on their signups and spends!',
+      KNOW_MORE_REFERRAL_WORKS: 'know more referral works',
+      SIGNUP_REWARD_TEXT: "You'll earn $CYPR every time a friend signs up!",
+      MERCHANT_SPEND_REWARD_TEXT:
+        'You earn $CYPR when invited friends spend at their boosted merchants',
+      NO_OF_REFERRAL: 'No. of referral',
+      EARNING_FOR_SPEND_BY_FRIEND: 'Earning for spend by your friend',
+      NO_VOTED_MERCHANTS: 'No voted merchants found',
+      REWARD_EARNINGS_DISCLAIMER:
+        'Reward earnings applicable per referral, per spend on every boosted merchant',
+      ESTIMATES_DISCLAIMER:
+        '** The numbers shown are estimates based on the current market conditions and are subject to change.',
+      OTHER_INVITE_OPTIONS: 'Other invite options',
+      NO_INVITE_CODE_AVAILABLE: 'No invite code available',
+      INVITE_CODE_COPIED: 'Invite code copied!',
+      FAILED_TO_COPY_CODE: 'Failed to copy invite code',
+      // Booster Info Bottom Sheet
+      WHAT_IS_BOOSTER_TITLE: 'What is Booster?',
+      BOOSTER_VECYPR_EXPLANATION:
+        'veCYPR is your voting power token earned by locking $CYPR tokens. Use it to boost merchants and earn higher rewards. veCYPR decays over time as locks approach expiration.',
+      TIP: 'Tip',
+      BOOSTER_TIP: 'Use all your veCYPR to maximize merchant boost benefits.',
+      HOW_TO_GET_VECYPR: 'How to Get veCYPR',
+      HOW_TO_GET_VECYPR_DESC:
+        'Lock your CYPR tokens to receive veCYPR. The longer you lock, the more veCYPR you receive.',
+      BOOST_BENEFITS: 'Boost Benefits',
+      BOOST_BENEFITS_DESC:
+        'Boosting merchants increases your reward multiplier, allowing you to earn more $CYPR tokens on every transaction.',
+      UNDERSTANDING_DECAY: 'Understanding Decay',
+      UNDERSTANDING_DECAY_DESC:
+        'Your veCYPR balance gradually decreases as your lock period nears its end. Extend your lock or add more CYPR to maintain your voting power.',
+      // Claim Rewards Errors and Messages
+      WALLET_NOT_FOUND: 'Wallet Not Found',
+      CONNECT_WALLET_FIRST: 'Please connect your wallet to claim rewards',
+      CLAIM_FAILED: 'Claim Failed',
+      CLAIM_FAILED_DESC: 'Failed to claim rewards. Please try again later.',
+      CLAIM_ERROR: 'Claim Error',
+      CLAIM_ERROR_DESC:
+        'An error occurred while claiming rewards. Please try again.',
+      REWARDS_CLAIMED_SUCCESS: 'Rewards Claimed Successfully',
+      CLAIM_TRANSACTION_CONFIRMED: 'Your claim transaction has been confirmed',
       WITHDRAW_CRYPTO: 'Withdraw Crypto',
       AMOUNT_TO_BE_WITHDRAWN: 'Amount to be withdrawn',
       WITHDRAW_ERROR: 'Withdrawal Error',
@@ -1674,7 +1728,7 @@ const resources = {
       REFERRAL_CODE_REQUIRED: 'Referral code is required',
       LOAD_YOUR_CARD: 'Load your card',
       LOAD_YOUR_CARD_DESCRIPTION:
-        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
         'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
       NEXT: 'Next',
@@ -1835,6 +1889,16 @@ const resources = {
         'Access it in the wallet that you have connected from.',
       CARD_TRANSACTIONS: 'Card Transactions',
       DETAILS: 'Details',
+      CARDS: 'Cards',
+      GET_YOUR_FIRST_TOKEN: 'Get your first token',
+      FUND_WALLET_DESCRIPTION:
+        'Fund your wallet by buying crypto or transferring from another wallet',
+      GET_TOKEN: 'Get Token',
+      BUY_CRYPTO: 'Buy Crypto',
+      BUY_CRYPTO_DESCRIPTION: 'Purchase with a debit card or bank account',
+      RECEIVE_CRYPTO: 'Receive Crypto',
+      RECEIVE_CRYPTO_DESCRIPTION:
+        'Receive crypto by scanning a QR code or sharing your address',
     },
   },
 };

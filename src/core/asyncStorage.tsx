@@ -8,6 +8,7 @@ import { DefiData, DefiResponse } from '../models/defi.interface';
 import { CYPHERD_ROOT_DATA } from './util';
 import { WalletHoldings } from './portfolio';
 import { ConnectionTypes } from '../constants/enum';
+import { ASYNC_STORAGE_KEYS_TO_PRESERVE } from '../constants/data';
 
 export const storePortfolioData = async (
   value: WalletHoldings,
@@ -286,17 +287,32 @@ export const getCardRevealReuseToken = async (cardId: string) => {
   }
 };
 
-export const clearAllData = async (clearContacts = false) => {
+/**
+ * Remove all keys from AsyncStorage except the ones that are explicitly marked for preservation
+ * in {@link ASYNC_STORAGE_KEYS_TO_PRESERVE}.  Optionally keep contact-book data as well.
+ *
+ * @param clearContacts – when set to true contact-book entries will also be deleted.
+ */
+export const clearAllData = async () => {
   try {
     const allKeys = await AsyncStorage.getAllKeys();
-    if (!clearContacts) {
-      const newAsyncStorageKeys = allKeys.filter(obj => {
-        return !/^CONTACT_BOOK/i.test(obj);
-      });
-      await AsyncStorage.multiRemove(newAsyncStorageKeys);
-    } else {
-      await AsyncStorage.multiRemove(allKeys);
-    }
+
+    const keysToRemove = allKeys.filter(key => {
+      // 1. Preserve critical keys that the app relies on across sessions
+      if (ASYNC_STORAGE_KEYS_TO_PRESERVE.includes(key)) {
+        return false;
+      }
+
+      // 2. Preserve the user's contact-book data (always)
+      if (/^CONTACT_BOOK/i.test(key)) {
+        return false;
+      }
+
+      // 3. All other keys can be safely purged
+      return true;
+    });
+
+    await AsyncStorage.multiRemove(keysToRemove);
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -634,6 +650,37 @@ export const getOverchargeDccInfoModalShown = async () => {
   try {
     const id = await AsyncStorage.getItem('OVERCHARGE_DCC_INFO_MODAL_SHOWN');
     return id;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setFirstLaunchAfterWalletCreation = async (value: boolean) => {
+  try {
+    await AsyncStorage.setItem(
+      'FIRST_LAUNCH_AFTER_WALLET_CREATION',
+      JSON.stringify(value),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getFirstLaunchAfterWalletCreation = async (): Promise<boolean> => {
+  try {
+    const storedValue = await AsyncStorage.getItem(
+      'FIRST_LAUNCH_AFTER_WALLET_CREATION',
+    );
+    return storedValue != null ? JSON.parse(storedValue) : false;
+  } catch (error) {
+    Sentry.captureException(error);
+    return false;
+  }
+};
+
+export const removeFirstLaunchAfterWalletCreation = async () => {
+  try {
+    await AsyncStorage.removeItem('FIRST_LAUNCH_AFTER_WALLET_CREATION');
   } catch (error) {
     Sentry.captureException(error);
   }
