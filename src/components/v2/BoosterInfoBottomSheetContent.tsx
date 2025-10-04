@@ -136,3 +136,4 @@ const BoosterInfoBottomSheetContent: React.FC = () => {
 };
 
 export default BoosterInfoBottomSheetContent;
+

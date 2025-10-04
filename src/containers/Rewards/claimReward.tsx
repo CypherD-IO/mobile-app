@@ -301,7 +301,7 @@ const ClaimReward: React.FC = () => {
         console.log('✅ Claim reward data loaded successfully');
       } else {
         console.error('❌ Failed to fetch claim reward data:', response.error);
-        showToast('Failed to load claim reward data');
+        showToast('Failed to load claim reward data', 'error');
       }
     } catch (error) {
       console.error('💥 Error fetching claim reward data:', error);

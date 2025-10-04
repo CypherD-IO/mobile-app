@@ -425,10 +425,6 @@ const MerchantRewardDetailContent: React.FC<
           size='large'
           color={isDarkMode ? '#ffffff' : '#000000'}
         />
-        <CyDText
-          className={`mt-4 text-[16px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
-          Loading merchant details...
-        </CyDText>
       </CyDView>
     );
   }

@@ -198,3 +198,4 @@ const ClaimRewardsExample = () => {
  */
 
 export default ClaimRewardsExample;
+
