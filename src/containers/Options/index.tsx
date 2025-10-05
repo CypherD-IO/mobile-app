@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import {
   CyDIcons,
   CyDImage,
@@ -45,8 +45,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import { isAndroid } from '../../misc/checkers';
-import { Linking } from 'react-native';
+import { Linking, Alert } from 'react-native';
 import * as Sentry from '@sentry/react-native';
+import { getDeveloperMode, setDeveloperMode } from '../../core/asyncStorage';
 
 const RenderOptions = ({
   isLoading,
@@ -136,6 +137,11 @@ export default function OptionsHub() {
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [updateModal, setUpdateModal] = useState<boolean>(false);
+
+  // Developer mode toggle state
+  const [versionClickCount, setVersionClickCount] = useState<number>(0);
+  const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // const premiumBenefits = [];
 
@@ -437,6 +443,91 @@ export default function OptionsHub() {
       void refreshProfile();
     }
   }, [isFocused]);
+
+  /**
+   * Load developer mode state on component mount
+   * Checks AsyncStorage for the current developer mode setting
+   */
+  useEffect(() => {
+    const loadDeveloperMode = async () => {
+      try {
+        const devMode = await getDeveloperMode();
+        setIsDeveloperMode(devMode);
+      } catch (error) {
+        // Log error to Sentry for debugging
+        Sentry.captureException(error);
+        console.error('Failed to load developer mode:', error);
+      }
+    };
+    void loadDeveloperMode();
+  }, []);
+
+  /**
+   * Handle version text click to toggle developer mode
+   * Requires 5 consecutive clicks within a time window to toggle
+   * Resets counter after 2 seconds of inactivity
+   */
+  const handleVersionClick = async (): Promise<void> => {
+    try {
+      // Clear any existing timeout
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+
+      const newCount = versionClickCount + 1;
+      setVersionClickCount(newCount);
+
+      // Check if we've reached the required number of clicks
+      if (newCount >= 5) {
+        const newDeveloperMode = !isDeveloperMode;
+
+        // Update AsyncStorage with new developer mode state
+        await setDeveloperMode(newDeveloperMode);
+        setIsDeveloperMode(newDeveloperMode);
+
+        // Reset click counter
+        setVersionClickCount(0);
+
+        // Show alert to user indicating the mode change
+        Alert.alert(
+          newDeveloperMode
+            ? 'Developer Mode Enabled'
+            : 'Developer Mode Disabled',
+          newDeveloperMode
+            ? 'Developer options are now available in Advanced Settings.'
+            : 'Developer options have been disabled.',
+          [{ text: 'OK' }],
+        );
+      } else {
+        // Set a timeout to reset the click counter after 2 seconds
+        // This ensures clicks must be consecutive within a reasonable timeframe
+        clickTimeoutRef.current = setTimeout(() => {
+          setVersionClickCount(0);
+        }, 2000);
+      }
+    } catch (error) {
+      // Handle any errors during toggle operation
+      Sentry.captureException(error);
+      console.error('Error toggling developer mode:', error);
+      Alert.alert(
+        'Error',
+        'Failed to toggle developer mode. Please try again.',
+      );
+      setVersionClickCount(0);
+    }
+  };
+
+  /**
+   * Cleanup timeout on component unmount to prevent memory leaks
+   */
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <CyDSafeAreaView className='bg-base20' edges={['top', 'bottom']}>
       <CyDScrollView
@@ -745,9 +836,15 @@ export default function OptionsHub() {
           <CyDView className='mt-[24px] pt-[24px]'>
             <CyDView className='flex flex-row gap-x-[12px] items-center'>
               <CyDView className='flex-1 bg-base200 h-[0.5px]' />
-              <CyDText className='text-[10px] font-regular text-base300'>
-                {t<string>('VERSION')} {DeviceInfo.getVersion()}
-              </CyDText>
+              <CyDTouchView
+                onPress={() => {
+                  void handleVersionClick();
+                }}>
+                <CyDText className='text-[10px] font-regular text-base300'>
+                  {t<string>('VERSION')} {DeviceInfo.getVersion()}
+                  {isDeveloperMode && ' 🔧'}
+                </CyDText>
+              </CyDTouchView>
               <CyDView className='flex-1 bg-base200 h-[0.5px]' />
             </CyDView>
             <CyDView className='flex flex-row items-center justify-center gap-x-[24px] mt-[24px]'>
