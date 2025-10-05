@@ -49,6 +49,8 @@ import ReferralRewardsBottomSheet from '../../components/v2/ReferralRewardsBotto
 import BoosterInfoBottomSheetContent from '../../components/v2/BoosterInfoBottomSheetContent';
 // NOTE: Import for ReferralsViewAll component (ready for navigation integration)
 // import ReferralsViewAll from './ReferralsViewAll';
+import Loading from '../Loading';
+import { ClaimRewardResponse } from '../../models/rewardsClaim.interface';
 
 /**
  * Combined rewards data structure for the component
@@ -638,6 +640,9 @@ export default function Rewards() {
     }>
   >([]);
   const [isTokenVideoLoaded, setIsTokenVideoLoaded] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [claimRewardData, setClaimRewardData] =
+    React.useState<ClaimRewardResponse | null>(null);
   const { theme } = useAppTheme();
   const colorScheme = useColorScheme();
 
@@ -652,12 +657,10 @@ export default function Rewards() {
     '',
   );
 
-  const totalRewards = React.useMemo(() => {
-    return DecimalHelper.toDecimal(
-      rewardsData?.userProfile?.allTime?.totalEarned?.total ?? '0',
-      18,
-    ).toString();
-  }, [rewardsData]);
+  const totalRewards = DecimalHelper.toDecimal(
+    rewardsData?.userProfile?.allTime?.totalEarned?.total ?? '0',
+    18,
+  ).toString();
 
   useEffect(() => {
     console.log(
@@ -667,33 +670,38 @@ export default function Rewards() {
     );
   }, [rewardsData]);
 
-  const totalUnclaimed = React.useMemo(() => {
-    return DecimalHelper.toDecimal(
-      rewardsData?.userProfile?.allTime?.totalUnclaimed?.total ?? '0',
-      18,
-    ).toString();
-  }, [rewardsData]);
+  const totalUnclaimed = DecimalHelper.toDecimal(
+    rewardsData?.userProfile?.allTime?.totalUnclaimed?.total ?? '0',
+    18,
+  ).toString();
 
-  const totalVotingPower = React.useMemo(() => {
-    return DecimalHelper.toDecimal(
-      rewardsData?.votingPower?.totalVotingPower ?? '0',
-      18,
-    ).toString();
-  }, [rewardsData]);
+  // Amount available to claim displayed on Rewards screen
+  console.log(
+    'claimRewardData?.rewardInfo?.totalRewardsInToken &&&&&&&&&&&& ',
+    claimRewardData?.rewardInfo?.totalRewardsInToken,
+  );
+  const availableToClaim =
+    claimRewardData?.rewardInfo?.totalRewardsInToken !== undefined
+      ? DecimalHelper.toDecimal(
+          claimRewardData.rewardInfo.totalRewardsInToken,
+          18,
+        ).toString()
+      : totalUnclaimed;
 
-  const usedVotingPower = React.useMemo(() => {
-    return DecimalHelper.toDecimal(
-      rewardsData?.votingPower?.usedVotingPower ?? '0',
-      18,
-    ).toString();
-  }, [rewardsData]);
+  const totalVotingPower = DecimalHelper.toDecimal(
+    rewardsData?.votingPower?.totalVotingPower ?? '0',
+    18,
+  ).toString();
 
-  const unusedVotingPower = React.useMemo(() => {
-    return DecimalHelper.toDecimal(
-      rewardsData?.votingPower?.freeVotingPower ?? '0',
-      18,
-    ).toString();
-  }, [rewardsData]);
+  const usedVotingPower = DecimalHelper.toDecimal(
+    rewardsData?.votingPower?.usedVotingPower ?? '0',
+    18,
+  ).toString();
+
+  const unusedVotingPower = DecimalHelper.toDecimal(
+    rewardsData?.votingPower?.freeVotingPower ?? '0',
+    18,
+  ).toString();
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
@@ -774,6 +782,7 @@ export default function Rewards() {
     React.useCallback(() => {
       const fetchRewards = async () => {
         try {
+          setIsLoading(true);
           console.log('📊 Fetching rewards data from multiple endpoints...');
           console.log('📊 Current address:', currentAddress);
 
@@ -785,22 +794,46 @@ export default function Rewards() {
           const profileUrl = `/v1/cypher-protocol/user/${currentAddress}/profile`;
           console.log('📡 Profile URL:', profileUrl);
 
-          const userProfileResponse = await getWithAuth(profileUrl);
-          console.log('📥 Profile Response received:', userProfileResponse);
-          console.log(
-            '📥 Profile Response.data keys:',
-            Object.keys(userProfileResponse.data || {}),
-          );
+          const userProfilePromise = getWithAuth(profileUrl);
 
-          // Fetch rewards history second
+          // Fetch rewards history second (in parallel)
           console.log(
             '📡 Step 2: Fetching rewards history for address:',
             currentAddress,
           );
           const historyUrl = `/v1/cypher-protocol/user/${currentAddress}/rewards/history?limit=10`;
           console.log('📡 History URL:', historyUrl);
+          const rewardsHistoryPromise = getWithAuth(historyUrl);
 
-          const rewardsHistoryResponse = await getWithAuth(historyUrl);
+          // Fetch voting power data third (in parallel)
+          console.log(
+            '📡 Step 3: Fetching voting power for address:',
+            currentAddress,
+          );
+          const votingPowerUrl = `/v1/cypher-protocol/user/${currentAddress}/voting-power?includeEndOfEpoch=true&includeVeNFTDetails=true`;
+          console.log('📡 Voting Power URL:', votingPowerUrl);
+          const votingPowerPromise = getWithAuth(votingPowerUrl);
+          const claimRewardPromise = getWithAuth(
+            '/v1/cypher-protocol/user/claim-reward',
+          );
+
+          const [
+            userProfileResponse,
+            rewardsHistoryResponse,
+            votingPowerResponse,
+            claimRewardResponse,
+          ] = await Promise.all([
+            userProfilePromise,
+            rewardsHistoryPromise,
+            votingPowerPromise,
+            claimRewardPromise,
+          ]);
+
+          console.log('📥 Profile Response received:', userProfileResponse);
+          console.log(
+            '📥 Profile Response.data keys:',
+            Object.keys(userProfileResponse.data || {}),
+          );
           console.log(
             '📥 Rewards History Response received:',
             rewardsHistoryResponse,
@@ -809,16 +842,6 @@ export default function Rewards() {
             '📥 Rewards History Response.data keys:',
             Object.keys(rewardsHistoryResponse.data || {}),
           );
-
-          // Fetch voting power data third
-          console.log(
-            '📡 Step 3: Fetching voting power for address:',
-            currentAddress,
-          );
-          const votingPowerUrl = `/v1/cypher-protocol/user/${currentAddress}/voting-power?includeEndOfEpoch=true&includeVeNFTDetails=true`;
-          console.log('📡 Voting Power URL:', votingPowerUrl);
-
-          const votingPowerResponse = await getWithAuth(votingPowerUrl);
           console.log(
             '📥 Voting Power Response received:',
             votingPowerResponse,
@@ -830,6 +853,12 @@ export default function Rewards() {
           console.log(
             '📥 Voting Power Response.data.votingPower:',
             votingPowerResponse.data?.votingPower,
+          );
+          console.log(
+            '📥 Claim Reward Response received:',
+            claimRewardResponse.data,
+            '********',
+            claimRewardResponse.data.rewardInfo,
           );
 
           // Check if all critical requests succeeded
@@ -916,6 +945,18 @@ export default function Rewards() {
           } as IVotingPowerResponse);
           console.log('✅ Enriched Voting Power:', enrichedVotingPower);
 
+          console.log(
+            '🔍 Claim reward response: ^^^^^^^^^^^^',
+            claimRewardResponse.data,
+          );
+
+          if (!claimRewardResponse.isError && claimRewardResponse.data) {
+            setClaimRewardData(claimRewardResponse.data as ClaimRewardResponse);
+            console.log('✅ Claim reward data extracted');
+          } else {
+            console.warn('⚠️ Failed to fetch claim reward (non-critical)');
+          }
+
           // Combine all data into a single state object
           const combinedData: ICombinedRewardsData = {
             userProfile,
@@ -927,6 +968,8 @@ export default function Rewards() {
           setRewardsData(combinedData);
         } catch (err) {
           console.error('💥 Error fetching rewards data:', err);
+        } finally {
+          setIsLoading(false);
         }
       };
 
@@ -1203,6 +1246,15 @@ export default function Rewards() {
   };
 
   // NOTE: RENDER METHOD 🍎🍎🍎🍎🍎🍎
+  if (isLoading) {
+    return (
+      <Loading
+        loadingText={'Fetching rewards...'}
+        backgroundColor={isDarkMode ? 'bg-black' : 'bg-n20'}
+      />
+    );
+  }
+
   return (
     <CyDSafeAreaView className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}>
       {/* Header */}
@@ -1303,7 +1355,7 @@ export default function Rewards() {
                     resizeMode='contain'
                   />
                   <CyDText className='text-n0 text-[20px] font-extrabold'>
-                    {DecimalHelper.round(totalUnclaimed, 2).toString()}
+                    {DecimalHelper.round(availableToClaim, 2).toString()}
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-medium text-n0'>
@@ -1315,6 +1367,7 @@ export default function Rewards() {
                 onPress={() => {
                   navigation.navigate(screenTitle.CLAIM_REWARD, {
                     rewardsData,
+                    claimRewardData,
                   });
                 }}
                 type={ButtonType.PRIMARY}

@@ -2,21 +2,27 @@
  * useRewardsDistributor Hook
  *
  * Custom hook for interacting with the Rewards Distributor smart contract
- * on Base Sepolia chain. Handles claiming rewards with Merkle proofs.
+ * on Base (mainnet) chain. Handles claiming rewards with Merkle proofs.
  *
- * Contract: 0x355a548FE06ba5CBa40d3e011179B67bb553f9A9
- * Chain: Base Sepolia (Chain ID: 84532 / 0x14a34)
+ * Contract: 0x204f179de0c6decae6ae93e7427139016dd16c2a
+ * Chain: Base (Chain ID: 8453 / 0x2105)
  */
 
-import { useNavigation } from '@react-navigation/native';
+// import { useNavigation } from '@react-navigation/native';
 import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import * as Sentry from '@sentry/react-native';
 import { getChainId } from '@wagmi/core';
 import { useContext } from 'react';
 import { Platform } from 'react-native';
-import { createWalletClient, encodeFunctionData, Hex, http } from 'viem';
+import {
+  createPublicClient,
+  createWalletClient,
+  encodeFunctionData,
+  Hex,
+  http,
+} from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { baseSepolia } from 'viem/chains';
+import { base } from 'viem/chains';
 import { useSendTransaction, useSwitchChain, WagmiContext } from 'wagmi';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ConnectionTypes } from '../../constants/enum';
@@ -29,10 +35,11 @@ import {
 } from '../../core/util';
 
 /**
- * Rewards Distributor Contract Configuration
+ * Rewards Distributor Contract Configuration (Base mainnet)
  */
 const REWARDS_DISTRIBUTOR_CONTRACT =
-  '0x0506AE2a8F884DEAFF200530E116ce444fD78AB6' as const;
+  // '0x0506AE2a8F884DEAFF200530E116ce444fD78AB6' as const;
+  '0x204f179de0c6decae6ae93e7427139016dd16c2a' as const;
 
 /**
  * ABI for the claimMultiple function
@@ -71,7 +78,7 @@ export interface ClaimRewardsParams {
    * Array of Merkle proofs for each claim
    * Each proof is an array of bytes32 hashes
    */
-  proofs: `0x${string}`[][];
+  proofs: Array<Array<`0x${string}`>>;
 
   /**
    * Array of root IDs corresponding to each claim
@@ -122,19 +129,34 @@ export default function useRewardsDistributor() {
   const { showModal, hideModal } = useGlobalModalContext();
 
   /**
-   * Get transaction receipt and wait for confirmation
-   * Note: Since baseSepolia is not in wagmiConfig, we skip receipt verification
-   * and return the hash directly
+   * Get transaction receipt and wait for confirmation on Base mainnet
    */
   const getTransactionReceipt = async (
     hash: `0x${string}`,
   ): Promise<`0x${string}`> => {
     console.log('📜 Transaction hash received:', hash);
-    console.log(
-      '⚠️ Skipping receipt verification (baseSepolia not in wagmiConfig)',
-    );
-    // Return the hash directly since baseSepolia is not configured in wagmi
-    return hash;
+    const publicClient = createPublicClient({
+      chain: base,
+      transport: http('https://mainnet.base.org'),
+    });
+
+    try {
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        pollingInterval: 1500,
+      });
+
+      console.log('🧾 Transaction receipt:', receipt);
+      if (receipt.status === 'success') {
+        console.log('✅ Transaction confirmed on Base');
+        return hash;
+      }
+      throw new Error('Transaction reverted on Base');
+    } catch (error) {
+      console.error('❌ Error waiting for transaction receipt:', error);
+      throw error;
+    }
   };
 
   /**
@@ -163,13 +185,12 @@ export default function useRewardsDistributor() {
 
   /**
    * Estimate gas for the claim transaction
-   * Note: Since baseSepolia is not in wagmiConfig, we use a safe default
+   * Using a safe default on Base
    */
   const estimateClaimGas = async (
     params: ClaimRewardsParams,
   ): Promise<bigint> => {
-    console.log('⛽ Using default gas limit for claim transaction...');
-    console.log('⚠️ Gas estimation skipped (baseSepolia not in wagmiConfig)');
+    console.log('⛽ Using default gas limit for claim transaction on Base...');
 
     // Use a safe default gas limit for claim transactions
     // ClaimMultiple typically uses ~150k-300k gas depending on number of claims
@@ -180,8 +201,7 @@ export default function useRewardsDistributor() {
   };
 
   /**
-   * Handle chain switching if needed
-   * Note: For native wallet mode, chain switching is not required
+   * Handle chain switching if needed (WalletConnect)
    */
   const ensureCorrectChain = async (): Promise<boolean> => {
     try {
@@ -198,11 +218,11 @@ export default function useRewardsDistributor() {
         return true; // Proceed anyway for native wallet
       }
 
-      const connectedChain = getChainId(wagmiConfig);
+      const connectedChain: number = getChainId(wagmiConfig);
 
-      if (connectedChain !== baseSepolia.id) {
+      if (connectedChain !== base.id) {
         console.log(
-          `🔄 Switching chain from ${connectedChain} to Base Sepolia (${baseSepolia.id})...`,
+          `🔄 Switching chain from ${connectedChain} to Base (${base.id})...`,
         );
 
         // Show warning modal for MetaMask on Android
@@ -212,25 +232,25 @@ export default function useRewardsDistributor() {
         ) {
           showModal('state', {
             type: 'warning',
-            title: 'Switch to Base Sepolia',
+            title: 'Switch to Base',
             description:
-              "If you don't see a switch chain popup in your MetaMask wallet, please manually change the connected chain to Base Sepolia.",
+              "If you don't see a switch chain popup in your MetaMask wallet, please manually change the connected chain to Base.",
             onSuccess: hideModal,
           });
         }
 
         await switchChainAsync({
-          chainId: baseSepolia.id,
+          chainId: base.id,
         });
 
         hideModal();
         await sleepFor(1000);
 
-        console.log('✅ Chain switched to Base Sepolia');
+        console.log('✅ Chain switched to Base');
         return true;
       }
 
-      console.log('✅ Already on Base Sepolia chain');
+      console.log('✅ Already on Base chain');
       return true;
     } catch (error) {
       console.error('❌ Error switching chain:', error);
@@ -240,7 +260,7 @@ export default function useRewardsDistributor() {
         type: 'error',
         title: "Couldn't Switch Chain",
         description:
-          'Failed to switch to Base Sepolia chain. Please switch manually in your wallet.',
+          'Failed to switch to Base chain. Please switch manually in your wallet.',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -250,7 +270,7 @@ export default function useRewardsDistributor() {
   };
 
   /**
-   * Send claim transaction using WalletConnect
+   * Send claim transaction using WalletConnect (Base)
    */
   const claimViaWalletConnect = async (
     params: ClaimRewardsParams,
@@ -260,7 +280,7 @@ export default function useRewardsDistributor() {
     // Ensure we're on the correct chain
     const chainSwitched = await ensureCorrectChain();
     if (!chainSwitched) {
-      throw new Error('Failed to switch to Base Sepolia chain');
+      throw new Error('Failed to switch to Base chain');
     }
 
     // Encode the function call
@@ -271,9 +291,9 @@ export default function useRewardsDistributor() {
 
     // Set up timeout for user signing
     let timer: NodeJS.Timeout;
-    const timeoutPromise = new Promise<never>((_, rejectTimeout) => {
+    const timeoutPromise = new Promise<never>((_resolve, _reject) => {
       timer = setTimeout(() => {
-        rejectTimeout(
+        _reject(
           new Error(
             "Transaction request timed out. User didn't sign the transaction request",
           ),
@@ -292,7 +312,7 @@ export default function useRewardsDistributor() {
         to: REWARDS_DISTRIBUTOR_CONTRACT,
         data,
         gas,
-        chainId: baseSepolia.id,
+        chainId: base.id,
       });
 
       const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
@@ -311,7 +331,7 @@ export default function useRewardsDistributor() {
   };
 
   /**
-   * Send claim transaction using native wallet (private key)
+   * Send claim transaction using native wallet (private key) on Base
    */
   const claimViaNativeWallet = async (
     params: ClaimRewardsParams,
@@ -329,11 +349,11 @@ export default function useRewardsDistributor() {
 
       console.log('✅ Private key loaded, account:', account.address);
 
-      // Create wallet client with Base Sepolia RPC
+      // Create wallet client with Base RPC
       const client = createWalletClient({
         account,
-        chain: baseSepolia,
-        transport: http('https://sepolia.base.org'),
+        chain: base,
+        transport: http('https://mainnet.base.org'),
       });
 
       // Encode the function call
@@ -461,6 +481,6 @@ export default function useRewardsDistributor() {
     /**
      * Chain information
      */
-    chain: baseSepolia,
+    chain: base,
   };
 }

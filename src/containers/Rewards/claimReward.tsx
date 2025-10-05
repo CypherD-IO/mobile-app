@@ -4,7 +4,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Share, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  CyDSafeAreaView,
   CyDView,
   CyDTouchView,
   CyDText,
@@ -20,13 +19,14 @@ import { showToast } from '../utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
-import { DecimalHelper } from '../../utils/decimalHelper';
 import useRewardsDistributor from '../../hooks/useRewardsDistributor';
 import { HdWalletContext } from '../../core/util';
 import { get } from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { screenTitle } from '../../constants';
 import useAxios from '../../core/HttpRequest';
+import { ClaimRewardResponse } from '../../models/rewardsClaim.interface';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 interface EarningBreakdown {
   id: string;
@@ -51,42 +51,6 @@ interface SpendPerformance {
   totalSpend: string;
   avgSpendPerTransaction: string;
   tokensEarnedPer10Spend: string;
-}
-
-enum ClaimStatus {
-  PENDING = 'PENDING',
-  CLAIMED = 'CLAIMED',
-  FAILED = 'FAILED',
-}
-
-interface ClaimRewardResponse {
-  epochNumber: number;
-  isEligible: boolean;
-  claimInfo?: {
-    claimAddress?: string;
-    amount: string[];
-    proof: string[][];
-    claimStatus: ClaimStatus;
-    rootId: number[];
-  };
-  rewardInfo?: {
-    totalRewardsInToken: number;
-    baseSpendAmount: number;
-    boostedSpendSplit: Array<{
-      parentMerchantId: string;
-      canonicalName: string;
-      logoUrl?: string;
-      spend: number;
-    }>;
-    boostedSpend: Record<string, string>;
-    boostedReferralAmount: number;
-  };
-  totalRewardsEarned: {
-    baseSpend: number;
-    boostedSpend: number;
-    boostedReferral: number;
-    total: number;
-  };
 }
 
 /**
@@ -220,8 +184,10 @@ const ClaimReward: React.FC = () => {
     useState<ClaimRewardResponse | null>(null);
   const [loadingClaimData, setLoadingClaimData] = useState<boolean>(true);
 
-  // Get rewardsData from navigation params
-  const rewardsData = (route.params as any)?.rewardsData;
+  // Get rewardsData and claimRewardData from navigation params
+  const passedClaimRewardData = (route.params as any)?.claimRewardData as
+    | ClaimRewardResponse
+    | undefined;
 
   // Calculate claim data from API response
   const claimData = React.useMemo(() => {
@@ -233,7 +199,13 @@ const ClaimReward: React.FC = () => {
       };
     }
 
-    const totalRewards = claimRewardData.totalRewardsEarned?.total ?? 0;
+    // Convert from wei (18 decimals) to token units
+    const totalRewardsWei =
+      claimRewardData?.rewardInfo?.totalRewardsInToken ?? 0;
+    const totalRewards = DecimalHelper.toDecimal(
+      totalRewardsWei,
+      18,
+    ).toString();
 
     return {
       totalRewards,
@@ -248,16 +220,25 @@ const ClaimReward: React.FC = () => {
       return [];
     }
 
-    const rewards = claimRewardData.totalRewardsEarned;
-    const baseSpend = rewards?.baseSpend ?? 0;
-    const boostedSpend = rewards?.boostedSpend ?? 0;
-    const boostedReferral = rewards?.boostedReferral ?? 0;
+    const rewards = claimRewardData.rewardInfo;
+    const baseSpend = DecimalHelper.toDecimal(
+      rewards?.baseSpendAmount ?? 0,
+      18,
+    ).toFixed(2);
+    const boostedSpend = DecimalHelper.toDecimal(
+      rewards?.boostedSpend ?? 0,
+      18,
+    ).toFixed(2);
+    const boostedReferral = DecimalHelper.toDecimal(
+      rewards?.boostedReferralAmount ?? 0,
+      18,
+    ).toFixed(2);
 
     return [
       {
         id: '2',
         type: 'From spends',
-        amount: `${baseSpend.toFixed(2)} $CYPR`,
+        amount: `${baseSpend} $CYPR`,
         color: 'blue-400',
         bgColor: 'rgba(247,198,69,0.15)',
         textColor: '#F7C645',
@@ -265,7 +246,7 @@ const ClaimReward: React.FC = () => {
       {
         id: '3',
         type: 'Merchant Spends',
-        amount: `${boostedSpend.toFixed(2)} $CYPR`,
+        amount: `${boostedSpend} $CYPR`,
         color: 'red-400',
         bgColor: 'rgba(255,140,0,0.15)',
         textColor: '#FF8C00',
@@ -273,7 +254,7 @@ const ClaimReward: React.FC = () => {
       {
         id: '4',
         type: 'Referral Rewards',
-        amount: `${boostedReferral.toFixed(2)} $CYPR`,
+        amount: `${boostedReferral} $CYPR`,
         color: 'blue-400',
         bgColor: 'rgba(7,73,255,0.15)',
         textColor: '#0749FF',
@@ -294,10 +275,14 @@ const ClaimReward: React.FC = () => {
         '/v1/cypher-protocol/user/claim-reward',
       );
 
-      console.log('📊 Claim reward response:', response);
+      console.log(
+        '📊 Claim reward response:',
+        // response,
+        response.data.claimInfo.amount,
+      );
 
       if (!response.isError && response.data) {
-        setClaimRewardData(response.data);
+        setClaimRewardData(response.data as ClaimRewardResponse);
         console.log('✅ Claim reward data loaded successfully');
       } else {
         console.error('❌ Failed to fetch claim reward data:', response.error);
@@ -315,6 +300,11 @@ const ClaimReward: React.FC = () => {
    * Fetch claim reward data on component mount
    */
   useEffect(() => {
+    if (passedClaimRewardData) {
+      setClaimRewardData(passedClaimRewardData);
+      setLoadingClaimData(false);
+      return;
+    }
     void fetchClaimRewardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
