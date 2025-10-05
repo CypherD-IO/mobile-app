@@ -127,7 +127,6 @@ const KYCVerification = () => {
   );
 
   const getProgress = () => {
-    console.log('kycStatus', kycStatus);
     switch (kycStatus) {
       case CardApplicationStatus.KYC_INITIATED:
         if (isRainDeclined) {

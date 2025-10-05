@@ -134,7 +134,6 @@ export default function useRewardsDistributor() {
   const getTransactionReceipt = async (
     hash: `0x${string}`,
   ): Promise<`0x${string}`> => {
-    console.log('📜 Transaction hash received:', hash);
     const publicClient = createPublicClient({
       chain: base,
       transport: http('https://mainnet.base.org'),
@@ -147,9 +146,7 @@ export default function useRewardsDistributor() {
         pollingInterval: 1500,
       });
 
-      console.log('🧾 Transaction receipt:', receipt);
       if (receipt.status === 'success') {
-        console.log('✅ Transaction confirmed on Base');
         return hash;
       }
       throw new Error('Transaction reverted on Base');
@@ -164,18 +161,12 @@ export default function useRewardsDistributor() {
    */
   const encodeClaimMultiple = (params: ClaimRewardsParams): `0x${string}` => {
     try {
-      console.log('📝 Encoding claimMultiple function call...');
-      console.log('  - Proofs count:', params.proofs.length);
-      console.log('  - RootIds count:', params.rootIds.length);
-      console.log('  - Values count:', params.values.length);
-
       const data = encodeFunctionData({
         abi: REWARDS_DISTRIBUTOR_ABI,
         functionName: 'claimMultiple',
         args: [params.proofs, params.rootIds, params.values],
       });
 
-      console.log('✅ Function call encoded successfully');
       return data;
     } catch (error) {
       console.error('❌ Error encoding function call:', error);
@@ -190,12 +181,9 @@ export default function useRewardsDistributor() {
   const estimateClaimGas = async (
     params: ClaimRewardsParams,
   ): Promise<bigint> => {
-    console.log('⛽ Using default gas limit for claim transaction on Base...');
-
     // Use a safe default gas limit for claim transactions
     // ClaimMultiple typically uses ~150k-300k gas depending on number of claims
     const defaultGas = 500000n;
-    console.log('✅ Using default gas:', defaultGas.toString());
 
     return defaultGas;
   };
@@ -209,7 +197,6 @@ export default function useRewardsDistributor() {
 
       // For native wallet, we don't need to switch chains
       if (connectionType !== ConnectionTypes.WALLET_CONNECT) {
-        console.log('✅ Using native wallet - chain switching not required');
         return true;
       }
 
@@ -221,10 +208,6 @@ export default function useRewardsDistributor() {
       const connectedChain: number = getChainId(wagmiConfig);
 
       if (connectedChain !== base.id) {
-        console.log(
-          `🔄 Switching chain from ${connectedChain} to Base (${base.id})...`,
-        );
-
         // Show warning modal for MetaMask on Android
         if (
           walletInfo?.name === 'MetaMask Wallet' &&
@@ -246,11 +229,9 @@ export default function useRewardsDistributor() {
         hideModal();
         await sleepFor(1000);
 
-        console.log('✅ Chain switched to Base');
         return true;
       }
 
-      console.log('✅ Already on Base chain');
       return true;
     } catch (error) {
       console.error('❌ Error switching chain:', error);
@@ -275,8 +256,6 @@ export default function useRewardsDistributor() {
   const claimViaWalletConnect = async (
     params: ClaimRewardsParams,
   ): Promise<`0x${string}`> => {
-    console.log('🔗 Claiming via WalletConnect...');
-
     // Ensure we're on the correct chain
     const chainSwitched = await ensureCorrectChain();
     if (!chainSwitched) {
@@ -319,8 +298,6 @@ export default function useRewardsDistributor() {
 
       cleanup();
 
-      console.log('✅ Transaction sent:', hash);
-
       // Wait for confirmation
       const receipt = await getTransactionReceipt(hash);
       return receipt;
@@ -336,8 +313,6 @@ export default function useRewardsDistributor() {
   const claimViaNativeWallet = async (
     params: ClaimRewardsParams,
   ): Promise<`0x${string}`> => {
-    console.log('🔐 Claiming via native wallet...');
-
     // Load private key from keychain
     const privateKey = await loadPrivateKeyFromKeyChain(
       false,
@@ -346,8 +321,6 @@ export default function useRewardsDistributor() {
 
     if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
       const account = privateKeyToAccount(privateKey as Hex);
-
-      console.log('✅ Private key loaded, account:', account.address);
 
       // Create wallet client with Base RPC
       const client = createWalletClient({
@@ -369,8 +342,6 @@ export default function useRewardsDistributor() {
         gas,
       });
 
-      console.log('✅ Transaction sent:', hash);
-
       // Wait for confirmation
       const receipt = await getTransactionReceipt(hash);
       return receipt;
@@ -387,19 +358,6 @@ export default function useRewardsDistributor() {
     params: ClaimRewardsParams,
   ): Promise<ClaimResult> => {
     try {
-      console.log('🎁 Starting reward claim...');
-      console.log('📋 Claim parameters:');
-      console.log('  - From:', params.fromAddress);
-      console.log('  - Number of claims:', params.proofs.length);
-      console.log(
-        '  - Root IDs:',
-        params.rootIds.map(id => id.toString()),
-      );
-      console.log(
-        '  - Values:',
-        params.values.map(v => v.toString()),
-      );
-
       // Validate parameters
       if (
         params.proofs.length !== params.rootIds.length ||
@@ -416,7 +374,6 @@ export default function useRewardsDistributor() {
 
       // Check connection type
       const connectionType = await getConnectionType();
-      console.log('🔌 Connection type:', connectionType);
 
       let hash: `0x${string}`;
 
@@ -425,9 +382,6 @@ export default function useRewardsDistributor() {
       } else {
         hash = await claimViaNativeWallet(params);
       }
-
-      console.log('🎉 Rewards claimed successfully!');
-      console.log('📜 Transaction hash:', hash);
 
       return {
         hash,

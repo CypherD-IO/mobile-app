@@ -434,23 +434,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const hasRedirectedToCard = useRef<boolean>(false);
 
   useEffect(() => {
-    console.log(
-      'P O R T F O L I O  B A L A N C E :',
-      portfolioBalance,
-      'Type:',
-      typeof portfolioBalance,
-    );
-    console.log(
-      'Should show GetFirstToken:',
-      portfolioBalance === '' ||
-        portfolioBalance === '0' ||
-        Number(portfolioBalance) === 0,
-    );
-  }, [portfolioBalance]);
-
-  useEffect(() => {
     const checkRedirectToCard = async () => {
-      console.log('F R O M  C A R D  W E L C O M E :', fromCardWelcome);
       // Suppress redirect if user explicitly came from Card Welcome (skip flow)
       if (isFocused && !hasRedirectedToCard.current && !fromCardWelcome) {
         const cardProfile = globalStateContext?.globalState?.cardProfile;
@@ -461,9 +445,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           !isFirstLaunch
         ) {
           hasRedirectedToCard.current = true;
-          console.log(
-            'N A V I G A T I N G  T O  C A R D  F R O M  P O R T F O L I O',
-          );
+
           navigation.navigate(C.screenTitle.CARD);
         }
       }

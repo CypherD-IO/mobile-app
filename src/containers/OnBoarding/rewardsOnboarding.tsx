@@ -169,11 +169,7 @@ export default function RewardsOnboarding() {
     const fetchRewardsInfo = async () => {
       try {
         const res = await getWithoutAuth('/v1/cards/onboarding-rewards/info');
-        console.log('res : ', res);
         const { data, isError, error } = res;
-        console.log('data : ', data);
-        console.log('isError : ', isError);
-        console.log('error : ', error);
         if (!isError && data?.totalPossibleRewards !== undefined) {
           setTotalPossibleRewards(data.totalPossibleRewards);
         }

@@ -168,15 +168,7 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
                         contentContainerStyle={stylesList.merchantListContent}
                         nestedScrollEnabled={true}
                         keyboardShouldPersistTaps='always'
-                        scrollEventThrottle={16}
-                        onScrollBeginDrag={() => {
-                          console.log(
-                            `Merchant list scrolling: ${votedCandidates.length} items`,
-                          );
-                        }}
-                        onScrollEndDrag={() => {
-                          console.log('Merchant list scroll ended');
-                        }}>
+                        scrollEventThrottle={16}>
                         {votedCandidates.map((item, index) => (
                           <CyDTouchableWithoutFeedback key={index}>
                             <CyDView className='flex-row items-center mb-[12px]'>

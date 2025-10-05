@@ -61,8 +61,6 @@ const ClaimRewardsExample = () => {
    */
   const handleEstimateGas = async () => {
     try {
-      console.log('⛽ Estimating gas for claim...');
-
       const params = {
         proofs: claimData.proofs,
         rootIds: claimData.rootIds.map(id => BigInt(id)),
@@ -73,7 +71,6 @@ const ClaimRewardsExample = () => {
       const gas = await estimateClaimGas(params);
       setEstimatedGas(gas);
 
-      console.log('✅ Estimated gas:', gas.toString());
       showToast(`Estimated gas: ${gas.toString()} units`);
     } catch (error) {
       console.error('❌ Error estimating gas:', error);
@@ -88,8 +85,6 @@ const ClaimRewardsExample = () => {
     setClaiming(true);
 
     try {
-      console.log('🎁 Starting claim process...');
-
       // Prepare parameters
       const params = {
         proofs: claimData.proofs,
@@ -102,9 +97,6 @@ const ClaimRewardsExample = () => {
       const result = await claimRewards(params);
 
       if (result.success) {
-        console.log('✅ Rewards claimed successfully!');
-        console.log('📜 Transaction hash:', result.hash);
-
         showToast('Rewards claimed successfully! 🎉');
 
         // TODO: Refresh rewards data from API
@@ -198,4 +190,3 @@ const ClaimRewardsExample = () => {
  */
 
 export default ClaimRewardsExample;
-

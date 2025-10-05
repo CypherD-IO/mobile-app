@@ -26,7 +26,6 @@ const TaskWheelItem: React.FC<TaskWheelItemProps> = ({
   task,
   isSelected = false,
 }) => {
-  console.log('isSelected from TaskWheelItem : ', isSelected);
   return (
     <CyDView
       className={`flex-row items-center px-4 py-2 overflow-hidden

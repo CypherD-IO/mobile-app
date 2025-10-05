@@ -172,11 +172,7 @@ export default function Referrals() {
   const fetchReferralCodes = async () => {
     setIsReferralCodesLoading(true);
     const response = await getWithAuth('/v1/cards/referral-v2');
-    console.log('response : : : ', response);
-    console.log(
-      'response.data.referralCodes : : : ',
-      response.data.referralCodes,
-    );
+
     setIsReferralCodesLoading(false);
 
     setReferralCodes(response.data.referralCodes); // Filter out any undefined/null values
@@ -263,8 +259,6 @@ export default function Referrals() {
       return;
     }
 
-    console.log('Showing QR Code for referral code:', codeForQR);
-
     showBottomSheet({
       id: 'referral-qr-code',
       snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '90%'],
@@ -278,9 +272,6 @@ export default function Referrals() {
           friendEarnings={referralData.friendEarnings}
         />
       ),
-      onClose: () => {
-        console.log('QR Code bottom sheet closed');
-      },
     });
   };
 

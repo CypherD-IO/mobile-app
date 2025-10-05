@@ -120,7 +120,6 @@ const TokenRewardEarned = () => {
 
     // If custom callback provided, use it
     if (customOnContinue) {
-      console.log('✅ Executing custom continue callback');
       customOnContinue();
       return;
     }
@@ -128,12 +127,10 @@ const TokenRewardEarned = () => {
     // Otherwise, navigate based on context
     if (fromRewardsClaim) {
       // Coming from rewards claim - go back to rewards screen
-      console.log('✅ Navigating back to Rewards screen');
       navigation.goBack();
       navigation.goBack();
     } else {
       // Coming from card signup - continue to name on card
-      console.log('✅ Navigating to Name on Card screen');
       (navigation as any).navigate(screenTitle.NAME_ON_CARD);
     }
   };

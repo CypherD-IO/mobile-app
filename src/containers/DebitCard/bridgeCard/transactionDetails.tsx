@@ -1271,7 +1271,6 @@ const OverchargedTransactionInfoSection = () => {
 export default function TransactionDetails() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { transaction }: { transaction: ICardTransaction } = route.params;
-  console.log('T R A N S A C T I O N : : : ', transaction);
   const { fxCurrencySymbol } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;

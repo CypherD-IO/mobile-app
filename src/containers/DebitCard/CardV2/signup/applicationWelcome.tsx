@@ -123,9 +123,6 @@ const ApplicationWelcome = (): JSX.Element => {
   // Dynamic background colour for video placeholder to avoid black flash.
   const videoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
 
-  // console.log('deadline : ', deadline);
-  // console.log('isRewardSlotAvailable : ', isRewardSlotAvailable);
-
   // Show modal once when reward slot is available
   React.useEffect(() => {
     if (isRewardSlotAvailable && !deadline) {
@@ -350,9 +347,6 @@ const ApplicationWelcome = (): JSX.Element => {
       <ExclusiveOfferModal
         isVisible={showExclusiveOfferModal}
         onClickGotIt={handleExclusiveOfferClose}
-        onSeeDetails={() => {
-          console.log('Card signup - exclusive offer see details clicked');
-        }}
         rewardAmount={totalRewardsPossible}
       />
     </CyDView>

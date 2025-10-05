@@ -162,9 +162,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
     COMPLETED: 3,
   };
 
-  console.log('currentStage :', currentStage);
   const derivedIndex = stageToIndex[currentStage ?? 'KYC_PENDING'] ?? 0;
-  console.log('derivedIndex :', derivedIndex);
 
   // Keep internal index state in sync with backend stage changes
   const [selectedIndex, setSelectedIndex] = useState(derivedIndex);
@@ -229,17 +227,6 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   }));
 
   const currentTask = rewardData.tasks[selectedIndex];
-
-  useEffect(() => {
-    console.log('selectedIndex :', selectedIndex);
-    console.log('currentTask :', currentTask);
-  }, [selectedIndex, currentTask]);
-
-  const handleTaskPress = () => {
-    if (onTaskPress && currentTask) {
-      onTaskPress(currentTask);
-    }
-  };
 
   const handleWheelChange = (index: number, item: any) => {
     setSelectedIndex(index);

@@ -21,8 +21,6 @@ import { screenTitle } from '../../constants';
 
 interface MerchantRewardDetailContentProps {
   merchantData?: MerchantDetailData;
-  onKnowMorePress?: () => void;
-  onRemoveBoosterPress?: () => void;
   navigation?: any;
 }
 
@@ -157,24 +155,13 @@ interface ReferralTransaction {
 
 const MerchantRewardDetailContent: React.FC<
   MerchantRewardDetailContentProps
-> = ({
-  merchantData,
-  navigation: navigationProp,
-  onKnowMorePress = () => {
-    console.log('Know more pressed');
-  },
-  onRemoveBoosterPress = () => {
-    console.log('Remove booster pressed');
-  },
-}) => {
+> = ({ merchantData, navigation: navigationProp }) => {
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   const { getWithAuth } = useAxios();
   const { showBottomSheet } = useGlobalBottomSheet();
   const navigationHook = useNavigation();
   const navigation = navigationProp ?? navigationHook;
-
-  console.log('**************** merchantData', merchantData?.candidateId);
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
@@ -234,19 +221,9 @@ const MerchantRewardDetailContent: React.FC<
       setLoading(true);
       setError(null);
 
-      console.log(
-        '%%%%%%%%%% merchantData.candidateId : ',
-        merchantData.candidateId,
-      );
-
       const detailsResponse = await getWithAuth(
         `/v1/cypher-protocol/merchants/${merchantData.candidateId}`,
       );
-
-      console.log('@@@@@@@@ detailsResponse : ', detailsResponse);
-
-      // console.log('detailsResponse', detailsResponse);
-      console.log('@@@@@@@@ userSpecificData : ', detailsResponse.data);
 
       if (!detailsResponse.isError) {
         const data: MerchantDetailsResponseDto = detailsResponse.data;
@@ -254,7 +231,6 @@ const MerchantRewardDetailContent: React.FC<
 
         // Transform userSpecificData.historicalEarnings → RewardCycle[]
         const he = data.userSpecificData?.historicalEarnings ?? [];
-        console.log('he )))))))) : ', he);
         const transformedHistory: RewardCycle[] = he.map((earn: any) => ({
           id: `epoch-${String(earn.epochNumber)}`,
           name: `Reward Cycle ${String(earn.epochNumber)}`,
@@ -267,7 +243,6 @@ const MerchantRewardDetailContent: React.FC<
         }));
         setVotingHistory(transformedHistory);
 
-        console.log('bribe data : ', data.bribeData?.currentEpoch);
         // Transform bribeData.currentEpoch → PromotionalBonus[]
         const promos: PromotionalBonus[] =
           data.bribeData?.currentEpoch?.map((bribe, index) => ({
@@ -464,25 +439,10 @@ const MerchantRewardDetailContent: React.FC<
   };
 
   /**
-   * Handles know more button press
-   */
-  const handleKnowMorePress = () => {
-    console.log(
-      'Know More pressed for:',
-      currentMerchantData.brand ?? currentMerchantData.canonicalName,
-    );
-    onKnowMorePress();
-  };
-
-  /**
    * Handles boost this merchant button press
    * Navigates to social media screen with candidate ID parameter
    */
   const handleBoostMerchant = () => {
-    console.log(
-      'Boost merchant pressed for:',
-      currentMerchantData.brand ?? currentMerchantData.canonicalName,
-    );
     const candidateId = currentMerchantData.candidateId;
     const redirectURI = `https://app.cypherhq.io/#/?candidateId=${candidateId}`;
     navigation.navigate(screenTitle.OPTIONS);

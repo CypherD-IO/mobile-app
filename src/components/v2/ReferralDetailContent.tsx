@@ -42,7 +42,6 @@ const ReferralDetailContent: React.FC<Props> = ({
   referralDetail,
   votedMerchants = [],
 }) => {
-  // console.log('V O T E D  M E R C H A N T S :', votedMerchants);
   const { t } = useTranslation();
   const { theme } = useTheme();
   const colorScheme = useColorScheme();

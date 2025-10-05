@@ -121,10 +121,7 @@ const MerchantRewardListScreen: React.FC = () => {
         ...(offsetRef.current ? { offset: offsetRef.current } : {}),
       };
 
-      console.log(': : : : : : : params : : : : : : : ', params);
-
       const resp = await getWithAuth('/v1/cypher-protocol/merchants', params);
-      console.log('resp : : : : ', resp);
       inFlightRef.current = false;
 
       if (!resp.isError) {
@@ -255,8 +252,6 @@ const MerchantRewardListScreen: React.FC = () => {
    * Displays comprehensive merchant information and reward details
    */
   const handleMerchantPress = (merchant: MerchantData) => {
-    console.log('Merchant selected:', merchant);
-
     setSelectedMerchant(merchant);
 
     showBottomSheet({
@@ -270,22 +265,9 @@ const MerchantRewardListScreen: React.FC = () => {
         <MerchantRewardDetailContent
           merchantData={merchant}
           navigation={navigation}
-          onKnowMorePress={() => {
-            console.log(
-              'Know more pressed for:',
-              merchant.brand ?? merchant.canonicalName,
-            );
-          }}
-          onRemoveBoosterPress={() => {
-            console.log(
-              'Remove booster pressed for:',
-              merchant.brand ?? merchant.canonicalName,
-            );
-          }}
         />
       ),
       onClose: () => {
-        console.log('Merchant detail bottom sheet closed');
         setSelectedMerchant(null);
       },
     });

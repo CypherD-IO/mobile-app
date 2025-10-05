@@ -254,14 +254,11 @@ const OnBoardingGetStarted = () => {
    * Logs current state and navigates to next section or final destination
    */
   const handleContinue = () => {
-    console.log('Continue pressed, current index:', currentIndex);
     if (currentIndex < totalSections - 1) {
       // Move to next section (0 -> 1 -> 2)
       const nextIndex = currentIndex + 1;
-      console.log('Moving to next section:', nextIndex);
       setCurrentIndex(nextIndex);
     } else {
-      console.log('Navigating to onboarding options');
       navigation.navigate(screenTitle.ONBOARDING_OPTIONS);
     }
   };
@@ -271,15 +268,12 @@ const OnBoardingGetStarted = () => {
    * Logs current state and navigates to previous section or exits onboarding
    */
   const handleBack = () => {
-    console.log('Back pressed, current index:', currentIndex);
     if (currentIndex > 0) {
       // Move to previous section (2 -> 1 -> 0)
       const prevIndex = currentIndex - 1;
-      console.log('Moving to previous section:', prevIndex);
       setCurrentIndex(prevIndex);
     } else {
       // If on first section, navigate back to previous screen
-      console.log('Navigating back from onboarding');
       navigation.goBack();
     }
   };
@@ -289,17 +283,12 @@ const OnBoardingGetStarted = () => {
    * Displays comprehensive token information in a modal
    */
   const handleShowTokenDetails = () => {
-    console.log('Showing Cypher token details bottom sheet');
-
     showBottomSheet({
       id: 'cypher-token-details',
       snapPoints: ['75%', Platform.OS === 'android' ? '100%' : '93%'],
       showCloseButton: true,
       scrollable: true,
       content: <CypherTokenBottomSheetContent />,
-      onClose: () => {
-        console.log('Cypher token details bottom sheet closed');
-      },
       backgroundColor: 'rgba(15, 15, 15, 0.95)',
     });
   };
@@ -333,21 +322,12 @@ const OnBoardingGetStarted = () => {
       if (isSignificantSwipe) {
         if (dx > 0) {
           // Right swipe - go to previous section
-          console.log('Right swipe detected, going to previous section');
           handleBack();
         } else {
           // Left swipe - go to next section
-          console.log('Left swipe detected, going to next section');
           handleContinue();
         }
-      } else {
-        console.log('Swipe gesture too small, ignoring');
       }
-    },
-
-    onPanResponderTerminate: () => {
-      // Handle gesture termination if needed
-      console.log('Swipe gesture terminated');
     },
   });
 

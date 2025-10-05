@@ -79,17 +79,10 @@ export const GlobalBottomSheetProvider: React.FC<
         if (!ref) {
           // Ref not ready yet -> keep it for the next render cycle
           nextQueue.push(id);
-          console.log(
-            `GlobalBottomSheetProvider: ref for '${id}' not ready yet, will retry next frame`,
-          );
           return;
         }
 
         const delay = Platform.OS === 'android' ? 400 : 100;
-
-        console.log(
-          `GlobalBottomSheetProvider: presenting bottom sheet '${id}' after ${delay}ms`,
-        );
 
         setTimeout(() => {
           // Protect against unmounted refs
@@ -102,8 +95,6 @@ export const GlobalBottomSheetProvider: React.FC<
   }, [pendingPresentations, bottomSheets]);
 
   const showBottomSheet = (config: BottomSheetConfig) => {
-    console.log('GlobalBottomSheetProvider: Showing bottom sheet:', config.id);
-
     // Add or update the bottom sheet
     setBottomSheets(prev => {
       const existing = prev.find(sheet => sheet.id === config.id);
@@ -120,20 +111,16 @@ export const GlobalBottomSheetProvider: React.FC<
   };
 
   const hideBottomSheet = (id: string) => {
-    console.log('GlobalBottomSheetProvider: Hiding bottom sheet:', id);
     bottomSheetRefs.current[id]?.dismiss();
   };
 
   const hideAllBottomSheets = () => {
-    console.log('GlobalBottomSheetProvider: Hiding all bottom sheets');
     Object.values(bottomSheetRefs.current).forEach(ref => {
       ref?.dismiss();
     });
   };
 
   const handleBottomSheetClose = (id: string) => {
-    console.log('GlobalBottomSheetProvider: Bottom sheet closed:', id);
-
     // Find the config and call its onClose callback
     const config = bottomSheets.find(sheet => sheet.id === id);
     config?.onClose?.();
@@ -176,16 +163,10 @@ export const GlobalBottomSheetProvider: React.FC<
                   // Delay by 2 animation frames to ensure layout/measurements complete
                   requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                      console.log(
-                        `GlobalBottomSheetProvider: presenting bottom sheet '${config.id}' after double RAF`,
-                      );
                       present();
 
                       // Fallback retry after 120 ms in case first call is ignored (Android edge-case)
                       setTimeout(() => {
-                        console.log(
-                          `GlobalBottomSheetProvider: retry present for '${config.id}' (fallback)`,
-                        );
                         present();
                       }, 120);
                     });

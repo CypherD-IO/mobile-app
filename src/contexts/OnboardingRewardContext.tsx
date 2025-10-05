@@ -139,9 +139,6 @@ export const OnboardingRewardProvider: React.FC<{
 
   const refreshStatus = useCallback(async () => {
     const res = await getWithAuth('/v1/cards/onboarding-rewards');
-    console.log('res in refreshStatus', res);
-    console.log('data in refreshStatus', res.data);
-    console.log('isError in refreshStatus', res.isError);
     if (!res.isError) {
       applyResponse(res.data);
     }
@@ -152,8 +149,6 @@ export const OnboardingRewardProvider: React.FC<{
       '/v1/cards/onboarding-rewards',
       {},
     );
-    console.log('data in createTracking', data);
-    console.log('isError in createTracking', isError);
     if (!isError) {
       applyResponse(data);
     }

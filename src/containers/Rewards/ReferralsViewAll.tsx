@@ -217,7 +217,6 @@ export default function ReferralsViewAll({
   /* -------------------------------------------------------------------------- */
 
   const renderReferralItem = (ref: Referee, isLast: boolean) => {
-    console.log('R E F E R R A L  I T E M :', ref);
     return (
       <CyDTouchView
         key={`${ref.address}-${ref.epoch}`}

@@ -62,8 +62,6 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
       const res = await getWithoutAuth('/v1/cards/onboarding-rewards/info');
       const { data, isError } = res;
 
-      console.log('data : ', data.rewardStages.kycPending.timeLimit);
-
       if (!isError) {
         // Extract time limit safely: rewardStages.kycPending.timeLimit (in seconds)
         const timeLimitSeconds = get(

@@ -44,7 +44,6 @@ export interface RouteProps {
 }
 
 export default function DebitCardScreen(props: RouteProps) {
-  console.log('🔍 DEBIT CARD SCREEN - COMPONENT INITIALIZED');
   const { t } = useTranslation();
 
   const globalContext = useContext<any>(GlobalContext);
@@ -119,9 +118,6 @@ export default function DebitCardScreen(props: RouteProps) {
       let isLoading = false;
 
       const checkCardApplicationStatus = async () => {
-        console.log(
-          'C H E C K I N G  C A R D  A P P L I C A T I O N  S T A T U S',
-        );
         if (isLoading || !isMounted) return;
 
         if (!isReadOnlyWallet) {
@@ -144,15 +140,6 @@ export default function DebitCardScreen(props: RouteProps) {
               return;
             }
 
-            console.log(
-              'C U R R E N T  C A R D  P R O F I L E :',
-              currentCardProfile,
-            );
-            console.log(
-              'P R O V I D E R :',
-              has(currentCardProfile, provider as string),
-            );
-
             if (
               currentCardProfile &&
               has(currentCardProfile, provider as string)
@@ -170,14 +157,8 @@ export default function DebitCardScreen(props: RouteProps) {
                   get(currentCardProfile, [provider, 'preferredName']) !==
                     undefined);
 
-              console.log(
-                'I S  C A R D  A P P L I C A T I O N  C O M P L E T E D :',
-                isCardApplicationCompleted,
-              );
-
               if (isCardApplicationCompleted && !hasRedirected.current) {
                 hasRedirected.current = true;
-                console.log('[DebitCard] redirect ➜ CARD_SCREEN');
                 props.navigation.reset({
                   index: 0,
                   routes: [
@@ -231,7 +212,6 @@ export default function DebitCardScreen(props: RouteProps) {
                   ],
                 });
               } else if (shouldCheckApplication(currentCardProfile)) {
-                console.log('🔍 DEBIT CARD SCREEN - CHECKING APPLICATION');
                 await checkApplication(provider as CardProviders);
                 // No navigation here; mark resolved so UI can render loader/next screen
                 if (isMounted && !hasRedirected.current) {
@@ -240,7 +220,6 @@ export default function DebitCardScreen(props: RouteProps) {
               } else {
                 if (!hasRedirected.current) {
                   hasRedirected.current = true;
-                  console.log('[DebitCard] redirect ➜ KYC_VERIFICATION_INTRO');
                   props.navigation.reset({
                     index: 0,
                     routes: [
@@ -255,7 +234,6 @@ export default function DebitCardScreen(props: RouteProps) {
               const isReferralCodeApplied = await getReferralCode();
               if (isReferralCodeApplied && !hasRedirected.current) {
                 hasRedirected.current = true;
-                console.log('[DebitCard] redirect ➜ ENTER_REFERRAL_CODE');
                 props.navigation.reset({
                   index: 0,
                   routes: [
@@ -267,7 +245,6 @@ export default function DebitCardScreen(props: RouteProps) {
                 });
               } else if (!isReferralCodeApplied && !hasRedirected.current) {
                 hasRedirected.current = true;
-                console.log('[DebitCard] redirect ➜ CARD_APPLICATION_WELCOME');
                 props.navigation.reset({
                   index: 0,
                   routes: [

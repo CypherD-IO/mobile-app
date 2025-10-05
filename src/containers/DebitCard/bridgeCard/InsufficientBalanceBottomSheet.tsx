@@ -217,29 +217,6 @@ const InsufficientBalanceBottomSheetContent: React.FC<
   });
   const selectorRef = React.useRef<any>(null);
 
-  console.log('ethereumAddress ::::::::: ', ethereumAddress);
-
-  // Debug: Log wallet structure
-  console.log('HDWallet context for insufficient balance sheet:', {
-    ethereum: ethereumAddress,
-    solana: get(
-      hdWalletContext,
-      'state.wallet.solana.wallets[0].address',
-      'NOT_FOUND',
-    ),
-    cosmos: get(
-      hdWalletContext,
-      'state.wallet.cosmos.wallets[0].address',
-      'NOT_FOUND',
-    ),
-    osmosis: get(
-      hdWalletContext,
-      'state.wallet.osmosis.wallets[0].address',
-      'NOT_FOUND',
-    ),
-    walletKeys: Object.keys(hdWalletContext?.state?.wallet || {}),
-  });
-
   function getChainDataWithAddress(chain: Chain): UserChain {
     let address = '';
 
@@ -333,11 +310,6 @@ const InsufficientBalanceBottomSheetContent: React.FC<
       console.error('Error opening funding guide:', err),
     );
   };
-
-  console.log(
-    'Rendering InsufficientBalanceBottomSheetContent with selectedChain:',
-    selectedChain,
-  );
 
   return (
     <CyDScrollView className='flex-1 px-[16px]'>

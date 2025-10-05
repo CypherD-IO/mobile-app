@@ -140,9 +140,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       content: (
         <InsufficientBalanceBottomSheetContent minAmount={minTokenValueLimit} />
       ),
-      onClose: () => {
-        console.log('Insufficient balance sheet closed');
-      },
     });
   };
 
@@ -151,7 +148,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       if (route.params?.tokenData) {
         setSelectedToken(route.params.tokenData);
       } else {
-        console.log('selectedToken in fundCard : ', selectedToken);
         if (!selectedToken) {
           // Auto-select the first suitable token from user's portfolio
           void setDefaultSelectedToken();
@@ -165,14 +161,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   }, [selectedToken]);
 
   const setDefaultSelectedToken = async () => {
-    console.log('setDefaultSelectedToken');
     try {
       const localPortfolio = await getLocalPortfolio();
       if (localPortfolio?.totalHoldings) {
-        console.log(
-          'localPortfolio.totalHoldings',
-          localPortfolio.totalHoldings[0],
-        );
         // Filter tokens that are fundable and have value > minimum required
         const fundableTokens = localPortfolio.totalHoldings.filter(token => {
           if (!token.isFundable || !token.isVerified) return false;
@@ -189,8 +180,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
           return Number(token.totalValue) >= minimumValue;
         });
-
-        console.log('fundableTokens', fundableTokens);
 
         // Sort by total value (descending) and select the first one
         if (fundableTokens.length > 0) {
@@ -226,14 +215,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
           }
         } else {
-          console.log(
-            'No eligible tokens found - show insufficient balance bottom sheet',
-          );
           // No eligible tokens found - show insufficient balance bottom sheet
           showInsufficientBalanceSheet();
         }
       }
-      console.log('setDefaultSelectedToken end');
     } catch (error) {
       // Log error and show insufficient balance sheet as fallback
       console.error('Error setting default selected token:', error);

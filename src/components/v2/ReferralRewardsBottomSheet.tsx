@@ -105,14 +105,11 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
   useEffect(() => {
     const fetchReferralCodes = async () => {
       try {
-        console.log('📡 Fetching referral codes...');
         const response = await getWithAuth('/v1/cards/referral-v2');
-        console.log('✅ Referral codes response:', response);
 
         if (!response.isError && response.data?.referralCodes) {
           const codes = response.data.referralCodes.filter(Boolean);
           setReferralCodes(codes);
-          console.log('✅ Referral codes loaded:', codes);
         } else {
           console.warn('⚠️ No referral codes found in response');
         }
@@ -136,8 +133,6 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
     const loadVotedMerchantsAndEarnings = async () => {
       setLoadingEarnings(true);
       try {
-        console.log('📡 Loading voted merchants and earnings...');
-
         // Fetch list of merchants user has voted for
         const listResp = await getWithAuth('/v1/cypher-protocol/merchants', {
           onlyUserVoted: true,
@@ -146,7 +141,6 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
         if (!listResp.isError && listResp.data?.items) {
           const items: MerchantData[] = listResp.data.items;
           setVotedMerchants(items);
-          console.log('✅ Voted merchants loaded:', items.length);
 
           // Get top 5 merchants for earning calculations
           const top = items.slice(0, 5);
@@ -190,7 +184,6 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
           });
 
           setMerchantBaseEarnings(earningsMap);
-          console.log('✅ Merchant base earnings calculated:', earningsMap);
         } else {
           console.warn('⚠️ No voted merchants found');
         }
@@ -252,7 +245,6 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
 
     try {
       copyToClipboard(codeToCopy);
-      console.log('✅ Invite code copied to clipboard:', codeToCopy);
       showToast(t('INVITE_CODE_COPIED') || 'Invite code copied!');
     } catch (err) {
       console.error('❌ Failed to copy invite code:', err);
@@ -265,7 +257,6 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
    * Updates the selected count and recalculates earnings
    */
   const handleReferralCountChange = useCallback((count: number) => {
-    console.log('📊 Referral count changed to:', count);
     setSelectedReferralCount(count);
   }, []);
 

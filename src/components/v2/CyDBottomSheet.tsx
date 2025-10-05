@@ -94,8 +94,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     const isDarkMode =
       theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-    console.log('CyDBottomSheet: Component mounted, isDarkMode:', isDarkMode);
-
     // Memoize snap points
     const snapPointsMemo = useMemo(() => snapPoints, [snapPoints]);
 
@@ -107,18 +105,10 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
 
     // Auto-present the bottom sheet when component mounts if no initialSnapIndex is provided
     useEffect(() => {
-      console.log(
-        'CyDBottomSheet: useEffect triggered, initialSnapIndex:',
-        initialSnapIndex,
-      );
-
       // If no initial snap index is provided, auto-present the sheet
       // OR if initialSnapIndex is -1 (closed), we still want to auto-present for GlobalBottomSheetProvider
       if (initialSnapIndex === undefined || initialSnapIndex === -1) {
         const timer = setTimeout(() => {
-          console.log(
-            'CyDBottomSheet: Auto-presenting bottom sheet (fallback mechanism)',
-          );
           bottomSheetRef.current?.snapToIndex(0);
         }, 200); // Slightly longer delay to ensure the provider's present() calls happen first
 
@@ -131,40 +121,27 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       ref,
       () => ({
         present: () => {
-          console.log('CyDBottomSheet: present() called');
           try {
             bottomSheetRef.current?.snapToIndex(0);
-            console.log('CyDBottomSheet: snapToIndex(0) executed successfully');
           } catch (error) {
             console.error('CyDBottomSheet: Error in present():', error);
           }
         },
         dismiss: () => {
-          console.log('CyDBottomSheet: dismiss() called');
           try {
             bottomSheetRef.current?.close();
-            console.log('CyDBottomSheet: close() executed successfully');
           } catch (error) {
             console.error('CyDBottomSheet: Error in dismiss():', error);
           }
         },
         snapToIndex: (index: number) => {
-          console.log(
-            'CyDBottomSheet: snapToIndex() called with index:',
-            index,
-          );
           try {
             bottomSheetRef.current?.snapToIndex(index);
-            console.log('CyDBottomSheet: snapToIndex executed successfully');
           } catch (error) {
             console.error('CyDBottomSheet: Error in snapToIndex():', error);
           }
         },
         snapToPosition: (position: string | number) => {
-          console.log(
-            'CyDBottomSheet: snapToPosition() called with position:',
-            position,
-          );
           try {
             return bottomSheetRef.current?.snapToPosition(position);
           } catch (error) {
@@ -172,7 +149,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           }
         },
         expand: () => {
-          console.log('CyDBottomSheet: expand() called');
           try {
             return bottomSheetRef.current?.expand();
           } catch (error) {
@@ -180,7 +156,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           }
         },
         collapse: () => {
-          console.log('CyDBottomSheet: collapse() called');
           try {
             return bottomSheetRef.current?.collapse();
           } catch (error) {
@@ -188,10 +163,8 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           }
         },
         close: () => {
-          console.log('CyDBottomSheet: close() called');
           try {
             bottomSheetRef.current?.close();
-            console.log('CyDBottomSheet: close() executed successfully');
           } catch (error) {
             console.error('CyDBottomSheet: Error in close():', error);
           }
@@ -203,13 +176,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     // Handle sheet changes
     const handleSheetChanges = useCallback(
       (index: number) => {
-        console.log(
-          'CyDBottomSheet: Index changed to:',
-          index,
-          'Previous:',
-          previousIndexRef.current,
-        );
-
         const prevIndex = previousIndexRef.current;
         previousIndexRef.current = index;
 
@@ -217,12 +183,10 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
         // 1. onOpen -> when we go from a closed state (-1) to any open index (>= 0)
         // 2. onClose -> when we go from an open state (>= 0) to closed (-1)
         if (index >= 0 && (prevIndex === -1 || prevIndex === null)) {
-          console.log('CyDBottomSheet: Firing onOpen callback');
           onOpen?.();
         }
 
         if (index === -1 && prevIndex !== -1 && prevIndex !== null) {
-          console.log('CyDBottomSheet: Firing onClose callback');
           onClose?.();
         }
 
@@ -257,13 +221,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     );
 
     const ContentWrapper = scrollable ? BottomSheetScrollView : BottomSheetView;
-
-    console.log(
-      'CyDBottomSheet: Rendering with snapPoints:',
-      snapPointsMemo,
-      'initialIndex:',
-      initialSnapIndex ?? -1,
-    );
 
     return (
       <CyDView

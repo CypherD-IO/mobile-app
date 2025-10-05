@@ -389,11 +389,6 @@ export default function CypherCardScreen() {
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  useEffect(() => {
-    console.log('C A R D  S C R E E N  M O U N T E D');
-    return () => console.log('C A R D  S C R E E N  U N M O U N T E D');
-  }, []);
-
   const onRefresh = async () => {
     void refreshProfile();
 
@@ -513,9 +508,7 @@ export default function CypherCardScreen() {
 
   const fetchRecentTransactions = async () => {
     const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10&includeRewards=true`;
-    console.log('C A R D  I D :', cardId);
     const response = await getWithAuth(txnURL);
-    console.log('R E S P : : : ', response);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
       txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
@@ -624,8 +617,6 @@ export default function CypherCardScreen() {
 
   // Show merchant detail sheet
   const showMerchantDetailSheet = (merchant: any) => {
-    console.log('Showing merchant detail for:', merchant?.name);
-
     setSelectedMerchantData(merchant);
 
     showBottomSheet({
@@ -635,31 +626,18 @@ export default function CypherCardScreen() {
       scrollable: true,
       topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
       backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
-      content: (
-        <MerchantRewardDetailContent
-          merchantData={merchant}
-          onKnowMorePress={() => {
-            console.log('Know More pressed for:', merchant?.name);
-          }}
-          onRemoveBoosterPress={() => {
-            console.log('Remove booster pressed for:', merchant?.name);
-          }}
-        />
-      ),
+      content: <MerchantRewardDetailContent merchantData={merchant} />,
       onClose: () => {
-        console.log('Merchant detail modal closed');
         setSelectedMerchantData(null);
       },
     });
   };
 
   const handleViewAllMerchants = () => {
-    console.log('Navigating to Merchant Reward List screen');
     navigation.navigate(screenTitle.MERCHANT_REWARD_LIST);
   };
 
   const handleDirectMerchantPress = (merchant: any) => {
-    console.log('Direct merchant press:', merchant?.name);
     showMerchantDetailSheet(merchant);
   };
 

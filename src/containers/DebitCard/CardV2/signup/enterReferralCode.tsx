@@ -99,8 +99,6 @@ const EnterReferralCode = (): JSX.Element => {
         referralCode: referralCode.trim().toUpperCase(),
       });
 
-      console.log('response : ', response);
-
       if (!response.isError) {
         if (response.data.isValid) {
           await setReferralCodeAsync(referralCode);
@@ -110,11 +108,7 @@ const EnterReferralCode = (): JSX.Element => {
             const votedResp = await getWithAuth(
               `/v1/cards/referral-v2/${referralCode.trim().toUpperCase()}/voted-candidates`,
             );
-            console.log(
-              'votedResp : ',
-              votedResp,
-              votedResp.data.votedCandidates,
-            );
+
             if (!votedResp.isError && votedResp.data?.votedCandidates) {
               const merchants = votedResp.data.votedCandidates.map(
                 (c: any) => ({
@@ -124,9 +118,7 @@ const EnterReferralCode = (): JSX.Element => {
               );
               setVotedCandidates(merchants);
             }
-          } catch (e) {
-            console.log('Error fetching voted candidates', e);
-          }
+          } catch (e) {}
 
           setShowBoostedRewardInfoModal(true);
         } else {
@@ -150,7 +142,6 @@ const EnterReferralCode = (): JSX.Element => {
         });
       }
     } catch (error) {
-      console.log('error : ', error);
       showModal('state', {
         type: 'error',
         title: t('ERROR_IN_APPLYING_REFERRAL_CODE'),

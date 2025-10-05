@@ -74,7 +74,6 @@ const ClaimRewardsBottomSheetContent = ({
    * Navigates to social media screen with claim lock URL
    */
   const handleDepositAndBoost = () => {
-    console.log('Deposit and boost rewards pressed');
     const redirectURI = 'https://app.cypherhq.io/#/?claimLock=true';
     navigation.navigate(screenTitle.OPTIONS);
     setTimeout(() => {
@@ -269,21 +268,13 @@ const ClaimReward: React.FC = () => {
   const fetchClaimRewardData = async () => {
     try {
       setLoadingClaimData(true);
-      console.log('📡 Fetching claim reward data...');
 
       const response = await getWithAuth(
         '/v1/cypher-protocol/user/claim-reward',
       );
 
-      console.log(
-        '📊 Claim reward response:',
-        // response,
-        response.data.claimInfo.amount,
-      );
-
       if (!response.isError && response.data) {
         setClaimRewardData(response.data as ClaimRewardResponse);
-        console.log('✅ Claim reward data loaded successfully');
       } else {
         console.error('❌ Failed to fetch claim reward data:', response.error);
         showToast('Failed to load claim reward data', 'error');
@@ -338,8 +329,6 @@ const ClaimReward: React.FC = () => {
    * Executes the claim rewards transaction on Base Sepolia
    */
   const handleClaimToWalletTransaction = async () => {
-    console.log('🎁 Claim to wallet pressed');
-
     try {
       // Get user's Ethereum address from wallet context
       const fromAddress = get(
@@ -361,8 +350,6 @@ const ClaimReward: React.FC = () => {
         });
         return;
       }
-
-      console.log('📍 User address:', fromAddress);
 
       // Check if claim data is available
       if (!claimRewardData?.claimInfo) {
@@ -411,23 +398,11 @@ const ClaimReward: React.FC = () => {
         fromAddress,
       };
 
-      console.log('📋 Claim parameters:', {
-        proofs: claimParams.proofs,
-        rootIds: claimParams.rootIds.map(id => id.toString()),
-        values: claimParams.values.map(v => v.toString()),
-        fromAddress: claimParams.fromAddress,
-      });
-
       // Execute claim
       const result = await claimRewards(claimParams);
 
-      console.log('🎉 Claim result:', result);
-
       // Only consider successful if there's a valid transaction hash
       if (result.success && result.hash && result.hash !== '0x') {
-        console.log('✅ Rewards claimed successfully!');
-        console.log('📜 Transaction hash:', result.hash);
-
         // Calculate the total claimed amount in CYPR tokens
         // Sum all values and convert from Wei to tokens (18 decimals)
         const totalClaimedWei = claimParams.values.reduce(
@@ -435,8 +410,6 @@ const ClaimReward: React.FC = () => {
           0n,
         );
         const claimedAmount = Number(totalClaimedWei) / Math.pow(10, 18);
-
-        console.log('💰 Total claimed amount:', claimedAmount, '$CYPR');
 
         // Navigate to TokenRewardEarned screen with claimed amount
         const navigationParams = {
@@ -493,8 +466,6 @@ const ClaimReward: React.FC = () => {
    * Shows bottom sheet with claim options
    */
   const handleClaimRewards = () => {
-    console.log('Claim rewards pressed - total:', claimData.totalRewards);
-
     const bottomSheetId = 'claim-rewards-options';
 
     showBottomSheet({
@@ -508,16 +479,12 @@ const ClaimReward: React.FC = () => {
           onClaimToWallet={handleClaimToWalletTransaction}
           navigation={navigation}
           onClose={() => {
-            console.log('Closing claim rewards bottom sheet...');
             hideBottomSheet(bottomSheetId);
           }}
         />
       ),
       topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
       backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
-      onClose: () => {
-        console.log('Claim rewards bottom sheet closed');
-      },
     });
   };
 

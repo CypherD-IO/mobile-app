@@ -103,7 +103,6 @@ const OffersAndPromotion = (): JSX.Element => {
             const votedResp = await getWithAuth(
               `/v1/cards/referral-v2/${referralCode.trim().toUpperCase()}/voted-candidates`,
             );
-            console.log('votedResp in offers and promotion : ', votedResp);
             if (!votedResp.isError && votedResp.data?.votedCandidates) {
               const merchants = votedResp.data.votedCandidates.map(
                 (c: any) => ({
@@ -113,9 +112,7 @@ const OffersAndPromotion = (): JSX.Element => {
               );
               setVotedCandidates(merchants);
             }
-          } catch (err) {
-            console.log('Error fetching voted candidates', err);
-          }
+          } catch (err) {}
 
           setShowBoostedRewardInfoModal(true);
         } else {

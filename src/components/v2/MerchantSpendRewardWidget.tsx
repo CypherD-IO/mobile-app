@@ -69,14 +69,10 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   const fetchTopMerchants = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('~~~ fetching top merchants and epoch details');
       // Adjust the endpoint & params as per backend specification
       const resp = await getWithAuth(
         '/v1/cypher-protocol/merchants?sortBy=multiplier&limit=6',
       );
-
-      console.log('~~~ resp merchants', resp);
-      console.log('~~~ resp merchants list : ', resp.data.items);
 
       const { isError, data } = resp;
 
@@ -113,10 +109,6 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     const fetchEpoch = async () => {
       try {
         const epochResp = await getWithoutAuth('/v1/cypher-protocol/epoch');
-        console.log(
-          '~~~ epochResp : ',
-          epochResp.data.parameters.tierMultipliers,
-        );
         setEpochData(epochResp.data);
       } catch (err) {
         console.warn('Failed to fetch epoch details', err);
@@ -135,12 +127,10 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   );
 
   const handleMerchantPress = (merchant: MerchantData) => {
-    console.log('Merchant pressed:', merchant);
     onMerchantPress?.(merchant);
   };
 
   const handleViewAllPress = () => {
-    console.log('View all merchant bonus pressed');
     onViewAllPress?.();
   };
 
@@ -158,7 +148,6 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   const renderMerchantCard = (merchant: MerchantData, index: number) => {
     // Check if user has voted for this merchant
     const hasUserVoted = merchant.userVoteData?.hasVoted || false;
-    console.log('hasUserVoted : ', hasUserVoted);
 
     return (
       <CyDTouchView

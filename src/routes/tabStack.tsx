@@ -101,7 +101,6 @@ const TabStack = React.memo(
         try {
           const isFirstLaunch = await getFirstLaunchAfterWalletCreation();
           if (isFirstLaunch) {
-            console.log('I S  F I R S T  L A U N C H');
             setInitialTab(screenTitle.CARD);
             // Reset the flag so subsequent launches open Portfolio
             await setFirstLaunchAfterWalletCreation(false);
@@ -249,14 +248,6 @@ const TabStack = React.memo(
             break;
 
           default:
-            console.log(
-              'G E T  C U R R E N T  R O U T E  N A M E :',
-              getCurrentRouteName(),
-            );
-            console.log(
-              'Unhandled deep link screenToNavigate:',
-              data.screenToNavigate,
-            );
           // Do not navigate to CARD for unmatched deep link data
           // This prevents double navigation issues during wallet creation
           // Only navigate to CARD if there's a specific reason in the cases above
