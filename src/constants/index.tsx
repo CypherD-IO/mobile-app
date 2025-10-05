@@ -149,6 +149,7 @@ export const screenTitle = {
   CARD_CONTROLS: 'CardControls',
   AIRDROP_ELIGIBILITY: 'AirdropEligibility',
   AIRDROP_CLAIM: 'AirdropClaim',
+  AIRDROP_CLAIM_SUCCESS: 'AirdropClaimSuccess',
   COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
 };
 

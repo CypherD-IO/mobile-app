@@ -118,6 +118,7 @@ import CardApplicationStack from './CardApplicationStack';
 import KYCVerification from '../containers/DebitCard/CardV2/signup/application/kyc/kycVerification';
 import AirdropEligibility from '../containers/airdrop/eligibility';
 import AirdropClaim from '../containers/airdrop/claim';
+import AirdropClaimSuccess from '../containers/airdrop/claimSuccess';
 import CountryTemporarilyUnsupported from '../containers/DebitCard/CardV2/signup/application/countryTemporarilyUnsupported';
 import OptionsHub from '../containers/Options';
 
@@ -432,6 +433,14 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.AIRDROP_CLAIM}
         component={AirdropClaim}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.AIRDROP_CLAIM_SUCCESS}
+        component={AirdropClaimSuccess}
         options={({ navigation }) => ({
           headerShown: false,
         })}

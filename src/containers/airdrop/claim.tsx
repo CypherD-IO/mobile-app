@@ -39,8 +39,6 @@ import MerchantBoostModal, {
 import useAxios from '../../core/HttpRequest';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { SuccessTransaction } from '../../components/v2/StateModal';
-import { CHAIN_BASE, CHAIN_BASE_SEPOLIA } from '../../constants/server';
 import { t } from 'i18next';
 import { screenTitle } from '../../constants';
 import Loading from '../Loading';
@@ -157,21 +155,6 @@ export default function AirdropClaim() {
     }
   }, [selectedMerchants.length, loadDefaultMerchants]);
 
-  const renderSuccessTransaction = (hash: string, isTestnet: boolean) => {
-    const chain = isTestnet ? CHAIN_BASE_SEPOLIA : CHAIN_BASE;
-    return (
-      <>
-        <SuccessTransaction
-          hash={hash}
-          symbol={chain?.symbol ?? ''}
-          name={chain?.name ?? ''}
-          navigation={navigation}
-          hideModal={hideModal}
-        />
-      </>
-    );
-  };
-
   const checkAlreadyClaimed = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -286,22 +269,33 @@ export default function AirdropClaim() {
           onFailure: hideModal,
         });
       } else {
+        // Mark airdrop as claimed in the backend
         await patchWithAuth(`/v1/airdrop/mark-claimed/${walletAddress}`, {
           claimed: true,
           hash: result?.hash ?? '',
         });
-        showModal('state', {
-          type: 'success',
-          title: t('CLAIM_SUCCESS'),
-          modalImage: AppImages.CYPHER_SUCCESS,
-          description: renderSuccessTransaction(
-            result?.hash,
-            get(airdropData, 'claimInfo.isTestnet', true),
-          ),
-          onSuccess: () => {
-            hideModal();
-            navigation.navigate(screenTitle.PORTFOLIO);
-          },
+
+        // Calculate total token values for display
+        const totalCyprValue = sum([
+          airdropData.tokenAllocation?.cypherCardRewards[0],
+          airdropData.tokenAllocation?.cypherOGRewards[0],
+          airdropData.tokenAllocation?.influencerRewards[0],
+          airdropData.tokenAllocation?.baseCommunityRewards[0],
+        ]);
+
+        const totalVeCyprValue = sum([
+          airdropData.tokenAllocation?.cypherCardRewards[1],
+          airdropData.tokenAllocation?.cypherOGRewards[1],
+          airdropData.tokenAllocation?.influencerRewards[1],
+          airdropData.tokenAllocation?.baseCommunityRewards[1],
+        ]);
+
+        // Navigate to success screen with claim details
+        navigation.navigate(screenTitle.AIRDROP_CLAIM_SUCCESS, {
+          merchants: selectedMerchants,
+          totalCypr: totalCyprValue,
+          totalVeCypr: totalVeCyprValue,
+          transactionHash: result?.hash ?? '',
         });
       }
     } catch (error) {
