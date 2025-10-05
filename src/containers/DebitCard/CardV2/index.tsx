@@ -74,13 +74,6 @@ import {
 } from '../../../styles/tailwindComponents';
 import CardScreen from '../bridgeCard/card';
 import CardTxnFilterModal from './CardTxnFilterModal';
-import MerchantSpendRewardWidget from '../../../components/v2/MerchantSpendRewardWidget';
-import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
-import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
-import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
-import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
-import { Theme, useTheme } from '../../../reducers/themeReducer';
-import { useColorScheme } from 'nativewind';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -953,39 +946,7 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
-            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
-              {cardId === CARD_IDS.HIDDEN_CARD && (
-                <CyDTouchView
-                  className='mx-[16px] bg-base250 rounded-[12px] p-[16px]'
-                  onPress={() => {
-                    onPressFundCard();
-                  }}>
-                  <CyDView>
-                    <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                      <CyDFastImage
-                        source={AppImages.FALLING_COINS_3D}
-                        className='h-[46px] w-[32px]'
-                        resizeMode='contain'
-                      />
-                      <CyDView className='flex flex-col flex-1'>
-                        <CyDView className='flex flex-row items-center justify-between gap-x-[4px]'>
-                          <CyDText className='text-[20px] font-[500] mb-[4px]'>
-                            {t<string>('LOAD_YOUR_CARD')}
-                          </CyDText>
-                          <CyDMaterialDesignIcons
-                            name='arrow-right-thin'
-                            size={24}
-                            className='text-base400'
-                          />
-                        </CyDView>
-                        <CyDText className='text-[14px] font-[400] mb-[16px]'>
-                          {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
-                        </CyDText>
-                      </CyDView>
-                    </CyDView>
-                  </CyDView>
-                </CyDTouchView>
-              )}
+            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
               <GetPhysicalCardComponent
                 cardProfile={cardProfile}
                 cardProvider={cardProvider}
