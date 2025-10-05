@@ -404,13 +404,6 @@ export default function OptionsHub() {
         });
       },
     },
-    {
-      title: 'AIRDROP',
-      imageUri: 'https://public.cypherd.io/icons/youtube.png',
-      onPress: () => {
-        navigation.navigate(screenTitle.AIRDROP_ELIGIBILITY);
-      },
-    },
   ];
 
   const refreshProfile = async () => {

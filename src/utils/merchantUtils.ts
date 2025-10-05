@@ -11,7 +11,6 @@ const computeFallback = (
   merchant: MerchantLike,
 ): { text: string; fontSize: number } => {
   const name = merchant.brand ?? merchant.canonicalName ?? '';
-  console.log('****************** name : ', name);
   if (!name) return { text: '?', fontSize: 18 };
   const firstWord = name.split(' ')[0];
   const display = firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
