@@ -95,9 +95,9 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
 
   // Approximate width that should remain visible when collapsed – includes
   // icon (28) + padding/margin (~20)
-  const COLLAPSED_WIDTH = 56;
+  const COLLAPSED_WIDTH = 100;
   const LEFT_MARGIN =
-    typeof position.left === 'number' ? position.left : 16; /* default 16px */
+    typeof position.left === 'number' ? position.left : 32; /* default 16px */
 
   /**
    * How far the banner needs to travel for the icon to reach the right margin
@@ -197,20 +197,13 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
     <CyDAnimatedView style={[dynamicPositionStyle, bannerAnimatedStyle]}>
       <Pressable onPress={handlePress}>
         <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg'>
-          {/* Left side - Icon */}
-          {isEligible ? (
-            <CyDMaterialDesignIcons
-              name='check-circle'
-              size={28}
-              color='white'
-              className='mr-2'
-            />
-          ) : (
-            <Image
-              source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
-              className='w-[28px] h-[28px] mr-2'
-              resizeMode='contain'
-            />
+          {/* Countdown timer */}
+          {!isEligible && (
+            <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full min-w-[90px] px-2 py-1 items-center mr-2'>
+              <CyDText className='text-white font-bold text-[14px]'>
+                {formatTime(minutes)}m: {formatTime(seconds)}s
+              </CyDText>
+            </CyDView>
           )}
 
           {/* Offer text and timer (opacity animated) */}
@@ -223,13 +216,20 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
                 : `Get ${totalRewardsPossible} $CYPR as sign up bonus`}
             </CyDText>
 
-            {/* Countdown timer */}
-            {!isEligible && (
-              <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full min-w-[90px] px-2 py-1 items-center'>
-                <CyDText className='text-white font-bold text-[14px]'>
-                  {formatTime(minutes)}m: {formatTime(seconds)}s
-                </CyDText>
-              </CyDView>
+            {/* Left side - Icon */}
+            {isEligible ? (
+              <CyDMaterialDesignIcons
+                name='check-circle'
+                size={28}
+                color='white'
+                className='mr-2'
+              />
+            ) : (
+              <Image
+                source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
+                className='w-[28px] h-[28px]'
+                resizeMode='contain'
+              />
             )}
           </CyDAnimatedView>
         </CyDView>
