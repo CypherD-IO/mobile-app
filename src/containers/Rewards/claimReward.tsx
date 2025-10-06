@@ -210,10 +210,9 @@ const ClaimReward: React.FC = () => {
     // Convert from wei (18 decimals) to token units
     const totalRewardsWei =
       claimRewardData?.rewardInfo?.totalRewardsInToken ?? 0;
-    const totalRewards = DecimalHelper.toDecimal(
-      totalRewardsWei,
-      18,
-    ).toString();
+    const totalRewards = Number(
+      DecimalHelper.toDecimal(totalRewardsWei, 18).toString(),
+    );
 
     return {
       totalRewards,
@@ -401,11 +400,11 @@ const ClaimReward: React.FC = () => {
         fromAddress,
       };
 
-      // Execute claim
+      // Execute claim using the same pattern as airdrop claim
       const result = await claimRewards(claimParams);
 
-      // Only consider successful if there's a valid transaction hash
-      if (result.success && result.hash && result.hash !== '0x') {
+      // Check if transaction was successful
+      if (!result.isError && result.hash) {
         // Calculate the total claimed amount in CYPR tokens
         // Sum all values and convert from Wei to tokens (18 decimals)
         const totalClaimedWei = claimParams.values.reduce(
@@ -413,7 +412,6 @@ const ClaimReward: React.FC = () => {
           0n,
         );
         const claimedAmount = Number(totalClaimedWei) / Math.pow(10, 18);
-
         // Mark rewards as claimed in backend
         // This is a non-blocking call - we don't want to prevent navigation if it fails
         try {
@@ -431,8 +429,6 @@ const ClaimReward: React.FC = () => {
               markClaimedResponse.error,
             );
             // Don't block the user flow - just log the error
-          } else {
-            console.log('✅ Successfully marked rewards as claimed on backend');
           }
         } catch (markClaimedError) {
           console.error(
@@ -459,12 +455,19 @@ const ClaimReward: React.FC = () => {
         // Refresh claim reward data after successful claim
         void fetchClaimRewardData();
       } else {
-        // Show error modal if claim failed or no transaction hash
+        // Show error modal if claim failed
         console.error('❌ Claim failed:', result.error);
+        const errorMessage =
+          result.error instanceof Error
+            ? result.error.message
+            : typeof result.error === 'string'
+              ? result.error
+              : t('CLAIM_FAILED_DESC');
+
         showModal('state', {
           type: 'error',
           title: t('CLAIM_FAILED'),
-          description: result.error ?? t('CLAIM_FAILED_DESC'),
+          description: errorMessage,
           onSuccess: hideModal,
           onFailure: hideModal,
         });

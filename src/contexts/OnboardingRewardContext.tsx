@@ -138,15 +138,9 @@ export const OnboardingRewardProvider: React.FC<{
   );
 
   const refreshStatus = useCallback(async () => {
-    console.log('refreshStatus ::::::::::::::::: ');
     try {
       const res = await getWithAuth('/v1/cards/onboarding-rewards');
       if (!res.isError) {
-        console.log(
-          'refreshStatus ::::::::::::::::: res.data',
-          res.data.currentStage,
-          res.data.statusWiseRewards,
-        );
         applyResponse(res.data);
       } else {
         Sentry.captureException(

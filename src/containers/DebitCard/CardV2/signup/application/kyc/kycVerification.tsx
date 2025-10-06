@@ -72,9 +72,6 @@ const KYCVerification = () => {
           previousKycStatusRef.current !== null &&
           previousKycStatusRef.current !== applicationStatus
         ) {
-          console.log(
-            `KYC status changed from ${previousKycStatusRef.current} to ${String(applicationStatus)}. Refreshing onboarding rewards...`,
-          );
           void refreshStatus();
         }
 
