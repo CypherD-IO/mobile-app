@@ -22,7 +22,7 @@ import { ChainConfigMapping } from '../../constants/server';
  */
 // TODO: Change to Base mainnet contract
 const REWARDS_DISTRIBUTOR_CONTRACT =
-  '0x204f179de0c6decae6ae93e7427139016dd16c2a' as const;
+  '0x3aDCB5664d9ABB0bD7991Bcd295E095a95295BE5' as const;
 
 /**
  * ABI for the claimMultiple function
