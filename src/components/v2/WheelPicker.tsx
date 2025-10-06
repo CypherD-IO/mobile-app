@@ -69,7 +69,7 @@ const WheelPicker: React.FC<WheelPickerProps> = ({
     [data],
   );
 
-  const handleValueChanged: OriginalProps<WheelPickerItem>['onValueChanged'] =
+  const handleValueChange: OriginalProps<WheelPickerItem>['onValueChanged'] =
     useCallback(
       ({ index }: { index: number }) => {
         if (index !== selectedIndex && data[index]) {
@@ -78,15 +78,6 @@ const WheelPicker: React.FC<WheelPickerProps> = ({
       },
       [data, onChange, selectedIndex],
     );
-
-  const handleValueChanging = useCallback(
-    ({ index }: { index: number }) => {
-      if (index !== selectedIndex && data[index]) {
-        onChange(index, data[index]);
-      }
-    },
-    [data, onChange, selectedIndex],
-  );
 
   return (
     <WheelPickerOriginal
@@ -113,8 +104,8 @@ const WheelPicker: React.FC<WheelPickerProps> = ({
           index,
         })
       }
-      onValueChanged={handleValueChanged}
-      {...({ onValueChanging: handleValueChanging } as any)}
+      onValueChanged={handleValueChange}
+      {...({ onValueChanging: handleValueChange } as any)}
     />
   );
 };

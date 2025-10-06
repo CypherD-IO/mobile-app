@@ -384,7 +384,6 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
         return { bg: 'rgba(247,198,69,0.15)', txt: '#F7C645' };
       case 'merchant':
         return { bg: 'rgba(255,140,0,0.15)', txt: '#FF8C00' };
-      case 'referrals':
       default:
         return { bg: 'rgba(7,73,255,0.15)', txt: '#0749FF' };
     }
@@ -1127,7 +1126,7 @@ export default function Rewards() {
   if (isLoading) {
     return (
       <Loading
-        loadingText={'Fetching rewards...'}
+        loadingText={''}
         backgroundColor={isDarkMode ? 'bg-black' : 'bg-n20'}
       />
     );

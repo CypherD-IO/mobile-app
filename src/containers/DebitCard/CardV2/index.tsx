@@ -75,10 +75,6 @@ import {
 import CardScreen from '../bridgeCard/card';
 import CardTxnFilterModal from './CardTxnFilterModal';
 import MerchantSpendRewardWidget from '../../../components/v2/MerchantSpendRewardWidget';
-import RewardsEpochModal, {
-  IEpochInfo,
-  shouldShowRewardsEpochModal,
-} from '../../../components/v2/RewardsEpochModal';
 import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
 import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';

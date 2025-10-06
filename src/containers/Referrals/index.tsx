@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Clipboard,
-  Share,
-  Dimensions,
-  Platform,
-  useColorScheme,
-  StyleSheet,
-} from 'react-native';
+import { Platform, useColorScheme, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   CyDSafeAreaView,
@@ -23,15 +16,17 @@ import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
+import ReferralRewardsBottomSheet from '../../components/v2/ReferralRewardsBottomSheet';
 // @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
 import { QRCode } from 'react-native-custom-qr-codes';
 import { BlurView } from '@react-native-community/blur';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import useAxios from '../../core/HttpRequest';
 import NewReferralCodeModal from '../../components/v2/newReferralCodeModal';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+// Removed unused GlobalModal import
+import Clipboard from '@react-native-clipboard/clipboard';
 
-const { width } = Dimensions.get('window');
+// removed unused Dimensions width
 
 interface ReferralData {
   referralCode: string;
@@ -39,6 +34,10 @@ interface ReferralData {
   friendEarnings: number;
   additionalUserEarnings: number;
   additionalFriendEarnings: number;
+}
+
+interface MinimalNav {
+  navigate: (route: string, params?: unknown) => void;
 }
 
 // Extracted styles to avoid inline-style linter warnings
@@ -137,9 +136,9 @@ const QRCodeBottomSheetContent = ({
 export default function Referrals() {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const { showBottomSheet } = useGlobalBottomSheet();
-  const { postWithAuth, getWithAuth } = useAxios();
-  const { showModal, hideModal } = useGlobalModalContext();
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+  const { postWithAuth, getWithAuth, getWithoutAuth } = useAxios();
+  // removed unused showModal, hideModal
 
   const { theme } = useTheme();
   const colorScheme = useColorScheme();
@@ -150,37 +149,110 @@ export default function Referrals() {
   /*                       Referral Data (fetched from API)                    */
   /* ------------------------------------------------------------------------ */
   const [referralCodes, setReferralCodes] = useState<string[]>([]);
-  const [isReferralCodesLoading, setIsReferralCodesLoading] = useState(false);
+  // Loading states exist but are not currently displayed in UI; keep only epoch-independent loading if used elsewhere
+  // Removed unused state: isReferralCodesLoading
 
-  // Keep existing earnings placeholders – can be replaced with API later.
-  const [referralData] = useState<ReferralData>({
+  // Earnings values; will be populated from API parameters
+  const [referralData, setReferralData] = useState<ReferralData>({
     referralCode: '',
-    userEarnings: 50.0,
-    friendEarnings: 100.0,
-    additionalUserEarnings: 30.0,
-    additionalFriendEarnings: 70.0,
+    userEarnings: 0,
+    friendEarnings: 0,
+    additionalUserEarnings: 50,
+    additionalFriendEarnings: 100,
   });
 
   // New-code modal state
   const [isNewCodeModalVisible, setIsNewCodeModalVisible] = useState(false);
   const [code, setCode] = useState('');
-  const [createReferralCodeLoading, setCreateReferralCodeLoading] =
-    useState(false);
+  // Removed unused state: createReferralCodeLoading
 
   /**
    * Fetch referral codes list from backend.
    */
-  const fetchReferralCodes = async () => {
-    setIsReferralCodesLoading(true);
-    const response = await getWithAuth('/v1/cards/referral-v2');
+  const fetchReferralCodes = async (): Promise<void> => {
+    try {
+      const res = await getWithAuth('/v1/cards/referral-v2');
+      if (!res.isError && Array.isArray(res.data?.referralCodes)) {
+        setReferralCodes(res.data.referralCodes.filter(Boolean));
+        // Safely read referral parameters if available
+        const signupBonus: number | undefined =
+          res.data?.parameters?.signupBonus;
+        const baseReferralPerReferee: number | undefined =
+          res.data?.parameters?.baseReferralPerReferee;
 
-    setIsReferralCodesLoading(false);
-
-    setReferralCodes(response.data.referralCodes); // Filter out any undefined/null values
+        if (
+          typeof signupBonus === 'number' ||
+          typeof baseReferralPerReferee === 'number'
+        ) {
+          setReferralData(prev => ({
+            ...prev,
+            friendEarnings:
+              typeof signupBonus === 'number'
+                ? signupBonus
+                : prev.friendEarnings,
+            userEarnings:
+              typeof baseReferralPerReferee === 'number'
+                ? baseReferralPerReferee
+                : prev.userEarnings,
+          }));
+        }
+      } else {
+        setReferralCodes([]);
+        if (res.isError) {
+          showToast(t('Failed to load referral codes'), 'error');
+        }
+      }
+    } finally {
+      // no-op
+    }
   };
 
   useEffect(() => {
     void fetchReferralCodes();
+  }, []);
+
+  /**
+   * Fetch current epoch parameters to populate referral earnings.
+   * This is the source of truth for the "They Join Cypher" amounts.
+   */
+  const fetchEpochParameters = async (): Promise<void> => {
+    try {
+      const epochResp = await getWithoutAuth('/v1/cypher-protocol/epoch');
+      if (!epochResp.isError) {
+        const signupBonus = epochResp.data?.parameters?.signupBonus;
+        const baseReferralPerReferee =
+          epochResp.data?.parameters?.baseReferralPerReferee;
+
+        // Prefer epoch parameters when available
+        if (
+          typeof signupBonus === 'number' ||
+          typeof signupBonus === 'string' ||
+          typeof baseReferralPerReferee === 'number' ||
+          typeof baseReferralPerReferee === 'string'
+        ) {
+          const parsedSignupBonus = Number(signupBonus);
+          const parsedBaseReferral = Number(baseReferralPerReferee);
+
+          setReferralData(prev => ({
+            ...prev,
+            friendEarnings: Number.isFinite(parsedSignupBonus)
+              ? parsedSignupBonus
+              : prev.friendEarnings,
+            userEarnings: Number.isFinite(parsedBaseReferral)
+              ? parsedBaseReferral
+              : prev.userEarnings,
+          }));
+        }
+      } else {
+        console.warn('⚠️ Failed to fetch epoch parameters for referrals');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching epoch parameters:', error);
+    }
+  };
+
+  useEffect(() => {
+    void fetchEpochParameters();
   }, []);
 
   /**
@@ -193,14 +265,11 @@ export default function Referrals() {
     utm_medium: string;
   }) => {
     setIsNewCodeModalVisible(false);
-    setCreateReferralCodeLoading(true);
 
     const response = await postWithAuth('/v1/cards/referral-v2', {
       referralCode: code,
       ...payload,
     });
-
-    setCreateReferralCodeLoading(false);
 
     if (!response.isError) {
       showToast(t('REFERRAL_CODE_CREATED', 'Referral code created'));
@@ -218,7 +287,7 @@ export default function Referrals() {
    * Handles copying referral code to clipboard
    * Provides user feedback through toast notification
    */
-  const handleCopyReferralCode = () => {
+  const handleCopyReferralCode = (): void => {
     try {
       const codeToCopy = referralCodes[0];
       if (!codeToCopy) {
@@ -227,7 +296,7 @@ export default function Referrals() {
       }
       Clipboard.setString(codeToCopy);
       showToast(t('Referral code copied to clipboard!'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error copying referral code:', error);
       showToast(t('Failed to copy referral code'));
     }
@@ -277,6 +346,28 @@ export default function Referrals() {
   };
 
   /**
+   * Opens the Referral Rewards bottom sheet to explain the
+   * "Earn even more when..." section with live examples.
+   */
+  const handleOpenReferralRewardsInfo = (): void => {
+    showBottomSheet({
+      id: 'referral-rewards-info',
+      snapPoints: ['75%', Platform.OS === 'android' ? '100%' : '93%'],
+      showCloseButton: true,
+      scrollable: true,
+      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      content: (
+        <ReferralRewardsBottomSheet
+          onOpenInviteModal={() => {
+            hideBottomSheet('referral-rewards-info');
+          }}
+        />
+      ),
+    });
+  };
+
+  /**
    * Handles navigation to add referral code screen
    * For users who want to enter someone else's referral code
    */
@@ -288,18 +379,16 @@ export default function Referrals() {
   /**
    * Navigates to the All Referral Codes screen
    */
-  const handleViewAllReferralCodes = () => {
-    (navigation as any).navigate(screenTitle.ALL_REFERRAL_CODES, {
-      referralCodes,
-    });
+  const handleViewAllReferralCodes = (): void => {
+    // Cast to a minimal typed shape to avoid using any
+    const nav = navigation as unknown as MinimalNav;
+    nav.navigate(screenTitle.ALL_REFERRAL_CODES, { referralCodes });
   };
 
   /**
    * Handles back navigation
    */
-  const handleBack = () => {
-    navigation.goBack();
-  };
+  // removed unused handleBack
 
   /**
    * Handles close action
@@ -372,7 +461,7 @@ export default function Referrals() {
               {referralCodes[0] ?? '———'}
             </CyDText>
             <CyDTouchView onPress={handleCopyReferralCode} className='p-2'>
-              <CyDIcons name='copy' size={20} className='text-base400' />
+              <CyDIcons name='copy' size={32} className='text-base400' />
             </CyDTouchView>
           </CyDView>
           {/* View All Referral Codes CTA */}
@@ -529,12 +618,21 @@ export default function Referrals() {
                 {t('REFERRAL_IF_FRIEND_SHOPS')}
               </CyDText>
 
-              <CyDText className='text-n200 text-[14px] mb-2'>
+              {/* Learn more link to detailed referral rewards bottom sheet */}
+              <CyDTouchView
+                onPress={handleOpenReferralRewardsInfo}
+                className='mb-3'>
+                <CyDText className='text-blue-400 underline text-[14px]'>
+                  {t('LEARN_HOW_IT_WORKS', 'Learn how it works')}
+                </CyDText>
+              </CyDTouchView>
+
+              {/* <CyDText className='text-n200 text-[14px] mb-2'>
                 {t('REFERRAL_IF_FRIEND_SPEND')}
-              </CyDText>
+              </CyDText> */}
 
               {/* Additional Earnings Display */}
-              <CyDView className='flex-row gap-x-[8px]'>
+              {/* <CyDView className='flex-row gap-x-[8px]'>
                 <CyDView className='flex-col gap-y-[4px]'>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
                     {t('REFERRAL_YOULL_EARN')}
@@ -566,7 +664,7 @@ export default function Referrals() {
                     </CyDText>
                   </CyDView>
                 </CyDView>
-              </CyDView>
+              </CyDView> */}
             </CyDView>
           </CyDView>
         </CyDView>

@@ -14,7 +14,7 @@ import { ReferralOnboardingStatus } from '../../constants/enum';
 import { getMaskedAddress } from '../../core/util';
 import MerchantLogo from './MerchantLogo';
 
-export interface RefereeDetail {
+export interface ReferralDetail {
   address: string;
   totalRewardsEarned: number;
   onboardingStatus: string;
@@ -34,7 +34,7 @@ export interface VotedMerchant {
 }
 
 interface Props {
-  referralDetail: RefereeDetail;
+  referralDetail: ReferralDetail;
   votedMerchants?: VotedMerchant[];
 }
 
@@ -65,7 +65,7 @@ const ReferralDetailContent: React.FC<Props> = ({
               resizeMode='contain'
             />
             <CyDText className='text-[22px] font-medium'>
-              {referralDetail.totalRewardsEarned.toFixed(2)}
+              {(referralDetail.totalRewardsEarned ?? 0).toFixed(2)}
             </CyDText>
           </CyDView>
           <CyDText className='text-n200 text-[12px]'>
@@ -120,7 +120,7 @@ const ReferralDetailContent: React.FC<Props> = ({
                         resizeMode='contain'
                       />
                       <CyDText className='text-white text-[20px] font-bold'>
-                        {referralDetail.totalRewardsEarned.toFixed(2)}
+                        {(referralDetail.totalRewardsEarned ?? 0).toFixed(2)}
                       </CyDText>
                     </CyDView>
                   </CyDView>

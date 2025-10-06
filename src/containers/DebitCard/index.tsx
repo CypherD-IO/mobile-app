@@ -27,7 +27,6 @@ import useAxios from '../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
-import CardWailtList from './cardWaitList';
 import { getReferralCode } from '../../core/asyncStorage';
 import { useFocusEffect } from '@react-navigation/native';
 import countryMaster from '../../../assets/datasets/countryMaster';
@@ -335,7 +334,6 @@ export default function DebitCardScreen(props: RouteProps) {
             </CyDText>
           </CyDImageBackground>
         )}
-        {!isReadOnlyWallet && <CardWailtList navigation={props.navigation} />}
       </CyDView>
     </OnboardingRewardProvider>
   );

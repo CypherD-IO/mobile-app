@@ -71,6 +71,8 @@ const RewardCard: React.FC<RewardCardProps> = ({
   rewardAmount,
   containerStyle = 'bg-p100 rounded-[12px] p-[16px] mb-[40px]',
 }) => {
+  const { t } = useTranslation();
+
   return (
     <CyDView className={containerStyle}>
       {/* Top Section */}
@@ -125,7 +127,7 @@ const RewardCard: React.FC<RewardCardProps> = ({
   );
 };
 
-export default function RewardsOnboarding() {
+export default function OnBoardingOptions() {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -232,10 +234,12 @@ export default function RewardsOnboarding() {
 
   const navigateToSeedPhraseGeneration = (type: string) => {
     setIsSelectSeedPhraseCountModalVisible(false);
+    setLoading(true);
     setTimeout(() => {
       navigation.navigate(screenTitle.CREATE_SEED_PHRASE, {
         seedPhraseType: type,
       });
+      setLoading(false);
     }, 250);
   };
 

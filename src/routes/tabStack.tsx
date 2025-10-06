@@ -128,7 +128,7 @@ const TabStack = React.memo(
             if (processedReferralCode !== referrerData.referral) {
               // Navigate to referral code screen
               setDeepLinkData({
-                screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+                screenToNavigate: screenTitle.ENTER_REFERRAL_CODE,
                 params: {
                   referralCodeFromLink: referrerData.referral,
                   toPage: screenTitle.CARD_APPLICATION,
@@ -403,7 +403,7 @@ const TabStack = React.memo(
       if (theme === Theme.SYSTEM) {
         return colorScheme === 'dark' ? '#FFFFFF' : '#000000';
       }
-      return theme === 'dark' ? '#FFFFFF' : '#000000';
+      return theme === Theme.DARK ? '#FFFFFF' : '#000000';
     }, [theme, colorScheme]);
 
     if (!initialTab) {

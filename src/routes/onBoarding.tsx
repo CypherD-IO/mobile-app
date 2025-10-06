@@ -18,8 +18,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboard } from '../hooks/useKeyboard';
 import OnBoardingGetStarted from '../containers/OnBoarding/getStarted';
-import OnBoardOpotions from '../containers/OnBoarding/onBoardOpotions';
-import RewardsOnboarding from '../containers/OnBoarding/rewardsOnboarding';
+import OnBoardingOptions from '../containers/OnBoarding/onBoardingOptions';
 
 const Stack = createNativeStackNavigator();
 
@@ -116,7 +115,7 @@ function OnBoardingStack({
       />
       <Stack.Screen
         name={screenTitle.ONBOARDING_OPTIONS}
-        component={RewardsOnboarding}
+        component={OnBoardingOptions}
         options={{
           headerShown: false,
         }}

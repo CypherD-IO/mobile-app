@@ -228,7 +228,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
             <GradientText
               textElement={
                 <CyDText className='text-[20px] font-bold'>
-                  {epochData?.parameters?.tierMultipliers?.pro}X Rewards
+                  {epochData?.parameters?.tierMultipliers?.pro ?? '-'}X Rewards
                 </CyDText>
               }
               gradientColors={[
@@ -240,12 +240,12 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
               ]}
             />
             <CyDText className='text-[14px] line-through text-n200'>
-              {epochData?.parameters?.tierMultipliers?.basic}X Rewards
+              {epochData?.parameters?.tierMultipliers?.basic ?? '-'}X Rewards
             </CyDText>
           </CyDView>
         ) : (
           <CyDText className='text-[20px]'>
-            {epochData?.parameters?.tierMultipliers?.basic}X Rewards
+            {epochData?.parameters?.tierMultipliers?.basic ?? '-'}X Rewards
           </CyDText>
         )}
       </CyDView>

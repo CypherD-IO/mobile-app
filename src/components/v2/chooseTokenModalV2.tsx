@@ -418,7 +418,7 @@ const updateStatusBarStyle = (
         ? colorScheme === 'dark'
           ? '#000000ff'
           : '#ffffffff'
-        : theme === 'dark'
+        : theme === Theme.DARK
           ? '#000000ff'
           : '#ffffffff'
       : 'transparent';
@@ -429,10 +429,10 @@ const updateStatusBarStyle = (
   // Both platforms: Set status bar style
   const barStyle =
     theme === Theme.SYSTEM
-      ? colorScheme === 'dark'
+      ? colorScheme === Theme.DARK
         ? 'light-content'
         : 'dark-content'
-      : theme === 'dark'
+      : theme === Theme.DARK
         ? 'light-content'
         : 'dark-content';
 

@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import useAxios from '../core/HttpRequest';
-
+import * as Sentry from '@sentry/react-native';
 /**
  * Detailed reward milestone structure returned by backend within
  * `statusWiseRewards`. Keys like "kycPending", "firstLoad" etc. map to
@@ -138,19 +138,41 @@ export const OnboardingRewardProvider: React.FC<{
   );
 
   const refreshStatus = useCallback(async () => {
-    const res = await getWithAuth('/v1/cards/onboarding-rewards');
-    if (!res.isError) {
-      applyResponse(res.data);
+    try {
+      const res = await getWithAuth('/v1/cards/onboarding-rewards');
+      if (!res.isError) {
+        applyResponse(res.data);
+      } else {
+        Sentry.captureException(
+          new Error('Failed to fetch onboarding rewards status'),
+          {
+            extra: { error: res.error },
+          },
+        );
+      }
+    } catch (error) {
+      Sentry.captureException(error);
     }
   }, [getWithAuth, applyResponse]);
 
   const createTracking = useCallback(async () => {
-    const { data, isError } = await postWithAuth(
-      '/v1/cards/onboarding-rewards',
-      {},
-    );
-    if (!isError) {
-      applyResponse(data);
+    try {
+      const { data, isError, error } = await postWithAuth(
+        '/v1/cards/onboarding-rewards',
+        {},
+      );
+      if (!isError) {
+        applyResponse(data);
+      } else {
+        Sentry.captureException(
+          new Error('Failed to create onboarding reward tracking'),
+          {
+            extra: { error },
+          },
+        );
+      }
+    } catch (error) {
+      Sentry.captureException(error);
     }
   }, [postWithAuth, applyResponse]);
 

@@ -11,7 +11,7 @@ import {
   CyDIcons,
   CyDImage,
 } from '../../../styles/tailwindComponents';
-import MerchantLogo from '../../../components/v2/MerchantLogo';
+import { MerchantLogo } from '../../../components/v2/MerchantLogo';
 import {
   ActivityIndicator,
   FlatList,
@@ -146,6 +146,7 @@ const MerchantRewardListScreen: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to fetch merchants', err);
+      inFlightRef.current = false;
       setState(prev => ({
         ...prev,
         isLoading: false,

@@ -911,9 +911,9 @@ export function SwapStackScreen({
 
 export function RewardsStackScreen() {
   return (
-    <RewardsStack.Navigator initialRouteName={screenTitle.REWARDS}>
+    <RewardsStack.Navigator initialRouteName={screenTitle.REWARDS_SCREEN}>
       <RewardsStack.Screen
-        name={screenTitle.REWARDS}
+        name={screenTitle.REWARDS_SCREEN}
         component={Rewards}
         options={{ headerShown: false }}
       />

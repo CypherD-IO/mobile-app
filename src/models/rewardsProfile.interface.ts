@@ -3,22 +3,11 @@
  * Used for /v1/cypher-protocol/user/:address/profile endpoint
  */
 
+import { PlanInfo } from './planInfo.interface';
+
 /**
  * Plan information for the user
  */
-export interface PlanInfo {
-  planId: string;
-  tierLevel?: number;
-  tierName?: string;
-  tierMultiplier: number;
-  activeSince?: number;
-  expiresAt?: number;
-  expiresOn?: number;
-  autoRenewal?: boolean;
-  planHistory?: any[];
-  schedulerTaskIds?: any;
-  updatedOn?: number;
-}
 
 /**
  * Breakdown of rewards by type
@@ -74,5 +63,3 @@ export interface UserProfileApiResponse {
     details?: Record<string, any>;
   };
 }
-
-

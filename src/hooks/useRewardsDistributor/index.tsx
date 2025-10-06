@@ -122,7 +122,7 @@ export interface ClaimResult {
  */
 export default function useRewardsDistributor() {
   const wagmiConfig = useContext(WagmiContext);
-  const hdWalletContext = useContext<any>(HdWalletContext);
+  const hdWalletContext = useContext(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
   const { walletInfo } = useWalletInfo();
@@ -314,13 +314,20 @@ export default function useRewardsDistributor() {
     params: ClaimRewardsParams,
   ): Promise<`0x${string}`> => {
     // Load private key from keychain
-    const privateKey = await loadPrivateKeyFromKeyChain(
-      false,
-      hdWalletContext.state.pinValue,
-    );
+    const pin = hdWalletContext?.state?.pinValue ?? '';
+    if (!hdWalletContext || !pin) {
+      throw new Error('Wallet not initialized or PIN unavailable');
+    }
+    const privateKey = await loadPrivateKeyFromKeyChain(false, pin);
 
     if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
       const account = privateKeyToAccount(privateKey as Hex);
+      if (
+        params.fromAddress &&
+        account.address.toLowerCase() !== params.fromAddress.toLowerCase()
+      ) {
+        throw new Error('From address does not match the loaded wallet');
+      }
 
       // Create wallet client with Base RPC
       const client = createWalletClient({

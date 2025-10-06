@@ -426,28 +426,6 @@ const MerchantRewardDetailContent: React.FC<
   }
 
   /**
-   * Processes merchant name for display in the circle
-   * - If name has multiple words, takes first word only
-   * - If name is longer than 10 characters, truncates to 10
-   * - Returns processed name and appropriate font size
-   */
-  const processMerchantName = (name: string) => {
-    const firstWord = name.split(' ')[0];
-    const displayName =
-      firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
-
-    // Calculate font size based on name length
-    let fontSize = 20;
-    if (displayName.length >= 8) {
-      fontSize = 14;
-    } else if (displayName.length > 5) {
-      fontSize = 16;
-    }
-
-    return { displayName, fontSize };
-  };
-
-  /**
    * Handles boost this merchant button press
    * Navigates to social media screen with candidate ID parameter
    */
@@ -466,17 +444,9 @@ const MerchantRewardDetailContent: React.FC<
     }, 250);
   };
 
-  const { displayName, fontSize } = processMerchantName(
-    currentMerchantData.brand ?? currentMerchantData.canonicalName,
-  );
-
   // Style objects for dynamic styling
   const overlayStyle = {
     backgroundColor: 'rgba(13, 13, 13, 0.7)',
-  };
-
-  const merchantTextStyle = {
-    fontSize,
   };
 
   return (

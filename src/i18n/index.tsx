@@ -108,7 +108,7 @@ const resources = {
       REFERRAL_ENTER_REFERRAL_CODE: 'Enter referral code',
       REFERRAL_EARN_CYPHER_TOKENS: 'Earn Cypher tokens on referrals',
       REFERRAL_WHEN_INVITEE_SIGNS_UP:
-        'when your invitee signs up and makes a purchase\nat your favorite merchant.',
+        'when your friend signs up and spends\nat your favorite merchant.',
       REFERRAL_CODE: 'Referral code',
       REFERRAL_OTHER_INVITE_CODES: 'Other Invite Codes',
       REFERRAL_ADD_ANOTHER_CODE: 'Add Another Code',
@@ -126,7 +126,8 @@ const resources = {
       REFERRAL_EARN_EVEN_MORE: 'Earn Even More When They Follow You',
       REFERRAL_IF_FRIEND_SHOPS:
         'If your friend shops at the same place you "Boosted a Merchant" you both unlock bonus rewards.',
-      REFERRAL_IF_FRIEND_SPEND: 'i.e If your friend spend $100 at Walmart',
+      REFERRAL_IF_FRIEND_SPEND:
+        'i.e For example, if your friend spend $100 at Walmart',
       MERCHANT_SEARCH_MERCHANTS_OR_CATEGORIES: 'Search Merchants or Categories',
       CARD_FUND_PLACEHOLDER: '0.00',
       OPTIONS_WE_ARE_COOKING_SOMETHING: "We're cooking something",
@@ -1368,9 +1369,12 @@ const resources = {
       KNOW_MORE_REFERRAL_WORKS: 'know more referral works',
       SIGNUP_REWARD_TEXT: "You'll earn $CYPR every time a friend signs up!",
       MERCHANT_SPEND_REWARD_TEXT:
-        'You earn $CYPR when invited friends spend at their boosted merchants',
-      NO_OF_REFERRAL: 'No. of referral',
-      EARNING_FOR_SPEND_BY_FRIEND: 'Earning for spend by your friend',
+        'You earn $CYPR when invited friends spend at the merchants you boosted.',
+      MERCHANT_SPEND_REWARD_TEXT_2:
+        'Based on the number of friends who spend at the merchants you boosted the rewards you earn will increase.',
+      NO_OF_REFERRAL: 'No. of friends',
+      EARNING_FOR_SPEND_BY_FRIEND:
+        'Rewards you earn when your friends spend at ',
       NO_VOTED_MERCHANTS: 'No voted merchants found',
       REWARD_EARNINGS_DISCLAIMER:
         'Reward earnings applicable per referral, per spend on every boosted merchant',
@@ -2073,6 +2077,29 @@ const resources = {
         'Claim the earned cypher token straight to your wallet',
       YOUR_REWARDS_ARE_AVAILABLE_TO_CLAIM:
         'Your rewards are\navailable to claim',
+
+      // Cypher Token Bottom Sheet translations
+      CYPHER_TOKEN_TITLE: 'Cypher',
+      CYPHER_TOKEN_SUBTITLE: 'Token',
+      HOW_YOU_CAN_EARN_IT: 'How you can earn it',
+      ON_PURCHASES: 'On Purchases',
+      SPEND_USING_CYPHER_CARD_TO_EARN_TOKEN:
+        'Spend using the cypher card to earn cypher token',
+      CYPHER_TOKEN_REFERRALS: 'Referrals',
+      REFER_OTHERS_TO_CYPHER_PLATFORM: 'Refer others to the cypher platform',
+      ADDITIONAL_REWARDS: 'Additional rewards',
+      ACTIVATE_MERCHANTS_FOR_REWARDS_MULTIPLIER:
+        'Activate merchants for additional rewards multiplier, get up to 12X more cypher tokens than normal rewards',
+      HOW_TO_USE_IT: 'How to use it',
+      COMPOUND_YOUR_REWARD: 'Compound your reward',
+      USE_CYPR_TO_ACTIVATE_BRANDS:
+        'Use your $CYPR to Activate your favourite brands for additional rewards',
+      LOAD_YOUR_CARD_AND_SPEND: 'Load your card & Spend',
+      LOAD_CARD_WITH_CYPHER_TOKEN:
+        'you can load your card with cypher token, and spend across 140m+ merchants',
+      GROW_WITH_US: 'Grow with Us',
+      INVITE_FRIENDS_SHOP_AND_LOCK:
+        'Invite friends, shop often, and lock smart — your influence (and rewards) grow over time.',
       CLAIM_REWARDS: 'Claim Rewards',
       EARNING_BREAKDOWN: 'Earning breakdown',
       FROM_SPENDS: 'From spends',

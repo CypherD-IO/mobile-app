@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -6,7 +6,13 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform, StyleSheet, useColorScheme } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  useColorScheme,
+  AppState,
+  NativeEventSubscription,
+} from 'react-native';
 import Video from 'react-native-video';
 import { BlurView } from '@react-native-community/blur';
 import {
@@ -27,7 +33,7 @@ import {
   useTheme as useAppTheme,
   Theme,
 } from '../../../../reducers/themeReducer';
-
+import * as Sentry from '@sentry/react-native';
 interface StepData {
   id: number;
   title: string;
@@ -109,6 +115,11 @@ const ApplicationWelcome = (): JSX.Element => {
     deadline,
   } = useOnboardingReward();
 
+  // Ref to track if screen is currently focused
+  const isScreenFocused = useRef(false);
+  // Ref to track app state subscription
+  const appStateSubscription = useRef<NativeEventSubscription | null>(null);
+
   const { theme } = useAppTheme();
   const colorScheme = useColorScheme();
   const isDarkMode =
@@ -133,23 +144,51 @@ const ApplicationWelcome = (): JSX.Element => {
     }
   }, [isRewardSlotAvailable, deadline]);
 
+  // Handle app state changes (for notification panel, etc.)
+  React.useEffect(() => {
+    // Subscribe to app state changes
+    appStateSubscription.current = AppState.addEventListener(
+      'change',
+      nextAppState => {
+        if (isScreenFocused.current) {
+          // Only handle app state changes when this screen is focused
+          if (nextAppState === 'active') {
+            // App came back to foreground/active - resume video
+            setIsVideoPaused(false);
+          } else if (nextAppState === 'background') {
+            // App went to background - pause video to save resources
+            setIsVideoPaused(true);
+          }
+          // Note: We don't pause for 'inactive' state (notification panel)
+          // to keep video playing smoothly
+        }
+      },
+    );
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (appStateSubscription.current) {
+        appStateSubscription.current.remove();
+      }
+    };
+  }, []);
+
   // Handle video playback based on screen focus
   useFocusEffect(
     React.useCallback(() => {
-      // Screen is focused - reset loading state and start video
-      setIsVideoLoaded(false);
-      setIsVideoPaused(true);
+      // Screen is focused - start or resume video
+      isScreenFocused.current = true;
 
-      // Small delay to ensure smooth transition
+      // Start video playback with a small delay for smooth transition
       const timer = setTimeout(() => {
-        setIsVideoPaused(false); // Start playing (paused = false)
+        setIsVideoPaused(false);
       }, 100);
 
       return () => {
-        // Screen is unfocused - pause video and reset loading state
+        // Screen is unfocused - pause video
         clearTimeout(timer);
-        setIsVideoPaused(true); // Pause video (paused = true)
-        setIsVideoLoaded(false); // Reset loading state
+        isScreenFocused.current = false;
+        setIsVideoPaused(true);
       };
     }, []),
   );
@@ -181,10 +220,18 @@ const ApplicationWelcome = (): JSX.Element => {
 
   // Skip button handler – navigate to Portfolio and flag the source so
   // Portfolio can suppress its automatic "redirect-to-card" logic.
-  const handleBack = () => {
+  const handleBack = (): void => {
     // Navigate to the Portfolio tab and explicitly target the first screen
     // in its stack so that the nested screen receives our params.
-    (navigation as any).navigate(screenTitle.PORTFOLIO, {
+    // Using type assertion for nested navigation which isn't fully typed in NavigationProp
+    (
+      navigation as NavigationProp<ParamListBase> & {
+        navigate: (
+          screen: string,
+          options: { screen: string; params: { fromCardWelcome: boolean } },
+        ) => void;
+      }
+    ).navigate(screenTitle.PORTFOLIO, {
       screen: screenTitle.PORTFOLIO_SCREEN,
       params: { fromCardWelcome: true },
     });
@@ -192,7 +239,11 @@ const ApplicationWelcome = (): JSX.Element => {
 
   const handleExclusiveOfferClose = async () => {
     // Ensure backend updates before closing the modal, without breaking the expected void return type
-    await createTracking();
+    try {
+      await createTracking();
+    } catch (error) {
+      Sentry.captureException(error);
+    }
     setShowExclusiveOfferModal(false);
   };
 
@@ -229,14 +280,19 @@ const ApplicationWelcome = (): JSX.Element => {
             muted={true}
             controls={false}
             playInBackground={false}
-            playWhenInactive={false}
+            playWhenInactive={true} // Keep playing when notification panel is pulled down
             onLoad={() => {
               // Video loaded successfully, show it and start playing
               setIsVideoLoaded(true);
               setIsVideoPaused(false);
             }}
+            onReadyForDisplay={() => {
+              // Backup handler - ensures video is shown even if onLoad doesn't fire
+              setIsVideoLoaded(true);
+            }}
             onError={error => {
-              console.log('Video playback error:', error);
+              Sentry.captureException(error);
+              console.error('Video playback error:', error);
             }}
           />
         </CyDView>

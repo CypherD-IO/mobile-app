@@ -29,7 +29,6 @@ import { setFirstLaunchAfterWalletCreation } from '../../core/asyncStorage';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '../../components/v2/toast';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
-import { Height } from '@keplr-wallet/proto-types/ibc/core/client/v1/client';
 
 interface RouteParams {
   seedPhraseType: SeedPhraseType;
@@ -245,7 +244,7 @@ function CreateSeedPhrase() {
   }, [seedPhrase]);
 
   return (
-    <CyDSafeAreaView className='bg-n20 flex-1'>
+    <CyDView className='bg-n20 flex-1'>
       <Toast config={toastConfig} position={'bottom'} bottomOffset={140} />
       {loading ? (
         <Loading />
@@ -255,7 +254,7 @@ function CreateSeedPhrase() {
             className='flex-1'
             showsVerticalScrollIndicator={false}>
             {/* Header with Logo and Title */}
-            <CyDView className='items-center pt-[36px] pb-[30px]'>
+            <CyDView className='items-center pt-[30px] pb-[30px]'>
               <CyDView className='w-[64px] h-[64px] bg-blue-500 rounded-[12px] items-center justify-center mb-[24px]'>
                 <CyDMaterialDesignIcons
                   name='seed'
@@ -355,7 +354,7 @@ function CreateSeedPhrase() {
           </CyDScrollView>
 
           {/* Fixed Bottom Section */}
-          <CyDView className='bg-n20 pt-[8px]'>
+          <CyDSafeAreaView edges={['bottom']} className='bg-n20 pt-[8px]'>
             {/* Continue Button */}
             <CyDView className='px-[20px] mb-[20px]'>
               <Button
@@ -383,10 +382,10 @@ function CreateSeedPhrase() {
                 {t('CYPHER_AUDIT_TEXT')}
               </CyDText>
             </CyDView>
-          </CyDView>
+          </CyDSafeAreaView>
         </CyDView>
       )}
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }
 

@@ -6,12 +6,15 @@ import {
   CyDScrollView,
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Bottom Sheet Content for Cypher Token Information
  * Displays information about how to earn and use CYPR tokens
  */
 const CypherTokenBottomSheetContent: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <CyDView className='flex-1 px-[20px] rounded-t-[24px] bg-rgba(15, 15, 15, 0.95)'>
       {/* Header */}
@@ -21,8 +24,12 @@ const CypherTokenBottomSheetContent: React.FC = () => {
           className='w-[48px] h-[44px] mb-[8px]'
         />
         <CyDView className='flex-row items-center gap-x-[4px]'>
-          <CyDText className='text-[20px] font-bold text-white'>Cypher</CyDText>
-          <CyDText className='text-[20px] text-n200 font-bold'>Token</CyDText>
+          <CyDText className='text-[20px] font-bold text-white'>
+            {t('CYPHER_TOKEN_TITLE')}
+          </CyDText>
+          <CyDText className='text-[20px] text-n200 font-bold'>
+            {t('CYPHER_TOKEN_SUBTITLE')}
+          </CyDText>
         </CyDView>
       </CyDView>
 
@@ -34,7 +41,7 @@ const CypherTokenBottomSheetContent: React.FC = () => {
         {/* How you can earn it section */}
         <CyDView className='mb-[32px]'>
           <CyDText className='font-medium mb-[8px] text-white'>
-            How you can earn it
+            {t('HOW_YOU_CAN_EARN_IT')}
           </CyDText>
 
           <CyDView className='flex flex-col gap-y-[24px] p-6 bg-[#202020] rounded-[12px]'>
@@ -48,10 +55,10 @@ const CypherTokenBottomSheetContent: React.FC = () => {
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-medium mb-[2px] text-white'>
-                  On Purchases
+                  {t('ON_PURCHASES')}
                 </CyDText>
                 <CyDText className='text-[16px] text-n200'>
-                  Spend using the cypher card to earn cypher token
+                  {t('SPEND_USING_CYPHER_CARD_TO_EARN_TOKEN')}
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -66,10 +73,10 @@ const CypherTokenBottomSheetContent: React.FC = () => {
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-medium mb-[2px] text-white'>
-                  Referrals
+                  {t('CYPHER_TOKEN_REFERRALS')}
                 </CyDText>
                 <CyDText className='text-[16px] text-n200'>
-                  Refer others to the cypher platform
+                  {t('REFER_OTHERS_TO_CYPHER_PLATFORM')}
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -84,11 +91,10 @@ const CypherTokenBottomSheetContent: React.FC = () => {
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-medium mb-[2px] text-white'>
-                  Additional rewards
+                  {t('ADDITIONAL_REWARDS')}
                 </CyDText>
                 <CyDText className='text-[16px] text-n200'>
-                  Activate merchants for additional rewards multiplier, get up
-                  to 12X more cypher tokens than normal rewards
+                  {t('ACTIVATE_MERCHANTS_FOR_REWARDS_MULTIPLIER')}
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -98,7 +104,7 @@ const CypherTokenBottomSheetContent: React.FC = () => {
         {/* How to use it section */}
         <CyDView className='mb-[32px]'>
           <CyDText className='font-medium mb-[8px] text-white'>
-            How to use it
+            {t('HOW_TO_USE_IT')}
           </CyDText>
 
           {/* Compound your reward */}
@@ -112,11 +118,10 @@ const CypherTokenBottomSheetContent: React.FC = () => {
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-medium mb-[2px] text-white'>
-                  Compound your reward
+                  {t('COMPOUND_YOUR_REWARD')}
                 </CyDText>
                 <CyDText className='text-[16px] text-n200'>
-                  Use your $CYPR to Activate your favourite brands for
-                  additional rewards
+                  {t('USE_CYPR_TO_ACTIVATE_BRANDS')}
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -131,11 +136,10 @@ const CypherTokenBottomSheetContent: React.FC = () => {
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-medium mb-[2px] text-white'>
-                  Load you card & Spend
+                  {t('LOAD_YOUR_CARD_AND_SPEND')}
                 </CyDText>
                 <CyDText className='text-[16px] text-n200'>
-                  you can load your card with cypher token, and spend across
-                  140m+ merchants
+                  {t('LOAD_CARD_WITH_CYPHER_TOKEN')}
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -150,11 +154,10 @@ const CypherTokenBottomSheetContent: React.FC = () => {
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-medium mb-[2px] text-white'>
-                  Grow with Us
+                  {t('GROW_WITH_US')}
                 </CyDText>
                 <CyDText className='text-[16px] text-n200'>
-                  Invite friends, shop often, and lock smart — your influence
-                  (and rewards) grow over time.
+                  {t('INVITE_FRIENDS_SHOP_AND_LOCK')}
                 </CyDText>
               </CyDView>
             </CyDView>

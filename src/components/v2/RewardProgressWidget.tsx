@@ -159,7 +159,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
     KYC_PENDING: 0,
     FIRST_LOAD: 1,
     FIRST_SPEND: 2,
-    COMPLETED: 3,
+    COMPLETED: 2,
   };
 
   const derivedIndex = stageToIndex[currentStage ?? 'KYC_PENDING'] ?? 0;

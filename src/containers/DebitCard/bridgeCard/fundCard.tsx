@@ -163,7 +163,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const setDefaultSelectedToken = async () => {
     try {
       const localPortfolio = await getLocalPortfolio();
-      if (localPortfolio?.totalHoldings) {
+      if (
+        localPortfolio?.totalHoldings &&
+        localPortfolio.totalHoldings.length > 0
+      ) {
         // Filter tokens that are fundable and have value > minimum required
         const fundableTokens = localPortfolio.totalHoldings.filter(token => {
           if (!token.isFundable || !token.isVerified) return false;
@@ -627,7 +630,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
     const nativeToken = await getNativeToken(item.chainDetails.backendName);
-    setNativeTokenBalance(nativeToken.balanceDecimal);
+    setNativeTokenBalance(nativeToken.balanceDecimal ?? '0');
     setIsCryptoInput(false);
     const tempMinTokenValue =
       item.chainDetails.backendName === CHAIN_ETH.backendName

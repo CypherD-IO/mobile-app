@@ -148,26 +148,26 @@ const OffersAndPromotion = (): JSX.Element => {
     }
   };
 
-  const handleRemoveCoupon = async () => {
-    try {
-      await removeReferralCode();
-      setReferralCode('');
-      setIsApplied(false);
+  // const handleRemoveCoupon = async () => {
+  //   try {
+  //     await removeReferralCode();
+  //     setReferralCode('');
+  //     setIsApplied(false);
 
-      showModal('state', {
-        type: 'success',
-        title: t('COUPON_REMOVED_TITLE', 'Coupon Removed'),
-        description: t(
-          'YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED_SUCCESSFULLY_MESSAGE',
-          'Your referral code has been removed successfully',
-        ),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } catch (error) {
-      console.error('Error removing referral code:', error);
-    }
-  };
+  //     showModal('state', {
+  //       type: 'success',
+  //       title: t('COUPON_REMOVED_TITLE', 'Coupon Removed'),
+  //       description: t(
+  //         'YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED_SUCCESSFULLY_MESSAGE',
+  //         'Your referral code has been removed successfully',
+  //       ),
+  //       onSuccess: hideModal,
+  //       onFailure: hideModal,
+  //     });
+  //   } catch (error) {
+  //     console.error('Error removing referral code:', error);
+  //   }
+  // };
 
   const handleBoostedRewardContinue = () => {
     setShowBoostedRewardInfoModal(false);
@@ -340,22 +340,12 @@ const OffersAndPromotion = (): JSX.Element => {
                       Applied
                     </CyDText>
                   </CyDView>
-
                   <CyDText className='text-p100 text-[12px] font-semibold mb-[12px]'>
                     Get {totalRewardsPossible} $CYPR when you spend $
                     {totalRewardsPossible}
                   </CyDText>
-
-                  {/* Custom Dotted Line */}
-                  <CyDView className='flex-row mb-[12px] overflow-hidden'>
-                    {Array.from({ length: 100 }).map((_, index) => (
-                      <CyDView
-                        key={index}
-                        className='w-[3px] h-[1px] bg-base150 mr-[2px]'
-                      />
-                    ))}
-                  </CyDView>
-
+                  {/* Dotted Line */}
+                  <CyDView className='mb-[12px] h-[1px] border-b border-dashed border-base150' />
                   <CyDText className='text-n200 text-[14px] mb-[10px]'>
                     Get your guaranteed token upon signing up and enjoy a $
                     {totalRewardsPossible} value!

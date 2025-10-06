@@ -83,7 +83,7 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
     if (isVisible) {
       void fetchRewardsInfo();
     }
-  }, [isVisible, getWithoutAuth]);
+  }, [isVisible, fetchRewardsInfo]);
 
   const handleGotIt = async () => {
     try {

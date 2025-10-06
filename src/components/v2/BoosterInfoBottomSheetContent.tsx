@@ -58,25 +58,27 @@ const BoosterInfoBottomSheetContent: React.FC = () => {
           {/* veCYPR Explanation */}
           <CyDView className='mb-5'>
             <CyDText className='text-base leading-relaxed text-primaryText'>
-              {t('BOOSTER_VECYPR_EXPLANATION') ??
-                'veCYPR is your voting power token earned by locking CYPR. Use it to boost merchants and earn higher rewards. veCYPR decays over time as locks approach expiration.'}
+              {t(
+                'BOOSTER_VECYPR_EXPLANATION',
+                'veCYPR is your voting power token earned by locking CYPR. Use it to boost merchants and earn higher rewards. veCYPR decays over time as locks approach expiration.',
+              )}
             </CyDText>
           </CyDView>
 
           {/* Tip Section */}
           <CyDView
-            className={`rounded-[12px] p-4 border-l-4 ${
-              isDarkMode ? 'bg-base200 border-p50' : 'bg-p50/10 border-p50'
-            }`}>
+            className={`rounded-[12px] p-4 border-l-4 bg-base20 border-p50`}>
             <CyDView className='flex-row items-start'>
               <CyDText className='text-lg mr-2'>💡</CyDText>
               <CyDView className='flex-1'>
                 <CyDText className='text-sm font-semibold text-primaryText mb-1'>
-                  {t('TIP') ?? 'Tip'}
+                  {t('TIP', 'Tip')}
                 </CyDText>
                 <CyDText className='text-sm text-primaryText leading-relaxed'>
-                  {t('BOOSTER_TIP') ??
-                    'Use all your veCYPR to maximize merchant boost benefits.'}
+                  {t(
+                    'BOOSTER_TIP',
+                    'Use all your veCYPR to maximize merchant boost benefits.',
+                  )}
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -91,11 +93,13 @@ const BoosterInfoBottomSheetContent: React.FC = () => {
               isDarkMode ? 'bg-base40' : 'bg-n20'
             }`}>
             <CyDText className='text-base font-semibold text-primaryText mb-2'>
-              {t('HOW_TO_GET_VECYPR') ?? 'How to Get veCYPR'}
+              {t('HOW_TO_GET_VECYPR', 'How to Get veCYPR')}
             </CyDText>
             <CyDText className='text-sm text-n200 leading-relaxed'>
-              {t('HOW_TO_GET_VECYPR_DESC') ??
-                'Lock your CYPR tokens to receive veCYPR. The longer you lock, the more veCYPR you receive.'}
+              {t(
+                'HOW_TO_GET_VECYPR_DESC',
+                'Lock your CYPR tokens to receive veCYPR. The longer you lock, the more veCYPR you receive.',
+              )}
             </CyDText>
           </CyDView>
 
@@ -105,11 +109,13 @@ const BoosterInfoBottomSheetContent: React.FC = () => {
               isDarkMode ? 'bg-base40' : 'bg-n20'
             }`}>
             <CyDText className='text-base font-semibold text-primaryText mb-2'>
-              {t('BOOST_BENEFITS') ?? 'Boost Benefits'}
+              {t('BOOST_BENEFITS', 'Boost Benefits')}
             </CyDText>
             <CyDText className='text-sm text-n200 leading-relaxed'>
-              {t('BOOST_BENEFITS_DESC') ??
-                'Boosting merchants increases your reward multiplier, allowing you to earn more $CYPR tokens on every transaction.'}
+              {t(
+                'BOOST_BENEFITS_DESC',
+                'Boosting merchants increases your reward multiplier, allowing you to earn more $CYPR tokens on every transaction.',
+              )}
             </CyDText>
           </CyDView>
 
@@ -119,11 +125,13 @@ const BoosterInfoBottomSheetContent: React.FC = () => {
               isDarkMode ? 'bg-base40' : 'bg-n20'
             }`}>
             <CyDText className='text-base font-semibold text-primaryText mb-2'>
-              {t('UNDERSTANDING_DECAY') ?? 'Understanding Decay'}
+              {t('UNDERSTANDING_DECAY', 'Understanding Decay')}
             </CyDText>
             <CyDText className='text-sm text-n200 leading-relaxed'>
-              {t('UNDERSTANDING_DECAY_DESC') ??
-                'Your veCYPR balance gradually decreases as your lock period nears its end. Extend your lock or add more CYPR to maintain your voting power.'}
+              {t(
+                'UNDERSTANDING_DECAY_DESC',
+                'Your veCYPR balance gradually decreases as your lock period nears its end. Extend your lock or add more CYPR to maintain your voting power.',
+              )}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -136,4 +144,3 @@ const BoosterInfoBottomSheetContent: React.FC = () => {
 };
 
 export default BoosterInfoBottomSheetContent;
-

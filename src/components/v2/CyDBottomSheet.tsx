@@ -240,6 +240,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           index={initialSnapIndex ?? -1}
           enablePanDownToClose={enablePanDownToClose}
           enableOverDrag={enableOverDrag}
+          enableDynamicSizing={enableDynamicSizing}
           backgroundStyle={{
             backgroundColor:
               backgroundColor ?? (isDarkMode ? '#161616' : '#F5F6F7'), // Force dark background

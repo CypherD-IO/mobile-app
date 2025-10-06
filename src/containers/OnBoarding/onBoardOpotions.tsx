@@ -82,6 +82,8 @@ export default function OnBoardOpotions() {
   const [isImportWalletModalVisible, setIsImportWalletModalVisible] =
     useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isNavigatingToCreateWallet, setIsNavigatingToCreateWallet] =
+    useState<boolean>(false);
 
   const handleSubmit = async () => {
     try {
@@ -107,12 +109,23 @@ export default function OnBoardOpotions() {
     }
   };
 
+  /**
+   * Navigates to the seed phrase generation screen with loading state
+   * Shows a loading indicator while the modal closes and navigation occurs
+   * @param type - The seed phrase type (12 or 24 words)
+   */
   const navigateToSeedPhraseGeneration = (type: string) => {
     setIsSelectSeedPhraseCountModalVisible(false);
+    setIsNavigatingToCreateWallet(true);
     setTimeout(() => {
       navigation.navigate(screenTitle.CREATE_SEED_PHRASE, {
         seedPhraseType: type,
       });
+      // Reset loading state after navigation completes
+      // Small delay to ensure smooth transition
+      setTimeout(() => {
+        setIsNavigatingToCreateWallet(false);
+      }, 500);
     }, MODAL_HIDE_TIMEOUT_250);
   };
 
@@ -264,7 +277,8 @@ export default function OnBoardOpotions() {
     }
   };
 
-  if (loading) {
+  // Show loading screen during social login or when navigating to create wallet
+  if (loading || isNavigatingToCreateWallet) {
     return <Loading />;
   }
 

@@ -29,6 +29,7 @@ import { copyToClipboard } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import MerchantLogo from './MerchantLogo';
 import { MerchantLike } from '../../models/merchantLogo.interface';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 /**
  * Merchant data structure with user rewards
@@ -167,7 +168,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
               ) {
                 const boosted: string =
                   resp.data.userRewards.currentEpoch.predicted.boostedSpend;
-                const amount = parseFloat(boosted) / Math.pow(10, 18);
+                const amount = DecimalHelper.toDecimal(boosted, 18).toNumber();
                 earningsMap[top[idx].candidateId] = Number.isFinite(amount)
                   ? amount
                   : 0;
@@ -272,21 +273,25 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
         {/* Header Section */}
         <CyDView className='mb-2'>
           <CyDText className='text-lg font-bold text-primaryText'>
-            {t('INVITE_FRIENDS_EARN_REWARDS') ?? 'Invite friends, earn rewards'}
+            {t('INVITE_FRIENDS_EARN_REWARDS', 'Invite friends, earn rewards')}
           </CyDText>
         </CyDView>
 
         {/* Description */}
         <CyDText className='text-n200 text-sm mb-4 leading-relaxed'>
-          {t('REFERRAL_REWARDS_DESCRIPTION') ??
-            'Cypher Referral Rewards offers two reward layers: a signup reward for every sign-ups and a merchant reward for spending at your boosted merchants.'}
+          {t(
+            'REFERRAL_REWARDS_DESCRIPTION',
+            'Cypher Referral Rewards offers two reward layers: a signup reward for every sign-ups and a merchant reward for spending at your boosted merchants.',
+          )}
         </CyDText>
 
         {/* Signup Reward Section */}
         <CyDView className='mb-6'>
           <CyDText className='text-n200 text-sm mb-2'>
-            {t('SIGNUP_REWARD_TEXT') ??
-              "You'll earn $CYPR every time a friend signs up!"}
+            {t(
+              'SIGNUP_REWARD_TEXT',
+              "You'll earn $CYPR every time a friend signs up!",
+            )}
           </CyDText>
           <CyDView
             className={`rounded-[12px] px-4 py-3 flex-row items-center max-w-[320px] ${
@@ -298,7 +303,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
               resizeMode='contain'
             />
             <CyDText className='text-[20px] font-bold text-primaryText font-newyork'>
-              150
+              100
             </CyDText>
           </CyDView>
         </CyDView>
@@ -306,8 +311,17 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
         {/* Merchant Spending Rewards Section */}
         <CyDView>
           <CyDText className='text-n200 text-sm mb-3'>
-            {t('MERCHANT_SPEND_REWARD_TEXT') ??
-              'You earn $CYPR when invited friends spend at their boosted merchants'}
+            {t(
+              'MERCHANT_SPEND_REWARD_TEXT',
+              'You earn $CYPR when invited friends spend at their boosted merchants',
+            )}
+          </CyDText>
+
+          <CyDText className='text-n200 text-sm mb-3'>
+            {t(
+              'MERCHANT_SPEND_REWARD_TEXT_2',
+              'Based on the number of friends who spend at the merchants you boosted, the rewards you earn will increase.',
+            )}
           </CyDText>
 
           {/* Merchant Earnings Card */}
@@ -318,7 +332,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
             {/* Referral Count Selector */}
             <CyDView className='mb-4'>
               <CyDText className='text-n200 text-sm mb-2'>
-                {t('NO_OF_REFERRAL') ?? 'No. of referral'}
+                {t('NO_OF_REFERRAL', 'No. of friends')}
               </CyDText>
               <CyDView className='flex-row gap-2 flex-wrap'>
                 {[1, 2, 3, 4, 5].map(count => (
@@ -348,8 +362,10 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
             {/* Merchant Earnings List */}
             <CyDView>
               <CyDText className='text-n200 text-sm mb-3'>
-                {t('EARNING_FOR_SPEND_BY_FRIEND') ??
-                  'Earning for spend by your friend'}
+                {t(
+                  'EARNING_FOR_SPEND_BY_FRIEND',
+                  'Rewards you earn when your friends spends at',
+                )}
               </CyDText>
 
               {/* Loading State */}
@@ -412,7 +428,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
                     isDarkMode ? 'bg-base40' : 'bg-n0'
                   }`}>
                   <CyDText className='text-n200 text-sm text-center'>
-                    {t('NO_VOTED_MERCHANTS') ?? 'No voted merchants found'}
+                    {t('NO_VOTED_MERCHANTS', 'No voted merchants found')}
                   </CyDText>
                 </CyDView>
               )}
@@ -421,13 +437,17 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
 
           {/* Disclaimer Text */}
           <CyDText className='text-xs text-n200 mb-1 leading-relaxed'>
-            {t('REWARD_EARNINGS_DISCLAIMER') ??
-              'Reward earnings applicable per referral, per spend on every boosted merchant'}
+            {t(
+              'REWARD_EARNINGS_DISCLAIMER',
+              'Reward earnings applicable per referral, per spend on every boosted merchant',
+            )}
           </CyDText>
 
           <CyDText className='text-xs text-n200 mb-4 leading-relaxed'>
-            {t('ESTIMATES_DISCLAIMER') ??
-              '** The numbers shown are estimates based on the current market conditions and are subject to change.'}
+            {t(
+              'ESTIMATES_DISCLAIMER',
+              '** The numbers shown are estimates based on the current market conditions and are subject to change.',
+            )}
           </CyDText>
         </CyDView>
 
@@ -436,7 +456,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
           <>
             <CyDView className='mb-4'>
               <CyDText className='text-n200 text-sm mb-2'>
-                {t('INVITE_CODE') ?? 'Invite code'}
+                {t('INVITE_CODE', 'Invite code')}
               </CyDText>
               <CyDView className='flex-row items-center gap-2'>
                 <CyDView
@@ -466,7 +486,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
             {/* Other Invite Options Link */}
             <CyDTouchView onPress={onOpenInviteModal}>
               <CyDText className='text-blue300 underline text-sm'>
-                {t('OTHER_INVITE_OPTIONS') ?? 'Other invite options'}
+                {t('OTHER_INVITE_OPTIONS', 'Other invite options')}
               </CyDText>
             </CyDTouchView>
           </>

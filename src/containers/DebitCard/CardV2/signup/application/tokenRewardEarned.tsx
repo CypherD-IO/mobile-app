@@ -44,7 +44,6 @@ const TokenRewardEarned = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const [isAnimationComplete, setIsAnimationComplete] = useState(false);
 
   /**
    * Reference to the confetti animation instance so that we can manually
@@ -98,19 +97,9 @@ const TokenRewardEarned = () => {
 
   // Get props from route params or use dummy data
   const rewardAmount = route.params?.rewardAmount ?? 100;
-  const tokenSymbol = route.params?.tokenSymbol ?? '$CYPR';
   const congratsMessage =
     route.params?.message ??
     "Congrats on signing up for the card! You've earned it!";
-
-  useEffect(() => {
-    // Simulate animation completion after 2 seconds
-    const timer = setTimeout(() => {
-      setIsAnimationComplete(true);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   /**
    * Handle continue button press

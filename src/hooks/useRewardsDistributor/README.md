@@ -128,7 +128,7 @@ Main function to claim rewards with Merkle proofs.
 
 Estimates gas required for the claim transaction (with 20% buffer).
 
-### `encodeClaimMultiple(params: ClaimRewardsParams): `0x${string}``
+### `encodeClaimMultiple(params: ClaimRewardsParams): `0x${string}`
 
 Encodes the claimMultiple function call data (useful for testing or manual transactions).
 
@@ -285,4 +285,3 @@ For issues or questions:
 2. Verify contract address and chain ID are correct
 3. Ensure you have valid Merkle proofs
 4. Check Sentry for captured exceptions
-
