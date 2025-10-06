@@ -65,12 +65,14 @@ const QRCodeBottomSheetContent = ({
   userEarnings: number;
   friendEarnings: number;
 }) => {
+  const { t } = useTranslation();
+
   return (
     <CyDView className='flex-1 bg-n20 px-4'>
       {/* QR Code Section */}
       <CyDView className='items-center mb-8'>
         <CyDText className='text-n200 text-sm mb-4 text-center'>
-          Referral code
+          {t('REFERRAL_CODE', 'Referral code')}
         </CyDText>
 
         {/* QR Code Container */}
@@ -96,13 +98,13 @@ const QRCodeBottomSheetContent = ({
           </CyDView>
           <CyDView className='flex-1'>
             <CyDText className='font-semibold text-lg mb-2'>
-              They Join Cypher
+              {t('THEY_JOIN_CYPHER')}
             </CyDText>
             <CyDText className='text-n200 text-sm leading-relaxed'>
-              When they sign up, complete KYC, and make their{'\n'}
-              first card purchase —{' '}
+              {t('WHEN_THEY_SIGN_UP_COMPLETE_KYC_AND_MAKE_FIRST_PURCHASE')}
+              {'\n'}{' '}
               <CyDText className='text-yellow-400 font-semibold'>
-                both of you earn CYPR tokens
+                {t('BOTH_OF_YOU_EARN_CYPR_TOKENS')}
               </CyDText>
               .
             </CyDText>
@@ -116,11 +118,10 @@ const QRCodeBottomSheetContent = ({
           </CyDView>
           <CyDView className='flex-1'>
             <CyDText className='font-semibold text-lg mb-2'>
-              Earn Even More When They Follow you
+              {t('EARN_EVEN_MORE_WHEN_THEY_FOLLOW_YOU')}
             </CyDText>
             <CyDText className='text-n200 text-sm leading-relaxed'>
-              If your friend shops at the same place you &quot;Boosted{'\n'}a
-              Merchant&quot; you both unlock bonus rewards.
+              {t('IF_YOUR_FRIEND_SHOPS_AT_THE_SAME_PLACE_YOU_BOOSTED')}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -328,7 +329,9 @@ export default function Referrals() {
       <CyDScrollView className='flex-1'>
         {/* Header (now scrollable) */}
         <CyDView className='flex-row justify-between items-center px-4 pt-3'>
-          <CyDText className='text-[28px]'>Invite friends</CyDText>
+          <CyDText className='text-[28px]'>
+            {t('INVITE_FRIENDS', 'Invite friends')}
+          </CyDText>
 
           <CyDTouchView onPress={handleClose} className='p-2'>
             <CyDIcons name='close' size={32} className='text-base400' />
@@ -349,11 +352,10 @@ export default function Referrals() {
         {/* Title and Description */}
         <CyDView className='px-4 pb-6'>
           <CyDText className='text-[20px] font-semibold text-center mb-2'>
-            Earn Cypher tokens on referrals
+            {t('REFERRAL_EARN_CYPHER_TOKENS')}
           </CyDText>
           <CyDText className='text-n200 text-center'>
-            when your invitee signs up and makes a purchase{'\n'}
-            at your favorite merchant.
+            {t('REFERRAL_WHEN_INVITEE_SIGNS_UP')}
           </CyDText>
         </CyDView>
 
@@ -363,7 +365,7 @@ export default function Referrals() {
             isDarkMode ? 'bg-n20' : 'bg-n0'
           }`}>
           <CyDText className='text-n200 text-[12px] text-center mb-2'>
-            Referral code
+            {t('REFERRAL_CODE')}
           </CyDText>
           <CyDView className='flex-row items-center justify-center'>
             <CyDText className='text-[30px] font-bold tracking-wider mr-1'>
@@ -384,8 +386,8 @@ export default function Referrals() {
               className='items-center mt-2'>
               <CyDText className='text-blue-400 text-[14px] underline font-medium'>
                 {referralCodes.length > 1
-                  ? 'Other Invite Codes'
-                  : 'Add Another Code'}
+                  ? t('REFERRAL_OTHER_INVITE_CODES')
+                  : t('REFERRAL_ADD_ANOTHER_CODE')}
               </CyDText>
             </CyDTouchView>
           }
@@ -396,7 +398,9 @@ export default function Referrals() {
           <CyDTouchView
             onPress={handleInviteLink}
             className='flex-1 bg-base400 rounded-full py-[12px] flex-row items-center justify-center gap-x-2'>
-            <CyDText className='text-n0 font-semibold'>Invite link</CyDText>
+            <CyDText className='text-n0 font-semibold'>
+              {t('REFERRAL_INVITE_LINK')}
+            </CyDText>
             <CyDMaterialDesignIcons
               name='link-variant'
               size={18}
@@ -407,7 +411,9 @@ export default function Referrals() {
           <CyDTouchView
             onPress={handleQRCode}
             className='flex-1 bg-base400 rounded-full py-[12px] flex-row items-center justify-center gap-x-2'>
-            <CyDText className='text-n0 font-semibold'>QR Code</CyDText>
+            <CyDText className='text-n0 font-semibold'>
+              {t('REFERRAL_QR_CODE')}
+            </CyDText>
             <CyDMaterialDesignIcons
               name='qrcode-scan'
               size={18}
@@ -429,7 +435,7 @@ export default function Referrals() {
               💡
             </CyDText>
             <CyDText className='text-base400 font-semibold'>
-              How it works?
+              {t('REFERRAL_HOW_IT_WORKS')}
             </CyDText>
           </CyDView>
 
@@ -442,10 +448,10 @@ export default function Referrals() {
             </CyDView>
             <CyDView className='flex-1'>
               <CyDText className='font-semibold mb-1'>
-                Share Your Invite Link
+                {t('REFERRAL_SHARE_YOUR_INVITE_LINK')}
               </CyDText>
               <CyDText className='text-n200 text-sm'>
-                Send your unique link to friends and family.
+                {t('REFERRAL_SEND_UNIQUE_LINK')}
               </CyDText>
             </CyDView>
           </CyDView>
@@ -458,20 +464,21 @@ export default function Referrals() {
               <CyDText className='font-semibold text-[12px]'>💸</CyDText>
             </CyDView>
             <CyDView className='flex-1'>
-              <CyDText className='font-semibold mb-1'>They Join Cypher</CyDText>
+              <CyDText className='font-semibold mb-1'>
+                {t('THEY_JOIN_CYPHER', 'They Join Cypher')}
+              </CyDText>
               <CyDText className='text-n200 text-sm mb-3'>
-                When they sign up, complete KYC, and make their{'\n'}
-                first card purchase — both of you earn CYPR tokens.
+                {t('REFERRAL_WHEN_THEY_SIGN_UP')}
               </CyDText>
 
               {/* Earnings Display */}
               <CyDView className='flex-row gap-x-[8px]'>
                 <CyDView className='flex-col gap-y-[4px]'>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
-                    You&apos;ll Earn:
+                    {t('REFERRAL_YOULL_EARN')}
                   </CyDText>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
-                    They Earn:
+                    {t('REFERRAL_THEY_EARN')}
                   </CyDText>
                 </CyDView>
 
@@ -504,7 +511,7 @@ export default function Referrals() {
 
         {/* Additional Earnings Section */}
         <CyDText className='font-semibold mx-4 mb-4'>
-          Additional Earnings
+          {t('REFERRAL_ADDITIONAL_EARNINGS')}
         </CyDText>
         <CyDView
           className={`mx-4 mb-6 rounded-[12px] py-4 ${
@@ -516,25 +523,24 @@ export default function Referrals() {
             </CyDView>
             <CyDView className='flex-1'>
               <CyDText className='font-semibold mb-1'>
-                Earn Even More When They Follow You
+                {t('REFERRAL_EARN_EVEN_MORE')}
               </CyDText>
               <CyDText className='text-n200 text-[14px] mb-4'>
-                If your friend shops at the same place you &quot;Boosted a
-                Merchant&quot; you both unlock bonus rewards.
+                {t('REFERRAL_IF_FRIEND_SHOPS')}
               </CyDText>
 
               <CyDText className='text-n200 text-[14px] mb-2'>
-                i.e If your friend spend $100 at Walmart
+                {t('REFERRAL_IF_FRIEND_SPEND')}
               </CyDText>
 
               {/* Additional Earnings Display */}
               <CyDView className='flex-row gap-x-[8px]'>
                 <CyDView className='flex-col gap-y-[4px]'>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
-                    You&apos;ll Earn:
+                    {t('REFERRAL_YOULL_EARN')}
                   </CyDText>
                   <CyDText className='text-n200 text-[14px] font-medium mb-1'>
-                    They Earn:
+                    {t('REFERRAL_THEY_EARN')}
                   </CyDText>
                 </CyDView>
 

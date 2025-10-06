@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CyDView,
   CyDText,
@@ -20,6 +21,7 @@ interface Props {
 }
 
 const KYCInProgressComponent = ({ onRefresh }: Props) => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   return (
     <>
@@ -41,7 +43,9 @@ const KYCInProgressComponent = ({ onRefresh }: Props) => {
         </CyDText>
 
         {/* KYC Status Card */}
-        <CyDText className='text-[14px] text-n200 mt-4'>KYC Status</CyDText>
+        <CyDText className='text-[14px] text-n200 mt-4'>
+          {t('CARD_KYC_STATUS')}
+        </CyDText>
         <CyDView className='border-[1px] border-n40 rounded-[12px] p-3 mt-1'>
           <CyDView className='flex-row items-center'>
             <CyDView className='w-3 h-3 rounded-full bg-p200 mr-2' />
@@ -57,7 +61,9 @@ const KYCInProgressComponent = ({ onRefresh }: Props) => {
                   size={20}
                   className='text-base400 mr-1'
                 />
-                <CyDText className='text-base400 text-[14px]'>Refresh</CyDText>
+                <CyDText className='text-base400 text-[14px]'>
+                  {t('CARD_REFRESH')}
+                </CyDText>
               </CyDView>
             </CyDTouchView>
           </CyDView>

@@ -23,6 +23,7 @@ import AppImages, {
 } from '../../../../../../assets/images/appImages';
 import Button from '../../../../../components/v2/button';
 import { ButtonType } from '../../../../../constants/enum';
+import { useTranslation } from 'react-i18next';
 
 interface RouteParams {
   rewardAmount?: number;
@@ -40,6 +41,7 @@ interface TokenRewardEarnedProps {
 }
 
 const TokenRewardEarned = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [isAnimationComplete, setIsAnimationComplete] = useState(false);
@@ -157,7 +159,7 @@ const TokenRewardEarned = () => {
           <CyDView className='flex-1' />
           {/* "You have earned" text */}
           <CyDText className='text-white text-[22px] font-bold text-center mb-[6px]'>
-            You have earned
+            {t('YOU_HAVE_EARNED')}
           </CyDText>
 
           {/* Reward amount badge */}
@@ -181,7 +183,7 @@ const TokenRewardEarned = () => {
         {/* Continue Button */}
         <CyDView className='w-full px-4 pb-8'>
           <Button
-            title='Continue'
+            title={t('CONTINUE')}
             onPress={handleContinue}
             type={ButtonType.PRIMARY}
             style='rounded-full w-full'

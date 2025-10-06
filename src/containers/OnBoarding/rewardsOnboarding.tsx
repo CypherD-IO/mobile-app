@@ -7,7 +7,7 @@ import Web3Auth, {
   LOGIN_PROVIDER,
   MFA_LEVELS,
 } from '@web3auth/react-native-sdk';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useContext } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -76,7 +76,7 @@ const RewardCard: React.FC<RewardCardProps> = ({
       {/* Top Section */}
       <CyDView className='mb-[20px]'>
         <CyDText className='text-black text-[14px] font-bold mb-[4px]'>
-          Sign up Cypher card and claim
+          {t('SIGN_UP_CYPHER_CARD_AND_CLAIM')}
         </CyDText>
         <CyDView className='flex-row justify-between items-start'>
           <CyDView className='flex-row items-center pr-[4px]'>
@@ -108,7 +108,7 @@ const RewardCard: React.FC<RewardCardProps> = ({
       {/* Bottom Section */}
       <CyDView className='flex-row justify-between items-center'>
         <CyDText className='text-black text-[14px] font-bold flex-1 mr-[8px]'>
-          Sign up now and win a chance to unlock.
+          {t('SIGN_UP_NOW_AND_WIN_A_CHANCE_TO_UNLOCK')}
         </CyDText>
         {/* <CyDTouchView className='flex-row bg-p30 rounded-full py-[8px] px-[12px] items-center'>
           <CyDMaterialDesignIcons
@@ -126,6 +126,7 @@ const RewardCard: React.FC<RewardCardProps> = ({
 };
 
 export default function RewardsOnboarding() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { showModal, hideModal } = useGlobalModalContext();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
@@ -306,7 +307,9 @@ export default function RewardsOnboarding() {
         if (_privateKey.length === 66 && isValidPrivateKey(_privateKey)) {
           await importWalletFromEvmPrivateKey(hdWalletContext, _privateKey);
         } else {
-          throw new Error('Invalid Ethereum private key');
+          throw new Error(
+            t('INVALID_ETHEREUM_PRIVATE_KEY', 'Invalid Ethereum private key'),
+          );
         }
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_EVM, {
           from:
@@ -318,7 +321,9 @@ export default function RewardsOnboarding() {
         })) as string;
         const base58privatekey = bs58.encode(Buffer.from(_privateKey, 'hex'));
         if (!_privateKey || _privateKey.length === 0) {
-          throw new Error('Invalid Solana private key');
+          throw new Error(
+            t('INVALID_SOLANA_PRIVATE_KEY', 'Invalid Solana private key'),
+          );
         }
         await importWalletFromSolanaPrivateKey(
           hdWalletContext,
@@ -390,7 +395,10 @@ export default function RewardsOnboarding() {
         showModal('state', {
           type: 'error',
           title: t('UNEXPECTED_ERROR'),
-          description: 'Unable to initialize Web3Auth',
+          description: t(
+            'UNABLE_TO_INITIALIZE_WEB3AUTH',
+            'Unable to initialize Web3Auth',
+          ),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -409,7 +417,7 @@ export default function RewardsOnboarding() {
       }
       showModal('state', {
         type: 'error',
-        title: 'Unable to login',
+        title: t('UNABLE_TO_LOGIN', 'Unable to login'),
         description: errorMessage,
         onSuccess: hideModal,
         onFailure: hideModal,
@@ -474,9 +482,10 @@ export default function RewardsOnboarding() {
 
                 <CyDView>
                   <CyDText className='text-[12px] font-normal text-base400 mt-[16px]'>
-                    {
-                      'You can card load, send and receive tokens from 7 Network'
-                    }
+                    {t(
+                      'YOU_CAN_CARD_LOAD_SEND_AND_RECEIVE_TOKENS_FROM_7_NETWORK',
+                      'You can card load, send and receive tokens from 7 Network',
+                    )}
                   </CyDText>
                   <CyDView className='flex flex-row items-center gap-x-[6px] mt-[6px]'>
                     <CyDImage
@@ -526,7 +535,7 @@ export default function RewardsOnboarding() {
                     />
                   </CyDView>
                   <CyDText className='text-[16px] font-semibold'>
-                    {'Solana'}
+                    {t('SOLANA', 'Solana')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='w-[24px] h-[24px] rounded-full'>
@@ -549,7 +558,7 @@ export default function RewardsOnboarding() {
                 void handleSubmit();
               }}>
               <CyDText className='text-[16px] font-bold text-black'>
-                {'Continue'}
+                {t('CONTINUE', 'Continue')}
               </CyDText>
             </CyDTouchView>
 
@@ -597,22 +606,23 @@ export default function RewardsOnboarding() {
                 </CyDTouchView>
 
                 <CyDText className='text-base400 text-[28px] font-bold mb-[4px]'>
-                  Continue with Email
+                  {t('CONTINUE_WITH_EMAIL')}
                 </CyDText>
                 <CyDText className='text-n200 text-[14px] mb-[32px]'>
-                  {
-                    "We'll use this to sign you in or create an account for you if you don't have one yet"
-                  }
+                  {t(
+                    'WE_WILL_USE_THIS_TO_SIGN_YOU_IN_OR_CREATE_AN_ACCOUNT',
+                    t('ONBOARDING_WE_USE_THIS_TO_SIGN_IN'),
+                  )}
                 </CyDText>
 
                 {/* Email Input */}
                 <CyDText className='text-n200 text-[12px] font-medium mb-[6px]'>
-                  Email
+                  {t('EMAIL')}
                 </CyDText>
                 <CyDView className='bg-n20 rounded-[8px] mb-[12px]'>
                   <CyDTextInput
                     className='text-primaryText bg-n20 text-[18px] py-[16px] px-[16px] rounded-[8px]'
-                    placeholder='johndoe@gmail.com'
+                    placeholder={t('ONBOARDING_EMAIL_PLACEHOLDER')}
                     placeholderTextColor='#8993A4'
                     value={email}
                     onChangeText={setEmail}
@@ -634,7 +644,7 @@ export default function RewardsOnboarding() {
                     className={`text-[18px] font-bold text-center ${
                       email.trim() ? 'text-primaryText' : 'text-n90'
                     }`}>
-                    Continue
+                    {t('CONTINUE')}
                   </CyDText>
                 </CyDTouchView>
 
@@ -765,7 +775,7 @@ export default function RewardsOnboarding() {
                 navigateToSeedPhraseGeneration(selectedSeedPhraseCount);
               }}>
               <CyDText className='text-[16px] font-bold text-black'>
-                {'Continue'}
+                {t('CONTINUE', 'Continue')}
               </CyDText>
             </CyDTouchView>
 
@@ -882,9 +892,7 @@ export default function RewardsOnboarding() {
                   Create or{'\n'}Connect Wallet
                 </CyDText>
                 <CyDText className='text-n200 text-[14px] mb-[32px]'>
-                  {
-                    "If you don't have a wallet yet, no worries! Creating a new one is quick and easy."
-                  }
+                  {t('ONBOARDING_IF_YOU_DONT_HAVE_WALLET')}
                 </CyDText>
 
                 {/* Create New Wallet Button */}
@@ -918,9 +926,7 @@ export default function RewardsOnboarding() {
                 </CyDView>
 
                 <CyDText className='text-n200 text-[14px] mb-[16px]'>
-                  {
-                    "If you've got a wallet, you can easily import it or wallet connect it right here."
-                  }
+                  {t('ONBOARDING_IF_YOUVE_GOT_WALLET')}
                 </CyDText>
 
                 {/* Import existing wallet Button */}

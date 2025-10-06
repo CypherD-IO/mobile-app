@@ -16,7 +16,7 @@ import {
   CyDTouchView,
 } from '../../../../styles/tailwindComponents';
 import { screenTitle } from '../../../../constants';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import AppImages, {
   AppImagesMap,
 } from '../../../../../assets/images/appImages';
@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
 });
 
 const ApplicationWelcome = (): JSX.Element => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
   const [isVideoPaused, setIsVideoPaused] = useState(true);
@@ -245,7 +246,7 @@ const ApplicationWelcome = (): JSX.Element => {
           <CyDText className='text-[32px] font-medium'>{t('CARDS')}</CyDText>
           <CyDTouchView onPress={handleBack}>
             <CyDView className='flex-row items-center gap-1 bg-base40 px-6 py-2 rounded-full'>
-              <CyDText className='font-medium'>Skip</CyDText>
+              <CyDText className='font-medium'>{t('CARD_SKIP')}</CyDText>
             </CyDView>
           </CyDTouchView>
         </CyDView>
@@ -292,7 +293,7 @@ const ApplicationWelcome = (): JSX.Element => {
               className='bg-[#F7C645] py-[14px] rounded-[30px]'
               onPress={handleNext}>
               <CyDText className='text-[20px] font-bold text-center text-black'>
-                {'Continue'}
+                {t('CONTINUE_BUTTON', 'Continue')}
               </CyDText>
             </CyDTouchView>
           </BlurView>
@@ -331,7 +332,7 @@ const ApplicationWelcome = (): JSX.Element => {
               className='bg-[#F7C645] py-[14px] rounded-[30px]'
               onPress={handleNext}>
               <CyDText className='text-[20px] font-bold text-center text-black'>
-                {'Continue'}
+                {t('CONTINUE_BUTTON', 'Continue')}
               </CyDText>
             </CyDTouchView>
           </CyDView>

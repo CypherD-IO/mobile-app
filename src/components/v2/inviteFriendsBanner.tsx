@@ -28,6 +28,7 @@ const InviteFriendsBanner = () => {
         <CyDView className='flex-1 pr-[12px]'>
           <CyDText className='text-white font-bold text-[20px] leading-[26px]'>
             {t(
+              'INVITE_FRIENDS_MESSAGE',
               'Invite your friends \nto cypher, \nearn reward\nwhen they spend',
             )}
           </CyDText>

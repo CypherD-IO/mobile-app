@@ -154,7 +154,7 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
 
           {/* Title */}
           <CyDText className='text-white text-[24px] font-bold text-center mb-[16px]'>
-            Exclusive offer Just for you
+            {t('EXCLUSIVE_OFFER_JUST_FOR_YOU')}
           </CyDText>
 
           {/* Reward Amount with Token */}
@@ -171,13 +171,14 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
 
           {/* As Signup Reward */}
           <CyDText className='text-n200 text-[16px] font-medium mb-[16px]'>
-            As Signup Reward
+            {t('AS_SIGNUP_REWARD')}
           </CyDText>
 
           {/* Description */}
           <CyDText className='text-white text-[16px] text-center mb-[20px] leading-[22px] px-[16px]'>
-            Join the Cypher Card today and enjoy a bonus of{'\n'}
-            {rewardAmount} $CYPR if you sign up within
+            {t('JOIN_THE_CYPHER_CARD_TODAY_AND_ENJOY_A_BONUS')}
+            {'\n'}
+            {rewardAmount} $CYPR {t('IF_YOU_SIGN_UP_WITHIN')}
           </CyDText>
 
           {/* Countdown Timer */}
@@ -206,7 +207,7 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
                   className='text-black mr-[8px]'
                 />
                 <CyDText className='text-black text-[18px] font-bold'>
-                  {'Got it'}
+                  {t('GOT_IT', 'Got it')}
                 </CyDText>
               </>
             )}

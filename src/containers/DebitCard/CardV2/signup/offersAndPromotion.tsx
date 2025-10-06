@@ -16,7 +16,7 @@ import {
   CyDLottieView,
 } from '../../../../styles/tailwindComponents';
 import { screenTitle } from '../../../../constants';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import Button from '../../../../components/v2/button';
 import AppImages from '../../../../../assets/images/appImages';
 import { Platform, StyleSheet } from 'react-native';
@@ -37,6 +37,7 @@ import BoostedRewardInfoModal from '../../../../components/v2/BoostedRewardInfoM
 import { useOnboardingReward } from '../../../../contexts/OnboardingRewardContext';
 
 const OffersAndPromotion = (): JSX.Element => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
   const [referralCode, setReferralCode] = useState<string>('');
@@ -74,7 +75,7 @@ const OffersAndPromotion = (): JSX.Element => {
     // Handle questions button press - placeholder for now
     showModal('state', {
       type: 'info',
-      title: t('Questions'),
+      title: t('QUESTIONS_TITLE', 'Questions'),
       description: t('How can we help you?'),
       onSuccess: hideModal,
       onFailure: hideModal,
@@ -155,8 +156,11 @@ const OffersAndPromotion = (): JSX.Element => {
 
       showModal('state', {
         type: 'success',
-        title: t('Coupon Removed'),
-        description: t('Your referral code has been removed successfully'),
+        title: t('COUPON_REMOVED_TITLE', 'Coupon Removed'),
+        description: t(
+          'YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED_SUCCESSFULLY_MESSAGE',
+          'Your referral code has been removed successfully',
+        ),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -214,7 +218,10 @@ const OffersAndPromotion = (): JSX.Element => {
                 <CyDTextInput
                   value={referralCode}
                   onChangeText={text => setReferralCode(text.toUpperCase())}
-                  placeholder='Enter referral code'
+                  placeholder={t(
+                    'ENTER_REFERRAL_CODE_PLACEHOLDER',
+                    'Enter referral code',
+                  )}
                   className='flex-1 !bg-n0 rounded-tl-[8px] rounded-bl-[8px] p-[12px]'
                   placeholderTextColor='#666666'
                   autoCapitalize='characters'
@@ -263,7 +270,7 @@ const OffersAndPromotion = (): JSX.Element => {
                       size={20}
                       className='text-green-600 mr-2'
                     />
-                    <CyDText>Coupon applied</CyDText>
+                    <CyDText>{t('CARD_COUPON_APPLIED')}</CyDText>
                   </CyDView>
 
                   <CyDTouchView onPress={handleRemoveCoupon}>

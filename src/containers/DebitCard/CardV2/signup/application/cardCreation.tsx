@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   NavigationProp,
   ParamListBase,
@@ -38,6 +39,7 @@ interface RouteParams {
 }
 
 const CardCreation = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [isLoading, setIsLoading] = useState(true);
@@ -110,13 +112,11 @@ const CardCreation = () => {
 
       // Prepare the share message
       const shareImage = {
-        title: 'My Cypher Card',
-        message:
-          "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n" +
-          '    💳 Google Pay & Apple Pay support\n' +
-          '    💰 Lowest ever 0% Forex Markup\n' +
-          '    💲 0% Loading Fee for USDC\n' +
-          '    🌍 Use your crypto anywhere, just like a regular card',
+        title: t('MY_CYPHER_CARD_SHARE_TITLE', 'My Cypher Card'),
+        message: t(
+          'REVOLUTIONIZE_CRYPTO_SPENDING_MESSAGE',
+          "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0% Forex Markup\n    💲 0% Loading Fee for USDC\n    🌍 Use your crypto anywhere, just like a regular card",
+        ),
         url: `data:image/jpeg;base64,${uri}`,
       };
 
@@ -127,8 +127,11 @@ const CardCreation = () => {
       if (error.message !== 'User did not share') {
         Toast.show({
           type: 'error',
-          text1: 'Share failed',
-          text2: 'Unable to share card details',
+          text1: t('SHARE_FAILED_TITLE', 'Share failed'),
+          text2: t(
+            'UNABLE_TO_SHARE_CARD_DETAILS_TITLE',
+            'Unable to share card details',
+          ),
         });
       }
     }
@@ -146,8 +149,14 @@ const CardCreation = () => {
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: 'Error loading card details',
-        text2: 'Please try again. If the problem persists, contact support.',
+        text1: t(
+          'ERROR_LOADING_CARD_DETAILS_TITLE',
+          'Error loading card details',
+        ),
+        text2: t(
+          'ERROR_LOADING_CARD_DETAILS_MESSAGE',
+          'Please try again. If the problem persists, contact support.',
+        ),
       });
     } finally {
       setIsButtonLoading(false);
@@ -225,11 +234,13 @@ const CardCreation = () => {
                   size={16}
                   className='text-base400 text-white mr-[6px]'
                 />
-                <CyDText className='text-[18px] text-white'>Share</CyDText>
+                <CyDText className='text-[18px] text-white'>
+                  {t('CARD_SHARE')}
+                </CyDText>
               </CyDTouchView>
 
               <Button
-                title='Start Using'
+                title={t('START_USING_TITLE', 'Start Using')}
                 onPress={() => {
                   void handleStartUsing();
                 }}

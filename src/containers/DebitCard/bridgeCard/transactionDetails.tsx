@@ -1166,7 +1166,7 @@ const getTransactionDisplayProps = (
     return {
       image: AppImages.GREY_EXCLAMATION_ICON,
       textColor: 'text-base400',
-      imageText: 'Declined',
+      imageText: t('DECLINED'),
     };
   } else if (
     type === CardTransactionTypes.DEBIT &&
@@ -1175,31 +1175,31 @@ const getTransactionDisplayProps = (
     return {
       image: AppImages.GREY_EXCLAMATION_ICON,
       textColor: 'text-n600',
-      imageText: 'Cancelled',
+      imageText: t('CANCELLED'),
     };
   } else if (type === CardTransactionTypes.DEBIT) {
     return {
       image: AppImages.DEBIT_TRANSACTION_ICON,
       textColor: 'text-base400',
-      imageText: 'Debited',
+      imageText: t('DEBITED'),
     };
   } else if (type === CardTransactionTypes.CREDIT) {
     return {
       image: AppImages.CREDIT_TRANSACTION_ICON,
       textColor: 'text-green350',
-      imageText: 'Credited',
+      imageText: t('CREDITED'),
     };
   } else if (type === CardTransactionTypes.REFUND) {
     return {
       image: AppImages.CREDIT_TRANSACTION_ICON,
       textColor: 'text-green350',
-      imageText: 'Refunded',
+      imageText: t('REFUNDED'),
     };
   } else {
     return {
       image: AppImages.CREDIT_TRANSACTION_ICON,
       textColor: 'text-green350',
-      imageText: 'Credited',
+      imageText: t('CREDITED'),
     };
   }
 };

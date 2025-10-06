@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CyDView,
   CyDText,
@@ -156,6 +157,7 @@ interface ReferralTransaction {
 const MerchantRewardDetailContent: React.FC<
   MerchantRewardDetailContentProps
 > = ({ merchantData, navigation: navigationProp }) => {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   const { getWithAuth } = useAxios();
@@ -247,7 +249,7 @@ const MerchantRewardDetailContent: React.FC<
         const promos: PromotionalBonus[] =
           data.bribeData?.currentEpoch?.map((bribe, index) => ({
             id: `bribe-${index}`,
-            title: 'Promotional Bonus',
+            title: t('PROMOTIONAL_BONUS', 'Promotional Bonus'),
             amount: bribe.amountFormatted,
             token: bribe.token.symbol,
             date: formatTimestamp(bribe.addedAt),
@@ -258,11 +260,18 @@ const MerchantRewardDetailContent: React.FC<
           'Failed to fetch merchant details:',
           detailsResponse.error,
         );
-        setError('Failed to load merchant details');
+        setError(
+          t(
+            'FAILED_TO_LOAD_MERCHANT_DETAILS',
+            'Failed to load merchant details',
+          ),
+        );
       }
     } catch (err) {
       console.error('Error fetching merchant data:', err);
-      setError('Failed to load merchant data');
+      setError(
+        t('FAILED_TO_LOAD_MERCHANT_DATA', 'Failed to load merchant data'),
+      );
     } finally {
       setLoading(false);
     }
@@ -359,7 +368,7 @@ const MerchantRewardDetailContent: React.FC<
         <CyDView className='flex-1'>
           <CyDView className='items-center py-4'>
             <CyDText className='text-[16px] font-semibold'>
-              Reward Cycles
+              {t('REWARD_CYCLES')}
             </CyDText>
           </CyDView>
           {votingHistory.map((cycle, idx) => (
@@ -410,7 +419,7 @@ const MerchantRewardDetailContent: React.FC<
         className={`flex-1 items-center justify-center ${isDarkMode ? 'bg-black' : 'bg-n30'}`}>
         <CyDText
           className={`text-[16px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
-          Merchant data not available
+          {t('MERCHANT_DATA_NOT_AVAILABLE')}
         </CyDText>
       </CyDView>
     );
@@ -512,7 +521,7 @@ const MerchantRewardDetailContent: React.FC<
             false) && (
             <CyDView className='absolute -top-3 bg-orange500 rounded-full px-2 py-1 self-center z-10'>
               <CyDText className='text-white text-[10px] font-bold'>
-                BOOSTED
+                {t('BOOSTED')}
               </CyDText>
             </CyDView>
           )}
@@ -543,8 +552,8 @@ const MerchantRewardDetailContent: React.FC<
 
           {/* Rewards Badge */}
           <CyDText className='text-green400 text-[18px] font-bold'>
-            {currentMerchantData.historicalMultiplier.current.toFixed(1)}X
-            Rewards
+            {currentMerchantData.historicalMultiplier.current.toFixed(1)}X{' '}
+            {t('REWARDS')}
           </CyDText>
         </CyDView>
       </CyDView>
@@ -552,7 +561,7 @@ const MerchantRewardDetailContent: React.FC<
       {/* Your spend section */}
       <CyDView className='mb-6 mx-4 '>
         <CyDText className='text-[12px] font-medium mb-2'>
-          Your spend on this merchant, earns
+          {t('YOUR_SPEND_ON_THIS_MERCHANT_EARNS')}
         </CyDText>
 
         {/* All Transaction reward */}
@@ -562,10 +571,12 @@ const MerchantRewardDetailContent: React.FC<
           }`}>
           <CyDView className='flex-row justify-between items-center mb-4 px-4'>
             <CyDText className='text-[14px] font-medium'>
-              All Transaction reward
+              {t('ALL_TRANSACTION_REWARD')}
             </CyDText>
             <CyDView className='items-end'>
-              <CyDText className='text-[14px] font-medium'>1X Rewards</CyDText>
+              <CyDText className='text-[14px] font-medium'>
+                {t('ONE_X_REWARDS')}
+              </CyDText>
               {/* <CyDText className='text-n200 text-[12px]'>
                 {currentMerchantData.baseReward}
               </CyDText> */}
@@ -594,11 +605,11 @@ const MerchantRewardDetailContent: React.FC<
           {/* Merchant reward */}
           <CyDView className='flex-row justify-between items-center px-4'>
             <CyDText className='text-[14px] font-medium'>
-              Merchant reward
+              {t('MERCHANT_REWARD')}
             </CyDText>
             <CyDText className='text-[14px] font-medium'>
-              {currentMerchantData.historicalMultiplier.current.toFixed(1)}X
-              Rewards
+              {currentMerchantData.historicalMultiplier.current.toFixed(1)}X{' '}
+              {t('REWARDS')}
             </CyDText>
             {/* <CyDText className='text-n200 text-[12px]'>
                 {currentMerchantData.merchantReward ??
@@ -611,7 +622,9 @@ const MerchantRewardDetailContent: React.FC<
       {/* Bonuses Section */}
       {promotionalBonuses.length > 0 && (
         <CyDView className='mb-6 mx-4'>
-          <CyDText className='text-[12px] font-medium mb-2'>Bonuses</CyDText>
+          <CyDText className='text-[12px] font-medium mb-2'>
+            {t('BONUSES')}
+          </CyDText>
 
           <CyDView
             className={`bg-base40 rounded-[12px] ${
@@ -646,7 +659,7 @@ const MerchantRewardDetailContent: React.FC<
                       </CyDText>
                     </CyDView>
                     <CyDText className='text-n200 text-[12px]'>
-                      Avg Booster
+                      {t('AVG_BOOSTER')}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -662,13 +675,11 @@ const MerchantRewardDetailContent: React.FC<
           isDarkMode ? 'bg-base40' : 'bg-n0'
         }`}>
         <CyDText className='text-[14px] font-semibold mb-3'>
-          Merchant Boost
+          {t('MERCHANT_BOOST')}
         </CyDText>
 
         <CyDText className='text-n200 text-[12px] leading-5 mb-4'>
-          Boosting is powered by the Cypher community. The more people who boost
-          a merchant, the greater the reward potential - not just for you, but
-          for everyone using Cypher.
+          {t('BOOSTING_IS_POWERED_BY_THE_CYPHER_COMMUNITY')}
         </CyDText>
 
         {userBoostStatus?.hasBoost ? (
@@ -687,7 +698,7 @@ const MerchantRewardDetailContent: React.FC<
             <CyDView className='flex flex-row items-center justify-between px-3'>
               <CyDView>
                 <CyDText className='text-n200 text-[12px] font-medium'>
-                  You have boosted this merchant for
+                  {t('YOU_HAVE_BOOSTED_THIS_MERCHANT_FOR')}
                 </CyDText>
                 <CyDText className='font-medium'>
                   {DecimalHelper.round(
@@ -697,7 +708,7 @@ const MerchantRewardDetailContent: React.FC<
                     ),
                     2,
                   ).toNumber()}{' '}
-                  veCypher
+                  {t('VE_CYPHER')}
                 </CyDText>
               </CyDView>
               <CyDView>
@@ -714,7 +725,7 @@ const MerchantRewardDetailContent: React.FC<
         ) : (
           <CyDView className='items-center justify-center rounded-[16px] bg-base20 py-[28px] mb-4'>
             <CyDText className='text-n200 text-[14px] font-medium'>
-              You haven&apos;t boosted this merchant
+              {t('YOU_HAVENT_BOOSTED_THIS_MERCHANT')}
             </CyDText>
           </CyDView>
         )}
@@ -726,8 +737,7 @@ const MerchantRewardDetailContent: React.FC<
             className='text-n200 mr-2'
           />
           <CyDText className='text-n200 text-[12px] flex-1'>
-            Brands may offer exclusive bonuses when you boost them – giving you
-            even more back for your support.
+            {t('BRANDS_MAY_OFFER_EXCLUSIVE_BONUSES')}
           </CyDText>
         </CyDView>
 
@@ -738,7 +748,7 @@ const MerchantRewardDetailContent: React.FC<
               className='bg-yellow-400 rounded-[25px] py-4 items-center'
               onPress={handleBoostMerchant}>
               <CyDText className='text-black text-[16px] font-semibold'>
-                Boost this merchant
+                {t('BOOST_THIS_MERCHANT')}
               </CyDText>
             </CyDTouchView>
           </CyDView>
@@ -757,7 +767,7 @@ const MerchantRewardDetailContent: React.FC<
       {userTransactions.length > 0 && (
         <CyDView className='mb-6 mx-4'>
           <CyDText className='text-[12px] font-medium mb-2'>
-            Your Recent Transactions on this Merchant
+            {t('YOUR_RECENT_TRANSACTIONS_ON_THIS_MERCHANT')}
           </CyDText>
 
           <CyDView
@@ -814,7 +824,9 @@ const MerchantRewardDetailContent: React.FC<
                 isDarkMode ? 'bg-base200' : 'bg-n40'
               }`}
               onPress={openAllRewardCycles}>
-              <CyDText className='text-[14px] font-medium'>View All</CyDText>
+              <CyDText className='text-[14px] font-medium'>
+                {t('VIEW_ALL')}
+              </CyDText>
               <CyDMaterialDesignIcons
                 name='chevron-right'
                 size={20}
@@ -829,7 +841,7 @@ const MerchantRewardDetailContent: React.FC<
       {votingHistory.length > 0 && (
         <CyDView className='mb-6 mx-4'>
           <CyDText className='text-[16px] font-semibold mb-2'>
-            Previous reward cycles earnings
+            {t('PREVIOUS_REWARD_CYCLES_EARNINGS')}
           </CyDText>
 
           <CyDView
@@ -870,7 +882,9 @@ const MerchantRewardDetailContent: React.FC<
                   isDarkMode ? 'bg-base200' : 'bg-n40'
                 }`}
                 onPress={openAllRewardCycles}>
-                <CyDText className='text-[14px] font-medium'>View All</CyDText>
+                <CyDText className='text-[14px] font-medium'>
+                  {t('VIEW_ALL')}
+                </CyDText>
                 <CyDMaterialDesignIcons
                   name='chevron-right'
                   size={20}
@@ -885,10 +899,7 @@ const MerchantRewardDetailContent: React.FC<
       {/* Disclaimer */}
       <CyDView className='mb-8 mx-4'>
         <CyDText className='text-n200 text-[10px] leading-4'>
-          Disclaimer: All third-party trademarks, including logos and brand
-          names, are the property of their respective owners. Their inclusion
-          within this product is for identification and informational purposes
-          only and does not imply any endorsement, sponsorship, or affiliation.
+          {t('DISCLAIMER_THIRD_PARTY_TRADEMARKS')}
         </CyDText>
       </CyDView>
     </CyDView>

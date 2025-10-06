@@ -69,12 +69,24 @@ interface RewardTrendsContentProps {
 const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   rewardsData,
 }) => {
+  const { t } = useTranslation();
+
   /* -------------------------------------------------------------------------- */
   /*                         Time-filter drop-down logic                         */
   /* -------------------------------------------------------------------------- */
 
-  // Visible label for the currently selected time window
-  const [timeFilter, setTimeFilter] = React.useState('All time');
+  // Theme / color-scheme helpers (kept inside component to respect dynamic changes)
+  const { theme } = useAppTheme();
+  const colorScheme = useColorScheme();
+
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
+  // Dynamic background colour for video placeholder to avoid black flash.
+  const rewardTrendsTokenVideoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
+
+  // Time-filter drop-down logic
+  const [timeFilter, setTimeFilter] = React.useState(t('ALL_TIME', 'All time'));
   const [showOptions, setShowOptions] = React.useState(false);
   const selectorRef = React.useRef<any>(null);
   const [dropdownPos, setDropdownPos] = React.useState({
@@ -86,35 +98,25 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 
   // Build list of options based on epochs from rewards history
   const timeOptions: string[] = React.useMemo(() => {
-    const opts: string[] = ['All time'];
+    const opts: string[] = [t('ALL_TIME', 'All time')];
     if (rewardsData?.rewardsHistory?.epochs?.length) {
       rewardsData.rewardsHistory.epochs.forEach(e => {
         // Using String(...) to satisfy eslint restrict-template-expressions rule
-        opts.push(`Reward Cycle ${String(e.epochNumber)}`);
+        opts.push(`${t('REWARD_CYCLE')} ${String(e.epochNumber)}`);
       });
     }
     return opts;
-  }, [rewardsData]);
+  }, [rewardsData, t]);
 
   // Resolve selected epoch object (undefined for all-time)
   const selectedEpoch = React.useMemo(() => {
-    if (timeFilter === 'All time') return undefined;
-    const match = /Reward Cycle (\d+)/.exec(timeFilter);
+    if (timeFilter === t('ALL_TIME', 'All time')) return undefined;
+    const match = new RegExp(`${t('REWARD_CYCLE')} (\\d+)`).exec(timeFilter);
     const epochNum = match ? Number(match[1]) : undefined;
     return rewardsData?.rewardsHistory?.epochs?.find(
       e => e.epochNumber === epochNum,
     );
-  }, [timeFilter, rewardsData]);
-
-  // Theme / color-scheme helpers (kept inside component to respect dynamic changes)
-  const { theme } = useAppTheme();
-  const colorScheme = useColorScheme();
-
-  const isDarkMode =
-    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
-
-  // Dynamic background colour for video placeholder to avoid black flash.
-  const rewardTrendsTokenVideoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
+  }, [timeFilter, rewardsData, t]);
 
   /* -------------------------------------------------------------------------- */
   /*                   Derived metrics based on selected window                 */
@@ -277,7 +279,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
               date: dateStr,
               transactions: grouped[dateStr].map((txn: any) => ({
                 id: txn.id,
-                merchant: txn.title ?? txn.merchant ?? 'Unknown',
+                merchant: txn.title ?? txn.merchant ?? t('UNKNOWN', 'Unknown'),
                 amount: txn.amount,
                 status: txn.tStatus,
                 time: moment(txn.date).format('h:mm A'),
@@ -394,7 +396,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
         {/* Time Filter */}
         <CyDView className='flex-row justify-between items-center py-4'>
           <CyDText className='text-[22px] font-medium'>
-            {'Reward Trends'}
+            {t('REWARD_TRENDS', 'Reward Trends')}
           </CyDText>
           <CyDTouchView
             ref={selectorRef}
@@ -497,7 +499,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
         {/* Total Rewards Earned Label */}
         <CyDView className='mb-6'>
           <CyDText className='text-n200 text-[14px]'>
-            Total Rewards Earned
+            {t('REWARDS_TOTAL_REWARDS_EARNED')}
           </CyDText>
         </CyDView>
 
@@ -505,7 +507,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
         <CyDView className='mb-6'>
           {/* Bonus row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDText className='text-[14px]'>Bonus</CyDText>
+            <CyDText className='text-[14px]'>{t('REWARDS_BONUS')}</CyDText>
             <CyDView
               style={{
                 backgroundColor: getBadgeColors('bonus').bg,
@@ -520,7 +522,9 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
           </CyDView>
           {/* From spends row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDText className='text-[14px]'>From spends</CyDText>
+            <CyDText className='text-[14px]'>
+              {t('REWARDS_FROM_SPENDS')}
+            </CyDText>
             <CyDView
               style={{ backgroundColor: getBadgeColors('spends').bg }}
               className='px-1 py-[2px] rounded-[4px]'>
@@ -533,7 +537,9 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
           </CyDView>
           {/* Merchant spends row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDText className='text-[14px]'>Merchant Spends</CyDText>
+            <CyDText className='text-[14px]'>
+              {t('REWARDS_MERCHANT_SPENDS')}
+            </CyDText>
             <CyDView
               style={{ backgroundColor: getBadgeColors('merchant').bg }}
               className='px-1 py-[2px] rounded-[4px]'>
@@ -546,7 +552,9 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
           </CyDView>
           {/* Referrals row */}
           <CyDView className='flex-row justify-between items-center mb-3'>
-            <CyDText className='text-[14px]'>Referrals Rewards</CyDText>
+            <CyDText className='text-[14px]'>
+              {t('REWARDS_REFERRALS_REWARDS')}
+            </CyDText>
             <CyDView
               style={{ backgroundColor: getBadgeColors('referrals').bg }}
               className='px-1 py-[2px] rounded-[4px]'>
@@ -564,7 +572,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
       <CyDView className='flex-1 mb-[40px]'>
         {transactionData.length > 0 && (
           <CyDText className='text-[18px] font-bold py-4 px-4 bg-n20'>
-            Reward Transaction
+            {t('REWARDS_REWARD_TRANSACTION')}
           </CyDText>
         )}
 
@@ -584,6 +592,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 export default function Rewards() {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
+
   // NOTE: Casting navigation to `any` as we navigate to multiple stacks without strict typing.
   // This prevents TypeScript linter errors while keeping the API unchanged.
   const navigation: any = useNavigation();
@@ -1132,7 +1141,7 @@ export default function Rewards() {
           isDarkMode ? 'text-white' : 'bg-n30'
         }`}>
         <CyDText className='text-[32px] font-medium text-base400'>
-          {'Rewards'}
+          {t('REWARDS', 'Rewards')}
         </CyDText>
         <CyDTouchView onPress={handleWhatIsCypherTokenPress}>
           <CyDText className='text-blue200 font-medium text-[12px]'>
@@ -1226,11 +1235,14 @@ export default function Rewards() {
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-medium text-n0'>
-                  {'Rewards available to claim'}
+                  {t(
+                    'REWARDS_AVAILABLE_TO_CLAIM',
+                    'Rewards available to claim',
+                  )}
                 </CyDText>
               </CyDView>
               <Button
-                title={'Claim'}
+                title={t('CLAIM', 'Claim')}
                 onPress={() => {
                   navigation.navigate(screenTitle.CLAIM_REWARD, {
                     rewardsData,
@@ -1265,7 +1277,10 @@ export default function Rewards() {
                 <CyDView className='flex flex-row items-center justify-between'>
                   <CyDText className='text-[14px] mr-[6px]'>{'💡'}</CyDText>
                   <CyDText className='text-[12px] text-n200 font-medium flex-1'>
-                    {t('Deposit cypher token to get reward booster')}
+                    {t(
+                      'DEPOSIT_CYPHER_TOKEN_TO_GET_REWARD_BOOSTER',
+                      'Deposit cypher token to get reward booster',
+                    )}
                   </CyDText>
                 </CyDView>
 
@@ -1275,7 +1290,7 @@ export default function Rewards() {
                     isDarkMode ? 'bg-base200' : 'bg-n50'
                   }`}>
                   <CyDText className='text-base100 text-[14px] '>
-                    {'View More'}
+                    {t('REWARDS_VIEW_MORE')}
                   </CyDText>
                 </CyDTouchView>
               </CyDView>
@@ -1324,7 +1339,9 @@ export default function Rewards() {
                 <CyDView className='flex-row justify-between mt-[8px]'>
                   <CyDView className='flex-row items-center'>
                     <CyDView className='h-[6px] w-[6px] bg-p150 rounded-full mr-[4px]' />
-                    <CyDText className='text-[12px]'>Used</CyDText>
+                    <CyDText className='text-[12px]'>
+                      {t('REWARDS_USED')}
+                    </CyDText>
                   </CyDView>
                   <CyDText className='text-[12px]'>
                     {DecimalHelper.round(usedVotingPower, 2).toString()}
@@ -1334,7 +1351,9 @@ export default function Rewards() {
                 <CyDView className='flex-row justify-between mt-[4px]'>
                   <CyDView className='flex-row items-center'>
                     <CyDView className='h-[6px] w-[6px] bg-green200 rounded-full mr-[4px]' />
-                    <CyDText className='text-[12px]'>Un-used</CyDText>
+                    <CyDText className='text-[12px]'>
+                      {t('REWARDS_UNUSED')}
+                    </CyDText>
                   </CyDView>
                   <CyDText className='text-[12px]'>
                     {DecimalHelper.round(unusedVotingPower, 2).toString()}
@@ -1354,7 +1373,7 @@ export default function Rewards() {
             {/* Referrals Section */}
             <CyDView className='mx-[16px] mt-[16px]'>
               <CyDText className='text-[16px] font-medium mb-[8px]'>
-                {'Referrals'}
+                {t('REFERRALS', 'Referrals')}
               </CyDText>
 
               <CyDView className='mb-[40px]'>
@@ -1384,7 +1403,7 @@ export default function Rewards() {
                             ) : (
                               <CyDView className='bg-n60 rounded-[16px] px-[12px] py-[4px] mr-[8px]'>
                                 <CyDText className='text-n200 text-[12px]'>
-                                  Pending
+                                  {t('REWARDS_PENDING')}
                                 </CyDText>
                               </CyDView>
                             )}
@@ -1405,7 +1424,7 @@ export default function Rewards() {
                           }`}
                           onPress={handleViewAllReferralsPress}>
                           <CyDText className='text-[16px] font-medium'>
-                            View All
+                            {t('REWARDS_VIEW_ALL')}
                           </CyDText>
                           <CyDMaterialDesignIcons
                             name='chevron-right'
@@ -1428,7 +1447,7 @@ export default function Rewards() {
                           className='text-base400 mr-[8px]'
                         />
                         <CyDText className='text-base100 text-[14px] font-medium'>
-                          Invite Friends
+                          {t('INVITE_FRIENDS')}
                         </CyDText>
                       </CyDTouchView>
 
@@ -1438,7 +1457,7 @@ export default function Rewards() {
                         }`}
                         onPress={handleLearnReferralWorksPress}>
                         <CyDText className='text-[14px] font-medium'>
-                          Learn how referral works
+                          {t('REWARDS_LEARN_HOW_REFERRAL_WORKS')}
                         </CyDText>
                       </CyDTouchView>
                     </CyDView>

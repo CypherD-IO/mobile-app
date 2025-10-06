@@ -67,6 +67,7 @@ const ClaimRewardsBottomSheetContent = ({
   onClose: () => void;
   navigation: any;
 }) => {
+  const { t } = useTranslation();
   const [claiming, setClaiming] = useState(false);
 
   /**
@@ -80,7 +81,7 @@ const ClaimRewardsBottomSheetContent = ({
       navigation.navigate(screenTitle.OPTIONS, {
         screen: screenTitle.SOCIAL_MEDIA_SCREEN,
         params: {
-          title: 'Deposit and Boost',
+          title: t('DEPOSIT_AND_BOOST'),
           uri: redirectURI,
         },
       });
@@ -116,11 +117,10 @@ const ClaimRewardsBottomSheetContent = ({
           <CyDView className='items-center'>
             <CyDIcons name='card-filled' className='text-black text-[40px]' />
             <CyDText className='text-black font-semibold text-center mb-1'>
-              Deposit and boost Reward
+              {t('DEPOSIT_AND_BOOST_REWARD')}
             </CyDText>
             <CyDText className='text-black text-[14px] text-center opacity-80'>
-              Use your claimable Cypher tokens as{'\n'}
-              collateral to boost rewards
+              {t('USE_CLAIMABLE_CYPHER_TOKENS_AS_COLLATERAL')}
             </CyDText>
           </CyDView>
         </CyDTouchView>
@@ -145,12 +145,12 @@ const ClaimRewardsBottomSheetContent = ({
               className='text-base400 my-[8px]'
             />
             <CyDText className='font-semibold text-center mb-1'>
-              {claiming ? 'Claiming...' : 'Claim to wallet'}
+              {claiming ? t('CLAIMING') : t('CLAIM_TO_WALLET')}
             </CyDText>
             <CyDText className='text-n200 text-[14px] text-center'>
               {claiming
-                ? 'Processing your claim transaction'
-                : 'Claim the earned cypher token straight to your wallet'}
+                ? t('PROCESSING_YOUR_CLAIM_TRANSACTION')
+                : t('CLAIM_THE_EARNED_CYPHER_TOKEN_STRAIGHT_TO_YOUR_WALLET')}
             </CyDText>
           </CyDView>
         </CyDTouchView>
@@ -236,7 +236,7 @@ const ClaimReward: React.FC = () => {
     return [
       {
         id: '2',
-        type: 'From spends',
+        type: t('FROM_SPENDS'),
         amount: `${baseSpend} $CYPR`,
         color: 'blue-400',
         bgColor: 'rgba(247,198,69,0.15)',
@@ -244,7 +244,7 @@ const ClaimReward: React.FC = () => {
       },
       {
         id: '3',
-        type: 'Merchant Spends',
+        type: t('MERCHANT_SPENDS'),
         amount: `${boostedSpend} $CYPR`,
         color: 'red-400',
         bgColor: 'rgba(255,140,0,0.15)',
@@ -252,14 +252,14 @@ const ClaimReward: React.FC = () => {
       },
       {
         id: '4',
-        type: 'Referral Rewards',
+        type: t('REFERRAL_REWARDS'),
         amount: `${boostedReferral} $CYPR`,
         color: 'blue-400',
         bgColor: 'rgba(7,73,255,0.15)',
         textColor: '#0749FF',
       },
     ];
-  }, [claimRewardData]);
+  }, [claimRewardData, t]);
 
   /**
    * Fetches claim reward data from API
@@ -315,11 +315,11 @@ const ClaimReward: React.FC = () => {
 
     Share.share({
       message: shareMessage,
-      title: 'Cypher Rewards Achievement',
+      title: t('CYPHER_REWARDS_ACHIEVEMENT'),
     }).catch((error: any) => {
       if (error.message !== 'User did not share') {
         console.error('Error sharing rewards:', error);
-        showToast('Failed to share rewards information');
+        showToast(t('FAILED_TO_SHARE_REWARDS_INFORMATION'));
       }
     });
   };
@@ -341,10 +341,8 @@ const ClaimReward: React.FC = () => {
         console.error('❌ No Ethereum address found in wallet context');
         showModal('state', {
           type: 'error',
-          title: t('WALLET_NOT_FOUND') ?? 'Wallet Not Found',
-          description:
-            t('CONNECT_WALLET_FIRST') ??
-            'Please connect your wallet to claim rewards',
+          title: t('WALLET_NOT_FOUND'),
+          description: t('CONNECT_WALLET_FIRST'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -356,10 +354,8 @@ const ClaimReward: React.FC = () => {
         console.error('❌ No claim data available');
         showModal('state', {
           type: 'error',
-          title: t('CLAIM_DATA_NOT_AVAILABLE') ?? 'Claim Data Not Available',
-          description:
-            t('CLAIM_DATA_NOT_AVAILABLE_DESC') ??
-            'Unable to retrieve claim information. Please try again.',
+          title: t('CLAIM_DATA_NOT_AVAILABLE'),
+          description: t('CLAIM_DATA_NOT_AVAILABLE_DESC'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -371,10 +367,8 @@ const ClaimReward: React.FC = () => {
         console.warn('⚠️ User is not eligible to claim rewards');
         showModal('state', {
           type: 'error',
-          title: t('NOT_ELIGIBLE') ?? 'Not Eligible',
-          description:
-            t('NOT_ELIGIBLE_DESC') ??
-            'You are not eligible to claim rewards at this time.',
+          title: t('NOT_ELIGIBLE'),
+          description: t('NOT_ELIGIBLE_DESC'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -415,7 +409,7 @@ const ClaimReward: React.FC = () => {
         const navigationParams = {
           rewardAmount: claimedAmount,
           tokenSymbol: '$CYPR',
-          message: 'Congrats! You have successfully claimed your rewards!',
+          message: t('CONGRATS_ON_SIGNING_UP_FOR_THE_CARD'),
           transactionHash: result.hash,
           fromRewardsClaim: true, // Flag to indicate coming from rewards claim
         };
@@ -432,11 +426,8 @@ const ClaimReward: React.FC = () => {
         console.error('❌ Claim failed:', result.error);
         showModal('state', {
           type: 'error',
-          title: t('CLAIM_FAILED') ?? 'Claim Failed',
-          description:
-            result.error ??
-            t('CLAIM_FAILED_DESC') ??
-            'Failed to claim rewards. Please try again later.',
+          title: t('CLAIM_FAILED'),
+          description: result.error ?? t('CLAIM_FAILED_DESC'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -446,14 +437,11 @@ const ClaimReward: React.FC = () => {
 
       // Show error modal for exceptions
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : (t('CLAIM_ERROR_DESC') ??
-            'An error occurred while claiming rewards. Please try again.');
+        error instanceof Error ? error.message : t('CLAIM_ERROR_DESC');
 
       showModal('state', {
         type: 'error',
-        title: t('CLAIM_ERROR') ?? 'Claim Error',
+        title: t('CLAIM_ERROR'),
         description: errorMessage,
         onSuccess: hideModal,
         onFailure: hideModal,
@@ -502,9 +490,9 @@ const ClaimReward: React.FC = () => {
       <CyDView
         className={`flex-row justify-between items-center px-4 py-3 ${isDarkMode ? 'bg-white' : 'bg-black'}`}>
         <CyDText className='text-n0 text-lg font-semibold'>
-          Cypher{' '}
+          {t('CYPHER')}{' '}
           <CyDText className='text-n0 font-[300] tracking-[2px]'>
-            REWARDS
+            {t('CYPHER_REWARDS')}
           </CyDText>
         </CyDText>
 
@@ -527,7 +515,7 @@ const ClaimReward: React.FC = () => {
               color={isDarkMode ? '#ffffff' : '#000000'}
             />
             <CyDText className='text-n200 text-[16px] mt-4'>
-              Loading claim data...
+              {t('LOADING_CLAIM_DATA')}
             </CyDText>
           </CyDView>
         ) : (
@@ -535,7 +523,7 @@ const ClaimReward: React.FC = () => {
             {/* Main Claim Section */}
             <CyDView className='px-6 py-8 bg-base400 rounded-br-[36px] pt-[200px] -mt-[200px]'>
               <CyDText className='text-n0 text-[44px] font-[300] leading-tight mb-4'>
-                Your rewards are{'\n'}available to claim
+                {t('YOUR_REWARDS_ARE_AVAILABLE_TO_CLAIM')}
               </CyDText>
 
               {/* Token Amount */}
@@ -561,13 +549,13 @@ const ClaimReward: React.FC = () => {
                   onPress={handleShare}
                   className='bg-base80 rounded-full px-[30px] py-[14px] items-center'>
                   <CyDText className='text-black text-[20px] font-medium'>
-                    Share
+                    {t('SHARE')}
                   </CyDText>
                 </CyDTouchView>
 
                 <CyDView className='flex-1'>
                   <Button
-                    title='Claim Rewards'
+                    title={t('CLAIM_REWARDS')}
                     titleStyle='text-[20px] font-medium'
                     onPress={handleClaimRewards}
                     type={ButtonType.PRIMARY}
@@ -586,7 +574,7 @@ const ClaimReward: React.FC = () => {
                   isDarkMode ? 'bg-base40' : 'bg-n0'
                 }`}>
                 <CyDText className='text-[16px] font-medium mb-1'>
-                  Earning breakdown
+                  {t('EARNING_BREAKDOWN')}
                 </CyDText>
 
                 {earningBreakdown.map(item => (

@@ -28,7 +28,7 @@ import PageHeader from '../../components/PageHeader';
 
 const copyToClipboard = (text: string) => {
   Clipboard.setString(text);
-  showToast('Copied to clipboard');
+  showToast(t('COPIED_TO_CLIPBOARD_MESSAGE', 'Copied to clipboard'));
 };
 
 const ShareVia = ({ referralLink }: { referralLink: string }) => {
@@ -45,12 +45,12 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
 
   const shareOptions = [
     {
-      name: 'Whatsapp',
+      name: t('WHATSAPP_NAME', 'Whatsapp'),
       icon: AppImages.WHATSAPP_ICON,
       url: `whatsapp://send?text=${encodeURIComponent(shareUrlText)}`,
     },
     {
-      name: 'Telegram',
+      name: t('TELEGRAM_NAME', 'Telegram'),
       icon: AppImages.TELEGRAM_BLUE_ICON,
       url: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareUrlText)}`,
     },
@@ -59,8 +59,8 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
       icon: AppImages.X_ICON,
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareUrlText)}`,
     },
-    { name: 'QR Code', icon: AppImages.QR_CODE_ICON },
-    { name: 'Share', icon: AppImages.SHARE_ICON },
+    { name: t('QR_CODE', 'QR Code'), icon: AppImages.QR_CODE_ICON },
+    { name: t('SHARE_NAME', 'Share'), icon: AppImages.SHARE_ICON },
   ];
 
   const handleShare = async (option: {
@@ -83,9 +83,9 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
           message: shareUrlText,
         });
       }
-    } else if (option.name === 'QR Code') {
+    } else if (option.name === t('QR_CODE', 'QR Code')) {
       setIsQrModalVisible(true);
-    } else if (option.name === 'Share') {
+    } else if (option.name === t('SHARE_NAME', 'Share')) {
       try {
         await Share.share({
           message: shareUrlText,
@@ -102,7 +102,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
         referralUrl={referralLink}
       />
       <CyDView className='p-[16px]'>
-        <CyDText className='text-[14px] font-medium'>Share via</CyDText>
+        <CyDText className='text-[14px] font-medium'>{t('SHARE_VIA')}</CyDText>
         <CyDView className='flex-row justify-between mt-[12px]'>
           {shareOptions.map((option, index) => (
             <CyDTouchView
@@ -247,15 +247,15 @@ const getReferralStatus = (applicationStatus: string) => {
       CardApplicationStatus.KYC_SUCCESSFUL ||
       CardApplicationStatus.SUBMITTED ||
       CardApplicationStatus.COMPLETION_PENDING:
-      return 'Signed up';
+      return t('SIGNED_UP_STATUS', 'Signed up');
     case CardApplicationStatus.KYC_FAILED ||
       CardApplicationStatus.KYC_EXPIRED ||
       CardApplicationStatus.DECLINED:
       return 'KYC Failed';
     case CardApplicationStatus.COMPLETED:
-      return 'Completed';
+      return t('COMPLETED_STATUS', 'Completed');
     default:
-      return 'Signed up';
+      return t('SIGNED_UP_STATUS', 'Signed up');
   }
 };
 
