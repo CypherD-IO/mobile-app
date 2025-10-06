@@ -15,7 +15,6 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
-import OfferTagComponent from '../../../../../../components/v2/OfferTagComponent';
 interface Props {
   onRefresh: () => void;
 }
@@ -125,7 +124,6 @@ const KYCInProgressComponent = ({ onRefresh }: Props) => {
           </CyDView>
         </CyDView>
       </CyDScrollView>
-      <OfferTagComponent position={{ bottom: 120, left: 16, right: 16 }} />
     </>
   );
 };

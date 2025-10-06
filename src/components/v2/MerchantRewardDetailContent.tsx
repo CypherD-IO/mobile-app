@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   CyDView,
@@ -19,6 +19,7 @@ import { useGlobalBottomSheet } from '../v2/GlobalBottomSheetProvider';
 import { PieChart } from 'react-native-svg-charts';
 import { useNavigation } from '@react-navigation/native';
 import { screenTitle } from '../../constants';
+import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 
 interface MerchantRewardDetailContentProps {
   merchantData?: MerchantDetailData;
@@ -158,6 +159,7 @@ const MerchantRewardDetailContent: React.FC<
   MerchantRewardDetailContentProps
 > = ({ merchantData, navigation: navigationProp }) => {
   const { t } = useTranslation();
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   const { getWithAuth } = useAxios();
@@ -281,14 +283,6 @@ const MerchantRewardDetailContent: React.FC<
     void fetchMerchantData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [merchantData?.candidateId]);
-
-  // Show error toast if needed
-  useEffect(() => {
-    if (error) {
-      // TODO: Replace with your toast implementation
-      console.error('Toast:', error);
-    }
-  }, [error]);
 
   // Use passed merchant data or fetched details
   const currentMerchantData = useMemo(
@@ -430,8 +424,15 @@ const MerchantRewardDetailContent: React.FC<
    * Navigates to social media screen with candidate ID parameter
    */
   const handleBoostMerchant = () => {
+    const sessionToken = globalContext.globalState.token;
+
+    if (!sessionToken) {
+      console.error('Session token not available');
+      return;
+    }
+
     const candidateId = currentMerchantData.candidateId;
-    const redirectURI = `https://app.cypherhq.io/#/?candidateId=${candidateId}`;
+    const redirectURI = `https://app.cypherhq.io/#/?candidateId=${candidateId}&sessionToken=${sessionToken}`;
     navigation.navigate(screenTitle.OPTIONS);
     setTimeout(() => {
       navigation.navigate(screenTitle.OPTIONS, {
@@ -539,26 +540,26 @@ const MerchantRewardDetailContent: React.FC<
           className={`bg-base40 rounded-[12px] py-4 mb-3 ${
             isDarkMode ? 'bg-base40' : 'bg-n0'
           }`}>
-          <CyDView className='flex-row justify-between items-center mb-4 px-4'>
+          {/* <CyDView className='flex-row justify-between items-center mb-4 px-4'>
             <CyDText className='text-[14px] font-medium'>
               {t('ALL_TRANSACTION_REWARD')}
             </CyDText>
             <CyDView className='items-end'>
               <CyDText className='text-[14px] font-medium'>
                 {t('ONE_X_REWARDS')}
-              </CyDText>
-              {/* <CyDText className='text-n200 text-[12px]'>
+              </CyDText> */}
+          {/* <CyDText className='text-n200 text-[12px]'>
                 {currentMerchantData.baseReward}
               </CyDText> */}
-            </CyDView>
+          {/* </CyDView>
           </CyDView>
 
           <CyDView className='relative  mb-4'>
             <CyDView
               className={`h-[1px] ${isDarkMode ? 'bg-base200' : 'bg-n40'}`}
-            />
-            {/* Plus Icon */}
-            <CyDView className='items-center absolute -top-4 left-1/2 -translate-x-1/2'>
+            /> */}
+          {/* Plus Icon */}
+          {/* <CyDView className='items-center absolute -top-4 left-1/2 -translate-x-1/2'>
               <CyDView
                 className={`w-8 h-8 rounded-full items-center justify-center ${
                   isDarkMode ? 'bg-white' : 'bg-black'
@@ -570,7 +571,7 @@ const MerchantRewardDetailContent: React.FC<
                 />
               </CyDView>
             </CyDView>
-          </CyDView>
+          </CyDView> */}
 
           {/* Merchant reward */}
           <CyDView className='flex-row justify-between items-center px-4'>

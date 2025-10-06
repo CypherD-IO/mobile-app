@@ -233,6 +233,7 @@ const EmailVerification = (): JSX.Element => {
           left: 16,
           right: 16,
         }}
+        collapsed={true}
       />
 
       <CardApplicationFooter

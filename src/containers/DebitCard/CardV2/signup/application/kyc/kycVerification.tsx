@@ -1,14 +1,11 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useState, useRef } from 'react';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
   useFocusEffect,
 } from '@react-navigation/native';
-import {
-  CyDView,
-  CyDSafeAreaView,
-} from '../../../../../../styles/tailwindComponents';
+import { CyDSafeAreaView } from '../../../../../../styles/tailwindComponents';
 import CardApplicationHeader from '../../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../../components/v2/CardApplicationFooter';
 import { screenTitle } from '../../../../../../constants';
@@ -49,8 +46,10 @@ const KYCVerification = () => {
   );
   const [isRainDeclined, setIsRainDeclined] = useState(false);
 
-  const { refreshStatus, statusWiseRewards, totalRewardsPossible, stopTimer } =
-    useOnboardingReward();
+  // Use ref to track the previous KYC status for proper change detection
+  const previousKycStatusRef = useRef<CardApplicationStatus | null>(null);
+
+  const { refreshStatus, statusWiseRewards, stopTimer } = useOnboardingReward();
 
   const checkKYCStatus = async () => {
     try {
@@ -66,6 +65,22 @@ const KYCVerification = () => {
           [tempProvider, 'applicationStatus'],
           '',
         );
+
+        // Refresh onboarding reward status when KYC status changes
+        // Check if status has changed from the previous check
+        if (
+          previousKycStatusRef.current !== null &&
+          previousKycStatusRef.current !== applicationStatus
+        ) {
+          console.log(
+            `KYC status changed from ${previousKycStatusRef.current} to ${String(applicationStatus)}. Refreshing onboarding rewards...`,
+          );
+          void refreshStatus();
+        }
+
+        // Update the ref with the current status for next comparison
+        previousKycStatusRef.current = applicationStatus;
+
         if (applicationStatus === CardApplicationStatus.COMPLETED) {
           globalContext.globalDispatch({
             type: GlobalContextType.CARD_PROFILE,
@@ -202,6 +217,7 @@ const KYCVerification = () => {
         onBackPress={() => navigation.navigate(screenTitle.PORTFOLIO)}
       />
       {renderContent()}
+
       <CardApplicationFooter
         currentStep={2}
         totalSteps={3}

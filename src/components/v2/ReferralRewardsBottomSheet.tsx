@@ -80,7 +80,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
   votedMerchants: parentVotedMerchants = [],
 }) => {
   const { t } = useTranslation();
-  const { getWithAuth } = useAxios();
+  const { getWithAuth, getWithoutAuth } = useAxios();
 
   // Theme hooks
   const { theme } = useTheme();
@@ -98,6 +98,8 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
   >({});
   const [loadingEarnings, setLoadingEarnings] = useState<boolean>(false);
   const loadedEarningsRef = useRef<boolean>(false);
+  const [signupBonus, setSignupBonus] = useState<number>(0); // Default to 100
+  const [loadingSignupBonus, setLoadingSignupBonus] = useState<boolean>(true);
 
   /**
    * Fetch referral codes from API
@@ -120,6 +122,39 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
     };
 
     void fetchReferralCodes();
+  }, []);
+
+  /**
+   * Fetch signup bonus from epoch parameters
+   * Retrieves the current epoch signup bonus reward amount
+   */
+  useEffect(() => {
+    const fetchSignupBonus = async () => {
+      try {
+        setLoadingSignupBonus(true);
+        const epochResp = await getWithoutAuth('/v1/cypher-protocol/epoch');
+
+        if (!epochResp.isError) {
+          const signupBonusValue = epochResp.data?.parameters?.signupBonus;
+
+          // Parse and validate signup bonus
+
+          const parsedSignupBonus = Number(signupBonusValue);
+          setSignupBonus(parsedSignupBonus);
+        } else {
+          console.error(
+            '❌ Failed to fetch epoch parameters:',
+            epochResp.error,
+          );
+        }
+      } catch (error) {
+        console.error('❌ Error fetching signup bonus from epoch:', error);
+      } finally {
+        setLoadingSignupBonus(false);
+      }
+    };
+
+    void fetchSignupBonus();
   }, []);
 
   /**
@@ -148,8 +183,8 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
 
           // Fetch detailed merchant data including user rewards
           const detailResponses = await Promise.all(
-            top.map(m => {
-              return getWithAuth(
+            top.map(async m => {
+              return await getWithAuth(
                 `/v1/cypher-protocol/merchants/${m.candidateId}`,
                 {
                   includeUserData: true,
@@ -302,9 +337,13 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
               className='h-6 w-6 mr-3'
               resizeMode='contain'
             />
-            <CyDText className='text-[20px] font-bold text-primaryText font-newyork'>
-              100
-            </CyDText>
+            {loadingSignupBonus ? (
+              <CyDView className='h-6 w-16 rounded bg-n40 animate-pulse' />
+            ) : (
+              <CyDText className='text-[20px] font-bold text-primaryText font-newyork'>
+                {signupBonus ?? '0'}
+              </CyDText>
+            )}
           </CyDView>
         </CyDView>
 

@@ -27,6 +27,7 @@ import { screenTitle } from '../../constants';
 import useAxios from '../../core/HttpRequest';
 import { ClaimRewardResponse } from '../../models/rewardsClaim.interface';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 
 interface EarningBreakdown {
   id: string;
@@ -68,6 +69,7 @@ const ClaimRewardsBottomSheetContent = ({
   navigation: any;
 }) => {
   const { t } = useTranslation();
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [claiming, setClaiming] = useState(false);
 
   /**
@@ -75,7 +77,14 @@ const ClaimRewardsBottomSheetContent = ({
    * Navigates to social media screen with claim lock URL
    */
   const handleDepositAndBoost = () => {
-    const redirectURI = 'https://app.cypherhq.io/#/?claimLock=true';
+    const sessionToken = globalContext.globalState.token;
+
+    if (!sessionToken) {
+      console.error('Session token not available');
+      return;
+    }
+
+    const redirectURI = `https://app.cypherhq.io/#/?claimLock=true&sessionToken=${encodeURIComponent(sessionToken)}`;
     navigation.navigate(screenTitle.OPTIONS);
     setTimeout(() => {
       navigation.navigate(screenTitle.OPTIONS, {
@@ -166,7 +175,7 @@ const ClaimReward: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { getWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth } = useAxios();
 
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
@@ -405,6 +414,34 @@ const ClaimReward: React.FC = () => {
         );
         const claimedAmount = Number(totalClaimedWei) / Math.pow(10, 18);
 
+        // Mark rewards as claimed in backend
+        // This is a non-blocking call - we don't want to prevent navigation if it fails
+        try {
+          const currentTimestamp = Math.floor(Date.now() / 1000);
+          const markClaimedResponse = await patchWithAuth(
+            '/v1/cypher-protocol/user/mark-claimed',
+            {
+              unixTimestamp: currentTimestamp,
+            },
+          );
+
+          if (markClaimedResponse.isError) {
+            console.error(
+              '⚠️ Failed to mark rewards as claimed on backend:',
+              markClaimedResponse.error,
+            );
+            // Don't block the user flow - just log the error
+          } else {
+            console.log('✅ Successfully marked rewards as claimed on backend');
+          }
+        } catch (markClaimedError) {
+          console.error(
+            '💥 Exception while marking rewards as claimed:',
+            markClaimedError,
+          );
+          // Don't block the user flow - just log the error
+        }
+
         // Navigate to TokenRewardEarned screen with claimed amount
         const navigationParams = {
           rewardAmount: claimedAmount,
@@ -534,7 +571,7 @@ const ClaimReward: React.FC = () => {
                   resizeMode='contain'
                 />
                 <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
-                  {claimData.totalRewards.toLocaleString()}
+                  {DecimalHelper.round(claimData.totalRewards, 2).toString()}
                 </CyDText>
               </CyDView>
 

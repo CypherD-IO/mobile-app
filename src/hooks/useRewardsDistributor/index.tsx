@@ -37,9 +37,9 @@ import {
 /**
  * Rewards Distributor Contract Configuration (Base mainnet)
  */
+// TODO: Change to Base mainnet contract
 const REWARDS_DISTRIBUTOR_CONTRACT =
-  // '0x0506AE2a8F884DEAFF200530E116ce444fD78AB6' as const;
-  '0x204f179de0c6decae6ae93e7427139016dd16c2a' as const;
+  '0x3aDCB5664d9ABB0bD7991Bcd295E095a95295BE5' as const;
 
 /**
  * ABI for the claimMultiple function
@@ -315,9 +315,7 @@ export default function useRewardsDistributor() {
   ): Promise<`0x${string}`> => {
     // Load private key from keychain
     const pin = hdWalletContext?.state?.pinValue ?? '';
-    if (!hdWalletContext || !pin) {
-      throw new Error('Wallet not initialized or PIN unavailable');
-    }
+
     const privateKey = await loadPrivateKeyFromKeyChain(false, pin);
 
     if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {

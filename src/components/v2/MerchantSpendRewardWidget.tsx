@@ -9,7 +9,6 @@ import MerchantLogo from './MerchantLogo';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useAxios from '../../core/HttpRequest';
-import { ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import GradientText from '../gradientText';
 
@@ -134,6 +133,33 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     onViewAllPress?.();
   };
 
+  /**
+   * Renders a skeleton loader card that mimics the merchant card layout.
+   * Used during loading state to provide visual feedback to users.
+   */
+  const renderSkeletonCard = (index: number) => {
+    return (
+      <CyDView
+        className='items-center mb-6 w-[100px]'
+        key={`skeleton-${index}`}>
+        {/* Skeleton Merchant Icon with Badge */}
+        <CyDView className='relative mb-2'>
+          {/* Circular skeleton for merchant logo */}
+          <CyDView className={`w-[64px] h-[64px] rounded-full bg-n20`} />
+
+          {/* Skeleton Multiplier Badge */}
+          <CyDView
+            className={`absolute -top-3 rounded-full px-2 py-1 self-center `}>
+            <CyDView className='w-[32px] h-[16px]' />
+          </CyDView>
+        </CyDView>
+
+        {/* Skeleton Merchant Name */}
+        <CyDView className={`w-[80px] h-[20px] rounded bg-n20`} />
+      </CyDView>
+    );
+  };
+
   const renderMerchantCard = (merchant: MerchantData, index: number) => {
     // Check if user has voted for this merchant
     const hasUserVoted = merchant.userVoteData?.hasVoted || false;
@@ -248,27 +274,37 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
       </CyDView>
 
       {/* Merchants Grid */}
-      {!loading ? (
-        <CyDView className='px-4'>
-          <CyDView className='flex-row justify-center gap-3 mb-4'>
-            {merchantData.merchants
-              .slice(0, 3)
-              .map((merchant, index) => renderMerchantCard(merchant, index))}
-          </CyDView>
+      <CyDView className='px-4'>
+        {loading ? (
+          <>
+            {/* Skeleton loaders matching merchant card layout */}
+            <CyDView className='flex-row justify-center gap-3 mb-4'>
+              {[0, 1, 2].map(index => renderSkeletonCard(index))}
+            </CyDView>
 
-          <CyDView className='flex-row justify-center gap-3'>
-            {merchantData.merchants
-              .slice(3, 6)
-              .map((merchant, index) =>
-                renderMerchantCard(merchant, index + 3),
-              )}
-          </CyDView>
-        </CyDView>
-      ) : (
-        <CyDView className='items-center justify-center -mt-[14px] mb-[8px]'>
-          <ActivityIndicator />
-        </CyDView>
-      )}
+            <CyDView className='flex-row justify-center gap-3'>
+              {[3, 4, 5].map(index => renderSkeletonCard(index))}
+            </CyDView>
+          </>
+        ) : (
+          <>
+            {/* Actual merchant cards */}
+            <CyDView className='flex-row justify-center gap-3 mb-4'>
+              {merchantData.merchants
+                .slice(0, 3)
+                .map((merchant, index) => renderMerchantCard(merchant, index))}
+            </CyDView>
+
+            <CyDView className='flex-row justify-center gap-3'>
+              {merchantData.merchants
+                .slice(3, 6)
+                .map((merchant, index) =>
+                  renderMerchantCard(merchant, index + 3),
+                )}
+            </CyDView>
+          </>
+        )}
+      </CyDView>
 
       {/* View All Button */}
       <CyDView className='px-4'>

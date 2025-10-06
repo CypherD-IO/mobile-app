@@ -69,7 +69,7 @@ const screensToHaveNavBar = [
   screenTitle.PORTFOLIO_SCREEN,
   screenTitle.DEBIT_CARD_SCREEN,
   screenTitle.OPTIONS_SCREEN,
-  screenTitle.REWARDS,
+  screenTitle.REWARDS_SCREEN,
   screenTitle.CARD_SCREEN,
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,

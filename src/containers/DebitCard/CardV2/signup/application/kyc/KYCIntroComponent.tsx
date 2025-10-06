@@ -39,7 +39,10 @@ const KYCIntroComponent = () => {
         </CyDText>
       </CyDView>
 
-      <OfferTagComponent position={{ bottom: 20, left: 16, right: 16 }} />
+      <OfferTagComponent
+        position={{ bottom: 20, left: 16, right: 16 }}
+        collapsed={true}
+      />
     </CyDView>
   );
 };

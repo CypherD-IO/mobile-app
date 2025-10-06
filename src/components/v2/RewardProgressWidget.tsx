@@ -50,7 +50,7 @@ const BottomInfoSection = ({ task }: { task: any }) => {
   }, [task.id, progressAnimation, lastAnimatedTaskId]);
 
   return (
-    <CyDView className='flex-row items-center justify-between'>
+    <CyDView className='flex-row items-center justify-between h-[55px]'>
       {(task.id === '1' || task.id === '2') && (
         <CyDText className='text-n200 text-[14px] text-center font-medium mb-2'>
           {task.description}
@@ -97,7 +97,7 @@ const BottomInfoSection = ({ task }: { task: any }) => {
           {/* </CyDView> */}
         </CyDView>
       )}
-      {task.id === '4' && (
+      {/* {task.id === '4' && (
         <CyDView className='w-full'>
           <CyDView className='items-center mb-3'>
             <CyDText className='text-n200 text-[12px] font-medium mb-1'>
@@ -106,36 +106,36 @@ const BottomInfoSection = ({ task }: { task: any }) => {
             <CyDText className='text-[14px] text-center'>
               {task.description}
             </CyDText>
+          </CyDView> */}
+
+      {/* Merchant Options */}
+      {/* <CyDView className='flex-row justify-between items-center mb-3'> */}
+      {/* Amazon Option 1 */}
+      {/* <CyDView className='flex-1 bg-base200 rounded-full flex-row items-center p-2 mr-1'>
+              <CyDView className='w-6 h-6 bg-white rounded-full items-center justify-center mr-1'></CyDView>
+              <CyDText className='text-white text-[16px] font-medium'>
+                Amazon
+              </CyDText>
+            </CyDView> */}
+
+      {/* Amazon Option 2 */}
+      {/* <CyDView className='flex-1 bg-base200 rounded-full flex-row items-center p-2 mr-1'>
+              <CyDView className='w-6 h-6 bg-white rounded-full items-center justify-center mr-1'></CyDView>
+              <CyDText className='text-white text-[16px] font-medium'>
+                Amazon
+              </CyDText>
+            </CyDView> */}
+
+      {/* Amazon Option 3 */}
+      {/* <CyDView className='flex-1 bg-base200 rounded-full flex-row items-center p-2'>
+              <CyDView className='w-6 h-6 bg-white rounded-full items-center justify-center mr-1'></CyDView>
+              <CyDText className='text-white text-[16px] font-medium'>
+                Amazon
+              </CyDText>
+            </CyDView>
           </CyDView>
-
-          {/* Merchant Options */}
-          <CyDView className='flex-row justify-between items-center mb-3'>
-            {/* Amazon Option 1 */}
-            <CyDView className='flex-1 bg-base200 rounded-full flex-row items-center p-2 mr-1'>
-              <CyDView className='w-6 h-6 bg-white rounded-full items-center justify-center mr-1'></CyDView>
-              <CyDText className='text-white text-[16px] font-medium'>
-                Amazon
-              </CyDText>
-            </CyDView>
-
-            {/* Amazon Option 2 */}
-            <CyDView className='flex-1 bg-base200 rounded-full flex-row items-center p-2 mr-1'>
-              <CyDView className='w-6 h-6 bg-white rounded-full items-center justify-center mr-1'></CyDView>
-              <CyDText className='text-white text-[16px] font-medium'>
-                Amazon
-              </CyDText>
-            </CyDView>
-
-            {/* Amazon Option 3 */}
-            <CyDView className='flex-1 bg-base200 rounded-full flex-row items-center p-2'>
-              <CyDView className='w-6 h-6 bg-white rounded-full items-center justify-center mr-1'></CyDView>
-              <CyDText className='text-white text-[16px] font-medium'>
-                Amazon
-              </CyDText>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-      )}
+        </CyDView> */}
+      {/* )} */}
     </CyDView>
   );
 };
@@ -190,7 +190,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       completed: Boolean(milestone('firstLoad').earned),
       reward: milestone('firstLoad').amount ?? 0,
       status: milestone('firstLoad').earned ? 'completed' : 'pending',
-      description: `Load your card to avail ${milestone('firstLoad').amount} $CYPR as bonus rewards`,
+      description: `Add funds to your card to avail ${milestone('firstLoad').amount} $CYPR as bonus rewards.`,
     },
     {
       id: '3',

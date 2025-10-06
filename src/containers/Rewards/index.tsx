@@ -591,7 +591,7 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
 export default function Rewards() {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
-
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   // NOTE: Casting navigation to `any` as we navigate to multiple stacks without strict typing.
   // This prevents TypeScript linter errors while keeping the API unchanged.
   const navigation: any = useNavigation();
@@ -1005,10 +1005,19 @@ export default function Rewards() {
    * Navigates to social media screen with locks URL
    */
   const handleDepositTokenPress = () => {
-    const redirectURI = 'https://app.cypherhq.io/#/?locks=true';
-    (navigation as any).navigate(screenTitle.OPTIONS);
+    const sessionToken = globalContext.globalState.token;
+
+    if (!sessionToken) {
+      console.error('Session token not available');
+      return;
+    }
+
+    // Construct the URI with sessionToken as a query parameter
+    const baseURI = 'https://app.cypherhq.io/#/locks';
+    const redirectURI = `${baseURI}?sessionToken=${encodeURIComponent(sessionToken)}`;
+    navigation.navigate(screenTitle.OPTIONS);
     setTimeout(() => {
-      (navigation as any).navigate(screenTitle.OPTIONS, {
+      navigation.navigate(screenTitle.OPTIONS, {
         screen: screenTitle.SOCIAL_MEDIA_SCREEN,
         params: {
           title: 'Deposit Tokens',

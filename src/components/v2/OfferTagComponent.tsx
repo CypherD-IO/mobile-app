@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Image,
   ViewStyle,
   DimensionValue,
-  Keyboard,
-  Platform,
   Dimensions,
+  Pressable,
 } from 'react-native';
 import {
   CyDText,
@@ -40,6 +39,7 @@ interface OfferTagPosition {
  */
 interface OfferTagComponentProps {
   position?: OfferTagPosition;
+  collapsed?: boolean; // Controls whether the component should be collapsed to the right
 }
 
 /**
@@ -49,16 +49,22 @@ interface OfferTagComponentProps {
  * - Real-time countdown timer
  * - Green rounded banner design matching the provided screenshot
  * - Configurable floating positioning that doesn't affect page layout
- * - SKIP button functionality
+ * - Click to expand/collapse functionality
+ * - Auto-collapse on interaction outside the component
  * - Responsive design with proper padding and styling
  *
  * @param position - Object containing top, bottom, left, right positioning values
+ * @param collapsed - Boolean controlling whether component should be collapsed (slid to right)
  */
 const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
   position = { top: 48, left: 16, right: 16 }, // Default position: top with side margins
+  collapsed = false, // Default to expanded state
 }) => {
   const { remainingMs, totalRewardsPossible } = useOnboardingReward();
   const { statusWiseRewards } = useOnboardingReward();
+
+  // Track whether user has manually expanded the component
+  const [isManuallyExpanded, setIsManuallyExpanded] = useState(false);
 
   const isEligible = useMemo(() => {
     return get(statusWiseRewards, ['kycPending', 'earned'], false);
@@ -81,11 +87,9 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
   };
 
   /* ------------------------------------------------------------------
-   *  Animation setup (Android only – iOS retains current behaviour)
+   *  Animation setup (Both Android and iOS)
    * ------------------------------------------------------------------ */
 
-  // Shared value driving horizontal slide
-  const translateX = useSharedValue(0);
   // Dimensions for computing target offset
   const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -103,23 +107,53 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
     COLLAPSED_WIDTH -
     LEFT_MARGIN; /* right margin ~= LEFT_MARGIN */
 
-  // Animate on keyboard visibility changes (Android only)
+  // Shared value driving horizontal slide
+  // Initialize with correct value based on collapsed prop to prevent flash
+  const translateX = useSharedValue(collapsed ? TARGET_TRANSLATE_X : 0);
+
+  /**
+   * Effect to handle collapsed state changes
+   * When collapsed prop is true and user hasn't manually expanded, slide to right
+   * When collapsed prop is false, always show expanded
+   * Only reset manual expansion when transitioning from collapsed to expanded (not on each screen change)
+   */
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
-
-    const showSub = Keyboard.addListener('keyboardDidShow', () => {
-      translateX.value = withTiming(TARGET_TRANSLATE_X, { duration: 300 });
-    });
-
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+    // Only reset manual expansion when transitioning TO expanded (collapsed=false)
+    // This prevents the brief expand-then-collapse animation when navigating between collapsed screens
+    if (!collapsed) {
+      setIsManuallyExpanded(false);
       translateX.value = withTiming(0, { duration: 300 });
-    });
+    } else if (collapsed && !isManuallyExpanded) {
+      // Collapse to right only if not manually expanded
+      translateX.value = withTiming(TARGET_TRANSLATE_X, { duration: 300 });
+    }
+  }, [collapsed, TARGET_TRANSLATE_X, translateX, isManuallyExpanded]);
 
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [TARGET_TRANSLATE_X, translateX]);
+  /**
+   * Effect to handle manual expansion animation
+   * When user manually expands, animate to full width
+   */
+  useEffect(() => {
+    if (collapsed && isManuallyExpanded) {
+      // User manually expanded, show full banner
+      translateX.value = withTiming(0, { duration: 300 });
+    } else if (collapsed && !isManuallyExpanded) {
+      // Ensure it stays collapsed when not manually expanded
+      translateX.value = withTiming(TARGET_TRANSLATE_X, { duration: 300 });
+    }
+  }, [isManuallyExpanded, collapsed, TARGET_TRANSLATE_X, translateX]);
+
+  /**
+   * Handle click on the component
+   * When collapsed and clicked, expand it
+   * When expanded (after manual expansion), clicking anywhere outside should collapse it
+   */
+  const handlePress = () => {
+    if (collapsed) {
+      // Toggle the manual expansion state
+      setIsManuallyExpanded(!isManuallyExpanded);
+    }
+  };
 
   // Animated styles – banner slide
   const bannerAnimatedStyle = useAnimatedStyle(() => {
@@ -139,6 +173,21 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
     return { opacity };
   });
 
+  /**
+   * Auto-collapse when user interacts with screen
+   * This effect listens for any touch outside the component to collapse it back
+   */
+  useEffect(() => {
+    if (collapsed && isManuallyExpanded) {
+      // Set a timer to auto-collapse after 5 seconds of expansion
+      const timer = setTimeout(() => {
+        setIsManuallyExpanded(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [collapsed, isManuallyExpanded]);
+
   if (shouldHide) {
     // Countdown finished – don't render the banner. Hooks have still run above.
     return null;
@@ -146,43 +195,45 @@ const OfferTagComponent: React.FC<OfferTagComponentProps> = ({
 
   return (
     <CyDAnimatedView style={[dynamicPositionStyle, bannerAnimatedStyle]}>
-      <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg'>
-        {/* Left side - Icon */}
-        {isEligible ? (
-          <CyDMaterialDesignIcons
-            name='check-circle'
-            size={28}
-            color='white'
-            className='mr-2'
-          />
-        ) : (
-          <Image
-            source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
-            className='w-[28px] h-[28px] mr-2'
-            resizeMode='contain'
-          />
-        )}
-
-        {/* Offer text and timer (opacity animated) */}
-        <CyDAnimatedView
-          style={textAnimatedStyle}
-          className='flex flex-1 flex-row items-center justify-between'>
-          <CyDText className='text-white leading-tight mr-2'>
-            {isEligible
-              ? 'You are eligible for the sign-up bonus'
-              : `Get ${totalRewardsPossible} $CYPR as sign up bonus`}
-          </CyDText>
-
-          {/* Countdown timer */}
-          {!isEligible && (
-            <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full min-w-[90px] px-2 py-1 items-center'>
-              <CyDText className='text-white font-bold text-[14px]'>
-                {formatTime(minutes)}m: {formatTime(seconds)}s
-              </CyDText>
-            </CyDView>
+      <Pressable onPress={handlePress}>
+        <CyDView className='flex-row items-center justify-between bg-green300 rounded-full p-1 shadow-lg'>
+          {/* Left side - Icon */}
+          {isEligible ? (
+            <CyDMaterialDesignIcons
+              name='check-circle'
+              size={28}
+              color='white'
+              className='mr-2'
+            />
+          ) : (
+            <Image
+              source={AppImagesMap.common.OFFER_CODE_TAG_GREEN}
+              className='w-[28px] h-[28px] mr-2'
+              resizeMode='contain'
+            />
           )}
-        </CyDAnimatedView>
-      </CyDView>
+
+          {/* Offer text and timer (opacity animated) */}
+          <CyDAnimatedView
+            style={textAnimatedStyle}
+            className='flex flex-1 flex-row items-center justify-between'>
+            <CyDText className='text-white leading-tight mr-2'>
+              {isEligible
+                ? 'You are eligible for the sign-up bonus'
+                : `Get ${totalRewardsPossible} $CYPR as sign up bonus`}
+            </CyDText>
+
+            {/* Countdown timer */}
+            {!isEligible && (
+              <CyDView className='bg-green300 border-[#006731] border-[1px] rounded-full min-w-[90px] px-2 py-1 items-center'>
+                <CyDText className='text-white font-bold text-[14px]'>
+                  {formatTime(minutes)}m: {formatTime(seconds)}s
+                </CyDText>
+              </CyDView>
+            )}
+          </CyDAnimatedView>
+        </CyDView>
+      </Pressable>
     </CyDAnimatedView>
   );
 };

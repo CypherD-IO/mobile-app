@@ -951,40 +951,34 @@ export default function CypherCardScreen() {
             <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
               {cardId === CARD_IDS.HIDDEN_CARD && (
                 <CyDTouchView
-                  className='mx-[16px]'
+                  className='mx-[16px] bg-base250 rounded-[12px] p-[16px]'
                   onPress={() => {
                     onPressFundCard();
                   }}>
-                  <LinearGradient
-                    colors={['#4575F7', '#3155B4']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={style.loadCardGradientContainer}>
-                    <CyDView>
-                      <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                        <CyDFastImage
-                          source={AppImages.FALLING_COINS_3D}
-                          className='h-[46px] w-[32px]'
-                          resizeMode='contain'
-                        />
-                        <CyDView className='flex flex-col flex-1'>
-                          <CyDView className='flex flex-row items-center justify-between gap-x-[4px]'>
-                            <CyDText className='text-[20px] font-[500] mb-[4px] text-white'>
-                              {t<string>('LOAD_YOUR_CARD')}
-                            </CyDText>
-                            <CyDMaterialDesignIcons
-                              name='arrow-right-thin'
-                              size={24}
-                              className='text-white'
-                            />
-                          </CyDView>
-                          <CyDText className='text-[14px] font-[400] mb-[16px] text-white'>
-                            {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
+                  <CyDView>
+                    <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                      <CyDFastImage
+                        source={AppImages.FALLING_COINS_3D}
+                        className='h-[46px] w-[32px]'
+                        resizeMode='contain'
+                      />
+                      <CyDView className='flex flex-col flex-1'>
+                        <CyDView className='flex flex-row items-center justify-between gap-x-[4px]'>
+                          <CyDText className='text-[20px] font-[500] mb-[4px]'>
+                            {t<string>('LOAD_YOUR_CARD')}
                           </CyDText>
+                          <CyDMaterialDesignIcons
+                            name='arrow-right-thin'
+                            size={24}
+                            className='text-base400'
+                          />
                         </CyDView>
+                        <CyDText className='text-[14px] font-[400] mb-[16px]'>
+                          {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
+                        </CyDText>
                       </CyDView>
                     </CyDView>
-                  </LinearGradient>
+                  </CyDView>
                 </CyDTouchView>
               )}
               <GetPhysicalCardComponent

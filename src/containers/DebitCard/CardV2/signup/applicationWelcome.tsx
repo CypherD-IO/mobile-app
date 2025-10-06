@@ -342,7 +342,10 @@ const ApplicationWelcome = (): JSX.Element => {
             </CyDView>
 
             {/* Offer Tag Component - using relative positioning within container */}
-            <OfferTagComponent position={{ bottom: 94, left: 16, right: 16 }} />
+            <OfferTagComponent
+              position={{ bottom: 94, left: 16, right: 16 }}
+              collapsed={false}
+            />
 
             {/* Continue Button */}
             <CyDTouchView
@@ -381,7 +384,10 @@ const ApplicationWelcome = (): JSX.Element => {
             </CyDView>
 
             {/* Offer Tag Component - using relative positioning within container */}
-            <OfferTagComponent position={{ bottom: 94, left: 16, right: 16 }} />
+            <OfferTagComponent
+              position={{ bottom: 94, left: 16, right: 16 }}
+              collapsed={false}
+            />
 
             {/* Continue Button */}
             <CyDTouchView

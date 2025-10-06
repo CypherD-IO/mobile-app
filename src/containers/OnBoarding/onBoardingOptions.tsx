@@ -54,6 +54,26 @@ enum SocialLoginMethod {
   GOOGLE = 'google',
 }
 
+// Skeleton Loader Component for reward amount
+const SkeletonLoader: React.FC = () => {
+  const [opacity, setOpacity] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOpacity(prev => (prev === 1 ? 0.3 : 1));
+    }, 800);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <CyDView
+      style={{ opacity }}
+      className='bg-p200 rounded-[8px] w-[60px] h-[38px]'
+    />
+  );
+};
+
 // RewardCard Component
 interface RewardCardProps {
   timeLeft: {
@@ -62,6 +82,7 @@ interface RewardCardProps {
   };
   formatTime: (minutes: number, seconds: number) => string;
   rewardAmount: number;
+  isLoadingReward?: boolean;
   containerStyle?: string;
 }
 
@@ -69,6 +90,7 @@ const RewardCard: React.FC<RewardCardProps> = ({
   timeLeft,
   formatTime,
   rewardAmount,
+  isLoadingReward = false,
   containerStyle = 'bg-p100 rounded-[12px] p-[16px] mb-[40px]',
 }) => {
   const { t } = useTranslation();
@@ -94,9 +116,13 @@ const RewardCard: React.FC<RewardCardProps> = ({
                 resizeMode='contain'
               />
             </CyDView>
-            <CyDText className='text-black text-[28px] font-bold'>
-              {rewardAmount}
-            </CyDText>
+            {isLoadingReward ? (
+              <SkeletonLoader />
+            ) : (
+              <CyDText className='text-black text-[28px] font-bold'>
+                {rewardAmount}
+              </CyDText>
+            )}
           </CyDView>
           <CyDText className='text-black text-[28px] font-bold mb-[1px]'>
             🤑
@@ -166,11 +192,14 @@ export default function OnBoardingOptions() {
 
   // Holds the total possible rewards fetched from public onboarding rewards API
   const [totalPossibleRewards, setTotalPossibleRewards] = useState<number>(0);
+  // Loading state for rewards API call
+  const [isLoadingRewards, setIsLoadingRewards] = useState<boolean>(true);
 
   // Fetch onboarding rewards info on component mount
   useEffect(() => {
     const fetchRewardsInfo = async () => {
       try {
+        setIsLoadingRewards(true);
         const res = await getWithoutAuth('/v1/cards/onboarding-rewards/info');
         const { data, isError, error } = res;
         if (!isError && data?.totalPossibleRewards !== undefined) {
@@ -178,6 +207,8 @@ export default function OnBoardingOptions() {
         }
       } catch (error) {
         console.error('Failed to fetch onboarding rewards info:', error);
+      } finally {
+        setIsLoadingRewards(false);
       }
     };
 
@@ -589,6 +620,7 @@ export default function OnBoardingOptions() {
                 timeLeft={timeLeft}
                 formatTime={formatTime}
                 rewardAmount={totalPossibleRewards}
+                isLoadingReward={isLoadingRewards}
               />
             </CyDView>
 
@@ -871,6 +903,7 @@ export default function OnBoardingOptions() {
                 timeLeft={timeLeft}
                 formatTime={formatTime}
                 rewardAmount={totalPossibleRewards}
+                isLoadingReward={isLoadingRewards}
               />
             </CyDView>
 
@@ -1012,6 +1045,7 @@ export default function OnBoardingOptions() {
               timeLeft={timeLeft}
               formatTime={formatTime}
               rewardAmount={totalPossibleRewards}
+              isLoadingReward={isLoadingRewards}
             />
           </CyDView>
 

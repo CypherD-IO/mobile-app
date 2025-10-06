@@ -415,6 +415,7 @@ const ShippingAddress = (): JSX.Element => {
                 left: 16,
                 right: 16,
               }}
+              collapsed={true}
             />
 
             {/* Footer */}
