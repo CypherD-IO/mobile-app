@@ -2315,6 +2315,7 @@ const resources = {
         'If you did not initiate the transaction or if your on-chain transaction failed, you can close this funding ticket.',
       CLOSE_TICKET: 'Close ticket',
       CLOSING: 'Closing...',
+      WHAT_IS_CYPR_TOKEN: 'What is $CYPR token?',
     },
   },
 };

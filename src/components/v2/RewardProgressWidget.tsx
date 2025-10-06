@@ -190,7 +190,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       completed: Boolean(milestone('firstLoad').earned),
       reward: milestone('firstLoad').amount ?? 0,
       status: milestone('firstLoad').earned ? 'completed' : 'pending',
-      description: `Load your card to avail ${milestone('firstLoad').amount} $CYPR as bonus reward`,
+      description: `Load your card to avail ${milestone('firstLoad').amount} $CYPR as bonus rewards`,
     },
     {
       id: '3',

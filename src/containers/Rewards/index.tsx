@@ -1144,7 +1144,7 @@ export default function Rewards() {
         </CyDText>
         <CyDTouchView onPress={handleWhatIsCypherTokenPress}>
           <CyDText className='text-blue200 font-medium text-[12px]'>
-            {t('WHAT_IS_CYPHER_TOKEN', 'What is Cypher token?')}
+            {t('WHAT_IS_CYPR_TOKEN', 'What is $CYPR token?')}
           </CyDText>
         </CyDTouchView>
       </CyDView>

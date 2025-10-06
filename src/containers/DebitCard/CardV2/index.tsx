@@ -381,7 +381,6 @@ export default function CypherCardScreen() {
 
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
-  // isPremium = true; // Remove this test line
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
@@ -951,7 +950,11 @@ export default function CypherCardScreen() {
 
             <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
               {cardId === CARD_IDS.HIDDEN_CARD && (
-                <CyDView className='mx-[16px]'>
+                <CyDTouchView
+                  className='mx-[16px]'
+                  onPress={() => {
+                    onPressFundCard();
+                  }}>
                   <LinearGradient
                     colors={['#4575F7', '#3155B4']}
                     start={{ x: 0, y: 0 }}
@@ -965,9 +968,16 @@ export default function CypherCardScreen() {
                           resizeMode='contain'
                         />
                         <CyDView className='flex flex-col flex-1'>
-                          <CyDText className='text-[20px] font-[500] mb-[4px] text-white'>
-                            {t<string>('LOAD_YOUR_CARD')}
-                          </CyDText>
+                          <CyDView className='flex flex-row items-center justify-between gap-x-[4px]'>
+                            <CyDText className='text-[20px] font-[500] mb-[4px] text-white'>
+                              {t<string>('LOAD_YOUR_CARD')}
+                            </CyDText>
+                            <CyDMaterialDesignIcons
+                              name='arrow-right-thin'
+                              size={24}
+                              className='text-white'
+                            />
+                          </CyDView>
                           <CyDText className='text-[14px] font-[400] mb-[16px] text-white'>
                             {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
                           </CyDText>
@@ -975,7 +985,7 @@ export default function CypherCardScreen() {
                       </CyDView>
                     </CyDView>
                   </LinearGradient>
-                </CyDView>
+                </CyDTouchView>
               )}
               <GetPhysicalCardComponent
                 cardProfile={cardProfile}

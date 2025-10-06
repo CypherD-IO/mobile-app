@@ -160,8 +160,8 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
           {/* Reward Amount with Token */}
           <CyDView className='flex-row items-center justify-center mb-[4px]'>
             <CyDImage
-              source={AppImages.CYPR_TOKEN}
-              className='w-[32px] h-[32px] mr-[8px]'
+              source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+              className='w-[40px] h-[40px] mr-[8px]'
               resizeMode='contain'
             />
             <CyDText className='text-white text-[48px] font-bold'>

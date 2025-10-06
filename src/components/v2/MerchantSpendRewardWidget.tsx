@@ -134,24 +134,12 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     onViewAllPress?.();
   };
 
-  // kept for potential future text-only usage: getMerchantLogoProps handles this now
-  const processMerchantName = (name: string) => {
-    const firstWord = name.split(' ')[0];
-    const displayName =
-      firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
-    let fontSize = 20;
-    if (displayName.length >= 8) fontSize = 14;
-    else if (displayName.length > 5) fontSize = 16;
-    return { displayName, fontSize };
-  };
-
   const renderMerchantCard = (merchant: MerchantData, index: number) => {
     // Check if user has voted for this merchant
     const hasUserVoted = merchant.userVoteData?.hasVoted || false;
 
     return (
       <CyDTouchView
-        // key={merchant.candidateId + index.toString()}
         key={merchant.candidateId}
         className='items-center mb-6 w-[100px]'
         onPress={() => handleMerchantPress(merchant)}>

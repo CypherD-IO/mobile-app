@@ -49,7 +49,7 @@ enum ProviderType {
   SOLANA = 'solana',
 }
 
-const enum SocialLoginMethod {
+enum SocialLoginMethod {
   EMAIL = 'email',
   GOOGLE = 'google',
 }
