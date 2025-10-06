@@ -13,12 +13,12 @@ import { get, isEmpty } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Toast from 'react-native-toast-message';
-import AppImages from '../../../../assets/images/appImages';
-import CardProviderSwitch from '../../../components/cardProviderSwitch';
+import AppImages, { AppImagesMap } from '../../../../assets/images/appImages';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
+import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import ActivityBottomBar from '../../../components/v2/ActivityBottomBar';
@@ -56,12 +56,14 @@ import { isPotentiallyDccOvercharged } from '../../../core/util';
 import useActivityPolling from '../../../hooks/useActivityPolling';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import { CardFundResponse } from '../../../models/activities.interface';
+import usePortfolio from '../../../hooks/usePortfolio';
 import { Card, ICardTransaction } from '../../../models/card.model';
 import { CardDesign } from '../../../models/cardDesign.interface';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { PlanInfo } from '../../../models/planInfo.interface';
 import {
   CyDFastImage,
+  CyDImage,
   CyDLottieView,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
@@ -72,6 +74,13 @@ import {
 } from '../../../styles/tailwindComponents';
 import CardScreen from '../bridgeCard/card';
 import CardTxnFilterModal from './CardTxnFilterModal';
+import MerchantSpendRewardWidget from '../../../components/v2/MerchantSpendRewardWidget';
+import RewardProgressWidget from '../../../components/v2/RewardProgressWidget';
+import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDetailContent';
+import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
+import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -135,6 +144,7 @@ export default function CypherCardScreen() {
   );
   const { getWalletProfile, isLegacyCardClosed, getCardSpendStats } =
     useCardUtilities();
+  const { fetchPortfolio, getLocalPortfolio } = usePortfolio();
   const [spendStats, setSpendStats] = useState<{
     isPremiumPlan: boolean;
     amount: number;
@@ -364,6 +374,15 @@ export default function CypherCardScreen() {
     setIsActivityDetailsVisible(false);
     setSelectedActivity(null);
   };
+  const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
+  const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+  const { refreshStatus: refreshOnboardingStatus, statusWiseRewards } =
+    useOnboardingReward();
+
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -403,6 +422,18 @@ export default function CypherCardScreen() {
       void fetchRecentTransactions();
       void getCardDesignValues();
     }
+
+    // Ensure portfolio data is available if user landed directly on Card tab
+    try {
+      const localPortfolio = await getLocalPortfolio();
+      if (!localPortfolio) {
+        // background fetch; we ignore result here as other screens will read from storage
+        void fetchPortfolio();
+      }
+    } catch (e) {
+      console.warn('Portfolio fetch failed in Card screen', e);
+    }
+
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
     }
@@ -411,6 +442,7 @@ export default function CypherCardScreen() {
   useEffect(() => {
     if (isFocused) {
       void onRefresh();
+      void refreshOnboardingStatus();
     }
   }, [isFocused, cardProvider]);
 
@@ -468,8 +500,9 @@ export default function CypherCardScreen() {
     }
     setBalanceLoading(false);
   };
+
   const fetchRecentTransactions = async () => {
-    const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10`;
+    const txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=10&includeRewards=true`;
     const response = await getWithAuth(txnURL);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
@@ -575,6 +608,32 @@ export default function CypherCardScreen() {
       return true;
     }
     return false;
+  };
+
+  // Show merchant detail sheet
+  const showMerchantDetailSheet = (merchant: any) => {
+    setSelectedMerchantData(merchant);
+
+    showBottomSheet({
+      id: 'merchant-detail',
+      snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
+      showCloseButton: true,
+      scrollable: true,
+      topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
+      content: <MerchantRewardDetailContent merchantData={merchant} />,
+      onClose: () => {
+        setSelectedMerchantData(null);
+      },
+    });
+  };
+
+  const handleViewAllMerchants = () => {
+    navigation.navigate(screenTitle.MERCHANT_REWARD_LIST);
+  };
+
+  const handleDirectMerchantPress = (merchant: any) => {
+    showMerchantDetailSheet(merchant);
   };
 
   const onPressFundCard = () => {
@@ -889,41 +948,55 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
-            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
+            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
+              {cardId === CARD_IDS.HIDDEN_CARD && (
+                <CyDTouchView
+                  className='mx-[16px] bg-base250 rounded-[12px] p-[16px]'
+                  onPress={() => {
+                    onPressFundCard();
+                  }}>
+                  <CyDView>
+                    <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                      <CyDFastImage
+                        source={AppImages.FALLING_COINS_3D}
+                        className='h-[46px] w-[32px]'
+                        resizeMode='contain'
+                      />
+                      <CyDView className='flex flex-col flex-1'>
+                        <CyDView className='flex flex-row items-center justify-between gap-x-[4px]'>
+                          <CyDText className='text-[20px] font-[500] mb-[4px]'>
+                            {t<string>('LOAD_YOUR_CARD')}
+                          </CyDText>
+                          <CyDMaterialDesignIcons
+                            name='arrow-right-thin'
+                            size={24}
+                            className='text-base400'
+                          />
+                        </CyDView>
+                        <CyDText className='text-[14px] font-[400] mb-[16px]'>
+                          {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
+                        </CyDText>
+                      </CyDView>
+                    </CyDView>
+                  </CyDView>
+                </CyDTouchView>
+              )}
               <GetPhysicalCardComponent
                 cardProfile={cardProfile}
                 cardProvider={cardProvider}
                 cardDesignData={cardDesignData}
                 cardBalance={cardBalance}
               />
-
-              {cardId === CARD_IDS.HIDDEN_CARD ? (
-                <CyDView className='mx-[16px] mt-[16px]'>
-                  <CyDView className='border-[1px] border-n40 rounded-[16px] p-[16px]'>
-                    <CyDText className='text-[20px] font-[500] mb-[8px]'>
-                      {t<string>('LOAD_YOUR_CARD')}
-                    </CyDText>
-                    <CyDText className='text-[14px] font-[400] mb-[16px] text-n200'>
-                      {t<string>('LOAD_YOUR_CARD_DESCRIPTION')}
-                    </CyDText>
-                    <CyDTouchView
-                      className='bg-n30 rounded-[8px] px-[10px] py-[15px]'
-                      onPress={onPressFundCard}>
-                      <CyDView className='flex flex-row justify-between items-center'>
-                        <CyDText className='text-[14px] font-[500]'>
-                          {t<string>('LOAD_YOUR_CARD')}
-                        </CyDText>
-                        <CyDMaterialDesignIcons
-                          name='arrow-right-thin'
-                          size={24}
-                          className='text-base400'
-                        />
-                      </CyDView>
-                    </CyDTouchView>
-                  </CyDView>
-                </CyDView>
-              ) : (
-                <CyDView className='mx-[16px] mt-[16px]'>
+              {get(statusWiseRewards, ['kycPending', 'earned'], false) && (
+                <RewardProgressWidget />
+              )}
+              <MerchantSpendRewardWidget
+                onViewAllPress={handleViewAllMerchants}
+                onMerchantPress={handleDirectMerchantPress}
+                isPremium={planInfo?.planId === CypherPlanId.PRO_PLAN}
+              />
+              {cardId !== CARD_IDS.HIDDEN_CARD && (
+                <CyDView className='mx-[16px]'>
                   <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                     {t<string>('RECENT_TRANSACTIONS')}
                   </CyDText>
@@ -967,7 +1040,7 @@ export default function CypherCardScreen() {
                 </CyDView>
               )}
               {cardProfile && isLegacyCardClosed(cardProfile) && (
-                <CyDView className='mx-[16px] mt-[16px]'>
+                <CyDView className='mx-[16px]'>
                   <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
                     {t<string>('OTHERS')}
                   </CyDText>
@@ -993,9 +1066,8 @@ export default function CypherCardScreen() {
                   </CyDTouchView>
                 </CyDView>
               )}
-
               {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
-                <CyDView className='mx-[16px] mt-[16px] bg-p10 p-6 rounded-xl'>
+                <CyDView className='mx-[16px] bg-p10 p-6 rounded-xl'>
                   <CyDView className='flex flex-row items-center gap-x-[4px] justify-center'>
                     <CyDText className='font-extrabold text-[20px]'>
                       {'Cypher'}
@@ -1121,5 +1193,9 @@ const style = StyleSheet.create({
     borderRadius: 100,
     paddingHorizontal: 7,
     paddingVertical: 4,
+  },
+  loadCardGradientContainer: {
+    borderRadius: 12,
+    padding: 16,
   },
 });

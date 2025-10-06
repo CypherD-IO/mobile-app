@@ -1166,7 +1166,7 @@ const getTransactionDisplayProps = (
     return {
       image: AppImages.GREY_EXCLAMATION_ICON,
       textColor: 'text-base400',
-      imageText: 'Declined',
+      imageText: t('DECLINED'),
     };
   } else if (
     type === CardTransactionTypes.DEBIT &&
@@ -1175,31 +1175,31 @@ const getTransactionDisplayProps = (
     return {
       image: AppImages.GREY_EXCLAMATION_ICON,
       textColor: 'text-n600',
-      imageText: 'Cancelled',
+      imageText: t('CANCELLED'),
     };
   } else if (type === CardTransactionTypes.DEBIT) {
     return {
       image: AppImages.DEBIT_TRANSACTION_ICON,
       textColor: 'text-base400',
-      imageText: 'Debited',
+      imageText: t('DEBITED'),
     };
   } else if (type === CardTransactionTypes.CREDIT) {
     return {
       image: AppImages.CREDIT_TRANSACTION_ICON,
       textColor: 'text-green350',
-      imageText: 'Credited',
+      imageText: t('CREDITED'),
     };
   } else if (type === CardTransactionTypes.REFUND) {
     return {
       image: AppImages.CREDIT_TRANSACTION_ICON,
       textColor: 'text-green350',
-      imageText: 'Refunded',
+      imageText: t('REFUNDED'),
     };
   } else {
     return {
       image: AppImages.CREDIT_TRANSACTION_ICON,
       textColor: 'text-green350',
-      imageText: 'Credited',
+      imageText: t('CREDITED'),
     };
   }
 };
@@ -1731,6 +1731,54 @@ export default function TransactionDetails() {
                     </CyDText>
                   </CyDView>
                 )}
+                {/* Rewards banner – shown when cypherRewards exist */}
+                {(() => {
+                  // Extract rewards data safely
+                  const cypherRewards: any = (transaction as any)
+                    ?.cypherRewards;
+                  const rewardsAlloc = get(
+                    cypherRewards,
+                    'rewardsAllocation',
+                    null,
+                  );
+
+                  if (!rewardsAlloc) return null;
+
+                  const totalRewards = Number(rewardsAlloc?.totalRewards ?? 0);
+                  if (totalRewards <= 0) return null;
+
+                  const boostedRewards = Number(
+                    rewardsAlloc?.boostedSpendRewards ?? 0,
+                  );
+                  const isBoosted = boostedRewards > 0;
+
+                  // Determine banner styles & text
+                  const bannerBg = isBoosted ? 'bg-orange500' : 'bg-green400';
+                  const bannerText = isBoosted
+                    ? `You've earned boosted rewards from \n ${capitalize(
+                        transaction?.metadata?.merchant?.merchantName ?? '',
+                      )} Rewards`
+                    : 'You have earned';
+
+                  return (
+                    <CyDView
+                      className={`flex-row items-center justify-between rounded-[12px] px-[16px] py-[12px] mt-[16px] ${bannerBg} mx-[16px]`}>
+                      <CyDText className='text-white font-medium text-[14px] flex-1 mr-[8px]'>
+                        {bannerText}
+                      </CyDText>
+                      <CyDView className='flex-row items-center'>
+                        <CyDFastImage
+                          source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                          className='w-[24px] h-[24px] mr-[4px]'
+                          resizeMode='contain'
+                        />
+                        <CyDText className='text-white font-bold text-[18px]'>
+                          {limitDecimalPlaces(String(totalRewards), 2)}
+                        </CyDText>
+                      </CyDView>
+                    </CyDView>
+                  );
+                })()}
               </CyDView>
               {isOvercharged && <OverchargedTransactionInfoSection />}
               <CyDView className='flex flex-col flex-1 justify-between bg-n0'>

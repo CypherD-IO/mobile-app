@@ -764,7 +764,9 @@ export default function CardControls() {
             {isExpanded ? (
               <CyDView className='flex flex-row items-center gap-x-[12px]'>
                 <CyDView className='h-[40px] w-[63px] bg-n40 rounded-[4px]' />
-                <CyDText className='font-medium'>Select a card</CyDText>
+                <CyDText className='font-medium'>
+                  {t('CARD_SELECT_A_CARD')}
+                </CyDText>
               </CyDView>
             ) : (
               <CyDView className='flex flex-row items-center gap-x-[12px]'>
@@ -877,7 +879,9 @@ export default function CardControls() {
                   source={AppImages.SPEND_CONTROL_ICON}
                   className='w-[32px] h-[32px]'
                 />
-                <CyDText className='text-[18px]'>Spend Controls</CyDText>
+                <CyDText className='text-[18px]'>
+                  {t('CARD_SPEND_CONTROLS')}
+                </CyDText>
               </CyDView>
 
               <CyDView className='flex items-center mt-[24px]'>
@@ -909,7 +913,9 @@ export default function CardControls() {
 
               <CyDView className='mt-[24px] mx-[-16px]'>
                 <CyDView className='flex flex-row justify-between items-center py-[12px] px-[16px] border-t border-n40'>
-                  <CyDText className='text-[16px]'>Daily Limit</CyDText>
+                  <CyDText className='text-[16px]'>
+                    {t('CARD_DAILY_LIMIT')}
+                  </CyDText>
                   <CyDTouchView
                     className='flex flex-row items-center'
                     onPress={() => handleEditLimit('daily')}>
@@ -928,7 +934,9 @@ export default function CardControls() {
                     'flex flex-row justify-between items-center pt-[12px] px-[16px] border-t border-n40',
                     { 'pb-[12px]': !isPremiumUser },
                   )}>
-                  <CyDText className='text-[16px]'>Monthly Limit</CyDText>
+                  <CyDText className='text-[16px]'>
+                    {t('CARD_MONTHLY_LIMIT')}
+                  </CyDText>
                   <CyDTouchView
                     className='flex flex-row items-center'
                     onPress={() => handleEditLimit('monthly')}>
@@ -992,7 +1000,9 @@ export default function CardControls() {
                     source={AppImages.ATM_WITHDRAWAL_ICON}
                     className='w-[32px] h-[32px]'
                   />
-                  <CyDText className='text-[16px]'>ATM Withdrawals</CyDText>
+                  <CyDText className='text-[16px]'>
+                    {t('CARD_ATM_WITHDRAWALS')}
+                  </CyDText>
                   <Tooltip
                     isVisible={showAtmWithdrawalTooltip}
                     content={

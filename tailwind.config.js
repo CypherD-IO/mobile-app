@@ -172,6 +172,7 @@ module.exports = {
         blue100: 'var(--color-blue100)',
         blue200: 'var(--color-blue200)',
         blue300: 'var(--color-blue300)',
+        orange500: 'var(--color-orange500)',
         rewardsBlue: '#0057FF',
         rewardsYellow: '#ffb800',
         goldText: '#FBE19D',

@@ -82,6 +82,8 @@ export default function OnBoardOpotions() {
   const [isImportWalletModalVisible, setIsImportWalletModalVisible] =
     useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isNavigatingToCreateWallet, setIsNavigatingToCreateWallet] =
+    useState<boolean>(false);
 
   const handleSubmit = async () => {
     try {
@@ -107,12 +109,23 @@ export default function OnBoardOpotions() {
     }
   };
 
+  /**
+   * Navigates to the seed phrase generation screen with loading state
+   * Shows a loading indicator while the modal closes and navigation occurs
+   * @param type - The seed phrase type (12 or 24 words)
+   */
   const navigateToSeedPhraseGeneration = (type: string) => {
     setIsSelectSeedPhraseCountModalVisible(false);
+    setIsNavigatingToCreateWallet(true);
     setTimeout(() => {
       navigation.navigate(screenTitle.CREATE_SEED_PHRASE, {
         seedPhraseType: type,
       });
+      // Reset loading state after navigation completes
+      // Small delay to ensure smooth transition
+      setTimeout(() => {
+        setIsNavigatingToCreateWallet(false);
+      }, 500);
     }, MODAL_HIDE_TIMEOUT_250);
   };
 
@@ -235,7 +248,7 @@ export default function OnBoardOpotions() {
         showModal('state', {
           type: 'error',
           title: t('UNEXPECTED_ERROR'),
-          description: 'Unable to initialize Web3Auth',
+          description: t('UNABLE_TO_INITIALIZE_WEB3AUTH'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -256,7 +269,7 @@ export default function OnBoardOpotions() {
       }
       showModal('state', {
         type: 'error',
-        title: 'Unable to login',
+        title: t('UNABLE_TO_LOGIN'),
         description: errorMessage,
         onSuccess: hideModal,
         onFailure: hideModal,
@@ -264,7 +277,8 @@ export default function OnBoardOpotions() {
     }
   };
 
-  if (loading) {
+  // Show loading screen during social login or when navigating to create wallet
+  if (loading || isNavigatingToCreateWallet) {
     return <Loading />;
   }
 
@@ -279,12 +293,10 @@ export default function OnBoardOpotions() {
         setModalVisible={setIsSelectSeedPhraseCountModalVisible}>
         <CyDView className={'bg-n20 p-[16px] pb-[30px] rounded-t-[24px]'}>
           <CyDText className={'text-[20px] font-bold mt-[24px]'}>
-            {'Create a Wallet '}
+            {t('CREATE_A_WALLET')}
           </CyDText>
           <CyDText className='mt-[2px] text-n200 text-[12px]'>
-            {
-              'Choose a Mnemonic phrase of either 12 or 24 words \nthat you want to create!'
-            }
+            {t('CHOOSE_A_MNEMONIC_PHRASE')}
           </CyDText>
           <CyDView className='mt-[24px] bg-n0 rounded-[8px] p-[16px]'>
             <CyDTouchView
@@ -293,7 +305,7 @@ export default function OnBoardOpotions() {
                 setSelectedSeedPhraseCount(SeedPhraseType.TWELVE_WORDS);
               }}>
               <CyDText className='text-[16px] font-semibold'>
-                {'12 Word Phrase'}
+                {t('TWELVE_WORD_PHRASE')}
               </CyDText>
               <CyDView className='w-[24px] h-[24px] rounded-full'>
                 {selectedSeedPhraseCount !== SeedPhraseType.TWELVE_WORDS ? (
@@ -316,7 +328,7 @@ export default function OnBoardOpotions() {
                 setSelectedSeedPhraseCount(SeedPhraseType.TWENTY_FOUR_WORDS);
               }}>
               <CyDText className='text-[16px] font-semibold'>
-                {'24 Word Phrase'}
+                {t('TWENTY_FOUR_WORD_PHRASE')}
               </CyDText>
               <CyDView className='w-[24px] h-[24px] rounded-full'>
                 {selectedSeedPhraseCount !==
@@ -338,7 +350,7 @@ export default function OnBoardOpotions() {
                 className='text-green400'
               />
               <CyDText className='text-[12px] font-medium text-green400'>
-                {'Most secure '}
+                {t('MOST_SECURE')}
               </CyDText>
             </CyDView>
           </CyDView>
@@ -349,14 +361,14 @@ export default function OnBoardOpotions() {
               navigateToSeedPhraseGeneration(selectedSeedPhraseCount);
             }}>
             <CyDText className='text-[16px] font-bold text-black'>
-              {'Continue'}
+              {t('CONTINUE')}
             </CyDText>
           </CyDTouchView>
 
           <CyDView className='flex flex-row items-center justify-center gap-x-[4px] mt-[24px]'>
             <CyDIcons name='shield-tick' size={20} className='text-base400' />
             <CyDText className='text-[12px] font-medium'>
-              {'Cypher Passed security audit'}
+              {t('CYPHER_AUDIT_TEXT')}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -371,12 +383,10 @@ export default function OnBoardOpotions() {
         setModalVisible={setIsProviderSelectionModalVisible}>
         <CyDView className={'bg-n20 p-[16px] pb-[30px] rounded-t-[24px]'}>
           <CyDText className={'text-[20px] font-bold mt-[24px]'}>
-            {'Select a Chain '}
+            {t('SELECT_A_CHAIN')}
           </CyDText>
           <CyDText className='mt-[2px] text-n200 text-[12px]'>
-            {
-              'You will be able to access the wallet based on the \nnetwork you pick below.'
-            }
+            {t('YOU_WILL_BE_ABLE_TO_ACCESS_THE_WALLET')}
           </CyDText>
           <CyDView className='mt-[24px] bg-n0 rounded-[8px] p-[16px]'>
             <CyDView>
@@ -393,7 +403,7 @@ export default function OnBoardOpotions() {
                     />
                   </CyDView>
                   <CyDText className='text-[16px] font-semibold'>
-                    {'Ethereum (EVM)'}
+                    {t('ETHEREUM_EVM')}
                   </CyDText>
                 </CyDView>
                 <CyDView className='w-[24px] h-[24px] rounded-full'>
@@ -411,7 +421,9 @@ export default function OnBoardOpotions() {
 
               <CyDView>
                 <CyDText className='text-[12px] font-normal text-base400 mt-[16px]'>
-                  {'You can card load, send and receive tokens from 7 Network'}
+                  {t(
+                    'YOU_CAN_CARD_LOAD_SEND_AND_RECEIVE_TOKENS_FROM_7_NETWORK',
+                  )}
                 </CyDText>
                 <CyDView className='flex flex-row items-center gap-x-[6px] mt-[6px]'>
                   <CyDImage
@@ -461,7 +473,7 @@ export default function OnBoardOpotions() {
                   />
                 </CyDView>
                 <CyDText className='text-[16px] font-semibold'>
-                  {'Solana'}
+                  {t('SOLANA_CHAIN')}
                 </CyDText>
               </CyDView>
               <CyDView className='w-[24px] h-[24px] rounded-full'>
@@ -484,14 +496,14 @@ export default function OnBoardOpotions() {
               void handleSubmit();
             }}>
             <CyDText className='text-[16px] font-bold text-black'>
-              {'Continue'}
+              {t('CONTINUE')}
             </CyDText>
           </CyDTouchView>
 
           <CyDView className='flex flex-row items-center justify-center gap-x-[4px] mt-[24px]'>
             <CyDIcons name='shield-tick' size={20} className='text-base400' />
             <CyDText className='text-[12px] font-medium'>
-              {'Cypher Passed security audit'}
+              {t('CYPHER_AUDIT_TEXT')}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -506,12 +518,10 @@ export default function OnBoardOpotions() {
         setModalVisible={setIsImportWalletModalVisible}>
         <CyDView className={'bg-n20 p-[16px] pb-[30px] rounded-t-[24px]'}>
           <CyDText className={'text-[20px] font-bold mt-[24px]'}>
-            {'Import Wallet Options'}
+            {t('IMPORT_WALLET_OPTIONS')}
           </CyDText>
           <CyDText className='mt-[2px] text-n200 text-[12px]'>
-            {
-              'You can import your wallet using either a seed phrase \nor a private key.'
-            }
+            {t('YOU_CAN_IMPORT_YOUR_WALLET_USING_EITHER')}
           </CyDText>
           <CyDView className='mt-[24px] bg-n0 rounded-[8px] p-[16px]'>
             <CyDTouchView
@@ -527,7 +537,7 @@ export default function OnBoardOpotions() {
                   className='text-base400'
                 />
                 <CyDText className='text-[16px] font-semibold'>
-                  {'Import Seed Phrase'}
+                  {t('IMPORT_SEED_PHRASE')}
                 </CyDText>
               </CyDView>
             </CyDTouchView>
@@ -547,7 +557,7 @@ export default function OnBoardOpotions() {
                   className='text-base400'
                 />
                 <CyDText className='text-[16px] font-semibold'>
-                  {'Import Private Key'}
+                  {t('IMPORT_PRIVATE_KEY')}
                 </CyDText>
               </CyDView>
             </CyDTouchView>
@@ -556,7 +566,7 @@ export default function OnBoardOpotions() {
           <CyDView className='flex flex-row items-center justify-center gap-x-[4px] mt-[24px]'>
             <CyDIcons name='shield-tick' size={20} className='text-base400' />
             <CyDText className='text-[12px] font-medium'>
-              {'Cypher Passed security audit'}
+              {t('CYPHER_AUDIT_TEXT')}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -566,7 +576,7 @@ export default function OnBoardOpotions() {
         className='flex-1 bg-[#F74555]'
         style={{ paddingTop: inset.top }}>
         <CyDText className='mx-[36px] mt-[40px] mb-[50px] text-[32px] font-bold font-nord text-white'>
-          {"LET'S \nGET STARTED"}
+          {t('LETS_GET_STARTED')}
         </CyDText>
         <CyDKeyboardAwareScrollView className='flex-1 rounded-t-[30px] bg-n0 py-[24px] px-[22px] bg-n20'>
           <CyDText className='text-[18px] font-semibold text-center'>
@@ -592,7 +602,7 @@ export default function OnBoardOpotions() {
                     className='w-[30px] h-[30px]'
                   />
                   <CyDText className='text-[16px] font-medium'>
-                    {'Create New Wallet'}
+                    {t('CREATE_NEW_WALLET')}
                   </CyDText>
                 </CyDView>
                 <CyDIcons
@@ -615,7 +625,7 @@ export default function OnBoardOpotions() {
                     className='w-[30px] h-[30px]'
                   />
                   <CyDText className='text-[16px] font-medium'>
-                    {'Import Wallet'}
+                    {t('IMPORT_WALLET')}
                   </CyDText>
                 </CyDView>
                 <CyDIcons
@@ -641,7 +651,7 @@ export default function OnBoardOpotions() {
                     className='w-[30px] h-[30px]'
                   />
                   <CyDText className='text-[16px] font-medium'>
-                    {'Connect Wallet'}
+                    {t('CONNECT_WALLET')}
                   </CyDText>
                 </CyDView>
                 <CyDIcons
@@ -667,7 +677,7 @@ export default function OnBoardOpotions() {
             <CyDView className='mt-[6px] flex-row items-center border border-n50 rounded-[8px] bg-n0'>
               <CyDTextInput
                 className='flex-1 text-[18px] text-base400 py-[16px] pl-[12px] rounded-[8px] font-normal'
-                placeholder='Email address'
+                placeholder={t('EMAIL_ADDRESS')}
                 placeholderTextColor={'#8993A4'}
                 value={email}
                 onChangeText={setEmail}
@@ -688,7 +698,7 @@ export default function OnBoardOpotions() {
                     setIsProviderSelectionModalVisible(true);
                   }}>
                   <CyDText className='text-[16px] font-normal'>
-                    {'Next'}
+                    {t('NEXT')}
                   </CyDText>
                 </TouchableOpacity>
               )}
@@ -701,7 +711,7 @@ export default function OnBoardOpotions() {
                   setIsProviderSelectionModalVisible(true);
                 }}>
                 <CyDText className='text-[12px] font-medium text-base400'>
-                  {'Sign in with'}
+                  {t('SIGN_IN_WITH')}
                 </CyDText>
                 <CyDImage
                   source={AppImages.GOOGLE_LOGO}
@@ -716,7 +726,7 @@ export default function OnBoardOpotions() {
                     setIsProviderSelectionModalVisible(true);
                   }}>
                   <CyDText className='text-[12px] font-medium text-base400'>
-                    {'Sign in with'}
+                    {t('SIGN_IN_WITH_APPLE')}
                   </CyDText>
                   <CyDImage
                     source={AppImages.APPLE_LOGO_GRAY}

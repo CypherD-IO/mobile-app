@@ -90,7 +90,9 @@ export default function CardActivationConsent() {
         <CyDTouchView
           className='flex flex-row justify-center items-center w-full p-[8px] rounded-[22px]'
           style={styles.premiumButton}>
-          <CyDText className='text-center font-bold text-[16px]'>Go</CyDText>
+          <CyDText className='text-center font-bold text-[16px]'>
+            {t('CARD_GO')}
+          </CyDText>
           <CyDImage
             source={AppImages.PREMIUM_LABEL}
             className='w-[72px] h-[16px] ml-[4px]'

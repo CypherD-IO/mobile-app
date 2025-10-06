@@ -121,6 +121,7 @@ export const screenTitle = {
   CARD_APPLICATION: 'cardApplication',
   CARD_APPLICATION_WELCOME: 'cardApplicationWelcome',
   ENTER_REFERRAL_CODE: 'enterReferralCode',
+  OFFERS_AND_PROMOTION: 'offersAndPromotion',
   BASIC_DETAILS: 'basicDetails',
   SHIPPING_ADDRESS: 'shippingAddress',
   ADDITIONAL_DETAILS: 'additionalDetails',
@@ -130,8 +131,13 @@ export const screenTitle = {
   KYC_WEBVIEW: 'kycWebView',
   VERIFICATION_FAILED: 'verificationFailed',
   NAME_ON_CARD: 'nameOnCard',
+  TOKEN_REWARD_EARNED: 'tokenRewardEarned',
   CARD_CREATION: 'cardCreation',
   REWARDS: 'Rewards',
+  REWARDS_SCREEN: 'RewardsScreen',
+  CLAIM_REWARD: 'ClaimReward',
+  REFERRALS_VIEW_ALL: 'ReferralsViewAll',
+  ALL_REFERRAL_CODES: 'AllReferralCodes',
   MIGRATE_FUNDS: 'migrateFunds',
   REFERRALS: 'Referrals',
   CRYPTO_WITHDRAWAL: 'cryptoWithdrawal',
@@ -151,6 +157,7 @@ export const screenTitle = {
   AIRDROP_CLAIM: 'AirdropClaim',
   AIRDROP_CLAIM_SUCCESS: 'AirdropClaimSuccess',
   COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
+  MERCHANT_REWARD_LIST: 'MerchantRewardList',
 };
 
 export const fontsName = {
