@@ -9,7 +9,7 @@ import Web3Auth, {
 } from '@web3auth/react-native-sdk';
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useContext } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -52,6 +52,7 @@ enum ProviderType {
 enum SocialLoginMethod {
   EMAIL = 'email',
   GOOGLE = 'google',
+  APPLE = 'apple',
 }
 
 // Skeleton Loader Component for reward amount
@@ -299,6 +300,15 @@ export default function OnBoardingOptions() {
     setIsProviderSelectionModalVisible(true);
   };
 
+  /**
+   * Initiates the Apple social login flow
+   * Sets the social login method to Apple and shows the provider selection modal
+   */
+  const handleAppleLogin = () => {
+    setSocialLoginMethod(SocialLoginMethod.APPLE);
+    setIsProviderSelectionModalVisible(true);
+  };
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
@@ -348,7 +358,11 @@ export default function OnBoardingOptions() {
         }
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_EVM, {
           from:
-            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
+            socialLoginMethod === SocialLoginMethod.EMAIL
+              ? 'email'
+              : socialLoginMethod === SocialLoginMethod.GOOGLE
+                ? 'google'
+                : 'apple',
         });
       } else if (providerType === ProviderType.SOLANA) {
         _privateKey = (await provider.provider.request({
@@ -366,7 +380,11 @@ export default function OnBoardingOptions() {
         );
         logAnalyticsToFirebase(AnalyticEvent.SOCIAL_LOGIN_SOLANA, {
           from:
-            socialLoginMethod === SocialLoginMethod.EMAIL ? 'email' : 'google',
+            socialLoginMethod === SocialLoginMethod.EMAIL
+              ? 'email'
+              : socialLoginMethod === SocialLoginMethod.GOOGLE
+                ? 'google'
+                : 'apple',
         });
       } else {
         return;
@@ -417,6 +435,30 @@ export default function OnBoardingOptions() {
     }
   };
 
+  /**
+   * Handles Apple social login authentication
+   * Initiates the Web3Auth login flow with Apple provider and mandatory MFA
+   * @param provider - Web3Auth instance to use for authentication
+   */
+  const appleLogin = async (provider: Web3Auth) => {
+    await provider.login({
+      loginProvider: LOGIN_PROVIDER.APPLE,
+      mfaLevel: MFA_LEVELS.MANDATORY,
+    });
+
+    try {
+      await generateWallet(provider);
+    } catch (error) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNEXPECTED_ERROR'),
+        description: parseErrorMessage(error),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
   const handleSocialLogin = async () => {
     try {
       let provider;
@@ -444,6 +486,8 @@ export default function OnBoardingOptions() {
         await handleEmailLogin(provider);
       } else if (socialLoginMethod === SocialLoginMethod.GOOGLE) {
         await googleLogin(provider);
+      } else if (socialLoginMethod === SocialLoginMethod.APPLE) {
+        await appleLogin(provider);
       }
     } catch (error) {
       let errorMessage = parseErrorMessage(error);
@@ -696,7 +740,7 @@ export default function OnBoardingOptions() {
                 {/* Google Button */}
                 <CyDTouchView
                   onPress={handleGoogleLogin}
-                  className='flex-row items-center justify-center bg-blue-600 rounded-full py-[16px] px-[24px] mb-[40px]'>
+                  className='flex-row items-center justify-center bg-blue-600 rounded-full py-[16px] px-[24px] mb-[16px]'>
                   <CyDView className='bg-white rounded-full p-[1px] mr-[8px]'>
                     <CyDImage
                       source={AppImages.GOOGLE_LOGO}
@@ -708,6 +752,25 @@ export default function OnBoardingOptions() {
                     Continue with Google
                   </CyDText>
                 </CyDTouchView>
+
+                {/* Apple Button - iOS Only */}
+                {Platform.OS === 'ios' && (
+                  <CyDTouchView
+                    onPress={handleAppleLogin}
+                    className='flex-row items-center justify-center bg-black rounded-full py-[16px] px-[24px] mb-[40px]'>
+                    <CyDImage
+                      source={AppImages.APPLE_LOGO_GRAY}
+                      className='w-[20px] h-[20px] mr-[8px]'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='text-white text-[18px] font-bold'>
+                      Continue with Apple
+                    </CyDText>
+                  </CyDTouchView>
+                )}
+
+                {/* Adjust bottom margin if not iOS */}
+                {Platform.OS !== 'ios' && <CyDView className='mb-[24px]' />}
 
                 {/* Security Audit */}
                 <CyDView className='flex-row items-center justify-center'>
