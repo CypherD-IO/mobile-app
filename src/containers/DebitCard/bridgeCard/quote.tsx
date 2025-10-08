@@ -135,11 +135,6 @@ export default function CardQuote({
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
 
-  /**
-   * Memoize cosmosAddresses to prevent unnecessary re-creation and re-renders.
-   * Without this, the object would get a new reference on every render,
-   * causing any hooks that depend on it (like useCallback) to also re-execute.
-   */
   const cosmosAddresses = useMemo(
     () => ({
       cosmos: cosmos.address,
