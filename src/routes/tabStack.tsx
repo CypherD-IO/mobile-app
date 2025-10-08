@@ -450,7 +450,7 @@ const TabStack = React.memo(
 
               let iconSource = '';
               if (route.name === screenTitle.PORTFOLIO) {
-                iconSource = 'home-filled';
+                iconSource = 'portfolio';
               } else if (route.name === screenTitle.CARD) {
                 iconSource = 'card-filled';
               } else if (route.name === screenTitle.REWARDS) {
