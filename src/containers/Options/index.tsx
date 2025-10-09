@@ -738,25 +738,6 @@ export default function OptionsHub() {
             </CyDView>
           )} */}
 
-          <CyDView className='mt-[24px]'>
-            <CyDText className='text-[12px] text-n200 tracking-[2px]'>
-              {'REFERRALS AND REWARDS'}
-            </CyDText>
-
-            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
-              {referralAndRewards.map(benefit => (
-                <RenderOptions
-                  isLoading={isLoading}
-                  apiDependent={benefit.apiDependent}
-                  key={benefit.title}
-                  icon={benefit.icon as IconNames}
-                  title={benefit.title}
-                  onPress={benefit.onPress}
-                />
-              ))}
-            </CyDView>
-          </CyDView>
-
           <CyDView className='mt-[44px]'>
             <CyDText className='text-[12px] text-n200 tracking-[2px]'>
               {'CYPHER CARD'}

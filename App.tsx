@@ -508,7 +508,7 @@ function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <CyDView style={{ flex: 1, backgroundColor: 'white' }} className=''>
+        <CyDView className='flex-1 bg-n0'>
           {/* Configure StatusBar dynamically based on theme context for proper contrast and SafeArea behavior */}
           <ThemedStatusBar />
           <GestureHandlerRootView style={{ flex: 1 }}>
@@ -568,7 +568,7 @@ function App() {
                                       <Toast
                                         config={toastConfig}
                                         position={'bottom'}
-                                        bottomOffset={140}
+                                        bottomOffset={100}
                                       />
                                       {<ConfirmationModals />}
                                       <WalletConnectModal

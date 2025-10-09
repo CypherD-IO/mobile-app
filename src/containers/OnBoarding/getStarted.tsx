@@ -73,7 +73,7 @@ function BottomNavigation({
   const showBackButton = currentIndex > 0;
 
   return (
-    <CyDView className='absolute bottom-0 left-0 right-0 bg-black'>
+    <CyDView className=' bg-black'>
       {/* Progress Indicators */}
       <ProgressIndicator
         currentIndex={currentIndex}
@@ -248,6 +248,7 @@ const OnBoardingGetStarted = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { showBottomSheet } = useGlobalBottomSheet();
   const totalSections = 3;
+  const inset = useSafeAreaInsets();
 
   /**
    * Handles continue button press across sections
@@ -350,7 +351,10 @@ const OnBoardingGetStarted = () => {
   );
 
   return (
-    <CyDView className='flex-1' {...panResponder.panHandlers}>
+    <CyDView
+      className='flex-1'
+      {...panResponder.panHandlers}
+      style={{ paddingBottom: inset.bottom }}>
       {/* Sections */}
       {currentIndex === 0 && <Section1 handleContinue={handleContinue} />}
       {currentIndex === 1 && <Section2 handleContinue={handleContinue} />}
