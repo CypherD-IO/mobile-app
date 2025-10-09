@@ -73,10 +73,7 @@ import { screenTitle } from './src/constants';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
 import { ThemeProvider, useTheme, Theme } from './src/reducers/themeReducer';
 import { CyDView } from './src/styles/tailwindComponents';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
 import { useColorScheme } from 'nativewind';
@@ -352,7 +349,6 @@ const ThemedStatusBar = () => {
 function App() {
   const routeNameRef = React.useRef();
   const navigationRef = React.useRef();
-  const insets = useSafeAreaInsets();
   const [globalState, globalDispatch] = React.useReducer(
     gloabalContextReducer,
     initialGlobalState,
@@ -572,7 +568,7 @@ function App() {
                                       <Toast
                                         config={toastConfig}
                                         position={'bottom'}
-                                        bottomOffset={80 + insets.bottom}
+                                        bottomOffset={80}
                                       />
                                       {<ConfirmationModals />}
                                       <WalletConnectModal
