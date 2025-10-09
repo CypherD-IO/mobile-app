@@ -336,10 +336,11 @@ const TabStack = React.memo(
 
     const tabBarStyle = useMemo(
       () => ({
-        ...styles.elevatedBackground,
-        height: isIOS() ? 88 : 90,
-        paddingBottom: (isIOS() ? 28 : 30) + insets.bottom,
-        paddingTop: 10,
+        height: 70,
+        paddingHorizontal: 21,
+        elevation: 24, // For Android
+        paddingBottom: 0,
+        padding: 10,
         transform: [
           {
             translateY: tabBarAnimation.interpolate({
@@ -349,7 +350,6 @@ const TabStack = React.memo(
           },
         ],
         opacity: tabBarAnimation,
-        borderTopWidth: 0,
         position: 'absolute' as const,
         bottom: 0,
         left: 0,
@@ -467,7 +467,7 @@ const TabStack = React.memo(
               return (
                 <CyDIcons
                   name={iconSource as any}
-                  size={32}
+                  size={36}
                   className={clsx('', {
                     'text-base400': focused,
                     'text-n200': !focused,
@@ -485,7 +485,7 @@ const TabStack = React.memo(
             },
             tabBarStyle,
             tabBarBackground: () => (
-              <CyDView className='bg-n0 h-full rounded-t-[20px] shadow-xl shadow-n40' />
+              <CyDView className='bg-n0 h-full border-t border-n40' />
             ),
           })}
           initialRouteName={initialTab}>
@@ -509,7 +509,7 @@ const TabStack = React.memo(
             component={PortfolioStackScreen}
             options={{
               tabBarButton: () => (
-                <CyDView className={'scale-105'}>
+                <CyDView className={'flex items-center justify-center'}>
                   <ShortcutsModal />
                 </CyDView>
               ),
@@ -555,12 +555,3 @@ const TabStack = React.memo(
 );
 
 export default TabStack;
-
-const styles = StyleSheet.create({
-  elevatedBackground: {
-    paddingHorizontal: 21,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    elevation: 24, // For Android
-  },
-});

@@ -330,29 +330,6 @@ export default function OptionsHub() {
     },
   ];
 
-  const referralAndRewards = [
-    {
-      icon: 'rewards-icon',
-      apiDependent: true,
-      title: t('REWARDS'),
-      onPress: () => {
-        navigation.navigate(screenTitle.REWARDS, {
-          fromOptionsStack: true,
-        });
-      },
-    },
-    {
-      icon: 'account-share',
-      apiDependent: true,
-      title: t('REFERRALS'),
-      onPress: () => {
-        navigation.navigate(screenTitle.REFERRALS, {
-          fromOptionsStack: true,
-        });
-      },
-    },
-  ];
-
   const socialMediaOptions = [
     {
       title: 'DISCORD',
@@ -532,7 +509,7 @@ export default function OptionsHub() {
     <CyDSafeAreaView className='bg-base20' edges={['top', 'bottom']}>
       <CyDScrollView
         className='bg-base20'
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
+        contentContainerStyle={{ paddingBottom: insets.bottom }}>
         {planChangeModalVisible && (
           <SelectPlanModal
             isModalVisible={planChangeModalVisible}
