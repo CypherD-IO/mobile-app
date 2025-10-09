@@ -719,15 +719,9 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_FAQ_SCREEN}
         component={SocialMediaScreen}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title={''}
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-            />
-          ),
-        })}
+        options={{
+          headerShown: false,
+        }}
       />
       <FundCardStack.Screen
         name={screenTitle.KYC_VERIFICATION_INTRO}

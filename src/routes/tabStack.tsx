@@ -18,6 +18,7 @@ import {
   Platform,
   ToastAndroid,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
 import { isIOS } from '../misc/checkers';
@@ -86,6 +87,7 @@ const TabStack = React.memo(
     const navigationReadyRef = useRef<boolean>(false);
     const pendingDeepLinkRef = useRef<typeof deepLinkData>(null);
     const { referrerData } = useInstallReferrer();
+    const insets = useSafeAreaInsets();
 
     let backPressCount = 0;
 
@@ -335,6 +337,9 @@ const TabStack = React.memo(
     const tabBarStyle = useMemo(
       () => ({
         ...styles.elevatedBackground,
+        height: isIOS() ? 88 : 90,
+        paddingBottom: (isIOS() ? 28 : 30) + insets.bottom,
+        paddingTop: 10,
         transform: [
           {
             translateY: tabBarAnimation.interpolate({
@@ -350,7 +355,7 @@ const TabStack = React.memo(
         left: 0,
         right: 0,
       }),
-      [tabBarAnimation],
+      [tabBarAnimation, insets.bottom],
     );
 
     const getActiveRouteName = useCallback((state: any): string => {
@@ -450,7 +455,7 @@ const TabStack = React.memo(
 
               let iconSource = '';
               if (route.name === screenTitle.PORTFOLIO) {
-                iconSource = 'home-filled';
+                iconSource = 'portfolio';
               } else if (route.name === screenTitle.CARD) {
                 iconSource = 'card-filled';
               } else if (route.name === screenTitle.REWARDS) {
@@ -553,9 +558,6 @@ export default TabStack;
 
 const styles = StyleSheet.create({
   elevatedBackground: {
-    height: isIOS() ? 88 : 90,
-    paddingBottom: isIOS() ? 28 : 30,
-    paddingTop: 10,
     paddingHorizontal: 21,
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
