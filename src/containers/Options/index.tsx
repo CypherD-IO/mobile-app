@@ -506,9 +506,9 @@ export default function OptionsHub() {
   }, []);
 
   return (
-    <CyDSafeAreaView className='bg-base20' edges={['top', 'bottom']}>
+    <CyDSafeAreaView className='bg-base20' edges={['top']}>
       <CyDScrollView
-        className='bg-base20'
+        className='bg-base20 '
         contentContainerStyle={{ paddingBottom: insets.bottom }}>
         {planChangeModalVisible && (
           <SelectPlanModal
@@ -600,7 +600,7 @@ export default function OptionsHub() {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-base350 p-[16px]'>
+        <CyDView className='bg-base350 p-[16px] pb-[50px]'>
           {updateModal && (
             <CyDView className='flex-row justify-between items-center p-[16px] rounded-[8px] bg-n0'>
               <CyDText className='text-[14px] font-bold '>
