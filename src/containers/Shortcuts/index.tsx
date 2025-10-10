@@ -32,7 +32,7 @@ import {
   sortJSONArrayByKey,
 } from '../../core/util';
 import { useTranslation } from 'react-i18next';
-import { AppState } from 'react-native';
+import { AppState, StyleSheet } from 'react-native';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
 import { isIOS } from '../../misc/checkers';
@@ -805,9 +805,16 @@ export default function ShortcutsModal() {
           autoPlay
           loop
           resizeMode={'contain'}
-          style={{ width: 50, height: 50 }}
+          style={styles.lottie}
         />
       </CyDView>
     </CyDTouchView>
   );
 }
+
+const styles = StyleSheet.create({
+  lottie: {
+    width: 40,
+    height: 40,
+  },
+});

@@ -336,11 +336,11 @@ const TabStack = React.memo(
 
     const tabBarStyle = useMemo(
       () => ({
-        height: 70,
-        paddingHorizontal: 21,
+        height: 50,
+        paddingHorizontal: 30,
         elevation: 24, // For Android
         paddingBottom: 0,
-        padding: 10,
+        paddingVertical: 6,
         transform: [
           {
             translateY: tabBarAnimation.interpolate({
@@ -467,7 +467,7 @@ const TabStack = React.memo(
               return (
                 <CyDIcons
                   name={iconSource as any}
-                  size={36}
+                  size={30}
                   className={clsx('', {
                     'text-base400': focused,
                     'text-n200': !focused,
@@ -479,8 +479,8 @@ const TabStack = React.memo(
             tabBarInactiveTintColor: '#7A8699',
             tabBarActiveTintColor: getTabBarTextColor(),
             tabBarLabelStyle: {
-              fontSize: 12,
-              fontWeight: '700' as const,
+              fontSize: 10,
+              fontWeight: '600' as const,
               fontFamily: 'Manrope',
             },
             tabBarStyle,
