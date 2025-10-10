@@ -337,7 +337,8 @@ const TabStack = React.memo(
     const tabBarStyle = useMemo(
       () => ({
         height: 50,
-        paddingHorizontal: 30,
+        paddingHorizontal: 20,
+        borderTopWidth: 0,
         elevation: 24, // For Android
         paddingBottom: 0,
         paddingVertical: 6,
@@ -467,7 +468,7 @@ const TabStack = React.memo(
               return (
                 <CyDIcons
                   name={iconSource as any}
-                  size={30}
+                  size={36}
                   className={clsx('', {
                     'text-base400': focused,
                     'text-n200': !focused,
@@ -485,7 +486,7 @@ const TabStack = React.memo(
             },
             tabBarStyle,
             tabBarBackground: () => (
-              <CyDView className='bg-n0 h-full border-t border-n40' />
+              <CyDView className='bg-n0 h-full border-t-[0.5px] border-n40' />
             ),
           })}
           initialRouteName={initialTab}>
