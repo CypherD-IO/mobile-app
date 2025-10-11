@@ -13,7 +13,6 @@ import {
   useNavigation,
   useFocusEffect,
 } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
 import { Platform, StyleSheet, BackHandler, PanResponder } from 'react-native';
 import Video from 'react-native-video';
@@ -113,7 +112,6 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
     <CyDView className='flex-1 bg-[#000000]'>
       <CyDScrollView
         className='flex-1'
-        contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
@@ -146,7 +144,6 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
     <CyDView className='flex-1 bg-[#000000]'>
       <CyDScrollView
         className='flex-1'
-        contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
@@ -187,7 +184,6 @@ function Section3({
     <CyDView className='flex-1 bg-black'>
       <CyDScrollView
         className='flex-1'
-        contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}
@@ -242,7 +238,6 @@ const OnBoardingGetStarted = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { showBottomSheet } = useGlobalBottomSheet();
   const totalSections = 3;
-  const inset = useSafeAreaInsets();
 
   /**
    * Handles continue button press across sections
