@@ -21,7 +21,7 @@ import Dialog, {
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { t } from 'i18next';
-import { CyDText } from '../../styles/tailwindComponents';
+import { CyDSafeAreaView, CyDText } from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
@@ -320,9 +320,17 @@ export const InitializeAppProvider = ({
         if (!isAuthenticated) {
           return <Loading />;
         }
-        return <>{children}</>;
+        return (
+          <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-n0'>
+            {children}
+          </CyDSafeAreaView>
+        );
       } else {
-        return <OnBoardingStack />;
+        return (
+          <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-black'>
+            <OnBoardingStack />
+          </CyDSafeAreaView>
+        );
       }
     } else {
       if (pinSetStatus === PinPresentStates.NOTSET) {
