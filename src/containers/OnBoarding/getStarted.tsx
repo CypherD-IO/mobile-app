@@ -25,9 +25,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  scrollContentContainer: {
-    paddingBottom: 180,
-  },
 });
 
 // Progress Indicator Component
@@ -112,9 +109,8 @@ function BottomNavigation({
 }
 
 function Section1({ handleContinue }: { handleContinue: () => void }) {
-  const inset = useSafeAreaInsets();
   return (
-    <CyDView className='flex-1 bg-[#000000]' style={{ paddingTop: inset.top }}>
+    <CyDView className='flex-1 bg-[#000000]'>
       <CyDScrollView
         className='flex-1'
         contentContainerStyle={styles.scrollContentContainer}
@@ -146,9 +142,8 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
 }
 
 function Section2({ handleContinue }: { handleContinue: () => void }) {
-  const inset = useSafeAreaInsets();
   return (
-    <CyDView className='flex-1 bg-[#000000]' style={{ paddingTop: inset.top }}>
+    <CyDView className='flex-1 bg-[#000000]'>
       <CyDScrollView
         className='flex-1'
         contentContainerStyle={styles.scrollContentContainer}
@@ -186,11 +181,10 @@ function Section3({
   handleContinue: () => void;
   onShowTokenDetails: () => void;
 }) {
-  const inset = useSafeAreaInsets();
   const videoContainerHeight = Platform.OS === 'android' ? 350 : 300;
 
   return (
-    <CyDView className='flex-1 bg-black' style={{ paddingTop: inset.top }}>
+    <CyDView className='flex-1 bg-black'>
       <CyDScrollView
         className='flex-1'
         contentContainerStyle={styles.scrollContentContainer}
@@ -351,10 +345,7 @@ const OnBoardingGetStarted = () => {
   );
 
   return (
-    <CyDView
-      className='flex-1'
-      {...panResponder.panHandlers}
-      style={{ paddingBottom: inset.bottom }}>
+    <CyDView className='flex-1' {...panResponder.panHandlers}>
       {/* Sections */}
       {currentIndex === 0 && <Section1 handleContinue={handleContinue} />}
       {currentIndex === 1 && <Section2 handleContinue={handleContinue} />}
