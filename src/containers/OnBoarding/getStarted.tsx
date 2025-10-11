@@ -13,7 +13,6 @@ import {
   useNavigation,
   useFocusEffect,
 } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
 import { Platform, StyleSheet, BackHandler, PanResponder } from 'react-native';
 import Video from 'react-native-video';
@@ -24,9 +23,6 @@ const styles = StyleSheet.create({
   videoContainer: {
     width: '100%',
     height: '100%',
-  },
-  scrollContentContainer: {
-    paddingBottom: 180,
   },
 });
 
@@ -112,12 +108,10 @@ function BottomNavigation({
 }
 
 function Section1({ handleContinue }: { handleContinue: () => void }) {
-  const inset = useSafeAreaInsets();
   return (
-    <CyDView className='flex-1 bg-[#000000]' style={{ paddingTop: inset.top }}>
+    <CyDView className='flex-1 bg-[#000000]'>
       <CyDScrollView
         className='flex-1'
-        contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
@@ -146,12 +140,10 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
 }
 
 function Section2({ handleContinue }: { handleContinue: () => void }) {
-  const inset = useSafeAreaInsets();
   return (
-    <CyDView className='flex-1 bg-[#000000]' style={{ paddingTop: inset.top }}>
+    <CyDView className='flex-1 bg-[#000000]'>
       <CyDScrollView
         className='flex-1'
-        contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
@@ -186,14 +178,12 @@ function Section3({
   handleContinue: () => void;
   onShowTokenDetails: () => void;
 }) {
-  const inset = useSafeAreaInsets();
   const videoContainerHeight = Platform.OS === 'android' ? 350 : 300;
 
   return (
-    <CyDView className='flex-1 bg-black' style={{ paddingTop: inset.top }}>
+    <CyDView className='flex-1 bg-black'>
       <CyDScrollView
         className='flex-1'
-        contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}
@@ -248,7 +238,6 @@ const OnBoardingGetStarted = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { showBottomSheet } = useGlobalBottomSheet();
   const totalSections = 3;
-  const inset = useSafeAreaInsets();
 
   /**
    * Handles continue button press across sections
@@ -351,10 +340,7 @@ const OnBoardingGetStarted = () => {
   );
 
   return (
-    <CyDView
-      className='flex-1'
-      {...panResponder.panHandlers}
-      style={{ paddingBottom: inset.bottom }}>
+    <CyDView className='flex-1' {...panResponder.panHandlers}>
       {/* Sections */}
       {currentIndex === 0 && <Section1 handleContinue={handleContinue} />}
       {currentIndex === 1 && <Section2 handleContinue={handleContinue} />}
