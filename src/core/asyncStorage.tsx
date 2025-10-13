@@ -685,3 +685,34 @@ export const removeFirstLaunchAfterWalletCreation = async () => {
     Sentry.captureException(error);
   }
 };
+
+/**
+ * Update reminder snooze helpers
+ * Persist a timestamp (in ms) until which the update alert should not be shown.
+ */
+export const setUpdateReminderSnoozeUntil = async (
+  timestampMs: number,
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(
+      'UPDATE_REMINDER_SNOOZE_UNTIL',
+      String(timestampMs),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getUpdateReminderSnoozeUntil = async (): Promise<
+  number | null
+> => {
+  try {
+    const value = await AsyncStorage.getItem('UPDATE_REMINDER_SNOOZE_UNTIL');
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
+  }
+};

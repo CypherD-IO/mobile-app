@@ -3,6 +3,10 @@ import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Alert, Linking, Platform } from 'react-native';
 import {
+  setUpdateReminderSnoozeUntil,
+  setReferralCodeAsync,
+} from '../../core/asyncStorage';
+import {
   CypherDeclineCodes,
   GlobalModalType,
   PinPresentStates,
@@ -33,7 +37,6 @@ import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 import { useInstallReferrer } from '../../hooks/useInstallReferrer';
-import { setReferralCodeAsync } from '../../core/asyncStorage';
 import { get } from 'lodash';
 
 import {
@@ -321,7 +324,7 @@ export const InitializeAppProvider = ({
       (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
       pinAuthenticated
     ) {
-      if (ethereumAddress || solanaAddress) {
+      if (ethereumAddress ?? solanaAddress) {
         if (!isAuthenticated) {
           return <Loading />;
         }
@@ -394,6 +397,9 @@ export const InitializeAppProvider = ({
       const laterAction = () => {
         setUpdateModal(false);
         logAnalyticsToFirebase(AnalyticEvent.UPDATE_LATER, {});
+        // Snooze for 24 hours
+        const snoozeUntil = Date.now() + 24 * 60 * 60 * 1000;
+        void setUpdateReminderSnoozeUntil(snoozeUntil);
       };
 
       // Show system alert instead of custom dialog

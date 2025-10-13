@@ -401,11 +401,6 @@ const ApplicationWelcome = (): JSX.Element => {
         )}
       </CyDView>
 
-      {/* Bottom Inset Background */}
-      <CyDView
-        style={{ backgroundColor: containerBgColor, height: insets.bottom }}
-      />
-
       {/* Exclusive Offer Modal */}
       <ExclusiveOfferModal
         isVisible={showExclusiveOfferModal}
