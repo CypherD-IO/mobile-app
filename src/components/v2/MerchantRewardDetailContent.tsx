@@ -9,7 +9,11 @@ import {
 } from '../../styles/tailwindComponents';
 import MerchantLogo from './MerchantLogo';
 import { BlurView } from '@react-native-community/blur';
-import { StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import {
+  StyleSheet,
+  ActivityIndicator,
+  InteractionManager,
+} from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { useColorScheme } from 'nativewind';
@@ -163,7 +167,7 @@ const MerchantRewardDetailContent: React.FC<
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   const { getWithAuth } = useAxios();
-  const { showBottomSheet } = useGlobalBottomSheet();
+  const { showBottomSheet, hideAllBottomSheets } = useGlobalBottomSheet();
   const navigationHook = useNavigation();
   const navigation = navigationProp ?? navigationHook;
 
@@ -441,6 +445,17 @@ const MerchantRewardDetailContent: React.FC<
           title: 'Boost Merchant',
           uri: redirectURI,
         },
+      });
+
+      // After navigation begins, close any open bottom sheets to avoid overlaying the next screen.
+      // Using InteractionManager ensures we wait until current interactions (like navigation animations)
+      // are scheduled before attempting to dismiss the sheet.
+      void InteractionManager.runAfterInteractions(() => {
+        try {
+          hideAllBottomSheets();
+        } catch (err) {
+          console.warn('Failed to close bottom sheet after navigation', err);
+        }
       });
     }, 250);
   };

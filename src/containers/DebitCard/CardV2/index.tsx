@@ -621,7 +621,12 @@ export default function CypherCardScreen() {
       scrollable: true,
       topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
       backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
-      content: <MerchantRewardDetailContent merchantData={merchant} />,
+      content: (
+        <MerchantRewardDetailContent
+          merchantData={merchant}
+          navigation={navigation}
+        />
+      ),
       onClose: () => {
         setSelectedMerchantData(null);
       },

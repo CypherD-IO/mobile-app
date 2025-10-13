@@ -47,6 +47,7 @@ import {
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
+import { Platform } from 'react-native';
 import useCardUtilities from '../useCardUtilities';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
@@ -166,8 +167,18 @@ export default function useInitializer() {
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     try {
-      const res = await inAppUpdates.checkNeedsUpdate();
-      if (res.shouldUpdate) {
+      // Build options explicitly to avoid any null version comparisons inside the library
+      const options: any = {
+        curVersion: getVersion(),
+      };
+      // For iOS, provide the App Store application id to make the lookup deterministic
+      if (Platform.OS === 'ios') {
+        // Cypherd Wallet iOS App Store ID (used elsewhere in the app for store links)
+        options.appId = '1604120414';
+      }
+
+      const res = await inAppUpdates.checkNeedsUpdate(options);
+      if (res?.shouldUpdate) {
         setUpdateModal(true);
       }
     } catch (e) {

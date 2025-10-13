@@ -2316,6 +2316,9 @@ const resources = {
       CLOSE_TICKET: 'Close ticket',
       CLOSING: 'Closing...',
       WHAT_IS_CYPR_TOKEN: 'What is $CYPR token?',
+      EARN_INCENTIVES: 'Earn incentives by voting',
+      EARN_INCENTIVES_DESCRIPTION:
+        'Certain merchants offer direct incentives to voters who vote for them. Vote for those merchants to earn incentives.',
     },
   },
 };
