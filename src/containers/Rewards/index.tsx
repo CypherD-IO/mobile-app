@@ -37,6 +37,7 @@ import { ButtonType, CardProviders } from '../../constants/enum';
 import { Theme, useTheme as useAppTheme } from '../../reducers/themeReducer';
 import CypherTokenBottomSheetContent from '../../components/v2/cypherTokenBottomSheetContent';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { FIRST_REWARDS_EPOCH_START_UTC } from '../../constants/data';
 import InviteFriendsBanner from '../../components/v2/inviteFriendsBanner';
 import { IUserProfileResponse } from '../../models/rewardsProfile.interface';
 import { IRewardsHistoryResponse } from '../../models/rewardsHistory.interface';
@@ -82,11 +83,10 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  // Dynamic background colour for video placeholder to avoid black flash.
-  const rewardTrendsTokenVideoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
-
   // Time-filter drop-down logic
-  const [timeFilter, setTimeFilter] = React.useState(t('ALL_TIME', 'All time'));
+  const [timeFilter, setTimeFilter] = React.useState<string>(
+    t('ALL_TIME', 'All time'),
+  );
   const [showOptions, setShowOptions] = React.useState(false);
   const selectorRef = React.useRef<any>(null);
   const [dropdownPos, setDropdownPos] = React.useState({
@@ -107,6 +107,26 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
     }
     return opts;
   }, [rewardsData, t]);
+
+  // Default selection: current epoch (first epoch item if available)
+  React.useEffect(() => {
+    try {
+      const epochs = rewardsData?.rewardsHistory?.epochs;
+      if (
+        timeFilter === t('ALL_TIME', 'All time') &&
+        Array.isArray(epochs) &&
+        epochs.length > 0
+      ) {
+        const current = epochs[0];
+        if (current?.epochNumber !== undefined) {
+          setTimeFilter(`${t('REWARD_CYCLE')} ${String(current.epochNumber)}`);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to set default epoch selection', err);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rewardsData]);
 
   // Resolve selected epoch object (undefined for all-time)
   const selectedEpoch = React.useMemo(() => {
@@ -225,82 +245,105 @@ const RewardTrendsContent: React.FC<RewardTrendsContentProps> = ({
   const { getWithAuth } = useAxios();
 
   useEffect(() => {
-    const fetchTransactions = async () => {
+    let cancelled = false;
+
+    const fetchTransactionsPaginated = async () => {
       try {
-        // Determine transaction limit based on whether we're filtering to a specific epoch or all time
-        const transactionLimit = selectedEpoch ? 5 : 200;
-        let url = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=${transactionLimit}&includeRewards=true`;
+        // Build base URL with date range. When no epoch is selected, fetch from FIRST_REWARDS_EPOCH_START_UTC till now (UTC seconds)
+        const perPageLimit = 200;
+        const nowUtcSeconds = Math.floor(Date.now() / 1000);
+        const startDate =
+          selectedEpoch?.epochStartTime ?? FIRST_REWARDS_EPOCH_START_UTC;
+        const endDate = selectedEpoch?.epochEndTime ?? nowUtcSeconds;
+        const baseUrl = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&includeRewards=true&limit=${perPageLimit}&startDate=${String(
+          startDate,
+        )}&endDate=${String(endDate)}`;
 
-        // Append epoch window if selected epoch exists
-        if (selectedEpoch?.epochStartTime && selectedEpoch?.epochEndTime) {
-          url += `&startDate=${String(selectedEpoch.epochStartTime)}&endDate=${String(selectedEpoch.epochEndTime)}`;
-        } else if (!selectedEpoch) {
-          // For "All time" selection, limit end date to current epoch's start time
-          // The current epoch is typically the most recent one (first in the array after sorting)
-          const currentEpoch = rewardsData?.rewardsHistory?.epochs?.[0];
-          if (currentEpoch?.epochStartTime) {
-            url += `&endDate=${String(currentEpoch.epochStartTime)}`;
+        const aggregated: any[] = [];
+        let offsetCursor: string | undefined;
+        const MAX_PAGES = 50;
+        for (let page = 0; page < MAX_PAGES; page++) {
+          let url = baseUrl;
+          if (offsetCursor) {
+            url += `&offset=${offsetCursor}`;
           }
+
+          const resp = await getWithAuth(url);
+          if (resp.isError) {
+            break;
+          }
+
+          const pageTxns = Array.isArray(resp.data?.transactions)
+            ? resp.data.transactions
+            : [];
+          if (pageTxns.length > 0) {
+            aggregated.push(...pageTxns);
+          }
+
+          const nextOffset: string | undefined = resp.data?.offset;
+          const noMorePages =
+            !nextOffset || nextOffset === offsetCursor || pageTxns.length === 0;
+          if (noMorePages) {
+            break;
+          }
+          offsetCursor = nextOffset;
         }
 
-        const resp = await getWithAuth(url);
+        if (cancelled) return;
 
-        if (!resp.isError) {
-          const allTransactions = resp.data.transactions ?? [];
+        // Filter and transform for UI with strict time bounds (defensive)
+        const filteredTransactions = aggregated.filter((txn: any) => {
+          const isDebit = txn.type === 'DEBIT';
+          const isSettled = txn.isSettled === true;
+          const hasMerchantName = txn.metadata?.merchant?.merchantName;
+          // Ensure transaction falls within [startDate, endDate]
+          const txnDate: Date | undefined = txn?.date;
+          const txnSeconds = new Date(txnDate ?? '').getTime() / 1000;
+          const withinBounds = txnSeconds >= startDate && txnSeconds <= endDate;
+          return isDebit && isSettled && hasMerchantName && withinBounds;
+        });
 
-          // Filter transactions to include only:
-          // 1. DEBIT transactions
-          // 2. Settled transactions (isSettled === true)
-          // 3. Transactions with merchant name present in metadata
-          const filteredTransactions = allTransactions.filter((txn: any) => {
-            const isDebit = txn.type === 'DEBIT';
-            const isSettled = txn.isSettled === true;
-            const hasMerchantName = txn.metadata?.merchant?.merchantName;
+        const grouped: { [date: string]: any[] } = {};
+        filteredTransactions.forEach((txn: any) => {
+          const dateKey = moment(txn.date).format('MMM DD, YYYY');
+          if (!grouped[dateKey]) grouped[dateKey] = [];
+          grouped[dateKey].push(txn);
+        });
 
-            return isDebit && isSettled && hasMerchantName;
-          });
+        const transformed = Object.keys(grouped)
+          .sort(
+            (a, b) =>
+              moment(b, 'MMM DD, YYYY').valueOf() -
+              moment(a, 'MMM DD, YYYY').valueOf(),
+          )
+          .map((dateStr, idx) => ({
+            id: `day-${String(idx)}`,
+            date: dateStr,
+            transactions: grouped[dateStr].map((txn: any) => ({
+              id: txn.id,
+              merchant: txn.title ?? txn.merchant ?? t('UNKNOWN', 'Unknown'),
+              amount: txn.amount,
+              status: txn.tStatus,
+              time: moment(txn.date).format('h:mm A'),
+              reward: txn.cypherRewards,
+            })),
+          }));
 
-          /* Group by calendar day for UI section */
-          const grouped: { [date: string]: any[] } = {};
-          filteredTransactions.forEach((txn: any) => {
-            const dateKey = moment(txn.date).format('MMM DD, YYYY');
-            if (!grouped[dateKey]) grouped[dateKey] = [];
-            grouped[dateKey].push(txn);
-          });
-
-          const transformed = Object.keys(grouped)
-            .sort(
-              (a, b) =>
-                moment(b, 'MMM DD, YYYY').valueOf() -
-                moment(a, 'MMM DD, YYYY').valueOf(),
-            )
-            .map((dateStr, idx) => ({
-              id: `day-${String(idx)}`,
-              date: dateStr,
-              transactions: grouped[dateStr].map((txn: any) => ({
-                id: txn.id,
-                merchant: txn.title ?? txn.merchant ?? t('UNKNOWN', 'Unknown'),
-                amount: txn.amount,
-                status: txn.tStatus,
-                time: moment(txn.date).format('h:mm A'),
-                reward: txn.cypherRewards,
-              })),
-            }));
-
-          setTransactionData(transformed);
-        } else {
-          console.error('Error response from transactions API:', resp.error);
-          setTransactionData([]);
-        }
+        setTransactionData(transformed);
       } catch (error) {
-        console.error('Error fetching reward transactions', error);
-        setTransactionData([]);
+        console.error('Error fetching reward transactions (paginated)', error);
+        if (!cancelled) setTransactionData([]);
       }
     };
 
-    void fetchTransactions();
+    setTransactionData([]);
+    void fetchTransactionsPaginated();
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEpoch, cardProvider, rewardsData]);
+  }, [selectedEpoch, cardProvider]);
 
   const renderTransactionItem = (transaction: any) => {
     return (
@@ -811,7 +854,20 @@ export default function Rewards() {
             !rewardsHistoryResponse.isError &&
             rewardsHistoryResponse.data?.epochs
           ) {
-            rewardsHistory = rewardsHistoryResponse.data;
+            const epochsSorted = [...rewardsHistoryResponse.data.epochs].sort(
+              (a: any, b: any) => {
+                const aStart = a?.epochStartTime ?? 0;
+                const bStart = b?.epochStartTime ?? 0;
+                if (bStart !== aStart) return bStart - aStart;
+                const aNum = a?.epochNumber ?? 0;
+                const bNum = b?.epochNumber ?? 0;
+                return bNum - aNum;
+              },
+            );
+            rewardsHistory = {
+              ...rewardsHistoryResponse.data,
+              epochs: epochsSorted,
+            } as IRewardsHistoryResponse;
           } else {
             console.warn(
               '⚠️ Using empty rewards history (endpoint may not be deployed)',

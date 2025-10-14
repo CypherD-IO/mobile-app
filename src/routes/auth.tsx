@@ -79,8 +79,6 @@ import WalletConnectCamera from '../containers/Options/WalletConnectCamera';
 import AdvancedSettings from '../containers/Options/advancedSettings';
 import AppSettings from '../containers/Options/appSettings';
 import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
-import ImportWalletOptions from '../containers/Options/importWalletOptions';
-import OptionsScreen from '../containers/Options/index';
 import Referrals from '../containers/Referrals';
 import Rewards from '../containers/Rewards';
 import ClaimReward from '../containers/Rewards/claimReward';
