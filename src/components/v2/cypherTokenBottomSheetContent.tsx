@@ -136,10 +136,10 @@ const CypherTokenBottomSheetContent: React.FC = () => {
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-medium mb-[2px] text-white'>
-                  {t('LOAD_YOUR_CARD_AND_SPEND')}
+                  {t('EARN_INCENTIVES')}
                 </CyDText>
                 <CyDText className='text-[16px] text-n200'>
-                  {t('LOAD_CARD_WITH_CYPHER_TOKEN')}
+                  {t('EARN_INCENTIVES_DESCRIPTION')}
                 </CyDText>
               </CyDView>
             </CyDView>

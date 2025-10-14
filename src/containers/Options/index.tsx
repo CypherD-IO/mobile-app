@@ -408,11 +408,13 @@ export default function OptionsHub() {
   const onTelegramDisconnected = () => {
     // Refresh the profile to update telegram state
     void refreshProfile();
-    void inAppUpdates.checkNeedsUpdate().then(result => {
-      if (result.shouldUpdate) {
-        setUpdateModal(true);
-      }
-    });
+    void inAppUpdates
+      .checkNeedsUpdate({ curVersion: DeviceInfo.getVersion() })
+      .then(result => {
+        if (result.shouldUpdate) {
+          setUpdateModal(true);
+        }
+      });
   };
 
   useEffect(() => {

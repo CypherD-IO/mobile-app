@@ -13,27 +13,31 @@ export default function PinAuthRoute({
 }: {
   setPinAuthentication: (pinAuthentication: boolean) => void;
   initialScreen: string;
-}) {
+}): JSX.Element {
   return (
     <Stack.Navigator initialRouteName={initialScreen}>
-      <Stack.Screen
-        name={screenTitle.SET_PIN}
-        component={SetPin}
-        options={{ headerShown: false }}
-        initialParams={{ setPinAuthentication }}
-      />
+      <Stack.Screen name={screenTitle.SET_PIN} options={{ headerShown: false }}>
+        {props => (
+          <SetPin {...props} setPinAuthentication={setPinAuthentication} />
+        )}
+      </Stack.Screen>
       <Stack.Screen
         name={screenTitle.CONFIRM_PIN}
-        component={ConfirmPin}
-        options={{ headerShown: false }}
-        initialParams={{ setPinAuthentication }}
-      />
+        options={{ headerShown: false }}>
+        {props => (
+          <ConfirmPin {...props} setPinAuthentication={setPinAuthentication} />
+        )}
+      </Stack.Screen>
       <Stack.Screen
         name={screenTitle.PIN_VALIDATION}
-        component={PinValidation}
-        options={{ headerShown: false }}
-        initialParams={{ setPinAuthentication }}
-      />
+        options={{ headerShown: false }}>
+        {props => (
+          <PinValidation
+            {...props}
+            setPinAuthentication={setPinAuthentication}
+          />
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }
