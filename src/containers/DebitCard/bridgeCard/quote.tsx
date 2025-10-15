@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -134,18 +135,27 @@ export default function CardQuote({
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
 
-  const cosmosAddresses = {
-    cosmos: cosmos.address,
-    osmosis: osmosis.address,
-    noble: noble.address,
-    coreum: coreum.address,
-    injective: injective.address,
-    'cosmoshub-4': cosmos.address,
-    'osmosis-1': osmosis.address,
-    'coreum-mainnet-1': coreum.address,
-    'noble-1': noble.address,
-    'injective-1': injective.address,
-  };
+  const cosmosAddresses = useMemo(
+    () => ({
+      cosmos: cosmos.address,
+      osmosis: osmosis.address,
+      noble: noble.address,
+      coreum: coreum.address,
+      injective: injective.address,
+      'cosmoshub-4': cosmos.address,
+      'osmosis-1': osmosis.address,
+      'coreum-mainnet-1': coreum.address,
+      'noble-1': noble.address,
+      'injective-1': injective.address,
+    }),
+    [
+      cosmos.address,
+      osmosis.address,
+      noble.address,
+      coreum.address,
+      injective.address,
+    ],
+  );
 
   const chainLogo = get(
     ChainConfigMapping,
@@ -849,7 +859,15 @@ export default function CardQuote({
         onFailure: hideModal,
       });
     }
-  }, []);
+  }, [
+    selectedToken,
+    tokenQuote,
+    tokenSendParams,
+    route.name,
+    cosmosAddresses,
+    solanaAddress,
+    ethereumAddress,
+  ]);
 
   const onLoadPress = async () => {
     try {

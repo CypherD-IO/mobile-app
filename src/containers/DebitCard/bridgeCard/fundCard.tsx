@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { floor, get, isEmpty, set } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, useWindowDimensions } from 'react-native';
+import { Keyboard, Platform, useWindowDimensions } from 'react-native';
 import Button from '../../../components/v2/button';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
@@ -66,6 +66,9 @@ import useGasService from '../../../hooks/useGasService';
 import usePortfolio from '../../../hooks/usePortfolio';
 import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 import { formatUnits } from 'viem';
+import { TokenMeta } from '../../../models/tokenMetaData.model';
+import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
+import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -103,15 +106,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const minTokenValueLimit = 10;
   const minTokenValueEth = MINIMUM_TRANSFER_AMOUNT_ETH;
   const minTokenValueHlSpot = MINIMUM_TRANSFER_AMOUNT_HL_SPOT;
-  const [selectedToken, setSelectedToken] = useState<
-    Holding & IHyperLiquidHolding
-  >();
+  const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>('0');
-  const { getNativeToken } = usePortfolio();
+  const { getNativeToken, getLocalPortfolio } = usePortfolio();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
+  const { showBottomSheet } = useGlobalBottomSheet();
   const {
     estimateGasForEvm,
     estimateGasForSolana,
@@ -126,15 +128,29 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { height } = useWindowDimensions();
   const isSmallScreenMobile = height <= 750;
 
+  /**
+   * Show insufficient balance bottom sheet
+   */
+  const showInsufficientBalanceSheet = () => {
+    showBottomSheet({
+      id: 'insufficient-balance-sheet',
+      snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
+      showCloseButton: true,
+      scrollable: true,
+      content: (
+        <InsufficientBalanceBottomSheetContent minAmount={minTokenValueLimit} />
+      ),
+    });
+  };
+
   useEffect(() => {
     if (isFocused) {
       if (route.params?.tokenData) {
         setSelectedToken(route.params.tokenData);
       } else {
         if (!selectedToken) {
-          setTimeout(() => {
-            setIsChooseTokenVisible(true);
-          }, CHOOSE_TOKEN_MODAL_TIMEOUT);
+          // Auto-select the first suitable token from user's portfolio
+          void setDefaultSelectedToken();
         }
       }
     }
@@ -143,6 +159,75 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   useEffect(() => {
     onEnterAmount(amount);
   }, [selectedToken]);
+
+  const setDefaultSelectedToken = async () => {
+    try {
+      const localPortfolio = await getLocalPortfolio();
+      if (
+        localPortfolio?.totalHoldings &&
+        localPortfolio.totalHoldings.length > 0
+      ) {
+        // Filter tokens that are fundable and have value > minimum required
+        const fundableTokens = localPortfolio.totalHoldings.filter(token => {
+          if (!token.isFundable || !token.isVerified) return false;
+
+          // Check minimum value requirements based on chain and account type
+          const { backendName } = token.chainDetails;
+          let minimumValue = minTokenValueLimit;
+
+          if (backendName === CHAIN_ETH.backendName) {
+            minimumValue = minTokenValueEth;
+          } else if (token.accountType === 'spot') {
+            minimumValue = minTokenValueHlSpot;
+          }
+
+          return Number(token.totalValue) >= minimumValue;
+        });
+
+        // Sort by total value (descending) and select the first one
+        if (fundableTokens.length > 0) {
+          const sortedTokens = fundableTokens.sort(
+            (a, b) => Number(b.totalValue) - Number(a.totalValue),
+          );
+          const defaultToken = sortedTokens[0];
+
+          // Set the default token and fetch its native token balance
+          setSelectedToken(defaultToken);
+          const nativeToken = await getNativeToken(
+            defaultToken.chainDetails.backendName,
+          );
+          setNativeTokenBalance(nativeToken.balanceDecimal);
+
+          // Set suggested amounts
+          const tempMinTokenValue =
+            defaultToken.chainDetails.backendName === CHAIN_ETH.backendName
+              ? minTokenValueEth
+              : minTokenValueLimit;
+          const splittableAmount = defaultToken.totalValue - tempMinTokenValue;
+          if (splittableAmount >= tempMinTokenValue) {
+            setSuggestedAmounts({
+              low: String(tempMinTokenValue + floor(splittableAmount * 0.25)),
+              med: String(tempMinTokenValue + floor(splittableAmount * 0.5)),
+              high: String(tempMinTokenValue + floor(splittableAmount * 0.75)),
+            });
+          } else {
+            setSuggestedAmounts({
+              low: tempMinTokenValue.toString(),
+              med: tempMinTokenValue.toString(),
+              high: tempMinTokenValue.toString(),
+            });
+          }
+        } else {
+          // No eligible tokens found - show insufficient balance bottom sheet
+          showInsufficientBalanceSheet();
+        }
+      }
+    } catch (error) {
+      // Log error and show insufficient balance sheet as fallback
+      console.error('Error setting default selected token:', error);
+      showInsufficientBalanceSheet();
+    }
+  };
 
   const showQuoteModal = async (
     quote: CardQuoteResponse,
@@ -545,7 +630,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
     const nativeToken = await getNativeToken(item.chainDetails.backendName);
-    setNativeTokenBalance(nativeToken.balanceDecimal);
+    setNativeTokenBalance(nativeToken.balanceDecimal ?? '0');
     setIsCryptoInput(false);
     const tempMinTokenValue =
       item.chainDetails.backendName === CHAIN_ETH.backendName
@@ -631,7 +716,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               isNativeToken(selectedToken)
             ) {
               const gasReservedForNativeToken = await estimateReserveFee({
-                tokenData: selectedToken,
+                tokenData: convertHoldingToTokenMeta(selectedToken),
                 fromAddress: ethereumAddress,
                 toAddress: ethereumAddress,
                 publicClient,
@@ -1188,6 +1273,35 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     }
   };
 
+  /**
+   * Converts a Holding object to TokenMeta interface required by gas estimation functions
+   */
+  const convertHoldingToTokenMeta = (holding: Holding): TokenMeta => {
+    return {
+      about: holding.about ?? '',
+      balanceDecimal: holding.balanceDecimal,
+      balanceInteger: holding.balanceInteger,
+      chainDetails: holding.chainDetails,
+      coinGeckoId: holding.coinGeckoId,
+      contractAddress: holding.contractAddress,
+      contractDecimals: holding.contractDecimals,
+      denom: holding.denom,
+      isVerified: holding.isVerified,
+      logoUrl: holding.logoUrl,
+      name: holding.name,
+      price: holding.price,
+      price24h: typeof holding.price24h === 'number' ? holding.price24h : 0,
+      symbol: holding.symbol,
+      totalValue: holding.totalValue.toString(),
+      actualUnbondingBalance: holding.actualUnbondingBalance ?? 0,
+      unbondingBalanceTotalValue: holding.unbondingBalanceTotalValue ?? 0,
+      isBridgeable: holding.isBridgeable,
+      isSwapable: holding.isSwapable,
+      isZeroFeeCardFunding: holding.isZeroFeeCardFunding,
+      id: holding.id,
+    };
+  };
+
   return (
     <CyDView
       className={clsx('bg-n20 flex flex-1 flex-col justify-between h-full', {
@@ -1307,23 +1421,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     (selectedToken?.symbol ?? ' '))}
             </CyDText>
 
-            {selectedToken?.isInfLimit && (
-              <CyDView className='flex flex-row bg-green20 ml-3 mt-[8px] rounded-full justify-between items-center px-3 py-1 w-fit gap-x-1 m'>
-                <CyDMaterialDesignIcons
-                  name='check-circle'
-                  size={16}
-                  className='text-green400'
-                />
-
-                <CyDText className='text-green400 text-sm'>
-                  {t('MAX_LOAD_LIMIT', {
-                    maxLoadLimit: formatCurrencyWithSuffix(
-                      selectedToken?.maxQuoteLimit,
-                    ),
-                  })}
-                </CyDText>
-              </CyDView>
-            )}
             <RenderWarningMessage />
             {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
                 <CyDView className='mb-[2px]'>

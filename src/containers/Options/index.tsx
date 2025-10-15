@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import {
   CyDIcons,
   CyDImage,
@@ -45,8 +45,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import { isAndroid } from '../../misc/checkers';
-import { Linking } from 'react-native';
+import { Linking, Alert } from 'react-native';
 import * as Sentry from '@sentry/react-native';
+import { getDeveloperMode, setDeveloperMode } from '../../core/asyncStorage';
 
 const RenderOptions = ({
   isLoading,
@@ -136,6 +137,11 @@ export default function OptionsHub() {
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [updateModal, setUpdateModal] = useState<boolean>(false);
+
+  // Developer mode toggle state
+  const [versionClickCount, setVersionClickCount] = useState<number>(0);
+  const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // const premiumBenefits = [];
 
@@ -324,29 +330,6 @@ export default function OptionsHub() {
     },
   ];
 
-  const referralAndRewards = [
-    {
-      icon: 'rewards-icon',
-      apiDependent: true,
-      title: t('REWARDS'),
-      onPress: () => {
-        navigation.navigate(screenTitle.REWARDS, {
-          fromOptionsStack: true,
-        });
-      },
-    },
-    {
-      icon: 'account-share',
-      apiDependent: true,
-      title: t('REFERRALS'),
-      onPress: () => {
-        navigation.navigate(screenTitle.REFERRALS, {
-          fromOptionsStack: true,
-        });
-      },
-    },
-  ];
-
   const socialMediaOptions = [
     {
       title: 'DISCORD',
@@ -425,11 +408,13 @@ export default function OptionsHub() {
   const onTelegramDisconnected = () => {
     // Refresh the profile to update telegram state
     void refreshProfile();
-    void inAppUpdates.checkNeedsUpdate().then(result => {
-      if (result.shouldUpdate) {
-        setUpdateModal(true);
-      }
-    });
+    void inAppUpdates
+      .checkNeedsUpdate({ curVersion: DeviceInfo.getVersion() })
+      .then(result => {
+        if (result.shouldUpdate) {
+          setUpdateModal(true);
+        }
+      });
   };
 
   useEffect(() => {
@@ -437,11 +422,96 @@ export default function OptionsHub() {
       void refreshProfile();
     }
   }, [isFocused]);
+
+  /**
+   * Load developer mode state on component mount
+   * Checks AsyncStorage for the current developer mode setting
+   */
+  useEffect(() => {
+    const loadDeveloperMode = async () => {
+      try {
+        const devMode = await getDeveloperMode();
+        setIsDeveloperMode(devMode);
+      } catch (error) {
+        // Log error to Sentry for debugging
+        Sentry.captureException(error);
+        console.error('Failed to load developer mode:', error);
+      }
+    };
+    void loadDeveloperMode();
+  }, []);
+
+  /**
+   * Handle version text click to toggle developer mode
+   * Requires 5 consecutive clicks within a time window to toggle
+   * Resets counter after 2 seconds of inactivity
+   */
+  const handleVersionClick = async (): Promise<void> => {
+    try {
+      // Clear any existing timeout
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+
+      const newCount = versionClickCount + 1;
+      setVersionClickCount(newCount);
+
+      // Check if we've reached the required number of clicks
+      if (newCount >= 5) {
+        const newDeveloperMode = !isDeveloperMode;
+
+        // Update AsyncStorage with new developer mode state
+        await setDeveloperMode(newDeveloperMode);
+        setIsDeveloperMode(newDeveloperMode);
+
+        // Reset click counter
+        setVersionClickCount(0);
+
+        // Show alert to user indicating the mode change
+        Alert.alert(
+          newDeveloperMode
+            ? 'Developer Mode Enabled'
+            : 'Developer Mode Disabled',
+          newDeveloperMode
+            ? 'Developer options are now available in Advanced Settings.'
+            : 'Developer options have been disabled.',
+          [{ text: 'OK' }],
+        );
+      } else {
+        // Set a timeout to reset the click counter after 2 seconds
+        // This ensures clicks must be consecutive within a reasonable timeframe
+        clickTimeoutRef.current = setTimeout(() => {
+          setVersionClickCount(0);
+        }, 2000);
+      }
+    } catch (error) {
+      // Handle any errors during toggle operation
+      Sentry.captureException(error);
+      console.error('Error toggling developer mode:', error);
+      Alert.alert(
+        'Error',
+        'Failed to toggle developer mode. Please try again.',
+      );
+      setVersionClickCount(0);
+    }
+  };
+
+  /**
+   * Cleanup timeout on component unmount to prevent memory leaks
+   */
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <CyDSafeAreaView className='bg-base20' edges={['top', 'bottom']}>
+    <CyDSafeAreaView className='bg-base20' edges={['top']}>
       <CyDScrollView
-        className='bg-base20'
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
+        className='bg-base20 '
+        contentContainerStyle={{ paddingBottom: insets.bottom }}>
         {planChangeModalVisible && (
           <SelectPlanModal
             isModalVisible={planChangeModalVisible}
@@ -532,7 +602,7 @@ export default function OptionsHub() {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-base350 p-[16px]'>
+        <CyDView className='bg-base350 p-[16px] pb-[50px]'>
           {updateModal && (
             <CyDView className='flex-row justify-between items-center p-[16px] rounded-[8px] bg-n0'>
               <CyDText className='text-[14px] font-bold '>
@@ -647,25 +717,6 @@ export default function OptionsHub() {
             </CyDView>
           )} */}
 
-          <CyDView className='mt-[24px]'>
-            <CyDText className='text-[12px] text-n200 tracking-[2px]'>
-              {'REFERRALS AND REWARDS'}
-            </CyDText>
-
-            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
-              {referralAndRewards.map(benefit => (
-                <RenderOptions
-                  isLoading={isLoading}
-                  apiDependent={benefit.apiDependent}
-                  key={benefit.title}
-                  icon={benefit.icon as IconNames}
-                  title={benefit.title}
-                  onPress={benefit.onPress}
-                />
-              ))}
-            </CyDView>
-          </CyDView>
-
           <CyDView className='mt-[44px]'>
             <CyDText className='text-[12px] text-n200 tracking-[2px]'>
               {'CYPHER CARD'}
@@ -745,9 +796,15 @@ export default function OptionsHub() {
           <CyDView className='mt-[24px] pt-[24px]'>
             <CyDView className='flex flex-row gap-x-[12px] items-center'>
               <CyDView className='flex-1 bg-base200 h-[0.5px]' />
-              <CyDText className='text-[10px] font-regular text-base300'>
-                {t<string>('VERSION')} {DeviceInfo.getVersion()}
-              </CyDText>
+              <CyDTouchView
+                onPress={() => {
+                  void handleVersionClick();
+                }}>
+                <CyDText className='text-[10px] font-regular text-base300'>
+                  {t<string>('VERSION')} {DeviceInfo.getVersion()}
+                  {isDeveloperMode && ' 🔧'}
+                </CyDText>
+              </CyDTouchView>
               <CyDView className='flex-1 bg-base200 h-[0.5px]' />
             </CyDView>
             <CyDView className='flex flex-row items-center justify-center gap-x-[24px] mt-[24px]'>

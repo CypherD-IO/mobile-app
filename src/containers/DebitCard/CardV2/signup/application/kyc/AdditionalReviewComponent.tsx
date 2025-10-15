@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CyDView,
   CyDText,
@@ -18,6 +19,7 @@ const AdditionalReviewComponent = ({
   onRefresh,
   onNext,
 }: AdditionalReviewComponentProps) => {
+  const { t } = useTranslation();
   return (
     <CyDScrollView className='flex-1 px-5'>
       {/* Main Image */}
@@ -30,7 +32,7 @@ const AdditionalReviewComponent = ({
       </CyDView>
 
       {/* Title and Subtitle */}
-      <CyDText className='text-[32px]'>Additional Review</CyDText>
+      <CyDText className='text-[32px]'>{t('CARD_ADDITIONAL_REVIEW')}</CyDText>
       <CyDText className='text-[14px] font-medium text-n200 mt-[6px]'>
         We&apos;re currently processing your document with care.
       </CyDText>
@@ -65,7 +67,9 @@ const AdditionalReviewComponent = ({
       </CyDView>
 
       {/* KYC Status */}
-      <CyDText className='text-[14px] text-n200 mt-6'>KYC Status</CyDText>
+      <CyDText className='text-[14px] text-n200 mt-6'>
+        {t('CARD_KYC_STATUS')}
+      </CyDText>
       <CyDView className='border-[1px] border-n40 rounded-[12px] p-3 mt-1'>
         <CyDView className='flex-row items-center'>
           <CyDView className='w-3 h-3 rounded-full bg-p200 mr-2' />
@@ -81,7 +85,9 @@ const AdditionalReviewComponent = ({
                 size={20}
                 className='text-base400 mr-1'
               />
-              <CyDText className='text-base400 text-[14px]'>Refresh</CyDText>
+              <CyDText className='text-base400 text-[14px]'>
+                {t('CARD_REFRESH')}
+              </CyDText>
             </CyDView>
           </CyDTouchView>
         </CyDView>

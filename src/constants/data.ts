@@ -768,6 +768,12 @@ export const TIME_GAPS = [
   { id: 3, label: 'This Month', value: 'This Month' },
 ];
 
+// Rewards program anchor: first epoch start (09 Oct 2025 00:00:00 UTC)
+// Keep as a number (unix seconds) to match backend API expectations for startDate/endDate
+export const FIRST_REWARDS_EPOCH_START_UTC: number = Math.floor(
+  new Date('2025-10-09T00:00:00Z').getTime() / 1000,
+);
+
 export const GAS_BUFFER_FACTOR = 1.3;
 export const GAS_BUFFER_FACTOR_FOR_LOAD_MAX = 1.5;
 
@@ -984,3 +990,12 @@ export const OCCUPATION_LABEL_TO_CODE_MAP: Record<string, string> = {
   Retired: 'RETIRED',
   'Other / Not Listed': 'OTHERXX',
 };
+
+export const ASYNC_STORAGE_KEYS_TO_PRESERVE: string[] = [
+  /*
+   * ARCH_HOST stores the base URL for the backend (Arch) service and must persist
+   * between app sessions—even when the user opts to clear all local data.
+   * Add additional keys here in future if they should be retained across resets.
+   */
+  'ARCH_HOST',
+];
