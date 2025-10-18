@@ -12,7 +12,7 @@
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "postinstall": "./node_modules/.bin/rn-nodeify --install 'crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,fs' --hack&&patch-package",
+    "postinstall": "./node_modules/.bin/rn-nodeify --install 'buffer,react-native-randombytes,vm,stream,http,https,os,url,fs' --hack&&patch-package",
     "react-devtools": "react-devtools",
     "postversion": "react-native-version",
     "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'",
@@ -69,7 +69,7 @@
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-community/push-notification-ios": "^1.10.1",
     "@react-native-cookies/cookies": "^6.2.1",
-    "@react-native-documents/picker": "^10.1.2",
+    "@react-native-documents/picker": "10.1.2",
     "@react-native-firebase/analytics": "^21.5.0",
     "@react-native-firebase/app": "^21.5.0",
     "@react-native-firebase/messaging": "^21.5.0",
@@ -82,7 +82,6 @@
     "@react-navigation/drawer": "^6.1.8",
     "@react-navigation/native": "^6.0.6",
     "@react-navigation/native-stack": "^6.2.5",
-    "@react-navigation/stack": "^6.3.16",
     "@reown/appkit-auth-wagmi-react-native": "1.0.2",
     "@reown/appkit-wagmi-react-native": "1.0.2",
     "@reown/walletkit": "^1.0.0",
@@ -183,7 +182,7 @@
     "react-native-qrcode-scanner": "^1.5.5",
     "react-native-quick-crypto": "^0.7.9",
     "react-native-randombytes": "^3.6.1",
-    "react-native-reanimated": "^3.4.2",
+    "react-native-reanimated": "3.4.2",
     "react-native-reanimated-carousel": "^4.0.2",
     "react-native-render-html": "^6.3.4",
     "react-native-restart": "^0.0.24",
@@ -295,7 +294,7 @@
     "tty": "tty-browserify",
     "vm": "vm-browserify",
     "tls": false,
-    "crypto": "react-native-crypto"
+    "crypto": "react-native-quick-crypto"
   },
   "browser": {
     "zlib": "browserify-zlib",
