@@ -562,11 +562,3 @@ export enum FdCardProviders {
   REAP_CARD = 'REAP_CARD',
   RAIN_CARD = 'RAIN_CARD',
 }
-
-export enum ReferralOnboardingStatus {
-  SIGNED_UP = 'SIGNED_UP',
-  KYC_PENDING = 'KYC_PENDING',
-  KYC_VERIFIED = 'KYC_VERIFIED',
-  FIRST_LOAD = 'FIRST_LOAD',
-  FIRST_SPEND = 'FIRST_SPEND',
-}

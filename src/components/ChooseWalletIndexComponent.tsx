@@ -40,7 +40,7 @@ const RadioButton = (props: { selected: boolean }) => {
   return (
     <CyDView
       className={
-        'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-p50 flex flex-row justify-center items-center'
+        'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-base100 flex flex-row justify-center items-center'
       }>
       {selected ? (
         <CyDView className={'h-[10px] w-[10px] rounded-[5px] bg-p50'} />
@@ -57,19 +57,19 @@ const RenderWalletAddresses = (
   return (
     <CyDTouchView
       className={
-        'flex flex-row justify-evenly bg-n0 items-center self-center rounded-[10px] p-[20px] mb-[10px] mx-[16px]'
+        'flex flex-row justify-evenly bg-n0 items-center self-center border-[1px] border-n40 h-[60px] rounded-[10px] px-[20px] mb-[10px] mx-[16px]'
       }
       onPress={() => {
         // n40;
         setSelectedIndex(item.index);
       }}>
-      <CyDText className='ml-[10px]'>{item.index}</CyDText>
+      <CyDText className='ml-[10px] mr-[20px]'>{item.index}</CyDText>
       <CyDMaterialDesignIcons
         name={randomIcons[item.index % randomIcons.length]}
         size={24}
-        className='text-base400 mx-[10px]'
+        className='text-base400'
       />
-      <CyDText className='grow text-[14px] font-semibold'>
+      <CyDText className='grow text-center'>
         {item.address.substring(0, 8) +
           '...' +
           item.address.substring(item.address.length - 6)}
@@ -98,7 +98,22 @@ export default function ChooseWalletIndexComponent({
   return (
     <CyDView className='flex justify-between h-full'>
       <CyDView
-        className={onlyOneAddressShown ? 'pb-[24px]' : 'pb-[24px] flex-1'}>
+        className={onlyOneAddressShown ? 'pb-[24px]' : 'pb-[80px] flex-1'}>
+        <CyDView className='flex flex-row mx-[16px] w-full'>
+          {!onlyOneAddressShown && (
+            <CyDTouchView
+              onPress={() => {
+                navigation.navigate(screenTitle.ENTER_KEY);
+              }}>
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
+            </CyDTouchView>
+          )}
+          <CyDView className='w-[calc(100% - 40px)] mx-auto'>
+            <CyDText className='font-semibold text-center -ml-[24px] text-[20px]'>
+              {t('WALLETS')}
+            </CyDText>
+          </CyDView>
+        </CyDView>
         <CyDText className={'my-[20px] mx-[60px] text-center text-[14px]'}>
           {t('CHOOSE_WALLET_INDEX_TEXT')}
         </CyDText>
@@ -111,12 +126,12 @@ export default function ChooseWalletIndexComponent({
           scrollEnabled={!onlyOneAddressShown}
         />
         {onlyOneAddressShown && (
-          <CyDView className='w-full items-center justify-center mt-[12px]'>
+          <CyDView className='w-full items-center justify-center'>
             <CyDText className='text-[12px] text-center'>
               {t('SHOW_MORE_WALLET_ADDRESS_TEXT')}
             </CyDText>
             <CyDTouchView
-              className='rounded-[6px] w-[100px] bg-n0 py-[6px] px-[12px] border-[1px] border-n40 mt-[8px] items-center'
+              className='rounded-[6px] w-[100px] bg-n0 py-[6px] px-[12px] border-[1px] border-[#D0D5DD] mt-[8px] items-center'
               onPress={() => {
                 setShowMoreLoading(true);
                 setTimeout(() => {

@@ -37,7 +37,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get, isEmpty, omit, omitBy } from 'lodash';
+import { find, get, isEmpty, omit } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
@@ -1463,20 +1463,4 @@ export const extractAddressFromURI = (content: string): string => {
   } catch (error) {
     return '';
   }
-};
-
-export const processMerchantName = (name: string) => {
-  const firstWord = name.split(' ')[0];
-  const displayName =
-    firstWord.length > 8 ? firstWord.substring(0, 8) : firstWord;
-
-  // Calculate font size based on name length
-  let fontSize = 20;
-  if (displayName.length >= 8) {
-    fontSize = 14;
-  } else if (displayName.length > 5) {
-    fontSize = 16;
-  }
-
-  return { displayName, fontSize };
 };

@@ -24,6 +24,8 @@ export const MerchantLogo: React.FC<MerchantLogoProps> = ({
     size,
   );
 
+  console.log('****************** f : ', fontSize);
+
   const baseClasses =
     'bg-white rounded-full items-center justify-center relative overflow-hidden p-1';
   const borderClasses = hasUserVoted
@@ -40,6 +42,8 @@ export const MerchantLogo: React.FC<MerchantLogoProps> = ({
   const [currentUri, setCurrentUri] = useState<string>(String(logoUrl ?? ''));
   const showImage = hasLogo && !!currentUri && !loadFailed;
   const isSvg = showImage && mode === 'svg';
+
+  console.log('showImg : ', showImage, hasLogo, logoUrl, loadFailed);
 
   return (
     <CyDView

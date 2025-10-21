@@ -330,6 +330,29 @@ export default function OptionsHub() {
     },
   ];
 
+  const referralAndRewards = [
+    {
+      icon: 'rewards-icon',
+      apiDependent: true,
+      title: t('REWARDS'),
+      onPress: () => {
+        navigation.navigate(screenTitle.REWARDS, {
+          fromOptionsStack: true,
+        });
+      },
+    },
+    {
+      icon: 'account-share',
+      apiDependent: true,
+      title: t('REFERRALS'),
+      onPress: () => {
+        navigation.navigate(screenTitle.REFERRALS, {
+          fromOptionsStack: true,
+        });
+      },
+    },
+  ];
+
   const socialMediaOptions = [
     {
       title: 'DISCORD',
@@ -408,13 +431,11 @@ export default function OptionsHub() {
   const onTelegramDisconnected = () => {
     // Refresh the profile to update telegram state
     void refreshProfile();
-    void inAppUpdates
-      .checkNeedsUpdate({ curVersion: DeviceInfo.getVersion() })
-      .then(result => {
-        if (result.shouldUpdate) {
-          setUpdateModal(true);
-        }
-      });
+    void inAppUpdates.checkNeedsUpdate().then(result => {
+      if (result.shouldUpdate) {
+        setUpdateModal(true);
+      }
+    });
   };
 
   useEffect(() => {
@@ -508,10 +529,10 @@ export default function OptionsHub() {
   }, []);
 
   return (
-    <CyDSafeAreaView className='bg-base20' edges={['top']}>
+    <CyDSafeAreaView className='bg-base20' edges={['top', 'bottom']}>
       <CyDScrollView
-        className='bg-base20 '
-        contentContainerStyle={{ paddingBottom: insets.bottom }}>
+        className='bg-base20'
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
         {planChangeModalVisible && (
           <SelectPlanModal
             isModalVisible={planChangeModalVisible}
@@ -602,7 +623,7 @@ export default function OptionsHub() {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-base350 p-[16px] pb-[50px]'>
+        <CyDView className='bg-base350 p-[16px]'>
           {updateModal && (
             <CyDView className='flex-row justify-between items-center p-[16px] rounded-[8px] bg-n0'>
               <CyDText className='text-[14px] font-bold '>
@@ -716,6 +737,25 @@ export default function OptionsHub() {
               </CyDView>
             </CyDView>
           )} */}
+
+          <CyDView className='mt-[24px]'>
+            <CyDText className='text-[12px] text-n200 tracking-[2px]'>
+              {'REFERRALS AND REWARDS'}
+            </CyDText>
+
+            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
+              {referralAndRewards.map(benefit => (
+                <RenderOptions
+                  isLoading={isLoading}
+                  apiDependent={benefit.apiDependent}
+                  key={benefit.title}
+                  icon={benefit.icon as IconNames}
+                  title={benefit.title}
+                  onPress={benefit.onPress}
+                />
+              ))}
+            </CyDView>
+          </CyDView>
 
           <CyDView className='mt-[44px]'>
             <CyDText className='text-[12px] text-n200 tracking-[2px]'>

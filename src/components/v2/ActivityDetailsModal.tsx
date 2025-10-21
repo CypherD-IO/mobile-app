@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import moment from 'moment';
-import { useTranslation } from 'react-i18next';
 import CyDModalLayout from './modal';
 import {
   CyDView,
@@ -62,7 +61,6 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   completedActivities = [],
   failedActivities = [],
 }) => {
-  const { t } = useTranslation();
   const [txnHash, setTxnHash] = React.useState<string>('');
   const [isSubmittingRequest, setIsSubmittingRequest] =
     React.useState<boolean>(false);
@@ -756,16 +754,16 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                 ActivityStatus.USER_REPORTED && (
                 <CyDView className='p-4 bg-n20 border-t border-n40'>
                   <CyDText className='text-[16px] font-semibold text-base100 mb-2'>
-                    {t('YOUR_FUNDING_IS_OUR_TOP_PRIORITY')}
+                    Your funding is our top priority
                   </CyDText>
                   {fetchingStatusTime > 0 ? (
                     <CyDText className='text-[14px] text-n200'>
-                      {t('FETCHING_YOUR_REPORT_STATUS_IN')} {fetchingStatusTime}
-                      s
+                      Fetching your report status in {fetchingStatusTime}s
                     </CyDText>
                   ) : (
                     <CyDText className='text-[14px] text-n200'>
-                      {t('WE_HAVE_RECEIVED_YOUR_TRANSACTION_REPORT')}
+                      We have received your transaction report and will update
+                      you soon.
                     </CyDText>
                   )}
                 </CyDView>
@@ -778,16 +776,17 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                 <CyDView className='p-4 bg-n20 border-t border-n40'>
                   <CyDView className='flex-row items-center justify-between mb-2'>
                     <CyDText className='text-[16px] font-semibold flex-1'>
-                      {t('YOUR_FUNDING_IS_OUR_TOP_PRIORITY')}
+                      Your funding is our top priority
                     </CyDText>
                     <CyDView className='bg-p100 border border-base400 rounded-[8px] p-[6px] w-[130px]'>
                       <CyDText className='text-[12px] text-black font-bold text-center'>
-                        {t('RESOLVING_IN')} {formatRemainingTime(remainingTime)}
+                        Resolving in {formatRemainingTime(remainingTime)}
                       </CyDText>
                     </CyDView>
                   </CyDView>
                   <CyDText className='text-[14px] text-n200'>
-                    {t('WE_HAVE_RECEIVED_YOUR_REQUEST_AND_TEAM_WORKING')}
+                    We have received your request and the team is currently
+                    working on it, will update you soon.
                   </CyDText>
                 </CyDView>
               )}
@@ -798,16 +797,18 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                 <CyDView className='p-4 border-t border-n40 '>
                   <CyDText className='text-[32px] font-semibold'>😐</CyDText>
                   <CyDText className='text-[14px] font-normal'>
-                    {t('WE_APOLOGIZE_FOR_THE_DELAY_IN_COMPLETING_FUNDING')}
+                    {'We apologize for the delay in completing your funding.'}
                   </CyDText>
                   <CyDText className='text-[12px] font-normal mt-[8px] text-n200'>
-                    {t('REACH_OUT_TO_SUPPORT_TEAM_FOR_QUICKER_RESOLUTION')}
+                    {
+                      "Reach out to our support team for a quicker resolution. We understand that delays can be frustrating, but rest assured, the funds that have passed through the blockchain are secure with us, so there's no need to worry."
+                    }
                   </CyDText>
                   <CyDTouchView
                     onPress={handleContactSupport}
                     className='bg-p50 rounded-full py-[10px] px-[24px] items-center mt-4'>
                     <CyDText className='font-medium text-[16px] text-black'>
-                      {t('CONTACT_SUPPORT')}
+                      Contact Support
                     </CyDText>
                   </CyDTouchView>
                 </CyDView>
@@ -823,7 +824,9 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                   <CyDView className='p-4 bg-n20 flex flex-row items-start gap-x-[4px]'>
                     <CyDView className='flex-1 pr-2'>
                       <CyDText className='text-[14px]'>
-                        {t('WE_KNOW_DELAYS_ARE_FRUSTRATING_INITIATE_REQUEST')}
+                        {
+                          'We know delays are frustrating. Initiate a request to our fund processing team to expedite your funding.'
+                        }
                       </CyDText>
                     </CyDView>
                     <CyDTouchView
@@ -836,15 +839,14 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                         isSubmittingRequest ? 'bg-n60' : 'bg-n40',
                       )}>
                       <CyDText className='font-medium text-[14px]'>
-                        {isSubmittingRequest
-                          ? t('SUBMITTING')
-                          : t('REQUEST_TEAM')}
+                        {isSubmittingRequest ? 'Submitting...' : 'Request Team'}
                       </CyDText>
                     </CyDTouchView>
                   </CyDView>
                   <CyDView className='px-4 pb-4 bg-n20'>
                     <CyDText className='text-[12px] text-n80 mb-2'>
-                      {t('PROVIDE_CORRECT_TRANSACTION_HASH_TO_HELP_TEAM')}
+                      Provide the correct transaction hash to help the team
+                      process faster
                     </CyDText>
                     <CyDView className='border border-n60 rounded-lg bg-n0 flex-row items-center'>
                       {txnHash ? (
@@ -871,7 +873,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                         <>
                           <CyDView className='flex-1 p-3'>
                             <CyDText className='text-[14px] text-n80'>
-                              {t('TRANSACTION_HASH_OPTIONAL')}
+                              Transaction hash (optional)
                             </CyDText>
                           </CyDView>
                           <CyDTouchView
@@ -885,7 +887,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                               color='#9CA3AF'
                             />
                             <CyDText className='text-[12px] text-n80'>
-                              {t('PASTE')}
+                              Paste
                             </CyDText>
                           </CyDTouchView>
                         </>
@@ -898,7 +900,9 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                     <CyDView className='p-4 bg-n20 flex flex-row items-start gap-x-[4px] border-t border-n40'>
                       <CyDView className='flex-1 pr-2'>
                         <CyDText className='text-[14px]'>
-                          {t('IF_YOU_DID_NOT_INITIATE_TRANSACTION_OR_FAILED')}
+                          {
+                            'If you did not initiate the transaction or if your on-chain transaction failed, you can close this funding ticket.'
+                          }
                         </CyDText>
                       </CyDView>
                       <CyDTouchView
@@ -910,7 +914,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
                           'rounded-lg p-[6px] shrink-0 bg-red40',
                         )}>
                         <CyDText className='font-medium text-[14px]'>
-                          {isClosingTicket ? t('CLOSING') : t('CLOSE_TICKET')}
+                          {isClosingTicket ? 'Closing...' : 'Close ticket'}
                         </CyDText>
                       </CyDTouchView>
                     </CyDView>

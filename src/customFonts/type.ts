@@ -139,6 +139,4 @@ export type IconNames =
   | 'profile'
   | 'scholar'
   | 'seed'
-  | 'arrow-forward'
-  | 'portfolio'
-  | 'offerIcon';
+  | 'arrow-forward';

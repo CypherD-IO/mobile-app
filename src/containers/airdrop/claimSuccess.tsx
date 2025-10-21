@@ -75,6 +75,8 @@ export default function AirdropClaimSuccess() {
       const baseURI = 'https://app.cypherhq.io/#/airdrop/claimLock';
       const lockURI = `${baseURI}?sessionToken=${encodeURIComponent(sessionToken)}`;
 
+      console.log('Navigating to lock page with session token', lockURI);
+
       navigation.navigate(screenTitle.OPTIONS);
       setTimeout(() => {
         navigation.navigate(screenTitle.OPTIONS, {

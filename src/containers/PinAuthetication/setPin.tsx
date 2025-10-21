@@ -17,23 +17,20 @@ import {
 } from '@react-navigation/native';
 import PageHeader from '../../components/PageHeader';
 
-interface SetPinProps {
-  setPinAuthentication?: (value: boolean) => void;
-}
-
 interface RouteParams {
+  setPinAuthentication: (value: boolean) => void;
   changePinValue: boolean;
 }
 
-export default function SetPin({
-  setPinAuthentication = () => {},
-}: SetPinProps): JSX.Element {
+export default function SetPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { changePinValue = false } = route.params ?? ({} as RouteParams);
+  const { setPinAuthentication = () => {}, changePinValue = false } =
+    route.params;
 
   let setPin = (pin: string) => {
     navigation.navigate(screenTitle.CONFIRM_PIN, {
+      setPinAuthentication,
       pin,
       backButton: true,
     });
@@ -47,7 +44,7 @@ export default function SetPin({
     };
   }
 
-  const PIN = (): JSX.Element => {
+  const PIN = () => {
     return (
       <CyDView>
         <CyDView className={'mt-[15%]'}>
@@ -62,7 +59,7 @@ export default function SetPin({
     );
   };
 
-  const handleBackButton = (): boolean => {
+  const handleBackButton = () => {
     navigation.goBack();
     return true;
   };

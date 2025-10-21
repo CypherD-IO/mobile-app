@@ -1,11 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
-import { Alert, Linking, Platform } from 'react-native';
-import {
-  setUpdateReminderSnoozeUntil,
-  setReferralCodeAsync,
-} from '../../core/asyncStorage';
+import { Linking, Platform } from 'react-native';
 import {
   CypherDeclineCodes,
   GlobalModalType,
@@ -25,7 +21,7 @@ import Dialog, {
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { t } from 'i18next';
-import { CyDSafeAreaView, CyDText } from '../../styles/tailwindComponents';
+import { CyDText } from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
@@ -37,6 +33,7 @@ import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 import { useInstallReferrer } from '../../hooks/useInstallReferrer';
+import { setReferralCodeAsync } from '../../core/asyncStorage';
 import { get } from 'lodash';
 
 import {
@@ -153,6 +150,7 @@ export const InitializeAppProvider = ({
       if (isAPIAccessible) {
         await exitIfJailBroken();
         void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
+        void checkForUpdatesAndShowModal(setUpdateModal);
         void loadActivitiesFromAsyncStorage();
 
         await requestUserPermission();
@@ -165,12 +163,6 @@ export const InitializeAppProvider = ({
 
     void initializeApp();
   }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      void checkForUpdatesAndShowModal(setUpdateModal);
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     if (referrerData?.referral) {
@@ -324,21 +316,13 @@ export const InitializeAppProvider = ({
       (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
       pinAuthenticated
     ) {
-      if (ethereumAddress ?? solanaAddress) {
+      if (ethereumAddress || solanaAddress) {
         if (!isAuthenticated) {
           return <Loading />;
         }
-        return (
-          <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-n0'>
-            {children}
-          </CyDSafeAreaView>
-        );
+        return <>{children}</>;
       } else {
-        return (
-          <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-black'>
-            <OnBoardingStack />
-          </CyDSafeAreaView>
-        );
+        return <OnBoardingStack />;
       }
     } else {
       if (pinSetStatus === PinPresentStates.NOTSET) {
@@ -368,60 +352,60 @@ export const InitializeAppProvider = ({
     isAuthenticated,
   ]);
 
-  useEffect(() => {
-    if (updateModal) {
-      const title = t<string>('NEW_UPDATE');
-      const message = !forcedUpdate
-        ? t<string>('NEW_UPDATE_MSG')
-        : t<string>('NEW_MUST_UPDATE_MSG');
-
-      const goToStore = () => {
-        analytics().logEvent('update_now', {}).catch(Sentry.captureException);
-        setUpdateModal(false);
-        if (Platform.OS === 'android') {
-          void Linking.openURL('market://details?id=com.cypherd.androidwallet');
-        } else {
-          const link =
-            'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
-          Linking.canOpenURL(link).then(
-            supported => {
-              if (supported) {
-                void Linking.openURL(link);
-              }
-            },
-            err => Sentry.captureException(err),
-          );
-        }
-      };
-
-      const laterAction = () => {
-        setUpdateModal(false);
-        logAnalyticsToFirebase(AnalyticEvent.UPDATE_LATER, {});
-        // Snooze for 24 hours
-        const snoozeUntil = Date.now() + 24 * 60 * 60 * 1000;
-        void setUpdateReminderSnoozeUntil(snoozeUntil);
-      };
-
-      // Show system alert instead of custom dialog
-      if (forcedUpdate) {
-        Alert.alert(
-          title,
-          message,
-          [{ text: t('UPDATE'), onPress: goToStore }],
-          { cancelable: false },
-        );
-      } else {
-        Alert.alert(title, message, [
-          { text: t('LATER'), onPress: laterAction, style: 'cancel' },
-          { text: t('UPDATE'), onPress: goToStore },
-        ]);
-      }
-    }
-  }, [updateModal, forcedUpdate]);
-
   return (
     <>
-      {/* Keep existing tamperedSignMessageModal Dialog unchanged */}
+      <Dialog
+        visible={updateModal}
+        footer={
+          <DialogFooter>
+            <DialogButton
+              text={t('UPDATE')}
+              onPress={() => {
+                analytics()
+                  .logEvent('update_now', {})
+                  .catch(Sentry.captureException);
+                setUpdateModal(false);
+                if (Platform.OS === 'android') {
+                  void Linking.openURL(
+                    'market://details?id=com.cypherd.androidwallet',
+                  );
+                } else {
+                  const link =
+                    'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
+                  Linking.canOpenURL(link).then(
+                    supported => {
+                      if (supported) {
+                        void Linking.openURL(link);
+                      }
+                    },
+                    err => Sentry.captureException(err),
+                  );
+                }
+              }}
+            />
+            <DialogButton
+              text={t('LATER')}
+              disabled={forcedUpdate}
+              onPress={() => {
+                setUpdateModal(false);
+                logAnalyticsToFirebase(AnalyticEvent.UPDATE_LATER, {});
+              }}
+            />
+          </DialogFooter>
+        }
+        width={0.8}
+        onTouchOutside={() => {
+          !forcedUpdate && setUpdateModal(false);
+        }}>
+        <DialogContent>
+          <CyDText className={'font-bold text-[16px] mt-[20px] text-center'}>
+            {t<string>('NEW_UPDATE')}
+          </CyDText>
+          <CyDText className={'font-bold text-[13px] mt-[20px] text-center'}>
+            {!forcedUpdate ? t('NEW_UPDATE_MSG') : t('NEW_MUST_UPDATE_MSG')}
+          </CyDText>
+        </DialogContent>
+      </Dialog>
       <Dialog
         visible={tamperedSignMessageModal}
         footer={

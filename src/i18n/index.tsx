@@ -42,7 +42,6 @@ const resources = {
         'Transaction Submitted. \nKindly wait few minutes for confirmation.',
       SUCCESS: 'Success',
       FAILURE: 'Failure',
-      ERROR: 'Error',
       TOAST_TYPE_SUCCESS: 'success',
       TOAST_TYPE_ERROR: 'error',
       OKAY: 'OKAY',
@@ -70,76 +69,6 @@ const resources = {
       MARKETS: 'Markets',
       CHOOSE_CHAIN: 'Choose Chain',
       CANCEL: 'CANCEL',
-      BROWSER_CANCEL: 'Cancel',
-      BROWSER_RECENT_SEARCHES: 'Recent Searches',
-      BROWSER_CLEAR_BROWSING_HISTORY: 'Clear browsing history',
-      BROWSER_START_USING_BROWSER:
-        'Start using the browser to view history here',
-      BROWSER_BOOKMARKS: 'BOOKMARKS',
-      BROWSER_YOUR_BOOKMARKS_WILL_BE_SHOWN: 'Your bookmarks will be shown here',
-      BROWSER_HISTORY: 'HISTORY',
-      CARD_SHARE: 'Share',
-      CARD_SKIP: 'Skip',
-      CARD_COUPON_APPLIED: 'Coupon applied',
-      CARD_GO: 'Go',
-      CARD_ADDITIONAL_REVIEW: 'Additional Review',
-      CARD_KYC_STATUS: 'KYC Status',
-      CARD_REFRESH: 'Refresh',
-      CARD_SELECT_A_CARD: 'Select a card',
-      CARD_SPEND_CONTROLS: 'Spend Controls',
-      CARD_DAILY_LIMIT: 'Daily Limit',
-      CARD_MONTHLY_LIMIT: 'Monthly Limit',
-      daily: 'Daily',
-      monthly: 'Monthly',
-      CARD_ATM_WITHDRAWALS: 'ATM Withdrawals',
-      THEME_SYSTEM_DEFAULT: 'System Default',
-      THEME_LIGHT: 'Light',
-      THEME_DARK: 'Dark',
-      WALLET_SEED_PHRASE: 'Seed Phrase',
-      ONBOARDING_EMAIL_PLACEHOLDER: 'johndoe@gmail.com',
-      ONBOARDING_WE_USE_THIS_TO_SIGN_IN:
-        "We'll use this to sign you in or create an account for you if you don't have one yet",
-      ONBOARDING_IF_YOU_DONT_HAVE_WALLET:
-        "If you don't have a wallet yet, no worries! Creating a new one is quick and easy.",
-      ONBOARDING_IF_YOUVE_GOT_WALLET:
-        "If you've got a wallet, you can easily import it or wallet connect it right here.",
-      REFERRAL_GOT_INVITE_CODE:
-        "Got an invite code from a friend who referred you to Cypher? Just enter it below! Remember, you won't be able to do this later.",
-      REFERRAL_ENTER_REFERRAL_CODE: 'Enter referral code',
-      REFERRAL_EARN_CYPHER_TOKENS: 'Earn Cypher tokens on referrals',
-      REFERRAL_WHEN_INVITEE_SIGNS_UP:
-        'when your friend signs up and spends\nat your favorite merchant.',
-      REFERRAL_CODE: 'Referral code',
-      REFERRAL_OTHER_INVITE_CODES: 'Other Invite Codes',
-      REFERRAL_ADD_ANOTHER_CODE: 'Add Another Code',
-      REFERRAL_INVITE_LINK: 'Invite link',
-      REFERRAL_QR_CODE: 'QR Code',
-      REFERRAL_HOW_IT_WORKS: 'How it works?',
-      REFERRAL_SHARE_YOUR_INVITE_LINK: 'Share Your Invite Link',
-      REFERRAL_SEND_UNIQUE_LINK: 'Send your unique link to friends and family.',
-      REFERRAL_THEY_JOIN_CYPHER: 'They Join Cypher',
-      REFERRAL_WHEN_THEY_SIGN_UP:
-        'When they sign up, complete KYC, and make their\nfirst card purchase — both of you earn CYPR tokens.',
-      REFERRAL_YOULL_EARN: "You'll Earn:",
-      REFERRAL_THEY_EARN: 'They Earn:',
-      REFERRAL_ADDITIONAL_EARNINGS: 'Additional Earnings',
-      REFERRAL_EARN_EVEN_MORE: 'Earn Even More When They Follow You',
-      REFERRAL_IF_FRIEND_SHOPS:
-        'If your friend shops at the same place you "Boosted a Merchant" you both unlock bonus rewards.',
-      REFERRAL_IF_FRIEND_SPEND:
-        'i.e For example, if your friend spend $100 at Walmart',
-      MERCHANT_SEARCH_MERCHANTS_OR_CATEGORIES: 'Search Merchants or Categories',
-      CARD_FUND_PLACEHOLDER: '0.00',
-      OPTIONS_WE_ARE_COOKING_SOMETHING: "We're cooking something",
-      CARD_YOUR_CARD_IS_SUCCESSFULLY_FROZEN:
-        "Your card is successfully frozen. You can't make any transactions. You can unfreeze it anytime.",
-      CARD_WELL_NOTIFY_YOU_ONCE_WE_SUPPORT:
-        "We'll notify you once we support your country, you can then continue the application from where you left.",
-      CARD_DIDNT_RECEIVE: "Didn't receive ? ",
-      CARD_CHOOSE_WHERE_YOUD_LIKE_TO_RECEIVE:
-        "Choose where you'd like to receive the online payment verification code.",
-      CARD_ONCE_YOU_FIND_THE: 'Once you find the',
-      CARD_JUST_PRESS_SEND: 'Just press send',
       SIGN_IN_MSG: 'Sign this message?',
       MESSAGE: 'Message',
       FUND_YOUR_ACCOUNT: 'Fund your account?',
@@ -346,6 +275,7 @@ const resources = {
       REWARDS: 'Rewards',
       APPROVE: 'APPROVE',
       REJECT: 'REJECT',
+      CANCEL_INIT_CAPS: 'Cancel',
       WITH_US_TEXT: '& earn juicy rewards',
       PRIVATE_KEY: 'Private Key',
       PRIVATE_KEY_SUBTITLE:
@@ -783,7 +713,7 @@ const resources = {
       SWAP_TOKENS: 'Swap Tokens',
       SWAP: 'SWAP',
       SWAP_TITLE: 'Swap',
-      SWAP_SHORTCUTS_SUBTITLE: 'Swap tokens across chains',
+      SWAP_SHORTCUTS_SUBTITLE: 'Swap tokens on same chain',
       SWAP_SUCCESS: 'Swap Success',
       SWAP_SUCCESS_DESCRIPTION: 'Your tokens have been successfully swapped',
       SWAP_ERROR_DESCRIPTION: 'Swap Error. Please try again later',
@@ -1328,6 +1258,7 @@ const resources = {
       TARGET_AUDIENCE: 'Target Audience',
       SELECT_TARGET_AUDIENCE: 'Which type of user are you expecting?',
       SPECIFY_OTHER_TARGET_AUDIENCE: 'Specify other target audience',
+      REFERRAL_CODE: 'Referral Code',
       REFERRAL_CODE_CREATED: 'Referral Code Created',
       REFERRAL_CODE_CREATED_MESSAGE:
         'Your referral code has been created successfully',
@@ -1348,67 +1279,10 @@ const resources = {
       ENTER_REFERRAL_CODE: 'Enter Referral Code',
       INVALID_REFERRAL_CODE: 'Invalid Referral Code',
       INVALID_REFERRAL_CODE_DESCRIPTION: 'Please enter a valid referral code',
-      REFERRAL_CODE_APPLIED: 'Referral Code Applied',
-      YOUR_REFERRAL_CODE_HAS_BEEN_APPLIED:
-        'Your referral code has been applied successfully',
-      COUPON_REMOVED: 'Coupon Removed',
-      YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED:
-        'Your referral code has been removed successfully',
-      QUESTIONS: 'Questions',
-      HOW_CAN_WE_HELP_YOU: 'How can we help you?',
       REFERRAL_CODE_APPLIED_SUCCESSFULLY: 'Referral Code Applied Successfully',
       REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
         "You've earned 50 reward points for applying the referral code. Continue to application.",
       ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
-      // Referral Rewards Bottom Sheet
-      INVITE_FRIENDS_EARN_REWARDS: 'Invite friends, earn rewards',
-      REFERRAL_REWARDS_DESCRIPTION:
-        'Cypher Referral Rewards offers two reward layers: a signup reward for every sign-ups and a merchant reward for spending at your boosted merchants.',
-      REFERRAL_WORKS_INFO:
-        'Refer friends to earn rewards on their signups and spends!',
-      KNOW_MORE_REFERRAL_WORKS: 'know more referral works',
-      SIGNUP_REWARD_TEXT: "You'll earn $CYPR every time a friend signs up!",
-      MERCHANT_SPEND_REWARD_TEXT:
-        'You earn $CYPR when invited friends spend at the merchants you boosted.',
-      MERCHANT_SPEND_REWARD_TEXT_2:
-        'Based on the number of friends who spend at the merchants you boosted the rewards you earn will increase.',
-      NO_OF_REFERRAL: 'No. of friends',
-      EARNING_FOR_SPEND_BY_FRIEND:
-        'Rewards you earn when your friends spend at ',
-      NO_VOTED_MERCHANTS: 'No voted merchants found',
-      REWARD_EARNINGS_DISCLAIMER:
-        'Reward earnings applicable per referral, per spend on every boosted merchant',
-      ESTIMATES_DISCLAIMER:
-        '** The numbers shown are estimates based on the current market conditions and are subject to change.',
-      OTHER_INVITE_OPTIONS: 'Other invite options',
-      NO_INVITE_CODE_AVAILABLE: 'No invite code available',
-      INVITE_CODE_COPIED: 'Invite code copied!',
-      FAILED_TO_COPY_CODE: 'Failed to copy invite code',
-      // Booster Info Bottom Sheet
-      WHAT_IS_BOOSTER_TITLE: 'What is Booster?',
-      BOOSTER_VECYPR_EXPLANATION:
-        'veCYPR is your voting power token earned by locking $CYPR tokens. Use it to boost merchants and earn higher rewards. veCYPR decays over time as locks approach expiration.',
-      TIP: 'Tip',
-      BOOSTER_TIP: 'Use all your veCYPR to maximize merchant boost benefits.',
-      HOW_TO_GET_VECYPR: 'How to Get veCYPR',
-      HOW_TO_GET_VECYPR_DESC:
-        'Lock your CYPR tokens to receive veCYPR. The longer you lock, the more veCYPR you receive.',
-      BOOST_BENEFITS: 'Boost Benefits',
-      BOOST_BENEFITS_DESC:
-        'Boosting merchants increases your reward multiplier, allowing you to earn more $CYPR tokens on every transaction.',
-      UNDERSTANDING_DECAY: 'Understanding Decay',
-      UNDERSTANDING_DECAY_DESC:
-        'Your veCYPR balance gradually decreases as your lock period nears its end. Extend your lock or add more CYPR to maintain your voting power.',
-      // Claim Rewards Errors and Messages
-      WALLET_NOT_FOUND: 'Wallet Not Found',
-      CONNECT_WALLET_FIRST: 'Please connect your wallet to claim rewards',
-      CLAIM_FAILED: 'Claim Failed',
-      CLAIM_FAILED_DESC: 'Failed to claim rewards. Please try again later.',
-      CLAIM_ERROR: 'Claim Error',
-      CLAIM_ERROR_DESC:
-        'An error occurred while claiming rewards. Please try again.',
-      REWARDS_CLAIMED_SUCCESS: 'Rewards Claimed Successfully',
-      CLAIM_TRANSACTION_CONFIRMED: 'Your claim transaction has been confirmed',
       WITHDRAW_CRYPTO: 'Withdraw Crypto',
       AMOUNT_TO_BE_WITHDRAWN: 'Amount to be withdrawn',
       WITHDRAW_ERROR: 'Withdrawal Error',
@@ -1800,7 +1674,7 @@ const resources = {
       REFERRAL_CODE_REQUIRED: 'Referral code is required',
       LOAD_YOUR_CARD: 'Load your card',
       LOAD_YOUR_CARD_DESCRIPTION:
-        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains.',
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains to load your card.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
         'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
       NEXT: 'Next',
@@ -1961,364 +1835,6 @@ const resources = {
         'Access it in the wallet that you have connected from.',
       CARD_TRANSACTIONS: 'Card Transactions',
       DETAILS: 'Details',
-      CARDS: 'Cards',
-      GET_YOUR_FIRST_TOKEN: 'Get your first token',
-      FUND_WALLET_DESCRIPTION:
-        'Fund your wallet by buying crypto or transferring from another wallet',
-      GET_TOKEN: 'Get Token',
-      BUY_CRYPTO: 'Buy Crypto',
-      BUY_CRYPTO_DESCRIPTION: 'Purchase with a debit card or bank account',
-      RECEIVE_CRYPTO: 'Receive Crypto',
-      RECEIVE_CRYPTO_DESCRIPTION:
-        'Receive crypto by scanning a QR code or sharing your address',
-      // Additional translations for hardcoded text
-      REWARD_TRENDS: 'Reward Trends',
-      ALL_TIME: 'All time',
-      REWARDS_AVAILABLE_TO_CLAIM: 'Rewards available to claim',
-      REWARDS_BONUS: 'Bonus',
-      REWARDS_FROM_SPENDS: 'From spends',
-      REWARDS_MERCHANT_SPENDS: 'Merchant Spends',
-      REWARDS_REFERRALS_REWARDS: 'Referrals Rewards',
-      REWARDS_USED: 'Used',
-      REWARDS_UNUSED: 'Un-used',
-      REWARDS_TOTAL_REWARDS_EARNED: 'Total Rewards Earned',
-      REWARDS_REWARD_TRANSACTION: 'Reward Transaction',
-      REWARDS_VIEW_MORE: 'View More',
-      REWARDS_LEARN_HOW_REFERRAL_WORKS: 'Learn how referral works',
-      REWARDS_VIEW_ALL: 'View All',
-      REWARDS_PENDING: 'Pending',
-      DEPOSIT_TOKENS: 'Deposit Tokens',
-      DEPOSIT_CYPHER_TOKEN_TO_GET_REWARD_BOOSTER:
-        'Deposit cypher token to get reward booster',
-      UNKNOWN: 'Unknown',
-      INVITE_FRIENDS: 'Invite friends',
-      OTHER_INVITE_CODES: 'Other Invite Codes',
-      ADD_ANOTHER_CODE: 'Add Another Code',
-      THEY_JOIN_CYPHER: 'They Join Cypher',
-      SIGNED_UP: 'Signed up',
-      COMPLETED: 'Completed',
-      NO_REFERRAL_CODE_AVAILABLE: 'No referral code available',
-      REFERRAL_CODE_COPIED_TO_CLIPBOARD: 'Referral code copied to clipboard!',
-      FAILED_TO_COPY_REFERRAL_CODE: 'Failed to copy referral code',
-      JUST_PRESS_THE_BUTTON: 'Just press the button',
-      BOT_COMMAND_COPIED: 'Bot Command Copied',
-      FAILED_TO_OPEN_TELEGRAM: 'Failed to open telegram',
-      MY_CYPHER_CARD: 'My Cypher Card',
-      SHARE_FAILED: 'Share failed',
-      UNABLE_TO_SHARE_CARD_DETAILS: 'Unable to share card details',
-      ERROR_LOADING_CARD_DETAILS: 'Error loading card details',
-      START_USING: 'Start Using',
-      YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED_SUCCESSFULLY:
-        'Your referral code has been removed successfully',
-      WHATSAPP: 'Whatsapp',
-      TELEGRAM: 'Telegram',
-      SHARE: 'Share',
-      WEBPAGE: 'Webpage',
-      // DebitCard translations
-      MY_CYPHER_CARD_SHARE_TITLE: 'My Cypher Card',
-      REVOLUTIONIZE_CRYPTO_SPENDING_MESSAGE:
-        "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0% Forex Markup\n    💲 0% Loading Fee for USDC",
-      SHARE_FAILED_TITLE: 'Share failed',
-      UNABLE_TO_SHARE_CARD_DETAILS_TITLE: 'Unable to share card details',
-      ERROR_LOADING_CARD_DETAILS_TITLE: 'Error loading card details',
-      ERROR_LOADING_CARD_DETAILS_MESSAGE:
-        'Please try again. If the problem persists, contact support.',
-      START_USING_TITLE: 'Start Using',
-      CONNECT_TO_TELEGRAM_TITLE: 'Connect to telegram',
-      JUST_PRESS_THE_BUTTON_MESSAGE: 'Just press the button',
-      SEND_BUTTON: 'Send',
-      BOT_COMMAND_COPIED_MESSAGE: 'Bot Command Copied',
-      FAILED_TO_OPEN_TELEGRAM_MESSAGE: 'Failed to open telegram',
-      CONTINUE_BUTTON: 'Continue',
-      QUESTIONS_TITLE: 'Questions',
-      COUPON_REMOVED_TITLE: 'Coupon Removed',
-      YOUR_REFERRAL_CODE_HAS_BEEN_REMOVED_SUCCESSFULLY_MESSAGE:
-        'Your referral code has been removed successfully',
-      ENTER_REFERRAL_CODE_PLACEHOLDER: 'Enter referral code',
-      COPIED_TO_CLIPBOARD_MESSAGE: 'Copied to clipboard',
-      WHATSAPP_NAME: 'Whatsapp',
-      TELEGRAM_NAME: 'Telegram',
-      SHARE_NAME: 'Share',
-      SIGNED_UP_STATUS: 'Signed up',
-      COMPLETED_STATUS: 'Completed',
-      // Browser translations
-      BOOKMARK_REMOVED_SUCCESSFULLY: 'Bookmark removed successfully',
-      SEARCH_OR_ENTER_ADDRESS: 'Search or enter address',
-      // QR Code translations
-      SUPPORTED_CHAINS_LIST:
-        'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Avalanche, Optimism, Arbitrum',
-      // Component translations
-      GOT_IT: 'Got it',
-      INVITE_FRIENDS_MESSAGE:
-        'Invite your friends \nto cypher, \nearn reward\nwhen they spend',
-      // OnBoarding translations
-      INVALID_ETHEREUM_PRIVATE_KEY: 'Invalid Ethereum private key',
-      INVALID_SOLANA_PRIVATE_KEY: 'Invalid Solana private key',
-      UNABLE_TO_INITIALIZE_WEB3AUTH: 'Unable to initialize Web3Auth',
-      UNABLE_TO_LOGIN: 'Unable to login',
-      YOU_CAN_CARD_LOAD_SEND_AND_RECEIVE_TOKENS_FROM_7_NETWORK:
-        'You can card load, send and receive tokens from 7 Network',
-      SOLANA: 'Solana',
-      WE_WILL_USE_THIS_TO_SIGN_YOU_IN_OR_CREATE_AN_ACCOUNT:
-        "We'll use this to sign you in or create an account for you if you don't have one yet",
-      // MerchantRewardDetailContent translations
-      PROMOTIONAL_BONUS: 'Promotional Bonus',
-      FAILED_TO_LOAD_MERCHANT_DETAILS: 'Failed to load merchant details',
-      FAILED_TO_LOAD_MERCHANT_DATA: 'Failed to load merchant data',
-
-      // Claim Rewards translations
-      DEPOSIT_AND_BOOST_REWARD: 'Deposit and boost Reward',
-      USE_CLAIMABLE_CYPHER_TOKENS_AS_COLLATERAL:
-        'Use your claimable Cypher tokens as\ncollateral to boost rewards',
-      CLAIM_TO_WALLET: 'Claim to wallet',
-      CLAIMING: 'Claiming...',
-      PROCESSING_YOUR_CLAIM_TRANSACTION: 'Processing your claim transaction',
-      CLAIM_THE_EARNED_CYPHER_TOKEN_STRAIGHT_TO_YOUR_WALLET:
-        'Claim the earned cypher token straight to your wallet',
-      YOUR_REWARDS_ARE_AVAILABLE_TO_CLAIM:
-        'Your rewards are\navailable to claim',
-
-      // Cypher Token Bottom Sheet translations
-      CYPHER_TOKEN_TITLE: 'Cypher',
-      CYPHER_TOKEN_SUBTITLE: 'Token',
-      HOW_YOU_CAN_EARN_IT: 'How you can earn it',
-      ON_PURCHASES: 'On Purchases',
-      SPEND_USING_CYPHER_CARD_TO_EARN_TOKEN:
-        'Spend using the cypher card to earn cypher token',
-      CYPHER_TOKEN_REFERRALS: 'Referrals',
-      REFER_OTHERS_TO_CYPHER_PLATFORM: 'Refer others to the cypher platform',
-      ADDITIONAL_REWARDS: 'Additional rewards',
-      ACTIVATE_MERCHANTS_FOR_REWARDS_MULTIPLIER:
-        'Activate merchants for additional rewards multiplier, get up to 12X more cypher tokens than normal rewards',
-      HOW_TO_USE_IT: 'How to use it',
-      COMPOUND_YOUR_REWARD: 'Compound your reward',
-      USE_CYPR_TO_ACTIVATE_BRANDS:
-        'Use your $CYPR to Activate your favourite brands for additional rewards',
-      LOAD_YOUR_CARD_AND_SPEND: 'Load your card & Spend',
-      LOAD_CARD_WITH_CYPHER_TOKEN:
-        'you can load your card with cypher token, and spend across 140m+ merchants',
-      GROW_WITH_US: 'Grow with Us',
-      INVITE_FRIENDS_SHOP_AND_LOCK:
-        'Invite friends, shop often, and lock smart — your influence (and rewards) grow over time.',
-      CLAIM_REWARDS: 'Claim Rewards',
-      EARNING_BREAKDOWN: 'Earning breakdown',
-      FROM_SPENDS: 'From spends',
-      MERCHANT_SPENDS: 'Merchant Spends',
-      REFERRAL_REWARDS: 'Referral Rewards',
-      LOADING_CLAIM_DATA: 'Loading claim data...',
-      CYPHER_REWARDS_ACHIEVEMENT: 'Cypher Rewards Achievement',
-      FAILED_TO_SHARE_REWARDS_INFORMATION:
-        'Failed to share rewards information',
-      CLAIM_DATA_NOT_AVAILABLE: 'Claim Data Not Available',
-      CLAIM_DATA_NOT_AVAILABLE_DESC:
-        'Unable to retrieve claim information. Please try again.',
-      NOT_ELIGIBLE: 'Not Eligible',
-      NOT_ELIGIBLE_DESC: 'You are not eligible to claim rewards at this time.',
-
-      // Transaction Details translations
-      REFUNDED: 'Refunded',
-      ADD_COUNTRY_TO_ALLOWED_COUNTRIES:
-        'Add {country} to your allowed countries or update card settings to match your requirements.',
-      INTERNATIONAL_TRANSACTIONS_ALREADY_ENABLED:
-        'International transactions are already enabled for {country}. Retry your transaction.',
-      ADDED_COUNTRY: 'Added {country}',
-      ADD_COUNTRY: 'Add {country}',
-      CYPHER_PREMIUM: 'Premium',
-      SAVE: 'Save',
-      MORE: 'more',
-      ON_THIS_LOAD_WITH_PREMIUM: 'on this load with premium',
-      ON_THIS_TRANSACTION_WITH_PREMIUM: 'on this transaction with premium',
-      ZERO_FOREX_MARKUP: 'Zero Forex Markup',
-      ZERO_USDC_LOAD_FEE: 'Zero USDC Load Fee',
-      EXPLORE_PREMIUM: 'Explore Premium',
-      UNABLE_TO_SHARE_TRANSACTION_DETAILS:
-        'Unable to share transaction details',
-      PLEASE_TRY_AGAIN: 'Please try again',
-
-      // OnBoarding translations
-      CREATE_A_WALLET: 'Create a Wallet',
-      CHOOSE_A_MNEMONIC_PHRASE:
-        'Choose a Mnemonic phrase of either 12 or 24 words \nthat you want to create!',
-      TWELVE_WORD_PHRASE: '12 Word Phrase',
-      TWENTY_FOUR_WORD_PHRASE: '24 Word Phrase',
-      MOST_SECURE: 'Most secure',
-      SELECT_A_CHAIN: 'Select a Chain',
-      YOU_WILL_BE_ABLE_TO_ACCESS_THE_WALLET:
-        'You will be able to access the wallet based on the \nnetwork you pick below.',
-      ETHEREUM_EVM: 'Ethereum (EVM)',
-      SOLANA_CHAIN: 'Solana',
-      IMPORT_WALLET_OPTIONS: 'Import Wallet Options',
-      YOU_CAN_IMPORT_YOUR_WALLET_USING_EITHER:
-        'You can import your wallet using either a seed phrase \nor a private key.',
-      IMPORT_SEED_PHRASE: 'Import Seed Phrase',
-      LETS_GET_STARTED: "LET'S \nGET STARTED",
-      CREATE_NEW_WALLET: 'Create New Wallet',
-      SIGN_IN_WITH: 'Sign in with',
-      UNABLE_TO_LOGIN_TITLE: 'Unable to login',
-      MISSING_ISO2_CODE_OR_CARDID: 'Missing ISO2 code or cardId',
-      ADDED_COUNTRY_TO_ALLOWED_COUNTRIES:
-        'Added {country} to your allowed countries',
-      PLEASE_RETRY_YOUR_TRANSACTION_AGAIN:
-        'Please retry your transaction again.',
-      CARD_SUCCESSFULLY_ACTIVATED: 'Card Successfully Activated',
-      YOUR_CARD_IS_ACTIVE_NOW: 'Your card is active now!',
-
-      // Rewards Onboarding translations
-      WE_LL_USE_THIS_TO_SIGN_YOU_IN:
-        "We'll use this to sign you in or create an account for you if you don't have one yet",
-      IF_YOU_DON_T_HAVE_A_WALLET_YET:
-        "If you don't have a wallet yet, no worries! Creating a new one is quick and easy.",
-      IF_YOU_VE_GOT_A_WALLET:
-        "If you've got a wallet, you can easily import it or wallet connect it right here.",
-
-      // Referrals translations
-
-      // Offers and Promotion translations
-      VERTICAL_GET_TEXT: 'Vertical "Get" text',
-
-      // Rewards translations
-      ALL_TIME_SELECTION: 'All time',
-
-      // Card Controls translations
-      YOU_LL_BE_NOTIFIED_ONCE_THE_REQUEST_IS_PROCESSED:
-        "You'll be notified once the request is processed through email and telegram.",
-
-      // Referrals View All translations
-      HELPER_FORMATS_EPOCH_START_END:
-        'Helper – formats epoch start/end (seconds) to "Apr 24 to May 7 2025"',
-      IF_YEARS_ARE_SAME:
-        'If years are same -> "Apr 1 to Apr 14 2025" else "Apr 24 2024 to May 7 2025"',
-
-      // Token Reward Earned translations
-      CONGRATS_ON_SIGNING_UP_FOR_THE_CARD:
-        "Congrats on signing up for the card! You've earned it!",
-      YOU_HAVE_EARNED_TEXT: 'You have earned text',
-
-      // Enter Referral Code translations
-      GOT_AN_INVITE_CODE_FROM_A_FRIEND:
-        "Got an invite code from a friend who referred you to Cypher? Just enter it below! Remember, you won't be able to do this later.",
-
-      // Card V2 Index translations
-      HANDLES_KNOW_MORE_ACTION:
-        'Handles "Know More" action for ongoing activities',
-
-      // Options Rewards translations
-      WE_RE_COOKING_SOMETHING: "We're cooking something",
-
-      // Quote translations
-      USER_DIDN_T_SIGN_DECLINE_THE_TRANSACTION_REQUEST:
-        "User didn't sign / decline the transaction request",
-      STICKY_FOOTER_WITH_EXPLORE_PREMIUM:
-        'Sticky footer with "Explore Premium" and buttons',
-
-      // Card translations
-      YOUR_CARD_IS_SUCCESSFULLY_FROZEN:
-        "Your card is successfully frozen. You can't make any transactions. You can unfreeze it anytime.",
-
-      // Country Temporarily Unsupported translations
-      WE_LL_NOTIFY_YOU_ONCE_WE_SUPPORT_YOUR_COUNTRY:
-        "We'll notify you once we support your country, you can then continue the application from where you left.",
-
-      // Card Unlock Auth translations
-      DIDN_T_RECEIVE: "Didn't receive ? ",
-
-      // Card Reveal Auth translations
-      DIDN_T_RECEIVE_AUTH: "Didn't receive ? ",
-
-      // Merchant Reward Detail Content translations
-      REWARD_CYCLES: 'Reward Cycles',
-      MERCHANT_DATA_NOT_AVAILABLE: 'Merchant data not available',
-      YOUR_SPEND_ON_THIS_MERCHANT_EARNS: 'Your spend on this merchant, earns',
-      ALL_TRANSACTION_REWARD: 'All Transaction reward',
-      ONE_X_REWARDS: '1X Rewards',
-      MERCHANT_REWARD: 'Merchant reward',
-      BONUSES: 'Bonuses',
-      AVG_BOOSTER: 'Avg Booster',
-      BOOSTING_IS_POWERED_BY_THE_CYPHER_COMMUNITY:
-        'Boosting is powered by the Cypher community. The more people who boost a merchant, the greater the reward potential - not just for you, but for everyone using Cypher.',
-      YOU_HAVE_BOOSTED_THIS_MERCHANT_FOR: 'You have boosted this merchant for',
-      VE_CYPHER: 'veCypher',
-      YOU_HAVENT_BOOSTED_THIS_MERCHANT: "You haven't boosted this merchant",
-      BRANDS_MAY_OFFER_EXCLUSIVE_BONUSES:
-        'Brands may offer exclusive bonuses when you boost them – giving you even more back for your support.',
-      BOOST_THIS_MERCHANT: 'Boost this merchant',
-      YOUR_RECENT_TRANSACTIONS_ON_THIS_MERCHANT:
-        'Your Recent Transactions on this Merchant',
-      VIEW_ALL: 'View All',
-      PREVIOUS_REWARD_CYCLES_EARNINGS: 'Previous reward cycles earnings',
-      DISCLAIMER_THIRD_PARTY_TRADEMARKS:
-        'Disclaimer: All third-party trademarks, including logos and brand names, are the property of their respective owners. Their inclusion within this product is for identification and informational purposes only and does not imply any endorsement, sponsorship, or affiliation.',
-      BOOSTED: 'BOOSTED',
-
-      // Exclusive Offer Modal translations
-      EXCLUSIVE_OFFER_JUST_FOR_YOU: 'Exclusive offer Just for you',
-      AS_SIGNUP_REWARD: 'As Signup Reward',
-      JOIN_THE_CYPHER_CARD_TODAY_AND_ENJOY_A_BONUS:
-        'Join the Cypher Card today and enjoy a bonus of',
-      IF_YOU_SIGN_UP_WITHIN: 'if you sign up within',
-
-      // Onboarding Options translations
-      SIGN_IN_WITH_APPLE: 'Sign in with',
-
-      // Claim Reward translations
-      DEPOSIT_AND_BOOST: 'Deposit and Boost',
-      CYPHER: 'Cypher',
-
-      // Referrals Screen translations
-      WHEN_THEY_SIGN_UP_COMPLETE_KYC_AND_MAKE_FIRST_PURCHASE:
-        'When they sign up, complete KYC, and make their first card purchase —',
-      BOTH_OF_YOU_EARN_CYPR_TOKENS: 'both of you earn CYPR tokens',
-      EARN_EVEN_MORE_WHEN_THEY_FOLLOW_YOU:
-        'Earn Even More When They Follow you',
-      IF_YOUR_FRIEND_SHOPS_AT_THE_SAME_PLACE_YOU_BOOSTED:
-        'If your friend shops at the same place you "Boosted a Merchant" you both unlock bonus rewards.',
-
-      // Rewards Index translations
-      REWARD_CYCLE: 'Reward Cycle',
-
-      // Rewards Onboarding translations
-      SIGN_UP_CYPHER_CARD_AND_CLAIM: 'Sign up for Cypher card and claim',
-      SIGN_UP_NOW_AND_WIN_A_CHANCE_TO_UNLOCK:
-        'Sign up now and win a chance to unlock.',
-
-      // Browser translations
-      TODAY: 'Today',
-      YESTERDAY: 'Yesterday',
-
-      // Options Referrals translations
-      SHARE_VIA: 'Share via',
-
-      // Token Reward Earned translations
-      YOU_HAVE_EARNED: 'You have earned',
-
-      // Activity Details Modal translations
-      YOUR_FUNDING_IS_OUR_TOP_PRIORITY: 'Your funding is our top priority',
-      FETCHING_YOUR_REPORT_STATUS_IN: 'Fetching your report status in',
-      WE_HAVE_RECEIVED_YOUR_TRANSACTION_REPORT:
-        'We have received your transaction report and will update you soon.',
-      RESOLVING_IN: 'Resolving in',
-      WE_HAVE_RECEIVED_YOUR_REQUEST_AND_TEAM_WORKING:
-        'We have received your request and the team is currently working on it, will update you soon.',
-      WE_APOLOGIZE_FOR_THE_DELAY_IN_COMPLETING_FUNDING:
-        'We apologize for the delay in completing your funding.',
-      REACH_OUT_TO_SUPPORT_TEAM_FOR_QUICKER_RESOLUTION:
-        "Reach out to our support team for a quicker resolution. We understand that delays can be frustrating, but rest assured, the funds that have passed through the blockchain are secure with us, so there's no need to worry.",
-      WE_KNOW_DELAYS_ARE_FRUSTRATING_INITIATE_REQUEST:
-        'We know delays are frustrating. Initiate a request to our fund processing team to expedite your funding.',
-      REQUEST_TEAM: 'Request Team',
-      SUBMITTING: 'Submitting...',
-      PROVIDE_CORRECT_TRANSACTION_HASH_TO_HELP_TEAM:
-        'Provide the correct transaction hash to help the team process faster',
-      TRANSACTION_HASH_OPTIONAL: 'Transaction hash (optional)',
-      PASTE: 'Paste',
-      IF_YOU_DID_NOT_INITIATE_TRANSACTION_OR_FAILED:
-        'If you did not initiate the transaction or if your on-chain transaction failed, you can close this funding ticket.',
-      CLOSE_TICKET: 'Close ticket',
-      CLOSING: 'Closing...',
-      WHAT_IS_CYPR_TOKEN: 'What is $CYPR token?',
-      EARN_INCENTIVES: 'Earn incentives by voting',
-      EARN_INCENTIVES_DESCRIPTION:
-        'Certain merchants offer direct incentives to voters who vote for them. Vote for those merchants to earn incentives.',
     },
   },
 };

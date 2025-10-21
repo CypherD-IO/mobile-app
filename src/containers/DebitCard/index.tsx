@@ -27,10 +27,10 @@ import useAxios from '../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
+import CardWailtList from './cardWaitList';
 import { getReferralCode } from '../../core/asyncStorage';
 import { useFocusEffect } from '@react-navigation/native';
 import countryMaster from '../../../assets/datasets/countryMaster';
-import { OnboardingRewardProvider } from '../../contexts/OnboardingRewardContext';
 
 export interface RouteProps {
   navigation: {
@@ -48,10 +48,6 @@ export default function DebitCardScreen(props: RouteProps) {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
-
-  // State to control when UI should render actual content. Until redirect decisions are
-  // complete we just show <Loading /> to avoid flash of interim screens like wait-list.
-  const [redirectResolved, setRedirectResolved] = useState<boolean>(false);
   const { getWalletProfile, isLegacyCardClosed } = useCardUtilities();
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -102,17 +98,8 @@ export default function DebitCardScreen(props: RouteProps) {
   };
   setCardProvider();
 
-  // Ensure we invoke navigation.reset only once per mount to avoid double navigation flashes
-  const hasRedirected = React.useRef<boolean>(false);
-
   useFocusEffect(
     useCallback(() => {
-      // Return early on the very first focus to avoid immediate redirect that causes double navigation
-      // if (!isInitialFocusHandled.current) {
-      //   isInitialFocusHandled.current = true;
-      //   setLoading(false);
-      //   return;
-      // }
       let isMounted = true;
       let isLoading = false;
 
@@ -128,15 +115,6 @@ export default function DebitCardScreen(props: RouteProps) {
 
             if (!currentCardProfile) {
               currentCardProfile = await refreshProfile();
-            }
-
-            // If provider is still undefined we cannot make decisions – mark resolved
-            if (!provider) {
-              if (isMounted) {
-                setLoading(false);
-                setRedirectResolved(true);
-              }
-              return;
             }
 
             if (
@@ -156,14 +134,15 @@ export default function DebitCardScreen(props: RouteProps) {
                   get(currentCardProfile, [provider, 'preferredName']) !==
                     undefined);
 
-              if (isCardApplicationCompleted && !hasRedirected.current) {
-                hasRedirected.current = true;
+              if (isCardApplicationCompleted) {
                 props.navigation.reset({
                   index: 0,
                   routes: [
                     {
                       name: screenTitle.CARD_SCREEN,
-                      params: { cardProvider: provider },
+                      params: {
+                        cardProvider: provider,
+                      },
                     },
                   ],
                 });
@@ -212,38 +191,31 @@ export default function DebitCardScreen(props: RouteProps) {
                 });
               } else if (shouldCheckApplication(currentCardProfile)) {
                 await checkApplication(provider as CardProviders);
-                // No navigation here; mark resolved so UI can render loader/next screen
-                if (isMounted && !hasRedirected.current) {
-                  setRedirectResolved(true);
-                }
               } else {
-                if (!hasRedirected.current) {
-                  hasRedirected.current = true;
-                  props.navigation.reset({
-                    index: 0,
-                    routes: [
-                      {
-                        name: screenTitle.KYC_VERIFICATION_INTRO,
-                      },
-                    ],
-                  });
-                }
+                props.navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: screenTitle.KYC_VERIFICATION_INTRO,
+                    },
+                  ],
+                });
               }
             } else {
               const isReferralCodeApplied = await getReferralCode();
-              if (isReferralCodeApplied && !hasRedirected.current) {
-                hasRedirected.current = true;
+              if (isReferralCodeApplied) {
                 props.navigation.reset({
                   index: 0,
                   routes: [
                     {
                       name: screenTitle.ENTER_REFERRAL_CODE,
-                      params: { referralCodeFromLink: isReferralCodeApplied },
+                      params: {
+                        referralCodeFromLink: isReferralCodeApplied,
+                      },
                     },
                   ],
                 });
-              } else if (!isReferralCodeApplied && !hasRedirected.current) {
-                hasRedirected.current = true;
+              } else {
                 props.navigation.reset({
                   index: 0,
                   routes: [
@@ -253,20 +225,12 @@ export default function DebitCardScreen(props: RouteProps) {
                   ],
                 });
               }
-
-              // Reached end without redirect (edge-case)
-              if (isMounted && !hasRedirected.current) {
-                setRedirectResolved(true);
-              }
             }
           } catch (error) {
             Sentry.captureException(error);
           } finally {
             if (isMounted) {
               setLoading(false);
-              if (!hasRedirected.current) {
-                setRedirectResolved(true);
-              }
               isLoading = false;
             }
           }
@@ -317,24 +281,23 @@ export default function DebitCardScreen(props: RouteProps) {
     }
   };
 
-  if (loading || !redirectResolved) {
+  if (loading) {
     return <Loading />;
   }
 
   return (
-    <OnboardingRewardProvider>
-      <CyDView className='flex-1'>
-        <CardProviderSwitch />
-        {isReadOnlyWallet && (
-          <CyDImageBackground
-            source={AppImages.READ_ONLY_CARD_BACKGROUND}
-            className='h-full items-center justify-center'>
-            <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
-              {t<string>('TRACK_WALLET_CYPHER_CARD')}
-            </CyDText>
-          </CyDImageBackground>
-        )}
-      </CyDView>
-    </OnboardingRewardProvider>
+    <CyDView className='flex-1'>
+      <CardProviderSwitch />
+      {isReadOnlyWallet && (
+        <CyDImageBackground
+          source={AppImages.READ_ONLY_CARD_BACKGROUND}
+          className='h-full items-center justify-center'>
+          <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
+            {t<string>('TRACK_WALLET_CYPHER_CARD')}
+          </CyDText>
+        </CyDImageBackground>
+      )}
+      {!isReadOnlyWallet && <CardWailtList navigation={props.navigation} />}
+    </CyDView>
   );
 }

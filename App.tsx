@@ -77,8 +77,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CardProviders } from './src/constants/enum';
 import { get } from 'lodash';
 import { useColorScheme } from 'nativewind';
-import { GlobalBottomSheetProvider } from './src/components/v2/GlobalBottomSheetProvider';
-import { OnboardingRewardProvider } from './src/contexts/OnboardingRewardContext';
 
 // Early Sentry initialization to prevent "Sentry.wrap called before Sentry.init" warning
 
@@ -404,7 +402,7 @@ function App() {
     ],
     config: {
       screens: {
-        [screenTitle.CARD]: '*',
+        [screenTitle.PORTFOLIO]: '*',
       },
     },
     async getInitialURL() {
@@ -508,7 +506,7 @@ function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <CyDView className='flex-1 '>
+        <CyDView style={{ flex: 1, backgroundColor: 'white' }} className=''>
           {/* Configure StatusBar dynamically based on theme context for proper contrast and SafeArea behavior */}
           <ThemedStatusBar />
           <GestureHandlerRootView style={{ flex: 1 }}>
@@ -556,49 +554,45 @@ function App() {
                               state: bridgeState,
                               dispatch: bridgeDispatch,
                             }}>
-                            <GlobalBottomSheetProvider>
-                              <GlobalModal>
-                                <ThreeDSecureProvider>
-                                  <InitializeAppProvider>
-                                    <OnboardingRewardProvider>
-                                      <TabStack
-                                        deepLinkData={deepLinkData}
-                                        setDeepLinkData={setDeepLinkData}
-                                      />
-                                      <Toast
-                                        config={toastConfig}
-                                        position={'bottom'}
-                                        bottomOffset={80}
-                                      />
-                                      {<ConfirmationModals />}
-                                      <WalletConnectModal
-                                        walletConnectModalVisible={
-                                          walletConnectModalData.displayWalletConnectModal
-                                        }
-                                        setWalletConnectModalVisible={
-                                          setWalletConnectModalVisible
-                                        }
-                                        renderContent={
-                                          walletConnectModalData.renderContent
-                                        }
-                                        walletConnectApproveRequest={
-                                          walletConnectApproveRequest
-                                        }
-                                        walletConnectRejectRequest={
-                                          walletConnectRejectRequest
-                                        }
-                                        dispatchActivity={dispatchActivity}
-                                        params={walletConnectModalData.params}
-                                        request={request}
-                                        walletConnectDispatch={
-                                          walletConnectDispatch
-                                        }
-                                      />
-                                    </OnboardingRewardProvider>
-                                  </InitializeAppProvider>
-                                </ThreeDSecureProvider>
-                              </GlobalModal>
-                            </GlobalBottomSheetProvider>
+                            <GlobalModal>
+                              <ThreeDSecureProvider>
+                                <InitializeAppProvider>
+                                  <TabStack
+                                    deepLinkData={deepLinkData}
+                                    setDeepLinkData={setDeepLinkData}
+                                  />
+                                  <Toast
+                                    config={toastConfig}
+                                    position={'bottom'}
+                                    bottomOffset={140}
+                                  />
+                                  {<ConfirmationModals />}
+                                  <WalletConnectModal
+                                    walletConnectModalVisible={
+                                      walletConnectModalData.displayWalletConnectModal
+                                    }
+                                    setWalletConnectModalVisible={
+                                      setWalletConnectModalVisible
+                                    }
+                                    renderContent={
+                                      walletConnectModalData.renderContent
+                                    }
+                                    walletConnectApproveRequest={
+                                      walletConnectApproveRequest
+                                    }
+                                    walletConnectRejectRequest={
+                                      walletConnectRejectRequest
+                                    }
+                                    dispatchActivity={dispatchActivity}
+                                    params={walletConnectModalData.params}
+                                    request={request}
+                                    walletConnectDispatch={
+                                      walletConnectDispatch
+                                    }
+                                  />
+                                </InitializeAppProvider>
+                              </ThreeDSecureProvider>
+                            </GlobalModal>
                           </BridgeContext.Provider>
                         </ModalContext.Provider>
                       </ActivityContext.Provider>

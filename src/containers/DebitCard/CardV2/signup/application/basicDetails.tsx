@@ -13,12 +13,11 @@ import { screenTitle } from '../../../../../constants';
 import FormikTextInput from '../../../../../components/v2/formikInput';
 import FormikDateInput from '../../../../../components/v2/formikDatePicker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Platform, ReturnKeyTypeOptions } from 'react-native';
+import { ReturnKeyTypeOptions } from 'react-native';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
 import { t } from 'i18next';
-import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
 
 // Validation schema for the basic details form
 const BasicDetailsSchema = Yup.object().shape({
@@ -176,15 +175,6 @@ const BasicDetails = (): JSX.Element => {
               </CyDText> */}
             </KeyboardAwareScrollView>
 
-            <OfferTagComponent
-              position={{
-                bottom: Platform.OS === 'android' ? 118 : 146,
-                left: 16,
-                right: 16,
-              }}
-              collapsed={true}
-            />
-
             {/* Footer */}
             <CardApplicationFooter
               currentStep={currentStep}
@@ -192,9 +182,7 @@ const BasicDetails = (): JSX.Element => {
               currentSectionProgress={60}
               buttonConfig={{
                 title: t('NEXT'),
-                onPress: () => {
-                  handleSubmit();
-                },
+                onPress: () => handleSubmit(),
                 disabled: !isValid,
               }}
             />

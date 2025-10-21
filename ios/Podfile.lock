@@ -512,13 +512,6 @@ PODS:
   - react-native-vector-icons (11.0.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
-  - react-native-video (6.15.0):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
-    - react-native-video/Video (= 6.15.0)
-  - react-native-video/Video (6.15.0):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
   - react-native-view-shot (3.5.0):
     - React-Core
   - react-native-web-browser (1.1.0):
@@ -790,7 +783,6 @@ DEPENDENCIES:
   - react-native-rsa-native (from `../node_modules/react-native-rsa-native`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-vector-icons (from `../node_modules/@react-native-vector-icons/common`)"
-  - react-native-video (from `../node_modules/react-native-video`)
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - "react-native-web-browser (from `../node_modules/@toruslabs/react-native-web-browser`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -960,8 +952,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-vector-icons:
     :path: "../node_modules/@react-native-vector-icons/common"
-  react-native-video:
-    :path: "../node_modules/react-native-video"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
   react-native-web-browser:
@@ -1124,7 +1114,6 @@ SPEC CHECKSUMS:
   react-native-rsa-native: a7931cdda1f73a8576a46d7f431378c5550f0c38
   react-native-safe-area-context: 1c298d1cee1e333d3f44ea6dc8dfca086bd06242
   react-native-vector-icons: 198081b1b25f218e2a97d157cd05518075ec7112
-  react-native-video: 78f2088f889c1d953f9deae237b8d68984039d10
   react-native-view-shot: 247dc0fd1a3225df70029cae5a61dbfc35c3e8ae
   react-native-web-browser: bc106e2b98f1fc95d12aa5c5c36180481efbbf23
   react-native-webview: b786deb5b6c97dbaf5c4deed5ad7d3bc1687b795
