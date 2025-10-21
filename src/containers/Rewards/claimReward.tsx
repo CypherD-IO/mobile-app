@@ -20,12 +20,14 @@ import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvi
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useRewardsDistributor from '../../hooks/useRewardsDistributor';
+import useBribesClaimer from '../../hooks/useBribesClaimer';
 import { HdWalletContext } from '../../core/util';
 import { get } from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { screenTitle } from '../../constants';
 import useAxios from '../../core/HttpRequest';
 import { ClaimRewardResponse } from '../../models/rewardsClaim.interface';
+import { IBribeClaimResponse } from '../../models/bribesClaim.interface';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 
@@ -38,21 +40,22 @@ interface EarningBreakdown {
   textColor: string;
 }
 
-interface MerchantReward {
-  id: string;
-  name: string;
-  multiplier: string;
-  rewardsEarned: string;
-  referralRewards?: string;
-  totalSpend: string;
-  boosted?: boolean;
-}
+// Removed unused interfaces - keeping only what's actually used
+// interface MerchantReward {
+//   id: string;
+//   name: string;
+//   multiplier: string;
+//   rewardsEarned: string;
+//   referralRewards?: string;
+//   totalSpend: string;
+//   boosted?: boolean;
+// }
 
-interface SpendPerformance {
-  totalSpend: string;
-  avgSpendPerTransaction: string;
-  tokensEarnedPer10Spend: string;
-}
+// interface SpendPerformance {
+//   totalSpend: string;
+//   avgSpendPerTransaction: string;
+//   tokensEarnedPer10Spend: string;
+// }
 
 /**
  * Bottom Sheet Content for Claim Rewards Options
@@ -183,14 +186,21 @@ const ClaimReward: React.FC = () => {
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  // Initialize Rewards Distributor hook (must be in parent component within WagmiProvider)
+  // Initialize Rewards Distributor and Bribes Claimer hooks (must be in parent component within WagmiProvider)
   const { claimRewards } = useRewardsDistributor();
+  const { claimBribesBatch } = useBribesClaimer();
   const hdWalletContext = useContext<any>(HdWalletContext);
 
   // State for claim reward data from API
   const [claimRewardData, setClaimRewardData] =
     useState<ClaimRewardResponse | null>(null);
   const [loadingClaimData, setLoadingClaimData] = useState<boolean>(true);
+
+  // State for bribes data from API
+  const [bribesData, setBribesData] = useState<IBribeClaimResponse | null>(
+    null,
+  );
+  const [loadingBribesData, setLoadingBribesData] = useState<boolean>(true);
 
   // Get rewardsData and claimRewardData from navigation params
   const passedClaimRewardData = (route.params as any)?.claimRewardData as
@@ -223,51 +233,74 @@ const ClaimReward: React.FC = () => {
 
   // Calculate earning breakdown from API response
   const earningBreakdown: EarningBreakdown[] = React.useMemo(() => {
-    if (!claimRewardData) {
-      return [];
+    const breakdown: EarningBreakdown[] = [];
+
+    // Add protocol rewards if available
+    if (claimRewardData) {
+      const rewards = claimRewardData.rewardInfo;
+      const baseSpend = DecimalHelper.toDecimal(
+        rewards?.baseSpendAmount ?? 0,
+        18,
+      ).toFixed(2);
+      const boostedSpend = DecimalHelper.toDecimal(
+        rewards?.boostedSpend ?? 0,
+        18,
+      ).toFixed(2);
+      const boostedReferral = DecimalHelper.toDecimal(
+        rewards?.boostedReferralAmount ?? 0,
+        18,
+      ).toFixed(2);
+
+      breakdown.push(
+        {
+          id: '2',
+          type: t('FROM_SPENDS'),
+          amount: `${baseSpend} $CYPR`,
+          color: 'blue-400',
+          bgColor: 'rgba(247,198,69,0.15)',
+          textColor: '#F7C645',
+        },
+        {
+          id: '3',
+          type: t('MERCHANT_SPENDS'),
+          amount: `${boostedSpend} $CYPR`,
+          color: 'red-400',
+          bgColor: 'rgba(255,140,0,0.15)',
+          textColor: '#FF8C00',
+        },
+        {
+          id: '4',
+          type: t('REFERRAL_REWARDS'),
+          amount: `${boostedReferral} $CYPR`,
+          color: 'blue-400',
+          bgColor: 'rgba(7,73,255,0.15)',
+          textColor: '#0749FF',
+        },
+      );
     }
 
-    const rewards = claimRewardData.rewardInfo;
-    const baseSpend = DecimalHelper.toDecimal(
-      rewards?.baseSpendAmount ?? 0,
-      18,
-    ).toFixed(2);
-    const boostedSpend = DecimalHelper.toDecimal(
-      rewards?.boostedSpend ?? 0,
-      18,
-    ).toFixed(2);
-    const boostedReferral = DecimalHelper.toDecimal(
-      rewards?.boostedReferralAmount ?? 0,
-      18,
-    ).toFixed(2);
+    // Add bribes section if available
+    if (
+      bribesData?.hasClaimableBribes &&
+      bribesData?.mergedBribes &&
+      bribesData.mergedBribes.length > 0
+    ) {
+      const totalBribesValue = bribesData.summary?.totalClaimableBribes ?? 0;
+      breakdown.push({
+        id: '5',
+        type: 'Voting Bribes',
+        amount:
+          totalBribesValue > 0
+            ? `$${totalBribesValue.toFixed(2)}`
+            : `${bribesData.mergedBribes.length} veNFT(s)`,
+        color: 'purple-400',
+        bgColor: 'rgba(147,51,234,0.15)',
+        textColor: '#9333EA',
+      });
+    }
 
-    return [
-      {
-        id: '2',
-        type: t('FROM_SPENDS'),
-        amount: `${baseSpend} $CYPR`,
-        color: 'blue-400',
-        bgColor: 'rgba(247,198,69,0.15)',
-        textColor: '#F7C645',
-      },
-      {
-        id: '3',
-        type: t('MERCHANT_SPENDS'),
-        amount: `${boostedSpend} $CYPR`,
-        color: 'red-400',
-        bgColor: 'rgba(255,140,0,0.15)',
-        textColor: '#FF8C00',
-      },
-      {
-        id: '4',
-        type: t('REFERRAL_REWARDS'),
-        amount: `${boostedReferral} $CYPR`,
-        color: 'blue-400',
-        bgColor: 'rgba(7,73,255,0.15)',
-        textColor: '#0749FF',
-      },
-    ];
-  }, [claimRewardData, t]);
+    return breakdown;
+  }, [claimRewardData, bribesData, t]);
 
   /**
    * Fetches claim reward data from API
@@ -296,16 +329,50 @@ const ClaimReward: React.FC = () => {
   };
 
   /**
-   * Fetch claim reward data on component mount
+   * Fetches bribes data from API
+   * This provides the bribe tokens, candidates, and epoch ranges needed for claiming
+   */
+  const fetchBribesData = async () => {
+    try {
+      setLoadingBribesData(true);
+
+      const response = await getWithAuth('/v1/cypher-protocol/bribes/claim');
+
+      if (!response.isError && response.data) {
+        const data = response.data as IBribeClaimResponse;
+        setBribesData(data);
+
+        // Log bribes data for debugging
+        console.log('✅ Bribes data fetched successfully', {
+          hasClaimableBribes: data.hasClaimableBribes,
+          mergedBribesCount: data.mergedBribes?.length ?? 0,
+          totalClaimable: data.summary?.totalClaimableBribes ?? 0,
+        });
+      } else {
+        console.error('❌ Failed to fetch bribes data:', response.error);
+        // Don't show toast for bribes - it's optional
+      }
+    } catch (error) {
+      console.error('💥 Error fetching bribes data:', error);
+      // Don't show toast for bribes - it's optional
+    } finally {
+      setLoadingBribesData(false);
+    }
+  };
+
+  /**
+   * Fetch claim reward data and bribes data on component mount
    */
   useEffect(() => {
     if (passedClaimRewardData) {
       setClaimRewardData(passedClaimRewardData);
       setLoadingClaimData(false);
-      return;
+    } else {
+      void fetchClaimRewardData();
     }
-    void fetchClaimRewardData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // Always fetch bribes data
+    void fetchBribesData();
   }, []);
 
   /**
@@ -334,7 +401,8 @@ const ClaimReward: React.FC = () => {
 
   /**
    * Handle claim to wallet transaction
-   * Executes the claim rewards transaction on Base Sepolia
+   * Executes both the claim rewards transaction and claim bribes transactions on Base
+   * This allows users to claim both protocol rewards and bribes in a single flow
    */
   const handleClaimToWalletTransaction = async () => {
     try {
@@ -357,94 +425,163 @@ const ClaimReward: React.FC = () => {
         return;
       }
 
-      // Check if claim data is available
-      if (!claimRewardData?.claimInfo) {
-        console.error('❌ No claim data available');
+      // Check if either claim data or bribes data is available
+      const hasRewards =
+        claimRewardData?.isEligible && claimRewardData?.claimInfo;
+      const hasBribes =
+        bribesData?.hasClaimableBribes &&
+        bribesData?.mergedBribes &&
+        bribesData.mergedBribes.length > 0;
+
+      if (!hasRewards && !hasBribes) {
+        console.error('❌ No rewards or bribes available to claim');
         showModal('state', {
           type: 'error',
-          title: t('CLAIM_DATA_NOT_AVAILABLE'),
-          description: t('CLAIM_DATA_NOT_AVAILABLE_DESC'),
+          title: t('NO_CLAIMS_AVAILABLE'),
+          description:
+            'There are no rewards or bribes available to claim at this time.',
           onSuccess: hideModal,
           onFailure: hideModal,
         });
         return;
       }
 
-      // Check eligibility
-      if (!claimRewardData.isEligible) {
-        console.warn('⚠️ User is not eligible to claim rewards');
-        showModal('state', {
-          type: 'error',
-          title: t('NOT_ELIGIBLE'),
-          description: t('NOT_ELIGIBLE_DESC'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-        return;
-      }
+      let rewardsClaimedSuccess = false;
+      let bribesClaimedSuccess = false;
+      let rewardsClaimedAmount = 0;
+      let bribesClaimedCount = 0;
+      let lastTransactionHash = '';
 
-      const { claimInfo } = claimRewardData;
+      // Step 1: Claim protocol rewards if available
+      if (hasRewards && claimRewardData?.claimInfo) {
+        console.log('🎁 Claiming protocol rewards...');
 
-      // Convert proof and amount from API format to contract format
-      const proofs = claimInfo.proof.map(proofArray =>
-        proofArray.map(p => p),
-      ) as Array<Array<`0x${string}`>>;
+        const { claimInfo } = claimRewardData;
 
-      const rootIds = claimInfo.rootId.map(id => BigInt(id));
-      const values = claimInfo.amount.map(amt => BigInt(amt));
+        // Convert proof and amount from API format to contract format
+        const proofs = claimInfo.proof.map(proofArray =>
+          proofArray.map(p => p),
+        ) as Array<Array<`0x${string}`>>;
 
-      const claimParams = {
-        proofs,
-        rootIds,
-        values,
-        fromAddress,
-      };
+        const rootIds = claimInfo.rootId.map(id => BigInt(id));
+        const values = claimInfo.amount.map(amt => BigInt(amt));
 
-      // Execute claim using the same pattern as airdrop claim
-      const result = await claimRewards(claimParams);
+        const claimParams = {
+          proofs,
+          rootIds,
+          values,
+          fromAddress,
+        };
 
-      // Check if transaction was successful
-      if (!result.isError && result.hash) {
-        // Calculate the total claimed amount in CYPR tokens
-        // Sum all values and convert from Wei to tokens (18 decimals)
-        const totalClaimedWei = claimParams.values.reduce(
-          (sum, val) => sum + val,
-          0n,
-        );
-        const claimedAmount = Number(totalClaimedWei) / Math.pow(10, 18);
-        // Mark rewards as claimed in backend
-        // This is a non-blocking call - we don't want to prevent navigation if it fails
-        try {
-          const currentTimestamp = Math.floor(Date.now() / 1000);
-          const markClaimedResponse = await patchWithAuth(
-            '/v1/cypher-protocol/user/mark-claimed',
-            {
-              unixTimestamp: currentTimestamp,
-            },
+        // Execute claim using the same pattern as airdrop claim
+        const result = await claimRewards(claimParams);
+
+        // Check if transaction was successful
+        if (!result.isError && result.hash) {
+          console.log('✅ Protocol rewards claimed successfully', result.hash);
+          rewardsClaimedSuccess = true;
+          lastTransactionHash = result.hash;
+
+          // Calculate the total claimed amount in CYPR tokens
+          // Sum all values and convert from Wei to tokens (18 decimals)
+          const totalClaimedWei = claimParams.values.reduce(
+            (sum, val) => sum + val,
+            0n,
           );
+          rewardsClaimedAmount = Number(totalClaimedWei) / Math.pow(10, 18);
 
-          if (markClaimedResponse.isError) {
+          // Mark rewards as claimed in backend
+          // This is a non-blocking call - we don't want to prevent navigation if it fails
+          try {
+            const currentTimestamp = Math.floor(Date.now() / 1000);
+            const markClaimedResponse = await patchWithAuth(
+              '/v1/cypher-protocol/user/mark-claimed',
+              {
+                unixTimestamp: currentTimestamp,
+              },
+            );
+
+            if (markClaimedResponse.isError) {
+              console.error(
+                '⚠️ Failed to mark rewards as claimed on backend:',
+                markClaimedResponse.error,
+              );
+              // Don't block the user flow - just log the error
+            }
+          } catch (markClaimedError) {
             console.error(
-              '⚠️ Failed to mark rewards as claimed on backend:',
-              markClaimedResponse.error,
+              '💥 Exception while marking rewards as claimed:',
+              markClaimedError,
             );
             // Don't block the user flow - just log the error
           }
-        } catch (markClaimedError) {
-          console.error(
-            '💥 Exception while marking rewards as claimed:',
-            markClaimedError,
+        } else {
+          console.error('❌ Protocol rewards claim failed:', result.error);
+          // Don't fail the entire process - continue to bribes if available
+        }
+      }
+
+      // Step 2: Claim bribes if available
+      if (hasBribes && bribesData?.mergedBribes) {
+        console.log('🎁 Claiming bribes...');
+
+        // Prepare claim parameters for all merged bribes
+        const claimParams = bribesData.mergedBribes.map(bribe => ({
+          tokenId: parseInt(bribe.veNFTId, 10),
+          bribeTokens: bribe.bribeTokens,
+          candidates: bribe.candidates,
+          fromTimestamp: bribe.epochRange.from,
+          untilTimestamp: bribe.epochRange.until,
+        }));
+
+        // Execute batch claim for all bribes
+        const results = await claimBribesBatch(claimParams);
+
+        // Count successes
+        const successCount = results.filter(r => !r.isError).length;
+
+        if (successCount > 0) {
+          console.log(
+            `✅ Bribes claimed successfully: ${successCount}/${results.length}`,
           );
-          // Don't block the user flow - just log the error
+          bribesClaimedSuccess = true;
+          bribesClaimedCount = successCount;
+
+          // Get last successful transaction hash
+          const lastSuccessful = results
+            .reverse()
+            .find(r => !r.isError && r.hash);
+          if (lastSuccessful?.hash) {
+            lastTransactionHash = lastSuccessful.hash;
+          }
+
+          // Refresh bribes data after successful claim
+          void fetchBribesData();
+        } else {
+          console.error('❌ All bribe claims failed');
+        }
+      }
+
+      // Show results based on what was claimed
+      if (rewardsClaimedSuccess || bribesClaimedSuccess) {
+        let successMessage = '';
+
+        if (rewardsClaimedSuccess && bribesClaimedSuccess) {
+          successMessage = `Successfully claimed ${rewardsClaimedAmount.toFixed(2)} $CYPR rewards and bribes from ${bribesClaimedCount} veNFT(s)!`;
+        } else if (rewardsClaimedSuccess) {
+          successMessage = t('CONGRATS_ON_SIGNING_UP_FOR_THE_CARD');
+        } else if (bribesClaimedSuccess) {
+          successMessage = `Successfully claimed bribes from ${bribesClaimedCount} veNFT(s)!`;
         }
 
         // Navigate to TokenRewardEarned screen with claimed amount
         const navigationParams = {
-          rewardAmount: claimedAmount,
+          rewardAmount: rewardsClaimedAmount || 0,
           tokenSymbol: '$CYPR',
-          message: t('CONGRATS_ON_SIGNING_UP_FOR_THE_CARD'),
-          transactionHash: result.hash,
+          message: successMessage,
+          transactionHash: lastTransactionHash,
           fromRewardsClaim: true, // Flag to indicate coming from rewards claim
+          bribesClaimedCount: bribesClaimedSuccess ? bribesClaimedCount : 0,
         };
 
         (navigation as any).navigate(
@@ -455,19 +592,12 @@ const ClaimReward: React.FC = () => {
         // Refresh claim reward data after successful claim
         void fetchClaimRewardData();
       } else {
-        // Show error modal if claim failed
-        console.error('❌ Claim failed:', result.error);
-        const errorMessage =
-          result.error instanceof Error
-            ? result.error.message
-            : typeof result.error === 'string'
-              ? result.error
-              : t('CLAIM_FAILED_DESC');
-
+        // Show error modal if all claims failed
+        console.error('❌ All claims failed');
         showModal('state', {
           type: 'error',
           title: t('CLAIM_FAILED'),
-          description: errorMessage,
+          description: 'Failed to claim rewards and bribes. Please try again.',
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -520,9 +650,9 @@ const ClaimReward: React.FC = () => {
     <>
       {/* Top inset background – white in dark mode, black in light mode */}
       <CyDView
+        className={isDarkMode ? 'bg-white' : 'bg-black'}
         style={{
           height: insets.top,
-          backgroundColor: isDarkMode ? '#FFFFFF' : '#000000',
         }}
       />
 
@@ -548,14 +678,18 @@ const ClaimReward: React.FC = () => {
       <CyDScrollView
         className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}
         showsVerticalScrollIndicator={false}>
-        {loadingClaimData ? (
+        {loadingClaimData || loadingBribesData ? (
           <CyDView className='flex-1 items-center justify-center py-20'>
             <ActivityIndicator
               size='large'
               color={isDarkMode ? '#ffffff' : '#000000'}
             />
             <CyDText className='text-n200 text-[16px] mt-4'>
-              {t('LOADING_CLAIM_DATA')}
+              {loadingClaimData && loadingBribesData
+                ? 'Loading rewards and bribes data...'
+                : loadingClaimData
+                  ? t('LOADING_CLAIM_DATA')
+                  : 'Loading bribes data...'}
             </CyDText>
           </CyDView>
         ) : (
