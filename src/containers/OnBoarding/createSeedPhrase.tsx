@@ -1,20 +1,26 @@
-import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NativeModules, StyleSheet } from 'react-native';
 import * as bip39 from 'bip39';
-// @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
-import { QRCode } from 'react-native-custom-qr-codes';
-import { AppImagesMap } from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import Loading from '../../components/v2/loading';
+import CyDModalLayout from '../../components/v2/modal';
+import ReadOnlySeedPhraseBlock from '../../components/v2/readOnlySeedPhraseBlock';
 import { ButtonType, SECRET_TYPES, SeedPhraseType } from '../../constants/enum';
 import {
   generateWalletFromMnemonic,
   IAccountDetailWithChain,
 } from '../../core/Address';
 import { saveCredentialsToKeychain } from '../../core/Keychain';
-import { copyToClipboard, HdWalletContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import {
   CyDIcons,
@@ -25,39 +31,13 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import { setFirstLaunchAfterWalletCreation } from '../../core/asyncStorage';
-import Toast from 'react-native-toast-message';
-import { toastConfig } from '../../components/v2/toast';
-import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 
 interface RouteParams {
   seedPhraseType: SeedPhraseType;
 }
 
-// Component to render individual seed phrase word with number
-const SeedPhraseWord = ({
-  word,
-  index,
-  totalWords,
-}: {
-  word: string;
-  index: number;
-  totalWords: number;
-}) => {
-  // Check if this word is in the last row (last 3 words)
-  const isLastRow = index > totalWords - 3;
-
-  return (
-    <CyDView
-      className={`w-[33.33%] px-[4px] flex-row items-center justify-start ${isLastRow ? 'mb-0' : 'mb-[24px]'}`}>
-      <CyDText className='text-primaryText text-[16px] font-normal text-center'>
-        {index}. {word}
-      </CyDText>
-    </CyDView>
-  );
-};
-
 function CreateSeedPhrase() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
   const { t } = useTranslation();
@@ -71,162 +51,42 @@ function CreateSeedPhrase() {
     privateKey: string;
   }>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [isProceeding, setIsProceeding] = useState<boolean>(false);
+  const [isTipsVisible, setTipsVisible] = useState<boolean>(false);
+  const waysToSecureSeedPhrase = [
+    t('WRITE_DOWN_SEED_PHRASE'),
+    t('USE_STEEL_BACKUPS'),
+    t('USE_PASSWORD_MANAGER'),
+    t('NEVER_STORE_ON_INTERNET_DEVICES'),
+  ];
   const [showSeedPhrase, setShowSeedPhrase] = useState<boolean>(false);
-  const { showBottomSheet } = useGlobalBottomSheet();
-
   const maskedSeedPhrase =
     seedPhraseType === SeedPhraseType.TWELVE_WORDS
       ? new Array(12).fill('******')
       : new Array(24).fill('******');
   const hdWalletContext = useContext<any>(HdWalletContext);
 
-  /**
-   * Generates a new mnemonic seed phrase based on the specified type
-   * Uses bip39 library to create either 12 or 24 word seed phrases
-   */
   const generateMnemonic = async () => {
-    try {
-      const generatedSeedPhrase =
-        seedPhraseType === SeedPhraseType.TWELVE_WORDS
-          ? bip39.generateMnemonic(128)
-          : bip39.generateMnemonic(256);
-      setSeedPhrase(generatedSeedPhrase);
-    } catch (error) {
-      console.error('Error generating mnemonic:', error);
-      // Handle error appropriately - could show error message or navigate back
-    }
+    const generatedSeedPhrase =
+      seedPhraseType === SeedPhraseType.TWELVE_WORDS
+        ? bip39.generateMnemonic(128)
+        : bip39.generateMnemonic(256);
+    setSeedPhrase(generatedSeedPhrase);
   };
 
-  /**
-   * Generates wallet data from the provided mnemonic
-   * Creates wallet with index 0 by default for seed phrase imports
-   */
   const generateWallet = async (mnemonic: string, trkEvent: string) => {
-    try {
-      const generatedWallet = await generateWalletFromMnemonic(
-        mnemonic,
-        0, // when imported via seedphrase we generate with index 0 by default
-      );
-      setWallet(generatedWallet);
-    } catch (error) {
-      console.error('Error generating wallet:', error);
-      // Handle error appropriately
-    }
+    const generatedWallet = await generateWalletFromMnemonic(
+      mnemonic,
+      0, // when imported via seedphrase we generate with index 0 by default
+    );
+    setWallet(generatedWallet);
   };
 
-  /**
-   * Toggles the visibility of the seed phrase between shown and masked states
-   */
-  const toggleSeedPhraseVisibility = () => {
-    setShowSeedPhrase(!showSeedPhrase);
-  };
-
-  /**
-   * Copies the seed phrase to clipboard without showing any toast notification
-   */
-  const handleCopySeedPhrase = () => {
-    copyToClipboard(seedPhrase);
-    Toast.show({
-      type: 'success',
-      text1: 'Copied to clipboard',
-    });
-  };
-
-  /**
-   * Saves the wallet credentials to keychain and proceeds to portfolio
-   * This completes the wallet creation process
-   */
-  const proceedToPortfolio = async () => {
-    setIsProceeding(true);
-    if (wallet) {
-      try {
-        await saveCredentialsToKeychain(
-          hdWalletContext,
-          wallet,
-          SECRET_TYPES.MENEMONIC,
-        );
-        await setFirstLaunchAfterWalletCreation(true);
-        // After successful save, navigation or additional logic can occur here.
-      } catch (error) {
-        console.error('Error saving credentials:', error);
-        // Handle error appropriately
-      } finally {
-        setIsProceeding(false);
-      }
-    }
-  };
-
-  /**
-   * Displays the seed phrase QR code inside a global bottom sheet
-   */
-  const handleShowQR = () => {
-    const ethAddress =
-      wallet?.accounts.find(a => a.name === 'ethereum')?.address ?? '';
-    const formattedAddress = ethAddress
-      ? `${ethAddress.slice(0, 6)}...${ethAddress.slice(-6)}`
-      : '';
-
-    showBottomSheet({
-      id: 'seed-phrase-qr',
-      snapPoints: ['60%', '80%'],
-      showCloseButton: true,
-      scrollable: true,
-      content: (
-        <CyDView className='bg-n20 px-[25px] pb-[54px] pt-[16px]'>
-          <CyDText className='font-bold text-[22px] text-center mb-[24px]'>
-            Recovery Phrase
-          </CyDText>
-
-          {/* Ethereum Address Display */}
-          {formattedAddress !== '' && (
-            <CyDView className='items-center'>
-              <CyDText className='text-n200 text-[14px] font-medium'>
-                {formattedAddress}
-              </CyDText>
-            </CyDView>
-          )}
-
-          <CyDView className='flex justify-center items-center mt-[16px] mb-[44px]'>
-            <CyDView className='rounded-[12px] p-[8px] bg-white'>
-              <QRCode
-                content={seedPhrase}
-                codeStyle='dot'
-                size={180}
-                logo={AppImagesMap.common.QR_LOGO}
-                logoSize={60}
-              />
-            </CyDView>
-          </CyDView>
-
-          {/* Security Warning */}
-          <CyDView className='bg-red400 rounded-[12px] p-[16px] mx-[8px] mb-[8px]'>
-            <CyDView className='flex-row items-start'>
-              <CyDMaterialDesignIcons
-                name='school'
-                size={24}
-                className='text-white mr-[12px] mt-[2px] flex-shrink-0'
-              />
-              <CyDText className='text-white text-[14px] flex-1 leading-[20px] font-medium'>
-                Please refrain from sharing this QR code with anyone or any
-                unknown applications. Anyone who has access to this QR code can
-                gain access to all of your assets.
-              </CyDText>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-      ),
-    });
-  };
-
-  // Generate mnemonic on component mount
   useEffect(() => {
     if (seedPhrase === '') {
       void generateMnemonic();
     }
   }, []);
 
-  // Handle screenshot prevention on Android
   useEffect(() => {
     if (isFocused) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
@@ -235,7 +95,6 @@ function CreateSeedPhrase() {
     }
   }, [isFocused]);
 
-  // Generate wallet when seed phrase is available
   useEffect(() => {
     if (seedPhrase) {
       void generateWallet(seedPhrase, 'create_wallet');
@@ -243,156 +102,207 @@ function CreateSeedPhrase() {
     }
   }, [seedPhrase]);
 
+  const toggleSeedPhraseVisibility = () => {
+    setShowSeedPhrase(!showSeedPhrase);
+  };
+
+  const proceedToPortfolio = async () => {
+    if (wallet) {
+      void saveCredentialsToKeychain(
+        hdWalletContext,
+        wallet,
+        SECRET_TYPES.MENEMONIC,
+      );
+    }
+  };
+
   return (
-    <CyDView className='bg-n20 flex-1'>
-      <Toast config={toastConfig} position={'bottom'} bottomOffset={140} />
+    <CyDSafeAreaView className='bg-n20 flex-1'>
+      <CyDTouchView
+        className='flex flex-row px-[16px] py-[13px] items-center justify-between'
+        onPress={() => {
+          navigation.goBack();
+        }}>
+        <CyDIcons name='arrow-left' size={24} className='text-base400' />
+        <CyDText className='font-bold text-[24px]'>
+          {t('CREATE_SEEDPHRASE_TITLE')}
+        </CyDText>
+        <CyDView />
+      </CyDTouchView>
+      <CyDModalLayout
+        setModalVisible={() => {
+          setTipsVisible(false);
+        }}
+        isModalVisible={isTipsVisible}
+        style={styles.modalLayout}
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}>
+        <CyDView
+          className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          <CyDTouchView
+            onPress={() => {
+              setTipsVisible(false);
+            }}
+            className={'z-[50] self-end'}>
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
+            />
+          </CyDTouchView>
+          <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
+            {t('HOW_TO_SECURE')}
+          </CyDText>
+          <CyDView className={'mx-[20px] my-[10px]'}>
+            {waysToSecureSeedPhrase.map(item => {
+              return (
+                <CyDView
+                  className={'flex flex-row items-center my-[4px]'}
+                  key={item}>
+                  <CyDView className='w-2 h-2 bg-p150 rounded-full mr-3' />
+                  <CyDText className={'leading-[25px] font-semibold'}>
+                    {item}
+                  </CyDText>
+                </CyDView>
+              );
+            })}
+          </CyDView>
+        </CyDView>
+      </CyDModalLayout>
+
       {loading ? (
         <Loading />
       ) : (
         <CyDView className='flex-1'>
-          <CyDScrollView
-            className='flex-1'
-            showsVerticalScrollIndicator={false}>
-            {/* Header with Logo and Title */}
-            <CyDView className='items-center pt-[30px] pb-[30px]'>
-              <CyDView className='w-[64px] h-[64px] bg-blue-500 rounded-[12px] items-center justify-center mb-[24px]'>
-                <CyDMaterialDesignIcons
-                  name='seed'
-                  size={32}
-                  className='text-white'
-                />
-              </CyDView>
-
-              <CyDText className='text-primaryText text-[18px] font-bold text-center px-[40px] leading-[26px]'>
-                These words unlock your wallet,{'\n'}Keep them safe.
-              </CyDText>
-            </CyDView>
-
-            {/* Seed Phrase Grid */}
-            {seedPhrase.length > 0 && (
-              <CyDView className='px-[24px] mb-[16px]'>
-                {/* Show/Hide Toggle */}
-                <CyDView className='flex-row justify-end mb-[16px]'>
-                  <CyDTouchView
-                    onPress={toggleSeedPhraseVisibility}
-                    className='flex-row items-center'>
-                    <CyDMaterialDesignIcons
-                      name={showSeedPhrase ? 'eye-outline' : 'eye-off-outline'}
-                      size={20}
-                      className='text-base400 mr-[8px]'
-                    />
-                    <CyDText className='text-base400 text-[14px] font-medium'>
-                      {showSeedPhrase ? 'Hide' : 'Show'}
+          <CyDView className={'bg-n20 flex-col justify-between flex-1'}>
+            <CyDView className='flex-1'>
+              <CyDScrollView>
+                <CyDView>
+                  <CyDView
+                    className={
+                      'flex items-center justify-center py-[20px] px-[30px]'
+                    }>
+                    <CyDText className={'text-[16px] text-center'}>
+                      {t('CREATE_SEED_PHRASE_INFO')}
                     </CyDText>
-                  </CyDTouchView>
+                  </CyDView>
+                  <CyDView
+                    className={'flex items-center justify-center px-[30px]'}>
+                    <CyDText className={'text-[14px] font-bold text-center'}>
+                      {t('CREATE_SEED_PHRASE_WARNING')}
+                    </CyDText>
+                  </CyDView>
                 </CyDView>
-
-                {/* Seed Phrase Words Grid */}
-                <CyDView className='flex-row flex-wrap justify-start px-[8px] py-[16px] bg-base40 rounded-[12px]'>
-                  {(showSeedPhrase
-                    ? seedPhrase.split(' ')
-                    : maskedSeedPhrase
-                  ).map((word, index) => (
-                    <SeedPhraseWord
-                      key={index}
-                      word={word}
-                      index={index + 1}
-                      totalWords={
-                        showSeedPhrase
-                          ? seedPhrase.split(' ').length
-                          : maskedSeedPhrase.length
-                      }
-                    />
-                  ))}
-                </CyDView>
-              </CyDView>
-            )}
-
-            {/* Recommendation Section */}
-            <CyDView className='bg-base40 rounded-[8px] p-[16px] mx-[24px] mb-[16px]'>
-              <CyDView className='flex-row items-start'>
-                <CyDMaterialDesignIcons
-                  name='school'
-                  size={24}
-                  className='text-n200 mr-[12px] mt-[2px]'
-                />
-                <CyDText className='text-n200 text-[12px] flex-1 leading-[16px]'>
-                  We recommend writing down this seed on paper and storing it
-                  securely in a place only you can access.
-                </CyDText>
-              </CyDView>
+                {seedPhrase.length > 0 && (
+                  <>
+                    <CyDView
+                      className={'flex flex-row justify-end mt-[4px] h-[18px]'}>
+                      {showSeedPhrase && (
+                        <CyDTouchView
+                          onPress={() => {
+                            toggleSeedPhraseVisibility();
+                          }}>
+                          <CyDMaterialDesignIcons
+                            name={'eye-outline'}
+                            size={20}
+                            className='text-base400 mr-[12px]'
+                          />
+                        </CyDTouchView>
+                      )}
+                      {!showSeedPhrase && (
+                        <CyDTouchView
+                          onPress={() => {
+                            toggleSeedPhraseVisibility();
+                          }}>
+                          <CyDMaterialDesignIcons
+                            name={'eye-off-outline'}
+                            size={20}
+                            className='text-base400 mr-[12px]'
+                          />
+                        </CyDTouchView>
+                      )}
+                    </CyDView>
+                    {showSeedPhrase && (
+                      <CyDView
+                        className={'w-full flex flex-row justify-center'}>
+                        <CyDView
+                          className={
+                            'flex flex-row flex-wrap justify-center items-center text-center mt-[5%] py-[6px]'
+                          }>
+                          {seedPhrase.split(' ').map((word, index) => {
+                            return (
+                              <ReadOnlySeedPhraseBlock
+                                key={index}
+                                content={word}
+                                index={++index}
+                                onBlockTouch={undefined}
+                                clickEvent={undefined}
+                              />
+                            );
+                          })}
+                        </CyDView>
+                      </CyDView>
+                    )}
+                    {!showSeedPhrase && (
+                      <CyDView
+                        className={'w-full flex flex-row justify-center'}>
+                        <CyDView
+                          className={
+                            'flex flex-row flex-wrap justify-center items-center text-center mt-[5%] py-[6px]'
+                          }>
+                          {maskedSeedPhrase.map((word, index) => {
+                            return (
+                              <ReadOnlySeedPhraseBlock
+                                key={index}
+                                content={word}
+                                index={++index}
+                                onBlockTouch={undefined}
+                                clickEvent={undefined}
+                              />
+                            );
+                          })}
+                        </CyDView>
+                      </CyDView>
+                    )}
+                  </>
+                )}
+                <CyDTouchView
+                  onPress={() => {
+                    setTipsVisible(true);
+                  }}
+                  className={'m-[22px] flex flex-row justify-end'}>
+                  <CyDMaterialDesignIcons
+                    name='information-outline'
+                    size={16}
+                    className='text-base400 mr-[6px] mt[2px]'
+                  />
+                  <CyDText className={'text-[14px] font-bold'}>
+                    {t('HOW_TO_SECURE_SEED_PHRASE')}
+                  </CyDText>
+                </CyDTouchView>
+              </CyDScrollView>
             </CyDView>
 
-            {/* Action Buttons */}
-            <CyDView className='flex-row justify-center px-[20px] mb-[30px]'>
-              <CyDTouchView
-                onPress={handleShowQR}
-                className='flex-row items-center justify-center bg-n0 border border-n40 rounded-[25px] py-[12px] px-[24px] mr-[12px] flex-1'>
-                <CyDMaterialDesignIcons
-                  name='qrcode'
-                  size={16}
-                  className='text-base400 mr-[8px]'
-                />
-                <CyDText className='text-base400 text-[14px] font-bold text-center'>
-                  Show QR
-                </CyDText>
-              </CyDTouchView>
-
-              <CyDTouchView
-                onPress={handleCopySeedPhrase}
-                className='flex-row items-center justify-center bg-n0 border border-n40 rounded-[25px] py-[12px] px-[24px] flex-1'>
-                <CyDMaterialDesignIcons
-                  name='content-copy'
-                  size={16}
-                  className='text-base400 mr-[8px]'
-                />
-                <CyDText className='text-base400 text-[14px] font-bold text-center'>
-                  Copy Seed
-                </CyDText>
-              </CyDTouchView>
-            </CyDView>
-          </CyDScrollView>
-
-          {/* Fixed Bottom Section */}
-          <CyDSafeAreaView edges={['bottom']} className='bg-n20 pt-[8px]'>
-            {/* Continue Button */}
-            <CyDView className='px-[20px] mb-[20px]'>
-              <Button
-                title='Continue'
-                loading={isProceeding}
-                onPress={() => {
-                  void proceedToPortfolio();
-                }}
-                type={ButtonType.PRIMARY}
-                style='w-full rounded-[30px]'
-                titleStyle='text-[20px] font-bold'
-                loaderStyle={styles.loaderStyle}
-                paddingY={14}
-              />
-            </CyDView>
-
-            {/* Security Audit */}
-            <CyDView className='flex-row px-[20px] mb-[4px] items-center justify-center'>
-              <CyDMaterialDesignIcons
-                name='shield-check'
-                size={16}
-                className='text-base400 mr-[6px]'
-              />
-              <CyDText className='text-primaryText text-[10px] font-bold text-center'>
-                {t('CYPHER_AUDIT_TEXT')}
-              </CyDText>
-            </CyDView>
-          </CyDSafeAreaView>
+            <Button
+              title={t('CONFIRM')}
+              onPress={() => {
+                void proceedToPortfolio();
+              }}
+              type={ButtonType.PRIMARY}
+              style='mt-[5px] w-[80%] h-[50px] mx-auto mb-[10px]'
+            />
+          </CyDView>
         </CyDView>
       )}
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
 
-export default CreateSeedPhrase;
-
 const styles = StyleSheet.create({
-  loaderStyle: {
-    height: 32,
+  modalLayout: {
+    margin: 0,
+    justifyContent: 'flex-end',
   },
 });
+
+export default CreateSeedPhrase;

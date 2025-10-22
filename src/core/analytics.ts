@@ -122,9 +122,6 @@ export const AnalyticEvent = {
   ETHEREUM_DEEPLINK_TOKEN_SELECTED: 'ethereum_deeplink_token_selected',
   ETHEREUM_DEEPLINK_AMOUNT_ENTERED: 'ethereum_deeplink_amount_entered',
   ETHEREUM_DEEPLINK_SEND_INITIATED: 'ethereum_deeplink_send_initiated',
-  EXCLUSIVE_OFFER_MODAL_VIEWED: 'exclusive_offer_modal_viewed',
-  EXCLUSIVE_OFFER_SEE_DETAILS_CLICKED: 'exclusive_offer_see_details_clicked',
-  EXCLUSIVE_OFFER_GOT_IT_CLICKED: 'exclusive_offer_got_it_clicked',
 };
 
 export const logAnalyticsToFirebase = (

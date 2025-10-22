@@ -39,7 +39,7 @@ export default function useAxios() {
 
   let token = globalContext.globalState.token;
 
-  // Create a fresh response object per request to avoid cross-call mutations
+  const response: IHttpResponse = { isError: false };
 
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const baseURL: string = ARCH_HOST;
@@ -130,10 +130,6 @@ export default function useAxios() {
     body = {},
     config?: AxiosRequestConfig,
   ): Promise<IHttpResponse> {
-    // IMPORTANT: Do NOT reuse the same response object across multiple requests.
-    // Creating a new object here ensures callers don't see stale/overwritten data
-    // when multiple sequential requests are made and their references are held.
-    const response: IHttpResponse = { isError: false };
     let shouldRetry = 0;
 
     do {

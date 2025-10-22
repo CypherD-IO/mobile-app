@@ -44,16 +44,6 @@ export type TransactionResponse =
       error: unknown;
     };
 
-export type ReadContractResponse<T = unknown> =
-  | {
-      isError: false;
-      data: T;
-    }
-  | {
-      isError: true;
-      error: unknown;
-    };
-
 export type CheckAllowanceResponse = Promise<
   | {
       isError: false;

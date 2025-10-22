@@ -23,25 +23,24 @@ import {
 import PageHeader from '../../components/PageHeader';
 
 interface RouteParams {
+  setPinAuthentication: (value: boolean) => void;
   pin: string;
   backButton: boolean;
   changePinValue: boolean;
 }
-
-interface ConfirmPinProps {
-  setPinAuthentication?: (value: boolean) => void;
-}
-
-export default function ConfirmPin({
-  setPinAuthentication = () => {},
-}: ConfirmPinProps): JSX.Element {
+export default function ConfirmPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { pin, backButton = false, changePinValue = false } = route.params;
+  const {
+    setPinAuthentication = value => {},
+    pin,
+    backButton = false,
+    changePinValue = false,
+  } = route.params;
   const [wrongPin, setWrongPin] = useState(false); // state to show or hide the Wrong Pin text
   const hdWallet = useContext<any>(HdWalletContext);
 
-  const handleBackButton = (): boolean => {
+  const handleBackButton = () => {
     navigation.goBack();
     return true;
   };
@@ -53,7 +52,7 @@ export default function ConfirmPin({
     };
   }, []);
 
-  const PINHeader = (): JSX.Element => {
+  const PINHeader = () => {
     return (
       <>
         {backButton && (
@@ -75,7 +74,7 @@ export default function ConfirmPin({
     );
   };
 
-  let savePinValue = async (pinConfirm: string): Promise<void> => {
+  let savePinValue = async (pinConfirm: string) => {
     if (pin !== pinConfirm) {
       setWrongPin(true);
       return;
@@ -92,7 +91,7 @@ export default function ConfirmPin({
     setPinAuthentication(true);
   };
   if (changePinValue) {
-    savePinValue = async (pinConfirm: string): Promise<void> => {
+    savePinValue = async (pinConfirm: string) => {
       if (pin !== pinConfirm) {
         setWrongPin(true);
         return;
@@ -110,7 +109,7 @@ export default function ConfirmPin({
     };
   }
 
-  const PIN = (): JSX.Element => {
+  const PIN = () => {
     return (
       <CyDView>
         <CyDView className={'mt-[15%]'}>

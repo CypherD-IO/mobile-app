@@ -95,10 +95,7 @@ export default function TelegramSetup() {
         `https://t.me/CypherHQBot?text=${encodeURIComponent(botCommand)}`,
       );
     } catch (err) {
-      showToast(
-        t('FAILED_TO_OPEN_TELEGRAM_MESSAGE', 'Failed to open telegram'),
-        'error',
-      );
+      showToast('Failed to open telegram', 'error');
       Sentry.captureException(err);
     }
   };
@@ -170,7 +167,7 @@ export default function TelegramSetup() {
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
                   <CyDText className='text-white font-bold text-[18px] font-manrope'>
-                    {t('CONNECT_TO_TELEGRAM_TITLE', 'Connect to telegram')}
+                    {t('Connect to telegram')}
                   </CyDText>
                 </CyDTouchView>
               </CyDView>
@@ -189,15 +186,10 @@ export default function TelegramSetup() {
                   </CyDText>
                 </CyDText>
                 <CyDView className='flex-row items-center mt-[12px]'>
-                  <CyDText>
-                    {t(
-                      'JUST_PRESS_THE_BUTTON_MESSAGE',
-                      'Just press the button',
-                    )}
-                  </CyDText>
+                  <CyDText>{'Just press the button'}</CyDText>
                   <CyDView className='mx-[4px] bg-[#54A9EB] rounded-[6px] px-[8px] py-[2px] text-base400'>
                     <CyDText className=' text-white text-[10px]'>
-                      {t('SEND_BUTTON', 'Send')}
+                      {'Send'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -212,9 +204,7 @@ export default function TelegramSetup() {
                   className='mx-[4px] bg-n30 border border-n50 rounded-[6px] px-[8px] py-[2px] text-base400 w-[120px] flex-row items-center mt-[12px]'
                   onPress={() => {
                     copyToClipboard(`/link ${telegramConnectionId}`);
-                    showToast(
-                      t('BOT_COMMAND_COPIED_MESSAGE', 'Bot Command Copied'),
-                    );
+                    showToast(t('Bot Command Copied'));
                   }}>
                   <CyDText className=' text-base400 text-[14px] font-bold'>
                     {'/link ' + telegramConnectionId}

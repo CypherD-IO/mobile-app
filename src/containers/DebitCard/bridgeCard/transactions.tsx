@@ -177,7 +177,7 @@ export default function CardTransactions() {
     if (pullToRefresh) {
       txnRetrievalOffset.current = undefined;
     }
-    let txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=15&includeRewards=true`;
+    let txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=15`;
     if (txnRetrievalOffset.current) {
       txnURL += `&offset=${txnRetrievalOffset.current}`;
     }

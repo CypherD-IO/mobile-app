@@ -762,11 +762,8 @@ const AIRDROP_TOKEN_WIGGLE = {
 const TREASURE_CHEST = {
   uri: `${S3_BUCKET_URL_ICONS}/treasureChest.png`,
 };
-const PROFILE_AVATAR = require('./profileAvatar.png');
-const SUCCESS_TICK_3D = {
-  uri: `${S3_BUCKET_URL_ICONS}/successTick3d.png`,
-};
 
+const PROFILE_AVATAR = require('./profileAvatar.png');
 export const AppImagesMap = {
   common: {
     EMPTY_PERSON,
@@ -1087,7 +1084,6 @@ export const AppImagesMap = {
     REWARD_BG_LIGHT,
     GREEN_CHECK_MARK_WHITE_BORDER,
     TREASURE_CHEST,
-    SUCCESS_TICK_3D,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1413,7 +1409,6 @@ enum AppImages {
   REWARD_BG_LIGHT = 'REWARD_BG_LIGHT',
   GREEN_CHECK_MARK_WHITE_BORDER = 'GREEN_CHECK_MARK_WHITE_BORDER',
   TREASURE_CHEST = 'TREASURE_CHEST',
-  SUCCESS_TICK_3D = 'SUCCESS_TICK_3D',
 }
 
 export default AppImages;

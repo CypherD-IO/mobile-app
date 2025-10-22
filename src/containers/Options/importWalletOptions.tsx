@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   CyDImageBackground,
   CyDMaterialDesignIcons,
@@ -17,7 +16,6 @@ export default function ImportWalletOptions({
 }: {
   navigation: { navigate: (screen: string) => void };
 }) {
-  const { t } = useTranslation();
   const { openWalletConnectModal } = useConnectionManager();
   return (
     <CyDImageBackground
@@ -31,9 +29,7 @@ export default function ImportWalletOptions({
           }}
           className='flex flex-row justify-between items-center border-b-[0.2px] py-[22px]'>
           <CyDView>
-            <CyDText className='text-[16px] font-semibold'>
-              {t('WALLET_SEED_PHRASE')}
-            </CyDText>
+            <CyDText className='text-[16px] font-semibold'>Seed Phrase</CyDText>
           </CyDView>
           <CyDMaterialDesignIcons
             name='chevron-right'

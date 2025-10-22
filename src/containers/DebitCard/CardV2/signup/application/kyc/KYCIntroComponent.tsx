@@ -5,7 +5,6 @@ import {
   CyDImage,
 } from '../../../../../../styles/tailwindComponents';
 import AppImages from '../../../../../../../assets/images/appImages';
-import OfferTagComponent from '../../../../../../components/v2/OfferTagComponent';
 
 const KYCIntroComponent = () => {
   return (
@@ -38,11 +37,6 @@ const KYCIntroComponent = () => {
           recognition authentication.
         </CyDText>
       </CyDView>
-
-      <OfferTagComponent
-        position={{ bottom: 20, left: 16, right: 16 }}
-        collapsed={true}
-      />
     </CyDView>
   );
 };
