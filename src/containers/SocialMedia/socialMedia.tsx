@@ -16,22 +16,13 @@ interface RouteParams {
   uri: string;
   title: string;
 }
-
-/**
- * SocialMediaScreen Component
- * Displays external web content in a webview with proper media playback controls
- */
 export default function SocialMediaScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { uri } = route.params;
   const [isLoading, setIsLoading] = useState(true);
 
-  /**
-   * Handles hardware back button press on Android
-   * @returns {boolean} true to prevent default back behavior
-   */
-  const handleBackButton = (): boolean => {
+  const handleBackButton = () => {
     navigation.goBack();
     return true;
   };
@@ -55,14 +46,6 @@ export default function SocialMediaScreen() {
           renderLoading={() => {
             return <Loading />;
           }}
-          // Media playback configuration
-          allowsInlineMediaPlayback={true} // Prevents videos from auto-fullscreen on iOS
-          mediaPlaybackRequiresUserAction={false} // Allows autoplay if needed
-          javaScriptEnabled={true} // Required for video player controls
-          domStorageEnabled={true} // Required for HTML5 video storage
-          // Additional settings for better video experience
-          allowsFullscreenVideo={false} // Disables fullscreen video button
-          allowsProtectedMedia={true} // Allows DRM protected content if needed
         />
       </CyDView>
     </CyDSafeAreaView>

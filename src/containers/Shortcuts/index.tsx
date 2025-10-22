@@ -32,7 +32,7 @@ import {
   sortJSONArrayByKey,
 } from '../../core/util';
 import { useTranslation } from 'react-i18next';
-import { AppState, StyleSheet } from 'react-native';
+import { AppState } from 'react-native';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
 import { isIOS } from '../../misc/checkers';
@@ -138,13 +138,6 @@ export default function ShortcutsModal() {
   // check populateShortcutsData if adding any options
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
-    {
-      index: 2,
-      title: ShortcutsTitle.SWAP,
-      logo: AppImages.SWAP_SHORTCUT,
-      subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.SWAP,
-    },
     {
       index: 3,
       title: ShortcutsTitle.SEND,
@@ -254,9 +247,6 @@ export default function ShortcutsModal() {
         setTimeout(() => setSellModalVisible(true), 250);
         break;
       case ShortcutsTitle.SEND:
-        navigation.navigate(item.screenTitle);
-        break;
-      case ShortcutsTitle.SWAP:
         navigation.navigate(item.screenTitle);
         break;
       case ShortcutsTitle.RECEIVE:
@@ -802,19 +792,13 @@ export default function ShortcutsModal() {
         }>
         <CyDLottieView
           source={AppImages.SHORTCUTS}
+          // ref={ref => setAnimation(ref)}
           autoPlay
           loop
           resizeMode={'contain'}
-          style={styles.lottie}
+          style={{ width: 50, height: 50 }}
         />
       </CyDView>
     </CyDTouchView>
   );
 }
-
-const styles = StyleSheet.create({
-  lottie: {
-    width: 40,
-    height: 40,
-  },
-});

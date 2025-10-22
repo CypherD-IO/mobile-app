@@ -28,25 +28,20 @@ import PageHeader from '../../components/PageHeader';
 
 interface RouteParams {
   title: string;
+  setPinAuthentication: (value: any) => {};
   lockScreen: boolean;
   callback: any;
 }
 
-interface PinValidationProps {
-  setPinAuthentication?: (value: boolean) => void;
-}
-
-export default function PinValidation({
-  setPinAuthentication,
-}: PinValidationProps): JSX.Element {
+export default function PinValidation() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const params = (route.params || {}) as Partial<RouteParams>;
   const {
     title = `${t<string>('ENTER_PIN')}`,
+    setPinAuthentication = value => {},
     lockScreen = false,
     callback,
-  } = params;
+  } = route.params;
   const retryCount = 10;
   const [retries, setRetries] = useState(retryCount);
   const [wrongPin, setWrongPin] = useState(false); // state to show or hide the Wrong Pin text
@@ -54,7 +49,7 @@ export default function PinValidation({
   const hdWallet = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
 
-  let validatePinValue = async (pin: string): Promise<void> => {
+  let validatePinValue = async (pin: string) => {
     if (retries < 1) {
       return;
     }
@@ -67,7 +62,9 @@ export default function PinValidation({
         setReSettingToBiometric(false);
       }
       callback?.();
-      setPinAuthentication?.(true);
+      if (setPinAuthentication) {
+        setPinAuthentication(true);
+      }
     } else {
       if (retries > 1) {
         setWrongPin(true);
@@ -78,7 +75,7 @@ export default function PinValidation({
     }
   };
   if (lockScreen) {
-    validatePinValue = async (pin: string): Promise<void> => {
+    validatePinValue = async (pin: string) => {
       if (retries < 1) {
         return;
       }
@@ -97,20 +94,18 @@ export default function PinValidation({
     };
   }
 
-  const onSuccessFunctionality = (): void => {
+  const onSuccessFunctionality = () => {
     navigation.navigate(screenTitle.SET_PIN);
     hideModal();
   };
 
-  const PIN = (): JSX.Element => {
+  const PIN = () => {
     return (
       <CyDView>
         <CyDView className={'mt-[15%]'}>
           <OtpInput
             pinCount={4}
-            getOtp={(otp: string) => {
-              void validatePinValue(otp);
-            }}
+            getOtp={async (otp: string) => await validatePinValue(otp)}
             showButton={true}
             buttonCTA={t('ENTER')}
             showSecuredEntryToggle={true}

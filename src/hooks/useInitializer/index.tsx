@@ -20,7 +20,6 @@ import {
   setAuthToken,
   setRefreshToken,
   setRpcEndpoints,
-  getUpdateReminderSnoozeUntil,
 } from '../../core/asyncStorage';
 import {
   GlobalContext,
@@ -48,8 +47,6 @@ import {
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
-import { Platform } from 'react-native';
-import semver from 'semver';
 import useCardUtilities from '../useCardUtilities';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
@@ -62,7 +59,9 @@ export default function useInitializer() {
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const { ethereum, solana } = hdWallet.state.wallet;
-  const inAppUpdates = new SpInAppUpdates(!!__DEV__);
+  const inAppUpdates = new SpInAppUpdates(
+    false, // isDebug
+  );
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile } = useCardUtilities();
 
@@ -167,39 +166,8 @@ export default function useInitializer() {
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     try {
-      // Respect snooze if the user tapped "Later" within the last 24 hours
-      const snoozeUntil = await getUpdateReminderSnoozeUntil();
-      if (snoozeUntil && Date.now() < snoozeUntil) {
-        return;
-      }
-      // Build options explicitly to avoid any null version comparisons inside the library
-      const options: any = {
-        curVersion: String(getVersion()).trim(),
-        customVersionComparator: (
-          storeVersion: string,
-          currentVersion: string,
-        ) => {
-          // Defensive comparator: coerce both sides and gracefully handle nulls
-          try {
-            const store = semver.coerce(storeVersion);
-            const current = semver.coerce(currentVersion);
-            if (store && current) return semver.compare(store, current);
-            if (store && !current) return 1; // if current unparsable, assume update available
-            if (!store && current) return -1; // if store unparsable, assume no update
-            return 0;
-          } catch {
-            return 0;
-          }
-        },
-      };
-      // For iOS, provide the App Store application id to make the lookup deterministic
-      if (Platform.OS === 'ios') {
-        // Cypherd Wallet iOS App Store ID (used elsewhere in the app for store links)
-        options.appId = '1604120414';
-      }
-
-      const res = await inAppUpdates.checkNeedsUpdate(options);
-      if (res?.shouldUpdate) {
+      const res = await inAppUpdates.checkNeedsUpdate();
+      if (res.shouldUpdate) {
         setUpdateModal(true);
       }
     } catch (e) {

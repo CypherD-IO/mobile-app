@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   CyDSafeAreaView,
   CyDText,
@@ -15,7 +14,6 @@ import {
 } from '@react-navigation/native';
 
 export default function AppearanceSelector() {
-  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { theme, changeTheme } = useTheme();
 
@@ -26,9 +24,7 @@ export default function AppearanceSelector() {
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
           onPress={() => changeTheme(Theme.SYSTEM)}>
-          <CyDText className='font-semibold text-xl'>
-            {t('THEME_SYSTEM_DEFAULT')}
-          </CyDText>
+          <CyDText className='font-semibold text-xl'>System Default</CyDText>
           {theme === Theme.SYSTEM && (
             <CyDView className='w-4 h-4 rounded-full bg-p150 flex-row items-center justify-center'>
               <CyDView className='w-2 h-2 rounded-full bg-base400' />
@@ -38,9 +34,7 @@ export default function AppearanceSelector() {
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
           onPress={() => changeTheme(Theme.LIGHT)}>
-          <CyDText className='font-semibold text-xl'>
-            {t('THEME_LIGHT')}
-          </CyDText>
+          <CyDText className='font-semibold text-xl'>Light</CyDText>
           {theme === Theme.LIGHT && (
             <CyDView className='w-4 h-4 rounded-full bg-p150 flex-row items-center justify-center'>
               <CyDView className='w-2 h-2 rounded-full bg-base400' />
@@ -50,7 +44,7 @@ export default function AppearanceSelector() {
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
           onPress={() => changeTheme(Theme.DARK)}>
-          <CyDText className='font-semibold text-xl'>{t('THEME_DARK')}</CyDText>
+          <CyDText className='font-semibold text-xl'>Dark</CyDText>
           {theme === Theme.DARK && (
             <CyDView className='w-4 h-4 rounded-full bg-p150 flex-row items-center justify-center'>
               <CyDView className='w-2 h-2 rounded-full bg-base400' />

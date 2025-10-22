@@ -6,6 +6,7 @@ import {
   CyDView,
   CyDText,
   CyDTouchView,
+  CyDFastImage,
   CyDTextInput,
   CyDIcons,
   CyDMaterialDesignIcons,
@@ -15,11 +16,10 @@ import {
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
 
-import { capitalize, floor } from 'lodash';
+import { capitalize, endsWith, floor } from 'lodash';
 import Button from './button';
 import InfiniteScrollFooterLoader from './InfiniteScrollFooterLoader';
-// import { SvgUri } from 'react-native-svg';
-import MerchantLogo from './MerchantLogo';
+import { SvgUri } from 'react-native-svg';
 
 // --- Types and Interfaces ---
 export interface GetMerchantsQuery {
@@ -289,9 +289,7 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
     setIsVisible(false);
   };
 
-  const handleScroll = (event: {
-    nativeEvent: { contentOffset: { y: number } };
-  }) => {
+  const handleScroll = (event: any) => {
     if (event.nativeEvent.contentOffset.y > 0) {
       animateToFullHeight();
     }
@@ -324,15 +322,11 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
       {/* Top section: Merchant info */}
       <CyDView className='flex-row items-center justify-between px-[16px] pt-[16px]'>
         <CyDView className='flex-row items-center flex-1'>
-          <MerchantLogo
-            merchant={{
-              brand: item.canonicalName,
-              canonicalName: item.canonicalName,
-              logoUrl: item.logoUrl,
-            }}
-            size={32}
-            showBorder={false}
-          />
+          {item.logoUrl ? (
+            renderImage(item.logoUrl)
+          ) : (
+            <CyDView className='w-[24px] h-[24px] rounded-full bg-blue20' />
+          )}
           <CyDText className='text-lg font-bold text-white'>
             {capitalize(item.canonicalName)}
           </CyDText>
@@ -396,7 +390,21 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
     </CyDView>
   );
 
-  // replaced by MerchantLogo component
+  const renderImage = (logoUrl: string) => {
+    const isSvg = endsWith(logoUrl, '.svg');
+    return isSvg ? (
+      <CyDView className='w-[32px] h-[32px] rounded-full bg-white overflow-hidden items-center justify-center mr-4'>
+        <SvgUri uri={logoUrl ?? ''} width={24} height={24} />
+      </CyDView>
+    ) : (
+      <CyDView className='w-[32px] h-[32px] rounded-full bg-white overflow-hidden items-center justify-center mr-4'>
+        <CyDFastImage
+          source={{ uri: logoUrl ?? '' }}
+          className='w-[24px] h-[24px]'
+        />
+      </CyDView>
+    );
+  };
 
   // --- Render merchant row in add merchant view ---
   const renderMerchant = ({ item }: { item: MerchantWithAllocation }) => {
@@ -408,15 +416,11 @@ const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
         )}
         style={styles.minHeight80}
         onPress={() => handleSelect(item)}>
-        <MerchantLogo
-          merchant={{
-            brand: item.canonicalName,
-            canonicalName: item.canonicalName,
-            logoUrl: item.logoUrl,
-          }}
-          size={32}
-          showBorder={false}
-        />
+        {item.logoUrl ? (
+          renderImage(item.logoUrl)
+        ) : (
+          <CyDView className='w-[32px] h-[32px] rounded-full bg-n40 mr-2' />
+        )}
         <CyDText className='!text-[20px] font-bold flex-1 text-white'>
           {capitalize(item.canonicalName)}
         </CyDText>

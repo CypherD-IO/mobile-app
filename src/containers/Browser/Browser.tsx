@@ -124,7 +124,7 @@ export default function Browser() {
 
   const [websiteInfo, setWebsiteInfo] = useState<WebsiteInfo>({
     host: '',
-    title: t('WEBPAGE', 'Webpage'),
+    title: 'Webpage',
     origin: '',
     url: '',
   });
@@ -189,9 +189,9 @@ export default function Browser() {
     for (const date in historyByDate) {
       const tDate =
         (date === today
-          ? `${t('TODAY')} - `
+          ? 'Today - '
           : date === yesterday
-            ? `${t('YESTERDAY')} - `
+            ? 'Yesterday - '
             : '') + date;
       tBrowserHistory.push({ dateString: tDate, entry: historyByDate[date] });
     }
@@ -210,7 +210,7 @@ export default function Browser() {
   }, [isFocused]);
 
   useEffect(() => {
-    if (websiteInfo.title !== t('WEBPAGE', 'Webpage')) {
+    if (websiteInfo.title !== 'Webpage') {
       const curr = {
         name: websiteInfo.title,
         image: `https://www.google.com/s2/favicons?domain=${websiteInfo.host}&sz=32`,
@@ -543,9 +543,7 @@ export default function Browser() {
         fav => fav.url !== websiteInfo.url,
       );
       setBrowserFavourites(favourites);
-      showToast(
-        t('BOOKMARK_REMOVED_SUCCESSFULLY', 'Bookmark removed successfully'),
-      );
+      showToast('Bookmark removed successfully');
       return;
     }
     const curr = {
@@ -705,10 +703,7 @@ export default function Browser() {
               onFocus={() => {
                 setFocus(true);
               }}
-              placeholder={t(
-                'SEARCH_OR_ENTER_ADDRESS',
-                'Search or enter address',
-              )}
+              placeholder='Search or enter address'
               placeholderTextColor='#777777'
               onBlur={() => setFocus(false)}
               value={getValueForWebsiteInput()}
@@ -744,7 +739,7 @@ export default function Browser() {
                 Keyboard.dismiss();
                 setFocus(false);
               }}>
-              <CyDText>{t('BROWSER_CANCEL')}</CyDText>
+              <CyDText>Cancel</CyDText>
             </CyDTouchView>
           )}
 
@@ -813,9 +808,7 @@ export default function Browser() {
             </CyDView>
           )}
         {onFocus && searchData.length > 0 && (
-          <CyDText className='text-base ml-2 mt-2'>
-            {t('BROWSER_RECENT_SEARCHES')}
-          </CyDText>
+          <CyDText className='text-base ml-2 mt-2'>Recent Searches</CyDText>
         )}
         {onFocus && (
           <CyDView className='h-full'>
@@ -862,7 +855,7 @@ export default function Browser() {
                 });
               }}>
               <CyDText className='text-[14px] p-3 text-center'>
-                {t('BROWSER_CLEAR_BROWSING_HISTORY')}
+                Clear browsing history
               </CyDText>
             </CyDTouchView>
 
@@ -870,7 +863,7 @@ export default function Browser() {
             {browserHistory.length === 0 ? (
               <CyDView>
                 <CyDText className='text-[22px]'>
-                  {t('BROWSER_START_USING_BROWSER')}
+                  Start using the browser to view history here
                 </CyDText>
               </CyDView>
             ) : (
@@ -955,10 +948,10 @@ export default function Browser() {
               }
             }}>
             <CyDView className='p-4'>
-              <CyDText className=''>{t('BROWSER_BOOKMARKS')}</CyDText>
+              <CyDText className=''>{'bookmarks'.toLocaleUpperCase()}</CyDText>
               {browserFavourites.length === 0 && (
                 <CyDText className='text-[12px] '>
-                  {t('BROWSER_YOUR_BOOKMARKS_WILL_BE_SHOWN')}
+                  Your bookmarks will be shown here
                 </CyDText>
               )}
               <CyDView className='flex flex-row flex-wrap mb-[30px] items-center justify-start m-[10px]'>
@@ -1048,13 +1041,13 @@ export default function Browser() {
             {browserHistory.length === 0 ? (
               <CyDView className='flex flex-row items-center justify-center'>
                 <CyDText className='text-[12px]'>
-                  {t('BROWSER_START_USING_BROWSER')}
+                  Start using the browser to view history here
                 </CyDText>
               </CyDView>
             ) : (
               <>
                 <CyDText className=' text-left ml-3 mt-[10px] text-[15px] font-bold'>
-                  {t('BROWSER_HISTORY')}
+                  {'history'.toLocaleUpperCase()}
                 </CyDText>
                 {spliceHistoryByTime().map(historybt => (
                   <CyDView key={historybt.dateString} className='mx-3'>

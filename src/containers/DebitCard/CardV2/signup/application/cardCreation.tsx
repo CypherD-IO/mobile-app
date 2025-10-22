@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   NavigationProp,
   ParamListBase,
@@ -18,13 +17,11 @@ import {
   CyDImageBackground,
 } from '../../../../../styles/tailwindComponents';
 import { screenTitle } from '../../../../../constants';
-import AppImages, {
-  AppImagesMap,
-} from '../../../../../../assets/images/appImages';
-import { Share, StyleSheet, Vibration, NativeModules } from 'react-native';
-import Video from 'react-native-video';
+import AppImages from '../../../../../../assets/images/appImages';
+import { Share, StyleSheet } from 'react-native';
 import Button from '../../../../../components/v2/button';
 import { ButtonType, GlobalContextType } from '../../../../../constants/enum';
+import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import Toast from 'react-native-toast-message';
 import {
@@ -32,14 +29,12 @@ import {
   GlobalContextDef,
 } from '../../../../../core/globalContext';
 import useCardUtilities from '../../../../../hooks/useCardUtilities';
-import LottieView from 'lottie-react-native';
 
 interface RouteParams {
   name: string;
 }
 
 const CardCreation = () => {
-  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [isLoading, setIsLoading] = useState(true);
@@ -49,35 +44,10 @@ const CardCreation = () => {
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { getWalletProfile } = useCardUtilities();
 
-  // Confetti animation refs and play tracking
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  const triggerHaptic = () => {
-    const hapticAvailable = !!NativeModules.RNReactNativeHapticFeedback;
-    if (hapticAvailable) {
-      // Dynamically require to avoid unused import if module absent
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const ReactNativeHapticFeedback = require('react-native-haptic-feedback');
-      ReactNativeHapticFeedback.trigger('impactMedium', {
-        enableVibrateFallback: true,
-        ignoreAndroidSystemSettings: false,
-      });
-    } else {
-      Vibration.vibrate(30);
-    }
-  };
-
-  const handleConfettiFinish = () => {
-    // Hide confetti overlay after first play
-    setShowConfetti(false);
-  };
-
   useEffect(() => {
     // Show loading state for 4 seconds
     setTimeout(() => {
       setIsLoading(false);
-      setShowConfetti(true); // Show confetti once loading completes
-      triggerHaptic();
     }, 4000);
   }, []);
 
@@ -112,11 +82,13 @@ const CardCreation = () => {
 
       // Prepare the share message
       const shareImage = {
-        title: t('MY_CYPHER_CARD_SHARE_TITLE', 'My Cypher Card'),
-        message: t(
-          'REVOLUTIONIZE_CRYPTO_SPENDING_MESSAGE',
-          "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0% Forex Markup\n    💲 0% Loading Fee for USDC",
-        ),
+        title: 'My Cypher Card',
+        message:
+          "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n" +
+          '    💳 Google Pay & Apple Pay support\n' +
+          '    💰 Lowest ever 0% Forex Markup\n' +
+          '    💲 0% Loading Fee for USDC\n' +
+          '    🌍 Use your crypto anywhere, just like a regular card',
         url: `data:image/jpeg;base64,${uri}`,
       };
 
@@ -127,11 +99,8 @@ const CardCreation = () => {
       if (error.message !== 'User did not share') {
         Toast.show({
           type: 'error',
-          text1: t('SHARE_FAILED_TITLE', 'Share failed'),
-          text2: t(
-            'UNABLE_TO_SHARE_CARD_DETAILS_TITLE',
-            'Unable to share card details',
-          ),
+          text1: 'Share failed',
+          text2: 'Unable to share card details',
         });
       }
     }
@@ -149,14 +118,8 @@ const CardCreation = () => {
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: t(
-          'ERROR_LOADING_CARD_DETAILS_TITLE',
-          'Error loading card details',
-        ),
-        text2: t(
-          'ERROR_LOADING_CARD_DETAILS_MESSAGE',
-          'Please try again. If the problem persists, contact support.',
-        ),
+        text1: 'Error loading card details',
+        text2: 'Please try again. If the problem persists, contact support.',
       });
     } finally {
       setIsButtonLoading(false);
@@ -164,28 +127,27 @@ const CardCreation = () => {
   };
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-black'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
+      {/* Back button */}
+      <CardApplicationHeader />
+
       {/* Main content */}
       <ViewShot ref={viewRef} style={styles.container}>
-        <CyDView className='flex-1 justify-between p-4 bg-black'>
-          {/* Card video container */}
+        <CyDView className='flex-1 justify-between p-4 bg-n0'>
+          {/* Card image container */}
           <CyDView className='flex-1 items-center justify-center'>
-            <CyDView className='w-full aspect-[380/262] rounded-[12px] overflow-hidden relative'>
-              {/* Background Video */}
-              <Video
-                source={{
-                  uri: AppImagesMap.common.VIRTUAL_CARD_HORIZONTAL_SPIN.uri,
-                }}
-                style={styles.cardVideo}
-                resizeMode='cover'
-                repeat={true}
-                paused={false}
-                muted={true}
-                controls={false}
-                playInBackground={false}
-                playWhenInactive={false}
-              />
-            </CyDView>
+            <CyDImageBackground
+              source={AppImages.CYPHER_VIRTUAL_CARD}
+              className='w-full aspect-[380/239] rounded-[12px]'
+              resizeMode='contain'>
+              <CyDView className='flex-1 p-5'>
+                <CyDView className='mt-auto'>
+                  <CyDText className='text-white font-semibold text-[16px]'>
+                    {name}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            </CyDImageBackground>
           </CyDView>
 
           {/* Status section - always visible but content changes */}
@@ -198,7 +160,7 @@ const CardCreation = () => {
                   loop
                   style={styles.loader}
                 />
-                <CyDText className='text-[20px] font-[500] ml-2 text-white'>
+                <CyDText className='text-[20px] font-[500] ml-2'>
                   Creating card
                 </CyDText>
               </>
@@ -209,7 +171,7 @@ const CardCreation = () => {
                   className='w-[28px] h-[28px] rounded-full items-center justify-center mr-2'
                   resizeMode='contain'
                 />
-                <CyDText className='font-[500] text-[20px] text-white'>
+                <CyDText className='font-[500] text-[20px]'>
                   Card Created
                 </CyDText>
               </>
@@ -234,13 +196,11 @@ const CardCreation = () => {
                   size={16}
                   className='text-base400 text-white mr-[6px]'
                 />
-                <CyDText className='text-[18px] text-white'>
-                  {t('CARD_SHARE')}
-                </CyDText>
+                <CyDText className='text-[18px] text-white'>Share</CyDText>
               </CyDTouchView>
 
               <Button
-                title={t('START_USING_TITLE', 'Start Using')}
+                title='Start Using'
                 onPress={() => {
                   void handleStartUsing();
                 }}
@@ -254,19 +214,6 @@ const CardCreation = () => {
           </CyDView>
         </CyDView>
       </ViewShot>
-
-      {/* Confetti overlay after card is created */}
-      {showConfetti && (
-        <CyDView pointerEvents='none' style={styles.confetti}>
-          <LottieView
-            source={AppImagesMap.common.CONFETTI_ANIMATION}
-            autoPlay
-            loop={false}
-            onAnimationFinish={handleConfettiFinish}
-            style={StyleSheet.absoluteFill}
-          />
-        </CyDView>
-      )}
     </CyDSafeAreaView>
   );
 };
@@ -285,24 +232,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-  },
-  cardVideo: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-  },
-  confetti: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
   },
 });
 
