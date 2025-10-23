@@ -1,6 +1,6 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, StyleSheet, Modal, Dimensions } from 'react-native';
+import { Linking, StyleSheet, Modal } from 'react-native';
 // @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
 import { QRCode } from 'react-native-custom-qr-codes';
 import Share from 'react-native-share';
@@ -36,7 +36,8 @@ import { HdWalletContext, getMaskedAddress } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import { showToast } from '../../utilities/toastUtility';
 import Button from '../../../components/v2/button';
-import { ButtonType } from '../../../constants/enum';
+import { ButtonType, ConnectionTypes } from '../../../constants/enum';
+import { getConnectionType } from '../../../core/asyncStorage';
 
 interface InsufficientBalanceBottomSheetContentProps {
   minAmount: number;
@@ -197,17 +198,26 @@ const InsufficientBalanceBottomSheetContent: React.FC<
 > = ({ minAmount }) => {
   const { t } = useTranslation();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const [connectionType, setConnectionType] = useState<ConnectionTypes | null>(
+    ConnectionTypes.SEED_PHRASE,
+  );
   const ethereumAddress = get(
     hdWalletContext,
     'state.wallet.ethereum.address',
     '',
   );
+  const solanaAddress = get(
+    hdWalletContext,
+    'state.wallet.solana.wallets[0].address',
+    '',
+  );
 
   // Synchronously set the default selectedChain to Ethereum
   const [selectedChain, setSelectedChain] = useState<UserChain>({
-    ...CHAIN_ETH,
-    address: ethereumAddress,
+    ...CHAIN_SOLANA,
+    address: solanaAddress,
   });
+
   const [showChainSelector, setShowChainSelector] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({
     x: 0,
@@ -311,6 +321,25 @@ const InsufficientBalanceBottomSheetContent: React.FC<
     );
   };
 
+  useEffect(() => {
+    void getConnectionType().then(_connectionType => {
+      if (_connectionType) {
+        setConnectionType(_connectionType);
+        if (_connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
+          setSelectedChain({
+            ...CHAIN_SOLANA,
+            address: solanaAddress,
+          });
+        } else {
+          setSelectedChain({
+            ...CHAIN_SOLANA,
+            address: solanaAddress,
+          });
+        }
+      }
+    });
+  }, []);
+
   return (
     <CyDScrollView className='flex-1 px-[16px]'>
       {/* Warning Banner */}
@@ -335,17 +364,19 @@ const InsufficientBalanceBottomSheetContent: React.FC<
       </CyDView>
 
       {/* Chain Selector */}
-      <ChainSelector
-        selectedChain={selectedChain}
-        setSelectedChain={setSelectedChain}
-        showChainSelector={showChainSelector}
-        setShowChainSelector={setShowChainSelector}
-        dropdownPos={dropdownPos}
-        setDropdownPos={setDropdownPos}
-        selectorRef={selectorRef}
-        getChainDataWithAddress={getChainDataWithAddress}
-        FUNDING_CHAINS={FUNDING_CHAINS}
-      />
+      {connectionType !== ConnectionTypes.SOCIAL_LOGIN_SOLANA && (
+        <ChainSelector
+          selectedChain={selectedChain}
+          setSelectedChain={setSelectedChain}
+          showChainSelector={showChainSelector}
+          setShowChainSelector={setShowChainSelector}
+          dropdownPos={dropdownPos}
+          setDropdownPos={setDropdownPos}
+          selectorRef={selectorRef}
+          getChainDataWithAddress={getChainDataWithAddress}
+          FUNDING_CHAINS={FUNDING_CHAINS}
+        />
+      )}
 
       {/* Info Message */}
       <CyDView className='flex-row items-center justify-center mb-[32px]'>

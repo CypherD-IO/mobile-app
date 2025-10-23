@@ -5,7 +5,10 @@ import { floor, get, isEmpty, set } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, Platform, useWindowDimensions } from 'react-native';
+import { formatUnits } from 'viem';
 import Button from '../../../components/v2/button';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
+import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
 import CyDNumberPad from '../../../components/v2/numberpad';
@@ -35,7 +38,6 @@ import {
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../../constants/server';
-import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
 import { Holding, IHyperLiquidHolding } from '../../../core/portfolio';
@@ -49,8 +51,11 @@ import {
   limitDecimalPlaces,
   parseErrorMessage,
   validateAmount,
-  formatCurrencyWithSuffix,
 } from '../../../core/util';
+import useGasService from '../../../hooks/useGasService';
+import usePortfolio from '../../../hooks/usePortfolio';
+import { CardQuoteResponse } from '../../../models/card.model';
+import { TokenMeta } from '../../../models/tokenMetaData.model';
 import {
   CyDImage,
   CyDMaterialDesignIcons,
@@ -61,13 +66,6 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
-import { CardQuoteResponse } from '../../../models/card.model';
-import useGasService from '../../../hooks/useGasService';
-import usePortfolio from '../../../hooks/usePortfolio';
-import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
-import { formatUnits } from 'viem';
-import { TokenMeta } from '../../../models/tokenMetaData.model';
-import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
