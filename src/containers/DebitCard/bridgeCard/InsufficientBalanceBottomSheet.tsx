@@ -332,8 +332,8 @@ const InsufficientBalanceBottomSheetContent: React.FC<
           });
         } else {
           setSelectedChain({
-            ...CHAIN_SOLANA,
-            address: solanaAddress,
+            ...CHAIN_ETH,
+            address: ethereumAddress,
           });
         }
       }

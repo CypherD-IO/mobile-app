@@ -498,7 +498,9 @@ export default function ChooseTokenModalV2(props: TokenModal) {
 
   const [selectedToken, setSelectedToken] = useState<Holding | null>(null);
   const { supportedChains } = useSupportedChains();
-  const [selectedChain, setSelectedChain] = useState<Chain>(supportedChains[0]);
+  const [selectedChain, setSelectedChain] = useState<Chain>(
+    supportedChains[0] || ALL_FUNDABLE_CHAINS[0],
+  );
   const chainData = useMemo(() => {
     if (type === TokenModalType.CARD_LOAD) {
       return supportedChains;
