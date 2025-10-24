@@ -97,21 +97,11 @@ export default function useBribesClaimer() {
     params: ClaimBribesParams,
   ): Promise<ClaimBribesResult> => {
     try {
-      // Log the claim attempt for debugging
-      console.log('🎯 Executing bribes claim contract call', {
-        tokenId: params.tokenId,
-        bribeTokensCount: params.bribeTokens.length,
-        candidatesCount: params.candidates.length,
-        fromTimestamp: params.fromTimestamp,
-        untilTimestamp: params.untilTimestamp,
-      });
-
       // Use Base mainnet chain
       const chain = 'base';
       const chainConfig = get(ChainConfigMapping, chain);
 
       if (!chainConfig) {
-        console.error('❌ Chain config not found for Base');
         throw new Error('Chain configuration not found for Base');
       }
 
@@ -141,14 +131,13 @@ export default function useBribesClaimer() {
         functionName: 'claimBribes',
         args: [
           BigInt(params.tokenId),
-          params.bribeTokens as `0x${string}`[],
-          params.candidates as `0x${string}`[],
+          params.bribeTokens as Array<`0x${string}`>,
+          params.candidates as Array<`0x${string}`>,
           BigInt(params.fromTimestamp),
           BigInt(params.untilTimestamp),
         ],
       });
 
-      console.log('✅ Contract data encoded successfully');
       params.onStatusUpdate?.('Submitting claim transaction...');
 
       // Execute the contract call using the transaction manager
@@ -167,10 +156,6 @@ export default function useBribesClaimer() {
         console.error('❌ Contract execution failed', resp.error);
         throw new Error('Contract execution failed');
       }
-
-      console.log('✅ Bribes claim transaction successful', {
-        hash: resp.hash,
-      });
 
       params.onStatusUpdate?.(
         'Transaction confirmed! Bribes claimed successfully.',
@@ -215,12 +200,6 @@ export default function useBribesClaimer() {
     params: ClaimBribesParams,
   ): Promise<ClaimBribesResult> => {
     try {
-      console.log('🎁 Starting bribe claim process', {
-        tokenId: params.tokenId,
-        bribeTokensCount: params.bribeTokens.length,
-        candidatesCount: params.candidates.length,
-      });
-
       // Additional validation
       if (params.tokenId < 0) {
         throw new Error('Invalid token ID: must be a positive number');
@@ -247,12 +226,6 @@ export default function useBribesClaimer() {
       }
 
       const result = await executeBribesClaimContract(params);
-
-      if (!result.isError) {
-        console.log('✅ Bribes claimed successfully', {
-          hash: result.hash,
-        });
-      }
 
       return result;
     } catch (error) {
@@ -284,17 +257,10 @@ export default function useBribesClaimer() {
   const claimBribesBatch = async (
     paramsList: ClaimBribesParams[],
   ): Promise<ClaimBribesResult[]> => {
-    console.log(
-      `🎁 Starting batch bribe claim for ${paramsList.length} veNFTs`,
-    );
-
     const results: ClaimBribesResult[] = [];
 
     for (let i = 0; i < paramsList.length; i++) {
       const params = paramsList[i];
-      console.log(
-        `📝 Processing claim ${i + 1}/${paramsList.length} for veNFT ${params.tokenId}`,
-      );
 
       params.onStatusUpdate?.(
         `Claiming bribes for veNFT ${params.tokenId} (${i + 1}/${paramsList.length})...`,
@@ -321,9 +287,6 @@ export default function useBribesClaimer() {
     }
 
     const successCount = results.filter(r => !r.isError).length;
-    console.log(
-      `✅ Batch claim completed: ${successCount}/${paramsList.length} successful`,
-    );
 
     return results;
   };

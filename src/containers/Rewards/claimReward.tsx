@@ -341,13 +341,6 @@ const ClaimReward: React.FC = () => {
       if (!response.isError && response.data) {
         const data = response.data as IBribeClaimResponse;
         setBribesData(data);
-
-        // Log bribes data for debugging
-        console.log('✅ Bribes data fetched successfully', {
-          hasClaimableBribes: data.hasClaimableBribes,
-          mergedBribesCount: data.mergedBribes?.length ?? 0,
-          totalClaimable: data.summary?.totalClaimableBribes ?? 0,
-        });
       } else {
         console.error('❌ Failed to fetch bribes data:', response.error);
         // Don't show toast for bribes - it's optional
@@ -454,8 +447,6 @@ const ClaimReward: React.FC = () => {
 
       // Step 1: Claim protocol rewards if available
       if (hasRewards && claimRewardData?.claimInfo) {
-        console.log('🎁 Claiming protocol rewards...');
-
         const { claimInfo } = claimRewardData;
 
         // Convert proof and amount from API format to contract format
@@ -478,7 +469,6 @@ const ClaimReward: React.FC = () => {
 
         // Check if transaction was successful
         if (!result.isError && result.hash) {
-          console.log('✅ Protocol rewards claimed successfully', result.hash);
           rewardsClaimedSuccess = true;
           lastTransactionHash = result.hash;
 
@@ -523,8 +513,6 @@ const ClaimReward: React.FC = () => {
 
       // Step 2: Claim bribes if available
       if (hasBribes && bribesData?.mergedBribes) {
-        console.log('🎁 Claiming bribes...');
-
         // Prepare claim parameters for all merged bribes
         const claimParams = bribesData.mergedBribes.map(bribe => ({
           tokenId: parseInt(bribe.veNFTId, 10),
@@ -541,9 +529,6 @@ const ClaimReward: React.FC = () => {
         const successCount = results.filter(r => !r.isError).length;
 
         if (successCount > 0) {
-          console.log(
-            `✅ Bribes claimed successfully: ${successCount}/${results.length}`,
-          );
           bribesClaimedSuccess = true;
           bribesClaimedCount = successCount;
 

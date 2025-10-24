@@ -495,14 +495,15 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     filteredHoldings: [],
     hyperliquidHoldings: [],
   });
-  const [selectedChain, setSelectedChain] = useState<Chain>(
-    ALL_FUNDABLE_CHAINS[0],
-  );
+
   const [selectedToken, setSelectedToken] = useState<Holding | null>(null);
   const { supportedChains } = useSupportedChains();
+  const [selectedChain, setSelectedChain] = useState<Chain>(
+    supportedChains[0] || ALL_FUNDABLE_CHAINS[0],
+  );
   const chainData = useMemo(() => {
     if (type === TokenModalType.CARD_LOAD) {
-      return ALL_FUNDABLE_CHAINS;
+      return supportedChains;
     }
     // Add ALL_FUNDABLE_CHAINS[0] (All Chains option) to supported chains
     return [ALL_FUNDABLE_CHAINS[0], ...supportedChains];
