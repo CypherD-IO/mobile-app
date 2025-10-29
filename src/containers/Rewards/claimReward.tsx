@@ -226,7 +226,7 @@ const ClaimReward: React.FC = () => {
 
     return {
       totalRewards,
-      dateRange: `Epoch ${claimRewardData.epochNumber}`,
+      dateRange: `Reward Cycle ${claimRewardData.epochNumber}`,
       isEligible: claimRewardData.isEligible,
     };
   }, [claimRewardData]);
