@@ -12,9 +12,12 @@ import {
   CyDIcons,
 } from '../../styles/tailwindComponents';
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
-import * as C from '../../constants/index';
 import { HdWalletContext, isValidPrivateKey } from '../../core/util';
-import { importWalletFromEvmPrivateKey } from '../../core/HdWallet';
+import {
+  importWalletFromEvmPrivateKey,
+  importWalletFromSolanaPrivateKey,
+} from '../../core/HdWallet';
+import bs58 from 'bs58';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { QRScannerScreens } from '../../constants/server';
 import { screenTitle } from '../../constants/index';
@@ -37,6 +40,7 @@ import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
 import { ConnectionTypes } from '../../constants/enum';
 import { get } from 'lodash';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export default function Login() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -48,55 +52,100 @@ export default function Login() {
   const [createWalletLoading, setCreateWalletLoading] =
     useState<boolean>(false);
 
-  const hdWalletContext = useContext<any>(HdWalletContext);
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { deleteWithAuth } = useAxios();
 
-  const fetchCopiedText = async () => {
+  const fetchCopiedText = async (): Promise<void> => {
     const text = await Clipboard.getString();
     setPrivateKey(text);
   };
 
-  const handleBackButton = () => {
+  const handleBackButton = (): boolean => {
     navigation?.goBack();
     return true;
   };
 
-  const onSuccess = async (e: any) => {
+  const onSuccess = async (e: { data: string }): Promise<void> => {
     const textValue = e.data;
     setPrivateKey(textValue);
   };
 
-  const submitImportWallet = async (textValue = privateKey) => {
+  const submitImportWallet = async (textValue = privateKey): Promise<void> => {
     const { isReadOnlyWallet } = hdWalletContext.state;
-    const ethereumAddress = get(
+    const ethereumAddress: string | undefined = get(
       hdWalletContext,
       'state.wallet.ethereum.address',
       undefined,
-    ) as string;
-    if (!textValue.startsWith('0x')) {
-      textValue = '0x' + textValue;
-    }
-    if (textValue.length === 66 && isValidPrivateKey(textValue)) {
-      setLoading(true);
-      if (isReadOnlyWallet) {
-        const data = await getReadOnlyWalletData();
-        if (data) {
-          const readOnlyWalletData = JSON.parse(data);
-          await deleteWithAuth(
-            `/v1/configuration/address/${ethereumAddress}/observer/${readOnlyWalletData?.observerId as string}`,
-          );
+    );
+
+    // Normalize input without altering case (important for base58 Solana keys)
+    const input = String(textValue ?? '').trim();
+
+    // Detect EVM hex private key: 64 hex chars with optional 0x prefix
+    const isHex64 = /^(0x)?[0-9a-fA-F]{64}$/.test(input);
+
+    // Helper to cleanup read-only observer for EVM address if available
+    const cleanupReadOnlyObserver = async () => {
+      try {
+        if (isReadOnlyWallet && ethereumAddress) {
+          const data = await getReadOnlyWalletData();
+          if (data) {
+            const readOnlyWalletData = JSON.parse(data);
+            await deleteWithAuth(
+              `/v1/configuration/address/${ethereumAddress}/observer/${readOnlyWalletData?.observerId as string}`,
+            );
+          }
         }
+      } catch {
+        // Intentionally swallow observer cleanup errors to not block import
       }
-      setTimeout(() => {
-        void importWalletFromEvmPrivateKey(hdWalletContext, textValue);
-        setLoading(false);
-        setPrivateKey('');
-        void setConnectionType(ConnectionTypes.PRIVATE_KEY);
-        setCreateWalletLoading(true);
-      }, IMPORT_WALLET_TIMEOUT);
-    } else {
+    };
+
+    if (isHex64) {
+      // EVM flow
+      const evmKey = input.startsWith('0x') ? input : `0x${input}`;
+      if (isValidPrivateKey(evmKey)) {
+        setLoading(true);
+        await cleanupReadOnlyObserver();
+        try {
+          await importWalletFromEvmPrivateKey(hdWalletContext, evmKey);
+          setPrivateKey('');
+          await setConnectionType(ConnectionTypes.PRIVATE_KEY);
+          setCreateWalletLoading(true);
+        } catch {
+          setBadKeyError(true);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
       setBadKeyError(true);
+      return;
     }
+
+    // Try Solana flow: expect a base58-encoded 64-byte secret key
+    try {
+      const decoded = bs58.decode(input);
+      if (decoded && decoded.length === 64) {
+        setLoading(true);
+        await cleanupReadOnlyObserver();
+        try {
+          await importWalletFromSolanaPrivateKey(hdWalletContext, input);
+          setPrivateKey('');
+          await setConnectionType(ConnectionTypes.PRIVATE_KEY);
+          setCreateWalletLoading(true);
+        } catch {
+          setBadKeyError(true);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+    } catch {
+      // fallthrough to error state
+    }
+
+    setBadKeyError(true);
   };
 
   useEffect(() => {
@@ -161,7 +210,8 @@ export default function Login() {
                   placeholderTextColor={Colors.placeHolderColor}
                   value={privateKey}
                   onChangeText={text => {
-                    setPrivateKey(text.toLowerCase());
+                    // Preserve exact casing for Solana base58 keys; do not force lowercase
+                    setPrivateKey(text);
                     setBadKeyError(false);
                   }}
                   multiline={true}
