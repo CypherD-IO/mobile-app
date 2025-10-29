@@ -17,7 +17,7 @@ import {
   importWalletFromEvmPrivateKey,
   importWalletFromSolanaPrivateKey,
 } from '../../core/HdWallet';
-import * as bs58 from 'bs58';
+import bs58 from 'bs58';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { QRScannerScreens } from '../../constants/server';
 import { screenTitle } from '../../constants/index';
@@ -107,13 +107,16 @@ export default function Login() {
       if (isValidPrivateKey(evmKey)) {
         setLoading(true);
         await cleanupReadOnlyObserver();
-        setTimeout(() => {
-          void importWalletFromEvmPrivateKey(hdWalletContext, evmKey);
-          setLoading(false);
+        try {
+          await importWalletFromEvmPrivateKey(hdWalletContext, evmKey);
           setPrivateKey('');
-          void setConnectionType(ConnectionTypes.PRIVATE_KEY);
+          await setConnectionType(ConnectionTypes.PRIVATE_KEY);
           setCreateWalletLoading(true);
-        }, IMPORT_WALLET_TIMEOUT);
+        } catch {
+          setBadKeyError(true);
+        } finally {
+          setLoading(false);
+        }
         return;
       }
       setBadKeyError(true);
@@ -122,17 +125,20 @@ export default function Login() {
 
     // Try Solana flow: expect a base58-encoded 64-byte secret key
     try {
-      const decoded = bs58.default.decode(input);
+      const decoded = bs58.decode(input);
       if (decoded && decoded.length === 64) {
         setLoading(true);
         await cleanupReadOnlyObserver();
-        setTimeout(() => {
-          void importWalletFromSolanaPrivateKey(hdWalletContext, input);
-          setLoading(false);
+        try {
+          await importWalletFromSolanaPrivateKey(hdWalletContext, input);
           setPrivateKey('');
-          void setConnectionType(ConnectionTypes.PRIVATE_KEY);
+          await setConnectionType(ConnectionTypes.PRIVATE_KEY);
           setCreateWalletLoading(true);
-        }, IMPORT_WALLET_TIMEOUT);
+        } catch {
+          setBadKeyError(true);
+        } finally {
+          setLoading(false);
+        }
         return;
       }
     } catch {
