@@ -862,7 +862,6 @@ const RenderCardActions = ({
 
   const onLoadCard = () => {
     navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
-      navigation,
       currentCardProvider: cardProvider,
       currentCardIndex: 0,
     });

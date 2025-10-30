@@ -190,7 +190,6 @@ export default function CardDescription() {
 
   const onPressFundCard = () => {
     navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
-      navigation,
       currentCardProvider,
       currentCardIndex: 0,
     });

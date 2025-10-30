@@ -412,7 +412,6 @@ export default function ShippingCheckout() {
         hideModal();
         // Navigate to Load Card screen with required params
         const loadParams = {
-          navigation,
           currentCardProvider,
           currentCardIndex: 0,
         } as never;
