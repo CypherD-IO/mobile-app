@@ -1,11 +1,15 @@
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { floor, get, isEmpty, set } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, Platform, useWindowDimensions } from 'react-native';
+import { formatUnits } from 'viem';
 import Button from '../../../components/v2/button';
+import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
+import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
 import CyDNumberPad from '../../../components/v2/numberpad';
@@ -35,7 +39,6 @@ import {
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../../constants/server';
-import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
 import { Holding, IHyperLiquidHolding } from '../../../core/portfolio';
@@ -49,8 +52,11 @@ import {
   limitDecimalPlaces,
   parseErrorMessage,
   validateAmount,
-  formatCurrencyWithSuffix,
 } from '../../../core/util';
+import useGasService from '../../../hooks/useGasService';
+import usePortfolio from '../../../hooks/usePortfolio';
+import { CardQuoteResponse } from '../../../models/card.model';
+import { TokenMeta } from '../../../models/tokenMetaData.model';
 import {
   CyDImage,
   CyDMaterialDesignIcons,
@@ -61,25 +67,30 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
-import { CardQuoteResponse } from '../../../models/card.model';
-import useGasService from '../../../hooks/useGasService';
-import usePortfolio from '../../../hooks/usePortfolio';
-import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
-import { formatUnits } from 'viem';
-import { TokenMeta } from '../../../models/tokenMetaData.model';
-import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
 
-export default function BridgeFundCardScreen({ route }: { route: any }) {
-  const {
-    navigation,
-    currentCardProvider,
-    currentCardIndex,
-  }: {
-    navigation: any;
-    currentCardProvider: CardProviders;
-    currentCardIndex: number;
-  } = route.params;
+/**
+ * Interface for route parameters passed to BridgeFundCardScreen
+ */
+interface BridgeFundCardScreenParams {
+  currentCardProvider: CardProviders;
+  currentCardIndex: number;
+}
+
+/**
+ * BridgeFundCardScreen - Screen for loading funds onto a card
+ * Allows users to select a token and amount to fund their card
+ * @param route - Route object containing navigation parameters
+ */
+export default function BridgeFundCardScreen({
+  route,
+}: {
+  route: { params: BridgeFundCardScreenParams };
+}): JSX.Element {
+  // Use navigation hook instead of receiving it as a param to avoid non-serializable warning
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  const { currentCardProvider, currentCardIndex } = route.params;
 
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
@@ -218,6 +229,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
           }
         } else {
+          console.log('No eligible tokens found ::::: ');
           // No eligible tokens found - show insufficient balance bottom sheet
           showInsufficientBalanceSheet();
         }

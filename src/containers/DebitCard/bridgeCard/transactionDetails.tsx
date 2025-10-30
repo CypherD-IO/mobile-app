@@ -641,9 +641,9 @@ const DeclinedTransactionActionItem = ({
               }
               onPress={() => {
                 navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
-                  navigation,
                   cardId: cardDetails.cardId ?? '',
                   currentCardProvider: provider,
+                  currentCardIndex: 0,
                 });
               }}>
               <CyDText className='text-center text-[14px] font-semibold text-black'>
