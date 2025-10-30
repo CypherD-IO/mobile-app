@@ -632,6 +632,7 @@ export default function BridgeFundCardScreen({
           selectedToken.balanceDecimal,
         ) ||
         (backendName === CHAIN_ETH.backendName &&
+          !['usd-coin', 'tether'].includes(selectedToken?.coinGeckoId) &&
           DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH))
       );
     }
@@ -690,6 +691,7 @@ export default function BridgeFundCardScreen({
       let errorMessage = '';
       if (
         backendName === CHAIN_ETH.backendName &&
+        !['usd-coin', 'tether'].includes(selectedToken?.coinGeckoId) &&
         DecimalHelper.isLessThan(usdAmount_, MINIMUM_TRANSFER_AMOUNT_ETH)
       ) {
         errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
@@ -1182,6 +1184,7 @@ export default function BridgeFundCardScreen({
         } else if (
           usdAmount &&
           backendName === CHAIN_ETH.backendName &&
+          !['usd-coin', 'tether'].includes(selectedToken?.coinGeckoId) &&
           DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH)
         ) {
           errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
@@ -1195,7 +1198,10 @@ export default function BridgeFundCardScreen({
           !usdAmount ||
           DecimalHelper.isLessThan(usdAmount, minTokenValueLimit)
         ) {
-          if (backendName === CHAIN_ETH.backendName) {
+          if (
+            backendName === CHAIN_ETH.backendName &&
+            !['usd-coin', 'tether'].includes(selectedToken?.coinGeckoId)
+          ) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
           } else if (selectedToken.accountType === 'spot') {
             errorMessage = `${t<string>('MINIMUM_AMOUNT_HL_SPOT', {
