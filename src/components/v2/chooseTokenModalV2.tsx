@@ -223,7 +223,8 @@ const RenderToken = React.memo(
     const getMinimumTokenValue = (token: Holding | SupportedToken) => {
       if (
         type === TokenModalType.CARD_LOAD &&
-        token.chainDetails.chain_id === CHAIN_ETH.chain_id
+        token.chainDetails.chain_id === CHAIN_ETH.chain_id &&
+        !['usd-coin', 'tether'].includes(token.coinGeckoId)
       ) {
         return minTokenValueEth;
       } else if (
