@@ -1,4 +1,5 @@
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { floor, get, isEmpty, set } from 'lodash';
@@ -68,16 +69,28 @@ import {
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
 
-export default function BridgeFundCardScreen({ route }: { route: any }) {
-  const {
-    navigation,
-    currentCardProvider,
-    currentCardIndex,
-  }: {
-    navigation: any;
-    currentCardProvider: CardProviders;
-    currentCardIndex: number;
-  } = route.params;
+/**
+ * Interface for route parameters passed to BridgeFundCardScreen
+ */
+interface BridgeFundCardScreenParams {
+  currentCardProvider: CardProviders;
+  currentCardIndex: number;
+}
+
+/**
+ * BridgeFundCardScreen - Screen for loading funds onto a card
+ * Allows users to select a token and amount to fund their card
+ * @param route - Route object containing navigation parameters
+ */
+export default function BridgeFundCardScreen({
+  route,
+}: {
+  route: { params: BridgeFundCardScreenParams };
+}): JSX.Element {
+  // Use navigation hook instead of receiving it as a param to avoid non-serializable warning
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  const { currentCardProvider, currentCardIndex } = route.params;
 
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
@@ -216,6 +229,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
           }
         } else {
+          console.log('No eligible tokens found ::::: ');
           // No eligible tokens found - show insufficient balance bottom sheet
           showInsufficientBalanceSheet();
         }

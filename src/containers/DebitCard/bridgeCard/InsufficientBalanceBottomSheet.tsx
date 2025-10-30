@@ -78,7 +78,29 @@ const modalDropdownStyles = StyleSheet.create({
   },
 });
 
-const ChainSelector = ({
+interface ChainSelectorProps {
+  selectedChain: UserChain;
+  setSelectedChain: (chain: UserChain) => void;
+  showChainSelector: boolean;
+  setShowChainSelector: (show: boolean) => void;
+  dropdownPos: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  setDropdownPos: (pos: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) => void;
+  selectorRef: React.RefObject<any>;
+  getChainDataWithAddress: (chain: Chain) => UserChain;
+  availableChains: Chain[];
+}
+
+const ChainSelector: React.FC<ChainSelectorProps> = ({
   selectedChain,
   setSelectedChain,
   showChainSelector,
@@ -87,8 +109,8 @@ const ChainSelector = ({
   setDropdownPos,
   selectorRef,
   getChainDataWithAddress,
-  FUNDING_CHAINS,
-}: any) => {
+  availableChains,
+}) => {
   // When opening, measure the selector position on screen
   const openDropdown = () => {
     if (selectorRef.current) {
@@ -151,40 +173,44 @@ const ChainSelector = ({
               className='max-h-[320px]'
               showsVerticalScrollIndicator={true}
               nestedScrollEnabled={true}>
-              {FUNDING_CHAINS.map((chain: any, index: number) => {
-                const chainData = getChainDataWithAddress(chain);
-                const hasAddress = Boolean(chainData.address);
-                const isSelected = selectedChain?.id === chain.id;
-                return (
-                  <CyDTouchView
-                    key={chain.id}
-                    className={`flex-row items-center px-[18px] py-[14px] ${!hasAddress ? 'opacity-50' : ''} ${FUNDING_CHAINS.length - 1 === index ? '' : 'border-b border-base150'}`}
-                    onPress={() => {
-                      if (hasAddress) {
+              {availableChains.length > 0 ? (
+                availableChains.map((chain: any, index: number) => {
+                  const chainData = getChainDataWithAddress(chain);
+                  const isSelected = selectedChain?.id === chain.id;
+                  return (
+                    <CyDTouchView
+                      key={chain.id}
+                      className={`flex-row items-center px-[18px] py-[14px] ${availableChains.length - 1 === index ? '' : 'border-b border-base150'}`}
+                      onPress={() => {
                         setSelectedChain(chainData);
                         setShowChainSelector(false);
-                      }
-                    }}
-                    disabled={!hasAddress}>
-                    <CyDFastImage
-                      source={chain.logo_url}
-                      className='w-[22px] h-[22px] mr-[12px]'
-                    />
-                    <CyDText
-                      className='text-white text-[16px] flex-1'
-                      numberOfLines={1}>
-                      {chain.name}
-                    </CyDText>
-                    {isSelected && (
-                      <CyDMaterialDesignIcons
-                        name='check-circle'
-                        size={20}
-                        className='text-yellow-400 ml-[8px]'
+                      }}>
+                      <CyDFastImage
+                        source={chain.logo_url}
+                        className='w-[22px] h-[22px] mr-[12px]'
                       />
-                    )}
-                  </CyDTouchView>
-                );
-              })}
+                      <CyDText
+                        className='text-white text-[16px] flex-1'
+                        numberOfLines={1}>
+                        {chain.name}
+                      </CyDText>
+                      {isSelected && (
+                        <CyDMaterialDesignIcons
+                          name='check-circle'
+                          size={20}
+                          className='text-yellow-400 ml-[8px]'
+                        />
+                      )}
+                    </CyDTouchView>
+                  );
+                })
+              ) : (
+                <CyDView className='px-[18px] py-[24px] items-center'>
+                  <CyDText className='text-n200 text-[14px] text-center'>
+                    No chains available for this wallet type
+                  </CyDText>
+                </CyDView>
+              )}
             </CyDScrollView>
           </CyDView>
         </CyDTouchView>
@@ -212,11 +238,28 @@ const InsufficientBalanceBottomSheetContent: React.FC<
     '',
   );
 
-  // Synchronously set the default selectedChain to Ethereum
-  const [selectedChain, setSelectedChain] = useState<UserChain>({
-    ...CHAIN_SOLANA,
-    address: solanaAddress,
-  });
+  // Default to Ethereum if available, otherwise Solana if available
+  const getDefaultChain = (): UserChain => {
+    if (ethereumAddress) {
+      return {
+        ...CHAIN_ETH,
+        address: ethereumAddress,
+      };
+    } else if (solanaAddress) {
+      return {
+        ...CHAIN_SOLANA,
+        address: solanaAddress,
+      };
+    }
+    // Fallback to Ethereum even if no address (will show as unavailable)
+    return {
+      ...CHAIN_ETH,
+      address: '',
+    };
+  };
+
+  const [selectedChain, setSelectedChain] =
+    useState<UserChain>(getDefaultChain());
 
   const [showChainSelector, setShowChainSelector] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({
@@ -227,64 +270,84 @@ const InsufficientBalanceBottomSheetContent: React.FC<
   });
   const selectorRef = React.useRef<any>(null);
 
+  // Filter available chains - only show chains with addresses
+  const [availableChains, setAvailableChains] = useState<Chain[]>([]);
+
+  /**
+   * Get chain data with address for a specific chain
+   * Gracefully handles missing addresses (e.g., WalletConnect only has Ethereum)
+   * @param chain - The chain to get address for
+   * @returns UserChain object with address (empty string if not available)
+   */
   function getChainDataWithAddress(chain: Chain): UserChain {
     let address = '';
 
-    switch (chain.backendName) {
-      case 'ETH':
-      case 'POLYGON':
-      case 'BSC':
-      case 'AVALANCHE':
-      case 'ARBITRUM':
-      case 'OPTIMISM':
-      case 'BASE':
-      case 'ZKSYNC_ERA':
-        address = ethereumAddress;
-        break;
-      case 'SOLANA':
-        address = get(
-          hdWalletContext,
-          'state.wallet.solana.wallets[0].address',
-          '',
-        );
-        break;
-      case 'COSMOS':
-        address = get(
-          hdWalletContext,
-          'state.wallet.cosmos.wallets[0].address',
-          '',
-        );
-        break;
-      case 'OSMOSIS':
-        address = get(
-          hdWalletContext,
-          'state.wallet.osmosis.wallets[0].address',
-          '',
-        );
-        break;
-      case 'NOBLE':
-        address = get(
-          hdWalletContext,
-          'state.wallet.noble.wallets[0].address',
-          '',
-        );
-        break;
-      case 'COREUM':
-        address = get(
-          hdWalletContext,
-          'state.wallet.coreum.wallets[0].address',
-          '',
-        );
-        break;
-      case 'INJECTIVE':
-        address = get(
-          hdWalletContext,
-          'state.wallet.injective.wallets[0].address',
-          '',
-        );
-        break;
-      default:
-        address = ethereumAddress;
+    try {
+      switch (chain.backendName) {
+        case 'ETH':
+        case 'POLYGON':
+        case 'BSC':
+        case 'AVALANCHE':
+        case 'ARBITRUM':
+        case 'OPTIMISM':
+        case 'BASE':
+        case 'ZKSYNC_ERA':
+          // EVM chains all use the same Ethereum address
+          address = ethereumAddress || '';
+          break;
+        case 'SOLANA':
+          address = get(
+            hdWalletContext,
+            'state.wallet.solana.wallets[0].address',
+            '',
+          );
+          break;
+        case 'COSMOS':
+          address = get(
+            hdWalletContext,
+            'state.wallet.cosmos.wallets[0].address',
+            '',
+          );
+          break;
+        case 'OSMOSIS':
+          address = get(
+            hdWalletContext,
+            'state.wallet.osmosis.wallets[0].address',
+            '',
+          );
+          break;
+        case 'NOBLE':
+          address = get(
+            hdWalletContext,
+            'state.wallet.noble.wallets[0].address',
+            '',
+          );
+          break;
+        case 'COREUM':
+          address = get(
+            hdWalletContext,
+            'state.wallet.coreum.wallets[0].address',
+            '',
+          );
+          break;
+        case 'INJECTIVE':
+          address = get(
+            hdWalletContext,
+            'state.wallet.injective.wallets[0].address',
+            '',
+          );
+          break;
+        default:
+          // Default to Ethereum address for unknown chains
+          address = ethereumAddress || '';
+      }
+    } catch (error) {
+      // Log error but don't crash - return empty address
+      console.error(
+        `Error getting address for chain ${chain.backendName}:`,
+        error,
+      );
+      address = '';
     }
 
     return {
@@ -321,20 +384,53 @@ const InsufficientBalanceBottomSheetContent: React.FC<
     );
   };
 
+  /**
+   * Filter chains to only show those with available addresses
+   * Prevents showing chains that aren't available (e.g., WalletConnect only has Ethereum)
+   */
+  const filterAvailableChains = (): Chain[] => {
+    const chains: Chain[] = [];
+
+    for (const chain of FUNDING_CHAINS) {
+      const chainData = getChainDataWithAddress(chain);
+      // Only include chains that have an address
+      if (chainData.address && chainData.address.length > 0) {
+        chains.push(chain);
+      }
+    }
+
+    return chains;
+  };
+
   useEffect(() => {
+    // Filter available chains based on wallet context
+    const filtered = filterAvailableChains();
+    setAvailableChains(filtered);
+
+    // Set connection type and default chain
     void getConnectionType().then(_connectionType => {
       if (_connectionType) {
         setConnectionType(_connectionType);
-        if (_connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
+
+        if (
+          _connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA &&
+          solanaAddress
+        ) {
+          // Social login Solana: default to Solana
           setSelectedChain({
             ...CHAIN_SOLANA,
             address: solanaAddress,
           });
-        } else {
+        } else if (ethereumAddress) {
+          // All other cases: default to Ethereum if available
           setSelectedChain({
             ...CHAIN_ETH,
             address: ethereumAddress,
           });
+        } else if (filtered.length > 0) {
+          // Fallback: use first available chain
+          const firstChain = getChainDataWithAddress(filtered[0]);
+          setSelectedChain(firstChain);
         }
       }
     });
@@ -363,19 +459,35 @@ const InsufficientBalanceBottomSheetContent: React.FC<
         </CyDView>
       </CyDView>
 
-      {/* Chain Selector */}
-      {connectionType !== ConnectionTypes.SOCIAL_LOGIN_SOLANA && (
-        <ChainSelector
-          selectedChain={selectedChain}
-          setSelectedChain={setSelectedChain}
-          showChainSelector={showChainSelector}
-          setShowChainSelector={setShowChainSelector}
-          dropdownPos={dropdownPos}
-          setDropdownPos={setDropdownPos}
-          selectorRef={selectorRef}
-          getChainDataWithAddress={getChainDataWithAddress}
-          FUNDING_CHAINS={FUNDING_CHAINS}
-        />
+      {/* Chain Selector - Only show if multiple chains available and not Solana social login */}
+      {connectionType !== ConnectionTypes.SOCIAL_LOGIN_SOLANA &&
+        availableChains.length > 1 && (
+          <ChainSelector
+            selectedChain={selectedChain}
+            setSelectedChain={setSelectedChain}
+            showChainSelector={showChainSelector}
+            setShowChainSelector={setShowChainSelector}
+            dropdownPos={dropdownPos}
+            setDropdownPos={setDropdownPos}
+            selectorRef={selectorRef}
+            getChainDataWithAddress={getChainDataWithAddress}
+            availableChains={availableChains}
+          />
+        )}
+
+      {/* Show chain name if only one chain available */}
+      {availableChains.length === 1 && (
+        <CyDView className='items-center mb-[6px]'>
+          <CyDView className='flex-row items-center px-[12px] py-[8px]'>
+            <CyDFastImage
+              source={selectedChain?.logo_url}
+              className='w-[20px] h-[20px] mr-[8px]'
+            />
+            <CyDText className='text-[16px] font-semibold'>
+              {selectedChain?.name} Address
+            </CyDText>
+          </CyDView>
+        </CyDView>
       )}
 
       {/* Info Message */}
@@ -390,76 +502,79 @@ const InsufficientBalanceBottomSheetContent: React.FC<
         </CyDText>
       </CyDView>
 
-      {/* QR Code Section */}
-      <CyDView className='items-center mb-[20px]'>
-        <CyDView className='bg-white p-[12px] rounded-[12px] mb-8'>
-          <QRCode
-            content={selectedChain.address}
-            codeStyle='dot'
-            size={180}
-            logo={get(
-              AppImagesMap.common,
-              [selectedChain?.logo_url],
-              AppImagesMap.common.QR_LOGO,
-            )}
-            // logo={get(AppImages, selectedChain.logo_url, AppImages.QR_LOGO)}
-            logoSize={40}
-          />
-        </CyDView>
+      {/* QR Code Section - Only show if address is available */}
+      {selectedChain.address && selectedChain.address.length > 0 ? (
+        <CyDView className='items-center mb-[20px]'>
+          <CyDView className='bg-white p-[12px] rounded-[12px] mb-8'>
+            <QRCode
+              content={selectedChain.address}
+              codeStyle='dot'
+              size={180}
+              logo={get(
+                AppImagesMap.common,
+                [selectedChain?.logo_url],
+                AppImagesMap.common.QR_LOGO,
+              )}
+              logoSize={40}
+            />
+          </CyDView>
 
-        <CyDView className='items-center'>
-          <CyDText className='text-n200 text-[20px] font-bold text-center mb-[16px]'>
-            {getMaskedAddress(selectedChain.address)}
+          <CyDView className='items-center'>
+            <CyDText className='text-n200 text-[20px] font-bold text-center mb-[16px]'>
+              {getMaskedAddress(selectedChain.address)}
+            </CyDText>
+          </CyDView>
+
+          {/* Copy and Share buttons */}
+          <CyDView className='flex-row space-x-[10px]'>
+            <Button
+              onPress={() => {
+                shareAddress().catch(console.error);
+              }}
+              icon={
+                <CyDMaterialDesignIcons
+                  name='share-variant'
+                  size={20}
+                  className='text-base400'
+                />
+              }
+              style='bg-n40 border border-n40 rounded-full px-[16px] py-[8px] mr-[8px]'
+              title='Share Address'
+              type={ButtonType.SECONDARY}
+              titleStyle='text-[14px] ml-[8px]'
+            />
+            <Button
+              onPress={() => copyToClipboard(selectedChain.address)}
+              icon={
+                <CyDMaterialDesignIcons
+                  name='content-copy'
+                  size={20}
+                  className='text-base400'
+                />
+              }
+              style='bg-n40 border border-n40 rounded-full px-[16px] py-[8px]'
+              title={'Copy Address'}
+              type={ButtonType.SECONDARY}
+              titleStyle='text-[14px] ml-[8px]'
+            />
+          </CyDView>
+        </CyDView>
+      ) : (
+        <CyDView className='items-center mb-[20px] py-[32px]'>
+          <CyDMaterialDesignIcons
+            name='wallet-outline'
+            size={48}
+            className='text-n200 mb-[16px]'
+          />
+          <CyDText className='text-n200 text-[16px] font-semibold text-center'>
+            No wallet address available
           </CyDText>
-
-          {/* Address breakdown */}
-          {/* <CyDView className='flex-row mb-[16px]'>
-            <CyDText className='text-blue-400 text-[12px] font-bold'>
-              {selectedChain.address.slice(0, 8)}
-            </CyDText>
-            <CyDText className='text-n200 text-[12px]'>
-              {selectedChain.address.slice(8, -6)}
-            </CyDText>
-            <CyDText className='text-blue-400 text-[12px] font-bold'>
-              {selectedChain.address.slice(-6)}
-            </CyDText>
-          </CyDView> */}
+          <CyDText className='text-n200 text-[14px] text-center mt-[8px] px-[24px]'>
+            This wallet type doesn&apos;t support funding through these
+            networks.
+          </CyDText>
         </CyDView>
-
-        {/* Copy and Share buttons */}
-        <CyDView className='flex-row space-x-[10px]'>
-          <Button
-            onPress={() => {
-              shareAddress().catch(console.error);
-            }}
-            icon={
-              <CyDMaterialDesignIcons
-                name='share-variant'
-                size={20}
-                className='text-base400'
-              />
-            }
-            style='bg-n40 border border-n40 rounded-full px-[16px] py-[8px] mr-[8px]'
-            title='Share Address'
-            type={ButtonType.SECONDARY}
-            titleStyle='text-[14px] ml-[8px]'
-          />
-          <Button
-            onPress={() => copyToClipboard(selectedChain.address)}
-            icon={
-              <CyDMaterialDesignIcons
-                name='content-copy'
-                size={20}
-                className='text-base400'
-              />
-            }
-            style='bg-n40 border border-n40 rounded-full px-[16px] py-[8px]'
-            title={'Copy Address'}
-            type={ButtonType.SECONDARY}
-            titleStyle='text-[14px] ml-[8px]'
-          />
-        </CyDView>
-      </CyDView>
+      )}
 
       {/* Learn More Link */}
       <CyDTouchView
