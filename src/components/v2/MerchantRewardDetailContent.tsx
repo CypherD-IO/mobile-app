@@ -258,7 +258,7 @@ const MerchantRewardDetailContent: React.FC<
             title: t('PROMOTIONAL_BONUS', 'Promotional Bonus'),
             amount: bribe.amountFormatted,
             token: bribe.token.symbol,
-            date: formatTimestamp(bribe.addedAt),
+            date: formatTimestamp(bribe.addedAt * 1000),
           })) ?? [];
         setPromotionalBonuses(promos);
       } else {
