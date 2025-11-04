@@ -61,7 +61,7 @@ interface MerchantBoostModalProps {
   initialSelectedMerchants?: MerchantWithAllocation[];
 }
 
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 150;
 
 const MerchantBoostModal: React.FC<MerchantBoostModalProps> = ({
   isVisible,

@@ -64,7 +64,7 @@ const MerchantRewardListScreen: React.FC = () => {
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  const LIMIT = 20;
+  const LIMIT = 150;
   const offsetRef = useRef<string | undefined>(undefined);
   const inFlightRef = useRef<boolean>(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
