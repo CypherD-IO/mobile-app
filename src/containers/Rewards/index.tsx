@@ -820,6 +820,8 @@ export default function Rewards() {
             claimRewardPromise,
           ]);
 
+
+
           // Check if all critical requests succeeded
           if (userProfileResponse.isError) {
             console.error(
@@ -1313,6 +1315,7 @@ export default function Rewards() {
                     claimRewardData,
                   });
                 }}
+                disabled={Number(availableToClaim) <= 0}
                 type={ButtonType.PRIMARY}
                 style='rounded-full px-8'
                 paddingY={8}
