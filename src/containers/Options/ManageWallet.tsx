@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { BackHandler, FlatList } from 'react-native';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
-import { HdWalletContext } from '../../core/util';
+import { HdWalletContext, parseErrorMessage } from '../../core/util';
 import {
   CyDIcons,
   CyDSafeAreaView,
@@ -30,6 +30,8 @@ import PageHeader from '../../components/PageHeader';
 import { screenTitle } from '../../constants';
 import clsx from 'clsx';
 import Toast from 'react-native-toast-message';
+import useWeb3Auth from '../../hooks/useWeb3Auth';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 
 interface IManageWalletData {
   index: number;
@@ -45,6 +47,11 @@ interface ISecurityPrivacyData {
   logo: IconNames;
 }
 
+interface IMfaData {
+  index: number;
+  title: string;
+  logo: IconNames;
+}
 const renderSettingsData = (
   item: IManageWalletData,
   hdWalletContext: { state: HDWallet },
@@ -188,6 +195,33 @@ const renderSecurityPrivacyData = (
   );
 };
 
+const renderMfaData = (item: IMfaData, asyncEnableMFA: () => Promise<void>) => {
+  return (
+    <CyDView className={'mb-[8px]'}>
+      <CyDTouchView
+        className={
+          'flex flex-row justify-between items-center bg-n0 rounded-[12px] px-[16px] py-[16px]'
+        }
+        onPress={() => {
+          void asyncEnableMFA();
+        }}>
+        <CyDView className={'flex flex-row items-center gap-x-[12px]'}>
+          <CyDView
+            className={
+              'flex items-center justify-center h-[36px] w-[36px] rounded-[6px] bg-[#FA812F]'
+            }>
+            <CyDIcons name={item.logo} size={36} className='text-white' />
+          </CyDView>
+          <CyDText className={'font-semibold text-[16px] '}>
+            {item.title}
+          </CyDText>
+        </CyDView>
+        <CyDIcons name='chevron-right' size={20} className='text-base400' />
+      </CyDTouchView>
+    </CyDView>
+  );
+};
+
 export default function ManageWallet() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
@@ -196,6 +230,10 @@ export default function ManageWallet() {
   const [connectionTypeValue, setConnectionTypeValue] = useState<
     ConnectionTypes | undefined
   >(storedConnectionType ?? undefined);
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  const [isMfaEnabled, setIsMfaEnabled] = useState<boolean>(true);
 
   useEffect(() => {
     if (storedConnectionType) {
@@ -203,11 +241,29 @@ export default function ManageWallet() {
     }
   }, [storedConnectionType]);
 
+  useEffect(() => {
+    void checkMfaEnabled();
+  }, []);
+
   const manageWalletData: IManageWalletData[] = getManageWalletData(
     connectionTypeValue,
     deleteWallet,
     navigation,
   );
+
+  const checkMfaEnabled = async () => {
+    const provider =
+      connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM
+        ? web3AuthEvm
+        : web3AuthSolana;
+    const connected = provider.connected;
+
+    if (!connected) {
+      await provider.init();
+    }
+    const userInfo = provider.userInfo();
+    setIsMfaEnabled(userInfo?.isMfaEnabled ?? false);
+  };
 
   const isSecurityOptionDisabled =
     connectionTypeValue === ConnectionTypes.WALLET_CONNECT;
@@ -247,6 +303,16 @@ export default function ManageWallet() {
     return baseData;
   }, [connectionTypeValue, hdWalletContext.state.pinValue]);
 
+  const mfaData = useMemo((): IMfaData[] => {
+    return [
+      {
+        index: 0,
+        title: t('ENABLE_MFA'),
+        logo: 'shield' as IconNames,
+      },
+    ];
+  }, []);
+
   /**
    * Handles hardware back button press
    * Memoized to prevent unnecessary re-renders
@@ -281,12 +347,63 @@ export default function ManageWallet() {
     [hdWalletContext],
   );
 
+  const renderMfaItem = useCallback(
+    ({ item }: { item: IMfaData }) => renderMfaData(item, asyncEnableMFA),
+    [],
+  );
+
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
   }, []);
+
+  const asyncEnableMFA = async () => {
+    const provider =
+      connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM
+        ? web3AuthEvm
+        : web3AuthSolana;
+    const connected = provider.connected;
+
+    void web3AuthEvm;
+    if (!connected) {
+      await provider.init();
+    }
+    const userInfo = provider.userInfo();
+
+    if (userInfo?.isMfaEnabled) {
+      showModal('state', {
+        type: 'success',
+        title: 'MFA already enabled',
+        description: 'MFA is already enabled',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
+    }
+
+    provider
+      .enableMFA()
+      .then((result: boolean) => {
+        showModal('state', {
+          type: 'success',
+          title: 'MFA enabled',
+          description: 'MFA enabled successfully',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      })
+      .catch(error => {
+        showModal('state', {
+          type: 'error',
+          title: 'Error enabling MFA',
+          description: parseErrorMessage(error),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      });
+  };
 
   return (
     <CyDSafeAreaView className={'bg-n0 h-full'}>
@@ -309,7 +426,7 @@ export default function ManageWallet() {
 
         {/* Wallet Options Section */}
         {manageWalletData.length > 0 && (
-          <CyDView className={'px-[16px]'}>
+          <CyDView className={'px-[16px] mb-[16px]'}>
             <CyDText className={'text-n200 text-[12px] font-medium mb-[8px]'}>
               {t('WALLET_OPTIONS')}
             </CyDText>
@@ -321,6 +438,23 @@ export default function ManageWallet() {
             />
           </CyDView>
         )}
+
+        {manageWalletData.length > 0 &&
+          !isMfaEnabled &&
+          (connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM ||
+            connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_SOLANA) && (
+            <CyDView className={'px-[16px]'}>
+              <CyDText className={'text-n200 text-[12px] font-medium mb-[8px]'}>
+                {t('MFA_SETTINGS')}
+              </CyDText>
+              <FlatList<IMfaData>
+                data={mfaData}
+                renderItem={renderMfaItem}
+                keyExtractor={item => item.index.toString()}
+                scrollEnabled={false}
+              />
+            </CyDView>
+          )}
       </CyDView>
     </CyDSafeAreaView>
   );
