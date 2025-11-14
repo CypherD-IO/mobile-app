@@ -245,6 +245,7 @@ export enum GlobalModalType {
   THREE_D_SECURE_APPROVAL = 'threeDSecureApproval',
   CARD_ACTIONS_FROM_NOTIFICATION = 'cardActionsFromNotification',
   TRANSACTION_DECLINE_HANDLING = 'transactionDeclineHandling',
+  CHECK_MFA_ENABLED = 'checkMfaEnabled',
 }
 
 export enum TokenModalType {
