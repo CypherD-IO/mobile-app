@@ -2322,6 +2322,8 @@ const resources = {
       ENABLE_MFA: 'Enable MFA',
       ENABLE_MFA_DESCRIPTION:
         'Enable Multi-Factor Authentication to secure your account so your assets are always under your control. Add an extra layer of protection to keep your wallet safe.',
+      ENABLE_MFA_SETTINGS_INFO:
+        'You can enable MFA anytime under Options → Account Settings → Manage Wallet → Enable MFA',
       ENABLE_NOW: 'Enable Now',
       MFA_SETTINGS: 'MFA Settings',
     },

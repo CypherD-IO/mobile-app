@@ -106,10 +106,18 @@ const EnableMfaModal: React.FC<EnableMfaModalProps> = ({
         </CyDText>
 
         {/* Description */}
-        <CyDView className='mt-[16px] mb-[20px]'>
+        <CyDView className='mt-[16px] mb-[12px]'>
           <CyDText
             className={'text-center text-[15px] leading-[22px] text-base200'}>
             {t('ENABLE_MFA_DESCRIPTION')}
+          </CyDText>
+        </CyDView>
+
+        {/* Settings Info */}
+        <CyDView className='bg-n30 rounded-[12px] px-[16px] py-[12px] mb-[20px]'>
+          <CyDText
+            className={'text-center text-[12px] leading-[18px] text-base100'}>
+            {t('ENABLE_MFA_SETTINGS_INFO')}
           </CyDText>
         </CyDView>
 

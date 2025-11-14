@@ -205,10 +205,10 @@ export default function useConnectionManager() {
 
       // Show the MFA enable modal
       showModal(GlobalModalType.CHECK_MFA_ENABLED, {
-        onSuccess: () => {
+        onSuccess: async () => {
           hideModal();
-          void socialAuthProvider.init();
-          void socialAuthProvider?.enableMFA();
+          await socialAuthProvider.init();
+          await socialAuthProvider?.enableMFA();
         },
         onFailure: async () => {
           // User clicked "Maybe Later" - snooze for 1 week

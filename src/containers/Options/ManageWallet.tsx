@@ -386,6 +386,7 @@ export default function ManageWallet() {
     provider
       .enableMFA()
       .then((result: boolean) => {
+        setIsMfaEnabled(true);
         showModal('state', {
           type: 'success',
           title: 'MFA enabled',
