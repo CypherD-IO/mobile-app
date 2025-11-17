@@ -2319,6 +2319,13 @@ const resources = {
       EARN_INCENTIVES: 'Earn incentives by voting',
       EARN_INCENTIVES_DESCRIPTION:
         'Certain merchants offer direct incentives to voters who vote for them. Vote for those merchants to earn incentives.',
+      ENABLE_MFA: 'Enable MFA',
+      ENABLE_MFA_DESCRIPTION:
+        'Enable Multi-Factor Authentication to secure your account so your assets are always under your control. Add an extra layer of protection to keep your wallet safe.',
+      ENABLE_MFA_SETTINGS_INFO:
+        'You can enable MFA anytime under Options → Account Settings → Manage Wallet → Enable MFA',
+      ENABLE_NOW: 'Enable Now',
+      MFA_SETTINGS: 'MFA Settings',
     },
   },
 };

@@ -297,7 +297,6 @@ const OnBoardingGetStarted = () => {
 
     onPanResponderMove: (evt, gestureState) => {
       // Log gesture progress for debugging
-      // console.log('Swipe in progress:', gestureState.dx);
     },
 
     onPanResponderRelease: (evt, gestureState) => {

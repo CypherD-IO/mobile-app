@@ -716,3 +716,50 @@ export const getUpdateReminderSnoozeUntil = async (): Promise<
     return null;
   }
 };
+
+/**
+ * MFA modal snooze helpers
+ * Persist a timestamp (in ms) until which the MFA enable modal should not be shown.
+ * When user clicks "Maybe Later", store the timestamp for 1 week from now.
+ */
+export const setMfaModalSnoozeUntil = async (
+  timestampMs: number,
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem('MFA_MODAL_SNOOZE_UNTIL', String(timestampMs));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+/**
+ * Retrieves the timestamp (in ms) until which the MFA enable modal should remain snoozed.
+ * Returns null if no snooze is active or if the value cannot be parsed.
+ *
+ * @returns {Promise<number | null>} The snooze timestamp in milliseconds, or null if not set
+ */
+export const getMfaModalSnoozeUntil = async (): Promise<number | null> => {
+  try {
+    const value = await AsyncStorage.getItem('MFA_MODAL_SNOOZE_UNTIL');
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
+  }
+};
+
+/**
+ * Clears the MFA modal snooze timestamp from AsyncStorage.
+ * This will allow the MFA modal to be shown again immediately.
+ *
+ * @returns {Promise<void>}
+ */
+export const clearMfaModalSnooze = async (): Promise<void> => {
+  try {
+    await AsyncStorage.removeItem('MFA_MODAL_SNOOZE_UNTIL');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};

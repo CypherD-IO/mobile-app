@@ -400,7 +400,7 @@ export default function OnBoardingOptions() {
       extraLoginOptions: {
         login_hint: email,
       },
-      mfaLevel: MFA_LEVELS.MANDATORY,
+      mfaLevel: MFA_LEVELS.NONE,
     });
 
     try {
@@ -419,7 +419,7 @@ export default function OnBoardingOptions() {
   const googleLogin = async (provider: Web3Auth) => {
     await provider.login({
       loginProvider: LOGIN_PROVIDER.GOOGLE,
-      mfaLevel: MFA_LEVELS.MANDATORY,
+      mfaLevel: MFA_LEVELS.NONE,
     });
 
     try {
@@ -435,15 +435,10 @@ export default function OnBoardingOptions() {
     }
   };
 
-  /**
-   * Handles Apple social login authentication
-   * Initiates the Web3Auth login flow with Apple provider and mandatory MFA
-   * @param provider - Web3Auth instance to use for authentication
-   */
   const appleLogin = async (provider: Web3Auth) => {
     await provider.login({
       loginProvider: LOGIN_PROVIDER.APPLE,
-      mfaLevel: MFA_LEVELS.MANDATORY,
+      mfaLevel: MFA_LEVELS.NONE,
     });
 
     try {

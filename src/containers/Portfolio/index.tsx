@@ -169,8 +169,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     BridgeContext,
   ) as BridgeContextDef;
   const { getWithAuth } = useAxios();
-  const { deleteSocialAuthWalletIfSessionExpired, connectionType } =
-    useConnectionManager();
+  const {
+    deleteSocialAuthWalletIfSessionExpired,
+    connectionType,
+    checkMfaEnabled,
+  } = useConnectionManager();
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
@@ -713,6 +716,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       ].includes(connectionType)
     ) {
       void deleteSocialAuthWalletIfSessionExpired();
+      void checkMfaEnabled();
     }
   }, [connectionType, isFocused]);
 
@@ -1196,7 +1200,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 {'Choose platform to buy'}
               </CyDText>
               <CyDFlatList
-                data={buyOptionsData as IBuyOptionsData[]}
+                data={buyOptionsData}
                 renderItem={({ item }: { item: IBuyOptionsData }) =>
                   renderBuyPlatformItem(item)
                 }

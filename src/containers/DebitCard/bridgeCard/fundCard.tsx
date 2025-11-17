@@ -1,5 +1,9 @@
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import {
+  useIsFocused,
+  useNavigation,
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { floor, get, isEmpty, set } from 'lodash';
@@ -229,7 +233,6 @@ export default function BridgeFundCardScreen({
             });
           }
         } else {
-          console.log('No eligible tokens found ::::: ');
           // No eligible tokens found - show insufficient balance bottom sheet
           showInsufficientBalanceSheet();
         }
