@@ -2326,6 +2326,7 @@ const resources = {
         'You can enable MFA anytime under Options → Account Settings → Manage Wallet → Enable MFA',
       ENABLE_NOW: 'Enable Now',
       MFA_SETTINGS: 'MFA Settings',
+      LOADING_WALLET_INFO: 'Loading wallet info...',
     },
   },
 };

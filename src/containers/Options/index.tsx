@@ -434,7 +434,6 @@ export default function OptionsHub() {
       } catch (error) {
         // Log error to Sentry for debugging
         Sentry.captureException(error);
-        console.error('Failed to load developer mode:', error);
       }
     };
     void loadDeveloperMode();
@@ -486,7 +485,6 @@ export default function OptionsHub() {
     } catch (error) {
       // Handle any errors during toggle operation
       Sentry.captureException(error);
-      console.error('Error toggling developer mode:', error);
       Alert.alert(
         'Error',
         'Failed to toggle developer mode. Please try again.',

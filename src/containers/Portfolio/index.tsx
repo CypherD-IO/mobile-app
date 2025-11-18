@@ -45,12 +45,12 @@ import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContex
 import CyDTokenValue from '../../components/v2/tokenValue';
 import { QUICK_ACTION_NOTIFICATION_CATEGORY_IDS } from '../../constants/data';
 import {
-  ConnectionTypes,
   CypherDeclineCodes,
   GlobalContextType,
   GlobalModalType,
   RPCODES,
   CardProviders,
+  ConnectionTypes,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
@@ -716,7 +716,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       ].includes(connectionType)
     ) {
       void deleteSocialAuthWalletIfSessionExpired();
-      void checkMfaEnabled();
     }
   }, [connectionType, isFocused]);
 

@@ -14,6 +14,8 @@ import {
 } from '../styles/tailwindComponents';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
+import Toast from 'react-native-toast-message';
+import { parseErrorMessage } from '../core/util';
 
 interface TermsAndConditionsModalProps {
   isModalVisible: boolean;
@@ -45,7 +47,11 @@ export default function TermsAndConditionsModal({
       setShowModal(false);
       resetScrollState();
     } catch (error) {
-      console.error('Error accepting terms:', error);
+      Toast.show({
+        type: 'error',
+        text2: parseErrorMessage(error),
+        position: 'top',
+      });
     } finally {
       setIsLoading(false);
     }

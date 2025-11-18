@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -13,12 +13,20 @@ import { screenTitle } from '../../../../../constants';
 import FormikTextInput from '../../../../../components/v2/formikInput';
 import FormikDateInput from '../../../../../components/v2/formikDatePicker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Platform, ReturnKeyTypeOptions } from 'react-native';
+import {
+  Platform,
+  ReturnKeyTypeOptions,
+  ActivityIndicator,
+} from 'react-native';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
 import { useFormContext } from './FormContext';
 import { t } from 'i18next';
 import OfferTagComponent from '../../../../../components/v2/OfferTagComponent';
+import useConnectionManager from '../../../../../hooks/useConnectionManager';
+import useWeb3Auth from '../../../../../hooks/useWeb3Auth';
+import { ConnectionTypes } from '../../../../../constants/enum';
+import * as Sentry from '@sentry/react-native';
 
 // Validation schema for the basic details form
 const BasicDetailsSchema = Yup.object().shape({
@@ -64,12 +72,90 @@ const BasicDetails = (): JSX.Element => {
   const currentStep = 1;
   const totalSteps = 3;
   const { formState, setFormState } = useFormContext();
+  const { connectionType } = useConnectionManager();
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   // Add refs for each input
   const firstNameRef = useRef<any>(null);
   const lastNameRef = useRef<any>(null);
   const dobRef = useRef<any>(null);
   const emailRef = useRef<any>(null);
+
+  // Ref to track if we've already fetched user info to prevent duplicate calls
+  const hasFetchedUserInfo = useRef<boolean>(false);
+
+  // State to hold the prefilled email from social login
+  const [prefilledEmail, setPrefilledEmail] = useState<string>('');
+
+  // Loading state to track when email is being fetched for social login users
+  const [isLoadingUserInfo, setIsLoadingUserInfo] = useState<boolean>(false);
+
+  /**
+   * Effect to prefill email from Web3Auth user info if using social login
+   * Checks if connection type is social login (EVM or Solana) and fetches user info
+   * Sets loading state while fetching to show loading indicator
+   * Uses a ref to ensure this only runs once to prevent duplicate API calls
+   */
+  useEffect(() => {
+    const fetchUserInfoAndPrefillEmail = async (): Promise<void> => {
+      try {
+        // Check if the connection type is social login (EVM or Solana)
+        if (
+          connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM ||
+          connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA
+        ) {
+          // Set loading state to true before fetching user info
+          setIsLoadingUserInfo(true);
+
+          let userInfo;
+
+          // Get user info from the appropriate Web3Auth instance based on connection type
+          if (connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM) {
+            // Initialize Web3Auth EVM if not already connected
+            if (!web3AuthEvm.connected) {
+              await web3AuthEvm.init();
+            }
+            userInfo = web3AuthEvm.userInfo();
+          } else if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
+            // Initialize Web3Auth Solana if not already connected
+            if (!web3AuthSolana.connected) {
+              await web3AuthSolana.init();
+            }
+            userInfo = web3AuthSolana.userInfo();
+          }
+
+          // If user info contains an email, prefill it
+          if (userInfo?.email) {
+            setPrefilledEmail(userInfo.email);
+          }
+        }
+      } catch (error) {
+        // Log error but don't block the user from continuing
+        Sentry.captureException(error);
+      } finally {
+        // Always set loading to false when done, whether successful or not
+        setIsLoadingUserInfo(false);
+      }
+    };
+
+    // Only fetch once: if we have a connection type, haven't fetched before, and don't already have an email
+    if (
+      connectionType &&
+      !hasFetchedUserInfo.current &&
+      !formState.email &&
+      !prefilledEmail
+    ) {
+      // Mark as fetched immediately to prevent duplicate calls
+      hasFetchedUserInfo.current = true;
+      void fetchUserInfoAndPrefillEmail();
+    }
+  }, [
+    connectionType,
+    web3AuthEvm,
+    web3AuthSolana,
+    formState.email,
+    prefilledEmail,
+  ]);
 
   const handleSubmit = (values: FormValues) => {
     // Update form state
@@ -87,12 +173,33 @@ const BasicDetails = (): JSX.Element => {
     navigation.navigate(screenTitle.SHIPPING_ADDRESS);
   };
 
+  // Initial values for the form, prioritizing form state, then prefilled email from social login
   const initialValues: FormValues = {
     firstName: formState.firstName || '',
     lastName: formState.lastName || '',
     dateOfBirth: formState.dateOfBirth || '',
-    email: formState.email || '',
+    email: formState.email || prefilledEmail || '',
   };
+
+  // Show loading indicator while fetching user info for social login users
+  if (isLoadingUserInfo) {
+    return (
+      <CyDView
+        className='flex-1 bg-n0'
+        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        {/* Header */}
+        <CardApplicationHeader />
+
+        {/* Loading state */}
+        <CyDView className='flex-1 justify-center items-center'>
+          <ActivityIndicator size='large' color='#F7C645' />
+          <CyDText className='mt-4 text-[16px] text-n200'>
+            {t('Loading your information...')}
+          </CyDText>
+        </CyDView>
+      </CyDView>
+    );
+  }
 
   return (
     <CyDView
@@ -104,7 +211,8 @@ const BasicDetails = (): JSX.Element => {
       <Formik
         initialValues={initialValues}
         validationSchema={BasicDetailsSchema}
-        onSubmit={handleSubmit}>
+        onSubmit={handleSubmit}
+        enableReinitialize={true}>
         {({ handleSubmit, isValid, dirty }) => (
           <>
             <KeyboardAwareScrollView

@@ -25,7 +25,7 @@ import {
   CyDScrollView,
 } from '../../../styles/tailwindComponents';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
-import { getCardImage } from '../../../core/util';
+import { getCardImage, parseErrorMessage } from '../../../core/util';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { Card } from '../../../models/card.model';
@@ -312,7 +312,10 @@ export default function CardControls() {
         });
       }
     } catch (error) {
-      console.error('Error toggling channel:', error);
+      Toast.show({
+        type: 'error',
+        text2: parseErrorMessage(error),
+      });
     }
   };
 

@@ -1,26 +1,23 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
-import moment from 'moment';
-import { useTranslation } from 'react-i18next';
-import CyDModalLayout from './modal';
-import {
-  CyDView,
-  CyDText,
-  CyDTouchView,
-  CyDMaterialDesignIcons,
-  CyDSafeAreaView,
-} from '../../styles/tailwindComponents';
-import { CardFundResponse } from '../../models/activities.interface';
-import { ActivityStatus, AnalyticsType } from '../../constants/enum';
+import Intercom from '@intercom/intercom-react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import clsx from 'clsx';
 import { capitalize } from 'lodash';
-import Intercom from '@intercom/intercom-react-native';
+import moment from 'moment';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { logAnalytics, parseErrorMessage } from '../../core/util';
-import Clipboard from '@react-native-clipboard/clipboard';
+import { ActivityStatus, AnalyticsType } from '../../constants/enum';
 import useAxios from '../../core/HttpRequest';
-import { isAndroid } from '../../misc/checkers';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { logAnalytics, parseErrorMessage } from '../../core/util';
+import { CardFundResponse } from '../../models/activities.interface';
+import {
+  CyDMaterialDesignIcons,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindComponents';
+import CyDModalLayout from './modal';
 
 interface ActivityDetailsModalProps {
   /** Whether the modal is visible */
@@ -513,7 +510,10 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
         setTxnHash(clipboardContent.trim());
       }
     } catch (error) {
-      console.error('Error reading clipboard:', error);
+      Toast.show({
+        text1: 'Failed to paste transaction hash',
+        type: 'error',
+      });
     }
   };
 
@@ -535,7 +535,6 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
         type: 'success',
       });
     } catch (error) {
-      console.error('Error copying quote ID:', error);
       Toast.show({
         text1: 'Failed to copy quote ID',
         type: 'error',
