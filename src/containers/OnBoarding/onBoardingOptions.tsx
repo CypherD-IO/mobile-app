@@ -43,6 +43,7 @@ import useWeb3Auth from '../../hooks/useWeb3Auth';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import useAxios from '../../core/HttpRequest';
+import Toast from 'react-native-toast-message';
 
 enum ProviderType {
   ETHEREUM = 'ethereum',
@@ -206,8 +207,14 @@ export default function OnBoardingOptions() {
         if (!isError && data?.totalPossibleRewards !== undefined) {
           setTotalPossibleRewards(data.totalPossibleRewards);
         }
+        if (isError) {
+          throw error;
+        }
       } catch (error) {
-        console.error('Failed to fetch onboarding rewards info:', error);
+        Toast.show({
+          type: 'error',
+          text2: parseErrorMessage(error),
+        });
       } finally {
         setIsLoadingRewards(false);
       }

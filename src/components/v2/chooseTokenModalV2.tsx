@@ -45,7 +45,8 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
-import { formatCurrencyWithSuffix } from '../../core/util';
+import { formatCurrencyWithSuffix, parseErrorMessage } from '../../core/util';
+import Toast from 'react-native-toast-message';
 
 interface TokenModal {
   tokenList?: Holding[];
@@ -761,7 +762,11 @@ export default function ChooseTokenModalV2(props: TokenModal) {
         hasMore: results.length > pagination.limit,
       }));
     } catch (error) {
-      console.error('Error searching tokens:', error);
+      Toast.show({
+        type: 'error',
+        text2: parseErrorMessage(error),
+        position: 'top',
+      });
     }
   };
 

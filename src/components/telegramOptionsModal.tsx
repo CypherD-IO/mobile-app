@@ -17,6 +17,7 @@ import useCardUtilities from '../hooks/useCardUtilities';
 import clsx from 'clsx';
 import { screenTitle } from '../constants';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { parseErrorMessage } from '../core/util';
 
 interface TelegramOptionsModalProps {
   isModalVisible: boolean;
@@ -52,7 +53,10 @@ export default function TelegramOptionsModal({
         }
       }
     } catch (error) {
-      console.error('Error refreshing profile:', error);
+      Toast.show({
+        type: 'error',
+        text2: parseErrorMessage(error),
+      });
     }
   };
 

@@ -44,6 +44,7 @@ import {
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
+  ConnectionTypes,
   CypherPlanId,
   GlobalContextType,
 } from '../../../constants/enum';
@@ -81,6 +82,7 @@ import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetPr
 import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
+import useConnectionManager from '../../../hooks/useConnectionManager';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -123,6 +125,7 @@ export default function CypherCardScreen() {
     dateRange: initialCardTxnDateRange,
     statuses: STATUSES,
   });
+  const { connectionType, checkMfaEnabled } = useConnectionManager();
   const selectedCard = get(cardProfile, [
     cardProvider,
     'cards',
@@ -449,6 +452,18 @@ export default function CypherCardScreen() {
   useEffect(() => {
     void getCardDesignValues();
   }, [isFocused, cardId]);
+
+  useEffect(() => {
+    if (
+      connectionType &&
+      [
+        ConnectionTypes.SOCIAL_LOGIN_EVM,
+        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
+      ].includes(connectionType)
+    ) {
+      void checkMfaEnabled();
+    }
+  }, [connectionType, isFocused]);
 
   const checkForOverchargeDccInfo = async (
     transactions: ICardTransaction[],

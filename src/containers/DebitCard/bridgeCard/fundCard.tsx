@@ -239,7 +239,6 @@ export default function BridgeFundCardScreen({
       }
     } catch (error) {
       // Log error and show insufficient balance sheet as fallback
-      console.error('Error setting default selected token:', error);
       showInsufficientBalanceSheet();
     }
   };

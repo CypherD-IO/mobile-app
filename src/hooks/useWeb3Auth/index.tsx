@@ -107,6 +107,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: '0x2105',
       [ChainBackendNames.SOLANA]: '0x1',
       [ChainBackendNames.ZKSYNC_ERA]: '0x144',
+      [ChainBackendNames.BASE_SEPOLIA]: '0x14a34',
     };
     return (
       chainIds[
@@ -129,6 +130,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'Base',
       [ChainBackendNames.SOLANA]: 'Solana',
       [ChainBackendNames.ZKSYNC_ERA]: 'zkSync Era',
+      [ChainBackendNames.BASE_SEPOLIA]: 'Base Sepolia',
     };
     return (
       displayNames[
@@ -151,6 +153,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'https://basescan.org',
       [ChainBackendNames.SOLANA]: 'https://explorer.solana.com',
       [ChainBackendNames.ZKSYNC_ERA]: 'https://explorer.zksync.io',
+      [ChainBackendNames.BASE_SEPOLIA]: 'https://sepolia.basescan.org',
     };
     return (
       explorers[
@@ -173,6 +176,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'ETH',
       [ChainBackendNames.SOLANA]: 'SOL',
       [ChainBackendNames.ZKSYNC_ERA]: 'ETH',
+      [ChainBackendNames.BASE_SEPOLIA]: 'ETH',
     };
     return (
       tickers[
@@ -195,6 +199,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'ETH',
       [ChainBackendNames.SOLANA]: 'SOL',
       [ChainBackendNames.ZKSYNC_ERA]: 'ETH',
+      [ChainBackendNames.BASE_SEPOLIA]: 'ETH',
     };
     return (
       tickerNames[

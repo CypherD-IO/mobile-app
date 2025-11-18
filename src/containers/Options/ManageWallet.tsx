@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useCallback,
 } from 'react';
-import { BackHandler, FlatList } from 'react-native';
+import { BackHandler, FlatList, ActivityIndicator } from 'react-native';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { HdWalletContext, parseErrorMessage } from '../../core/util';
 import {
@@ -32,6 +32,7 @@ import clsx from 'clsx';
 import Toast from 'react-native-toast-message';
 import useWeb3Auth from '../../hooks/useWeb3Auth';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import * as Sentry from '@sentry/react-native';
 
 interface IManageWalletData {
   index: number;
@@ -233,7 +234,11 @@ export default function ManageWallet() {
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
   const { showModal, hideModal } = useGlobalModalContext();
 
+  // Track MFA enabled status
   const [isMfaEnabled, setIsMfaEnabled] = useState<boolean>(true);
+
+  // Track loading state for social login MFA check
+  const [isLoadingMfaStatus, setIsLoadingMfaStatus] = useState<boolean>(false);
 
   useEffect(() => {
     if (storedConnectionType) {
@@ -241,9 +246,12 @@ export default function ManageWallet() {
     }
   }, [storedConnectionType]);
 
+  // Check MFA status when connection type is determined or changes
   useEffect(() => {
-    void checkMfaEnabled();
-  }, []);
+    if (connectionTypeValue) {
+      void checkMfaEnabled();
+    }
+  }, [connectionTypeValue]);
 
   const manageWalletData: IManageWalletData[] = getManageWalletData(
     connectionTypeValue,
@@ -251,18 +259,47 @@ export default function ManageWallet() {
     navigation,
   );
 
-  const checkMfaEnabled = async () => {
-    const provider =
-      connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM
-        ? web3AuthEvm
-        : web3AuthSolana;
-    const connected = provider.connected;
+  /**
+   * Checks if MFA is enabled for the current social login user
+   * Sets loading state while checking to prevent premature UI rendering
+   */
+  const checkMfaEnabled = async (): Promise<void> => {
+    // Only check MFA for social login users
+    const isSocialLogin =
+      connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM ||
+      connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_SOLANA;
 
-    if (!connected) {
-      await provider.init();
+    if (!isSocialLogin) {
+      return;
     }
-    const userInfo = provider.userInfo();
-    setIsMfaEnabled(userInfo?.isMfaEnabled ?? false);
+
+    try {
+      // Set loading state to true before starting the check
+      setIsLoadingMfaStatus(true);
+
+      const provider =
+        connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM
+          ? web3AuthEvm
+          : web3AuthSolana;
+
+      const connected = provider.connected;
+
+      // Initialize provider if not connected (this can take several seconds)
+      if (!connected) {
+        await provider.init();
+      }
+
+      // Get user info and MFA status
+      const userInfo = provider.userInfo();
+      setIsMfaEnabled(userInfo?.isMfaEnabled ?? false);
+    } catch (error) {
+      // Log error and default to MFA enabled to be safe
+      Sentry.captureException(error);
+      setIsMfaEnabled(true);
+    } finally {
+      // Always clear loading state when done
+      setIsLoadingMfaStatus(false);
+    }
   };
 
   const isSecurityOptionDisabled =
@@ -406,56 +443,79 @@ export default function ManageWallet() {
       });
   };
 
+  // Check if we should show loading screen (for social login users while MFA status is being checked)
+  const isSocialLogin =
+    connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM ||
+    connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_SOLANA;
+  const shouldShowLoading = isSocialLogin && isLoadingMfaStatus;
+
   return (
     <CyDSafeAreaView className={'bg-n0 h-full'}>
       <PageHeader title={'MANAGE_WALLET'} navigation={navigation} />
       <CyDView className={'bg-n20 h-full pt-[24px]'}>
-        {/* Reveal Keys Section */}
-        {securityPrivacyData.length > 0 && (
-          <CyDView className={'px-[16px] mb-[16px]'}>
-            <CyDText className={'text-n200 text-[12px] font-medium mb-[8px]'}>
-              {t('REVEAL_KEYS')}
+        {shouldShowLoading ? (
+          // Loading state for social login users while checking MFA status
+          <CyDView className={'flex-1 justify-center items-center'}>
+            <ActivityIndicator size='large' color='#FA812F' />
+            <CyDText className={'mt-[16px] text-base400 text-[14px]'}>
+              {t('LOADING_WALLET_INFO')}
             </CyDText>
-            <FlatList<ISecurityPrivacyData>
-              data={securityPrivacyData}
-              renderItem={renderSecurityPrivacyItem}
-              keyExtractor={item => item.index.toString()}
-              scrollEnabled={false}
-            />
           </CyDView>
-        )}
+        ) : (
+          <>
+            {/* Reveal Keys Section */}
+            {securityPrivacyData.length > 0 && (
+              <CyDView className={'px-[16px] mb-[16px]'}>
+                <CyDText
+                  className={'text-n200 text-[12px] font-medium mb-[8px]'}>
+                  {t('REVEAL_KEYS')}
+                </CyDText>
+                <FlatList<ISecurityPrivacyData>
+                  data={securityPrivacyData}
+                  renderItem={renderSecurityPrivacyItem}
+                  keyExtractor={item => item.index.toString()}
+                  scrollEnabled={false}
+                />
+              </CyDView>
+            )}
 
-        {/* Wallet Options Section */}
-        {manageWalletData.length > 0 && (
-          <CyDView className={'px-[16px] mb-[16px]'}>
-            <CyDText className={'text-n200 text-[12px] font-medium mb-[8px]'}>
-              {t('WALLET_OPTIONS')}
-            </CyDText>
-            <FlatList<IManageWalletData>
-              data={manageWalletData}
-              renderItem={renderManageWalletItem}
-              keyExtractor={item => item.index.toString()}
-              scrollEnabled={false}
-            />
-          </CyDView>
-        )}
+            {/* Wallet Options Section */}
+            {manageWalletData.length > 0 && (
+              <CyDView className={'px-[16px] mb-[16px]'}>
+                <CyDText
+                  className={'text-n200 text-[12px] font-medium mb-[8px]'}>
+                  {t('WALLET_OPTIONS')}
+                </CyDText>
+                <FlatList<IManageWalletData>
+                  data={manageWalletData}
+                  renderItem={renderManageWalletItem}
+                  keyExtractor={item => item.index.toString()}
+                  scrollEnabled={false}
+                />
+              </CyDView>
+            )}
 
-        {manageWalletData.length > 0 &&
-          !isMfaEnabled &&
-          (connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM ||
-            connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_SOLANA) && (
-            <CyDView className={'px-[16px]'}>
-              <CyDText className={'text-n200 text-[12px] font-medium mb-[8px]'}>
-                {t('MFA_SETTINGS')}
-              </CyDText>
-              <FlatList<IMfaData>
-                data={mfaData}
-                renderItem={renderMfaItem}
-                keyExtractor={item => item.index.toString()}
-                scrollEnabled={false}
-              />
-            </CyDView>
-          )}
+            {/* MFA Settings Section - Only show for social login users with MFA disabled */}
+            {manageWalletData.length > 0 &&
+              !isMfaEnabled &&
+              (connectionTypeValue === ConnectionTypes.SOCIAL_LOGIN_EVM ||
+                connectionTypeValue ===
+                  ConnectionTypes.SOCIAL_LOGIN_SOLANA) && (
+                <CyDView className={'px-[16px]'}>
+                  <CyDText
+                    className={'text-n200 text-[12px] font-medium mb-[8px]'}>
+                    {t('MFA_SETTINGS')}
+                  </CyDText>
+                  <FlatList<IMfaData>
+                    data={mfaData}
+                    renderItem={renderMfaItem}
+                    keyExtractor={item => item.index.toString()}
+                    scrollEnabled={false}
+                  />
+                </CyDView>
+              )}
+          </>
+        )}
       </CyDView>
     </CyDSafeAreaView>
   );

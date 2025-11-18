@@ -42,6 +42,8 @@ import {
   getFirstLaunchAfterWalletCreation,
   setFirstLaunchAfterWalletCreation,
 } from '../core/asyncStorage';
+import Toast from 'react-native-toast-message';
+import { parseErrorMessage } from '../core/util';
 
 const Tab = createBottomTabNavigator();
 const NAVIGATION_DELAY = 50;
@@ -141,10 +143,10 @@ const TabStack = React.memo(
               await setProcessedReferrerCode(referrerData.referral);
             }
           } catch (error) {
-            console.error(
-              'Error processing referral code from install referrer:',
-              error,
-            );
+            Toast.show({
+              type: 'error',
+              text2: parseErrorMessage(error),
+            });
           }
         }
         // Note: For iOS, referral codes require server-side resolution of the attribution token
