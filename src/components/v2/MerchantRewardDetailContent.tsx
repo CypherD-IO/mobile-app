@@ -233,6 +233,11 @@ const MerchantRewardDetailContent: React.FC<
         `/v1/cypher-protocol/merchants/${merchantData.candidateId}`,
       );
 
+      console.log(
+        'detailsResponse : >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
+        detailsResponse,
+      );
+
       if (!detailsResponse.isError) {
         const data: MerchantDetailsResponseDto = detailsResponse.data;
         setMerchantDetails(data);

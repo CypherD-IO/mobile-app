@@ -688,6 +688,11 @@ export default function Rewards() {
     18,
   ).toString();
 
+  console.log(
+    'claimRewardData.rewardInfo',
+    claimRewardData?.rewardInfo?.totalRewardsInToken,
+  );
+  console.log('totalUnclaimed', totalUnclaimed);
   const availableToClaim =
     claimRewardData?.rewardInfo?.totalRewardsInToken !== undefined
       ? DecimalHelper.toDecimal(
@@ -696,20 +701,32 @@ export default function Rewards() {
         ).toString()
       : totalUnclaimed;
 
-  const totalVotingPower = DecimalHelper.toDecimal(
-    rewardsData?.votingPower?.totalVotingPower ?? '0',
-    18,
-  ).toString();
+  /**
+   * Calculate total voting power from wei (18 decimals) to readable format
+   * Returns string representation for display purposes
+   */
+  const totalVotingPower = React.useMemo(() => {
+    const total = rewardsData?.votingPower?.totalVotingPower ?? '0';
+    return DecimalHelper.toDecimal(total, 18).toString();
+  }, [rewardsData?.votingPower?.totalVotingPower]);
 
-  const usedVotingPower = DecimalHelper.toDecimal(
-    rewardsData?.votingPower?.usedVotingPower ?? '0',
-    18,
-  ).toString();
+  /**
+   * Calculate used voting power from wei (18 decimals) to readable format
+   * Returns string representation for display purposes
+   */
+  const usedVotingPower = React.useMemo(() => {
+    const used = rewardsData?.votingPower?.usedVotingPower ?? '0';
+    return DecimalHelper.toDecimal(used, 18).toString();
+  }, [rewardsData?.votingPower?.usedVotingPower]);
 
-  const unusedVotingPower = DecimalHelper.toDecimal(
-    rewardsData?.votingPower?.freeVotingPower ?? '0',
-    18,
-  ).toString();
+  /**
+   * Calculate unused/free voting power from wei (18 decimals) to readable format
+   * Returns string representation for display purposes
+   */
+  const unusedVotingPower = React.useMemo(() => {
+    const free = rewardsData?.votingPower?.freeVotingPower ?? '0';
+    return DecimalHelper.toDecimal(free, 18).toString();
+  }, [rewardsData?.votingPower?.freeVotingPower]);
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
@@ -820,7 +837,7 @@ export default function Rewards() {
             claimRewardPromise,
           ]);
 
-
+          console.log('claimRewardResponse', claimRewardResponse);
 
           // Check if all critical requests succeeded
           if (userProfileResponse.isError) {

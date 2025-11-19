@@ -74,6 +74,7 @@ import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import ReportTransactionModal from '../../../components/v2/reportTransactionModal';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import { DecimalHelper } from '../../../utils/decimalHelper';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -1773,7 +1774,14 @@ export default function TransactionDetails() {
                           resizeMode='contain'
                         />
                         <CyDText className='text-white font-bold text-[18px]'>
-                          {limitDecimalPlaces(String(totalRewards), 2)}
+                          {limitDecimalPlaces(
+                            String(
+                              DecimalHelper.toDecimal(totalRewards, 18).toFixed(
+                                2,
+                              ),
+                            ),
+                            2,
+                          )}
                         </CyDText>
                       </CyDView>
                     </CyDView>
@@ -1874,7 +1882,7 @@ export default function TransactionDetails() {
                           className='text-base400'
                         />
                         <CyDText className='font-semibold text-[12px]'>
-                          {'Zero Forex Markup'}
+                          {'0.75% Forex Markup'}
                         </CyDText>
                       </CyDView>
                       <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>

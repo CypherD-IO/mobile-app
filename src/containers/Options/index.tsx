@@ -663,7 +663,7 @@ export default function OptionsHub() {
                     className='text-base400'
                   />
                   <CyDText className='font-semibold text-[12px]'>
-                    {'Zero Forex Markup'}
+                    {'0.75% Forex Markup'}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>

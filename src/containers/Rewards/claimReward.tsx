@@ -58,6 +58,7 @@ interface MerchantRewardData {
   logo?: string;
   rewardsEarned: number;
   canonicalName?: string;
+  totalSpend: number;
 }
 
 interface ClaimExecutionResult {
@@ -279,356 +280,9 @@ const InfoIcon: React.FC<InfoIconProps> = ({
 };
 
 /**
- * Bottom Sheet Content for Rewards Breakdown
- * Shows detailed breakdown of rewards before claiming
+ * Note: RewardsBreakdownBottomSheetContent component has been removed
+ * The breakdown is now displayed inline on the main page instead of in a bottom sheet
  */
-const RewardsBreakdownBottomSheetContent = ({
-  claimRewardData,
-  onProceedToClaim,
-  onClose,
-  isDarkMode,
-}: {
-  claimRewardData: ClaimRewardResponse | null;
-  onProceedToClaim: () => void;
-  onClose: () => void;
-  isDarkMode: boolean;
-}) => {
-  const { t } = useTranslation();
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
-
-  /**
-   * Helper function to format numbers with decimals
-   * @param value - The number to format
-   * @param decimals - Number of decimal places (default: 2)
-   * @returns Formatted string with decimals
-   */
-  const formatWithDecimals = (value: number, decimals = 2): string => {
-    return value.toLocaleString(undefined, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
-  };
-
-  /**
-   * Process API data to create breakdown
-   * Calculates base spend, boosted spend, referral rewards, and merchant breakdown
-   * Note: API returns human-readable token units (not wei)
-   */
-  const getBreakdownData = () => {
-    if (!claimRewardData?.isEligible || !claimRewardData?.rewardInfo) {
-      return {
-        baseSpendRewards: 0,
-        boostedSpendRewards: 0,
-        referralRewards: 0,
-        totalEarnings: 0,
-        merchantRewards: [],
-      };
-    }
-
-    const { rewardInfo } = claimRewardData;
-
-    // API returns human-readable token units (not wei)
-    const baseSpendRewards = rewardInfo.baseSpendAmount ?? 0;
-    const boostedSpendRewards = rewardInfo.boostedSpend ?? 0;
-    const referralRewards = rewardInfo.boostedReferralAmount ?? 0;
-
-    const totalEarnings =
-      baseSpendRewards + boostedSpendRewards + referralRewards;
-
-    // Transform merchant data from boostedSpendSplit
-    const merchantRewards: MerchantRewardData[] =
-      rewardInfo.boostedSpendSplit?.map(
-        (
-          merchant: {
-            parentMerchantId?: string;
-            canonicalName?: string;
-            logoUrl?: string;
-            spend?: number;
-          },
-          index: number,
-        ) => ({
-          id: merchant.parentMerchantId ?? `merchant_${index}`,
-          name: merchant.canonicalName ?? 'Unknown Merchant',
-          logo: merchant.logoUrl,
-          rewardsEarned: merchant.spend ?? 0,
-          canonicalName: merchant.canonicalName,
-        }),
-      ) ?? [];
-
-    return {
-      baseSpendRewards,
-      boostedSpendRewards,
-      referralRewards,
-      totalEarnings,
-      merchantRewards,
-    };
-  };
-
-  const breakdownData = getBreakdownData();
-
-  /**
-   * Tooltip content for each reward type
-   * Provides educational information about how each reward is earned
-   */
-  const tooltipContent = {
-    baseSpend:
-      t('BASE_SPEND_TOOLTIP') ??
-      'Every spend at any merchant qualifies for base spend rewards. Earn 1 $CYPR for every $10 spent with your Cypher card.',
-    boostedSpend:
-      t('BOOSTED_SPEND_TOOLTIP') ??
-      "Spending at merchants listed in the leaderboard qualifies for boosted rewards. Number of $CYPR earned is based on the merchant's reward multiplier at the end of the reward cycle.",
-    referral:
-      t('REFERRAL_TOOLTIP') ??
-      'First-time spend made by your referrals (at merchants listed in the leaderboard) who onboarded in the last reward cycle qualifies for referral rewards.',
-  };
-
-  // Color constants for reward types
-  const baseSpendBgColor = 'rgba(247,198,69,0.15)';
-  const baseSpendColor = '#F7C645';
-  const boostedSpendBgColor = 'rgba(255,140,0,0.15)';
-  const boostedSpendColor = '#FF8C00';
-  const referralBgColor = 'rgba(7,73,255,0.15)';
-  const referralColor = '#0749FF';
-
-  // Styles for sticky button footer
-  const footerBorderTopColor = isDarkMode ? '#2A2A2A' : '#E5E5E5';
-  const footerShadowColor = '#000';
-  const footerShadowOffset = { width: 0, height: -2 };
-  const footerShadowOpacity = 0.1;
-  const footerShadowRadius = 4;
-  const footerElevation = 8;
-  const footerBorderTopWidth = 1;
-  const isAndroid = Platform.OS === 'android';
-  // When sticky footer is disabled on Android, we only need regular padding
-  const scrollViewPaddingBottom = isAndroid ? 24 : 20;
-  const footerMinHeight = Platform.OS === 'android' ? 80 : undefined;
-  const footerFlexShrink = 0;
-
-  return (
-    <CyDView className='flex-1 bg-n0'>
-      {/* Scrollable content area */}
-      <CyDScrollView
-        className='flex-1 px-6'
-        showsVerticalScrollIndicator={false}
-        nestedScrollEnabled={true}
-        contentContainerStyle={{
-          paddingBottom: scrollViewPaddingBottom,
-        }}>
-        {/* Earning breakdown section */}
-        <CyDView className='rounded-[12px] bg-base40 p-4 mb-[18px] mt-6'>
-          <CyDText className='font-medium text-[14px] mb-6 text-n200'>
-            {t('EARNING_BREAKDOWN')}
-          </CyDText>
-
-          <CyDView className='gap-y-4'>
-            {/* Base spend rewards */}
-            <CyDView className='flex-row items-center justify-between'>
-              <CyDView className='flex-row items-center'>
-                <CyDText className='text-[14px]'>
-                  {t('BASE_SPEND_REWARDS') ?? 'Base spend rewards'}
-                </CyDText>
-                <InfoIcon
-                  tooltipId='baseSpend'
-                  content={tooltipContent.baseSpend}
-                  showTooltip={showTooltip}
-                  setShowTooltip={setShowTooltip}
-                  isDarkMode={isDarkMode}
-                />
-              </CyDView>
-              <CyDView
-                className='px-1 py-[2px] rounded-[4px]'
-                style={{ backgroundColor: baseSpendBgColor }}>
-                <CyDText
-                  className='text-[14px] font-semibold'
-                  style={{ color: baseSpendColor }}>
-                  {formatWithDecimals(breakdownData.baseSpendRewards)} $CYPR
-                </CyDText>
-              </CyDView>
-            </CyDView>
-
-            {/* Boosted spend rewards */}
-            <CyDView className='flex-row items-center justify-between'>
-              <CyDView className='flex-row items-center'>
-                <CyDText className='text-[14px]'>
-                  {t('BOOSTED_SPEND_REWARDS') ?? 'Boosted spend rewards'}
-                </CyDText>
-                <InfoIcon
-                  tooltipId='boostedSpend'
-                  content={tooltipContent.boostedSpend}
-                  showTooltip={showTooltip}
-                  setShowTooltip={setShowTooltip}
-                  isDarkMode={isDarkMode}
-                />
-              </CyDView>
-              <CyDView
-                className='px-1 py-[2px] rounded-[4px]'
-                style={{ backgroundColor: boostedSpendBgColor }}>
-                <CyDText
-                  className='text-[14px] font-semibold'
-                  style={{ color: boostedSpendColor }}>
-                  {formatWithDecimals(breakdownData.boostedSpendRewards)} $CYPR
-                </CyDText>
-              </CyDView>
-            </CyDView>
-
-            {/* Referral rewards */}
-            <CyDView className='flex-row items-center justify-between'>
-              <CyDView className='flex-row items-center'>
-                <CyDText className='text-[14px]'>
-                  {t('REFERRAL_REWARDS')}
-                </CyDText>
-                <InfoIcon
-                  tooltipId='referral'
-                  content={tooltipContent.referral}
-                  showTooltip={showTooltip}
-                  setShowTooltip={setShowTooltip}
-                  isDarkMode={isDarkMode}
-                />
-              </CyDView>
-              <CyDView
-                className='px-1 py-[2px] rounded-[4px]'
-                style={{ backgroundColor: referralBgColor }}>
-                <CyDText
-                  className='text-[14px] font-semibold'
-                  style={{ color: referralColor }}>
-                  {formatWithDecimals(breakdownData.referralRewards)} $CYPR
-                </CyDText>
-              </CyDView>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-
-        {/* Reward on Merchants section */}
-        <CyDView className='rounded-[12px] bg-base40 py-4 mb-6'>
-          <CyDText className='font-medium text-[14px] mb-4 text-n200 px-4'>
-            {t('REWARD_ON_MERCHANTS') ?? 'Reward on Merchants'}
-          </CyDText>
-
-          {/* Total Earnings Header */}
-          <CyDView className='flex-row items-center justify-between bg-base200 px-4 py-3 mb-4'>
-            <CyDText className='text-[14px] font-medium text-n50'>
-              {t('TOTAL_EARNINGS') ?? 'Total Earnings'}
-            </CyDText>
-            <CyDView className='flex-row items-center gap-x-2'>
-              <CyDImage
-                source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                className='w-5 h-5'
-                resizeMode='contain'
-              />
-              <CyDText className='text-[18px] font-bold text-white'>
-                {formatWithDecimals(breakdownData.totalEarnings, 0)}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          {/* Merchant List */}
-          {breakdownData.merchantRewards.length > 0 ? (
-            <CyDView>
-              {breakdownData.merchantRewards.map((merchant, index) => (
-                <CyDView
-                  key={merchant.id}
-                  className={`px-4 py-4 ${
-                    index !== breakdownData.merchantRewards.length - 1
-                      ? 'border-b'
-                      : ''
-                  } ${isDarkMode ? 'border-base200' : 'border-n40'}`}>
-                  {/* Merchant header */}
-                  <CyDView className='flex-row items-center gap-x-3 mb-4'>
-                    {/* Merchant logo */}
-                    <CyDView className='w-10 h-10 p-[2px] rounded-full bg-white items-center justify-center overflow-hidden'>
-                      {merchant.logo ? (
-                        <CyDImage
-                          source={{ uri: merchant.logo }}
-                          className='w-full h-full rounded-full'
-                          resizeMode='contain'
-                        />
-                      ) : (
-                        <CyDView className='w-full h-full rounded-full items-center justify-center bg-n40'>
-                          <CyDText className='text-[10px] font-bold uppercase'>
-                            {merchant.name.slice(0, 2)}
-                          </CyDText>
-                        </CyDView>
-                      )}
-                    </CyDView>
-
-                    {/* Merchant name */}
-                    <CyDView className='flex-1'>
-                      <CyDText className='text-[16px] font-medium'>
-                        {merchant.name}
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-
-                  {/* Merchant stats */}
-                  <CyDView className='flex-row items-center justify-between'>
-                    <CyDText className='text-[14px] text-n200'>
-                      {t('REWARDS_EARNED') ?? 'Rewards earned'}
-                    </CyDText>
-                    <CyDView
-                      className='px-1 py-[2px] rounded-[4px]'
-                      style={{ backgroundColor: boostedSpendBgColor }}>
-                      <CyDText
-                        className='text-[14px] font-medium'
-                        style={{ color: boostedSpendColor }}>
-                        {formatWithDecimals(merchant.rewardsEarned)} $CYPR
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-                </CyDView>
-              ))}
-            </CyDView>
-          ) : (
-            <CyDView className='p-4'>
-              <CyDText className='text-[14px] text-n200 text-center'>
-                {t('NO_MERCHANT_REWARDS') ?? 'No merchant rewards available'}
-              </CyDText>
-            </CyDView>
-          )}
-        </CyDView>
-        {/* Android: place the action button inside scroll content (no sticky) */}
-        {isAndroid && (
-          <CyDView className='py-4'>
-            <Button
-              title={t('PROCEED_TO_CLAIM') ?? 'Proceed to Claim'}
-              titleStyle='text-[18px] font-semibold'
-              onPress={onProceedToClaim}
-              type={ButtonType.PRIMARY}
-              style='rounded-full'
-              paddingY={16}
-            />
-          </CyDView>
-        )}
-      </CyDScrollView>
-
-      {/* iOS: sticky footer with proceed button - always visible at bottom */}
-      {!isAndroid && (
-        <CyDView
-          className='px-6 py-4 bg-n0'
-          style={{
-            borderTopWidth: footerBorderTopWidth,
-            borderTopColor: footerBorderTopColor,
-            shadowColor: footerShadowColor,
-            shadowOffset: footerShadowOffset,
-            shadowOpacity: footerShadowOpacity,
-            shadowRadius: footerShadowRadius,
-            elevation: footerElevation,
-            // Ensure footer doesn't shrink and stays at bottom
-            flexShrink: footerFlexShrink,
-            minHeight: footerMinHeight,
-          }}>
-          <Button
-            title={t('PROCEED_TO_CLAIM') ?? 'Proceed to Claim'}
-            titleStyle='text-[18px] font-semibold'
-            onPress={onProceedToClaim}
-            type={ButtonType.PRIMARY}
-            style='rounded-full'
-            paddingY={16}
-          />
-        </CyDView>
-      )}
-    </CyDView>
-  );
-};
 
 /**
  * Bottom Sheet Content for Claim Rewards Options
@@ -649,14 +303,15 @@ const ClaimRewardsBottomSheetContent = ({
   const { t } = useTranslation();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { showModal, hideModal } = useGlobalModalContext();
-  const [claiming, setClaiming] = useState(false);
+  const [claimingToWallet, setClaimingToWallet] = useState(false);
+  const [claimingAndLock, setClaimingAndLock] = useState(false);
 
   /**
    * Handle deposit and boost rewards
    * Navigates to social media screen with claim lock URL
    */
   const handleDepositAndBoost = async () => {
-    setClaiming(true);
+    setClaimingAndLock(true);
     try {
       // First, perform the on-chain claims (rewards + bribes if available)
       const result = await onPerformClaims();
@@ -749,7 +404,7 @@ const ClaimRewardsBottomSheetContent = ({
         onFailure: hideModal,
       });
     } finally {
-      setClaiming(false);
+      setClaimingAndLock(false);
     }
   };
 
@@ -762,7 +417,7 @@ const ClaimRewardsBottomSheetContent = ({
    * Calls the parent function to execute the claim and closes the bottom sheet
    */
   const handleClaimToWallet = async () => {
-    setClaiming(true);
+    setClaimingToWallet(true);
     try {
       await onClaimToWallet();
       // Close the bottom sheet after successful claim
@@ -771,7 +426,7 @@ const ClaimRewardsBottomSheetContent = ({
       // Keep bottom sheet open if there's an error so user can retry
       console.error('Error in claim, keeping bottom sheet open:', error);
     } finally {
-      setClaiming(false);
+      setClaimingToWallet(false);
     }
   };
 
@@ -786,7 +441,10 @@ const ClaimRewardsBottomSheetContent = ({
         {/* Deposit and boost Reward */}
         <CyDTouchView
           onPress={onPressDepositAndBoost}
-          className='bg-p50 rounded-[16px] pb-4 pt-2 px-6'>
+          disabled={claimingAndLock || claimingToWallet}
+          className={`bg-p50 rounded-[16px] pb-4 pt-2 px-6 ${
+            claimingAndLock || claimingToWallet ? 'opacity-50' : ''
+          }`}>
           <CyDView className='items-center'>
             <CyDIcons name='card-filled' className='text-black text-[40px]' />
             <CyDText className='text-black font-semibold text-center mb-1'>
@@ -801,9 +459,9 @@ const ClaimRewardsBottomSheetContent = ({
         {/* Claim to wallet */}
         <CyDTouchView
           onPress={onPressClaimToWallet}
-          disabled={claiming}
+          disabled={claimingToWallet || claimingAndLock}
           className={`bg-base40 rounded-[16px] px-6 pb-4 pt-2 ${
-            claiming ? 'opacity-50' : ''
+            claimingToWallet || claimingAndLock ? 'opacity-50' : ''
           }`}>
           <CyDView className='items-center'>
             {/* <CyDIcons
@@ -816,10 +474,10 @@ const ClaimRewardsBottomSheetContent = ({
               className='text-base400 my-[8px]'
             />
             <CyDText className='font-semibold text-center mb-1'>
-              {claiming ? t('CLAIMING') : t('CLAIM_TO_WALLET')}
+              {claimingToWallet ? t('CLAIMING') : t('CLAIM_TO_WALLET')}
             </CyDText>
             <CyDText className='text-n200 text-[14px] text-center'>
-              {claiming
+              {claimingToWallet
                 ? t('PROCESSING_YOUR_CLAIM_TRANSACTION')
                 : t('CLAIM_THE_EARNED_CYPHER_TOKEN_STRAIGHT_TO_YOUR_WALLET')}
             </CyDText>
@@ -861,6 +519,9 @@ const ClaimReward: React.FC = () => {
   );
   const [loadingBribesData, setLoadingBribesData] = useState<boolean>(true);
 
+  // State for tooltip management in inline breakdown
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+
   // Get rewardsData and claimRewardData from navigation params
   const passedClaimRewardData = (route.params as any)?.claimRewardData as
     | ClaimRewardResponse
@@ -876,8 +537,13 @@ const ClaimReward: React.FC = () => {
       };
     }
 
-    // API returns human-readable token units (not wei)
-    const totalRewards = claimRewardData?.rewardInfo?.totalRewardsInToken ?? 0;
+    // API returns values in wei - convert to decimal using 18 decimals
+    const totalRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(claimRewardData?.rewardInfo?.totalRewardsInToken ?? '0'),
+        18,
+      ).toString(),
+    );
 
     return {
       totalRewards,
@@ -893,12 +559,24 @@ const ClaimReward: React.FC = () => {
     // Add protocol rewards if available
     if (claimRewardData) {
       const rewards = claimRewardData.rewardInfo;
-      // API returns human-readable token units (not wei)
-      // Convert to numbers to ensure .toFixed() works correctly
-      const baseSpend = (Number(rewards?.baseSpendAmount) || 0).toFixed(2);
-      const boostedSpend = (Number(rewards?.boostedSpend) || 0).toFixed(2);
-      const boostedReferral = (
-        Number(rewards?.boostedReferralAmount) || 0
+      // API returns values in wei - convert to decimal using 18 decimals
+      const baseSpend = parseFloat(
+        DecimalHelper.toDecimal(
+          String(rewards?.baseSpendAmount ?? '0'),
+          18,
+        ).toString(),
+      ).toFixed(2);
+      const boostedSpend = parseFloat(
+        DecimalHelper.toDecimal(
+          String(rewards?.boostedSpend ?? '0'),
+          18,
+        ).toString(),
+      ).toFixed(2);
+      const boostedReferral = parseFloat(
+        DecimalHelper.toDecimal(
+          String(rewards?.boostedReferralAmount ?? '0'),
+          18,
+        ).toString(),
       ).toFixed(2);
 
       breakdown.push(
@@ -1020,6 +698,126 @@ const ClaimReward: React.FC = () => {
   }, []);
 
   /**
+   * Helper function to format numbers with decimals
+   * @param value - The number to format
+   * @param decimals - Number of decimal places (default: 2)
+   * @returns Formatted string with decimals
+   */
+  const formatWithDecimals = (value: number, decimals = 2): string => {
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  };
+
+  /**
+   * Process API data to create detailed breakdown
+   * Calculates base spend, boosted spend, referral rewards, and merchant breakdown
+   * Note: API returns values in wei - must convert to decimal using 18 decimals
+   */
+  const getDetailedBreakdownData = () => {
+    if (!claimRewardData?.isEligible || !claimRewardData?.rewardInfo) {
+      return {
+        baseSpendRewards: 0,
+        boostedSpendRewards: 0,
+        referralRewards: 0,
+        totalEarnings: 0,
+        merchantRewards: [],
+      };
+    }
+
+    const { rewardInfo } = claimRewardData;
+
+    // API returns values in wei - convert to decimal using 18 decimals
+    const baseSpendRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(rewardInfo.baseSpendAmount ?? '0'),
+        18,
+      ).toString(),
+    );
+    const boostedSpendRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(rewardInfo.boostedSpend ?? '0'),
+        18,
+      ).toString(),
+    );
+    const referralRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(rewardInfo.boostedReferralAmount ?? '0'),
+        18,
+      ).toString(),
+    );
+
+    const totalEarnings =
+      baseSpendRewards + boostedSpendRewards + referralRewards;
+
+    // Transform merchant data from boostedSpendSplit
+    const merchantRewards: MerchantRewardData[] =
+      rewardInfo.boostedSpendSplit?.map(
+        (
+          merchant: {
+            parentMerchantId?: string;
+            canonicalName?: string;
+            logoUrl?: string;
+            spend?: string | number;
+          },
+          index: number,
+        ) => ({
+          id: merchant.parentMerchantId ?? `merchant_${index}`,
+          name: merchant.canonicalName ?? 'Unknown Merchant',
+          logo: merchant.logoUrl,
+          totalSpend: parseFloat(
+            DecimalHelper.toDecimal(
+              String(merchant.spend ?? '0'),
+              18,
+            ).toString(),
+          ),
+          rewardsEarned: parseFloat(
+            DecimalHelper.toDecimal(
+              String(merchant.spend ?? '0'),
+              18,
+            ).toString(),
+          ),
+          canonicalName: merchant.canonicalName,
+        }),
+      ) ?? [];
+
+    return {
+      baseSpendRewards,
+      boostedSpendRewards,
+      referralRewards,
+      totalEarnings,
+      merchantRewards,
+    };
+  };
+
+  const detailedBreakdownData = getDetailedBreakdownData();
+
+  /**
+   * Tooltip content for each reward type
+   * Provides educational information about how each reward is earned
+   */
+  const tooltipContent = {
+    baseSpend:
+      t('BASE_SPEND_TOOLTIP') ??
+      'Every spend at any merchant qualifies for base spend rewards. Earn 1 $CYPR for every $10 spent with your Cypher card.',
+    boostedSpend:
+      t('BOOSTED_SPEND_TOOLTIP') ??
+      "Spending at merchants listed in the leaderboard qualifies for boosted rewards. Number of $CYPR earned is based on the merchant's reward multiplier at the end of the reward cycle.",
+    referral:
+      t('REFERRAL_TOOLTIP') ??
+      'First-time spend made by your referrals (at merchants listed in the leaderboard) who onboarded in the last reward cycle qualifies for referral rewards.',
+  };
+
+  // Color constants for reward types
+  const baseSpendBgColor = 'rgba(247,198,69,0.15)';
+  const baseSpendColor = '#F7C645';
+  const boostedSpendBgColor = 'rgba(255,140,0,0.15)';
+  const boostedSpendColor = '#FF8C00';
+  const referralBgColor = 'rgba(7,73,255,0.15)';
+  const referralColor = '#0749FF';
+
+  /**
    * Handles back navigation
    */
   const handleBack = () => {
@@ -1118,6 +916,8 @@ const ClaimReward: React.FC = () => {
         // Execute claim using the same pattern as airdrop claim
         const result = await claimRewards(claimParams);
 
+        console.log('result of claimRewards : ', result);
+
         // Check if transaction was successful
         if (!result.isError && result.hash) {
           rewardsClaimedSuccess = true;
@@ -1134,14 +934,16 @@ const ClaimReward: React.FC = () => {
           // Mark rewards as claimed in backend
           // This is a non-blocking call - we don't want to prevent navigation if it fails
           try {
+            console.log('marking rewards as claimed on backend');
             const currentTimestamp = Math.floor(Date.now() / 1000);
             const markClaimedResponse = await patchWithAuth(
               '/v1/cypher-protocol/user/mark-claimed',
               {
                 unixTimestamp: currentTimestamp,
+                ...(result.hash && { transactionHash: result.hash }),
               },
             );
-
+            console.log('markClaimedResponse : ', markClaimedResponse);
             if (markClaimedResponse.isError) {
               console.error(
                 '⚠️ Failed to mark rewards as claimed on backend:',
@@ -1305,52 +1107,11 @@ const ClaimReward: React.FC = () => {
 
   /**
    * Handles claim rewards action
-   * First shows breakdown bottom sheet if rewards are available, then claim options
+   * Shows claim options bottom sheet directly (breakdown is now inline on the page)
    */
   const handleClaimRewards = () => {
-    // Check if there are claimable rewards
-    const hasClaimableRewards =
-      claimRewardData?.isEligible &&
-      claimRewardData?.rewardInfo &&
-      claimRewardData?.rewardInfo?.totalRewardsInToken > 0;
-
-    // If no claimable rewards, skip breakdown and go directly to claim options
-    // (for cases where user might only have bribes to claim)
-    if (!hasClaimableRewards) {
-      showClaimOptionsBottomSheet();
-      return;
-    }
-
-    // Show breakdown bottom sheet first
-    const breakdownSheetId = 'rewards-breakdown';
-
-    showBottomSheet({
-      id: breakdownSheetId,
-      snapPoints: ['85%'],
-      showCloseButton: true,
-      // Android: allow sheet to be scrollable so content receives pan gestures
-      // iOS: keep false to preserve sticky footer behavior
-      scrollable: Platform.OS === 'android',
-      content: (
-        <RewardsBreakdownBottomSheetContent
-          claimRewardData={claimRewardData}
-          isDarkMode={isDarkMode}
-          onProceedToClaim={() => {
-            // Close breakdown sheet and open claim options sheet
-            hideBottomSheet(breakdownSheetId);
-            // Small delay to allow the first sheet to close smoothly
-            setTimeout(() => {
-              showClaimOptionsBottomSheet();
-            }, 300);
-          }}
-          onClose={() => {
-            hideBottomSheet(breakdownSheetId);
-          }}
-        />
-      ),
-      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
-      backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
-    });
+    // Show claim options bottom sheet
+    showClaimOptionsBottomSheet();
   };
 
   return (
@@ -1449,32 +1210,213 @@ const ClaimReward: React.FC = () => {
 
             {/* Content Container */}
             <CyDView className='flex-1 px-4 gap-y-6'>
-              {/* Earning Breakdown */}
+              {/* Earning Breakdown - Summary */}
               <CyDView
-                className={`p-4 mt-6 rounded-[12px] ${
+                className={`rounded-[12px] p-4 mt-6 ${
                   isDarkMode ? 'bg-base40' : 'bg-n0'
                 }`}>
-                <CyDText className='text-[16px] font-medium mb-1'>
-                  {t('EARNING_BREAKDOWN')}
+                <CyDText className='font-medium text-[14px] mb-6 text-n200'>
+                  {t('EARNING_BREAKDOWN') ?? 'Earning Breakdown'}
                 </CyDText>
 
-                {earningBreakdown.map(item => (
-                  <CyDView
-                    key={item.id}
-                    className='flex-row justify-between items-center mt-3'>
-                    <CyDText className='text-[14px]'>{item.type}</CyDText>
+                <CyDView className='gap-y-4'>
+                  {/* Base spend rewards */}
+                  <CyDView className='flex-row items-center justify-between'>
+                    <CyDView className='flex-row items-center'>
+                      <CyDText className='text-[14px]'>
+                        {t('BASE_SPEND_REWARDS') ?? 'Base spend rewards'}
+                      </CyDText>
+                      <InfoIcon
+                        tooltipId='baseSpend'
+                        content={tooltipContent.baseSpend}
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                        isDarkMode={isDarkMode}
+                      />
+                    </CyDView>
                     <CyDView
-                      className={`px-1 py-[2px] rounded-[4px]`}
-                      style={{ backgroundColor: item.bgColor }}>
+                      className='px-1 py-[2px] rounded-[4px]'
+                      style={{ backgroundColor: baseSpendBgColor }}>
                       <CyDText
-                        className={`text-[14px] font-medium`}
-                        style={{ color: item.textColor }}>
-                        {item.amount}
+                        className='text-[14px] font-semibold'
+                        style={{ color: baseSpendColor }}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.baseSpendRewards,
+                        )}{' '}
+                        $CYPR
                       </CyDText>
                     </CyDView>
                   </CyDView>
-                ))}
+
+                  {/* Boosted spend rewards */}
+                  <CyDView className='flex-row items-center justify-between'>
+                    <CyDView className='flex-row items-center'>
+                      <CyDText className='text-[14px]'>
+                        {t('BOOSTED_SPEND_REWARDS') ?? 'Boosted spend rewards'}
+                      </CyDText>
+                      <InfoIcon
+                        tooltipId='boostedSpend'
+                        content={tooltipContent.boostedSpend}
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                        isDarkMode={isDarkMode}
+                      />
+                    </CyDView>
+                    <CyDView
+                      className='px-1 py-[2px] rounded-[4px]'
+                      style={{ backgroundColor: boostedSpendBgColor }}>
+                      <CyDText
+                        className='text-[14px] font-semibold'
+                        style={{ color: boostedSpendColor }}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.boostedSpendRewards,
+                        )}{' '}
+                        $CYPR
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+
+                  {/* Referral rewards */}
+                  <CyDView className='flex-row items-center justify-between'>
+                    <CyDView className='flex-row items-center'>
+                      <CyDText className='text-[14px]'>
+                        {t('REFERRAL_REWARDS')}
+                      </CyDText>
+                      <InfoIcon
+                        tooltipId='referral'
+                        content={tooltipContent.referral}
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                        isDarkMode={isDarkMode}
+                      />
+                    </CyDView>
+                    <CyDView
+                      className='px-1 py-[2px] rounded-[4px]'
+                      style={{ backgroundColor: referralBgColor }}>
+                      <CyDText
+                        className='text-[14px] font-semibold'
+                        style={{ color: referralColor }}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.referralRewards,
+                        )}{' '}
+                        $CYPR
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
               </CyDView>
+
+              {/* Reward on Merchants Section */}
+              {detailedBreakdownData.merchantRewards.length > 0 && (
+                <CyDView
+                  className={`rounded-[12px] py-4 mb-6 ${
+                    isDarkMode ? 'bg-base40' : 'bg-n0'
+                  }`}>
+                  <CyDText className='font-medium text-[14px] mb-4 text-n200 px-4'>
+                    {t('REWARD_ON_MERCHANTS') ?? 'Reward on Merchants'}
+                  </CyDText>
+
+                  {/* Total Earnings Header */}
+                  <CyDView
+                    className={`flex-row items-center justify-between px-4 py-3 mb-4 ${
+                      isDarkMode ? 'bg-base200' : 'bg-n20'
+                    }`}>
+                    <CyDText
+                      className={`text-[14px] font-medium ${
+                        isDarkMode ? 'text-n50' : 'text-black'
+                      }`}>
+                      {t('TOTAL_EARNINGS') ?? 'Total Earnings'}
+                    </CyDText>
+                    <CyDView className='flex-row items-center gap-x-2'>
+                      <CyDImage
+                        source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                        className='w-5 h-5'
+                        resizeMode='contain'
+                      />
+                      <CyDText
+                        className={`text-[18px] font-bold ${
+                          isDarkMode ? 'text-white' : 'text-black'
+                        }`}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.totalEarnings,
+                          0,
+                        )}
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+
+                  {/* Merchant List */}
+                  <CyDView>
+                    {detailedBreakdownData.merchantRewards.map(
+                      (merchant, index) => (
+                        <CyDView
+                          key={merchant.id}
+                          className={`px-4 py-4 ${
+                            index !==
+                            detailedBreakdownData.merchantRewards.length - 1
+                              ? 'border-b'
+                              : ''
+                          } ${isDarkMode ? 'border-base200' : 'border-n40'}`}>
+                          {/* Merchant header */}
+                          <CyDView className='flex-row items-center gap-x-3 mb-4'>
+                            {/* Merchant logo */}
+                            <CyDView className='w-10 h-10 p-[2px] rounded-full bg-white items-center justify-center overflow-hidden'>
+                              {merchant.logo ? (
+                                <CyDImage
+                                  source={{ uri: merchant.logo }}
+                                  className='w-full h-full rounded-full'
+                                  resizeMode='contain'
+                                />
+                              ) : (
+                                <CyDView className='w-full h-full rounded-full items-center justify-center bg-n40'>
+                                  <CyDText className='text-[10px] font-bold uppercase'>
+                                    {merchant.name.slice(0, 2)}
+                                  </CyDText>
+                                </CyDView>
+                              )}
+                            </CyDView>
+
+                            {/* Merchant name */}
+                            <CyDView className='flex-1'>
+                              <CyDText className='text-[16px] font-medium'>
+                                {merchant.name}
+                              </CyDText>
+                            </CyDView>
+                          </CyDView>
+
+                          {/* Merchant stats */}
+                          <CyDView className='flex-row items-center justify-between'>
+                            <CyDText className='text-[14px] text-n200'>
+                              {t('REWARDS_EARNED') ?? 'Rewards earned'}
+                            </CyDText>
+                            <CyDView
+                              className='px-1 py-[2px] rounded-[4px]'
+                              style={{ backgroundColor: boostedSpendBgColor }}>
+                              <CyDText
+                                className='text-[14px] font-medium'
+                                style={{ color: boostedSpendColor }}>
+                                {formatWithDecimals(merchant.rewardsEarned)}{' '}
+                                $CYPR
+                              </CyDText>
+                            </CyDView>
+                          </CyDView>
+
+                          {/* Merchant stats */}
+                          <CyDView className='flex-row items-center justify-between mt-2'>
+                            <CyDText className='text-[14px] text-n200'>
+                              {t('TOTAL_SPEND') ?? 'Total spend'}
+                            </CyDText>
+
+                            <CyDText className='text-[14px] font-medium'>
+                              ${formatWithDecimals(merchant.totalSpend)}
+                            </CyDText>
+                          </CyDView>
+                        </CyDView>
+                      ),
+                    )}
+                  </CyDView>
+                </CyDView>
+              )}
 
               {/* Reward on Merchants */}
               {/* <CyDView
@@ -1619,12 +1561,6 @@ const ClaimReward: React.FC = () => {
           </>
         )}
       </CyDScrollView>
-
-      {/* Bottom Safe Area with n0 background */}
-      <CyDView
-        className={`${isDarkMode ? 'bg-black' : 'bg-n30'}`}
-        style={{ height: insets.bottom }}
-      />
     </>
   );
 };

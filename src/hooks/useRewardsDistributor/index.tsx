@@ -24,7 +24,7 @@ import { ChainConfigMapping } from '../../constants/server';
 // const REWARDS_DISTRIBUTOR_CONTRACT =
 //   '0x3aDCB5664d9ABB0bD7991Bcd295E095a95295BE5' as const;
 const REWARDS_DISTRIBUTOR_CONTRACT =
-  '0x96e297afcE26B3feB9DA225E0f46BbABdA194A3F' as const;
+  '0x7D4681eBb0792c3E03998bcc0EF8829Ca3505fC3' as const;
 
 /**
  * ABI for the claimMultiple function
@@ -185,8 +185,8 @@ export default function useRewardsDistributor() {
         throw new Error('No claims provided');
       }
 
+      console.log('params', params);
       const result = await executeRewardsClaimContract(params);
-
       return result;
     } catch (error) {
       console.error('❌ Error claiming rewards:', error);

@@ -2017,7 +2017,7 @@ const resources = {
       // DebitCard translations
       MY_CYPHER_CARD_SHARE_TITLE: 'My Cypher Card',
       REVOLUTIONIZE_CRYPTO_SPENDING_MESSAGE:
-        "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0% Forex Markup\n    💲 0% Loading Fee for USDC",
+        "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0.75% Forex Markup\n    💲 0% Loading Fee for USDC",
       SHARE_FAILED_TITLE: 'Share failed',
       UNABLE_TO_SHARE_CARD_DETAILS_TITLE: 'Unable to share card details',
       ERROR_LOADING_CARD_DETAILS_TITLE: 'Error loading card details',
@@ -2341,6 +2341,7 @@ const resources = {
       MFA_SETTINGS: 'MFA Settings',
       LOADING_WALLET_INFO: 'Loading wallet info...',
       NO_CLAIMS_AVAILABLE: 'No claims available',
+      TOTAL_SPEND: 'Total spend',
     },
   },
 };

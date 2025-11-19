@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import {
   CyDSafeAreaView,
@@ -11,6 +10,7 @@ import {
   CyDIcons,
   CyDImage,
 } from '../../../styles/tailwindComponents';
+import AppImages from '../../../../assets/images/appImages';
 import { MerchantLogo } from '../../../components/v2/MerchantLogo';
 import {
   ActivityIndicator,
@@ -25,6 +25,11 @@ import Fuse from 'fuse.js';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 
+/**
+ * Interface for merchant data returned by the legacy /merchants endpoint.
+ * This is kept as-is so existing UI and bottom sheet behaviour continue working
+ * for all sort options other than Reward Multiplier.
+ */
 interface MerchantData {
   groupId: string;
   candidateId: string;
@@ -51,10 +56,41 @@ interface MerchantData {
     transactionCount: number;
     uniqueSpenders: number;
   };
+  projectedCYPRReward?: string;
+}
+
+/**
+ * Interface for merchant reward data returned from
+ * /v1/cypher-protocol/merchants/rewards endpoint.
+ */
+interface MerchantRewardData {
+  parentMerchantId: string;
+  candidateId: string;
+  canonicalName: string;
+  category?: string;
+  subcategory?: string;
+  brand?: string;
+  logoUrl?: string;
+  isActive: boolean;
+  isVerified: boolean;
+  isCandidate: boolean;
+  votesGained: string;
+  emissionGained: string;
+  votePercentage: number;
+  uniqueVoters: number;
+  currentSpend: number;
+  currentTransactionCount: number;
+  projectedCYPRReward: string;
+}
+
+interface PaginatedMerchantRewardsResponse {
+  items?: MerchantRewardData[];
+  referenceAmount?: number;
+  hasMore?: boolean;
+  nextOffset?: string;
 }
 
 const MerchantRewardListScreen: React.FC = () => {
-  const { t } = useTranslation();
   const navigation = useNavigation();
   const { showBottomSheet } = useGlobalBottomSheet();
   const { getWithAuth } = useAxios();
@@ -64,7 +100,7 @@ const MerchantRewardListScreen: React.FC = () => {
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  const LIMIT = 20;
+  const LIMIT = 150;
   const offsetRef = useRef<string | undefined>(undefined);
   const inFlightRef = useRef<boolean>(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,10 +114,10 @@ const MerchantRewardListScreen: React.FC = () => {
 
   const sortOptions = [
     { label: 'Name', value: 'name' },
-    { label: 'Votes', value: 'votes' },
-    { label: 'Merchant Spend', value: 'spending' },
-    { label: 'Voters', value: 'voters' },
-    { label: 'Reward Multiplier', value: 'multiplier' },
+    { label: 'Total Votes', value: 'votes' },
+    { label: 'Total Spend', value: 'spending' },
+    { label: 'Total Voters', value: 'voters' },
+    { label: '$CYPR Rewards', value: 'multiplier' },
     { label: 'Incentives', value: 'bribes' },
   ];
 
@@ -103,7 +139,16 @@ const MerchantRewardListScreen: React.FC = () => {
     null,
   );
 
-  const fetchMerchants = async (showLoading = true) => {
+  /**
+   * Reward reference amount returned by /merchants/rewards.
+   * This represents the spend amount corresponding to the projected CYPR
+   * reward value shown in the list (e.g. "for every 10$ Spend").
+   */
+  const [rewardReferenceAmount, setRewardReferenceAmount] = useState<
+    number | null
+  >(null);
+
+  const fetchMerchants = async (showLoading = true): Promise<void> => {
     if (inFlightRef.current) return;
     inFlightRef.current = true;
 
@@ -115,37 +160,89 @@ const MerchantRewardListScreen: React.FC = () => {
     }
 
     try {
-      const params: any = {
+      const params: Record<string, unknown> = {
         limit: LIMIT,
         sortBy: selectedSort.value,
         ...(offsetRef.current ? { offset: offsetRef.current } : {}),
       };
 
-      const resp = await getWithAuth('/v1/cypher-protocol/merchants', params);
+      const resp = await getWithAuth(
+        '/v1/cypher-protocol/merchants/rewards',
+        params,
+      );
       inFlightRef.current = false;
 
-      if (!resp.isError) {
-        const { items = [], nextOffset } = resp.data ?? {};
+      if (!resp.isError && resp.data) {
+        const {
+          items: rewardItems = [],
+          referenceAmount,
+          nextOffset,
+        } = (resp.data ?? {}) as PaginatedMerchantRewardsResponse;
+
+        // Map reward API response into the richer MerchantData shape used
+        // throughout the screen and in the detail bottom sheet.
+        const mappedMerchants: MerchantData[] = rewardItems.map(item => ({
+          groupId: item.parentMerchantId,
+          candidateId: item.candidateId,
+          brand: item.brand ?? item.canonicalName,
+          canonicalName: item.canonicalName,
+          category: item.category ?? '',
+          subcategory: item.subcategory ?? '',
+          logoUrl: item.logoUrl,
+          historicalMultiplier: {
+            current: 0,
+            max: 0,
+          },
+          votePercentage: item.votePercentage,
+          voteRank: 0,
+          isActive: item.isActive,
+          isVerified: item.isVerified,
+          hasActiveBribes: false,
+          userVoteData: {
+            hasVoted: false,
+          },
+          metrics: {
+            averageTransactionSize: 0,
+            totalSpend: item.currentSpend,
+            transactionCount: item.currentTransactionCount,
+            uniqueSpenders: item.uniqueVoters,
+          },
+          projectedCYPRReward: item.projectedCYPRReward,
+        }));
+
         setState(prev => ({
           ...prev,
-          merchants: offsetRef.current ? [...prev.merchants, ...items] : items,
+          merchants: offsetRef.current
+            ? [...prev.merchants, ...mappedMerchants]
+            : mappedMerchants,
           isLoading: false,
           isLoadingMore: false,
           isSearchingMore: false,
           hasMore: Boolean(nextOffset),
         }));
         offsetRef.current = nextOffset;
+
+        setRewardReferenceAmount(
+          typeof referenceAmount === 'number' ? referenceAmount : null,
+        );
       } else {
-        console.warn('Failed to fetch merchants', resp?.error);
+        console.warn(
+          '[MerchantRewardListScreen] Failed to fetch merchant rewards',
+          resp?.error,
+        );
         setState(prev => ({
           ...prev,
           isLoading: false,
           isLoadingMore: false,
           isSearchingMore: false,
         }));
+        setRewardReferenceAmount(null);
       }
     } catch (err) {
-      console.error('Failed to fetch merchants', err);
+      console.error(
+        '[MerchantRewardListScreen] Error fetching merchant rewards',
+        err,
+      );
       inFlightRef.current = false;
       setState(prev => ({
         ...prev,
@@ -153,6 +250,7 @@ const MerchantRewardListScreen: React.FC = () => {
         isLoadingMore: false,
         isSearchingMore: false,
       }));
+      setRewardReferenceAmount(null);
     }
   };
 
@@ -190,56 +288,89 @@ const MerchantRewardListScreen: React.FC = () => {
     [],
   );
 
-  const progressiveSearch = async (term: string) => {
-    let currentResults = searchInBatch(state.merchants, term);
-    setFilteredMerchants(currentResults);
-
-    if (!term.trim()) {
-      setState(prev => ({ ...prev, isSearchingMore: false }));
-      return;
-    }
-
-    if (currentResults.length > 0 || !state.hasMore) {
-      setState(prev => ({ ...prev, isSearchingMore: false }));
-      return;
-    }
-
-    setState(prev => ({ ...prev, isSearchingMore: true }));
-
-    while (offsetRef.current) {
-      await fetchMerchants(false);
-      currentResults = searchInBatch(state.merchants, term);
-      setFilteredMerchants(currentResults);
-      if (currentResults.length > 0 || !offsetRef.current) break;
-    }
-
-    setState(prev => ({ ...prev, isSearchingMore: false }));
-  };
-
+  /**
+   * Debounced search effect.
+   *
+   * Behaviour:
+   * 1. Immediately searches within the currently loaded merchants and updates the UI.
+   * 2. If there are no local matches but additional pages are available, flips `isSearchingMore`
+   *    to true to trigger background pagination.
+   * 3. When search text is cleared, it resets to showing all loaded merchants.
+   */
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    if (!searchText.trim()) {
+    const term = searchText.trim();
+
+    // When there is no active search term, always show the full loaded list
+    if (!term) {
       setFilteredMerchants(state.merchants);
+      setState(prev => ({
+        ...prev,
+        isSearchingMore: false,
+      }));
       return;
     }
 
+    // Use a relatively small debounce value to keep the search feeling responsive,
+    // while still avoiding excessive re-computation and network calls.
     searchTimeoutRef.current = setTimeout(() => {
-      void progressiveSearch(searchText);
-    }, 300);
+      const localResults = searchInBatch(state.merchants, term);
+      setFilteredMerchants(localResults);
+
+      const needsMoreData =
+        localResults.length === 0 && state.hasMore && !state.isLoading;
+
+      setState(prev => ({
+        ...prev,
+        // When we have no matches locally and more pages are available, we mark
+        // that we are "searching more" so another effect can progressively
+        // fetch additional pages in the background.
+        isSearchingMore: needsMoreData,
+      }));
+    }, 10);
 
     return () => {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText, state.merchants]);
 
+  /**
+   * Progressive, paginated search effect.
+   *
+   * Once the debounced search determines that there are zero matches in the
+   * already loaded merchants *and* more pages are available, this effect will:
+   * - Fetch the next page of merchants in the background.
+   * - Allow the debounced search effect (above) to re-run when `state.merchants`
+   *   updates, which will then:
+   *     - Either find matches and turn `isSearchingMore` off, or
+   *     - Find no matches and, if more pages remain, keep `isSearchingMore` on.
+   *
+   * This continues until a match is found or all pages have been exhausted.
+   */
   useEffect(() => {
-    if (!searchText.trim()) setFilteredMerchants(state.merchants);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.merchants]);
+    const term = searchText.trim();
+
+    if (!term) {
+      return;
+    }
+
+    if (!state.isSearchingMore || !state.hasMore) {
+      return;
+    }
+
+    // Avoid overlapping background fetches; we rely on `inFlightRef` which is
+    // already used by `fetchMerchants` to guard concurrent requests.
+    if (inFlightRef.current) {
+      return;
+    }
+
+    void fetchMerchants(false);
+  }, [state.isSearchingMore, state.hasMore, searchText]);
 
   /**
    * Handles navigation back to previous screen
@@ -436,58 +567,84 @@ const MerchantRewardListScreen: React.FC = () => {
           ) : (
             <FlatList
               data={filteredMerchants}
-              renderItem={({ item }) => (
-                <CyDTouchView
-                  className={`flex-row items-center justify-between py-4 px-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}
-                  onPress={() => handleMerchantPress(item)}>
-                  <CyDView className='flex-row items-center flex-1'>
-                    {/* Merchant Icon */}
-                    <CyDView className='relative mr-3'>
-                      <MerchantLogo
-                        merchant={{
-                          brand: item.brand ?? item.canonicalName,
-                          canonicalName: item.canonicalName,
-                          logoUrl: item.logoUrl,
-                        }}
-                        size={48}
-                        hasUserVoted={item.userVoteData?.hasVoted}
-                        showBorder={!isDarkMode}
-                      />
+              renderItem={({ item }) => {
+                const projectedReward =
+                  item.projectedCYPRReward != null
+                    ? Number.parseFloat(
+                        item.projectedCYPRReward as unknown as string,
+                      ).toFixed(2)
+                    : null;
+
+                return (
+                  <CyDTouchView
+                    className={`flex-row items-center justify-between py-4 px-4 border-b ${
+                      isDarkMode ? 'border-gray-800' : 'border-gray-200'
+                    }`}
+                    onPress={() => handleMerchantPress(item)}>
+                    <CyDView className='flex-row items-center flex-1'>
+                      {/* Merchant Icon */}
+                      <CyDView className='relative mr-3'>
+                        <MerchantLogo
+                          merchant={{
+                            brand: item.brand ?? item.canonicalName,
+                            canonicalName: item.canonicalName,
+                            logoUrl: item.logoUrl,
+                          }}
+                          size={48}
+                          hasUserVoted={item.userVoteData?.hasVoted}
+                          showBorder={!isDarkMode}
+                        />
+                      </CyDView>
+
+                      {/* Merchant Info */}
+                      <CyDView className='flex-1'>
+                        <CyDText
+                          className={`text-[18px] font-semibold ${
+                            isDarkMode ? 'text-white' : 'text-black'
+                          }`}>
+                          {item.brand ?? item.canonicalName}
+                        </CyDText>
+                        <CyDText
+                          className={`text-[14px] ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                          {item.category ?? ''}
+                        </CyDText>
+                      </CyDView>
                     </CyDView>
 
-                    {/* Merchant Info */}
-                    <CyDView className='flex-1'>
+                    {/* Right-side reward section – always show projected CYPR reward */}
+                    <CyDView className='items-end ml-3'>
+                      <CyDView className='flex-row items-center'>
+                        <CyDImage
+                          source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                          className='w-[24px] h-[24px] mr-1'
+                          resizeMode='contain'
+                        />
+                        <CyDText
+                          className={`text-[18px] font-semibold ${
+                            isDarkMode ? 'text-white' : 'text-black'
+                          }`}>
+                          {projectedReward ?? '--'}
+                        </CyDText>
+                      </CyDView>
                       <CyDText
-                        className={`text-[18px] font-semibold ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                        {item.brand ?? item.canonicalName}
-                      </CyDText>
-                      <CyDText
-                        className={`text-[14px] ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {item.category ?? ''}
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-
-                  {/* Reward Multiplier */}
-                  <CyDView className='flex flex-row items-center'>
-                    <CyDView
-                      className={`rounded-full px-3 py-1 mr-2 ${
-                        item.userVoteData?.hasVoted
-                          ? 'bg-orange500'
-                          : 'bg-green400'
-                      }`}>
-                      <CyDText className='text-white text-[12px] font-bold'>
-                        {item.historicalMultiplier.current.toFixed(1)}X Rewards
+                        className={`text-[12px] mt-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
+                        for every {rewardReferenceAmount ?? '-'}$ Spend
                       </CyDText>
                     </CyDView>
                     <CyDMaterialDesignIcons
                       name='chevron-right'
                       size={20}
-                      className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}
+                      className={`ml-1 ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}
                     />
-                  </CyDView>
-                </CyDTouchView>
-              )}
+                  </CyDTouchView>
+                );
+              }}
               keyExtractor={item => item.candidateId}
               onEndReached={() => {
                 if (
