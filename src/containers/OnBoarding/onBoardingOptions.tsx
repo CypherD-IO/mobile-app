@@ -1168,7 +1168,9 @@ export default function OnBoardingOptions() {
 
                 {/* Wallet Connect Button */}
                 <CyDTouchView
-                  onPress={handleConnectWallet}
+                  onPress={() => {
+                    void handleConnectWallet();
+                  }}
                   className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[40px]'>
                   <CyDImage
                     source={AppImages.WALLET_CONNECT_ICON}
