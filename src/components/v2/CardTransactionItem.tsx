@@ -105,7 +105,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
     boostedSpendRewards !== '0' &&
     boostedSpendRewards !== '0.0';
   const hasBaseRewards =
-    baseSpendRewards && DecimalHelper.gt(baseSpendRewards, '0'); // or compare the converted value
+    baseSpendRewards && DecimalHelper.isGreaterThan(baseSpendRewards, '0'); // or compare the converted value
   const formattedBoostedRewards = hasBoostedRewards
     ? convertFromUnitAmount(boostedSpendRewards, 18, 2)
     : '0';
@@ -207,7 +207,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                   </CyDText>
                 </CyDView>
                 {hasBaseRewards && (
-                  <CyDText className='text-[10px] font-semibold text-successTextGreen mr-[5px]'>
+                  <CyDText className='text-[10px] font-semibold text-n200 mr-[5px]'>
                     Earned {formattedBaseRewards} CYPR
                   </CyDText>
                 )}
