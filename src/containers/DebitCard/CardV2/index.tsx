@@ -521,6 +521,7 @@ export default function CypherCardScreen() {
     const response = await getWithAuth(txnURL);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
+
       txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
         // Use a fallback approach since 'date' field might not exist
         const aTransaction = a as ICardTransaction & {

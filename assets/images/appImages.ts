@@ -766,6 +766,9 @@ const PROFILE_AVATAR = require('./profileAvatar.png');
 const SUCCESS_TICK_3D = {
   uri: `${S3_BUCKET_URL_ICONS}/successTick3d.png`,
 };
+const WALLET_CONNECT_MOBILE = {
+  uri: `${S3_BUCKET_URL_ICONS}/walletConnectMobile.png`,
+};
 
 export const AppImagesMap = {
   common: {
@@ -1088,6 +1091,7 @@ export const AppImagesMap = {
     GREEN_CHECK_MARK_WHITE_BORDER,
     TREASURE_CHEST,
     SUCCESS_TICK_3D,
+    WALLET_CONNECT_MOBILE,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1414,6 +1418,7 @@ enum AppImages {
   GREEN_CHECK_MARK_WHITE_BORDER = 'GREEN_CHECK_MARK_WHITE_BORDER',
   TREASURE_CHEST = 'TREASURE_CHEST',
   SUCCESS_TICK_3D = 'SUCCESS_TICK_3D',
+  WALLET_CONNECT_MOBILE = 'WALLET_CONNECT_MOBILE',
 }
 
 export default AppImages;

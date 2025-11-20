@@ -2342,6 +2342,18 @@ const resources = {
       LOADING_WALLET_INFO: 'Loading wallet info...',
       NO_CLAIMS_AVAILABLE: 'No claims available',
       TOTAL_SPEND: 'Total spend',
+      BOOSTED_REWARD: 'Boosted Reward',
+      BASE_REWARD: 'Base Reward',
+      FOR_EVERY_AMOUNT_SPEND: 'For every ${{amount}} spent',
+      COMMUNITY_STATS: 'Community Stats',
+      THIS_REWARD_CYCLE_TREND: 'This Reward Cycle Trend',
+      COMMUNITY_BOOSTING_TREND: 'Community Boosting trend',
+      POPULAR: 'Popular',
+      DECLINING: 'Declining',
+      NORMAL: 'Normal',
+      YOU_HAVE_EARNED_BOOSTED_REWARDS: 'You have earned boosted rewards',
+      WALLET_CONNECT_STATUS_DESCRIPTION:
+        "Hang tight! We're connecting you to your wallet now.",
     },
   },
 };

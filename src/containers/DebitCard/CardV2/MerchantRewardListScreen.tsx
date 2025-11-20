@@ -24,6 +24,8 @@ import MerchantRewardDetailContent from '../../../components/v2/MerchantRewardDe
 import Fuse from 'fuse.js';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
+import { DecimalHelper } from '../../../utils/decimalHelper';
+import { limitDecimalPlaces } from '../../../core/util';
 
 /**
  * Interface for merchant data returned by the legacy /merchants endpoint.
@@ -115,10 +117,9 @@ const MerchantRewardListScreen: React.FC = () => {
   const sortOptions = [
     { label: 'Name', value: 'name' },
     { label: 'Total Votes', value: 'votes' },
-    { label: 'Total Spend', value: 'spending' },
+    { label: 'Total Spend', value: 'spend' },
     { label: 'Total Voters', value: 'voters' },
-    { label: '$CYPR Rewards', value: 'multiplier' },
-    { label: 'Incentives', value: 'bribes' },
+    { label: '$CYPR Rewards', value: 'rewards' },
   ];
 
   const [state, setState] = useState<{
@@ -170,6 +171,7 @@ const MerchantRewardListScreen: React.FC = () => {
         '/v1/cypher-protocol/merchants/rewards',
         params,
       );
+
       inFlightRef.current = false;
 
       if (!resp.isError && resp.data) {
@@ -570,9 +572,13 @@ const MerchantRewardListScreen: React.FC = () => {
               renderItem={({ item }) => {
                 const projectedReward =
                   item.projectedCYPRReward != null
-                    ? Number.parseFloat(
-                        item.projectedCYPRReward as unknown as string,
-                      ).toFixed(2)
+                    ? limitDecimalPlaces(
+                        DecimalHelper.toDecimal(
+                          item.projectedCYPRReward as unknown as string,
+                          18,
+                        ),
+                        2,
+                      )
                     : null;
 
                 return (

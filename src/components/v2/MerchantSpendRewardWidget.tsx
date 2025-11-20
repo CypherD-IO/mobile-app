@@ -12,6 +12,7 @@ import { useColorScheme } from 'nativewind';
 import useAxios from '../../core/HttpRequest';
 import GradientText from '../gradientText';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { limitDecimalPlaces } from '../../core/util';
 
 /**
  * Props interface for the MerchantSpendRewardWidget component
@@ -114,11 +115,6 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
         '/v1/cypher-protocol/merchants/rewards?sortBy=multiplier&limit=6',
       );
 
-      console.log(
-        'resp : >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
-        resp,
-      );
-
       const { isError, data } = resp;
 
       if (!isError && data) {
@@ -173,10 +169,10 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
 
     const planId = isPremium ? CypherPlanId.PRO_PLAN : CypherPlanId.BASIC_PLAN;
     return (
-      DecimalHelper.round(
-        merchantRewardsData.baseReward[planId],
+      limitDecimalPlaces(
+        DecimalHelper.toDecimal(merchantRewardsData.baseReward[planId], 18),
         2,
-      ).toString() || '-'
+      ) || '-'
     );
   };
 
@@ -187,8 +183,11 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   const getBasicPlanReward = (): string => {
     if (!merchantRewardsData?.baseReward) return '-';
     return (
-      DecimalHelper.round(
-        merchantRewardsData.baseReward[CypherPlanId.BASIC_PLAN],
+      limitDecimalPlaces(
+        DecimalHelper.toDecimal(
+          merchantRewardsData.baseReward[CypherPlanId.BASIC_PLAN],
+          18,
+        ),
         2,
       ).toString() || '-'
     );
@@ -235,10 +234,11 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
     index: number,
   ): JSX.Element => {
     // Format the projected CYPR reward value
-    const cypRReward = parseFloat(merchant.projectedCYPRReward || '0').toFixed(
-      1,
-    );
-
+    const cypRReward =
+      limitDecimalPlaces(
+        DecimalHelper.toDecimal(merchant.projectedCYPRReward, 18),
+        2,
+      ) || '0';
     const isRightColumn = index % 2 !== 0;
     const hasBottomBorder = index < 4; // First 4 items (2 rows) have bottom border
 
@@ -265,7 +265,7 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
             {/* Reward Value */}
             <CyDView className='flex-row items-center gap-1'>
               <CyDImage
-                source={AppImages.CYPR_TOKEN}
+                source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
                 className='w-[24px] h-[24px]'
                 resizeMode='contain'
               />

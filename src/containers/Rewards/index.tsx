@@ -688,11 +688,6 @@ export default function Rewards() {
     18,
   ).toString();
 
-  console.log(
-    'claimRewardData.rewardInfo',
-    claimRewardData?.rewardInfo?.totalRewardsInToken,
-  );
-  console.log('totalUnclaimed', totalUnclaimed);
   const availableToClaim =
     claimRewardData?.rewardInfo?.totalRewardsInToken !== undefined
       ? DecimalHelper.toDecimal(
@@ -836,8 +831,6 @@ export default function Rewards() {
             votingPowerPromise,
             claimRewardPromise,
           ]);
-
-          console.log('claimRewardResponse', claimRewardResponse);
 
           // Check if all critical requests succeeded
           if (userProfileResponse.isError) {
@@ -1304,40 +1297,42 @@ export default function Rewards() {
             </CyDTouchView>
           </CyDView>
 
-          <CyDView className='flex-1 bg-n20'>
-            <CyDView className='flex flex-row justify-between items-center p-4 rounded-[16px] bg-base400 mx-[16px] mt-[24px] mb-[16px]'>
-              <CyDView className='flex flex-col'>
-                <CyDView className='flex-row items-center mb-2'>
-                  <CyDImage
-                    source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                    className='w-[22px] h-[22px] mr-1'
-                    resizeMode='contain'
-                  />
-                  <CyDText className='text-n0 text-[20px] font-extrabold'>
-                    {DecimalHelper.round(availableToClaim, 2).toString()}
+          <CyDView className='flex-1 bg-n20 pt-[24px]'>
+            {Number(availableToClaim) > 0 && (
+              <CyDView className='flex flex-row justify-between items-center p-4 rounded-[16px] bg-base400 mx-[16px] mb-[16px]'>
+                <CyDView className='flex flex-col'>
+                  <CyDView className='flex-row items-center mb-2'>
+                    <CyDImage
+                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                      className='w-[22px] h-[22px] mr-1'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='text-n0 text-[20px] font-extrabold'>
+                      {DecimalHelper.round(availableToClaim, 2).toString()}
+                    </CyDText>
+                  </CyDView>
+                  <CyDText className='text-[14px] font-medium text-n0'>
+                    {t(
+                      'REWARDS_AVAILABLE_TO_CLAIM',
+                      'Rewards available to claim',
+                    )}
                   </CyDText>
                 </CyDView>
-                <CyDText className='text-[14px] font-medium text-n0'>
-                  {t(
-                    'REWARDS_AVAILABLE_TO_CLAIM',
-                    'Rewards available to claim',
-                  )}
-                </CyDText>
+                <Button
+                  title={t('CLAIM', 'Claim')}
+                  onPress={() => {
+                    navigation.navigate(screenTitle.CLAIM_REWARD, {
+                      rewardsData,
+                      claimRewardData,
+                    });
+                  }}
+                  disabled={Number(availableToClaim) <= 0}
+                  type={ButtonType.PRIMARY}
+                  style='rounded-full px-8'
+                  paddingY={8}
+                />
               </CyDView>
-              <Button
-                title={t('CLAIM', 'Claim')}
-                onPress={() => {
-                  navigation.navigate(screenTitle.CLAIM_REWARD, {
-                    rewardsData,
-                    claimRewardData,
-                  });
-                }}
-                disabled={Number(availableToClaim) <= 0}
-                type={ButtonType.PRIMARY}
-                style='rounded-full px-8'
-                paddingY={8}
-              />
-            </CyDView>
+            )}
             {/* Action Cards */}
             <CyDView className='flex-row justify-between mx-[16px]'>
               {/* Cypher Deposit */}

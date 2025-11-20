@@ -40,19 +40,31 @@ export default function useValidSessionToken() {
         );
         if (resp?.data) {
           const { token, refreshToken } = resp.data;
-          void setAuthToken(token);
-          void setRefreshToken(refreshToken);
+          await setAuthToken(token);
+          await setRefreshToken(refreshToken);
           globalContext.globalDispatch({
             type: GlobalContextType.SIGN_IN,
             sessionToken: token,
           });
           return true;
         } else {
-          // throw error
+          // If response exists but no data, treat as failure
           return false;
         }
-      } catch (e) {
-        // throw error
+      } catch (e: any) {
+        // Check if it's an auth error (401/403)
+        const status = e?.response?.status;
+        if (status === 401 || status === 403) {
+          // Explicit auth failure - session is invalid
+          return false;
+        }
+
+        // For network errors or server errors (5xx),
+        // be optimistic if we have an existing token
+        if (authToken) {
+          return true;
+        }
+
         return false;
       }
     }

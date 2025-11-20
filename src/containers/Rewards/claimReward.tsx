@@ -916,8 +916,6 @@ const ClaimReward: React.FC = () => {
         // Execute claim using the same pattern as airdrop claim
         const result = await claimRewards(claimParams);
 
-        console.log('result of claimRewards : ', result);
-
         // Check if transaction was successful
         if (!result.isError && result.hash) {
           rewardsClaimedSuccess = true;
@@ -934,7 +932,6 @@ const ClaimReward: React.FC = () => {
           // Mark rewards as claimed in backend
           // This is a non-blocking call - we don't want to prevent navigation if it fails
           try {
-            console.log('marking rewards as claimed on backend');
             const currentTimestamp = Math.floor(Date.now() / 1000);
             const markClaimedResponse = await patchWithAuth(
               '/v1/cypher-protocol/user/mark-claimed',
@@ -943,7 +940,6 @@ const ClaimReward: React.FC = () => {
                 ...(result.hash && { transactionHash: result.hash }),
               },
             );
-            console.log('markClaimedResponse : ', markClaimedResponse);
             if (markClaimedResponse.isError) {
               console.error(
                 '⚠️ Failed to mark rewards as claimed on backend:',

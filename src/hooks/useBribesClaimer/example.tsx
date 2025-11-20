@@ -78,9 +78,7 @@ const ClaimBribesExample = () => {
         candidates: bribe.candidates as string[],
         fromTimestamp: bribe.epochRange.from,
         untilTimestamp: bribe.epochRange.until,
-        onStatusUpdate: (msg: string) => {
-          console.log(`veNFT ${bribe.veNFTId}: ${msg}`);
-        },
+        onStatusUpdate: (msg: string) => {},
       }));
 
       // Execute batch claim
@@ -120,9 +118,7 @@ const ClaimBribesExample = () => {
         candidates: bribe.candidates as string[],
         fromTimestamp: bribe.epochRange.from,
         untilTimestamp: bribe.epochRange.until,
-        onStatusUpdate: (msg: string) => {
-          console.log(msg);
-        },
+        onStatusUpdate: (msg: string) => {},
       });
 
       if (!result.isError) {

@@ -94,6 +94,30 @@ export default function CardTransactions() {
     void fetchTransactions(true);
   }, []);
 
+  const dummyBoostedTransaction: ICardTransaction = {
+    id: 'dummy-boosted-1',
+    title: 'Test Boosted Transaction',
+    amount: 10.0,
+    date: new Date().toISOString(),
+    createdAt: Math.floor(Date.now() / 1000),
+    type: CardTransactionTypes.DEBIT,
+    tStatus: ReapTxnStatus.CLEARED,
+    iconUrl: 'https://public.cypherd.io/icons/shopping.png',
+    cypherRewards: {
+      epochNumber: 2,
+      calculatedAt: 1762334256,
+      rewardsAllocation: {
+        tierMultiplier: 1,
+        baseSpendRewards: '1000000000000000000',
+        planId: 'basic_plan_v1',
+        percentageOfUserRewards: 1,
+        boostedSpendRewards: '5000000000000000000',
+        amountSpent: 10.0,
+        totalRewards: '6000000000000000000',
+      },
+    },
+  } as any;
+
   const spliceTransactions = (txnsToSplice: ICardTransaction[]) => {
     if (txnsToSplice.length === 0) {
       setFilteredTransactions([]);
@@ -197,6 +221,7 @@ export default function CardTransactions() {
         }
 
         if (pullToRefresh) {
+          txnsToSet.unshift(dummyBoostedTransaction);
           setTransactions(txnsToSet);
           spliceTransactions(txnsToSet);
         } else {

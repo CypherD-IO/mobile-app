@@ -17,6 +17,8 @@ export const AnalyticEvent = {
   INITIATE_SOCIAL_LOGIN: 'initiate_social_login',
   SOCIAL_LOGIN_SOLANA: 'social_login_solana',
   SIGN_WALLET_CONNECT_MSG: 'sign_wallet_connect_msg',
+  WALLET_CONNECT_SIGNATURE_REJECTED: 'wallet_connect_signature_rejected',
+  WALLET_CONNECT_RETRY_SIGNATURE: 'wallet_connect_retry_signature',
   SWAP_QUOTE_ERROR: 'SWAP_QUOTE_ERROR',
   BRIDGE_QUOTE_ERROR: 'BRIDGE_QUOTE_ERROR',
   BRIDGE_SUCCESS: 'BRIDGE_SUCCESS',

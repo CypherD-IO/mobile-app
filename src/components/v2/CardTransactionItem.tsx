@@ -6,7 +6,9 @@ import {
 import clsx from 'clsx';
 import moment from 'moment';
 import React, { memo } from 'react';
+import { StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import LottieView from 'lottie-react-native';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import {
@@ -16,6 +18,7 @@ import {
 } from '../../constants/enum';
 import { intercomAnalyticsLog } from '../../containers/utilities/analyticsUtility';
 import {
+  convertFromUnitAmount,
   formatToLocalDate,
   getSymbolFromCurrency,
   isPotentiallyDccOvercharged,
@@ -90,6 +93,26 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
     wallet,
     channel,
   } = item;
+
+  const boostedSpendRewards =
+    item.cypherRewards?.rewardsAllocation?.boostedSpendRewards;
+  const baseSpendRewards =
+    item.cypherRewards?.rewardsAllocation?.baseSpendRewards;
+
+  const hasBoostedRewards =
+    boostedSpendRewards &&
+    boostedSpendRewards !== '0' &&
+    boostedSpendRewards !== '0.0';
+  const hasBaseRewards =
+    baseSpendRewards && baseSpendRewards !== '0' && baseSpendRewards !== '0.0';
+
+  const formattedBoostedRewards = hasBoostedRewards
+    ? convertFromUnitAmount(boostedSpendRewards, 18, 2)
+    : '0';
+  const formattedBaseRewards = hasBaseRewards
+    ? convertFromUnitAmount(baseSpendRewards, 18, 2)
+    : '0';
+
   return (
     <>
       {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-n0 border-x n40' /> */}
@@ -183,6 +206,11 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                     {limitDecimalPlaces(fxCurrencyValue ?? amount, 2)}{' '}
                   </CyDText>
                 </CyDView>
+                {hasBaseRewards && (
+                  <CyDText className='text-[10px] font-semibold text-successTextGreen mr-[5px]'>
+                    Earned {formattedBaseRewards} CYPR
+                  </CyDText>
+                )}
                 {isPotentiallyDccOvercharged(item) && (
                   <CyDView className='flex flex-row items-center w-fit rounded-full bg-p0 px-[4px] py-[2px]'>
                     <CyDMaterialDesignIcons
@@ -199,9 +227,50 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
             )}
           </CyDView>
         </CyDView>
+        {hasBoostedRewards && (
+          <CyDView className='relative mt-[12px] h-[32px] w-full overflow-hidden rounded-[8px] flex-row items-center justify-between px-[12px]'>
+            <LottieView
+              source={require('../../../assets/lotties/greenShimmer.json')}
+              autoPlay
+              loop
+              style={styles.lottie}
+              resizeMode='cover'
+            />
+            {/* Background color fallback if Lottie doesn't load immediately or needs base */}
+            <CyDView className='absolute w-full h-full bg-[#006a31] opacity-90 z-[-1]' />
+
+            <CyDView className='flex-row items-center z-10 gap-x-[4px]'>
+              <CyDText className='text-n0 font-[600] text-[12px]'>💰</CyDText>
+              <CyDText className='text-n0 font-[600] text-white text-[12px]'>
+                {t('YOU_HAVE_EARNED_BOOSTED_REWARDS')}
+              </CyDText>
+            </CyDView>
+
+            <CyDView className='flex-row items-center z-10'>
+              <CyDFastImage
+                source={AppImages.CYPR_TOKEN}
+                className='h-[16px] w-[16px] mr-[4px]'
+                resizeMode='contain'
+              />
+              <CyDText className='text-n0 font-bold text-white text-[12px]'>
+                {formattedBoostedRewards}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+        )}
       </CyDTouchView>
     </>
   );
 };
 
 export default memo(CardTransactionItem);
+
+const styles = StyleSheet.create({
+  lottie: {
+    position: 'absolute',
+    width: '200%',
+    height: '200%',
+    top: '-50%',
+    left: '-50%',
+  },
+});
