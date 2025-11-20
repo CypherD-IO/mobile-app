@@ -1159,7 +1159,7 @@ const TransactionDetail = ({
                 return (
                   <CyDView className='flex flex-row justify-between items-center mt-[24px]'>
                     <CyDText className='text-[14px] text-n200 font-semibold'>
-                      {t('Base Rewards')}
+                      {t('Base Rewards Earned')}
                     </CyDText>
                     <CyDText className='text-[14px] font-semibold'>
                       {convertFromUnitAmount(
