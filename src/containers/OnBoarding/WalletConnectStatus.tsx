@@ -491,11 +491,11 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         {((hasOpenedModal && !isConnected) ||
           (hasTriggeredSigning && isSigning)) && (
           <Animated.Text
-            className='text-center text-[13px] text-blue500 mt-[16px] font-medium'
+            className='text-center text-[13px] text-base400 mt-[16px] font-medium'
             style={{ opacity: blinkOpacity }}>
             {t(
               'WALLET_CONNECT_AUTO_REDIRECT_MESSAGE',
-              'Automatic redirection to the {{walletName}} should happen. If not please navigate to the {{walletName}}',
+              'Automatic redirection to the {{walletName}} should happen. \nIf not please navigate to the {{walletName}}',
               { walletName: walletInfo?.name ?? 'wallet' },
             )}
           </Animated.Text>
