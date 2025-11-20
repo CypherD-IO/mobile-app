@@ -766,12 +766,6 @@ const ClaimReward: React.FC = () => {
           id: merchant.parentMerchantId ?? `merchant_${index}`,
           name: merchant.canonicalName ?? 'Unknown Merchant',
           logo: merchant.logoUrl,
-          totalSpend: parseFloat(
-            DecimalHelper.toDecimal(
-              String(merchant.spend ?? '0'),
-              18,
-            ).toString(),
-          ),
           rewardsEarned: parseFloat(
             DecimalHelper.toDecimal(
               String(merchant.spend ?? '0'),
@@ -1398,7 +1392,7 @@ const ClaimReward: React.FC = () => {
                           </CyDView>
 
                           {/* Merchant stats */}
-                          <CyDView className='flex-row items-center justify-between mt-2'>
+                          {/* <CyDView className='flex-row items-center justify-between mt-2'>
                             <CyDText className='text-[14px] text-n200'>
                               {t('TOTAL_SPEND') ?? 'Total spend'}
                             </CyDText>
@@ -1406,7 +1400,7 @@ const ClaimReward: React.FC = () => {
                             <CyDText className='text-[14px] font-medium'>
                               ${formatWithDecimals(merchant.totalSpend)}
                             </CyDText>
-                          </CyDView>
+                          </CyDView> */}
                         </CyDView>
                       ),
                     )}

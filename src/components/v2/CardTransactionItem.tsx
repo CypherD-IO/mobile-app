@@ -33,6 +33,7 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import { get } from 'lodash';
+import { DecimalHelper } from '../../utils/decimalHelper';
 
 interface CardTransactionItemProps {
   item: ICardTransaction;
@@ -104,8 +105,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
     boostedSpendRewards !== '0' &&
     boostedSpendRewards !== '0.0';
   const hasBaseRewards =
-    baseSpendRewards && baseSpendRewards !== '0' && baseSpendRewards !== '0.0';
-
+    baseSpendRewards && DecimalHelper.gt(baseSpendRewards, '0'); // or compare the converted value
   const formattedBoostedRewards = hasBoostedRewards
     ? convertFromUnitAmount(boostedSpendRewards, 18, 2)
     : '0';

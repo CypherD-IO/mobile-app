@@ -83,6 +83,12 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
    */
   const loadHdWallet = async (): Promise<void> => {
     try {
+      if (!address) {
+        console.error(
+          '[WalletConnectStatus] Missing wallet address while loading HD wallet',
+        );
+        return;
+      }
       void setConnectionType(ConnectionTypes.WALLET_CONNECT);
       hdWalletContext?.dispatch({
         type: 'LOAD_WALLET',
@@ -123,6 +129,9 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
    */
   const registerIntercomUser = (): void => {
     try {
+      if (!address) {
+        return;
+      }
       const walletAddress = String(address).toLowerCase();
 
       Intercom.loginUserWithUserAttributes({
@@ -347,6 +356,10 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
    */
   const handleRetrySignature = async (): Promise<void> => {
     try {
+      if (!address) {
+        return;
+      }
+
       // Reset error states
       setSignatureRejected(false);
       setSignatureSuccess(false);

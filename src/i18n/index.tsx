@@ -1800,9 +1800,9 @@ const resources = {
       REFERRAL_CODE_REQUIRED: 'Referral code is required',
       LOAD_YOUR_CARD: 'Load your card',
       LOAD_YOUR_CARD_DESCRIPTION:
-        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains.',
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 16+ blockchains.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
-        'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
+        'As the first step, load your Cypher card. With access to over 1000 tokens across more than 16 different blockchains, the possibilities are endless!',
       NEXT: 'Next',
       ADDITIONAL_DOCUMENT_REQUIRED: 'Additional Document Required',
       ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION:
