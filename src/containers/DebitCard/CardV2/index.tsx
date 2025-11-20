@@ -521,6 +521,7 @@ export default function CypherCardScreen() {
     const response = await getWithAuth(txnURL);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
+
       txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
         // Use a fallback approach since 'date' field might not exist
         const aTransaction = a as ICardTransaction & {
@@ -1145,7 +1146,7 @@ export default function CypherCardScreen() {
                         className='text-base400'
                       />
                       <CyDText className='font-semibold text-[12px]'>
-                        {'Zero Forex Markup'}
+                        {'0.75% Forex Markup'}
                       </CyDText>
                     </CyDView>
                     <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>

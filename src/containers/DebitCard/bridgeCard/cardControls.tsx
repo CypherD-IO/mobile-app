@@ -1185,58 +1185,68 @@ export default function CardControls() {
             </CyDView>
 
             {/* Security Controls */}
-            <CyDText className='mt-[16px] text-[14px] text-n200 mb-[8px]'>
-              Security Controls
-            </CyDText>
-            <CyDView className='bg-n0 rounded-[10px] px-[16px]'>
-              {/* Authentication Method */}
-              <CyDTouchView
-                className='flex flex-row items-center justify-between py-[16px]'
-                onPress={() => setShow3DsModal(true)}>
-                <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                  <CyDImage
-                    source={AppImages.AUTHENTICATION_METHOD_ICON}
-                    className='w-[32px] h-[32px]'
-                  />
-                  <CyDText className='text-[16px]'>
-                    Authentication Method
-                  </CyDText>
-                </CyDView>
-                <CyDView className='flex flex-row items-center'>
-                  <CyDText className='text-[14px] text-b150'>
-                    {isTelegramEnabled ? 'Email' : 'SMS'}
-                  </CyDText>
-                  <CyDMaterialDesignIcons
-                    name='chevron-right'
-                    size={16}
-                    className='text-base400 ml-2'
-                  />
-                </CyDView>
-              </CyDTouchView>
+            {!(
+              currentCardProvider === CardProviders.RAIN_CARD &&
+              selectedCard?.type === CardType.VIRTUAL
+            ) && (
+              <>
+                <CyDText className='mt-[16px] text-[14px] text-n200 mb-[8px]'>
+                  Security Controls
+                </CyDText>
+                <CyDView className='bg-n0 rounded-[10px] px-[16px]'>
+                  {/* Authentication Method */}
+                  {currentCardProvider === CardProviders.REAP_CARD && (
+                    <CyDTouchView
+                      className='flex flex-row items-center justify-between py-[16px]'
+                      onPress={() => setShow3DsModal(true)}>
+                      <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                        <CyDImage
+                          source={AppImages.AUTHENTICATION_METHOD_ICON}
+                          className='w-[32px] h-[32px]'
+                        />
+                        <CyDText className='text-[16px]'>
+                          Authentication Method
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className='flex flex-row items-center'>
+                        <CyDText className='text-[14px] text-b150'>
+                          {isTelegramEnabled ? 'Email' : 'SMS'}
+                        </CyDText>
+                        <CyDMaterialDesignIcons
+                          name='chevron-right'
+                          size={16}
+                          className='text-base400 ml-2'
+                        />
+                      </CyDView>
+                    </CyDTouchView>
+                  )}
 
-              {/* Card Pin */}
-              <CyDTouchView
-                className='flex flex-row items-center justify-between py-[16px] border-t border-n40'
-                onPress={() => {
-                  navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
-                    currentCardProvider,
-                    card: selectedCard,
-                  });
-                }}>
-                <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                  <CyDImage
-                    source={AppImages.CARD_PIN_ICON}
-                    className='w-[32px] h-[32px]'
-                  />
-                  <CyDText className='text-[16px]'>Card Pin</CyDText>
+                  {/* Card Pin */}
+
+                  <CyDTouchView
+                    className='flex flex-row items-center justify-between py-[16px] border-t border-n40'
+                    onPress={() => {
+                      navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
+                        currentCardProvider,
+                        card: selectedCard,
+                      });
+                    }}>
+                    <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                      <CyDImage
+                        source={AppImages.CARD_PIN_ICON}
+                        className='w-[32px] h-[32px]'
+                      />
+                      <CyDText className='text-[16px]'>Card Pin</CyDText>
+                    </CyDView>
+                    <CyDMaterialDesignIcons
+                      name='chevron-right'
+                      size={16}
+                      className='text-base400 ml-2'
+                    />
+                  </CyDTouchView>
                 </CyDView>
-                <CyDMaterialDesignIcons
-                  name='chevron-right'
-                  size={16}
-                  className='text-base400 ml-2'
-                />
-              </CyDTouchView>
-            </CyDView>
+              </>
+            )}
 
             {/* Reset Card Settings */}
             <CyDView className='mt-[16px] bg-n0 rounded-[10px] px-[16px]'>

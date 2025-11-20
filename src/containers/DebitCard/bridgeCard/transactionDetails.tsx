@@ -2,11 +2,13 @@ import Intercom from '@intercom/intercom-react-native';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import LottieView from 'lottie-react-native';
 import AppImages from '../../../../assets/images/appImages';
 import {
   HdWalletContext,
   copyToClipboard,
   formatAmount,
+  convertFromUnitAmount,
   getCountryNameById,
   limitDecimalPlaces,
   parseErrorMessage,
@@ -74,6 +76,7 @@ import GradientText from '../../../components/gradientText';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import ReportTransactionModal from '../../../components/v2/reportTransactionModal';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import { DecimalHelper } from '../../../utils/decimalHelper';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -1137,6 +1140,38 @@ const TransactionDetail = ({
                   </CyDText>
                 </CyDView>
               )}
+              {(() => {
+                // Extract rewards data safely
+                const cypherRewards: any = (transaction as any)?.cypherRewards;
+                const rewardsAlloc = get(
+                  cypherRewards,
+                  'rewardsAllocation',
+                  null,
+                );
+
+                if (!rewardsAlloc) return null;
+
+                const baseSpendRewards = Number(
+                  rewardsAlloc?.baseSpendRewards ?? 0,
+                );
+                if (baseSpendRewards <= 0) return null;
+
+                return (
+                  <CyDView className='flex flex-row justify-between items-center mt-[24px]'>
+                    <CyDText className='text-[14px] text-n200 font-semibold'>
+                      {t('Base Rewards')}
+                    </CyDText>
+                    <CyDText className='text-[14px] font-semibold'>
+                      {convertFromUnitAmount(
+                        rewardsAlloc?.baseSpendRewards,
+                        18,
+                        2,
+                      )}{' '}
+                      CYPR
+                    </CyDText>
+                  </CyDView>
+                );
+              })()}
             </>
           )}
         </CyDView>
@@ -1752,28 +1787,57 @@ export default function TransactionDetails() {
                   );
                   const isBoosted = boostedRewards > 0;
 
+                  if (!isBoosted) return null;
+
                   // Determine banner styles & text
-                  const bannerBg = isBoosted ? 'bg-orange500' : 'bg-green400';
+                  const bannerBg = isBoosted ? 'bg-n0' : 'bg-green400';
                   const bannerText = isBoosted
-                    ? `You've earned boosted rewards from \n ${capitalize(
-                        transaction?.metadata?.merchant?.merchantName ?? '',
-                      )} Rewards`
+                    ? t('YOU_HAVE_EARNED_BOOSTED_REWARDS')
                     : 'You have earned';
 
                   return (
                     <CyDView
-                      className={`flex-row items-center justify-between rounded-[12px] px-[16px] py-[12px] mt-[16px] ${bannerBg} mx-[16px]`}>
-                      <CyDText className='text-white font-medium text-[14px] flex-1 mr-[8px]'>
-                        {bannerText}
-                      </CyDText>
-                      <CyDView className='flex-row items-center'>
+                      className={`relative overflow-hidden flex-row items-center justify-between rounded-[12px] px-[16px] py-[12px] mt-[16px] ${bannerBg} mx-[16px]`}>
+                      {isBoosted && (
+                        <>
+                          <LottieView
+                            source={require('../../../../assets/lotties/greenShimmerBig.json')}
+                            autoPlay
+                            loop
+                            style={{
+                              position: 'absolute',
+                              width: '200%',
+                              height: '200%',
+                              top: '-50%',
+                              left: '-50%',
+                            }}
+                            resizeMode='cover'
+                          />
+                          <CyDView className='absolute top-0 left-0 right-0 bottom-0 bg-[#006a31] opacity-90 z-[-1]' />
+                        </>
+                      )}
+
+                      <CyDView className='flex-row items-center z-10 flex-1 mr-[8px]'>
+                        <CyDText className='text-n0 font-[600] text-[12px]'>
+                          💰
+                        </CyDText>
+                        <CyDText className='text-white font-medium text-[14px]'>
+                          {bannerText}
+                        </CyDText>
+                      </CyDView>
+
+                      <CyDView className='flex-row items-center z-10'>
                         <CyDFastImage
-                          source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                          source={AppImages.CYPR_TOKEN}
                           className='w-[24px] h-[24px] mr-[4px]'
                           resizeMode='contain'
                         />
                         <CyDText className='text-white font-bold text-[18px]'>
-                          {limitDecimalPlaces(String(totalRewards), 2)}
+                          {convertFromUnitAmount(
+                            rewardsAlloc?.boostedSpendRewards,
+                            18,
+                            2,
+                          )}
                         </CyDText>
                       </CyDView>
                     </CyDView>
@@ -1874,7 +1938,7 @@ export default function TransactionDetails() {
                           className='text-base400'
                         />
                         <CyDText className='font-semibold text-[12px]'>
-                          {'Zero Forex Markup'}
+                          {'0.75% Forex Markup'}
                         </CyDText>
                       </CyDView>
                       <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>

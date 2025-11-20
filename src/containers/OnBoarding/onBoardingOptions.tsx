@@ -2,13 +2,14 @@ import {
   NavigationProp,
   ParamListBase,
   useNavigation,
+  useFocusEffect,
 } from '@react-navigation/native';
 import Web3Auth, {
   LOGIN_PROVIDER,
   MFA_LEVELS,
 } from '@web3auth/react-native-sdk';
 import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Keyboard, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppImages from '../../../assets/images/appImages';
@@ -21,6 +22,7 @@ import {
   importWalletFromSolanaPrivateKey,
 } from '../../core/HdWallet';
 import { setConnectionType } from '../../core/asyncStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   HdWalletContext,
   isValidPrivateKey,
@@ -44,6 +46,13 @@ import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import useAxios from '../../core/HttpRequest';
 import Toast from 'react-native-toast-message';
+import WalletConnectStatus from './WalletConnectStatus';
+
+/**
+ * AsyncStorage key for persisting WalletConnect flow state during app backgrounding
+ * This ensures the WalletConnect status screen persists across redirects to external wallet apps
+ */
+const WALLET_CONNECT_FLOW_KEY = 'ONBOARDING_WALLET_CONNECT_FLOW_ACTIVE';
 
 enum ProviderType {
   ETHEREUM = 'ethereum',
@@ -168,6 +177,11 @@ export default function OnBoardingOptions() {
   const [loading, setLoading] = useState<boolean>(false);
   const [showEmailScreen, setShowEmailScreen] = useState(false);
   const [showWalletScreen, setShowWalletScreen] = useState(false);
+  const [showWalletConnectStatus, setShowWalletConnectStatus] =
+    useState<boolean>(false);
+  // Loading state to prevent flash of wrong screen while checking AsyncStorage
+  const [isCheckingWalletConnectFlow, setIsCheckingWalletConnectFlow] =
+    useState<boolean>(true);
   const [email, setEmail] = useState('');
   const [isProviderSelectionModalVisible, setIsProviderSelectionModalVisible] =
     useState<boolean>(false);
@@ -196,6 +210,65 @@ export default function OnBoardingOptions() {
   const [totalPossibleRewards, setTotalPossibleRewards] = useState<number>(0);
   // Loading state for rewards API call
   const [isLoadingRewards, setIsLoadingRewards] = useState<boolean>(true);
+
+  /**
+   * Check and restore WalletConnect flow state on initial mount
+   * This ensures the correct screen shows immediately without flashing the wrong screen
+   */
+  useEffect(() => {
+    const checkWalletConnectFlow = async () => {
+      try {
+        const flowActive = await AsyncStorage.getItem(WALLET_CONNECT_FLOW_KEY);
+        if (flowActive === 'true') {
+          setShowWalletScreen(true);
+          setShowWalletConnectStatus(true);
+        }
+      } catch (error) {
+        console.error(
+          '[OnboardingOptions] Failed to check WalletConnect flow state:',
+          error,
+        );
+      } finally {
+        // Always set loading to false after check completes
+        setIsCheckingWalletConnectFlow(false);
+      }
+    };
+
+    void checkWalletConnectFlow();
+  }, []);
+
+  /**
+   * Restore WalletConnect flow state when screen comes into focus (after initial mount)
+   * This ensures the WalletConnect status screen is shown after app returns from background
+   * (e.g., after redirecting to external wallet app for connection/signing)
+   */
+  useFocusEffect(
+    useCallback(() => {
+      // Skip the first mount since useEffect handles it
+      if (isCheckingWalletConnectFlow) {
+        return;
+      }
+
+      const restoreWalletConnectFlow = async () => {
+        try {
+          const flowActive = await AsyncStorage.getItem(
+            WALLET_CONNECT_FLOW_KEY,
+          );
+          if (flowActive === 'true') {
+            setShowWalletScreen(true);
+            setShowWalletConnectStatus(true);
+          }
+        } catch (error) {
+          console.error(
+            '[OnboardingOptions] Failed to restore WalletConnect flow state:',
+            error,
+          );
+        }
+      };
+
+      void restoreWalletConnectFlow();
+    }, [isCheckingWalletConnectFlow]),
+  );
 
   // Fetch onboarding rewards info on component mount
   useEffect(() => {
@@ -269,6 +342,7 @@ export default function OnBoardingOptions() {
 
   const handleBackFromWallet = () => {
     setShowWalletScreen(false);
+    setShowWalletConnectStatus(false);
   };
 
   const navigateToSeedPhraseGeneration = (type: string) => {
@@ -290,9 +364,27 @@ export default function OnBoardingOptions() {
     setIsImportWalletModalVisible(true);
   };
 
-  const handleConnectWallet = () => {
-    void openWalletConnectModal();
-    void logAnalyticsToFirebase(AnalyticEvent.CONNECT_USING_WALLET_CONNECT);
+  /**
+   * Initiates WalletConnect flow and persists flow state to survive app backgrounding
+   * This ensures the status screen persists when app redirects to external wallet
+   */
+  const handleConnectWallet = async () => {
+    try {
+      // Persist WalletConnect flow state before showing the status screen
+      // This will survive app backgrounding during redirects to external wallet apps
+      await AsyncStorage.setItem(WALLET_CONNECT_FLOW_KEY, 'true');
+
+      // Navigate into the WalletConnect status view, which will in turn
+      // trigger the WalletConnect mobile flow and show connection progress.
+      setShowWalletConnectStatus(true);
+    } catch (error) {
+      console.error(
+        '[OnboardingOptions] Failed to persist WalletConnect flow state:',
+        error,
+      );
+      // Still show the screen even if persistence fails
+      setShowWalletConnectStatus(true);
+    }
   };
 
   const handleEmailContinue = () => {
@@ -506,7 +598,8 @@ export default function OnBoardingOptions() {
     }
   };
 
-  if (loading) {
+  // Show loading while checking if WalletConnect flow is active to prevent flash of wrong screen
+  if (loading || isCheckingWalletConnectFlow) {
     return <Loading />;
   }
 
@@ -795,6 +888,27 @@ export default function OnBoardingOptions() {
 
   // Render wallet screen if showWalletScreen is true
   if (showWalletScreen) {
+    if (showWalletConnectStatus) {
+      return (
+        <WalletConnectStatus
+          onBack={async () => {
+            try {
+              // Clear persisted WalletConnect flow state when navigating back
+              await AsyncStorage.removeItem(WALLET_CONNECT_FLOW_KEY);
+            } catch (error) {
+              console.error(
+                '[OnboardingOptions] Failed to clear WalletConnect flow state:',
+                error,
+              );
+            }
+            // Reset states to show main onboarding options
+            setShowWalletConnectStatus(false);
+            setShowWalletScreen(false);
+          }}
+        />
+      );
+    }
+
     return (
       <>
         {/* Select SeedPhrase Count Modal */}
@@ -1054,7 +1168,9 @@ export default function OnBoardingOptions() {
 
                 {/* Wallet Connect Button */}
                 <CyDTouchView
-                  onPress={handleConnectWallet}
+                  onPress={() => {
+                    void handleConnectWallet();
+                  }}
                   className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[40px]'>
                   <CyDImage
                     source={AppImages.WALLET_CONNECT_ICON}

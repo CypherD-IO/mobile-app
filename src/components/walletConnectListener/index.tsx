@@ -25,6 +25,13 @@ import DeviceInfo from 'react-native-device-info';
 import { getToken } from '../../notification/pushNotification';
 import { get } from 'lodash';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+/**
+ * AsyncStorage key to check if we're in onboarding WalletConnect flow
+ * If this key is set, we should NOT automatically load the wallet on connection
+ */
+const WALLET_CONNECT_FLOW_KEY = 'ONBOARDING_WALLET_CONNECT_FLOW_ACTIVE';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -92,15 +99,34 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     if (isInitializing) {
       return; // Don't perform any checks while initializing
     }
-    if (isConnected && address && !ethereumAddress) {
-      void verifySessionTokenAndSign();
-    } else if (
-      connectionType === ConnectionTypes.WALLET_CONNECT &&
-      !isConnected &&
-      !address
-    ) {
-      void handleDisconnect();
-    }
+
+    /**
+     * Check if we're in the onboarding WalletConnect flow
+     * If so, skip automatic wallet loading - the onboarding flow will handle it
+     */
+    const checkAndHandleConnection = async () => {
+      const isOnboardingFlow = await AsyncStorage.getItem(
+        WALLET_CONNECT_FLOW_KEY,
+      );
+
+      if (isConnected && address && !ethereumAddress) {
+        if (isOnboardingFlow === 'true') {
+          // Don't automatically load wallet during onboarding
+          // The onboarding screens will handle the wallet creation
+          return;
+        }
+        // Normal flow: not in onboarding, proceed with wallet loading
+        void verifySessionTokenAndSign();
+      } else if (
+        connectionType === ConnectionTypes.WALLET_CONNECT &&
+        !isConnected &&
+        !address
+      ) {
+        void handleDisconnect();
+      }
+    };
+
+    void checkAndHandleConnection();
   }, [isConnected, address, ethereumAddress, connectionType, isInitializing]);
 
   const dispatchProfileData = async (token: string) => {

@@ -696,20 +696,32 @@ export default function Rewards() {
         ).toString()
       : totalUnclaimed;
 
-  const totalVotingPower = DecimalHelper.toDecimal(
-    rewardsData?.votingPower?.totalVotingPower ?? '0',
-    18,
-  ).toString();
+  /**
+   * Calculate total voting power from wei (18 decimals) to readable format
+   * Returns string representation for display purposes
+   */
+  const totalVotingPower = React.useMemo(() => {
+    const total = rewardsData?.votingPower?.totalVotingPower ?? '0';
+    return DecimalHelper.toDecimal(total, 18).toString();
+  }, [rewardsData?.votingPower?.totalVotingPower]);
 
-  const usedVotingPower = DecimalHelper.toDecimal(
-    rewardsData?.votingPower?.usedVotingPower ?? '0',
-    18,
-  ).toString();
+  /**
+   * Calculate used voting power from wei (18 decimals) to readable format
+   * Returns string representation for display purposes
+   */
+  const usedVotingPower = React.useMemo(() => {
+    const used = rewardsData?.votingPower?.usedVotingPower ?? '0';
+    return DecimalHelper.toDecimal(used, 18).toString();
+  }, [rewardsData?.votingPower?.usedVotingPower]);
 
-  const unusedVotingPower = DecimalHelper.toDecimal(
-    rewardsData?.votingPower?.freeVotingPower ?? '0',
-    18,
-  ).toString();
+  /**
+   * Calculate unused/free voting power from wei (18 decimals) to readable format
+   * Returns string representation for display purposes
+   */
+  const unusedVotingPower = React.useMemo(() => {
+    const free = rewardsData?.votingPower?.freeVotingPower ?? '0';
+    return DecimalHelper.toDecimal(free, 18).toString();
+  }, [rewardsData?.votingPower?.freeVotingPower]);
 
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
@@ -1285,39 +1297,42 @@ export default function Rewards() {
             </CyDTouchView>
           </CyDView>
 
-          <CyDView className='flex-1 bg-n20'>
-            <CyDView className='flex flex-row justify-between items-center p-4 rounded-[16px] bg-base400 mx-[16px] mt-[24px] mb-[16px]'>
-              <CyDView className='flex flex-col'>
-                <CyDView className='flex-row items-center mb-2'>
-                  <CyDImage
-                    source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                    className='w-[22px] h-[22px] mr-1'
-                    resizeMode='contain'
-                  />
-                  <CyDText className='text-n0 text-[20px] font-extrabold'>
-                    {DecimalHelper.round(availableToClaim, 2).toString()}
+          <CyDView className='flex-1 bg-n20 pt-[24px]'>
+            {Number(availableToClaim) > 0 && (
+              <CyDView className='flex flex-row justify-between items-center p-4 rounded-[16px] bg-base400 mx-[16px] mb-[16px]'>
+                <CyDView className='flex flex-col'>
+                  <CyDView className='flex-row items-center mb-2'>
+                    <CyDImage
+                      source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                      className='w-[22px] h-[22px] mr-1'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='text-n0 text-[20px] font-extrabold'>
+                      {DecimalHelper.round(availableToClaim, 2).toString()}
+                    </CyDText>
+                  </CyDView>
+                  <CyDText className='text-[14px] font-medium text-n0'>
+                    {t(
+                      'REWARDS_AVAILABLE_TO_CLAIM',
+                      'Rewards available to claim',
+                    )}
                   </CyDText>
                 </CyDView>
-                <CyDText className='text-[14px] font-medium text-n0'>
-                  {t(
-                    'REWARDS_AVAILABLE_TO_CLAIM',
-                    'Rewards available to claim',
-                  )}
-                </CyDText>
+                <Button
+                  title={t('CLAIM', 'Claim')}
+                  onPress={() => {
+                    navigation.navigate(screenTitle.CLAIM_REWARD, {
+                      rewardsData,
+                      claimRewardData,
+                    });
+                  }}
+                  disabled={Number(availableToClaim) <= 0}
+                  type={ButtonType.PRIMARY}
+                  style='rounded-full px-8'
+                  paddingY={8}
+                />
               </CyDView>
-              <Button
-                title={t('CLAIM', 'Claim')}
-                onPress={() => {
-                  navigation.navigate(screenTitle.CLAIM_REWARD, {
-                    rewardsData,
-                    claimRewardData,
-                  });
-                }}
-                type={ButtonType.PRIMARY}
-                style='rounded-full px-8'
-                paddingY={8}
-              />
-            </CyDView>
+            )}
             {/* Action Cards */}
             <CyDView className='flex-row justify-between mx-[16px]'>
               {/* Cypher Deposit */}

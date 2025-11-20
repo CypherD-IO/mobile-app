@@ -23,7 +23,9 @@ import { useGlobalBottomSheet } from '../v2/GlobalBottomSheetProvider';
 import { PieChart } from 'react-native-svg-charts';
 import { useNavigation } from '@react-navigation/native';
 import { screenTitle } from '../../constants';
+import { CypherPlanId } from '../../constants/enum';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { get } from 'lodash';
 
 interface MerchantRewardDetailContentProps {
   merchantData?: MerchantDetailData;
@@ -56,6 +58,19 @@ interface MerchantDetailData {
     transactionCount: number;
     uniqueSpenders: number;
   };
+  // New fields
+  projectedCYPRReward: string;
+  referenceAmount: number;
+  baseReward: {
+    [key: string]: string;
+  };
+  currentEpochVotes: string;
+}
+
+interface EstimatedNextEpochRewards {
+  baseSpend: string;
+  boostedSpend: string;
+  total: string;
 }
 
 // The full response now includes votingHistory & bribeData directly
@@ -110,21 +125,19 @@ interface MerchantDetailsResponseDto extends MerchantDetailData {
       transactionCount: number;
       lastTransactionAt?: number;
     };
-    estimatedNextEpochRewards: any;
+    estimatedNextEpochRewards: EstimatedNextEpochRewards;
   };
 
-  trends: any;
-}
-
-interface VotingHistoryItem {
-  epochNumber: number;
-  bribesReceived?: string;
-  [key: string]: any;
-}
-
-interface VotingHistoryResponse {
-  history: VotingHistoryItem[];
-  hasMore: boolean;
+  trends: {
+    votingTrend: string;
+    spendingTrend: string;
+    voterGrowth: number;
+    multiplierTrend: Array<{
+      epoch: number;
+      multiplier: number;
+      change: number;
+    }>;
+  };
 }
 
 interface PromotionalBonus {
@@ -151,14 +164,6 @@ interface RewardCycle {
   token: string;
 }
 
-interface ReferralTransaction {
-  id: string;
-  hash: string;
-  amount: string;
-  status: string;
-  date: string;
-}
-
 const MerchantRewardDetailContent: React.FC<
   MerchantRewardDetailContentProps
 > = ({ merchantData, navigation: navigationProp }) => {
@@ -181,7 +186,6 @@ const MerchantRewardDetailContent: React.FC<
     PromotionalBonus[]
   >([]);
   const [votingHistory, setVotingHistory] = useState<RewardCycle[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   // Helper: formats timestamp to '26 June, 2025 11:58AM'
   function formatTimestamp(timestamp: number): string {
@@ -227,7 +231,6 @@ const MerchantRewardDetailContent: React.FC<
 
     try {
       setLoading(true);
-      setError(null);
 
       const detailsResponse = await getWithAuth(
         `/v1/cypher-protocol/merchants/${merchantData.candidateId}`,
@@ -258,7 +261,7 @@ const MerchantRewardDetailContent: React.FC<
             title: t('PROMOTIONAL_BONUS', 'Promotional Bonus'),
             amount: bribe.amountFormatted,
             token: bribe.token.symbol,
-            date: formatTimestamp(bribe.addedAt),
+            date: formatTimestamp(bribe.addedAt * 1000),
           })) ?? [];
         setPromotionalBonuses(promos);
       } else {
@@ -266,18 +269,9 @@ const MerchantRewardDetailContent: React.FC<
           'Failed to fetch merchant details:',
           detailsResponse.error,
         );
-        setError(
-          t(
-            'FAILED_TO_LOAD_MERCHANT_DETAILS',
-            'Failed to load merchant details',
-          ),
-        );
       }
     } catch (err) {
       console.error('Error fetching merchant data:', err);
-      setError(
-        t('FAILED_TO_LOAD_MERCHANT_DATA', 'Failed to load merchant data'),
-      );
     } finally {
       setLoading(false);
     }
@@ -285,7 +279,6 @@ const MerchantRewardDetailContent: React.FC<
 
   useEffect(() => {
     void fetchMerchantData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [merchantData?.candidateId]);
 
   // Use passed merchant data or fetched details
@@ -349,6 +342,42 @@ const MerchantRewardDetailContent: React.FC<
       },
     ];
   }, [merchantDetails]);
+
+  // Plan Info for Reward Breakdown
+  const cardProfile = globalContext.globalState.cardProfile;
+  const planId = get(cardProfile, ['planInfo', 'planId']);
+  const isPremiumUser = planId === CypherPlanId.PRO_PLAN;
+
+  const rewardBreakdown = useMemo(() => {
+    const referenceAmount = merchantDetails?.referenceAmount ?? 10;
+
+    const baseRewardWei =
+      merchantDetails?.baseReward?.[
+        isPremiumUser ? CypherPlanId.PRO_PLAN : CypherPlanId.BASIC_PLAN
+      ] ?? '0';
+    const projectedRewardWei = merchantDetails?.projectedCYPRReward ?? '0';
+
+    const baseRewardValue = DecimalHelper.toDecimal(
+      baseRewardWei,
+      18,
+    ).toNumber();
+    const projectedRewardValue = DecimalHelper.toDecimal(
+      projectedRewardWei,
+      18,
+    ).toNumber();
+
+    const formatReward = (value: number): string =>
+      value.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+    return {
+      referenceAmount,
+      baseRewardDisplay: formatReward(baseRewardValue),
+      merchantRewardDisplay: formatReward(projectedRewardValue),
+    };
+  }, [merchantDetails, isPremiumUser]);
 
   const userTransactions: Transaction[] = []; // Not available in response yet
 
@@ -537,10 +566,10 @@ const MerchantRewardDetailContent: React.FC<
           </CyDText>
 
           {/* Rewards Badge */}
-          <CyDText className='text-green400 text-[18px] font-bold'>
+          {/* <CyDText className='text-green400 text-[18px] font-bold'>
             {currentMerchantData.historicalMultiplier.current.toFixed(1)}X{' '}
             {t('REWARDS')}
-          </CyDText>
+          </CyDText> */}
         </CyDView>
       </CyDView>
 
@@ -550,57 +579,65 @@ const MerchantRewardDetailContent: React.FC<
           {t('YOUR_SPEND_ON_THIS_MERCHANT_EARNS')}
         </CyDText>
 
-        {/* All Transaction reward */}
         <CyDView
-          className={`bg-base40 rounded-[12px] py-4 mb-3 ${
-            isDarkMode ? 'bg-base40' : 'bg-n0'
+          className={`rounded-[12px] relative ${
+            isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
           }`}>
-          {/* <CyDView className='flex-row justify-between items-center mb-4 px-4'>
+          {/* Base reward */}
+          <CyDView className='flex-row justify-between items-center px-4 py-3 border-b border-n40'>
             <CyDText className='text-[14px] font-medium'>
-              {t('ALL_TRANSACTION_REWARD')}
+              {t('BASE_REWARD')}
             </CyDText>
             <CyDView className='items-end'>
-              <CyDText className='text-[14px] font-medium'>
-                {t('ONE_X_REWARDS')}
-              </CyDText> */}
-          {/* <CyDText className='text-n200 text-[12px]'>
-                {currentMerchantData.baseReward}
-              </CyDText> */}
-          {/* </CyDView>
+              <CyDView className='flex-row items-center'>
+                <CyDImage
+                  source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                  className='w-5 h-5 mr-1 rounded-full'
+                />
+                <CyDText className='text-[16px] font-semibold'>
+                  {rewardBreakdown.baseRewardDisplay}
+                </CyDText>
+              </CyDView>
+              <CyDText className='text-n200 text-[12px]'>
+                {t('FOR_EVERY_AMOUNT_SPEND', {
+                  amount: rewardBreakdown.referenceAmount,
+                })}
+              </CyDText>
+            </CyDView>
           </CyDView>
 
-          <CyDView className='relative  mb-4'>
-            <CyDView
-              className={`h-[1px] ${isDarkMode ? 'bg-base200' : 'bg-n40'}`}
-            /> */}
           {/* Plus Icon */}
-          {/* <CyDView className='items-center absolute -top-4 left-1/2 -translate-x-1/2'>
-              <CyDView
-                className={`w-8 h-8 rounded-full items-center justify-center ${
-                  isDarkMode ? 'bg-white' : 'bg-black'
-                }`}>
-                <CyDMaterialDesignIcons
-                  name='plus'
-                  size={20}
-                  className={`text-black ${isDarkMode ? 'text-black' : 'text-white'}`}
-                />
-              </CyDView>
+          <CyDView className='items-center absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10'>
+            <CyDView className='w-8 h-8 bg-black rounded-full items-center justify-center'>
+              <CyDMaterialDesignIcons
+                name='plus'
+                size={16}
+                className='text-white'
+              />
             </CyDView>
-          </CyDView> */}
+          </CyDView>
 
-          {/* Merchant reward */}
-          <CyDView className='flex-row justify-between items-center px-4'>
+          {/* Merchant reward (Boosted reward) */}
+          <CyDView className='flex-row justify-between items-center px-4 py-3'>
             <CyDText className='text-[14px] font-medium'>
-              {t('MERCHANT_REWARD')}
+              {t('BOOSTED_REWARD')}
             </CyDText>
-            <CyDText className='text-[14px] font-medium'>
-              {currentMerchantData.historicalMultiplier.current.toFixed(1)}X{' '}
-              {t('REWARDS')}
-            </CyDText>
-            {/* <CyDText className='text-n200 text-[12px]'>
-                {currentMerchantData.merchantReward ??
-                  '~ 45 - 61 $CYPR/$10 spent'}
-              </CyDText> */}
+            <CyDView className='items-end'>
+              <CyDView className='flex-row items-center'>
+                <CyDImage
+                  source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                  className='w-5 h-5 mr-1 rounded-full'
+                />
+                <CyDText className='text-[16px] font-semibold'>
+                  {rewardBreakdown.merchantRewardDisplay}
+                </CyDText>
+              </CyDView>
+              <CyDText className='text-n200 text-[12px]'>
+                {t('FOR_EVERY_AMOUNT_SPEND', {
+                  amount: rewardBreakdown.referenceAmount,
+                })}
+              </CyDText>
+            </CyDView>
           </CyDView>
         </CyDView>
       </CyDView>
@@ -614,7 +651,7 @@ const MerchantRewardDetailContent: React.FC<
 
           <CyDView
             className={`bg-base40 rounded-[12px] ${
-              isDarkMode ? 'bg-base40' : 'bg-n0'
+              isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
             }`}>
             {promotionalBonuses.map((bonus, index) => (
               <CyDView
@@ -669,17 +706,6 @@ const MerchantRewardDetailContent: React.FC<
         </CyDText>
 
         {userBoostStatus?.hasBoost ? (
-          // <CyDView className='mb-4'>
-          //   <CyDText className='text-green-500 text-[14px] font-medium mb-2'>
-          //     ✓ You have boosted this merchant
-          //   </CyDText>
-          //   {userBoostStatus.boostAmount && (
-          //     <CyDText className='text-n200 text-[12px]'>
-          //       Boost amount: {userBoostStatus.boostAmount} CYPR
-          //     </CyDText>
-          //   )}
-          //   {/* userBoostStatus.boostDate is not available in the new response */}
-          // </CyDView>
           <CyDView className='rounded-[16px] bg-base20 py-3 mb-4'>
             <CyDView className='flex flex-row items-center justify-between px-3'>
               <CyDView>
@@ -741,13 +767,167 @@ const MerchantRewardDetailContent: React.FC<
         )}
       </CyDView>
 
-      {/* <CyDTouchView
-        className='bg-base200 rounded-[25px] py-4 items-center mb-7 mx-4'
-        onPress={handleKnowMorePress}>
-        <CyDText className='text-white text-[16px] font-medium'>
-          Know More about {currentMerchantData.name}
+      {/* Community Stats Section */}
+      <CyDView className='mb-6 mx-4'>
+        <CyDText className='text-[14px] font-semibold mb-3'>
+          {t('COMMUNITY_STATS', 'Community Stats')}
         </CyDText>
-      </CyDTouchView> */}
+
+        <CyDView
+          className={`rounded-[12px] py-4 space-y-4 ${
+            isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
+          }`}>
+          {/* Total veCYPR on Merchant */}
+          <CyDView className='px-4'>
+            <CyDView className='flex-row items-center gap-1 mb-2'>
+              <CyDText className='text-n200 text-[12px]'>
+                {t(
+                  'TOTAL_BOOSTER_CURRENT_CYCLE',
+                  'Total Booster (Current Reward Cycle)',
+                )}
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex-row items-center gap-1'>
+              <CyDMaterialDesignIcons
+                name='lightning-bolt'
+                size={16}
+                className='text-yellow-400'
+              />
+              <CyDText className='text-[20px] font-bold'>
+                {DecimalHelper.toDecimal(
+                  merchantDetails?.currentEpochVotes ?? '0',
+                  18,
+                )
+                  .toNumber()
+                  .toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  })}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+
+          {/* Divider */}
+          <CyDView className='w-full h-[1px] bg-n40 my-4' />
+
+          {/* Total spends on Merchant */}
+          <CyDView className='px-4'>
+            <CyDView className='flex-row items-center gap-1 mb-2'>
+              <CyDText className='text-n200 text-[12px]'>
+                {t('TOTAL_SPEND', 'Total spend')}
+              </CyDText>
+            </CyDView>
+            <CyDText className='text-[20px] font-bold'>
+              $
+              {merchantDetails?.metrics?.totalSpend?.toLocaleString('en-US') ??
+                '0'}
+            </CyDText>
+          </CyDView>
+
+          {/* Divider */}
+          <CyDView className='w-full h-[1px] bg-n40 my-4' />
+
+          {/* Vote Percentage */}
+          <CyDView className='px-4'>
+            <CyDView className='flex-row items-center gap-1 mb-2'>
+              <CyDText className='text-n200 text-[12px]'>
+                {t('BOOST_PERCENTAGE', 'Boost Percentage')}
+              </CyDText>
+            </CyDView>
+            <CyDText className='text-[20px] font-bold'>
+              {(
+                merchantDetails?.votePercentage ??
+                currentMerchantData?.votePercentage ??
+                0
+              ).toFixed(2)}
+              %
+            </CyDText>
+          </CyDView>
+        </CyDView>
+      </CyDView>
+
+      {/* This Reward Cycle Trend Section */}
+      {merchantDetails?.trends && (
+        <CyDView className='mb-6 mx-4'>
+          <CyDText className='text-[14px] font-semibold mb-3'>
+            {t('THIS_REWARD_CYCLE_TREND', 'This Reward Cycle Trend')}
+          </CyDText>
+
+          <CyDView
+            className={`rounded-[12px] py-4 space-y-4 ${
+              isDarkMode ? 'bg-base40' : 'bg-n0 border border-n40'
+            }`}>
+            {/* Community Boosting trend */}
+            <CyDView className='px-4'>
+              <CyDText className='text-n200 text-[12px] mb-2'>
+                {t('COMMUNITY_BOOSTING_TREND', 'Community Boosting trend')}
+              </CyDText>
+              <CyDView className='flex-row items-center gap-2'>
+                {merchantDetails.trends.votingTrend === 'INCREASING' && (
+                  <>
+                    <CyDText className='text-[18px]'>🔥</CyDText>
+                    <CyDText className='text-[18px] font-medium'>
+                      {t('POPULAR', 'Popular')}
+                    </CyDText>
+                  </>
+                )}
+                {merchantDetails.trends.votingTrend === 'DECREASING' && (
+                  <>
+                    <CyDText className='text-[18px]'>📉</CyDText>
+                    <CyDText className='text-[18px] font-medium'>
+                      {t('DECLINING', 'Declining')}
+                    </CyDText>
+                  </>
+                )}
+                {merchantDetails.trends.votingTrend === 'STABLE' && (
+                  <>
+                    <CyDText className='text-[18px]'>📊</CyDText>
+                    <CyDText className='text-[18px] font-medium'>
+                      {t('NORMAL', 'Normal')}
+                    </CyDText>
+                  </>
+                )}
+              </CyDView>
+            </CyDView>
+
+            {/* Divider */}
+            <CyDView className='w-full h-[1px] bg-n40 my-4' />
+
+            {/* Spending Trend */}
+            <CyDView className='px-4'>
+              <CyDText className='text-n200 text-[12px] mb-2'>
+                {t('SPENDING_TREND', 'Spending Trend')}
+              </CyDText>
+              <CyDView className='flex-row items-center gap-2'>
+                {merchantDetails.trends.spendingTrend === 'INCREASING' && (
+                  <>
+                    <CyDText className='text-[18px]'>🔥</CyDText>
+                    <CyDText className='text-[18px] font-medium'>
+                      {t('POPULAR', 'Popular')}
+                    </CyDText>
+                  </>
+                )}
+                {merchantDetails.trends.spendingTrend === 'DECREASING' && (
+                  <>
+                    <CyDText className='text-[18px]'>📉</CyDText>
+                    <CyDText className='text-[18px] font-medium'>
+                      {t('DECLINING', 'Declining')}
+                    </CyDText>
+                  </>
+                )}
+                {merchantDetails.trends.spendingTrend === 'STABLE' && (
+                  <>
+                    <CyDText className='text-[18px]'>📊</CyDText>
+                    <CyDText className='text-[18px] font-medium'>
+                      {t('NORMAL', 'Normal')}
+                    </CyDText>
+                  </>
+                )}
+              </CyDView>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      )}
 
       {/* Recent Transactions */}
       {userTransactions.length > 0 && (

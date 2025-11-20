@@ -184,7 +184,6 @@ export default function useRewardsDistributor() {
       }
 
       const result = await executeRewardsClaimContract(params);
-
       return result;
     } catch (error) {
       console.error('❌ Error claiming rewards:', error);

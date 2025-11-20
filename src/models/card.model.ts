@@ -50,6 +50,10 @@ export interface ITokenData {
 
 export interface ICardTransaction {
   id: string;
+  type: string;
+  createdAt: number;
+  channel?: string;
+  date: string;
   category?: string;
   iconUrl?: string;
   title: string;
@@ -95,6 +99,19 @@ export interface ICardTransaction {
   programId?: CardProviders;
   client?: string;
   isReported?: boolean;
+  cypherRewards?: {
+    epochNumber: number;
+    calculatedAt: number;
+    rewardsAllocation: {
+      tierMultiplier: number;
+      baseSpendRewards: string;
+      planId: string;
+      percentageOfUserRewards: number;
+      boostedSpendRewards: string;
+      amountSpent: number;
+      totalRewards: string;
+    };
+  };
 }
 
 export interface CardQuoteResponse {

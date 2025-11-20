@@ -125,11 +125,11 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
         <CyDView className='bg-black flex-1'>
           <CyDView className='px-[24px] pt-[20px]'>
             <CyDText className='text-[32px] font-bold text-white mt-[12px] font-nord'>
-              {'Zero Fee,\nRewarding Crypto Card'}
+              {'Lowest Fees,\nRewarding Crypto Card'}
             </CyDText>
             <CyDText className='text-[16px] font-medium mt-[20px] !text-[#666666]'>
               {
-                'Make crypto your everyday currency with Cypher . Instantly top up from any wallet using 1,000+ tokens across 25+ chains. Spend globally!'
+                'Make crypto your everyday currency with Cypher . Instantly top up from any wallet using 1,000+ tokens across 16+ chains. Spend globally and earn rewards!'
               }
             </CyDText>
           </CyDView>
@@ -161,7 +161,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
             </CyDText>
             <CyDText className='text-[18px] font-medium mt-[12px] !text-[#666666]'>
               {
-                'Access 14+ chains, manage 1000+ tokens, and send, receive, or swap assets seamlessly.'
+                'Access 16+ chains, manage 1000+ tokens, and send, receive, or swap assets seamlessly.'
               }
             </CyDText>
           </CyDView>

@@ -115,7 +115,7 @@ const CardCreation = () => {
         title: t('MY_CYPHER_CARD_SHARE_TITLE', 'My Cypher Card'),
         message: t(
           'REVOLUTIONIZE_CRYPTO_SPENDING_MESSAGE',
-          "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0% Forex Markup\n    💲 0% Loading Fee for USDC",
+          "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0.75% Forex Markup\n    💲 0% Loading Fee for USDC",
         ),
         url: `data:image/jpeg;base64,${uri}`,
       };
