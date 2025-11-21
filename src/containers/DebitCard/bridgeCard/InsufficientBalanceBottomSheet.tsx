@@ -342,11 +342,6 @@ const InsufficientBalanceBottomSheetContent: React.FC<
           address = ethereumAddress || '';
       }
     } catch (error) {
-      // Log error but don't crash - return empty address
-      console.error(
-        `Error getting address for chain ${chain.backendName}:`,
-        error,
-      );
       address = '';
     }
 

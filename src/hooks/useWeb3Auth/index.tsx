@@ -1,5 +1,8 @@
 import { useContext, useMemo } from 'react';
-import Web3Auth, { WEB3AUTH_NETWORK } from '@web3auth/react-native-sdk';
+import Web3Auth, {
+  WEB3AUTH_NETWORK,
+  MFA_FACTOR,
+} from '@web3auth/react-native-sdk';
 import type { CustomChainConfig } from '@web3auth/base';
 import * as WebBrowser from '@toruslabs/react-native-web-browser';
 import EncryptedStorage from 'react-native-encrypted-storage';
@@ -104,6 +107,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: '0x2105',
       [ChainBackendNames.SOLANA]: '0x1',
       [ChainBackendNames.ZKSYNC_ERA]: '0x144',
+      [ChainBackendNames.BASE_SEPOLIA]: '0x14a34',
     };
     return (
       chainIds[
@@ -126,6 +130,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'Base',
       [ChainBackendNames.SOLANA]: 'Solana',
       [ChainBackendNames.ZKSYNC_ERA]: 'zkSync Era',
+      [ChainBackendNames.BASE_SEPOLIA]: 'Base Sepolia',
     };
     return (
       displayNames[
@@ -148,6 +153,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'https://basescan.org',
       [ChainBackendNames.SOLANA]: 'https://explorer.solana.com',
       [ChainBackendNames.ZKSYNC_ERA]: 'https://explorer.zksync.io',
+      [ChainBackendNames.BASE_SEPOLIA]: 'https://sepolia.basescan.org',
     };
     return (
       explorers[
@@ -170,6 +176,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'ETH',
       [ChainBackendNames.SOLANA]: 'SOL',
       [ChainBackendNames.ZKSYNC_ERA]: 'ETH',
+      [ChainBackendNames.BASE_SEPOLIA]: 'ETH',
     };
     return (
       tickers[
@@ -192,6 +199,7 @@ export default function useWeb3Auth() {
       [ChainBackendNames.BASE]: 'ETH',
       [ChainBackendNames.SOLANA]: 'SOL',
       [ChainBackendNames.ZKSYNC_ERA]: 'ETH',
+      [ChainBackendNames.BASE_SEPOLIA]: 'ETH',
     };
     return (
       tickerNames[
@@ -208,34 +216,34 @@ export default function useWeb3Auth() {
   }
 
   const mfaSettings = {
-    socialBackupFactor: {
-      enable: true,
-      priority: 1,
-      mandatory: true,
-    },
-
-    passkeysFactor: {
+    [MFA_FACTOR.SOCIAL_BACKUP]: {
       enable: true,
       priority: 2,
       mandatory: false,
     },
 
-    deviceShareFactor: {
+    [MFA_FACTOR.PASSKEYS]: {
+      enable: true,
+      priority: 1,
+      mandatory: true,
+    },
+
+    [MFA_FACTOR.DEVICE]: {
       enable: true,
       priority: 3,
       mandatory: false,
     },
-    authenticatorFactor: {
+    [MFA_FACTOR.AUTHENTICATOR]: {
       enable: true,
       priority: 4,
-      mandatory: false,
+      mandatory: true,
     },
-    backUpShareFactor: {
+    [MFA_FACTOR.BACKUP_SHARE]: {
       enable: true,
       priority: 5,
       mandatory: false,
     },
-    passwordFactor: {
+    [MFA_FACTOR.PASSWORD]: {
       enable: false,
       priority: 6,
       mandatory: false,

@@ -1175,7 +1175,7 @@ export default function SelectPlanModal({
                   <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
                     <CyDView>
                       <CyDText className='text-[16px] font-semibold'>
-                        0% Forex Markup
+                        0.75% Forex Markup
                       </CyDText>
                       <CyDText className='text-[16px] font-semibold'>
                         without any spending limit

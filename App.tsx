@@ -210,7 +210,8 @@ Sentry.init({
 });
 
 interface DeepLinkData {
-  screenToNavigate: string;
+  // Screen to navigate to from a deep link. Kept optional to align with TabStack's internal typing.
+  screenToNavigate?: string;
   params?: {
     cardId?: string;
     currentCardProvider?: string;
@@ -222,8 +223,13 @@ interface DeepLinkData {
 }
 
 // Export this utility function for handling deep links
-export const handleDeepLink = async (url: string | null) => {
-  if (!url) return null;
+// Always keep this logic in sync with navigation handling in TabStack to avoid orphaned deep links.
+export const handleDeepLink = async (
+  url: string | null,
+): Promise<DeepLinkData | null> => {
+  if (!url) {
+    return null;
+  }
 
   // Handle ethereum: URI scheme
   if (url.startsWith('ethereum:')) {
@@ -274,6 +280,7 @@ export const handleDeepLink = async (url: string | null) => {
       screenToNavigate: screenTitle.TELEGRAM_SETUP,
     };
   } else if (url.includes('/card?')) {
+    // Handle card-related actions when query params are present
     const urlObj = new URL(url);
     const decline = urlObj.searchParams.get('decline');
     const cardId = urlObj.searchParams.get('cardId');
@@ -287,7 +294,35 @@ export const handleDeepLink = async (url: string | null) => {
         },
       };
     }
+  } else {
+    // Handle clean /card deep links without query params and other top-level routes
+    try {
+      const parsedUrl = new URL(url);
+      const { pathname, search } = parsedUrl;
+
+      // Deep link to the main Debit Card page when /card (with no query params) is opened
+      if (
+        (pathname === '/card' || pathname === '/card/') &&
+        (!search || search === '')
+      ) {
+        return {
+          screenToNavigate: screenTitle.DEBIT_CARD_SCREEN,
+        };
+      }
+
+      // Deep link for boost merchants: https://app.cypherhq.io/boost-merchants
+      if (pathname === '/boost-merchants') {
+        return {
+          screenToNavigate: screenTitle.MERCHANT_REWARD_LIST,
+        };
+      }
+    } catch (error) {
+      // Log and swallow URL parsing errors so they never break app startup from a malformed link
+      // eslint-disable-next-line no-console
+      console.error('Failed to parse deep link URL in handleDeepLink:', error);
+    }
   }
+
   return null;
 };
 

@@ -44,6 +44,7 @@ import {
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
+  ConnectionTypes,
   CypherPlanId,
   GlobalContextType,
 } from '../../../constants/enum';
@@ -81,6 +82,7 @@ import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetPr
 import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
+import useConnectionManager from '../../../hooks/useConnectionManager';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -123,6 +125,7 @@ export default function CypherCardScreen() {
     dateRange: initialCardTxnDateRange,
     statuses: STATUSES,
   });
+  const { connectionType, checkMfaEnabled } = useConnectionManager();
   const selectedCard = get(cardProfile, [
     cardProvider,
     'cards',
@@ -450,6 +453,18 @@ export default function CypherCardScreen() {
     void getCardDesignValues();
   }, [isFocused, cardId]);
 
+  useEffect(() => {
+    if (
+      connectionType &&
+      [
+        ConnectionTypes.SOCIAL_LOGIN_EVM,
+        ConnectionTypes.SOCIAL_LOGIN_SOLANA,
+      ].includes(connectionType)
+    ) {
+      void checkMfaEnabled();
+    }
+  }, [connectionType, isFocused]);
+
   const checkForOverchargeDccInfo = async (
     transactions: ICardTransaction[],
   ) => {
@@ -506,6 +521,7 @@ export default function CypherCardScreen() {
     const response = await getWithAuth(txnURL);
     if (!response.isError) {
       const { transactions: txnsToSet } = response.data;
+
       txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
         // Use a fallback approach since 'date' field might not exist
         const aTransaction = a as ICardTransaction & {
@@ -1130,7 +1146,7 @@ export default function CypherCardScreen() {
                         className='text-base400'
                       />
                       <CyDText className='font-semibold text-[12px]'>
-                        {'Zero Forex Markup'}
+                        {'0.75% Forex Markup'}
                       </CyDText>
                     </CyDView>
                     <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>

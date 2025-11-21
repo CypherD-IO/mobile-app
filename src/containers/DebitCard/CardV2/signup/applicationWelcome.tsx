@@ -292,14 +292,15 @@ const ApplicationWelcome = (): JSX.Element => {
             }}
             onError={error => {
               Sentry.captureException(error);
-              console.error('Video playback error:', error);
             }}
           />
         </CyDView>
 
         {/* Header */}
         <CyDView className='flex-row justify-between items-center px-4 py-2'>
-          <CyDText className='text-[32px] font-medium'>{t('CARDS')}</CyDText>
+          <CyDText className='text-[26px] font-medium'>
+            {t('CYPHER_CARD')}
+          </CyDText>
           <CyDTouchView onPress={handleBack}>
             <CyDView className='flex-row items-center gap-1 bg-base40 px-6 py-2 rounded-full'>
               <CyDText className='font-medium'>{t('CARD_SKIP')}</CyDText>

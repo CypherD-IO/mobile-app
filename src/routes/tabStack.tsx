@@ -42,6 +42,8 @@ import {
   getFirstLaunchAfterWalletCreation,
   setFirstLaunchAfterWalletCreation,
 } from '../core/asyncStorage';
+import Toast from 'react-native-toast-message';
+import { parseErrorMessage } from '../core/util';
 
 const Tab = createBottomTabNavigator();
 const NAVIGATION_DELAY = 50;
@@ -141,10 +143,10 @@ const TabStack = React.memo(
               await setProcessedReferrerCode(referrerData.referral);
             }
           } catch (error) {
-            console.error(
-              'Error processing referral code from install referrer:',
-              error,
-            );
+            Toast.show({
+              type: 'error',
+              text2: parseErrorMessage(error),
+            });
           }
         }
         // Note: For iOS, referral codes require server-side resolution of the attribution token
@@ -203,9 +205,12 @@ const TabStack = React.memo(
     // Extract common deep link navigation logic into a reusable function
     const handleNavigation = useCallback(
       (data: { screenToNavigate?: string; params?: any }) => {
-        if (!data?.screenToNavigate) return false;
+        if (!data?.screenToNavigate) {
+          return false;
+        }
+
         if (!navigationRef.current || !navigationReadyRef.current) {
-          // Store for later processing once navigation is ready
+          // Store for later processing once navigation is ready so we never drop a deep link intent
           pendingDeepLinkRef.current = data;
           return false;
         }
@@ -221,6 +226,7 @@ const TabStack = React.memo(
           case screenTitle.TELEGRAM_PIN_SETUP:
             navigateToScreenInTab(screenTitle.CARD, {
               screen: data.screenToNavigate,
+              params: data.params,
             });
             break;
 
@@ -236,6 +242,22 @@ const TabStack = React.memo(
             break;
 
           case screenTitle.CARD_CONTROLS:
+            navigateToScreenInTab(screenTitle.CARD, {
+              screen: data.screenToNavigate,
+              params: data.params,
+            });
+            break;
+
+          case screenTitle.DEBIT_CARD_SCREEN:
+            // Deep link to the main Debit Card screen (default card landing page)
+            navigateToScreenInTab(screenTitle.CARD, {
+              screen: data.screenToNavigate,
+              params: data.params,
+            });
+            break;
+
+          case screenTitle.MERCHANT_REWARD_LIST:
+            // Deep link to the Merchant Reward List screen (boost merchants entry point)
             navigateToScreenInTab(screenTitle.CARD, {
               screen: data.screenToNavigate,
               params: data.params,

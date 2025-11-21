@@ -1800,9 +1800,9 @@ const resources = {
       REFERRAL_CODE_REQUIRED: 'Referral code is required',
       LOAD_YOUR_CARD: 'Load your card',
       LOAD_YOUR_CARD_DESCRIPTION:
-        'Get your Cypher card and dive in! You can use over 1000+ tokens across 14+ blockchains.',
+        'Get your Cypher card and dive in! You can use over 1000+ tokens across 16+ blockchains.',
       LOAD_YOUR_CARD_DESCRIPTION_2:
-        'As the first step, load your Cypher card. With access to over 1000 tokens across more than 14 different blockchains, the possibilities are endless!',
+        'As the first step, load your Cypher card. With access to over 1000 tokens across more than 16 different blockchains, the possibilities are endless!',
       NEXT: 'Next',
       ADDITIONAL_DOCUMENT_REQUIRED: 'Additional Document Required',
       ADDITIONAL_DOCUMENT_REQUIRED_DESCRIPTION:
@@ -2017,7 +2017,7 @@ const resources = {
       // DebitCard translations
       MY_CYPHER_CARD_SHARE_TITLE: 'My Cypher Card',
       REVOLUTIONIZE_CRYPTO_SPENDING_MESSAGE:
-        "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0% Forex Markup\n    💲 0% Loading Fee for USDC",
+        "🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:\n\n    Earn $CYPR on every spend\n    💳 Google Pay & Apple Pay support\n    💰 Lowest ever 0.75% Forex Markup\n    💲 0% Loading Fee for USDC",
       SHARE_FAILED_TITLE: 'Share failed',
       UNABLE_TO_SHARE_CARD_DETAILS_TITLE: 'Unable to share card details',
       ERROR_LOADING_CARD_DETAILS_TITLE: 'Error loading card details',
@@ -2067,7 +2067,7 @@ const resources = {
       FAILED_TO_LOAD_MERCHANT_DATA: 'Failed to load merchant data',
 
       // Claim Rewards translations
-      DEPOSIT_AND_BOOST_REWARD: 'Deposit and boost Reward',
+      CLAIM_AND_LOCK_REWARD: 'Claim and lock rewards',
       USE_CLAIMABLE_CYPHER_TOKENS_AS_COLLATERAL:
         'Use your claimable Cypher tokens as\ncollateral to boost rewards',
       CLAIM_TO_WALLET: 'Claim to wallet',
@@ -2114,6 +2114,19 @@ const resources = {
         'Unable to retrieve claim information. Please try again.',
       NOT_ELIGIBLE: 'Not Eligible',
       NOT_ELIGIBLE_DESC: 'You are not eligible to claim rewards at this time.',
+      BASE_SPEND_REWARDS: 'Base spend rewards',
+      BOOSTED_SPEND_REWARDS: 'Boosted spend rewards',
+      REWARD_ON_MERCHANTS: 'Reward on Merchants',
+      TOTAL_EARNINGS: 'Total Earnings',
+      REWARDS_EARNED: 'Rewards earned',
+      NO_MERCHANT_REWARDS: 'No merchant rewards available',
+      PROCEED_TO_CLAIM: 'Proceed to Claim',
+      BASE_SPEND_TOOLTIP:
+        'Every spend at any merchant qualifies for base spend rewards. ',
+      BOOSTED_SPEND_TOOLTIP:
+        "Spending at merchants which has boosted rewards (Merchants with atleast 1 vote from the previous reward cycle are considered for boosted rewards. The emission of the current reward cycle is allocated for each merchant based on the number of votes they received in the previous reward cycle). Number of $CYPR earned is based on the merchant's reward multiplier at the end of the reward cycle. \n\n Pro Tip: Boost merchants you frequently shop at to make them boosted merchants. Spend at boosted merchants to earn more $CYPR.",
+      REFERRAL_TOOLTIP:
+        'Rewards earned when your referrals signup for Cypher card and make their first purchase. \n\n Pro Tip: Refer friends to Cypher and you both earn $CYPR.',
 
       // Transaction Details translations
       REFUNDED: 'Refunded',
@@ -2319,6 +2332,28 @@ const resources = {
       EARN_INCENTIVES: 'Earn incentives by voting',
       EARN_INCENTIVES_DESCRIPTION:
         'Certain merchants offer direct incentives to voters who vote for them. Vote for those merchants to earn incentives.',
+      ENABLE_MFA: 'Enable MFA',
+      ENABLE_MFA_DESCRIPTION:
+        'Enable Multi-Factor Authentication to secure your account so your assets are always under your control. Add an extra layer of protection to keep your wallet safe.',
+      ENABLE_MFA_SETTINGS_INFO:
+        'You can enable MFA anytime under Options → Account Settings → Manage Wallet → Enable MFA',
+      ENABLE_NOW: 'Enable Now',
+      MFA_SETTINGS: 'MFA Settings',
+      LOADING_WALLET_INFO: 'Loading wallet info...',
+      NO_CLAIMS_AVAILABLE: 'No claims available',
+      TOTAL_SPEND: 'Total spend',
+      BOOSTED_REWARD: 'Boosted Reward',
+      BASE_REWARD: 'Base Reward',
+      FOR_EVERY_AMOUNT_SPEND: 'For every ${{amount}} spent',
+      COMMUNITY_STATS: 'Community Stats',
+      THIS_REWARD_CYCLE_TREND: 'This Reward Cycle Trend',
+      COMMUNITY_BOOSTING_TREND: 'Community Boosting trend',
+      POPULAR: 'Popular',
+      DECLINING: 'Declining',
+      NORMAL: 'Normal',
+      YOU_HAVE_EARNED_BOOSTED_REWARDS: 'You have earned boosted rewards',
+      WALLET_CONNECT_STATUS_DESCRIPTION:
+        "Hang tight! We're connecting you to your wallet now.",
     },
   },
 };

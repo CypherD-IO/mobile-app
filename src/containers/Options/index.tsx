@@ -108,8 +108,9 @@ export default function OptionsHub() {
   const cardProfile = globalState.cardProfile;
   const currentCardProvider = cardProfile?.provider;
   const card = cardProfile?.rc?.cards?.[0];
-  const hasHiddenCard = cardProfile?.rc?.cards?.some(
-    _card => _card.status === CardStatus.HIDDEN,
+  const hasCards = get(cardProfile, ['rc', 'cards'], []).length > 0;
+  const hasHiddenCard = get(cardProfile, ['rc', 'cards'], []).some(
+    (_card: any) => _card.status === CardStatus.HIDDEN,
   );
   const cardId = card?.cardId;
   const planInfo = cardProfile?.planInfo;
@@ -161,20 +162,16 @@ export default function OptionsHub() {
           },
         ]
       : []),
-    ...(!hasHiddenCard
-      ? [
-          {
-            icon: 'loop-object',
-            apiDependent: true,
-            title: t('AUTO_LOAD'),
-            onPress: () => {
-              isAutoloadConfigured
-                ? setIsAutoLoadOptionsVisible(true)
-                : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-            },
-          },
-        ]
-      : []),
+    {
+      icon: 'loop-object',
+      apiDependent: true,
+      title: t('AUTO_LOAD'),
+      onPress: () => {
+        isAutoloadConfigured
+          ? setIsAutoLoadOptionsVisible(true)
+          : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+      },
+    },
     {
       icon: 'connect-link',
       apiDependent: true,
@@ -204,7 +201,9 @@ export default function OptionsHub() {
         navigation.navigate(screenTitle.MANAGE_WALLET);
       },
     },
-    ...(currentCardProvider === CardProviders.REAP_CARD
+    ...(currentCardProvider === CardProviders.REAP_CARD &&
+    hasCards &&
+    !hasHiddenCard
       ? [
           {
             icon: 'left-hand-pamp-filled',
@@ -435,7 +434,6 @@ export default function OptionsHub() {
       } catch (error) {
         // Log error to Sentry for debugging
         Sentry.captureException(error);
-        console.error('Failed to load developer mode:', error);
       }
     };
     void loadDeveloperMode();
@@ -487,7 +485,6 @@ export default function OptionsHub() {
     } catch (error) {
       // Handle any errors during toggle operation
       Sentry.captureException(error);
-      console.error('Error toggling developer mode:', error);
       Alert.alert(
         'Error',
         'Failed to toggle developer mode. Please try again.',
@@ -634,7 +631,7 @@ export default function OptionsHub() {
             </CyDView>
           )}
 
-          {!isPremiumUser && (
+          {!isPremiumUser && hasCards && (
             <CyDView className='bg-base20 p-6 rounded-[8px] border border-base200'>
               <CyDView className='flex flex-row items-center gap-x-[4px] justify-start'>
                 <CyDText className='font-extrabold text-[20px]'>
@@ -666,7 +663,7 @@ export default function OptionsHub() {
                     className='text-base400'
                   />
                   <CyDText className='font-semibold text-[12px]'>
-                    {'Zero Forex Markup'}
+                    {'0.75% Forex Markup'}
                   </CyDText>
                 </CyDView>
                 <CyDView className='flex flex-row justify-center items-center gap-x-[4px]'>
@@ -717,24 +714,26 @@ export default function OptionsHub() {
             </CyDView>
           )} */}
 
-          <CyDView className='mt-[44px]'>
-            <CyDText className='text-[12px] text-n200 tracking-[2px]'>
-              {'CYPHER CARD'}
-            </CyDText>
+          {hasCards && (
+            <CyDView className='mt-[44px]'>
+              <CyDText className='text-[12px] text-n200 tracking-[2px]'>
+                {'CYPHER CARD'}
+              </CyDText>
 
-            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
-              {cypherCardOptions.map(benefit => (
-                <RenderOptions
-                  isLoading={isLoading}
-                  apiDependent={benefit.apiDependent}
-                  key={benefit.title}
-                  icon={benefit.icon as IconNames}
-                  title={benefit.title}
-                  onPress={benefit.onPress}
-                />
-              ))}
+              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
+                {cypherCardOptions.map(benefit => (
+                  <RenderOptions
+                    isLoading={isLoading}
+                    apiDependent={benefit.apiDependent}
+                    key={benefit.title}
+                    icon={benefit.icon as IconNames}
+                    title={benefit.title}
+                    onPress={benefit.onPress}
+                  />
+                ))}
+              </CyDView>
             </CyDView>
-          </CyDView>
+          )}
 
           <CyDView className='mt-[44px]'>
             <CyDText className='text-[12px] text-n200 tracking-[2px]'>
@@ -755,24 +754,26 @@ export default function OptionsHub() {
             </CyDView>
           </CyDView>
 
-          <CyDView className='mt-[44px]'>
-            <CyDText className='text-[12px] text-n200 tracking-[2px]'>
-              {'NOTIFICATIONS & INTEGRATIONS'}
-            </CyDText>
+          {hasCards && !hasHiddenCard && (
+            <CyDView className='mt-[44px]'>
+              <CyDText className='text-[12px] text-n200 tracking-[2px]'>
+                {'NOTIFICATIONS & INTEGRATIONS'}
+              </CyDText>
 
-            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[24px]'>
-              {notificationsAndIntegrationsOptions.map(benefit => (
-                <RenderOptions
-                  isLoading={isLoading}
-                  key={benefit.title}
-                  icon={benefit.icon as IconNames}
-                  title={benefit.title}
-                  onPress={benefit.onPress}
-                  apiDependent={benefit.apiDependent}
-                />
-              ))}
+              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[24px]'>
+                {notificationsAndIntegrationsOptions.map(benefit => (
+                  <RenderOptions
+                    isLoading={isLoading}
+                    key={benefit.title}
+                    icon={benefit.icon as IconNames}
+                    title={benefit.title}
+                    onPress={benefit.onPress}
+                    apiDependent={benefit.apiDependent}
+                  />
+                ))}
+              </CyDView>
             </CyDView>
-          </CyDView>
+          )}
 
           <CyDView className='mt-[44px]'>
             <CyDText className='text-[12px] text-n200 tracking-[2px]'>

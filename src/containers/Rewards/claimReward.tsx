@@ -1,7 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Share, ActivityIndicator } from 'react-native';
+import {
+  Share,
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  Dimensions,
+  View,
+  Platform,
+} from 'react-native';
+import type { ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDView,
@@ -14,7 +23,7 @@ import {
 } from '../../styles/tailwindComponents';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
-import { ButtonType } from '../../constants/enum';
+import { ButtonType, GlobalModalType } from '../../constants/enum';
 import { showToast } from '../utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import { Theme, useTheme } from '../../reducers/themeReducer';
@@ -40,22 +49,240 @@ interface EarningBreakdown {
   textColor: string;
 }
 
-// Removed unused interfaces - keeping only what's actually used
-// interface MerchantReward {
-//   id: string;
-//   name: string;
-//   multiplier: string;
-//   rewardsEarned: string;
-//   referralRewards?: string;
-//   totalSpend: string;
-//   boosted?: boolean;
-// }
+/**
+ * Interface for merchant reward data displayed in the breakdown
+ */
+interface MerchantRewardData {
+  id: string;
+  name: string;
+  logo?: string;
+  rewardsEarned: number;
+  canonicalName?: string;
+  totalSpend: number;
+}
 
-// interface SpendPerformance {
-//   totalSpend: string;
-//   avgSpendPerTransaction: string;
-//   tokensEarnedPer10Spend: string;
-// }
+interface ClaimExecutionResult {
+  success: boolean;
+  rewardsClaimedSuccess: boolean;
+  bribesClaimedSuccess: boolean;
+  rewardsClaimedAmount: number;
+  bribesClaimedCount: number;
+  lastTransactionHash: string;
+  errorMessage?: string;
+}
+
+/**
+ * Info Icon component with tooltip functionality
+ * Displays an information icon that shows a tooltip when pressed
+ */
+interface InfoIconProps {
+  tooltipId: string;
+  content: string;
+  showTooltip: string | null;
+  setShowTooltip: (id: string | null) => void;
+  isDarkMode: boolean;
+}
+
+const InfoIcon: React.FC<InfoIconProps> = ({
+  tooltipId,
+  content,
+  showTooltip,
+  setShowTooltip,
+  isDarkMode,
+}) => {
+  const borderColor = isDarkMode ? '#404040' : '#E5E5E5';
+  const borderWidth = 1;
+  const zIndex = 9999;
+  const elevation = 10;
+  const tooltipMaxWidth = 280; // Maximum width in pixels
+  const textFlexShrink = 1;
+
+  // Measure icon position to anchor tooltip in a Modal overlay
+  const iconRef = React.useRef<View | null>(null);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [tooltipTop, setTooltipTop] = useState<number>(0);
+  const [tooltipLeft, setTooltipLeft] = useState<number>(0);
+  const [iconLayout, setIconLayout] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
+  const screenWidth = Dimensions.get('window').width;
+  const horizontalPadding = 12;
+  const verticalOffset = 8;
+
+  // Store layout position for more reliable positioning on Android
+  const handleIconLayout = (event: {
+    nativeEvent: {
+      layout: { x: number; y: number; width: number; height: number };
+    };
+  }) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    setIconLayout({ x, y, width, height });
+  };
+
+  const handlePress = () => {
+    if (modalVisible) {
+      setModalVisible(false);
+      setShowTooltip(null);
+      return;
+    }
+
+    // Use a more reliable measurement approach for Android
+    // Try measureInWindow first, fallback to onLayout if needed
+    const measurePosition = () => {
+      iconRef.current?.measureInWindow((x, y, width, height) => {
+        let safeX = Number.isFinite(x) ? x : 0;
+        let safeY = Number.isFinite(y) ? y : 0;
+        let safeW = Number.isFinite(width) ? width : 14;
+        let safeH = Number.isFinite(height) ? height : 14;
+
+        // On Android, if measureInWindow gives invalid values, try using stored layout
+        if (
+          Platform.OS === 'android' &&
+          (safeX === 0 || safeY === 0) &&
+          iconLayout
+        ) {
+          // Try to get window position using measure
+          iconRef.current?.measure((fx, fy, fw, fh, px, py) => {
+            if (Number.isFinite(px) && Number.isFinite(py)) {
+              safeX = px;
+              safeY = py;
+              safeW = fw;
+              safeH = fh;
+              calculateTooltipPosition(safeX, safeY, safeW, safeH);
+            } else {
+              // Fallback: use layout position (less accurate but better than NaN)
+              calculateTooltipPosition(
+                iconLayout.x,
+                iconLayout.y,
+                iconLayout.width,
+                iconLayout.height,
+              );
+            }
+          });
+        } else {
+          calculateTooltipPosition(safeX, safeY, safeW, safeH);
+        }
+      });
+    };
+
+    const calculateTooltipPosition = (
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+    ) => {
+      const centerX = x + width / 2;
+      const left = Math.max(
+        horizontalPadding,
+        Math.min(
+          centerX - tooltipMaxWidth / 2,
+          screenWidth - tooltipMaxWidth - horizontalPadding,
+        ),
+      );
+      const top = y + height + verticalOffset;
+
+      if (!Number.isFinite(left) || !Number.isFinite(top)) {
+        // Fallback to center if measurement failed
+        setTooltipLeft(screenWidth / 2 - tooltipMaxWidth / 2);
+        setTooltipTop(100);
+      } else {
+        setTooltipLeft(left);
+        setTooltipTop(top);
+      }
+
+      setModalVisible(true);
+      setShowTooltip(tooltipId);
+    };
+
+    // Delay measurement until after layout pass
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        measurePosition();
+      }, 50); // Small delay for Android to ensure layout is ready
+    });
+  };
+
+  // Styles as constants to satisfy linter
+  const overlayStyle = {
+    flex: 1,
+    backgroundColor: 'transparent',
+  } as const;
+
+  const tooltipContainerStyle = {
+    position: 'absolute' as const,
+    top: tooltipTop,
+    left: tooltipLeft,
+    maxWidth: tooltipMaxWidth,
+    width: tooltipMaxWidth,
+    borderWidth,
+    borderColor,
+    zIndex,
+    elevation,
+  };
+
+  const getArrowStyle = (): ViewStyle => ({
+    position: 'absolute',
+    left: 20,
+    top: -6,
+    width: 12,
+    height: 12,
+    borderLeftWidth: borderWidth,
+    borderTopWidth: borderWidth,
+    borderColor,
+    transform: [{ rotate: '45deg' }],
+    backgroundColor: undefined,
+  });
+
+  const iconContainerStyle: ViewStyle = { marginLeft: 4 };
+
+  return (
+    <View ref={iconRef} style={iconContainerStyle} onLayout={handleIconLayout}>
+      <CyDTouchView onPress={handlePress}>
+        <CyDMaterialDesignIcons
+          name='information'
+          size={14}
+          className='text-n200'
+        />
+      </CyDTouchView>
+      <Modal
+        transparent
+        visible={modalVisible && showTooltip === tooltipId}
+        animationType='fade'
+        onRequestClose={() => {
+          setModalVisible(false);
+          setShowTooltip(null);
+        }}>
+        <Pressable
+          style={overlayStyle}
+          onPress={() => {
+            setModalVisible(false);
+            setShowTooltip(null);
+          }}>
+          <CyDView
+            className='bg-base40 rounded-lg p-3 shadow-2xl'
+            style={tooltipContainerStyle}>
+            <CyDView className='bg-base40' style={getArrowStyle()} />
+            <CyDText
+              className='text-[12px] leading-[18px]'
+              numberOfLines={0}
+              style={{ flexShrink: textFlexShrink }}>
+              {content}
+            </CyDText>
+          </CyDView>
+        </Pressable>
+      </Modal>
+    </View>
+  );
+};
+
+/**
+ * Note: RewardsBreakdownBottomSheetContent component has been removed
+ * The breakdown is now displayed inline on the main page instead of in a bottom sheet
+ */
 
 /**
  * Bottom Sheet Content for Claim Rewards Options
@@ -63,41 +290,126 @@ interface EarningBreakdown {
 const ClaimRewardsBottomSheetContent = ({
   totalRewards,
   onClaimToWallet,
+  onPerformClaims,
   onClose,
   navigation,
 }: {
   totalRewards: number;
   onClaimToWallet: () => Promise<void>;
+  onPerformClaims: () => Promise<ClaimExecutionResult>;
   onClose: () => void;
   navigation: any;
 }) => {
   const { t } = useTranslation();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const [claiming, setClaiming] = useState(false);
+  const { showModal, hideModal } = useGlobalModalContext();
+  const [claimingToWallet, setClaimingToWallet] = useState(false);
+  const [claimingAndLock, setClaimingAndLock] = useState(false);
 
   /**
    * Handle deposit and boost rewards
    * Navigates to social media screen with claim lock URL
    */
-  const handleDepositAndBoost = () => {
-    const sessionToken = globalContext.globalState.token;
+  const handleDepositAndBoost = async () => {
+    setClaimingAndLock(true);
+    try {
+      // First, perform the on-chain claims (rewards + bribes if available)
+      const result = await onPerformClaims();
 
-    if (!sessionToken) {
-      console.error('Session token not available');
-      return;
-    }
+      if (!result.success) {
+        showModal(GlobalModalType.STATE, {
+          type: 'error',
+          title: t('CLAIM_FAILED'),
+          description:
+            result.errorMessage ??
+            t<string>('CLAIM_ERROR_DESC') ??
+            'Claim failed',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
 
-    const redirectURI = `https://app.cypherhq.io/#/?claimLock=true&sessionToken=${encodeURIComponent(sessionToken)}`;
-    navigation.navigate(screenTitle.OPTIONS);
-    setTimeout(() => {
-      navigation.navigate(screenTitle.OPTIONS, {
-        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-        params: {
-          title: t('DEPOSIT_AND_BOOST'),
-          uri: redirectURI,
-        },
+      // After successful claim, show success modal with a Proceed to Lock action
+      const sessionToken = globalContext.globalState.token;
+      if (!sessionToken) {
+        console.error('Session token not available');
+      }
+      const redirectURI = `https://app.cypherhq.io/#/?claimLock=true&sessionToken=${encodeURIComponent(
+        sessionToken || '',
+      )}`;
+
+      showModal(GlobalModalType.CUSTOM_LAYOUT, {
+        isModalVisible: true,
+        customComponent: (
+          <CyDView className={'px-[24px] pt-[24px] pb-[16px] items-center'}>
+            <CyDMaterialDesignIcons
+              name={'check-circle'}
+              size={56}
+              className='text-green400'
+            />
+            <CyDText
+              className={'mt-[12px] text-center text-[18px] font-semibold'}>
+              {t<string>('CLAIM_SUCCESS') ?? 'Claim successful'}
+            </CyDText>
+            <CyDText className={'mt-[8px] text-center text-[14px] text-n200'}>
+              {t<string>('REWARDS_CLAIMED_READY_TO_LOCK') ??
+                'Your rewards are claimed. Proceed to lock to boost your rewards.'}
+            </CyDText>
+            <CyDView className={'w-[100%] mt-[20px] px-[8px]'}>
+              <Button
+                title={t<string>('PROCEED_TO_LOCK') ?? 'Proceed to Lock'}
+                onPress={() => {
+                  hideModal();
+                  navigation.navigate(screenTitle.OPTIONS);
+                  setTimeout(() => {
+                    navigation.navigate(screenTitle.OPTIONS, {
+                      screen: screenTitle.SOCIAL_MEDIA_SCREEN,
+                      params: {
+                        title: t('DEPOSIT_AND_BOOST'),
+                        uri: redirectURI,
+                      },
+                    });
+                  }, 250);
+                }}
+                type={ButtonType.PRIMARY}
+                style={'rounded-full'}
+                paddingY={14}
+              />
+              <Button
+                title={t<string>('CLOSE') ?? 'Close'}
+                onPress={() => {
+                  hideModal();
+                }}
+                type={ButtonType.SECONDARY}
+                style={'mt-[10px] rounded-full'}
+                paddingY={14}
+              />
+            </CyDView>
+          </CyDView>
+        ),
+        onSuccess: hideModal,
+        onFailure: hideModal,
       });
-    }, 250);
+
+      // Keep bottom sheet open so users see the modal, they can close from modal
+    } catch (error) {
+      console.error('Error in claim and lock flow:', error);
+      showModal(GlobalModalType.STATE, {
+        type: 'error',
+        title: t('CLAIM_ERROR') || 'Claim error',
+        description:
+          error instanceof Error ? error.message : t('CLAIM_ERROR_DESC'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } finally {
+      setClaimingAndLock(false);
+    }
+  };
+
+  const onPressDepositAndBoost = (): void => {
+    void handleDepositAndBoost();
   };
 
   /**
@@ -105,7 +417,7 @@ const ClaimRewardsBottomSheetContent = ({
    * Calls the parent function to execute the claim and closes the bottom sheet
    */
   const handleClaimToWallet = async () => {
-    setClaiming(true);
+    setClaimingToWallet(true);
     try {
       await onClaimToWallet();
       // Close the bottom sheet after successful claim
@@ -114,8 +426,12 @@ const ClaimRewardsBottomSheetContent = ({
       // Keep bottom sheet open if there's an error so user can retry
       console.error('Error in claim, keeping bottom sheet open:', error);
     } finally {
-      setClaiming(false);
+      setClaimingToWallet(false);
     }
+  };
+
+  const onPressClaimToWallet = (): void => {
+    void handleClaimToWallet();
   };
 
   return (
@@ -124,12 +440,15 @@ const ClaimRewardsBottomSheetContent = ({
       <CyDView className='gap-y-6 my-8'>
         {/* Deposit and boost Reward */}
         <CyDTouchView
-          onPress={handleDepositAndBoost}
-          className='bg-p50 rounded-[16px] pb-4 pt-2 px-6'>
+          onPress={onPressDepositAndBoost}
+          disabled={claimingAndLock || claimingToWallet}
+          className={`bg-p50 rounded-[16px] pb-4 pt-2 px-6 ${
+            claimingAndLock || claimingToWallet ? 'opacity-50' : ''
+          }`}>
           <CyDView className='items-center'>
             <CyDIcons name='card-filled' className='text-black text-[40px]' />
             <CyDText className='text-black font-semibold text-center mb-1'>
-              {t('DEPOSIT_AND_BOOST_REWARD')}
+              {t('CLAIM_AND_LOCK_REWARD')}
             </CyDText>
             <CyDText className='text-black text-[14px] text-center opacity-80'>
               {t('USE_CLAIMABLE_CYPHER_TOKENS_AS_COLLATERAL')}
@@ -139,12 +458,10 @@ const ClaimRewardsBottomSheetContent = ({
 
         {/* Claim to wallet */}
         <CyDTouchView
-          onPress={() => {
-            void handleClaimToWallet();
-          }}
-          disabled={claiming}
+          onPress={onPressClaimToWallet}
+          disabled={claimingToWallet || claimingAndLock}
           className={`bg-base40 rounded-[16px] px-6 pb-4 pt-2 ${
-            claiming ? 'opacity-50' : ''
+            claimingToWallet || claimingAndLock ? 'opacity-50' : ''
           }`}>
           <CyDView className='items-center'>
             {/* <CyDIcons
@@ -157,10 +474,10 @@ const ClaimRewardsBottomSheetContent = ({
               className='text-base400 my-[8px]'
             />
             <CyDText className='font-semibold text-center mb-1'>
-              {claiming ? t('CLAIMING') : t('CLAIM_TO_WALLET')}
+              {claimingToWallet ? t('CLAIMING') : t('CLAIM_TO_WALLET')}
             </CyDText>
             <CyDText className='text-n200 text-[14px] text-center'>
-              {claiming
+              {claimingToWallet
                 ? t('PROCESSING_YOUR_CLAIM_TRANSACTION')
                 : t('CLAIM_THE_EARNED_CYPHER_TOKEN_STRAIGHT_TO_YOUR_WALLET')}
             </CyDText>
@@ -202,6 +519,9 @@ const ClaimReward: React.FC = () => {
   );
   const [loadingBribesData, setLoadingBribesData] = useState<boolean>(true);
 
+  // State for tooltip management in inline breakdown
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+
   // Get rewardsData and claimRewardData from navigation params
   const passedClaimRewardData = (route.params as any)?.claimRewardData as
     | ClaimRewardResponse
@@ -217,11 +537,12 @@ const ClaimReward: React.FC = () => {
       };
     }
 
-    // Convert from wei (18 decimals) to token units
-    const totalRewardsWei =
-      claimRewardData?.rewardInfo?.totalRewardsInToken ?? 0;
-    const totalRewards = Number(
-      DecimalHelper.toDecimal(totalRewardsWei, 18).toString(),
+    // API returns values in wei - convert to decimal using 18 decimals
+    const totalRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(claimRewardData?.rewardInfo?.totalRewardsInToken ?? '0'),
+        18,
+      ).toString(),
     );
 
     return {
@@ -238,17 +559,24 @@ const ClaimReward: React.FC = () => {
     // Add protocol rewards if available
     if (claimRewardData) {
       const rewards = claimRewardData.rewardInfo;
-      const baseSpend = DecimalHelper.toDecimal(
-        rewards?.baseSpendAmount ?? 0,
-        18,
+      // API returns values in wei - convert to decimal using 18 decimals
+      const baseSpend = parseFloat(
+        DecimalHelper.toDecimal(
+          String(rewards?.baseSpendAmount ?? '0'),
+          18,
+        ).toString(),
       ).toFixed(2);
-      const boostedSpend = DecimalHelper.toDecimal(
-        rewards?.boostedSpend ?? 0,
-        18,
+      const boostedSpend = parseFloat(
+        DecimalHelper.toDecimal(
+          String(rewards?.boostedSpend ?? '0'),
+          18,
+        ).toString(),
       ).toFixed(2);
-      const boostedReferral = DecimalHelper.toDecimal(
-        rewards?.boostedReferralAmount ?? 0,
-        18,
+      const boostedReferral = parseFloat(
+        DecimalHelper.toDecimal(
+          String(rewards?.boostedReferralAmount ?? '0'),
+          18,
+        ).toString(),
       ).toFixed(2);
 
       breakdown.push(
@@ -285,7 +613,8 @@ const ClaimReward: React.FC = () => {
       bribesData?.mergedBribes &&
       bribesData.mergedBribes.length > 0
     ) {
-      const totalBribesValue = bribesData.summary?.totalClaimableBribes ?? 0;
+      const totalBribesValue =
+        Number(bribesData.summary?.totalClaimableBribes) || 0;
       breakdown.push({
         id: '5',
         type: 'Voting Bribes',
@@ -369,6 +698,120 @@ const ClaimReward: React.FC = () => {
   }, []);
 
   /**
+   * Helper function to format numbers with decimals
+   * @param value - The number to format
+   * @param decimals - Number of decimal places (default: 2)
+   * @returns Formatted string with decimals
+   */
+  const formatWithDecimals = (value: number, decimals = 2): string => {
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  };
+
+  /**
+   * Process API data to create detailed breakdown
+   * Calculates base spend, boosted spend, referral rewards, and merchant breakdown
+   * Note: API returns values in wei - must convert to decimal using 18 decimals
+   */
+  const getDetailedBreakdownData = () => {
+    if (!claimRewardData?.isEligible || !claimRewardData?.rewardInfo) {
+      return {
+        baseSpendRewards: 0,
+        boostedSpendRewards: 0,
+        referralRewards: 0,
+        totalEarnings: 0,
+        merchantRewards: [],
+      };
+    }
+
+    const { rewardInfo } = claimRewardData;
+
+    // API returns values in wei - convert to decimal using 18 decimals
+    const baseSpendRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(rewardInfo.baseSpendAmount ?? '0'),
+        18,
+      ).toString(),
+    );
+    const boostedSpendRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(rewardInfo.boostedSpend ?? '0'),
+        18,
+      ).toString(),
+    );
+    const referralRewards = parseFloat(
+      DecimalHelper.toDecimal(
+        String(rewardInfo.boostedReferralAmount ?? '0'),
+        18,
+      ).toString(),
+    );
+
+    const totalEarnings =
+      baseSpendRewards + boostedSpendRewards + referralRewards;
+
+    // Transform merchant data from boostedSpendSplit
+    const merchantRewards: MerchantRewardData[] =
+      rewardInfo.boostedSpendSplit?.map(
+        (
+          merchant: {
+            parentMerchantId?: string;
+            canonicalName?: string;
+            logoUrl?: string;
+            spend?: string | number;
+          },
+          index: number,
+        ) => ({
+          id: merchant.parentMerchantId ?? `merchant_${index}`,
+          name: merchant.canonicalName ?? 'Unknown Merchant',
+          logo: merchant.logoUrl,
+          rewardsEarned: parseFloat(
+            DecimalHelper.toDecimal(
+              String(merchant.spend ?? '0'),
+              18,
+            ).toString(),
+          ),
+          canonicalName: merchant.canonicalName,
+        }),
+      ) ?? [];
+
+    return {
+      baseSpendRewards,
+      boostedSpendRewards,
+      referralRewards,
+      totalEarnings,
+      merchantRewards,
+    };
+  };
+
+  const detailedBreakdownData = getDetailedBreakdownData();
+
+  /**
+   * Tooltip content for each reward type
+   * Provides educational information about how each reward is earned
+   */
+  const tooltipContent = {
+    baseSpend:
+      t('BASE_SPEND_TOOLTIP') ??
+      'Every spend at any merchant qualifies for base spend rewards. Earn 1 $CYPR for every $10 spent with your Cypher card.',
+    boostedSpend:
+      t('BOOSTED_SPEND_TOOLTIP') ??
+      "Spending at merchants listed in the leaderboard qualifies for boosted rewards. Number of $CYPR earned is based on the merchant's reward multiplier at the end of the reward cycle.",
+    referral:
+      t('REFERRAL_TOOLTIP') ??
+      'First-time spend made by your referrals (at merchants listed in the leaderboard) who onboarded in the last reward cycle qualifies for referral rewards.',
+  };
+
+  // Color constants for reward types
+  const baseSpendBgColor = 'rgba(247,198,69,0.15)';
+  const baseSpendColor = '#F7C645';
+  const boostedSpendBgColor = 'rgba(255,140,0,0.15)';
+  const boostedSpendColor = '#FF8C00';
+  const referralBgColor = 'rgba(7,73,255,0.15)';
+  const referralColor = '#0749FF';
+
+  /**
    * Handles back navigation
    */
   const handleBack = () => {
@@ -393,11 +836,9 @@ const ClaimReward: React.FC = () => {
   };
 
   /**
-   * Handle claim to wallet transaction
-   * Executes both the claim rewards transaction and claim bribes transactions on Base
-   * This allows users to claim both protocol rewards and bribes in a single flow
+   * Execute claims (rewards + bribes) and return the result without navigating
    */
-  const handleClaimToWalletTransaction = async () => {
+  const performClaims = async (): Promise<ClaimExecutionResult> => {
     try {
       // Get user's Ethereum address from wallet context
       const fromAddress = get(
@@ -408,14 +849,15 @@ const ClaimReward: React.FC = () => {
 
       if (!fromAddress) {
         console.error('❌ No Ethereum address found in wallet context');
-        showModal('state', {
-          type: 'error',
-          title: t('WALLET_NOT_FOUND'),
-          description: t('CONNECT_WALLET_FIRST'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-        return;
+        return {
+          success: false,
+          rewardsClaimedSuccess: false,
+          bribesClaimedSuccess: false,
+          rewardsClaimedAmount: 0,
+          bribesClaimedCount: 0,
+          lastTransactionHash: '',
+          errorMessage: String(t('CONNECT_WALLET_FIRST')),
+        };
       }
 
       // Check if either claim data or bribes data is available
@@ -428,15 +870,16 @@ const ClaimReward: React.FC = () => {
 
       if (!hasRewards && !hasBribes) {
         console.error('❌ No rewards or bribes available to claim');
-        showModal('state', {
-          type: 'error',
-          title: t('NO_CLAIMS_AVAILABLE'),
-          description:
+        return {
+          success: false,
+          rewardsClaimedSuccess: false,
+          bribesClaimedSuccess: false,
+          rewardsClaimedAmount: 0,
+          bribesClaimedCount: 0,
+          lastTransactionHash: '',
+          errorMessage:
             'There are no rewards or bribes available to claim at this time.',
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-        return;
+        };
       }
 
       let rewardsClaimedSuccess = false;
@@ -488,9 +931,9 @@ const ClaimReward: React.FC = () => {
               '/v1/cypher-protocol/user/mark-claimed',
               {
                 unixTimestamp: currentTimestamp,
+                ...(result.hash && { transactionHash: result.hash }),
               },
             );
-
             if (markClaimedResponse.isError) {
               console.error(
                 '⚠️ Failed to mark rewards as claimed on backend:',
@@ -547,68 +990,88 @@ const ClaimReward: React.FC = () => {
         }
       }
 
-      // Show results based on what was claimed
-      if (rewardsClaimedSuccess || bribesClaimedSuccess) {
-        let successMessage = '';
-
-        if (rewardsClaimedSuccess && bribesClaimedSuccess) {
-          successMessage = `Successfully claimed ${rewardsClaimedAmount.toFixed(2)} $CYPR rewards and bribes from ${bribesClaimedCount} veNFT(s)!`;
-        } else if (rewardsClaimedSuccess) {
-          successMessage = t('CONGRATS_ON_SIGNING_UP_FOR_THE_CARD');
-        } else if (bribesClaimedSuccess) {
-          successMessage = `Successfully claimed bribes from ${bribesClaimedCount} veNFT(s)!`;
-        }
-
-        // Navigate to TokenRewardEarned screen with claimed amount
-        const navigationParams = {
-          rewardAmount: rewardsClaimedAmount || 0,
-          tokenSymbol: '$CYPR',
-          message: successMessage,
-          transactionHash: lastTransactionHash,
-          fromRewardsClaim: true, // Flag to indicate coming from rewards claim
-          bribesClaimedCount: bribesClaimedSuccess ? bribesClaimedCount : 0,
-        };
-
-        (navigation as any).navigate(
-          screenTitle.TOKEN_REWARD_EARNED,
-          navigationParams,
-        );
-
-        // Refresh claim reward data after successful claim
+      // Return the result to the caller
+      const success = rewardsClaimedSuccess || bribesClaimedSuccess;
+      if (success) {
+        // Refresh data after successful claim
         void fetchClaimRewardData();
-      } else {
-        // Show error modal if all claims failed
-        console.error('❌ All claims failed');
-        showModal('state', {
-          type: 'error',
-          title: t('CLAIM_FAILED'),
-          description: 'Failed to claim rewards and bribes. Please try again.',
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
       }
+      return {
+        success,
+        rewardsClaimedSuccess,
+        bribesClaimedSuccess,
+        rewardsClaimedAmount,
+        bribesClaimedCount,
+        lastTransactionHash,
+      };
     } catch (error) {
       console.error('💥 Error in claim process:', error);
-
-      // Show error modal for exceptions
       const errorMessage =
-        error instanceof Error ? error.message : t('CLAIM_ERROR_DESC');
-
-      showModal('state', {
-        type: 'error',
-        title: t('CLAIM_ERROR'),
-        description: errorMessage,
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
+        error instanceof Error ? error.message : String(t('CLAIM_ERROR_DESC'));
+      return {
+        success: false,
+        rewardsClaimedSuccess: false,
+        bribesClaimedSuccess: false,
+        rewardsClaimedAmount: 0,
+        bribesClaimedCount: 0,
+        lastTransactionHash: '',
+        errorMessage,
+      };
     }
   };
 
   /**
-   * Handles claim rewards action
-   * Shows bottom sheet with claim options
+   * Handle claim to wallet transaction
+   * Calls performClaims and then navigates to the success screen on success
    */
-  const handleClaimRewards = () => {
+  const handleClaimToWalletTransaction = async () => {
+    const result = await performClaims();
+    if (!result.success) {
+      showModal(GlobalModalType.STATE, {
+        type: 'error',
+        title: t('CLAIM_FAILED'),
+        description:
+          result.errorMessage ??
+          t<string>('CLAIM_ERROR_DESC') ??
+          'Claim failed',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
+    }
+
+    let successMessage = '';
+    if (result.rewardsClaimedSuccess && result.bribesClaimedSuccess) {
+      const formattedAmount = (
+        Number(result.rewardsClaimedAmount) || 0
+      ).toFixed(2);
+      successMessage = `Successfully claimed ${formattedAmount} $CYPR rewards and bribes from ${result.bribesClaimedCount} veNFT(s)!`;
+    } else if (result.rewardsClaimedSuccess) {
+      const formattedAmount = (
+        Number(result.rewardsClaimedAmount) || 0
+      ).toFixed(2);
+      successMessage = `Successfully claimed ${formattedAmount} $CYPR rewards!`;
+    } else if (result.bribesClaimedSuccess) {
+      successMessage = `Successfully claimed bribes from ${result.bribesClaimedCount} veNFT(s)!`;
+    }
+
+    (navigation as any).navigate(screenTitle.TOKEN_REWARD_EARNED, {
+      rewardAmount: result.rewardsClaimedAmount ?? 0,
+      tokenSymbol: '$CYPR',
+      message: successMessage,
+      transactionHash: result.lastTransactionHash,
+      fromRewardsClaim: true,
+      bribesClaimedCount: result.bribesClaimedSuccess
+        ? result.bribesClaimedCount
+        : 0,
+    });
+  };
+
+  /**
+   * Shows the claim options bottom sheet (deposit & boost or claim to wallet)
+   * This is the second bottom sheet in the claim flow
+   */
+  const showClaimOptionsBottomSheet = () => {
     const bottomSheetId = 'claim-rewards-options';
 
     showBottomSheet({
@@ -620,6 +1083,7 @@ const ClaimReward: React.FC = () => {
         <ClaimRewardsBottomSheetContent
           totalRewards={claimData.totalRewards}
           onClaimToWallet={handleClaimToWalletTransaction}
+          onPerformClaims={performClaims}
           navigation={navigation}
           onClose={() => {
             hideBottomSheet(bottomSheetId);
@@ -629,6 +1093,15 @@ const ClaimReward: React.FC = () => {
       topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
       backgroundColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
     });
+  };
+
+  /**
+   * Handles claim rewards action
+   * Shows claim options bottom sheet directly (breakdown is now inline on the page)
+   */
+  const handleClaimRewards = () => {
+    // Show claim options bottom sheet
+    showClaimOptionsBottomSheet();
   };
 
   return (
@@ -727,32 +1200,213 @@ const ClaimReward: React.FC = () => {
 
             {/* Content Container */}
             <CyDView className='flex-1 px-4 gap-y-6'>
-              {/* Earning Breakdown */}
+              {/* Earning Breakdown - Summary */}
               <CyDView
-                className={`p-4 mt-6 rounded-[12px] ${
+                className={`rounded-[12px] p-4 mt-6 ${
                   isDarkMode ? 'bg-base40' : 'bg-n0'
                 }`}>
-                <CyDText className='text-[16px] font-medium mb-1'>
-                  {t('EARNING_BREAKDOWN')}
+                <CyDText className='font-medium text-[14px] mb-6 text-n200'>
+                  {t('EARNING_BREAKDOWN') ?? 'Earning Breakdown'}
                 </CyDText>
 
-                {earningBreakdown.map(item => (
-                  <CyDView
-                    key={item.id}
-                    className='flex-row justify-between items-center mt-3'>
-                    <CyDText className='text-[14px]'>{item.type}</CyDText>
+                <CyDView className='gap-y-4'>
+                  {/* Base spend rewards */}
+                  <CyDView className='flex-row items-center justify-between'>
+                    <CyDView className='flex-row items-center'>
+                      <CyDText className='text-[14px]'>
+                        {t('BASE_SPEND_REWARDS') ?? 'Base spend rewards'}
+                      </CyDText>
+                      <InfoIcon
+                        tooltipId='baseSpend'
+                        content={tooltipContent.baseSpend}
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                        isDarkMode={isDarkMode}
+                      />
+                    </CyDView>
                     <CyDView
-                      className={`px-1 py-[2px] rounded-[4px]`}
-                      style={{ backgroundColor: item.bgColor }}>
+                      className='px-1 py-[2px] rounded-[4px]'
+                      style={{ backgroundColor: baseSpendBgColor }}>
                       <CyDText
-                        className={`text-[14px] font-medium`}
-                        style={{ color: item.textColor }}>
-                        {item.amount}
+                        className='text-[14px] font-semibold'
+                        style={{ color: baseSpendColor }}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.baseSpendRewards,
+                        )}{' '}
+                        $CYPR
                       </CyDText>
                     </CyDView>
                   </CyDView>
-                ))}
+
+                  {/* Boosted spend rewards */}
+                  <CyDView className='flex-row items-center justify-between'>
+                    <CyDView className='flex-row items-center'>
+                      <CyDText className='text-[14px]'>
+                        {t('BOOSTED_SPEND_REWARDS') ?? 'Boosted spend rewards'}
+                      </CyDText>
+                      <InfoIcon
+                        tooltipId='boostedSpend'
+                        content={tooltipContent.boostedSpend}
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                        isDarkMode={isDarkMode}
+                      />
+                    </CyDView>
+                    <CyDView
+                      className='px-1 py-[2px] rounded-[4px]'
+                      style={{ backgroundColor: boostedSpendBgColor }}>
+                      <CyDText
+                        className='text-[14px] font-semibold'
+                        style={{ color: boostedSpendColor }}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.boostedSpendRewards,
+                        )}{' '}
+                        $CYPR
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+
+                  {/* Referral rewards */}
+                  <CyDView className='flex-row items-center justify-between'>
+                    <CyDView className='flex-row items-center'>
+                      <CyDText className='text-[14px]'>
+                        {t('REFERRAL_REWARDS')}
+                      </CyDText>
+                      <InfoIcon
+                        tooltipId='referral'
+                        content={tooltipContent.referral}
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                        isDarkMode={isDarkMode}
+                      />
+                    </CyDView>
+                    <CyDView
+                      className='px-1 py-[2px] rounded-[4px]'
+                      style={{ backgroundColor: referralBgColor }}>
+                      <CyDText
+                        className='text-[14px] font-semibold'
+                        style={{ color: referralColor }}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.referralRewards,
+                        )}{' '}
+                        $CYPR
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
               </CyDView>
+
+              {/* Reward on Merchants Section */}
+              {detailedBreakdownData.merchantRewards.length > 0 && (
+                <CyDView
+                  className={`rounded-[12px] py-4 mb-6 ${
+                    isDarkMode ? 'bg-base40' : 'bg-n0'
+                  }`}>
+                  <CyDText className='font-medium text-[14px] mb-4 text-n200 px-4'>
+                    {t('REWARD_ON_MERCHANTS') ?? 'Reward on Merchants'}
+                  </CyDText>
+
+                  {/* Total Earnings Header */}
+                  <CyDView
+                    className={`flex-row items-center justify-between px-4 py-3 mb-4 ${
+                      isDarkMode ? 'bg-base200' : 'bg-n20'
+                    }`}>
+                    <CyDText
+                      className={`text-[14px] font-medium ${
+                        isDarkMode ? 'text-n50' : 'text-black'
+                      }`}>
+                      {t('TOTAL_EARNINGS') ?? 'Total Earnings'}
+                    </CyDText>
+                    <CyDView className='flex-row items-center gap-x-2'>
+                      <CyDImage
+                        source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+                        className='w-5 h-5'
+                        resizeMode='contain'
+                      />
+                      <CyDText
+                        className={`text-[18px] font-bold ${
+                          isDarkMode ? 'text-white' : 'text-black'
+                        }`}>
+                        {formatWithDecimals(
+                          detailedBreakdownData.totalEarnings,
+                          0,
+                        )}
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+
+                  {/* Merchant List */}
+                  <CyDView>
+                    {detailedBreakdownData.merchantRewards.map(
+                      (merchant, index) => (
+                        <CyDView
+                          key={merchant.id}
+                          className={`px-4 py-4 ${
+                            index !==
+                            detailedBreakdownData.merchantRewards.length - 1
+                              ? 'border-b'
+                              : ''
+                          } ${isDarkMode ? 'border-base200' : 'border-n40'}`}>
+                          {/* Merchant header */}
+                          <CyDView className='flex-row items-center gap-x-3 mb-4'>
+                            {/* Merchant logo */}
+                            <CyDView className='w-10 h-10 p-[2px] rounded-full bg-white items-center justify-center overflow-hidden'>
+                              {merchant.logo ? (
+                                <CyDImage
+                                  source={{ uri: merchant.logo }}
+                                  className='w-full h-full rounded-full'
+                                  resizeMode='contain'
+                                />
+                              ) : (
+                                <CyDView className='w-full h-full rounded-full items-center justify-center bg-n40'>
+                                  <CyDText className='text-[10px] font-bold uppercase'>
+                                    {merchant.name.slice(0, 2)}
+                                  </CyDText>
+                                </CyDView>
+                              )}
+                            </CyDView>
+
+                            {/* Merchant name */}
+                            <CyDView className='flex-1'>
+                              <CyDText className='text-[16px] font-medium'>
+                                {merchant.name}
+                              </CyDText>
+                            </CyDView>
+                          </CyDView>
+
+                          {/* Merchant stats */}
+                          <CyDView className='flex-row items-center justify-between'>
+                            <CyDText className='text-[14px] text-n200'>
+                              {t('REWARDS_EARNED') ?? 'Rewards earned'}
+                            </CyDText>
+                            <CyDView
+                              className='px-1 py-[2px] rounded-[4px]'
+                              style={{ backgroundColor: boostedSpendBgColor }}>
+                              <CyDText
+                                className='text-[14px] font-medium'
+                                style={{ color: boostedSpendColor }}>
+                                {formatWithDecimals(merchant.rewardsEarned)}{' '}
+                                $CYPR
+                              </CyDText>
+                            </CyDView>
+                          </CyDView>
+
+                          {/* Merchant stats */}
+                          {/* <CyDView className='flex-row items-center justify-between mt-2'>
+                            <CyDText className='text-[14px] text-n200'>
+                              {t('TOTAL_SPEND') ?? 'Total spend'}
+                            </CyDText>
+
+                            <CyDText className='text-[14px] font-medium'>
+                              ${formatWithDecimals(merchant.totalSpend)}
+                            </CyDText>
+                          </CyDView> */}
+                        </CyDView>
+                      ),
+                    )}
+                  </CyDView>
+                </CyDView>
+              )}
 
               {/* Reward on Merchants */}
               {/* <CyDView
@@ -897,12 +1551,6 @@ const ClaimReward: React.FC = () => {
           </>
         )}
       </CyDScrollView>
-
-      {/* Bottom Safe Area with n0 background */}
-      <CyDView
-        className={`${isDarkMode ? 'bg-black' : 'bg-n30'}`}
-        style={{ height: insets.bottom }}
-      />
     </>
   );
 };

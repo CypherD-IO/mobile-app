@@ -26,6 +26,7 @@ import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { parseErrorMessage } from '../../../core/util';
 import clsx from 'clsx';
+import Toast from 'react-native-toast-message';
 
 export default function ManageSubscription() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -79,10 +80,10 @@ export default function ManageSubscription() {
         });
       }
     } catch (error) {
-      console.error(
-        'Error refreshing profile after subscription cancellation:',
-        error,
-      );
+      Toast.show({
+        type: 'error',
+        text2: parseErrorMessage(error),
+      });
     }
   };
 

@@ -21,6 +21,8 @@ import { screenTitle } from '../../constants';
 import { capitalize } from 'lodash';
 import { MerchantLogo } from '../../components/v2/MerchantLogo';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import Toast from 'react-native-toast-message';
+import { parseErrorMessage } from '../../core/util';
 
 /**
  * Interface for merchant data displayed in the success screen
@@ -67,7 +69,6 @@ export default function AirdropClaimSuccess() {
       const sessionToken = globalContext.globalState.token;
 
       if (!sessionToken) {
-        console.error('Session token not available');
         return;
       }
 
@@ -86,7 +87,10 @@ export default function AirdropClaimSuccess() {
         });
       }, 250);
     } catch (error) {
-      console.error('Error navigating to lock page:', error);
+      Toast.show({
+        type: 'error',
+        text2: parseErrorMessage(error),
+      });
     }
   };
 

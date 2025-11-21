@@ -3,6 +3,8 @@ import {
   clearAllData,
   getConnectionType,
   getReadOnlyWalletData,
+  getMfaModalSnoozeUntil,
+  setMfaModalSnoozeUntil,
 } from '../../core/asyncStorage';
 import {
   ConnectionTypes,
@@ -157,7 +159,7 @@ export default function useConnectionManager() {
           web3Auth = web3AuthSolana;
           break;
       }
-      if (web3Auth) {
+      if (web3Auth && !web3Auth.connected) {
         await web3Auth.init();
         return web3Auth;
       }
@@ -167,6 +169,7 @@ export default function useConnectionManager() {
 
   const deleteSocialAuthWalletIfSessionExpired = async () => {
     const socialAuthProvider = await getSocialAuthProvider();
+
     if (socialAuthProvider && !socialAuthProvider.connected) {
       showModal(GlobalModalType.REMOVE_SOCIAL_AUTH_WALLET, {
         onSuccess: () => {
@@ -174,6 +177,46 @@ export default function useConnectionManager() {
           void deleteWalletConfig();
         },
         onFailure: hideModal,
+      });
+    }
+  };
+
+  /**
+   * Checks if MFA is enabled for the current social auth user.
+   * If MFA is not enabled and the modal hasn't been snoozed, shows the MFA enable modal.
+   * The modal can be snoozed for 1 week by clicking "Maybe Later".
+   *
+   * @returns {Promise<void>}
+   */
+  const checkMfaEnabled = async (): Promise<void> => {
+    const socialAuthProvider = await getSocialAuthProvider();
+    const userInfo = socialAuthProvider?.userInfo();
+
+    // Only proceed if user has social auth but hasn't enabled MFA
+    if (socialAuthProvider && !userInfo?.isMfaEnabled) {
+      // Check if the modal has been snoozed
+      const snoozeUntil = await getMfaModalSnoozeUntil();
+      const currentTime = Date.now();
+
+      // If snoozed and the snooze period hasn't expired, don't show the modal
+      if (snoozeUntil && currentTime < snoozeUntil) {
+        return;
+      }
+
+      // Show the MFA enable modal
+      showModal(GlobalModalType.CHECK_MFA_ENABLED, {
+        onSuccess: async () => {
+          hideModal();
+          await socialAuthProvider.init();
+          await socialAuthProvider?.enableMFA();
+        },
+        onFailure: async () => {
+          // User clicked "Maybe Later" - snooze for 1 week
+          const oneWeekInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+          const snoozeUntilTimestamp = Date.now() + oneWeekInMs;
+          await setMfaModalSnoozeUntil(snoozeUntilTimestamp);
+          hideModal();
+        },
       });
     }
   };
@@ -191,5 +234,6 @@ export default function useConnectionManager() {
     deleteWalletConfig,
     getSocialAuthProvider,
     deleteSocialAuthWalletIfSessionExpired,
+    checkMfaEnabled,
   };
 }
