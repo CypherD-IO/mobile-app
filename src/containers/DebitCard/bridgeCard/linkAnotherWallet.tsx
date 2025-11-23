@@ -16,7 +16,6 @@ import useAxios from '../../../core/HttpRequest';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import {
   getChainNameFromAddress,
-  isEthereumAddress,
   parseErrorMessage,
   trimWhitespace,
 } from '../../../core/util';
@@ -145,7 +144,7 @@ export default function LinkAnotherWallet() {
   const onOTPEntry = async (otp: string) => {
     setIsSubmitting(true);
     const data: Record<string, string | number> = {
-      child: !isEthereumAddress(formValues.address)
+      child: !isAddress(formValues.address)
         ? formValues.address
         : formValues.address.toLowerCase(),
       label: formValues.walletName,
