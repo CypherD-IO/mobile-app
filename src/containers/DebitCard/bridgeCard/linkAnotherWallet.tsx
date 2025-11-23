@@ -62,12 +62,16 @@ export default function LinkAnotherWallet() {
     address: yup
       .string()
       .required('Address Required')
-      .test('Enter valid ETH Address', 'Enter valid ETH Address', address => {
-        return (
-          isSolanaAddress(trimWhitespace(address ?? '')) ||
-          isAddress(trimWhitespace(address ?? ''))
-        );
-      }),
+      .test(
+        'Enter valid ETH Address / Solana Address',
+        'Enter valid ETH Address / Solana Address',
+        address => {
+          return (
+            isSolanaAddress(trimWhitespace(address ?? '')) ||
+            isAddress(trimWhitespace(address ?? ''))
+          );
+        },
+      ),
     walletName: yup.string().required('Wallet Name Required'),
   });
 
