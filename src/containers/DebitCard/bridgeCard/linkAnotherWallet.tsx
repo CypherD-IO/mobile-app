@@ -61,12 +61,16 @@ export default function LinkAnotherWallet() {
     address: yup
       .string()
       .required('Address Required')
-      .test('Enter valid ETH Address', 'Enter valid ETH Address', address => {
-        return (
-          isSolanaAddress(trimWhitespace(address ?? '')) ||
-          isAddress(trimWhitespace(address ?? ''))
-        );
-      }),
+      .test(
+        'Enter valid ETH Address / Solana Address',
+        'Enter valid ETH Address / Solana Address',
+        address => {
+          return (
+            isSolanaAddress(trimWhitespace(address ?? '')) ||
+            isAddress(trimWhitespace(address ?? ''))
+          );
+        },
+      ),
     walletName: yup.string().required('Wallet Name Required'),
   });
 
@@ -140,7 +144,9 @@ export default function LinkAnotherWallet() {
   const onOTPEntry = async (otp: string) => {
     setIsSubmitting(true);
     const data: Record<string, string | number> = {
-      child: formValues.address.toLowerCase(),
+      child: !isAddress(formValues.address)
+        ? formValues.address
+        : formValues.address.toLowerCase(),
       label: formValues.walletName,
       chain: getChainNameFromAddress(formValues.address) ?? '',
       otp: '',
