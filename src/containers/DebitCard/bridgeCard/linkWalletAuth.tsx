@@ -24,6 +24,7 @@ import {
 } from '@react-navigation/native';
 import { t } from 'i18next';
 import PageHeader from '../../../components/PageHeader';
+import { isAddress } from 'web3-validator';
 
 interface RouteParams {
   onSuccess: () => void;
@@ -112,8 +113,11 @@ export default function LinkWalletAuth() {
 
   const verifyOTP = async (num: number) => {
     setVerifyingOTP(true);
+    const walletAddressFormatted = !isAddress(linkedWalletToDelete)
+      ? linkedWalletToDelete
+      : linkedWalletToDelete.toLowerCase();
     const response = await deleteWithAuth(
-      `/v1/authentication/profile/child/${linkedWalletToDelete.toLowerCase()}?otp=${num}`,
+      `/v1/authentication/profile/child/${walletAddressFormatted}?otp=${num}`,
     );
     if (!response.isError) {
       setVerifyingOTP(false);

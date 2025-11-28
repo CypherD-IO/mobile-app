@@ -38,6 +38,7 @@ import {
 } from '@react-navigation/native';
 import { isSolanaAddress } from '../../utilities/solanaUtilities';
 import PageHeader from '../../../components/PageHeader';
+import { isTronAddress } from '../../utilities/tronUtilities';
 
 export default function LinkAnotherWallet() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -62,12 +63,13 @@ export default function LinkAnotherWallet() {
       .string()
       .required('Address Required')
       .test(
-        'Enter valid ETH Address / Solana Address',
-        'Enter valid ETH Address / Solana Address',
+        'Enter valid ETH Address / Solana Address / Tron Address',
+        'Enter valid ETH Address / Solana Address / Tron Address',
         address => {
           return (
             isSolanaAddress(trimWhitespace(address ?? '')) ||
-            isAddress(trimWhitespace(address ?? ''))
+            isAddress(trimWhitespace(address ?? '')) ||
+            isTronAddress(trimWhitespace(address ?? ''))
           );
         },
       ),
