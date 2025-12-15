@@ -830,6 +830,9 @@ const resources = {
       UNSUPPORTED_CHAIN: 'Unsupported Chain',
       UNSUPPORTED_CHAIN_DESCRIPTION:
         'The requested chain is currently not supported. Please contact cypher support.',
+      WC_SESSION_EXPIRED: 'Session Expired',
+      WC_SESSION_EXPIRED_DESCRIPTION:
+        'The connection session has expired or was disconnected. Please reconnect the dApp and try again.',
       APPROVE_REQUEST: 'Approve Request',
       DEFAULT_AUTH_REMOVE:
         'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Clicking on "Proceed" will remove the exising wallet and you will be able to import the same wallet (if you have the seed phrase backed up) / create a new wallet without authentication.',

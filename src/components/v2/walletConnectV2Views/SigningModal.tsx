@@ -17,7 +17,11 @@ import {
   chainIdNumberMapping,
 } from '../../../constants/server';
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
-import { CyDScrollView, CyDView } from '../../../styles/tailwindComponents';
+import {
+  CyDScrollView,
+  CyDText,
+  CyDView,
+} from '../../../styles/tailwindComponents';
 import { t } from 'i18next';
 import { EIP155_SIGNING_METHODS } from '../../../constants/EIP155Data';
 import { useGlobalModalContext } from '../GlobalModal';
@@ -92,30 +96,60 @@ export default function SigningModal({
   const isMessageModalForSigningTypedData =
     modalPayload?.params && 'signMessageTitle' in modalPayload.params;
 
+  // Flag to track if session data could be retrieved
+  let isSessionValid = true;
+
   if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
     ({ id, topic, params } = requestEvent);
     ({ method, params: requestParams } = params.request);
-    requestSession = web3wallet?.engine.signClient.session.get(topic);
-    const { icons, name, url } = requestSession?.peer.metadata;
-    dAppInfo = {
-      name,
-      url,
-      logo: icons[0],
-    };
-    const [, chainId] = params.chainId.split(':');
-    chain = SUPPORTED_EVM_CHAINS.includes(+chainId)
-      ? chainIdNumberMapping[+chainId]
-      : undefined;
-    if (chain) {
-      publicClient = getViemPublicClient(getWeb3Endpoint(chain, globalContext));
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: t('UNSUPPORTED_CHAIN'),
-        description: t('UNSUPPORTED_CHAIN_DESCRIPTION'),
-        onSuccess: handleReject,
-        onFailure: handleReject,
-      });
+
+    // Safely attempt to retrieve the session - it may have been deleted
+    // This handles race conditions where the dApp disconnects while a request is pending
+    try {
+      requestSession = web3wallet?.engine.signClient.session.get(topic);
+    } catch (sessionError) {
+      // Session was deleted or is invalid - this is expected in race conditions
+      // Log as warning since we handle this gracefully with an error UI
+      console.warn(
+        '[SigningModal] Session expired or disconnected - showing error UI to user',
+        sessionError,
+      );
+      Sentry.captureException(sessionError);
+      isSessionValid = false;
+    }
+
+    // Additional validation to ensure session data is available
+    if (isSessionValid && !requestSession?.peer?.metadata) {
+      console.warn(
+        '[SigningModal] Session metadata is missing - session may have expired',
+      );
+      isSessionValid = false;
+    }
+
+    if (isSessionValid && requestSession?.peer?.metadata) {
+      const { icons, name, url } = requestSession.peer.metadata;
+      dAppInfo = {
+        name,
+        url,
+        logo: icons[0],
+      };
+      const [, chainId] = params.chainId.split(':');
+      chain = SUPPORTED_EVM_CHAINS.includes(+chainId)
+        ? chainIdNumberMapping[+chainId]
+        : undefined;
+      if (chain) {
+        publicClient = getViemPublicClient(
+          getWeb3Endpoint(chain, globalContext),
+        );
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: t('UNSUPPORTED_CHAIN'),
+          description: t('UNSUPPORTED_CHAIN_DESCRIPTION'),
+          onSuccess: handleReject,
+          onFailure: handleReject,
+        });
+      }
     }
   } else {
     // The payload is from 'BROWSER'
@@ -452,6 +486,42 @@ export default function SigningModal({
       return 'Accept';
     }
   };
+
+  // If the session is invalid (deleted), show an error state
+  // This handles race conditions where the dApp disconnects while a request is pending
+  if (
+    payloadFrom === SigningModalPayloadFrom.WALLETCONNECT &&
+    !isSessionValid
+  ) {
+    return (
+      <CyDModalLayout
+        setModalVisible={() => {}}
+        isModalVisible={isModalVisible}
+        style={styles.modalLayout}
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}>
+        <CyDView className='rounded-t-[24px] bg-n20 px-[25px] py-[20px]'>
+          <CyDView className='flex flex-row justify-center'>
+            <CyDText className='text-[22px] font-extrabold mt-[14px] mb-[10px]'>
+              {t('WC_SESSION_EXPIRED')}
+            </CyDText>
+          </CyDView>
+          <CyDView className='my-[10px]'>
+            <CyDText className='text-center text-[14px] text-subTextColor'>
+              {t('WC_SESSION_EXPIRED_DESCRIPTION')}
+            </CyDText>
+          </CyDView>
+          <CyDView className='w-full mt-[12px] mb-[24px]'>
+            <Button
+              style='p-[3%] mt-[12px]'
+              title={t('CLOSE')}
+              onPress={() => hideModal()}
+            />
+          </CyDView>
+        </CyDView>
+      </CyDModalLayout>
+    );
+  }
 
   return (
     <CyDModalLayout

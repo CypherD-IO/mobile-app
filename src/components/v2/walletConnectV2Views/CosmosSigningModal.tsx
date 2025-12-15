@@ -1,6 +1,6 @@
 /* eslint-disable no-void */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
@@ -17,6 +17,7 @@ import {
 } from '../../../styles/tailwindComponents';
 import { t } from 'i18next';
 import Button from '../button';
+import * as Sentry from '@sentry/react-native';
 
 interface CosmosSigningModalProps {
   requestEvent: SignClientTypes.EventArguments['session_request'] | undefined;
@@ -32,15 +33,78 @@ export default function CosmosSigningModal({
   const [, handleWeb3Cosmos] = useWeb3(Web3Origin.WALLETCONNECT);
   const [acceptingRequest, setAcceptingRequest] = useState<boolean>(false);
   const [rejectingRequest, setRejectingRequest] = useState<boolean>(false);
-  const { id, topic, params } = requestEvent;
-  const { params: requestParams, method: requestMethod } = params.request;
-  const { signerAddress, signDoc } = requestParams;
-  const [, method] = requestMethod.split('_');
-  const requestSession = web3wallet.engine.signClient.session.get(topic);
-  const { icons, name, url } = requestSession.peer.metadata;
-  const [, chainId] = params.chainId.split(':');
 
-  const chain: Chain = chainIdNumberMapping[+chainId];
+  // Safely extract session data with error handling for deleted sessions
+  // This handles race conditions where the dApp disconnects while a request is pending
+  const sessionData = useMemo(() => {
+    if (!requestEvent) {
+      return { isValid: false, error: 'No request event provided' };
+    }
+
+    const { id, topic, params } = requestEvent;
+    const { params: requestParams, method: requestMethod } = params.request;
+    const { signerAddress, signDoc } = requestParams;
+    const [, method] = requestMethod.split('_');
+    const [, chainId] = params.chainId.split(':');
+
+    // Safely attempt to retrieve the session - it may have been deleted
+    let requestSession;
+    try {
+      requestSession = web3wallet?.engine?.signClient?.session?.get(topic);
+    } catch (sessionError) {
+      // Session was deleted or is invalid - this is expected in race conditions
+      // Log as warning since we handle this gracefully with an error UI
+      console.warn(
+        '[CosmosSigningModal] Session expired or disconnected - showing error UI to user',
+        sessionError,
+      );
+      Sentry.captureException(sessionError);
+      return { isValid: false, error: 'Session was recently deleted' };
+    }
+
+    // Validate session metadata exists
+    if (!requestSession?.peer?.metadata) {
+      console.warn(
+        '[CosmosSigningModal] Session metadata is missing - session may have expired',
+      );
+      return { isValid: false, error: 'Session metadata is missing' };
+    }
+
+    const { icons, name, url } = requestSession.peer.metadata;
+    const chain: Chain = chainIdNumberMapping[+chainId];
+
+    return {
+      isValid: true,
+      id,
+      topic,
+      params,
+      requestParams,
+      signerAddress,
+      signDoc,
+      method,
+      chainId,
+      icons,
+      name,
+      url,
+      chain,
+    };
+  }, [requestEvent]);
+
+  // Destructure session data for use in the component
+  const {
+    isValid,
+    id,
+    topic,
+    params,
+    signerAddress,
+    signDoc,
+    method,
+    chainId,
+    icons,
+    name,
+    url,
+    chain,
+  } = sessionData as any;
 
   const handleAccept = async () => {
     try {
@@ -146,6 +210,39 @@ export default function CosmosSigningModal({
       </CyDView>
     );
   };
+
+  // If the session is invalid (deleted), show an error state and close the modal
+  if (!isValid) {
+    return (
+      <CyDModalLayout
+        setModalVisible={() => {}}
+        isModalVisible={isModalVisible}
+        style={styles.modalLayout}
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}>
+        <CyDView style={styles.modalContentContainer}>
+          <CyDView className={'flex flex-row justify-center'}>
+            <CyDText
+              className={'text-[22px] font-extrabold mt-[14px] mb-[10px]'}>
+              {t<string>('WC_SESSION_EXPIRED')}
+            </CyDText>
+          </CyDView>
+          <CyDView className='my-[10px]'>
+            <CyDText className='text-center text-[14px] text-subTextColor'>
+              {t<string>('WC_SESSION_EXPIRED_DESCRIPTION')}
+            </CyDText>
+          </CyDView>
+          <CyDView className={'w-full'}>
+            <Button
+              style={'mb-[10px]'}
+              title={t('CLOSE')}
+              onPress={() => hideModal()}
+            />
+          </CyDView>
+        </CyDView>
+      </CyDModalLayout>
+    );
+  }
 
   return (
     <CyDModalLayout

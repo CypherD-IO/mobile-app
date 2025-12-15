@@ -62,6 +62,18 @@ export const EIP155_SIGNING_METHODS = {
   WALLET_REQUEST_PERMISSIONS: 'wallet_requestPermissions',
 };
 
+/**
+ * EIP-5792 Wallet Capability Methods
+ * These methods allow dApps to discover wallet capabilities
+ * @see https://eips.ethereum.org/EIPS/eip-5792
+ */
+export const EIP5792_METHODS = {
+  WALLET_GET_CAPABILITIES: 'wallet_getCapabilities',
+  WALLET_SEND_CALLS: 'wallet_sendCalls',
+  WALLET_GET_CALLS_STATUS: 'wallet_getCallsStatus',
+  WALLET_SHOW_CALLS_STATUS: 'wallet_showCallsStatus',
+};
+
 export const COSMOS_SIGNING_METHODS = {
   COSMOS_SIGN_DIRECT: 'cosmos_signDirect',
   COSMOS_SIGN_AMINO: 'cosmos_signAmino',

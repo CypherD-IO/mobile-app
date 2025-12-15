@@ -5,7 +5,9 @@ import { deleteTopic, web3wallet } from '../../core/walletConnectV2Utils';
 import {
   COSMOS_SIGNING_METHODS,
   EIP155_SIGNING_METHODS,
+  EIP5792_METHODS,
 } from '../../constants/EIP155Data';
+import { formatJsonRpcResult } from '@json-rpc-tools/utils';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { GlobalModalType } from '../../constants/enum';
 import { HdWalletContext } from '../../core/util';
@@ -55,8 +57,42 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         return;
       }
 
-      const { params } = requestEvent;
+      const { topic, params } = requestEvent;
       const { request } = params;
+
+      // Validate the session exists before processing the request
+      // This prevents race conditions where the session is deleted before the modal opens
+      try {
+        const session = web3wallet?.engine?.signClient?.session?.get(topic);
+        if (!session?.peer?.metadata) {
+          console.warn(
+            '[WalletConnect] Session not found or invalid for topic:',
+            topic,
+          );
+          return showModal('state', {
+            type: 'error',
+            title: t('WC_SESSION_EXPIRED'),
+            description: t('WC_SESSION_EXPIRED_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }
+      } catch (sessionError) {
+        // Session was deleted or is invalid - this is expected in race conditions
+        // Log as warning since we handle this gracefully with an error UI
+        console.warn(
+          '[WalletConnect] Session expired or disconnected - showing error UI to user',
+          sessionError,
+        );
+        Sentry.captureException(sessionError);
+        return showModal('state', {
+          type: 'error',
+          title: t('WC_SESSION_EXPIRED'),
+          description: t('WC_SESSION_EXPIRED_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
 
       try {
         switch (request.method) {
@@ -89,7 +125,39 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
               requestEvent,
               hideModal,
             });
+
+          // EIP-5792: wallet_getCapabilities - Returns wallet capabilities for each chain
+          // This is a query-only method that doesn't require user interaction
+          // We return empty capabilities indicating we don't support advanced features
+          // like batch transactions, paymasters, or session keys
+          case EIP5792_METHODS.WALLET_GET_CAPABILITIES: {
+            const { id } = requestEvent;
+            const [, chainIds] = request.params; // [address, chainIds[]]
+
+            // Build capabilities response - empty object for each chain ID
+            // Format: { "0x1": {}, "0x89": {} } - no capabilities supported
+            const capabilities: Record<string, Record<string, unknown>> = {};
+            if (Array.isArray(chainIds)) {
+              chainIds.forEach((chainId: string) => {
+                capabilities[chainId] = {};
+              });
+            }
+
+            // Respond directly without UI - this is just a capability query
+            const response = formatJsonRpcResult(id, capabilities);
+            await web3wallet?.respondSessionRequest({
+              topic,
+              response,
+            });
+            return;
+          }
+
           default:
+            console.error(
+              '[WalletConnect] Unsupported method:',
+              request.method,
+              request,
+            );
             return showModal('state', {
               type: 'error',
               title: t('UNSUPPORTED_METHOD'),
