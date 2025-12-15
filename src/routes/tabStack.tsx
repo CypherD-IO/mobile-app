@@ -14,14 +14,12 @@ import {
   Animated,
   BackHandler,
   Linking,
-  StyleSheet,
   Platform,
-  ToastAndroid,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
-import { isIOS } from '../misc/checkers';
 import { CyDIcons, CyDView } from '../styles/tailwindComponents';
 import {
   DebitCardStackScreen,
@@ -44,10 +42,28 @@ import {
 } from '../core/asyncStorage';
 import Toast from 'react-native-toast-message';
 import { parseErrorMessage } from '../core/util';
+import {
+  FloatingMorphButton,
+  MorphOverlay,
+} from '../components/v2/MorphOverlay';
 
 const Tab = createBottomTabNavigator();
 const NAVIGATION_DELAY = 50;
 const DEEP_LINK_PROCESSING_DELAY = 100;
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+/**
+ * NOTE:
+ * React Navigation types can be tricky here because we combine a tab navigator, nested stacks,
+ * and programmatic navigation through a container ref.
+ *
+ * At runtime, the navigation ref always exposes `.navigate()`, so we cast to a minimal stable
+ * shape to avoid TypeScript "never overload" errors while keeping behavior unchanged.
+ */
+interface UnsafeNavigationRef {
+  navigate: (...args: unknown[]) => void;
+}
 
 interface TabStackProps {
   deepLinkData: {
@@ -90,6 +106,24 @@ const TabStack = React.memo(
     const pendingDeepLinkRef = useRef<typeof deepLinkData>(null);
     const { referrerData } = useInstallReferrer();
     const insets = useSafeAreaInsets();
+
+    // Morph Overlay State
+    const [isMorphOverlayVisible, setIsMorphOverlayVisible] = useState(false);
+    /**
+     * We keep a separate "rendered" flag because the MorphOverlay remains mounted briefly
+     * while it plays its closing animation (particles + UI collapsing). During that time
+     * we want the floating trigger button to stay hidden to avoid visual overlap.
+     */
+    const [isMorphOverlayRendered, setIsMorphOverlayRendered] = useState(false);
+    /**
+     * Track when the button is reforming from particles (overlay just closed).
+     * This triggers the "particles converging back into button" animation.
+     */
+    const [isButtonReforming, setIsButtonReforming] = useState(false);
+    const [fabPosition, setFabPosition] = useState({
+      x: SCREEN_WIDTH - 76, // Default position (right side)
+      y: SCREEN_HEIGHT - 140, // Above tab bar
+    });
 
     let backPressCount = 0;
 
@@ -164,7 +198,13 @@ const TabStack = React.memo(
         }, 2000);
 
         if (Platform.OS === 'android') {
-          // Only show toast on Android
+          /**
+           * Android-only API:
+           * Use a dynamic require so platform-specific modules aren't imported at module scope.
+           */
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const { ToastAndroid } =
+            require('react-native') as typeof import('react-native');
           ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
         }
       } else if (backPressCount === 1) {
@@ -187,15 +227,17 @@ const TabStack = React.memo(
      */
     const navigateToScreenInTab = useCallback(
       (tabName: string, navigationParams: NavigationParams) => {
-        if (!navigationRef.current) return;
+        const unsafeNav =
+          navigationRef.current as unknown as UnsafeNavigationRef | null;
+        if (!unsafeNav) return;
 
         // Step 1: Navigate to the parent tab first
-        navigationRef.current.navigate(tabName);
+        unsafeNav.navigate(tabName);
 
         // Step 2: After a short delay, navigate to the specific screen within the tab
         setTimeout(() => {
-          if (navigationRef.current) {
-            navigationRef.current.navigate(tabName, navigationParams);
+          if (unsafeNav) {
+            unsafeNav.navigate(tabName, navigationParams);
           }
         }, NAVIGATION_DELAY);
       },
@@ -567,6 +609,37 @@ const TabStack = React.memo(
             }}
           />
         </Tab.Navigator>
+
+        {/* Morph Overlay Components */}
+        {!(isMorphOverlayVisible || isMorphOverlayRendered) && (
+          <FloatingMorphButton
+            onPress={() => {
+              setFabPosition({
+                x: SCREEN_WIDTH - 76,
+                y: SCREEN_HEIGHT - 140,
+              });
+              setIsMorphOverlayVisible(true);
+              // Reset reforming state when opening
+              setIsButtonReforming(false);
+            }}
+            isReforming={isButtonReforming}
+          />
+        )}
+        <MorphOverlay
+          isVisible={isMorphOverlayVisible}
+          onClose={() => setIsMorphOverlayVisible(false)}
+          fabPosition={fabPosition}
+          onRenderStateChange={isRendered => {
+            setIsMorphOverlayRendered(isRendered);
+            // When overlay stops rendering (closing animation complete),
+            // trigger the button reform animation
+            if (!isRendered) {
+              setIsButtonReforming(true);
+              // Reset after animation completes
+              setTimeout(() => setIsButtonReforming(false), 600);
+            }
+          }}
+        />
       </NavigationContainer>
     );
   },
