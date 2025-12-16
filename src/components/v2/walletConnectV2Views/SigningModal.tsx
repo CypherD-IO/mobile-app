@@ -100,8 +100,9 @@ export default function SigningModal({
   let isSessionValid = true;
 
   if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
+    // First extract only the topic and id needed for session lookup
+    // Defer extracting method/requestParams until session is validated
     ({ id, topic, params } = requestEvent);
-    ({ method, params: requestParams } = params.request);
 
     // Safely attempt to retrieve the session - it may have been deleted
     // This handles race conditions where the dApp disconnects while a request is pending
@@ -126,7 +127,12 @@ export default function SigningModal({
       isSessionValid = false;
     }
 
+    // Only extract method and requestParams after session is validated
+    // This prevents useEffect from running with requestParams while publicClient is undefined
     if (isSessionValid && requestSession?.peer?.metadata) {
+      // Now safe to destructure method and params since session is valid
+      ({ method, params: requestParams } = params.request);
+
       const { icons, name, url } = requestSession.peer.metadata;
       dAppInfo = {
         name,
@@ -261,6 +267,15 @@ export default function SigningModal({
     };
 
     const getDataForNativeTxn = async () => {
+      // Defensive early return: publicClient is undefined when session is invalid
+      // This prevents calling publicClient.getBalance() on an undefined object
+      if (!publicClient) {
+        console.warn(
+          '[SigningModal] getDataForNativeTxn skipped - publicClient is undefined (session may be invalid)',
+        );
+        return;
+      }
+
       let paramsForDecoding: DecodeTxnRequestBody;
       if (
         payloadFrom === SigningModalPayloadFrom.WALLETCONNECT &&
@@ -400,8 +415,18 @@ export default function SigningModal({
         void decodeTxnRequest();
       }
     } else {
-      void getDataForNativeTxn();
+      // Only call getDataForNativeTxn if we have valid chain and publicClient
+      // This guards against race conditions where session becomes invalid
+      if (chain && publicClient) {
+        void getDataForNativeTxn();
+      } else {
+        console.warn(
+          '[SigningModal] Skipping getDataForNativeTxn - missing chain or publicClient (session may be invalid)',
+        );
+      }
     }
+    // Note: isSessionValid is a computed value from render, not state.
+    // The defensive checks for chain/publicClient handle the invalid session case.
   }, [requestParams, paramsFromPayload]);
 
   async function handleAccept() {
