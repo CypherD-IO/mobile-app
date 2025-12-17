@@ -20,7 +20,7 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
-ios/.xcode.env.local
+**/.xcode.env.local
 
 # Android/IntelliJ
 #
@@ -55,10 +55,10 @@ yarn-error.log
 *.jsbundle
 
 # Ruby / CocoaPods
-/ios/Pods/
-/ios/tmp.xcconfig
-/ios/GoogleService-Info.plist
-/ios/sentry.properties
+**/Pods/
+**/tmp.xcconfig
+**/GoogleService-Info.plist
+**/sentry.properties
 /vendor/bundle/
 Gemfile.lock  # Avoid Ruby/Bundler version conflicts between local and CI
 # Temporary files created by Metro to check the health of the file watcher
@@ -83,3 +83,11 @@ artifacts
 
 #specstory
 .specstory/
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

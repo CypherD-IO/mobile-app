@@ -6,9 +6,15 @@ ruby ">= 2.6.10"
 # Note: In CI, we install CocoaPods globally to avoid Ruby 3.3.8 bundled gem conflicts
 # Local development can still use this Gemfile with bundler if needed
 
-# Explicit dependencies for Ruby compatibility across versions
-gem 'logger', '~> 1.4'
-
 # For local development environments that prefer bundler
-gem 'cocoapods', '~> 1.15.0'
-gem 'activesupport', '~> 7.0.8'
+# Exclude problematic versions of cocoapods and activesupport that causes build failures.
+gem 'cocoapods', '>= 1.13', '!= 1.15.0', '!= 1.15.1'
+gem 'activesupport', '>= 6.1.7.5', '!= 7.1.0'
+gem 'xcodeproj', '< 1.26.0'
+gem 'concurrent-ruby', '< 1.3.4'
+ 
+# Ruby 3.4.0 has removed some libraries from the standard library.
+gem 'bigdecimal'
+gem 'logger', '~> 1.4'
+gem 'benchmark'
+gem 'mutex_m'

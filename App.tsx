@@ -570,27 +570,33 @@ function App() {
                     });
                   }
                   routeNameRef.current = currentRouteName;
-                }}>
+                }}
+              >
                 <WalletConnectContext.Provider
-                  value={{ walletConnectState, walletConnectDispatch }}>
+                  value={{ walletConnectState, walletConnectDispatch }}
+                >
                   <GlobalContext.Provider
-                    value={{ globalState, globalDispatch }}>
+                    value={{ globalState, globalDispatch }}
+                  >
                     <HdWalletContext.Provider value={{ state, dispatch }}>
                       <ActivityContext.Provider
                         value={{
                           state: stateActivity,
                           dispatch: dispatchActivity,
-                        }}>
+                        }}
+                      >
                         <ModalContext.Provider
                           value={{
                             state: modalState,
                             dispatch: modalDispatch,
-                          }}>
+                          }}
+                        >
                           <BridgeContext.Provider
                             value={{
                               state: bridgeState,
                               dispatch: bridgeDispatch,
-                            }}>
+                            }}
+                          >
                             <GlobalBottomSheetProvider>
                               <GlobalModal>
                                 <ThreeDSecureProvider>

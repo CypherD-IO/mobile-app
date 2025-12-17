@@ -17,7 +17,7 @@ import { get } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { QRCodeReadEvent } from '../../types/QRScanner';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -968,7 +968,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     }
   };
 
-  const onSuccess = async (readEvent: BarCodeReadEvent) => {
+  const onSuccess = async (readEvent: QRCodeReadEvent) => {
     let error = false;
     const content = readEvent.data;
 

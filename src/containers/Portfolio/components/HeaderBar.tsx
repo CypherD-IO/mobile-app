@@ -8,7 +8,7 @@ import {
 } from '../../../styles/tailwindComponents';
 import { Chain, QRScannerScreens } from '../../../constants/server';
 import { screenTitle } from '../../../constants';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { QRCodeReadEvent } from '../../../types/QRScanner';
 import { ConnectionTypes } from '../../../constants/enum';
 import useConnectionManager from '../../../hooks/useConnectionManager';
 import { HdWalletContext } from '../../../core/util';
@@ -19,7 +19,7 @@ interface HeaderBarProps {
   navigation: any;
   setChooseChain: (arg: boolean) => void;
   selectedChain: Chain;
-  onWCSuccess: (e: BarCodeReadEvent) => void;
+  onWCSuccess: (e: QRCodeReadEvent) => void;
   renderTitleComponent?: ReactNode;
 }
 

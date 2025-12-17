@@ -2,7 +2,7 @@ import firebase from '@react-native-firebase/app';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import React, { useContext, useState } from 'react';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { QRCodeReadEvent } from '../../types/QRScanner';
 import { v4 as uuidv4 } from 'uuid';
 import { isAddress } from 'web3-validator';
 import AppImages from '../../../assets/images/appImages';
@@ -114,7 +114,7 @@ export default function TrackWallet() {
     }
   };
 
-  const onSuccess = async (readEvent: BarCodeReadEvent) => {
+  const onSuccess = async (readEvent: QRCodeReadEvent) => {
     const content = readEvent.data;
     // To handle metamask address: ethereum:0xBd1cD305900424CD4fAd1736a2B4d118c7CA935D@9001
     const regEx = content.match(/(\b0x[a-fA-F0-9]{40}\b)/g);

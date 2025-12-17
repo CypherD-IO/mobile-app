@@ -1,11 +1,11 @@
-const lazyImports = require('metro-react-native-babel-preset/src/configs/lazy-imports');
+const lazyImports = require('@react-native/babel-preset/src/configs/lazy-imports');
 
 module.exports = (api) => {
   api.cache(true);
   return {
     comments: false,
     compact: true,
-    presets: [['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }], 'nativewind/babel'],
+    presets: [['module:@react-native/babel-preset', { useTransformReactJSXExperimental: true }], 'nativewind/babel'],
     plugins: [
       'react-native-reanimated/plugin',
       '@babel/plugin-transform-flow-strip-types',

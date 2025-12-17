@@ -1,81 +1,144 @@
-# cypherd-ui
+# Cypherd Wallet
 
-TBD: Next step is to prototype the interaction between React Native app back to webview (response to JSON RPC calls). interaction from Webview to reactNative has already been implemented.
+A multi-chain cryptocurrency wallet mobile app built with React Native, supporting Ethereum, Cosmos, Solana, and other blockchain networks.
 
-## <B> Steps to run the project locally </B>
+> **Note**: The next step is to prototype the interaction between React Native app back to webview (response to JSON RPC calls). Interaction from WebView to React Native has already been implemented.
 
-### Configure
+## Prerequisites
 
-1. Sentry in sentry.properties file
-2. GoogleService in plist file
+Before getting started, ensure you have completed the [React Native Environment Setup](https://reactnative.dev/docs/set-up-your-environment).
 
-[React Native MAC Setup Guide](https://reactnative.dev/docs/environment-setup)
+### Required Configuration
 
-```
-npm install (from the root folder)
-npx pod-install (from the root folder)
-```
+1. **Sentry**: Configure in `sentry.properties` file
+2. **Google Services**: Configure in the iOS plist file
 
-To run:
+## Getting Started
 
-```
-npm install <package-name>
-npx pod-install (from the root folder)
+### Step 1: Install Dependencies
 
-npx react-native start --reset-cache
-npx react-native run-ios
+```sh
+npm install
 ```
 
-To clear the cache:
-If you are sure the module exists, try these steps:
+### Step 2: Install iOS Pods
 
-1.  Clear watchman watches: `watchman watch-del-all`
-2.  Delete node_modules and `run yarn install`
-3.  Reset Metro's cache: `yarn start --reset-cache`
-4.  Remove the cache: `rm -rf /tmp/metro-*`
+For iOS, install CocoaPods dependencies:
 
-To close the app:
+```sh
+# First time setup - install the Ruby bundler
+bundle install
 
-Shift+Command+H twice to open all apps, swipe up to close the app
-
-<B>Introduction</B>
-</BR>
-
-</B>EIP-1193</B>
-</BR>
-EIP-1193 Ethereum Provider Javascript API
-https://eips.ethereum.org/EIPS/eip-1193
-Ethereum Provider API defines the standard on how a dApp interacts with the wallet app through RPC calls using injected content-scripts by setting the window.ethereum object in javascript.
-
-<B>Communication between WebView and ReactNative</B>
-</BR>
-react-native-webview component has capability for the webview to interact with the react-native app in both directions
-https://github.com/react-native-webview/react-native-webview/blob/master/docs/Guide.md#communicating-between-js-and-native
-
-<B>Installation Instructions for react-native web3.js</B></BR>
-web3.js reactive native installation instructions from https://levelup.gitconnected.com/tutorial-how-to-set-up-web3js-1-x-with-react-native-0-6x-2021-467b2e0c94a4
-
-Highlight from the above article
-Final Step
-Each time you add a new npm package, you will need to hack the node modules again, to automate this, simply add this to your package.json:
-"scripts": {
-...
-"postinstall": "./node_modules/.bin/rn-nodeify --install 'crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,net,fs' --hack"
-},
-
-<B> Setup Instructions: </B>
-https://reactnative.dev/docs/next/environment-setup
-
-<B> Note: </B>
-Once in a while, run the below command to clear the cache.
-
-- Please make sure to run "watchman watch-del-all" and "npm start --reset-cache" before running the app.
-
-M1 Specific instruction
-
+# Install pods (run this after every native dependency update)
+bundle exec pod install
+# OR
+npm run pod-install
 ```
+
+**M1/Apple Silicon specific:**
+
+```sh
 sudo arch -x86_64 gem install ffi
-arch -x86_64 pod install -- for pod install
+arch -x86_64 pod install
 ```
 
-![Alt](https://repobeats.axiom.co/api/embed/6b56a18d1d04f0be2d12cef997469095a3e92039.svg 'Repobeats analytics image')
+### Step 3: Run the App
+
+**iOS:**
+
+```sh
+npm run ios
+```
+
+**Android:**
+
+```sh
+npm run android
+```
+
+**Both platforms simultaneously:**
+
+```sh
+npm start
+```
+
+## Available Scripts
+
+| Command                 | Description                                     |
+| ----------------------- | ----------------------------------------------- |
+| `npm run ios`           | Run on iOS Simulator (iPhone 16 Pro)            |
+| `npm run android`       | Run on Android Emulator                         |
+| `npm start`             | Run on both iOS and Android                     |
+| `npm run pod-install`   | Install CocoaPods dependencies                  |
+| `npm run clean-android` | Clean Android build with refreshed dependencies |
+| `npm run lint`          | Run ESLint                                      |
+| `npm run lint:fix`      | Run ESLint with auto-fix                        |
+| `npm test`              | Run Jest tests                                  |
+
+### E2E Testing (Detox)
+
+| Command                     | Description                                 |
+| --------------------------- | ------------------------------------------- |
+| `npm run e2e:build:ios`     | Build for iOS E2E tests                     |
+| `npm run e2e:test:ios`      | Run iOS E2E tests                           |
+| `npm run e2e:build:android` | Build for Android E2E tests                 |
+| `npm run e2e:test:android`  | Run Android E2E tests                       |
+| `npm run e2e:full-workflow` | Prepare environment and run clean iOS tests |
+
+## Troubleshooting
+
+### Clear Cache
+
+If you encounter module resolution issues, try the following steps:
+
+1. Clear watchman watches:
+
+   ```sh
+   watchman watch-del-all
+   ```
+
+2. Delete `node_modules` and reinstall:
+
+   ```sh
+   rm -rf node_modules
+   npm install
+   ```
+
+3. Reset Metro's cache:
+
+   ```sh
+   npm start -- --reset-cache
+   ```
+
+4. Remove Metro cache:
+   ```sh
+   rm -rf /tmp/metro-*
+   ```
+
+### Close App on Simulator
+
+Press <kbd>Shift</kbd> + <kbd>Cmd</kbd> + <kbd>H</kbd> twice to open all apps, then swipe up to close.
+
+## Technical Overview
+
+### EIP-1193 Ethereum Provider
+
+This app implements the [EIP-1193 Ethereum Provider JavaScript API](https://eips.ethereum.org/EIPS/eip-1193), which defines the standard for how dApps interact with the wallet through RPC calls using injected content-scripts by setting the `window.ethereum` object.
+
+### WebView Communication
+
+The app uses [react-native-webview](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Guide.md#communicating-between-js-and-native) for bidirectional communication between the WebView and React Native.
+
+### Node Polyfills
+
+Due to React Native's environment, certain Node.js modules are polyfilled. The `postinstall` script automatically handles this using `rn-nodeify`:
+
+```sh
+./node_modules/.bin/rn-nodeify --install 'crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,fs' --hack
+```
+
+> **Note**: Each time you add a new npm package, the node modules will be automatically patched via the `postinstall` script.
+
+## Analytics
+
+![Repobeats analytics](https://repobeats.axiom.co/api/embed/6b56a18d1d04f0be2d12cef997469095a3e92039.svg 'Repobeats analytics image')

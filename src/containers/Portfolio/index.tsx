@@ -30,7 +30,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { QRCodeReadEvent } from '../../types/QRScanner';
 import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import {
@@ -869,7 +869,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }
 
-  const onWCSuccess = (e: BarCodeReadEvent) => {
+  const onWCSuccess = (e: QRCodeReadEvent) => {
     const link = e.data;
     if (link.startsWith('wc')) {
       navigation.navigate(C.screenTitle.OPTIONS, {
