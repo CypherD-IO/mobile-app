@@ -6,9 +6,9 @@ import Animated, {
   useSharedValue,
   withSpring,
   interpolate,
-  runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const ITEM_HEIGHT = 40;
@@ -66,7 +66,8 @@ const PickerItem = React.memo(
     return (
       <Animated.View
         style={itemStyle}
-        className='h-[40px] justify-center items-center'>
+        className='h-[40px] justify-center items-center'
+      >
         <CyDText className='text-[22px] font-medium text-[#3C3C43]'>
           {item.label}
         </CyDText>
@@ -126,7 +127,7 @@ const CyDPicker: React.FC<PickerProps> = ({
       });
 
       if (onChange) {
-        runOnJS(onChange)({
+        scheduleOnRN(onChange, {
           label: value[safeIndex].label,
           value: value[safeIndex].value,
         });
@@ -149,7 +150,7 @@ const CyDPicker: React.FC<PickerProps> = ({
       });
 
       if (onChange) {
-        runOnJS(onChange)({
+        scheduleOnRN(onChange, {
           label: value[safeIndex].label,
           value: value[safeIndex].value,
         });
@@ -184,7 +185,8 @@ const CyDPicker: React.FC<PickerProps> = ({
           bounces={false}
           contentContainerStyle={{
             paddingVertical: PICKER_HEIGHT / 2 - ITEM_HEIGHT / 2,
-          }}>
+          }}
+        >
           {value.map((item, index) => renderItem(item, index))}
         </Animated.ScrollView>
       </CyDView>

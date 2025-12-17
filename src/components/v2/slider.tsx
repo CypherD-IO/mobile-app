@@ -5,11 +5,11 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import {
   CyDAnimatedView,
   CyDGestureHandlerRootView,
@@ -105,7 +105,7 @@ const Slider = ({
     'worklet';
     if (onValueChange) {
       const _value = calculateValue(newOffset);
-      runOnJS(onValueChange)(_value);
+      scheduleOnRN(onValueChange, _value);
     }
   };
 
@@ -135,12 +135,12 @@ const Slider = ({
 
         if (onSlidingComplete) {
           const finalValue = calculateValue(nearestStepOffset);
-          runOnJS(onSlidingComplete)(finalValue);
+          scheduleOnRN(onSlidingComplete, finalValue);
         }
       } else {
         if (onSlidingComplete) {
           const finalValue = calculateValue(currentOffset);
-          runOnJS(onSlidingComplete)(finalValue);
+          scheduleOnRN(onSlidingComplete, finalValue);
         }
       }
     });
@@ -205,7 +205,8 @@ const Slider = ({
             <CyDTouchView
               key={index}
               className='w-[20px] h-[20px] items-center justify-center'
-              onPress={() => handleDotPress(index)}>
+              onPress={() => handleDotPress(index)}
+            >
               <CyDView className='w-[4px] h-[4px] bg-n0 rounded-full' />
             </CyDTouchView>
           ))}
@@ -222,7 +223,8 @@ const Slider = ({
                 key={index}
                 className={clsx('h-[20px] items-center justify-center', {
                   'w-[24px]': !customValues,
-                })}>
+                })}
+              >
                 <CyDText className='text-base400 text-[10px]'>
                   {formatValue(_value)}
                 </CyDText>
@@ -241,7 +243,8 @@ const Slider = ({
         <GestureDetector gesture={pan}>
           <CyDAnimatedView
             className='w-[24px] h-[24px] z-[1000] bg-white absolute shadow-md flex-row justify-center items-center rounded-full'
-            style={sliderStyle}>
+            style={sliderStyle}
+          >
             <CyDView className='w-[8px] h-[8px] bg-p50 rounded-full justify-center items-center'>
               <CyDView className='bg-white w-[3px] h-[3px] rounded-full' />
             </CyDView>

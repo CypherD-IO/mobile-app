@@ -9,8 +9,8 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  runOnJS,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import clsx from 'clsx';
 import {
   CyDMaterialDesignIcons,
@@ -85,15 +85,15 @@ const SlideToConfirmV2 = ({
       const newValue = Math.max(0, Math.min(event.translationX, SLIDER_WIDTH));
       translateX.value = newValue;
       isSwiping.value = true;
-      runOnJS(setSwipeStatus)('swiping');
+      scheduleOnRN(setSwipeStatus, 'swiping');
     })
     .onEnd(() => {
       if (translateX.value > SLIDER_WIDTH * 0.9) {
         translateX.value = withSpring(SLIDER_WIDTH);
-        runOnJS(handleAccept)();
+        scheduleOnRN(handleAccept);
       } else {
         translateX.value = withSpring(0);
-        runOnJS(setSwipeStatus)('initial');
+        scheduleOnRN(setSwipeStatus, 'initial');
       }
       isSwiping.value = false;
     });
@@ -127,7 +127,8 @@ const SlideToConfirmV2 = ({
                     'w-[50px] h-[50px] bg-[#f0a500] rounded-full justify-center items-center',
                     confirmed && !isError && 'bg-green-600',
                     confirmed && isError && 'bg-red-600',
-                  )}>
+                  )}
+                >
                   {acceptLoading ? (
                     <ActivityIndicator color='white' />
                   ) : (
@@ -149,7 +150,8 @@ const SlideToConfirmV2 = ({
                 <Animated.Text
                   className={clsx(
                     'text-white font-semibold flex-1 text-center ml-[-50px]',
-                  )}>
+                  )}
+                >
                   {swipeStatus === 'initial' && 'Swipe to confirm'}
                 </Animated.Text>
               </CyDView>

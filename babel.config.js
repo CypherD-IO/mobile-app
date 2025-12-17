@@ -7,7 +7,8 @@ module.exports = (api) => {
     compact: true,
     presets: [['module:@react-native/babel-preset', { useTransformReactJSXExperimental: true }], 'nativewind/babel'],
     plugins: [
-      'react-native-reanimated/plugin',
+      'react-native-worklets/plugin',
+      'react-native-worklets-core/plugin',
       '@babel/plugin-transform-flow-strip-types',
       '@babel/plugin-proposal-optional-catch-binding',
       ['@babel/plugin-transform-private-methods', { loose: true }],

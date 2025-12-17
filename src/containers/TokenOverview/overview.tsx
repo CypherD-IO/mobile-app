@@ -29,11 +29,11 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import HTML from 'react-native-render-html';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import Loading from '../../components/v2/loading';
@@ -306,7 +306,7 @@ export default function Overview({
   const formatTimestamp = (value: string) => {
     'worklet';
     if (value !== '') {
-      runOnJS(getDateTime)(+value);
+      scheduleOnRN(getDateTime, +value);
       return chartXValue.value;
     } else {
       return '';
@@ -384,7 +384,8 @@ export default function Overview({
                     onPress={() => {
                       copyToClipboard(tokenData.contractAddress);
                       showToast(`${t('CONTRACT_ADDRESS_COPY_ALL_SMALL')}`);
-                    }}>
+                    }}
+                  >
                     <CyDMaterialDesignIcons
                       name={'content-copy'}
                       size={10}
@@ -411,7 +412,8 @@ export default function Overview({
                 <CyDView
                   className={clsx('flex flex-row justify-end items-center', {
                     'mt-[-12px]': isAndroid(),
-                  })}>
+                  })}
+                >
                   <CyDMaterialDesignIcons
                     name={selectedTrend > 0 ? 'trending-up' : 'trending-down'}
                     size={20}
@@ -423,7 +425,8 @@ export default function Overview({
                     className={clsx('text-[14px] font-bold ml-[3px]', {
                       'text-lightGreen': selectedTrend > 0,
                       'text-red300': selectedTrend < 0,
-                    })}>
+                    })}
+                  >
                     {Math.abs(selectedTrend).toFixed(2)}%
                   </CyDText>
                 </CyDView>
@@ -445,7 +448,8 @@ export default function Overview({
           <CyDView
             className={
               'flex flex-row justify-between items-center px-[10px] py-[14px] w-[100%]'
-            }>
+            }
+          >
             <CyDView className={'w-[75%]'}>
               <CyDText className={'text-[12px] font-bold mb-[2px]'}>
                 {t<string>('YOUR_BALANCE_PASCAL_CASE')}
@@ -460,7 +464,8 @@ export default function Overview({
             <CyDView>
               {/* <CyDTokenValue className={'text-center text-[18px] font-bold'}>{getTotalValue()}</CyDTokenValue> */}
               <CyDTokenValue
-                className={'text-center text-[18px] font-extrabold '}>
+                className={'text-center text-[18px] font-extrabold '}
+              >
                 {totalValueInAmount}
               </CyDTokenValue>
             </CyDView>
@@ -499,11 +504,13 @@ export default function Overview({
               className={'justify-start mt-[6px]'}
               onPress={() => {
                 setLoadMoreAbout(false);
-              }}>
+              }}
+            >
               <CyDText
                 className={
                   'font-bold text-[14px] text-base100 text-center underline'
-                }>
+                }
+              >
                 {t<string>('VIEW_MORE')}
               </CyDText>
             </CyDTouchView>
@@ -546,7 +553,8 @@ export default function Overview({
                     });
                     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                   }}
-                  className='rounded-[8px] flex flex-row justify-center items-center bg-blue20 mr-[10px] p-[5px]'>
+                  className='rounded-[8px] flex flex-row justify-center items-center bg-blue20 mr-[10px] p-[5px]'
+                >
                   <CyDFastImage
                     className='h-[30px] w-[30px] mx-[10px]'
                     source={item.chainDetails.logo_url}
@@ -603,7 +611,8 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setMarketCapTip(false)}
-                placement='top'>
+                placement='top'
+              >
                 <CyDTouchView onPress={() => setMarketCapTip(true)}>
                   <CyDIcons
                     name='information'
@@ -644,7 +653,8 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setVolumeTip(false)}
-                placement='top'>
+                placement='top'
+              >
                 <CyDTouchView onPress={() => setVolumeTip(true)}>
                   <CyDIcons
                     name='information'
@@ -686,7 +696,8 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setCirculatingSupplyTip(false)}
-                placement='top'>
+                placement='top'
+              >
                 <CyDTouchView onPress={() => setCirculatingSupplyTip(true)}>
                   <CyDIcons
                     name='information'
@@ -731,7 +742,8 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setTotalSupplyTip(false)}
-                placement='top'>
+                placement='top'
+              >
                 <CyDTouchView onPress={() => setTotalSupplyTip(true)}>
                   <CyDIcons
                     name='information'
@@ -776,7 +788,8 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setMaxSupplyTip(false)}
-                placement='top'>
+                placement='top'
+              >
                 <CyDTouchView onPress={() => setMaxSupplyTip(true)}>
                   <CyDIcons
                     name='information'
@@ -805,11 +818,13 @@ export default function Overview({
           onPress={() => {
             void Intercom.present();
             sendFirebaseEvent(hdWalletContext, 'support');
-          }}>
+          }}
+        >
           <CyDText
             className={
               'text-blue300 font-bold underline underline-offset-2 text-center'
-            }>
+            }
+          >
             {t<string>(
               tokenData?.isVerified
                 ? 'NEED_SOMETHING_ELSE'
@@ -828,7 +843,8 @@ export default function Overview({
       ref={scrollViewRef}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
+      }
+    >
       <ChartPathProvider data={data}>
         <TokenSummary />
         {chartloading && (
@@ -863,7 +879,8 @@ export default function Overview({
               />
             </CyDView>
             <CyDView
-              className={`flex flex-row mt-[20px] justify-center items-center`}>
+              className={`flex flex-row mt-[20px] justify-center items-center`}
+            >
               <CyDView className={'flex flex-row flex-1 justify-around'}>
                 {graphs.map((graph, index) => {
                   const isSelected = graph.dataSource === dataSource;
@@ -877,12 +894,14 @@ export default function Overview({
                         transition.value = 0;
                         current.value = index as GraphIndex;
                         transition.value = withTiming(1);
-                      }}>
+                      }}
+                    >
                       <CyDAnimatedView
                         className={clsx(
                           'p-[10px] rounded-[8px]',
                           isSelected ? 'bg-blue20' : 'bg-transparent',
-                        )}>
+                        )}
+                      >
                         <CyDText className='text-[14px] font-bold text-center'>
                           {graph.label}
                         </CyDText>
