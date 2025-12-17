@@ -92,6 +92,10 @@ android {
         versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 773
         versionName System.getenv('VERSION_NAME') ?: "4.87"
         missingDimensionStrategy 'react-native-camera', 'general'
+        
+        // Define manifest placeholder for usesCleartextTraffic
+        // This allows the manifest to use ${usesCleartextTraffic} placeholder
+        manifestPlaceholders = [usesCleartextTraffic: "false"]
     }
     packagingOptions {
         pickFirst '**/libcrypto.so'
@@ -115,6 +119,8 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            // Enable cleartext traffic for debug builds to allow HTTP connections during development
+            manifestPlaceholders = [usesCleartextTraffic: "true"]
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -124,6 +130,8 @@ android {
             }
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            // Disable cleartext traffic for release builds for security
+            manifestPlaceholders = [usesCleartextTraffic: "false"]
         }
     }
 }

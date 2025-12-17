@@ -57,7 +57,7 @@ class MainApplication : Application(), ReactApplication {
 
   /**
    * Called when the application is first created. Initializes custom fonts,
-   * SoLoader, New Architecture (if enabled), Flipper, and Intercom.
+   * SoLoader, New Architecture (if enabled), and Intercom.
    */
   override fun onCreate() {
     super.onCreate()
@@ -77,9 +77,6 @@ class MainApplication : Application(), ReactApplication {
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       DefaultNewArchitectureEntryPoint.load()
     }
-
-    // Initialize Flipper for debugging in debug builds
-    ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
 
     // Initialize Intercom for customer messaging
     IntercomModule.initialize(
