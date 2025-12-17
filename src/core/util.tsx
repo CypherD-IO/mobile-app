@@ -74,7 +74,7 @@ import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import moment from 'moment';
 import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
-import { RSA } from 'react-native-rsa-native';
+import { RSA } from '../utils/rsa';
 import { hostWorker } from '../global';
 import { v4 as uuidv4 } from 'uuid';
 import { ICountry } from '../models/cardApplication.model';
@@ -1146,7 +1146,7 @@ export const stripPemHeaders = (pem: string) => {
 
 export const generateKeys = async () => {
   try {
-    const keyPair = await RSA.generateKeys(4096); // Generate a 2048-bit key pair
+    const keyPair = await RSA.generateKeys(4096); // Generate 4096 bit RSA key pair
     const privateKey = keyPair.private; // Private key in PEM format
     const publicKey = keyPair.public; // Public key in PEM format
 
@@ -1154,7 +1154,9 @@ export const generateKeys = async () => {
     const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
     return { publicKeyBase64, privateKey };
   } catch (error) {
-    // error in genrating keys
+    // Error generating RSA keys - log for debugging
+    console.error('[generateKeys] Error generating RSA key pair:', error);
+    return undefined;
   }
 };
 
