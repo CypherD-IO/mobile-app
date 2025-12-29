@@ -40,6 +40,7 @@ import {
   ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
+  EVM_CHAINS_BACKEND_NAMES,
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../../constants/server';
@@ -72,6 +73,7 @@ import {
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
+import { fetchCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 
 /**
  * Interface for route parameters passed to BridgeFundCardScreen
@@ -296,7 +298,64 @@ export default function BridgeFundCardScreen({
       return;
     }
     let gasDetails;
-    const targetWalletAddress = quote.targetAddress ? quote.targetAddress : '';
+
+    if (!quote.programId || !quote.cardProvider || !quote.chain) {
+      Sentry.captureMessage('Target address lookup validation failed', {
+          level: 'warning',
+          extra: {
+            hasCypherCardProgram: !!quote.programId,
+            hasProvider: !!quote.cardProvider,
+            hasChainName: !!quote.chain,
+            quoteId: quote.quoteId,
+         },
+      });
+      setLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: t('ERROR_FETCHING_QUOTE'),
+        description: t('ERROR_FETCHING_QUOTE_DESCRIPTION'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
+    }
+
+    const targetWalletAddress = await fetchCardTargetAddress(
+      quote.programId,
+      quote.cardProvider,
+      quote.chain,
+    );
+    let isAddressMatch = false;
+    if (EVM_CHAINS_BACKEND_NAMES.includes(quote.chain as ChainBackendNames)) {
+      const normalizedContractAddress =  targetWalletAddress.toLowerCase();
+      const normalizedQuoteAddress = (quote.targetAddress || '').toLowerCase();
+      isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;
+    } else {
+      isAddressMatch = targetWalletAddress === (quote.targetAddress || '');
+    }
+
+    if (!isAddressMatch) {
+      const mismatchError = new Error("Target address mismatch between contract and quote");
+      Sentry.captureException(mismatchError, {
+      extra: {
+        quoteId: quote.quoteId,
+        chain: quote.chain,
+        program: quote.programId,
+        provider: quote.cardProvider,
+        quoteAddress: quote.targetAddress,
+      },
+    });
+    setLoading(false);
+    showModal('state', {
+      type: 'error',
+      title: t('TARGET_ADDRESS_MISMATCH'),
+      description: t('TARGET_ADDRESS_MISMATCH_DESCRIPTION'),
+      onSuccess: hideModal,
+      onFailure: hideModal,
+    });
+    return;
+    }
+
     try {
       if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
         // No gas needed for hyperliquid. Just signtyped data

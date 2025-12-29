@@ -38,6 +38,7 @@ import {
   ChainNameMapping,
   ChainNames,
   COSMOS_CHAINS,
+  EVM_CHAINS_BACKEND_NAMES,
   PURE_COSMOS_CHAINS,
 } from '../../../constants/server';
 import { useTranslation } from 'react-i18next';
@@ -70,6 +71,7 @@ import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
 import { formatUnits } from 'viem';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import { fetchCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 
 export default function CardQuote({
   navigation,
@@ -134,6 +136,71 @@ export default function CardQuote({
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
+  const [targetAddress, setTargetAddress] = useState<string>('');
+
+  useEffect(() => {
+    const getAddress = async () => {
+      try {
+        if (!tokenQuote.programId || !tokenQuote.cardProvider || !tokenQuote.chain) {
+          Sentry.captureMessage('Target address lookup validation failed', {
+            level: 'warning',
+            extra: {
+              hasProgramId: !!tokenQuote.programId,
+              hasCardProvider: !!tokenQuote.cardProvider,
+              hasChain: !!tokenQuote.chain,
+              quoteId: tokenQuote.quoteId,
+            },
+          });
+          showModal('state', {
+            type: 'error',
+            title: t('ERROR_FETCHING_QUOTE'),
+            description: t('ERROR_FETCHING_QUOTE_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
+        const targetWalletAddress = await fetchCardTargetAddress(
+          tokenQuote.programId,
+          tokenQuote.cardProvider,
+          tokenQuote.chain,
+        );
+        let isAddressMatch = false;
+        if (EVM_CHAINS_BACKEND_NAMES.includes(tokenQuote.chain as ChainBackendNames)) {
+          const normalizedContractAddress =  targetWalletAddress.toLowerCase();
+          const normalizedQuoteAddress = (tokenQuote.targetAddress || '').toLowerCase();
+          isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;
+        } else {
+          isAddressMatch = targetWalletAddress === (tokenQuote.targetAddress || '');
+        }
+    
+        if (!isAddressMatch) {
+          throw new Error("Target address mismatch between contract and quote");
+        }
+        setTargetAddress(targetWalletAddress);
+      } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            quoteId: tokenQuote.quoteId,
+            chain: tokenQuote.chain,
+            program: tokenQuote.programId,
+            provider: tokenQuote.cardProvider,
+            quoteAddress: tokenQuote.targetAddress,
+          },
+        });
+        showModal('state', {
+          type: 'error',
+          title: t('TARGET_ADDRESS_MISMATCH'),
+          description: t('TARGET_ADDRESS_MISMATCH_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+    };
+
+    getAddress();
+  }, []);
 
   const cosmosAddresses = useMemo(
     () => ({
@@ -391,7 +458,7 @@ export default function CardQuote({
             response = await transferOnHyperLiquid({
               chain: ChainBackendNames.ARBITRUM,
               amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress,
+              toAddress: targetAddress,
               contractAddress,
               contractDecimals,
               accountType: selectedToken.accountType as HyperLiquidAccount,
@@ -401,7 +468,7 @@ export default function CardQuote({
             response = await sendEvmToken({
               chain: selectedToken.chainDetails.backendName,
               amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress as `0x${string}`,
+              toAddress: targetAddress as `0x${string}`,
               contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
               symbol: selectedToken.symbol,
@@ -411,9 +478,9 @@ export default function CardQuote({
               tokenQuote.cosmosSwap?.requiredAddresses ?? [],
             );
             if (!addressList.length) {
-              addressList.push(tokenQuote.targetAddress);
+              addressList.push(targetAddress);
             } else {
-              addressList[addressList.length - 1] = tokenQuote.targetAddress;
+              addressList[addressList.length - 1] = targetAddress;
             }
             const body = {
               source_asset_denom: tokenQuote.cosmosSwap?.sourceAssetDenom,
@@ -718,7 +785,7 @@ export default function CardQuote({
           } else if (chainName === ChainNames.SOLANA) {
             response = await sendSolanaTokens({
               amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress,
+              toAddress: targetAddress,
               contractDecimals,
               contractAddress,
             });
