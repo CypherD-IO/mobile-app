@@ -310,6 +310,7 @@ export default function BridgeFundCardScreen({
          },
       });
       setLoading(false);
+      setIsMaxLoading(false);
       showModal('state', {
         type: 'error',
         title: t('ERROR_FETCHING_QUOTE'),
@@ -337,6 +338,7 @@ export default function BridgeFundCardScreen({
         },
       });
       setLoading(false);
+      setIsMaxLoading(false);
       showModal('state', {
         type: 'error',
         title: t('ERROR_FETCHING_TARGET_ADDRESS'),
@@ -368,6 +370,7 @@ export default function BridgeFundCardScreen({
       },
     });
     setLoading(false);
+    setIsMaxLoading(false);
     showModal('state', {
       type: 'error',
       title: t('TARGET_ADDRESS_MISMATCH'),

@@ -183,6 +183,7 @@ export default function CardQuote({
         setTargetAddress(targetWalletAddress);
         setIsAddressLoading(false);
       } catch (error) {
+        const isMismatchError = error instanceof Error && error.message === "Target address mismatch between contract and quote";
         Sentry.captureException(error, {
           extra: {
             quoteId: tokenQuote.quoteId,
@@ -194,8 +195,8 @@ export default function CardQuote({
         });
         showModal('state', {
           type: 'error',
-          title: t('TARGET_ADDRESS_MISMATCH'),
-          description: t('TARGET_ADDRESS_MISMATCH_DESCRIPTION'),
+          title: isMismatchError ? t('TARGET_ADDRESS_MISMATCH') : t('ERROR_FETCHING_TARGET_ADDRESS'),
+          description: isMismatchError ? t('TARGET_ADDRESS_MISMATCH_DESCRIPTION') : t('ERROR_FETCHING_TARGET_ADDRESS_DESCRIPTION'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
