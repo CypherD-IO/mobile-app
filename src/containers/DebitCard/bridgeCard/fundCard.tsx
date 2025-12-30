@@ -320,11 +320,33 @@ export default function BridgeFundCardScreen({
       return;
     }
 
-    const targetWalletAddress = await fetchCardTargetAddress(
-      quote.programId,
-      quote.cardProvider,
-      quote.chain,
-    );
+    let targetWalletAddress: string;
+    try {
+      targetWalletAddress = await fetchCardTargetAddress(
+        quote.programId,
+        quote.cardProvider,
+        quote.chain,
+      );
+    } catch (error) {
+      Sentry.captureException(error, {
+        extra: {
+          quoteId: quote.quoteId,
+          chain: quote.chain,
+          program: quote.programId,
+          provider: quote.cardProvider,
+        },
+      });
+      setLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: t('ERROR_FETCHING_TARGET_ADDRESS'),
+        description: t('ERROR_FETCHING_TARGET_ADDRESS_DESCRIPTION'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
+    }
+    
     let isAddressMatch = false;
     if (EVM_CHAINS_BACKEND_NAMES.includes(quote.chain as ChainBackendNames)) {
       const normalizedContractAddress =  targetWalletAddress.toLowerCase();

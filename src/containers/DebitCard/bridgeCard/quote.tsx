@@ -137,10 +137,12 @@ export default function CardQuote({
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
   const [targetAddress, setTargetAddress] = useState<string>('');
+  const [isAddressLoading, setIsAddressLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const getAddress = async () => {
       try {
+        setIsAddressLoading(true);
         if (!tokenQuote.programId || !tokenQuote.cardProvider || !tokenQuote.chain) {
           Sentry.captureMessage('Target address lookup validation failed', {
             level: 'warning',
@@ -158,6 +160,7 @@ export default function CardQuote({
             onSuccess: hideModal,
             onFailure: hideModal,
           });
+          setIsAddressLoading(false);
           return;
         }
         const targetWalletAddress = await fetchCardTargetAddress(
@@ -178,6 +181,7 @@ export default function CardQuote({
           throw new Error("Target address mismatch between contract and quote");
         }
         setTargetAddress(targetWalletAddress);
+        setIsAddressLoading(false);
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
@@ -195,6 +199,7 @@ export default function CardQuote({
           onSuccess: hideModal,
           onFailure: hideModal,
         });
+        setIsAddressLoading(false);
         return;
       }
     };
@@ -1240,6 +1245,7 @@ export default function CardQuote({
             loading={loading}
             disabled={
               isPayDisabled ||
+              isAddressLoading ||
               (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
             }
             onPress={() => {

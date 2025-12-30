@@ -20,13 +20,17 @@ export const isOsmosisAddress = (address: string): boolean => {
 };
   
 export const isInjectiveAddress = (address: string): boolean => {
-    const INJECTIVE_ADDRESS_REGEX = /(?=^inj)(?=[a-zA-Z0-9]{42})/;
-    return INJECTIVE_ADDRESS_REGEX.test(address);
+    if (address) {
+        return address.substring(0, 3) === 'inj' && address.length === 42;
+    }
+    return false;
 };
-  
+
 export const isCoreumAddress = (address: string): boolean => {
-    const COREUM_ADDRESS_REGEX = /(?=^core)(?=[a-zA-Z0-9]{43})/;
-    return COREUM_ADDRESS_REGEX.test(address);
+    if (address) {
+        return address.substring(0, 4) === 'core' && address.length === 43;
+    }
+    return false;
 };
   
 export const isSolanaAddress = (address: string): boolean => {
