@@ -1348,18 +1348,18 @@ export default function BridgeFundCardScreen({
         keyboardShouldPersistTaps='handled'
         showsVerticalScrollIndicator={false}>
         <RenderSelectedToken />
-        <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
+        <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center h-[140px]'>
           <CyDView className={'w-full items-center'}>
             <CyDView className={'flex flex-row justify-center items-center'}>
               {!isCrpytoInput && !isSmallScreenMobile && (
-                <CyDText
-                  className={clsx('text-mandarin font-bold', {
-                    'text-[32px]': amount.length <= 15,
-                    'text-[60px]': amount.length <= 7,
-                    'text-[75px]': amount.length <= 5,
+                <CyDTokenValue
+                  className={clsx('text-mandarin font-bold text-[28px]', {
+                    'text-[40px]': amount.length <= 10,
+                    'text-[50px]': amount.length <= 7,
+                    'text-[75px]': amount.length <= 4,
                   })}>
-                  {`$${amount === '' ? '0.00' : amount}`}
-                </CyDText>
+                  {amount}
+                </CyDTokenValue>
               )}
               {!isCrpytoInput && isSmallScreenMobile && (
                 <CyDView className='flex flex-row self-center'>
@@ -1442,14 +1442,6 @@ export default function BridgeFundCardScreen({
             </CyDText>
 
             <RenderWarningMessage />
-            {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
-                <CyDView className='mb-[2px]'>
-                  <CyDText className='text-center font-semibold'>
-                    {t<string>('CARD_LOAD_MIN_AMOUNT')}
-                  </CyDText>
-                </CyDView>
-              )}
-              <RenderWarningMessage /> */}
           </CyDView>
           <CyDView className={'p-[4px] ml-[-45px]'}>
             <CyDTouchView

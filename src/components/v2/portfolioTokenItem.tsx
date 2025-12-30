@@ -59,12 +59,8 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation?.navigate(screenTitle.SWAP, {
-                screen: screenTitle.SWAP_SCREEN,
-                params: {
-                  tokenData,
-                  backVisible: true,
-                },
+              navigation.navigate(screenTitle.SWAP_SCREEN, {
+                tokenData,
               });
             }}>
             <CyDImage
@@ -227,7 +223,7 @@ const PortfolioTokenItem = ({
             </CyDView>
             <CyDView className='flex self-center items-end max-w-[35%]'>
               {item.isVerified && (
-                <CyDTokenValue className='text-[18px] font-bold'>
+                <CyDTokenValue className='text-[18px]'>
                   {item.totalValue}
                 </CyDTokenValue>
               )}

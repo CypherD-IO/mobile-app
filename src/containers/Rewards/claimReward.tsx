@@ -1005,7 +1005,6 @@ const ClaimReward: React.FC = () => {
         lastTransactionHash,
       };
     } catch (error) {
-      console.error('💥 Error in claim process:', error);
       const errorMessage =
         error instanceof Error ? error.message : String(t('CLAIM_ERROR_DESC'));
       return {

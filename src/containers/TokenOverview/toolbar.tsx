@@ -77,12 +77,8 @@ export default function TokenOverviewToolBar({
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.SWAP, {
-                screen: screenTitle.SWAP_SCREEN,
-                params: {
-                  tokenData,
-                  backVisible: true,
-                },
+              navigation.navigate(screenTitle.SWAP_SCREEN, {
+                tokenData,
               });
             }}>
             <CyDImage

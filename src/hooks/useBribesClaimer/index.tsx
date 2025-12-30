@@ -153,7 +153,6 @@ export default function useBribesClaimer() {
       });
 
       if (resp.isError) {
-        console.error('❌ Contract execution failed', resp.error);
         throw new Error('Contract execution failed');
       }
 

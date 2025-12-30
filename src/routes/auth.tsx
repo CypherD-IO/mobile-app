@@ -452,6 +452,13 @@ export function PortfolioStackScreen() {
           headerShown: false,
         })}
       />
+      <PortfolioStack.Screen
+        name={screenTitle.SWAP_SCREEN}
+        component={Bridge}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
     </PortfolioStack.Navigator>
   );
 }
@@ -857,47 +864,6 @@ export function BrowserStackScreen({
         options={{ headerShown: false }}
       />
     </BrowserStack.Navigator>
-  );
-}
-
-export function SwapStackScreen({
-  navigation,
-}: {
-  navigation: NavigationProp<ParamListBase>;
-}) {
-  // const { keyboardHeight } = useKeyboard();
-  let backPressCount = 0;
-  const handleBackButton = () => {
-    navigation.navigate(screenTitle.PORTFOLIO);
-    if (backPressCount === 1) {
-      setTimeout(() => {
-        backPressCount = 0;
-      }, 2000);
-      ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
-    } else if (backPressCount === 2) {
-      backPressCount = 0;
-      BackHandler.exitApp();
-    }
-    backPressCount++;
-    return true;
-  };
-
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
-    };
-  }, []);
-  return (
-    <SwapStack.Navigator initialRouteName={screenTitle.SWAP_SCREEN}>
-      <SwapStack.Screen
-        name={screenTitle.SWAP_SCREEN}
-        component={Bridge}
-        options={() => ({
-          headerShown: false,
-        })}
-      />
-    </SwapStack.Navigator>
   );
 }
 

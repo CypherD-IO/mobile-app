@@ -2357,6 +2357,10 @@ const resources = {
       YOU_HAVE_EARNED_BOOSTED_REWARDS: 'You have earned boosted rewards',
       WALLET_CONNECT_STATUS_DESCRIPTION:
         "Hang tight! We're connecting you to your wallet now.",
+      CONNECT: 'Connect',
+      GOOD_MORNING: 'Good Morning!',
+      GOOD_AFTERNOON: 'Good Afternoon!',
+      GOOD_EVENING: 'Good Evening!',
     },
   },
 };

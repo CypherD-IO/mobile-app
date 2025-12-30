@@ -47,6 +47,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import useSupportedChains from '../../hooks/useSupportedChains/index';
 import { formatCurrencyWithSuffix, parseErrorMessage } from '../../core/util';
 import Toast from 'react-native-toast-message';
+import CyDTokenValue from './tokenValue';
 
 interface TokenModal {
   tokenList?: Holding[];
@@ -190,10 +191,6 @@ const formatBalance = (balance: string | number | undefined): string => {
   return new Intl.NumberFormat('en-US', {
     maximumSignificantDigits: 4,
   }).format(Number(balance) || 0);
-};
-
-const formatCurrency = (value: string | number | undefined): string => {
-  return currencyFormatter.format(Number(value) || 0);
 };
 
 const RenderToken = React.memo(
@@ -349,9 +346,11 @@ const RenderToken = React.memo(
         </CyDView>
 
         <CyDView>
-          <CyDText className={'font-semibold text-[16px] text-right mr-[2px]'}>
-            {formatCurrency(item.totalValue)}
-          </CyDText>
+          <CyDTokenValue
+            parentClass='justify-end'
+            className='text-[16px] font-medium'>
+            {item.totalValue}
+          </CyDTokenValue>
           <CyDView className='flex flex-row items-center justify-end'>
             <CyDText
               className={

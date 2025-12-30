@@ -506,7 +506,7 @@ export default function EnterAmount(props: any) {
                           </CyDText>
                         </CyDView>
                         <CyDView className='flex self-center items-end'>
-                          <CyDTokenValue className='text-[16px] font-extrabold'>
+                          <CyDTokenValue className='text-[16px]'>
                             {tokenData.totalValue}
                           </CyDTokenValue>
                           <CyDTokenAmount className='text-[14px] text-subTextColor font-bold'>
