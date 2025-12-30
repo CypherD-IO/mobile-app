@@ -1,163 +1,107 @@
 import { t } from 'i18next';
 import React, { useContext } from 'react';
-import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
-import {
-  ChainBackendNames,
-  FundWalletAddressType,
-} from '../../constants/server';
-import { GlobalContext } from '../../core/globalContext';
-import { isBasicCosmosChain } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
-  CyDImage,
+  CyDIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import { isIOS } from '../../misc/checkers';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { CardProviders } from '../../constants/enum';
+import { get } from 'lodash';
 
+interface TokenOverviewToolBarProps {
+  tokenData: TokenMeta;
+  navigation: NavigationProp<ParamListBase>;
+}
+
+/**
+ * Floating action toolbar for Token Overview with Fund Card, Swap, and Send buttons
+ */
 export default function TokenOverviewToolBar({
   tokenData,
   navigation,
-}: {
-  tokenData: TokenMeta;
-  navigation: NavigationProp<ParamListBase>;
-}) {
-  const globalStateContext = useContext<any>(GlobalContext);
+}: TokenOverviewToolBarProps) {
   const { isBridgeable, isSwapable } = tokenData;
-  const canShowIBC =
-    globalStateContext.globalState.ibc &&
-    isBasicCosmosChain(tokenData.chainDetails.backendName);
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile = globalContext?.globalState?.cardProfile;
+  const currentCardProvider = get(
+    cardProfile,
+    'provider',
+    CardProviders.REAP_CARD,
+  );
+
+  /**
+   * Navigate to Fund Card screen in Card tab
+   */
+  const handleFundCardPress = (): void => {
+    const parentNav = navigation.getParent();
+    if (parentNav) {
+      parentNav.navigate(screenTitle.CARD, {
+        screen: screenTitle.BRIDGE_FUND_CARD_SCREEN,
+        params: {
+          currentCardProvider,
+          currentCardIndex: 0,
+          selectedToken: tokenData,
+        },
+      });
+    }
+  };
+
+  /**
+   * Navigate to Swap screen
+   */
+  const handleSwapPress = (): void => {
+    navigation.navigate(screenTitle.SWAP_SCREEN, {
+      tokenData,
+    });
+  };
+
+  /**
+   * Navigate to Send screen
+   */
+  const handleSendPress = (): void => {
+    navigation.navigate(screenTitle.ENTER_AMOUNT, {
+      navigation,
+      tokenData,
+    });
+  };
 
   return (
-    <CyDView
-      className={`flex flex-row w-[100%] justify-evenly items-center mt-[7px] pb-[${isIOS() ? 15 : 0}px]`}>
-      <CyDView className='flex items-center'>
+    <CyDView className='flex-row items-center gap-[8px] px-[16px] w-full bg-transparent'>
+      {/* Fund Card Button - Takes remaining space */}
+      <CyDView className='flex-1'>
         <CyDTouchView
-          className={'flex items-center justify-center'}
-          onPress={() => {
-            navigation.navigate(screenTitle.ENTER_AMOUNT, {
-              navigation,
-              tokenData,
-            });
-          }}>
-          <CyDImage
-            source={AppImages.SEND_SHORTCUT}
-            className={'w-[35px] h-[35px]'}
-          />
+          onPress={handleFundCardPress}
+          activeOpacity={0.8}
+          className='w-full bg-p100 rounded-full px-[20px] py-[14px] flex-row items-center justify-center gap-[8px]'>
+          <CyDIcons name='card-load-filled' size={20} className='text-black' />
+          <CyDText className='text-black text-[16px] font-bold'>
+            {t('FUND_CARD', 'Fund Card')}
+          </CyDText>
         </CyDTouchView>
-        <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>
-          {t<string>('SEND')}
-        </CyDText>
       </CyDView>
 
-      {canShowIBC && (
-        <CyDView className='flex items-center'>
-          <CyDTouchView
-            className={
-              'bg-p40 rounded-full w-[35px] h-[35px] flex items-center justify-center'
-            }
-            onPress={() => {
-              navigation.navigate(screenTitle.IBC_SCREEN, {
-                tokenData,
-              });
-            }}>
-            <CyDImage source={AppImages.IBC} className={'w-[20px] h-[16px]'} />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>
-            {t<string>('IBC')}
-          </CyDText>
-        </CyDView>
-      )}
-
+      {/* Swap Button - Round */}
       {(isSwapable || isBridgeable) && (
-        <CyDView>
-          <CyDTouchView
-            className={'flex items-center justify-center mx-[15px]'}
-            onPress={() => {
-              navigation.navigate(screenTitle.SWAP_SCREEN, {
-                tokenData,
-              });
-            }}>
-            <CyDImage
-              source={AppImages.SWAP_SHORTCUT}
-              className={'w-[30px] h-[30px]'}
-            />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('SWAP_TITLE')}
-          </CyDText>
-        </CyDView>
+        <CyDTouchView
+          onPress={handleSwapPress}
+          activeOpacity={0.8}
+          className='w-[52px] h-[52px] bg-p100 rounded-full items-center justify-center'>
+          <CyDIcons name='swap-horizontal' size={24} className='text-black' />
+        </CyDTouchView>
       )}
 
-      <CyDView className='flex items-center'>
-        <CyDTouchView
-          className={' flex items-center justify-center'}
-          onPress={() => {
-            let addressTypeQRCode;
-            switch (tokenData.chainDetails.backendName) {
-              case ChainBackendNames.COSMOS:
-                addressTypeQRCode = FundWalletAddressType.COSMOS;
-                break;
-              case ChainBackendNames.OSMOSIS:
-                addressTypeQRCode = FundWalletAddressType.OSMOSIS;
-                break;
-              case ChainBackendNames.NOBLE:
-                addressTypeQRCode = FundWalletAddressType.NOBLE;
-                break;
-              case ChainBackendNames.COREUM:
-                addressTypeQRCode = FundWalletAddressType.COREUM;
-                break;
-              case ChainBackendNames.INJECTIVE:
-                addressTypeQRCode = FundWalletAddressType.INJECTIVE;
-                break;
-              case ChainBackendNames.SOLANA:
-                addressTypeQRCode = FundWalletAddressType.SOLANA;
-                break;
-              case ChainBackendNames.ZKSYNC_ERA:
-                addressTypeQRCode = FundWalletAddressType.ZKSYNC_ERA;
-                break;
-              case ChainBackendNames.BASE:
-                addressTypeQRCode = FundWalletAddressType.BASE;
-                break;
-              case ChainBackendNames.POLYGON:
-                addressTypeQRCode = FundWalletAddressType.POLYGON;
-                break;
-              case ChainBackendNames.AVALANCHE:
-                addressTypeQRCode = FundWalletAddressType.AVALANCHE;
-                break;
-              case ChainBackendNames.ARBITRUM:
-                addressTypeQRCode = FundWalletAddressType.ARBITRUM;
-                break;
-              case ChainBackendNames.OPTIMISM:
-                addressTypeQRCode = FundWalletAddressType.OPTIMISM;
-                break;
-              case ChainBackendNames.BSC:
-                addressTypeQRCode = FundWalletAddressType.BSC;
-                break;
-              case ChainBackendNames.ETH:
-                addressTypeQRCode = FundWalletAddressType.EVM;
-                break;
-              default:
-                addressTypeQRCode = FundWalletAddressType.EVM;
-                break;
-            }
-
-            navigation.navigate(screenTitle.QRCODE, {
-              addressType: addressTypeQRCode,
-            });
-          }}>
-          <CyDImage
-            source={AppImages.RECEIVE_SHORTCUT}
-            className={'w-[35px] h-[35px]'}
-          />
-        </CyDTouchView>
-        <CyDText className={'text-center mt-[3px]  text-[12px] font-semibold'}>
-          {t<string>('RECEIVE')}
-        </CyDText>
-      </CyDView>
+      {/* Send Button - Round */}
+      <CyDTouchView
+        onPress={handleSendPress}
+        activeOpacity={0.8}
+        className='w-[52px] h-[52px] bg-p100 rounded-full items-center justify-center'>
+        <CyDIcons name='arrow-up-right' size={24} className='text-black' />
+      </CyDTouchView>
     </CyDView>
   );
 }

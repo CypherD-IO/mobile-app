@@ -183,11 +183,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     BridgeContext,
   ) as BridgeContextDef;
   const { getWithAuth } = useAxios();
-  const {
-    deleteSocialAuthWalletIfSessionExpired,
-    connectionType,
-    checkMfaEnabled,
-  } = useConnectionManager();
+  const { deleteSocialAuthWalletIfSessionExpired, connectionType } =
+    useConnectionManager();
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
@@ -214,12 +211,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   // Receive modal states
   const [chooseChainModal, setChooseChainModal] = useState<boolean>(false);
-  const [receiveSelectedChain, setReceiveSelectedChain] =
-    useState<Chain>(CHAIN_ETH);
 
   const { theme } = useTheme();
   const isDarkMode =
-    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+    theme === Theme.DARK ||
+    (theme === Theme.SYSTEM && colorScheme.get() === 'dark');
 
   // Buy options data
   const buyOptionsData: IBuyOptionsData[] = [
@@ -1593,7 +1589,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             isModalVisible={chooseChainModal}
             data={chainData}
             title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
-            selectedItem={receiveSelectedChain.name}
+            selectedItem={'Ethereum'}
             onPress={(item: Chain) => handleReceiveChainSelection(item)}
             customStyle={styles.chooseChainModalStyle}
             isClosable={true}

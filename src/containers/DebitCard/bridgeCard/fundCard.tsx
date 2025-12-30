@@ -79,6 +79,7 @@ import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSh
 interface BridgeFundCardScreenParams {
   currentCardProvider: CardProviders;
   currentCardIndex: number;
+  selectedToken?: Holding;
 }
 
 /**
@@ -94,7 +95,11 @@ export default function BridgeFundCardScreen({
   // Use navigation hook instead of receiving it as a param to avoid non-serializable warning
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
-  const { currentCardProvider, currentCardIndex } = route.params;
+  const {
+    currentCardProvider,
+    currentCardIndex,
+    selectedToken: tokenFromRoute,
+  } = route.params;
 
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
@@ -160,8 +165,8 @@ export default function BridgeFundCardScreen({
 
   useEffect(() => {
     if (isFocused) {
-      if (route.params?.tokenData) {
-        setSelectedToken(route.params.tokenData);
+      if (tokenFromRoute) {
+        setSelectedToken(tokenFromRoute);
       } else {
         if (!selectedToken) {
           // Auto-select the first suitable token from user's portfolio
@@ -169,7 +174,7 @@ export default function BridgeFundCardScreen({
         }
       }
     }
-  }, [isFocused]);
+  }, [isFocused, tokenFromRoute]);
 
   useEffect(() => {
     onEnterAmount(amount);

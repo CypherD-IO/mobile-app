@@ -21,7 +21,7 @@ export default function CyDTokenValue(props: CyDTokenValueProps) {
     children,
     className = '',
     revealTemporarily = false,
-    decimalColorClass = 'text-[#666666]',
+    decimalColorClass = '!text-[#666666]',
     mainColorClass = 'text-base400',
     parentClass = '',
     ...restProps
