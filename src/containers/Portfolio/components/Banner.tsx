@@ -87,7 +87,7 @@ export const Banner = ({
   ];
 
   return (
-    <CyDView className='bg-20'>
+    <CyDView className='bg-n20'>
       {/* Dark section with curved bottom */}
       <CyDView className='bg-n0 rounded-b-[24px] px-[20px] pt-[12px] pb-[16px]'>
         {/* Chain Selector */}

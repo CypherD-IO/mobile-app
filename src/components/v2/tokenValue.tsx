@@ -15,6 +15,7 @@ interface CyDTokenValueProps {
 
 export default function CyDTokenValue(props: CyDTokenValueProps) {
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
+
   const { hideBalance } = hdWallet.state;
   const {
     children,

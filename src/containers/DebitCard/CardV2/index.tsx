@@ -806,7 +806,7 @@ export default function CypherCardScreen() {
                         }}>
                         <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
                           <CyDTokenValue className='text-[28px]'>
-                            {cardBalance}
+                            {cardBalance === 'NA' ? '0.00' : cardBalance}
                           </CyDTokenValue>
                           <CyDMaterialDesignIcons
                             name='refresh'

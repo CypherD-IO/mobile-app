@@ -92,7 +92,7 @@ export const HeaderBar = ({ navigation, onWCSuccess }: HeaderBarProps) => {
     };
 
     void resolveEnsName();
-  }, [ethAddress, resolveDomain]);
+  }, [ethAddress]);
 
   /**
    * Handles copying the wallet address to clipboard
