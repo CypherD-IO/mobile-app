@@ -1,7 +1,6 @@
 import { t } from 'i18next';
 import React, { useContext } from 'react';
 import { screenTitle } from '../../constants';
-import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDIcons,
   CyDText,
@@ -10,11 +9,12 @@ import {
 } from '../../styles/tailwindComponents';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
-import { CardProviders } from '../../constants/enum';
 import { get } from 'lodash';
+import { Holding } from '../../core/portfolio';
+import clsx from 'clsx';
 
 interface TokenOverviewToolBarProps {
-  tokenData: TokenMeta;
+  tokenData: Holding;
   navigation: NavigationProp<ParamListBase>;
 }
 
@@ -25,14 +25,10 @@ export default function TokenOverviewToolBar({
   tokenData,
   navigation,
 }: TokenOverviewToolBarProps) {
-  const { isBridgeable, isSwapable } = tokenData;
+  const { isBridgeable, isSwapable, isFundable } = tokenData;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext?.globalState?.cardProfile;
-  const currentCardProvider = get(
-    cardProfile,
-    'provider',
-    CardProviders.REAP_CARD,
-  );
+  const currentCardProvider = get(cardProfile, 'provider', '');
 
   /**
    * Navigate to Fund Card screen in Card tab
@@ -40,14 +36,20 @@ export default function TokenOverviewToolBar({
   const handleFundCardPress = (): void => {
     const parentNav = navigation.getParent();
     if (parentNav) {
-      parentNav.navigate(screenTitle.CARD, {
-        screen: screenTitle.BRIDGE_FUND_CARD_SCREEN,
-        params: {
-          currentCardProvider,
-          currentCardIndex: 0,
-          selectedToken: tokenData,
-        },
-      });
+      if (currentCardProvider) {
+        parentNav.navigate(screenTitle.CARD, {
+          screen: screenTitle.BRIDGE_FUND_CARD_SCREEN,
+          params: {
+            currentCardProvider,
+            currentCardIndex: 0,
+            selectedToken: tokenData,
+          },
+        });
+      } else {
+        parentNav.navigate(screenTitle.CARD, {
+          screen: screenTitle.DEBIT_CARD_SCREEN,
+        });
+      }
     }
   };
 
@@ -77,7 +79,14 @@ export default function TokenOverviewToolBar({
         <CyDTouchView
           onPress={handleFundCardPress}
           activeOpacity={0.8}
-          className='w-full bg-p100 rounded-full px-[20px] py-[14px] flex-row items-center justify-center gap-[8px]'>
+          disabled={!isFundable}
+          className={clsx(
+            'w-full  rounded-full px-[20px] py-[14px] flex-row items-center justify-center gap-[8px]',
+            {
+              'bg-base80': !isFundable,
+              'bg-p100': isFundable,
+            },
+          )}>
           <CyDIcons name='card-load-filled' size={20} className='text-black' />
           <CyDText className='text-black text-[16px] font-bold'>
             {t('FUND_CARD', 'Fund Card')}

@@ -126,7 +126,7 @@ export const themes: Record<
     '--color-p400': '#9E7400',
     '--color-base20': '#171717',
     '--color-base40': '#202020',
-    '--color-base80': '#CACACA',
+    '--color-base80': '#444444',
     '--color-base100': '#999999',
     '--color-base150': '#666666',
     '--color-base200': '#444444',

@@ -1371,6 +1371,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               }
             }}
             stickySectionHeadersEnabled={true}
+            contentContainerStyle={styles.contentContainer}
           />
 
           {/* Buy coin modal */}
@@ -1671,5 +1672,8 @@ const styles = StyleSheet.create({
   chooseChainModalStyle: {
     justifyContent: 'flex-end',
     padding: 0,
+  },
+  contentContainer: {
+    paddingBottom: 50,
   },
 });

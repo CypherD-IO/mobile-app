@@ -72,7 +72,7 @@ const RenderOptions = ({
     <CyDView className='items-center justify-center w-[100px]'>
       <CyDTouchView
         className={clsx(
-          'rounded-full border border-base200 p-[12px] items-center justify-center',
+          'rounded-full border !border-base80 p-[12px] items-center justify-center',
           {
             'animate-pulse': apiDependent && isLoading,
             'animate-none': !apiDependent,

@@ -25,17 +25,17 @@ const TOAST_TYPE_CONFIG: Record<string, ToastTypeConfig> = {
   success: {
     icon: 'tick',
     iconColor: 'text-green300',
-    bgColor: 'bg-n20',
+    bgColor: 'bg-base20',
   },
   error: {
     icon: 'close',
     iconColor: 'text-red300',
-    bgColor: 'bg-n20',
+    bgColor: 'bg-base20',
   },
   info: {
     icon: 'information',
     iconColor: 'text-blue300',
-    bgColor: 'bg-n20',
+    bgColor: 'bg-base20',
   },
 };
 
