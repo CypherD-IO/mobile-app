@@ -38,7 +38,7 @@ export default function TokenOverviewToolBar({
     if (parentNav) {
       if (currentCardProvider) {
         // First navigate to CARD tab
-        parentNav.navigate(screenTitle.DEBIT_CARD_SCREEN);
+        parentNav.navigate(screenTitle.CARD);
 
         // Then navigate to the fund card screen within the FundCardStack
         // Use setTimeout to ensure tab navigation completes first
