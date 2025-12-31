@@ -166,7 +166,9 @@ export default function BridgeFundCardScreen({
   useEffect(() => {
     if (isFocused) {
       if (tokenFromRoute) {
+        // Set the token from route and fetch its native token balance
         setSelectedToken(tokenFromRoute);
+        void fetchNativeTokenBalance(tokenFromRoute);
       } else {
         if (!selectedToken) {
           // Auto-select the first suitable token from user's portfolio
@@ -175,6 +177,20 @@ export default function BridgeFundCardScreen({
       }
     }
   }, [isFocused, tokenFromRoute]);
+
+  /**
+   * Fetch native token balance for a given token
+   * Required for gas fee calculations and balance validation
+   */
+  const fetchNativeTokenBalance = async (token: Holding): Promise<void> => {
+    try {
+      const nativeToken = await getNativeToken(token.chainDetails.backendName);
+      setNativeTokenBalance(nativeToken.balanceDecimal);
+    } catch (error) {
+      // Set to '0' on error to avoid undefined state
+      setNativeTokenBalance('0');
+    }
+  };
 
   useEffect(() => {
     onEnterAmount(amount);
@@ -205,6 +221,7 @@ export default function BridgeFundCardScreen({
         });
 
         // Sort by total value (descending) and select the first one
+
         if (fundableTokens.length > 0) {
           const sortedTokens = fundableTokens.sort(
             (a, b) => Number(b.totalValue) - Number(a.totalValue),
