@@ -1253,6 +1253,11 @@ export default function useTransactionManager() {
       );
     }
 
+    // Ensure gasFeeInCrypto is available
+    if (!gasDetails.gasFeeInCrypto) {
+      throw new Error('Solana: Gas fee estimation returned undefined');
+    }
+
     // For native SOL, check balance includes amount + fees
     // For SPL tokens, only check for fees (amount is from token account)
     const requiredBalance =
