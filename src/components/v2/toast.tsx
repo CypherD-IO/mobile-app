@@ -109,9 +109,13 @@ export const toastConfig = {
 
   // Legacy simple toast for backwards compatibility
   simpleToast: ({ props }: { props: { text: string } }) => (
-    <CyDView className='h-[36px] w-[80px] flex flex-row justify-center items-center'>
-      <CyDIcons name='tick' size={16} className='text-base400' />
-      <CyDText>{props.text}</CyDText>
+    <CyDView className='h-[36px] min-w-[80px] flex flex-row justify-center items-center px-[12px] bg-n0 rounded-full mx-[24px]'>
+      <CyDIcons name='tick' size={16} className='text-base400 mr-[6px]' />
+      <CyDText
+        className='text-base400 text-[14px] font-medium flex-1'
+        numberOfLines={1}>
+        {props.text}
+      </CyDText>
     </CyDView>
   ),
 };

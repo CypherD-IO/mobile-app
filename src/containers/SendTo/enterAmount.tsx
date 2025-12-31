@@ -59,7 +59,6 @@ export default function EnterAmount(props: any) {
   const [tokenData, setTokenData] = useState<TokenMeta>(
     props?.route?.params?.tokenData,
   );
-  // const { tokenData }: { tokenData: Holding } = route.params;
   const [valueForUsd, setValueForUsd] = useState('0.00'); // native token amount
   const [usdValue, setUsdValue] = useState<string>('0.00');
   const [cryptoValue, setCryptoValue] = useState<string>('0.00');

@@ -67,7 +67,6 @@ export default function TokenOverviewToolBar({
    */
   const handleSendPress = (): void => {
     navigation.navigate(screenTitle.ENTER_AMOUNT, {
-      navigation,
       tokenData,
     });
   };

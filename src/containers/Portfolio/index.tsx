@@ -366,18 +366,21 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     setTimeout(() => setSellModalVisible(true), 250);
   };
 
-  const renderBuyPlatformItem = (item: IBuyOptionsData): JSX.Element | null => {
+  /**
+   * Shared renderer for platform items (Buy/Sell)
+   * Extracts common UI logic to reduce duplication
+   */
+  const renderPlatformItem = (
+    item: IBuyOptionsData | ISellOptionsData,
+    onPress: () => void,
+    showPaymentModes = true,
+  ): JSX.Element | null => {
     if (!item.isVisibileInUI) return null;
     return (
       <CyDTouchView
         className={'mb-[16px]'}
         activeOpacity={0.7}
-        onPress={() => {
-          setBuyType(item);
-          setChainData(item.supportedChains);
-          setPendingBuyAction(true);
-          setBuyModalVisible(false);
-        }}>
+        onPress={onPress}>
         <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
           <CyDView className={'flex flex-row justify-between'}>
             <CyDView className={'flex flex-row items-center'}>
@@ -407,19 +410,34 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             ))}
           </CyDView>
           <CyDView className={'w-full h-[1px] bg-n40 my-[16px]'} />
-          {item.title !== BuyOptions.COINBASE &&
-            item.title !== BuyOptions.TRANSFI && (
-              <CyDView className='pl-[2px]'>
-                <CyDText className={'text-subTextColor'}>
-                  {t('MODES_INIT_CAPS')} :{' '}
-                  <CyDText className={'font-black text-subTextColor'}>
-                    {item.supportedPaymentModes}
-                  </CyDText>
+          {showPaymentModes && (
+            <CyDView className='pl-[2px]'>
+              <CyDText className={'text-subTextColor'}>
+                {t('MODES_INIT_CAPS')} :{' '}
+                <CyDText className={'font-black text-subTextColor'}>
+                  {item.supportedPaymentModes}
                 </CyDText>
-              </CyDView>
-            )}
+              </CyDText>
+            </CyDView>
+          )}
         </CyDView>
       </CyDTouchView>
+    );
+  };
+
+  const renderBuyPlatformItem = (item: IBuyOptionsData): JSX.Element | null => {
+    const shouldShowPaymentModes =
+      item.title !== BuyOptions.COINBASE && item.title !== BuyOptions.TRANSFI;
+
+    return renderPlatformItem(
+      item,
+      () => {
+        setBuyType(item);
+        setChainData(item.supportedChains);
+        setPendingBuyAction(true);
+        setBuyModalVisible(false);
+      },
+      shouldShowPaymentModes,
     );
   };
 
@@ -459,56 +477,15 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const renderSellPlatformItem = (
     item: ISellOptionsData,
   ): JSX.Element | null => {
-    if (!item.isVisibileInUI) return null;
-    return (
-      <CyDTouchView
-        className={'mb-[16px]'}
-        activeOpacity={0.7}
-        onPress={() => {
-          setSellType(item);
-          setChainData(item.supportedChains);
-          setPendingSellAction(true);
-          setSellModalVisible(false);
-        }}>
-        <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
-          <CyDView className={'flex flex-row justify-between'}>
-            <CyDView className={'flex flex-row items-center'}>
-              <CyDImage
-                source={item.logo}
-                className={'w-[22px] h-[22px] mr-[6px]'}
-              />
-              <CyDText className={'font-bold text-[18px]'}>
-                {item.displayTitle}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-          <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
-            {item.supportedChains.map(chain => (
-              <CyDView
-                key={chain.backendName}
-                className={'flex flex-row items-center mr-[12px] mb-[6px]'}>
-                <CyDImage
-                  source={chain.logo_url}
-                  className={'w-[12px] h-[12px] mr-[4px]'}
-                />
-                <CyDText
-                  className={'text-subTextColor font-medium text-[12px]'}>
-                  {chain.name.toUpperCase()}
-                </CyDText>
-              </CyDView>
-            ))}
-          </CyDView>
-          <CyDView className={'w-full h-[1px] bg-n40 my-[16px]'} />
-          <CyDView className='pl-[2px]'>
-            <CyDText className={'text-subTextColor'}>
-              {t('MODES_INIT_CAPS')} :{' '}
-              <CyDText className={'font-black text-subTextColor'}>
-                {item.supportedPaymentModes}
-              </CyDText>
-            </CyDText>
-          </CyDView>
-        </CyDView>
-      </CyDTouchView>
+    return renderPlatformItem(
+      item,
+      () => {
+        setSellType(item);
+        setChainData(item.supportedChains);
+        setPendingSellAction(true);
+        setSellModalVisible(false);
+      },
+      true, // Always show payment modes for sell
     );
   };
 
