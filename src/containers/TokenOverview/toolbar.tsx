@@ -37,15 +37,23 @@ export default function TokenOverviewToolBar({
     const parentNav = navigation.getParent();
     if (parentNav) {
       if (currentCardProvider) {
-        parentNav.navigate(screenTitle.CARD, {
-          screen: screenTitle.BRIDGE_FUND_CARD_SCREEN,
-          params: {
-            currentCardProvider,
-            currentCardIndex: 0,
-            selectedToken: tokenData,
-          },
-        });
+        // First navigate to CARD tab
+        parentNav.navigate(screenTitle.DEBIT_CARD_SCREEN);
+
+        // Then navigate to the fund card screen within the FundCardStack
+        // Use setTimeout to ensure tab navigation completes first
+        setTimeout(() => {
+          parentNav.navigate(screenTitle.CARD, {
+            screen: screenTitle.BRIDGE_FUND_CARD_SCREEN,
+            params: {
+              currentCardProvider,
+              currentCardIndex: 0,
+              selectedToken: tokenData,
+            },
+          });
+        }, 100);
       } else {
+        // If no card provider, go to debit card screen
         parentNav.navigate(screenTitle.CARD, {
           screen: screenTitle.DEBIT_CARD_SCREEN,
         });

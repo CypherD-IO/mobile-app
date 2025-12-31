@@ -32,10 +32,6 @@ import {
 import { BarCodeReadEvent } from 'react-native-camera';
 import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
-import {
-  ChooseChainModal,
-  WHERE_PORTFOLIO,
-} from '../../components/ChooseChainModal';
 import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -574,8 +570,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
    * Handle chain selection for receive flow
    * Simplified callback that properly handles the chain selection
    */
-  const handleReceiveChainSelection = (selectedChain: Chain) => {
-    onSelectingChain({ item: selectedChain?.item ?? selectedChain });
+  const handleReceiveChainSelection = (chain: Chain) => {
+    onSelectingChain({ item: chain });
   };
 
   const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
@@ -1313,18 +1309,26 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       )}
       {!isPortfolioLoading ? (
         <>
-          <ChooseChainModal
+          <ChooseChainModalV2
             isModalVisible={chooseChain}
-            onPress={() => {
+            setModalVisible={setChooseChain}
+            data={hdWallet ? getAvailableChains(hdWallet) : []}
+            title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
+            selectedItem={selectedChain.name}
+            onPress={(item: { item: Chain }) => {
+              setSelectedChain(item.item);
               setChooseChain(false);
             }}
-            selectedChain={selectedChain}
-            setSelectedChain={setSelectedChain}
-            where={WHERE_PORTFOLIO}
+            animationIn={'slideInUp'}
+            animationOut={'slideOutDown'}
           />
           {/* Header on dark background */}
           <CyDView className='bg-n0'>
-            <HeaderBar navigation={navigation} onWCSuccess={onWCSuccess} />
+            <HeaderBar
+              navigation={navigation}
+              onWCSuccess={onWCSuccess}
+              selectedChain={selectedChain}
+            />
           </CyDView>
           <SectionList
             className='bg-n20'
@@ -1568,7 +1572,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             data={chainData}
             title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
             selectedItem={'Ethereum'}
-            onPress={(item: Chain) => handleReceiveChainSelection(item)}
+            onPress={(item: { item: Chain; index: number }) =>
+              handleReceiveChainSelection(item.item)
+            }
             customStyle={styles.chooseChainModalStyle}
             isClosable={true}
             animationOut={'slideOutDown'}

@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { Holding } from '../../core/portfolio';
 import { SwapToken } from '../../models/swapToken.interface';
-import { HyperLiquidAccount, TokenModalType } from '../../constants/enum';
+import { TokenModalType } from '../../constants/enum';
 import {
   ALL_FUNDABLE_CHAINS,
   Chain,
@@ -26,7 +26,6 @@ import {
   CyDTouchView,
   CyDView,
   CyDFlatList,
-  CyDScrollView,
   CyDLottieView,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
@@ -74,8 +73,8 @@ interface SupportedToken extends Omit<Holding, 'totalValue' | 'balance'> {
   balance: string;
   contractAddress: string;
   coingeckoId: string;
-  isInfLimit: boolean;
-  maxQuoteLimit: number;
+  isInfLimit?: boolean;
+  maxQuoteLimit?: number;
 }
 
 interface ISupportedToken {
@@ -116,7 +115,7 @@ function ChainSelectionView({
   setSelectedChain: (chain: Chain) => void;
   onBack: () => void;
   isFullHeight: boolean;
-  onScroll: (event: any) => void;
+  onScroll: (event: { nativeEvent: { contentOffset: { y: number } } }) => void;
   heightAnim: Animated.Value;
 }) {
   const allChainsData = useMemo(() => {
@@ -125,6 +124,51 @@ function ChainSelectionView({
     );
     return [ALL_FUNDABLE_CHAINS[0], ...otherChains];
   }, [chainData]);
+
+  const renderChainItem = ({ item }: { item: Chain }) => {
+    const isSelected = selectedChain?.chain_id === item.chain_id;
+
+    return (
+      <CyDTouchView
+        onPress={() => {
+          setSelectedChain(item);
+          onBack();
+        }}
+        key={item.chain_id}
+        className={clsx(
+          'flex flex-col items-center justify-center p-[12px] rounded-[16px] m-[4px] relative',
+          {
+            'bg-p150 border-2 border-p100': isSelected,
+            'bg-n0 border border-n40': !isSelected,
+          },
+        )}
+        style={styles.chainGridItem}>
+        {/* Chain Logo */}
+        <CyDFastImage
+          source={item.logo_url}
+          className='w-[36px] h-[36px] rounded-full mb-[8px]'
+        />
+
+        {/* Chain Name */}
+        <CyDText
+          className='text-[12px] font-medium text-center text-base400'
+          numberOfLines={1}>
+          {capitalize(item.name.split(' ')[0])}
+        </CyDText>
+
+        {/* Selected Indicator */}
+        {isSelected && (
+          <CyDView className='absolute top-[4px] right-[4px]'>
+            <CyDMaterialDesignIcons
+              name='check-bold'
+              size={16}
+              className='text-p100'
+            />
+          </CyDView>
+        )}
+      </CyDTouchView>
+    );
+  };
 
   return (
     <Animated.View
@@ -142,47 +186,37 @@ function ChainSelectionView({
       className='bg-n0 border-1 px-[8px]'>
       <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] self-center mt-[16px]' />
 
-      <CyDView className='flex-row items-center py-[24px]'>
-        <CyDTouchView onPress={onBack} className='absolute left-[16px] z-10'>
+      {/* Header with Title and Back Button */}
+      <CyDView className='flex flex-row items-center justify-between px-[12px] pt-[12px] pb-[14px]'>
+        {/* Back Button */}
+        <CyDTouchView onPress={onBack} className='mr-[12px]'>
           <CyDMaterialDesignIcons
             name='arrow-left'
             size={24}
             className='text-base400'
           />
         </CyDTouchView>
-        <CyDText className='text-[18px] font-nunito font-bold flex-1 text-center'>
+
+        {/* Title */}
+        <CyDText className='flex-1 text-center text-[18px] font-nunito font-bold'>
           Select Chain
         </CyDText>
+
+        {/* Spacer to balance the layout */}
+        <CyDView style={styles.headerSpacer} />
       </CyDView>
 
-      <CyDScrollView onScroll={onScroll} scrollEventThrottle={16}>
-        <CyDView className='flex-wrap flex-row items-start justify-evenly'>
-          {allChainsData.map(item => (
-            <CyDTouchView
-              onPress={() => {
-                setSelectedChain(item);
-                onBack();
-              }}
-              key={item.chain_id}
-              className={clsx(
-                'border-[1px] border-n40 rounded-[6px] flex-col items-center justify-center bg-n30 h-[74px] w-[104px] mb-[12px]',
-                {
-                  'bg-p10': selectedChain?.chain_id === item.chain_id,
-                },
-              )}>
-              <CyDView className='flex flex-col items-center h-[50px] w-[46px]'>
-                <CyDFastImage
-                  source={item.logo_url}
-                  className='w-[32px] h-[32px] rounded-full'
-                />
-                <CyDText className='text-[10px] mt-[6px] font-normal text-center w-[60px]'>
-                  {capitalize(item.name.split(' ')[0])}
-                </CyDText>
-              </CyDView>
-            </CyDTouchView>
-          ))}
-        </CyDView>
-      </CyDScrollView>
+      <CyDFlatList
+        data={allChainsData as any}
+        renderItem={renderChainItem as any}
+        keyExtractor={(item: any) => (item as Chain).chain_id}
+        numColumns={3}
+        columnWrapperStyle={styles.chainColumnWrapper}
+        contentContainerStyle={styles.chainContentContainer}
+        showsVerticalScrollIndicator={true}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+      />
     </Animated.View>
   );
 }
@@ -271,7 +305,7 @@ const RenderToken = React.memo(
           }
           handleModalClose();
           setSelected(item as Holding);
-          onSelectingToken(item);
+          onSelectingToken(item as Holding);
         }}>
         <CyDView className={'flex flex-row items-center'}>
           <CyDView className={'flex flex-row items-center'}>
@@ -326,14 +360,14 @@ const RenderToken = React.memo(
                   className={'text-n200 text-[12px] font-nunito font-regular'}>
                   {item.chainDetails.name}
                 </CyDText>
-                {item.isInfLimit && (
+                {(item as SupportedToken).isInfLimit && (
                   <>
                     <CyDView className='h-[6px] w-[6px] rounded-full bg-n200 mx-[6px]' />
                     <CyDView className='px-2 bg-green400 rounded-full'>
                       <CyDText className='text-white text-[10px] font-medium'>
                         {t('LOAD_UP_TO', {
                           maxLoadLimit: formatCurrencyWithSuffix(
-                            item.maxQuoteLimit,
+                            (item as SupportedToken).maxQuoteLimit ?? 0,
                           ),
                         })}
                       </CyDText>
@@ -465,12 +499,14 @@ const EmptyListMessage = ({
 );
 
 const getTokenKey = (item: Holding | SupportedToken) => {
-  const chainId = item.chainDetails?.chain_id || '';
+  const chainId = item.chainDetails?.chain_id ?? '';
   const address =
-    item.contractAddress ||
-    (COSMOS_CHAINS.includes(item.chainDetails.chainName) ? item.denom : '');
-  const symbol = item.symbol || '';
-  const accountType = (item as any).accountType || '';
+    item.contractAddress ??
+    (COSMOS_CHAINS.includes(item.chainDetails.chainName)
+      ? (item.denom ?? '')
+      : '');
+  const symbol = item.symbol ?? '';
+  const accountType = (item as { accountType?: string }).accountType ?? '';
   const key = `${chainId}-${address}-${symbol}-${accountType}`;
   return key;
 };
@@ -486,7 +522,9 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     onSelectingToken,
     type = TokenModalType.PORTFOLIO,
     noTokensAvailableMessage = t('NO_TOKENS_FOUND'),
-    onCancel = () => {},
+    onCancel = () => {
+      // no-op
+    },
   } = props;
   const { getWithoutAuth } = useAxios();
   const { getLocalPortfolio } = usePortfolio();
@@ -500,7 +538,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
   const [selectedToken, setSelectedToken] = useState<Holding | null>(null);
   const { supportedChains } = useSupportedChains();
   const [selectedChain, setSelectedChain] = useState<Chain>(
-    supportedChains[0] || ALL_FUNDABLE_CHAINS[0],
+    ALL_FUNDABLE_CHAINS[0],
   );
   const chainData = useMemo(() => {
     if (type === TokenModalType.CARD_LOAD) {
@@ -518,9 +556,6 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     hasMore: true,
     isLoading: false,
   });
-  const [searchResults, setSearchResults] = useState<
-    Array<Holding | SupportedToken>
-  >([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [currentView, setCurrentView] = useState<'tokens' | 'chains'>('tokens');
   const [isFullHeight, setIsFullHeight] = useState(false);
@@ -658,7 +693,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
 
             return {
               // Use token.tokenAddress instead of undefined
-              contractAddress: token.tokenAddress || token.address || '', // Fallback to empty string if both are undefined
+              contractAddress: token.tokenAddress ?? '',
               symbol: token.symbol,
               name: token.name,
               logoUrl: token.logo,
@@ -730,35 +765,24 @@ export default function ChooseTokenModalV2(props: TokenModal) {
     });
   };
 
-  const searchTokens = (searchText: string) => {
+  const searchTokens = (searchTerm: string) => {
     try {
-      if (!searchText.trim()) {
-        setSearchResults([]);
+      if (!searchTerm.trim()) {
+        // Reset pagination when search is cleared
+        setPagination({
+          page: 1,
+          limit: 30,
+          hasMore: true,
+          isLoading: false,
+        });
         return;
       }
 
-      const tokensToSearch =
-        selectedChain.chain_id === ALL_FUNDABLE_CHAINS[0].chain_id
-          ? combinedTokensList
-          : combinedTokensList.filter(
-              token => token.chainDetails.chain_id === selectedChain.chain_id,
-            );
-
-      const fuse = new Fuse(tokensToSearch, {
-        keys: ['name', 'symbol'],
-        threshold: 0.3,
-      });
-
-      const results = fuse
-        .search(searchText)
-        .map(result => result.item)
-        .sort((a, b) => Number(b.totalValue) - Number(a.totalValue));
-
-      setSearchResults(results);
+      // Reset pagination for new search
       setPagination(prev => ({
         ...prev,
         page: 1,
-        hasMore: results.length > pagination.limit,
+        hasMore: true,
       }));
     } catch (error) {
       Toast.show({
@@ -779,7 +803,7 @@ export default function ChooseTokenModalV2(props: TokenModal) {
         duration: 300,
         useNativeDriver: false,
       }).start(() => {
-        updateStatusBarStyle(true, theme, colorScheme.colorScheme);
+        updateStatusBarStyle(true, theme, colorScheme.colorScheme ?? 'dark');
       });
     }
   };
@@ -787,13 +811,15 @@ export default function ChooseTokenModalV2(props: TokenModal) {
   const handleModalClose = () => {
     setIsFullHeight(false);
     setBackdropOpacity(0.5);
-    updateStatusBarStyle(false, theme, colorScheme.colorScheme);
+    updateStatusBarStyle(false, theme, colorScheme.colorScheme ?? 'dark');
     heightAnim.setValue(80);
     setErrorMessage('');
     setIsChooseTokenModalVisible(false);
   };
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: {
+    nativeEvent: { contentOffset: { y: number } };
+  }) => {
     if (event.nativeEvent.contentOffset.y > 0) {
       animateToFullHeight();
     }
@@ -928,14 +954,14 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                     source={AppImages.LOADING_SPINNER}
                     autoPlay
                     loop
-                    style={{ width: 40, height: 40 }}
+                    style={styles.loadingSpinner}
                   />
                 </CyDView>
               ) : (
                 <>
                   <CyDFlatList
-                    data={paginatedTokens}
-                    keyExtractor={getTokenKey}
+                    data={paginatedTokens as any}
+                    keyExtractor={getTokenKey as any}
                     initialNumToRender={10}
                     maxToRenderPerBatch={10}
                     windowSize={5}
@@ -945,13 +971,9 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                     onEndReached={loadMoreTokens}
                     onScroll={handleScroll}
                     scrollEventThrottle={16}
-                    renderItem={({
-                      item,
-                    }: {
-                      item: Holding | SupportedToken;
-                    }) => (
+                    renderItem={(renderProps: any) => (
                       <RenderToken
-                        item={item}
+                        item={renderProps.item}
                         selected={selectedToken}
                         setSelected={setSelectedToken}
                         onSelectingToken={onSelectingToken}
@@ -969,7 +991,9 @@ export default function ChooseTokenModalV2(props: TokenModal) {
                     }
                     ListEmptyComponent={
                       <EmptyListMessage
-                        noTokensAvailableMessage={noTokensAvailableMessage}
+                        noTokensAvailableMessage={
+                          noTokensAvailableMessage ?? t('NO_TOKENS_FOUND')
+                        }
                       />
                     }
                   />
@@ -999,6 +1023,23 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   listFooterLoader: {
+    width: 40,
+    height: 40,
+  },
+  chainGridItem: {
+    width: '30%',
+  },
+  chainColumnWrapper: {
+    justifyContent: 'flex-start',
+    paddingHorizontal: 8,
+  },
+  chainContentContainer: {
+    paddingTop: 8,
+  },
+  headerSpacer: {
+    width: 24,
+  },
+  loadingSpinner: {
     width: 40,
     height: 40,
   },

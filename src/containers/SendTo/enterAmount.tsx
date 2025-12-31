@@ -351,7 +351,7 @@ export default function EnterAmount(props: any) {
   return (
     <CyDSafeAreaView className='flex-1 bg-n0' edges={['top']}>
       <PageHeader title={'ENTER_AMOUNT'} navigation={navigation} />
-      <CyDView className='flex-1 bg-n20 pt-[24px]'>
+      <CyDView className='flex-1 bg-n20 pt-[24px] justify-between'>
         <ChooseTokenModalV2
           isChooseTokenModalVisible={isChooseTokenVisible}
           onSelectingToken={token => {
@@ -379,7 +379,7 @@ export default function EnterAmount(props: any) {
           <CyDView>
             <CyDView
               className={
-                'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-n20 rounded-b-[25px]'
+                'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-n20'
               }>
               {tokenData && (
                 <CyDView

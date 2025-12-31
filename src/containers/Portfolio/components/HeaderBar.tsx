@@ -5,7 +5,11 @@ import AppImages from '../../../../assets/images/appImages';
 import GradientText from '../../../components/gradientText';
 import { screenTitle } from '../../../constants';
 import { ConnectionTypes, CypherPlanId } from '../../../constants/enum';
-import { QRScannerScreens } from '../../../constants/server';
+import {
+  QRScannerScreens,
+  Chain,
+  CHAIN_COLLECTION,
+} from '../../../constants/server';
 import { showToast } from '../../../containers/utilities/toastUtility';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import {
@@ -23,10 +27,12 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
+import { get } from 'lodash';
 
 interface HeaderBarProps {
   navigation: any;
   onWCSuccess: (e: BarCodeReadEvent) => void;
+  selectedChain: Chain;
 }
 
 /**
@@ -47,12 +53,70 @@ const getTimeBasedGreeting = (): string => {
   }
 };
 
-export const HeaderBar = ({ navigation, onWCSuccess }: HeaderBarProps) => {
+export const HeaderBar = ({
+  navigation,
+  onWCSuccess,
+  selectedChain,
+}: HeaderBarProps) => {
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { wallet } = hdWalletContext.state;
-  const { ethereum, solana } = wallet;
-  const address = ethereum?.address ?? solana?.address;
-  const ethAddress = ethereum?.address;
+  const { ethereum, solana, cosmos, osmosis, noble, coreum, injective } =
+    wallet;
+
+  /**
+   * Get the address for the currently selected chain
+   */
+  const getAddressForChain = (): string | undefined => {
+    // If "All Chains" is selected, default to Ethereum or Solana
+    if (selectedChain.chain_id === CHAIN_COLLECTION.chain_id) {
+      return ethereum?.address ?? solana?.address;
+    }
+
+    // Get address based on chain backend name
+    const chainName = selectedChain.backendName?.toLowerCase();
+    switch (chainName) {
+      case 'eth':
+      case 'ethereum':
+      case 'polygon':
+      case 'matic':
+      case 'avalanche':
+      case 'avax':
+      case 'optimism':
+      case 'arbitrum':
+      case 'base':
+      case 'bsc':
+      case 'fantom':
+      case 'moonbeam':
+      case 'moonriver':
+      case 'zksync':
+      case 'polygonzkevm':
+      case 'aurora':
+      case 'evmos':
+      case 'shardeum':
+      case 'shardeum_sphinx':
+        // All EVM chains use the same Ethereum address
+        return get(ethereum.wallets, ethereum.currentIndex)?.address;
+      case 'sol':
+      case 'solana':
+        return get(solana.wallets, solana.currentIndex)?.address;
+      case 'cosmos':
+        return get(cosmos.wallets, cosmos.currentIndex)?.address;
+      case 'osmosis':
+        return get(osmosis.wallets, osmosis.currentIndex)?.address;
+      case 'noble':
+        return get(noble.wallets, noble.currentIndex)?.address;
+      case 'coreum':
+        return get(coreum.wallets, coreum.currentIndex)?.address;
+      case 'injective':
+        return get(injective.wallets, injective.currentIndex)?.address;
+      default:
+        // Default to Ethereum address for unknown chains
+        return get(ethereum.wallets, ethereum.currentIndex)?.address;
+    }
+  };
+
+  const address = getAddressForChain();
+  const ethAddress = get(ethereum.wallets, ethereum.currentIndex)?.address;
 
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalState.cardProfile;
@@ -77,6 +141,7 @@ export const HeaderBar = ({ navigation, onWCSuccess }: HeaderBarProps) => {
   /**
    * Resolves ENS name for the ethereum address
    * Only attempts resolution if we have a valid ethereum address
+   * Re-resolves when the selected chain or address changes
    */
   useEffect(() => {
     const resolveEnsName = async (): Promise<void> => {
@@ -92,7 +157,7 @@ export const HeaderBar = ({ navigation, onWCSuccess }: HeaderBarProps) => {
     };
 
     void resolveEnsName();
-  }, [ethAddress]);
+  }, [ethAddress, selectedChain]);
 
   /**
    * Handles copying the wallet address to clipboard
