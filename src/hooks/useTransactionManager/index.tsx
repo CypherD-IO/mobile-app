@@ -1253,11 +1253,14 @@ export default function useTransactionManager() {
       );
     }
 
-    await checkBalance(
-      connection,
-      fromKeypair.publicKey,
-      gasDetails.gasFeeInCrypto,
-    );
+    // For native SOL, check balance includes amount + fees
+    // For SPL tokens, only check for fees (amount is from token account)
+    const requiredBalance =
+      contractAddress === 'solana-native'
+        ? DecimalHelper.add(amountToSend, gasDetails.gasFeeInCrypto).toString()
+        : gasDetails.gasFeeInCrypto;
+
+    await checkBalance(connection, fromKeypair.publicKey, requiredBalance);
 
     const newTransaction = new VersionedTransaction(messageV0);
     newTransaction.sign([fromKeypair]);

@@ -887,10 +887,20 @@ export default function BridgeFundCardScreen({
           !GASLESS_CHAINS.includes(chainDetails.backendName)
         ) {
           try {
+            // Use a reasonable estimation amount instead of full balance
+            // Gas fees on Solana are relatively consistent, so we can estimate with a smaller amount
+            // This avoids the circular dependency where we need to know gas to calculate sendable amount
+            const estimationAmount = DecimalHelper.isLessThan(
+              amountInCrypto,
+              '0.1',
+            )
+              ? amountInCrypto
+              : '0.1';
+
             const gasDetails = await estimateGasForSolana({
               fromAddress: solana.address,
               toAddress: solana.address,
-              amountToSend: String(amountInCrypto),
+              amountToSend: estimationAmount,
               contractAddress,
               tokenContractDecimals: contractDecimals,
             });
