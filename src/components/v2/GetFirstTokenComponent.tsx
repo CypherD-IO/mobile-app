@@ -60,7 +60,7 @@ const GetFirstTokenComponent = ({ onGetTokenPress }: GetFirstTokenProps) => {
   };
 
   return (
-    <CyDView className='mx-[10px] mt-2'>
+    <CyDView className=''>
       {/* Gradient Border Container */}
       <LinearGradient
         colors={['#4575F6', '#A228EA', '#FCBA6C']}

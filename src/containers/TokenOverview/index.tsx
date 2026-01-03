@@ -144,15 +144,13 @@ function TokenOverviewV2() {
           )}
         </CyDView>
       )}
-      <CyDAnimatedView
-        layout={Layout.springify()}
-        className={clsx(
-          'h-[110px] self-end bg-n20 pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
-          { 'pt-[16px]': isAndroid() },
-        )}
-        style={styles.elevatedBackground}>
-        <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
-      </CyDAnimatedView>
+      {index === 0 && (
+        <CyDAnimatedView
+          className='absolute bottom-0 left-0 right-0 pb-[20px]'
+          style={styles.floatingToolbar}>
+          <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
+        </CyDAnimatedView>
+      )}
     </CyDView>
   );
 }
@@ -161,6 +159,16 @@ const styles = StyleSheet.create({
   elevatedBackground: {
     elevation: 3,
     // backgroundColor: isIOS() ? Colors.white : Colors.transparent,
+  },
+  floatingToolbar: {
+    shadowColor: '#FFFFFF',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
 

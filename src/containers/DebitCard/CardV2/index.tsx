@@ -83,6 +83,7 @@ import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useConnectionManager from '../../../hooks/useConnectionManager';
+import CyDTokenValue from '../../../components/v2/tokenValue';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -804,14 +805,9 @@ export default function CypherCardScreen() {
                           void fetchCardBalance();
                         }}>
                         <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                          <CyDText
-                            className={clsx('font-bold text-[28px]', {
-                              'text-red400':
-                                shouldShowLocked() || shouldShowActionNeeded(),
-                            })}>
-                            {(cardBalance !== 'NA' ? '$ ' : '') +
-                              (cardBalance ?? 0)}
-                          </CyDText>
+                          <CyDTokenValue className='!text-[32px]'>
+                            {cardBalance === 'NA' ? '0.00' : cardBalance}
+                          </CyDTokenValue>
                           <CyDMaterialDesignIcons
                             name='refresh'
                             size={20}

@@ -59,7 +59,6 @@ export default function EnterAmount(props: any) {
   const [tokenData, setTokenData] = useState<TokenMeta>(
     props?.route?.params?.tokenData,
   );
-  // const { tokenData }: { tokenData: Holding } = route.params;
   const [valueForUsd, setValueForUsd] = useState('0.00'); // native token amount
   const [usdValue, setUsdValue] = useState<string>('0.00');
   const [cryptoValue, setCryptoValue] = useState<string>('0.00');
@@ -352,7 +351,7 @@ export default function EnterAmount(props: any) {
   return (
     <CyDSafeAreaView className='flex-1 bg-n0' edges={['top']}>
       <PageHeader title={'ENTER_AMOUNT'} navigation={navigation} />
-      <CyDView className='flex-1 bg-n20 pt-[24px]'>
+      <CyDView className='flex-1 bg-n20 pt-[24px] justify-between'>
         <ChooseTokenModalV2
           isChooseTokenModalVisible={isChooseTokenVisible}
           onSelectingToken={token => {
@@ -380,7 +379,7 @@ export default function EnterAmount(props: any) {
           <CyDView>
             <CyDView
               className={
-                'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-n20 rounded-b-[25px]'
+                'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-n20'
               }>
               {tokenData && (
                 <CyDView
@@ -506,7 +505,7 @@ export default function EnterAmount(props: any) {
                           </CyDText>
                         </CyDView>
                         <CyDView className='flex self-center items-end'>
-                          <CyDTokenValue className='text-[16px] font-extrabold'>
+                          <CyDTokenValue className='text-[16px]'>
                             {tokenData.totalValue}
                           </CyDTokenValue>
                           <CyDTokenAmount className='text-[14px] text-subTextColor font-bold'>

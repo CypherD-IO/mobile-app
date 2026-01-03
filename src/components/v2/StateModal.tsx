@@ -284,7 +284,7 @@ export const BuyOrBridge = ({
             onPress={() => {
               hideModal();
               setTimeout(() => {
-                navigation.navigate(screenTitle.SWAP);
+                navigation.navigate(screenTitle.SWAP_SCREEN);
               }, MODAL_HIDE_TIMEOUT);
             }}>
             <CyDView

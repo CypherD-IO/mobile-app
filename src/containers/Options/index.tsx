@@ -11,7 +11,13 @@ import {
 } from '../../styles/tailwindComponents';
 import { IconNames } from '../../customFonts/type';
 import AppImages from '../../../assets/images/appImages';
-import { getMaskedAddress, HdWalletContext } from '../../core/util';
+import {
+  copyToClipboard,
+  getMaskedAddress,
+  HdWalletContext,
+} from '../../core/util';
+import useEns from '../../hooks/useEns';
+import { showToast } from '../utilities/toastUtility';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import GradientText from '../../components/gradientText';
@@ -66,7 +72,7 @@ const RenderOptions = ({
     <CyDView className='items-center justify-center w-[100px]'>
       <CyDTouchView
         className={clsx(
-          'rounded-full border border-base80 p-[12px] items-center justify-center',
+          'rounded-full border !border-base80 p-[12px] items-center justify-center',
           {
             'animate-pulse': apiDependent && isLoading,
             'animate-none': !apiDependent,
@@ -124,6 +130,14 @@ export default function OptionsHub() {
 
   const address =
     hdWallet.wallet.ethereum.address ?? hdWallet.wallet.solana.address ?? '';
+  const ethAddress = hdWallet.wallet.ethereum.address;
+
+  // ENS resolution state
+  const [ensName, setEnsName] = useState<string | null>(null);
+  const ensHook = useEns();
+  const resolveDomain = ensHook[1] as (
+    address: `0x${string}`,
+  ) => Promise<string | null>;
 
   const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
@@ -143,8 +157,6 @@ export default function OptionsHub() {
   const [versionClickCount, setVersionClickCount] = useState<number>(0);
   const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(false);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // const premiumBenefits = [];
 
   const cypherCardOptions = [
     ...(currentCardProvider === CardProviders.REAP_CARD
@@ -272,13 +284,6 @@ export default function OptionsHub() {
         });
       },
     },
-    // {
-    //   icon: 'bell',
-    //   title: 'App Notification',
-    //   onPress: () => {
-    //     navigation.navigate(screenTitle.NOTIFICATION_SETTINGS);
-    //   },
-    // },
   ];
 
   const supportAndOtherOptions = [
@@ -423,6 +428,43 @@ export default function OptionsHub() {
   }, [isFocused]);
 
   /**
+   * Resolves ENS name for the ethereum address
+   * Only attempts resolution if we have a valid ethereum address
+   */
+  useEffect(() => {
+    const resolveEnsName = async (): Promise<void> => {
+      if (ethAddress) {
+        try {
+          const resolvedName = await resolveDomain(ethAddress as `0x${string}`);
+          setEnsName(resolvedName);
+        } catch {
+          // ENS resolution failed, keep ensName as null
+          setEnsName(null);
+        }
+      }
+    };
+    void resolveEnsName();
+  }, [ethAddress, resolveDomain]);
+
+  /**
+   * Handles copying the wallet address to clipboard
+   * Shows a toast notification on success or failure
+   */
+  const handleCopyAddress = (): void => {
+    try {
+      if (address) {
+        copyToClipboard(address);
+        showToast(
+          t('ADDRESS_COPIED', 'Address copied to clipboard'),
+          'success',
+        );
+      }
+    } catch {
+      showToast(t('FAILED_TO_COPY', 'Failed to copy address'), 'error');
+    }
+  };
+
+  /**
    * Load developer mode state on component mount
    * Checks AsyncStorage for the current developer mode setting
    */
@@ -540,9 +582,29 @@ export default function OptionsHub() {
             source={AppImages.PROFILE_AVATAR}
             className='w-[145px] h-[145px] self-center'
           />
-          <CyDText className='text-center mt-[24px] font-semibold text-[20px]'>
-            {getMaskedAddress(address)}
-          </CyDText>
+
+          {/* ENS name and address section - clickable to copy */}
+          <CyDTouchView
+            onPress={handleCopyAddress}
+            activeOpacity={0.7}
+            className='mt-[24px] items-center'>
+            {ensName ? (
+              <>
+                {/* Show ENS name prominently */}
+                <CyDText className='text-center font-semibold text-[20px]'>
+                  {ensName}
+                </CyDText>
+                {/* Show masked address below ENS */}
+                <CyDText className='text-center text-[14px] text-n200 mt-[4px]'>
+                  {getMaskedAddress(address)}
+                </CyDText>
+              </>
+            ) : (
+              <CyDText className='text-center font-semibold text-[20px]'>
+                {getMaskedAddress(address)}
+              </CyDText>
+            )}
+          </CyDTouchView>
 
           {isPremiumUser && (
             <GradientText

@@ -78,7 +78,7 @@ const RenderDetail = ({
               </CyDView>
             </CyDView>
             <CyDView className='flex-1 max-w-[50%] items-end'>
-              <CyDTokenValue className={'font-bold text-[16px] '}>
+              <CyDTokenValue className={'font-bold text-[16px]'}>
                 {token.balanceUSD}
               </CyDTokenValue>
               <CyDView className='flex-1 flex-row justify-end items-center'>

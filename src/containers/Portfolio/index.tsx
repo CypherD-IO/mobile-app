@@ -24,7 +24,6 @@ import { useTranslation } from 'react-i18next';
 import {
   AppState,
   BackHandler,
-  FlatList,
   ListRenderItem,
   SectionList,
   StyleSheet,
@@ -33,16 +32,11 @@ import {
 import { BarCodeReadEvent } from 'react-native-camera';
 import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
-import {
-  ChooseChainModal,
-  WHERE_PORTFOLIO,
-} from '../../components/ChooseChainModal';
 import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
 import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
-import CyDTokenValue from '../../components/v2/tokenValue';
 import { QUICK_ACTION_NOTIFICATION_CATEGORY_IDS } from '../../constants/data';
 import {
   CypherDeclineCodes,
@@ -135,6 +129,18 @@ interface IBuyOptionsData {
   isVisibileInUI: boolean;
 }
 
+interface ISellOptionsData {
+  index: number;
+  title: string;
+  displayTitle: string;
+  logo: any;
+  supportedChains: Chain[];
+  currencyType: CurrencyTypes;
+  screenTitle: string;
+  supportedPaymentModes: string;
+  isVisibileInUI: boolean;
+}
+
 enum CurrencyTypes {
   USD = 'USD',
   INR = 'INR',
@@ -145,6 +151,10 @@ enum BuyOptions {
   ONMETA = 'ONMETA',
   COINBASE = 'COINBASE',
   TRANSFI = 'TRANSFI',
+}
+
+enum SellOptions {
+  ONMETA = 'ONMETA',
 }
 
 export default function Portfolio({ navigation }: PortfolioProps) {
@@ -169,11 +179,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     BridgeContext,
   ) as BridgeContextDef;
   const { getWithAuth } = useAxios();
-  const {
-    deleteSocialAuthWalletIfSessionExpired,
-    connectionType,
-    checkMfaEnabled,
-  } = useConnectionManager();
+  const { deleteSocialAuthWalletIfSessionExpired, connectionType } =
+    useConnectionManager();
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
@@ -189,15 +196,22 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     useState<boolean>(false);
   const [buyType, setBuyType] = useState<IBuyOptionsData>();
   const [chainData, setChainData] = useState<Chain[]>([CHAIN_COLLECTION]);
+  const [pendingBuyAction, setPendingBuyAction] = useState<boolean>(false);
+
+  // Sell modal states
+  const [sellModalVisible, setSellModalVisible] = useState<boolean>(false);
+  const [sellChooseChainModalVisible, setSellChooseChainModalVisible] =
+    useState<boolean>(false);
+  const [sellType, setSellType] = useState<ISellOptionsData>();
+  const [pendingSellAction, setPendingSellAction] = useState<boolean>(false);
 
   // Receive modal states
   const [chooseChainModal, setChooseChainModal] = useState<boolean>(false);
-  const [receiveSelectedChain, setReceiveSelectedChain] =
-    useState<Chain>(CHAIN_ETH);
 
   const { theme } = useTheme();
   const isDarkMode =
-    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+    theme === Theme.DARK ||
+    (theme === Theme.SYSTEM && colorScheme.get() === 'dark');
 
   // Buy options data
   const buyOptionsData: IBuyOptionsData[] = [
@@ -236,6 +250,27 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     },
   ];
 
+  // Sell options data
+  const sellOptionsData: ISellOptionsData[] = [
+    {
+      index: 0,
+      title: SellOptions.ONMETA,
+      displayTitle: t('ONMETA_SELL_DISPLAY_TITLE') ?? 'OnMeta',
+      logo: AppImages.ONMETA,
+      supportedChains: [
+        CHAIN_ETH,
+        CHAIN_AVALANCHE,
+        CHAIN_POLYGON,
+        CHAIN_ARBITRUM,
+        CHAIN_BSC,
+      ],
+      currencyType: CurrencyTypes.FIAT,
+      screenTitle: C.screenTitle.ON_META,
+      supportedPaymentModes: 'Instant Bank Deposit using IMPS',
+      isVisibileInUI: true,
+    },
+  ];
+
   const handleShowGetTokenSheet = () => {
     showBottomSheet({
       id: 'getTokenOptions',
@@ -253,12 +288,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
   };
 
-  const handleShowBuyModal = () => {
+  const handleShowBuyModal = (): void => {
     hideBottomSheet('getTokenOptions');
     setTimeout(() => setBuyModalVisible(true), 250);
   };
 
-  const handleShowReceiveModal = () => {
+  const handleShowReceiveModal = (): void => {
     hideBottomSheet('getTokenOptions');
     if (hdWallet) {
       setChainData(getAvailableChains(hdWallet));
@@ -266,60 +301,139 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     setTimeout(() => setChooseChainModal(true), 250);
   };
 
-  const renderBuyPlatformItem = (item: IBuyOptionsData) => {
+  /**
+   * Navigates to the send/enter amount screen
+   */
+  const handleSendPress = (): void => {
+    navigation.navigate(C.screenTitle.ENTER_AMOUNT);
+  };
+
+  /**
+   * Opens the receive modal with chain selection
+   */
+  const handleReceivePress = (): void => {
+    if (hdWallet) {
+      setChainData(getAvailableChains(hdWallet));
+    }
+    setChooseChainModal(true);
+  };
+
+  /**
+   * Navigates to the swap screen
+   */
+  const handleSwapPress = (): void => {
+    navigation.navigate(C.screenTitle.SWAP_SCREEN);
+  };
+
+  /**
+   * Opens the more options bottom sheet with Buy and Sell options
+   */
+  const handleMorePress = (): void => {
+    showBottomSheet({
+      id: 'moreOptions',
+      snapPoints: ['40%'],
+      showCloseButton: true,
+      scrollable: false,
+      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
+      content: (
+        <GetTokenBottomSheetContent
+          close={() => hideBottomSheet('moreOptions')}
+          onBuyPress={handleBuyFromMore}
+          onSellPress={handleSellFromMore}
+          mode='moreOptions'
+        />
+      ),
+    });
+  };
+
+  /**
+   * Handle Buy press from More Options bottom sheet
+   */
+  const handleBuyFromMore = (): void => {
+    hideBottomSheet('moreOptions');
+    setTimeout(() => setBuyModalVisible(true), 250);
+  };
+
+  /**
+   * Handle Sell press from More Options bottom sheet
+   */
+  const handleSellFromMore = (): void => {
+    hideBottomSheet('moreOptions');
+    setTimeout(() => setSellModalVisible(true), 250);
+  };
+
+  /**
+   * Shared renderer for platform items (Buy/Sell)
+   * Extracts common UI logic to reduce duplication
+   */
+  const renderPlatformItem = (
+    item: IBuyOptionsData | ISellOptionsData,
+    onPress: () => void,
+    showPaymentModes = true,
+  ): JSX.Element | null => {
+    if (!item.isVisibileInUI) return null;
     return (
-      item.isVisibileInUI && (
-        <CyDTouchView
-          className={'mb-[16px]'}
-          onPress={() => {
-            setBuyType(item);
-            setChainData(item.supportedChains);
-            setBuyModalVisible(false);
-            setTimeout(() => setBuyChooseChainModalVisible(true), 250);
-          }}>
-          <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
-            <CyDView className={'flex flex-row justify-between'}>
-              <CyDView className={'flex flex-row items-center'}>
+      <CyDTouchView
+        className={'mb-[16px]'}
+        activeOpacity={0.7}
+        onPress={onPress}>
+        <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
+          <CyDView className={'flex flex-row justify-between'}>
+            <CyDView className={'flex flex-row items-center'}>
+              <CyDImage
+                source={item.logo}
+                className={'w-[22px] h-[22px] mr-[6px]'}
+              />
+              <CyDText className={'font-bold text-[18px]'}>
+                {item.displayTitle}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+          <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
+            {item.supportedChains.map(chain => (
+              <CyDView
+                key={chain.backendName}
+                className={'flex flex-row items-center mr-[12px] mb-[6px]'}>
                 <CyDImage
-                  source={item.logo}
-                  className={'w-[22px] h-[22px] mr-[6px]'}
+                  source={chain.logo_url}
+                  className={'w-[12px] h-[12px] mr-[4px]'}
                 />
-                <CyDText className={'font-bold text-[18px]'}>
-                  {item.displayTitle}
+                <CyDText
+                  className={'text-subTextColor font-medium text-[12px]'}>
+                  {chain.name.toUpperCase()}
                 </CyDText>
               </CyDView>
-            </CyDView>
-            <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
-              {item.supportedChains.map(chain => (
-                <CyDView
-                  key={chain.backendName}
-                  className={'flex flex-row items-center mr-[12px] mb-[6px]'}>
-                  <CyDImage
-                    source={chain.logo_url}
-                    className={'w-[12px] h-[12px] mr-[4px]'}
-                  />
-                  <CyDText
-                    className={'text-subTextColor font-medium text-[12px]'}>
-                    {chain.name.toUpperCase()}
-                  </CyDText>
-                </CyDView>
-              ))}
-            </CyDView>
-            <CyDView className={'w-full h-[1px] bg-n40 my-[16px]'} />
-            {item.title !== BuyOptions.COINBASE &&
-              item.title !== BuyOptions.TRANSFI && (
-                <CyDView className='pl-[2px]'>
-                  <CyDText className={'text-subTextColor'}>
-                    {t('MODES_INIT_CAPS')} :{' '}
-                    <CyDText className={'font-black text-subTextColor'}>
-                      {item.supportedPaymentModes}
-                    </CyDText>
-                  </CyDText>
-                </CyDView>
-              )}
+            ))}
           </CyDView>
-        </CyDTouchView>
-      )
+          <CyDView className={'w-full h-[1px] bg-n40 my-[16px]'} />
+          {showPaymentModes && (
+            <CyDView className='pl-[2px]'>
+              <CyDText className={'text-subTextColor'}>
+                {t('MODES_INIT_CAPS')} :{' '}
+                <CyDText className={'font-black text-subTextColor'}>
+                  {item.supportedPaymentModes}
+                </CyDText>
+              </CyDText>
+            </CyDView>
+          )}
+        </CyDView>
+      </CyDTouchView>
+    );
+  };
+
+  const renderBuyPlatformItem = (item: IBuyOptionsData): JSX.Element | null => {
+    const shouldShowPaymentModes =
+      item.title !== BuyOptions.COINBASE && item.title !== BuyOptions.TRANSFI;
+
+    return renderPlatformItem(
+      item,
+      () => {
+        setBuyType(item);
+        setChainData(item.supportedChains);
+        setPendingBuyAction(true);
+        setBuyModalVisible(false);
+      },
+      shouldShowPaymentModes,
     );
   };
 
@@ -333,6 +447,55 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             navigation.navigate(buyType.screenTitle, {
               url: item.backendName,
               operation: 'buy',
+            });
+          }
+        }}>
+        <CyDView className={'flex flex-row items-center justify-between'}>
+          <CyDView className='flex flex-row items-center'>
+            <CyDImage
+              source={item.logo_url}
+              className={'w-[18px] h-[18px] mr-[10px]'}
+            />
+            <CyDText className={'font-medium text-[17px] '}>
+              {item.name.toUpperCase()}
+            </CyDText>
+          </CyDView>
+          <CyDMaterialDesignIcons
+            name='open-in-new'
+            size={18}
+            className='text-base400 ml-[10px]'
+          />
+        </CyDView>
+      </CyDTouchView>
+    );
+  };
+
+  const renderSellPlatformItem = (
+    item: ISellOptionsData,
+  ): JSX.Element | null => {
+    return renderPlatformItem(
+      item,
+      () => {
+        setSellType(item);
+        setChainData(item.supportedChains);
+        setPendingSellAction(true);
+        setSellModalVisible(false);
+      },
+      true, // Always show payment modes for sell
+    );
+  };
+
+  const renderSellChainItem = (item: Chain) => {
+    return (
+      <CyDTouchView
+        className={'p-[20px] bg-n0 rounded-[18px] mb-[10px]'}
+        activeOpacity={0.7}
+        onPress={() => {
+          setSellChooseChainModalVisible(false);
+          if (sellType) {
+            navigation.navigate(sellType.screenTitle, {
+              url: item.backendName,
+              operation: 'sell',
             });
           }
         }}>
@@ -407,8 +570,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
    * Handle chain selection for receive flow
    * Simplified callback that properly handles the chain selection
    */
-  const handleReceiveChainSelection = (selectedChain: Chain) => {
-    onSelectingChain({ item: selectedChain?.item ?? selectedChain });
+  const handleReceiveChainSelection = (chain: Chain) => {
+    onSelectingChain({ item: chain });
   };
 
   const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
@@ -426,7 +589,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     { key: 'txn', title: t('TXNS') },
   ];
   const [tabIndex, setTabIndex] = useState<number>(0);
-  const horrizontalFlatListRef = useRef<FlatList>(null);
 
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
@@ -1042,8 +1204,52 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     { title: 'txnHistory', scene: RenderTxnHistoryScene },
   ];
 
+  // Render sticky tabs header
+  const renderTabsHeader = (): JSX.Element => {
+    return (
+      <CyDView className='bg-n20 pt-[12px] px-[20px]'>
+        <CyDView className='flex flex-row items-center gap-[20px]'>
+          {tabs.map((tab, index) => {
+            return (
+              <CyDTouchView
+                className='pb-[12px]'
+                key={index}
+                onPress={() => {
+                  setTabIndex(index);
+                }}>
+                <CyDText
+                  className={clsx('text-[16px]', {
+                    'font-bold text-base400': index === tabIndex,
+                    'font-normal text-n100': index !== tabIndex,
+                  })}>
+                  {tab.title}
+                </CyDText>
+              </CyDTouchView>
+            );
+          })}
+        </CyDView>
+      </CyDView>
+    );
+  };
+
   // Sections for SectionList
   const sections = [
+    {
+      title: 'balance',
+      data: ['StaticView1'],
+      renderItem: () => (
+        <Banner
+          portfolioBalance={portfolioBalance}
+          selectedChain={selectedChain}
+          onChainPress={() => setChooseChain(true)}
+          onSendPress={handleSendPress}
+          onReceivePress={handleReceivePress}
+          onSwapPress={handleSwapPress}
+          onMorePress={handleMorePress}
+        />
+      ),
+    },
+    // Show "Get your first token" banner for new wallets with zero balance
     ...(portfolioBalance === '' ||
     portfolioBalance === '0' ||
     Number(portfolioBalance) === 0
@@ -1052,40 +1258,41 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             title: 'getFirstToken',
             data: ['StaticView0'],
             renderItem: () => (
-              <GetFirstTokenComponent
-                onGetTokenPress={handleShowGetTokenSheet}
-              />
+              <CyDView className='bg-n20 px-[10px] pt-[16px]'>
+                <GetFirstTokenComponent
+                  onGetTokenPress={handleShowGetTokenSheet}
+                />
+              </CyDView>
             ),
           },
         ]
       : []),
     {
-      title: 'balance',
-      data: ['StaticView1'],
-      renderItem: () => <Banner portfolioBalance={portfolioBalance} />,
-    },
-    {
       title: 'banners',
       data: ['StaticView2'],
-      renderItem: () => (jwtToken !== undefined ? <BannerCarousel /> : <></>),
+      renderItem: () => (
+        <CyDView className='bg-n20'>
+          {jwtToken !== undefined ? <BannerCarousel /> : <></>}
+        </CyDView>
+      ),
     },
     {
       title: 'scenes',
-      data: [''],
+      data: ['tabContent'],
       renderItem: () => scenesData[tabIndex].scene,
     },
   ];
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n20'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       {isPortfolioLoading && (
-        <CyDView className='justify-center items-center'>
+        <CyDView className='justify-center items-center bg-n20'>
           <Loading />
         </CyDView>
       )}
 
       {portfolioData?.isError && (
-        <CyDView className='h-full justify-center items-center'>
+        <CyDView className='h-full justify-center items-center bg-n20'>
           <CyDImage
             source={AppImages.NETWORK_ERROR}
             className='h-[90px] w-[90px]'
@@ -1102,30 +1309,39 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       )}
       {!isPortfolioLoading ? (
         <>
-          <ChooseChainModal
+          <ChooseChainModalV2
             isModalVisible={chooseChain}
-            onPress={() => {
+            setModalVisible={setChooseChain}
+            data={hdWallet ? getAvailableChains(hdWallet) : []}
+            title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
+            selectedItem={selectedChain.name}
+            onPress={(item: { item: Chain }) => {
+              setSelectedChain(item.item);
               setChooseChain(false);
             }}
-            selectedChain={selectedChain}
-            setSelectedChain={setSelectedChain}
-            where={WHERE_PORTFOLIO}
+            animationIn={'slideInUp'}
+            animationOut={'slideOutDown'}
           />
-          <HeaderBar
-            navigation={navigation}
-            renderTitleComponent={
-              <CyDTokenValue className='text-[24px] font-extrabold '>
-                {portfolioBalance}
-              </CyDTokenValue>
-            }
-            setChooseChain={setChooseChain}
-            selectedChain={selectedChain}
-            onWCSuccess={onWCSuccess}
-          />
+          {/* Header on dark background */}
+          <CyDView className='bg-n0'>
+            <HeaderBar
+              navigation={navigation}
+              onWCSuccess={onWCSuccess}
+              selectedChain={selectedChain}
+            />
+          </CyDView>
           <SectionList
+            className='bg-n20'
             sections={sections}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item, section }) => section.renderItem()}
+            renderItem={({ section }) => section.renderItem()}
+            renderSectionHeader={({ section }) => {
+              // Only render sticky header for the 'scenes' section (tabs)
+              if (section.title === 'scenes') {
+                return renderTabsHeader();
+              }
+              return null;
+            }}
             showsVerticalScrollIndicator={false}
             refreshing={false}
             onRefresh={() => {
@@ -1136,43 +1352,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               }
             }}
             stickySectionHeadersEnabled={true}
-            renderSectionHeader={({ section: { title } }) =>
-              title === 'scenes' ? (
-                <CyDView className='flex flex-row justify-start items-center py-[12px] pl-[20px] bg-n20'>
-                  {tabs.map((tab, index) => {
-                    return (
-                      <CyDTouchView
-                        className={clsx(
-                          'mr-[16px] px-[12px] py-[2px] rounded-[6px]',
-                          {
-                            'bg-p40': index === tabIndex,
-                          },
-                        )}
-                        key={index}
-                        onPress={() => {
-                          horrizontalFlatListRef?.current?.scrollToIndex({
-                            index,
-                            animated: true, // Scroll smoothly
-                          });
-                          setTabIndex(index);
-                        }}>
-                        <CyDText
-                          className={clsx('', {
-                            'font-semibold text-black': index === tabIndex,
-                          })}>
-                          {tab.title}
-                        </CyDText>
-                      </CyDTouchView>
-                    );
-                  })}
-                </CyDView>
-              ) : (
-                <></>
-              )
-            }
-            contentContainerStyle={styles.sectionListContent}
+            contentContainerStyle={styles.contentContainer}
           />
-          {/* Bottom sheet managed by GlobalBottomSheetProvider; nothing to render here */}
 
           {/* Buy coin modal */}
           <CyDModalLayout
@@ -1180,7 +1361,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             setModalVisible={setBuyModalVisible}
             animationIn={'slideInUp'}
             animationOut={'slideOutDown'}
-            style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+            onModalHide={() => {
+              if (pendingBuyAction) {
+                setBuyChooseChainModalVisible(true);
+                setPendingBuyAction(false);
+              }
+            }}
+            style={styles.bottomModalNoPadding}>
             <CyDView
               className={
                 'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
@@ -1200,10 +1387,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               </CyDText>
               <CyDFlatList
                 data={buyOptionsData}
-                renderItem={({ item }: { item: IBuyOptionsData }) =>
-                  renderBuyPlatformItem(item)
+                renderItem={({ item }) =>
+                  renderBuyPlatformItem(item as IBuyOptionsData)
                 }
-                keyExtractor={(item: IBuyOptionsData) => item.index.toString()}
+                keyExtractor={(item: unknown) =>
+                  (item as IBuyOptionsData).index.toString()
+                }
                 showsVerticalScrollIndicator={true}
               />
             </CyDView>
@@ -1215,7 +1404,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             setModalVisible={setBuyChooseChainModalVisible}
             animationIn={'slideInUp'}
             animationOut={'slideOutDown'}
-            style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+            style={styles.bottomModalNoPadding}>
             <CyDView
               className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
               <CyDView
@@ -1264,9 +1453,113 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               </CyDText>
               <CyDFlatList
                 data={chainData}
-                renderItem={({ item }) => renderChainItem(item)}
-                keyExtractor={item => item.backendName}
-                className={''}
+                renderItem={({ item }) => renderChainItem(item as Chain)}
+                keyExtractor={(item: unknown) => (item as Chain).backendName}
+                showsVerticalScrollIndicator={true}
+              />
+            </CyDView>
+          </CyDModalLayout>
+
+          {/* Sell coin modal */}
+          <CyDModalLayout
+            isModalVisible={sellModalVisible}
+            setModalVisible={setSellModalVisible}
+            animationIn={'slideInUp'}
+            animationOut={'slideOutDown'}
+            onModalHide={() => {
+              if (pendingSellAction) {
+                setSellChooseChainModalVisible(true);
+                setPendingSellAction(false);
+              }
+            }}
+            style={styles.bottomModalNoPadding}>
+            <CyDView
+              className={
+                'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
+              }>
+              <CyDTouchView
+                onPress={() => setSellModalVisible(false)}
+                className={'z-50 absolute top-[24px] right-[24px]'}>
+                <CyDMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+              <CyDText
+                className={'text-center font-bold text-[22px] mb-[14px]'}>
+                {t('CHOOSE_PLATFORM_TO_SELL', 'Choose platform to sell')}
+              </CyDText>
+              <CyDFlatList
+                data={sellOptionsData}
+                renderItem={({ item }) =>
+                  renderSellPlatformItem(item as ISellOptionsData)
+                }
+                keyExtractor={(item: unknown) =>
+                  (item as ISellOptionsData).index.toString()
+                }
+                showsVerticalScrollIndicator={true}
+              />
+            </CyDView>
+          </CyDModalLayout>
+
+          {/* Select chain in sell coin modal */}
+          <CyDModalLayout
+            isModalVisible={sellChooseChainModalVisible}
+            setModalVisible={setSellChooseChainModalVisible}
+            animationIn={'slideInUp'}
+            animationOut={'slideOutDown'}
+            style={styles.bottomModalNoPadding}>
+            <CyDView
+              className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
+              <CyDView
+                className={'flex flex-row justify-between items-center '}>
+                <CyDTouchView
+                  onPress={() => {
+                    setSellChooseChainModalVisible(false);
+                    setTimeout(() => setSellModalVisible(true), 250);
+                  }}
+                  className={''}>
+                  <CyDMaterialDesignIcons
+                    name={'arrow-left'}
+                    size={24}
+                    className='text-base400'
+                  />
+                </CyDTouchView>
+                <CyDView className={'flex flex-row'}>
+                  {sellType && (
+                    <>
+                      <CyDImage
+                        source={sellType.logo}
+                        className={'w-[20px] h-[20px]'}
+                      />
+                      <CyDText
+                        className={
+                          'text-center font-bold text-[16px] ml-[6px]'
+                        }>
+                        {sellType.title}
+                      </CyDText>
+                    </>
+                  )}
+                </CyDView>
+                <CyDTouchView
+                  onPress={() => setSellChooseChainModalVisible(false)}
+                  className={''}>
+                  <CyDMaterialDesignIcons
+                    name={'close'}
+                    size={24}
+                    className='text-base400'
+                  />
+                </CyDTouchView>
+              </CyDView>
+              <CyDText
+                className={'text-center font-bold text-[22px] my-[20px]'}>
+                {t('CHOOSE_CHAIN') ?? 'Choose Chain'}
+              </CyDText>
+              <CyDFlatList
+                data={chainData}
+                renderItem={({ item }) => renderSellChainItem(item as Chain)}
+                keyExtractor={(item: unknown) => (item as Chain).backendName}
                 showsVerticalScrollIndicator={true}
               />
             </CyDView>
@@ -1278,9 +1571,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             isModalVisible={chooseChainModal}
             data={chainData}
             title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
-            selectedItem={receiveSelectedChain.name}
-            onPress={(item: Chain) => handleReceiveChainSelection(item)}
-            customStyle={{ justifyContent: 'flex-end', padding: 0 }}
+            selectedItem={'Ethereum'}
+            onPress={(item: { item: Chain; index: number }) =>
+              handleReceiveChainSelection(item.item)
+            }
+            customStyle={styles.chooseChainModalStyle}
             isClosable={true}
             animationOut={'slideOutDown'}
             animationIn={'slideInUp'}
@@ -1352,7 +1647,16 @@ const styles = StyleSheet.create({
   lottieView: {
     width: '60%',
   },
-  sectionListContent: {
-    paddingBottom: 80,
+  bottomModalNoPadding: {
+    justifyContent: 'flex-end',
+    margin: 0,
+    padding: 0,
+  },
+  chooseChainModalStyle: {
+    justifyContent: 'flex-end',
+    padding: 0,
+  },
+  contentContainer: {
+    paddingBottom: 50,
   },
 });

@@ -41,7 +41,6 @@ import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import { screenTitle } from '../../constants';
 import { Colors } from '../../constants/theme';
-import { GlobalContext } from '../../core/globalContext';
 import useAxios from '../../core/HttpRequest';
 import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
 import {
@@ -458,9 +457,7 @@ export default function Overview({
               </CyDView>
             </CyDView>
             <CyDView>
-              {/* <CyDTokenValue className={'text-center text-[18px] font-bold'}>{getTotalValue()}</CyDTokenValue> */}
-              <CyDTokenValue
-                className={'text-center text-[18px] font-extrabold '}>
+              <CyDTokenValue className={'text-center text-[18px] '}>
                 {totalValueInAmount}
               </CyDTokenValue>
             </CyDView>
@@ -553,7 +550,7 @@ export default function Overview({
                     resizeMode='contain'
                   />
                   <CyDView className='flex flex-col mx-[10px] justify-center items-end'>
-                    <CyDTokenValue className='text-[16px] font-extrabold'>
+                    <CyDTokenValue className='text-[16px]'>
                       {item.totalValue}
                     </CyDTokenValue>
                     <CyDTokenAmount className='text-[12px]'>

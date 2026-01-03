@@ -79,6 +79,7 @@ import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSh
 interface BridgeFundCardScreenParams {
   currentCardProvider: CardProviders;
   currentCardIndex: number;
+  selectedToken?: Holding;
 }
 
 /**
@@ -94,7 +95,11 @@ export default function BridgeFundCardScreen({
   // Use navigation hook instead of receiving it as a param to avoid non-serializable warning
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
-  const { currentCardProvider, currentCardIndex } = route.params;
+  const {
+    currentCardProvider,
+    currentCardIndex,
+    selectedToken: tokenFromRoute,
+  } = route.params;
 
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
@@ -160,8 +165,10 @@ export default function BridgeFundCardScreen({
 
   useEffect(() => {
     if (isFocused) {
-      if (route.params?.tokenData) {
-        setSelectedToken(route.params.tokenData);
+      if (tokenFromRoute) {
+        // Set the token from route and fetch its native token balance
+        setSelectedToken(tokenFromRoute);
+        void fetchNativeTokenBalance(tokenFromRoute);
       } else {
         if (!selectedToken) {
           // Auto-select the first suitable token from user's portfolio
@@ -169,7 +176,21 @@ export default function BridgeFundCardScreen({
         }
       }
     }
-  }, [isFocused]);
+  }, [isFocused, tokenFromRoute]);
+
+  /**
+   * Fetch native token balance for a given token
+   * Required for gas fee calculations and balance validation
+   */
+  const fetchNativeTokenBalance = async (token: Holding): Promise<void> => {
+    try {
+      const nativeToken = await getNativeToken(token.chainDetails.backendName);
+      setNativeTokenBalance(nativeToken.balanceDecimal);
+    } catch (error) {
+      // Set to '0' on error to avoid undefined state
+      setNativeTokenBalance('0');
+    }
+  };
 
   useEffect(() => {
     onEnterAmount(amount);
@@ -200,6 +221,7 @@ export default function BridgeFundCardScreen({
         });
 
         // Sort by total value (descending) and select the first one
+
         if (fundableTokens.length > 0) {
           const sortedTokens = fundableTokens.sort(
             (a, b) => Number(b.totalValue) - Number(a.totalValue),
@@ -865,10 +887,20 @@ export default function BridgeFundCardScreen({
           !GASLESS_CHAINS.includes(chainDetails.backendName)
         ) {
           try {
+            // Use a reasonable estimation amount instead of full balance
+            // Gas fees on Solana are relatively consistent, so we can estimate with a smaller amount
+            // This avoids the circular dependency where we need to know gas to calculate sendable amount
+            const estimationAmount = DecimalHelper.isLessThan(
+              amountInCrypto,
+              '0.1',
+            )
+              ? amountInCrypto
+              : '0.1';
+
             const gasDetails = await estimateGasForSolana({
               fromAddress: solana.address,
               toAddress: solana.address,
-              amountToSend: String(amountInCrypto),
+              amountToSend: estimationAmount,
               contractAddress,
               tokenContractDecimals: contractDecimals,
             });
@@ -1348,18 +1380,18 @@ export default function BridgeFundCardScreen({
         keyboardShouldPersistTaps='handled'
         showsVerticalScrollIndicator={false}>
         <RenderSelectedToken />
-        <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
+        <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center h-[140px]'>
           <CyDView className={'w-full items-center'}>
             <CyDView className={'flex flex-row justify-center items-center'}>
               {!isCrpytoInput && !isSmallScreenMobile && (
-                <CyDText
-                  className={clsx('text-mandarin font-bold', {
-                    'text-[32px]': amount.length <= 15,
-                    'text-[60px]': amount.length <= 7,
-                    'text-[75px]': amount.length <= 5,
+                <CyDTokenValue
+                  className={clsx('text-mandarin font-bold text-[28px]', {
+                    'text-[40px]': amount.length <= 10,
+                    'text-[50px]': amount.length <= 7,
+                    'text-[75px]': amount.length <= 4,
                   })}>
-                  {`$${amount === '' ? '0.00' : amount}`}
-                </CyDText>
+                  {amount}
+                </CyDTokenValue>
               )}
               {!isCrpytoInput && isSmallScreenMobile && (
                 <CyDView className='flex flex-row self-center'>
@@ -1442,14 +1474,6 @@ export default function BridgeFundCardScreen({
             </CyDText>
 
             <RenderWarningMessage />
-            {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
-                <CyDView className='mb-[2px]'>
-                  <CyDText className='text-center font-semibold'>
-                    {t<string>('CARD_LOAD_MIN_AMOUNT')}
-                  </CyDText>
-                </CyDView>
-              )}
-              <RenderWarningMessage /> */}
           </CyDView>
           <CyDView className={'p-[4px] ml-[-45px]'}>
             <CyDTouchView
