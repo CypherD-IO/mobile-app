@@ -1,22 +1,25 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+// Updated for React Native 0.83.0
 
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
-        minSdkVersion = 25
-        compileSdkVersion = 34
-        targetSdkVersion = 35
-        // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
-        ndkVersion = "23.1.7779620"
-        kotlinVersion = "1.8.22"
+        // Align with RN 0.83 template (Upgrade Helper)
+        buildToolsVersion = "36.0.0"
+        minSdkVersion = 24  // RN 0.83 requires minimum SDK 24
+        compileSdkVersion = 36
+        targetSdkVersion = 36
+        // NDK version updated for RN 0.83.0
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.1.20"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:7.4.2")
-        classpath("com.facebook.react:react-native-gradle-plugin")
+        // Updated Android Gradle Plugin for RN 0.83.0
+        classpath("com.android.tools.build:gradle:8.8.0")
+        // Note: react-native-gradle-plugin is now applied via settings.gradle pluginManagement
         classpath("com.google.gms:google-services:4.3.10")
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.8.1")
         classpath("com.google.firebase:perf-plugin:1.4.2")

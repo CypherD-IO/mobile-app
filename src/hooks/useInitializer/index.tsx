@@ -45,7 +45,6 @@ import {
   getPlatform,
   getPlatformVersion,
 } from '../../core/util';
-import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
 import { Platform } from 'react-native';
@@ -55,6 +54,10 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import {
+  intercomLoginUserWithUserId,
+  intercomUpdateUser,
+} from '../../core/intercom';
 
 export default function useInitializer() {
   const { getWithoutAuth } = useAxios();
@@ -80,19 +83,11 @@ export default function useInitializer() {
   }) {
     const devMode = await getDeveloperMode();
     if (!devMode && walletAddresses.ethereumAddress) {
-      Intercom.loginUserWithUserAttributes({
-        userId: walletAddresses.ethereumAddress,
-      }).catch(() => {
-        // throws error if user is already registered
-      });
-      Intercom.updateUser({
-        userId: walletAddresses.ethereumAddress,
-        customAttributes: {
-          ...walletAddresses,
-          version: DeviceInfo.getVersion(),
-        },
-      }).catch(() => {
-        // throws error if user is already registered
+      // Intercom is best-effort; never allow it to crash initialization on RN upgrades.
+      void intercomLoginUserWithUserId(walletAddresses.ethereumAddress);
+      void intercomUpdateUser(walletAddresses.ethereumAddress, {
+        ...walletAddresses,
+        version: DeviceInfo.getVersion(),
       });
     }
     void analytics().setAnalyticsCollectionEnabled(!devMode);
@@ -305,11 +300,8 @@ export default function useInitializer() {
                 algo: '',
               },
             });
-            Intercom.loginUserWithUserAttributes({
-              userId: _ethereum.observerId,
-            }).catch(() => {
-              // throws error if user is already registered
-            });
+            // Intercom is best-effort; never allow it to crash initialization on RN upgrades.
+            void intercomLoginUserWithUserId(_ethereum.observerId);
           } else {
             dispatch({
               type: 'ADD_ADDRESS',

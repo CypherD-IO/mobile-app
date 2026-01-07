@@ -10,6 +10,7 @@ import {
   zkSync,
   base,
 } from 'wagmi/chains';
+import { ChainBackendNames } from './chainBackendNames';
 import { AllChainsEnum } from './enum';
 export interface Chain {
   chainName: string;
@@ -25,26 +26,8 @@ export interface Chain {
   coinGeckoId?: string;
   nativeTokenLogoUrl?: string;
 }
-
-export enum ChainBackendNames {
-  ALL = 'ALL',
-  ETH = 'ETH',
-  POLYGON = 'POLYGON',
-  AVALANCHE = 'AVALANCHE',
-  ARBITRUM = 'ARBITRUM',
-  OPTIMISM = 'OPTIMISM',
-  BSC = 'BSC',
-  COSMOS = 'COSMOS',
-  OSMOSIS = 'OSMOSIS',
-  NOBLE = 'NOBLE',
-  COREUM = 'COREUM',
-  INJECTIVE = 'INJECTIVE',
-  ZKSYNC_ERA = 'ZKSYNC_ERA',
-  BASE = 'BASE',
-  SOLANA = 'SOLANA',
-  HYPERLIQUID = 'HYPERLIQUID',
-  BASE_SEPOLIA = 'BASE_SEPOLIA',
-}
+// Re-export for backward compatibility (many modules import this enum from `constants/server`)
+export { ChainBackendNames };
 
 export enum FundWalletAddressType {
   EVM = 'EVM',

@@ -17,7 +17,7 @@ import { get } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { BarCodeReadEvent } from '../../types/barcode';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';

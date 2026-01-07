@@ -13,7 +13,7 @@ import {
   SigningStargateClient,
 } from '@cosmjs/stargate';
 import { abis, addresses } from '@eth-optimism/contracts-ts';
-import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
+import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/exports';
 import * as Sentry from '@sentry/react-native';
 import {
   createTransferInstruction,

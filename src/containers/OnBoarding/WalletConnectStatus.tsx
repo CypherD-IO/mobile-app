@@ -28,8 +28,11 @@ import {
   setConnectionType,
 } from '../../core/asyncStorage';
 import useCardUtilities from '../../hooks/useCardUtilities';
-import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
+import {
+  intercomLoginUserWithUserId,
+  intercomUpdateUser,
+} from '../../core/intercom';
 
 /**
  * AsyncStorage key for persisting WalletConnect flow state during app backgrounding
@@ -134,18 +137,10 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
       }
       const walletAddress = String(address).toLowerCase();
 
-      Intercom.loginUserWithUserAttributes({
-        userId: walletAddress,
-      }).catch(() => {
-        // throws error if user is already registered
-      });
-      Intercom.updateUser({
-        userId: walletAddress,
-        customAttributes: {
-          version: DeviceInfo.getVersion(),
-        },
-      }).catch(() => {
-        // throws error if user is already registered
+      // Intercom is best-effort; never allow it to crash onboarding on RN upgrades.
+      void intercomLoginUserWithUserId(walletAddress);
+      void intercomUpdateUser(walletAddress, {
+        version: DeviceInfo.getVersion(),
       });
     } catch (error) {
       console.error(

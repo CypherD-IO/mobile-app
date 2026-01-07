@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 import React, { useContext, useEffect, useState } from 'react';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { BarCodeReadEvent } from '../../../types/barcode';
 import AppImages from '../../../../assets/images/appImages';
 import GradientText from '../../../components/gradientText';
 import { screenTitle } from '../../../constants';

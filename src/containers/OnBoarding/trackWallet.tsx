@@ -2,7 +2,7 @@ import firebase from '@react-native-firebase/app';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import React, { useContext, useState } from 'react';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { BarCodeReadEvent } from '../../types/barcode';
 import { v4 as uuidv4 } from 'uuid';
 import { isAddress } from 'web3-validator';
 import AppImages from '../../../assets/images/appImages';

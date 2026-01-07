@@ -1,8 +1,15 @@
-import Intercom from '@intercom/intercom-react-native';
-import analytics from '@react-native-firebase/analytics';
-import { CHAIN_ETH, Chain, CHAIN_NAMES } from '../constants/server';
-import { isAddressSet } from '../core/util';
 import { Dispatch } from 'react';
+import analytics from '@react-native-firebase/analytics';
+import { CHAIN_ETH, CHAIN_NAMES } from '../constants/server';
+import type { Chain } from '../constants/server';
+import { intercomLoginUserWithUserId } from '../core/intercom';
+
+// Inlined to avoid circular dependency with ../core/util
+// (util.tsx imports HdWalletContextDef from this file)
+const IMPORTING = 'IMPORTING';
+const isAddressSet = (address: string | undefined): boolean => {
+  return Boolean(address?.trim() && address !== IMPORTING);
+};
 
 export interface WalletKey {
   address: string | undefined;
@@ -212,11 +219,9 @@ export function hdWalletStateReducer(
       // Handle analytics for ETH chain
       if (chain === CHAIN_ETH.chainName) {
         void Promise.all([
-          Intercom.loginUserWithUserAttributes({ userId: address }).catch(
-            () => {
-              // User already registered
-            },
-          ),
+          // Intercom is best-effort; on RN upgrades it may be temporarily incompatible with
+          // New Architecture. Never allow this to break wallet state initialization.
+          intercomLoginUserWithUserId(address),
           analytics().setUserId(address),
         ]);
       }

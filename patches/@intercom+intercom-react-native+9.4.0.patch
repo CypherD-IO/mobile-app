@@ -1,0 +1,52 @@
+diff --git a/node_modules/@intercom/intercom-react-native/ios/IntercomModule.m b/node_modules/@intercom/intercom-react-native/ios/IntercomModule.m
+index af690ed..466609f 100644
+--- a/node_modules/@intercom/intercom-react-native/ios/IntercomModule.m
++++ b/node_modules/@intercom/intercom-react-native/ios/IntercomModule.m
+@@ -119,24 +119,24 @@ RCT_EXPORT_METHOD(sendTokenToIntercom:(NSString *)token
+ 
+ #pragma mark - User
+ 
+-RCT_EXPORT_METHOD(loginUnidentifiedUser:(RCTPromiseResolveBlock)successCallback
+-                                failure:(RCTPromiseRejectBlock)failureCallback) {
++RCT_EXPORT_METHOD(loginUnidentifiedUser:(RCTPromiseResolveBlock)resolve
++                                rejecter:(RCTPromiseRejectBlock)reject) {
+     [Intercom loginUnidentifiedUserWithSuccess:^{
+-        successCallback(@(YES));
++        resolve(@(YES));
+     } failure:^(NSError * _Nonnull error) {
+-        failureCallback(UNIDENTIFIED_REGISTRATION, @"Error in loginUnidentifiedUser", [self removeNullUnderlyingError:error]);
++        reject(UNIDENTIFIED_REGISTRATION, @"Error in loginUnidentifiedUser", [self removeNullUnderlyingError:error]);
+     }];
+ };
+ 
+ RCT_EXPORT_METHOD(loginUserWithUserAttributes:(NSDictionary *)userAttributes
+-                                      success:(RCTPromiseResolveBlock)successCallback
+-                                      failure:(RCTPromiseRejectBlock)failureCallback) {
++                                      resolver:(RCTPromiseResolveBlock)resolve
++                                      rejecter:(RCTPromiseRejectBlock)reject) {
+     ICMUserAttributes *attributes = [IntercomAttributesBuilder userAttributesForDictionary:userAttributes];
+ 
+     [Intercom loginUserWithUserAttributes:attributes success:^{
+-        successCallback(@(YES));
++        resolve(@(YES));
+     } failure:^(NSError * _Nonnull error) {
+-        failureCallback(IDENTIFIED_REGISTRATION, @"Error in loginUserWithUserAttributes", [self removeNullUnderlyingError:error]);
++        reject(IDENTIFIED_REGISTRATION, @"Error in loginUserWithUserAttributes", [self removeNullUnderlyingError:error]);
+     }];
+ }
+ 
+@@ -147,12 +147,12 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
+ 
+ RCT_EXPORT_METHOD(updateUser:(NSDictionary *)userAttributesDict
+                   resolver:(RCTPromiseResolveBlock)resolve
+-              failureBlock:(RCTPromiseRejectBlock)failureCallback) {
++                  rejecter:(RCTPromiseRejectBlock)reject) {
+     ICMUserAttributes *userAttributes = [IntercomAttributesBuilder userAttributesForDictionary:userAttributesDict];
+     [Intercom updateUser:userAttributes success:^{
+         resolve(@(YES));
+     } failure:^(NSError * _Nonnull error) {
+-        failureCallback(UPDATE_USER, @"Error in updateUser", [self removeNullUnderlyingError:error]);
++        reject(UPDATE_USER, @"Error in updateUser", [self removeNullUnderlyingError:error]);
+     }];
+ };
+ 

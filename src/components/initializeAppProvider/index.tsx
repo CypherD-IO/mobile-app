@@ -27,7 +27,6 @@ import analytics from '@react-native-firebase/analytics';
 import { t } from 'i18next';
 import { CyDSafeAreaView, CyDText } from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
-import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
@@ -47,6 +46,7 @@ import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import { screenTitle } from '../../constants';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import { intercomPresent } from '../../core/intercom';
 
 interface UseInitializerReturn {
   exitIfJailBroken: () => Promise<void>;
@@ -121,6 +121,40 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     const initializeApp = async () => {
+      /**
+       * IMPORTANT (RN 0.83+):
+       * Never block dismissing the native splash screen on network / async init.
+       *
+       * Previously, `SplashScreen.hide()` was only called when `checkAPIAccessibility()`
+       * returned `true`. If the health check fails (wrong base URL, no network, server down),
+       * the app will remain stuck on the splash forever even though JS is running.
+       *
+       * We now:
+       * - Schedule a hard timeout to hide the splash.
+       * - Also attempt to hide as soon as initialization completes (success OR failure).
+       */
+
+      let didHideSplash = false;
+      const hideSplashSafely = (reason: string): void => {
+        if (didHideSplash) return;
+        didHideSplash = true;
+        try {
+          // eslint-disable-next-line no-console
+          console.log(`[InitializeAppProvider] Hiding splash (${reason})`);
+          SplashScreen.hide();
+        } catch (error) {
+          Sentry.captureException({
+            reason: 'SplashScreen.hide() failed',
+            error,
+          });
+        }
+      };
+
+      // Failsafe timeout: even if init hangs, do not trap users on the splash.
+      const splashTimeoutId = setTimeout(() => {
+        hideSplashSafely('timeout');
+      }, SPLASH_SCREEN_TIMEOUT);
+
       // Sentry is now initialized in App.tsx for v7 compatibility
 
       messaging().onMessage(response => {
@@ -149,17 +183,34 @@ export const InitializeAppProvider = ({
         }
       });
 
-      const isAPIAccessible = await checkAPIAccessibility();
-      if (isAPIAccessible) {
-        await exitIfJailBroken();
-        void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
-        void loadActivitiesFromAsyncStorage();
+      try {
+        const isAPIAccessible = await checkAPIAccessibility().catch(error => {
+          Sentry.captureException({
+            reason: '[InitializeAppProvider] checkAPIAccessibility threw',
+            error,
+          });
+          return false;
+        });
 
-        await requestUserPermission();
+        // eslint-disable-next-line no-console
+        console.log(
+          `[InitializeAppProvider] API accessible: ${String(isAPIAccessible)}`,
+        );
 
-        setTimeout(() => {
-          SplashScreen.hide();
-        }, SPLASH_SCREEN_TIMEOUT);
+        if (isAPIAccessible) {
+          await exitIfJailBroken();
+          void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
+          void loadActivitiesFromAsyncStorage();
+          await requestUserPermission();
+        } else {
+          // If API isn't reachable, allow the app UI to load so the user can retry / switch network.
+          // We intentionally do NOT crash or block on this.
+          void logAnalyticsToFirebase(AnalyticEvent.API_HEALTH_UNAVAILABLE, {});
+        }
+      } finally {
+        clearTimeout(splashTimeoutId);
+        hideSplashSafely('init_complete');
+        setWalletLoading(false);
       }
     };
 
@@ -435,7 +486,7 @@ export const InitializeAppProvider = ({
             <DialogButton
               text={t('CONTACT_TEXT')}
               onPress={() => {
-                void Intercom.present();
+                void intercomPresent();
                 sendFirebaseEvent(hdWallet, 'support');
               }}
             />

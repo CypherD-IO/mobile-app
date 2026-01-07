@@ -1,8 +1,11 @@
-apply plugin: "com.android.application"
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.google.firebase.firebase-perf'
-apply plugin: 'com.facebook.react'
+plugins {
+    id "com.android.application"
+    id "com.facebook.react"
+    id "org.jetbrains.kotlin.android"
+    id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics"
+    id "com.google.firebase.firebase-perf"
+}
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -88,8 +91,11 @@ android {
         versionName System.getenv('VERSION_NAME') ?: "4.87"
         missingDimensionStrategy 'react-native-camera', 'general'
     }
-    packagingOptions {
-        pickFirst '**/libcrypto.so'
+    // AGP 8.x uses 'packaging' instead of 'packagingOptions'
+    packaging {
+        jniLibs {
+            pickFirsts += ['**/libcrypto.so']
+        }
     }
     signingConfigs {
         release {
@@ -124,38 +130,49 @@ android {
 }
 
 dependencies {
+    // react-native-config for environment variables
     implementation project(':react-native-config')
+    
     // The version of react-native is set by the React Native Gradle Plugin
-    implementation "com.facebook.react:react-native:+"
-    implementation 'com.google.firebase:firebase-messaging:20.2.+'
     implementation("com.facebook.react:react-android")
+    
+    // Firebase messaging for push notifications
+    implementation 'com.google.firebase:firebase-messaging:20.2.+'
+    
+    // OkHttp for network requests
     implementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
+    
+    // Fresco for image loading
     implementation('com.facebook.fresco:fresco:2.0.0')
     // For animated GIF support
     implementation('com.facebook.fresco:animated-gif:2.5.0')
     // For WebP support, including animated WebP
     implementation('com.facebook.fresco:animated-webp:2.0.0')
     implementation('com.facebook.fresco:webpsupport:2.0.0')
+    
+    // AndroidX AppCompat
     implementation("androidx.appcompat:appcompat:1.6.1") {
         version {
             strictly '1.6.1'
         }
     }
 
-    debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
-    debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
-        exclude group:'com.squareup.okhttp3', module:'okhttp'
-    }
+    // NOTE: Flipper dependencies REMOVED in RN 0.83.0 - Flipper is no longer supported
+    // Use React Native DevTools instead: https://reactnative.dev/docs/debugging
 
-    debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
+    // Hermes JS engine (default in RN 0.83)
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
     }
 
+    // Install referrer for tracking app installs
     implementation 'com.android.installreferrer:installreferrer:2.2'
 }
 
-apply plugin: 'com.google.gms.google-services' // Do not remove. This is to support psuh notifications in android
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply plugin: 'com.google.gms.google-services' // Do not remove. This is to support push notifications in android
+
+// NOTE: native_modules.gradle is now handled automatically via settings.gradle autolinkLibrariesFromCommand()
+// If you need to manually apply it for compatibility, uncomment the line below:
+// apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

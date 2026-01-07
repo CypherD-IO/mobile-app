@@ -20,12 +20,15 @@ import useCardUtilities from '../../hooks/useCardUtilities';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindComponents';
 import useConnectionManager from '../../hooks/useConnectionManager';
-import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
 import { getToken } from '../../notification/pushNotification';
 import { get } from 'lodash';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  intercomLoginUserWithUserId,
+  intercomUpdateUser,
+} from '../../core/intercom';
 
 /**
  * AsyncStorage key to check if we're in onboarding WalletConnect flow
@@ -138,18 +141,10 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   };
 
   const registerIntercomUser = () => {
-    Intercom.loginUserWithUserAttributes({
-      userId: address,
-    }).catch(() => {
-      // throws error if user is already registered
-    });
-    Intercom.updateUser({
-      userId: address,
-      customAttributes: {
-        version: DeviceInfo.getVersion(),
-      },
-    }).catch(() => {
-      // throws error if user is already registered
+    // Intercom is best-effort; never allow it to crash wallet-connect flows on RN upgrades.
+    void intercomLoginUserWithUserId(address);
+    void intercomUpdateUser(address, {
+      version: DeviceInfo.getVersion(),
     });
   };
 

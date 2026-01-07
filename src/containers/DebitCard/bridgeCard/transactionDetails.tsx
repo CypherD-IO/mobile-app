@@ -1,9 +1,9 @@
-import Intercom from '@intercom/intercom-react-native';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LottieView from 'lottie-react-native';
 import AppImages from '../../../../assets/images/appImages';
+import { intercomPresent } from '../../../core/intercom';
 import {
   HdWalletContext,
   copyToClipboard,
@@ -2012,7 +2012,7 @@ export default function TransactionDetails() {
                   },
                 );
                 sendFirebaseEvent(hdWalletContext, 'support');
-                void Intercom.present();
+                void intercomPresent();
               }
             }}
             type={ButtonType.GREY_FILL}

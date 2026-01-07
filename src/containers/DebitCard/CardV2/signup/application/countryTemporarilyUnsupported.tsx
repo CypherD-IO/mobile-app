@@ -17,10 +17,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import CardApplicationHeader from '../../../../../components/v2/CardApplicationHeader';
 import CardApplicationFooter from '../../../../../components/v2/CardApplicationFooter';
-import Intercom from '@intercom/intercom-react-native';
 import { logAnalyticsToFirebase } from '../../../../../core/analytics';
 import { screenTitle } from '../../../../../constants';
 import useAxios from '../../../../../core/HttpRequest';
+import { intercomPresent } from '../../../../../core/intercom';
 import {
   CardApplicationStatus,
   CardProviders,
@@ -78,7 +78,7 @@ const CountryTemporarilyUnsupported = (): JSX.Element => {
     });
 
     // Open Intercom support chat
-    void Intercom.present();
+    void intercomPresent();
   };
 
   // On focus: refresh profile and if applicationStatus is CREATED navigate to Email Verification

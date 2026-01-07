@@ -42,8 +42,8 @@ import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
 
-import { ActivityContextDef } from '../reducers/activity_reducer';
-import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
+import type { ActivityContextDef } from '../reducers/activity_reducer';
+import type { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { t } from 'i18next';
 import {
   AnalyticsType,

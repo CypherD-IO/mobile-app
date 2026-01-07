@@ -10,7 +10,6 @@ import {
   setInternetCredentials,
   Options,
 } from 'react-native-keychain';
-import Intercom from '@intercom/intercom-react-native';
 import { Alert } from 'react-native';
 import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
@@ -65,7 +64,7 @@ import { hostWorker } from '../global';
 import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
-import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
+import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/exports';
 import * as bip39 from 'bip39';
 import { Keypair } from '@solana/web3.js';
 import { createWalletClient, custom, Hex } from 'viem';
@@ -76,6 +75,7 @@ import * as bs58 from 'bs58';
 import { get } from 'lodash';
 import { HDKey } from 'micro-ed25519-hdkey';
 import { cosmosConfig } from '../constants/cosmosConfig';
+import { intercomPresent } from './intercom';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 11;
@@ -180,7 +180,8 @@ export async function _setInternetCredentialsOptions(
         {
           text: 'OK',
           onPress: () => {
-            void Intercom.present();
+            // Best-effort: Intercom might be temporarily unavailable during RN upgrades.
+            void intercomPresent();
           },
         },
       ],

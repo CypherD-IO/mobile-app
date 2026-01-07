@@ -1,4 +1,3 @@
-import Intercom from '@intercom/intercom-react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import clsx from 'clsx';
 import { capitalize } from 'lodash';
@@ -18,6 +17,7 @@ import {
   CyDView,
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
+import { intercomPresent } from '../../core/intercom';
 
 interface ActivityDetailsModalProps {
   /** Whether the modal is visible */
@@ -497,7 +497,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
     handleModalClose();
 
     // Open Intercom chat
-    void Intercom.present();
+    void intercomPresent();
   };
 
   /**

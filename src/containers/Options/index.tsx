@@ -42,7 +42,6 @@ import { screenTitle } from '../../constants';
 import AutoLoadOptionsModal from '../DebitCard/bridgeCard/autoLoadOptions';
 import TelegramOptionsModal from '../../components/telegramOptionsModal';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
-import Intercom from '@intercom/intercom-react-native';
 import { get } from 'lodash';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import useAxios from '../../core/HttpRequest';
@@ -54,6 +53,7 @@ import { isAndroid } from '../../misc/checkers';
 import { Linking, Alert } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import { getDeveloperMode, setDeveloperMode } from '../../core/asyncStorage';
+import { intercomPresent } from '../../core/intercom';
 
 const RenderOptions = ({
   isLoading,
@@ -301,7 +301,7 @@ export default function OptionsHub() {
       title: t('SUPPORT'),
       apiDependent: false,
       onPress: async () => {
-        void Intercom.present();
+        void intercomPresent();
         sendFirebaseEvent(hdWalletContext, 'support');
       },
     },

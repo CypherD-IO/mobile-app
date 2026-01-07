@@ -1,4 +1,4 @@
-import { ChainBackendNames } from '../constants/server';
+import type { ChainBackendNames } from '../constants/chainBackendNames';
 
 export type DeFiPositionTypes =
   | 'liqudity'

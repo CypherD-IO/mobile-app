@@ -6,7 +6,7 @@ import {
   Registry,
 } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes as defaultStargateTypes } from '@cosmjs/stargate';
-import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
+import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/exports';
 import { Transaction } from '@solana/web3.js';
 import {
   MsgClearAdmin,

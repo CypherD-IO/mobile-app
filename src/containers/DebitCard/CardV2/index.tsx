@@ -1,4 +1,3 @@
-import Intercom from '@intercom/intercom-react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -17,6 +16,7 @@ import { StyleSheet, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Toast from 'react-native-toast-message';
 import AppImages, { AppImagesMap } from '../../../../assets/images/appImages';
+import { intercomPresent } from '../../../core/intercom';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
@@ -747,7 +747,7 @@ export default function CypherCardScreen() {
                 <CyDTouchView
                   className='mt-2 px-3 py-2 rounded-lg bg-white w-[135px]'
                   onPress={() => {
-                    void Intercom.present();
+                    void intercomPresent();
                   }}>
                   <CyDText className='text-black font-medium text-[14px]'>
                     {t('CONTACT_SUPPORT')}

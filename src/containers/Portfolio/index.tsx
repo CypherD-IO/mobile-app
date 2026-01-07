@@ -29,7 +29,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { BarCodeReadEvent } from 'react-native-camera';
+import { BarCodeReadEvent } from '../../types/barcode';
 import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import ChooseChainModalV2 from '../../components/v2/chooseChainModal';

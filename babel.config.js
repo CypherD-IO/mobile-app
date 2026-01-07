@@ -1,66 +1,48 @@
-const lazyImports = require('metro-react-native-babel-preset/src/configs/lazy-imports');
-
+/**
+ * Babel configuration for React Native 0.83.0
+ * Updated to use @react-native/babel-preset (replaces metro-react-native-babel-preset)
+ * Many plugins are now built into the preset and have been removed
+ */
 module.exports = (api) => {
   api.cache(true);
   return {
     comments: false,
     compact: true,
-    presets: [['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }], 'nativewind/babel'],
+    // Updated preset: metro-react-native-babel-preset -> @react-native/babel-preset
+    presets: [['module:@react-native/babel-preset', { useTransformReactJSXExperimental: true }], 'nativewind/babel'],
     plugins: [
+      // Reanimated plugin must be listed last (but we list it first and it gets processed last)
       'react-native-reanimated/plugin',
+      
+      // Transform plugins still needed
       '@babel/plugin-transform-flow-strip-types',
-      '@babel/plugin-proposal-optional-catch-binding',
       ['@babel/plugin-transform-private-methods', { loose: true }],
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-block-scoping',
-      [
-        '@babel/plugin-proposal-class-properties',
-        {
-          loose: true,
-        },
-      ],
       '@babel/plugin-syntax-dynamic-import',
       '@babel/plugin-syntax-export-default-from',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-computed-properties',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-destructuring',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-function-name',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-literals',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-parameters',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-shorthand-properties',
+      
+      // JSX transform for nativewind
       [
-            '@babel/plugin-transform-react-jsx',
-            {
-                runtime: 'automatic',
-                importSource: "nativewind",
-            },
-        ],
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-regenerator',
-      '@babel/plugin-transform-sticky-regex',
-      '@babel/plugin-transform-unicode-regex',
-      '@babel/plugin-proposal-export-default-from',
-      [
-        '@babel/plugin-transform-modules-commonjs',
+        '@babel/plugin-transform-react-jsx',
         {
-          strict: false,
-          strictMode: false, // prevent "use strict" injections
-          lazy: (importSpecifier) => lazyImports.has(importSpecifier),
-          allowTopLevelThis: true, // dont rewrite global `this` -> `undefined`
+          runtime: 'automatic',
+          importSource: 'nativewind',
         },
       ],
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-classes',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-arrow-functions'
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-spread',
-      '@babel/plugin-proposal-object-rest-spread',
-      // SUPPORTED BY DEFAULT: [
-      // SUPPORTED BY DEFAULT:   '@babel/plugin-transform-template-literals',
-      // SUPPORTED BY DEFAULT:   {loose: true}, // dont 'a'.concat('b'), just use 'a'+'b'
-      // SUPPORTED BY DEFAULT: ],
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-exponentiation-operator',
-      // SUPPORTED BY DEFAULT: '@babel/plugin-transform-object-assign',
-      // SUPPORTED BY DEFAULT: ['@babel/plugin-transform-for-of', {loose: true}],
-      // 'metro-react-native-babel-preset/src/transforms/transform-symbol-member',
+      
+      // Regex transforms
+      '@babel/plugin-transform-sticky-regex',
+      '@babel/plugin-transform-unicode-regex',
+      
+      // Export default from syntax
+      '@babel/plugin-proposal-export-default-from',
+      
+      // Export namespace from - needed for web3-validator
+      '@babel/plugin-transform-export-namespace-from',
+      
+      // Display name for debugging
       '@babel/plugin-transform-react-display-name',
-      '@babel/plugin-proposal-optional-chaining',
-      '@babel/plugin-proposal-nullish-coalescing-operator',
+      
+      // Runtime helpers
       [
         '@babel/plugin-transform-runtime',
         {
@@ -68,6 +50,14 @@ module.exports = (api) => {
           regenerator: true,
         },
       ],
+      
+      // NOTE: The following plugins have been REMOVED as they are now built into @react-native/babel-preset:
+      // - @babel/plugin-proposal-optional-catch-binding (now built-in)
+      // - @babel/plugin-proposal-class-properties (now built-in)
+      // - @babel/plugin-proposal-object-rest-spread (now built-in)
+      // - @babel/plugin-proposal-optional-chaining (now built-in)
+      // - @babel/plugin-proposal-nullish-coalescing-operator (now built-in)
+      // - @babel/plugin-transform-modules-commonjs with lazy imports (handled by preset)
     ],
   };
 };

@@ -1,7 +1,7 @@
 import { HDWallet } from '../../reducers/hdwallet_reducer';
-import Intercom from '@intercom/intercom-react-native';
 import { get } from 'lodash';
 import { logAnalyticsToFirebase } from '../../core/analytics';
+import { intercomLogEvent } from '../../core/intercom';
 
 export const sendFirebaseEvent = (
   hdWalletContext: { state: HDWallet },
@@ -23,5 +23,6 @@ export const intercomAnalyticsLog = async (
   params?: { [key: string]: any },
 ) => {
   void logAnalyticsToFirebase(name, params);
-  void Intercom.logEvent(name, params);
+  // Intercom is best-effort; never allow it to crash the app on startup.
+  void intercomLogEvent(name, params);
 };

@@ -8,7 +8,6 @@ import {
   monotoneCubicInterpolation,
   simplifyData,
 } from '@cypherd-io/animated-charts';
-import Intercom from '@intercom/intercom-react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -49,6 +48,7 @@ import {
   HdWalletContext,
   isNativeToken,
 } from '../../core/util';
+import { intercomPresent } from '../../core/intercom';
 import { isAndroid } from '../../misc/checkers';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
@@ -800,7 +800,7 @@ export default function Overview({
         <CyDTouchView
           className={'mb-[15px]'}
           onPress={() => {
-            void Intercom.present();
+            void intercomPresent();
             sendFirebaseEvent(hdWalletContext, 'support');
           }}>
           <CyDText
