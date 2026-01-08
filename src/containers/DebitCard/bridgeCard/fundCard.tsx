@@ -342,7 +342,7 @@ export default function BridgeFundCardScreen({
       targetWalletAddress = await fetchCardTargetAddress(
         quote.programId,
         quote.cardProvider,
-        quote.chain,
+        chain,
       );
     } catch (error) {
       Sentry.captureException(error, {
