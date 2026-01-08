@@ -30,9 +30,7 @@ import {
 import {
   ButtonType,
   CardProviders,
-  COSMOS_ONLY_CHAINS,
   EVM_ONLY_CHAINS,
-  SOLANA_ONLY_CHAINS,
   TokenModalType,
 } from '../../../constants/enum';
 import {
@@ -43,7 +41,6 @@ import {
   ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
-  EVM_CHAINS_BACKEND_NAMES,
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../../constants/server';
@@ -77,6 +74,7 @@ import {
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
 import { fetchCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
+import { getTargetChainBackendName } from '../../../utils/chainUtils';
 
 /**
  * Interface for route parameters passed to BridgeFundCardScreen
@@ -326,23 +324,11 @@ export default function BridgeFundCardScreen({
 
     let targetWalletAddress: string;
     try {
-      let chain = "";
-      if (EVM_ONLY_CHAINS.includes(quote.chain)) {
-        chain = ChainBackendNames.ETH;
-      }
-      else if (COSMOS_ONLY_CHAINS.includes(quote.chain)) {
-        chain = ChainBackendNames.OSMOSIS;
-      }
-      else if (SOLANA_ONLY_CHAINS.includes(quote.chain)) {
-        chain = ChainBackendNames.SOLANA;
-      }
-      else {
-        throw new Error('Invalid chain name: ' + quote.chain);
-      }
+      const targetChain = getTargetChainBackendName(quote.chain);
       targetWalletAddress = await fetchCardTargetAddress(
         quote.programId,
         quote.cardProvider,
-        chain,
+        targetChain,
       );
     } catch (error) {
       Sentry.captureException(error, {

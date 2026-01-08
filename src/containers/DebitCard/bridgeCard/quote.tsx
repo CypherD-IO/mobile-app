@@ -28,11 +28,9 @@ import Button from '../../../components/v2/button';
 import {
   AnalyticsType,
   ButtonType,
-  COSMOS_ONLY_CHAINS,
   CypherPlanId,
   EVM_ONLY_CHAINS,
   HyperLiquidAccount,
-  SOLANA_ONLY_CHAINS,
 } from '../../../constants/enum';
 import { capitalize, get } from 'lodash';
 import {
@@ -41,7 +39,6 @@ import {
   ChainNameMapping,
   ChainNames,
   COSMOS_CHAINS,
-  EVM_CHAINS_BACKEND_NAMES,
   PURE_COSMOS_CHAINS,
 } from '../../../constants/server';
 import { useTranslation } from 'react-i18next';
@@ -75,6 +72,7 @@ import useSkipApiBridge from '../../../core/skipApi';
 import { formatUnits } from 'viem';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import { fetchCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
+import { getTargetChainBackendName } from '../../../utils/chainUtils';
 
 export default function CardQuote({
   navigation,
@@ -141,9 +139,29 @@ export default function CardQuote({
   const injective = hdWallet.state.wallet.injective;
   const [targetAddress, setTargetAddress] = useState<string>('');
   const [isAddressLoading, setIsAddressLoading] = useState<boolean>(true);
+  const prevQuoteRef = useRef<any>(null);
 
   useEffect(() => {
     const getAddress = async () => {
+      const currentQuoteParams = {
+        programId: tokenQuote.programId,
+        cardProvider: tokenQuote.cardProvider,
+        chain: tokenQuote.chain,
+        targetAddress: tokenQuote.targetAddress,
+      };
+
+      if (
+        prevQuoteRef.current &&
+        prevQuoteRef.current.programId === currentQuoteParams.programId &&
+        prevQuoteRef.current.cardProvider === currentQuoteParams.cardProvider &&
+        prevQuoteRef.current.chain === currentQuoteParams.chain &&
+        prevQuoteRef.current.targetAddress === currentQuoteParams.targetAddress &&
+        targetAddress
+      ) {
+        setIsAddressLoading(false);
+        return;
+      }
+
       try {
         setIsAddressLoading(true);
         if (!tokenQuote.programId || !tokenQuote.cardProvider || !tokenQuote.chain) {
@@ -166,19 +184,7 @@ export default function CardQuote({
           setIsAddressLoading(false);
           return;
         }
-        let targetChain = "";
-        if (EVM_ONLY_CHAINS.includes(tokenQuote.chain)) {
-          targetChain = ChainBackendNames.ETH;
-        }
-        else if (COSMOS_ONLY_CHAINS.includes(tokenQuote.chain)) {
-          targetChain = ChainBackendNames.OSMOSIS;
-        }
-        else if (SOLANA_ONLY_CHAINS.includes(tokenQuote.chain)) {
-          targetChain = ChainBackendNames.SOLANA;
-        }
-        else {
-          throw new Error('Invalid chain name: ' + tokenQuote.chain);
-        }
+        const targetChain = getTargetChainBackendName(tokenQuote.chain);
         const targetWalletAddress = await fetchCardTargetAddress(
           tokenQuote.programId,
           tokenQuote.cardProvider,
@@ -197,6 +203,7 @@ export default function CardQuote({
           throw new Error("Target address mismatch between contract and quote");
         }
         setTargetAddress(targetWalletAddress);
+        prevQuoteRef.current = currentQuoteParams;
         setIsAddressLoading(false);
       } catch (error) {
         const isMismatchError = error instanceof Error && error.message === "Target address mismatch between contract and quote";
@@ -222,7 +229,7 @@ export default function CardQuote({
     };
 
     getAddress();
-  }, [tokenQuote, showModal, hideModal, t]);
+  }, [tokenQuote, showModal, hideModal, t, targetAddress]);
 
   const cosmosAddresses = useMemo(
     () => ({
