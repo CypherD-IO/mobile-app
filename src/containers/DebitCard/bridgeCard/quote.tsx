@@ -142,6 +142,7 @@ export default function CardQuote({
   const prevQuoteRef = useRef<any>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const getAddress = async () => {
       const currentQuoteParams = {
         programId: tokenQuote.programId,
@@ -158,12 +159,12 @@ export default function CardQuote({
         prevQuoteRef.current.targetAddress === currentQuoteParams.targetAddress &&
         targetAddress
       ) {
-        setIsAddressLoading(false);
+        if (isMounted) setIsAddressLoading(false);
         return;
       }
 
       try {
-        setIsAddressLoading(true);
+        if (isMounted) setIsAddressLoading(true);
         if (!tokenQuote.programId || !tokenQuote.cardProvider || !tokenQuote.chain) {
           Sentry.captureMessage('Target address lookup validation failed', {
             level: 'warning',
@@ -202,9 +203,11 @@ export default function CardQuote({
         if (!isAddressMatch) {
           throw new Error("Target address mismatch between contract and quote");
         }
-        setTargetAddress(targetWalletAddress);
-        prevQuoteRef.current = currentQuoteParams;
-        setIsAddressLoading(false);
+        if (isMounted) {
+          setTargetAddress(targetWalletAddress);
+          prevQuoteRef.current = currentQuoteParams;
+          setIsAddressLoading(false);
+        }
       } catch (error) {
         const isMismatchError = error instanceof Error && error.message === "Target address mismatch between contract and quote";
         Sentry.captureException(error, {
@@ -223,12 +226,15 @@ export default function CardQuote({
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        setIsAddressLoading(false);
+        if (isMounted) setIsAddressLoading(false);
         return;
       }
     };
 
     getAddress();
+    return () => {
+      isMounted = false;
+    };
   }, [tokenQuote, showModal, hideModal, t]);
 
   const cosmosAddresses = useMemo(
