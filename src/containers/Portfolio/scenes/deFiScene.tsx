@@ -67,81 +67,81 @@ const DeFiTotal = ({
 }) => {
   if (supply > 0 || debt > 0 || value > 0 || claimable > 0)
     return (
-      <CyDView className='pt-[10px] bg-n20'>
-        <CyDView className='flex flex-row justify-evenly items-center'>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 mr-[3px] mb-[2px] p-[2%]'>
-            <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
+      <CyDView className='pt-[10px] bg-n20 px-[10px]'>
+        <CyDView className='flex flex-row justify-evenly items-center gap-[8px]'>
+          <CyDView className='flex-1 h-[85px] rounded-[12px] bg-n0 p-[12px]'>
+            <CyDView className='w-full h-full flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
                 {value}
               </CyDTokenValue>
 
               <CyDView className='flex flex-row justify-center items-center'>
-                <CyDText className='font-medium text-[16px]'>
+                <CyDText className='font-medium text-[14px] text-n100'>
                   {t('TOTAL_BALANCE')}
                 </CyDText>
                 <CyDFastImage
                   source={AppImages.DEFI_VALUE}
-                  className='w-[20px] h-[20px] ml-[4px]'
+                  className='w-[18px] h-[18px] ml-[4px]'
                   resizeMode='contain'
                 />
               </CyDView>
             </CyDView>
           </CyDView>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 ml-[3px] mb-[2px] p-[2%]'>
-            <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
+          <CyDView className='flex-1 h-[85px] rounded-[12px] bg-n0 p-[12px]'>
+            <CyDView className='w-full h-full flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
                 {debt}
               </CyDTokenValue>
 
               <CyDView className='flex flex-row justify-center items-center'>
-                <CyDText className='font-medium text-[16px]'>
+                <CyDText className='font-medium text-[14px] text-n100'>
                   {t('TOTAL_DEBT')}
                 </CyDText>
                 <CyDFastImage
                   source={AppImages.DEFI_DEBT}
-                  className='w-[20px] h-[20px] ml-[4px]'
+                  className='w-[18px] h-[18px] ml-[4px]'
                   resizeMode='contain'
                 />
               </CyDView>
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='flex flex-row justify-evenly items-center'>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 mt-[6px] mr-[2px] p-[2%]'>
-            <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
+        <CyDView className='flex flex-row justify-evenly items-center gap-[8px] mt-[8px]'>
+          <CyDView className='flex-1 h-[85px] rounded-[12px] bg-n0 p-[12px]'>
+            <CyDView className='w-full h-full flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
                 {supply}
               </CyDTokenValue>
 
               <CyDView className='flex flex-row justify-center items-center'>
-                <CyDText className='font-medium text-[16px]'>
+                <CyDText className='font-medium text-[14px] text-n100'>
                   {t('TOTAL_SUPPLY')}
                 </CyDText>
                 <CyDFastImage
                   source={AppImages.DEFI_SUPPLY}
-                  className='w-[20px] h-[20px] ml-[4px]'
+                  className='w-[18px] h-[18px] ml-[4px]'
                   resizeMode='contain'
                 />
               </CyDView>
             </CyDView>
           </CyDView>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 mt-[6px] ml-[2px] p-[2%]'>
-            <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
+          <CyDView className='flex-1 h-[85px] rounded-[12px] bg-n0 p-[12px]'>
+            <CyDView className='w-full h-full flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
                 {claimable}
               </CyDTokenValue>
 
               <CyDView className='flex flex-row justify-center items-center'>
-                <CyDText className='font-medium text-[16px]'>
+                <CyDText className='font-medium text-[14px] text-n100'>
                   {t('TOTAL_REWARDS')}
                 </CyDText>
                 <CyDFastImage
                   source={AppImages.DEFI_REWARDS}
-                  className='w-[20px] h-[20px] ml-[4px]'
+                  className='w-[18px] h-[18px] ml-[4px]'
                   resizeMode='contain'
                 />
               </CyDView>
@@ -266,7 +266,7 @@ const DeFiScene = ({
       return (
         <CyDTouchView
           key={`${protocol.protocolName}`}
-          className='relative px-[14px] py-[20px] border border-n40 rounded-[10px] flex mt-[40px]'
+          className='relative px-[14px] py-[20px] bg-n0 rounded-[12px] flex mt-[40px]'
           onPress={() => {
             navigation.navigate(screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN, {
               protocol,
@@ -274,7 +274,7 @@ const DeFiScene = ({
           }}>
           <CyDFastImage
             source={protocol.protocolLogo}
-            className='absolute -top-[21px] right-[50%] h-[42px] w-[42px] rounded-full border border-n40'
+            className='absolute -top-[21px] right-[50%] h-[42px] w-[42px] rounded-full bg-n20'
             resizeMode='contain'
           />
           <CyDView className='flex flex-row'>
@@ -311,7 +311,7 @@ const DeFiScene = ({
                     })}
                   {moreChainsCount > 1 && (
                     <CyDView className='h-[16px] w-[16px] rounded-full flex justify-center items-center'>
-                      <CyDText className='text-[12px] '>
+                      <CyDText className='text-[12px]'>
                         {t('PLUS')}
                         {moreChainsCount}
                       </CyDText>
@@ -334,7 +334,7 @@ const DeFiScene = ({
               )}
             </CyDView>
           </CyDView>
-          <CyDView className='relative border border-n40 rounded-[10px] p-[8px] mt-[15px] flex'>
+          <CyDView className='relative bg-n20 rounded-[10px] p-[8px] mt-[15px] flex'>
             {Object.values(protocol.types)
               .slice(0, 3)
               .map(type => {
@@ -361,7 +361,7 @@ const DeFiScene = ({
                   </CyDView>
                 );
               })}
-            <CyDView className='border border-n40 rounded-[10px] absolute -bottom-[11px] right-[42%]'>
+            <CyDView className='bg-n0 rounded-[10px] absolute -bottom-[11px] right-[42%]'>
               <CyDText className='text-[12px] font-medium px-[4px] py-[2px]'>
                 {t('VIEW_MORE')}
               </CyDText>
@@ -376,7 +376,7 @@ const DeFiScene = ({
   if (loading) return <Loading />;
 
   return (
-    <CyDView className='flex-1 mx-[10px]'>
+    <CyDView className='bg-n20'>
       <>
         <DeFiFilterModal
           navigation={navigation}
@@ -417,7 +417,7 @@ const DeFiScene = ({
               : 0
           }
         />
-        <CyDScrollView scrollEnabled={false}>
+        <CyDScrollView scrollEnabled={false} className='px-[10px] pb-[20px]'>
           {!_.isEmpty(deFiData.filteredData) &&
             Object.values(deFiData.filteredData.protocols)
               .sort(sortDefiProtocolDesc)

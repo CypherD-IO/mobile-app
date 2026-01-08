@@ -14,21 +14,17 @@ import {
   Animated,
   BackHandler,
   Linking,
-  StyleSheet,
   Platform,
   ToastAndroid,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../constants';
-import ShortcutsModal from '../containers/Shortcuts';
-import { isIOS } from '../misc/checkers';
 import { CyDIcons, CyDView } from '../styles/tailwindComponents';
 import {
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
   RewardsStackScreen,
-  SwapStackScreen,
 } from './auth';
 import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
@@ -76,7 +72,6 @@ const screensToHaveNavBar = [
   screenTitle.CARD_SCREEN,
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,
-  screenTitle.SWAP_SCREEN,
 ];
 
 const TabStack = React.memo(
@@ -471,11 +466,6 @@ const TabStack = React.memo(
           screenOptions={({ route }) => ({
             headerShown: false,
             tabBarIcon: ({ focused }) => {
-              // Do not render an icon for the hidden Swap tab
-              if (route.name === screenTitle.SWAP) {
-                return null;
-              }
-
               let iconSource = '';
               if (route.name === screenTitle.PORTFOLIO) {
                 iconSource = 'portfolio';
@@ -528,17 +518,6 @@ const TabStack = React.memo(
             }}
           />
           <Tab.Screen
-            name={screenTitle.SHORTCUTS}
-            component={PortfolioStackScreen}
-            options={{
-              tabBarButton: () => (
-                <CyDView className={'flex items-center justify-center'}>
-                  <ShortcutsModal />
-                </CyDView>
-              ),
-            }}
-          />
-          <Tab.Screen
             name={screenTitle.REWARDS}
             component={RewardsStackScreen}
             options={{
@@ -550,18 +529,6 @@ const TabStack = React.memo(
             name={screenTitle.OPTIONS}
             component={OptionsStackScreen}
             options={{
-              lazy: true,
-              headerShown: false,
-            }}
-          />
-
-          {/* Hidden Tab for Swap functionality */}
-          <Tab.Screen
-            name={screenTitle.SWAP}
-            component={SwapStackScreen}
-            options={{
-              // Hide this tab from the tab bar – it will be accessed programmatically
-              tabBarButton: () => null,
               lazy: true,
               headerShown: false,
             }}

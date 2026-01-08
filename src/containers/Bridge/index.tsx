@@ -87,11 +87,7 @@ import Button from '../../components/v2/button';
 import SignatureModal from '../../components/v2/signatureModal';
 import CyDSkeleton from '../../components/v2/skeleton';
 import { screenTitle } from '../../constants';
-import {
-  AnalyticsType,
-  ButtonType,
-  ConnectionTypes,
-} from '../../constants/enum';
+import { AnalyticsType, ButtonType } from '../../constants/enum';
 import {
   ALL_CHAINS,
   CAN_ESTIMATE_L1_FEE_CHAINS,
@@ -131,7 +127,6 @@ import {
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
-import useConnectionManager from '../../hooks/useConnectionManager';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface SwapBridgeChainData {
@@ -177,7 +172,6 @@ enum TxnStatus {
 
 interface RouteParams {
   tokenData?: any;
-  backVisible?: boolean;
 }
 
 const Bridge: React.FC = () => {
@@ -279,7 +273,6 @@ const Bridge: React.FC = () => {
   >(null);
   const [error, setError] = useState<string>('');
   const routeParamsTokenData = route?.params?.tokenData;
-  const routeParamsBackVisible = route?.params?.backVisible;
   const { getLocalPortfolio } = usePortfolio();
   const [signaturesRequired, setSignaturesRequired] = useState<number>(0);
   const [toggle, setToggle] = useState<boolean>(false);
@@ -2497,7 +2490,7 @@ const Bridge: React.FC = () => {
   }
 
   return (
-    <CyDSafeAreaView className='mb-[45px] bg-n20 flex-1'>
+    <CyDSafeAreaView className='bg-n20 flex-1'>
       <CyDKeyboardAwareScrollView>
         <CyDView
           className={clsx(
@@ -2506,17 +2499,13 @@ const Bridge: React.FC = () => {
               'mb-[40px]': index === 1,
             },
           )}>
-          {(index === 1 || routeParamsBackVisible) && (
-            <CyDTouchView
-              className=''
-              onPress={() => {
-                routeParamsBackVisible && index === 0
-                  ? navigation.goBack()
-                  : resetAndSetIndex();
-              }}>
-              <CyDIcons name='arrow-left' size={24} className='text-base400' />
-            </CyDTouchView>
-          )}
+          <CyDTouchView
+            className=''
+            onPress={() => {
+              navigation.goBack();
+            }}>
+            <CyDIcons name='arrow-left' size={24} className='text-base400' />
+          </CyDTouchView>
           <CyDText className='text-base400 font-extrabold text-[28px] font-manrope'>
             {index === 1 ? 'Preview' : 'Bridge'}
           </CyDText>

@@ -37,7 +37,7 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
       } catch (error) {
         // Swallow disconnect errors – connection cleanup is a best-effort step.
         // eslint-disable-next-line no-console
-        console.log(
+        console.warn(
           '[WalletConnectMobile] Failed to disconnect before opening connect modal:',
           error,
         );
@@ -49,7 +49,7 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
       void open({ view: 'Connect' });
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.log(
+      console.warn(
         '[WalletConnectMobile] Failed to open WalletConnect modal:',
         error,
       );
@@ -69,7 +69,7 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
       await disconnectAsync();
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.log(
+      console.warn(
         '[WalletConnectMobile] Failed to disconnect WalletConnect session:',
         error,
       );

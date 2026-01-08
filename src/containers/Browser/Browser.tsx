@@ -24,10 +24,7 @@ import { ActivityIndicator, BackHandler, Keyboard } from 'react-native';
 import { URL } from 'react-native-url-polyfill';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import AppImages from '../../../assets/images/appImages';
-import {
-  ChooseChainModal,
-  WHERE_BROWSER,
-} from '../../components/ChooseChainModal';
+import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
 import MoreViewModal from '../../components/MoreViewModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
@@ -35,6 +32,7 @@ import { INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
 import {
   Chain,
+  ALL_CHAINS,
   CHAIN_ETH,
   CHAIN_SOLANA,
   ChainNames,
@@ -575,14 +573,22 @@ export default function Browser() {
     <CyDSafeAreaView className='bg-n0 flex-1' edges={['top']}>
       <PageHeader title={'BROWSER'} navigation={navigation} />
       <CyDView className='flex-1 bg-n20'>
-        <ChooseChainModal
+        <ChooseChainModalV2
           isModalVisible={chooseChain}
-          onPress={() => {
+          setModalVisible={setChooseChain}
+          data={ALL_CHAINS}
+          title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
+          selectedItem={selectedDappChain?.name ?? CHAIN_ETH.name}
+          onPress={(item: { item: Chain }) => {
+            setSelectedDappChain(item.item);
+            hdWalletContext?.dispatch({
+              type: 'CHOOSE_CHAIN',
+              value: { selectedChain: item.item },
+            });
             setChooseChain(false);
           }}
-          where={WHERE_BROWSER}
-          selectedChain={selectedDappChain ?? CHAIN_ETH}
-          setSelectedChain={setSelectedDappChain}
+          animationIn={'slideInUp'}
+          animationOut={'slideOutDown'}
         />
         <MoreViewModal
           isModalVisible={moreView}

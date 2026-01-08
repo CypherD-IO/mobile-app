@@ -83,6 +83,7 @@ import { useOnboardingReward } from '../../../contexts/OnboardingRewardContext';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useConnectionManager from '../../../hooks/useConnectionManager';
+import CyDTokenValue from '../../../components/v2/tokenValue';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -775,25 +776,6 @@ export default function CypherCardScreen() {
                     Cards
                   </CyDText>
                 </CyDView>
-                <CyDTouchView
-                  className='bg-n40 rounded-full p-[8px] flex flex-row items-center'
-                  onPress={() => {
-                    Toast.show({
-                      type: 'info',
-                      text1: 'We have moved the options to the new screen',
-                      text2: 'You can access all the settings from here',
-                    });
-                    navigation.navigate(screenTitle.OPTIONS);
-                  }}>
-                  <CyDMaterialDesignIcons
-                    name={'hammer-screwdriver'}
-                    size={16}
-                    className='text-base400'
-                  />
-                  <CyDText className='font-bold text-[12px] text-base400 ml-[7px]'>
-                    {t('OPTIONS')}
-                  </CyDText>
-                </CyDTouchView>
               </CyDView>
             )}
 
@@ -823,14 +805,9 @@ export default function CypherCardScreen() {
                           void fetchCardBalance();
                         }}>
                         <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                          <CyDText
-                            className={clsx('font-bold text-[28px]', {
-                              'text-red400':
-                                shouldShowLocked() || shouldShowActionNeeded(),
-                            })}>
-                            {(cardBalance !== 'NA' ? '$ ' : '') +
-                              (cardBalance ?? 0)}
-                          </CyDText>
+                          <CyDTokenValue className='!text-[32px]'>
+                            {cardBalance === 'NA' ? '0.00' : cardBalance}
+                          </CyDTokenValue>
                           <CyDMaterialDesignIcons
                             name='refresh'
                             size={20}

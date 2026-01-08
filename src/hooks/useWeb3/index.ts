@@ -896,15 +896,17 @@ export default function useWeb3(origin: Web3Origin) {
                 ? SignTypedDataVersion.V4
                 : SignTypedDataVersion.V3;
 
-            const acknowledgement = await SignTransactionModalFunc(
-              modalContext,
-              {
-                signMessage: JSON.stringify(eip712Data, undefined, 4),
-                payload,
-                signMessageTitle:
-                  'SignTypedData ' + typedDataVersion.toString(),
-              },
-            );
+            // For WalletConnect requests, skip the additional modal since the user
+            // has already confirmed in the WalletConnect signing modal
+            const acknowledgement =
+              origin !== Web3Origin.WALLETCONNECT
+                ? await SignTransactionModalFunc(modalContext, {
+                    signMessage: JSON.stringify(eip712Data, undefined, 4),
+                    payload,
+                    signMessageTitle:
+                      'SignTypedData ' + typedDataVersion.toString(),
+                  })
+                : true;
 
             if (!acknowledgement) {
               return userRejectedRequest();

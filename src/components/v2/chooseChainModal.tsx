@@ -12,6 +12,21 @@ import { StyleSheet } from 'react-native';
 import * as React from 'react';
 import clsx from 'clsx';
 
+interface ChooseChainModalProps {
+  isModalVisible: boolean;
+  setModalVisible: (visible: boolean) => void;
+  data: any[];
+  onPress: (item: { item: any; index: number }) => void;
+  title: string;
+  selectedItem: string;
+  customStyle?: any;
+  animationIn?: any;
+  animationOut?: any;
+  isClosable?: boolean;
+  backEnabled?: boolean;
+  onPressBack?: () => void;
+}
+
 export default function ChooseChainModal({
   isModalVisible,
   setModalVisible,
@@ -24,38 +39,48 @@ export default function ChooseChainModal({
   animationOut = 'slideOutDown',
   isClosable = false,
   backEnabled = false,
-  onPressBack = () => {},
-}) {
-  const renderFromList = item => {
+  onPressBack,
+}: ChooseChainModalProps) {
+  /**
+   * Renders a chain item in grid layout
+   * Shows chain logo and name in a card format
+   */
+  const renderFromList = ({ item, index }: { item: any; index: number }) => {
+    const isSelected = item.name === selectedItem;
+
     return (
       <CyDTouchView
-        key={item.item.name}
+        key={item.name}
         className={clsx(
-          'flex flex-row py-[12px] px-[24px] items-center justify-between',
+          'flex flex-col items-center justify-center p-[12px] rounded-[16px] m-[4px] relative',
           {
-            'bg-n0 rounded-[18px]': item.item.name === selectedItem,
+            'bg-p150 border-2 border-p100': isSelected,
+            'bg-n0 border border-n40': !isSelected,
           },
         )}
+        style={styles.gridItem}
         onPress={() => {
           setModalVisible(false);
-          onPress(item);
+          onPress({ item, index });
         }}>
-        <CyDView className={'flex flex-row items-center'}>
-          <CyDImage
-            source={item.item.logo_url}
-            className={'w-[28px] h-[28px] mr-[18px]'}
-          />
-          <CyDText className={' text-[18px]  font-regular'}>
-            {item.item.name}
-          </CyDText>
-        </CyDView>
+        {/* Chain Logo */}
+        <CyDImage
+          source={item.logo_url}
+          className={'w-[36px] h-[36px] mb-[8px]'}
+        />
 
-        {item.item.name === selectedItem && (
-          <CyDMaterialDesignIcons
-            name='check-bold'
-            size={16}
-            className='text-base400 self-end'
-          />
+        {/* Chain Name */}
+        <CyDText
+          className='text-[12px] font-medium text-center text-base400'
+          numberOfLines={1}>
+          {item.name}
+        </CyDText>
+
+        {/* Selected Indicator */}
+        {isSelected && (
+          <CyDView className='absolute top-[4px] right-[4px]'>
+            <CyDIcons name='tick' size={16} className='text-p100' />
+          </CyDView>
         )}
       </CyDTouchView>
     );
@@ -72,33 +97,47 @@ export default function ChooseChainModal({
         className={
           'bg-n20 border-1 rounded-t-[36px] border-n40 p-[12px] pb-[22px] h-[60%] relative'
         }>
-        <CyDTouchView
-          onPress={() => {
-            setModalVisible(false);
-          }}
-          className={'self-end'}>
-          <CyDMaterialDesignIcons
-            name={'close'}
-            size={24}
-            className='text-base400'
-          />
-        </CyDTouchView>
-        <CyDText
-          className={'text-center pt-[24px] pb-[14px] text-[22px]  font-bold'}>
-          {title}
-        </CyDText>
+        {/* Header with Title and Close Button */}
+        <CyDView className='flex flex-row items-center justify-between px-[12px] pt-[12px] pb-[14px]'>
+          {/* Back Button (conditionally rendered) */}
+          {backEnabled && (
+            <CyDTouchView
+              onPress={
+                onPressBack ??
+                (() => {
+                  // no-op
+                })
+              }
+              className={'mr-[12px]'}>
+              <CyDIcons name='arrow-left' size={24} className='text-base400' />
+            </CyDTouchView>
+          )}
 
-        {backEnabled && (
+          {/* Title */}
+          <CyDText className='flex-1 text-center text-[22px] font-bold'>
+            {title}
+          </CyDText>
+
+          {/* Close Button */}
           <CyDTouchView
-            onPress={onPressBack}
-            className={'absolute z-[50] top-[20px] left-[24px]'}>
-            <CyDIcons name='arrow-left' size={24} className='text-base400' />
+            onPress={() => {
+              setModalVisible(false);
+            }}>
+            <CyDMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
+            />
           </CyDTouchView>
-        )}
+        </CyDView>
+
         <CyDFlatList
           data={data}
           renderItem={renderFromList}
           showsVerticalScrollIndicator={true}
+          numColumns={3}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.contentContainer}
         />
       </CyDView>
     </CyDModalLayout>
@@ -109,5 +148,15 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end',
+  },
+  gridItem: {
+    width: '30%',
+  },
+  columnWrapper: {
+    justifyContent: 'flex-start',
+    paddingHorizontal: 8,
+  },
+  contentContainer: {
+    paddingTop: 8,
   },
 });

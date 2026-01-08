@@ -1,13 +1,18 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import BottomConfirmCosmos from '../../components/BottomConfirmCosmos';
-import { ChooseChainModal } from '../../components/ChooseChainModal';
+import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
 import PushModal from '../../components/PushModal';
 import { BrowserModal, ModalContext } from '../../reducers/modalReducer';
 import SigningModal from '../../components/v2/walletConnectV2Views/SigningModal';
 import { SigningModalPayloadFrom } from '../../constants/enum';
+import { ALL_CHAINS, Chain } from '../../constants/server';
+import { HdWalletContext } from '../../core/util';
+import { useTranslation } from 'react-i18next';
 
 export default function ConfirmationModals() {
   const Cxt = useContext(ModalContext);
+  const hdWallet = useContext(HdWalletContext);
+  const { t } = useTranslation();
 
   const { visible: ccmVisible, payload: ccmPayload } =
     Cxt.state[BrowserModal.ChooseChainModal];
@@ -23,12 +28,21 @@ export default function ConfirmationModals() {
   return (
     <>
       {ccmVisible && (
-        <ChooseChainModal
+        <ChooseChainModalV2
           isModalVisible={ccmVisible}
-          onPress={() => {
+          setModalVisible={() => {}}
+          data={ALL_CHAINS}
+          title={t('CHOOSE_CHAIN') ?? 'Choose Chain'}
+          selectedItem={hdWallet?.state?.selectedChain?.name ?? ''}
+          onPress={(item: { item: Chain }) => {
+            hdWallet?.dispatch({
+              type: 'CHOOSE_CHAIN',
+              value: { selectedChain: item.item },
+            });
             ccmPayload?.resolve(true);
           }}
-          where={'BROWSER'}
+          animationIn={'slideInUp'}
+          animationOut={'slideOutDown'}
         />
       )}
       {stmVisible && (
