@@ -377,24 +377,24 @@ export default function BridgeFundCardScreen({
     if (!isAddressMatch) {
       const mismatchError = new Error("Target address mismatch between contract and quote");
       Sentry.captureException(mismatchError, {
-      extra: {
-        quoteId: quote.quoteId,
-        chain: quote.chain,
-        program: quote.programId,
-        provider: quote.cardProvider,
-        quoteAddress: quote.targetAddress,
-      },
-    });
-    setLoading(false);
-    setIsMaxLoading(false);
-    showModal('state', {
-      type: 'error',
-      title: t('TARGET_ADDRESS_MISMATCH'),
-      description: t('TARGET_ADDRESS_MISMATCH_DESCRIPTION'),
-      onSuccess: hideModal,
-      onFailure: hideModal,
-    });
-    return;
+        extra: {
+          quoteId: quote.quoteId,
+          chain: quote.chain,
+          program: quote.programId,
+          provider: quote.cardProvider,
+          quoteAddress: quote.targetAddress,
+        },
+      });
+      setLoading(false);
+      setIsMaxLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: t('TARGET_ADDRESS_MISMATCH'),
+        description: t('TARGET_ADDRESS_MISMATCH_DESCRIPTION'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
     }
 
     try {

@@ -166,15 +166,15 @@ export default function CardQuote({
           setIsAddressLoading(false);
           return;
         }
-        let chain = "";
+        let targetChain = "";
         if (EVM_ONLY_CHAINS.includes(tokenQuote.chain)) {
-          chain = ChainBackendNames.ETH;
+          targetChain = ChainBackendNames.ETH;
         }
         else if (COSMOS_ONLY_CHAINS.includes(tokenQuote.chain)) {
-          chain = ChainBackendNames.OSMOSIS;
+          targetChain = ChainBackendNames.OSMOSIS;
         }
         else if (SOLANA_ONLY_CHAINS.includes(tokenQuote.chain)) {
-          chain = ChainBackendNames.SOLANA;
+          targetChain = ChainBackendNames.SOLANA;
         }
         else {
           throw new Error('Invalid chain name: ' + tokenQuote.chain);
@@ -182,7 +182,7 @@ export default function CardQuote({
         const targetWalletAddress = await fetchCardTargetAddress(
           tokenQuote.programId,
           tokenQuote.cardProvider,
-          chain,
+          targetChain,
         );
         let isAddressMatch = false;
         if (EVM_ONLY_CHAINS.includes(tokenQuote.chain)) {
@@ -956,6 +956,7 @@ export default function CardQuote({
     cosmosAddresses,
     solanaAddress,
     ethereumAddress,
+    targetAddress,
   ]);
 
   const onLoadPress = async () => {
