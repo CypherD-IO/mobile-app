@@ -28,8 +28,11 @@ import Button from '../../../components/v2/button';
 import {
   AnalyticsType,
   ButtonType,
+  COSMOS_ONLY_CHAINS,
   CypherPlanId,
+  EVM_ONLY_CHAINS,
   HyperLiquidAccount,
+  SOLANA_ONLY_CHAINS,
 } from '../../../constants/enum';
 import { capitalize, get } from 'lodash';
 import {
@@ -163,13 +166,26 @@ export default function CardQuote({
           setIsAddressLoading(false);
           return;
         }
+        let chain = "";
+        if (EVM_ONLY_CHAINS.includes(tokenQuote.chain)) {
+          chain = ChainBackendNames.ETH;
+        }
+        else if (COSMOS_ONLY_CHAINS.includes(tokenQuote.chain)) {
+          chain = ChainBackendNames.OSMOSIS;
+        }
+        else if (SOLANA_ONLY_CHAINS.includes(tokenQuote.chain)) {
+          chain = ChainBackendNames.SOLANA;
+        }
+        else {
+          throw new Error('Invalid chain name: ' + tokenQuote.chain);
+        }
         const targetWalletAddress = await fetchCardTargetAddress(
           tokenQuote.programId,
           tokenQuote.cardProvider,
-          tokenQuote.chain,
+          chain,
         );
         let isAddressMatch = false;
-        if (EVM_CHAINS_BACKEND_NAMES.includes(tokenQuote.chain as ChainBackendNames)) {
+        if (EVM_ONLY_CHAINS.includes(tokenQuote.chain)) {
           const normalizedContractAddress =  targetWalletAddress.toLowerCase();
           const normalizedQuoteAddress = (tokenQuote.targetAddress || '').toLowerCase();
           isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;

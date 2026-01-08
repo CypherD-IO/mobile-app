@@ -25,6 +25,9 @@ import {
 import {
   CARD_IDS,
   CardProviders,
+  COSMOS_ONLY_CHAINS,
+  EVM_ONLY_CHAINS,
+  SOLANA_ONLY_CHAINS,
   TokenModalType,
 } from '../../../constants/enum';
 import {
@@ -954,10 +957,23 @@ export default function FirstLoadCard() {
     }
     let targetWalletAddress: string;
     try {
+      let chain = "";
+      if (EVM_ONLY_CHAINS.includes(quote.chain)) {
+        chain = ChainBackendNames.ETH;
+      }
+      else if (COSMOS_ONLY_CHAINS.includes(quote.chain)) {
+        chain = ChainBackendNames.OSMOSIS;
+      }
+      else if (SOLANA_ONLY_CHAINS.includes(quote.chain)) {
+        chain = ChainBackendNames.SOLANA;
+      }
+      else {
+        throw new Error('Invalid chain name: ' + quote.chain);
+      }
       targetWalletAddress = await fetchCardTargetAddress(
         quote.programId,
         quote.cardProvider,
-        quote.chain,
+        chain,
       );
     } catch (error) {
       Sentry.captureException(error, {
@@ -980,7 +996,7 @@ export default function FirstLoadCard() {
       return;
     }
     let isAddressMatch = false;
-    if (EVM_CHAINS_BACKEND_NAMES.includes(quote.chain as ChainBackendNames)) {
+    if (EVM_ONLY_CHAINS.includes(quote.chain)) {
       const normalizedContractAddress =  targetWalletAddress.toLowerCase();
       const normalizedQuoteAddress = (quote.targetAddress || '').toLowerCase();
       isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;
