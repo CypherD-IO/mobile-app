@@ -229,7 +229,7 @@ export default function CardQuote({
     };
 
     getAddress();
-  }, [tokenQuote, showModal, hideModal, t, targetAddress]);
+  }, [tokenQuote, showModal, hideModal, t]);
 
   const cosmosAddresses = useMemo(
     () => ({
