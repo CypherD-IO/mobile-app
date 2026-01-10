@@ -115,7 +115,7 @@ function Section1({ handleContinue }: { handleContinue: () => void }) {
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
-        <CyDView className='bg-[#000000] justify-center items-center w-[412px] h-[464px]'>
+        <CyDView className='bg-[#000000] justify-center items-center h-[464px]'>
           <CyDImage
             source={AppImages.ON_BOARDING_2}
             className='w-full h-full'
@@ -147,7 +147,7 @@ function Section2({ handleContinue }: { handleContinue: () => void }) {
         showsVerticalScrollIndicator={false}
         bounces={true}
         scrollEventThrottle={16}>
-        <CyDView className='bg-[#000000] justify-center items-center w-[412px] h-[464px]'>
+        <CyDView className='bg-[#000000] justify-center items-center  h-[464px]'>
           <CyDImage
             source={AppImages.ON_BOARDING_1}
             className='w-full h-full'

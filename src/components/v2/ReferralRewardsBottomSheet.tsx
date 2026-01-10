@@ -340,7 +340,7 @@ const ReferralRewardsBottomSheet: React.FC<ReferralRewardsBottomSheetProps> = ({
             {loadingSignupBonus ? (
               <CyDView className='h-6 w-16 rounded bg-n40 animate-pulse' />
             ) : (
-              <CyDText className='text-[20px] font-bold text-primaryText font-newyork'>
+              <CyDText className='text-[20px] font-bold text-primaryText !font-gambetta'>
                 {signupBonus ?? '0'}
               </CyDText>
             )}

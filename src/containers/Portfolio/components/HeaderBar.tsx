@@ -215,20 +215,15 @@ export const HeaderBar = ({
 
       <CyDView className='flex flex-row items-center gap-[10px]'>
         {isPremiumUser && (
-          <CyDView
-            className={
-              'px-[12px] py-[6px] rounded-full bg-base250 flex flex-row items-center justify-center'
-            }>
-            <GradientText
-              textElement={
-                <CyDText className='font-extrabold text-[14px] text-center'>
-                  {'Premium'}
-                </CyDText>
-              }
-              gradientColors={['#FA9703', '#F89408', '#F6510A']}
-              locations={[0, 0.3, 0.6]}
-            />
-          </CyDView>
+          <GradientText
+            textElement={
+              <CyDText className='font-extrabold text-[14px] text-center'>
+                {'Premium'}
+              </CyDText>
+            }
+            gradientColors={['#FA9703', '#F89408', '#F6510A']}
+            locations={[0, 0.3, 0.6]}
+          />
         )}
 
         {connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (

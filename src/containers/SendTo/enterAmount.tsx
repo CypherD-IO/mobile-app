@@ -440,6 +440,7 @@ export default function EnterAmount(props: any) {
                         },
                       )}
                       keyboardType='decimal-pad'
+                      returnKeyType='done'
                       onChangeText={text => {
                         setValueForUsd(text);
                         if (enterCryptoAmount) {

@@ -47,17 +47,17 @@ export default function CyDTokenValue(props: CyDTokenValueProps) {
     }
   };
 
-  // Build classes for main part: font-newyork + bold + fontSize + mainColorClass
+  // Build classes for main part: !font-gambetta + bold + fontSize + mainColorClass
   const mainClasses = clsx(
-    'font-newyork',
-    'font-extrabold',
+    '!font-gambetta',
+    'font-bold',
     mainColorClass,
     className,
   );
 
-  // Build classes for decimal part: font-newyork + normal weight + fontSize + decimalColorClass
+  // Build classes for decimal part: !font-gambetta + normal weight + fontSize + decimalColorClass
   const decimalClasses = clsx(
-    'font-newyork',
+    '!font-gambetta',
     'font-normal',
     decimalColorClass,
     className,
