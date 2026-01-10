@@ -1,6 +1,5 @@
 import { t } from 'i18next';
 import React, { useContext, useEffect, useState } from 'react';
-import { BarCodeReadEvent } from 'react-native-camera';
 import AppImages from '../../../../assets/images/appImages';
 import GradientText from '../../../components/gradientText';
 import { screenTitle } from '../../../constants';
@@ -28,10 +27,11 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { get } from 'lodash';
+import type { QRScanEvent } from '../../../types/qr';
 
 interface HeaderBarProps {
   navigation: any;
-  onWCSuccess: (e: BarCodeReadEvent) => void;
+  onWCSuccess: (e: QRScanEvent) => void;
   selectedChain: Chain;
 }
 

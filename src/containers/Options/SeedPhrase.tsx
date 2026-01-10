@@ -113,7 +113,10 @@ export default function SeedPhrase() {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     if (isFocused) {
       loadSeedPhraseInMemory();
       if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
@@ -122,7 +125,7 @@ export default function SeedPhrase() {
     }
     return () => {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, [isFocused]);
 

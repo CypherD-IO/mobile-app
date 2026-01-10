@@ -253,6 +253,7 @@ export default function useInitializer() {
     state = initialHdWalletState,
   ) => {
     const cyRootData = await loadCyRootData(state);
+    console.log('cyRootData : ', cyRootData);
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {
@@ -261,6 +262,8 @@ export default function useInitializer() {
         accounts.ethereum?.[0]?.address ||
         accounts.solana?.[0]?.address
       ) {
+        console.log('^^^^^^ accounts ethereum : ', accounts.ethereum?.[0]?.address);
+        console.log('^^^^^^ accounts solana : ', accounts.solana?.[0]?.address);
         const attributes = {};
         Object.keys(accounts).forEach((chainName: string) => {
           const chainAccountList = accounts[chainName];
@@ -285,7 +288,10 @@ export default function useInitializer() {
             },
           );
         });
+        console.log('attributes : ', attributes);
+        console.log('registering intercom user ....');
         void registerIntercomUser(attributes);
+        console.log('intercom user registered ....');
       } else {
         void getReadOnlyWalletData().then(data => {
           if (data) {
@@ -352,12 +358,14 @@ export default function useInitializer() {
     setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     try {
+      console.log(' >>>>>>>>>>>> verifying session token ....');
       const isSessionTokenValid = await verifySessionToken();
       if (!isSessionTokenValid) {
         const signInResponse = await signIn(
           hdWallet,
           setShowDefaultAuthRemoveModal,
         );
+        console.log('signInResponse >>>>>>>> ::::::: ', signInResponse);
         if (signInResponse) {
           if (
             signInResponse?.message === SignMessageValidationType.VALID &&
@@ -395,6 +403,7 @@ export default function useInitializer() {
         const connectionType = await getConnectionType();
         // don't ask for authentication in case of wallet connect
         if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
+          console.log('loading dummy auth ....');
           await loadFromKeyChain(DUMMY_AUTH, true, () =>
             setShowDefaultAuthRemoveModal(true),
           );
@@ -405,8 +414,10 @@ export default function useInitializer() {
           type: GlobalContextType.IS_APP_AUTHENTICATED,
           isAuthenticated: true,
         });
+        console.log('isAuthenticated set to true');
       }
     } catch (error) {
+      console.log(' >>>>>>>>>>>> error in getAuthTokenData : ', error);
       Sentry.captureException(error);
     }
   };

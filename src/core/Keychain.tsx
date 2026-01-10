@@ -65,7 +65,7 @@ import { hostWorker } from '../global';
 import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
-import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
+import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/exports';
 import * as bip39 from 'bip39';
 import { Keypair } from '@solana/web3.js';
 import { createWalletClient, custom, Hex } from 'viem';
@@ -731,28 +731,33 @@ export async function signIn(
       undefined,
     );
 
+    console.log('ethereumAddress >>>>>>>> ::::::: ', ethereumAddress);
+    console.log('solanaAddress >>>>>>>> ::::::: ', solanaAddress);
+
     const address = ethereumAddress ?? solanaAddress ?? '';
     let ecosystem = EcosystemsEnum.EVM;
-
-    if (solanaAddress && !ethereumAddress) {
+    if (!ethereumAddress && solanaAddress) {
       ecosystem = EcosystemsEnum.SOLANA;
     }
 
     const { data } = await axios.get(
       `${ARCH_HOST}/v1/authentication/sign-message/${address}/${ecosystem}`,
     );
+    console.log('data >>>>>>>> ::::::: ', data);
     const verifyMessage = data.message;
     const validationResponse = isValidMessage(
       address,
       verifyMessage,
       ecosystem,
     );
+    console.log('validationResponse >>>>>>>> ::::::: ', validationResponse);
     if (validationResponse.message === SignMessageValidationType.VALID) {
       const privateKey = await loadPrivateKeyFromKeyChain(
         true,
         hdWallet.state.pinValue,
         () => setShowDefaultAuthRemoveModal?.(true),
       );
+      console.log('privateKey >>>>>>>> ::::::: ', privateKey);
       if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
         let signature;
         if (ecosystem === EcosystemsEnum.EVM) {
@@ -765,6 +770,7 @@ export async function signIn(
             account,
             message: verifyMessage,
           });
+          console.log('signature evm >>>>>>>> ::::::: ', signature);
         } else if (ecosystem === EcosystemsEnum.SOLANA) {
           const keypair = Keypair.fromSecretKey(
             bs58.default.decode(privateKey),
@@ -775,6 +781,7 @@ export async function signIn(
             keypair.secretKey,
           );
           signature = Array.from(signatureBytes);
+          console.log('signature sol >>>>>>>> ::::::: ', signature);
         }
 
         const result = await axios.post(
@@ -783,6 +790,7 @@ export async function signIn(
             signature,
           },
         );
+        console.log('result >>>>>>>> ::::::: ', result);
         return {
           ...validationResponse,
           token: result.data.token,

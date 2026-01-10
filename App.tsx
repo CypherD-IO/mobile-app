@@ -534,9 +534,13 @@ function App() {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    // RN 0.83+: prefer subscription.remove() (removeEventListener was removed).
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, []);
 

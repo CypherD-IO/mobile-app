@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Alert, Linking, Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {
   setUpdateReminderSnoozeUntil,
   setReferralCodeAsync,
@@ -17,11 +18,6 @@ import { WalletConnectV2Provider } from '../walletConnectV2Provider';
 import { SPLASH_SCREEN_TIMEOUT } from '../../constants/timeOuts';
 import SplashScreen from 'react-native-lottie-splash-screen';
 import DefaultAuthRemoveModal from '../v2/defaultAuthRemoveModal';
-import Dialog, {
-  DialogButton,
-  DialogContent,
-  DialogFooter,
-} from 'react-native-popup-dialog';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { t } from 'i18next';
@@ -119,9 +115,23 @@ export const InitializeAppProvider = ({
   // State to track if wallet data is still loading
   const [walletLoading, setWalletLoading] = useState<boolean>(true);
 
+  /**
+   * Centralized init logging so we can reason about the startup gating logic.
+   * Keep logs DEV-only to avoid noisy production logs.
+   */
+  const logInit = useCallback(
+    (message: string, extra?: Record<string, unknown>): void => {
+      if (!__DEV__) return;
+      // eslint-disable-next-line no-console
+      console.log('[InitApp]', message, extra ?? {});
+    },
+    [],
+  );
+
   useEffect(() => {
     const initializeApp = async () => {
       // Sentry is now initialized in App.tsx for v7 compatibility
+      logInit('initializeApp:start');
 
       messaging().onMessage(response => {
         if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
@@ -149,17 +159,38 @@ export const InitializeAppProvider = ({
         }
       });
 
-      const isAPIAccessible = await checkAPIAccessibility();
-      if (isAPIAccessible) {
-        await exitIfJailBroken();
-        void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
-        void loadActivitiesFromAsyncStorage();
+      try {
+        const isAPIAccessible = await checkAPIAccessibility();
+        logInit('checkAPIAccessibility:result', { isAPIAccessible });
 
-        await requestUserPermission();
+        if (isAPIAccessible) {
+          logInit('exitIfJailBroken:start');
+          await exitIfJailBroken();
+          logInit('exitIfJailBroken:done');
 
-        setTimeout(() => {
-          SplashScreen.hide();
-        }, SPLASH_SCREEN_TIMEOUT);
+          logInit('fetchRPCEndpointsFromServer:start');
+          void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
+
+          logInit('loadActivitiesFromAsyncStorage:start');
+          void loadActivitiesFromAsyncStorage();
+
+          logInit('requestUserPermission:start');
+          await requestUserPermission();
+          logInit('requestUserPermission:done');
+
+          setTimeout(() => {
+            logInit('SplashScreen.hide');
+            SplashScreen.hide();
+          }, SPLASH_SCREEN_TIMEOUT);
+        }
+      } catch (e) {
+        // If init throws, we currently end up on Loading forever. Log loudly so we can see it.
+        logInit('initializeApp:error', {
+          message: (e as Error)?.message ?? String(e),
+        });
+        Sentry.captureException(e);
+      } finally {
+        logInit('initializeApp:done');
       }
     };
 
@@ -289,11 +320,38 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     const setPinAuthenticationState = async () => {
-      const isDeviceBiometricEnabledValue = await isDeviceBiometricEnabled();
-      setBiometricEnabled(isDeviceBiometricEnabledValue);
+      try {
+        const isEmulator = await DeviceInfo.isEmulator();
 
-      const pinAlreadySetStatusValue = await pinAlreadySetStatus();
-      setPinSetStatus(pinAlreadySetStatusValue);
+        // Requirement: On iOS Simulator we should skip PIN/biometric gating and go straight
+        // to onboarding. We do that by taking the "no-auth-required" branch:
+        // (biometricEnabled && pinSetStatus === FALSE) => allows loading existing wallet and then onboarding.
+        if (Platform.OS === 'ios' && isEmulator) {
+          logInit('pinGate:ios-emulator-bypass', { isEmulator });
+          setBiometricEnabled(true);
+          setPinSetStatus(PinPresentStates.FALSE);
+          return;
+        }
+
+        logInit('pinGate:compute:start', { isEmulator });
+        const isDeviceBiometricEnabledValue = await isDeviceBiometricEnabled();
+        setBiometricEnabled(isDeviceBiometricEnabledValue);
+        logInit('pinGate:isDeviceBiometricEnabled', {
+          isDeviceBiometricEnabledValue,
+        });
+
+        const pinAlreadySetStatusValue = await pinAlreadySetStatus();
+        setPinSetStatus(pinAlreadySetStatusValue);
+        logInit('pinGate:pinAlreadySetStatus', { pinAlreadySetStatusValue });
+      } catch (e) {
+        // Secure default: if we fail to determine PIN presence, require validation rather than bypass.
+        logInit('pinGate:error', {
+          message: (e as Error)?.message ?? String(e),
+        });
+        Sentry.captureException(e);
+        setBiometricEnabled(false);
+        setPinSetStatus(PinPresentStates.TRUE);
+      }
     };
     if (!ethereumAddress && !solanaAddress) {
       void setPinAuthenticationState();
@@ -301,12 +359,36 @@ export const InitializeAppProvider = ({
   }, [ethereumAddress, solanaAddress]);
 
   useEffect(() => {
+    logInit('navGate:snapshot', {
+      platform: Platform.OS,
+      walletLoading,
+      biometricEnabled,
+      pinSetStatus,
+      pinAuthenticated,
+      hasEthereumAddress: ethereumAddress != null,
+      hasSolanaAddress: solanaAddress != null,
+      isAuthenticated,
+    });
+  }, [
+    biometricEnabled,
+    ethereumAddress,
+    isAuthenticated,
+    logInit,
+    pinAuthenticated,
+    pinSetStatus,
+    solanaAddress,
+    walletLoading,
+  ]);
+
+  useEffect(() => {
     if (
       (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
       pinAuthenticated
     ) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state).finally(() => {
+        console.log('inside the load exisitng wallet block');
         setWalletLoading(false);
+        console.log('wallet loading set to false');
       });
     }
   }, [biometricEnabled, pinAuthenticated, pinSetStatus]);
@@ -317,6 +399,7 @@ export const InitializeAppProvider = ({
       biometricEnabled &&
       pinSetStatus === PinPresentStates.FALSE
     ) {
+      console.log('loading the loading component 407');
       return <Loading />;
     }
 
@@ -326,6 +409,7 @@ export const InitializeAppProvider = ({
     ) {
       if (ethereumAddress ?? solanaAddress) {
         if (!isAuthenticated) {
+          console.log('loading the loading component because of not authenticated');
           return <Loading />;
         }
         return (
@@ -342,6 +426,7 @@ export const InitializeAppProvider = ({
       }
     } else {
       if (pinSetStatus === PinPresentStates.NOTSET) {
+        console.log('loading the loading component 434');
         return <Loading />;
       } else if (pinSetStatus === PinPresentStates.TRUE) {
         return (
@@ -419,39 +504,37 @@ export const InitializeAppProvider = ({
     }
   }, [updateModal, forcedUpdate]);
 
+  useEffect(() => {
+    if (!tamperedSignMessageModal) return;
+
+    // Use platform-native alerts instead of `react-native-popup-dialog` to avoid
+    // dependency churn and BackHandler API mismatches on newer RN versions.
+    Alert.alert(
+      t<string>('SOMETHING_WENT_WRONG'),
+      t<string>('CONTACT_CYPHERD_SUPPORT'),
+      [
+        {
+          text: t('CLOSE'),
+          style: 'destructive',
+          onPress: () => {
+            RNExitApp.exitApp();
+          },
+        },
+        {
+          text: t('CONTACT_TEXT'),
+          onPress: () => {
+            void Intercom.present();
+            sendFirebaseEvent(hdWallet, 'support');
+            setTamperedSignMessageModal(false);
+          },
+        },
+      ],
+      { cancelable: false },
+    );
+  }, [tamperedSignMessageModal, hdWallet]);
+
   return (
     <>
-      {/* Keep existing tamperedSignMessageModal Dialog unchanged */}
-      <Dialog
-        visible={tamperedSignMessageModal}
-        footer={
-          <DialogFooter>
-            <DialogButton
-              text={t('CLOSE')}
-              onPress={() => {
-                RNExitApp.exitApp();
-              }}
-            />
-            <DialogButton
-              text={t('CONTACT_TEXT')}
-              onPress={() => {
-                void Intercom.present();
-                sendFirebaseEvent(hdWallet, 'support');
-              }}
-            />
-          </DialogFooter>
-        }
-        width={0.8}>
-        <DialogContent>
-          <CyDText className={'font-bold text-[16px] mt-[20px] text-center'}>
-            {t<string>('SOMETHING_WENT_WRONG')}
-          </CyDText>
-          <CyDText className={'font-bold text-[13px] mt-[20px] text-center'}>
-            {t<string>('CONTACT_CYPHERD_SUPPORT')}
-          </CyDText>
-        </DialogContent>
-      </Dialog>
-
       <WalletConnectV2Provider>
         <JoinDiscordModal
           isModalVisible={isJoinDiscordModalVisible}

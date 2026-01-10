@@ -6,7 +6,7 @@ const getDefaultArchHost = () => {
     console.log(
       '🧪 Development mode detected - using ARCH_HOST: https://arch-dev.cypherd.io for testing',
     );
-    return 'https://arch-dev.cypherd.io';
+    return 'https://arch.cypherhq.io';
   } else {
     console.log(
       '🚀 Production build - using ARCH_HOST: https://arch.cypherhq.io',

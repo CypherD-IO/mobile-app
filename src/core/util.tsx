@@ -1070,6 +1070,12 @@ export const isValidMessage = (
     ?.match(/[^Version: ](.*)[^\\n]/g)
     ?.join('')
     .trim();
+  console.log('currentVersion >>>>>>>> ::::::: ', currentVersion);
+  console.log('expectedVersion >>>>>>>> ::::::: ', expectedVersion);
+  console.log(
+    'messageToBeValidatedWith >>>>>>>> ::::::: ',
+    messageToBeValidatedWith.test(messageToBeValidated),
+  );
   if (messageToBeValidatedWith.test(messageToBeValidated)) {
     return { message: SignMessageValidationType.VALID };
   } else {

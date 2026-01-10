@@ -69,15 +69,16 @@ const CardTxnFilterModal = ({
   const [isModalVisible, setModalVisible] = modalVisibilityState;
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', () => {
+    const onHardwareBackPress = () => {
       navigation.goBack();
       return true;
-    });
+    };
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onHardwareBackPress,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', () => {
-        navigation.goBack();
-        return true;
-      });
+      subscription.remove();
     };
   }, [navigation]);
 

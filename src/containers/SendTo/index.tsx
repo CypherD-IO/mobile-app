@@ -17,7 +17,6 @@ import { get } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
-import { BarCodeReadEvent } from 'react-native-camera';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -95,6 +94,7 @@ import { DecimalHelper } from '../../utils/decimalHelper';
 import usePortfolio from '../../hooks/usePortfolio';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import PageHeader from '../../components/PageHeader';
+import type { QRScanEvent } from '../../types/qr';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -423,9 +423,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, []);
 
@@ -968,7 +971,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     }
   };
 
-  const onSuccess = async (readEvent: BarCodeReadEvent) => {
+  const onSuccess = async (readEvent: QRScanEvent) => {
     let error = false;
     const content = readEvent.data;
 
