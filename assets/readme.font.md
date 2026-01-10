@@ -136,7 +136,7 @@ You can map all weights to the same file to prevent synthetic bolding:
 
 - `android/app/src/main/res/font/manrope.xml` - Multiple weight variants
 - `android/app/src/main/res/font/nord.xml` - Single weight
-- `android/app/src/main/res/font/newyork.xml` - Single file, multiple weights
+- `android/app/src/main/res/font/gambette.xml` - Single file, multiple weights
 
 ### Step 4: Register Font in MainApplication.java (Optional)
 
@@ -151,7 +151,7 @@ ReactFontManager.getInstance().addCustomFont(this, "Your Font Family Name", R.fo
 
 ```java
 ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope);
-ReactFontManager.getInstance().addCustomFont(this, "Gambette", R.font.newyork);
+ReactFontManager.getInstance().addCustomFont(this, "Gambette", R.font.gambette);
 ```
 
 ### Step 5: Update Tailwind Configuration
@@ -166,7 +166,7 @@ module.exports = {
       fontFamily: {
         manrope: ['Manrope'],
         nord: ['Cypher Nord'],
-        newyork: ['Gambette'],
+        gambette: ['Gambette'],
         yourfont: ['Your Font Family Name'], // Add your font here
       },
     },
