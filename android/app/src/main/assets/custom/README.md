@@ -414,22 +414,6 @@ npx react-native-asset
 <CyDText className='font-manrope font-bold text-[20px]'>Bold Text</CyDText>
 ```
 
-### New York (Single Font File)
-
-**Files:**
-
-- `NewYork.ttf`
-
-**Android XML:** `android/app/src/main/res/font/newyork.xml` (maps all weights to same file)
-
-**Usage:**
-
-```tsx
-<CyDText className='!font-gambetta font-extrabold text-[36px]'>
-  Reward Amount
-</CyDText>
-```
-
 ---
 
 ## Best Practices
