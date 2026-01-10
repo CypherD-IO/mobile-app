@@ -151,7 +151,7 @@ ReactFontManager.getInstance().addCustomFont(this, "Your Font Family Name", R.fo
 
 ```java
 ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope);
-ReactFontManager.getInstance().addCustomFont(this, "New York", R.font.newyork);
+ReactFontManager.getInstance().addCustomFont(this, "Gambette", R.font.newyork);
 ```
 
 ### Step 5: Update Tailwind Configuration
@@ -166,7 +166,7 @@ module.exports = {
       fontFamily: {
         manrope: ['Manrope'],
         nord: ['Cypher Nord'],
-        newyork: ['New York'],
+        newyork: ['Gambette'],
         yourfont: ['Your Font Family Name'], // Add your font here
       },
     },
@@ -412,22 +412,6 @@ npx react-native-asset
 
 ```tsx
 <CyDText className='font-manrope font-bold text-[20px]'>Bold Text</CyDText>
-```
-
-### New York (Single Font File)
-
-**Files:**
-
-- `NewYork.ttf`
-
-**Android XML:** `android/app/src/main/res/font/newyork.xml` (maps all weights to same file)
-
-**Usage:**
-
-```tsx
-<CyDText className='!font-gambetta font-extrabold text-[36px]'>
-  Reward Amount
-</CyDText>
 ```
 
 ---

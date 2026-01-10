@@ -734,7 +734,7 @@ export async function signIn(
     const address = ethereumAddress ?? solanaAddress ?? '';
     let ecosystem = EcosystemsEnum.EVM;
 
-    if (solanaAddress) {
+    if (solanaAddress && !ethereumAddress) {
       ecosystem = EcosystemsEnum.SOLANA;
     }
 
