@@ -27,7 +27,6 @@
 		DA4EFF8144104B61B81880A0 /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E7A3B5BB16A41F9BE9CC0FB /* Manrope-Light.ttf */; };
 		E9978F60E5B01199651AF2FE /* libPods-Cypherd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */; };
 		EC8AF5C1EF1942ADBFC836D3 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */; };
-		1C2DDF93D9F748A296DC52D4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = E588826D19A2405B826F16EA /* README.md */; };
 		CCAC4103B75F4453B519587D /* Gambetta-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8B0BD94B009A477E95E76E20 /* Gambetta-Bold.ttf */; };
 		3A1CEB72E44540DB896A8106 /* Gambetta-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */; };
 		E6894B9C48CE4E6590CCC2F6 /* Gambetta-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */; };
@@ -94,7 +93,6 @@
 		E98C8950ECC14CBFB7B00508 /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F805352840AE4EE2B8EDA9FA /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
-		E588826D19A2405B826F16EA /* README.md */ = {isa = PBXFileReference; name = "README.md"; path = "../assets/fonts/README.md"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		8B0BD94B009A477E95E76E20 /* Gambetta-Bold.ttf */ = {isa = PBXFileReference; name = "Gambetta-Bold.ttf"; path = "../assets/fonts/Gambetta-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */ = {isa = PBXFileReference; name = "Gambetta-Light.ttf"; path = "../assets/fonts/Gambetta-Light.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */ = {isa = PBXFileReference; name = "Gambetta-Medium.ttf"; path = "../assets/fonts/Gambetta-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
@@ -167,7 +165,6 @@
 				29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */,
 				A29F23708E9E4C56AAC109CA /* CypherNord.ttf */,
 				C44A417437F048A7964EE149 /* CydFont.ttf */,
-				E588826D19A2405B826F16EA /* README.md */,
 				8B0BD94B009A477E95E76E20 /* Gambetta-Bold.ttf */,
 				E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */,
 				CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */,
@@ -359,7 +356,6 @@
 				EC8AF5C1EF1942ADBFC836D3 /* Manrope-SemiBold.ttf in Resources */,
 				62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */,
 				23471A945E244EAB8AE2A170 /* CydFont.ttf in Resources */,
-				1C2DDF93D9F748A296DC52D4 /* README.md in Resources */,
 				CCAC4103B75F4453B519587D /* Gambetta-Bold.ttf in Resources */,
 				3A1CEB72E44540DB896A8106 /* Gambetta-Light.ttf in Resources */,
 				E6894B9C48CE4E6590CCC2F6 /* Gambetta-Medium.ttf in Resources */,
