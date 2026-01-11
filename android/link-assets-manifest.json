@@ -1,5 +1,5 @@
 {
-  "migIndex": 1,
+  "migIndex": 2,
   "data": [
     {
       "path": "assets/fonts/CydFont.ttf",
@@ -8,6 +8,26 @@
     {
       "path": "assets/fonts/CypherNord.ttf",
       "sha1": "8c3352dafffcffa0113832aeaf92fc52738022c0"
+    },
+    {
+      "path": "assets/fonts/Gambetta-Bold.ttf",
+      "sha1": "2bad2737c4ab3ccff42094347f978ddf593a26ae"
+    },
+    {
+      "path": "assets/fonts/Gambetta-Light.ttf",
+      "sha1": "7cc31579521b8c27eb3b00ba681e2b38ab56b0be"
+    },
+    {
+      "path": "assets/fonts/Gambetta-Medium.ttf",
+      "sha1": "6a3c5ddf2dfe9a05e162f7e7dd1aa56e1d0f2c3c"
+    },
+    {
+      "path": "assets/fonts/Gambetta-Regular.ttf",
+      "sha1": "78cabcbcb6ce32b4614af33c10f25e4323dd6097"
+    },
+    {
+      "path": "assets/fonts/Gambetta-Semibold.ttf",
+      "sha1": "5ac85acbbf3a48206993f25777ec58bca2e7afc7"
     },
     {
       "path": "assets/fonts/Manrope-Bold.ttf",
@@ -38,8 +58,8 @@
       "sha1": "e423e112f4832916b05308934c10aa84fd14c607"
     },
     {
-      "path": "assets/fonts/NewYork.ttf",
-      "sha1": "7ed6eb1ef3f96e9eb59c3359da53521e2c3ad9cb"
+      "path": "assets/fonts/README.md",
+      "sha1": "fed82ba2cc1a9426fd94466e192912c00deda380"
     }
   ]
 }

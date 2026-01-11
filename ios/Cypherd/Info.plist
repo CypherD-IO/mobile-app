@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.10.7</string>
+	<string>3.10.8</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -130,8 +130,12 @@
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
 		<string>CypherNord.ttf</string>
-		<string>NewYork.ttf</string>
 		<string>CydFont.ttf</string>
+		<string>Gambetta-Bold.ttf</string>
+		<string>Gambetta-Light.ttf</string>
+		<string>Gambetta-Medium.ttf</string>
+		<string>Gambetta-Regular.ttf</string>
+		<string>Gambetta-Semibold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

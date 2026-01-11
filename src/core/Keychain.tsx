@@ -724,14 +724,17 @@ export async function signIn(
       'state.wallet.ethereum.address',
       undefined,
     );
+
     const solanaAddress = get(
       hdWallet,
       'state.wallet.solana.address',
       undefined,
     );
+
     const address = ethereumAddress ?? solanaAddress ?? '';
     let ecosystem = EcosystemsEnum.EVM;
-    if (solanaAddress) {
+
+    if (solanaAddress && !ethereumAddress) {
       ecosystem = EcosystemsEnum.SOLANA;
     }
 

@@ -353,11 +353,11 @@ const TabStack = React.memo(
 
     const tabBarStyle = useMemo(
       () => ({
-        height: 50,
+        height: Platform.OS === 'android' ? 65 : 50,
         paddingHorizontal: 20,
+        paddingBottom: Platform.OS === 'android' ? 10 : 0,
         borderTopWidth: 0,
         elevation: 24, // For Android
-        paddingBottom: 0,
         paddingVertical: 6,
         transform: [
           {

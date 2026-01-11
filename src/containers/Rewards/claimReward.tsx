@@ -1164,7 +1164,7 @@ const ClaimReward: React.FC = () => {
                   className='w-8 h-8 mr-3'
                   resizeMode='contain'
                 />
-                <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
+                <CyDText className='text-n0 text-[36px] font-bold !font-gambetta'>
                   {DecimalHelper.round(claimData.totalRewards, 2).toString()}
                 </CyDText>
               </CyDView>
