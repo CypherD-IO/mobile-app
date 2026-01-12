@@ -21,7 +21,7 @@ import {
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Alert, BackHandler, NativeModules } from 'react-native';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from '../../components/v2/QRCode';
 import PageHeader from '../../components/PageHeader';
 import {
   CHAIN_COSMOS,

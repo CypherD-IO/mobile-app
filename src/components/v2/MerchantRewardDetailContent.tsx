@@ -7,13 +7,13 @@ import {
   CyDMaterialDesignIcons,
   CyDImage,
 } from '../../styles/tailwindComponents';
-import MerchantLogo from './MerchantLogo';
 import { BlurView } from '@react-native-community/blur';
 import {
   StyleSheet,
   ActivityIndicator,
   InteractionManager,
 } from 'react-native';
+import MerchantLogo from './MerchantLogo';
 import AppImages from '../../../assets/images/appImages';
 import { DecimalHelper } from '../../utils/decimalHelper';
 import { useColorScheme } from 'nativewind';
@@ -28,11 +28,16 @@ import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { get } from 'lodash';
 
 interface MerchantRewardDetailContentProps {
-  merchantData?: MerchantDetailData;
+  /**
+   * Initial merchant data may come from list endpoints that don't include the
+   * full "details" fields. We fetch the full details internally using
+   * `candidateId`, so this is intentionally the "base" shape.
+   */
+  merchantData?: MerchantBaseData;
   navigation?: any;
 }
 
-interface MerchantDetailData {
+interface MerchantBaseData {
   groupId: string;
   candidateId: string;
   brand: string;
@@ -58,7 +63,12 @@ interface MerchantDetailData {
     transactionCount: number;
     uniqueSpenders: number;
   };
-  // New fields
+  // Some list endpoints include this, but it is optional until we fetch details.
+  projectedCYPRReward?: string;
+}
+
+interface MerchantDetailData extends MerchantBaseData {
+  // Full details fields
   projectedCYPRReward: string;
   referenceAmount: number;
   baseReward: {
@@ -431,7 +441,9 @@ const MerchantRewardDetailContent: React.FC<
   if (loading) {
     return (
       <CyDView
-        className={`flex-1 items-center justify-center ${isDarkMode ? 'bg-black' : 'bg-n30'}`}>
+        className={`flex-1 items-center justify-center ${
+          isDarkMode ? 'bg-black' : 'bg-n30'
+        }`}>
         <ActivityIndicator
           size='large'
           color={isDarkMode ? '#ffffff' : '#000000'}
@@ -443,7 +455,9 @@ const MerchantRewardDetailContent: React.FC<
   if (!currentMerchantData) {
     return (
       <CyDView
-        className={`flex-1 items-center justify-center ${isDarkMode ? 'bg-black' : 'bg-n30'}`}>
+        className={`flex-1 items-center justify-center ${
+          isDarkMode ? 'bg-black' : 'bg-n30'
+        }`}>
         <CyDText
           className={`text-[16px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
           {t('MERCHANT_DATA_NOT_AVAILABLE')}
@@ -489,11 +503,6 @@ const MerchantRewardDetailContent: React.FC<
     }, 250);
   };
 
-  // Style objects for dynamic styling
-  const overlayStyle = {
-    backgroundColor: 'rgba(13, 13, 13, 0.7)',
-  };
-
   return (
     <CyDView
       className={`flex-1 pb-14 -mb-10 ${isDarkMode ? 'bg-black' : 'bg-n30'}`}>
@@ -502,26 +511,38 @@ const MerchantRewardDetailContent: React.FC<
         {/* Background Image or Solid Color */}
         {
           <>
-            {/* Background banner */}
-            <CyDView className='w-full h-[126px] bg-white items-center justify-center relative'>
-              {/* Large faded merchant name acting as background image */}
-              <CyDText className='text-black font-bold text-center text-[80px]'>
-                {currentMerchantData.brand ?? currentMerchantData.canonicalName}
-              </CyDText>
+            <CyDView className='w-full h-[146px] bg-white items-center justify-center relative overflow-hidden rounded-t-[14px]'>
+              <CyDView className='absolute top-[8px] left-0 right-0 items-center z-50'>
+                <CyDView
+                  style={{
+                    width: 34,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: isDarkMode
+                      ? 'rgba(255,255,255,0.35)'
+                      : 'rgba(0,0,0,0.25)',
+                  }}
+                />
+              </CyDView>
+              {currentMerchantData.logoUrl ? (
+                <CyDImage
+                  source={{ uri: currentMerchantData.logoUrl }}
+                  className='absolute inset-0 w-full h-full'
+                  resizeMode='cover'
+                />
+              ) : (
+                // Fallback when no logoUrl is present.
+                <CyDText className='text-black font-bold text-center text-[80px] opacity-30'>
+                  {currentMerchantData.brand ??
+                    currentMerchantData.canonicalName}
+                </CyDText>
+              )}
 
-              {/* Blur Effect overlaying the big text */}
               <BlurView
                 style={styles.blurAbsolute}
                 blurType={isDarkMode ? 'dark' : 'light'}
-                blurAmount={8}
+                blurAmount={10}
                 reducedTransparencyFallbackColor='rgba(255, 255, 255, 0.3)'
-                pointerEvents='none'
-              />
-
-              {/* Semi-transparent overlay (tint) */}
-              <CyDView
-                className='absolute inset-0'
-                style={overlayStyle}
                 pointerEvents='none'
               />
             </CyDView>
@@ -529,7 +550,7 @@ const MerchantRewardDetailContent: React.FC<
         }
 
         {/* Merchant Logo Circle */}
-        <CyDView className='w-20 h-20 bg-white rounded-full items-center justify-center mb-2 shadow-lg z-20 absolute left-1/2 -translate-x-1/2 top-[86px]'>
+        <CyDView className='w-20 h-20 bg-white rounded-full items-center justify-center mb-2 shadow-lg z-20 absolute left-1/2 -translate-x-1/2 top-[106px]'>
           {/* BOOSTED Badge */}
           {(userBoostStatus?.hasBoost ??
             currentMerchantData?.userVoteData?.hasVoted ??

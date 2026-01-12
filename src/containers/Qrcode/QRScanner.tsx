@@ -119,7 +119,7 @@ export default function QRScanner() {
       );
     }
 
-    return (
+  return (
       <CyDView className='h-screen w-screen bg-black'>
         <Camera
           style={{ height: SCREEN_HEIGHT, width: '100%' }}
@@ -127,9 +127,9 @@ export default function QRScanner() {
           isActive
           codeScanner={codeScanner}
         />
-        <CyDImageBackground
-          source={AppImages.SCANNER_BG}
-          resizeMode='cover'
+          <CyDImageBackground
+            source={AppImages.SCANNER_BG}
+            resizeMode='cover'
           style={{
             position: 'absolute',
             top: 0,
@@ -137,31 +137,31 @@ export default function QRScanner() {
             height: '100%',
             width: '100%',
           }}
-          imageStyle={{ height: '100%', width: '100%' }}>
+            imageStyle={{ height: '100%', width: '100%' }}>
           <CyDView className='flex flex-column justify-end items-center h-screen w-screen'>
             <CyDView className='flex items-center justify-center h-1/2 w-10/12 pt-[10px]'>
               <CyDText className={' text-center text-[20px] text-white mt-[24%]'}>
-                {renderText()}
-              </CyDText>
-              {fromPage === QRScannerScreens.WALLET_CONNECT && (
-                <CyDTouchView
-                  className={
-                    'flex items-center justify-center mt-[40px] h-[60px] w-2/3 border-[1px] border-n40 rounded-[12px]'
-                  }
-                  onPress={() =>
-                    navigation.navigate(C.screenTitle.WALLET_CONNECT)
-                  }>
-                  <CyDText
+                  {renderText()}
+                </CyDText>
+                {fromPage === QRScannerScreens.WALLET_CONNECT && (
+                  <CyDTouchView
                     className={
-                      'text-base400 text-[15px] font-extrabold text-white'
+                      'flex items-center justify-center mt-[40px] h-[60px] w-2/3 border-[1px] border-n40 rounded-[12px]'
+                    }
+                    onPress={() =>
+                      navigation.navigate(C.screenTitle.WALLET_CONNECT)
                     }>
-                    {t('Manage Connections')}
-                  </CyDText>
-                </CyDTouchView>
-              )}
+                    <CyDText
+                      className={
+                        'text-base400 text-[15px] font-extrabold text-white'
+                      }>
+                      {t('Manage Connections')}
+                    </CyDText>
+                  </CyDTouchView>
+                )}
+              </CyDView>
             </CyDView>
-          </CyDView>
-        </CyDImageBackground>
+          </CyDImageBackground>
       </CyDView>
     );
   }, [

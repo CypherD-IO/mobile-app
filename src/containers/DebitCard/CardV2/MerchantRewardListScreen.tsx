@@ -390,8 +390,9 @@ const MerchantRewardListScreen: React.FC = () => {
 
     showBottomSheet({
       id: 'merchant-reward-detail',
-      topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
       backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+      // We render a custom handle indicator inside the blurred header for better visual cohesion.
+      showHandle: false,
       snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
       scrollable: true,
@@ -461,7 +462,9 @@ const MerchantRewardListScreen: React.FC = () => {
         className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
         {/* Header */}
         <CyDView
-          className={`flex-row justify-between items-center px-4 pt-4 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
+          className={`flex-row justify-between items-center px-4 pt-4 ${
+            isDarkMode ? 'bg-black' : 'bg-white'
+          }`}>
           <CyDTouchView onPress={handleBack} className='p-2'>
             <CyDIcons
               name='arrow-left'
@@ -484,10 +487,14 @@ const MerchantRewardListScreen: React.FC = () => {
               <CyDMaterialDesignIcons
                 name='magnify'
                 size={20}
-                className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                className={`mr-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}
               />
               <CyDTextInput
-                className={`flex-1 text-[16px] !bg-base40 ${isDarkMode ? 'text-white' : 'text-black'}`}
+                className={`flex-1 text-[16px] !bg-base40 ${
+                  isDarkMode ? 'text-white' : 'text-black'
+                }`}
                 value={searchText}
                 autoCapitalize='none'
                 autoCorrect={false}
@@ -500,7 +507,9 @@ const MerchantRewardListScreen: React.FC = () => {
             {/* Filter Button */}
             <CyDView className='relative' style={filterButtonContainerStyle}>
               <CyDTouchView
-                className={`ml-3 p-3 rounded-[12px] ${showFilterDropdown ? 'bg-orange500' : 'bg-base40'}`}
+                className={`ml-3 p-3 rounded-[12px] ${
+                  showFilterDropdown ? 'bg-orange500' : 'bg-base40'
+                }`}
                 onPress={handleFilterPress}>
                 <CyDMaterialDesignIcons
                   name='filter-variant'
@@ -509,8 +518,8 @@ const MerchantRewardListScreen: React.FC = () => {
                     showFilterDropdown
                       ? 'text-white'
                       : isDarkMode
-                        ? 'text-gray-400'
-                        : 'text-gray-600'
+                      ? 'text-gray-400'
+                      : 'text-gray-600'
                   }
                 />
               </CyDTouchView>
@@ -538,8 +547,8 @@ const MerchantRewardListScreen: React.FC = () => {
                           selectedSort.value === option.value
                             ? 'text-orange500 font-semibold'
                             : isDarkMode
-                              ? 'text-white'
-                              : 'text-black'
+                            ? 'text-white'
+                            : 'text-black'
                         }`}>
                         {option.label}
                       </CyDText>
@@ -680,14 +689,20 @@ const MerchantRewardListScreen: React.FC = () => {
                     <CyDMaterialDesignIcons
                       name='store-outline'
                       size={48}
-                      className={`mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                      className={`mb-2 ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}
                     />
                     <CyDText
-                      className={`text-center text-[16px] font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      className={`text-center text-[16px] font-medium ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                       No merchants found
                     </CyDText>
                     <CyDText
-                      className={`text-center text-[12px] mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                      className={`text-center text-[12px] mt-1 ${
+                        isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                      }`}>
                       Try adjusting your search terms
                     </CyDText>
                   </CyDView>

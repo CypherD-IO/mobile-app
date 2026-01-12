@@ -17,8 +17,7 @@ import { screenTitle } from '../../constants';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import ReferralRewardsBottomSheet from '../../components/v2/ReferralRewardsBottomSheet';
-// @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from '../../components/v2/QRCode';
 import { BlurView } from '@react-native-community/blur';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import useAxios from '../../core/HttpRequest';

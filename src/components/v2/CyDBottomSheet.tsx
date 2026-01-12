@@ -222,6 +222,16 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
 
     const ContentWrapper = scrollable ? BottomSheetScrollView : BottomSheetView;
 
+    /**
+     * When we want the handle to visually appear "inside" the content (e.g. inside a blurred header),
+     * we hide the native handle area entirely and render a custom indicator inside the sheet content.
+     *
+     * Important: the sheet remains draggable because RNGH gestures can be handled by the content area.
+     */
+    const hiddenHandleComponent = useCallback(() => {
+      return <CyDView style={{ height: 0 }} />;
+    }, []);
+
     return (
       <CyDView
         style={{
@@ -247,21 +257,26 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
           }}
+          handleComponent={showHandle ? undefined : hiddenHandleComponent}
           handleIndicatorStyle={
-            handleIndicatorStyle ?? {
-              backgroundColor: isDarkMode ? '#444' : '#ccc',
-              width: 34,
-            }
+            showHandle
+              ? handleIndicatorStyle ?? {
+                  backgroundColor: isDarkMode ? '#444' : '#ccc',
+                  width: 34,
+                }
+              : { height: 0, width: 0 }
           }
           handleStyle={
-            handleStyle ?? {
-              backgroundColor:
-                topBarColor ??
-                backgroundColor ??
-                (isDarkMode ? '#161616' : '#F5F6F7'),
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-            }
+            showHandle
+              ? handleStyle ?? {
+                  backgroundColor:
+                    topBarColor ??
+                    backgroundColor ??
+                    (isDarkMode ? '#161616' : '#F5F6F7'),
+                  borderTopLeftRadius: 16,
+                  borderTopRightRadius: 16,
+                }
+              : { height: 0, padding: 0 }
           }
           backdropComponent={renderBackdrop}
           onChange={handleSheetChanges}

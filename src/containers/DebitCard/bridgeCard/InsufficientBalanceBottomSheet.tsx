@@ -1,8 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, Modal } from 'react-native';
-// @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from '../../../components/v2/QRCode';
 import Share from 'react-native-share';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { get } from 'lodash';

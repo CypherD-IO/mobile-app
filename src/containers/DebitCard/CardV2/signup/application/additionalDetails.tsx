@@ -85,17 +85,18 @@ const AdditionalDetails = (): JSX.Element => {
         };
 
         // Submit application
-        const { isError, error } = await postWithAuth(
+        const response = await postWithAuth(
           `/v1/cards/${CardProviders.REAP_CARD}/application`,
           payload,
         );
 
-        if (isError) {
+        if (response.isError) {
+          console.log('error', response);
           showModal('state', {
             type: 'error',
             title: t('Application Failed'),
             description:
-              error?.message ?? 'Error in submitting your application',
+              response.error?.message ?? 'Error in submitting your application',
             onSuccess: hideModal,
             onFailure: hideModal,
           });

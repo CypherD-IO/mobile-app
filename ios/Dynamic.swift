@@ -28,7 +28,7 @@ import Lottie
     }
 
     lottieView.play { _ in
-      RNSplashScreen.setAnimationFinished(true)
-    }
+        RNSplashScreen.setAnimationFinished(true)
+      }
   }
 }

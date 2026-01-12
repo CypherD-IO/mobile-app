@@ -16,7 +16,7 @@ import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import { AppImagesMap } from '../../../assets/images/appImages';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from '../../components/v2/QRCode';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { isAndroid } from '../../misc/checkers';
