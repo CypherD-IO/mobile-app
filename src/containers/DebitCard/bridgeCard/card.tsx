@@ -852,7 +852,7 @@ const RenderCardActions = ({
             ? 'Card Freeze Failed'
             : 'Card Activation Failed',
         description:
-          errMessage ??
+          errMessage ||
           (status === CardStatus.ACTIVE
             ? 'Unable to freeze card. Please try again later.'
             : 'Unable to activate card. Please try again later.'),

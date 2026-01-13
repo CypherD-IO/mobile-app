@@ -113,16 +113,23 @@ export default function SeedPhrase() {
   };
 
   useEffect(() => {
+    if (!isFocused) {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      return () => {
+        if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      };
+    }
+
+    // Only intercept Android back presses while this screen is focused.
+    // If we subscribe while unfocused, it can steal back events from other screens.
+    loadSeedPhraseInMemory();
+    if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
       handleBackButton,
     );
-    if (isFocused) {
-      loadSeedPhraseInMemory();
-      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
-    } else {
-      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
-    }
+
     return () => {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
       subscription.remove();

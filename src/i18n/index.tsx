@@ -2361,6 +2361,8 @@ const resources = {
       GOOD_MORNING: 'Good Morning!',
       GOOD_AFTERNOON: 'Good Afternoon!',
       GOOD_EVENING: 'Good Evening!',
+      CAMERA_PERMISSION_REQUIRED_DESC:
+        'We need camera access to scan QR codes. Please enable it in Settings -> Apps -> Cypher Wallet -> Camera',
     },
   },
 };

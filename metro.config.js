@@ -97,6 +97,25 @@ const config = {
         );
       }
 
+      /**
+       * @injectivelabs/sdk-ts subpath exports:
+       *
+       * The SDK publishes a helpful `./exports` entrypoint (e.g. `@injectivelabs/sdk-ts/exports`),
+       * but Metro does not consistently honor package.json `"exports"` in all setups.
+       *
+       * To avoid runtime "Unable to resolve module '@injectivelabs/sdk-ts/exports'" errors,
+       * we map that subpath to the concrete CJS file that exists on disk.
+       *
+       * (We keep using the `@injectivelabs/sdk-ts/exports` import in TS for correct types.)
+       */
+      if (moduleName === '@injectivelabs/sdk-ts/exports') {
+        return defaultResolveRequest(
+          context,
+          '@injectivelabs/sdk-ts/dist/cjs/exports.cjs',
+          platform,
+        );
+      }
+
       // react-native-svg: prefer source entrypoint
       if (moduleName === 'react-native-svg') {
         return defaultResolveRequest(

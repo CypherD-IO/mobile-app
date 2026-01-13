@@ -708,7 +708,9 @@ export const beautifyPriceWithUSDDenom = (price: number): string => {
     )} Million`;
   }
   if (price > 1000) {
-    return `${DecimalHelper.toString(DecimalHelper.divide(price, 1000).floor())} K`;
+    return `${DecimalHelper.toString(
+      DecimalHelper.divide(price, 1000).floor(),
+    )} K`;
   }
   return `${price}`;
 };
@@ -1070,12 +1072,6 @@ export const isValidMessage = (
     ?.match(/[^Version: ](.*)[^\\n]/g)
     ?.join('')
     .trim();
-  console.log('currentVersion >>>>>>>> ::::::: ', currentVersion);
-  console.log('expectedVersion >>>>>>>> ::::::: ', expectedVersion);
-  console.log(
-    'messageToBeValidatedWith >>>>>>>> ::::::: ',
-    messageToBeValidatedWith.test(messageToBeValidated),
-  );
   if (messageToBeValidatedWith.test(messageToBeValidated)) {
     return { message: SignMessageValidationType.VALID };
   } else {
@@ -1196,7 +1192,9 @@ export const encryptPin = async ({
   sessionKey: string;
   sessionId: string;
 }) => {
-  const formattedPin = `2${pin.length.toString(16)}${pin}${'F'.repeat(14 - pin.length)}`;
+  const formattedPin = `2${pin.length.toString(16)}${pin}${'F'.repeat(
+    14 - pin.length,
+  )}`;
 
   // Convert sessionKey from hex to Buffer
   const keyBytes = Buffer.from(sessionKey, 'hex');
@@ -1377,7 +1375,9 @@ export const getCardImage = (card: Card, provider: CardProviders) => {
   }
 
   if (provider === CardProviders.REAP_CARD) {
-    const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`;
+    const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
+      card.designId ?? ''
+    }.png`;
     return {
       uri: cardImage,
     };
@@ -1428,8 +1428,8 @@ export const getMinimumCardLoadAmount = (
   return tokenData?.accountType === 'spot'
     ? MINIMUM_TRANSFER_AMOUNT_HL_SPOT
     : tokenData?.chainDetails?.backendName === CHAIN_ETH.backendName
-      ? MINIMUM_TRANSFER_AMOUNT_ETH
-      : 10;
+    ? MINIMUM_TRANSFER_AMOUNT_ETH
+    : 10;
 };
 
 export const extractAddressFromURI = (content: string): string => {

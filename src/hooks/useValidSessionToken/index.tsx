@@ -19,6 +19,7 @@ export default function useValidSessionToken() {
   const globalContext = useContext<any>(GlobalContext);
   const verifySessionToken = async () => {
     const authToken: string = await getAuthToken();
+    console.log('authToken >>>>>>>> ::::::: ', authToken);
     if (authToken) {
       const refreshToken = await getRefreshToken();
       const baseUrl: string = ARCH_HOST;

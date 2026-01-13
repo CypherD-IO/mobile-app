@@ -23,7 +23,10 @@ import Lottie
   /// We accept `UIView` to keep ObjC bridging stable; at runtime this must be a `LottieAnimationView`.
   @objc func play(animationView: UIView) {
     guard let lottieView = animationView as? LottieAnimationView else {
-      // Fail safe: don't crash the app if the wrong view is passed from ObjC/JS.
+      // Fail safe:
+      // Don't crash the app if the wrong view is passed from ObjC/JS, but also don't leave the
+      // app stuck behind the splash screen indefinitely.
+      RNSplashScreen.setAnimationFinished(true)
       return
     }
 

@@ -57,7 +57,7 @@ const GetFirstTokenComponent = ({ onGetTokenPress }: GetFirstTokenProps) => {
           <CyDMaterialDesignIcons
             name='plus-circle-multiple-outline'
             size={24}
-            className='text-n40'
+            className='text-base400'
           />
           <CyDText
             numberOfLines={1}

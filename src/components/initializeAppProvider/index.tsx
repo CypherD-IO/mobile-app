@@ -115,24 +115,8 @@ export const InitializeAppProvider = ({
   // State to track if wallet data is still loading
   const [walletLoading, setWalletLoading] = useState<boolean>(true);
 
-  /**
-   * Centralized init logging so we can reason about the startup gating logic.
-   * Keep logs DEV-only to avoid noisy production logs.
-   */
-  const logInit = useCallback(
-    (message: string, extra?: Record<string, unknown>): void => {
-      if (!__DEV__) return;
-      // eslint-disable-next-line no-console
-      console.log('[InitApp]', message, extra ?? {});
-    },
-    [],
-  );
-
   useEffect(() => {
     const initializeApp = async () => {
-      // Sentry is now initialized in App.tsx for v7 compatibility
-      logInit('initializeApp:start');
-
       messaging().onMessage(response => {
         if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
           setTimeout(() => {
@@ -161,38 +145,21 @@ export const InitializeAppProvider = ({
 
       try {
         const isAPIAccessible = await checkAPIAccessibility();
-        logInit('checkAPIAccessibility:result', { isAPIAccessible });
+        console.log('isAPIAccessible >>>>>>>> ::::::: ', isAPIAccessible);
 
         if (isAPIAccessible) {
-          logInit('exitIfJailBroken:start');
           await exitIfJailBroken();
-          logInit('exitIfJailBroken:done');
-
-          logInit('fetchRPCEndpointsFromServer:start');
           void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
-
-          logInit('loadActivitiesFromAsyncStorage:start');
           void loadActivitiesFromAsyncStorage();
-
-          logInit('requestUserPermission:start');
           await requestUserPermission();
-          logInit('requestUserPermission:done');
-
-          setTimeout(() => {
-            logInit('SplashScreen.hide');
-            // Keep splash visible for a short, deterministic duration to avoid a "white flash"
-            // while our async initialization finishes on slower devices.
-            SplashScreen.hide();
-          }, SPLASH_SCREEN_TIMEOUT);
         }
       } catch (e) {
         // If init throws, we currently end up on Loading forever. Log loudly so we can see it.
-        logInit('initializeApp:error', {
-          message: (e as Error)?.message ?? String(e),
-        });
         Sentry.captureException(e);
       } finally {
-        logInit('initializeApp:done');
+        setTimeout(() => {
+          SplashScreen.hide();
+        }, SPLASH_SCREEN_TIMEOUT);
       }
     };
 
@@ -329,27 +296,18 @@ export const InitializeAppProvider = ({
         // to onboarding. We do that by taking the "no-auth-required" branch:
         // (biometricEnabled && pinSetStatus === FALSE) => allows loading existing wallet and then onboarding.
         if (Platform.OS === 'ios' && isEmulator) {
-          logInit('pinGate:ios-emulator-bypass', { isEmulator });
           setBiometricEnabled(true);
           setPinSetStatus(PinPresentStates.FALSE);
           return;
         }
 
-        logInit('pinGate:compute:start', { isEmulator });
         const isDeviceBiometricEnabledValue = await isDeviceBiometricEnabled();
         setBiometricEnabled(isDeviceBiometricEnabledValue);
-        logInit('pinGate:isDeviceBiometricEnabled', {
-          isDeviceBiometricEnabledValue,
-        });
 
         const pinAlreadySetStatusValue = await pinAlreadySetStatus();
         setPinSetStatus(pinAlreadySetStatusValue);
-        logInit('pinGate:pinAlreadySetStatus', { pinAlreadySetStatusValue });
       } catch (e) {
         // Secure default: if we fail to determine PIN presence, require validation rather than bypass.
-        logInit('pinGate:error', {
-          message: (e as Error)?.message ?? String(e),
-        });
         Sentry.captureException(e);
         setBiometricEnabled(false);
         setPinSetStatus(PinPresentStates.TRUE);
@@ -361,36 +319,12 @@ export const InitializeAppProvider = ({
   }, [ethereumAddress, solanaAddress]);
 
   useEffect(() => {
-    logInit('navGate:snapshot', {
-      platform: Platform.OS,
-      walletLoading,
-      biometricEnabled,
-      pinSetStatus,
-      pinAuthenticated,
-      hasEthereumAddress: ethereumAddress != null,
-      hasSolanaAddress: solanaAddress != null,
-      isAuthenticated,
-    });
-  }, [
-    biometricEnabled,
-    ethereumAddress,
-    isAuthenticated,
-    logInit,
-    pinAuthenticated,
-    pinSetStatus,
-    solanaAddress,
-    walletLoading,
-  ]);
-
-  useEffect(() => {
     if (
       (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
       pinAuthenticated
     ) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state).finally(() => {
-        console.log('inside the load exisitng wallet block');
         setWalletLoading(false);
-        console.log('wallet loading set to false');
       });
     }
   }, [biometricEnabled, pinAuthenticated, pinSetStatus]);
@@ -411,7 +345,9 @@ export const InitializeAppProvider = ({
     ) {
       if (ethereumAddress ?? solanaAddress) {
         if (!isAuthenticated) {
-          console.log('loading the loading component because of not authenticated');
+          console.log(
+            'loading the loading component because of not authenticated',
+          );
           return <Loading />;
         }
         return (
@@ -428,7 +364,7 @@ export const InitializeAppProvider = ({
       }
     } else {
       if (pinSetStatus === PinPresentStates.NOTSET) {
-        console.log('loading the loading component 434');
+        console.log('loading the loading component because of pin not set');
         return <Loading />;
       } else if (pinSetStatus === PinPresentStates.TRUE) {
         return (

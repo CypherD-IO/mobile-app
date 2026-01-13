@@ -241,8 +241,6 @@
     "@types/number-to-words": "^1.2.3",
     "@types/qs": "^6.9.7",
     "@types/react": "^19.2.0",
-    "@types/react-dom": "^18.0.5",
-    "@types/react-native": "^0.66.11",
     "@types/react-native-background-timer": "^2.0.2",
     "@types/react-native-popup-dialog": "^0.16.4",
     "@types/react-native-svg-charts": "^5.0.16",

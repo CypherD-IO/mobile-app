@@ -36,7 +36,7 @@ import {
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
 } from '../../constants/server';
-import ViewShot, { captureScreen } from 'react-native-view-shot';
+import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { SHARE_QR_TIMEOUT } from '../../constants/timeOuts';
 import { isAndroid } from '../../misc/checkers';
@@ -247,21 +247,12 @@ export default function QRCodeGenerator() {
           }
         });
 
-        // eslint-disable-next-line no-console
-        console.log(
-          '[QRCode] Android share: QR base64 length',
-          base64Png.length,
-        );
-
         const shareImage: Record<string, any> = {
           title: t('SHARE_TITLE'),
           subject: t('SHARE_TITLE'),
-          // Keep address in message so even if the user shares only text, it contains the critical data.
           message: `${selectedChain.name}: ${selectedChain.address}`,
           url: `data:image/png;base64,${base64Png}`,
           type: 'image/png',
-          // react-native-share on Android often needs a filename for base64/data-uri inputs,
-          // otherwise native URI generation can fail (leading to getScheme() NPE).
           filename: `cypher-qr-${selectedChain.chainName}`,
         };
 
@@ -287,82 +278,36 @@ export default function QRCodeGenerator() {
 
       // Use a temp file instead of base64. iOS share sheets are much more reliable with a file URL.
       //
-      // Android note:
+      // iOS note:
       // We use the ViewShot component ref here (instead of capturing an arbitrary View tag) because
-      // `captureRef(viewTag)` can intermittently fail under Fabric with:
-      // "Failed to snapshot view tag <id>".
+      // `captureRef(viewTag)` can intermittently fail under Fabric.
       await waitForUiToSettle();
 
-      // Retry a couple of times on Android — this specific failure is often timing-related.
-      let lastErr: unknown = null;
-      for (let attempt = 0; attempt < (isAndroid() ? 3 : 1); attempt += 1) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const fileUri = await (node as any).capture?.({
-            format: 'png',
-            quality: 0.9,
-            result: 'tmpfile',
-            // Helps on iOS for some view types (incl. SVG) to avoid missing content in the snapshot.
-            useRenderInContext: !isAndroid(),
-          });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fileUri = await (node as any).capture?.({
+        format: 'png',
+        quality: 0.9,
+        result: 'tmpfile',
+        // Helps on iOS for some view types (incl. SVG) to avoid missing content in the snapshot.
+        useRenderInContext: true,
+      });
 
-          if (!fileUri) {
-            throw new Error(
-              '[QRCode] shareQRImage: ViewShot.capture() returned empty uri',
-            );
-          }
-
-          const shareImage: Record<string, any> = {
-            title: t('SHARE_TITLE'),
-            subject: t('SHARE_TITLE'),
-            message: `${selectedChain.address}`,
-            url: fileUri,
-            type: 'image/png',
-          };
-
-          if (!isAndroid()) {
-            delete shareImage.message;
-          }
-
-          await Share.open(shareImage);
-          return;
-        } catch (captureErr) {
-          lastErr = captureErr;
-          await new Promise(resolve =>
-            setTimeout(resolve, 250 * (attempt + 1)),
-          );
-          await waitForUiToSettle();
-        }
-      }
-
-      // Hard fallback for Android/Fabric:
-      // If view-tag snapshotting is failing consistently, capture the full screen instead.
-      if (isAndroid()) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[QRCode] ViewShot capture failed on Android; falling back to captureScreen()',
-          lastErr,
+      if (!fileUri) {
+        throw new Error(
+          '[QRCode] shareQRImage: ViewShot.capture() returned empty uri',
         );
-
-        const screenUri = await captureScreen({
-          format: 'png',
-          quality: 0.9,
-          result: 'tmpfile',
-        });
-
-        const shareImage: Record<string, any> = {
-          title: t('SHARE_TITLE'),
-          subject: t('SHARE_TITLE'),
-          message: `${selectedChain.address}`,
-          url: screenUri,
-          type: 'image/png',
-        };
-
-        await Share.open(shareImage);
-        return;
       }
 
-      throw lastErr;
+      const shareImage: Record<string, any> = {
+        title: t('SHARE_TITLE'),
+        subject: t('SHARE_TITLE'),
+        url: fileUri,
+        type: 'image/png',
+      };
+
+      // iOS share sheets are more reliable without a `message` when attaching images.
+      await Share.open(shareImage);
+      return;
     } catch (err) {
       const message =
         typeof err === 'object' && err && 'message' in err

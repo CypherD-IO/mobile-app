@@ -214,17 +214,20 @@ export default function PrivateKey(props: PrivateKeyProps) {
   };
 
   useEffect(() => {
-    if (isFocused) {
-      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
-      setSelectedChain(hdWalletContext?.state.selectedChain);
-    } else {
+    if (!isFocused) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      return () => {
+        if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      };
     }
+    if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+    setSelectedChain(hdWalletContext?.state.selectedChain);
 
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
       handleBackButton,
     );
+
     return () => {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
       subscription.remove();

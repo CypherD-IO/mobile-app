@@ -1,16 +1,16 @@
 diff --git a/node_modules/react-native-rsa-native/android/build.gradle b/node_modules/react-native-rsa-native/android/build.gradle
-index 82f60d3..3e143cc 100644
+index 82f60d3..0b31a53 100644
 --- a/node_modules/react-native-rsa-native/android/build.gradle
 +++ b/node_modules/react-native-rsa-native/android/build.gradle
-@@ -9,7 +9,6 @@ buildscript {
+@@ -9,15 +9,12 @@ buildscript {
      if (project == rootProject) {
          repositories {
              google()
 -            jcenter()
-             maven {
-                 url "https://maven.fabric.io/public"
-             }
-@@ -17,7 +16,8 @@ buildscript {
+-            maven {
+-                url "https://maven.fabric.io/public"
+-            }
+             mavenCentral()
          }
  
          dependencies {
@@ -20,7 +20,7 @@ index 82f60d3..3e143cc 100644
          }
      }
  }
-@@ -45,7 +45,6 @@ allprojects {
+@@ -45,7 +42,6 @@ allprojects {
      repositories {
          mavenLocal()
          google()

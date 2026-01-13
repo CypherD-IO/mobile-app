@@ -59,15 +59,26 @@ static void InitializeFlipper(UIApplication *application) {
     rootView.backgroundColor = [UIColor whiteColor];
   }
 
-  [IntercomModule initialize:@"ios_sdk-ed69019e837fc8edd9a6410207514825594cae2b" withAppId:[RNCConfig envFor:@"INTERCOM_APP_KEY"]];
+  // Intercom initialization.
+  //
+  // Intercom requires TWO values:
+  // - SDK key (platform-specific, e.g. "ios_sdk-...")
+  // - App ID (shared across platforms)
+  NSString *intercomSdkKey = [RNCConfig envFor:@"INTERCOM_IOS_SDK_KEY"];
+  NSString *intercomAppId = [RNCConfig envFor:@"INTERCOM_APP_KEY"];
+  if (intercomSdkKey != nil && intercomSdkKey.length > 0 &&
+      intercomAppId != nil && intercomAppId.length > 0) {
+    [IntercomModule initialize:intercomSdkKey withAppId:intercomAppId];
+  } else {
+    // Missing env should not crash the app; Intercom will simply be disabled.
+    NSLog(@"[Intercom] Skipping initialization: missing INTERCOM_IOS_SDK_KEY and/or INTERCOM_APP_KEY");
+  }
 
   Dynamic *t = [Dynamic new];
   UIView *animationUIView = (UIView *)[t createAnimationViewWithRootView:rootView lottieName:@"splash"];
   animationUIView.backgroundColor = [UIColor blackColor];
   [RNSplashScreen showLottieSplash:animationUIView inRootView:rootView];
   [t playWithAnimationView:animationUIView];
-
-  [RNSplashScreen setAnimationFinished:true];
 
   // Define UNUserNotificationCenter
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -104,6 +115,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(void (^)(void))completionHandler
 {
   [RNCPushNotificationIOS didReceiveNotificationResponse:response];
+  completionHandler();
 }
 
 // RN 0.83 factory delegate method

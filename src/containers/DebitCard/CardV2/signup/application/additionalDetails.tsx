@@ -91,7 +91,6 @@ const AdditionalDetails = (): JSX.Element => {
         );
 
         if (response.isError) {
-          console.log('error', response);
           showModal('state', {
             type: 'error',
             title: t('Application Failed'),
