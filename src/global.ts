@@ -1,5 +1,9 @@
 import { getArchHost, setArchHost } from './core/asyncStorage';
 
+// Production ARCH_HOST URL - used to determine if we are running in production environment
+// This is used for additional security verification in critical flows like card loading
+export const PRODUCTION_ARCH_HOST = 'https://arch.cypherhq.io';
+
 // Simple test detection - use dev URL if in development mode
 const getDefaultArchHost = () => {
   if (__DEV__) {

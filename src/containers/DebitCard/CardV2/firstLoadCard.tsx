@@ -67,8 +67,7 @@ import {
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import { formatUnits } from 'viem';
-import { fetchCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
-import { getTargetChainBackendName } from '../../../utils/chainUtils';
+import { fetchVerifiedCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -931,86 +930,33 @@ export default function FirstLoadCard() {
       return;
     }
     let gasDetails;
-    if (!quote.programId || !quote.cardProvider || !quote.chain) {
-      Sentry.captureMessage('Target address lookup validation failed', {
-          level: 'warning',
-          extra: {
-            hasCypherCardProgram: !!quote.programId,
-            hasProvider: !!quote.cardProvider,
-            hasChainName: !!quote.chain,
-            quoteId: quote.quoteId,
-         },
-      });
+    
+    // Verify and get target address - handles production vs non-production environment checks
+    // In production: validates params, fetches from contract, compares addresses
+    // In non-production: uses quote's target address directly for easier testing
+    const verifiedTargetAddress = await fetchVerifiedCardTargetAddress({
+      programId: quote.programId,
+      cardProvider: quote.cardProvider,
+      chain: quote.chain,
+      targetAddress: quote.targetAddress,
+      quoteId: quote.quoteId,
+    });
+
+    if (!verifiedTargetAddress.isValid) {
       setLoading(false);
       setIsMaxLoading(false);
       showModal('state', {
         type: 'error',
-        title: t('ERROR_FETCHING_QUOTE'),
-        description: t('ERROR_FETCHING_QUOTE_DESCRIPTION'),
+        title: verifiedTargetAddress.error?.title ?? 'Transaction Security Check Failed',
+        description: verifiedTargetAddress.error?.description ?? 'Unable to verify transaction. Please try again.',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
       return;
-    }
-    let targetWalletAddress: string;
-    try {
-      const targetChain = getTargetChainBackendName(quote.chain);
-      targetWalletAddress = await fetchCardTargetAddress(
-        quote.programId,
-        quote.cardProvider,
-        targetChain,
-      );
-    } catch (error) {
-      Sentry.captureException(error, {
-        extra: {
-          quoteId: quote.quoteId,
-          chain: quote.chain,
-          program: quote.programId,
-          provider: quote.cardProvider,
-        },
-      });
-      setLoading(false);
-      setIsMaxLoading(false);
-      showModal('state', {
-        type: 'error',
-        title: t('ERROR_FETCHING_TARGET_ADDRESS'),
-        description: t('ERROR_FETCHING_TARGET_ADDRESS_DESCRIPTION'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-      return;
-    }
-    let isAddressMatch = false;
-    if (EVM_ONLY_CHAINS.includes(quote.chain)) {
-      const normalizedContractAddress =  targetWalletAddress.toLowerCase();
-      const normalizedQuoteAddress = (quote.targetAddress || '').toLowerCase();
-      isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;
-    } else {
-      isAddressMatch = targetWalletAddress === (quote.targetAddress || '');
     }
 
-    if (!isAddressMatch) {
-      const mismatchError = new Error("Target address mismatch between contract and quote");
-      Sentry.captureException(mismatchError, {
-      extra: {
-        quoteId: quote.quoteId,
-        chain: quote.chain,
-        program: quote.programId,
-        provider: quote.cardProvider,
-        quoteAddress: quote.targetAddress,
-      },
-    });
-    setLoading(false);
-    setIsMaxLoading(false);
-    showModal('state', {
-      type: 'error',
-      title: t('TARGET_ADDRESS_MISMATCH'),
-      description: t('TARGET_ADDRESS_MISMATCH_DESCRIPTION'),
-      onSuccess: hideModal,
-      onFailure: hideModal,
-    });
-    return;
-    }
+    const targetWalletAddress = verifiedTargetAddress.targetAddress;
+
     try {
       if (chainDetails.chainName === ChainNames.ETH) {
         const publicClient = getViemPublicClient(

@@ -71,8 +71,7 @@ import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
 import { formatUnits } from 'viem';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
-import { fetchCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
-import { getTargetChainBackendName } from '../../../utils/chainUtils';
+import { fetchVerifiedCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 
 export default function CardQuote({
   navigation,
@@ -163,71 +162,35 @@ export default function CardQuote({
         return;
       }
 
-      try {
-        if (isMounted) setIsAddressLoading(true);
-        if (!tokenQuote.programId || !tokenQuote.cardProvider || !tokenQuote.chain) {
-          Sentry.captureMessage('Target address lookup validation failed', {
-            level: 'warning',
-            extra: {
-              hasProgramId: !!tokenQuote.programId,
-              hasCardProvider: !!tokenQuote.cardProvider,
-              hasChain: !!tokenQuote.chain,
-              quoteId: tokenQuote.quoteId,
-            },
-          });
-          showModal('state', {
-            type: 'error',
-            title: t('ERROR_FETCHING_QUOTE'),
-            description: t('ERROR_FETCHING_QUOTE_DESCRIPTION'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-          setIsAddressLoading(false);
-          return;
-        }
-        const targetChain = getTargetChainBackendName(tokenQuote.chain);
-        const targetWalletAddress = await fetchCardTargetAddress(
-          tokenQuote.programId,
-          tokenQuote.cardProvider,
-          targetChain,
-        );
-        let isAddressMatch = false;
-        if (EVM_ONLY_CHAINS.includes(tokenQuote.chain)) {
-          const normalizedContractAddress =  targetWalletAddress.toLowerCase();
-          const normalizedQuoteAddress = (tokenQuote.targetAddress || '').toLowerCase();
-          isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;
-        } else {
-          isAddressMatch = targetWalletAddress === (tokenQuote.targetAddress || '');
-        }
-    
-        if (!isAddressMatch) {
-          throw new Error("Target address mismatch between contract and quote");
-        }
-        if (isMounted) {
-          setTargetAddress(targetWalletAddress);
-          prevQuoteRef.current = currentQuoteParams;
-          setIsAddressLoading(false);
-        }
-      } catch (error) {
-        const isMismatchError = error instanceof Error && error.message === "Target address mismatch between contract and quote";
-        Sentry.captureException(error, {
-          extra: {
-            quoteId: tokenQuote.quoteId,
-            chain: tokenQuote.chain,
-            program: tokenQuote.programId,
-            provider: tokenQuote.cardProvider,
-            quoteAddress: tokenQuote.targetAddress,
-          },
-        });
+      // Verify and get target address - handles production vs non-production environment checks
+      // In production: validates params, fetches from contract, compares addresses
+      // In non-production: uses quote's target address directly for easier testing
+      if (isMounted) setIsAddressLoading(true);
+
+      const verifiedTargetAddress = await fetchVerifiedCardTargetAddress({
+        programId: tokenQuote.programId,
+        cardProvider: tokenQuote.cardProvider,
+        chain: tokenQuote.chain,
+        targetAddress: tokenQuote.targetAddress,
+        quoteId: tokenQuote.quoteId,
+      });
+
+      if (!verifiedTargetAddress.isValid) {
         showModal('state', {
           type: 'error',
-          title: isMismatchError ? t('TARGET_ADDRESS_MISMATCH') : t('ERROR_FETCHING_TARGET_ADDRESS'),
-          description: isMismatchError ? t('TARGET_ADDRESS_MISMATCH_DESCRIPTION') : t('ERROR_FETCHING_TARGET_ADDRESS_DESCRIPTION'),
+          title: verifiedTargetAddress.error?.title ?? 'Transaction Security Check Failed',
+          description: verifiedTargetAddress.error?.description ?? 'Unable to verify transaction. Please try again.',
           onSuccess: hideModal,
           onFailure: hideModal,
         });
         if (isMounted) setIsAddressLoading(false);
         return;
+      }
+
+      if (isMounted) {
+        setTargetAddress(verifiedTargetAddress.targetAddress);
+        prevQuoteRef.current = currentQuoteParams;
+        setIsAddressLoading(false);
       }
     };
 
@@ -235,7 +198,7 @@ export default function CardQuote({
     return () => {
       isMounted = false;
     };
-  }, [tokenQuote, showModal, hideModal, t]);
+  }, [tokenQuote, showModal, hideModal]);
 
   const cosmosAddresses = useMemo(
     () => ({
