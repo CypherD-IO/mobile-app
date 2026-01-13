@@ -20,6 +20,20 @@ export type CyDQRCodeProps = Readonly<{
   logo?: ImageSourcePropType;
   logoSize?: number;
   /**
+   * Optional access to the underlying `react-native-qrcode-svg` instance.
+   *
+   * Why:
+   * - Android Fabric can be flaky when snapshotting arbitrary view tags via `react-native-view-shot`.
+   * - `react-native-qrcode-svg` can export a PNG base64 directly via `toDataURL()`, which is more
+   *   reliable for sharing.
+   *
+   * Note:
+   * - The exported PNG is generated from the SVG QR layer; our overlaid RN <Image> logo (workaround)
+   *   is NOT included in the export. This is acceptable for scan reliability (the QR has a logo hole),
+   *   and avoids Android snapshot flakes.
+   */
+  onQRCodeRef?: (ref: unknown | null) => void;
+  /**
    * Backwards-compat prop from the old library. Not used by `react-native-qrcode-svg`.
    */
   codeStyle?: string;
@@ -41,7 +55,14 @@ const EMPTY_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>';
 
 export default function QRCode(props: CyDQRCodeProps): React.ReactElement {
-  const { content, size = 250, logo, logoSize = 60, style } = props;
+  const {
+    content,
+    size = 250,
+    logo,
+    logoSize = 60,
+    style,
+    onQRCodeRef,
+  } = props;
 
   const logoContainerSize = Math.max(0, logoSize);
   const logoPos = (size - logoContainerSize) / 2;
@@ -52,6 +73,8 @@ export default function QRCode(props: CyDQRCodeProps): React.ReactElement {
       <QRCodeSvg
         value={content ?? ''}
         size={size}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getRef={onQRCodeRef as any}
         // Keep the old behavior of reserving a center area (hole) for the logo.
         // Using an empty SVG avoids the react-native-svg <Image> rendering edge cases.
         logoSVG={logo ? EMPTY_SVG : undefined}

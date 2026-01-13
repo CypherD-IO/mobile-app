@@ -35,6 +35,7 @@ public class MainActivity extends ReactActivity {
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    // Native Lottie splash (react-native-lottie-splash-screen)
     // Fix: https://github.com/invertase/react-native-firebase/issues/3469#issuecomment-614990736
     SplashScreen.show(this, R.id.lottie);
     SplashScreen.setAnimationFinished(true);

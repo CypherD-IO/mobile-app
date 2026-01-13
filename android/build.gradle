@@ -16,7 +16,10 @@ buildscript {
         // We pin AGP explicitly because this repo does not use a version catalog.
         classpath("com.android.tools.build:gradle:8.7.3")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("com.google.gms:google-services:4.3.10")
+        // google-services 4.3.10 is too old for modern AGP/Gradle and can fail to wire the
+        // generated `google_app_id` resources into the final merged resources, which then causes:
+        // "@react-native-firebase/app" -> "No Firebase App '[DEFAULT]' has been created".
+        classpath("com.google.gms:google-services:4.4.2")
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.8.1")
         classpath("com.google.firebase:perf-plugin:1.4.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")

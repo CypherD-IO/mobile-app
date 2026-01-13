@@ -180,6 +180,8 @@ export const InitializeAppProvider = ({
 
           setTimeout(() => {
             logInit('SplashScreen.hide');
+            // Keep splash visible for a short, deterministic duration to avoid a "white flash"
+            // while our async initialization finishes on slower devices.
             SplashScreen.hide();
           }, SPLASH_SCREEN_TIMEOUT);
         }

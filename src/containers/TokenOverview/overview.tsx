@@ -96,6 +96,11 @@ export const graphs = [
 
 const BUTTON_WIDTH = (width - 32) / graphs.length;
 
+// Perf: avoid recreating NativeWind interop wrappers on every render.
+const CyDChartYLabel = cssInterop(ChartYLabel, { className: 'style' });
+const CyDChartXLabel = cssInterop(ChartXLabel, { className: 'style' });
+const CyDChartDot = cssInterop(ChartDot, { className: 'style' });
+
 export default function Overview({
   tokenData,
   navigation,
@@ -133,9 +138,9 @@ export default function Overview({
   const [marketDistribution, setMarketDistribution] = useState();
   const [marketDistributionLoading, setMarketDistributionLoading] =
     useState(true);
-  const [loading, setLoading] = useState<boolean>(false);
-  let chartTimeout: ReturnType<typeof setTimeout>;
-  let marketDistributionTimeout: ReturnType<typeof setTimeout>;
+  const chartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const marketDistributionTimeoutRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showMarketCapTip, setMarketCapTip] = useState(false);
   const [showCirculatingSupplyTip, setCirculatingSupplyTip] = useState(false);
   const [showVolumeTip, setVolumeTip] = useState(false);
@@ -148,27 +153,11 @@ export default function Overview({
   );
   const [totalValue, setTotalValue] = useState(tokenData.balanceDecimal);
 
-  const [chartVisible, setChartVisible] = useState(false);
-
-  const CyDChartYLabel = cssInterop(ChartYLabel, {
-    className: 'style',
-  });
-
-  const CyDChartXLabel = cssInterop(ChartXLabel, {
-    className: 'style',
-  });
-
-  const CyDChartDot = cssInterop(ChartDot, {
-    className: 'style',
-  });
-
-  useEffect(() => {
-    setChartVisible(true);
-  }, [data, chartData]);
+  // NOTE: `chartVisible` was previously used as an additional guard; it was always
+  // set to true after data loads. Removing it avoids an extra state update/render.
 
   useEffect(() => {
     if (isFocused) {
-      setLoading(true);
       if (tokenData.isVerified && tokenData?.coinGeckoId !== '') {
         initialize();
       } else {
@@ -176,11 +165,16 @@ export default function Overview({
         setBalanceLoading(false);
         setMarketDistributionLoading(false);
       }
-      setLoading(false);
     }
     return () => {
-      clearTimeout(chartTimeout);
-      clearTimeout(marketDistributionTimeout);
+      if (chartTimeoutRef.current) {
+        clearTimeout(chartTimeoutRef.current);
+        chartTimeoutRef.current = null;
+      }
+      if (marketDistributionTimeoutRef.current) {
+        clearTimeout(marketDistributionTimeoutRef.current);
+        marketDistributionTimeoutRef.current = null;
+      }
     };
   }, [isFocused]);
 
@@ -202,7 +196,10 @@ export default function Overview({
         setChartLoading(false);
       } else {
         if (isFocused) {
-          chartTimeout = setTimeout(() => {
+          if (chartTimeoutRef.current) {
+            clearTimeout(chartTimeoutRef.current);
+          }
+          chartTimeoutRef.current = setTimeout(() => {
             void getChartData();
           }, 5000);
         } else {
@@ -226,7 +223,10 @@ export default function Overview({
         setTokenDescription(data.description);
       } else {
         if (isFocused) {
-          marketDistributionTimeout = setTimeout(() => {
+          if (marketDistributionTimeoutRef.current) {
+            clearTimeout(marketDistributionTimeoutRef.current);
+          }
+          marketDistributionTimeoutRef.current = setTimeout(() => {
             void getMarketDistribution();
           }, 5000);
         } else {
@@ -818,7 +818,8 @@ export default function Overview({
     );
   };
 
-  return loading && data.points.length === 0 ? (
+  // Perf/UX: show initial loader based on the actual async loads, not a separate state.
+  return chartloading && tokenData.isVerified && data.points.length === 0 ? (
     <Loading />
   ) : (
     <CyDScrollView
@@ -833,7 +834,7 @@ export default function Overview({
             <ActivityIndicator size='small' color={Colors.appColor} />
           </CyDView>
         )}
-        {!chartloading && chartData && chartVisible && (
+        {!chartloading && chartData && (
           <CyDView>
             <CyDView className={'flex flex-row justify-center'}>
               <CyDChartXLabel

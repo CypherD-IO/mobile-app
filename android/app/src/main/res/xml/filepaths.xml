@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+  <!--
+    react-native-share FileProvider paths (per official docs).
+    We use the external cache location so the shared file can be exposed via a content:// URI.
+  -->
+  <external-cache-path name="myexternalimages" path="Download/" />
+</paths>
+
