@@ -320,7 +320,7 @@ export default function OptionsHub() {
       onPress: () => {
         navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
           title: 'Card FAQ',
-          uri: 'https://cypherhq.io/card#faq',
+          uri: 'https://cypherhq.io/faq',
         });
       },
     },
