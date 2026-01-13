@@ -145,7 +145,6 @@ export const InitializeAppProvider = ({
 
       try {
         const isAPIAccessible = await checkAPIAccessibility();
-        console.log('isAPIAccessible >>>>>>>> ::::::: ', isAPIAccessible);
 
         if (isAPIAccessible) {
           await exitIfJailBroken();
@@ -335,7 +334,6 @@ export const InitializeAppProvider = ({
       biometricEnabled &&
       pinSetStatus === PinPresentStates.FALSE
     ) {
-      console.log('loading the loading component 407');
       return <Loading />;
     }
 
@@ -345,9 +343,6 @@ export const InitializeAppProvider = ({
     ) {
       if (ethereumAddress ?? solanaAddress) {
         if (!isAuthenticated) {
-          console.log(
-            'loading the loading component because of not authenticated',
-          );
           return <Loading />;
         }
         return (
@@ -364,7 +359,6 @@ export const InitializeAppProvider = ({
       }
     } else {
       if (pinSetStatus === PinPresentStates.NOTSET) {
-        console.log('loading the loading component because of pin not set');
         return <Loading />;
       } else if (pinSetStatus === PinPresentStates.TRUE) {
         return (

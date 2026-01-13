@@ -96,7 +96,7 @@ class MainApplication : Application(), ReactApplication, ShareApplication {
       ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope)
       ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont)
       ReactFontManager.getInstance().addCustomFont(this, "Cypher Nord", R.font.nord)
-      ReactFontManager.getInstance().addCustomFont(this, "New York", R.font.newyork)
+      ReactFontManager.getInstance().addCustomFont(this, "New York", R.font.gambetta)
     } catch (t: Throwable) {
       Log.e(TAG, "Failed to register custom fonts; continuing startup.", t)
     }

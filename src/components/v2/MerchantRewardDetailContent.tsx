@@ -511,7 +511,9 @@ const MerchantRewardDetailContent: React.FC<
         {/* Background Image or Solid Color */}
         {
           <>
-            <CyDView className='w-full h-[146px] bg-white items-center justify-center relative overflow-hidden rounded-t-[14px]'>
+            <CyDView
+              className='w-full h-[146px] items-center justify-center relative overflow-hidden'
+              style={{ backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }}>
               <CyDView className='absolute top-[8px] left-0 right-0 items-center z-50'>
                 <CyDView
                   style={{

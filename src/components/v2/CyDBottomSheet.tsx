@@ -251,6 +251,14 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           enablePanDownToClose={enablePanDownToClose}
           enableOverDrag={enableOverDrag}
           enableDynamicSizing={enableDynamicSizing}
+          containerStyle={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 16,
+            elevation: 1000,
+            zIndex: 10000,
+          }}
           backgroundStyle={{
             backgroundColor:
               backgroundColor ?? (isDarkMode ? '#161616' : '#F5F6F7'), // Force dark background
@@ -286,12 +294,9 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           style={[
             styles.bottomSheet,
             {
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: -4 },
-              shadowOpacity: 0.25,
-              shadowRadius: 16,
-              elevation: 1000,
-              zIndex: 10000,
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              overflow: 'hidden',
             },
           ]}>
           <ContentWrapper
@@ -321,17 +326,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
 );
 
 const styles = StyleSheet.create({
-  bottomSheet: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 1000,
-    zIndex: 10000,
-  },
+  bottomSheet: {},
   contentContainer: {
     flex: 1,
     backgroundColor: 'transparent',

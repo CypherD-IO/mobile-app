@@ -72,7 +72,6 @@ export default function useInitializer() {
 
   const checkAPIAccessibility = async () => {
     const response = await getWithoutAuth('/health');
-    console.log('response >>>>>>>> ::::::: ', response);
     return !response.isError;
   };
 
@@ -359,7 +358,6 @@ export default function useInitializer() {
           hdWallet,
           setShowDefaultAuthRemoveModal,
         );
-        console.log('signInResponse >>>>>>>> ::::::: ', signInResponse);
         if (signInResponse) {
           if (
             signInResponse?.message === SignMessageValidationType.VALID &&

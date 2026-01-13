@@ -6,7 +6,8 @@ export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 # Install CocoaPods using Homebrew
 brew install cocoapods
 
-# Install Node.js version 18.17.1 using nvm (Node Version Manager)
+# Install Node.js using nvm (Node Version Manager).
+# Source of truth: repo root `.nvmrc` (used by both GitHub Actions and Xcode Cloud).
 # Install nvm if not already installed
 if [ ! -d "$HOME/.nvm" ]; then
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
@@ -14,17 +15,26 @@ if [ ! -d "$HOME/.nvm" ]; then
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 fi
 
-# Load nvm and install Node.js 18.17.1
+# Load nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
-# Try to get Node.js version from .nvmrc, fallback to default if not found
-if [ -f "../.nvmrc" ]; then
-    NODE_VERSION=$(cat "../.nvmrc")
-    echo "Found .nvmrc file, using Node.js version: $NODE_VERSION"
+# Resolve repo root deterministically (Xcode Cloud does not guarantee the current working directory).
+# - Prefer CI_PRIMARY_REPOSITORY_PATH when available.
+# - Otherwise compute from this script location: ios/ci_scripts -> repo root (../..).
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+NVMRC_PATH="${REPO_ROOT}/.nvmrc"
+
+# Try to get Node.js version from repo root .nvmrc, fallback to a known-good version if not found.
+if [ -f "$NVMRC_PATH" ]; then
+    NODE_VERSION=$(cat "$NVMRC_PATH")
+    echo "Found .nvmrc file at: $NVMRC_PATH"
+    echo "Using Node.js version: $NODE_VERSION"
 else
-    NODE_VERSION="18.17.1"
-    echo "No .nvmrc file found, using default Node.js version: $NODE_VERSION"
+    NODE_VERSION="v22.12.0"
+    echo "No .nvmrc found at: $NVMRC_PATH"
+    echo "Falling back to Node.js version: $NODE_VERSION"
 fi
 
 nvm install $NODE_VERSION
@@ -34,6 +44,9 @@ nvm alias default $NODE_VERSION
 # Verify Node.js version
 node -v
 
+# Some RN scripts in CI expect a node binary to exist under /Users/local/.nvm.
+# Ensure the target directory exists before we symlink.
+sudo mkdir -p /Users/local/.nvm/versions/node/$NODE_VERSION/bin/
 sudo ln -sf $(which node) /Users/local/.nvm/versions/node/$NODE_VERSION/bin/node
 
 NODE_PATH=$(which node)
