@@ -29,7 +29,6 @@ import {
   AnalyticsType,
   ButtonType,
   CypherPlanId,
-  EVM_ONLY_CHAINS,
   HyperLiquidAccount,
 } from '../../../constants/enum';
 import { capitalize, get } from 'lodash';
@@ -71,7 +70,8 @@ import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
 import { formatUnits } from 'viem';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
-import { fetchVerifiedCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
+import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
+import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
 
 export default function CardQuote({
   navigation,
@@ -162,35 +162,52 @@ export default function CardQuote({
         return;
       }
 
-      // Verify and get target address - handles production vs non-production environment checks
-      // In production: validates params, fetches from contract, compares addresses
-      // In non-production: uses quote's target address directly for easier testing
       if (isMounted) setIsAddressLoading(true);
 
-      const verifiedTargetAddress = await fetchVerifiedCardTargetAddress({
-        programId: tokenQuote.programId,
-        cardProvider: tokenQuote.cardProvider,
-        chain: tokenQuote.chain,
-        targetAddress: tokenQuote.targetAddress,
-        quoteId: tokenQuote.quoteId,
-      });
+      // -------------------------------------------------------------------------
+      // Target Address Resolution
+      // -------------------------------------------------------------------------
+      // On production: Fetch from smart contract and validate against quote
+      // On dev/staging: Use quote's target address directly (no contract validation)
+      
+      const currentArchHost = hostWorker.getHost('ARCH_HOST');
+      const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
 
-      if (!verifiedTargetAddress.isValid) {
-        showModal('state', {
-          type: 'error',
-          title: verifiedTargetAddress.error?.title ?? 'Transaction Security Check Failed',
-          description: verifiedTargetAddress.error?.description ?? 'Unable to verify transaction. Please try again.',
-          onSuccess: hideModal,
-          onFailure: hideModal,
+      if (isProductionBackend) {
+        const result = await resolveAndValidateCardTargetAddress({
+          programId: tokenQuote.programId,
+          provider: tokenQuote.cardProvider,
+          chainName: tokenQuote.chain,
+          quoteTargetAddress: tokenQuote.targetAddress,
+          quoteId: tokenQuote.quoteId,
         });
-        if (isMounted) setIsAddressLoading(false);
-        return;
-      }
 
-      if (isMounted) {
-        setTargetAddress(verifiedTargetAddress.targetAddress);
-        prevQuoteRef.current = currentQuoteParams;
-        setIsAddressLoading(false);
+        if (!result.success) {
+          setIsAddressLoading(false);
+          setLoading(false);
+          showModal('state', {
+            type: 'error',
+            title: 'Transaction Security Check Failed',
+            description: result.userFriendlyMessage,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
+        if (isMounted) {
+          setTargetAddress(result.targetAddress);
+          prevQuoteRef.current = currentQuoteParams;
+          setIsAddressLoading(false);
+          setIsPayDisabled(false);
+        }
+      } else {
+        // Non-production: use quote address directly
+        if (isMounted) {
+          setTargetAddress(tokenQuote.targetAddress);
+          prevQuoteRef.current = currentQuoteParams;
+          setIsAddressLoading(false);
+          setIsPayDisabled(false);
+        }
       }
     };
 
@@ -198,7 +215,7 @@ export default function CardQuote({
     return () => {
       isMounted = false;
     };
-  }, [tokenQuote, showModal, hideModal]);
+  }, [tokenQuote]);
 
   const cosmosAddresses = useMemo(
     () => ({
@@ -1240,6 +1257,7 @@ export default function CardQuote({
             disabled={
               isPayDisabled ||
               isAddressLoading ||
+              !targetAddress ||
               (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
             }
             onPress={() => {

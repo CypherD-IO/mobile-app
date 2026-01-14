@@ -30,7 +30,6 @@ import {
 import {
   ButtonType,
   CardProviders,
-  EVM_ONLY_CHAINS,
   TokenModalType,
 } from '../../../constants/enum';
 import {
@@ -73,8 +72,8 @@ import {
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
-import { fetchVerifiedCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
-
+import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
+import { hostWorker, PRODUCTION_ARCH_HOST } from "../../../global";
 /**
  * Interface for route parameters passed to BridgeFundCardScreen
  */
@@ -299,31 +298,43 @@ export default function BridgeFundCardScreen({
     }
     let gasDetails;
 
-    // Verify and get target address - handles production vs non-production environment checks
-    // In production: validates params, fetches from contract, compares addresses
-    // In non-production: uses quote's target address directly for easier testing
-    const verifiedTargetAddress = await fetchVerifiedCardTargetAddress({
-      programId: quote.programId,
-      cardProvider: quote.cardProvider,
-      chain: quote.chain,
-      targetAddress: quote.targetAddress,
-      quoteId: quote.quoteId,
-    });
+    // -------------------------------------------------------------------------
+    // Target Address Resolution
+    // -------------------------------------------------------------------------
+    // On production: Fetch from smart contract and validate against quote
+    // On dev/staging: Use quote's target address directly (no contract validation)
+    
+    const currentArchHost = hostWorker.getHost('ARCH_HOST');
+    const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
+    let targetWalletAddress = '';
 
-    if (!verifiedTargetAddress.isValid) {
-      setLoading(false);
-      setIsMaxLoading(false);
-      showModal('state', {
-        type: 'error',
-        title: verifiedTargetAddress.error?.title ?? 'Transaction Security Check Failed',
-        description: verifiedTargetAddress.error?.description ?? 'Unable to verify transaction. Please try again.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
+    if (isProductionBackend) {
+      const result = await resolveAndValidateCardTargetAddress({
+        programId: quote.programId,
+        provider: quote.cardProvider,
+        chainName: quote.chain,
+        quoteTargetAddress: quote.targetAddress,
+        quoteId: quote.quoteId,
       });
-      return;
-    }
 
-    const targetWalletAddress = verifiedTargetAddress.targetAddress;
+      if (!result.success) {
+        setLoading(false);
+        setIsMaxLoading(false);
+        showModal('state', {
+          type: 'error',
+          title: 'Transaction Security Check Failed',
+          description: result.userFriendlyMessage,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+
+      targetWalletAddress = result.targetAddress;
+    } else {
+      // Non-production: use quote address directly
+      targetWalletAddress = quote.targetAddress;
+    }
 
     try {
       if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {

@@ -1,28 +1,96 @@
 import { http, createPublicClient, zeroAddress, isAddress } from "viem";
 import { CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS } from "../constants/data";
 import { isCosmosAddress, isNobleAddress, isOsmosisAddress, isSolanaAddress, isCoreumAddress, isInjectiveAddress } from "../utils/utils";
-import { CHAIN_BASE, ChainBackendNames } from "../constants/server";
-import * as Sentry from '@sentry/react';
+import { CHAIN_BASE, ChainBackendNames, CHAIN_HYPERLIQUID } from "../constants/server";
+import * as Sentry from '@sentry/react-native';
 import { TargetRouterABI } from '../constants/targetRouterABI';
 import { initialGlobalState } from "../core/globalContext";
 import { getWeb3Endpoint } from "../core/util";
-import { hostWorker, PRODUCTION_ARCH_HOST } from "../global";
 import { COSMOS_ONLY_CHAINS, EVM_ONLY_CHAINS, SOLANA_ONLY_CHAINS } from "../constants/enum";
 
+
+
+// ============================================================================
+// Types & Interfaces
+// ============================================================================
+
+/**
+ * Error types that can occur during target address resolution and validation.
+ * These help the consumer determine how to handle and display the error to users.
+ */
+export enum TargetAddressErrorType {
+  /** Required parameters (programId, provider, chainName) are missing */
+  MISSING_PARAMS = 'MISSING_PARAMS',
+  /** Chain name is not recognized or supported */
+  INVALID_CHAIN = 'INVALID_CHAIN',
+  /** Failed to fetch address from the smart contract */
+  FETCH_FAILED = 'FETCH_FAILED',
+  /** Address from contract doesn't match the quote's target address */
+  ADDRESS_MISMATCH = 'ADDRESS_MISMATCH',
+}
+
+/**
+ * Parameters required for resolving and validating a card target address.
+ */
+export interface ResolveTargetAddressParams {
+  /** The cypher card program identifier from the quote */
+  programId: string | undefined | null;
+  /** The card provider identifier */
+  provider: string | undefined | null;
+  /** The blockchain network name (e.g., 'ETH', 'POLYGON', 'SOLANA') */
+  chainName: string | undefined | null;
+  /** The target address provided in the quote (for validation) */
+  quoteTargetAddress: string | undefined | null;
+  /** Quote ID for error reporting and support reference */
+  quoteId?: string;
+}
+
+/**
+ * Successful result from target address resolution.
+ */
+export interface ResolveTargetAddressSuccess {
+  success: true;
+  /** The validated target address to use for the transaction */
+  targetAddress: string;
+}
+
+/**
+ * Failed result from target address resolution.
+ */
+export interface ResolveTargetAddressFailure {
+  success: false;
+  /** The type of error that occurred */
+  errorType: TargetAddressErrorType;
+  /** Human-readable error message for logging/debugging */
+  errorMessage: string;
+  /** User-friendly description suitable for display in error modals */
+  userFriendlyMessage: string;
+}
+
+export type ResolveTargetAddressResult = ResolveTargetAddressSuccess | ResolveTargetAddressFailure;
+
+// ============================================================================
+// Private Helpers
+// ============================================================================
+
+/**
+ * Public client for reading from the target router contract on Base chain.
+ */
 const publicClient = createPublicClient({
   transport: http(getWeb3Endpoint(CHAIN_BASE, { globalState: initialGlobalState, globalDispatch: () => {} })),
 });
 
 /**
- * Validates if the given address is valid for the specified chain.
- * 
+ * Validates that an address is properly formatted for the given chain.
+ *
  * @param address - The address to validate
- * @param chain - The chain identifier to validate against
+ * @param chain - The chain family (ETH, SOLANA, COSMOS, etc.)
  * @returns True if the address is valid for the chain, false otherwise
  */
 const isValidAddress = (address: string | undefined | null, chain: string): boolean => {
   if (!address) return false;
   if (address === zeroAddress) return false;
+
   switch (chain) {
     case ChainBackendNames.ETH:
     case ChainBackendNames.POLYGON:
@@ -32,30 +100,80 @@ const isValidAddress = (address: string | undefined | null, chain: string): bool
     case ChainBackendNames.OPTIMISM:
     case ChainBackendNames.ZKSYNC_ERA:
     case ChainBackendNames.BASE:
+    case ChainBackendNames.HYPERLIQUID:
       return isAddress(address);
 
-      case ChainBackendNames.SOLANA:
-        return isSolanaAddress(address);
-  
-      case ChainBackendNames.COSMOS:
-        return isCosmosAddress(address);
+    case ChainBackendNames.SOLANA:
+      return isSolanaAddress(address);
       
-      case ChainBackendNames.OSMOSIS:
-        return isOsmosisAddress(address);
-      
-      case ChainBackendNames.NOBLE:
-        return isNobleAddress(address);
-      
-      case ChainBackendNames.COREUM:
-        return isCoreumAddress(address);
-  
-      case ChainBackendNames.INJECTIVE:
-        return isInjectiveAddress(address);
-  
-      default:
-        return address.length > 0;
+    case ChainBackendNames.COSMOS:
+      return isCosmosAddress(address);
+
+    case ChainBackendNames.OSMOSIS:
+      return isOsmosisAddress(address);
+
+    case ChainBackendNames.NOBLE:
+      return isNobleAddress(address);
+
+    case ChainBackendNames.COREUM:
+      return isCoreumAddress(address);
+
+    case ChainBackendNames.INJECTIVE:
+      return isInjectiveAddress(address);
+
+    default:
+      return address.length > 0;
   }
 };
+
+/**
+ * Maps a specific chain backend name to its chain family for target address lookup.
+ * The target router contract uses chain families (ETH, OSMOSIS, SOLANA)
+ * rather than individual chain names.
+ *
+ * @param chainName - The specific chain backend name (e.g., 'POLYGON', 'ARBITRUM')
+ * @returns The chain family to use for contract lookup
+ * @throws Error if the chain name is not recognized
+ */
+export function getChainFamilyForTargetLookup(chainName: string): ChainBackendNames {
+  // EVM chains (including Hyperliquid which settles on Arbitrum) use ETH family
+  if (EVM_ONLY_CHAINS.includes(chainName) || CHAIN_HYPERLIQUID.backendName === chainName) {
+    return ChainBackendNames.ETH;
+  }
+
+  // Cosmos ecosystem chains use OSMOSIS family
+  if (COSMOS_ONLY_CHAINS.includes(chainName)) {
+    return ChainBackendNames.OSMOSIS;
+  }
+
+  // Solana chain family
+  if (SOLANA_ONLY_CHAINS.includes(chainName)) {
+    return ChainBackendNames.SOLANA;
+  }
+
+  throw new Error(`Unrecognized chain name for target lookup: ${chainName}`);
+}
+
+/**
+ * Normalizes addresses for comparison based on chain type.
+ * EVM addresses (including Hyperliquid which uses EVM-compatible addresses)
+ * are case-insensitive, others are case-sensitive.
+ *
+ * @param address - The address to normalize
+ * @param chainName - The chain backend name
+ * @returns Normalized address string
+ */
+function normalizeAddressForComparison(address: string, chainName: string): string {
+  // EVM chains and Hyperliquid use case-insensitive EVM addresses
+  if (EVM_ONLY_CHAINS.includes(chainName) || chainName === CHAIN_HYPERLIQUID.backendName) {
+    return address.toLowerCase();
+  }
+  return address;
+}
+
+// ============================================================================
+// Public API
+// ============================================================================
 
 /**
  * Fetches the target address for a given card program, provider, and chain
@@ -63,190 +181,200 @@ const isValidAddress = (address: string | undefined | null, chain: string): bool
  *
  * @param cardProgram - The card program identifier
  * @param provider - The provider identifier
- * @param chain - The chain identifier
+ * @param chain - The chain family identifier (ETH, OSMOSIS, SOLANA)
  * @returns The target address string
  * @throws Error if arguments are missing or if the target address is not found
  */
-export async function fetchCardTargetAddress(
-  cardProgram: string,
-  provider: string,
-  chain: string
-): Promise<string> {
+export async function fetchCardTargetAddress(cardProgram: string, provider: string, chain: string): Promise<string> {
   try {
+    if (!cardProgram || !provider || !chain) {
+      throw new Error('Missing cardProgram/provider/chain for target lookup.');
+    }
+
     const result = await publicClient.readContract({
-      abi: TargetRouterABI,
       address: CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS,
-      functionName: "targets", 
+      abi: TargetRouterABI,
+      functionName: 'targets',
       args: [cardProgram, provider, chain],
     });
 
     if (!isValidAddress(result, chain)) {
-      console.error("fetchCardTargetAddress: Invalid address returned from contract", { result, cardProgram, provider, chain });
       throw new Error(`Target address not found in contract (returned invalid address: ${result}).`);
     }
-    
-    return result;
+
+    return result as string;
   } catch (err) {
-    console.error("Error fetching target address:", err, { cardProgram, provider, chain });
     Sentry.captureException(err, {
-      extra: { cardProgram, provider, chain }
+      extra: { cardProgram, provider, chain },
     });
     const enrichedError = err instanceof Error ? err : new Error(String(err));
-    (enrichedError as any).context = { cardProgram, provider, chain }
+    (enrichedError as unknown as { context: { cardProgram: string; provider: string; chain: string } }).context = {
+      cardProgram,
+      provider,
+      chain,
+    };
     throw enrichedError;
   }
 }
 
 /**
- * Parameters required for target address verification
+ * Resolves and validates the target address for a card funding transaction.
+ *
+ * This function performs a complete security check by:
+ * 1. Validating all required parameters are present
+ * 2. Mapping the chain to its family for contract lookup
+ * 3. Fetching the target address from the on-chain router contract
+ * 4. Validating that the fetched address matches the quote's target address
+ *
+ * @param params - The parameters for target address resolution
+ * @returns A result object indicating success with the target address, or failure with error details
+ *
+ * @example
+ * ```typescript
+ * const result = await resolveAndValidateCardTargetAddress({
+ *   programId: quote.programId,
+ *   provider: 'payce',
+ *   chainName: 'POLYGON',
+ *   quoteTargetAddress: quote.targetAddress,
+ *   quoteId: quote.quoteId,
+ * });
+ *
+ * if (result.success) {
+ *   // Use result.targetAddress for the transaction
+ * } else {
+ *   // Handle error based on result.errorType
+ *   showErrorModal(result.userFriendlyMessage);
+ * }
+ * ```
  */
-export interface TargetAddressVerificationParams {
-  programId: string | undefined;
-  cardProvider: string | undefined;
-  chain: string | undefined;
-  targetAddress: string;
-  quoteId: string;
-}
+export async function resolveAndValidateCardTargetAddress(
+  params: ResolveTargetAddressParams,
+): Promise<ResolveTargetAddressResult> {
+  const { programId, provider, chainName, quoteTargetAddress, quoteId } = params;
 
-/**
- * Result of target address verification
- */
-export interface TargetAddressVerificationResult {
-  isValid: boolean;
-  targetAddress: string;
-  error?: {
-    type: 'MISSING_PARAMS' | 'FETCH_FAILED' | 'ADDRESS_MISMATCH';
-    title: string;
-    description: string;
-  };
-}
-
-/**
- * Verifies and returns the target address for card funding transactions.
- * 
- * In production (ARCH_HOST === PRODUCTION_ARCH_HOST), performs full security verification:
- * - Validates that programId, cardProvider, and chain are present
- * - Fetches the target address from the smart contract
- * - Compares it with the quote's target address (case-insensitive for EVM chains)
- * 
- * In non-production environments (dev/staging), trusts the backend and returns
- * the quote's target address directly without contract verification.
- * 
- * @param params - The verification parameters from the quote
- * @returns TargetAddressVerificationResult with isValid status and target address or error details
- */
-export async function fetchVerifiedCardTargetAddress(
-  params: TargetAddressVerificationParams
-): Promise<TargetAddressVerificationResult> {
-  const { programId, cardProvider, chain, targetAddress, quoteId } = params;
-  
-  const currentArchHost = hostWorker.getHost('ARCH_HOST');
-  const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
-
-  if (!isProductionBackend) {
-    return {
-      isValid: true,
-      targetAddress: targetAddress,
-    };
-  }
-
-  if (!programId || !cardProvider || !chain) {
-    Sentry.captureMessage('Target address lookup validation failed', {
+  // --------------------------------------------------------------------------
+  // Step 1: Validate required parameters
+  // --------------------------------------------------------------------------
+  if (!programId || !provider || !chainName) {
+    const missingParams = [!programId && 'programId', !provider && 'provider', !chainName && 'chainName']
+      .filter(Boolean)
+      .join(', ');
+    Sentry.captureMessage('Target address lookup validation failed - missing params', {
       level: 'warning',
       extra: {
         hasProgramId: !!programId,
-        hasCardProvider: !!cardProvider,
-        hasChain: !!chain,
+        hasProvider: !!provider,
+        hasChainName: !!chainName,
         quoteId,
       },
     });
 
     return {
-      isValid: false,
-      targetAddress: '',
-      error: {
-        type: 'MISSING_PARAMS',
-        title: 'Transaction Security Check Failed',
-        description: `We detected missing transaction details (program/provider/chain). To protect your funds, this transaction has been stopped. Please contact Cypher support with Quote ID: ${quoteId}`,
-      },
+      success: false,
+      errorType: TargetAddressErrorType.MISSING_PARAMS,
+      errorMessage: `Missing required parameters: ${missingParams}`,
+      userFriendlyMessage: `We detected missing transaction details (${missingParams}). To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
     };
   }
 
-  let contractTargetAddress: string;
+  // --------------------------------------------------------------------------
+  // Step 2: Map chain to chain family
+  // --------------------------------------------------------------------------
+  let chainFamily: ChainBackendNames;
   try {
-    let targetChain = "";
-    if (EVM_ONLY_CHAINS.includes(chain)) {
-      targetChain = ChainBackendNames.ETH;
-    } else if (COSMOS_ONLY_CHAINS.includes(chain)) {
-      targetChain = ChainBackendNames.OSMOSIS;
-    } else if (SOLANA_ONLY_CHAINS.includes(chain)) {
-      targetChain = ChainBackendNames.SOLANA;
-    } else {
-      throw new Error('Invalid chain name: ' + chain);
-    }
-    contractTargetAddress = await fetchCardTargetAddress(
-      programId,
-      cardProvider,
-      targetChain,
-    );
+    chainFamily = getChainFamilyForTargetLookup(chainName);
   } catch (error) {
+    Sentry.captureMessage('Target address lookup failed - invalid chain', {
+      level: 'warning',
+      extra: { chainName, quoteId },
+    });
+
+    return {
+      success: false,
+      errorType: TargetAddressErrorType.INVALID_CHAIN,
+      errorMessage: `Invalid chain name: ${chainName}`,
+      userFriendlyMessage: `Unsupported blockchain network. To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
+    };
+  }
+
+  // --------------------------------------------------------------------------
+  // Step 3: Fetch target address from contract
+  // --------------------------------------------------------------------------
+  let contractAddress: string;
+  try {
+    contractAddress = await fetchCardTargetAddress(programId, provider, chainFamily);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     Sentry.captureException(error, {
       extra: {
         quoteId,
-        chain,
-        program: programId,
-        provider: cardProvider,
-        quoteAddress: targetAddress,
+        chainName,
+        chainFamily,
+        programId,
+        provider,
+        message: 'Target address lookup failed',
       },
     });
 
-    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
-      isValid: false,
-      targetAddress: '',
-      error: {
-        type: 'FETCH_FAILED',
-        title: 'Transaction Security Check Failed',
-        description: `We were unable to verify the destination address (${errorMessage}). To protect your funds, this transaction has been stopped. Please contact Cypher support with Quote ID: ${quoteId}`,
-      },
+      success: false,
+      errorType: TargetAddressErrorType.FETCH_FAILED,
+      errorMessage: `Target address lookup failed: ${errorMessage}`,
+      userFriendlyMessage: `We were unable to verify the destination address (${errorMessage}). To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
     };
   }
 
-  let isAddressMatch = false;
-  if (EVM_ONLY_CHAINS.includes(chain)) {
-    const normalizedContractAddress = contractTargetAddress.toLowerCase();
-    const normalizedQuoteAddress = targetAddress.toLowerCase();
-    isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;
-  } else {
-    isAddressMatch = contractTargetAddress === targetAddress;
+  // --------------------------------------------------------------------------
+  // Step 4: Validate address match
+  // --------------------------------------------------------------------------
+  if (!quoteTargetAddress) {
+    return {
+      success: false,
+      errorType: TargetAddressErrorType.ADDRESS_MISMATCH,
+      errorMessage: 'Quote target address is missing for validation',
+      userFriendlyMessage: `We detected missing quote data for verification. To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
+    };
   }
+
+  const normalizedContractAddress = normalizeAddressForComparison(contractAddress, chainName);
+  const normalizedQuoteAddress = normalizeAddressForComparison(quoteTargetAddress, chainName);
+  const isAddressMatch = normalizedContractAddress === normalizedQuoteAddress;
 
   if (!isAddressMatch) {
-    const mismatchError = new Error("Target address mismatch between contract and quote");
-    Sentry.captureException(mismatchError, {
+    Sentry.captureException(new Error('Target address mismatch between contract and quote'), {
       extra: {
         quoteId,
-        chain,
-        program: programId,
-        provider: cardProvider,
-        quoteAddress: targetAddress,
-        contractAddress: contractTargetAddress,
+        chainName,
+        programId,
+        provider,
+        contractAddress,
+        quoteTargetAddress,
       },
     });
 
     return {
-      isValid: false,
-      targetAddress: '',
-      error: {
-        type: 'ADDRESS_MISMATCH',
-        title: 'Transaction Security Check Failed',
-        description: `We detected a mismatch in the destination address. To protect your funds, this transaction has been stopped. Please contact Cypher support with Quote ID: ${quoteId}`,
-      },
+      success: false,
+      errorType: TargetAddressErrorType.ADDRESS_MISMATCH,
+      errorMessage: `Target address mismatch: Contract(${contractAddress}) vs Quote(${quoteTargetAddress})`,
+      userFriendlyMessage: `We detected a mismatch in the destination address. To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
     };
   }
 
+  // --------------------------------------------------------------------------
+  // Success: Address resolved and validated
+  // --------------------------------------------------------------------------
   return {
-    isValid: true,
-    targetAddress: contractTargetAddress,
+    success: true,
+    targetAddress: contractAddress,
   };
 }
