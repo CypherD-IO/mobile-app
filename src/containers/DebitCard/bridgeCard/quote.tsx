@@ -202,11 +202,13 @@ export default function CardQuote({
         }
       } else {
         // Non-production: use quote address directly
-        if (isMounted) {
+        if (isMounted && tokenQuote.targetAddress) {
           setTargetAddress(tokenQuote.targetAddress);
           prevQuoteRef.current = currentQuoteParams;
           setIsAddressLoading(false);
           setIsPayDisabled(false);
+        } else if (isMounted) {
+          setIsAddressLoading(false);
         }
       }
     };
