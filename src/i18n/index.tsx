@@ -344,6 +344,7 @@ const resources = {
       MY_DELEGATION: 'My delegation',
       REWARD: 'Reward',
       REWARDS: 'Rewards',
+      REWARDS_CAPS: 'REWARDS',
       APPROVE: 'APPROVE',
       REJECT: 'REJECT',
       WITH_US_TEXT: '& earn juicy rewards',

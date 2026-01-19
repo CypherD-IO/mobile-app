@@ -90,12 +90,22 @@ target 'Cypherd' do
         # Disabling explicit modules for Pods avoids "Clang dependency scanner failure" cascades.
         config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
 
-        # Don't disable clang modules globally — Swift pods (e.g. Sentry) rely on modules like MetricKit.
-        # Instead, only disable clang modules for Lottie-related pods which have been triggering the
-        # dependency scanner failure in this project.
+        # Don't disable clang modules globally — Swift pods (e.g. Sentry, Lottie) rely on modules.
+        # Historically we disabled modules for some Lottie pods to avoid dependency scanner issues,
+        # but that breaks `import Lottie` (used by the native splash integration).
+        # Keep modules enabled; our modulemap-flag rewrite below handles the scanner issues.
         if target.name.include?('lottie')
-          config.build_settings['CLANG_ENABLE_MODULES'] = 'NO'
+          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
         end
+
+        # NOTE:
+        # Do NOT set `MODULEMAP_FILE` to an absolute `$(PODS_ROOT)/...` path for Firebase pods.
+        # Xcode/SwiftDriver will sometimes prefix `$(PODS_ROOT)` again when generating the
+        # `-fmodule-map-file` flags, producing a broken doubled path like:
+        #   .../ios/Pods//Users/.../ios/Pods/Headers/Public/...
+        #
+        # Keep the CocoaPods-generated (relative) modulemap paths, and rely on the xcconfig
+        # modulemap-flag rewrite below to make Archive deterministic.
 
         # Some CocoaPods dependencies (notably Firebase transitive deps like nanopb) can trigger
         # `-Werror=non-modular-include-in-framework-module` when building as modules.
@@ -162,6 +172,123 @@ target 'Cypherd' do
           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version_supported
         end
       end
+    end
+
+    # Xcode Archive can invoke `swiftc` with `-fmodule-map-file` flags that point at
+    # `${PODS_CONFIGURATION_BUILD_DIR}/<Pod>/<Something>.modulemap`.
+    # Those files are created in the build products directory *during* the Pods build, but the
+    # dependency scanner may try to load them earlier, causing Archive-only failures.
+    #
+    # Workaround: rewrite ONLY the modulemap flags to point at CocoaPods' stable modulemaps under
+    # `Pods/Target Support Files`, which exist immediately after `pod install`.
+    begin
+      pods_root = installer.sandbox.root.to_s
+      xcconfigs = [
+        File.join(pods_root, 'Target Support Files', 'Pods-Cypherd', 'Pods-Cypherd.debug.xcconfig'),
+        File.join(pods_root, 'Target Support Files', 'Pods-Cypherd', 'Pods-Cypherd.release.xcconfig'),
+      ]
+
+      modulemap_overrides = {
+        'FirebaseCoreInternal' => 'FirebaseCoreInternal.modulemap',
+        'FirebaseRemoteConfig' => 'FirebaseRemoteConfig.modulemap',
+        'FirebaseRemoteConfigInterop' => 'FirebaseRemoteConfigInterop.modulemap',
+        'FirebaseSessions' => 'FirebaseSessions.modulemap',
+        'FirebaseSharedSwift' => 'FirebaseSharedSwift.modulemap',
+        # Module name is `Promises`, but CocoaPods file is `PromisesSwift.modulemap`.
+        'PromisesSwift' => 'PromisesSwift.modulemap',
+        'RCTSwiftUI' => 'RCTSwiftUI.modulemap',
+        # Module name is `React_Codegen`, but CocoaPods file is `React-Codegen.modulemap`.
+        'React-Codegen' => 'React-Codegen.modulemap',
+        # Needed by RN headers in some Xcode/Archive flows (bridging header PCH can reference it).
+        'RCTDeprecation' => 'RCTDeprecation.modulemap',
+        'Sentry' => 'Sentry.modulemap',
+        'VisionCamera' => 'VisionCamera.modulemap',
+        'react-native-document-picker' => 'react-native-document-picker.modulemap',
+        'react-native-rsa-native' => 'react-native-rsa-native.modulemap',
+        'react-native-video' => 'react-native-video.modulemap',
+        'react-native-web-browser' => 'react-native-web-browser.modulemap',
+      }
+
+      xcconfigs.each do |xcconfig_path|
+        # Fail loudly: if this file isn't present, our Archive fix can't run and Archive may fail again.
+        unless File.exist?(xcconfig_path)
+          raise "[Podfile][ArchiveFix] Expected xcconfig not found: #{xcconfig_path}. " \
+                "Run `cd ios && pod install` and ensure CocoaPods generated Pods-Cypherd xcconfigs."
+        end
+
+        contents = File.read(xcconfig_path)
+        patched = contents.dup
+        total_replacements = 0
+
+        modulemap_overrides.each do |pod_dir, modulemap_file|
+          stable_path = "${PODS_ROOT}/Target Support Files/#{pod_dir}/#{modulemap_file}"
+
+          # Replace both of these forms if present:
+          # - ${PODS_CONFIGURATION_BUILD_DIR}/<Pod>/<file>.modulemap  (original CocoaPods output)
+          # - ${PODS_ROOT}/Headers/Public/<Pod>/<file>.modulemap      (older workaround attempt)
+          bad_build_dir_regex = %r{\$\{PODS_CONFIGURATION_BUILD_DIR\}/#{Regexp.escape(pod_dir)}/[^\"\s]+\.modulemap}
+          bad_headers_public_regex = %r{\$\{PODS_ROOT\}/Headers/Public/#{Regexp.escape(pod_dir)}/[^\"\s]+\.modulemap}
+
+          # Count replacements so we can log meaningful output (but do not fail solely on zero).
+          before_count = patched.scan(bad_build_dir_regex).length
+          patched.gsub!(bad_build_dir_regex, stable_path)
+          after_count = patched.scan(bad_build_dir_regex).length
+          total_replacements += (before_count - after_count)
+
+          before_count = patched.scan(bad_headers_public_regex).length
+          patched.gsub!(bad_headers_public_regex, stable_path)
+          after_count = patched.scan(bad_headers_public_regex).length
+          total_replacements += (before_count - after_count)
+        end
+
+        # IMPORTANT:
+        # Do NOT inject `-fmodule-map-file` flags for `lottie-ios` / `lottie-react-native` into the
+        # app target.
+        #
+        # Lottie is a Swift-only pod (the umbrella header is essentially empty). If Swift resolves
+        # the module via the clang modulemap, it won't see Swift types like `LottieAnimationView`,
+        # resulting in:
+        #   error: cannot find 'LottieAnimationView' in scope
+        #
+        # Removing these flags forces Swift to resolve the real Swift module from
+        # `${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios` via `SWIFT_INCLUDE_PATHS`.
+        patched.gsub!(%r{\s+-Xcc\s+-fmodule-map-file=\"\$\{PODS_ROOT\}/Target Support Files/lottie-ios/lottie-ios\.modulemap\"}, '')
+        patched.gsub!(%r{\s+-Xcc\s+-fmodule-map-file=\"\$\{PODS_ROOT\}/Target Support Files/lottie-react-native/lottie-react-native\.modulemap\"}, '')
+        patched.gsub!(%r{\s+-fmodule-map-file=\"\$\{PODS_ROOT\}/Target Support Files/lottie-ios/lottie-ios\.modulemap\"}, '')
+        patched.gsub!(%r{\s+-fmodule-map-file=\"\$\{PODS_ROOT\}/Target Support Files/lottie-react-native/lottie-react-native\.modulemap\"}, '')
+
+        if patched != contents
+          File.write(xcconfig_path, patched)
+          puts "Patched modulemap flags in: #{xcconfig_path} (replacements: #{total_replacements})"
+        end
+
+        # Fail loudly if any known-bad modulemap flag patterns remain after patching.
+        remaining_bad = []
+        modulemap_overrides.each_key do |pod_dir|
+          bad_build_dir_regex = %r{\$\{PODS_CONFIGURATION_BUILD_DIR\}/#{Regexp.escape(pod_dir)}/[^\"\s]+\.modulemap}
+          bad_headers_public_regex = %r{\$\{PODS_ROOT\}/Headers/Public/#{Regexp.escape(pod_dir)}/[^\"\s]+\.modulemap}
+          if patched.match?(bad_build_dir_regex) || patched.match?(bad_headers_public_regex)
+            remaining_bad << pod_dir
+          end
+        end
+
+        # Also ensure Lottie modulemap flags were removed (they break Swift `import Lottie` in Archive flows).
+        lottie_bad = [
+          %r{\$\{PODS_ROOT\}/Target Support Files/lottie-ios/lottie-ios\.modulemap},
+          %r{\$\{PODS_ROOT\}/Target Support Files/lottie-react-native/lottie-react-native\.modulemap},
+        ].any? { |rx| patched.match?(rx) }
+
+        if remaining_bad.any? || lottie_bad
+          raise "[Podfile][ArchiveFix] Modulemap patch verification failed for: #{xcconfig_path}\n" \
+                "- Remaining pods with bad modulemap references: #{remaining_bad.uniq.join(', ')}\n" \
+                "- Lottie modulemap flags still present: #{lottie_bad}\n" \
+                "This usually means CocoaPods/Xcode changed the generated flag format. " \
+                "Update the regexes in ios/Podfile or the modulemap override list before archiving."
+        end
+      end
+    rescue => e
+      # Fail loudly to prevent shipping a build that will likely fail to Archive in CI/Xcode.
+      raise "[Podfile][ArchiveFix] Failed while patching modulemap flags for Archive stability: #{e}"
     end
   end
 end

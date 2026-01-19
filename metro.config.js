@@ -1,6 +1,7 @@
 const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 const { resolve } = require('metro-resolver');
+const path = require('path');
 
 /**
  * Metro configuration
@@ -131,32 +132,159 @@ const config = {
        *   "'import.meta' is currently unsupported"
        *
        * The CJS build (`valtio/*.js`) uses `process.env.NODE_ENV` instead and works fine in RN/Hermes.
-       * We force the key Valtio entrypoints to their CJS counterparts to avoid bundling the ESM `.mjs`.
+       *
+       * IMPORTANT: Do NOT resolve via `defaultResolveRequest(context, 'valtio/index.js', ...)`.
+       * Valtio’s package.json `exports` wildcard will treat the requested subpath as `index.js`,
+       * producing a non-existent `./esm/index.js.mjs` mapping and causing Metro to fall back in
+       * unpredictable ways. Instead, return a direct `filePath` to the CJS file to fully bypass
+       * package `exports` for this library.
        */
       if (moduleName === 'valtio') {
-        return defaultResolveRequest(context, 'valtio/index.js', platform);
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'valtio', 'index.js'),
+        };
       }
       if (moduleName === 'valtio/vanilla') {
-        return defaultResolveRequest(context, 'valtio/vanilla.js', platform);
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'valtio', 'vanilla.js'),
+        };
       }
       if (moduleName === 'valtio/react') {
-        return defaultResolveRequest(context, 'valtio/react.js', platform);
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'valtio', 'react.js'),
+        };
+      }
+      if (moduleName.startsWith('valtio/esm/')) {
+        // Any explicit ESM import should be redirected to CJS.
+        // e.g. `valtio/esm/vanilla.mjs` -> `valtio/vanilla.js`
+        const leaf = moduleName.slice('valtio/esm/'.length);
+        if (leaf.startsWith('vanilla')) {
+          return {
+            type: 'sourceFile',
+            filePath: path.join(__dirname, 'node_modules', 'valtio', 'vanilla.js'),
+          };
+        }
+        if (leaf.startsWith('react')) {
+          return {
+            type: 'sourceFile',
+            filePath: path.join(__dirname, 'node_modules', 'valtio', 'react.js'),
+          };
+        }
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'valtio', 'index.js'),
+        };
       }
       if (moduleName.startsWith('valtio/vanilla/')) {
-        const subpath = moduleName.slice('valtio/vanilla/'.length);
-        return defaultResolveRequest(
-          context,
-          `valtio/vanilla/${subpath}.js`.replace(/\.js\.js$/, '.js'),
-          platform,
-        );
+        const subpath = moduleName
+          .slice('valtio/vanilla/'.length)
+          .replace(/\.(cjs|mjs|js|ts|tsx)$/, '');
+        return {
+          type: 'sourceFile',
+          filePath: path.join(
+            __dirname,
+            'node_modules',
+            'valtio',
+            'vanilla',
+            `${subpath}.js`,
+          ),
+        };
       }
       if (moduleName.startsWith('valtio/react/')) {
-        const subpath = moduleName.slice('valtio/react/'.length);
-        return defaultResolveRequest(
-          context,
-          `valtio/react/${subpath}.js`.replace(/\.js\.js$/, '.js'),
-          platform,
-        );
+        const subpath = moduleName
+          .slice('valtio/react/'.length)
+          .replace(/\.(cjs|mjs|js|ts|tsx)$/, '');
+        return {
+          type: 'sourceFile',
+          filePath: path.join(
+            __dirname,
+            'node_modules',
+            'valtio',
+            'react',
+            `${subpath}.js`,
+          ),
+        };
+      }
+
+      /**
+       * Zustand:
+       *
+       * Zustand v5 publishes ESM entrypoints under `esm/*.mjs` that use `import.meta.env` in the
+       * devtools middleware. Hermes does NOT support `import.meta`, so Release builds fail with:
+       *   "'import.meta' is currently unsupported"
+       *
+       * Zustand also ships equivalent CJS entrypoints (`*.js`) that use `process.env.NODE_ENV`
+       * and are Hermes-compatible.
+       *
+       * We force the common entrypoints to CJS via direct file paths (bypassing package `exports`).
+       */
+      if (moduleName === 'zustand') {
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'zustand', 'index.js'),
+        };
+      }
+      if (moduleName === 'zustand/vanilla') {
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'zustand', 'vanilla.js'),
+        };
+      }
+      if (moduleName === 'zustand/react') {
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'zustand', 'react.js'),
+        };
+      }
+      if (moduleName === 'zustand/middleware') {
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'zustand', 'middleware.js'),
+        };
+      }
+      if (moduleName.startsWith('zustand/middleware/')) {
+        const subpath = moduleName
+          .slice('zustand/middleware/'.length)
+          .replace(/\.(cjs|mjs|js|ts|tsx)$/, '');
+        return {
+          type: 'sourceFile',
+          filePath: path.join(
+            __dirname,
+            'node_modules',
+            'zustand',
+            'middleware',
+            `${subpath}.js`,
+          ),
+        };
+      }
+      if (moduleName.startsWith('zustand/esm/')) {
+        // Any explicit ESM import should be redirected to CJS.
+        const leaf = moduleName.slice('zustand/esm/'.length);
+        if (leaf.startsWith('middleware')) {
+          return {
+            type: 'sourceFile',
+            filePath: path.join(__dirname, 'node_modules', 'zustand', 'middleware.js'),
+          };
+        }
+        if (leaf.startsWith('vanilla')) {
+          return {
+            type: 'sourceFile',
+            filePath: path.join(__dirname, 'node_modules', 'zustand', 'vanilla.js'),
+          };
+        }
+        if (leaf.startsWith('react')) {
+          return {
+            type: 'sourceFile',
+            filePath: path.join(__dirname, 'node_modules', 'zustand', 'react.js'),
+          };
+        }
+        return {
+          type: 'sourceFile',
+          filePath: path.join(__dirname, 'node_modules', 'zustand', 'index.js'),
+        };
       }
 
       // Map deep imports of compiled spec files back to their TS sources (covers internal relative imports).
