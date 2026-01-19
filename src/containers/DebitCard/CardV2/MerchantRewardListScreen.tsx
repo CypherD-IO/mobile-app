@@ -106,6 +106,88 @@ interface PaginatedMerchantRewardsResponse {
   nextOffset?: string;
 }
 
+
+type MerchantRowProps = {
+  item: MerchantData;
+  onPressMerchant: (m: MerchantData) => void;
+  isDarkMode: boolean;
+  rewardReferenceAmount: number | null;
+};
+
+const MerchantRow = memo(function MerchantRow({
+  item,
+  onPressMerchant,
+  isDarkMode,
+  rewardReferenceAmount,
+}: MerchantRowProps) {
+  const onPress = useCallback(() => {
+    onPressMerchant(item);
+  }, [onPressMerchant, item]);
+
+  return (
+    <CyDTouchView
+      className={`flex-row items-center justify-between py-4 px-4 border-b ${
+        isDarkMode ? 'border-gray-800' : 'border-gray-200'
+      }`}
+      onPress={onPress}>
+      <CyDView className='flex-row items-center flex-1'>
+        <CyDView className='relative mr-3'>
+          <MerchantLogo
+            merchant={item as any}
+            size={48}
+            hasUserVoted={item.userVoteData?.hasVoted}
+            showBorder={!isDarkMode}
+          />
+        </CyDView>
+
+        <CyDView className='flex-1'>
+          <CyDText
+            numberOfLines={1}
+            className={`text-[18px] font-semibold ${
+              isDarkMode ? 'text-white' : 'text-black'
+            }`}>
+            {item.brand ?? item.canonicalName}
+          </CyDText>
+          <CyDText
+            numberOfLines={1}
+            className={`text-[14px] ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+            {item.category ?? ''}
+          </CyDText>
+        </CyDView>
+      </CyDView>
+
+      <CyDView className='items-end ml-3'>
+        <CyDView className='flex-row items-center'>
+          <CyDImage
+            source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+            className='w-[24px] h-[24px] mr-1'
+            resizeMode='contain'
+          />
+          <CyDText
+            className={`text-[18px] font-semibold ${
+              isDarkMode ? 'text-white' : 'text-black'
+            }`}>
+            {item.projectedRewardDisplay ?? '--'}
+          </CyDText>
+        </CyDView>
+        <CyDText
+          className={`text-[12px] mt-1 ${
+            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+          for every {rewardReferenceAmount ?? '-'}$ Spend
+        </CyDText>
+      </CyDView>
+      <CyDMaterialDesignIcons
+        name='chevron-right'
+        size={20}
+        className={`ml-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+      />
+    </CyDTouchView>
+  );
+});
+
 const MerchantRewardListScreen: React.FC = () => {
   const navigation = useNavigation();
   const { showBottomSheet } = useGlobalBottomSheet();
@@ -445,87 +527,6 @@ const MerchantRewardListScreen: React.FC = () => {
     [isDarkMode, navigation, showBottomSheet],
   );
 
-  const MerchantRow = useMemo(() => {
-    return memo(function MerchantRowImpl({
-      item,
-      onPressMerchant,
-      isDarkMode,
-      rewardReferenceAmount,
-    }: {
-      item: MerchantData;
-      onPressMerchant: (m: MerchantData) => void;
-      isDarkMode: boolean;
-      rewardReferenceAmount: number | null;
-    }) {
-      const onPress = useCallback(() => {
-        onPressMerchant(item);
-      }, [onPressMerchant, item]);
-
-      return (
-        <CyDTouchView
-          className={`flex-row items-center justify-between py-4 px-4 border-b ${
-            isDarkMode ? 'border-gray-800' : 'border-gray-200'
-          }`}
-          onPress={onPress}>
-          <CyDView className='flex-row items-center flex-1'>
-            <CyDView className='relative mr-3'>
-              <MerchantLogo
-                merchant={item as any}
-                size={48}
-                hasUserVoted={item.userVoteData?.hasVoted}
-                showBorder={!isDarkMode}
-              />
-            </CyDView>
-
-            <CyDView className='flex-1'>
-              <CyDText
-                numberOfLines={1}
-                className={`text-[18px] font-semibold ${
-                  isDarkMode ? 'text-white' : 'text-black'
-                }`}>
-                {item.brand ?? item.canonicalName}
-              </CyDText>
-              <CyDText
-                numberOfLines={1}
-                className={`text-[14px] ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                {item.category ?? ''}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className='items-end ml-3'>
-            <CyDView className='flex-row items-center'>
-              <CyDImage
-                source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                className='w-[24px] h-[24px] mr-1'
-                resizeMode='contain'
-              />
-              <CyDText
-                className={`text-[18px] font-semibold ${
-                  isDarkMode ? 'text-white' : 'text-black'
-                }`}>
-                {item.projectedRewardDisplay ?? '--'}
-              </CyDText>
-            </CyDView>
-            <CyDText
-              className={`text-[12px] mt-1 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-              for every {rewardReferenceAmount ?? '-'}$ Spend
-            </CyDText>
-          </CyDView>
-          <CyDMaterialDesignIcons
-            name='chevron-right'
-            size={20}
-            className={`ml-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-          />
-        </CyDTouchView>
-      );
-    });
-  }, []);
-
   const renderMerchantItem = useCallback(
     ({ item }: { item: MerchantData }) => (
       <MerchantRow
@@ -535,7 +536,7 @@ const MerchantRewardListScreen: React.FC = () => {
         rewardReferenceAmount={rewardReferenceAmount}
       />
     ),
-    [MerchantRow, handleMerchantPress, isDarkMode, rewardReferenceAmount],
+    [handleMerchantPress, isDarkMode, rewardReferenceAmount],
   );
 
   /**

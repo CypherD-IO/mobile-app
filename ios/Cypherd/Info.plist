@@ -70,7 +70,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>837</string>
+	<string>838</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -86,7 +86,7 @@
 		<string>twitter</string>
 	</array>
 	<key>LSMinimumSystemVersion</key>
-	<string>12.0</string>
+	<string>15.1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

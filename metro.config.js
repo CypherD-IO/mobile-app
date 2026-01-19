@@ -375,7 +375,7 @@ const config = {
       return defaultResolveRequest(context, moduleName, platform);
     },
     assetExts: [
-      ...defaultConfig.resolver.assetExts,
+      ...(defaultConfig.resolver.assetExts ?? []).filter(ext => ext !== 'svg'),
       'png',
       'jpg',
       'jpeg',
