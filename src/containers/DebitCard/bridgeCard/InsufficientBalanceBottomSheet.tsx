@@ -372,7 +372,7 @@ const InsufficientBalanceBottomSheetContent: React.FC<
   const openFundingGuide = () => {
     // You can replace this with your actual funding guide URL
     const fundingGuideUrl =
-      'https://docs.cypherwallet.io/how-to-fund-your-wallet';
+      'https://help.cypherhq.io/en/articles/13427680-how-to-send-funds-to-cypher-from-a-non-custodial-wallet';
     Linking.openURL(fundingGuideUrl).catch(err =>
       console.error('Error opening funding guide:', err),
     );
