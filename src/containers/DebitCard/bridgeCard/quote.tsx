@@ -99,7 +99,8 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const { globalState } = globalContext;
   const quoteExpiry = 60;
   const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
@@ -180,6 +181,7 @@ export default function CardQuote({
           chainName: tokenQuote.chain,
           quoteTargetAddress: tokenQuote.targetAddress,
           quoteId: tokenQuote.quoteId,
+          globalContext,
         });
 
         if (!result.success) {

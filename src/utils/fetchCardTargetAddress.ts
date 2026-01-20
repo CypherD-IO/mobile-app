@@ -1,11 +1,11 @@
-import { http, createPublicClient, zeroAddress, isAddress } from "viem";
+import { zeroAddress, isAddress } from "viem";
 import { CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS } from "../constants/data";
 import { isCosmosAddress, isNobleAddress, isOsmosisAddress, isSolanaAddress, isCoreumAddress, isInjectiveAddress } from "../utils/utils";
 import { CHAIN_BASE, ChainBackendNames, CHAIN_HYPERLIQUID } from "../constants/server";
 import * as Sentry from '@sentry/react-native';
 import { TargetRouterABI } from '../constants/targetRouterABI';
-import { initialGlobalState } from "../core/globalContext";
-import { getWeb3Endpoint } from "../core/util";
+import { GlobalContextDef } from "../core/globalContext";
+import { getViemPublicClient, getWeb3Endpoint } from "../core/util";
 import { COSMOS_ONLY_CHAINS, EVM_ONLY_CHAINS, SOLANA_ONLY_CHAINS } from "../constants/enum";
 
 
@@ -43,6 +43,8 @@ export interface ResolveTargetAddressParams {
   quoteTargetAddress: string | undefined | null;
   /** Quote ID for error reporting and support reference */
   quoteId?: string;
+  /** Global context for the current user */
+  globalContext: GlobalContextDef;
 }
 
 /**
@@ -72,13 +74,6 @@ export type ResolveTargetAddressResult = ResolveTargetAddressSuccess | ResolveTa
 // ============================================================================
 // Private Helpers
 // ============================================================================
-
-/**
- * Public client for reading from the target router contract on Base chain.
- */
-const publicClient = createPublicClient({
-  transport: http(getWeb3Endpoint(CHAIN_BASE, { globalState: initialGlobalState, globalDispatch: () => {} })),
-});
 
 /**
  * Validates that an address is properly formatted for the given chain.
@@ -185,12 +180,16 @@ function normalizeAddressForComparison(address: string, chainName: string): stri
  * @returns The target address string
  * @throws Error if arguments are missing or if the target address is not found
  */
-export async function fetchCardTargetAddress(cardProgram: string, provider: string, chain: string): Promise<string> {
+export async function fetchCardTargetAddress(cardProgram: string, provider: string, chain: string, globalContext: GlobalContextDef): Promise<string> {
   try {
     if (!cardProgram || !provider || !chain) {
       throw new Error('Missing cardProgram/provider/chain for target lookup.');
     }
 
+    const publicClient = getViemPublicClient(
+      getWeb3Endpoint(CHAIN_BASE, globalContext),
+    );
+    
     const result = await publicClient.readContract({
       address: CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS,
       abi: TargetRouterABI,
@@ -250,7 +249,7 @@ export async function fetchCardTargetAddress(cardProgram: string, provider: stri
 export async function resolveAndValidateCardTargetAddress(
   params: ResolveTargetAddressParams,
 ): Promise<ResolveTargetAddressResult> {
-  const { programId, provider, chainName, quoteTargetAddress, quoteId } = params;
+  const { programId, provider, chainName, quoteTargetAddress, quoteId, globalContext } = params;
 
   // --------------------------------------------------------------------------
   // Step 1: Validate required parameters
@@ -306,7 +305,7 @@ export async function resolveAndValidateCardTargetAddress(
   // --------------------------------------------------------------------------
   let contractAddress: string;
   try {
-    contractAddress = await fetchCardTargetAddress(programId, provider, chainFamily);
+    contractAddress = await fetchCardTargetAddress(programId, provider, chainFamily, globalContext);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     Sentry.captureException(error, {

@@ -315,6 +315,7 @@ export default function BridgeFundCardScreen({
         chainName: quote.chain,
         quoteTargetAddress: quote.targetAddress,
         quoteId: quote.quoteId,
+        globalContext,
       });
 
       if (!result.success) {
