@@ -71,8 +71,8 @@ export const CreateContact = () => {
   const editContactName = route.params ? route.params.editContactName : '';
   const additionalAddress =
     route.params && route.params.additionalAddress
-      ? route.params.additionalAddress
-      : { chain: '', toAddress: '' };
+    ? route.params.additionalAddress
+    : { chain: '', toAddress: '' };
   const [contactBook, setContactBook] = useState(
     route.params?.contactBook ? route.params?.contactBook : {},
   );

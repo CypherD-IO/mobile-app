@@ -614,7 +614,7 @@ const MerchantRewardListScreen: React.FC = () => {
         <CyDView className='px-4 py-3' style={searchBarContainerStyle}>
           <CyDView className='flex-row items-center'>
             <CyDView
-              className={`flex-1 flex-row items-center rounded-[12px] px-3 py-2 bg-base40`}>
+              className={`flex-1 h-[48px] flex-row items-center rounded-[12px] px-3 bg-base40`}>
               <CyDMaterialDesignIcons
                 name='magnify'
                 size={20}
@@ -623,7 +623,7 @@ const MerchantRewardListScreen: React.FC = () => {
                 }`}
               />
               <CyDTextInput
-                className={`flex-1 text-[16px] !bg-base40 ${
+                className={`flex-1 text-[16px] !bg-base40 py-0 ${
                   isDarkMode ? 'text-white' : 'text-black'
                 }`}
                 value={searchText}
@@ -638,7 +638,7 @@ const MerchantRewardListScreen: React.FC = () => {
             {/* Filter Button */}
             <CyDView className='relative' style={filterButtonContainerStyle}>
               <CyDTouchView
-                className={`ml-3 p-3 rounded-[12px] ${
+                className={`ml-3 h-[48px] w-[48px] rounded-[12px] items-center justify-center ${
                   showFilterDropdown ? 'bg-orange500' : 'bg-base40'
                 }`}
                 onPress={handleFilterPress}>

@@ -96,6 +96,17 @@ class MainApplication : Application(), ReactApplication, ShareApplication {
       ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope)
       ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont)
       ReactFontManager.getInstance().addCustomFont(this, "Cypher Nord", R.font.nord)
+      // NOTE:
+      // JS uses NativeWind/Tailwind `font-gambetta` which maps to the family name "Gambetta"
+      // (see `tailwind.config.js` -> theme.extend.fontFamily.gambetta).
+      //
+      // On Android, React Native only resolves custom fonts by the *exact* family name it's given.
+      // If we register Gambetta under a different name (e.g. "New York"), the font will silently
+      // fall back to the default typeface and appear "not applied".
+      ReactFontManager.getInstance().addCustomFont(this, "Gambetta", R.font.gambetta)
+
+      // Backwards-compatible alias: keep the previous registration name if any screen still
+      // references it.
       ReactFontManager.getInstance().addCustomFont(this, "New York", R.font.gambetta)
     } catch (t: Throwable) {
       Log.e(TAG, "Failed to register custom fonts; continuing startup.", t)

@@ -1081,16 +1081,18 @@ export default function CypherCardScreen() {
                             {'You could have saved'}
                           </CyDText>
 
-                          <LinearGradient
-                            colors={['#FA9703', '#F7510A', '#FA9703']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            locations={[0, 0.5, 1]}
-                            style={style.gradientStyle}>
+                          <CyDView style={style.gradientStyle}>
+                            <LinearGradient
+                              colors={['#FA9703', '#F7510A', '#FA9703']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 1 }}
+                              locations={[0, 0.5, 1]}
+                              style={StyleSheet.absoluteFill}
+                            />
                             <CyDText className='font-semibold text-[14px] text-white'>
                               {`$${spendStats.amount}`}
                             </CyDText>
-                          </LinearGradient>
+                          </CyDView>
                           <CyDText className='font-medium text-[14px] text-base200 text-center'>
                             {'in'}
                           </CyDText>
@@ -1185,6 +1187,9 @@ const style = StyleSheet.create({
     borderRadius: 100,
     paddingHorizontal: 7,
     paddingVertical: 4,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadCardGradientContainer: {
     borderRadius: 12,
