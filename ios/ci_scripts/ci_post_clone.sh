@@ -10,73 +10,43 @@ export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 # Install CocoaPods using Homebrew
 brew install cocoapods
 
-# Install Node.js using nvm (Node Version Manager).
-# Source of truth: repo root `.nvmrc` (used by both GitHub Actions and Xcode Cloud).
+# ================================================================================
+# Install Node.js via Homebrew (most reliable in Xcode Cloud)
+# ================================================================================
 #
-# IMPORTANT (Xcode Cloud):
-# The upstream nvm install script tries to edit shell profile files (e.g. `.zshrc`) and can exit
-# non-zero in CI even after successfully cloning nvm (we observed exit code 3). Because we run
-# `set -e`, that would abort the build.
+# Previously we used nvm, but Xcode Cloud's network environment blocks or fails
+# GitHub tarball/git downloads (exit code 3). Homebrew is already working
+# (cocoapods installed above), so we use it for Node as well.
 #
-# Fix: install nvm in a CI-safe, non-interactive way (git clone + source), without touching `.zshrc`.
-export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-NVM_GIT_TAG="v0.39.4"
-if [ ! -d "$NVM_DIR" ]; then
-  echo "Installing nvm (${NVM_GIT_TAG}) into ${NVM_DIR}..."
-  # NOTE (Xcode Cloud):
-  # Using `git clone --depth 1 --branch <tag>` can fail for annotated tags with:
-  #   "refs/tags/<tag> ... is not a commit" (exit code 3)
-  # The nvm tag we pin can be annotated, so prefer the release tarball approach in CI.
-  mkdir -p "$NVM_DIR"
-  curl -fsSL "https://github.com/nvm-sh/nvm/archive/refs/tags/${NVM_GIT_TAG}.tar.gz" \
-    | tar -xz -C "$NVM_DIR" --strip-components=1
-fi
+# We install node@22 to match the version in .nvmrc (v22.12.0).
+# Homebrew's node@22 formula tracks the latest 22.x LTS.
+# ================================================================================
+echo "Installing Node.js via Homebrew..."
+brew install node@22
 
-# Load nvm for this script execution.
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# Link node@22 so it's available as `node` in PATH
+brew link --overwrite node@22 || true  # --overwrite in case node is already linked
 
 # Resolve repo root deterministically (Xcode Cloud does not guarantee the current working directory).
 # - Prefer CI_PRIMARY_REPOSITORY_PATH when available.
 # - Otherwise compute from this script location: ios/ci_scripts -> repo root (../..).
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
-NVMRC_PATH="${REPO_ROOT}/.nvmrc"
 
 # Always run installs from deterministic directories.
 echo "Script dir: ${SCRIPT_DIR}"
 echo "Repo root:   ${REPO_ROOT}"
 
-# Try to get Node.js version from repo root .nvmrc, fallback to a known-good version if not found.
-if [ -f "$NVMRC_PATH" ]; then
-    NODE_VERSION="$(cat "$NVMRC_PATH" | tr -d ' \t\r\n')"
-    echo "Found .nvmrc file at: $NVMRC_PATH"
-    echo "Using Node.js version: $NODE_VERSION"
-else
-    NODE_VERSION="v22.12.0"
-    echo "No .nvmrc found at: $NVMRC_PATH"
-    echo "Falling back to Node.js version: $NODE_VERSION"
-fi
-
-# Normalize Node version to always include the leading "v" because some RN/Xcode scripts
-# expect node to exist at `/Users/local/.nvm/versions/node/vX.Y.Z/bin/node`.
-# Example failure:
-#   Can't find '/Users/local/.nvm/versions/node/v18.17.1/bin/node'
-# while `.nvmrc` may contain `18.17.1` (without the `v`).
-case "$NODE_VERSION" in
-  v*) NODE_VERSION_V="$NODE_VERSION" ;;
-  *)  NODE_VERSION_V="v$NODE_VERSION" ;;
-esac
-
-nvm install "$NODE_VERSION_V"
-nvm use "$NODE_VERSION_V"
-nvm alias default "$NODE_VERSION_V"
-
 # Verify Node.js version
+echo "Node.js version:"
 node -v
+echo "npm version:"
+npm -v
 
 # Some RN scripts in CI expect a node binary to exist under /Users/local/.nvm.
-# Ensure the target directory exists before we symlink.
+# Create symlinks for compatibility with react-native's node-binary.sh.
 NODE_BIN="$(which node)"
+NODE_VERSION_V="v$(node -v | tr -d 'v' | cut -d. -f1-3)"  # e.g., v22.12.0
 
 # Create the "vX.Y.Z" path (expected by many RN templates / node-binary.sh failures)
 sudo mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/"
@@ -87,13 +57,11 @@ NODE_VERSION_NO_V="${NODE_VERSION_V#v}"
 sudo mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/"
 sudo ln -sf "$NODE_BIN" "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/node"
 
-NODE_PATH="$NODE_BIN"
-
 # Print the Node.js path for debugging purposes
-echo "Node.js binary is located at: $NODE_PATH"
+echo "Node.js binary is located at: $NODE_BIN"
 
 # Export NODE_BINARY for Xcode to use
-export NODE_BINARY=$NODE_PATH
+export NODE_BINARY=$NODE_BIN
 
 # Install JS dependencies from repo root (package.json lives there).
 cd "$REPO_ROOT"
