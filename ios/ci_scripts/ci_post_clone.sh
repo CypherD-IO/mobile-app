@@ -23,7 +23,13 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 NVM_GIT_TAG="v0.39.4"
 if [ ! -d "$NVM_DIR" ]; then
   echo "Installing nvm (${NVM_GIT_TAG}) into ${NVM_DIR}..."
-  git clone --depth 1 --branch "${NVM_GIT_TAG}" https://github.com/nvm-sh/nvm.git "$NVM_DIR"
+  # NOTE (Xcode Cloud):
+  # Using `git clone --depth 1 --branch <tag>` can fail for annotated tags with:
+  #   "refs/tags/<tag> ... is not a commit" (exit code 3)
+  # The nvm tag we pin can be annotated, so prefer the release tarball approach in CI.
+  mkdir -p "$NVM_DIR"
+  curl -fsSL "https://github.com/nvm-sh/nvm/archive/refs/tags/${NVM_GIT_TAG}.tar.gz" \
+    | tar -xz -C "$NVM_DIR" --strip-components=1
 fi
 
 # Load nvm for this script execution.
