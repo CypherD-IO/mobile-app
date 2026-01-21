@@ -1,15 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import MaskedView from '@react-native-masked-view/masked-view';
+import { StyleSheet, ViewStyle } from 'react-native';
 import {
   CyDMaterialDesignIcons,
   CyDText,
-  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
 import Button from './button';
+import { Theme, useTheme } from '../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 interface GetFirstTokenProps {
   onGetTokenPress: () => void;
@@ -21,91 +20,91 @@ interface GetFirstTokenProps {
  */
 const GetFirstTokenComponent = ({ onGetTokenPress }: GetFirstTokenProps) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+
+  const isDarkMode: boolean =
+    theme === Theme.DARK || (theme === Theme.SYSTEM && colorScheme === 'dark');
 
   // Handle button press using callback prop
-  const handleGetTokenPress = () => {
+  const handleGetTokenPress = (): void => {
     onGetTokenPress();
   };
 
   /**
-   * Render gradient icon with MaskedView for gradient effect
+   * Theme-aware inner card styling.
+   *
+   * RN 0.83 + Fabric:
+   * Gradient borders + masked gradients can be brittle. To keep this UI stable, we use a
+   * simple `border-n40` and a solid `text-n40` icon color instead of gradients.
+   *
+   * Composition is kept the same as the old card:
+   * - Rounded corners ~16
+   * - Padding p-4
+   * - 24x24 icon
    */
-  const renderGradientIcon = () => {
-    return (
-      <MaskedView
-        maskElement={
-          <CyDView className='flex items-center justify-center'>
-            <CyDMaterialDesignIcons
-              name='plus-circle-multiple-outline'
-              size={24}
-              className='text-white'
-            />
-          </CyDView>
-        }>
-        <LinearGradient
-          colors={['#4575F6', '#A228EA', '#FCBA6C']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.iconGradient}>
-          <CyDView className='opacity-0'>
-            <CyDMaterialDesignIcons
-              name='plus-circle-multiple-outline'
-              size={24}
-              className='text-white'
-            />
-          </CyDView>
-        </LinearGradient>
-      </MaskedView>
-    );
-  };
+  const cardBgClassName: string = isDarkMode ? 'bg-black' : 'bg-n0';
+  const titleTextClassName: string = isDarkMode ? 'text-white' : 'text-base400';
+  const bodyTextClassName: string = isDarkMode ? 'text-white' : 'text-base300';
 
   return (
-    <CyDView className=''>
-      {/* Gradient Border Container */}
-      <LinearGradient
-        colors={['#4575F6', '#A228EA', '#FCBA6C']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.gradientBorder}>
-        {/* Inner Content Container with background */}
-        <CyDView className='bg-n0 rounded-[16px] p-4'>
-          {/* Header Section with Icon and Title */}
-          <CyDView className='flex flex-row items-center mb-[6px]'>
-            {renderGradientIcon()}
-            <CyDText className='text-[18px] font-bold text-base400 ml-[12px]'>
-              {t('GET_YOUR_FIRST_TOKEN') ?? 'Get your first token'}
-            </CyDText>
-          </CyDView>
-
-          {/* Description Text */}
-          <CyDText className='text-[14px] text-base300 mb-[16px] leading-[20px]'>
-            {t('FUND_WALLET_DESCRIPTION') ??
-              'Fund your wallet by buying crypto or transferring from another wallet'}
-          </CyDText>
-
-          {/* Get Token Button */}
-          <Button
-            title={t('GET_TOKEN') ?? 'Get Token'}
-            onPress={handleGetTokenPress}
-            disabled={false}
-            paddingY={12}
-            style='!rounded-full'
+    <CyDView style={styles.root}>
+      {/* Basic stable card (no gradients) */}
+      <CyDView
+        className={`${cardBgClassName} rounded-[16px] border border-n40 p-4`}>
+        {/* Header Section: icon + title on the same row */}
+        <CyDView style={styles.headerRow}>
+          <CyDMaterialDesignIcons
+            name='plus-circle-multiple-outline'
+            size={24}
+            className='text-base400'
           />
+          <CyDText
+            numberOfLines={1}
+            className={`text-[18px] font-bold ml-[12px] ${titleTextClassName}`}
+            style={styles.headerTitle}>
+            {t('GET_YOUR_FIRST_TOKEN') ?? 'Get your first token'}
+          </CyDText>
         </CyDView>
-      </LinearGradient>
+
+        {/* Description Text */}
+        <CyDText
+          className={`text-[14px] mb-[16px] leading-[20px] ${bodyTextClassName}`}>
+          {t('FUND_WALLET_DESCRIPTION') ??
+            'Fund your wallet by buying crypto or transferring from another wallet'}
+        </CyDText>
+
+        {/* Get Token Button */}
+        <Button
+          title={t('GET_TOKEN') ?? 'Get Token'}
+          onPress={handleGetTokenPress}
+          disabled={false}
+          paddingY={12}
+          style='!rounded-full'
+        />
+      </CyDView>
     </CyDView>
   );
 };
 
 const styles = StyleSheet.create({
-  gradientBorder: {
-    borderRadius: 16,
-    padding: 2, // This creates the border effect
-  },
-  iconGradient: {
+  root: {
+    width: '100%',
+    alignSelf: 'stretch',
+  } as ViewStyle,
+  iconSize: {
     width: 24,
     height: 24,
-  },
+    flexShrink: 0,
+  } as ViewStyle,
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  } as ViewStyle,
+  headerTitle: {
+    flexShrink: 1,
+  } as ViewStyle,
 });
 
 export default GetFirstTokenComponent;

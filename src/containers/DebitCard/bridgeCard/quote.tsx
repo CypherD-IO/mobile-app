@@ -993,17 +993,19 @@ export default function CardQuote({
                     }>
                     {'$' + String(tokenQuote.fees.actualFee)}
                   </CyDText>
-                  <LinearGradient
-                    colors={['#FA9703', '#F7510A', '#F48F0F']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.linearGradient}>
+                  <CyDView style={styles.linearGradient}>
+                    <LinearGradient
+                      colors={['#FA9703', '#F7510A', '#F48F0F']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={StyleSheet.absoluteFill}
+                    />
                     <CyDText className={'font-bold text-white'}>
                       {Number(tokenQuote.fees.fee) === 0
                         ? 'Free'
                         : '$' + String(tokenQuote.fees.fee)}
                     </CyDText>
-                  </LinearGradient>
+                  </CyDView>
                 </CyDView>
               ) : (
                 <CyDText className={'font-bold text-[14px] '}>
@@ -1192,6 +1194,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 10,
     paddingVertical: 6,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   priceFluctuationLearnMoreModal: {
     position: 'absolute',

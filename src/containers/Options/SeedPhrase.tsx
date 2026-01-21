@@ -16,7 +16,7 @@ import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import { AppImagesMap } from '../../../assets/images/appImages';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from '../../components/v2/QRCode';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { isAndroid } from '../../misc/checkers';
@@ -113,16 +113,26 @@ export default function SeedPhrase() {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-    if (isFocused) {
-      loadSeedPhraseInMemory();
-      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
-    } else {
+    if (!isFocused) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      return () => {
+        if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      };
     }
+
+    // Only intercept Android back presses while this screen is focused.
+    // If we subscribe while unfocused, it can steal back events from other screens.
+    loadSeedPhraseInMemory();
+    if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
+
     return () => {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, [isFocused]);
 

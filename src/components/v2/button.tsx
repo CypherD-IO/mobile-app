@@ -8,7 +8,12 @@ import {
 } from '../../styles/tailwindComponents';
 import clsx from 'clsx';
 import AppImages from '../../../assets/images/appImages';
-import { AppState, Keyboard, StyleSheet } from 'react-native';
+import {
+  ActivityIndicator,
+  AppState,
+  Keyboard,
+  StyleSheet,
+} from 'react-native';
 import { ButtonType, IconPosition, ImagePosition } from '../../constants/enum';
 import { HdWalletContext } from '../../core/util';
 interface IButton {
@@ -39,7 +44,7 @@ export default function Button({
   title,
   style = 'p-[3%]',
   titleStyle = 'text-[16px]',
-  loaderStyle = { height: 22 },
+  loaderStyle = { height: 22, width: 22 },
   image,
   isLottie = false,
   imageStyle = 'h-[20px] w-[20px] mt-[1px] mr-[10px]',
@@ -56,6 +61,9 @@ export default function Button({
   const hdWallet = useContext<any>(HdWalletContext);
   const isReadOnlyWallet = hdWallet?.state?.isReadOnlyWallet;
   const isLocked = isPrivateKeyDependent && isReadOnlyWallet;
+  const spinnerColor = [ButtonType.RED, ButtonType.DARK].includes(type)
+    ? '#FFFFFF'
+    : '#000000';
 
   const handleAppStateChange = (nextAppState: string) => {
     if (
@@ -89,7 +97,9 @@ export default function Button({
       accessible={true}
       accessibilityRole='button'
       className={clsx(
-        `rounded-[12px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
+        `rounded-[12px] py-[${
+          paddingY ?? 15
+        }px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
           'bg-n0 border-[1px]  border-greyButtonBackgroundColor':
@@ -106,12 +116,14 @@ export default function Button({
         },
       )}>
       {loading && (
-        <CyDView className={'flex items-center justify-between'}>
-          <CyDLottieView
-            source={AppImages.LOADER_TRANSPARENT}
-            autoPlay
-            loop
+        // IMPORTANT:
+        // We render an ActivityIndicator as the primary loader to ensure it always appears.
+        // We still keep the existing Lottie animation, but it is not relied on for visibility.
+        <CyDView className='flex-row items-center justify-center'>
+          <ActivityIndicator
             style={loaderStyle}
+            size='small'
+            color={spinnerColor}
           />
         </CyDView>
       )}

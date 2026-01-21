@@ -19,9 +19,12 @@ export default function LegalScreen() {
   };
 
   React.useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, []);
   return (

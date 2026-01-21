@@ -21,7 +21,7 @@ import {
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Alert, BackHandler, NativeModules } from 'react-native';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from '../../components/v2/QRCode';
 import PageHeader from '../../components/PageHeader';
 import {
   CHAIN_COSMOS,
@@ -214,17 +214,23 @@ export default function PrivateKey(props: PrivateKeyProps) {
   };
 
   useEffect(() => {
-    if (isFocused) {
-      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
-      setSelectedChain(hdWalletContext?.state.selectedChain);
-    } else {
+    if (!isFocused) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      return () => {
+        if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      };
     }
+    if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+    setSelectedChain(hdWalletContext?.state.selectedChain);
 
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
+
     return () => {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, [isFocused]);
 

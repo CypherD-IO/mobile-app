@@ -13,6 +13,11 @@ interface BottomSheetConfig {
   title?: string;
   snapPoints?: Array<string | number>;
   showCloseButton?: boolean;
+  /**
+   * Controls whether the native BottomSheet handle (the top bar + indicator) is shown.
+   * When set to false, the sheet is still draggable via content panning gestures.
+   */
+  showHandle?: boolean;
   scrollable?: boolean;
   content: React.ReactNode;
   backgroundColor?: string;
@@ -180,6 +185,7 @@ export const GlobalBottomSheetProvider: React.FC<
           title={config.title}
           topBarColor={config.topBarColor}
           backgroundColor={config.backgroundColor}
+          showHandle={config.showHandle ?? true}
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}
           onClose={() => handleBottomSheetClose(config.id)}

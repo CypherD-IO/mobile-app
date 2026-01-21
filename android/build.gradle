@@ -1,25 +1,29 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
-        minSdkVersion = 25
-        compileSdkVersion = 34
-        targetSdkVersion = 35
-        // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
-        ndkVersion = "23.1.7779620"
-        kotlinVersion = "1.8.22"
+        buildToolsVersion = "36.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 36
+        targetSdkVersion = 36
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.1.20"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:7.4.2")
+        // NOTE: RN 0.83 requires a modern Android toolchain.
+        // We pin AGP explicitly because this repo does not use a version catalog.
+        classpath("com.android.tools.build:gradle:8.7.3")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("com.google.gms:google-services:4.3.10")
+        // google-services 4.3.10 is too old for modern AGP/Gradle and can fail to wire the
+        // generated `google_app_id` resources into the final merged resources, which then causes:
+        // "@react-native-firebase/app" -> "No Firebase App '[DEFAULT]' has been created".
+        classpath("com.google.gms:google-services:4.4.2")
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.8.1")
         classpath("com.google.firebase:perf-plugin:1.4.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }
+
+apply plugin: "com.facebook.react.rootproject"

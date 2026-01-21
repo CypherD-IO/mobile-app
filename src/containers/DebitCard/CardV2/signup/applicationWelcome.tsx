@@ -98,6 +98,9 @@ const styles = StyleSheet.create({
   blurContainer: {
     paddingHorizontal: 16,
     paddingBottom: 24,
+    // On RN 0.83 + Fabric, some native views (like BlurView) can end up wider than their parent
+    // if used as a layout container. Keep the blur/tint clipped to the container bounds.
+    overflow: 'hidden',
   },
 });
 
@@ -125,12 +128,14 @@ const ApplicationWelcome = (): JSX.Element => {
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  // Dynamic background colour for the step container. Use a light translucent
-  // white in light-mode and a dark translucent black/grey in dark-mode so that
-  // the design matches platform conventions.
-  const containerBgColor = isDarkMode
-    ? 'rgba(22, 22, 22, 0.90)'
-    : 'rgba(255, 255, 255, 0.90)';
+  // Dynamic tint overlay used *on top of* BlurView.
+  //
+  // RN 0.83/Fabric: Using BlurView as a layout container + an almost-opaque background color
+  // makes blur appear "broken" (it is there, but you can't see it). We keep the tint lighter
+  // so the blur remains visible while still matching the design.
+  const containerTintColor = isDarkMode
+    ? 'rgba(22, 22, 22, 0.65)'
+    : 'rgba(255, 255, 255, 0.65)';
 
   // Dynamic background colour for video placeholder to avoid black flash.
   const videoBgColor = isDarkMode ? '#000000' : '#FFFFFF';
@@ -249,7 +254,19 @@ const ApplicationWelcome = (): JSX.Element => {
 
   return (
     <CyDView className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-n0'}`}>
-      <CyDView className='flex-1' style={{ paddingTop: insets.top }}>
+      {/* 
+       * RN 0.83 + Fabric tightened layout measurement in a few edge cases (notably with some
+       * native views like BlurView). We explicitly apply safe-area insets on ALL sides and
+       * force full-width containers so children (like the bottom CTA button) cannot overflow
+       * and get clipped on the right edge.
+       */}
+      <CyDView
+        className='flex-1'
+        style={{
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        }}>
         {/* Background Video */}
         <CyDView
           style={[styles.videoContainer, { backgroundColor: videoBgColor }]}>
@@ -313,14 +330,26 @@ const ApplicationWelcome = (): JSX.Element => {
 
         {/* Bottom Content Container with Blur Effect */}
         {Platform.OS === 'ios' ? (
-          <BlurView
+          // IMPORTANT:
+          // On RN 0.83/Fabric, BlurView is more reliable when used as an absolutely-filled
+          // background layer (instead of being the padding/layout container).
+          <CyDView
             style={[
               styles.blurContainer,
-              { backgroundColor: containerBgColor },
-            ]}
-            blurType={isDarkMode ? 'dark' : 'light'}
-            blurAmount={10}
-            reducedTransparencyFallbackColor={containerBgColor}>
+              { width: '100%', alignSelf: 'stretch' },
+            ]}>
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              blurType={isDarkMode ? 'dark' : 'light'}
+              blurAmount={10}
+              // If iOS "Reduce Transparency" is enabled, iOS will render this fallback color.
+              reducedTransparencyFallbackColor={isDarkMode ? '#161616' : '#FFFFFF'}
+            />
+            {/* Tint overlay (keeps text readable while still showing blur) */}
+            <CyDView
+              pointerEvents='none'
+              style={[StyleSheet.absoluteFill, { backgroundColor: containerTintColor }]}
+            />
             {/* Title */}
             <CyDView className='mb-4 mt-6 items-center'>
               <CyDText className='text-[22px] font-bold'>
@@ -351,17 +380,20 @@ const ApplicationWelcome = (): JSX.Element => {
             {/* Continue Button */}
             <CyDTouchView
               className='bg-[#F7C645] py-[14px] rounded-[30px]'
+              style={{ width: '100%', alignSelf: 'stretch' }}
               onPress={handleNext}>
               <CyDText className='text-[20px] font-bold text-center text-black'>
                 {t('CONTINUE_BUTTON', 'Continue')}
               </CyDText>
             </CyDTouchView>
-          </BlurView>
+          </CyDView>
         ) : (
           <CyDView
             style={[
               styles.blurContainer,
-              { backgroundColor: containerBgColor },
+              // Android: BlurView support depends on platform capabilities; keep the same tint so
+              // layout/spacing matches iOS even if blur is not available.
+              { backgroundColor: containerTintColor, width: '100%', alignSelf: 'stretch' },
             ]}>
             {/* Title */}
             <CyDView className='mb-4 mt-6 items-center'>
@@ -393,6 +425,7 @@ const ApplicationWelcome = (): JSX.Element => {
             {/* Continue Button */}
             <CyDTouchView
               className='bg-[#F7C645] py-[14px] rounded-[30px]'
+              style={{ width: '100%', alignSelf: 'stretch' }}
               onPress={handleNext}>
               <CyDText className='text-[20px] font-bold text-center text-black'>
                 {t('CONTINUE_BUTTON', 'Continue')}

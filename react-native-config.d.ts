@@ -8,6 +8,7 @@ declare module 'react-native-config' {
     AF_ONE_LINK_ID: string;
     AF_USER_INVITE_CHANNEL: string;
     INTERCOM_APP_KEY: string;
+    INTERCOM_IOS_SDK_KEY: string;
     WALLET_CONNECT_PROJECTID: string;
     WEB3_AUTH_CLIENT_ID: string;
     HELIUS_API_KEY: string;

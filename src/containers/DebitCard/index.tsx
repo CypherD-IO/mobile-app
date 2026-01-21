@@ -64,9 +64,12 @@ export default function DebitCardScreen(props: RouteProps) {
   };
 
   React.useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, []);
 

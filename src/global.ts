@@ -11,7 +11,7 @@ const getDefaultArchHost = () => {
     console.log(
       '🚀 Production build - using ARCH_HOST: https://arch.cypherhq.io',
     );
-    return 'https://arch.cypherd.io';
+    return 'https://arch.cypherhq.io';
   }
 };
 

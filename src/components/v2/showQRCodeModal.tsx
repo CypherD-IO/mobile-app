@@ -7,7 +7,7 @@ import {
 } from '../../styles/tailwindComponents';
 import CyDModalLayout from './modal';
 import { t } from 'i18next';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from './QRCode';
 import { StyleSheet } from 'react-native';
 import { AppImagesMap } from '../../../assets/images/appImages';
 

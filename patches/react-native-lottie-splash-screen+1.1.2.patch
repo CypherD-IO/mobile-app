@@ -1,0 +1,28 @@
+diff --git a/node_modules/react-native-lottie-splash-screen/android/build.gradle b/node_modules/react-native-lottie-splash-screen/android/build.gradle
+index ddbf339..7b01e98 100644
+--- a/node_modules/react-native-lottie-splash-screen/android/build.gradle
++++ b/node_modules/react-native-lottie-splash-screen/android/build.gradle
+@@ -25,11 +25,20 @@ android {
+ }
+ 
+ dependencies {
+-    def supportLibVersion = rootProject.hasProperty('supportLibVersion') ? rootProject.supportLibVersion : DEFAULT_SUPPORT_LIB_VERSION
+-
++    // NOTE:
++    // This library is old and still carries legacy "Support Library" defaults, but RN 0.83+ is
++    // AndroidX-only. If `com.android.support:*` dependencies leak into the graph, Gradle fails
++    // with `checkDebugDuplicateClasses` due to duplicate `android.support.v4.*` classes.
++    //
++    // We intentionally hard-pin an AndroidX AppCompat version here to prevent Support Library
++    // artifacts from being pulled in.
++    //
++    // This file is patched via `patch-package` (see `patches/react-native-lottie-splash-screen+1.1.2.patch`).
+     implementation fileTree(dir: 'libs', include: ['*.jar'])
+     testImplementation 'junit:junit:4.12'
+-    implementation "com.android.support:appcompat-v7:$supportLibVersion"
++    // RN 0.83+ is AndroidX-only; pulling legacy `com.android.support:*` causes duplicate class
++    // conflicts (e.g. support-compat vs androidx.core).
++    implementation "androidx.appcompat:appcompat:1.6.1"
+     implementation "com.facebook.react:react-native:+" // From node_modules
+     implementation 'com.airbnb.android:lottie:3.4.4'
+ }

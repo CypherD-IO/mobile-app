@@ -203,18 +203,15 @@ export default function CypherCardScreen() {
     });
 
     // Auto-remove after 5 minutes (300,000ms)
-    const timeoutId = setTimeout(
-      () => {
-        setFundingsCompletedInLast5Mins(prev =>
-          prev.filter(
-            activity => activity.freshdeskId !== completedActivity.freshdeskId,
-          ),
-        );
-        // Remove timeout ID from tracking set once executed
-        removalTimeoutsRef.current.delete(timeoutId);
-      },
-      5 * 60 * 1000,
-    ); // 5 minutes
+    const timeoutId = setTimeout(() => {
+      setFundingsCompletedInLast5Mins(prev =>
+        prev.filter(
+          activity => activity.freshdeskId !== completedActivity.freshdeskId,
+        ),
+      );
+      // Remove timeout ID from tracking set once executed
+      removalTimeoutsRef.current.delete(timeoutId);
+    }, 5 * 60 * 1000); // 5 minutes
 
     // Track timeout ID for cleanup on unmount
     removalTimeoutsRef.current.add(timeoutId);
@@ -243,18 +240,15 @@ export default function CypherCardScreen() {
     });
 
     // Auto-remove after 5 minutes (300,000ms)
-    const timeoutId = setTimeout(
-      () => {
-        setFundingsFailedInLast5Mins(prev =>
-          prev.filter(
-            activity => activity.freshdeskId !== failedActivity.freshdeskId,
-          ),
-        );
-        // Remove timeout ID from tracking set once executed
-        removalTimeoutsRef.current.delete(timeoutId);
-      },
-      5 * 60 * 1000,
-    ); // 5 minutes
+    const timeoutId = setTimeout(() => {
+      setFundingsFailedInLast5Mins(prev =>
+        prev.filter(
+          activity => activity.freshdeskId !== failedActivity.freshdeskId,
+        ),
+      );
+      // Remove timeout ID from tracking set once executed
+      removalTimeoutsRef.current.delete(timeoutId);
+    }, 5 * 60 * 1000); // 5 minutes
 
     // Track timeout ID for cleanup on unmount
     removalTimeoutsRef.current.add(timeoutId);
@@ -635,9 +629,10 @@ export default function CypherCardScreen() {
       id: 'merchant-detail',
       snapPoints: ['80%', Platform.OS === 'android' ? '100%' : '95%'],
       showCloseButton: true,
+      // We render a custom handle indicator inside the blurred header for better visual cohesion.
+      showHandle: false,
       scrollable: true,
-      topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
-      backgroundColor: isDarkMode ? '#595959' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
       content: (
         <MerchantRewardDetailContent
           merchantData={merchant}
@@ -727,8 +722,8 @@ export default function CypherCardScreen() {
                   {shouldShowLocked()
                     ? t('ACCOUNT_LOCKED')
                     : shouldShowActionNeeded()
-                      ? t('ACCOUNT_ACTION_NEEDED')
-                      : t('CONTACT_SUPPORT')}
+                    ? t('ACCOUNT_ACTION_NEEDED')
+                    : t('CONTACT_SUPPORT')}
                 </CyDText>
               </CyDView>
               <CyDText
@@ -740,8 +735,8 @@ export default function CypherCardScreen() {
                 {shouldShowLocked()
                   ? t('ACCOUNT_LOCKED_DESCRIPTION')
                   : shouldShowActionNeeded()
-                    ? t('ACCOUNT_ACTION_NEEDED_DESCRIPTION')
-                    : t('ACCOUNT_INACTIVE_DESCRIPTION')}
+                  ? t('ACCOUNT_ACTION_NEEDED_DESCRIPTION')
+                  : t('ACCOUNT_INACTIVE_DESCRIPTION')}
               </CyDText>
               {shouldShowContactSupport() && (
                 <CyDTouchView
@@ -1086,16 +1081,18 @@ export default function CypherCardScreen() {
                             {'You could have saved'}
                           </CyDText>
 
-                          <LinearGradient
-                            colors={['#FA9703', '#F7510A', '#FA9703']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            locations={[0, 0.5, 1]}
-                            style={style.gradientStyle}>
+                          <CyDView style={style.gradientStyle}>
+                            <LinearGradient
+                              colors={['#FA9703', '#F7510A', '#FA9703']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 1 }}
+                              locations={[0, 0.5, 1]}
+                              style={StyleSheet.absoluteFill}
+                            />
                             <CyDText className='font-semibold text-[14px] text-white'>
                               {`$${spendStats.amount}`}
                             </CyDText>
-                          </LinearGradient>
+                          </CyDView>
                           <CyDText className='font-medium text-[14px] text-base200 text-center'>
                             {'in'}
                           </CyDText>
@@ -1190,6 +1187,9 @@ const style = StyleSheet.create({
     borderRadius: 100,
     paddingHorizontal: 7,
     paddingVertical: 4,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadCardGradientContainer: {
     borderRadius: 12,

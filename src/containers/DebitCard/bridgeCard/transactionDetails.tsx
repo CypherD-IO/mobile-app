@@ -1904,16 +1904,18 @@ export default function TransactionDetails() {
                           {'Save'}
                         </CyDText>
                         {getPremiumAmount() > 0 ? (
-                          <LinearGradient
-                            colors={['#FA9703', '#F7510A', '#FA9703']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            locations={[0, 0.5, 1]}
-                            style={styles.gradientStyle}>
+                          <CyDView style={styles.gradientStyle}>
+                            <LinearGradient
+                              colors={['#FA9703', '#F7510A', '#FA9703']}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 1 }}
+                              locations={[0, 0.5, 1]}
+                              style={StyleSheet.absoluteFill}
+                            />
                             <CyDText className='font-semibold text-[14px] text-white'>
                               {`~$${getPremiumAmount()}`}
                             </CyDText>
-                          </LinearGradient>
+                          </CyDView>
                         ) : (
                           <CyDText className='font-medium text-[14px] text-base200'>
                             {'more'}
@@ -2051,6 +2053,9 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     paddingHorizontal: 6,
     paddingVertical: 3,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   container: {
     flex: 1,
