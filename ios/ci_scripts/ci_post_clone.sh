@@ -12,16 +12,22 @@ brew install cocoapods
 
 # Install Node.js using nvm (Node Version Manager).
 # Source of truth: repo root `.nvmrc` (used by both GitHub Actions and Xcode Cloud).
-# Install nvm if not already installed
-if [ ! -d "$HOME/.nvm" ]; then
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#
+# IMPORTANT (Xcode Cloud):
+# The upstream nvm install script tries to edit shell profile files (e.g. `.zshrc`) and can exit
+# non-zero in CI even after successfully cloning nvm (we observed exit code 3). Because we run
+# `set -e`, that would abort the build.
+#
+# Fix: install nvm in a CI-safe, non-interactive way (git clone + source), without touching `.zshrc`.
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+NVM_GIT_TAG="v0.39.4"
+if [ ! -d "$NVM_DIR" ]; then
+  echo "Installing nvm (${NVM_GIT_TAG}) into ${NVM_DIR}..."
+  git clone --depth 1 --branch "${NVM_GIT_TAG}" https://github.com/nvm-sh/nvm.git "$NVM_DIR"
 fi
 
-# Load nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+# Load nvm for this script execution.
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Resolve repo root deterministically (Xcode Cloud does not guarantee the current working directory).
 # - Prefer CI_PRIMARY_REPOSITORY_PATH when available.
