@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Fail fast in CI. Without this, `pod install` / `npm install` failures can be silently ignored,
+# and Xcode later fails with missing `Pods-*.xcconfig` / `.xcfilelist` files during the Analyze/Build phase.
+set -euo pipefail
+
 # Prevent Homebrew from auto-cleanup
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 
@@ -26,9 +30,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 NVMRC_PATH="${REPO_ROOT}/.nvmrc"
 
+# Always run installs from deterministic directories.
+echo "Script dir: ${SCRIPT_DIR}"
+echo "Repo root:   ${REPO_ROOT}"
+
 # Try to get Node.js version from repo root .nvmrc, fallback to a known-good version if not found.
 if [ -f "$NVMRC_PATH" ]; then
-    NODE_VERSION=$(cat "$NVMRC_PATH")
+    NODE_VERSION="$(cat "$NVMRC_PATH" | tr -d ' \t\r\n')"
     echo "Found .nvmrc file at: $NVMRC_PATH"
     echo "Using Node.js version: $NODE_VERSION"
 else
@@ -37,19 +45,37 @@ else
     echo "Falling back to Node.js version: $NODE_VERSION"
 fi
 
-nvm install $NODE_VERSION
-nvm use $NODE_VERSION
-nvm alias default $NODE_VERSION
+# Normalize Node version to always include the leading "v" because some RN/Xcode scripts
+# expect node to exist at `/Users/local/.nvm/versions/node/vX.Y.Z/bin/node`.
+# Example failure:
+#   Can't find '/Users/local/.nvm/versions/node/v18.17.1/bin/node'
+# while `.nvmrc` may contain `18.17.1` (without the `v`).
+case "$NODE_VERSION" in
+  v*) NODE_VERSION_V="$NODE_VERSION" ;;
+  *)  NODE_VERSION_V="v$NODE_VERSION" ;;
+esac
+
+nvm install "$NODE_VERSION_V"
+nvm use "$NODE_VERSION_V"
+nvm alias default "$NODE_VERSION_V"
 
 # Verify Node.js version
 node -v
 
 # Some RN scripts in CI expect a node binary to exist under /Users/local/.nvm.
 # Ensure the target directory exists before we symlink.
-sudo mkdir -p /Users/local/.nvm/versions/node/$NODE_VERSION/bin/
-sudo ln -sf $(which node) /Users/local/.nvm/versions/node/$NODE_VERSION/bin/node
+NODE_BIN="$(which node)"
 
-NODE_PATH=$(which node)
+# Create the "vX.Y.Z" path (expected by many RN templates / node-binary.sh failures)
+sudo mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/"
+sudo ln -sf "$NODE_BIN" "/Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/node"
+
+# Also create the "X.Y.Z" path for backwards compatibility with any scripts that omit the "v".
+NODE_VERSION_NO_V="${NODE_VERSION_V#v}"
+sudo mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/"
+sudo ln -sf "$NODE_BIN" "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/node"
+
+NODE_PATH="$NODE_BIN"
 
 # Print the Node.js path for debugging purposes
 echo "Node.js binary is located at: $NODE_PATH"
@@ -57,13 +83,15 @@ echo "Node.js binary is located at: $NODE_PATH"
 # Export NODE_BINARY for Xcode to use
 export NODE_BINARY=$NODE_PATH
 
-# Install dependencies with npm, using legacy-peer-deps if needed
+# Install JS dependencies from repo root (package.json lives there).
+cd "$REPO_ROOT"
 npm install --legacy-peer-deps
 
 # Clean up DerivedData folder if it exists
 rm -rf /Volumes/workspace/DerivedData
 
-# Deintegrate and reinstall CocoaPods dependencies
+# Deintegrate and reinstall CocoaPods dependencies from `ios/`
+cd "${REPO_ROOT}/ios"
 pod deintegrate
 pod install --repo-update
 
@@ -83,9 +111,9 @@ HELIUS_API_KEY=${HELIUS_API_KEY}
 WEB3_AUTH_CLIENT_ID=${WEB3_AUTH_CLIENT_ID}
 EOL
 
-# Use absolute paths with $CI_PRIMARY_REPOSITORY_PATH
-GOOGLE_PLIST_PATH="${CI_PRIMARY_REPOSITORY_PATH}/ios/GoogleService-Info.plist"
-SENTRY_PROPS_PATH="${CI_PRIMARY_REPOSITORY_PATH}/ios/sentry.properties"
+# Use absolute paths with resolved repo root (CI_PRIMARY_REPOSITORY_PATH is not guaranteed).
+GOOGLE_PLIST_PATH="${REPO_ROOT}/ios/GoogleService-Info.plist"
+SENTRY_PROPS_PATH="${REPO_ROOT}/ios/sentry.properties"
 
 if [ -z "$GOOGLE_SERVICE_INFO_PLIST" ]; then 
     echo "Error: GOOGLE_SERVICE_INFO_PLIST environment variable is not set" 
@@ -130,5 +158,9 @@ fi
 
 echo "Successfully created sentry.properties at: $SENTRY_PROPS_PATH"
 
+# Verify key Pods outputs exist (these are what Xcode complains about when missing).
+echo "Verifying CocoaPods outputs..."
+ls -la "${REPO_ROOT}/ios/Pods/Target Support Files/Pods-Cypherd/" | cat
+
 # Verify files exist in the correct location
-ls -la "${CI_PRIMARY_REPOSITORY_PATH}/ios/"
+ls -la "${REPO_ROOT}/ios/" | cat
