@@ -57,11 +57,9 @@ pod deintegrate
 pod install --repo-update
 
 
-# Define PROJECT_DIR relative to script location
-PROJECT_DIR="$(pwd)/.."  # Goes up one level from ci_scripts to ios directory
-
-# Create .env file in project root
-cat > "$PROJECT_DIR/../.env" << EOL
+# Create .env file in project root (REPO_ROOT, not relative to current directory)
+echo "Creating .env file at: ${REPO_ROOT}/.env"
+cat > "${REPO_ROOT}/.env" << EOL
 SENTRY_DSN=${SENTRY_DSN}
 ENVIRONMENT=${ENVIRONMENT}
 INTERCOM_APP_KEY=${INTERCOM_APP_KEY}
@@ -71,6 +69,15 @@ RA_PUB_KEY=${RA_PUB_KEY}
 HELIUS_API_KEY=${HELIUS_API_KEY}
 WEB3_AUTH_CLIENT_ID=${WEB3_AUTH_CLIENT_ID}
 EOL
+
+# Verify .env was created
+if [ -f "${REPO_ROOT}/.env" ]; then
+  echo "✓ .env file created successfully"
+  echo "  Lines: $(wc -l < "${REPO_ROOT}/.env")"
+else
+  echo "ERROR: Failed to create .env file!"
+  exit 1
+fi
 
 # Use absolute paths with resolved repo root (CI_PRIMARY_REPOSITORY_PATH is not guaranteed).
 GOOGLE_PLIST_PATH="${REPO_ROOT}/ios/GoogleService-Info.plist"
