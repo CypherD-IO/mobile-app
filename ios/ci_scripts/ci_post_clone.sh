@@ -45,23 +45,32 @@ npm -v
 
 # Some RN scripts in CI expect a node binary to exist under /Users/local/.nvm.
 # Create symlinks for compatibility with react-native's node-binary.sh.
+# NOTE: Xcode Cloud doesn't allow passwordless sudo, so we try without sudo first.
 NODE_BIN="$(which node)"
 NODE_VERSION_V="v$(node -v | tr -d 'v' | cut -d. -f1-3)"  # e.g., v22.12.0
-
-# Create the "vX.Y.Z" path (expected by many RN templates / node-binary.sh failures)
-sudo mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/"
-sudo ln -sf "$NODE_BIN" "/Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/node"
-
-# Also create the "X.Y.Z" path for backwards compatibility with any scripts that omit the "v".
 NODE_VERSION_NO_V="${NODE_VERSION_V#v}"
-sudo mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/"
-sudo ln -sf "$NODE_BIN" "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/node"
+
+echo "Creating compatibility symlinks for RN node-binary.sh..."
+
+# Try to create symlinks without sudo (Xcode Cloud may allow this for /Users/local)
+# If it fails, we continue anyway since `node` is already in PATH via Homebrew.
+{
+  mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/" 2>/dev/null &&
+  ln -sf "$NODE_BIN" "/Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/node" &&
+  echo "Created symlink: /Users/local/.nvm/versions/node/${NODE_VERSION_V}/bin/node"
+} || echo "WARN: Could not create vX.Y.Z symlink (non-fatal, node is in PATH)"
+
+{
+  mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/" 2>/dev/null &&
+  ln -sf "$NODE_BIN" "/Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/node" &&
+  echo "Created symlink: /Users/local/.nvm/versions/node/${NODE_VERSION_NO_V}/bin/node"
+} || echo "WARN: Could not create X.Y.Z symlink (non-fatal, node is in PATH)"
 
 # Print the Node.js path for debugging purposes
 echo "Node.js binary is located at: $NODE_BIN"
 
-# Export NODE_BINARY for Xcode to use
-export NODE_BINARY=$NODE_BIN
+# Export NODE_BINARY for Xcode to use (react-native build scripts check this env var first)
+export NODE_BINARY="$NODE_BIN"
 
 # Install JS dependencies from repo root (package.json lives there).
 cd "$REPO_ROOT"
