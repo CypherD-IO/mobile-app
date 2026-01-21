@@ -41,44 +41,61 @@ static void InitializeFlipper(UIApplication *application) {
 #endif
 
   // --- React Native (RN 0.83) New Architecture bootstrap ---
-  // IMPORTANT:
-  // The legacy `RCTBridge` / `RCTRootView` initialization path now throws at runtime when the
-  // app is configured for the New Architecture. Use RCTAppDelegate/RCTReactNativeFactory instead.
   self.moduleName = @"Cypherd";
   self.dependencyProvider = [RCTAppDependencyProvider new];
   self.initialProps = @{};
 
   BOOL didFinish = [super application:application didFinishLaunchingWithOptions:launchOptions];
 
-  // After RN has created the window + root view, attach our splash screen and other SDK init.
-  UIView *rootView = self.window.rootViewController.view;
-
-  if (@available(iOS 13.0, *)) {
-    rootView.backgroundColor = [UIColor systemBackgroundColor];
-  } else {
-    rootView.backgroundColor = [UIColor whiteColor];
-  }
-
   // Intercom initialization.
-  //
-  // Intercom requires TWO values:
-  // - SDK key (platform-specific, e.g. "ios_sdk-...")
-  // - App ID (shared across platforms)
   NSString *intercomSdkKey = [RNCConfig envFor:@"INTERCOM_IOS_SDK_KEY"];
   NSString *intercomAppId = [RNCConfig envFor:@"INTERCOM_APP_KEY"];
   if (intercomSdkKey != nil && intercomSdkKey.length > 0 &&
       intercomAppId != nil && intercomAppId.length > 0) {
     [IntercomModule initialize:intercomSdkKey withAppId:intercomAppId];
   } else {
-    // Missing env should not crash the app; Intercom will simply be disabled.
     NSLog(@"[Intercom] Skipping initialization: missing INTERCOM_IOS_SDK_KEY and/or INTERCOM_APP_KEY");
   }
 
+  // ===================================================================================
+  // LOTTIE SPLASH SCREEN FIX FOR RELEASE/TESTFLIGHT BUILDS
+  // ===================================================================================
+  //
+  // PROBLEM:
+  // In Release builds, React Native loads extremely fast. The Lottie splash view was
+  // being added as a subview of rootView, but React Native's content is also rendered
+  // into rootView. When RN renders, its content appears ON TOP of the splash view,
+  // visually hiding it even though the splash view is still in the hierarchy.
+  //
+  // SOLUTION:
+  // Add the splash view directly to the WINDOW instead of the rootView. This ensures
+  // the splash is above ALL content, including React Native's view hierarchy.
+  // The splash will only be removed when both:
+  //   1. The native animation timer fires (2 seconds)
+  //   2. JS calls SplashScreen.hide()
+  // ===================================================================================
+  
+  UIView *rootView = self.window.rootViewController.view;
+  if (rootView != nil) {
+    rootView.backgroundColor = [UIColor blackColor];
+  }
+
   Dynamic *t = [Dynamic new];
-  UIView *animationUIView = (UIView *)[t createAnimationViewWithRootView:rootView lottieName:@"splash"];
+  // Create the animation view using screen bounds (not dependent on rootView's frame)
+  UIView *animationUIView = (UIView *)[t createAnimationViewWithRootView:self.window lottieName:@"splash"];
   animationUIView.backgroundColor = [UIColor blackColor];
-  [RNSplashScreen showLottieSplash:animationUIView inRootView:rootView];
+  
+  // CRITICAL: Pass self.window as the "rootView" to showLottieSplash.
+  // This makes the splash a subview of the WINDOW, ensuring it's above
+  // React Native's entire view hierarchy.
+  // Note: showLottieSplash internally calls [rootView addSubview:animationView]
+  [RNSplashScreen showLottieSplash:animationUIView inRootView:self.window];
+  
+  // Start the animation and timer
   [t playWithAnimationView:animationUIView];
+  
+  NSLog(@"[Splash] Added Lottie splash to WINDOW (above all RN content). Frame: %@",
+        NSStringFromCGRect(animationUIView.frame));
 
   // Define UNUserNotificationCenter
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];

@@ -21,7 +21,7 @@ import DefaultAuthRemoveModal from '../v2/defaultAuthRemoveModal';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { t } from 'i18next';
-import { CyDSafeAreaView, CyDText } from '../../styles/tailwindComponents';
+import { CyDSafeAreaView } from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
@@ -69,7 +69,7 @@ export const InitializeAppProvider = ({
   children,
 }: {
   children: React.ReactNode;
-}) => {
+}): React.ReactElement => {
   const {
     exitIfJailBroken,
     fetchRPCEndpointsFromServer,
@@ -156,6 +156,11 @@ export const InitializeAppProvider = ({
         // If init throws, we currently end up on Loading forever. Log loudly so we can see it.
         Sentry.captureException(e);
       } finally {
+        // Hide splash screen after init completes.
+        // The native side (ios/Dynamic.swift) enforces a 2-second minimum display time,
+        // so calling hide() here is safe - the splash won't disappear until both:
+        //   1. Native 2-second timer fires (calls setAnimationFinished(true))
+        //   2. This JS hide() call is made
         setTimeout(() => {
           SplashScreen.hide();
         }, SPLASH_SCREEN_TIMEOUT);
@@ -170,24 +175,6 @@ export const InitializeAppProvider = ({
       void checkForUpdatesAndShowModal(setUpdateModal);
     }
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (referrerData?.referral) {
-      void setReferralCodeAsync(referrerData.referral);
-
-      if (isAuthenticated && ethereumAddress) {
-        showModal('success', {
-          title: t('REFERRAL_CODE_FOUND'),
-          description: t('REFERRAL_CODE_APPLIED', {
-            code: referrerData.referral,
-          }),
-          onSuccess: () => {
-            hideModal();
-          },
-        });
-      }
-    }
-  }, [referrerData, isAuthenticated, ethereumAddress]);
 
   useEffect(() => {
     if (referrerData?.referral) {
