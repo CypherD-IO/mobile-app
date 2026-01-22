@@ -1115,11 +1115,13 @@ const ClaimReward: React.FC = () => {
 
       {/* Header */}
       <CyDView
-        className={`flex-row justify-between items-center px-4 py-3 ${isDarkMode ? 'bg-white' : 'bg-black'}`}>
+        className={`flex-row justify-between items-center px-4 py-3 ${
+          isDarkMode ? 'bg-white' : 'bg-black'
+        }`}>
         <CyDText className='text-n0 text-lg font-semibold'>
           {t('CYPHER')}{' '}
           <CyDText className='text-n0 font-[300] tracking-[2px]'>
-            {t('CYPHER_REWARDS')}
+            {t('REWARDS_CAPS')}
           </CyDText>
         </CyDText>
 
@@ -1145,8 +1147,8 @@ const ClaimReward: React.FC = () => {
               {loadingClaimData && loadingBribesData
                 ? 'Loading rewards and bribes data...'
                 : loadingClaimData
-                  ? t('LOADING_CLAIM_DATA')
-                  : 'Loading bribes data...'}
+                ? t('LOADING_CLAIM_DATA')
+                : 'Loading bribes data...'}
             </CyDText>
           </CyDView>
         ) : (
@@ -1164,7 +1166,7 @@ const ClaimReward: React.FC = () => {
                   className='w-8 h-8 mr-3'
                   resizeMode='contain'
                 />
-                <CyDText className='text-n0 text-[36px] font-bold font-newyork'>
+                <CyDText className='text-n0 text-[36px] font-bold !font-gambetta'>
                   {DecimalHelper.round(claimData.totalRewards, 2).toString()}
                 </CyDText>
               </CyDView>

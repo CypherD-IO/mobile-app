@@ -65,7 +65,7 @@ import { hostWorker } from '../global';
 import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
-import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
+import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/exports';
 import * as bip39 from 'bip39';
 import { Keypair } from '@solana/web3.js';
 import { createWalletClient, custom, Hex } from 'viem';
@@ -724,14 +724,16 @@ export async function signIn(
       'state.wallet.ethereum.address',
       undefined,
     );
+
     const solanaAddress = get(
       hdWallet,
       'state.wallet.solana.address',
       undefined,
     );
+
     const address = ethereumAddress ?? solanaAddress ?? '';
     let ecosystem = EcosystemsEnum.EVM;
-    if (solanaAddress) {
+    if (!ethereumAddress && solanaAddress) {
       ecosystem = EcosystemsEnum.SOLANA;
     }
 

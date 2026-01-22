@@ -13,7 +13,8 @@ import {
   SigningStargateClient,
 } from '@cosmjs/stargate';
 import { abis, addresses } from '@eth-optimism/contracts-ts';
-import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
+// Use the package `exports` entrypoint (Metro-safe) instead of deep `dist/*` imports.
+import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/exports';
 import * as Sentry from '@sentry/react-native';
 import {
   createTransferInstruction,

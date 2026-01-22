@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Cache Node.js dependencies
@@ -116,8 +116,9 @@ jobs:
           echo "Node.js version: $(node --version)"
 
           # Create symlink to ensure React Native scripts can find Node
-          sudo mkdir -p /Users/local/.nvm/versions/node/v18.17.1/bin/
-          sudo ln -sf $(which node) /Users/local/.nvm/versions/node/v18.17.1/bin/node || true
+          NODE_VERSION="$(node --version)"
+          sudo mkdir -p "/Users/local/.nvm/versions/node/${NODE_VERSION}/bin/"
+          sudo ln -sf "$(which node)" "/Users/local/.nvm/versions/node/${NODE_VERSION}/bin/node" || true
 
           # Also update .xcode.env files to use correct Node path
           echo "export NODE_BINARY=$(which node)" > ios/.xcode.env.local

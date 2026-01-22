@@ -274,7 +274,7 @@ export default function CardRevealAuthScreen() {
           showModal('state', {
             type: 'error',
             title: t('VERIFICATION_FAILED'),
-            description: parseErrorMessage(t('INVALID_OTP')),
+            description: parseErrorMessage(response.error),
             onSuccess: () => onModalHide(),
             onFailure: () => onModalHide(),
           });
@@ -283,7 +283,7 @@ export default function CardRevealAuthScreen() {
         showModal('state', {
           type: 'error',
           title: t('VERIFICATION_FAILED'),
-          description: t('INVALID_OTP'),
+          description: parseErrorMessage(e),
           onSuccess: () => onModalHide(),
           onFailure: () => onModalHide(),
         });

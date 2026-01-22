@@ -17,8 +17,8 @@ import { HdWalletContext, getMaskedAddress } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-import { BackHandler } from 'react-native';
-import { QRCode } from 'react-native-custom-qr-codes';
+import { BackHandler, InteractionManager, View } from 'react-native';
+import QRCode from '../../components/v2/QRCode';
 import {
   CHAIN_COSMOS,
   CHAIN_ETH,
@@ -36,7 +36,7 @@ import {
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
 } from '../../constants/server';
-import { captureRef } from 'react-native-view-shot';
+import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { SHARE_QR_TIMEOUT } from '../../constants/timeOuts';
 import { isAndroid } from '../../misc/checkers';
@@ -201,34 +201,129 @@ export default function QRCodeGenerator() {
     return true;
   };
 
-  const viewRef = useRef();
+  // NOTE: captureRef works best with a real native View ref (especially under Fabric).
+  const viewShotRef = useRef<ViewShot | null>(null);
+  const [isViewShotReady, setIsViewShotReady] = useState<boolean>(false);
+  // NOTE: For Android sharing we export the QR as base64 directly from `react-native-qrcode-svg`
+  // (more reliable than view snapshots under Fabric).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const qrCodeSvgRef = useRef<any>(null);
 
-  async function shareQRImage() {
-    const url = await captureRef(viewRef, {
-      format: 'png',
-      quality: 0.7,
-      result: 'base64',
+  const waitForUiToSettle = async (): Promise<void> => {
+    // In Fabric, snapshotting can fail if we capture while layout/animations/interactions are still
+    // being committed. We explicitly wait for interactions + a couple frames.
+    await new Promise<void>(resolve => {
+      InteractionManager.runAfterInteractions(() => resolve());
     });
+    await new Promise<void>(resolve => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+  };
 
-    const shareImage = {
-      title: t('SHARE_TITLE'),
-      message: `${selectedChain.address}`,
-      subject: t('SHARE_TITLE'),
-      url: `data:image/jpeg;base64,${url}`,
-    };
+  async function shareQRImage(): Promise<void> {
+    try {
+      // ANDROID PATH:
+      // Avoid view snapshotting entirely (it is flaky under Fabric and can throw:
+      // "Failed to snapshot view tag <id>").
+      if (isAndroid()) {
+        const qrInst = qrCodeSvgRef.current;
+        if (!qrInst?.toDataURL) {
+          // eslint-disable-next-line no-console
+          console.error('[QRCode] Android share: QR instance ref is missing');
+          showToast(t('SOMETHING_WENT_WRONG', 'Something went wrong'));
+          return;
+        }
 
-    if (!isAndroid()) {
-      delete shareImage.message;
-    }
+        await waitForUiToSettle();
 
-    await Share.open(shareImage)
-      .then(res => {
-        return res;
-      })
-      .catch(err => {
-        return err;
+        const base64Png = await new Promise<string>((resolve, reject) => {
+          try {
+            qrInst.toDataURL((data: string) => {
+              if (!data) reject(new Error('toDataURL returned empty base64'));
+              else resolve(data);
+            });
+          } catch (e) {
+            reject(e);
+          }
+        });
+
+        const shareImage: Record<string, any> = {
+          title: t('SHARE_TITLE'),
+          subject: t('SHARE_TITLE'),
+          message: `${selectedChain.name}: ${selectedChain.address}`,
+          url: `data:image/png;base64,${base64Png}`,
+          type: 'image/png',
+          filename: `cypher-qr-${selectedChain.chainName}`,
+        };
+
+        await Share.open(shareImage);
+        return;
+      }
+
+      const node = viewShotRef.current;
+      if (!node) {
+        // This can happen if the view hasn't mounted yet or ref wasn't attached.
+        // Logging helps debug cases where "Share" appears to do nothing.
+        // eslint-disable-next-line no-console
+        console.error('[QRCode] shareQRImage: viewShotRef is null');
+        showToast(t('SOMETHING_WENT_WRONG', 'Something went wrong'));
+        return;
+      }
+
+      if (!isViewShotReady) {
+        // If we try to snapshot before layout is committed, Android will often throw:
+        // "Failed to snapshot view tag <id>"
+        await waitForUiToSettle();
+      }
+
+      // Use a temp file instead of base64. iOS share sheets are much more reliable with a file URL.
+      //
+      // iOS note:
+      // We use the ViewShot component ref here (instead of capturing an arbitrary View tag) because
+      // `captureRef(viewTag)` can intermittently fail under Fabric.
+      await waitForUiToSettle();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fileUri = await (node as any).capture?.({
+        format: 'png',
+        quality: 0.9,
+        result: 'tmpfile',
+        // Helps on iOS for some view types (incl. SVG) to avoid missing content in the snapshot.
+        useRenderInContext: true,
       });
-    setIsCapturingDetails(false);
+
+      if (!fileUri) {
+        throw new Error(
+          '[QRCode] shareQRImage: ViewShot.capture() returned empty uri',
+        );
+      }
+
+      const shareImage: Record<string, any> = {
+        title: t('SHARE_TITLE'),
+        subject: t('SHARE_TITLE'),
+        url: fileUri,
+        type: 'image/png',
+      };
+
+      // iOS share sheets are more reliable without a `message` when attaching images.
+      await Share.open(shareImage);
+      return;
+    } catch (err) {
+      const message =
+        typeof err === 'object' && err && 'message' in err
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            String((err as any).message ?? '')
+          : '';
+
+      if (message.includes('User did not share')) {
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('[QRCode] shareQRImage failed', err);
+        showToast(t('SOMETHING_WENT_WRONG', 'Something went wrong'));
+      }
+    } finally {
+      setIsCapturingDetails(false);
+    }
   }
 
   async function shareQR() {
@@ -246,6 +341,10 @@ export default function QRCodeGenerator() {
         codeStyle='dot'
         logo={AppImagesMap.common.QR_LOGO}
         logoSize={60}
+        onQRCodeRef={ref => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          qrCodeSvgRef.current = ref as any;
+        }}
       />
     ) : null;
   };
@@ -258,9 +357,12 @@ export default function QRCodeGenerator() {
       setSelectedChain(chainAddressData);
     }
 
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, []);
 
@@ -270,130 +372,161 @@ export default function QRCodeGenerator() {
       <PageHeader title={'RECEIVE'} navigation={navigation} />
       <CyDView className='bg-n20 pt-[24px]'>
         <CyDScrollView className='flex flex-start h-full w-full'>
-          <CyDView className={''} ref={viewRef}>
-            <CyDView
-              className={
-                isCapturingDetails
-                  ? 'flex flex-col justify-center items-center mt-[15px]'
-                  : 'flex flex-col items-center justify-center'
-              }>
-              <CyDFastImage
-                source={selectedChain.logo_url}
-                className={' w-[24px] h-[24px] mt-[2px]'}
-              />
-              <CyDText className={'text-[20px] text-center font-bold mt-[6px]'}>
-                {selectedChain.name}
-              </CyDText>
-            </CyDView>
-            <CyDView>
-              <CyDView className='flex justify-center items-center px-[20px] py-[10px] w-full'>
-                <RenderQRCode key={selectedChain.id} item={selectedChain} />
-
-                {!isCapturingDetails && !selectedChain.address && (
-                  <CyDText className='text-[18px] text-center font-extrabold'>
-                    {selectedChain.name} {t<string>('ADDRESS_NOT_ACCESSIBLE')}
-                  </CyDText>
-                )}
-                {Boolean(selectedChain.address) && (
+          <ViewShot
+            // NOTE:
+            // Keeping the captured region inside a dedicated ViewShot native view makes Android
+            // snapshotting much more reliable (Fabric + SVG QR).
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ref={viewShotRef as any}
+            onLayout={() => {
+              if (!isViewShotReady) setIsViewShotReady(true);
+            }}
+            style={{ width: '100%', alignSelf: 'stretch' }}>
+            <View
+              // These props significantly reduce "Failed to snapshot view tag" flakes on Android.
+              // They are `View` props (not `ViewShot` props).
+              collapsable={false}
+              renderToHardwareTextureAndroid
+              needsOffscreenAlphaCompositing
+              style={{ width: '100%' }}>
+              <View
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                }}>
+                <View className='bg-n20 flex-1' />
+              </View>
+              <CyDView className={''}>
+                <CyDView
+                  className={
+                    isCapturingDetails
+                      ? 'flex flex-col justify-center items-center mt-[15px]'
+                      : 'flex flex-col items-center justify-center'
+                  }>
+                  <CyDFastImage
+                    source={selectedChain.logo_url}
+                    className={' w-[24px] h-[24px] mt-[2px]'}
+                  />
                   <CyDText
-                    className={
-                      isCapturingDetails
-                        ? 'text-[20px] font-extrabold text-center mt-[20px]'
-                        : 'mt-[20px] text-[20px] font-extrabold text-center'
-                    }>
-                    {getMaskedAddress(selectedChain?.address)}
+                    className={'text-[20px] text-center font-bold mt-[6px]'}>
+                    {selectedChain.name}
                   </CyDText>
-                )}
-                {Boolean(selectedChain.address) && (
-                  <CyDView className='flex flex-row'>
-                    <CyDText
-                      className={'text-[14px] text-center font-extrabold'}>
-                      {selectedChain.address.slice(
-                        0,
-                        selectedChain.chainName === 'ethereum' ? 8 : 12,
-                      )}
-                    </CyDText>
+                </CyDView>
+                <CyDView>
+                  <CyDView className='flex justify-center items-center px-[20px] py-[10px] w-full'>
+                    <RenderQRCode key={selectedChain.id} item={selectedChain} />
+
+                    {!isCapturingDetails && !selectedChain.address && (
+                      <CyDText className='text-[18px] text-center font-extrabold'>
+                        {selectedChain.name}{' '}
+                        {t<string>('ADDRESS_NOT_ACCESSIBLE')}
+                      </CyDText>
+                    )}
+                    {Boolean(selectedChain.address) && (
+                      <CyDText
+                        className={
+                          isCapturingDetails
+                            ? 'text-[20px] font-extrabold text-center mt-[20px]'
+                            : 'mt-[20px] text-[20px] font-extrabold text-center'
+                        }>
+                        {getMaskedAddress(selectedChain?.address)}
+                      </CyDText>
+                    )}
+                    {Boolean(selectedChain.address) && (
+                      <CyDView className='flex flex-row'>
+                        <CyDText
+                          className={'text-[14px] text-center font-extrabold'}>
+                          {selectedChain.address.slice(
+                            0,
+                            selectedChain.chainName === 'ethereum' ? 8 : 12,
+                          )}
+                        </CyDText>
+                        <CyDText className={'text-[14px] text-center'}>
+                          {selectedChain.address.slice(
+                            selectedChain.chainName === 'ethereum' ? 8 : 12,
+                            Math.max(selectedChain.address.length - 6, 0),
+                          )}
+                        </CyDText>
+                        <CyDText
+                          className={'text-[14px] text-center font-extrabold'}>
+                          {selectedChain.address.slice(
+                            Math.max(selectedChain.address.length - 6, 0),
+                            selectedChain.address.length,
+                          )}
+                        </CyDText>
+                      </CyDView>
+                    )}
+                  </CyDView>
+                  {!isCapturingDetails && selectedChain.address && (
+                    <CyDView className='mt-[10px] justify-center items-center flex flex-row'>
+                      <Button
+                        onPress={() => {
+                          copyToClipboard(selectedChain.address);
+                          showToast(t('ADDRESS_COPY'));
+                        }}
+                        icon={
+                          <CyDMaterialDesignIcons
+                            name='content-copy'
+                            size={20}
+                            className='text-base400'
+                          />
+                        }
+                        style='w-[40px] h-[40px] mr-[10px] rounded-[8px] p-[0px]'
+                        type={ButtonType.SECONDARY}
+                        title={''}
+                        paddingY={0}
+                      />
+                      <Button
+                        icon={
+                          <CyDMaterialDesignIcons
+                            name='share-variant'
+                            size={24}
+                            className='text-base400'
+                          />
+                        }
+                        onPress={() => {
+                          void shareQR();
+                        }}
+                        style='w-[40px] h-[40px] ml-[10px] rounded-[8px]'
+                        imageStyle='self-center h-[18px] w-[18px]'
+                        type={ButtonType.SECONDARY}
+                        title={''}
+                        paddingY={0}
+                      />
+                    </CyDView>
+                  )}
+                  <CyDView
+                    className={
+                      'my-[10px] mx-[20px] px-[20px] py-[5px] border border-n40 bg-blue20 rounded-[8px]'
+                    }>
                     <CyDText className={'text-[14px] text-center'}>
-                      {selectedChain.address.slice(
-                        selectedChain.chainName === 'ethereum' ? 8 : 12,
-                        Math.max(selectedChain.address.length - 6, 0),
-                      )}
+                      {t('QRCODE_SUBTITLE')}
                     </CyDText>
-                    <CyDText
-                      className={'text-[14px] text-center font-extrabold'}>
-                      {selectedChain.address.slice(
-                        Math.max(selectedChain.address.length - 6, 0),
-                        selectedChain.address.length,
-                      )}
+                    <CyDText className={'text-[14px] text-center font-bold'}>
+                      {selectedChain.chainName === 'ethereum'
+                        ? t(
+                            'SUPPORTED_CHAINS_LIST',
+                            'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Avalanche, Optimism, Arbitrum',
+                          )
+                        : selectedChain.name}
                     </CyDText>
                   </CyDView>
-                )}
-              </CyDView>
-              {!isCapturingDetails && selectedChain.address && (
-                <CyDView className='mt-[10px] justify-center items-center flex flex-row'>
-                  <Button
-                    onPress={() => {
-                      copyToClipboard(selectedChain.address);
-                      showToast(t('ADDRESS_COPY'));
-                    }}
-                    icon={
-                      <CyDMaterialDesignIcons
-                        name='content-copy'
-                        size={20}
-                        className='text-base400'
-                      />
-                    }
-                    style='w-[40px] h-[40px] mr-[10px] rounded-[8px] p-[0px]'
-                    type={ButtonType.SECONDARY}
-                    title={''}
-                    paddingY={0}
-                  />
-                  <Button
-                    icon={
-                      <CyDMaterialDesignIcons
-                        name='share-variant'
-                        size={24}
-                        className='text-base400'
-                      />
-                    }
-                    onPress={() => {
-                      void shareQR();
-                    }}
-                    style='w-[40px] h-[40px] ml-[10px] rounded-[8px]'
-                    imageStyle='self-center h-[18px] w-[18px]'
-                    type={ButtonType.SECONDARY}
-                    title={''}
-                    paddingY={0}
-                  />
-                </CyDView>
-              )}
-              <CyDView
-                className={
-                  'my-[10px] mx-[20px] px-[20px] py-[5px] border border-n40 bg-blue20 rounded-[8px]'
-                }>
-                <CyDText className={'text-[14px] text-center'}>
-                  {t('QRCODE_SUBTITLE')}
-                </CyDText>
-                <CyDText className={'text-[14px] text-center font-bold'}>
-                  {selectedChain.chainName === 'ethereum'
-                    ? t(
-                        'SUPPORTED_CHAINS_LIST',
-                        'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Avalanche, Optimism, Arbitrum',
-                      )
-                    : selectedChain.name}
-                </CyDText>
-              </CyDView>
 
-              {isCapturingDetails && (
-                <CyDText
-                  className={
-                    'text-[15px] text-center font-bold items-end mb-[15px]'
-                  }>
-                  {t('SHARE_QR_TEXT')}
-                </CyDText>
-              )}
-            </CyDView>
-          </CyDView>
+                  {isCapturingDetails && (
+                    <CyDText
+                      className={
+                        'text-[15px] text-center font-bold items-end mb-[15px]'
+                      }>
+                      {t('SHARE_QR_TEXT')}
+                    </CyDText>
+                  )}
+                </CyDView>
+              </CyDView>
+            </View>
+          </ViewShot>
         </CyDScrollView>
       </CyDView>
     </CyDSafeAreaView>

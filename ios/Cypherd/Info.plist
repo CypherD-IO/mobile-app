@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.10.7</string>
+	<string>3.10.9</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -69,12 +69,8 @@
 			</array>
 		</dict>
 	</array>
-	<key>com.apple.developer.associated-domains</key>
-	<array>
-		<string>applinks:app.cypherhq.io</string>
-	</array>
 	<key>CFBundleVersion</key>
-	<string>814</string>
+	<string>846</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -89,22 +85,24 @@
 		<string>tg</string>
 		<string>twitter</string>
 	</array>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>localhost</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-			</dict>
 			<key>app.cypherhq.io</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<false/>
 				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 			</dict>
 		</dict>
@@ -114,11 +112,13 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>We use FaceID Scanner to secure your crypto wallet</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string>We use your location to help detect suspicious activity and to show region-relevant content when required.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Record Message for Customer Support Team in the app</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Send photos during Customer Support Chat in the app</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialDesignIcons.ttf</string>
@@ -130,8 +130,12 @@
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
 		<string>CypherNord.ttf</string>
-		<string>NewYork.ttf</string>
 		<string>CydFont.ttf</string>
+		<string>Gambetta-Bold.ttf</string>
+		<string>Gambetta-Light.ttf</string>
+		<string>Gambetta-Medium.ttf</string>
+		<string>Gambetta-Regular.ttf</string>
+		<string>Gambetta-Semibold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -150,7 +154,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>LSMinimumSystemVersion</key>
-	<string>12.0</string>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:app.cypherhq.io</string>
+	</array>
 </dict>
 </plist>

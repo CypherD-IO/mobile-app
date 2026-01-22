@@ -11,7 +11,11 @@ import clsx from 'clsx';
 import crypto from 'crypto';
 import { get, has, isEmpty, isUndefined, orderBy, trim } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { PixelRatio, useWindowDimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  PixelRatio,
+  useWindowDimensions,
+} from 'react-native';
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
@@ -152,7 +156,9 @@ export default function CardScreen({
             card => (card.status === CardStatus.ACTIVE ? 0 : 1),
             'asc',
           ),
-          personId: cardConfig.personId,
+          // `personId` is required by downstream card flows. Guard against undefined values
+          // (some backend responses omit it for certain providers).
+          personId: cardConfig.personId ?? '',
           currentCardRevealedDetails: {
             cardNumber: 'XXXX XXXX XXXX ',
             type,
@@ -183,7 +189,9 @@ export default function CardScreen({
       if (card.status === CardStatus.ADDITIONAL_CARD) {
         return AppImages.ADDITIONAL_CARD;
       }
-      const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`;
+      const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
+        card.designId ?? ''
+      }.png`;
       return {
         uri: cardImage,
       };
@@ -200,6 +208,8 @@ export default function CardScreen({
 
   const renderItem = ({ item, index }: { item: Card; index: number }) => {
     const card = item;
+    // Some API models type `status` as string; normalize to our enum for comparisons.
+    const cardStatus = card?.status as CardStatus;
 
     return (
       <CyDImageBackground
@@ -213,13 +223,13 @@ export default function CardScreen({
                 CardStatus.HIDDEN,
                 CardStatus.BLOCKED,
                 CardStatus.RC_UPGRADABLE,
-              ].includes(card?.status) || isAccountLocked,
+              ].includes(cardStatus) || isAccountLocked,
             'justify-end': ![
               CardStatus.IN_ACTIVE,
               CardStatus.HIDDEN,
               CardStatus.BLOCKED,
               CardStatus.RC_UPGRADABLE,
-            ].includes(card?.status),
+            ].includes(cardStatus),
           },
         )}
         resizeMode='contain'
@@ -566,7 +576,11 @@ const RenderCardActions = ({
       )}/verify/reuse-token`;
       const payload = {
         reuseToken: cardRevealReuseToken,
-        stylesheetUrl: `https://public.cypherd.io/css/${card.physicalCardType === PhysicalCardType.METAL ? 'cardRevealMobileOnMetal.css' : 'cardRevealMobileOnCard.css'}`,
+        stylesheetUrl: `https://public.cypherd.io/css/${
+          card.physicalCardType === PhysicalCardType.METAL
+            ? 'cardRevealMobileOnMetal.css'
+            : 'cardRevealMobileOnCard.css'
+        }`,
       };
       try {
         const response = await postWithAuth(verifyReuseTokenUrl, payload);
@@ -617,6 +631,11 @@ const RenderCardActions = ({
     base64Message,
     reuseToken,
     userNameValue,
+  }: {
+    privateKey: string;
+    base64Message: string;
+    reuseToken?: string;
+    userNameValue?: string;
   }) => {
     try {
       await sleepFor(1000);
@@ -639,7 +658,7 @@ const RenderCardActions = ({
         card,
         showCardDetailsModal: true,
         webviewUrl: trim(decryptedBuffer, '"'),
-        userName: userNameValue,
+        userName: userNameValue ?? '',
       });
       setIsFetchingCardDetails(false);
       return decryptedBuffer;
@@ -821,6 +840,11 @@ const RenderCardActions = ({
     } catch (error) {
       Sentry.captureException(error);
       setIsStatusLoading(false);
+      const errMessage =
+        typeof error === 'object' && error && 'message' in error
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            String((error as any).message ?? '')
+          : '';
       showModal('state', {
         type: 'error',
         title:
@@ -828,7 +852,7 @@ const RenderCardActions = ({
             ? 'Card Freeze Failed'
             : 'Card Activation Failed',
         description:
-          response.error.message ??
+          errMessage ||
           (status === CardStatus.ACTIVE
             ? 'Unable to freeze card. Please try again later.'
             : 'Unable to activate card. Please try again later.'),
@@ -1013,13 +1037,21 @@ const RenderCardActions = ({
             });
           }}>
           <CyDView
-            className={`${isAccountLocked ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${
+              isAccountLocked ? 'bg-n50' : 'bg-p50'
+            } h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {isFetchingCardDetails ? (
-              <CyDLottieView
-                source={AppImages.LOADER_TRANSPARENT}
-                autoPlay
-                loop
-              />
+              <>
+                {/* Fallback loader so the user always sees progress (Lottie sometimes renders at 0x0 without explicit sizing). */}
+                <ActivityIndicator size='small' color='#000000' />
+
+                <CyDLottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={{ width: 28, height: 28, position: 'absolute' }}
+                />
+              </>
             ) : (
               <CyDIcons name='card' className='text-black text-[36px]' />
             )}
@@ -1048,15 +1080,19 @@ const RenderCardActions = ({
               isAccountLocked
                 ? 'bg-n50'
                 : status !== CardStatus.ACTIVE
-                  ? 'bg-base100'
-                  : 'bg-p50',
+                ? 'bg-base100'
+                : 'bg-p50',
             )}>
             {isStatusLoading ? (
-              <CyDLottieView
-                source={AppImages.LOADER_TRANSPARENT}
-                autoPlay
-                loop
-              />
+              <>
+                <ActivityIndicator size='small' color='#000000' />
+                <CyDLottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={{ width: 28, height: 28, position: 'absolute' }}
+                />
+              </>
             ) : (
               <CyDImage
                 source={
@@ -1098,7 +1134,9 @@ const RenderCardActions = ({
             });
           }}>
           <CyDView
-            className={`${isAccountLocked ? 'bg-n50' : 'bg-p50'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={`${
+              isAccountLocked ? 'bg-n50' : 'bg-p50'
+            } h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {cardProvider === CardProviders.REAP_CARD ? (
               <CyDIcons name='settings' className='text-black text-[28px]' />
             ) : (

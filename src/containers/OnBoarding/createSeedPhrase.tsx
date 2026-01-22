@@ -3,8 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NativeModules, StyleSheet } from 'react-native';
 import * as bip39 from 'bip39';
-// @ts-expect-error - Type declaration not available for react-native-custom-qr-codes
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from '../../components/v2/QRCode';
 import { AppImagesMap } from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import Loading from '../../components/v2/loading';

@@ -1,0 +1,28 @@
+diff --git a/node_modules/@toruslabs/react-native-web-browser/android/build.gradle b/node_modules/@toruslabs/react-native-web-browser/android/build.gradle
+index 1e95ac6..a7106ab 100644
+--- a/node_modules/@toruslabs/react-native-web-browser/android/build.gradle
++++ b/node_modules/@toruslabs/react-native-web-browser/android/build.gradle
+@@ -5,13 +5,11 @@ buildscript {
+   repositories {
+     google()
+     mavenCentral()
+-    jcenter()
+   }
+ 
+   dependencies {
+-    classpath 'com.android.tools.build:gradle:7.3.0'
+-    // noinspection DifferentKotlinGradleVersion
+-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
++    // Standalone Android builds for this library are not supported in this app repo.
++    // The app's root buildscript provides the Android Gradle Plugin and Kotlin plugin.
+   }
+ }
+ 
+@@ -52,7 +50,6 @@ android {
+ 
+ repositories {
+   mavenCentral()
+-  jcenter()
+   google()
+ 
+   def found = false

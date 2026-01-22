@@ -29,7 +29,6 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { BarCodeReadEvent } from 'react-native-camera';
 import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import ChooseChainModalV2 from '../../components/v2/chooseChainModal';
@@ -112,6 +111,7 @@ import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvi
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { colorScheme } from 'nativewind';
 import CyDModalLayout from '../../components/v2/modal';
+import type { QRScanEvent } from '../../types/qr';
 
 export interface PortfolioProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
@@ -705,9 +705,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, [appState]);
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, []);
 
@@ -1031,7 +1034,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }
 
-  const onWCSuccess = (e: BarCodeReadEvent) => {
+  const onWCSuccess = (e: QRScanEvent) => {
     const link = e.data;
     if (link.startsWith('wc')) {
       navigation.navigate(C.screenTitle.OPTIONS, {
@@ -1258,7 +1261,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             title: 'getFirstToken',
             data: ['StaticView0'],
             renderItem: () => (
-              <CyDView className='bg-n20 px-[10px] pt-[16px]'>
+              // Ensure the promo card stretches full-width so its gradient border
+              // is visible on all edges under RN 0.83 + Fabric.
+              <CyDView className='bg-n20 px-[10px] pt-[16px] pb-[16px] w-full'>
                 <GetFirstTokenComponent
                   onGetTokenPress={handleShowGetTokenSheet}
                 />

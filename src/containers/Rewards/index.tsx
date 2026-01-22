@@ -1265,7 +1265,7 @@ export default function Rewards() {
 
             <GradientText
               textElement={
-                <CyDText className='text-[44px] font-bold font-newyork'>
+                <CyDText className='text-[44px] font-bold !font-gambetta'>
                   {DecimalHelper.round(totalRewards, 2).toString()}
                 </CyDText>
               }

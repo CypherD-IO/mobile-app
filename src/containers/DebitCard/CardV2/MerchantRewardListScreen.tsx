@@ -1,4 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   CyDSafeAreaView,
@@ -59,6 +68,11 @@ interface MerchantData {
     uniqueSpenders: number;
   };
   projectedCYPRReward?: string;
+  /**
+   * Pre-formatted projected reward string used by the list. This avoids doing
+   * Decimal math conversions inside `renderItem` for every row render.
+   */
+  projectedRewardDisplay?: string | null;
 }
 
 /**
@@ -92,6 +106,88 @@ interface PaginatedMerchantRewardsResponse {
   nextOffset?: string;
 }
 
+
+type MerchantRowProps = {
+  item: MerchantData;
+  onPressMerchant: (m: MerchantData) => void;
+  isDarkMode: boolean;
+  rewardReferenceAmount: number | null;
+};
+
+const MerchantRow = memo(function MerchantRow({
+  item,
+  onPressMerchant,
+  isDarkMode,
+  rewardReferenceAmount,
+}: MerchantRowProps) {
+  const onPress = useCallback(() => {
+    onPressMerchant(item);
+  }, [onPressMerchant, item]);
+
+  return (
+    <CyDTouchView
+      className={`flex-row items-center justify-between py-4 px-4 border-b ${
+        isDarkMode ? 'border-gray-800' : 'border-gray-200'
+      }`}
+      onPress={onPress}>
+      <CyDView className='flex-row items-center flex-1'>
+        <CyDView className='relative mr-3'>
+          <MerchantLogo
+            merchant={item as any}
+            size={48}
+            hasUserVoted={item.userVoteData?.hasVoted}
+            showBorder={!isDarkMode}
+          />
+        </CyDView>
+
+        <CyDView className='flex-1'>
+          <CyDText
+            numberOfLines={1}
+            className={`text-[18px] font-semibold ${
+              isDarkMode ? 'text-white' : 'text-black'
+            }`}>
+            {item.brand ?? item.canonicalName}
+          </CyDText>
+          <CyDText
+            numberOfLines={1}
+            className={`text-[14px] ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+            {item.category ?? ''}
+          </CyDText>
+        </CyDView>
+      </CyDView>
+
+      <CyDView className='items-end ml-3'>
+        <CyDView className='flex-row items-center'>
+          <CyDImage
+            source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+            className='w-[24px] h-[24px] mr-1'
+            resizeMode='contain'
+          />
+          <CyDText
+            className={`text-[18px] font-semibold ${
+              isDarkMode ? 'text-white' : 'text-black'
+            }`}>
+            {item.projectedRewardDisplay ?? '--'}
+          </CyDText>
+        </CyDView>
+        <CyDText
+          className={`text-[12px] mt-1 ${
+            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+          for every {rewardReferenceAmount ?? '-'}$ Spend
+        </CyDText>
+      </CyDView>
+      <CyDMaterialDesignIcons
+        name='chevron-right'
+        size={20}
+        className={`ml-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+      />
+    </CyDTouchView>
+  );
+});
+
 const MerchantRewardListScreen: React.FC = () => {
   const navigation = useNavigation();
   const { showBottomSheet } = useGlobalBottomSheet();
@@ -108,6 +204,8 @@ const MerchantRewardListScreen: React.FC = () => {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [searchText, setSearchText] = useState<string>('');
+  const deferredSearchText = useDeferredValue(searchText);
+  const [isSearchPending, startSearchTransition] = useTransition();
   const [showFilterDropdown, setShowFilterDropdown] = useState<boolean>(false);
   const [selectedSort, setSelectedSort] = useState<{
     label: string;
@@ -210,6 +308,16 @@ const MerchantRewardListScreen: React.FC = () => {
             uniqueSpenders: item.uniqueVoters,
           },
           projectedCYPRReward: item.projectedCYPRReward,
+          projectedRewardDisplay:
+            item.projectedCYPRReward != null
+              ? limitDecimalPlaces(
+                  DecimalHelper.toDecimal(
+                    item.projectedCYPRReward as unknown as string,
+                    18,
+                  ),
+                  2,
+                )
+              : null,
         }));
 
         setState(prev => ({
@@ -276,15 +384,13 @@ const MerchantRewardListScreen: React.FC = () => {
   }, [selectedSort.value]);
 
   // Search helpers
-  const searchInBatch = (batch: MerchantData[], term: string) => {
-    if (!term.trim()) return batch;
-    const localFuse = new Fuse(batch, {
+  const fuse = useMemo(() => {
+    return new Fuse(state.merchants, {
       keys: ['brand', 'canonicalName', 'category'],
       threshold: 0.3,
-      includeScore: true,
+      includeScore: false,
     });
-    return localFuse.search(term).map(r => r.item);
-  };
+  }, [state.merchants]);
 
   const [filteredMerchants, setFilteredMerchants] = useState<MerchantData[]>(
     [],
@@ -304,11 +410,13 @@ const MerchantRewardListScreen: React.FC = () => {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    const term = searchText.trim();
+    const term = deferredSearchText.trim();
 
     // When there is no active search term, always show the full loaded list
     if (!term) {
-      setFilteredMerchants(state.merchants);
+      startSearchTransition(() => {
+        setFilteredMerchants(state.merchants);
+      });
       setState(prev => ({
         ...prev,
         isSearchingMore: false,
@@ -319,8 +427,10 @@ const MerchantRewardListScreen: React.FC = () => {
     // Use a relatively small debounce value to keep the search feeling responsive,
     // while still avoiding excessive re-computation and network calls.
     searchTimeoutRef.current = setTimeout(() => {
-      const localResults = searchInBatch(state.merchants, term);
-      setFilteredMerchants(localResults);
+      const localResults = fuse.search(term).map(r => r.item);
+      startSearchTransition(() => {
+        setFilteredMerchants(localResults);
+      });
 
       const needsMoreData =
         localResults.length === 0 && state.hasMore && !state.isLoading;
@@ -332,14 +442,20 @@ const MerchantRewardListScreen: React.FC = () => {
         // fetch additional pages in the background.
         isSearchingMore: needsMoreData,
       }));
-    }, 10);
+    }, 150);
 
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchText, state.merchants]);
+  }, [
+    deferredSearchText,
+    fuse,
+    state.hasMore,
+    state.isLoading,
+    state.merchants,
+  ]);
 
   /**
    * Progressive, paginated search effect.
@@ -355,7 +471,7 @@ const MerchantRewardListScreen: React.FC = () => {
    * This continues until a match is found or all pages have been exhausted.
    */
   useEffect(() => {
-    const term = searchText.trim();
+    const term = deferredSearchText.trim();
 
     if (!term) {
       return;
@@ -372,7 +488,7 @@ const MerchantRewardListScreen: React.FC = () => {
     }
 
     void fetchMerchants(false);
-  }, [state.isSearchingMore, state.hasMore, searchText]);
+  }, [state.isSearchingMore, state.hasMore, deferredSearchText]);
 
   /**
    * Handles navigation back to previous screen
@@ -385,27 +501,43 @@ const MerchantRewardListScreen: React.FC = () => {
    * Handles merchant selection and shows detail bottom sheet
    * Displays comprehensive merchant information and reward details
    */
-  const handleMerchantPress = (merchant: MerchantData) => {
-    setSelectedMerchant(merchant);
+  const handleMerchantPress = useCallback(
+    (merchant: MerchantData) => {
+      setSelectedMerchant(merchant);
 
-    showBottomSheet({
-      id: 'merchant-reward-detail',
-      topBarColor: isDarkMode ? '#595959' : '#FFFFFF',
-      backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
-      snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
-      showCloseButton: true,
-      scrollable: true,
-      content: (
-        <MerchantRewardDetailContent
-          merchantData={merchant}
-          navigation={navigation}
-        />
-      ),
-      onClose: () => {
-        setSelectedMerchant(null);
-      },
-    });
-  };
+      showBottomSheet({
+        id: 'merchant-reward-detail',
+        backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+        // We render a custom handle indicator inside the blurred header for better visual cohesion.
+        showHandle: false,
+        snapPoints: ['70%', Platform.OS === 'android' ? '100%' : '95%'],
+        showCloseButton: true,
+        scrollable: true,
+        content: (
+          <MerchantRewardDetailContent
+            merchantData={merchant}
+            navigation={navigation}
+          />
+        ),
+        onClose: () => {
+          setSelectedMerchant(null);
+        },
+      });
+    },
+    [isDarkMode, navigation, showBottomSheet],
+  );
+
+  const renderMerchantItem = useCallback(
+    ({ item }: { item: MerchantData }) => (
+      <MerchantRow
+        item={item}
+        onPressMerchant={handleMerchantPress}
+        isDarkMode={isDarkMode}
+        rewardReferenceAmount={rewardReferenceAmount}
+      />
+    ),
+    [handleMerchantPress, isDarkMode, rewardReferenceAmount],
+  );
 
   /**
    * Handles filter button press to toggle dropdown visibility
@@ -461,7 +593,9 @@ const MerchantRewardListScreen: React.FC = () => {
         className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
         {/* Header */}
         <CyDView
-          className={`flex-row justify-between items-center px-4 pt-4 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
+          className={`flex-row justify-between items-center px-4 pt-4 ${
+            isDarkMode ? 'bg-black' : 'bg-white'
+          }`}>
           <CyDTouchView onPress={handleBack} className='p-2'>
             <CyDIcons
               name='arrow-left'
@@ -480,14 +614,18 @@ const MerchantRewardListScreen: React.FC = () => {
         <CyDView className='px-4 py-3' style={searchBarContainerStyle}>
           <CyDView className='flex-row items-center'>
             <CyDView
-              className={`flex-1 flex-row items-center rounded-[12px] px-3 py-2 bg-base40`}>
+              className={`flex-1 h-[48px] flex-row items-center rounded-[12px] px-3 bg-base40`}>
               <CyDMaterialDesignIcons
                 name='magnify'
                 size={20}
-                className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                className={`mr-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}
               />
               <CyDTextInput
-                className={`flex-1 text-[16px] !bg-base40 ${isDarkMode ? 'text-white' : 'text-black'}`}
+                className={`flex-1 text-[16px] !bg-base40 py-0 ${
+                  isDarkMode ? 'text-white' : 'text-black'
+                }`}
                 value={searchText}
                 autoCapitalize='none'
                 autoCorrect={false}
@@ -500,7 +638,9 @@ const MerchantRewardListScreen: React.FC = () => {
             {/* Filter Button */}
             <CyDView className='relative' style={filterButtonContainerStyle}>
               <CyDTouchView
-                className={`ml-3 p-3 rounded-[12px] ${showFilterDropdown ? 'bg-orange500' : 'bg-base40'}`}
+                className={`ml-3 h-[48px] w-[48px] rounded-[12px] items-center justify-center ${
+                  showFilterDropdown ? 'bg-orange500' : 'bg-base40'
+                }`}
                 onPress={handleFilterPress}>
                 <CyDMaterialDesignIcons
                   name='filter-variant'
@@ -509,8 +649,8 @@ const MerchantRewardListScreen: React.FC = () => {
                     showFilterDropdown
                       ? 'text-white'
                       : isDarkMode
-                        ? 'text-gray-400'
-                        : 'text-gray-600'
+                      ? 'text-gray-400'
+                      : 'text-gray-600'
                   }
                 />
               </CyDTouchView>
@@ -538,8 +678,8 @@ const MerchantRewardListScreen: React.FC = () => {
                           selectedSort.value === option.value
                             ? 'text-orange500 font-semibold'
                             : isDarkMode
-                              ? 'text-white'
-                              : 'text-black'
+                            ? 'text-white'
+                            : 'text-black'
                         }`}>
                         {option.label}
                       </CyDText>
@@ -569,89 +709,13 @@ const MerchantRewardListScreen: React.FC = () => {
           ) : (
             <FlatList
               data={filteredMerchants}
-              renderItem={({ item }) => {
-                const projectedReward =
-                  item.projectedCYPRReward != null
-                    ? limitDecimalPlaces(
-                        DecimalHelper.toDecimal(
-                          item.projectedCYPRReward as unknown as string,
-                          18,
-                        ),
-                        2,
-                      )
-                    : null;
-
-                return (
-                  <CyDTouchView
-                    className={`flex-row items-center justify-between py-4 px-4 border-b ${
-                      isDarkMode ? 'border-gray-800' : 'border-gray-200'
-                    }`}
-                    onPress={() => handleMerchantPress(item)}>
-                    <CyDView className='flex-row items-center flex-1'>
-                      {/* Merchant Icon */}
-                      <CyDView className='relative mr-3'>
-                        <MerchantLogo
-                          merchant={{
-                            brand: item.brand ?? item.canonicalName,
-                            canonicalName: item.canonicalName,
-                            logoUrl: item.logoUrl,
-                          }}
-                          size={48}
-                          hasUserVoted={item.userVoteData?.hasVoted}
-                          showBorder={!isDarkMode}
-                        />
-                      </CyDView>
-
-                      {/* Merchant Info */}
-                      <CyDView className='flex-1'>
-                        <CyDText
-                          className={`text-[18px] font-semibold ${
-                            isDarkMode ? 'text-white' : 'text-black'
-                          }`}>
-                          {item.brand ?? item.canonicalName}
-                        </CyDText>
-                        <CyDText
-                          className={`text-[14px] ${
-                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                          {item.category ?? ''}
-                        </CyDText>
-                      </CyDView>
-                    </CyDView>
-
-                    {/* Right-side reward section – always show projected CYPR reward */}
-                    <CyDView className='items-end ml-3'>
-                      <CyDView className='flex-row items-center'>
-                        <CyDImage
-                          source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                          className='w-[24px] h-[24px] mr-1'
-                          resizeMode='contain'
-                        />
-                        <CyDText
-                          className={`text-[18px] font-semibold ${
-                            isDarkMode ? 'text-white' : 'text-black'
-                          }`}>
-                          {projectedReward ?? '--'}
-                        </CyDText>
-                      </CyDView>
-                      <CyDText
-                        className={`text-[12px] mt-1 ${
-                          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                        }`}>
-                        for every {rewardReferenceAmount ?? '-'}$ Spend
-                      </CyDText>
-                    </CyDView>
-                    <CyDMaterialDesignIcons
-                      name='chevron-right'
-                      size={20}
-                      className={`ml-1 ${
-                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                      }`}
-                    />
-                  </CyDTouchView>
-                );
-              }}
+              renderItem={renderMerchantItem}
               keyExtractor={item => item.candidateId}
+              initialNumToRender={12}
+              maxToRenderPerBatch={12}
+              windowSize={7}
+              updateCellsBatchingPeriod={50}
+              removeClippedSubviews={true}
               onEndReached={() => {
                 if (
                   state.hasMore &&
@@ -672,6 +736,8 @@ const MerchantRewardListScreen: React.FC = () => {
                   </CyDView>
                 ) : null
               }
+              // Helps keep scroll smooth while typing in the search box.
+              keyboardShouldPersistTaps='handled'
               ListEmptyComponent={
                 filteredMerchants.length === 0 &&
                 !state.isLoading &&
@@ -680,14 +746,20 @@ const MerchantRewardListScreen: React.FC = () => {
                     <CyDMaterialDesignIcons
                       name='store-outline'
                       size={48}
-                      className={`mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                      className={`mb-2 ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}
                     />
                     <CyDText
-                      className={`text-center text-[16px] font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      className={`text-center text-[16px] font-medium ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                       No merchants found
                     </CyDText>
                     <CyDText
-                      className={`text-center text-[12px] mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                      className={`text-center text-[12px] mt-1 ${
+                        isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                      }`}>
                       Try adjusting your search terms
                     </CyDText>
                   </CyDView>

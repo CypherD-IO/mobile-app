@@ -1,77 +1,87 @@
 #!/bin/sh
 
+# Fail fast in CI. Without this, `pod install` / `npm install` failures can be silently ignored,
+# and Xcode later fails with missing `Pods-*.xcconfig` / `.xcfilelist` files during the Analyze/Build phase.
+set -euo pipefail
+
 # Prevent Homebrew from auto-cleanup
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 
 # Install CocoaPods using Homebrew
 brew install cocoapods
 
-# Install Node.js version 18.17.1 using nvm (Node Version Manager)
-# Install nvm if not already installed
-if [ ! -d "$HOME/.nvm" ]; then
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-fi
+# ================================================================================
+# Install Node.js via Homebrew (most reliable in Xcode Cloud)
+# ================================================================================
+#
+# Previously we used nvm, but Xcode Cloud's network environment blocks or fails
+# GitHub tarball/git downloads (exit code 3). Homebrew is already working
+# (cocoapods installed above), so we use it for Node as well.
+#
+# We install node@22 to match the version in .nvmrc (v22.12.0).
+# Homebrew's node@22 formula tracks the latest 22.x LTS.
+# ================================================================================
+echo "Installing Node.js via Homebrew..."
+brew install node@22
 
-# Load nvm and install Node.js 18.17.1
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+# Link node@22 so it's available as `node` in PATH
+brew link --overwrite node@22 || true  # --overwrite in case node is already linked
 
-# Try to get Node.js version from .nvmrc, fallback to default if not found
-if [ -f "../.nvmrc" ]; then
-    NODE_VERSION=$(cat "../.nvmrc")
-    echo "Found .nvmrc file, using Node.js version: $NODE_VERSION"
-else
-    NODE_VERSION="18.17.1"
-    echo "No .nvmrc file found, using default Node.js version: $NODE_VERSION"
-fi
+# Resolve repo root deterministically (Xcode Cloud does not guarantee the current working directory).
+# - Prefer CI_PRIMARY_REPOSITORY_PATH when available.
+# - Otherwise compute from this script location: ios/ci_scripts -> repo root (../..).
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 
-nvm install $NODE_VERSION
-nvm use $NODE_VERSION
-nvm alias default $NODE_VERSION
+# Always run installs from deterministic directories.
+echo "Script dir: ${SCRIPT_DIR}"
+echo "Repo root:   ${REPO_ROOT}"
 
 # Verify Node.js version
+echo "Node.js version:"
 node -v
+echo "npm version:"
+npm -v
+echo "Node.js binary: $(which node)"
 
-sudo ln -sf $(which node) /Users/local/.nvm/versions/node/$NODE_VERSION/bin/node
-
-NODE_PATH=$(which node)
-
-# Print the Node.js path for debugging purposes
-echo "Node.js binary is located at: $NODE_PATH"
-
-# Export NODE_BINARY for Xcode to use
-export NODE_BINARY=$NODE_PATH
-
-# Install dependencies with npm, using legacy-peer-deps if needed
+# Install JS dependencies from repo root (package.json lives there).
+cd "$REPO_ROOT"
 npm install --legacy-peer-deps
 
 # Clean up DerivedData folder if it exists
 rm -rf /Volumes/workspace/DerivedData
 
-# Deintegrate and reinstall CocoaPods dependencies
+# Deintegrate and reinstall CocoaPods dependencies from `ios/`
+cd "${REPO_ROOT}/ios"
 pod deintegrate
 pod install --repo-update
 
 
-# Define PROJECT_DIR relative to script location
-PROJECT_DIR="$(pwd)/.."  # Goes up one level from ci_scripts to ios directory
-
-# Create .env file in project root
-cat > "$PROJECT_DIR/../.env" << EOL
+# Create .env file in project root (REPO_ROOT, not relative to current directory)
+echo "Creating .env file at: ${REPO_ROOT}/.env"
+cat > "${REPO_ROOT}/.env" << EOL
 SENTRY_DSN=${SENTRY_DSN}
 ENVIRONMENT=${ENVIRONMENT}
 INTERCOM_APP_KEY=${INTERCOM_APP_KEY}
+INTERCOM_IOS_SDK_KEY=${INTERCOM_IOS_SDK_KEY}
 WALLET_CONNECT_PROJECTID=${WALLET_CONNECT_PROJECTID}
 RA_PUB_KEY=${RA_PUB_KEY}
 HELIUS_API_KEY=${HELIUS_API_KEY}
 WEB3_AUTH_CLIENT_ID=${WEB3_AUTH_CLIENT_ID}
 EOL
 
-# Use absolute paths with $CI_PRIMARY_REPOSITORY_PATH
-GOOGLE_PLIST_PATH="${CI_PRIMARY_REPOSITORY_PATH}/ios/GoogleService-Info.plist"
-SENTRY_PROPS_PATH="${CI_PRIMARY_REPOSITORY_PATH}/ios/sentry.properties"
+# Verify .env was created
+if [ -f "${REPO_ROOT}/.env" ]; then
+  echo "✓ .env file created successfully"
+  echo "  Lines: $(wc -l < "${REPO_ROOT}/.env")"
+else
+  echo "ERROR: Failed to create .env file!"
+  exit 1
+fi
+
+# Use absolute paths with resolved repo root (CI_PRIMARY_REPOSITORY_PATH is not guaranteed).
+GOOGLE_PLIST_PATH="${REPO_ROOT}/ios/GoogleService-Info.plist"
+SENTRY_PROPS_PATH="${REPO_ROOT}/ios/sentry.properties"
 
 if [ -z "$GOOGLE_SERVICE_INFO_PLIST" ]; then 
     echo "Error: GOOGLE_SERVICE_INFO_PLIST environment variable is not set" 
@@ -116,5 +126,9 @@ fi
 
 echo "Successfully created sentry.properties at: $SENTRY_PROPS_PATH"
 
+# Verify key Pods outputs exist (these are what Xcode complains about when missing).
+echo "Verifying CocoaPods outputs..."
+ls -la "${REPO_ROOT}/ios/Pods/Target Support Files/Pods-Cypherd/" | cat
+
 # Verify files exist in the correct location
-ls -la "${CI_PRIMARY_REPOSITORY_PATH}/ios/"
+ls -la "${REPO_ROOT}/ios/" | cat

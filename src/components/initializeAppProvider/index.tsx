@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Alert, Linking, Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {
   setUpdateReminderSnoozeUntil,
   setReferralCodeAsync,
@@ -17,15 +18,10 @@ import { WalletConnectV2Provider } from '../walletConnectV2Provider';
 import { SPLASH_SCREEN_TIMEOUT } from '../../constants/timeOuts';
 import SplashScreen from 'react-native-lottie-splash-screen';
 import DefaultAuthRemoveModal from '../v2/defaultAuthRemoveModal';
-import Dialog, {
-  DialogButton,
-  DialogContent,
-  DialogFooter,
-} from 'react-native-popup-dialog';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { t } from 'i18next';
-import { CyDSafeAreaView, CyDText } from '../../styles/tailwindComponents';
+import { CyDSafeAreaView } from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
@@ -73,7 +69,7 @@ export const InitializeAppProvider = ({
   children,
 }: {
   children: React.ReactNode;
-}) => {
+}): React.ReactElement => {
   const {
     exitIfJailBroken,
     fetchRPCEndpointsFromServer,
@@ -121,8 +117,6 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     const initializeApp = async () => {
-      // Sentry is now initialized in App.tsx for v7 compatibility
-
       messaging().onMessage(response => {
         if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
           setTimeout(() => {
@@ -149,14 +143,24 @@ export const InitializeAppProvider = ({
         }
       });
 
-      const isAPIAccessible = await checkAPIAccessibility();
-      if (isAPIAccessible) {
-        await exitIfJailBroken();
-        void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
-        void loadActivitiesFromAsyncStorage();
+      try {
+        const isAPIAccessible = await checkAPIAccessibility();
 
-        await requestUserPermission();
-
+        if (isAPIAccessible) {
+          await exitIfJailBroken();
+          void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
+          void loadActivitiesFromAsyncStorage();
+          await requestUserPermission();
+        }
+      } catch (e) {
+        // If init throws, we currently end up on Loading forever. Log loudly so we can see it.
+        Sentry.captureException(e);
+      } finally {
+        // Hide splash screen after init completes.
+        // The native side (ios/Dynamic.swift) enforces a 2-second minimum display time,
+        // so calling hide() here is safe - the splash won't disappear until both:
+        //   1. Native 2-second timer fires (calls setAnimationFinished(true))
+        //   2. This JS hide() call is made
         setTimeout(() => {
           SplashScreen.hide();
         }, SPLASH_SCREEN_TIMEOUT);
@@ -171,24 +175,6 @@ export const InitializeAppProvider = ({
       void checkForUpdatesAndShowModal(setUpdateModal);
     }
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (referrerData?.referral) {
-      void setReferralCodeAsync(referrerData.referral);
-
-      if (isAuthenticated && ethereumAddress) {
-        showModal('success', {
-          title: t('REFERRAL_CODE_FOUND'),
-          description: t('REFERRAL_CODE_APPLIED', {
-            code: referrerData.referral,
-          }),
-          onSuccess: () => {
-            hideModal();
-          },
-        });
-      }
-    }
-  }, [referrerData, isAuthenticated, ethereumAddress]);
 
   useEffect(() => {
     if (referrerData?.referral) {
@@ -289,11 +275,29 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     const setPinAuthenticationState = async () => {
-      const isDeviceBiometricEnabledValue = await isDeviceBiometricEnabled();
-      setBiometricEnabled(isDeviceBiometricEnabledValue);
+      try {
+        const isEmulator = await DeviceInfo.isEmulator();
 
-      const pinAlreadySetStatusValue = await pinAlreadySetStatus();
-      setPinSetStatus(pinAlreadySetStatusValue);
+        // Requirement: On iOS Simulator we should skip PIN/biometric gating and go straight
+        // to onboarding. We do that by taking the "no-auth-required" branch:
+        // (biometricEnabled && pinSetStatus === FALSE) => allows loading existing wallet and then onboarding.
+        if (Platform.OS === 'ios' && isEmulator) {
+          setBiometricEnabled(true);
+          setPinSetStatus(PinPresentStates.FALSE);
+          return;
+        }
+
+        const isDeviceBiometricEnabledValue = await isDeviceBiometricEnabled();
+        setBiometricEnabled(isDeviceBiometricEnabledValue);
+
+        const pinAlreadySetStatusValue = await pinAlreadySetStatus();
+        setPinSetStatus(pinAlreadySetStatusValue);
+      } catch (e) {
+        // Secure default: if we fail to determine PIN presence, require validation rather than bypass.
+        Sentry.captureException(e);
+        setBiometricEnabled(false);
+        setPinSetStatus(PinPresentStates.TRUE);
+      }
     };
     if (!ethereumAddress && !solanaAddress) {
       void setPinAuthenticationState();
@@ -419,39 +423,37 @@ export const InitializeAppProvider = ({
     }
   }, [updateModal, forcedUpdate]);
 
+  useEffect(() => {
+    if (!tamperedSignMessageModal) return;
+
+    // Use platform-native alerts instead of `react-native-popup-dialog` to avoid
+    // dependency churn and BackHandler API mismatches on newer RN versions.
+    Alert.alert(
+      t<string>('SOMETHING_WENT_WRONG'),
+      t<string>('CONTACT_CYPHERD_SUPPORT'),
+      [
+        {
+          text: t('CLOSE'),
+          style: 'destructive',
+          onPress: () => {
+            RNExitApp.exitApp();
+          },
+        },
+        {
+          text: t('CONTACT_TEXT'),
+          onPress: () => {
+            void Intercom.present();
+            sendFirebaseEvent(hdWallet, 'support');
+            setTamperedSignMessageModal(false);
+          },
+        },
+      ],
+      { cancelable: false },
+    );
+  }, [tamperedSignMessageModal, hdWallet]);
+
   return (
     <>
-      {/* Keep existing tamperedSignMessageModal Dialog unchanged */}
-      <Dialog
-        visible={tamperedSignMessageModal}
-        footer={
-          <DialogFooter>
-            <DialogButton
-              text={t('CLOSE')}
-              onPress={() => {
-                RNExitApp.exitApp();
-              }}
-            />
-            <DialogButton
-              text={t('CONTACT_TEXT')}
-              onPress={() => {
-                void Intercom.present();
-                sendFirebaseEvent(hdWallet, 'support');
-              }}
-            />
-          </DialogFooter>
-        }
-        width={0.8}>
-        <DialogContent>
-          <CyDText className={'font-bold text-[16px] mt-[20px] text-center'}>
-            {t<string>('SOMETHING_WENT_WRONG')}
-          </CyDText>
-          <CyDText className={'font-bold text-[13px] mt-[20px] text-center'}>
-            {t<string>('CONTACT_CYPHERD_SUPPORT')}
-          </CyDText>
-        </DialogContent>
-      </Dialog>
-
       <WalletConnectV2Provider>
         <JoinDiscordModal
           isModalVisible={isJoinDiscordModalVisible}

@@ -69,7 +69,8 @@ export const CreateContact = () => {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const editContact = route.params ? route.params.editContact : false;
   const editContactName = route.params ? route.params.editContactName : '';
-  const additionalAddress = route.params
+  const additionalAddress =
+    route.params && route.params.additionalAddress
     ? route.params.additionalAddress
     : { chain: '', toAddress: '' };
   const [contactBook, setContactBook] = useState(
@@ -380,9 +381,12 @@ export const CreateContact = () => {
   };
 
   React.useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, []);
 
@@ -395,7 +399,7 @@ export const CreateContact = () => {
         tempContactInfo[address] = contactToEdit.addresses[address];
       }
       setEditContactInfo(tempContactInfo);
-      if (additionalAddress) {
+      if (additionalAddress.chain !== '' && additionalAddress.toAddress !== '') {
         const additionalAddressesChain = contactBook[editContactName].addresses[
           additionalAddress.chain
         ]
@@ -416,7 +420,7 @@ export const CreateContact = () => {
   }, [additionalAddress]);
 
   useEffect(() => {
-    if (additionalAddress) {
+    if (additionalAddress.chain !== '' && additionalAddress.toAddress !== '') {
       setCreateContactInfo({
         name: '',
         [additionalAddress.chain]: [additionalAddress.toAddress],
@@ -469,7 +473,7 @@ export const CreateContact = () => {
           showToast(
             `${contactDetails.name} ${t('SAVED_TO_CONTACTS_ALL_SMALL')}`,
           );
-          if (additionalAddress) {
+          if (additionalAddress.chain !== '' && additionalAddress.toAddress !== '') {
             navigation.popToTop();
             navigation.navigate(screenTitle.ACTIVITIES);
           } else {
@@ -576,8 +580,7 @@ export const CreateContact = () => {
             editContact: true,
             editContactName: contact.name,
             contactBook,
-            additionalAddress,
-          });
+            ...(additionalAddress.chain !== '' && additionalAddress.toAddress !== '' ? { additionalAddress } : {}),          });
         }}
         onCancel={() => {
           setChooseContactModalVisible(false);
@@ -677,6 +680,9 @@ export const CreateContact = () => {
                       return (
                         editContact ? editContactInfo : createContactInfo
                       )[detail].map((oneAddress, addressIndex) => {
+                        if (!formProps.values[detail as keyof ContactInfo]) {
+                          return null;
+                        }
                         return (
                           <CyDView
                             className='flex-1 mt-[25px] self-center w-[87%]'

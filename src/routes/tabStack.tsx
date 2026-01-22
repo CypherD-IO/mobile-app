@@ -89,7 +89,9 @@ const TabStack = React.memo(
     let backPressCount = 0;
 
     // Use useNavigationContainerRef to get access to the navigation ref
-    const navigationRef = useNavigationContainerRef();
+    // This app uses dynamic screen names and nested navigation params.
+    // Keep the navigation ref broadly typed to avoid `never` inference which breaks `.navigate(...)` typing.
+    const navigationRef = useNavigationContainerRef<any>();
     const routeNameRef = React.useRef<string | undefined>(undefined);
 
     // Decide landing tab based on first-launch flag
@@ -170,9 +172,12 @@ const TabStack = React.memo(
     };
 
     useEffect(() => {
-      BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleBackButton,
+      );
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+        subscription.remove();
       };
     }, []);
 
@@ -353,11 +358,11 @@ const TabStack = React.memo(
 
     const tabBarStyle = useMemo(
       () => ({
-        height: 50,
+        height: Platform.OS === 'android' ? 65 : 50,
         paddingHorizontal: 20,
+        paddingBottom: Platform.OS === 'android' ? 10 : 0,
         borderTopWidth: 0,
         elevation: 24, // For Android
-        paddingBottom: 0,
         paddingVertical: 6,
         transform: [
           {

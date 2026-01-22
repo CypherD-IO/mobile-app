@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, ScrollView } from 'react-native';
+import React from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDView,
   CyDText,
@@ -54,6 +55,7 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
   onContinue,
   votedCandidates = [],
 }) => {
+  const insets = useSafeAreaInsets();
   // State for bonus data (will be populated by API call in future)
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
@@ -96,7 +98,14 @@ const BoostedRewardInfoModal: React.FC<BoostedRewardInfoModalProps> = ({
         // Only dismissible via Continue button - no action
       }}>
       <CyDView
-        style={styles.modalContainer}
+        style={[
+          styles.modalContainer,
+          votedCandidates.length > 0
+            ? styles.modalContainerWithList
+            : styles.modalContainerCompact,
+          // Ensure the bottom CTA never sits under the home indicator.
+          { paddingBottom: Math.max(insets.bottom, 12) },
+        ]}
         className='bg-n0 rounded-t-[24px] pb-[32px]'>
         {/* Success Icon - Positioned to be half outside the modal */}
 
@@ -222,11 +231,20 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '100%',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    minHeight: '60%',
+    // IMPORTANT (RN 0.83 + Fabric):
+    // Avoid forcing a large minHeight or absolute positioning for the sheet container.
+    // When the content is short (e.g. "Referral code is applied successfully"), a large
+    // minHeight makes the modal look like it's expanding into a "full screen" view.
+    //
+    // The modal layout (`justifyContent: 'flex-end'`) already pins this container to the bottom.
+  },
+  modalContainerCompact: {
+    // Let content determine height for short versions of this modal.
+    maxHeight: '55%',
+  },
+  modalContainerWithList: {
+    // For long lists, cap height so the ScrollView can scroll.
+    maxHeight: '82%',
   },
 });
 

@@ -178,7 +178,10 @@ export default function Login(props) {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton,
+    );
     if (isFocused) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
     } else {
@@ -186,7 +189,7 @@ export default function Login(props) {
     }
     return () => {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      subscription.remove();
     };
   }, [isFocused]);
 
