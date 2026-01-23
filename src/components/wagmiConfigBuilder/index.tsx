@@ -18,8 +18,6 @@ import {
 import { Config } from 'react-native-config';
 import Loading from '../v2/loading';
 import { HdWalletContext } from '../../core/util';
-import { getConnectionType } from '../../core/asyncStorage';
-import { ConnectionTypes } from '../../constants/enum';
 import { get } from 'lodash';
 
 export const WagmiConfigBuilder: React.FC = ({ children }) => {
@@ -58,17 +56,17 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
 
   useEffect(() => {
     void buildWagmiConfig();
-  }, [ethereumAddress]);
+  }, []);
 
   const buildWagmiConfig = async (): Promise<void> => {
-    const connectionType = await getConnectionType();
     if (!wagmiConfig) {
       const tempWagmiConfig = defaultWagmiConfig({
         chains,
         projectId,
-        enableWalletConnect:
-          connectionType !== ConnectionTypes.SEED_PHRASE &&
-          connectionType !== ConnectionTypes.PRIVATE_KEY, // this should be set as false for wallet connect (mobile app to dapp connection, in that case the connection type will be SEED PHRASE)
+        // Always enable WalletConnect in wagmi config.
+        // This is used for connecting TO external wallets (MetaMask, etc.) during onboarding.
+        // This is separate from WalletConnectV2Provider which handles the app ACTING AS a wallet for dApps.
+        enableWalletConnect: true,
         metadata,
         /**
          * wagmi's <Hydrate /> calls `onMount()` synchronously during render when `ssr` is false:

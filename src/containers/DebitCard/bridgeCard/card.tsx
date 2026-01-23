@@ -1042,15 +1042,7 @@ const RenderCardActions = ({
             } h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             {isFetchingCardDetails ? (
               <>
-                {/* Fallback loader so the user always sees progress (Lottie sometimes renders at 0x0 without explicit sizing). */}
                 <ActivityIndicator size='small' color='#000000' />
-
-                <CyDLottieView
-                  source={AppImages.LOADER_TRANSPARENT}
-                  autoPlay
-                  loop
-                  style={{ width: 28, height: 28, position: 'absolute' }}
-                />
               </>
             ) : (
               <CyDIcons name='card' className='text-black text-[36px]' />
@@ -1086,12 +1078,6 @@ const RenderCardActions = ({
             {isStatusLoading ? (
               <>
                 <ActivityIndicator size='small' color='#000000' />
-                <CyDLottieView
-                  source={AppImages.LOADER_TRANSPARENT}
-                  autoPlay
-                  loop
-                  style={{ width: 28, height: 28, position: 'absolute' }}
-                />
               </>
             ) : (
               <CyDImage
