@@ -73,6 +73,7 @@ interface ICustomLimit {
   atm?: boolean;
   ecom?: boolean;
   wal?: boolean;
+  tap?: boolean;
 }
 
 interface CardLimitsV2Response {
@@ -125,6 +126,7 @@ export default function CardControls() {
     online: false,
     merchantOutlet: false,
     applePay: false,
+    tapAndPay: false,
   });
 
   const [
@@ -146,6 +148,7 @@ export default function CardControls() {
     useState(false);
   const [showAtmWithdrawalTooltip, setShowAtmWithdrawalTooltip] =
     useState(false);
+  const [showTapAndPayTooltip, setShowTapAndPayTooltip] = useState(false);
   const [isCountryModalVisible, setIsCountryModalVisible] = useState(false);
   const [show3DsModal, setShow3DsModal] = useState(false);
   const [isTelegramEnabled, setIsTelegramEnabled] = useState(
@@ -261,6 +264,7 @@ export default function CardControls() {
     online: 'ecom',
     merchantOutlet: 'pos',
     applePay: 'wal',
+    tapAndPay: 'tap',
   } as const;
 
   type ChannelKey = keyof typeof channelMapping;
@@ -466,6 +470,7 @@ export default function CardControls() {
           online: response.data.customLimit?.ecom || false,
           merchantOutlet: response.data.customLimit?.pos || false,
           applePay: response.data.customLimit?.wal || false,
+          tapAndPay: response.data.customLimit?.tap || false,
         });
 
         populateSelectedCountries(response.data.countries);
@@ -1101,6 +1106,51 @@ export default function CardControls() {
                     value={channelControls.merchantOutlet}
                     onValueChange={async () =>
                       await handleChannelToggle('merchantOutlet')
+                    }
+                  />
+                </CyDView>
+              )}
+
+              {/* Tap and Pay */}
+              {selectedCard?.type === CardType.PHYSICAL && (
+                <CyDView className='flex flex-row items-center justify-between py-[16px] border-t border-n40'>
+                  <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                    <CyDImage
+                      source={AppImages.TAP_AND_PAY_ICON}
+                      className='w-[32px] h-[32px]'
+                    />
+                  <CyDText className='text-[16px]'>Tap and Pay</CyDText>
+                  <Tooltip
+                    isVisible={showTapAndPayTooltip}
+                    content={
+                      <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
+                        <CyDText className='text-[14px] text-base400'>
+                          Enable contactless payments by tapping your physical
+                          card at supported terminals
+                        </CyDText>
+                      </CyDView>
+                    }
+                    onClose={() => setShowTapAndPayTooltip(false)}
+                    placement='top'
+                    backgroundColor='transparent'
+                    useInteractionManager={true}
+                    contentStyle={{
+                      backgroundColor: 'transparent',
+                      borderWidth: 0,
+                    }}>
+                    <CyDTouchView onPress={() => setShowTapAndPayTooltip(true)}>
+                      <CyDMaterialDesignIcons
+                        name='information-outline'
+                        size={16}
+                        className='text-n200'
+                      />
+                    </CyDTouchView>
+                  </Tooltip>
+                </CyDView>
+                  <CyDSwitch
+                    value={channelControls.tapAndPay}
+                    onValueChange={async () =>
+                      await handleChannelToggle('tapAndPay')
                     }
                   />
                 </CyDView>
