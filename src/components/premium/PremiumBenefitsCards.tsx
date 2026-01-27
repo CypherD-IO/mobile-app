@@ -8,17 +8,27 @@ import {
 import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
 
+interface PremiumBenefitsCardsProps {
+  /** Pro plan data containing fee percentages and limits */
+  proPlanData?: {
+    fxMarkup?: number;
+    chargeBackLimit?: number;
+  };
+}
+
 /**
  * Premium Benefits Cards Component
  * Displays the 6 benefit cards for premium membership:
  * - Free Metal Card
- * - 0.75% Forex Markup
+ * - Forex Markup (dynamic from plan data)
  * - Free Stable Token Load
- * - Fraud Protection
+ * - Fraud Protection (dynamic from plan data)
  * - Higher Spending Limit
  * - Free Worldwide Shipping
  */
-export default function PremiumBenefitsCards() {
+export default function PremiumBenefitsCards({
+  proPlanData,
+}: PremiumBenefitsCardsProps) {
   return (
     <CyDTouchView className='bg-n30 p-[16px]' activeOpacity={1}>
       {/* Metal Card Benefit */}
@@ -45,7 +55,7 @@ export default function PremiumBenefitsCards() {
       <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
         <CyDView>
           <CyDText className='text-[16px] font-semibold'>
-            0.75% Forex Markup
+            {`${proPlanData?.fxMarkup ?? '-'}% Forex Markup`}
           </CyDText>
           <CyDText className='text-[16px] font-semibold'>
             without any spending limit
@@ -92,7 +102,7 @@ export default function PremiumBenefitsCards() {
             Protection against Fraud
           </CyDText>
           <CyDText className='text-[16px] font-semibold'>
-            covered up to $300
+            {`covered up to $${proPlanData?.chargeBackLimit ?? '-'}`}
           </CyDText>
           <CyDText className='text-[12px] font-bold text-n300'>
             Only fraud protection card in the industry

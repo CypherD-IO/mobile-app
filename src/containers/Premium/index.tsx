@@ -439,7 +439,7 @@ export default function PremiumScreen() {
                 </CyDView>
 
                 {/* Premium Benefits Cards */}
-                <PremiumBenefitsCards />
+                <PremiumBenefitsCards proPlanData={proPlanData} />
               </CyDScrollView>
             </CyDView>
           </CyDView>

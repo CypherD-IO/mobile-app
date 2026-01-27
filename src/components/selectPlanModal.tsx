@@ -758,7 +758,7 @@ export default function SelectPlanModal({
                 </CyDView>
 
                 {/* Premium Benefits Cards */}
-                <PremiumBenefitsCards />
+                <PremiumBenefitsCards proPlanData={proPlanData} />
               </CyDScrollView>
             </CyDView>
           </CyDView>
