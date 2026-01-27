@@ -2148,6 +2148,8 @@ const resources = {
       ZERO_FOREX_MARKUP: 'Zero Forex Markup',
       ZERO_USDC_LOAD_FEE: 'Zero USDC Load Fee',
       EXPLORE_PREMIUM: 'Explore Premium',
+      GET_A_CARD_FIRST: 'Get a Card First',
+      GET_CARD_NOW: 'Get Card Now',
       UNABLE_TO_SHARE_TRANSACTION_DETAILS:
         'Unable to share transaction details',
       PLEASE_TRY_AGAIN: 'Please try again',

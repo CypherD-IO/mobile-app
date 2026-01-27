@@ -30,7 +30,6 @@ import {
   GlobalContextType,
 } from '../constants/enum';
 import Button from './v2/button';
-import clsx from 'clsx';
 import { CYPHER_PLAN_ID_NAME_MAPPING } from '../constants/data';
 import useAxios from '../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
@@ -46,7 +45,11 @@ import { CardDesign } from '../models/cardDesign.interface';
 import { IPlanData } from '../models/planData.interface';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import Loading from './v2/loading';
-import CyDModalLayout from './v2/modal';
+import {
+  PremiumBenefitsCards,
+  PremiumFeaturesSummary,
+  PremiumUpgradeConsentModal,
+} from './premium';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -95,7 +98,6 @@ export default function SelectPlanModal({
 
   const [showComparision, setShowComparision] = useState(false);
   const [consentModalVisible, setConsentModalVisible] = useState(false);
-  const [consent, setConsent] = useState(false);
   const [planData, setPlanData] = useState<IPlanData | undefined>(undefined);
 
   const freePlanData = useMemo(
@@ -688,97 +690,17 @@ export default function SelectPlanModal({
             </CyDView>
           </Modal>
 
-          <CyDModalLayout
-            setModalVisible={setConsentModalVisible}
-            isModalVisible={consentModalVisible}
-            style={styles.modalLayout}
-            animationIn={'slideInUp'}
-            animationOut={'slideOutDown'}>
-            <CyDView className={'bg-n30 rounded-t-[20px] p-[16px]'}>
-              <CyDView className='flex-row justify-between items-center'>
-                <CyDView className='flex-row gap-x-[4px] items-center'>
-                  <CyDText className='text-[20px] font-bold'>
-                    {'Upgrading to'}
-                  </CyDText>
-                  <CyDFastImage
-                    source={AppImages.PREMIUM_LABEL}
-                    className='h-[30px] w-[100px]'
-                    resizeMode='contain'
-                  />
-                </CyDView>
-                <CyDTouchView
-                  onPress={() => {
-                    setConsentModalVisible(false);
-                  }}>
-                  <CyDMaterialDesignIcons
-                    name={'close'}
-                    size={24}
-                    className='text-base400'
-                  />
-                </CyDTouchView>
-              </CyDView>
-
-              <CyDTouchView
-                className='flex flex-row items-center mt-[16px]'
-                onPress={() => {
-                  setConsent(!consent);
-                }}>
-                <CyDView
-                  className={clsx(
-                    'h-[20px] w-[20px] border-[1px] rounded-[4px] border-n50',
-                    {
-                      'bg-n0': consent,
-                    },
-                  )}>
-                  {consent && (
-                    <CyDMaterialDesignIcons
-                      name='check-bold'
-                      size={17}
-                      className='text-base400 '
-                    />
-                  )}
-                </CyDView>
-                <CyDText className='px-[12px] text-[14px]'>
-                  {`By proceeding, I acknowledge and authorize a $${proPlanData?.cost} USD deduction from my Cypher account for the premium upgrade and agree to the`}
-                  <CyDText
-                    className='font-bold text-[14px] underline'
-                    onPress={() => {
-                      setConsentModalVisible(false);
-                      setIsModalVisible(false);
-                      navigation.navigate(screenTitle.LEGAL_SCREEN);
-                    }}>
-                    {' terms and conditions.'}
-                  </CyDText>
-                </CyDText>
-              </CyDTouchView>
-              {(isRainOutOfStock || isReapOutOfStock) && (
-                <>
-                  <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                    <CyDText className='font-bold underline'>
-                      {t('IMPORTANT')}:
-                    </CyDText>{' '}
-                    {t('METAL_OUT_OF_STOCK_WITH_EXTENTED_PREMIUM')}
-                  </CyDText>
-                  <CyDText className='px-[12px] text-[14px] my-[8px]'>
-                    {t('YOUR_PREMIUM_BENEFITS_WILL_START_IMMEDIATELY')}
-                  </CyDText>
-                </>
-              )}
-
-              <Button
-                title={t('GET_PREMIUM')}
-                onPress={() => {
-                  setConsentModalVisible(false);
-                  void onPlanUpgrade(CypherPlanId.PRO_PLAN);
-                }}
-                disabled={!consent}
-                loading={loading}
-                loaderStyle={styles.loaderStyle}
-                titleStyle='text-[14px] font-bold'
-                style='p-[3%] my-[12px]'
-              />
-            </CyDView>
-          </CyDModalLayout>
+          <PremiumUpgradeConsentModal
+            isVisible={consentModalVisible}
+            setIsVisible={setConsentModalVisible}
+            planCost={proPlanData?.cost}
+            loading={loading}
+            isRainOutOfStock={isRainOutOfStock}
+            isReapOutOfStock={isReapOutOfStock}
+            onConfirmUpgrade={() => void onPlanUpgrade(CypherPlanId.PRO_PLAN)}
+            navigation={navigation}
+            onClose={() => setIsModalVisible(false)}
+          />
 
           <CyDView className='h-full bg-n20'>
             <CyDView className='bg-n0 flex-1'>
@@ -809,471 +731,34 @@ export default function SelectPlanModal({
               <CyDScrollView
                 className='flex-1'
                 showsVerticalScrollIndicator={false}>
-                <CyDTouchView className='mt-[16px] px-[16px]' activeOpacity={1}>
-                  <CyDView className='flex-row items-center mt-[8px]'>
-                    <CyDMaterialDesignIcons
-                      name='check'
-                      size={24}
-                      className='text-base400'
-                    />
-                    <CyDText className='text-[14px] ml-[8px] font-medium'>
-                      {t('VIRTUAL_CARD')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='flex-row items-center mt-[8px]'>
-                    <CyDMaterialDesignIcons
-                      name='check'
-                      size={24}
-                      className='text-base400'
-                    />
-                    <CyDText className='text-[14px] ml-[8px] font-medium'>
-                      {t('APPLE_GOOGLE_PAY')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='flex-row items-center mt-[8px]'>
-                    <CyDText className='text-[14px] font-bold w-[36px]'>
-                      {t('Free')}
-                    </CyDText>
-                    <CyDText className='text-[14px] ml-[8px] font-medium'>
-                      {t('PHYSICAL_CARD')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='flex-row items-center mt-[8px]'>
-                    <CyDText className='text-[14px] font-bold w-[36px]'>
-                      {`${proPlanData?.fxMarkup}%`}
-                    </CyDText>
-                    <CyDText className='text-[14px] ml-[8px] font-medium'>
-                      {t('FOREX_MARKUP')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='flex-row items-center mt-[8px]'>
-                    <CyDText className='text-[14px] font-bold w-[36px]'>
-                      {`${proPlanData?.usdcFee === 0 ? 'FREE' : `${proPlanData?.usdcFee}%`} `}
-                    </CyDText>
-                    <CyDText className='text-[14px] ml-[8px] font-medium'>
-                      {t('CARD_LOAD_FEE_USDC')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className='flex-row items-center mt-[8px]'>
-                    <CyDText className='text-[14px] font-bold w-[36px]'>
-                      {`${proPlanData?.nonUsdcFee}%`}
-                    </CyDText>
-                    <CyDText className='text-[14px] ml-[8px] font-medium'>
-                      {t('CARD_LOAD_FEE_NON_USDC')}
-                    </CyDText>
-                  </CyDView>
+                {/* Premium Features Summary */}
+                <PremiumFeaturesSummary proPlanData={proPlanData} />
 
-                  <CyDView className='my-[16px]'>
-                    <Button
-                      title={t('COMPARE_PLANS')}
-                      onPress={() => {
-                        setShowComparision(true);
-                      }}
-                      titleStyle='text-[14px] font-bold'
-                      type={ButtonType.GREY_FILL}
-                      style='p-[15px]'
-                    />
-                    <Button
-                      title={`Get Premium for $${proPlanData?.cost}`}
-                      onPress={() => {
-                        setConsentModalVisible(true);
-                      }}
-                      loading={loading}
-                      loaderStyle={styles.loaderStyle}
-                      titleStyle='text-[14px] font-bold'
-                      style='p-[15px] mt-[12px]'
-                    />
-                  </CyDView>
-                </CyDTouchView>
+                {/* Action Buttons */}
+                <CyDView className='my-[16px] px-[16px]'>
+                  <Button
+                    title={t('COMPARE_PLANS')}
+                    onPress={() => {
+                      setShowComparision(true);
+                    }}
+                    titleStyle='text-[14px] font-bold'
+                    type={ButtonType.GREY_FILL}
+                    style='p-[15px]'
+                  />
+                  <Button
+                    title={`Get Premium for $${proPlanData?.cost}`}
+                    onPress={() => {
+                      setConsentModalVisible(true);
+                    }}
+                    loading={loading}
+                    loaderStyle={styles.loaderStyle}
+                    titleStyle='text-[14px] font-bold'
+                    style='p-[15px] mt-[12px]'
+                  />
+                </CyDView>
 
-                <CyDTouchView className='bg-n30 p-[16px]' activeOpacity={1}>
-                  {/* <CyDView className='border border-n40 rounded-[16px] bg-n0 '>
-                  <CyDView className='px-[16px] pt-[16px]'>
-                    <CyDText className='text-[20px] font-semibold'>
-                      Savings Calculator
-                    </CyDText>
-                    <CyDText className='text-[12px] font-medium mt-[6px]'>
-                      Find a plan that best fits your needs
-                    </CyDText>
-                  </CyDView>
-
-                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
-
-                  <CyDView className='px-[16px] pb-[13px]'>
-                    <CyDView className='flex-row justify-between items-center'>
-                      <CyDText className='text-[14px] font-bold'>
-                        Monthly non USD Spends
-                      </CyDText>
-                      <CyDText className='text-[14px] font-bold underline'>
-                        {`$${round(sliderValues.forex)}`}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='mt-[20px] mr-[16px]'>
-                      <Slider
-                        progress={forexSpend}
-                        containerStyle={styles.sliderContainer}
-                        renderBubble={() => {
-                          return null;
-                        }}
-                        steps={10}
-                        // thumbWidth={40}
-                        markWidth={0}
-                        minimumValue={forexMin}
-                        maximumValue={forexMax}
-                        sliderHeight={4}
-                        hapticMode='step'
-                        theme={{
-                          minimumTrackTintColor: '#FFB900',
-                          maximumTrackTintColor: '#EBEDF0',
-                        }}
-                        renderThumb={() => {
-                          return (
-                            <CyDView className='w-[20px] h-[20px] rounded-full border-[#FFB900] border-[4px]'>
-                              <CyDView className='w-full h-full bg-n0 rounded-full' />
-                            </CyDView>
-                          );
-                        }}
-                        onValueChange={value => {
-                          setSliderValues({
-                            ...sliderValues,
-                            forex: round(value),
-                          });
-                        }}
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
-
-                  <CyDView className='px-[16px] pb-[13px]'>
-                    <CyDView className='flex-row justify-between items-center'>
-                      <CyDText className='text-[14px] font-bold'>
-                        Monthly USDC Card load
-                      </CyDText>
-                      <CyDText className='text-[14px] font-bold underline'>
-                        {`$${round(sliderValues.usdc)}`}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='mt-[20px] mr-[16px]'>
-                      <Slider
-                        progress={usdcLoad}
-                        containerStyle={styles.sliderContainer}
-                        renderBubble={() => {
-                          return null;
-                        }}
-                        // thumbWidth={40}
-                        steps={10}
-                        markWidth={0}
-                        minimumValue={usdcMin}
-                        maximumValue={usdcMax}
-                        sliderHeight={4}
-                        hapticMode='step'
-                        theme={{
-                          minimumTrackTintColor: '#FFB900',
-                          maximumTrackTintColor: '#EBEDF0',
-                        }}
-                        onValueChange={value => {
-                          setSliderValues({
-                            ...sliderValues,
-                            usdc: round(value),
-                          });
-                        }}
-                        renderThumb={() => {
-                          return (
-                            <CyDView className='w-[20px] h-[20px] rounded-full border-[#FFB900] border-[4px]'>
-                              <CyDView className='w-full h-full bg-n0 rounded-full' />
-                            </CyDView>
-                          );
-                        }}
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
-
-                  <CyDView className='px-[16px] pb-[13px]'>
-                    <CyDView className='flex-row justify-between items-center'>
-                      <CyDText className='text-[14px] font-bold'>
-                        Monthly non USDC Card load
-                      </CyDText>
-                      <CyDText className='text-[14px] font-bold underline'>
-                        {`$${round(sliderValues.nonUsdc)}`}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='mt-[20px] mr-[16px]'>
-                      <Slider
-                        progress={nonUsdcLoad}
-                        containerStyle={styles.sliderContainer}
-                        renderBubble={() => {
-                          return null;
-                        }}
-                        // thumbWidth={40}
-                        steps={10}
-                        markWidth={0}
-                        minimumValue={nonUsdcMin}
-                        maximumValue={nonUsdcMax}
-                        sliderHeight={4}
-                        hapticMode='step'
-                        theme={{
-                          minimumTrackTintColor: '#FFB900',
-                          maximumTrackTintColor: '#EBEDF0',
-                        }}
-                        onValueChange={value => {
-                          setSliderValues({
-                            ...sliderValues,
-                            nonUsdc: round(value),
-                          });
-                        }}
-                        renderThumb={() => {
-                          return (
-                            <CyDView className='w-[20px] h-[20px] rounded-full border-[#FFB900] border-[4px]'>
-                              <CyDView className='w-full h-full bg-n0 rounded-full' />
-                            </CyDView>
-                          );
-                        }}
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
-
-                  <CyDView className='px-[16px]'>
-                    <CyDText className='text-[14px] font-bold'>
-                      Card Requirement
-                    </CyDText>
-                    <CyDView className='mt-[12px] flex-row justify-between items-center'>
-                      <CyDText className='text-[14px] font-medium'>
-                        Physical card
-                      </CyDText>
-                      <CyDTouchView
-                        onPress={() => {
-                          setIsChecked({
-                            ...isChecked,
-                            physicalCard: !isChecked.physicalCard,
-                          });
-                        }}
-                        className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
-                        <CyDView
-                          className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-base100 flex flex-row justify-center items-center',
-                            {
-                              'bg-p150 border-p150': isChecked.physicalCard,
-                            },
-                          )}>
-                          <CyDMaterialDesignIcons
-                            name='check-bold'
-                            size={18}
-                            className='text-n0'
-                          />
-                        </CyDView>
-                      </CyDTouchView>
-                    </CyDView>
-                    <CyDView className='flex-row justify-between items-center mt-[10px]'>
-                      <CyDText className='text-[14px] font-medium'>
-                        Metal card
-                      </CyDText>
-                      <CyDTouchView
-                        onPress={() => {
-                          setIsChecked({
-                            ...isChecked,
-                            metalCard: !isChecked.metalCard,
-                          });
-                        }}
-                        className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
-                        <CyDView
-                          className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-base100 flex flex-row justify-center items-center',
-                            {
-                              'bg-p150 border-p150': isChecked.metalCard,
-                            },
-                          )}>
-                          <CyDMaterialDesignIcons
-                            name='check-bold'
-                            size={18}
-                            className='text-n0'
-                          />
-                        </CyDView>
-                      </CyDTouchView>
-                    </CyDView>
-                    <CyDView className='flex-row justify-between items-center mt-[10px]'>
-                      <CyDText className='text-[14px] font-medium'>
-                        Add on cards
-                      </CyDText>
-                      <CyDTouchView
-                        onPress={() => {
-                          setIsChecked({
-                            ...isChecked,
-                            addonCard: !isChecked.addonCard,
-                          });
-                        }}
-                        className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
-                        <CyDView
-                          className={clsx(
-                            ' h-[18px] w-[18px] rounded-[4px] border border-base100 flex flex-row justify-center items-center',
-                            {
-                              'bg-p150 border-p150': isChecked.addonCard,
-                            },
-                          )}>
-                          <CyDMaterialDesignIcons
-                            name='check-bold'
-                            size={18}
-                            className='text-n0'
-                          />
-                        </CyDView>
-                      </CyDTouchView>
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='h-[0.5px] w-full border border-n40 border-dashed my-[13px]' />
-
-                  <CyDView className='mt-[3px] px-[16px] my-[16px] '>
-                    <CyDText className='text-[10px] font-medium'>
-                      Consider taking...
-                    </CyDText>
-                    <CyDText className='text-[20px] font-bold'>
-                      {`${get(CYPHER_PLAN_ID_NAME_MAPPING, recommendedPlan, recommendedPlan)}`}
-                    </CyDText>
-
-                    {totalSavings > 0 && (
-                      <CyDView className='mt-[16px] flex-row justify-between items-center'>
-                        <CyDText className='text-[12px] font-medium'>
-                          Your Savings
-                        </CyDText>
-                        <CyDText className='text-[20px] font-bold'>
-                          {`🎉 $${Math.abs(totalSavings)}`}
-                        </CyDText>
-                      </CyDView>
-                    )}
-                  </CyDView>
-                </CyDView> */}
-
-                  {/* <CyDText className='my-[12px] font-semibold text-[14px] text-center'>
-                  Premium Benefits
-                </CyDText> */}
-
-                  <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
-                    <CyDView>
-                      <CyDText className='text-[16px] font-semibold'>
-                        Free Metal card for all
-                      </CyDText>
-                      <CyDText className='text-[16px] font-semibold'>
-                        premium users
-                      </CyDText>
-                      <CyDText className='text-[12px] font-bold text-n300'>
-                        Sleek, shiny and durable
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='pr-[12px]'>
-                      <CyDFastImage
-                        source={AppImages.CARDS_FRONT_AND_BACK_3D}
-                        className='h-[63px] w-[62px] mx-auto'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
-                    <CyDView>
-                      <CyDText className='text-[16px] font-semibold'>
-                        0.75% Forex Markup
-                      </CyDText>
-                      <CyDText className='text-[16px] font-semibold'>
-                        without any spending limit
-                      </CyDText>
-                      <CyDText className='text-[12px] font-bold text-n300'>
-                        lowest among the other crypto cards
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='pr-[12px]'>
-                      <CyDFastImage
-                        source={AppImages.CASH_FLOW}
-                        className='h-[68px] w-[57px] mx-auto'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
-                    <CyDView>
-                      <CyDText className='text-[16px] font-semibold'>
-                        Free stable token card load
-                      </CyDText>
-                      <CyDText className='text-[16px] font-semibold'>
-                        & its unlimited
-                      </CyDText>
-                      <CyDText className='text-[12px] font-bold text-n300'>
-                        Discounted flat 0.5% for other tokens
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='pr-[12px]'>
-                      <CyDFastImage
-                        source={AppImages.MOBILE_AND_COINS_3D}
-                        className='h-[68px] w-[57px] mx-auto'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
-                    <CyDView>
-                      <CyDText className='text-[16px] font-semibold'>
-                        Protection against Fraud
-                      </CyDText>
-                      <CyDText className='text-[16px] font-semibold'>
-                        covered up to $300
-                      </CyDText>
-                      <CyDText className='text-[12px] font-bold text-n300'>
-                        Only fraud protection card in the industry
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='pr-[12px]'>
-                      <CyDFastImage
-                        source={AppImages.SHIELD_3D}
-                        className='h-[54px] w-[54px] mx-auto'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
-                    <CyDView>
-                      <CyDText className='text-[16px] font-semibold'>
-                        Higher spending limit per
-                      </CyDText>
-                      <CyDText className='text-[16px] font-semibold'>
-                        month on premium
-                      </CyDText>
-                      <CyDText className='text-[12px] font-bold text-n300'>
-                        Unlock full potential of a crypto card
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='pr-[12px]'>
-                      <CyDFastImage
-                        source={AppImages.SHOPPING_WOMEN}
-                        className='h-[66px] w-[66px] mx-auto'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                  </CyDView>
-
-                  <CyDView className='p-[12px] mt-[12px] bg-n0 rounded-[16px] flex-row justify-between'>
-                    <CyDView>
-                      <CyDText className='text-[16px] font-semibold'>
-                        {'Free Shipping \nworldwide'}
-                      </CyDText>
-                      <CyDText className='text-[12px] font-bold text-n300'>
-                        {t('Ships anywhere in the world*')}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className='pr-[12px]'>
-                      <CyDFastImage
-                        source={AppImages.POST_CARD}
-                        className='h-[60px] w-[57px] mx-auto'
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                  </CyDView>
-                </CyDTouchView>
+                {/* Premium Benefits Cards */}
+                <PremiumBenefitsCards />
               </CyDScrollView>
             </CyDView>
           </CyDView>
