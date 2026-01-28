@@ -14,22 +14,28 @@ export default function SaveChangesModal({
   card,
   onApplyToAllCards,
   onApplyToCard,
+  onCancel,
 }: {
   isModalVisible: boolean;
   setIsModalVisible: (isModalVisible: boolean) => void;
   card: Card;
   onApplyToAllCards: () => void;
   onApplyToCard: () => void;
+  onCancel?: () => void;
 }) {
   return (
     <CyDModalLayout
       isModalVisible={isModalVisible}
-      setModalVisible={setIsModalVisible}
+      setModalVisible={(visible: boolean) => {
+        setIsModalVisible(visible);
+        if (!visible) onCancel?.();
+      }}
       animationIn={'fadeIn'}
       animationOut={'fadeOut'}
       onSwipeComplete={({ swipingDirection }) => {
         if (swipingDirection === 'down') {
           setIsModalVisible(false);
+          onCancel?.();
         }
       }}
       swipeDirection={['down']}
@@ -42,7 +48,7 @@ export default function SaveChangesModal({
           {t('SAVE_CHANGES_DESC', {
             cardType: capitalize(card.type),
             last4: card.last4,
-          })}
+          }).toString()}
         </CyDText>
         <CyDView className='flex flex-col gap-[10px] mt-[40px]'>
           <Button

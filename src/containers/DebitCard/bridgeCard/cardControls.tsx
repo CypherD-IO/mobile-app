@@ -137,6 +137,7 @@ export default function CardControls() {
   const [activeCards, setActiveCards] = useState<Card[]>([]);
   const [showForAllCards, setShowForAllCards] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | undefined>(undefined);
+  const [pendingCard, setPendingCard] = useState<Card | null>(null);
   const [onOpenNavigateTo, setOnOpenNavigateTo] =
     useState<ON_OPEN_NAVIGATE | null>(onOpenNavigate);
 
@@ -170,7 +171,7 @@ export default function CardControls() {
   const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
 
   // Add a ref to store the exit action
-  const exitActionRef = useRef<any>();
+  const exitActionRef = useRef<any>(null);
 
   useEffect(() => {
     const filteredCards =
@@ -254,9 +255,14 @@ export default function CardControls() {
     }
   }, [isExpanded]);
 
-  const handleCardSelect = (selectedCard: Card) => {
-    setSelectedCardId(selectedCard.cardId);
+  const handleCardSelect = (card: Card) => {
     setIsExpanded(false);
+    if (hasChanges && showForAllCards) {
+      setPendingCard(card);
+      setShowSaveChangesModal(true);
+    } else {
+      setSelectedCardId(card.cardId);
+    }
   };
 
   const channelMapping = {
@@ -691,11 +697,21 @@ export default function CardControls() {
             title: t('CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS'),
             onSuccess: () => {
               hideModal();
-              navigation.goBack();
+              if (pendingCard) {
+                setSelectedCardId(pendingCard.cardId);
+                setPendingCard(null);
+              } else {
+                navigation.goBack();
+              }
             },
             onFailure: () => {
               hideModal();
-              navigation.goBack();
+              if (pendingCard) {
+                setSelectedCardId(pendingCard.cardId);
+                setPendingCard(null);
+              } else {
+                navigation.goBack();
+              }
             },
           });
         }, 300);
@@ -728,13 +744,17 @@ export default function CardControls() {
     setShowSaveChangesModal(false);
     setHasChanges(false);
     setChanges({});
-    if (exitActionRef.current) {
+    if (pendingCard) {
+      setSelectedCardId(pendingCard.cardId);
+      setPendingCard(null);
+    } else if (exitActionRef.current) {
       navigation.dispatch(exitActionRef.current);
     }
   };
 
   const handleCancelExit = () => {
     setShowSaveChangesModal(false);
+    setPendingCard(null);
   };
 
   const getDisplayCardType = (card: Card) => {
@@ -1348,7 +1368,7 @@ export default function CardControls() {
       <ChooseMultipleCountryModal
         isModalVisible={isCountryModalVisible}
         setModalVisible={setIsCountryModalVisible}
-        selectedCountryState={[selectedCountries, handleCountrySelection]}
+        selectedCountryState={[selectedCountries, setSelectedCountries]}
         allCountriesSelectedState={[
           allCountriesSelected,
           setAllCountriesSelected,
