@@ -305,10 +305,15 @@ export const InitializeAppProvider = ({
   }, [ethereumAddress, solanaAddress]);
 
   useEffect(() => {
-    if (
+    // Load wallet when authentication requirements are met:
+    // 1. Device has authentication AND no PIN (device-only auth)
+    // 2. Device has authentication AND PIN was validated (migration complete)
+    // 3. No device auth AND PIN was validated
+    const shouldLoadWallet =
       (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
-      pinAuthenticated
-    ) {
+      pinAuthenticated;
+
+    if (shouldLoadWallet) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state).finally(() => {
         setWalletLoading(false);
       });
@@ -316,18 +321,16 @@ export const InitializeAppProvider = ({
   }, [biometricEnabled, pinAuthenticated, pinSetStatus]);
 
   const RenderNavStack = useCallback(() => {
-    if (
-      walletLoading &&
-      biometricEnabled &&
-      pinSetStatus === PinPresentStates.FALSE
-    ) {
+    if (pinSetStatus === PinPresentStates.NOTSET) {
       return <Loading />;
     }
 
-    if (
-      (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) ||
-      pinAuthenticated
-    ) {
+    // CASE 1: Device has authentication (biometric OR passcode) AND no in-app PIN
+    // → Use device-level security only, skip in-app PIN entirely
+    if (biometricEnabled && pinSetStatus === PinPresentStates.FALSE) {
+      if (walletLoading) {
+        return <Loading />;
+      }
       if (ethereumAddress ?? solanaAddress) {
         if (!isAuthenticated) {
           return <Loading />;
@@ -344,25 +347,84 @@ export const InitializeAppProvider = ({
           </CyDSafeAreaView>
         );
       }
-    } else {
-      if (pinSetStatus === PinPresentStates.NOTSET) {
-        return <Loading />;
-      } else if (pinSetStatus === PinPresentStates.TRUE) {
+    }
+
+    // CASE 2: Device has authentication BUT user has existing PIN (migration case)
+    // → Validate PIN once to decrypt and migrate to device-only auth
+    if (biometricEnabled && pinSetStatus === PinPresentStates.TRUE) {
+      if (pinAuthenticated) {
+        // Migration complete - PIN has been validated and removed
+        if (walletLoading) {
+          return <Loading />;
+        }
+        if (ethereumAddress ?? solanaAddress) {
+          if (!isAuthenticated) {
+            return <Loading />;
+          }
+          return (
+            <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-n0'>
+              {children}
+            </CyDSafeAreaView>
+          );
+        } else {
+          return (
+            <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-black'>
+              <OnBoardingStack />
+            </CyDSafeAreaView>
+          );
+        }
+      }
+      // Show PIN validation for migration
+      return (
+        <PinAuthRoute
+          setPinAuthentication={setPinAuthenticated}
+          initialScreen={screenTitle.PIN_VALIDATION}
+        />
+      );
+    }
+
+    // CASE 3: Device has NO authentication (no biometric, no passcode)
+    // → Use in-app PIN as the security layer
+    if (pinAuthenticated) {
+      // User has already validated their PIN this session
+      if (ethereumAddress ?? solanaAddress) {
+        if (!isAuthenticated) {
+          return <Loading />;
+        }
         return (
-          <PinAuthRoute
-            setPinAuthentication={setPinAuthenticated}
-            initialScreen={screenTitle.PIN_VALIDATION}
-          />
+          <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-n0'>
+            {children}
+          </CyDSafeAreaView>
         );
-      } else if (pinSetStatus === PinPresentStates.FALSE) {
+      } else {
         return (
-          <PinAuthRoute
-            setPinAuthentication={setPinAuthenticated}
-            initialScreen={screenTitle.SET_PIN}
-          />
+          <CyDSafeAreaView edges={['bottom']} className='flex-1 bg-black'>
+            <OnBoardingStack />
+          </CyDSafeAreaView>
         );
       }
     }
+
+    if (pinSetStatus === PinPresentStates.TRUE) {
+      return (
+        <PinAuthRoute
+          setPinAuthentication={setPinAuthenticated}
+          initialScreen={screenTitle.PIN_VALIDATION}
+        />
+      );
+    } else if (pinSetStatus === PinPresentStates.FALSE) {
+      return (
+        <PinAuthRoute
+          setPinAuthentication={setPinAuthenticated}
+          initialScreen={screenTitle.SET_PIN}
+        />
+      );
+    }
+
+    // Fallback - should not reach here
+    return (
+      <Loading loadingText={'Could not load wallet. Please contact support.'} />
+    );
   }, [
     walletLoading,
     ethereumAddress,

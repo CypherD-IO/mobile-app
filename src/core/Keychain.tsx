@@ -8,6 +8,7 @@ import {
   hasInternetCredentials,
   resetInternetCredentials,
   setInternetCredentials,
+  isPasscodeAuthAvailable,
   SetOptions,
   GetOptions,
 } from 'react-native-keychain';
@@ -710,15 +711,29 @@ export const validatePin = async (pin: string) => {
   return false;
 };
 
+/**
+ * Checks if device-level authentication is available (biometric OR passcode).
+ * This is used to determine if we can rely on device-level security instead of in-app PIN.
+ *
+ * @returns true if device has biometric (Face ID, Touch ID, Fingerprint) OR device passcode enabled
+ */
 export const isBiometricEnabled = async () => {
-  let canAuthenticate;
+  let canAuthenticate = false;
   if (isIOS()) {
     canAuthenticate = await canImplyAuthentication({
       authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
     });
   } else {
     const hasBiometricsEnabled = await getSupportedBiometryType();
-    canAuthenticate = hasBiometricsEnabled !== null;
+    if (hasBiometricsEnabled !== null) {
+      canAuthenticate = true;
+    } else {
+      try {
+        canAuthenticate = await isPasscodeAuthAvailable();
+      } catch {
+        canAuthenticate = false;
+      }
+    }
   }
   return canAuthenticate;
 };
