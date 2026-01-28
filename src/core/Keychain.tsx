@@ -8,7 +8,8 @@ import {
   hasInternetCredentials,
   resetInternetCredentials,
   setInternetCredentials,
-  Options,
+  SetOptions,
+  GetOptions,
 } from 'react-native-keychain';
 import Intercom from '@intercom/intercom-react-native';
 import { Alert } from 'react-native';
@@ -248,19 +249,31 @@ export async function loadFromKeyChain(
   });
 
   try {
-    const credentials = await getInternetCredentials(key, {
-      authenticationPrompt: {
-        title: requestMessage,
-      },
-    });
-
+    // Configure authentication options with passcode fallback support
+    // iOS: Use authenticationType to show "Use Passcode" option
+    // Android: Do NOT set cancel button to enable device credential fallback (API 30+)
+    const options: GetOptions = {
+      authenticationPrompt: isIOS()
+        ? {
+            title: requestMessage,
+            subtitle: t('USE_BIOMETRIC_OR_PASSCODE'),
+            cancel: t('CANCEL'),
+          }
+        : {
+            title: requestMessage,
+            subtitle: t('USE_BIOMETRIC_OR_PASSCODE'),
+            // Note: On Android, omitting 'cancel' enables "Use PIN/Pattern/Password" fallback
+          },
+      // ACCESS_CONTROL for retrieval - allows biometric or device passcode
+      accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+    };
+    const credentials = await getInternetCredentials(key, options);
     // Auth succeeded - notify any waiting callers and clear the lock
     if (biometricAuthResolver) {
       biometricAuthResolver(true);
     }
     biometricAuthInProgress = null;
     biometricAuthResolver = null;
-
     if (credentials) {
       const value = credentials.password;
       return value;
@@ -508,7 +521,7 @@ function constructRootData(accounts: IAccountDetailWithChain[]) {
 
 export async function removeFromKeyChain(key: string) {
   try {
-    await resetInternetCredentials(key);
+    await resetInternetCredentials({ server: key });
   } catch (err) {
     // TODO (user feedback): Give feedback to user.
     Sentry.captureException(err);
@@ -520,8 +533,8 @@ export async function doesKeyExistInKeyChain(key: string) {
   return exists;
 }
 
-export async function getPrivateACLOptions(): Promise<Options> {
-  let res = {};
+export async function getPrivateACLOptions(): Promise<SetOptions> {
+  let res: SetOptions = {};
   try {
     let canAuthenticate;
     if (isIOS()) {
@@ -540,9 +553,7 @@ export async function getPrivateACLOptions(): Promise<Options> {
     }
     if (canAuthenticate && !isSimulator) {
       res = {
-        accessControl: isIOS()
-          ? ACCESS_CONTROL.USER_PRESENCE
-          : ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+        accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
         accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
       };
     }

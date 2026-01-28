@@ -34,19 +34,18 @@ Our approach implements a **hybrid security model** that:
 
 ### Keychain Access Control Configuration
 
-#### iOS Configuration
-
-```typescript
-accessControl: ACCESS_CONTROL.USER_PRESENCE;
-accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY;
-```
-
-#### Android Configuration
+#### iOS & Android Configuration (Unified)
 
 ```typescript
 accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE;
 accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY;
 ```
+
+This configuration allows users to authenticate using:
+- Biometric authentication (Face ID, Touch ID, or Fingerprint)
+- Device passcode/PIN/pattern as a fallback option
+
+**Note:** On Android API 30+, the system automatically shows "Use PIN/Pattern/Password" option when the `cancel` button text is not set in the authentication prompt.
 
 ### Security Properties
 
@@ -225,13 +224,15 @@ export const KeychainErrors = {
 
 #### iOS Behavior
 
-- Uses `ACCESS_CONTROL.USER_PRESENCE` for flexibility
+- Uses `ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE` for consistent behavior
+- Shows "Use Passcode" option in the biometric prompt
 - Throws `USERNAME_OR_PASSPHRASE_NOT_CORRECT` for multiple scenarios
 - Requires sophisticated error analysis
 
 #### Android Behavior
 
-- Uses `BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE` for stricter security
+- Uses `ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE` 
+- On API 30+: Shows "Use PIN/Pattern/Password" option when cancel button is not set
 - Provides more specific error codes
 - Generally more predictable error patterns
 
@@ -297,6 +298,8 @@ This architecture is **significantly more secure** than typical banking app impl
 
 ---
 
-**Last Updated**: January 2025  
-**Version**: 1.0  
+**Last Updated**: January 2026  
+**Version**: 1.1  
 **Authors**: CypherD Security Team
+
+**Library Version**: react-native-keychain v10.0.0
