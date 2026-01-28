@@ -73,6 +73,7 @@ interface ICustomLimit {
   atm?: boolean;
   ecom?: boolean;
   wal?: boolean;
+  tap?: boolean;
 }
 
 interface CardLimitsV2Response {
@@ -125,6 +126,7 @@ export default function CardControls() {
     online: false,
     merchantOutlet: false,
     applePay: false,
+    tapAndPay: false,
   });
 
   const [
@@ -135,6 +137,7 @@ export default function CardControls() {
   const [activeCards, setActiveCards] = useState<Card[]>([]);
   const [showForAllCards, setShowForAllCards] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | undefined>(undefined);
+  const [pendingCard, setPendingCard] = useState<Card | null>(null);
   const [onOpenNavigateTo, setOnOpenNavigateTo] =
     useState<ON_OPEN_NAVIGATE | null>(onOpenNavigate);
 
@@ -146,6 +149,7 @@ export default function CardControls() {
     useState(false);
   const [showAtmWithdrawalTooltip, setShowAtmWithdrawalTooltip] =
     useState(false);
+  const [showTapAndPayTooltip, setShowTapAndPayTooltip] = useState(false);
   const [isCountryModalVisible, setIsCountryModalVisible] = useState(false);
   const [show3DsModal, setShow3DsModal] = useState(false);
   const [isTelegramEnabled, setIsTelegramEnabled] = useState(
@@ -167,7 +171,7 @@ export default function CardControls() {
   const [showSaveChangesModal, setShowSaveChangesModal] = useState(false);
 
   // Add a ref to store the exit action
-  const exitActionRef = useRef<any>();
+  const exitActionRef = useRef<any>(null);
 
   useEffect(() => {
     const filteredCards =
@@ -251,9 +255,14 @@ export default function CardControls() {
     }
   }, [isExpanded]);
 
-  const handleCardSelect = (selectedCard: Card) => {
-    setSelectedCardId(selectedCard.cardId);
+  const handleCardSelect = (card: Card) => {
     setIsExpanded(false);
+    if (hasChanges && showForAllCards) {
+      setPendingCard(card);
+      setShowSaveChangesModal(true);
+    } else {
+      setSelectedCardId(card.cardId);
+    }
   };
 
   const channelMapping = {
@@ -261,6 +270,7 @@ export default function CardControls() {
     online: 'ecom',
     merchantOutlet: 'pos',
     applePay: 'wal',
+    tapAndPay: 'tap',
   } as const;
 
   type ChannelKey = keyof typeof channelMapping;
@@ -466,6 +476,7 @@ export default function CardControls() {
           online: response.data.customLimit?.ecom || false,
           merchantOutlet: response.data.customLimit?.pos || false,
           applePay: response.data.customLimit?.wal || false,
+          tapAndPay: response.data.customLimit?.tap || false,
         });
 
         populateSelectedCountries(response.data.countries);
@@ -686,11 +697,21 @@ export default function CardControls() {
             title: t('CHANGES_APPLIED_SUCCESSFULLY_TO_ALL_CARDS'),
             onSuccess: () => {
               hideModal();
-              navigation.goBack();
+              if (pendingCard) {
+                setSelectedCardId(pendingCard.cardId);
+                setPendingCard(null);
+              } else {
+                navigation.goBack();
+              }
             },
             onFailure: () => {
               hideModal();
-              navigation.goBack();
+              if (pendingCard) {
+                setSelectedCardId(pendingCard.cardId);
+                setPendingCard(null);
+              } else {
+                navigation.goBack();
+              }
             },
           });
         }, 300);
@@ -723,13 +744,17 @@ export default function CardControls() {
     setShowSaveChangesModal(false);
     setHasChanges(false);
     setChanges({});
-    if (exitActionRef.current) {
+    if (pendingCard) {
+      setSelectedCardId(pendingCard.cardId);
+      setPendingCard(null);
+    } else if (exitActionRef.current) {
       navigation.dispatch(exitActionRef.current);
     }
   };
 
   const handleCancelExit = () => {
     setShowSaveChangesModal(false);
+    setPendingCard(null);
   };
 
   const getDisplayCardType = (card: Card) => {
@@ -1106,6 +1131,51 @@ export default function CardControls() {
                 </CyDView>
               )}
 
+              {/* Tap and Pay */}
+              {selectedCard?.type === CardType.PHYSICAL && (
+                <CyDView className='flex flex-row items-center justify-between py-[16px] border-t border-n40'>
+                  <CyDView className='flex flex-row items-center gap-x-[12px]'>
+                    <CyDImage
+                      source={AppImages.TAP_AND_PAY_ICON}
+                      className='w-[32px] h-[32px]'
+                    />
+                  <CyDText className='text-[16px]'>Tap and Pay</CyDText>
+                  <Tooltip
+                    isVisible={showTapAndPayTooltip}
+                    content={
+                      <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
+                        <CyDText className='text-[14px] text-base400'>
+                          Enable contactless payments by tapping your physical
+                          card at supported terminals
+                        </CyDText>
+                      </CyDView>
+                    }
+                    onClose={() => setShowTapAndPayTooltip(false)}
+                    placement='top'
+                    backgroundColor='transparent'
+                    useInteractionManager={true}
+                    contentStyle={{
+                      backgroundColor: 'transparent',
+                      borderWidth: 0,
+                    }}>
+                    <CyDTouchView onPress={() => setShowTapAndPayTooltip(true)}>
+                      <CyDMaterialDesignIcons
+                        name='information-outline'
+                        size={16}
+                        className='text-n200'
+                      />
+                    </CyDTouchView>
+                  </Tooltip>
+                </CyDView>
+                  <CyDSwitch
+                    value={channelControls.tapAndPay}
+                    onValueChange={async () =>
+                      await handleChannelToggle('tapAndPay')
+                    }
+                  />
+                </CyDView>
+              )}
+
               {/* Apple Pay and Gpay */}
               <CyDView className='flex flex-row items-center justify-between py-[16px] border-t border-n40'>
                 <CyDView className='flex flex-row items-center gap-x-[12px]'>
@@ -1298,7 +1368,7 @@ export default function CardControls() {
       <ChooseMultipleCountryModal
         isModalVisible={isCountryModalVisible}
         setModalVisible={setIsCountryModalVisible}
-        selectedCountryState={[selectedCountries, handleCountrySelection]}
+        selectedCountryState={[selectedCountries, setSelectedCountries]}
         allCountriesSelectedState={[
           allCountriesSelected,
           setAllCountriesSelected,
