@@ -154,6 +154,19 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.cypherd.backup-warning</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Careful if Deleting</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Backup your wallet</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>exclamationmark.triangle.fill</string>
+		</dict>
+	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:app.cypherhq.io</string>

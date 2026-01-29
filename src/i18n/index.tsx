@@ -853,6 +853,7 @@ const resources = {
       AUTHENTICATION_CANCELLED: 'Authentication Cancelled',
       AUTHENTICATE_TO_CONTINUE:
         'Please authenticate to continue using the app.',
+      USE_BIOMETRIC_OR_PASSCODE: 'Use biometric or device passcode',
       FINGERPRINT_HARDWARE_NOT_AVAILABLE: 'Fingerprint hardware not available',
       FIX_THIS_ISSUE_TO_CONTINUE:
         'Please fix this issue to continue using the app.',

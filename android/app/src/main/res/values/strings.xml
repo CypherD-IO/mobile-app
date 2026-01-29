@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Cypher Wallet</string>
+    <string name="shortcut_backup_short">Careful if Deleting</string>
+    <string name="shortcut_backup_long">Backup your wallet</string>
 </resources>
