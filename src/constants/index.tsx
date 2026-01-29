@@ -157,6 +157,7 @@ export const screenTitle = {
   AIRDROP_CLAIM_SUCCESS: 'AirdropClaimSuccess',
   COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
   MERCHANT_REWARD_LIST: 'MerchantRewardList',
+  PREMIUM_SCREEN: 'PremiumScreen',
 };
 
 export const fontsName = {

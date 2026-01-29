@@ -37,6 +37,7 @@ export const AnalyticEvent = {
   EXPLORE_PREMIUM_LOAD_CARD_CTA: 'explore_premium_load_card_cta',
   EXPLORE_PREMIUM_TN_DETAIL_CTA: 'explore_premium_tn_detail_cta',
   EXPLORE_PREMIUM_CARD_PAGE_CTA: 'explore_premium_card_page_cta',
+  PREMIUM_SCREEN_VIEWED: 'premium_screen_viewed',
   VISITED_DEFI_OVERVIEW_SCREEN: 'visited_defi_overview_screen',
   INSIDE_COINBASE_PAY: 'inside_coinbase_pay',
   VISITED_NFT_HOLDINGS_SCREEN: 'visited_nft_holdings_screen',

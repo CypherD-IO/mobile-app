@@ -30,7 +30,6 @@ import {
 } from '../../constants/enum';
 import { t } from 'i18next';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
-import SelectPlanModal from '../../components/selectPlanModal';
 import Button from '../../components/v2/button';
 import {
   NavigationProp,
@@ -139,7 +138,6 @@ export default function OptionsHub() {
     address: `0x${string}`,
   ) => Promise<string | null>;
 
-  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
   const [isTelegramOptionsVisible, setIsTelegramOptionsVisible] =
@@ -551,15 +549,6 @@ export default function OptionsHub() {
       <CyDScrollView
         className='bg-base20 '
         contentContainerStyle={{ paddingBottom: insets.bottom }}>
-        {planChangeModalVisible && (
-          <SelectPlanModal
-            isModalVisible={planChangeModalVisible}
-            setIsModalVisible={setPlanChangeModalVisible}
-            cardProvider={currentCardProvider}
-            cardId={cardId}
-          />
-        )}
-
         {isAutoLoadOptionsvisible && (
           <AutoLoadOptionsModal
             isModalVisible={isAutoLoadOptionsvisible}
@@ -693,7 +682,7 @@ export default function OptionsHub() {
             </CyDView>
           )}
 
-          {!isPremiumUser && hasCards && (
+          {!isPremiumUser && (
             <CyDView className='bg-base20 p-6 rounded-[8px] border border-base200'>
               <CyDView className='flex flex-row items-center gap-x-[4px] justify-start'>
                 <CyDText className='font-extrabold text-[20px]'>
@@ -744,7 +733,7 @@ export default function OptionsHub() {
                 title={'Explore Premium'}
                 type={ButtonType.DARK}
                 onPress={() => {
-                  setPlanChangeModalVisible(true);
+                  navigation.navigate(screenTitle.PREMIUM_SCREEN);
                   void logAnalyticsToFirebase(
                     AnalyticEvent.EXPLORE_PREMIUM_CARD_PAGE_CTA,
                   );

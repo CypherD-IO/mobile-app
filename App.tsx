@@ -316,6 +316,13 @@ export const handleDeepLink = async (
           screenToNavigate: screenTitle.MERCHANT_REWARD_LIST,
         };
       }
+
+      // Deep link for premium page: https://app.cypherhq.io/premium
+      if (pathname === '/premium' || pathname === '/premium/') {
+        return {
+          screenToNavigate: screenTitle.PREMIUM_SCREEN,
+        };
+      }
     } catch (error) {
       // Log and swallow URL parsing errors so they never break app startup from a malformed link
       // eslint-disable-next-line no-console

@@ -264,6 +264,14 @@ const TabStack = React.memo(
             });
             break;
 
+          case screenTitle.PREMIUM_SCREEN:
+            // Deep link to the Premium screen (premium upgrade page)
+            navigateToScreenInTab(screenTitle.CARD, {
+              screen: data.screenToNavigate,
+              params: data.params,
+            });
+            break;
+
           case screenTitle.ENTER_AMOUNT:
             navigateToScreenInTab(screenTitle.PORTFOLIO, {
               screen: data.screenToNavigate,
