@@ -537,14 +537,22 @@ export async function doesKeyExistInKeyChain(key: string) {
 export async function getPrivateACLOptions(): Promise<SetOptions> {
   let res: SetOptions = {};
   try {
-    let canAuthenticate;
+    let canAuthenticate = false;
     if (isIOS()) {
       canAuthenticate = await canImplyAuthentication({
         authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
       });
     } else {
       const hasBiometricsEnabled = await getSupportedBiometryType();
-      canAuthenticate = !!hasBiometricsEnabled;
+      if (hasBiometricsEnabled !== null) {
+        canAuthenticate = true;
+      } else {
+        try {
+          canAuthenticate = await isPasscodeAuthAvailable();
+        } catch {
+          canAuthenticate = false;
+        }
+      }
     }
 
     let isSimulator = false;
