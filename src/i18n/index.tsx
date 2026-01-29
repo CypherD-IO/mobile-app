@@ -853,6 +853,7 @@ const resources = {
       AUTHENTICATION_CANCELLED: 'Authentication Cancelled',
       AUTHENTICATE_TO_CONTINUE:
         'Please authenticate to continue using the app.',
+      USE_BIOMETRIC_OR_PASSCODE: 'Use biometric or device passcode',
       FINGERPRINT_HARDWARE_NOT_AVAILABLE: 'Fingerprint hardware not available',
       FIX_THIS_ISSUE_TO_CONTINUE:
         'Please fix this issue to continue using the app.',
@@ -2148,6 +2149,8 @@ const resources = {
       ZERO_FOREX_MARKUP: 'Zero Forex Markup',
       ZERO_USDC_LOAD_FEE: 'Zero USDC Load Fee',
       EXPLORE_PREMIUM: 'Explore Premium',
+      GET_A_CARD_FIRST: 'Get a Card First',
+      GET_CARD_NOW: 'Get Card Now',
       UNABLE_TO_SHARE_TRANSACTION_DETAILS:
         'Unable to share transaction details',
       PLEASE_TRY_AGAIN: 'Please try again',

@@ -18,7 +18,6 @@ import { showToast } from '../../containers/utilities/toastUtility';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import ReferralRewardsBottomSheet from '../../components/v2/ReferralRewardsBottomSheet';
 import QRCode from '../../components/v2/QRCode';
-import { BlurView } from '@react-native-community/blur';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import useAxios from '../../core/HttpRequest';
 import NewReferralCodeModal from '../../components/v2/newReferralCodeModal';
@@ -38,17 +37,6 @@ interface ReferralData {
 interface MinimalNav {
   navigate: (route: string, params?: unknown) => void;
 }
-
-// Extracted styles to avoid inline-style linter warnings
-const styles = StyleSheet.create({
-  blurAbsolute: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-});
 
 /**
  * QR Code Bottom Sheet Content Component
@@ -397,23 +385,7 @@ export default function Referrals() {
   };
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
-      {/* Background image */}
-      <CyDImage
-        source={isDarkMode ? AppImages.REWARD_BG : AppImages.REWARD_BG_LIGHT}
-        resizeMode='cover'
-        className='absolute top-0 left-0 w-full h-full'
-      />
-      {/* Grey translucent tint with blur */}
-      <BlurView
-        style={styles.blurAbsolute}
-        blurType={isDarkMode ? 'dark' : 'light'}
-        blurAmount={37}
-        reducedTransparencyFallbackColor={
-          isDarkMode ? 'rgba(15, 15, 15, 0.25)' : 'rgba(223,226,230,0.25)'
-        }
-      />
-
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       <CyDScrollView className='flex-1'>
         {/* Header (now scrollable) */}
         <CyDView className='flex-row justify-between items-center px-4 pt-3'>
@@ -448,10 +420,7 @@ export default function Referrals() {
         </CyDView>
 
         {/* Referral Code Section */}
-        <CyDView
-          className={`mx-4 mb-6 rounded-2xl p-6 ${
-            isDarkMode ? 'bg-n20' : 'bg-n0'
-          }`}>
+        <CyDView className={'mx-4 mb-6 rounded-2xl p-6 bg-n0'}>
           <CyDText className='text-n200 text-[12px] text-center mb-2'>
             {t('REFERRAL_CODE')}
           </CyDText>

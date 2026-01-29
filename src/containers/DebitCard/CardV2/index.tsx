@@ -15,8 +15,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Toast from 'react-native-toast-message';
-import AppImages, { AppImagesMap } from '../../../../assets/images/appImages';
+import AppImages from '../../../../assets/images/appImages';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
@@ -1181,7 +1180,8 @@ export default function CypherCardScreen() {
 }
 const style = StyleSheet.create({
   loaderStyle: {
-    height: 38,
+    height: 40,
+    width: 40,
   },
   gradientStyle: {
     borderRadius: 100,

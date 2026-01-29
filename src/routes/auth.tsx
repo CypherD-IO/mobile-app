@@ -127,6 +127,7 @@ import TokenRewardEarned from '../containers/DebitCard/CardV2/signup/application
 import ReferralsViewAll from '../containers/Rewards/ReferralsViewAll';
 import AllReferralCodes from '../containers/Referrals/AllReferralCodes';
 import MerchantRewardListScreen from '../containers/DebitCard/CardV2/MerchantRewardListScreen';
+import PremiumScreen from '../containers/Premium';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -821,6 +822,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
           headerShown: false,
         }}
       />
+      <FundCardStack.Screen
+        name={screenTitle.PREMIUM_SCREEN}
+        component={PremiumScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
     </FundCardStack.Navigator>
   );
 }
@@ -1310,6 +1318,11 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN}
         component={UpdateCardContactDetails}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.PREMIUM_SCREEN}
+        component={PremiumScreen}
         options={{ headerShown: false }}
       />
     </OptionsStack.Navigator>

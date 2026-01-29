@@ -8,7 +8,9 @@ import {
   hasInternetCredentials,
   resetInternetCredentials,
   setInternetCredentials,
-  Options,
+  isPasscodeAuthAvailable,
+  SetOptions,
+  GetOptions,
 } from 'react-native-keychain';
 import Intercom from '@intercom/intercom-react-native';
 import { Alert } from 'react-native';
@@ -79,6 +81,11 @@ import { cosmosConfig } from '../constants/cosmosConfig';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 11;
+
+// Global lock to prevent multiple concurrent Face ID prompts
+// When Face ID is already in progress, other callers will wait for the result
+let biometricAuthInProgress: Promise<boolean> | null = null;
+let biometricAuthResolver: ((success: boolean) => void) | null = null;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
@@ -152,6 +159,9 @@ export async function removeCredentialsFromKeychain() {
   await removeFromKeyChain(CYPHERD_PRIVATE_KEY);
   // Reset Pin Authentication
   await removeFromKeyChain(PIN_AUTH);
+  // Reset biometric auth entries (so new wallet will have fresh ACL settings)
+  await removeFromKeyChain(AUTHORIZE_WALLET_DELETION);
+  await removeFromKeyChain(DUMMY_AUTH);
   // Remove cypherD root data
   // await removeFromKeyChain(CYPHERD_ROOT_DATA);
   await removeCyRootData();
@@ -214,6 +224,16 @@ export async function loadFromKeyChain(
     // Default empty function - no action needed
   },
 ) {
+  console.log('loadFromKeyChain : ', key);
+  // If biometric auth is already in progress, wait for it to complete
+  // This prevents multiple Face ID prompts from appearing simultaneously
+  if (biometricAuthInProgress) {
+    const authSucceeded = await biometricAuthInProgress;
+    if (!authSucceeded) {
+      return undefined;
+    }
+  }
+
   // Retrieve the credentials
   let requestMessage = '';
   switch (key) {
@@ -224,12 +244,37 @@ export async function loadFromKeyChain(
       requestMessage = 'Requesting access to continue using this app';
   }
 
+  // Create a new auth lock before attempting keychain access
+  biometricAuthInProgress = new Promise<boolean>(resolve => {
+    biometricAuthResolver = resolve;
+  });
+
   try {
-    const credentials = await getInternetCredentials(key, {
-      authenticationPrompt: {
-        title: requestMessage,
-      },
-    });
+    // Configure authentication options with passcode fallback support
+    // iOS: Use authenticationType to show "Use Passcode" option
+    // Android: Do NOT set cancel button to enable device credential fallback (API 30+)
+    const options: GetOptions = {
+      authenticationPrompt: isIOS()
+        ? {
+            title: requestMessage,
+            subtitle: t('USE_BIOMETRIC_OR_PASSCODE'),
+            cancel: t('CANCEL'),
+          }
+        : {
+            title: requestMessage,
+            subtitle: t('USE_BIOMETRIC_OR_PASSCODE'),
+            // Note: On Android, omitting 'cancel' enables "Use PIN/Pattern/Password" fallback
+          },
+      // ACCESS_CONTROL for retrieval - allows biometric or device passcode
+      accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+    };
+    const credentials = await getInternetCredentials(key, options);
+    // Auth succeeded - notify any waiting callers and clear the lock
+    if (biometricAuthResolver) {
+      biometricAuthResolver(true);
+    }
+    biometricAuthInProgress = null;
+    biometricAuthResolver = null;
     if (credentials) {
       const value = credentials.password;
       return value;
@@ -237,6 +282,13 @@ export async function loadFromKeyChain(
       return _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
     }
   } catch (error: any) {
+    // Auth failed - notify any waiting callers and clear the lock
+    if (biometricAuthResolver) {
+      biometricAuthResolver(false);
+    }
+    biometricAuthInProgress = null;
+    biometricAuthResolver = null;
+
     // in iOS we are flexible with authentication methods as only 1 biometric is allowed in iOS, but in Android we show the default auth modal if the user is tying to access the keychain with a new biometric / passcode that the ones present at the time of saving the credentials.
     if (
       error.message === KeychainErrors.CODE_11 ||
@@ -470,7 +522,7 @@ function constructRootData(accounts: IAccountDetailWithChain[]) {
 
 export async function removeFromKeyChain(key: string) {
   try {
-    await resetInternetCredentials(key);
+    await resetInternetCredentials({ server: key });
   } catch (err) {
     // TODO (user feedback): Give feedback to user.
     Sentry.captureException(err);
@@ -482,17 +534,25 @@ export async function doesKeyExistInKeyChain(key: string) {
   return exists;
 }
 
-export async function getPrivateACLOptions(): Promise<Options> {
-  let res = {};
+export async function getPrivateACLOptions(): Promise<SetOptions> {
+  let res: SetOptions = {};
   try {
-    let canAuthenticate;
+    let canAuthenticate = false;
     if (isIOS()) {
       canAuthenticate = await canImplyAuthentication({
         authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
       });
     } else {
       const hasBiometricsEnabled = await getSupportedBiometryType();
-      canAuthenticate = !!hasBiometricsEnabled;
+      if (hasBiometricsEnabled !== null) {
+        canAuthenticate = true;
+      } else {
+        try {
+          canAuthenticate = await isPasscodeAuthAvailable();
+        } catch {
+          canAuthenticate = false;
+        }
+      }
     }
 
     let isSimulator = false;
@@ -502,9 +562,7 @@ export async function getPrivateACLOptions(): Promise<Options> {
     }
     if (canAuthenticate && !isSimulator) {
       res = {
-        accessControl: isIOS()
-          ? ACCESS_CONTROL.USER_PRESENCE
-          : ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+        accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
         accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
       };
     }
@@ -661,15 +719,29 @@ export const validatePin = async (pin: string) => {
   return false;
 };
 
+/**
+ * Checks if device-level authentication is available (biometric OR passcode).
+ * This is used to determine if we can rely on device-level security instead of in-app PIN.
+ *
+ * @returns true if device has biometric (Face ID, Touch ID, Fingerprint) OR device passcode enabled
+ */
 export const isBiometricEnabled = async () => {
-  let canAuthenticate;
+  let canAuthenticate = false;
   if (isIOS()) {
     canAuthenticate = await canImplyAuthentication({
       authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
     });
   } else {
     const hasBiometricsEnabled = await getSupportedBiometryType();
-    canAuthenticate = hasBiometricsEnabled !== null;
+    if (hasBiometricsEnabled !== null) {
+      canAuthenticate = true;
+    } else {
+      try {
+        canAuthenticate = await isPasscodeAuthAvailable();
+      } catch {
+        canAuthenticate = false;
+      }
+    }
   }
   return canAuthenticate;
 };
