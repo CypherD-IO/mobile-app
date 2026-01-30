@@ -266,7 +266,7 @@ To test the hook:
 
 - `wagmi` - Ethereum wallet integration
 - `viem` - Ethereum utilities and ABI encoding
-- `@reown/appkit-wagmi-react-native` - WalletConnect integration
+- `@reown/appkit-react-native` - AppKit for WalletConnect integration
 - `@sentry/react-native` - Error tracking
 
 ## Notes

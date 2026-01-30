@@ -1,4 +1,4 @@
-import { useAppKit } from '@reown/appkit-wagmi-react-native';
+import { useAppKit } from '@reown/appkit-react-native';
 import { useAccount, useDisconnect } from 'wagmi';
 
 interface UseWalletConnectMobileResult {

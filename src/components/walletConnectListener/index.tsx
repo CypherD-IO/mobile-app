@@ -1,13 +1,18 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  PropsWithChildren,
+} from 'react';
 import { HdWalletContext } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
-import { AppKit, useWalletInfo } from '@reown/appkit-wagmi-react-native';
+import { AppKit, useWalletInfo } from '@reown/appkit-react-native';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
   getAuthToken,
-  getConnectionType,
   removeConnectionType,
   setAuthToken,
   setConnectionType,
@@ -15,7 +20,7 @@ import {
 } from '../../core/asyncStorage';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
-import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindComponents';
@@ -33,7 +38,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  */
 const WALLET_CONNECT_FLOW_KEY = 'ONBOARDING_WALLET_CONNECT_FLOW_ACTIVE';
 
-export const WalletConnectListener: React.FC = ({ children }) => {
+export const WalletConnectListener: React.FC<PropsWithChildren> = ({
+  children,
+}) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ethereumAddress = get(
@@ -46,17 +53,24 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
   const { connectionType, deleteWalletConfig } = useConnectionManager();
-  const [loading, setLoading] = useState<boolean>(
-    connectionType === ConnectionTypes.WALLET_CONNECT,
-  );
+  const [loading, setLoading] = useState<boolean>(false);
   const { walletInfo } = useWalletInfo();
   const { getWalletProfile } = useCardUtilities();
   const [isInitializing, setIsInitializing] = useState(true);
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const connectionTypeRef = useRef(connectionType);
 
+  // Keep ref in sync with connectionType
   useEffect(() => {
-    setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);
+    connectionTypeRef.current = connectionType;
   }, [connectionType]);
+
+  // Initialize loading state based on connectionType (only on mount)
+  useEffect(() => {
+    if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+      setLoading(true);
+    }
+  }, []);
 
   const { signMessageAsync } = useSignMessage({
     mutation: {

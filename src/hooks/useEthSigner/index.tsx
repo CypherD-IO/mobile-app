@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-react-native';
 import * as Sentry from '@sentry/react-native';
 import {
   getBlockNumber,
@@ -93,7 +93,12 @@ export default function useEthSigner() {
       const getTransactions = async () => {
         try {
           const response = await getWithAuth(
-            `/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`,
+            `/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(
+              ChainIdToBackendNameMapping,
+              [String(chainId)],
+            )}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${
+              contractAddress ? `&contractAddress=${contractAddress}` : ''
+            }`,
           );
           const data = response.data;
           if (data.transactions && data.transactions.length === 1) {
@@ -192,23 +197,17 @@ export default function useEthSigner() {
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       const connectedChain = getChainId(wagmiConfig);
       const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
-      if (
-        walletInfo?.name === 'MetaMask Wallet' &&
-        connectedChain !== chainConfig.id
-      ) {
+      // Switch chain for ALL WalletConnect wallets (required by wagmi - it doesn't auto-switch)
+      // Do this silently - the wallet app will show its own UI for the switch
+      if (connectedChain !== chainConfig.id) {
         try {
-          showModal('state', {
-            type: 'warning',
-            title: `Switch to ${chainConfig?.name} chain`,
-            description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
-            onSuccess: hideModal,
-          });
           await switchChainAsync({
             chainId: chainConfig.id,
           });
-          hideModal();
           await sleepFor(1000);
-        } catch (e) {}
+        } catch (e) {
+          throw new Error(`Failed to switch to ${chainConfig?.name} chain`);
+        }
       }
 
       const response = await sendTransactionAsync({
@@ -294,24 +293,50 @@ export default function useEthSigner() {
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       const connectedChain = getChainId(wagmiConfig);
       const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
-      if (
-        walletInfo?.name === 'MetaMask Wallet' &&
-        connectedChain !== chainConfig.id
-      ) {
+      // Switch chain for ALL WalletConnect wallets (required by wagmi - it doesn't auto-switch)
+      if (connectedChain !== chainConfig.id) {
+        const isMetaMask = walletInfo?.name === 'MetaMask Wallet';
         try {
-          setTimeout(() => {
-            const currentConnectedChain = getChainId(wagmiConfig);
-            if (
-              Platform.OS === 'android' &&
-              currentConnectedChain !== chainConfig.id
-            ) {
+          // For MetaMask on Android, show a fallback modal in case switch doesn't appear
+          if (isMetaMask && Platform.OS === 'android') {
+            setTimeout(() => {
+              const currentConnectedChain = getChainId(wagmiConfig);
+              if (currentConnectedChain !== chainConfig.id) {
+                showModal('state', {
+                  type: 'warning',
+                  title: `Switch to ${chainConfig.name} chain`,
+                  description: `If you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain and try again.`,
+                  onSuccess: () => {
+                    hideModal();
+                    redirectToMetaMask();
+                    navigation.goBack();
+                  },
+                  onFailure: () => {
+                    hideModal();
+                    navigation.goBack();
+                  },
+                });
+              }
+            }, 2000);
+          }
+          // For non-MetaMask wallets, switch silently - wallet app will show its own UI
+          await switchChainAsync({
+            chainId: chainConfig.id,
+          });
+          hideModal();
+          await sleepFor(1000);
+        } catch (e) {
+          Sentry.captureException(e);
+          hideModal();
+          // Only show error modal for MetaMask (which has known issues)
+          if (isMetaMask) {
+            setTimeout(() => {
               showModal('state', {
-                type: 'warning',
-                title: `Switch to ${chainConfig.name} chain`,
-                description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain and try again.`,
+                type: 'error',
+                title: "Couldn't Switch Chain",
+                description: `Failed to switch to ${chainConfig.name}. Please switch manually in your wallet and try again.`,
                 onSuccess: () => {
                   hideModal();
-                  redirectToMetaMask();
                   navigation.goBack();
                 },
                 onFailure: () => {
@@ -319,27 +344,9 @@ export default function useEthSigner() {
                   navigation.goBack();
                 },
               });
-            }
-          }, 2000);
-          await switchChainAsync({
-            chainId: chainConfig.id,
-          });
-          await sleepFor(1000);
-        } catch (e) {
-          Sentry.captureException(e);
-          setTimeout(() => {
-            showModal('state', {
-              type: 'error',
-              title: "Couldn't Switch Chain",
-              description: e,
-              onSuccess: () => {
-                hideModal();
-              },
-              onFailure: () => {
-                hideModal();
-              },
-            });
-          }, MODAL_HIDE_TIMEOUT_250);
+            }, MODAL_HIDE_TIMEOUT_250);
+          }
+          throw e;
         }
       }
       try {

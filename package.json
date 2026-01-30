@@ -84,8 +84,8 @@
     "@react-navigation/native": "^6.0.6",
     "@react-navigation/native-stack": "^6.2.5",
     "@react-navigation/stack": "^6.3.16",
-    "@reown/appkit-auth-wagmi-react-native": "1.0.2",
-    "@reown/appkit-wagmi-react-native": "1.0.2",
+    "@reown/appkit-react-native": "^2.0.1",
+    "@reown/appkit-wagmi-react-native": "^2.0.1",
     "@reown/walletkit": "^1.0.0",
     "@sentry/react-native": "^7.8.0",
     "@solana/spl-token": "^0.4.8",
@@ -330,6 +330,7 @@
     "libsodium": "0.8.0",
     "libsodium-wrappers": "0.8.0",
     "secp256k1": "5.0.1",
-    "react-native-svg": "15.15.1"
+    "react-native-svg": "15.15.1",
+    "valtio": "1.13.2"
   }
 }

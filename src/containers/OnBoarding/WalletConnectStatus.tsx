@@ -15,7 +15,7 @@ import useWalletConnectMobile from '../../hooks/useWalletConnectMobile';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import { Colors } from '../../constants/theme';
 import { useSignMessage } from 'wagmi';
-import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-react-native';
 import useAxios from '../../core/HttpRequest';
 import axios from '../../core/Http';
 import { hostWorker } from '../../global';
@@ -162,7 +162,9 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         try {
           // Verify signature with backend
           const verifyMessageResponse = await axios.post(
-            `${ARCH_HOST}/v1/authentication/verify-message/${String(address).toLowerCase()}?format=ERC-4361`,
+            `${ARCH_HOST}/v1/authentication/verify-message/${String(
+              address,
+            ).toLowerCase()}?format=ERC-4361`,
             {
               signature,
             },
@@ -558,7 +560,9 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
                 <CyDView className='w-[20px] h-[20px] rounded-full bg-n20' />
               )}
               <CyDText
-                className={`ml-[8px] text-[15px] ${signStepFailed ? 'text-red400' : 'text-base400'}`}>
+                className={`ml-[8px] text-[15px] ${
+                  signStepFailed ? 'text-red400' : 'text-base400'
+                }`}>
                 {signStepCompleted
                   ? t(
                       'WALLET_CONNECT_SIGN_COMPLETED',
@@ -566,24 +570,24 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
                       { address: addressPreview },
                     )
                   : signStepFailed
-                    ? t(
-                        'WALLET_CONNECT_SIGN_FAILED',
-                        'Sign request rejected for "{{address}}"',
-                        { address: addressPreview },
-                      )
-                    : isSigning
-                      ? t(
-                          'WALLET_CONNECT_SIGNING',
-                          'Awaiting signature from "{{address}}"',
-                          { address: addressPreview },
-                        )
-                      : t(
-                          'WALLET_CONNECT_SIGN_MESSAGE_STATUS',
-                          'Creating sign request for "{{address}}"',
-                          {
-                            address: addressPreview,
-                          },
-                        )}
+                  ? t(
+                      'WALLET_CONNECT_SIGN_FAILED',
+                      'Sign request rejected for "{{address}}"',
+                      { address: addressPreview },
+                    )
+                  : isSigning
+                  ? t(
+                      'WALLET_CONNECT_SIGNING',
+                      'Awaiting signature from "{{address}}"',
+                      { address: addressPreview },
+                    )
+                  : t(
+                      'WALLET_CONNECT_SIGN_MESSAGE_STATUS',
+                      'Creating sign request for "{{address}}"',
+                      {
+                        address: addressPreview,
+                      },
+                    )}
               </CyDText>
             </CyDView>
           </CyDView>
