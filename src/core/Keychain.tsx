@@ -250,9 +250,9 @@ export async function loadFromKeyChain(
   });
 
   try {
-    // Configure authentication options with passcode fallback support
-    // iOS: Use authenticationType to show "Use Passcode" option
-    // Android: Do NOT set cancel button to enable device credential fallback (API 30+)
+    // NOTE: We intentionally do NOT specify accessControl during retrieval.
+    // The keychain item's ACL is determined at save time. Specifying a different
+    // accessControl during retrieval can cause failures for items saved without ACL
     const options: GetOptions = {
       authenticationPrompt: isIOS()
         ? {
@@ -265,8 +265,6 @@ export async function loadFromKeyChain(
             subtitle: t('USE_BIOMETRIC_OR_PASSCODE'),
             // Note: On Android, omitting 'cancel' enables "Use PIN/Pattern/Password" fallback
           },
-      // ACCESS_CONTROL for retrieval - allows biometric or device passcode
-      accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
     };
     const credentials = await getInternetCredentials(key, options);
     // Auth succeeded - notify any waiting callers and clear the lock
