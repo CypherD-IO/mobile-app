@@ -536,6 +536,7 @@ export async function getPrivateACLOptions(): Promise<SetOptions> {
   let res: SetOptions = {};
   try {
     let canAuthenticate = false;
+
     if (isIOS()) {
       canAuthenticate = await canImplyAuthentication({
         authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
@@ -559,8 +560,9 @@ export async function getPrivateACLOptions(): Promise<SetOptions> {
       isSimulator = __DEV__ && isEmulator;
     }
     if (canAuthenticate && !isSimulator) {
+      // Use USER_PRESENCE which works with either biometry or device passcode.
       res = {
-        accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+        accessControl: ACCESS_CONTROL.USER_PRESENCE,
         accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
       };
     }
