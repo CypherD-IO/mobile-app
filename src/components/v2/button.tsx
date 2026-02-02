@@ -113,6 +113,7 @@ export default function Button({
           'bg-n50': disabled,
           'bg-n0': ButtonType.WHITE_FILL === type,
           'bg-base200': ButtonType.DARK_GREY_FILL === type,
+          'bg-yellow': ButtonType.YELLOW_FILL === type,
         },
       )}>
       {loading && (
@@ -174,6 +175,8 @@ export default function Button({
               ButtonType.WHITE_FILL,
               ButtonType.GREY_FILL,
             ].includes(type),
+            'font-manrope tracking-[-1px] leading-[130%] text-[20px] text-black':
+              ButtonType.YELLOW_FILL === type,
           })}>
           {title}
         </CyDText>

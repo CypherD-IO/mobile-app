@@ -127,6 +127,8 @@ export const AnalyticEvent = {
   EXCLUSIVE_OFFER_MODAL_VIEWED: 'exclusive_offer_modal_viewed',
   EXCLUSIVE_OFFER_SEE_DETAILS_CLICKED: 'exclusive_offer_see_details_clicked',
   EXCLUSIVE_OFFER_GOT_IT_CLICKED: 'exclusive_offer_got_it_clicked',
+  FREE_SAFEPAL_CLAIM_CLICKED: 'free_safepal_claim_clicked',
+  FREE_SAFEPAL_DONT_SHOW_CLICKED: 'free_safepal_dont_show_clicked',
 };
 
 export const logAnalyticsToFirebase = (

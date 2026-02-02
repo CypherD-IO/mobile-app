@@ -769,6 +769,9 @@ const SUCCESS_TICK_3D = {
 const WALLET_CONNECT_MOBILE = {
   uri: `${S3_BUCKET_URL_ICONS}/walletConnectMobile.png`,
 };
+const FREE_SAFEPAL_CLAIM_IMAGE = require('./Frame.png');
+const FREE_SAFEPAL_CLAIM_IMAGE_BG = require('./Rectangle 39447.png');
+const FREE_SAFEPAL_BADGE= require('./Frame (1).png');
 
 export const AppImagesMap = {
   common: {
@@ -1092,6 +1095,9 @@ export const AppImagesMap = {
     TREASURE_CHEST,
     SUCCESS_TICK_3D,
     WALLET_CONNECT_MOBILE,
+    FREE_SAFEPAL_CLAIM_IMAGE,
+    FREE_SAFEPAL_CLAIM_IMAGE_BG,
+    FREE_SAFEPAL_BADGE
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1419,6 +1425,9 @@ enum AppImages {
   TREASURE_CHEST = 'TREASURE_CHEST',
   SUCCESS_TICK_3D = 'SUCCESS_TICK_3D',
   WALLET_CONNECT_MOBILE = 'WALLET_CONNECT_MOBILE',
+  FREE_SAFEPAL_CLAIM_IMAGE = 'FREE_SAFEPAL_CLAIM_IMAGE',
+  FREE_SAFEPAL_CLAIM_IMAGE_BG = 'FREE_SAFEPAL_CLAIM_IMAGE_BG',
+  FREE_SAFEPAL_BADGE = 'FREE_SAFEPAL_BADGE',
 }
 
 export default AppImages;

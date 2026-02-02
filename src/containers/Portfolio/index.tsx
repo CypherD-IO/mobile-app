@@ -22,6 +22,7 @@ import React, {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
   AppState,
   BackHandler,
   ListRenderItem,
@@ -44,6 +45,7 @@ import {
   RPCODES,
   CardProviders,
   ConnectionTypes,
+  CypherPlanId,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
@@ -112,6 +114,8 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import { colorScheme } from 'nativewind';
 import CyDModalLayout from '../../components/v2/modal';
 import type { QRScanEvent } from '../../types/qr';
+import FreeSafepalClaimModal from '../../components/v2/freeSafepalClaimModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface PortfolioProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
@@ -207,6 +211,27 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   // Receive modal states
   const [chooseChainModal, setChooseChainModal] = useState<boolean>(false);
+
+  // Free Safepal claim modal states
+  const [isSafepalModalVisible, setSafepalModalVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkSafepalModal = async () => {
+      try {
+        const isPremiumUser = get(globalStateContext, ['globalState', 'cardProfile', 'planInfo', 'planId']) === CypherPlanId.PRO_PLAN;
+        const dismissed = await AsyncStorage.getItem('@free_safepal_claim_modal_dismissed');
+        if (dismissed !== 'true' && isPremiumUser) {
+          setTimeout(() => { 
+            setSafepalModalVisible(true);
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error checking safepal modal status', error);
+      }  
+    };
+
+    checkSafepalModal();
+  }, []);
 
   const { theme } = useTheme();
   const isDarkMode =
@@ -1587,6 +1612,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           />
         </>
       ) : null}
+      <FreeSafepalClaimModal 
+        isModalVisible={isSafepalModalVisible}
+        setIsModalVisible={setSafepalModalVisible}
+      />
     </CyDSafeAreaView>
   );
 }
