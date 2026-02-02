@@ -113,7 +113,7 @@ export default function Button({
           'bg-n50': disabled,
           'bg-n0': ButtonType.WHITE_FILL === type,
           'bg-base200': ButtonType.DARK_GREY_FILL === type,
-          'bg-yellow': ButtonType.YELLOW_FILL === type,
+          'bg-yellow': ButtonType.YELLOW_FILL === type && !disabled,
         },
       )}>
       {loading && (

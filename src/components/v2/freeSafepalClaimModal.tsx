@@ -17,7 +17,15 @@ import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AppImages from '../../../assets/images/appImages';
 import { FREE_SAFEPAL_CLAIM_URL } from '../../constants/data';
 
-const STORAGE_KEY_DISMISSED = '@free_safepal_claim_modal_dismissed';
+export const STORAGE_KEY_DISMISSED = '@free_safepal_claim_modal_dismissed';
+
+const safeSetItem = async (key: string, value: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(key, value);
+  } catch (error) {
+    console.error(`Failed to save ${key} to AsyncStorage:`, error);
+  }
+};
 
 export default function FreeSafepalClaimModal({
   isModalVisible,
@@ -30,7 +38,7 @@ export default function FreeSafepalClaimModal({
 
   useEffect(() => {
     if (!isModalVisible && dontShowAgain) {
-      void AsyncStorage.setItem(STORAGE_KEY_DISMISSED, 'true');
+      void safeSetItem(STORAGE_KEY_DISMISSED, 'true');
     }
   }, [isModalVisible, dontShowAgain]);
 
@@ -42,7 +50,7 @@ export default function FreeSafepalClaimModal({
     });
 
     if (dontShowAgain) {
-      await AsyncStorage.setItem(STORAGE_KEY_DISMISSED, 'true');
+      await safeSetItem(STORAGE_KEY_DISMISSED, 'true');
     }
 
     try {
@@ -65,7 +73,7 @@ export default function FreeSafepalClaimModal({
 
   const handleClose = async () => {
     if (dontShowAgain) {
-      await AsyncStorage.setItem(STORAGE_KEY_DISMISSED, 'true');
+      await safeSetItem(STORAGE_KEY_DISMISSED, 'true');
     }
     setIsModalVisible(false);
   };

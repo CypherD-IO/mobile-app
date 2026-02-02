@@ -114,7 +114,7 @@ import { Theme, useTheme } from '../../reducers/themeReducer';
 import { colorScheme } from 'nativewind';
 import CyDModalLayout from '../../components/v2/modal';
 import type { QRScanEvent } from '../../types/qr';
-import FreeSafepalClaimModal from '../../components/v2/freeSafepalClaimModal';
+import FreeSafepalClaimModal, { STORAGE_KEY_DISMISSED } from '../../components/v2/freeSafepalClaimModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface PortfolioProps {
@@ -216,12 +216,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [isSafepalModalVisible, setSafepalModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
     const checkSafepalModal = async () => {
       try {
         const isPremiumUser = get(globalStateContext, ['globalState', 'cardProfile', 'planInfo', 'planId']) === CypherPlanId.PRO_PLAN;
-        const dismissed = await AsyncStorage.getItem('@free_safepal_claim_modal_dismissed');
+        const dismissed = await AsyncStorage.getItem(STORAGE_KEY_DISMISSED);
         if (dismissed !== 'true' && isPremiumUser) {
-          setTimeout(() => { 
+          timer = setTimeout(() => { 
             setSafepalModalVisible(true);
           }, 1000);
         }
@@ -231,7 +232,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     };
 
     checkSafepalModal();
-  }, []);
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [globalStateContext?.globalState?.cardProfile?.planInfo?.planId]);
 
   const { theme } = useTheme();
   const isDarkMode =
