@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking, StyleSheet } from 'react-native';
+import { Dimensions, Linking, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'i18next';
 import {
@@ -26,6 +26,10 @@ const safeSetItem = async (key: string, value: string): Promise<void> => {
     console.error(`Failed to save ${key} to AsyncStorage:`, error);
   }
 };
+
+const windowHeight = Dimensions.get('window').height;
+const maxBgHeight = Math.min(windowHeight * 0.85, 750); 
+const imageHeight = Math.min(windowHeight * 0.72, 639); 
 
 export default function FreeSafepalClaimModal({
   isModalVisible,
@@ -95,13 +99,15 @@ export default function FreeSafepalClaimModal({
   
       <CyDImageBackground
         source={AppImages.FREE_SAFEPAL_CLAIM_IMAGE_BG}
-        className='rounded-t-[20px] overflow-hidden h-[750px]'
+        className='rounded-t-[20px] overflow-hidden'
+        style={{ height: maxBgHeight }}
         resizeMode='cover'
         imageStyle={{ borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
         
         <CyDView 
-          className='absolute top-0 left-0 right-0 w-full h-[639px]'
-          pointerEvents='none'>
+          className='absolute top-0 left-0 right-0 w-full'
+          style={{ height: imageHeight }}
+          pointerEvents='none'> 
           <CyDImage
             source={AppImages.FREE_SAFEPAL_CLAIM_IMAGE}
             className='w-full h-full'
@@ -110,7 +116,8 @@ export default function FreeSafepalClaimModal({
 
           <CyDImage
             source={AppImages.FREE_SAFEPAL_BADGE}
-            className='absolute top-[410px] left-[222px] w-[83px] h-[83px]'
+            className='absolute left-[222px] w-[83px] h-[83px]'
+            style={{ top: imageHeight * 0.64 }}
             resizeMode='contain'
           />
         </CyDView>
