@@ -1096,7 +1096,7 @@ export const AppImagesMap = {
     TREASURE_CHEST,
     SUCCESS_TICK_3D,
     WALLET_CONNECT_MOBILE,
-    SAFEPAL_CLAIM_MODAL
+    SAFEPAL_CLAIM_MODAL,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
