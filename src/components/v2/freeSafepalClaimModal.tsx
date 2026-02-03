@@ -28,8 +28,7 @@ const safeSetItem = async (key: string, value: string): Promise<void> => {
 };
 
 const windowHeight = Dimensions.get('window').height;
-const maxBgHeight = Math.min(windowHeight * 0.85, 750); 
-const imageHeight = Math.min(windowHeight * 0.72, 639); 
+const maxBgHeight = Math.min(windowHeight * 0.85, 750);
 
 export default function FreeSafepalClaimModal({
   isModalVisible,
@@ -96,49 +95,30 @@ export default function FreeSafepalClaimModal({
       swipeDirection={['down']}
       propagateSwipe={true}
       style={styles.modalLayout}>
-  
       <CyDImageBackground
-        source={AppImages.FREE_SAFEPAL_CLAIM_IMAGE_BG}
+        source={AppImages.SAFEPAL_CLAIM_MODAL}
         className='rounded-t-[20px] overflow-hidden'
         style={{ height: maxBgHeight }}
         resizeMode='cover'
         imageStyle={{ borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
-        
-        <CyDView 
-          className='absolute top-0 left-0 right-0 w-full'
-          style={{ height: imageHeight }}
-          pointerEvents='none'> 
-          <CyDImage
-            source={AppImages.FREE_SAFEPAL_CLAIM_IMAGE}
-            className='w-full h-full'
-            resizeMode='cover'
-          />
-
-          <CyDImage
-            source={AppImages.FREE_SAFEPAL_BADGE}
-            className='absolute left-[222px] w-[83px] h-[83px]'
-            style={{ top: imageHeight * 0.64 }}
-            resizeMode='contain'
-          />
-        </CyDView>
-
-        <CyDView className='flex-1 p-[16px] pb-[28px] justify-between'>
-        
-          <CyDView className='items-center pt-[8px] pb-[16px]'>
-            <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] rounded-full' />
+        <CyDView className='flex-1 justify-between'>
+          <CyDView className='items-center pt-[12px]'>
+            <CyDView className='w-[40px] h-[4px] bg-[#555] rounded-full' />
           </CyDView>
 
-          <CyDView>
+          <CyDView className='px-[16px] pb-[12px]'>
             <CyDTouchView
               activeOpacity={0.8}
               onPress={handleCheckboxChange}
-              className='flex-row items-center justify-center mb-[24px]'>
+              className='flex-row items-center justify-center mb-[10px]'>
               <CyDMaterialDesignIcons
-                name={dontShowAgain ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                size={24}
+                name={
+                  dontShowAgain ? 'checkbox-marked' : 'checkbox-blank-outline'
+                }
+                size={20}
                 className={dontShowAgain ? 'text-p100' : 'text-white'}
               />
-              <CyDText className='ml-[8px] text-[14px] text-white opacity-80'>
+              <CyDText className='ml-[10px] text-[14px] text-white opacity-70'>
                 {t("Don't show again") as string}
               </CyDText>
             </CyDTouchView>
