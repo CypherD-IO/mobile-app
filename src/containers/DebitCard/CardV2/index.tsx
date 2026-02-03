@@ -1192,15 +1192,6 @@ export default function CypherCardScreen() {
                   />
                 </CyDView>
               )}
-              <ActivityDetailsModal
-                isVisible={isActivityDetailsVisible}
-                onClose={handleCloseActivityDetails}
-                setIsVisible={setIsActivityDetailsVisible}
-                activity={selectedActivity}
-                ongoingActivities={ongoingCardActivities}
-                completedActivities={fundingsCompletedInLast5Mins}
-                failedActivities={fundingsFailedInLast5Mins}
-              />
               <FreeSafepalClaimModal
                 isModalVisible={isSafepalModalVisible}
                 setIsModalVisible={setSafepalModalVisible}
