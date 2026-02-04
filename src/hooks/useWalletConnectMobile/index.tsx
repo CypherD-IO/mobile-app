@@ -6,7 +6,7 @@ interface UseWalletConnectMobileResult {
   disconnectWalletConnect: () => Promise<void>;
   /**
    * True when a WalletConnect session is fully established.
-   * Useful for driving UI states like “Wallet connected”.
+   * Useful for driving UI states like "Wallet connected".
    */
   isConnected: boolean;
   /**
@@ -35,8 +35,6 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
       try {
         await disconnectAsync();
       } catch (error) {
-        // Swallow disconnect errors – connection cleanup is a best-effort step.
-        // eslint-disable-next-line no-console
         console.warn(
           '[WalletConnectMobile] Failed to disconnect before opening connect modal:',
           error,
@@ -45,10 +43,8 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
     }
 
     try {
-      // We intentionally do not await this since AppKit drives its own UI.
       void open({ view: 'Connect' });
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.warn(
         '[WalletConnectMobile] Failed to open WalletConnect modal:',
         error,
@@ -68,7 +64,6 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
     try {
       await disconnectAsync();
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.warn(
         '[WalletConnectMobile] Failed to disconnect WalletConnect session:',
         error,

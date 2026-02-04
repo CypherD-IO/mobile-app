@@ -94,9 +94,9 @@
     "@toruslabs/react-native-web-browser": "^1.1.0",
     "@tradle/react-native-http": "^2.0.1",
     "@wagmi/core": "^2.15.0",
-    "@walletconnect/core": "^2.7.0",
-    "@walletconnect/react-native-compat": "^2.11.0",
-    "@walletconnect/utils": "^2.7.0",
+    "@walletconnect/core": "2.23.4",
+    "@walletconnect/react-native-compat": "2.23.4",
+    "@walletconnect/utils": "2.23.4",
     "@web3auth/base": "^9.7.0",
     "@web3auth/ethereum-provider": "^9.7.0",
     "@web3auth/react-native-sdk": "^8.1.0",
@@ -247,7 +247,7 @@
     "@types/react-test-renderer": "^19.1.0",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.33.1",
-    "@walletconnect/types": "2.11.0",
+    "@walletconnect/types": "2.23.4",
     "babel-jest": "29.2.1",
     "detox": "^20.19.1",
     "dotenv": "^16.5.0",
@@ -331,6 +331,10 @@
     "libsodium-wrappers": "0.8.0",
     "secp256k1": "5.0.1",
     "react-native-svg": "15.15.1",
-    "valtio": "1.13.2"
+    "valtio": "1.13.2",
+    "@walletconnect/core": "2.23.4",
+    "@walletconnect/sign-client": "2.23.4",
+    "@walletconnect/types": "2.23.4",
+    "@walletconnect/utils": "2.23.4"
   }
 }

@@ -55,7 +55,31 @@ export default function PairingModal({
   const message =
     'Requesting permission to view addresses of your accounts and approval for transactions';
 
-  const checkAndAddPairingToConnectionsList = () => {
+  /**
+   * Wait for session to be available in active sessions after approval.
+   * This addresses a race condition where the dApp may send requests before
+   * the session is fully persisted to storage.
+   */
+  const waitForSessionAvailability = async (
+    pairingTopic: string,
+    maxRetries = 10,
+    delayMs = 200,
+  ): Promise<string | null> => {
+    for (let i = 0; i < maxRetries; i++) {
+      if (web3wallet) {
+        const sessions = Object.values(web3wallet.getActiveSessions());
+        const session = sessions.find(s => s.pairingTopic === pairingTopic);
+        if (session?.topic) {
+          return session.topic;
+        }
+      }
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+    return null;
+  };
+
+  const checkAndAddPairingToConnectionsList = async () => {
     let isPairingAlreadyAvailable = false;
     for (const connection of walletConnectState.dAppInfo) {
       if (
@@ -66,17 +90,18 @@ export default function PairingModal({
         break;
       }
     }
-    let sessionTopic = '';
-    if (web3wallet) {
-      const sessions = Object.values(web3wallet?.getActiveSessions());
-      if (sessions) {
-        const [session] = sessions.filter(
-          sessionObj =>
-            sessionObj.pairingTopic === currentProposal?.params.pairingTopic,
-        );
-        sessionTopic = session?.topic;
-      }
+
+    // Wait for session to be available with retry logic
+    const sessionTopic = await waitForSessionAvailability(
+      currentProposal?.params.pairingTopic ?? '',
+    );
+
+    if (!sessionTopic) {
+      console.warn(
+        '[WalletConnect] Session not found after approval, may cause issues with subsequent requests',
+      );
     }
+
     if (!isPairingAlreadyAvailable) {
       const connector = {
         topic: currentProposal?.params.pairingTopic,
@@ -85,7 +110,7 @@ export default function PairingModal({
         methods: eip155?.methods ?? optionalNamespaces?.eip155?.methods,
         icon,
         version: 'v2',
-        sessionTopic,
+        sessionTopic: sessionTopic ?? '',
       };
       walletConnectDispatch({
         type: WalletConnectActions.ADD_CONNECTOR,
@@ -191,8 +216,11 @@ export default function PairingModal({
           id,
           namespaces,
         });
+
+        // Wait for session to be fully persisted before updating UI
+        await checkAndAddPairingToConnectionsList();
+
         setAcceptingRequest(false);
-        checkAndAddPairingToConnectionsList();
         hideModal();
       }
     } catch (e) {

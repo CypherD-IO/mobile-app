@@ -48,6 +48,32 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     [showModal, hideModal, ethereum],
   );
 
+  /**
+   * Wait for session to become available in storage.
+   * This handles the race condition where a dApp sends a request immediately
+   * after session approval, before the session is fully persisted.
+   */
+  const waitForSession = async (
+    topic: string,
+    maxRetries = 5,
+    delayMs = 300,
+  ): Promise<any | null> => {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const session = web3wallet?.engine?.signClient?.session?.get(topic);
+        if (session?.peer?.metadata) {
+          return session;
+        }
+      } catch {
+        // Session not found yet, will retry
+      }
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+    return null;
+  };
+
   const onSessionRequest = useCallback(
     async (requestEvent: any) => {
       if (!showModal || !hideModal) {
@@ -60,31 +86,19 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       const { topic, params } = requestEvent;
       const { request } = params;
 
-      // Validate the session exists before processing the request
-      // This prevents race conditions where the session is deleted before the modal opens
-      try {
-        const session = web3wallet?.engine?.signClient?.session?.get(topic);
-        if (!session?.peer?.metadata) {
-          console.warn(
-            '[WalletConnect] Session not found or invalid for topic:',
-            topic,
-          );
-          return showModal('state', {
-            type: 'error',
-            title: t('WC_SESSION_EXPIRED'),
-            description: t('WC_SESSION_EXPIRED_DESCRIPTION'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }
-      } catch (sessionError) {
-        // Session was deleted or is invalid - this is expected in race conditions
-        // Log as warning since we handle this gracefully with an error UI
+      // Wait for session to be available with retry logic
+      // This handles the race condition where dApp sends request before session is persisted
+      const session = await waitForSession(topic);
+
+      if (!session) {
         console.warn(
-          '[WalletConnect] Session expired or disconnected - showing error UI to user',
-          sessionError,
+          '[WalletConnect] Session not found after retries for topic:',
+          topic,
         );
-        Sentry.captureException(sessionError);
+        Sentry.captureMessage(
+          `WalletConnect session not found after retries: ${topic}`,
+          'warning',
+        );
         return showModal('state', {
           type: 'error',
           title: t('WC_SESSION_EXPIRED'),
@@ -200,21 +214,48 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
   /******************************************************************************
    * Set up WalletConnect event listeners
+   * 
+   * IMPORTANT: We use refs for callbacks to avoid the cleanup/re-register cycle
+   * that was causing "No listener for session_proposal event" errors.
+   * The listeners are registered once and use refs to always call the latest callback.
    *****************************************************************************/
+  const onSessionProposalRef = useRef(onSessionProposal);
+  const onSessionRequestRef = useRef(onSessionRequest);
+  const onSessionRemovalRef = useRef(onSessionRemoval);
+
+  // Keep a reference to handlers for cleanup
+  const handlersRef = useRef<{
+    proposal?: (p: any) => void;
+    request?: (r: any) => void;
+    removal?: (e: any) => void;
+  }>({});
+
+  // Keep refs updated with latest callbacks
   useEffect(() => {
-    if (
-      initialized &&
-      web3wallet &&
-      !listenersRegistered.current &&
-      onSessionProposal &&
-      onSessionRequest &&
-      onSessionRemoval
-    ) {
+    onSessionProposalRef.current = onSessionProposal;
+    onSessionRequestRef.current = onSessionRequest;
+    onSessionRemovalRef.current = onSessionRemoval;
+  }, [onSessionProposal, onSessionRequest, onSessionRemoval]);
+
+  // Register listeners once when initialized
+  useEffect(() => {
+    if (initialized && web3wallet && !listenersRegistered.current) {
+      // Store handler references for cleanup
+      handlersRef.current.proposal = (proposal: any) => {
+        onSessionProposalRef.current?.(proposal);
+      };
+      handlersRef.current.request = (request: any) => {
+        void onSessionRequestRef.current?.(request);
+      };
+      handlersRef.current.removal = (event: any) => {
+        void onSessionRemovalRef.current?.(event);
+      };
+
       try {
         // Register listeners
-        web3wallet.on('session_proposal', onSessionProposal);
-        web3wallet.on('session_request', onSessionRequest);
-        web3wallet.on('session_delete', onSessionRemoval);
+        web3wallet.on('session_proposal', handlersRef.current.proposal);
+        web3wallet.on('session_request', handlersRef.current.request);
+        web3wallet.on('session_delete', handlersRef.current.removal);
 
         listenersRegistered.current = true;
       } catch (e) {
@@ -222,14 +263,22 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         Sentry.captureException(e);
       }
     }
+  }, [initialized]);
 
-    // Cleanup function
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       if (web3wallet && listenersRegistered.current) {
         try {
-          web3wallet.off('session_proposal', onSessionProposal);
-          web3wallet.off('session_request', onSessionRequest);
-          web3wallet.off('session_delete', onSessionRemoval);
+          if (handlersRef.current.proposal) {
+            web3wallet.off('session_proposal', handlersRef.current.proposal);
+          }
+          if (handlersRef.current.request) {
+            web3wallet.off('session_request', handlersRef.current.request);
+          }
+          if (handlersRef.current.removal) {
+            web3wallet.off('session_delete', handlersRef.current.removal);
+          }
           listenersRegistered.current = false;
         } catch (e) {
           console.error(
@@ -239,12 +288,5 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         }
       }
     };
-  }, [initialized, onSessionProposal, onSessionRequest, onSessionRemoval]);
-
-  // Additional effect to handle web3wallet changes
-  useEffect(() => {
-    if (!web3wallet && listenersRegistered.current) {
-      listenersRegistered.current = false;
-    }
-  }, [web3wallet]);
+  }, []);
 }

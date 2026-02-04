@@ -79,10 +79,9 @@ export default function WalletConnectCamera() {
 
   const connectWallet = async (uri: string) => {
     if (uri.includes('relay-protocol')) {
-      try {
-        const pairPromise = await web3WalletPair({ uri });
-        const currentTimestampInSeconds = Math.floor(Date.now() / 1000);
-        if (pairPromise?.expiry <= currentTimestampInSeconds) {
+      // Set up timeout for proposal expiry BEFORE pairing
+      sessionProposalListener.current = setTimeout(() => {
+        if (loading.current) {
           loading.current = false;
           showModal('state', {
             type: 'error',
@@ -91,28 +90,40 @@ export default function WalletConnectCamera() {
             onSuccess: hideModal,
             onFailure: hideModal,
           });
-        } else {
-          sessionProposalListener.current = setTimeout(() => {
-            if (loading.current) {
-              loading.current = false;
-              showModal('state', {
-                type: 'error',
-                title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
-                description: t('WC_PROPOSAL_EXPIRED_DESCRIPTION'),
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              });
-            }
-          }, WALLET_CONNECT_PROPOSAL_LISTENER);
-          web3wallet?.on('session_proposal', () => {
-            setWalletConnectURI('');
-            loading.current = false;
-            clearTimeout(sessionProposalListener.current);
+        }
+      }, WALLET_CONNECT_PROPOSAL_LISTENER);
+
+      // Set up one-time session_proposal handler BEFORE pairing
+      // This ensures the listener is registered before the event can fire
+      const handleSessionProposal = () => {
+        setWalletConnectURI('');
+        loading.current = false;
+        clearTimeout(sessionProposalListener.current);
+        // Remove this specific listener after handling
+        web3wallet?.off('session_proposal', handleSessionProposal);
+      };
+      web3wallet?.on('session_proposal', handleSessionProposal);
+
+      try {
+        const pairPromise = await web3WalletPair({ uri });
+        const currentTimestampInSeconds = Math.floor(Date.now() / 1000);
+        if (pairPromise?.expiry <= currentTimestampInSeconds) {
+          loading.current = false;
+          clearTimeout(sessionProposalListener.current);
+          web3wallet?.off('session_proposal', handleSessionProposal);
+          showModal('state', {
+            type: 'error',
+            title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
+            description: t('WC_PROPOSAL_EXPIRED_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
           });
         }
       } catch (e) {
         Sentry.captureException(e);
         loading.current = false;
+        clearTimeout(sessionProposalListener.current);
+        web3wallet?.off('session_proposal', handleSessionProposal);
         showModal('state', {
           type: 'error',
           title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
