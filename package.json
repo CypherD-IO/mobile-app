@@ -131,7 +131,7 @@
     "jail-monkey": "^2.6.0",
     "jetifier": "^2.0.0",
     "jwt-decode": "^3.1.2",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "lodash.filter": "^4.6.0",
     "long": "^5.2.0",
     "lottie-ios": "^4.6.0",
