@@ -43,12 +43,6 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
-import {
-  wcDebug,
-  wcError,
-  redactWcUri,
-} from '../../core/walletConnectDebug';
-
 interface RouteParams {
   walletConnectURI: string;
 }
@@ -84,14 +78,10 @@ export default function WalletConnectCamera() {
 
   const connectWallet = async (uri: string) => {
     if (uri.includes('relay-protocol')) {
-      wcDebug('WalletKit', 'QR connectWallet() called', {
-        uri: redactWcUri(uri),
-      });
       // Set up timeout for proposal expiry BEFORE pairing
       sessionProposalListener.current = setTimeout(() => {
         if (loading.current) {
           loading.current = false;
-          wcError('WalletKit', 'session_proposal timed out after QR pairing');
           showModal('state', {
             type: 'error',
             title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
@@ -112,7 +102,6 @@ export default function WalletConnectCamera() {
         }
         // Remove this specific listener after handling
         web3wallet?.off('session_proposal', handleSessionProposal);
-        wcDebug('WalletKit', 'session_proposal observed by QR screen');
       };
       web3wallet?.on('session_proposal', handleSessionProposal);
 
@@ -125,10 +114,6 @@ export default function WalletConnectCamera() {
             clearTimeout(sessionProposalListener.current);
           }
           web3wallet?.off('session_proposal', handleSessionProposal);
-          wcError('WalletKit', 'Pairing already expired', {
-            expiry: pairPromise?.expiry,
-            now: currentTimestampInSeconds,
-          });
           showModal('state', {
             type: 'error',
             title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
@@ -144,10 +129,6 @@ export default function WalletConnectCamera() {
           clearTimeout(sessionProposalListener.current);
         }
         web3wallet?.off('session_proposal', handleSessionProposal);
-        wcError('WalletKit', 'QR pairing failed', {
-          uri: redactWcUri(uri),
-          error: e,
-        });
         showModal('state', {
           type: 'error',
           title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
@@ -172,7 +153,6 @@ export default function WalletConnectCamera() {
 
   const onSuccess = (e: { data: string }) => {
     const link = e.data;
-    wcDebug('WalletKit', 'QR scan success', { link: redactWcUri(link) });
     if (link.startsWith('wc')) {
       loading.current = true;
       void connectWallet(link);
@@ -180,7 +160,6 @@ export default function WalletConnectCamera() {
         fromEthAddress: ethereumAddress,
       });
     } else {
-      wcError('WalletKit', 'QR scan invalid link', { link });
       showModal('state', {
         type: 'error',
         title: t('INVALID_CONNECTION_REQUEST'),
@@ -312,10 +291,6 @@ export default function WalletConnectCamera() {
   // };
 
   const deletePairing = async (pairingTopic: string, sessionTopic?: string) => {
-    wcDebug('WalletKit', 'Deleting pairing/session', {
-      pairingTopic,
-      sessionTopic,
-    });
     const [connector] = walletConnectState.dAppInfo.filter(
       (connection: any) => connection.topic === pairingTopic,
     );
@@ -328,16 +303,7 @@ export default function WalletConnectCamera() {
       if (sessionTopic) await deleteTopic(sessionTopic);
       await deleteTopic(pairingTopic);
       getv2Sessions();
-      wcDebug('WalletKit', 'Deleted pairing/session', {
-        pairingTopic,
-        sessionTopic,
-      });
     } catch (e) {
-      wcError('WalletKit', 'Failed deleting pairing/session', {
-        pairingTopic,
-        sessionTopic,
-        error: e,
-      });
       getv2Sessions();
     }
   };

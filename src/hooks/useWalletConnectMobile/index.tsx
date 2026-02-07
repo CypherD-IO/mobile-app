@@ -1,7 +1,5 @@
 import { useAppKit } from '@reown/appkit-react-native';
 import { useAccount, useDisconnect } from 'wagmi';
-import { useEffect } from 'react';
-import { wcDebug, wcWarn } from '../../core/walletConnectDebug';
 
 interface UseWalletConnectMobileResult {
   openWalletConnectModal: () => Promise<void>;
@@ -27,14 +25,6 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
   const { isConnected, isConnecting, address } = useAccount();
   const { disconnectAsync } = useDisconnect();
 
-  useEffect(() => {
-    wcDebug('AppKit', 'useAccount() state changed', {
-      isConnected,
-      isConnecting,
-      address: address ? `${address.slice(0, 6)}…${address.slice(-4)}` : undefined,
-    });
-  }, [isConnected, isConnecting, address]);
-
   /**
    * Opens the Reown/AppKit WalletConnect sheet.
    * If there is an existing connection we explicitly disconnect first so
@@ -43,18 +33,16 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
   const openWalletConnectModal = async (): Promise<void> => {
     if (isConnected) {
       try {
-        wcDebug('AppKit', 'Disconnecting existing session before opening Connect view');
         await disconnectAsync();
-      } catch (error) {
-        wcWarn('AppKit', 'Failed disconnect before open()', error as any);
+      } catch {
+        // Ignore disconnect errors before opening modal
       }
     }
 
     try {
-      wcDebug('AppKit', 'Opening AppKit modal', { view: 'Connect' });
       void open({ view: 'Connect' });
-    } catch (error) {
-      wcWarn('AppKit', 'Failed to open AppKit modal', error as any);
+    } catch {
+      // Ignore open errors
     }
   };
 
@@ -68,10 +56,9 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
     }
 
     try {
-      wcDebug('AppKit', 'Disconnecting AppKit session');
       await disconnectAsync();
-    } catch (error) {
-      wcWarn('AppKit', 'Failed disconnectAsync()', error as any);
+    } catch {
+      // Ignore disconnect errors
     }
   };
 

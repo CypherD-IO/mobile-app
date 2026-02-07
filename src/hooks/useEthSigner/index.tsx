@@ -121,23 +121,41 @@ export default function useEthSigner() {
   };
 
   // used To Send NativeCoins and to make any contact execution with contract data
-  async function sendNativeCoin({
-    transactionToBeSigned,
-    chainId,
-  }: {
-    transactionToBeSigned: EthTransactionPayload;
-    chainId: number;
-  }) {
+  async function sendNativeCoin(
+    {
+      transactionToBeSigned,
+      chainId,
+    }: {
+      transactionToBeSigned: EthTransactionPayload;
+      chainId: number;
+    },
+    abortSignal?: AbortSignal,
+  ) {
+    // Check if already aborted before starting
+    if (abortSignal?.aborted) {
+      throw new Error('User cancelled the request');
+    }
+
     let timer: NodeJS.Timeout;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => {
         reject(
           new Error(
-            "Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending reuests in your connected wallet and retry",
+            "Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending requests in your connected wallet and retry",
           ),
         );
       }, WALLET_CONNECT_SIGNING_TIMEOUT);
     });
+
+    // Create abort promise that rejects when signal is aborted
+    const abortPromise = abortSignal
+      ? new Promise((_, reject) => {
+          const abortHandler = () => {
+            reject(new Error('User cancelled the request'));
+          };
+          abortSignal.addEventListener('abort', abortHandler);
+        })
+      : null;
 
     const cleanup = () => {
       clearTimeout(timer);
@@ -159,30 +177,57 @@ export default function useEthSigner() {
           }),
     };
 
-    const sendTransactionPromise = sendTransactionAsync(txParams);
-    const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
-    cleanup();
-
-    return hash;
+    try {
+      const sendTransactionPromise = sendTransactionAsync(txParams);
+      const promises = [sendTransactionPromise, timeoutPromise];
+      if (abortPromise) {
+        promises.push(abortPromise);
+      }
+      const hash = await Promise.race(promises);
+      cleanup();
+      return hash;
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
   }
 
-  async function sendToken({
-    transactionToBeSigned,
-    chainId,
-  }: {
-    transactionToBeSigned: EthTransactionPayload;
-    chainId: number;
-  }) {
+  async function sendToken(
+    {
+      transactionToBeSigned,
+      chainId,
+    }: {
+      transactionToBeSigned: EthTransactionPayload;
+      chainId: number;
+    },
+    abortSignal?: AbortSignal,
+  ) {
+    // Check if already aborted before starting
+    if (abortSignal?.aborted) {
+      throw new Error('User cancelled the request');
+    }
+
     let timer: NodeJS.Timeout;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => {
         reject(
           new Error(
-            `Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending reuests in your connected wallet and retry`,
+            `Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending requests in your connected wallet and retry`,
           ),
         );
       }, WALLET_CONNECT_SIGNING_TIMEOUT);
     });
+
+    // Create abort promise that rejects when signal is aborted
+    const abortPromise = abortSignal
+      ? new Promise((_, reject) => {
+          const abortHandler = () => {
+            reject(new Error('User cancelled the request'));
+          };
+          abortSignal.addEventListener('abort', abortHandler);
+        })
+      : null;
+
     const cleanup = () => {
       clearTimeout(timer);
     };
@@ -203,11 +248,19 @@ export default function useEthSigner() {
           }),
     };
 
-    const sendTransactionPromise = sendTransactionAsync(txParams);
-    const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
-    cleanup();
-
-    return hash;
+    try {
+      const sendTransactionPromise = sendTransactionAsync(txParams);
+      const promises = [sendTransactionPromise, timeoutPromise];
+      if (abortPromise) {
+        promises.push(abortPromise);
+      }
+      const hash = await Promise.race(promises);
+      cleanup();
+      return hash;
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
   }
 
   const signApprovalEthereum = async ({
@@ -263,6 +316,7 @@ export default function useEthSigner() {
   async function handleTransaction(
     transactionToBeSigned: EthTransactionPayload,
     chainConfig: Chain,
+    abortSignal?: AbortSignal,
   ) {
     // Get the current block number before starting
     const startBlockNumber = await getBlockNumber(wagmiConfig);
@@ -271,15 +325,21 @@ export default function useEthSigner() {
     try {
       let hash;
       if (transactionToBeSigned.data) {
-        hash = await sendToken({
-          transactionToBeSigned,
-          chainId: chainConfig.id,
-        });
+        hash = await sendToken(
+          {
+            transactionToBeSigned,
+            chainId: chainConfig.id,
+          },
+          abortSignal,
+        );
       } else {
-        hash = await sendNativeCoin({
-          transactionToBeSigned,
-          chainId: chainConfig.id,
-        });
+        hash = await sendNativeCoin(
+          {
+            transactionToBeSigned,
+            chainId: chainConfig.id,
+          },
+          abortSignal,
+        );
       }
       return hash;
     } catch (directError) {
@@ -309,11 +369,14 @@ export default function useEthSigner() {
     }
   }
 
-  const signEthTransaction = async ({
-    rpc,
-    sendChain,
-    transactionToBeSigned,
-  }: EthSingerParams): Promise<`0x${string}`> => {
+  const signEthTransaction = async (
+    {
+      rpc,
+      sendChain,
+      transactionToBeSigned,
+    }: EthSingerParams,
+    abortSignal?: AbortSignal,
+  ): Promise<`0x${string}`> => {
     const connectionType = await getConnectionType();
 
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
@@ -379,9 +442,18 @@ export default function useEthSigner() {
         const hash = await handleTransaction(
           transactionToBeSigned,
           chainConfig,
+          abortSignal,
         );
         return hash as `0x${string}`;
       } catch (error: unknown) {
+        // Don't show error modal or log to Sentry for user cancellations
+        if (
+          error instanceof Error &&
+          error.message === 'User cancelled the request'
+        ) {
+          throw error;
+        }
+
         Sentry.captureException(error);
         showModal('state', {
           type: 'error',
@@ -451,8 +523,6 @@ export default function useEthSigner() {
   return {
     signEthTransaction,
     signApprovalEthereum,
-    sendNativeCoin,
-    sendToken,
     signTypedDataEth,
   };
 }

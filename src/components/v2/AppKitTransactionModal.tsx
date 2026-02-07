@@ -145,7 +145,7 @@ export const AppKitTransactionModal: React.FC<AppKitTransactionModalProps> = ({
             </Animated.Text>
 
             {/* Timer */}
-            <CyDView className='bg-n40 rounded-[16px] p-[16px] mb-[16px]'>
+            <CyDView className='border border-n40 rounded-[16px] p-[16px] mb-[16px]'>
               <CyDView className='flex-row items-center justify-center'>
                 <CyDMaterialDesignIcons
                   name='timer-outline'
@@ -153,7 +153,9 @@ export const AppKitTransactionModal: React.FC<AppKitTransactionModalProps> = ({
                   className={getTimerColor(timeRemaining)}
                 />
                 <CyDText
-                  className={`ml-[8px] text-[16px] font-bold ${getTimerColor(timeRemaining)}`}>
+                  className={`ml-[8px] text-[16px] font-bold ${getTimerColor(
+                    timeRemaining,
+                  )}`}>
                   {t('APPKIT_TX_TIME_REMAINING', 'Time remaining: {{time}}', {
                     time: formatTimeRemaining(timeRemaining),
                   })}
@@ -162,7 +164,7 @@ export const AppKitTransactionModal: React.FC<AppKitTransactionModalProps> = ({
             </CyDView>
 
             {/* Wallet info */}
-            <CyDView className='bg-n40 rounded-[16px] p-[16px] mb-[20px]'>
+            <CyDView className='bg-n0 mb-[20px]'>
               <CyDView className='flex-row items-center'>
                 <CyDMaterialDesignIcons
                   name='wallet-outline'

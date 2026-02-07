@@ -30,7 +30,6 @@ import {
 import useCardUtilities from '../../hooks/useCardUtilities';
 import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
-import { wcDebug, wcError, wcWarn } from '../../core/walletConnectDebug';
 import type { AxiosError } from 'axios';
 
 /**
@@ -92,12 +91,8 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         console.error(
           '[WalletConnectStatus] Missing wallet address while loading HD wallet',
         );
-        wcError('AppKit', 'Missing address while loading HD wallet');
         return;
       }
-      wcDebug('AppKit', 'Loading HD wallet from connected address', {
-        address: `${address.slice(0, 6)}…${address.slice(-4)}`,
-      });
       void setConnectionType(ConnectionTypes.WALLET_CONNECT);
       hdWalletContext?.dispatch({
         type: 'LOAD_WALLET',
@@ -110,7 +105,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
       });
     } catch (error) {
       console.error('[WalletConnectStatus] Error loading HD wallet:', error);
-      wcError('AppKit', 'Error loading HD wallet', error as any);
     }
   };
 
@@ -120,7 +114,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
    */
   const dispatchProfileData = async (authToken: string): Promise<void> => {
     try {
-      wcDebug('AppKit', 'Fetching wallet profile after auth');
       const profileData = await getWalletProfile(authToken);
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
@@ -131,7 +124,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         '[WalletConnectStatus] Error dispatching profile data:',
         error,
       );
-      wcError('AppKit', 'Error dispatching profile data', error as any);
     }
   };
 
@@ -164,7 +156,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         '[WalletConnectStatus] Error registering Intercom user:',
         error,
       );
-      wcWarn('AppKit', 'Intercom registration failed', error as any);
     }
   };
 
@@ -173,32 +164,18 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
     mutation: {
       async onSuccess(signature: string) {
         try {
-          wcDebug('AppKit', 'Signature received; verifying with backend', {
-            walletName: walletInfo?.name,
-            address: address
-              ? `${String(address).slice(0, 6)}…${String(address).slice(-4)}`
-              : undefined,
-          });
           setVerificationFailed(false);
           setVerificationErrorMessage('');
           // Verify signature with backend
           const verifyUrl = `${ARCH_HOST}/v1/authentication/verify-message/${String(
             address,
           ).toLowerCase()}?format=ERC-4361`;
-          wcDebug('AppKit', 'Verifying signature via backend', {
-            verifyUrl,
-            archHost: ARCH_HOST,
-          });
           const verifyMessageResponse = await axios.post(verifyUrl, {
             signature,
           });
 
           if (verifyMessageResponse?.data.token) {
             const { token, refreshToken } = verifyMessageResponse.data;
-            wcDebug(
-              'AppKit',
-              'Backend verification succeeded; persisting tokens and loading wallet',
-            );
 
             // Mark signature as successful
             setSignatureSuccess(true);
@@ -234,7 +211,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
             console.error(
               '[WalletConnectStatus] Verification failed, no token received',
             );
-            wcError('AppKit', 'Backend verification failed (no token)');
             setVerificationFailed(true);
             setVerificationErrorMessage('Verification failed (no token).');
           }
@@ -245,13 +221,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
           );
           const axiosErr = error as AxiosError | undefined;
           if (axiosErr && typeof (axiosErr as any).isAxiosError === 'boolean') {
-            wcError('AppKit', 'Axios error during signature verification', {
-              message: (axiosErr as any).message,
-              code: (axiosErr as any).code,
-              hasResponse: Boolean((axiosErr as any).response),
-              status: (axiosErr as any).response?.status,
-              data: (axiosErr as any).response?.data,
-            });
             // A "Network Error" here means we couldn't reach the backend at all
             // (no HTTP response). This is not a signature rejection.
             if (!(axiosErr as any).response) {
@@ -261,12 +230,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
               );
               return;
             }
-          } else {
-            wcError(
-              'AppKit',
-              'Error during signature verification',
-              error as any,
-            );
           }
           setVerificationFailed(true);
           setVerificationErrorMessage(
@@ -279,10 +242,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
           '[WalletConnectStatus] Signature rejected or failed:',
           error,
         );
-        wcWarn('AppKit', 'Signature rejected/failed', {
-          message: error.message,
-          walletName: walletInfo?.name,
-        });
 
         // Mark signature as rejected
         setSignatureRejected(true);
@@ -307,10 +266,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
     if (!hasOpenedModal) {
       setHasOpenedModal(true);
       void logAnalyticsToFirebase(AnalyticEvent.CONNECT_USING_WALLET_CONNECT);
-      wcDebug(
-        'AppKit',
-        'Opening AppKit connect sheet (onboarding status screen)',
-      );
       void openWalletConnectModal();
     }
   }, [hasOpenedModal, openWalletConnectModal]);
@@ -329,12 +284,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
       try {
         setHasTriggeredSigning(true);
         setIsSigning(true);
-        wcDebug('AppKit', 'Connected; requesting sign message from API', {
-          address: address
-            ? `${String(address).slice(0, 6)}…${String(address).slice(-4)}`
-            : undefined,
-          walletName: walletInfo?.name,
-        });
 
         // Get the message to sign from the API
         const response = await getWithoutAuth(
@@ -346,9 +295,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
           const message = response.data.message;
 
           // Request signature from the connected wallet
-          wcDebug('AppKit', 'Calling signMessageAsync()', {
-            walletName: walletInfo?.name,
-          });
           await signMessageAsync({ message });
 
           // Log analytics
@@ -360,18 +306,12 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
             '[WalletConnectStatus] Failed to get sign message from API:',
             response,
           );
-          wcError(
-            'AppKit',
-            'Failed to get sign message from API',
-            response as any,
-          );
         }
       } catch (error) {
         console.error(
           '[WalletConnectStatus] Error during signing flow:',
           error,
         );
-        wcError('AppKit', 'Error during signing flow', error as any);
       } finally {
         setIsSigning(false);
       }
@@ -444,9 +384,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         return;
       }
 
-      wcDebug('AppKit', 'Retrying signature flow', {
-        walletName: walletInfo?.name,
-      });
       // Reset error states
       setSignatureRejected(false);
       setSignatureSuccess(false);
@@ -485,7 +422,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         '[WalletConnectStatus] Error during retry signing flow:',
         error,
       );
-      wcError('AppKit', 'Error during retry signing flow', error as any);
       setSignatureRejected(true);
     } finally {
       setIsSigning(false);
@@ -501,17 +437,12 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
       // Clear the persisted state so the status screen doesn't show on next focus
       await AsyncStorage.removeItem(WALLET_CONNECT_FLOW_KEY);
       // Disconnect any active WalletConnect session
-      wcDebug(
-        'AppKit',
-        'Back pressed; disconnecting AppKit session and clearing onboarding flag',
-      );
       await disconnectWalletConnect();
     } catch (error) {
       console.error(
         '[WalletConnectStatus] Error during back press cleanup:',
         error,
       );
-      wcWarn('AppKit', 'Back press cleanup failed', error as any);
     } finally {
       // Always navigate back even if cleanup fails
       onBack();

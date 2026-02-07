@@ -23,8 +23,6 @@ import {
 import { HdWalletContext } from '../../../core/util';
 import { EIP155_CHAIN_IDS } from '../../../constants/EIP155Data';
 import { has, isEmpty } from 'lodash';
-import { wcDebug, wcError } from '../../../core/walletConnectDebug';
-
 interface PairingModalProps {
   // WalletConnect SDK event typing differs across versions; we only rely on
   // a small, runtime-checked subset of fields.
@@ -139,9 +137,6 @@ export default function PairingModal({
     try {
       setAcceptingRequest(true);
       if (!currentProposal?.id || !currentProposal?.params) {
-        wcError('WalletKit', 'handleAccept called without valid proposal', {
-          hasProposal: Boolean(currentProposal),
-        });
         setAcceptingRequest(false);
         hideModal();
         return;
@@ -149,13 +144,6 @@ export default function PairingModal({
       const id = currentProposal.id as number;
       const proposalRequiredNamespaces =
         currentProposal?.params?.requiredNamespaces ?? {};
-      wcDebug('WalletKit', 'User accepted session_proposal', {
-        id,
-        pairingTopic: currentProposal?.params?.pairingTopic,
-        proposerName: currentProposal?.params?.proposer?.metadata?.name,
-        requiredNamespaces: Object.keys(proposalRequiredNamespaces ?? {}),
-        optionalNamespaces: Object.keys(optionalNamespaces ?? {}),
-      });
       if (currentProposal) {
         const namespaces: SessionTypes.Namespaces = {};
         const namespaceKeys = !isEmpty(proposalRequiredNamespaces)
@@ -228,13 +216,6 @@ export default function PairingModal({
           };
         });
 
-        wcDebug('WalletKit', 'Approving session with namespaces', {
-          id,
-          namespaceKeys,
-          accountsCount: accounts.length,
-          eip155ChainsCount: eip155Chains.length,
-        });
-
         // const approvedNamespaces = buildApprovedNamespaces({
         //   proposal: params,
         //   supportedNamespaces: {
@@ -257,17 +238,8 @@ export default function PairingModal({
 
         setAcceptingRequest(false);
         hideModal();
-        wcDebug('WalletKit', 'Session approved and UI updated', {
-          id,
-          pairingTopic: currentProposal?.params?.pairingTopic,
-        });
       }
     } catch (e) {
-      wcError('WalletKit', 'Failed to approve session', {
-        id: currentProposal?.id,
-        pairingTopic: currentProposal?.params?.pairingTopic,
-        error: e,
-      });
       walletConnectDispatch({
         type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
       });
@@ -281,11 +253,6 @@ export default function PairingModal({
       if (currentProposal) {
         setRejectingRequest(true);
         const { id } = currentProposal as { id: number };
-        wcDebug('WalletKit', 'User rejected session_proposal', {
-          id,
-          pairingTopic: currentProposal?.params?.pairingTopic,
-          proposerName: currentProposal?.params?.proposer?.metadata?.name,
-        });
         await web3wallet?.rejectSession({
           id,
           reason: getSdkError('USER_REJECTED_METHODS'),
@@ -297,11 +264,6 @@ export default function PairingModal({
         hideModal();
       }
     } catch (e) {
-      wcError('WalletKit', 'Failed to reject session', {
-        id: currentProposal?.id,
-        pairingTopic: currentProposal?.params?.pairingTopic,
-        error: e,
-      });
       walletConnectDispatch({
         type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
       });

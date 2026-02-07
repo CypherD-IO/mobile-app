@@ -487,14 +487,17 @@ export default function CardQuote({
               symbol: selectedToken.symbol,
             });
           } else if (chainName === ChainNames.ETH) {
-            response = await sendEvmToken({
-              chain: selectedToken.chainDetails.backendName,
-              amountToSend: actualTokensRequired,
-              toAddress: targetAddress as `0x${string}`,
-              contractAddress: contractAddress as `0x${string}`,
-              contractDecimals,
-              symbol: selectedToken.symbol,
-            });
+            response = await sendEvmToken(
+              {
+                chain: selectedToken.chainDetails.backendName,
+                amountToSend: actualTokensRequired,
+                toAddress: targetAddress as `0x${string}`,
+                contractAddress: contractAddress as `0x${string}`,
+                contractDecimals,
+                symbol: selectedToken.symbol,
+              },
+              undefined, // No abort signal for bridge card transactions
+            );
           } else if (COSMOS_CHAINS.includes(chainName)) {
             const addressList = await getAddressList(
               tokenQuote.cosmosSwap?.requiredAddresses ?? [],

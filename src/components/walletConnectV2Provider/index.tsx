@@ -16,8 +16,6 @@ import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
 import { WagmiConfigBuilder } from '../wagmiConfigBuilder';
 import { get } from 'lodash';
-import { wcDebug, redactWcUri, wcError } from '../../core/walletConnectDebug';
-
 export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -25,7 +23,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const ethereumAddress = get(ethereum, 'address', '');
   const isInitializationInProgress = useRef<boolean>(false);
   // Use dedicated WalletKit project ID for receiving dApp connections
-  const projectId = String(Config.MOBILE_WALLETKIT_PROJECTID);
+  const projectId = Config.MOBILE_WALLETKIT_PROJECTID;
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
@@ -36,27 +34,17 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
 
   const onInitialize = useCallback(async () => {
     try {
-      if (projectId) {
-        wcDebug('WalletKit', 'Provider initializing WalletKit', {
-          projectIdSuffix: projectId.slice(-6),
-          hasEthereumAddress: Boolean(ethereumAddress),
-        });
+      if (typeof projectId === 'string' && projectId.length > 0) {
         await createWeb3Wallet(projectId);
         setIsWeb3WalletInitialized(true);
-        wcDebug('WalletKit', 'Provider WalletKit initialized');
       } else {
         console.error('[WalletConnectV2Provider] Missing projectId');
-        wcError(
-          'WalletKit',
-          'Missing WalletKit projectId (MOBILE_WALLETKIT_PROJECTID)',
-        );
       }
     } catch (err: unknown) {
       console.error(
         '[WalletConnectV2Provider] Error during wallet initialization:',
         err,
       );
-      wcError('WalletKit', 'Provider init failed', err as any);
       Sentry.captureException(err);
     }
   }, [projectId]);
@@ -77,9 +65,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const initiateWalletConnection = async () => {
     if (initialUrl) {
       let uri = initialUrl;
-      wcDebug('WalletKit', 'Initial URL received for pairing', {
-        initialUrl: redactWcUri(initialUrl),
-      });
       if (uri?.includes('cypherwallet://')) {
         uri = uri?.replace('cypherwallet://', '');
       }
@@ -95,9 +80,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
           // This addresses the race condition where pairing completes
           // before useEffect has a chance to register listeners
           await new Promise(resolve => setTimeout(resolve, 100));
-          wcDebug('WalletKit', 'Pairing from deep link', {
-            uri: redactWcUri(uri),
-          });
           await web3WalletPair({ uri: decodeURIComponent(uri) });
         }
       }

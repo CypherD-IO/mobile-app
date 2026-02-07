@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { AppKitTransactionState } from '../../components/v2/AppKitTransactionModal';
 
 interface UseAppKitTransactionModalProps {
@@ -9,6 +9,7 @@ interface UseAppKitTransactionModalProps {
 interface UseAppKitTransactionModalReturn {
   isModalVisible: boolean;
   modalState: AppKitTransactionState;
+  abortController: React.MutableRefObject<AbortController | null>;
   showModal: () => void;
   hideModal: () => void;
   setTimedOut: () => void;
@@ -28,8 +29,11 @@ export function useAppKitTransactionModal({
   const [modalState, setModalState] = useState<AppKitTransactionState>(
     AppKitTransactionState.WAITING,
   );
+  const abortController = useRef<AbortController | null>(null);
 
   const showModal = useCallback(() => {
+    // Create a new AbortController for this transaction
+    abortController.current = new AbortController();
     setModalState(AppKitTransactionState.WAITING);
     setIsModalVisible(true);
   }, []);
@@ -49,6 +53,8 @@ export function useAppKitTransactionModal({
 
   const handleResend = useCallback(async (resendFn: () => Promise<void>) => {
     try {
+      // Create a new AbortController for the resend
+      abortController.current = new AbortController();
       // Reset to waiting state
       setModalState(AppKitTransactionState.WAITING);
       // Execute the resend function
@@ -60,12 +66,18 @@ export function useAppKitTransactionModal({
   }, []);
 
   const handleCancel = useCallback(() => {
+    // Abort the ongoing transaction
+    if (abortController.current) {
+      abortController.current.abort();
+      abortController.current = null;
+    }
     hideModal();
   }, [hideModal]);
 
   return {
     isModalVisible,
     modalState,
+    abortController,
     showModal,
     hideModal,
     setTimedOut,

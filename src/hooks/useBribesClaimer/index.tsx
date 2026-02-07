@@ -141,16 +141,19 @@ export default function useBribesClaimer() {
       params.onStatusUpdate?.('Submitting claim transaction...');
 
       // Execute the contract call using the transaction manager
-      const resp = await executeTransferContract({
-        publicClient,
-        chain: chainConfig,
-        amountToSend: '0', // No ETH needed for claim
-        toAddress: ELECTION_CONTRACT,
-        contractAddress: ELECTION_CONTRACT,
-        contractDecimals: 18,
-        contractData,
-        isErc20: true, // Treat as ERC20 contract call
-      });
+      const resp = await executeTransferContract(
+        {
+          publicClient,
+          chain: chainConfig,
+          amountToSend: '0', // No ETH needed for claim
+          toAddress: ELECTION_CONTRACT,
+          contractAddress: ELECTION_CONTRACT,
+          contractDecimals: 18,
+          contractData,
+          isErc20: true, // Treat as ERC20 contract call
+        },
+        undefined, // No abort signal for bribes claimer
+      );
 
       if (resp.isError) {
         throw new Error('Contract execution failed');
