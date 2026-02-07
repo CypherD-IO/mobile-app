@@ -158,7 +158,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   } = useAppKitTransactionModal({
     walletName: walletInfo?.name ?? 'your wallet',
     onTimeout: () => {
-      console.log('[SendTo] AppKit transaction timed out');
     },
   });
 
@@ -590,13 +589,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       valueForUsd,
       tokenData.contractDecimals,
     );
-    console.log('amountToSend 559 ', amountToSend);
     if (chainName === ChainNames.ETH) {
-      console.log('chainName 561 ', chainName);
       const publicClient = getViemPublicClient(
         getWeb3Endpoint(tokenData.chainDetails, globalContext),
       );
-      console.log('publicClient 565 ', publicClient);
       gasEstimate = await estimateGasForEvm({
         publicClient,
         chain: tokenData.chainDetails.backendName,
@@ -607,7 +603,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         contractDecimals: tokenData.contractDecimals,
         isErc20: !tokenData.isNativeToken,
       });
-      console.log('gasEstimate 577 ', gasEstimate);
     } else if (chainName === ChainNames.SOLANA) {
       gasEstimate = await estimateGasForSolana({
         fromAddress: address ?? '',
@@ -633,7 +628,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const submitSendTransaction = async () => {
-    console.log('submitSendTransaction');
     setLoading(true);
     const id = genId();
     const activityData: SendTransactionActivity = {
@@ -656,14 +650,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     let error = false;
     addressRef.current = addressText;
 
-    console.log('addressRef.current 621 ', addressRef.current);
     // checking for ens
     if (
       chainDetails?.chainName === ChainNames.ETH &&
       Object.keys(EnsCoinTypes).includes(tokenData.chainDetails.backendName) &&
       isValidEns(addressRef.current)
     ) {
-      console.log('isValidEns 628 ', isValidEns(addressRef.current));
       const ens = addressText;
       const addr = await resolveAddress(
         ens,
@@ -723,7 +715,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       ) {
         activityData.fromAddress = injective.address;
       } else {
-        console.log('error 688 ', error);
         error = true;
         showModal('state', {
           type: 'error',
@@ -734,22 +725,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         });
       }
 
-      console.log('activityData.fromAddress 699 ', activityData.fromAddress);
-
       const gasFee = await getGasFee(
         chainDetails.chainName,
         activityData.fromAddress,
         isMaxGasEstimation,
       );
 
-      console.log('gasFee 707 ', gasFee);
-
       const amountToSend = limitDecimalPlaces(
         valueForUsd,
         tokenData.contractDecimals,
       );
-
-      console.log('amountToSend 714 ', amountToSend);
 
       if (gasFee) {
         const { hasSufficientBalance, hasSufficientGasFee } =
@@ -760,7 +745,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             amountToSend,
             tokenData.balanceDecimal,
           );
-        console.log('hasSufficientBalance 725 ', hasSufficientBalance);
         const hasSufficient = hasSufficientBalance && hasSufficientGasFee;
         if (!hasSufficient) {
           showModal('state', {
@@ -784,8 +768,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           DecimalHelper.multiply(gasFee.gasFeeInCrypto, tokenData?.price ?? 0),
         ),
       );
-
-      console.log('activityData.gasAmount 749 ', activityData.gasAmount);
 
       setTokenSendConfirmationParams({
         isModalVisible: true,
@@ -1095,7 +1077,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         });
       }
       
-      console.error('[SendTo] Transaction error:', error);
       Sentry.captureException(error);
     }
   };

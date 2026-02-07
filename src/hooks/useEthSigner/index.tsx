@@ -159,18 +159,6 @@ export default function useEthSigner() {
           }),
     };
 
-    console.log(
-      '[WC-TX] sendNativeCoin params:',
-      JSON.stringify({
-        to: txParams.to,
-        value: txParams.value?.toString(),
-        data: txParams.data,
-        gas: txParams.gas?.toString(),
-        chainId: txParams.chainId,
-        hasGasPrice: !!transactionToBeSigned.gasPrice,
-      }),
-    );
-
     const sendTransactionPromise = sendTransactionAsync(txParams);
     const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
     cleanup();
@@ -214,18 +202,6 @@ export default function useEthSigner() {
             maxFeePerGas: transactionToBeSigned.maxFeePerGas,
           }),
     };
-
-    console.log(
-      '[WC-TX] sendToken params:',
-      JSON.stringify({
-        to: txParams.to,
-        value: txParams.value?.toString(),
-        data: txParams.data?.substring(0, 20) + '...',
-        gas: txParams.gas?.toString(),
-        chainId: txParams.chainId,
-        hasGasPrice: !!transactionToBeSigned.gasPrice,
-      }),
-    );
 
     const sendTransactionPromise = sendTransactionAsync(txParams);
     const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
@@ -272,18 +248,6 @@ export default function useEthSigner() {
               maxFeePerGas: transactionToBeSigned.maxFeePerGas,
             }),
       };
-
-      console.log(
-        '[WC-TX] signApprovalEthereum params:',
-        JSON.stringify({
-          to: approvalTxParams.to,
-          value: approvalTxParams.value?.toString(),
-          data: approvalTxParams.data?.substring(0, 20) + '...',
-          gas: approvalTxParams.gas?.toString(),
-          chainId: approvalTxParams.chainId,
-          hasGasPrice: !!transactionToBeSigned.gasPrice,
-        }),
-      );
 
       const response = await sendTransactionAsync(approvalTxParams);
       const receipt = await getTransactionReceipt(response, chainConfig.id);

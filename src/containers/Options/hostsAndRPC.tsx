@@ -171,15 +171,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     // Old tokens are invalid for new hosts and will cause 401 loops
     const currentArchHost = getHost('ARCH_HOST');
     if (currentArchHost !== hosts.archHost) {
-      console.log(
-        '[AUTH_DEBUG] hostsAndRPC: ARCH_HOST changing from',
-        currentArchHost,
-        'to',
-        hosts.archHost,
-      );
-      console.log(
-        '[AUTH_DEBUG] hostsAndRPC: Clearing old auth tokens to prevent 401 loops',
-      );
       await clearAuthTokens();
     }
 
