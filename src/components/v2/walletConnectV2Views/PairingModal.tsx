@@ -23,11 +23,13 @@ import {
 import { HdWalletContext } from '../../../core/util';
 import { EIP155_CHAIN_IDS } from '../../../constants/EIP155Data';
 import { has, isEmpty } from 'lodash';
+import { wcDebug, wcError } from '../../../core/walletConnectDebug';
 
 interface PairingModalProps {
-  currentProposal:
-    | SignClientTypes.EventArguments['session_proposal']
-    | undefined;
+  // WalletConnect SDK event typing differs across versions; we only rely on
+  // a small, runtime-checked subset of fields.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentProposal: any | undefined;
   currentETHAddress: string;
   isModalVisible: boolean;
   hideModal: () => void;
@@ -39,19 +41,25 @@ export default function PairingModal({
   isModalVisible,
   hideModal,
 }: PairingModalProps) {
+  const noop = () => null;
   const [acceptingRequest, setAcceptingRequest] = useState<boolean>(false);
   const [rejectingRequest, setRejectingRequest] = useState<boolean>(false);
   const { walletConnectState, walletConnectDispatch } =
     useContext<any>(WalletConnectContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { wallet } = hdWalletContext.state;
-  const { address: cosmosAddress } = wallet?.cosmos;
-  const { params } = currentProposal;
-  const { proposer, requiredNamespaces, optionalNamespaces } = params;
-  const { metadata } = proposer;
-  const { eip155 } = requiredNamespaces;
-  const { name, url, icons } = metadata;
-  const icon = icons[0];
+  const cosmosAddress = wallet?.cosmos?.address;
+  const proposalParams = currentProposal?.params;
+  const proposer = proposalParams?.proposer;
+  const requiredNamespaces = proposalParams?.requiredNamespaces ?? {};
+  const optionalNamespaces = proposalParams?.optionalNamespaces ?? {};
+  const metadata = proposer?.metadata ?? {};
+  const eip155 = requiredNamespaces?.eip155 ?? optionalNamespaces?.eip155;
+  const name = String(metadata?.name ?? '');
+  const url = String(metadata?.url ?? '');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const icons: string[] = Array.isArray(metadata?.icons) ? metadata.icons : [];
+  const icon = icons?.[0] ?? '';
   const message =
     'Requesting permission to view addresses of your accounts and approval for transactions';
 
@@ -130,25 +138,43 @@ export default function PairingModal({
   const handleAccept = async () => {
     try {
       setAcceptingRequest(true);
-      const { id, params } = currentProposal;
-      const { requiredNamespaces, relays } = params;
+      if (!currentProposal?.id || !currentProposal?.params) {
+        wcError('WalletKit', 'handleAccept called without valid proposal', {
+          hasProposal: Boolean(currentProposal),
+        });
+        setAcceptingRequest(false);
+        hideModal();
+        return;
+      }
+      const id = currentProposal.id as number;
+      const proposalRequiredNamespaces =
+        currentProposal?.params?.requiredNamespaces ?? {};
+      wcDebug('WalletKit', 'User accepted session_proposal', {
+        id,
+        pairingTopic: currentProposal?.params?.pairingTopic,
+        proposerName: currentProposal?.params?.proposer?.metadata?.name,
+        requiredNamespaces: Object.keys(proposalRequiredNamespaces ?? {}),
+        optionalNamespaces: Object.keys(optionalNamespaces ?? {}),
+      });
       if (currentProposal) {
         const namespaces: SessionTypes.Namespaces = {};
-        const namespaceKeys = !isEmpty(requiredNamespaces)
-          ? Object.keys(requiredNamespaces)
+        const namespaceKeys = !isEmpty(proposalRequiredNamespaces)
+          ? Object.keys(proposalRequiredNamespaces)
           : Object.keys(optionalNamespaces);
         const accounts: string[] = [];
         const eip155Chains: string[] = [];
         namespaceKeys.forEach(key => {
-          if (requiredNamespaces && has(requiredNamespaces, key)) {
-            requiredNamespaces[key].chains.map((chain: string) => {
+          if (proposalRequiredNamespaces && has(proposalRequiredNamespaces, key)) {
+            proposalRequiredNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
                 [currentETHAddress].map(acc => {
                   eip155Chains.push(chain);
-                  accounts.push(`${chain}:${acc}`);
+                  accounts.push(`${String(chain)}:${String(acc)}`);
                 });
               } else if (key === 'cosmos' && cosmosAddress) {
-                [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
+                [cosmosAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
               }
             });
           }
@@ -158,10 +184,12 @@ export default function PairingModal({
               if (key === 'eip155') {
                 [currentETHAddress].map(acc => {
                   eip155Chains.push(chain);
-                  accounts.push(`${chain}:${acc}`);
+                  accounts.push(`${String(chain)}:${String(acc)}`);
                 });
               } else if (key === 'cosmos' && cosmosAddress) {
-                [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
+                [cosmosAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
               }
             });
           }
@@ -171,9 +199,9 @@ export default function PairingModal({
           let namespaceMethods: any = [];
           let namespaceEvents: any = [];
 
-          if (requiredNamespaces[key]?.methods) {
+          if (proposalRequiredNamespaces[key]?.methods) {
             namespaceMethods = namespaceMethods.concat(
-              ...requiredNamespaces[key].methods,
+              ...proposalRequiredNamespaces[key].methods,
             );
           }
           if (optionalNamespaces[key]?.methods) {
@@ -181,9 +209,9 @@ export default function PairingModal({
               ...optionalNamespaces[key].methods,
             );
           }
-          if (requiredNamespaces[key]?.events) {
+          if (proposalRequiredNamespaces[key]?.events) {
             namespaceEvents = namespaceEvents.concat(
-              ...requiredNamespaces[key].events,
+              ...proposalRequiredNamespaces[key].events,
             );
           }
           if (optionalNamespaces[key]?.events) {
@@ -198,6 +226,13 @@ export default function PairingModal({
             methods: namespaceMethods,
             events: namespaceEvents,
           };
+        });
+
+        wcDebug('WalletKit', 'Approving session with namespaces', {
+          id,
+          namespaceKeys,
+          accountsCount: accounts.length,
+          eip155ChainsCount: eip155Chains.length,
         });
 
         // const approvedNamespaces = buildApprovedNamespaces({
@@ -222,8 +257,17 @@ export default function PairingModal({
 
         setAcceptingRequest(false);
         hideModal();
+        wcDebug('WalletKit', 'Session approved and UI updated', {
+          id,
+          pairingTopic: currentProposal?.params?.pairingTopic,
+        });
       }
     } catch (e) {
+      wcError('WalletKit', 'Failed to approve session', {
+        id: currentProposal?.id,
+        pairingTopic: currentProposal?.params?.pairingTopic,
+        error: e,
+      });
       walletConnectDispatch({
         type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
       });
@@ -236,7 +280,12 @@ export default function PairingModal({
     try {
       if (currentProposal) {
         setRejectingRequest(true);
-        const { id } = currentProposal;
+        const { id } = currentProposal as { id: number };
+        wcDebug('WalletKit', 'User rejected session_proposal', {
+          id,
+          pairingTopic: currentProposal?.params?.pairingTopic,
+          proposerName: currentProposal?.params?.proposer?.metadata?.name,
+        });
         await web3wallet?.rejectSession({
           id,
           reason: getSdkError('USER_REJECTED_METHODS'),
@@ -248,6 +297,11 @@ export default function PairingModal({
         hideModal();
       }
     } catch (e) {
+      wcError('WalletKit', 'Failed to reject session', {
+        id: currentProposal?.id,
+        pairingTopic: currentProposal?.params?.pairingTopic,
+        error: e,
+      });
       walletConnectDispatch({
         type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
       });
@@ -294,7 +348,7 @@ export default function PairingModal({
 
   return (
     <CyDModalLayout
-      setModalVisible={() => {}}
+      setModalVisible={noop}
       isModalVisible={isModalVisible}
       style={styles.modalLayout}
       animationIn={'slideInUp'}

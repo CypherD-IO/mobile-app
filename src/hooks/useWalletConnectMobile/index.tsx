@@ -1,5 +1,7 @@
 import { useAppKit } from '@reown/appkit-react-native';
 import { useAccount, useDisconnect } from 'wagmi';
+import { useEffect } from 'react';
+import { wcDebug, wcWarn } from '../../core/walletConnectDebug';
 
 interface UseWalletConnectMobileResult {
   openWalletConnectModal: () => Promise<void>;
@@ -25,6 +27,14 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
   const { isConnected, isConnecting, address } = useAccount();
   const { disconnectAsync } = useDisconnect();
 
+  useEffect(() => {
+    wcDebug('AppKit', 'useAccount() state changed', {
+      isConnected,
+      isConnecting,
+      address: address ? `${address.slice(0, 6)}…${address.slice(-4)}` : undefined,
+    });
+  }, [isConnected, isConnecting, address]);
+
   /**
    * Opens the Reown/AppKit WalletConnect sheet.
    * If there is an existing connection we explicitly disconnect first so
@@ -33,22 +43,18 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
   const openWalletConnectModal = async (): Promise<void> => {
     if (isConnected) {
       try {
+        wcDebug('AppKit', 'Disconnecting existing session before opening Connect view');
         await disconnectAsync();
       } catch (error) {
-        console.warn(
-          '[WalletConnectMobile] Failed to disconnect before opening connect modal:',
-          error,
-        );
+        wcWarn('AppKit', 'Failed disconnect before open()', error as any);
       }
     }
 
     try {
+      wcDebug('AppKit', 'Opening AppKit modal', { view: 'Connect' });
       void open({ view: 'Connect' });
     } catch (error) {
-      console.warn(
-        '[WalletConnectMobile] Failed to open WalletConnect modal:',
-        error,
-      );
+      wcWarn('AppKit', 'Failed to open AppKit modal', error as any);
     }
   };
 
@@ -62,12 +68,10 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
     }
 
     try {
+      wcDebug('AppKit', 'Disconnecting AppKit session');
       await disconnectAsync();
     } catch (error) {
-      console.warn(
-        '[WalletConnectMobile] Failed to disconnect WalletConnect session:',
-        error,
-      );
+      wcWarn('AppKit', 'Failed disconnectAsync()', error as any);
     }
   };
 

@@ -42,6 +42,7 @@ import {
   EthTransactionPayload,
 } from '../../models/ethSigner.interface';
 import { recoverTypedSignature } from '@metamask/eth-sig-util';
+import { WALLET_CONNECT_SIGNING_TIMEOUT } from '../../constants/timeOuts';
 
 export default function useEthSigner() {
   const wagmiConfig = useContext(WagmiContext);
@@ -132,22 +133,45 @@ export default function useEthSigner() {
       timer = setTimeout(() => {
         reject(
           new Error(
-            "Signing transaction request timed out. User didn't sign / decline the transaction request",
+            "Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending reuests in your connected wallet and retry",
           ),
         );
-      }, 60 * 1000);
+      }, WALLET_CONNECT_SIGNING_TIMEOUT);
     });
 
     const cleanup = () => {
       clearTimeout(timer);
     };
 
-    // Send transaction with estimated values
-    const sendTransactionPromise = sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
+    // Build transaction params explicitly - avoid spreading extra fields like 'from'
+    // Always include 'data' (use '0x' for native sends) per Reown AppKit docs
+    const txParams = {
+      to: transactionToBeSigned.to,
+      value: transactionToBeSigned.value,
+      data: transactionToBeSigned.data ?? ('0x' as `0x${string}`),
+      gas: transactionToBeSigned.gas,
       chainId,
-      ...transactionToBeSigned,
-    });
+      ...(transactionToBeSigned.gasPrice
+        ? { gasPrice: transactionToBeSigned.gasPrice }
+        : {
+            maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas,
+            maxFeePerGas: transactionToBeSigned.maxFeePerGas,
+          }),
+    };
+
+    console.log(
+      '[WC-TX] sendNativeCoin params:',
+      JSON.stringify({
+        to: txParams.to,
+        value: txParams.value?.toString(),
+        data: txParams.data,
+        gas: txParams.gas?.toString(),
+        chainId: txParams.chainId,
+        hasGasPrice: !!transactionToBeSigned.gasPrice,
+      }),
+    );
+
+    const sendTransactionPromise = sendTransactionAsync(txParams);
     const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
     cleanup();
 
@@ -166,20 +190,44 @@ export default function useEthSigner() {
       timer = setTimeout(() => {
         reject(
           new Error(
-            "Signing transaction request timed out. User didn't sign / decline the transaction request",
+            `Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending reuests in your connected wallet and retry`,
           ),
         );
-      }, 60 * 1000);
+      }, WALLET_CONNECT_SIGNING_TIMEOUT);
     });
     const cleanup = () => {
       clearTimeout(timer);
     };
 
-    const sendTransactionPromise = sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
+    // Build transaction params explicitly - avoid spreading extra fields like 'from'
+    // Always include 'data' (use '0x' for token sends) per Reown AppKit docs
+    const txParams = {
+      to: transactionToBeSigned.to,
+      value: transactionToBeSigned.value,
+      data: transactionToBeSigned.data ?? ('0x' as `0x${string}`),
+      gas: transactionToBeSigned.gas,
       chainId,
-      ...transactionToBeSigned,
-    });
+      ...(transactionToBeSigned.gasPrice
+        ? { gasPrice: transactionToBeSigned.gasPrice }
+        : {
+            maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas,
+            maxFeePerGas: transactionToBeSigned.maxFeePerGas,
+          }),
+    };
+
+    console.log(
+      '[WC-TX] sendToken params:',
+      JSON.stringify({
+        to: txParams.to,
+        value: txParams.value?.toString(),
+        data: txParams.data?.substring(0, 20) + '...',
+        gas: txParams.gas?.toString(),
+        chainId: txParams.chainId,
+        hasGasPrice: !!transactionToBeSigned.gasPrice,
+      }),
+    );
+
+    const sendTransactionPromise = sendTransactionAsync(txParams);
     const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
     cleanup();
 
@@ -210,10 +258,10 @@ export default function useEthSigner() {
         }
       }
 
-      const response = await sendTransactionAsync({
-        account: transactionToBeSigned.from as `0x${string}`,
+      // Build approval tx params explicitly - avoid passing 'from' as 'account'
+      const approvalTxParams = {
         to: transactionToBeSigned.to,
-        data: transactionToBeSigned.data,
+        data: transactionToBeSigned.data ?? ('0x' as `0x${string}`),
         value: transactionToBeSigned.value,
         gas: transactionToBeSigned.gas,
         chainId: chainConfig.id,
@@ -223,7 +271,21 @@ export default function useEthSigner() {
               maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas,
               maxFeePerGas: transactionToBeSigned.maxFeePerGas,
             }),
-      });
+      };
+
+      console.log(
+        '[WC-TX] signApprovalEthereum params:',
+        JSON.stringify({
+          to: approvalTxParams.to,
+          value: approvalTxParams.value?.toString(),
+          data: approvalTxParams.data?.substring(0, 20) + '...',
+          gas: approvalTxParams.gas?.toString(),
+          chainId: approvalTxParams.chainId,
+          hasGasPrice: !!transactionToBeSigned.gasPrice,
+        }),
+      );
+
+      const response = await sendTransactionAsync(approvalTxParams);
       const receipt = await getTransactionReceipt(response, chainConfig.id);
       return receipt;
     } else {

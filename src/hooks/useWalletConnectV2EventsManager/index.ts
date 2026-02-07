@@ -17,6 +17,7 @@ import {
 } from '../../reducers/wallet_connect_reducer';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
+import { wcDebug, wcError } from '../../core/walletConnectDebug';
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -32,6 +33,13 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
   const onSessionProposal = useCallback(
     (proposal: any) => {
+      wcDebug('WalletKit', 'session_proposal received', {
+        id: proposal?.id,
+        pairingTopic: proposal?.params?.pairingTopic,
+        proposerName: proposal?.params?.proposer?.metadata?.name,
+        requiredNamespaces: Object.keys(proposal?.params?.requiredNamespaces ?? {}),
+        optionalNamespaces: Object.keys(proposal?.params?.optionalNamespaces ?? {}),
+      });
       if (!showModal || !ethereum?.wallets?.[ethereum?.currentIndex]?.address) {
         console.error(
           '[WalletConnect] Missing dependencies for session proposal',
@@ -76,6 +84,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
   const onSessionRequest = useCallback(
     async (requestEvent: any) => {
+      wcDebug('WalletKit', 'session_request received', {
+        topic: requestEvent?.topic,
+        method: requestEvent?.params?.request?.method,
+        chainId: requestEvent?.params?.chainId,
+      });
       if (!showModal || !hideModal) {
         console.error(
           '[WalletConnect] Missing modal context for session request',
@@ -95,8 +108,9 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           '[WalletConnect] Session not found after retries for topic:',
           topic,
         );
+        wcError('WalletKit', 'Session not found after retries', { topic });
         Sentry.captureMessage(
-          `WalletConnect session not found after retries: ${topic}`,
+          `WalletConnect session not found after retries: ${String(topic)}`,
           'warning',
         );
         return showModal('state', {
@@ -172,6 +186,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
               request.method,
               request,
             );
+            wcError('WalletKit', 'Unsupported session_request method', {
+              topic,
+              method: request.method,
+            });
             return showModal('state', {
               type: 'error',
               title: t('UNSUPPORTED_METHOD'),
@@ -182,6 +200,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         }
       } catch (error) {
         console.error('[WalletConnect] Error handling session request:', error);
+        wcError('WalletKit', 'Error handling session_request', {
+          topic,
+          method: request?.method,
+          error,
+        });
         Sentry.captureException(error);
         return showModal('state', {
           type: 'error',
@@ -197,6 +220,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
   const onSessionRemoval = useCallback(
     async ({ topic }: any) => {
+      wcDebug('WalletKit', 'session_delete received', { topic });
       if (!walletConnectDispatch) {
         console.error(
           '[WalletConnect] Missing walletConnectDispatch for session removal',
@@ -258,8 +282,12 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         web3wallet.on('session_delete', handlersRef.current.removal);
 
         listenersRegistered.current = true;
+        wcDebug('WalletKit', 'Event listeners registered', {
+          initialized,
+        });
       } catch (e) {
         console.error('[WalletConnect] Error registering event listeners:', e);
+        wcError('WalletKit', 'Error registering listeners', e as any);
         Sentry.captureException(e);
       }
     }
@@ -280,6 +308,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             web3wallet.off('session_delete', handlersRef.current.removal);
           }
           listenersRegistered.current = false;
+          wcDebug('WalletKit', 'Event listeners cleaned up');
         } catch (e) {
           console.error(
             '[WalletConnect] Error cleaning up event listeners:',

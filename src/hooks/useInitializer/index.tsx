@@ -143,6 +143,7 @@ export default function useInitializer() {
     // }
     let result;
     const RPCFromAsync = await getRpcEndpoints();
+    console.log('RPCFromAsync 146 : ', RPCFromAsync);
     if (
       RPCFromAsync &&
       RPCFromAsync !== '' &&
@@ -159,6 +160,7 @@ export default function useInitializer() {
       );
       result = resultFromEndpoint.data;
     }
+    console.log('result 163 : ', result);
     globalDispatch({ type: GlobalContextType.RPC_UPDATE, rpc: result });
     return result;
   };

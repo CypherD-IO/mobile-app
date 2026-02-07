@@ -197,6 +197,7 @@ export default function useGasService() {
     publicClient: PublicClient,
   ) {
     const response = await getWithoutAuth(`/v1/prices/gas/${chain}`);
+    console.log('response 200 ', response);
     if (!response.isError) {
       return response.data;
     } else if (EVM_CHAINS_BACKEND_NAMES.includes(chain)) {
@@ -287,6 +288,7 @@ export default function useGasService() {
       }
 
       const gasPriceDetail = await getGasPrice(chain, publicClient);
+      console.log('gasPriceDetail 290 ', gasPriceDetail);
       let gasLimit = Number(
         await publicClient.estimateGas({
           account: fromAddress,
@@ -346,6 +348,7 @@ export default function useGasService() {
         };
       }
     } catch (error) {
+      console.log('error 350 ', error);
       Sentry.captureException(error);
       return {
         isError: true,
@@ -640,8 +643,9 @@ export default function useGasService() {
           '',
         );
 
-        const { gasPrice, gasLimitMultiplier } =
-          await getCosmosGasPrice(backendName);
+        const { gasPrice, gasLimitMultiplier } = await getCosmosGasPrice(
+          backendName,
+        );
         const gasFee = DecimalHelper.multiply(simulation, [
           gasLimitMultiplier,
           gasPrice,
@@ -735,8 +739,9 @@ export default function useGasService() {
           '',
         );
 
-        const { gasPrice, gasLimitMultiplier } =
-          await getCosmosGasPrice(backendName);
+        const { gasPrice, gasLimitMultiplier } = await getCosmosGasPrice(
+          backendName,
+        );
 
         const gasFee = DecimalHelper.multiply(simulation, [
           gasLimitMultiplier,

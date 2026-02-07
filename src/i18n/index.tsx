@@ -834,6 +834,22 @@ const resources = {
       WC_SESSION_EXPIRED: 'Session Expired',
       WC_SESSION_EXPIRED_DESCRIPTION:
         'The connection session has expired or was disconnected. Please reconnect the dApp and try again.',
+      WC_SIGNING_TIMEOUT: 'Transaction Request Expired',
+      WC_SIGNING_TIMEOUT_DESCRIPTION:
+        'The transaction request was not signed within the allowed time and has been automatically rejected.',
+      WC_SIGNING_TIME_REMAINING: 'Time remaining: %s',
+      APPKIT_TX_PENDING: 'Transaction Pending',
+      APPKIT_TX_CHECK_WALLET:
+        'Please check {{walletName}} and approve the transaction request',
+      APPKIT_TX_TIME_REMAINING: 'Time remaining: {{time}}',
+      APPKIT_TX_CONNECTED_TO: 'Connected to: {{walletName}}',
+      APPKIT_TX_RESEND_REQUEST: 'Resend Request (if not showing)',
+      APPKIT_TX_TIMEOUT: 'Request Expired',
+      APPKIT_TX_TIMEOUT_DESC:
+        'The transaction request timed out and was not signed.',
+      APPKIT_TX_TIMEOUT_ACTION:
+        'Important: Please open {{walletName}} and REJECT any pending requests to avoid confusion.',
+      APPKIT_TX_RETRY: 'Retry Transaction',
       APPROVE_REQUEST: 'Approve Request',
       DEFAULT_AUTH_REMOVE:
         'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Clicking on "Proceed" will remove the exising wallet and you will be able to import the same wallet (if you have the seed phrase backed up) / create a new wallet without authentication.',

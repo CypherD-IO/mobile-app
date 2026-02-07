@@ -58,6 +58,11 @@ import useEns from '../../hooks/useEns';
 import useGasService from '../../hooks/useGasService';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import useTransactionManager from '../../hooks/useTransactionManager';
+import { useAppKitTransactionModal } from '../../hooks/useAppKitTransactionModal';
+import { AppKitTransactionModal } from '../../components/v2/AppKitTransactionModal';
+import { useWalletInfo } from '@reown/appkit-react-native';
+import { getConnectionType } from '../../core/asyncStorage';
+import { ConnectionTypes } from '../../constants/enum';
 import { TokenSendConfirmationParams } from '../../models/tokenSendConfirmationParams.interface';
 import {
   ActivityReducerAction,
@@ -137,6 +142,26 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const chainDetails = tokenData?.chainDetails;
   const { keyboardHeight } = useKeyboard();
+  const { walletInfo } = useWalletInfo();
+  
+  // AppKit transaction modal state
+  const pendingTxParamsRef = useRef<any>(null);
+  const [connectionType, setConnectionTypeState] = useState<string | null>(null);
+  const {
+    isModalVisible: isTxModalVisible,
+    modalState: txModalState,
+    showModal: showTxModal,
+    hideModal: hideTxModal,
+    setTimedOut: setTxTimedOut,
+    handleResend,
+    handleCancel: handleTxCancel,
+  } = useAppKitTransactionModal({
+    walletName: walletInfo?.name ?? 'your wallet',
+    onTimeout: () => {
+      console.log('[SendTo] AppKit transaction timed out');
+    },
+  });
+
   const [tokenSendConfirmationParams, setTokenSendConfirmationParams] =
     useState<TokenSendConfirmationParams>({
       isModalVisible: false,
@@ -163,6 +188,15 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
   const [nativeTokenDetails, setNativeTokenDetails] = useState<Holding>();
   const { refreshPortfolio } = usePortfolioRefresh();
+
+  // Check connection type for AppKit modal
+  useEffect(() => {
+    const checkConnectionType = async () => {
+      const connType = await getConnectionType();
+      setConnectionTypeState(connType);
+    };
+    void checkConnectionType();
+  }, []);
 
   let fuseByAddresses: Fuse<string>;
   if (Object.keys(addressDirectory).length) {
@@ -556,10 +590,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       valueForUsd,
       tokenData.contractDecimals,
     );
+    console.log('amountToSend 559 ', amountToSend);
     if (chainName === ChainNames.ETH) {
+      console.log('chainName 561 ', chainName);
       const publicClient = getViemPublicClient(
         getWeb3Endpoint(tokenData.chainDetails, globalContext),
       );
+      console.log('publicClient 565 ', publicClient);
       gasEstimate = await estimateGasForEvm({
         publicClient,
         chain: tokenData.chainDetails.backendName,
@@ -570,6 +607,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         contractDecimals: tokenData.contractDecimals,
         isErc20: !tokenData.isNativeToken,
       });
+      console.log('gasEstimate 577 ', gasEstimate);
     } else if (chainName === ChainNames.SOLANA) {
       gasEstimate = await estimateGasForSolana({
         fromAddress: address ?? '',
@@ -595,6 +633,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const submitSendTransaction = async () => {
+    console.log('submitSendTransaction');
     setLoading(true);
     const id = genId();
     const activityData: SendTransactionActivity = {
@@ -617,12 +656,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     let error = false;
     addressRef.current = addressText;
 
+    console.log('addressRef.current 621 ', addressRef.current);
     // checking for ens
     if (
       chainDetails?.chainName === ChainNames.ETH &&
       Object.keys(EnsCoinTypes).includes(tokenData.chainDetails.backendName) &&
       isValidEns(addressRef.current)
     ) {
+      console.log('isValidEns 628 ', isValidEns(addressRef.current));
       const ens = addressText;
       const addr = await resolveAddress(
         ens,
@@ -682,6 +723,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       ) {
         activityData.fromAddress = injective.address;
       } else {
+        console.log('error 688 ', error);
         error = true;
         showModal('state', {
           type: 'error',
@@ -692,16 +734,22 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         });
       }
 
+      console.log('activityData.fromAddress 699 ', activityData.fromAddress);
+
       const gasFee = await getGasFee(
         chainDetails.chainName,
         activityData.fromAddress,
         isMaxGasEstimation,
       );
 
+      console.log('gasFee 707 ', gasFee);
+
       const amountToSend = limitDecimalPlaces(
         valueForUsd,
         tokenData.contractDecimals,
       );
+
+      console.log('amountToSend 714 ', amountToSend);
 
       if (gasFee) {
         const { hasSufficientBalance, hasSufficientGasFee } =
@@ -712,6 +760,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             amountToSend,
             tokenData.balanceDecimal,
           );
+        console.log('hasSufficientBalance 725 ', hasSufficientBalance);
         const hasSufficient = hasSufficientBalance && hasSufficientGasFee;
         if (!hasSufficient) {
           showModal('state', {
@@ -735,6 +784,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           DecimalHelper.multiply(gasFee.gasFeeInCrypto, tokenData?.price ?? 0),
         ),
       );
+
+      console.log('activityData.gasAmount 749 ', activityData.gasAmount);
 
       setTokenSendConfirmationParams({
         isModalVisible: true,
@@ -818,18 +869,38 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       isModalVisible: false,
     });
     setLoading(true);
+    
+    // Store transaction params for resend functionality
+    const txParams = {
+      chain: tokenData.chainDetails.backendName,
+      amountToSend,
+      toAddress: addressRef.current,
+      contractAddress: tokenData.contractAddress,
+      contractDecimals: tokenData.contractDecimals,
+      symbol: tokenData.symbol,
+      chainName: chainDetails?.chainName,
+    };
+    pendingTxParamsRef.current = txParams;
+    
+    // Show AppKit transaction modal for WalletConnect users
+    const isWalletConnect = connectionType === ConnectionTypes.WALLET_CONNECT;
+    if (isWalletConnect && chainDetails?.chainName === ChainNames.ETH) {
+      showTxModal();
+    }
+    
     let response;
-    if (chainDetails?.chainName === ChainNames.ETH) {
-      fromAddress = ethereum.address;
-      response = await sendEvmToken({
-        chain: tokenData.chainDetails.backendName,
-        amountToSend,
-        toAddress: addressRef.current as `0x${string}`,
-        contractAddress: tokenData.contractAddress as `0x${string}`,
-        contractDecimals: tokenData.contractDecimals,
-        symbol: tokenData.symbol,
-      });
-    } else if (chainDetails?.chainName === ChainNames.SOLANA) {
+    try {
+      if (chainDetails?.chainName === ChainNames.ETH) {
+        fromAddress = ethereum.address;
+        response = await sendEvmToken({
+          chain: tokenData.chainDetails.backendName,
+          amountToSend,
+          toAddress: addressRef.current as `0x${string}`,
+          contractAddress: tokenData.contractAddress as `0x${string}`,
+          contractDecimals: tokenData.contractDecimals,
+          symbol: tokenData.symbol,
+        });
+      } else if (chainDetails?.chainName === ChainNames.SOLANA) {
       response = await sendSolanaTokens({
         amountToSend,
         toAddress: addressRef.current,
@@ -847,6 +918,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         contractDecimals: tokenData.contractDecimals,
       });
     }
+    
+    // Hide AppKit modal on success for WalletConnect users
+    if (isWalletConnect && chainDetails?.chainName === ChainNames.ETH) {
+      hideTxModal();
+    }
+    
     if (!response?.isError) {
       let willPrompt: boolean;
       if (
@@ -939,6 +1016,34 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void refreshPortfolio();
     } else {
       setLoading(false);
+      
+      // Check if it's a timeout error for WalletConnect users
+      const connType = connectionType ?? '';
+      const isWc = connType === ConnectionTypes.WALLET_CONNECT;
+      const isTimeoutError = response?.error?.message?.includes('timed out') || 
+                             response?.error?.message?.includes('timeout');
+      
+      if (isWc && isTimeoutError && chainDetails?.chainName === ChainNames.ETH) {
+        // Show timeout state in AppKit modal
+        setTxTimedOut();
+        // Modal will stay visible with timeout state
+        // Don't show the generic error modal
+      } else {
+        // Hide AppKit modal if it was shown
+        if (isWc && chainDetails?.chainName === ChainNames.ETH) {
+          hideTxModal();
+        }
+        
+        // Show generic error modal
+        showModal('state', {
+          type: 'error',
+          title: t('TRANSACTION_FAILED'),
+          description: parseErrorMessage(response.error),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+      
       // monitoring api
       void logAnalytics({
         type: AnalyticsType.ERROR,
@@ -961,14 +1066,68 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           reason: response.error,
         },
       });
-      showModal('state', {
-        type: 'error',
-        title: t('TRANSACTION_FAILED'),
-        description: parseErrorMessage(response.error),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
     }
+    } catch (error) {
+      setLoading(false);
+      
+      // Check if it's a timeout error for WalletConnect users
+      const connType = connectionType ?? '';
+      const isWc = connType === ConnectionTypes.WALLET_CONNECT;
+      const errorMessage = (error as Error)?.message ?? '';
+      const isTimeoutError = errorMessage.includes('timed out') || errorMessage.includes('timeout');
+      
+      if (isWc && isTimeoutError && chainDetails?.chainName === ChainNames.ETH) {
+        // Show timeout state in AppKit modal
+        setTxTimedOut();
+      } else {
+        // Hide AppKit modal if it was shown
+        if (isWc && chainDetails?.chainName === ChainNames.ETH) {
+          hideTxModal();
+        }
+        
+        // Show generic error modal
+        showModal('state', {
+          type: 'error',
+          title: t('TRANSACTION_FAILED'),
+          description: parseErrorMessage(error),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+      
+      console.error('[SendTo] Transaction error:', error);
+      Sentry.captureException(error);
+    }
+  };
+
+  // Handle resend transaction request for AppKit modal
+  const handleResendTransaction = async () => {
+    const txParams = pendingTxParamsRef.current;
+    if (!txParams) return;
+
+    await handleResend(async () => {
+      await sendEvmToken({
+        chain: txParams.chain,
+        amountToSend: txParams.amountToSend,
+        toAddress: txParams.toAddress as `0x${string}`,
+        contractAddress: txParams.contractAddress as `0x${string}`,
+        contractDecimals: txParams.contractDecimals,
+        symbol: txParams.symbol,
+      });
+      
+      hideTxModal();
+      void refreshPortfolio();
+    });
+  };
+
+  // Handle retry after timeout
+  const handleRetryTransaction = () => {
+    hideTxModal();
+    // Trigger the confirmation modal again
+    setTokenSendConfirmationParams({
+      ...tokenSendConfirmationParams,
+      isModalVisible: true,
+    });
   };
 
   const onSuccess = async (readEvent: QRScanEvent) => {
@@ -1098,6 +1257,17 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           isModalVisible={tokenSendConfirmationParams.isModalVisible}
           tokenSendParams={tokenSendConfirmationParams.tokenSendParams}
         />
+        
+        {/* AppKit Transaction Modal for WalletConnect users */}
+        <AppKitTransactionModal
+          isVisible={isTxModalVisible}
+          walletName={walletInfo?.name ?? 'your wallet'}
+          onResend={() => void handleResendTransaction()}
+          onCancel={handleTxCancel}
+          onRetry={handleRetryTransaction}
+          state={txModalState}
+        />
+        
         <CyDView className='h-full mx-[20px] pt-[10px]'>
           {/* Address label with QR scanner icon */}
           <CyDView className='flex flex-row justify-between items-center'>

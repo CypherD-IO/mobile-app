@@ -31,6 +31,7 @@ import { getToken } from '../../notification/pushNotification';
 import { get } from 'lodash';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { wcDebug, wcError } from '../../core/walletConnectDebug';
 
 /**
  * AsyncStorage key to check if we're in onboarding WalletConnect flow
@@ -72,11 +73,35 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
     }
   }, []);
 
+  useEffect(() => {
+    wcDebug('AppKit', 'Listener observed wagmi account state', {
+      isConnected,
+      address: address
+        ? `${address.slice(0, 6)}…${address.slice(-4)}`
+        : undefined,
+      connector: connector
+        ? (connector as any)?.id ?? (connector as any)?.name
+        : undefined,
+      walletName: walletInfo?.name,
+      connectionType,
+    });
+  }, [isConnected, address, connector, walletInfo, connectionType]);
+
   const { signMessageAsync } = useSignMessage({
     mutation: {
       async onSuccess(data) {
+        wcDebug('AppKit', 'signMessageAsync() success (signature received)', {
+          walletName: walletInfo?.name,
+          address: address
+            ? `${address.slice(0, 6)}…${address.slice(-4)}`
+            : undefined,
+        });
+        if (!address) {
+          wcError('AppKit', 'signMessageAsync success but address is missing');
+          return;
+        }
         const verifyMessageResponse = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
+          `${ARCH_HOST}/v1/authentication/verify-message/${address.toLowerCase()}?format=ERC-4361`,
           {
             signature: data,
           },
@@ -124,9 +149,18 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
       );
 
       if (isConnected && address && !ethereumAddress) {
+        wcDebug(
+          'AppKit',
+          'Connected wallet detected; deciding whether to auto-load',
+          {
+            isOnboardingFlow,
+            hasEthereumAddress: Boolean(ethereumAddress),
+          },
+        );
         if (isOnboardingFlow === 'true') {
           // Don't automatically load wallet during onboarding
           // The onboarding screens will handle the wallet creation
+          wcDebug('AppKit', 'Skipping auto-load due to onboarding flow flag');
           return;
         }
         // Normal flow: not in onboarding, proceed with wallet loading
@@ -136,6 +170,10 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
         !isConnected &&
         !address
       ) {
+        wcDebug(
+          'AppKit',
+          'Detected disconnected state while connectionType=WALLET_CONNECT; cleaning up',
+        );
         void handleDisconnect();
       }
     };
@@ -152,6 +190,9 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
   };
 
   const registerIntercomUser = () => {
+    if (!address) {
+      return;
+    }
     Intercom.loginUserWithUserAttributes({
       userId: address,
     }).catch(() => {
@@ -182,6 +223,7 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
   };
 
   const handleDisconnect = async () => {
+    wcDebug('AppKit', 'handleDisconnect() cleaning local connection state');
     void deleteWalletConfig();
     await removeConnectionType();
     setLoading(false);
@@ -190,17 +232,35 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
   const verifySessionTokenAndSign = async () => {
     setLoading(true);
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
-    await getToken(String(address).toLowerCase());
+    if (!address) {
+      wcError('AppKit', 'verifySessionTokenAndSign called without address');
+      setLoading(false);
+      return;
+    }
+    await getToken(address.toLowerCase());
     const isSessionTokenValid = await verifySessionToken();
+    wcDebug('AppKit', 'Session token validation result', {
+      isSessionTokenValid,
+      address: address
+        ? `${address.slice(0, 6)}…${address.slice(-4)}`
+        : undefined,
+      walletName: walletInfo?.name,
+    });
     if (!isSessionTokenValid) {
       void signConnectionMessage();
     } else {
       let authToken = await getAuthToken();
       authToken = JSON.parse(String(authToken));
-      const profileData = await getWalletProfile(authToken);
+      if (!authToken) {
+        wcError('AppKit', 'Stored authToken missing/empty after validation');
+        setLoading(false);
+        return;
+      }
+      const authTokenString = String(authToken);
+      const profileData = await getWalletProfile(authTokenString);
       globalContext.globalDispatch({
         type: GlobalContextType.SIGN_IN,
-        sessionToken: authToken,
+        sessionToken: authTokenString,
       });
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
@@ -212,8 +272,15 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
   };
 
   const signConnectionMessage = async () => {
+    wcDebug('AppKit', 'Preparing to sign connection message', {
+      walletName: walletInfo?.name,
+      connector: connector
+        ? (connector as any)?.id ?? (connector as any)?.name
+        : undefined,
+    });
     const provider = await connector?.getProvider();
     if (!provider) {
+      wcError('AppKit', 'connector.getProvider() returned null/undefined');
       throw new Error('web3Provider not connected');
     }
     const response = await getWithoutAuth(
@@ -222,6 +289,9 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
     );
     if (!response.isError) {
       const msg = response?.data?.message;
+      wcDebug('AppKit', 'Requesting signature for auth message', {
+        walletName: walletInfo?.name,
+      });
       await signMessageAsync({ message: msg });
       void logAnalyticsToFirebase(AnalyticEvent.SIGN_WALLET_CONNECT_MSG, {
         from: walletInfo?.name,
