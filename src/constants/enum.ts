@@ -571,9 +571,3 @@ export enum ReferralOnboardingStatus {
   FIRST_LOAD = 'FIRST_LOAD',
   FIRST_SPEND = 'FIRST_SPEND',
 }
-
-export const EVM_ONLY_CHAINS = ['ETH', 'POLYGON', 'AVALANCHE', 'ARBITRUM', 'OPTIMISM', 'BSC', 'ZKSYNC_ERA', 'BASE'];
-
-export const COSMOS_ONLY_CHAINS = ['COSMOS', 'OSMOSIS', 'NOBLE', 'COREUM', 'INJECTIVE'];
-
-export const SOLANA_ONLY_CHAINS = ['SOLANA'];

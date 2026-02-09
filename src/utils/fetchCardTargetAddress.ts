@@ -1,12 +1,11 @@
 import { zeroAddress, isAddress } from "viem";
 import { CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS } from "../constants/data";
 import { isCosmosAddress, isNobleAddress, isOsmosisAddress, isSolanaAddress, isCoreumAddress, isInjectiveAddress } from "../utils/utils";
-import { CHAIN_BASE, ChainBackendNames, CHAIN_HYPERLIQUID } from "../constants/server";
+import { CHAIN_BASE, ChainBackendNames, CHAIN_HYPERLIQUID, EVM_CHAINS_BACKEND_NAMES, COSMOS_CHAINS_BACKEND_NAMES, SOLANA_CHAINS_BACKEND_NAMES } from "../constants/server";
 import * as Sentry from '@sentry/react-native';
 import { TargetRouterABI } from '../constants/targetRouterABI';
 import { GlobalContextDef } from "../core/globalContext";
 import { getViemPublicClient, getWeb3Endpoint } from "../core/util";
-import { COSMOS_ONLY_CHAINS, EVM_ONLY_CHAINS, SOLANA_ONLY_CHAINS } from "../constants/enum";
 
 
 
@@ -38,7 +37,7 @@ export interface ResolveTargetAddressParams {
   /** The card provider identifier */
   provider: string | undefined | null;
   /** The blockchain network name (e.g., 'ETH', 'POLYGON', 'SOLANA') */
-  chainName: string | undefined | null;
+  chainName: ChainBackendNames | undefined | null;
   /** The target address provided in the quote (for validation) */
   quoteTargetAddress: string | undefined | null;
   /** Quote ID for error reporting and support reference */
@@ -117,7 +116,7 @@ const isValidAddress = (address: string | undefined | null, chain: string): bool
       return isInjectiveAddress(address);
 
     default:
-      return address.length > 0;
+      return false;
   }
 };
 
@@ -130,19 +129,19 @@ const isValidAddress = (address: string | undefined | null, chain: string): bool
  * @returns The chain family to use for contract lookup
  * @throws Error if the chain name is not recognized
  */
-export function getChainFamilyForTargetLookup(chainName: string): ChainBackendNames {
+export function getChainFamilyForTargetLookup(chainName: ChainBackendNames): ChainBackendNames {
   // EVM chains (including Hyperliquid which settles on Arbitrum) use ETH family
-  if (EVM_ONLY_CHAINS.includes(chainName) || CHAIN_HYPERLIQUID.backendName === chainName) {
+  if (EVM_CHAINS_BACKEND_NAMES.includes(chainName) || CHAIN_HYPERLIQUID.backendName === chainName) {
     return ChainBackendNames.ETH;
   }
 
   // Cosmos ecosystem chains use OSMOSIS family
-  if (COSMOS_ONLY_CHAINS.includes(chainName)) {
+  if (COSMOS_CHAINS_BACKEND_NAMES.includes(chainName)) {
     return ChainBackendNames.OSMOSIS;
   }
 
   // Solana chain family
-  if (SOLANA_ONLY_CHAINS.includes(chainName)) {
+  if (SOLANA_CHAINS_BACKEND_NAMES.includes(chainName)) {
     return ChainBackendNames.SOLANA;
   }
 
@@ -158,9 +157,9 @@ export function getChainFamilyForTargetLookup(chainName: string): ChainBackendNa
  * @param chainName - The chain backend name
  * @returns Normalized address string
  */
-function normalizeAddressForComparison(address: string, chainName: string): string {
+function normalizeAddressForComparison(address: string, chainName: ChainBackendNames): string {
   // EVM chains and Hyperliquid use case-insensitive EVM addresses
-  if (EVM_ONLY_CHAINS.includes(chainName) || chainName === CHAIN_HYPERLIQUID.backendName) {
+  if (EVM_CHAINS_BACKEND_NAMES.includes(chainName) || chainName === CHAIN_HYPERLIQUID.backendName) {
     return address.toLowerCase();
   }
   return address;
@@ -201,7 +200,7 @@ export async function fetchCardTargetAddress(cardProgram: string, provider: stri
       throw new Error(`Target address not found in contract (returned invalid address: ${result}).`);
     }
 
-    return result as string;
+    return result;
   } catch (err) {
     Sentry.captureException(err, {
       extra: { cardProgram, provider, chain },

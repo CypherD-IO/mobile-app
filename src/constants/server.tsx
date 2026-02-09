@@ -415,6 +415,10 @@ export const COSMOS_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.OSMOSIS,
 ];
 
+export const SOLANA_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
+  ChainBackendNames.SOLANA,
+];
+
 export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.ETH,
   ChainBackendNames.POLYGON,
