@@ -203,6 +203,7 @@
     "react-native-worklets": "^0.7.1",
     "react-native-worklets-core": "^1.6.2",
     "readable-stream": "^1.1.14",
+    "rn-emoji-keyboard": "^1.7.0",
     "secp256k1": "5.0.1",
     "share": "^0.7.40",
     "sp-react-native-in-app-updates": "^1.1.7",

@@ -37,7 +37,9 @@ import {
   CardStatus,
   CypherPlanId,
   PhysicalCardType,
+  GlobalContextType,
 } from '../../../constants/enum';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 import AppImages from '../../../../assets/images/appImages';
 import GradientText from '../../../components/gradientText';
 import EditLimitModal from '../../../components/v2/editLimitModal';
@@ -51,6 +53,11 @@ import SaveChangesModal from '../../../components/v2/saveChangesModal';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { countryMaster } from '../../../../assets/datasets/countryMaster';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import EditCardColor from './editCardColour';
+import EditCardTag from './editCardTag';
+import { getCardColorByHex } from '../../../constants/cardColours';
+import { truncateText } from '../../../utils/textUtils';
+import CardTagBadge from '../../../components/CardTagBadge';
 
 interface RouteParams {
   cardId: string;
@@ -102,7 +109,10 @@ export default function CardControls() {
     currentCardProvider,
     onOpenNavigate = ON_OPEN_NAVIGATE.DEFAULT,
   } = route.params ?? {};
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
+  const { globalState, globalDispatch } = useContext(
+    GlobalContext,
+  ) as GlobalContextDef;
+  const { getWalletProfile } = useCardUtilities();
   const { getWithAuth, patchWithAuth, postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -172,6 +182,18 @@ export default function CardControls() {
 
   // Add a ref to store the exit action
   const exitActionRef = useRef<any>(null);
+
+  /**
+   * Refreshes the card profile by fetching the latest wallet profile data
+   * from the API and updating the global context.
+   */
+  const refreshProfile = async (): Promise<void> => {
+    const data = await getWalletProfile(globalState.token);
+    globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: data,
+    });
+  };
 
   useEffect(() => {
     const filteredCards =
@@ -809,7 +831,9 @@ export default function CardControls() {
                   })}
                   resizeMode='contain'
                 />
-                <CyDText className='font-medium'>{`${getDisplayCardType(selectedCard)} card ** ${selectedCard?.last4}`}</CyDText>
+                <CyDText className='font-medium'>{`${getDisplayCardType(
+                  selectedCard,
+                )} card ** ${selectedCard?.last4}`}</CyDText>
               </CyDView>
             )}
             <CyDMaterialDesignIcons
@@ -873,7 +897,9 @@ export default function CardControls() {
                       })}
                       resizeMode='contain'
                     />
-                    <CyDText className='font-medium text-base400'>{`${getDisplayCardType(cardItem)} card ** ${cardItem?.last4}`}</CyDText>
+                    <CyDText className='font-medium text-base400'>{`${getDisplayCardType(
+                      cardItem,
+                    )} card ** ${cardItem?.last4}`}</CyDText>
                   </CyDView>
                   {cardItem.cardId === selectedCardId && (
                     <CyDMaterialDesignIcons
@@ -1139,34 +1165,35 @@ export default function CardControls() {
                       source={AppImages.TAP_AND_PAY_ICON}
                       className='w-[32px] h-[32px]'
                     />
-                  <CyDText className='text-[16px]'>Tap and Pay</CyDText>
-                  <Tooltip
-                    isVisible={showTapAndPayTooltip}
-                    content={
-                      <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
-                        <CyDText className='text-[14px] text-base400'>
-                          Enable contactless payments by tapping your physical
-                          card at supported terminals
-                        </CyDText>
-                      </CyDView>
-                    }
-                    onClose={() => setShowTapAndPayTooltip(false)}
-                    placement='top'
-                    backgroundColor='transparent'
-                    useInteractionManager={true}
-                    contentStyle={{
-                      backgroundColor: 'transparent',
-                      borderWidth: 0,
-                    }}>
-                    <CyDTouchView onPress={() => setShowTapAndPayTooltip(true)}>
-                      <CyDMaterialDesignIcons
-                        name='information-outline'
-                        size={16}
-                        className='text-n200'
-                      />
-                    </CyDTouchView>
-                  </Tooltip>
-                </CyDView>
+                    <CyDText className='text-[16px]'>Tap and Pay</CyDText>
+                    <Tooltip
+                      isVisible={showTapAndPayTooltip}
+                      content={
+                        <CyDView className='p-[5px] bg-n40 rounded-[4px]'>
+                          <CyDText className='text-[14px] text-base400'>
+                            Enable contactless payments by tapping your physical
+                            card at supported terminals
+                          </CyDText>
+                        </CyDView>
+                      }
+                      onClose={() => setShowTapAndPayTooltip(false)}
+                      placement='top'
+                      backgroundColor='transparent'
+                      useInteractionManager={true}
+                      contentStyle={{
+                        backgroundColor: 'transparent',
+                        borderWidth: 0,
+                      }}>
+                      <CyDTouchView
+                        onPress={() => setShowTapAndPayTooltip(true)}>
+                        <CyDMaterialDesignIcons
+                          name='information-outline'
+                          size={16}
+                          className='text-n200'
+                        />
+                      </CyDTouchView>
+                    </Tooltip>
+                  </CyDView>
                   <CyDSwitch
                     value={channelControls.tapAndPay}
                     onValueChange={async () =>
@@ -1318,6 +1345,22 @@ export default function CardControls() {
               </>
             )}
 
+            {/* Customization Section */}
+            <RenderCustomization
+              provider={currentCardProvider as CardProviders}
+              cardId={selectedCardId ?? ''}
+              currentColor={selectedCard?.cardColor}
+              currentTag={selectedCard?.cardTag}
+              availableCards={activeCards}
+              isVirtualCard={selectedCard?.type === CardType.VIRTUAL}
+              onUpdateCardColor={() => {
+                void refreshProfile();
+              }}
+              onUpdateCardTag={() => {
+                void refreshProfile();
+              }}
+            />
+
             {/* Reset Card Settings */}
             <CyDView className='mt-[16px] bg-n0 rounded-[10px] px-[16px]'>
               <CyDTouchView
@@ -1402,6 +1445,116 @@ export default function CardControls() {
         cardId={selectedCardId}
       />
     </>
+  );
+}
+
+function RenderCustomization({
+  provider,
+  cardId,
+  currentColor,
+  currentTag,
+  availableCards,
+  isVirtualCard,
+  onRefreshCards,
+  onUpdateCardColor,
+  onUpdateCardTag,
+}: {
+  provider: CardProviders;
+  cardId: string;
+  currentColor?: string;
+  currentTag?: string;
+  availableCards: Card[];
+  isVirtualCard: boolean;
+  onRefreshCards?: () => void;
+  onUpdateCardColor: () => void;
+  onUpdateCardTag: () => void;
+}) {
+  const { t } = useTranslation();
+  const [editCardColorVisible, setEditCardColorVisible] = useState(false);
+  const [editCardTagVisible, setEditCardTagVisible] = useState(false);
+
+  const colorDisplay = getCardColorByHex(currentColor);
+
+  return (
+    <CyDView className='w-full mt-[16px]'>
+      <EditCardColor
+        isModalVisible={editCardColorVisible}
+        setIsModalVisible={setEditCardColorVisible}
+        provider={provider}
+        cardId={cardId}
+        currentColor={currentColor}
+        currentTag={currentTag}
+        onUpdateCardColor={onUpdateCardColor}
+      />
+
+      <EditCardTag
+        isModalVisible={editCardTagVisible}
+        setIsModalVisible={setEditCardTagVisible}
+        currentTag={currentTag}
+        provider={provider}
+        cardId={cardId}
+        availableCards={availableCards}
+        onRefreshCards={onRefreshCards}
+        onUpdateCardTag={onUpdateCardTag}
+      />
+
+      <CyDText className='text-n200 text-[14px] mb-[8px]'>
+        {t('CUSTOMIZATION')}
+      </CyDText>
+      <CyDView className='bg-n0 rounded-[10px] px-[16px] overflow-hidden'>
+        {isVirtualCard && (
+          <CyDTouchView
+            className='flex-row justify-between items-center py-[16px] border-b border-n40'
+            onPress={() => setEditCardColorVisible(true)}>
+            <CyDView className='flex-row items-center gap-x-[12px]'>
+              <CyDView className='bg-[#2D2D2D] p-2 rounded-lg '>
+                <CyDImage
+                  source={AppImages.CARD_COLOUR_ICON}
+                  className='w-[20px] h-[20px]'
+                  resizeMode='contain'
+                />
+              </CyDView>
+              <CyDText className='text-[16px]'>{t('CARD_COLOUR')}</CyDText>
+            </CyDView>
+            <CyDView className='flex-row items-center gap-x-[8px]'>
+              <CyDView
+                className='h-3 w-3 rounded-full'
+                style={{ backgroundColor: colorDisplay.hex }}
+              />
+              <CyDText className='text-[13px] text-primaryText'>
+                {colorDisplay.name}
+              </CyDText>
+              <CyDMaterialDesignIcons
+                name='chevron-right'
+                size={20}
+                className='text-n200'
+              />
+            </CyDView>
+          </CyDTouchView>
+        )}
+
+        <CyDTouchView
+          className='flex-row justify-between items-center py-[16px]'
+          onPress={() => setEditCardTagVisible(true)}>
+          <CyDView className='flex-row items-center gap-x-[12px]'>
+            <CyDView className='bg-[#F74555] p-2 rounded-lg'>
+              <CyDMaterialDesignIcons name='tag' size={20} color='white' />
+            </CyDView>
+            <CyDText className='text-[16px]'>{t('CARD_TAGS')}</CyDText>
+          </CyDView>
+          <CyDView className='flex-row items-center gap-x-[8px]'>
+            <CyDText className='text-[13px] text-primaryText'>
+              {currentTag ? truncateText(currentTag, 12) : t('NOT_SET')}
+            </CyDText>
+            <CyDMaterialDesignIcons
+              name='chevron-right'
+              size={20}
+              className='text-n200'
+            />
+          </CyDView>
+        </CyDTouchView>
+      </CyDView>
+    </CyDView>
   );
 }
 
