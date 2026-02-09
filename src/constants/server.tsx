@@ -397,6 +397,7 @@ export const chainIdNumberMapping: Record<number, Chain> = {
 };
 
 export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
+  ChainBackendNames.ETH,
   ChainBackendNames.POLYGON,
   ChainBackendNames.BSC,
   ChainBackendNames.AVALANCHE,
@@ -413,6 +414,10 @@ export const COSMOS_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.COREUM,
   ChainBackendNames.INJECTIVE,
   ChainBackendNames.OSMOSIS,
+];
+
+export const SOLANA_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
+  ChainBackendNames.SOLANA,
 ];
 
 export const PORTFOLIO_CHAINS_BACKEND_NAMES = [

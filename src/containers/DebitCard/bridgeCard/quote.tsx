@@ -70,6 +70,8 @@ import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
 import { formatUnits } from 'viem';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
+import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
 
 export default function CardQuote({
   navigation,
@@ -97,7 +99,8 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const { globalState } = globalContext;
   const quoteExpiry = 60;
   const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
@@ -134,6 +137,92 @@ export default function CardQuote({
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
+  const [targetAddress, setTargetAddress] = useState<string>('');
+  const [isAddressLoading, setIsAddressLoading] = useState<boolean>(true);
+  const prevQuoteRef = useRef<any>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const getAddress = async () => {
+      const currentQuoteParams = {
+        programId: tokenQuote.programId,
+        cardProvider: tokenQuote.cardProvider,
+        chain: tokenQuote.chain,
+        targetAddress: tokenQuote.targetAddress,
+      };
+
+      if (
+        prevQuoteRef.current &&
+        prevQuoteRef.current.programId === currentQuoteParams.programId &&
+        prevQuoteRef.current.cardProvider === currentQuoteParams.cardProvider &&
+        prevQuoteRef.current.chain === currentQuoteParams.chain &&
+        prevQuoteRef.current.targetAddress ===
+          currentQuoteParams.targetAddress &&
+        targetAddress
+      ) {
+        if (isMounted) setIsAddressLoading(false);
+        return;
+      }
+
+      if (isMounted) setIsAddressLoading(true);
+
+      // -------------------------------------------------------------------------
+      // Target Address Resolution
+      // -------------------------------------------------------------------------
+      // On production: Fetch from smart contract and validate against quote
+      // On dev/staging: Use quote's target address directly (no contract validation)
+
+      const currentArchHost = hostWorker.getHost('ARCH_HOST');
+      const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
+
+      if (isProductionBackend) {
+        const result = await resolveAndValidateCardTargetAddress({
+          programId: tokenQuote.programId,
+          provider: route.params.cardProvider,
+          chainName: tokenQuote.chain as ChainBackendNames,
+          quoteTargetAddress: tokenQuote.targetAddress,
+          quoteId: tokenQuote.quoteId,
+          globalContext,
+        });
+
+        console.log('result', result);
+
+        if (!result.success) {
+          setIsAddressLoading(false);
+          setLoading(false);
+          showModal('state', {
+            type: 'error',
+            title: 'Transaction Security Check Failed',
+            description: result.userFriendlyMessage,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
+        if (isMounted) {
+          setTargetAddress(result.targetAddress);
+          prevQuoteRef.current = currentQuoteParams;
+          setIsAddressLoading(false);
+          setIsPayDisabled(false);
+        }
+      } else {
+        // Non-production: use quote address directly
+        if (isMounted && tokenQuote.targetAddress) {
+          setTargetAddress(tokenQuote.targetAddress);
+          prevQuoteRef.current = currentQuoteParams;
+          setIsAddressLoading(false);
+          setIsPayDisabled(false);
+        } else if (isMounted) {
+          setIsAddressLoading(false);
+        }
+      }
+    };
+
+    getAddress();
+    return () => {
+      isMounted = false;
+    };
+  }, [tokenQuote]);
 
   const cosmosAddresses = useMemo(
     () => ({
@@ -391,7 +480,7 @@ export default function CardQuote({
             response = await transferOnHyperLiquid({
               chain: ChainBackendNames.ARBITRUM,
               amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress,
+              toAddress: targetAddress,
               contractAddress,
               contractDecimals,
               accountType: selectedToken.accountType as HyperLiquidAccount,
@@ -401,7 +490,7 @@ export default function CardQuote({
             response = await sendEvmToken({
               chain: selectedToken.chainDetails.backendName,
               amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress as `0x${string}`,
+              toAddress: targetAddress as `0x${string}`,
               contractAddress: contractAddress as `0x${string}`,
               contractDecimals,
               symbol: selectedToken.symbol,
@@ -411,9 +500,9 @@ export default function CardQuote({
               tokenQuote.cosmosSwap?.requiredAddresses ?? [],
             );
             if (!addressList.length) {
-              addressList.push(tokenQuote.targetAddress);
+              addressList.push(targetAddress);
             } else {
-              addressList[addressList.length - 1] = tokenQuote.targetAddress;
+              addressList[addressList.length - 1] = targetAddress;
             }
             const body = {
               source_asset_denom: tokenQuote.cosmosSwap?.sourceAssetDenom,
@@ -718,7 +807,7 @@ export default function CardQuote({
           } else if (chainName === ChainNames.SOLANA) {
             response = await sendSolanaTokens({
               amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress,
+              toAddress: targetAddress,
               contractDecimals,
               contractAddress,
             });
@@ -749,8 +838,8 @@ export default function CardQuote({
                     '',
                   )
                 : chainName === ChainNames.SOLANA
-                  ? solanaAddress
-                  : ethereumAddress,
+                ? solanaAddress
+                : ethereumAddress,
               ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
               ...(connectionType ? { connectionType } : {}),
             });
@@ -771,8 +860,8 @@ export default function CardQuote({
                     '',
                   )
                 : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
-                  ? solanaAddress
-                  : ethereumAddress,
+                ? solanaAddress
+                : ethereumAddress,
               ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
               ...(connectionType ? { connectionType } : {}),
               other: {
@@ -831,8 +920,8 @@ export default function CardQuote({
         )
           ? get(cosmosAddresses, selectedToken?.chainDetails?.chainName, '')
           : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
-            ? solanaAddress
-            : ethereumAddress,
+          ? solanaAddress
+          : ethereumAddress,
         ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
         other: {
           amountToSend: actualTokensRequired,
@@ -867,6 +956,7 @@ export default function CardQuote({
     cosmosAddresses,
     solanaAddress,
     ethereumAddress,
+    targetAddress,
   ]);
 
   const onLoadPress = async () => {
@@ -1124,7 +1214,11 @@ export default function CardQuote({
         {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
           <CyDView className='bg-p10 mb-[24px] px-[12px] py-[16px] mx-[16px] rounded-[12px] flex flex-row justify-between items-center'>
             <CyDText className='text-base200 font-medium text-[12px]'>
-              {`Want to save ${tokenQuote?.fees?.fee && tokenQuote?.fees?.fee > 1 ? '$' + String(tokenQuote?.fees?.fee) : 'more'} on this load?`}
+              {`Want to save ${
+                tokenQuote?.fees?.fee && tokenQuote?.fees?.fee > 1
+                  ? '$' + String(tokenQuote?.fees?.fee)
+                  : 'more'
+              } on this load?`}
             </CyDText>
             <CyDTouchView
               className='flex flex-row items-center gap-[4px]'
@@ -1173,6 +1267,8 @@ export default function CardQuote({
             loading={loading}
             disabled={
               isPayDisabled ||
+              isAddressLoading ||
+              !targetAddress ||
               (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
             }
             onPress={() => {

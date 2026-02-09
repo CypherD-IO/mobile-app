@@ -4149,7 +4149,7 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 8a82b93a6400c8e6551c0bcd66a9177f2e067aed
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
-  hermes-engine: 5e64f6488ee717196dfc687e4ef99dce19651389
+  hermes-engine: a5b42648a9a43afb2df452e354fc7d924c9bb557
   Intercom: aca703f001cf9470b1f13b72cb8cc969a09bafca
   intercom-react-native: c8ee5e7d845955c5f6898c0f094ebcf1d6db9255
   jail-monkey: e057abe7b37f84e1763491eb72113efd334a6de0
