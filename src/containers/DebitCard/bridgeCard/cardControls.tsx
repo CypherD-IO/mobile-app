@@ -1544,7 +1544,7 @@ function RenderCustomization({
           </CyDView>
           <CyDView className='flex-row items-center gap-x-[8px]'>
             <CyDText className='text-[13px] text-primaryText'>
-              {currentTag ? truncateText(currentTag, 12) : t('NOT_SET')}
+              {currentTag ? truncateText(currentTag, 10) : t('NOT_SET')}
             </CyDText>
             <CyDMaterialDesignIcons
               name='chevron-right'

@@ -25,7 +25,7 @@ export default function CardTagBadge({
       )}>
       <CyDText className='text-[14px]'>{emoji}</CyDText>
       <CyDText className='font-medium text-[14px] leading-[140%] tracking-[-0.4px] text-gray-800'>
-        {truncateText(name, 10)}
+        {truncateText(name, 8)}
       </CyDText>
     </CyDView>
   );

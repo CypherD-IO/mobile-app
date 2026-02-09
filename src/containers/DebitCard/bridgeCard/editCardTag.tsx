@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Animated } from 'react-native';
 import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard';
@@ -68,7 +68,14 @@ export default function EditCardTag({
   const { patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
 
+  useEffect(() => {
+    if (isModalVisible) {
+      setSelectedTag(currentTag ?? null);
+    }
+  }, [isModalVisible, currentTag]);
+
   const handleClose = (): void => {
+    setSelectedTag(currentTag ?? null);
     setView('select');
     setCustomEmoji('');
     setCustomName('');
