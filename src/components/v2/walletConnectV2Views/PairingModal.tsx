@@ -47,6 +47,7 @@ export default function PairingModal({
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { wallet } = hdWalletContext.state;
   const cosmosAddress = wallet?.cosmos?.address;
+  const solanaAddress = wallet?.solana?.address;
   const proposalParams = currentProposal?.params;
   const proposer = proposalParams?.proposer;
   const requiredNamespaces = proposalParams?.requiredNamespaces ?? {};
@@ -149,18 +150,26 @@ export default function PairingModal({
         const namespaceKeys = !isEmpty(proposalRequiredNamespaces)
           ? Object.keys(proposalRequiredNamespaces)
           : Object.keys(optionalNamespaces);
-        const accounts: string[] = [];
-        const eip155Chains: string[] = [];
+
         namespaceKeys.forEach(key => {
+          const accounts: string[] = [];
+          const chains: string[] = [];
+
           if (proposalRequiredNamespaces && has(proposalRequiredNamespaces, key)) {
             proposalRequiredNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
+                chains.push(chain);
                 [currentETHAddress].map(acc => {
-                  eip155Chains.push(chain);
                   accounts.push(`${String(chain)}:${String(acc)}`);
                 });
               } else if (key === 'cosmos' && cosmosAddress) {
+                chains.push(chain);
                 [cosmosAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
+              } else if (key === 'solana' && solanaAddress) {
+                chains.push(chain);
+                [solanaAddress].map(acc =>
                   accounts.push(`${String(chain)}:${String(acc)}`),
                 );
               }
@@ -170,12 +179,18 @@ export default function PairingModal({
           if (optionalNamespaces && has(optionalNamespaces, key)) {
             optionalNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
+                chains.push(chain);
                 [currentETHAddress].map(acc => {
-                  eip155Chains.push(chain);
                   accounts.push(`${String(chain)}:${String(acc)}`);
                 });
               } else if (key === 'cosmos' && cosmosAddress) {
+                chains.push(chain);
                 [cosmosAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
+              } else if (key === 'solana' && solanaAddress) {
+                chains.push(chain);
+                [solanaAddress].map(acc =>
                   accounts.push(`${String(chain)}:${String(acc)}`),
                 );
               }
@@ -209,7 +224,7 @@ export default function PairingModal({
           }
 
           namespaces[key] = {
-            chains: eip155Chains,
+            chains,
             accounts,
             methods: namespaceMethods,
             events: namespaceEvents,
