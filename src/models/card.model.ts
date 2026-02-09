@@ -129,6 +129,7 @@ export interface CardQuoteResponse {
   tokenSymbol: string;
   expiry: number;
   estimatedTime: number;
+  programId: string;
   isInstSwapEnabled: boolean;
   fees: {
     fee: number;
