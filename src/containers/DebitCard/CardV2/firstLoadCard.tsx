@@ -31,6 +31,7 @@ import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ETH,
   CHAIN_OSMOSIS,
+  ChainBackendNames,
   ChainNames,
   COSMOS_CHAINS,
   GASLESS_CHAINS,
@@ -395,7 +396,7 @@ export default function FirstLoadCard() {
             )
               ? errorMessage +
                 `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-              : (errorMessage ?? t('UNABLE_TO_TRANSFER')),
+              : errorMessage ?? t('UNABLE_TO_TRANSFER'),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -506,7 +507,7 @@ export default function FirstLoadCard() {
             )
               ? parseErrorMessage(response.error) +
                 `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-              : (parseErrorMessage(response.error) ?? t('UNABLE_TO_TRANSFER')),
+              : parseErrorMessage(response.error) ?? t('UNABLE_TO_TRANSFER'),
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -688,12 +689,16 @@ export default function FirstLoadCard() {
           backendName === CHAIN_ETH.backendName &&
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
+          errorMessage = `${t<string>(
+            'MINIMUM_AMOUNT_ETH',
+          )} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = 'Minimum card load amount for Ethereum is $50';
           } else {
-            errorMessage = `Minimum card load amount is $${String(minTokenValueLimit)}`;
+            errorMessage = `Minimum card load amount is $${String(
+              minTokenValueLimit,
+            )}`;
           }
         }
 
@@ -930,13 +935,13 @@ export default function FirstLoadCard() {
       return;
     }
     let gasDetails;
-    
+
     // -------------------------------------------------------------------------
     // Target Address Resolution
     // -------------------------------------------------------------------------
     // On production: Fetch from smart contract and validate against quote
     // On dev/staging: Use quote's target address directly (no contract validation)
-    
+
     const currentArchHost = hostWorker.getHost('ARCH_HOST');
     const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
     let targetWalletAddress = '';
@@ -944,8 +949,8 @@ export default function FirstLoadCard() {
     if (isProductionBackend) {
       const result = await resolveAndValidateCardTargetAddress({
         programId: quote.programId,
-        provider: quote.cardProvider,
-        chainName: quote.chain,
+        provider: currentCardProvider,
+        chainName: quote.chain as ChainBackendNames,
         quoteTargetAddress: quote.targetAddress,
         quoteId: quote.quoteId,
         globalContext,
@@ -1188,7 +1193,10 @@ export default function FirstLoadCard() {
                   )}
                   {isCryptoInput && (
                     <CyDText className='font-medium text-n100 text-[12px]'>
-                      {`${DecimalHelper.round(selectedToken?.balanceDecimal ?? '', 8).toString()} ${String(selectedToken?.symbol ?? '')}`}
+                      {`${DecimalHelper.round(
+                        selectedToken?.balanceDecimal ?? '',
+                        8,
+                      ).toString()} ${String(selectedToken?.symbol ?? '')}`}
                     </CyDText>
                   )}
                   <CyDMaterialDesignIcons

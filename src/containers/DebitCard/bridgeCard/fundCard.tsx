@@ -73,7 +73,7 @@ import {
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
 import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
-import { hostWorker, PRODUCTION_ARCH_HOST } from "../../../global";
+import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
 /**
  * Interface for route parameters passed to BridgeFundCardScreen
  */
@@ -303,7 +303,7 @@ export default function BridgeFundCardScreen({
     // -------------------------------------------------------------------------
     // On production: Fetch from smart contract and validate against quote
     // On dev/staging: Use quote's target address directly (no contract validation)
-    
+
     const currentArchHost = hostWorker.getHost('ARCH_HOST');
     const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
     let targetWalletAddress = '';
@@ -311,8 +311,8 @@ export default function BridgeFundCardScreen({
     if (isProductionBackend) {
       const result = await resolveAndValidateCardTargetAddress({
         programId: quote.programId,
-        provider: quote.cardProvider,
-        chainName: quote.chain,
+        provider: currentCardProvider,
+        chainName: quote.chain as ChainBackendNames,
         quoteTargetAddress: quote.targetAddress,
         quoteId: quote.quoteId,
         globalContext,
@@ -758,9 +758,13 @@ export default function BridgeFundCardScreen({
         !['usd-coin', 'tether'].includes(selectedToken?.coinGeckoId) &&
         DecimalHelper.isLessThan(usdAmount_, MINIMUM_TRANSFER_AMOUNT_ETH)
       ) {
-        errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
+        errorMessage = `${t<string>(
+          'MINIMUM_AMOUNT_ETH',
+        )} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
       } else if (DecimalHelper.isLessThan(usdAmount_, minTokenValueLimit)) {
-        errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
+        errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(
+          minTokenValueLimit,
+        )}`;
       }
 
       if (!isEmpty(errorMessage)) {
@@ -888,8 +892,7 @@ export default function BridgeFundCardScreen({
               )
                 ? parseErrorMessage(response.error) +
                   `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-                : (parseErrorMessage(response.error) ??
-                  t('UNABLE_TO_TRANSFER')),
+                : parseErrorMessage(response.error) ?? t('UNABLE_TO_TRANSFER'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -1015,7 +1018,7 @@ export default function BridgeFundCardScreen({
               )
                 ? parseErrorMessage(response.error) +
                   `. Please ensure you have enough balance for gas fees as few ${nativeTokenSymbol} is reserved for gas fees.`
-                : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
+                : response.error.message ?? t('UNABLE_TO_TRANSFER'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -1132,7 +1135,7 @@ export default function BridgeFundCardScreen({
               )
                 ? parseErrorMessage(response.error) +
                   '. Please ensure you have enough balance for gas fees.'
-                : (response.error.message ?? t('UNABLE_TO_TRANSFER')),
+                : response.error.message ?? t('UNABLE_TO_TRANSFER'),
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -1261,13 +1264,17 @@ export default function BridgeFundCardScreen({
           !['usd-coin', 'tether'].includes(selectedToken?.coinGeckoId) &&
           DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_ETH)
         ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
+          errorMessage = `${t<string>(
+            'MINIMUM_AMOUNT_ETH',
+          )} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
         } else if (
           usdAmount &&
           selectedToken.accountType === 'spot' &&
           DecimalHelper.isLessThan(usdAmount, MINIMUM_TRANSFER_AMOUNT_HL_SPOT)
         ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_HL_SPOT')} $${MINIMUM_TRANSFER_AMOUNT_HL_SPOT}`;
+          errorMessage = `${t<string>(
+            'MINIMUM_AMOUNT_HL_SPOT',
+          )} $${MINIMUM_TRANSFER_AMOUNT_HL_SPOT}`;
         } else if (
           !usdAmount ||
           DecimalHelper.isLessThan(usdAmount, minTokenValueLimit)
@@ -1282,7 +1289,9 @@ export default function BridgeFundCardScreen({
               minAmount: String(MINIMUM_TRANSFER_AMOUNT_HL_SPOT),
             })}`;
           } else {
-            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
+            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(
+              minTokenValueLimit,
+            )}`;
           }
         }
 
@@ -1321,7 +1330,7 @@ export default function BridgeFundCardScreen({
     if (tempIsCryproInput) {
       const usdAmt = DecimalHelper.multiply(
         amount,
-        selectedToken?.isZeroFeeCardFunding ? 1 : (selectedToken?.price ?? 0),
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price ?? 0,
       );
       setCryptoAmount(amount);
       setUsdAmount(
@@ -1335,7 +1344,7 @@ export default function BridgeFundCardScreen({
           amount,
           selectedToken?.isZeroFeeCardFunding ? 1 : multiplier,
         ),
-        selectedToken?.isZeroFeeCardFunding ? 1 : (selectedToken?.price ?? 0),
+        selectedToken?.isZeroFeeCardFunding ? 1 : selectedToken?.price ?? 0,
       );
       setCryptoAmount(cryptoAmt.toString());
       setUsdAmount(amount);

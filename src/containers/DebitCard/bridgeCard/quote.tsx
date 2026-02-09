@@ -156,7 +156,8 @@ export default function CardQuote({
         prevQuoteRef.current.programId === currentQuoteParams.programId &&
         prevQuoteRef.current.cardProvider === currentQuoteParams.cardProvider &&
         prevQuoteRef.current.chain === currentQuoteParams.chain &&
-        prevQuoteRef.current.targetAddress === currentQuoteParams.targetAddress &&
+        prevQuoteRef.current.targetAddress ===
+          currentQuoteParams.targetAddress &&
         targetAddress
       ) {
         if (isMounted) setIsAddressLoading(false);
@@ -170,19 +171,21 @@ export default function CardQuote({
       // -------------------------------------------------------------------------
       // On production: Fetch from smart contract and validate against quote
       // On dev/staging: Use quote's target address directly (no contract validation)
-      
+
       const currentArchHost = hostWorker.getHost('ARCH_HOST');
       const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
 
       if (isProductionBackend) {
         const result = await resolveAndValidateCardTargetAddress({
           programId: tokenQuote.programId,
-          provider: tokenQuote.cardProvider,
-          chainName: tokenQuote.chain,
+          provider: route.params.cardProvider,
+          chainName: tokenQuote.chain as ChainBackendNames,
           quoteTargetAddress: tokenQuote.targetAddress,
           quoteId: tokenQuote.quoteId,
           globalContext,
         });
+
+        console.log('result', result);
 
         if (!result.success) {
           setIsAddressLoading(false);
@@ -835,8 +838,8 @@ export default function CardQuote({
                     '',
                   )
                 : chainName === ChainNames.SOLANA
-                  ? solanaAddress
-                  : ethereumAddress,
+                ? solanaAddress
+                : ethereumAddress,
               ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
               ...(connectionType ? { connectionType } : {}),
             });
@@ -857,8 +860,8 @@ export default function CardQuote({
                     '',
                   )
                 : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
-                  ? solanaAddress
-                  : ethereumAddress,
+                ? solanaAddress
+                : ethereumAddress,
               ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
               ...(connectionType ? { connectionType } : {}),
               other: {
@@ -917,8 +920,8 @@ export default function CardQuote({
         )
           ? get(cosmosAddresses, selectedToken?.chainDetails?.chainName, '')
           : selectedToken?.chainDetails?.chainName === ChainNames.SOLANA
-            ? solanaAddress
-            : ethereumAddress,
+          ? solanaAddress
+          : ethereumAddress,
         ...(tokenQuote.quoteId ? { quoteId: tokenQuote.quoteId } : {}),
         other: {
           amountToSend: actualTokensRequired,
@@ -1211,7 +1214,11 @@ export default function CardQuote({
         {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
           <CyDView className='bg-p10 mb-[24px] px-[12px] py-[16px] mx-[16px] rounded-[12px] flex flex-row justify-between items-center'>
             <CyDText className='text-base200 font-medium text-[12px]'>
-              {`Want to save ${tokenQuote?.fees?.fee && tokenQuote?.fees?.fee > 1 ? '$' + String(tokenQuote?.fees?.fee) : 'more'} on this load?`}
+              {`Want to save ${
+                tokenQuote?.fees?.fee && tokenQuote?.fees?.fee > 1
+                  ? '$' + String(tokenQuote?.fees?.fee)
+                  : 'more'
+              } on this load?`}
             </CyDText>
             <CyDTouchView
               className='flex flex-row items-center gap-[4px]'
