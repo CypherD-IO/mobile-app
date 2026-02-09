@@ -397,6 +397,7 @@ export const chainIdNumberMapping: Record<number, Chain> = {
 };
 
 export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
+  ChainBackendNames.ETH,
   ChainBackendNames.POLYGON,
   ChainBackendNames.BSC,
   ChainBackendNames.AVALANCHE,
