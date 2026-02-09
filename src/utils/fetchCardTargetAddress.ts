@@ -1,9 +1,8 @@
 import { zeroAddress, isAddress } from "viem";
-import { CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS } from "../constants/data";
+import { CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS, TargetRouterABI } from "../constants/data";
 import { isCosmosAddress, isNobleAddress, isOsmosisAddress, isSolanaAddress, isCoreumAddress, isInjectiveAddress } from "../utils/utils";
 import { CHAIN_BASE, ChainBackendNames, CHAIN_HYPERLIQUID, EVM_CHAINS_BACKEND_NAMES, COSMOS_CHAINS_BACKEND_NAMES, SOLANA_CHAINS_BACKEND_NAMES } from "../constants/server";
 import * as Sentry from '@sentry/react-native';
-import { TargetRouterABI } from '../constants/targetRouterABI';
 import { GlobalContextDef } from "../core/globalContext";
 import { getViemPublicClient, getWeb3Endpoint } from "../core/util";
 
