@@ -9,7 +9,6 @@ declare module 'react-native-config' {
     AF_USER_INVITE_CHANNEL: string;
     INTERCOM_APP_KEY: string;
     INTERCOM_IOS_SDK_KEY: string;
-    WALLET_CONNECT_PROJECTID: string;
     MOBILE_WALLETKIT_PROJECTID: string;
     MOBILE_APPKIT_PROJECTID: string;
     WEB3_AUTH_CLIENT_ID: string;
