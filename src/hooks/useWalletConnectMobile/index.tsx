@@ -1,4 +1,4 @@
-import { useAppKit } from '@reown/appkit-wagmi-react-native';
+import { useAppKit } from '@reown/appkit-react-native';
 import { useAccount, useDisconnect } from 'wagmi';
 
 interface UseWalletConnectMobileResult {
@@ -6,7 +6,7 @@ interface UseWalletConnectMobileResult {
   disconnectWalletConnect: () => Promise<void>;
   /**
    * True when a WalletConnect session is fully established.
-   * Useful for driving UI states like “Wallet connected”.
+   * Useful for driving UI states like "Wallet connected".
    */
   isConnected: boolean;
   /**
@@ -34,25 +34,15 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
     if (isConnected) {
       try {
         await disconnectAsync();
-      } catch (error) {
-        // Swallow disconnect errors – connection cleanup is a best-effort step.
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[WalletConnectMobile] Failed to disconnect before opening connect modal:',
-          error,
-        );
+      } catch {
+        // Ignore disconnect errors before opening modal
       }
     }
 
     try {
-      // We intentionally do not await this since AppKit drives its own UI.
       void open({ view: 'Connect' });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        '[WalletConnectMobile] Failed to open WalletConnect modal:',
-        error,
-      );
+    } catch {
+      // Ignore open errors
     }
   };
 
@@ -67,12 +57,8 @@ export default function useWalletConnectMobile(): UseWalletConnectMobileResult {
 
     try {
       await disconnectAsync();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        '[WalletConnectMobile] Failed to disconnect WalletConnect session:',
-        error,
-      );
+    } catch {
+      // Ignore disconnect errors
     }
   };
 

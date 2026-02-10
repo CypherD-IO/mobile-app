@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-react-native';
 import * as Sentry from '@sentry/react-native';
 import {
   getBlockNumber,
@@ -34,7 +34,10 @@ import useAxios from '../../core/HttpRequest';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  extractErrorDetails,
+  getBestErrorMessage,
   HdWalletContext,
+  isUserRejectionError,
   sleepFor,
 } from '../../core/util';
 import {
@@ -42,6 +45,7 @@ import {
   EthTransactionPayload,
 } from '../../models/ethSigner.interface';
 import { recoverTypedSignature } from '@metamask/eth-sig-util';
+import { WALLET_CONNECT_SIGNING_TIMEOUT } from '../../constants/timeOuts';
 
 export default function useEthSigner() {
   const wagmiConfig = useContext(WagmiContext);
@@ -93,7 +97,12 @@ export default function useEthSigner() {
       const getTransactions = async () => {
         try {
           const response = await getWithAuth(
-            `/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`,
+            `/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(
+              ChainIdToBackendNameMapping,
+              [String(chainId)],
+            )}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${
+              contractAddress ? `&contractAddress=${contractAddress}` : ''
+            }`,
           );
           const data = response.data;
           if (data.transactions && data.transactions.length === 1) {
@@ -115,70 +124,146 @@ export default function useEthSigner() {
   };
 
   // used To Send NativeCoins and to make any contact execution with contract data
-  async function sendNativeCoin({
-    transactionToBeSigned,
-    chainId,
-  }: {
-    transactionToBeSigned: EthTransactionPayload;
-    chainId: number;
-  }) {
+  async function sendNativeCoin(
+    {
+      transactionToBeSigned,
+      chainId,
+    }: {
+      transactionToBeSigned: EthTransactionPayload;
+      chainId: number;
+    },
+    abortSignal?: AbortSignal,
+  ) {
+    // Check if already aborted before starting
+    if (abortSignal?.aborted) {
+      throw new Error('User cancelled the request');
+    }
+
     let timer: NodeJS.Timeout;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => {
         reject(
           new Error(
-            "Signing transaction request timed out. User didn't sign / decline the transaction request",
+            "Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending requests in your connected wallet and retry",
           ),
         );
-      }, 60 * 1000);
+      }, WALLET_CONNECT_SIGNING_TIMEOUT);
     });
+
+    // Create abort promise that rejects when signal is aborted
+    const abortPromise = abortSignal
+      ? new Promise((_, reject) => {
+          const abortHandler = () => {
+            reject(new Error('User cancelled the request'));
+          };
+          abortSignal.addEventListener('abort', abortHandler);
+        })
+      : null;
 
     const cleanup = () => {
       clearTimeout(timer);
     };
 
-    // Send transaction with estimated values
-    const sendTransactionPromise = sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
+    // Build transaction params explicitly - avoid spreading extra fields like 'from'
+    // Always include 'data' (use '0x' for native sends) per Reown AppKit docs
+    const txParams = {
+      to: transactionToBeSigned.to,
+      value: transactionToBeSigned.value,
+      data: transactionToBeSigned.data ?? ('0x' as `0x${string}`),
+      gas: transactionToBeSigned.gas,
       chainId,
-      ...transactionToBeSigned,
-    });
-    const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
-    cleanup();
+      ...(transactionToBeSigned.gasPrice
+        ? { gasPrice: transactionToBeSigned.gasPrice }
+        : {
+            maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas,
+            maxFeePerGas: transactionToBeSigned.maxFeePerGas,
+          }),
+    };
 
-    return hash;
+    try {
+      const sendTransactionPromise = sendTransactionAsync(txParams);
+      const promises = [sendTransactionPromise, timeoutPromise];
+      if (abortPromise) {
+        promises.push(abortPromise);
+      }
+      const hash = await Promise.race(promises);
+      cleanup();
+      return hash;
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
   }
 
-  async function sendToken({
-    transactionToBeSigned,
-    chainId,
-  }: {
-    transactionToBeSigned: EthTransactionPayload;
-    chainId: number;
-  }) {
+  async function sendToken(
+    {
+      transactionToBeSigned,
+      chainId,
+    }: {
+      transactionToBeSigned: EthTransactionPayload;
+      chainId: number;
+    },
+    abortSignal?: AbortSignal,
+  ) {
+    // Check if already aborted before starting
+    if (abortSignal?.aborted) {
+      throw new Error('User cancelled the request');
+    }
+
     let timer: NodeJS.Timeout;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => {
         reject(
           new Error(
-            "Signing transaction request timed out. User didn't sign / decline the transaction request",
+            `Signing transaction request timed out. User didn't sign / decline the transaction request. \n\n NOTE: Please cancel any pending requests in your connected wallet and retry`,
           ),
         );
-      }, 60 * 1000);
+      }, WALLET_CONNECT_SIGNING_TIMEOUT);
     });
+
+    // Create abort promise that rejects when signal is aborted
+    const abortPromise = abortSignal
+      ? new Promise((_, reject) => {
+          const abortHandler = () => {
+            reject(new Error('User cancelled the request'));
+          };
+          abortSignal.addEventListener('abort', abortHandler);
+        })
+      : null;
+
     const cleanup = () => {
       clearTimeout(timer);
     };
 
-    const sendTransactionPromise = sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
+    // Build transaction params explicitly - avoid spreading extra fields like 'from'
+    // Always include 'data' (use '0x' for token sends) per Reown AppKit docs
+    const txParams = {
+      to: transactionToBeSigned.to,
+      value: transactionToBeSigned.value,
+      data: transactionToBeSigned.data ?? ('0x' as `0x${string}`),
+      gas: transactionToBeSigned.gas,
       chainId,
-      ...transactionToBeSigned,
-    });
-    const hash = await Promise.race([sendTransactionPromise, timeoutPromise]);
-    cleanup();
+      ...(transactionToBeSigned.gasPrice
+        ? { gasPrice: transactionToBeSigned.gasPrice }
+        : {
+            maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas,
+            maxFeePerGas: transactionToBeSigned.maxFeePerGas,
+          }),
+    };
 
-    return hash;
+    try {
+      const sendTransactionPromise = sendTransactionAsync(txParams);
+      const promises = [sendTransactionPromise, timeoutPromise];
+      if (abortPromise) {
+        promises.push(abortPromise);
+      }
+      const hash = await Promise.race(promises);
+      cleanup();
+      return hash;
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
   }
 
   const signApprovalEthereum = async ({
@@ -192,29 +277,23 @@ export default function useEthSigner() {
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       const connectedChain = getChainId(wagmiConfig);
       const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
-      if (
-        walletInfo?.name === 'MetaMask Wallet' &&
-        connectedChain !== chainConfig.id
-      ) {
+      // Switch chain for ALL WalletConnect wallets (required by wagmi - it doesn't auto-switch)
+      // Do this silently - the wallet app will show its own UI for the switch
+      if (connectedChain !== chainConfig.id) {
         try {
-          showModal('state', {
-            type: 'warning',
-            title: `Switch to ${chainConfig?.name} chain`,
-            description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
-            onSuccess: hideModal,
-          });
           await switchChainAsync({
             chainId: chainConfig.id,
           });
-          hideModal();
           await sleepFor(1000);
-        } catch (e) {}
+        } catch (e) {
+          throw new Error(`Failed to switch to ${chainConfig?.name} chain`);
+        }
       }
 
-      const response = await sendTransactionAsync({
-        account: transactionToBeSigned.from as `0x${string}`,
+      // Build approval tx params explicitly - avoid passing 'from' as 'account'
+      const approvalTxParams = {
         to: transactionToBeSigned.to,
-        data: transactionToBeSigned.data,
+        data: transactionToBeSigned.data ?? ('0x' as `0x${string}`),
         value: transactionToBeSigned.value,
         gas: transactionToBeSigned.gas,
         chainId: chainConfig.id,
@@ -224,7 +303,9 @@ export default function useEthSigner() {
               maxPriorityFeePerGas: transactionToBeSigned.maxPriorityFeePerGas,
               maxFeePerGas: transactionToBeSigned.maxFeePerGas,
             }),
-      });
+      };
+
+      const response = await sendTransactionAsync(approvalTxParams);
       const receipt = await getTransactionReceipt(response, chainConfig.id);
       return receipt;
     } else {
@@ -238,6 +319,7 @@ export default function useEthSigner() {
   async function handleTransaction(
     transactionToBeSigned: EthTransactionPayload,
     chainConfig: Chain,
+    abortSignal?: AbortSignal,
   ) {
     // Get the current block number before starting
     const startBlockNumber = await getBlockNumber(wagmiConfig);
@@ -246,15 +328,21 @@ export default function useEthSigner() {
     try {
       let hash;
       if (transactionToBeSigned.data) {
-        hash = await sendToken({
-          transactionToBeSigned,
-          chainId: chainConfig.id,
-        });
+        hash = await sendToken(
+          {
+            transactionToBeSigned,
+            chainId: chainConfig.id,
+          },
+          abortSignal,
+        );
       } else {
-        hash = await sendNativeCoin({
-          transactionToBeSigned,
-          chainId: chainConfig.id,
-        });
+        hash = await sendNativeCoin(
+          {
+            transactionToBeSigned,
+            chainId: chainConfig.id,
+          },
+          abortSignal,
+        );
       }
       return hash;
     } catch (directError) {
@@ -284,34 +372,63 @@ export default function useEthSigner() {
     }
   }
 
-  const signEthTransaction = async ({
-    rpc,
-    sendChain,
-    transactionToBeSigned,
-  }: EthSingerParams): Promise<`0x${string}`> => {
+  const signEthTransaction = async (
+    {
+      rpc,
+      sendChain,
+      transactionToBeSigned,
+    }: EthSingerParams,
+    abortSignal?: AbortSignal,
+  ): Promise<`0x${string}`> => {
     const connectionType = await getConnectionType();
 
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       const connectedChain = getChainId(wagmiConfig);
       const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
-      if (
-        walletInfo?.name === 'MetaMask Wallet' &&
-        connectedChain !== chainConfig.id
-      ) {
+      // Switch chain for ALL WalletConnect wallets (required by wagmi - it doesn't auto-switch)
+      if (connectedChain !== chainConfig.id) {
+        const isMetaMask = walletInfo?.name === 'MetaMask Wallet';
         try {
-          setTimeout(() => {
-            const currentConnectedChain = getChainId(wagmiConfig);
-            if (
-              Platform.OS === 'android' &&
-              currentConnectedChain !== chainConfig.id
-            ) {
+          // For MetaMask on Android, show a fallback modal in case switch doesn't appear
+          if (isMetaMask && Platform.OS === 'android') {
+            setTimeout(() => {
+              const currentConnectedChain = getChainId(wagmiConfig);
+              if (currentConnectedChain !== chainConfig.id) {
+                showModal('state', {
+                  type: 'warning',
+                  title: `Switch to ${chainConfig.name} chain`,
+                  description: `If you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain and try again.`,
+                  onSuccess: () => {
+                    hideModal();
+                    redirectToMetaMask();
+                    navigation.goBack();
+                  },
+                  onFailure: () => {
+                    hideModal();
+                    navigation.goBack();
+                  },
+                });
+              }
+            }, 2000);
+          }
+          // For non-MetaMask wallets, switch silently - wallet app will show its own UI
+          await switchChainAsync({
+            chainId: chainConfig.id,
+          });
+          hideModal();
+          await sleepFor(1000);
+        } catch (e) {
+          Sentry.captureException(e);
+          hideModal();
+          // Only show error modal for MetaMask (which has known issues)
+          if (isMetaMask) {
+            setTimeout(() => {
               showModal('state', {
-                type: 'warning',
-                title: `Switch to ${chainConfig.name} chain`,
-                description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain and try again.`,
+                type: 'error',
+                title: "Couldn't Switch Chain",
+                description: `Failed to switch to ${chainConfig.name}. Please switch manually in your wallet and try again.`,
                 onSuccess: () => {
                   hideModal();
-                  redirectToMetaMask();
                   navigation.goBack();
                 },
                 onFailure: () => {
@@ -319,41 +436,40 @@ export default function useEthSigner() {
                   navigation.goBack();
                 },
               });
-            }
-          }, 2000);
-          await switchChainAsync({
-            chainId: chainConfig.id,
-          });
-          await sleepFor(1000);
-        } catch (e) {
-          Sentry.captureException(e);
-          setTimeout(() => {
-            showModal('state', {
-              type: 'error',
-              title: "Couldn't Switch Chain",
-              description: e,
-              onSuccess: () => {
-                hideModal();
-              },
-              onFailure: () => {
-                hideModal();
-              },
-            });
-          }, MODAL_HIDE_TIMEOUT_250);
+            }, MODAL_HIDE_TIMEOUT_250);
+          }
+          throw e;
         }
       }
       try {
         const hash = await handleTransaction(
           transactionToBeSigned,
           chainConfig,
+          abortSignal,
         );
         return hash as `0x${string}`;
       } catch (error: unknown) {
+        const { errorMessage, errorDetails, errorShortMessage } =
+          extractErrorDetails(error);
+
+        // Don't show error modal or log to Sentry for user cancellations/rejections
+        if (isUserRejectionError(error)) {
+          throw error;
+        }
+
         Sentry.captureException(error);
+
+        // Show a cleaner error message if viem wraps the actual error
+        const displayMessage = getBestErrorMessage(
+          errorMessage,
+          errorDetails,
+          errorShortMessage,
+        );
+
         showModal('state', {
           type: 'error',
           title: 'Transaction Failed',
-          description: (error as Error).message,
+          description: displayMessage,
           onSuccess: () => {
             hideModal();
             navigation.goBack();
@@ -418,8 +534,6 @@ export default function useEthSigner() {
   return {
     signEthTransaction,
     signApprovalEthereum,
-    sendNativeCoin,
-    sendToken,
     signTypedDataEth,
   };
 }

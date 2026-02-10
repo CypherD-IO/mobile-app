@@ -15,7 +15,7 @@ import useWalletConnectMobile from '../../hooks/useWalletConnectMobile';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import { Colors } from '../../constants/theme';
 import { useSignMessage } from 'wagmi';
-import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-react-native';
 import useAxios from '../../core/HttpRequest';
 import axios from '../../core/Http';
 import { hostWorker } from '../../global';
@@ -30,6 +30,7 @@ import {
 import useCardUtilities from '../../hooks/useCardUtilities';
 import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
+import type { AxiosError } from 'axios';
 
 /**
  * AsyncStorage key for persisting WalletConnect flow state during app backgrounding
@@ -54,7 +55,7 @@ const formatAddressPreview = (address?: string): string => {
 
 const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
   onBack,
-}: WalletConnectStatusProps): JSX.Element => {
+}: WalletConnectStatusProps): React.ReactElement => {
   const { t } = useTranslation();
   const hdWalletContext = useContext(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
@@ -75,6 +76,9 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
   const [isSigning, setIsSigning] = useState<boolean>(false);
   const [signatureRejected, setSignatureRejected] = useState<boolean>(false);
   const [signatureSuccess, setSignatureSuccess] = useState<boolean>(false);
+  const [verificationFailed, setVerificationFailed] = useState<boolean>(false);
+  const [verificationErrorMessage, setVerificationErrorMessage] =
+    useState<string>('');
   const blinkOpacity = useRef(new Animated.Value(1)).current;
 
   /**
@@ -160,13 +164,15 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
     mutation: {
       async onSuccess(signature: string) {
         try {
+          setVerificationFailed(false);
+          setVerificationErrorMessage('');
           // Verify signature with backend
-          const verifyMessageResponse = await axios.post(
-            `${ARCH_HOST}/v1/authentication/verify-message/${String(address).toLowerCase()}?format=ERC-4361`,
-            {
-              signature,
-            },
-          );
+          const verifyUrl = `${ARCH_HOST}/v1/authentication/verify-message/${String(
+            address,
+          ).toLowerCase()}?format=ERC-4361`;
+          const verifyMessageResponse = await axios.post(verifyUrl, {
+            signature,
+          });
 
           if (verifyMessageResponse?.data.token) {
             const { token, refreshToken } = verifyMessageResponse.data;
@@ -205,14 +211,30 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
             console.error(
               '[WalletConnectStatus] Verification failed, no token received',
             );
-            setSignatureRejected(true);
+            setVerificationFailed(true);
+            setVerificationErrorMessage('Verification failed (no token).');
           }
         } catch (error) {
           console.error(
             '[WalletConnectStatus] Error during signature verification:',
             error,
           );
-          setSignatureRejected(true);
+          const axiosErr = error as AxiosError | undefined;
+          if (axiosErr && typeof (axiosErr as any).isAxiosError === 'boolean') {
+            // A "Network Error" here means we couldn't reach the backend at all
+            // (no HTTP response). This is not a signature rejection.
+            if (!(axiosErr as any).response) {
+              setVerificationFailed(true);
+              setVerificationErrorMessage(
+                'Network error while verifying signature. Please check connectivity/VPN and try again.',
+              );
+              return;
+            }
+          }
+          setVerificationFailed(true);
+          setVerificationErrorMessage(
+            (error as Error)?.message ?? 'Verification error',
+          );
         }
       },
       onError(error: Error) {
@@ -224,6 +246,8 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         // Mark signature as rejected
         setSignatureRejected(true);
         setSignatureSuccess(false);
+        setVerificationFailed(false);
+        setVerificationErrorMessage('');
 
         // Log analytics for rejection
         void logAnalyticsToFirebase(
@@ -307,13 +331,12 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
   /**
    * Smooth blink animation effect for the wallet redirection message
    * Fades in and out smoothly to draw user attention
-   * Shows during connecting and signing phases
+   * Shows during stage 1 (connecting) and stage 2 (signing) only; not during stage 3 (loading)
    */
   useEffect(() => {
-    // Determine if we should show the message
-    const shouldShowMessage =
-      (hasOpenedModal && !isConnected) || // Show during connecting phase
-      (hasTriggeredSigning && isSigning); // Show during signing phase
+    const isStage1 = hasOpenedModal && !isConnected;
+    const isStage2 = hasTriggeredSigning && isSigning;
+    const shouldShowMessage = (isStage1 || isStage2) && !signatureSuccess;
 
     if (!shouldShowMessage) {
       return;
@@ -347,6 +370,7 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
     isConnected,
     hasTriggeredSigning,
     isSigning,
+    signatureSuccess,
     blinkOpacity,
   ]);
 
@@ -363,6 +387,8 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
       // Reset error states
       setSignatureRejected(false);
       setSignatureSuccess(false);
+      setVerificationFailed(false);
+      setVerificationErrorMessage('');
       setIsSigning(true);
 
       // Log retry analytics
@@ -425,7 +451,7 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
 
   const connectionStepCompleted: boolean = isConnected;
   const signStepCompleted: boolean = signatureSuccess;
-  const signStepFailed: boolean = signatureRejected;
+  const signStepFailed: boolean = signatureRejected || verificationFailed;
   const addressPreview: string = formatAddressPreview(address);
 
   return (
@@ -451,11 +477,8 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         <CyDText className='text-center text-[20px] font-extrabold text-base400 mt-[8px]'>
           {t('WALLET_CONNECT_SMALL', 'Wallet Connect')}
         </CyDText>
-        <CyDText className='text-center text-[14px] text-n200 mt-[12px]'>
-          {t('WALLET_CONNECT_STATUS_DESCRIPTION')}
-        </CyDText>
 
-        {/* Error message when signature is rejected */}
+        {/* Error message when signature is rejected OR verification fails */}
         {signStepFailed && !isSigning && (
           <CyDView className='mt-[16px] bg-red50 border border-red200 rounded-[12px] p-[16px]'>
             <CyDView className='flex-row items-center mb-[8px]'>
@@ -465,15 +488,29 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
                 className='text-red400'
               />
               <CyDText className='ml-[8px] text-[15px] font-bold text-red400'>
-                {t('WALLET_CONNECT_SIGNATURE_REJECTED', 'Signature Rejected')}
+                {verificationFailed
+                  ? t(
+                      'WALLET_CONNECT_VERIFICATION_FAILED',
+                      'Verification Failed',
+                    )
+                  : t(
+                      'WALLET_CONNECT_SIGNATURE_REJECTED',
+                      'Signature Rejected',
+                    )}
               </CyDText>
             </CyDView>
             <CyDText className='text-[13px] text-red300 mb-[12px]'>
-              {t(
-                'WALLET_CONNECT_SIGNATURE_REJECTED_DESC',
-                'You rejected the signature request in {{walletName}}. Please try again to complete the authentication.',
-                { walletName: walletInfo?.name ?? 'your wallet' },
-              )}
+              {verificationFailed
+                ? verificationErrorMessage ||
+                  t(
+                    'WALLET_CONNECT_VERIFICATION_FAILED_DESC',
+                    'We could not verify your signature with the backend. Please try again.',
+                  )
+                : t(
+                    'WALLET_CONNECT_SIGNATURE_REJECTED_DESC',
+                    'You rejected the signature request in {{walletName}}. Please try again to complete the authentication.',
+                    { walletName: walletInfo?.name ?? 'your wallet' },
+                  )}
             </CyDText>
             <CyDTouchView
               className='bg-red400 rounded-[8px] py-[10px] px-[16px] items-center'
@@ -487,9 +524,8 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
           </CyDView>
         )}
 
-        {/* Blinking redirection message - shown during connecting and signing phases */}
-        {((hasOpenedModal && !isConnected) ||
-          (hasTriggeredSigning && isSigning)) && (
+        {/* Stage 1: Connecting – redirect to wallet for connection (current text) */}
+        {hasOpenedModal && !isConnected && !signatureSuccess && (
           <Animated.Text
             className='text-center text-[13px] text-base400 mt-[16px] font-medium'
             style={{ opacity: blinkOpacity }}>
@@ -499,6 +535,53 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
               { walletName: walletInfo?.name ?? 'wallet' },
             )}
           </Animated.Text>
+        )}
+
+        {/* Stage 2: Signing – redirect + sign message hint + retrigger button */}
+        {isConnected &&
+          hasTriggeredSigning &&
+          isSigning &&
+          !signatureSuccess &&
+          !signStepFailed && (
+            <CyDView className='mt-[16px]'>
+              <Animated.Text
+                className='text-center text-[13px] text-base400 font-medium'
+                style={{ opacity: blinkOpacity }}>
+                {t(
+                  'WALLET_CONNECT_SIGN_PHASE_MESSAGE',
+                  "You'll be redirected to {{walletName}}. A sign message will be shown — sign that message to proceed.",
+                  { walletName: walletInfo?.name ?? 'wallet' },
+                )}
+              </Animated.Text>
+              <CyDText className='mt-[14px] text-[12px] text-n200 text-center'>
+                {t(
+                  'WALLET_CONNECT_SIGN_PHASE_MESSAGE_DESCRIPTION',
+                  "Don't see the sign request?",
+                )}
+              </CyDText>
+              <CyDTouchView
+                className='mt-[8px] bg-n0 border border-base400 rounded-[8px] py-[10px] px-[16px] items-center self-center'
+                onPress={() => {
+                  void handleRetrySignature();
+                }}>
+                <CyDText className='text-[14px] font-semibold text-base400'>
+                  {t(
+                    'WALLET_CONNECT_SHOW_SIGN_AGAIN',
+                    'Retrigger Sign Request',
+                  )}
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          )}
+
+        {/* Stage 3: Signed – brief wait while wallet loads; show fun message (no redirect) */}
+        {signatureSuccess && (
+          <CyDText className='text-center text-[15px] text-base400 mt-[16px] font-semibold'>
+            {t(
+              'WALLET_CONNECT_LOADING_WALLET_FUN',
+              "Setting up your wallet... You're almost in!",
+            )}
+          </CyDText>
         )}
 
         {/* Hero image */}
@@ -558,7 +641,9 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
                 <CyDView className='w-[20px] h-[20px] rounded-full bg-n20' />
               )}
               <CyDText
-                className={`ml-[8px] text-[15px] ${signStepFailed ? 'text-red400' : 'text-base400'}`}>
+                className={`ml-[8px] text-[15px] ${
+                  signStepFailed ? 'text-red400' : 'text-base400'
+                }`}>
                 {signStepCompleted
                   ? t(
                       'WALLET_CONNECT_SIGN_COMPLETED',
@@ -566,24 +651,24 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
                       { address: addressPreview },
                     )
                   : signStepFailed
-                    ? t(
-                        'WALLET_CONNECT_SIGN_FAILED',
-                        'Sign request rejected for "{{address}}"',
-                        { address: addressPreview },
-                      )
-                    : isSigning
-                      ? t(
-                          'WALLET_CONNECT_SIGNING',
-                          'Awaiting signature from "{{address}}"',
-                          { address: addressPreview },
-                        )
-                      : t(
-                          'WALLET_CONNECT_SIGN_MESSAGE_STATUS',
-                          'Creating sign request for "{{address}}"',
-                          {
-                            address: addressPreview,
-                          },
-                        )}
+                  ? t(
+                      'WALLET_CONNECT_SIGN_FAILED',
+                      'Sign request rejected for "{{address}}"',
+                      { address: addressPreview },
+                    )
+                  : isSigning
+                  ? t(
+                      'WALLET_CONNECT_SIGNING',
+                      'Awaiting signature from "{{address}}"',
+                      { address: addressPreview },
+                    )
+                  : t(
+                      'WALLET_CONNECT_SIGN_MESSAGE_STATUS',
+                      'Creating sign request for "{{address}}"',
+                      {
+                        address: addressPreview,
+                      },
+                    )}
               </CyDText>
             </CyDView>
           </CyDView>

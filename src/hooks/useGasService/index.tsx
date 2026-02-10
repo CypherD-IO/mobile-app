@@ -640,8 +640,9 @@ export default function useGasService() {
           '',
         );
 
-        const { gasPrice, gasLimitMultiplier } =
-          await getCosmosGasPrice(backendName);
+        const { gasPrice, gasLimitMultiplier } = await getCosmosGasPrice(
+          backendName,
+        );
         const gasFee = DecimalHelper.multiply(simulation, [
           gasLimitMultiplier,
           gasPrice,
@@ -735,8 +736,9 @@ export default function useGasService() {
           '',
         );
 
-        const { gasPrice, gasLimitMultiplier } =
-          await getCosmosGasPrice(backendName);
+        const { gasPrice, gasLimitMultiplier } = await getCosmosGasPrice(
+          backendName,
+        );
 
         const gasFee = DecimalHelper.multiply(simulation, [
           gasLimitMultiplier,

@@ -1486,3 +1486,62 @@ export const processMerchantName = (name: string) => {
 
   return { displayName, fontSize };
 };
+
+/**
+ * Checks if an error represents a user rejection/cancellation
+ */
+export const isUserRejectionError = (
+  error: unknown,
+): boolean => {
+  const errorMessage = (error as Error)?.message ?? '';
+  const errorDetails = (error as any)?.details ?? '';
+  const errorShortMessage = (error as any)?.shortMessage ?? '';
+
+  const rejectionPatterns = [
+    'User cancelled the request',
+    "User didn't sign",
+    'User disapproved',
+    'User rejected',
+    'User denied',
+  ];
+
+  return rejectionPatterns.some(
+    pattern =>
+      errorMessage.includes(pattern) ||
+      errorDetails.includes(pattern) ||
+      errorShortMessage.includes(pattern),
+  );
+};
+
+/**
+ * Extracts error details from an error object
+ */
+export const extractErrorDetails = (error: unknown) => {
+  const errorMessage = parseErrorMessage(error);
+  const errorObj = error as any;
+  const errorDetails = errorObj?.details || '';
+  const errorShortMessage = errorObj?.shortMessage || '';
+
+  return { errorMessage, errorDetails, errorShortMessage };
+};
+
+/**
+ * Gets the best error message to display, preferring detailed messages over generic RPC errors
+ */
+export const getBestErrorMessage = (
+  errorMessage: string,
+  errorDetails: string,
+  errorShortMessage: string,
+): string => {
+  if (errorMessage.includes('An unknown RPC error occurred')) {
+    return errorDetails || errorShortMessage || errorMessage;
+  }
+  return errorMessage;
+};
+
+/**
+ * Checks if an error is a timeout error
+ */
+export const isTimeoutError = (errorMessage: string): boolean => {
+  return errorMessage.includes('timed out') || errorMessage.includes('timeout');
+};

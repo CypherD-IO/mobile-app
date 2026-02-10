@@ -19,6 +19,7 @@ export const AnalyticEvent = {
   SIGN_WALLET_CONNECT_MSG: 'sign_wallet_connect_msg',
   WALLET_CONNECT_SIGNATURE_REJECTED: 'wallet_connect_signature_rejected',
   WALLET_CONNECT_RETRY_SIGNATURE: 'wallet_connect_retry_signature',
+  WALLET_CONNECT_SIGNING_TIMEOUT: 'wallet_connect_signing_timeout',
   SWAP_QUOTE_ERROR: 'SWAP_QUOTE_ERROR',
   BRIDGE_QUOTE_ERROR: 'BRIDGE_QUOTE_ERROR',
   BRIDGE_SUCCESS: 'BRIDGE_SUCCESS',

@@ -23,11 +23,11 @@ import {
 import { HdWalletContext } from '../../../core/util';
 import { EIP155_CHAIN_IDS } from '../../../constants/EIP155Data';
 import { has, isEmpty } from 'lodash';
-
 interface PairingModalProps {
-  currentProposal:
-    | SignClientTypes.EventArguments['session_proposal']
-    | undefined;
+  // WalletConnect SDK event typing differs across versions; we only rely on
+  // a small, runtime-checked subset of fields.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentProposal: any | undefined;
   currentETHAddress: string;
   isModalVisible: boolean;
   hideModal: () => void;
@@ -39,23 +39,54 @@ export default function PairingModal({
   isModalVisible,
   hideModal,
 }: PairingModalProps) {
+  const noop = () => null;
   const [acceptingRequest, setAcceptingRequest] = useState<boolean>(false);
   const [rejectingRequest, setRejectingRequest] = useState<boolean>(false);
   const { walletConnectState, walletConnectDispatch } =
     useContext<any>(WalletConnectContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { wallet } = hdWalletContext.state;
-  const { address: cosmosAddress } = wallet?.cosmos;
-  const { params } = currentProposal;
-  const { proposer, requiredNamespaces, optionalNamespaces } = params;
-  const { metadata } = proposer;
-  const { eip155 } = requiredNamespaces;
-  const { name, url, icons } = metadata;
-  const icon = icons[0];
+  const cosmosAddress = wallet?.cosmos?.address;
+  const solanaAddress = wallet?.solana?.address;
+  const proposalParams = currentProposal?.params;
+  const proposer = proposalParams?.proposer;
+  const requiredNamespaces = proposalParams?.requiredNamespaces ?? {};
+  const optionalNamespaces = proposalParams?.optionalNamespaces ?? {};
+  const metadata = proposer?.metadata ?? {};
+  const eip155 = requiredNamespaces?.eip155 ?? optionalNamespaces?.eip155;
+  const name = String(metadata?.name ?? '');
+  const url = String(metadata?.url ?? '');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const icons: string[] = Array.isArray(metadata?.icons) ? metadata.icons : [];
+  const icon = icons?.[0] ?? '';
   const message =
     'Requesting permission to view addresses of your accounts and approval for transactions';
 
-  const checkAndAddPairingToConnectionsList = () => {
+  /**
+   * Wait for session to be available in active sessions after approval.
+   * This addresses a race condition where the dApp may send requests before
+   * the session is fully persisted to storage.
+   */
+  const waitForSessionAvailability = async (
+    pairingTopic: string,
+    maxRetries = 10,
+    delayMs = 200,
+  ): Promise<string | null> => {
+    for (let i = 0; i < maxRetries; i++) {
+      if (web3wallet) {
+        const sessions = Object.values(web3wallet.getActiveSessions());
+        const session = sessions.find(s => s.pairingTopic === pairingTopic);
+        if (session?.topic) {
+          return session.topic;
+        }
+      }
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+    return null;
+  };
+
+  const checkAndAddPairingToConnectionsList = async () => {
     let isPairingAlreadyAvailable = false;
     for (const connection of walletConnectState.dAppInfo) {
       if (
@@ -66,17 +97,18 @@ export default function PairingModal({
         break;
       }
     }
-    let sessionTopic = '';
-    if (web3wallet) {
-      const sessions = Object.values(web3wallet?.getActiveSessions());
-      if (sessions) {
-        const [session] = sessions.filter(
-          sessionObj =>
-            sessionObj.pairingTopic === currentProposal?.params.pairingTopic,
-        );
-        sessionTopic = session?.topic;
-      }
+
+    // Wait for session to be available with retry logic
+    const sessionTopic = await waitForSessionAvailability(
+      currentProposal?.params.pairingTopic ?? '',
+    );
+
+    if (!sessionTopic) {
+      console.warn(
+        '[WalletConnect] Session not found after approval, may cause issues with subsequent requests',
+      );
     }
+
     if (!isPairingAlreadyAvailable) {
       const connector = {
         topic: currentProposal?.params.pairingTopic,
@@ -85,7 +117,7 @@ export default function PairingModal({
         methods: eip155?.methods ?? optionalNamespaces?.eip155?.methods,
         icon,
         version: 'v2',
-        sessionTopic,
+        sessionTopic: sessionTopic ?? '',
       };
       walletConnectDispatch({
         type: WalletConnectActions.ADD_CONNECTOR,
@@ -105,25 +137,41 @@ export default function PairingModal({
   const handleAccept = async () => {
     try {
       setAcceptingRequest(true);
-      const { id, params } = currentProposal;
-      const { requiredNamespaces, relays } = params;
+      if (!currentProposal?.id || !currentProposal?.params) {
+        setAcceptingRequest(false);
+        hideModal();
+        return;
+      }
+      const id = currentProposal.id as number;
+      const proposalRequiredNamespaces =
+        currentProposal?.params?.requiredNamespaces ?? {};
       if (currentProposal) {
         const namespaces: SessionTypes.Namespaces = {};
-        const namespaceKeys = !isEmpty(requiredNamespaces)
-          ? Object.keys(requiredNamespaces)
+        const namespaceKeys = !isEmpty(proposalRequiredNamespaces)
+          ? Object.keys(proposalRequiredNamespaces)
           : Object.keys(optionalNamespaces);
-        const accounts: string[] = [];
-        const eip155Chains: string[] = [];
+
         namespaceKeys.forEach(key => {
-          if (requiredNamespaces && has(requiredNamespaces, key)) {
-            requiredNamespaces[key].chains.map((chain: string) => {
+          const accounts: string[] = [];
+          const chains: string[] = [];
+
+          if (proposalRequiredNamespaces && has(proposalRequiredNamespaces, key)) {
+            proposalRequiredNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
+                chains.push(chain);
                 [currentETHAddress].map(acc => {
-                  eip155Chains.push(chain);
-                  accounts.push(`${chain}:${acc}`);
+                  accounts.push(`${String(chain)}:${String(acc)}`);
                 });
               } else if (key === 'cosmos' && cosmosAddress) {
-                [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
+                chains.push(chain);
+                [cosmosAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
+              } else if (key === 'solana' && solanaAddress) {
+                chains.push(chain);
+                [solanaAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
               }
             });
           }
@@ -131,12 +179,20 @@ export default function PairingModal({
           if (optionalNamespaces && has(optionalNamespaces, key)) {
             optionalNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
+                chains.push(chain);
                 [currentETHAddress].map(acc => {
-                  eip155Chains.push(chain);
-                  accounts.push(`${chain}:${acc}`);
+                  accounts.push(`${String(chain)}:${String(acc)}`);
                 });
               } else if (key === 'cosmos' && cosmosAddress) {
-                [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
+                chains.push(chain);
+                [cosmosAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
+              } else if (key === 'solana' && solanaAddress) {
+                chains.push(chain);
+                [solanaAddress].map(acc =>
+                  accounts.push(`${String(chain)}:${String(acc)}`),
+                );
               }
             });
           }
@@ -146,9 +202,9 @@ export default function PairingModal({
           let namespaceMethods: any = [];
           let namespaceEvents: any = [];
 
-          if (requiredNamespaces[key]?.methods) {
+          if (proposalRequiredNamespaces[key]?.methods) {
             namespaceMethods = namespaceMethods.concat(
-              ...requiredNamespaces[key].methods,
+              ...proposalRequiredNamespaces[key].methods,
             );
           }
           if (optionalNamespaces[key]?.methods) {
@@ -156,9 +212,9 @@ export default function PairingModal({
               ...optionalNamespaces[key].methods,
             );
           }
-          if (requiredNamespaces[key]?.events) {
+          if (proposalRequiredNamespaces[key]?.events) {
             namespaceEvents = namespaceEvents.concat(
-              ...requiredNamespaces[key].events,
+              ...proposalRequiredNamespaces[key].events,
             );
           }
           if (optionalNamespaces[key]?.events) {
@@ -168,7 +224,7 @@ export default function PairingModal({
           }
 
           namespaces[key] = {
-            chains: eip155Chains,
+            chains,
             accounts,
             methods: namespaceMethods,
             events: namespaceEvents,
@@ -191,8 +247,11 @@ export default function PairingModal({
           id,
           namespaces,
         });
+
+        // Wait for session to be fully persisted before updating UI
+        await checkAndAddPairingToConnectionsList();
+
         setAcceptingRequest(false);
-        checkAndAddPairingToConnectionsList();
         hideModal();
       }
     } catch (e) {
@@ -208,7 +267,7 @@ export default function PairingModal({
     try {
       if (currentProposal) {
         setRejectingRequest(true);
-        const { id } = currentProposal;
+        const { id } = currentProposal as { id: number };
         await web3wallet?.rejectSession({
           id,
           reason: getSdkError('USER_REJECTED_METHODS'),
@@ -266,7 +325,7 @@ export default function PairingModal({
 
   return (
     <CyDModalLayout
-      setModalVisible={() => {}}
+      setModalVisible={noop}
       isModalVisible={isModalVisible}
       style={styles.modalLayout}
       animationIn={'slideInUp'}
