@@ -1,16 +1,18 @@
-import { Core } from '@walletconnect/core';
 import { getSdkError } from '@walletconnect/utils';
 import { WalletKit, IWalletKit } from '@reown/walletkit';
+import { Core } from '@walletconnect/core';
 import * as Sentry from '@sentry/react-native';
-
 export let web3wallet: IWalletKit;
-export let core: any;
 
 export async function createWeb3Wallet(projectId: string) {
   try {
-    core = new Core({
+    // Create Core with WalletKit's dedicated project ID and custom storage prefix
+    // The customStoragePrefix ensures WalletKit uses separate storage keys from AppKit
+    // WalletKit will use "walletkit@2:*" keys, AppKit uses default "wc@2:*" keys
+    const core = new Core({
       projectId,
       relayUrl: 'wss://relay.walletconnect.com',
+      customStoragePrefix: 'walletkit',
     });
 
     web3wallet = await WalletKit.init({
@@ -22,13 +24,6 @@ export async function createWeb3Wallet(projectId: string) {
         icons: ['https://public.cypherd.io/icons/appLogo.png'],
       },
     });
-
-    try {
-      const clientId =
-        await web3wallet.engine.signClient.core.crypto.getClientId();
-    } catch (error) {
-      console.error('Failed to set WalletConnect clientId in state', error);
-    }
 
     return web3wallet;
   } catch (e) {

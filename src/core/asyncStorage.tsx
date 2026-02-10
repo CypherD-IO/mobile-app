@@ -473,6 +473,15 @@ export const getRefreshToken = async () => {
   }
 };
 
+export const clearAuthTokens = async () => {
+  try {
+    await AsyncStorage.removeItem('AUTH_TOKEN');
+    await AsyncStorage.removeItem('REFRESH_TOKEN');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
 export const setConnectionType = async (token: ConnectionTypes) => {
   try {
     await AsyncStorage.setItem('CONNECTION_TYPE', token);

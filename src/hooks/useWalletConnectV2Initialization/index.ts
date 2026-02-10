@@ -3,7 +3,6 @@ import { createWeb3Wallet } from '../../core/walletConnectV2Utils';
 import useAxios from '../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import { GlobalContext } from '../../core/globalContext';
-
 export default function useWalletConnectV2Initialization () {
   const globalContext = useContext<any>(GlobalContext);
   const [initialized, setInitialized] = useState(false);

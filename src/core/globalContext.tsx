@@ -125,7 +125,8 @@ export const gloabalContextReducer = (
     } else if (type === GlobalContextType.IS_APP_AUTHENTICATED) {
       return { ...state, isAuthenticated };
     } else if (type === GlobalContextType.RESET_GLOBAL_STATE) {
-      return initialGlobalState;
+      // Preserve rpcEndpoints across wallet deletion/reset.
+      return { ...initialGlobalState, rpcEndpoints: state.rpcEndpoints };
     }
   }
   return state;
@@ -140,11 +141,18 @@ export const GlobalContext = React.createContext<GlobalContextDef | null>(null);
 
 export function isTokenValid(token: any) {
   if (token) {
-    const jwtInfo = jwt_decode<JwtPayload>(token);
-    if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {
+    try {
+      const jwtInfo = jwt_decode<JwtPayload>(token);
+      const isExpired = jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000;
+
+      if (isExpired) {
+        return false;
+      }
+      return true;
+    } catch (e: any) {
+      console.error('isTokenValid: Error decoding token:', e?.message);
       return false;
     }
-    return true;
   }
   return false;
 }

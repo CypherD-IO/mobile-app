@@ -21,6 +21,7 @@ import {
   setRpcPreference,
   getRpcPreference,
   getDeveloperMode,
+  clearAuthTokens,
 } from '../../core/asyncStorage';
 import { hostWorker } from '../../global';
 import { ChainBackendNames } from '../../constants/server';
@@ -128,6 +129,11 @@ export default function HostsAndRPCScreen({ navigation }) {
   const reset = async () => {
     hideModal();
     setLoading(true);
+
+    // Clear auth tokens when resetting hosts to defaults
+    // Old tokens will be invalid for the default host
+    await clearAuthTokens();
+
     await setRpcPreference(RPCPreference.DEFAULT);
     await clearRpcEndpoints();
     await clearHost('ARCH_HOST');
@@ -160,6 +166,14 @@ export default function HostsAndRPCScreen({ navigation }) {
     }
 
     setLoading(true);
+
+    // Check if ARCH_HOST is being changed - if so, clear auth tokens
+    // Old tokens are invalid for new hosts and will cause 401 loops
+    const currentArchHost = getHost('ARCH_HOST');
+    if (currentArchHost !== hosts.archHost) {
+      await clearAuthTokens();
+    }
+
     await setRpcPreference(RPCPreference.OVERIDDEN);
     await setRpcEndpoints(JSON.stringify(tempRPCEndpoints));
     setHost('ARCH_HOST', hosts.archHost);

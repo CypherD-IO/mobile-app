@@ -138,16 +138,19 @@ export default function useRewardsDistributor() {
       });
 
       // Execute the contract call using the transaction manager
-      const resp = await executeTransferContract({
-        publicClient,
-        chain: chainConfig,
-        amountToSend: '0', // No ETH needed for claim
-        toAddress: REWARDS_DISTRIBUTOR_CONTRACT,
-        contractAddress: REWARDS_DISTRIBUTOR_CONTRACT,
-        contractDecimals: 18,
-        contractData,
-        isErc20: true, // Treat as ERC20 contract call
-      });
+      const resp = await executeTransferContract(
+        {
+          publicClient,
+          chain: chainConfig,
+          amountToSend: '0', // No ETH needed for claim
+          toAddress: REWARDS_DISTRIBUTOR_CONTRACT,
+          contractAddress: REWARDS_DISTRIBUTOR_CONTRACT,
+          contractDecimals: 18,
+          contractData,
+          isErc20: true, // Treat as ERC20 contract call
+        },
+        undefined, // No abort signal for rewards distributor
+      );
 
       if (resp.isError) {
         throw new Error('Contract execution failed');

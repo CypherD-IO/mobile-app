@@ -239,18 +239,21 @@ export default function useSkipApiBridge() {
 
       const sendGranted = await showModalAndGetResponse(setEvmModalVisible);
       if (sendGranted) {
-        const hash = await executeTransferContract({
-          publicClient,
-          chain: currentChain,
-          amountToSend: parseUnits(
-            get(evmTx, 'value', 0).toString(),
-            selectedFromToken.decimals,
-          ).toString(),
-          toAddress: get(evmTx, 'to', '') as `0x${string}`,
-          contractAddress: get(evmTx, 'to', '') as `0x${string}`,
-          contractDecimals: selectedFromToken.decimals,
-          contractData: ('0x' + get(evmTx, 'data', '')) as `0x${string}`,
-        });
+        const hash = await executeTransferContract(
+          {
+            publicClient,
+            chain: currentChain,
+            amountToSend: parseUnits(
+              get(evmTx, 'value', 0).toString(),
+              selectedFromToken.decimals,
+            ).toString(),
+            toAddress: get(evmTx, 'to', '') as `0x${string}`,
+            contractAddress: get(evmTx, 'to', '') as `0x${string}`,
+            contractDecimals: selectedFromToken.decimals,
+            contractData: ('0x' + get(evmTx, 'data', '')) as `0x${string}`,
+          },
+          undefined, // No abort signal for skip API transactions
+        );
         if (hash.isError) {
           return { isError: true, error: hash.error };
         } else {

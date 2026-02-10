@@ -3,7 +3,7 @@ import * as C from '../../constants/index';
 import AppImages from './../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
-import { FlatList } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDText,
@@ -43,7 +43,6 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
-
 interface RouteParams {
   walletConnectURI: string;
 }
@@ -54,7 +53,7 @@ export default function WalletConnectCamera() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
   const { walletConnectState, walletConnectDispatch } =
-    useContext<walletConnectContextDef>(WalletConnectContext);
+    useContext<any>(WalletConnectContext);
 
   const hdWalletContext = useContext<any>(HdWalletContext);
   const ethereumAddress = get(
@@ -74,15 +73,14 @@ export default function WalletConnectCamera() {
     useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const loading = useRef(true);
-  const sessionProposalListener = useRef<NodeJS.Timeout>();
+  const sessionProposalListener = useRef<NodeJS.Timeout | null>(null);
   const [isLoadingConnections, setIsLoadingConnections] = useState(true);
 
   const connectWallet = async (uri: string) => {
     if (uri.includes('relay-protocol')) {
-      try {
-        const pairPromise = await web3WalletPair({ uri });
-        const currentTimestampInSeconds = Math.floor(Date.now() / 1000);
-        if (pairPromise?.expiry <= currentTimestampInSeconds) {
+      // Set up timeout for proposal expiry BEFORE pairing
+      sessionProposalListener.current = setTimeout(() => {
+        if (loading.current) {
           loading.current = false;
           showModal('state', {
             type: 'error',
@@ -91,28 +89,46 @@ export default function WalletConnectCamera() {
             onSuccess: hideModal,
             onFailure: hideModal,
           });
-        } else {
-          sessionProposalListener.current = setTimeout(() => {
-            if (loading.current) {
-              loading.current = false;
-              showModal('state', {
-                type: 'error',
-                title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
-                description: t('WC_PROPOSAL_EXPIRED_DESCRIPTION'),
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              });
-            }
-          }, WALLET_CONNECT_PROPOSAL_LISTENER);
-          web3wallet?.on('session_proposal', () => {
-            setWalletConnectURI('');
-            loading.current = false;
+        }
+      }, WALLET_CONNECT_PROPOSAL_LISTENER);
+
+      // Set up one-time session_proposal handler BEFORE pairing
+      // This ensures the listener is registered before the event can fire
+      const handleSessionProposal = () => {
+        setWalletConnectURI('');
+        loading.current = false;
+        if (sessionProposalListener.current) {
+          clearTimeout(sessionProposalListener.current);
+        }
+        // Remove this specific listener after handling
+        web3wallet?.off('session_proposal', handleSessionProposal);
+      };
+      web3wallet?.on('session_proposal', handleSessionProposal);
+
+      try {
+        const pairPromise = await web3WalletPair({ uri });
+        const currentTimestampInSeconds = Math.floor(Date.now() / 1000);
+        if (pairPromise?.expiry <= currentTimestampInSeconds) {
+          loading.current = false;
+          if (sessionProposalListener.current) {
             clearTimeout(sessionProposalListener.current);
+          }
+          web3wallet?.off('session_proposal', handleSessionProposal);
+          showModal('state', {
+            type: 'error',
+            title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
+            description: t('WC_PROPOSAL_EXPIRED_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
           });
         }
       } catch (e) {
         Sentry.captureException(e);
         loading.current = false;
+        if (sessionProposalListener.current) {
+          clearTimeout(sessionProposalListener.current);
+        }
+        web3wallet?.off('session_proposal', handleSessionProposal);
         showModal('state', {
           type: 'error',
           title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
@@ -135,7 +151,7 @@ export default function WalletConnectCamera() {
     }
   };
 
-  const onSuccess = e => {
+  const onSuccess = (e: { data: string }) => {
     const link = e.data;
     if (link.startsWith('wc')) {
       loading.current = true;
@@ -160,7 +176,7 @@ export default function WalletConnectCamera() {
       data = { connectors: [], dAppInfo: [] };
     } else {
       data = {
-        connectors: walletConnectState?.connectors?.map(element => {
+        connectors: walletConnectState?.connectors?.map((element: any) => {
           return element.session ?? element;
         }),
         dAppInfo: walletConnectState?.dAppInfo,
@@ -197,7 +213,7 @@ export default function WalletConnectCamera() {
         );
         const staleConnectors: number[] = [];
         const connectors = walletConnectState?.connectors?.filter(
-          (connector, index) => {
+          (connector: any, index: number) => {
             if (activeSessionTopics.includes(connector?.topic)) {
               return true;
             }
@@ -206,7 +222,7 @@ export default function WalletConnectCamera() {
           },
         );
         const dAppInfo = walletConnectState?.dAppInfo?.filter(
-          (dApp, index) => !staleConnectors.includes(index),
+          (_dApp: any, index: number) => !staleConnectors.includes(index),
         );
         if (staleConnectors.length) {
           walletConnectDispatch({
@@ -276,7 +292,7 @@ export default function WalletConnectCamera() {
 
   const deletePairing = async (pairingTopic: string, sessionTopic?: string) => {
     const [connector] = walletConnectState.dAppInfo.filter(
-      connection => connection.topic === pairingTopic,
+      (connection: any) => connection.topic === pairingTopic,
     );
     walletConnectDispatch({
       type: WalletConnectActions.DELETE_DAPP_INFO,
@@ -292,9 +308,10 @@ export default function WalletConnectCamera() {
     }
   };
 
-  const renderSessionItem = session => {
+  const renderSessionItem = (session: { item: any }) => {
     const { name, icons } = session.item.peer.metadata;
     const { expiry } = session.item;
+    const nameStr = String(name ?? '');
     return (
       <CyDView>
         <CyDView className={'flex items-center'}>
@@ -313,9 +330,9 @@ export default function WalletConnectCamera() {
                     <CyDView
                       className={'flex flex-row items-center align-center'}>
                       <CyDText className={'font-extrabold text-[16px]'}>
-                        {name.length > 25
-                          ? `${name.substring(0, 25)}....`
-                          : name}
+                        {nameStr.length > 25
+                          ? `${nameStr.substring(0, 25)}....`
+                          : nameStr}
                       </CyDText>
                     </CyDView>
                     <CyDView
@@ -337,7 +354,7 @@ export default function WalletConnectCamera() {
                 }}
                 style={'w-[80%] py-[10px] mb-[8px]'}
                 type={ButtonType.RED}
-                title={t('DISCONNECT')}
+                title={t<string>('DISCONNECT')}
                 titleStyle='text-[14px] text-white'
               />
             </CyDView>
@@ -377,7 +394,7 @@ export default function WalletConnectCamera() {
                 }}
                 style={'w-[80%] p-[20px] my-[18px]'}
                 type={ButtonType.RED}
-                title={t('DELETE_CONNECTION')}
+                title={t<string>('DELETE_CONNECTION')}
                 titleStyle='text-[14px] text-white'
               />
             </CyDView>
@@ -388,7 +405,7 @@ export default function WalletConnectCamera() {
             <FlatList
               data={sessionsForAPairing}
               renderItem={item => renderSessionItem(item)}
-              style={{ width: '100%', maxHeight: 300 }}
+              style={styles.sessionsList}
               showsVerticalScrollIndicator={true}
             />
           </CyDView>
@@ -402,7 +419,12 @@ export default function WalletConnectCamera() {
     );
   };
 
-  const RenderPairingOnlineStatus = ({ pairing }) => {
+  // eslint-disable-next-line react/prop-types
+  const RenderPairingOnlineStatus = ({
+    pairing,
+  }: {
+    pairing: { topic: string };
+  }) => {
     const isOnline = getSessionsForAPairing(pairing.topic).length > 0;
     return (
       <CyDView>
@@ -428,10 +450,11 @@ export default function WalletConnectCamera() {
     });
   }
 
-  const renderItem = item => {
+  const renderItem = (item: any) => {
     const element = item.item;
     const key = item.index;
     const isV2 = has(element, 'version') && element?.version === 'v2';
+    const elementName = String(element?.name ?? '');
     return (
       <CyDTouchView
         disabled={!isV2}
@@ -459,9 +482,9 @@ export default function WalletConnectCamera() {
                     <CyDView
                       className={'flex flex-row items-center align-center'}>
                       <CyDText className={'font-extrabold text-[16px]'}>
-                        {element.name.length > 25
-                          ? `${element.name.substring(0, 25)}....`
-                          : element.name}
+                        {elementName.length > 25
+                          ? `${elementName.substring(0, 25)}....`
+                          : elementName}
                       </CyDText>
                       {isV2 && <RenderPairingOnlineStatus pairing={element} />}
                     </CyDView>
@@ -524,7 +547,7 @@ export default function WalletConnectCamera() {
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-[20px] font-bold text-base400'>
-          {t('WALLET_CONNECT_SMALL')}
+          {t<string>('WALLET_CONNECT_SMALL')}
         </CyDText>
         <CyDTouchView
           onPress={() => {
@@ -553,7 +576,7 @@ export default function WalletConnectCamera() {
               resizeMode='contain'
             />
             <CyDText className='mt-[30px] text-[20px] font-semibold w-[300px] text-center'>
-              {t('NO_CONNECTIONS')}
+              {t<string>('NO_CONNECTIONS')}
             </CyDText>
           </CyDView>
         }
@@ -561,3 +584,7 @@ export default function WalletConnectCamera() {
     </CyDSafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  sessionsList: { width: '100%', maxHeight: 300 },
+});

@@ -1,13 +1,18 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  PropsWithChildren,
+} from 'react';
 import { HdWalletContext } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
-import { AppKit, useWalletInfo } from '@reown/appkit-wagmi-react-native';
+import { AppKit, useWalletInfo } from '@reown/appkit-react-native';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
   getAuthToken,
-  getConnectionType,
   removeConnectionType,
   setAuthToken,
   setConnectionType,
@@ -15,7 +20,7 @@ import {
 } from '../../core/asyncStorage';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
-import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindComponents';
@@ -26,14 +31,15 @@ import { getToken } from '../../notification/pushNotification';
 import { get } from 'lodash';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 /**
  * AsyncStorage key to check if we're in onboarding WalletConnect flow
  * If this key is set, we should NOT automatically load the wallet on connection
  */
 const WALLET_CONNECT_FLOW_KEY = 'ONBOARDING_WALLET_CONNECT_FLOW_ACTIVE';
 
-export const WalletConnectListener: React.FC = ({ children }) => {
+export const WalletConnectListener: React.FC<PropsWithChildren> = ({
+  children,
+}) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ethereumAddress = get(
@@ -46,23 +52,33 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
   const { connectionType, deleteWalletConfig } = useConnectionManager();
-  const [loading, setLoading] = useState<boolean>(
-    connectionType === ConnectionTypes.WALLET_CONNECT,
-  );
+  const [loading, setLoading] = useState<boolean>(false);
   const { walletInfo } = useWalletInfo();
   const { getWalletProfile } = useCardUtilities();
   const [isInitializing, setIsInitializing] = useState(true);
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const connectionTypeRef = useRef(connectionType);
 
+  // Keep ref in sync with connectionType
   useEffect(() => {
-    setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);
+    connectionTypeRef.current = connectionType;
   }, [connectionType]);
+
+  // Initialize loading state based on connectionType (only on mount)
+  useEffect(() => {
+    if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+      setLoading(true);
+    }
+  }, []);
 
   const { signMessageAsync } = useSignMessage({
     mutation: {
       async onSuccess(data) {
+        if (!address) {
+          return;
+        }
         const verifyMessageResponse = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
+          `${ARCH_HOST}/v1/authentication/verify-message/${address.toLowerCase()}?format=ERC-4361`,
           {
             signature: data,
           },
@@ -138,6 +154,9 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   };
 
   const registerIntercomUser = () => {
+    if (!address) {
+      return;
+    }
     Intercom.loginUserWithUserAttributes({
       userId: address,
     }).catch(() => {
@@ -176,17 +195,26 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const verifySessionTokenAndSign = async () => {
     setLoading(true);
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
-    await getToken(String(address).toLowerCase());
+    if (!address) {
+      setLoading(false);
+      return;
+    }
+    await getToken(address.toLowerCase());
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {
       void signConnectionMessage();
     } else {
       let authToken = await getAuthToken();
       authToken = JSON.parse(String(authToken));
-      const profileData = await getWalletProfile(authToken);
+      if (!authToken) {
+        setLoading(false);
+        return;
+      }
+      const authTokenString = String(authToken);
+      const profileData = await getWalletProfile(authTokenString);
       globalContext.globalDispatch({
         type: GlobalContextType.SIGN_IN,
-        sessionToken: authToken,
+        sessionToken: authTokenString,
       });
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,

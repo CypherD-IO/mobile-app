@@ -134,25 +134,28 @@ export default function useTransactionManager() {
     return isNative;
   }
 
-  const executeTransferContract = async ({
-    publicClient,
-    chain,
-    amountToSend,
-    toAddress,
-    contractAddress,
-    contractDecimals,
-    contractData,
-    isErc20 = true,
-  }: {
-    publicClient: PublicClient;
-    chain: Chain;
-    amountToSend: string;
-    toAddress: `0x${string}`;
-    contractAddress: `0x${string}`;
-    contractDecimals: number;
-    contractData?: `0x${string}`;
-    isErc20?: boolean;
-  }): Promise<TransactionResponse> => {
+  const executeTransferContract = async (
+    {
+      publicClient,
+      chain,
+      amountToSend,
+      toAddress,
+      contractAddress,
+      contractDecimals,
+      contractData,
+      isErc20 = true,
+    }: {
+      publicClient: PublicClient;
+      chain: Chain;
+      amountToSend: string;
+      toAddress: `0x${string}`;
+      contractAddress: `0x${string}`;
+      contractDecimals: number;
+      contractData?: `0x${string}`;
+      isErc20?: boolean;
+    },
+    abortSignal?: AbortSignal,
+  ): Promise<TransactionResponse> => {
     try {
       const gasEstimateResponse = await estimateGasForEvm({
         publicClient,
@@ -200,11 +203,14 @@ export default function useTransactionManager() {
             }),
       };
 
-      const hash = await signEthTransaction({
-        rpc: getWeb3Endpoint(chain, globalContext),
-        sendChain: chain.backendName,
-        transactionToBeSigned: txnPayload,
-      });
+      const hash = await signEthTransaction(
+        {
+          rpc: getWeb3Endpoint(chain, globalContext),
+          sendChain: chain.backendName,
+          transactionToBeSigned: txnPayload,
+        },
+        abortSignal,
+      );
 
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
@@ -270,27 +276,33 @@ export default function useTransactionManager() {
     }
   };
 
-  const sendNativeToken = async ({
-    publicClient,
-    chain,
-    amountToSend,
-    toAddress,
-    contractAddress,
-    contractDecimals,
-  }: SendNativeToken): Promise<string> => {
-    const chainConfig = get(
-      ChainConfigMapping,
-      String(get(ChainNameMapping, chain)),
-    );
-    const resp = await executeTransferContract({
+  const sendNativeToken = async (
+    {
       publicClient,
-      chain: chainConfig,
+      chain,
       amountToSend,
       toAddress,
       contractAddress,
       contractDecimals,
-      isErc20: false,
-    });
+    }: SendNativeToken,
+    abortSignal?: AbortSignal,
+  ): Promise<string> => {
+    const chainConfig = get(
+      ChainConfigMapping,
+      String(get(ChainNameMapping, chain)),
+    );
+    const resp = await executeTransferContract(
+      {
+        publicClient,
+        chain: chainConfig,
+        amountToSend,
+        toAddress,
+        contractAddress,
+        contractDecimals,
+        isErc20: false,
+      },
+      abortSignal,
+    );
 
     if (!resp.isError) {
       return resp.hash;
@@ -298,21 +310,24 @@ export default function useTransactionManager() {
     throw resp.error;
   };
 
-  const sendERC20Token = async ({
-    publicClient,
-    chain,
-    amountToSend,
-    toAddress,
-    contractAddress,
-    contractDecimals,
-  }: {
-    publicClient: PublicClient;
-    chain: ChainBackendNames;
-    amountToSend: string;
-    toAddress: `0x${string}`;
-    contractAddress: `0x${string}`;
-    contractDecimals: number;
-  }): Promise<string> => {
+  const sendERC20Token = async (
+    {
+      publicClient,
+      chain,
+      amountToSend,
+      toAddress,
+      contractAddress,
+      contractDecimals,
+    }: {
+      publicClient: PublicClient;
+      chain: ChainBackendNames;
+      amountToSend: string;
+      toAddress: `0x${string}`;
+      contractAddress: `0x${string}`;
+      contractDecimals: number;
+    },
+    abortSignal?: AbortSignal,
+  ): Promise<string> => {
     const erc20Abi = [
       {
         inputs: [
@@ -339,15 +354,18 @@ export default function useTransactionManager() {
       String(get(ChainNameMapping, chain)),
     );
 
-    const resp = await executeTransferContract({
-      publicClient,
-      chain: chainConfig,
-      amountToSend: '0',
-      toAddress,
-      contractAddress,
-      contractDecimals,
-      contractData,
-    });
+    const resp = await executeTransferContract(
+      {
+        publicClient,
+        chain: chainConfig,
+        amountToSend: '0',
+        toAddress,
+        contractAddress,
+        contractDecimals,
+        contractData,
+      },
+      abortSignal,
+    );
 
     if (!resp.isError) {
       return resp.hash;
@@ -355,15 +373,18 @@ export default function useTransactionManager() {
     throw resp.error;
   };
 
-  const sendEvmToken = async ({
-    chain,
-    amountToSend,
-    toAddress,
-    contractAddress,
-    contractDecimals,
-    symbol,
-    // contractData: contractDataUser,
-  }: SendInEvmInterface): Promise<TransactionResponse> => {
+  const sendEvmToken = async (
+    {
+      chain,
+      amountToSend,
+      toAddress,
+      contractAddress,
+      contractDecimals,
+      symbol,
+    }: // contractData: contractDataUser,
+    SendInEvmInterface,
+    abortSignal?: AbortSignal,
+  ): Promise<TransactionResponse> => {
     try {
       const chainConfig = get(
         ChainConfigMapping,
@@ -380,24 +401,30 @@ export default function useTransactionManager() {
         symbol === 'SHM' ||
         isNativeCurrency(chainConfig, contractAddress)
       ) {
-        const hash = await sendNativeToken({
-          publicClient,
-          chain,
-          amountToSend,
-          toAddress,
-          contractAddress,
-          contractDecimals,
-        });
+        const hash = await sendNativeToken(
+          {
+            publicClient,
+            chain,
+            amountToSend,
+            toAddress,
+            contractAddress,
+            contractDecimals,
+          },
+          abortSignal,
+        );
         return { hash: String(hash), isError: false };
       } else {
-        const hash = await sendERC20Token({
-          publicClient,
-          chain,
-          amountToSend,
-          toAddress,
-          contractAddress,
-          contractDecimals,
-        });
+        const hash = await sendERC20Token(
+          {
+            publicClient,
+            chain,
+            amountToSend,
+            toAddress,
+            contractAddress,
+            contractDecimals,
+          },
+          abortSignal,
+        );
 
         return { hash: String(hash), isError: false };
       }
