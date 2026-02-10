@@ -16,14 +16,14 @@ import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
 import { WagmiConfigBuilder } from '../wagmiConfigBuilder';
 import { get } from 'lodash';
-
 export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
   const hdWalletContext = useContext<any>(HdWalletContext);
   const ethereum = get(hdWalletContext, 'state.wallet.ethereum', undefined);
   const ethereumAddress = get(ethereum, 'address', '');
   const isInitializationInProgress = useRef<boolean>(false);
-  const projectId = String(Config.WALLET_CONNECT_PROJECTID);
+  // Use dedicated WalletKit project ID for receiving dApp connections
+  const projectId = Config.MOBILE_WALLETKIT_PROJECTID;
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
@@ -34,7 +34,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
 
   const onInitialize = useCallback(async () => {
     try {
-      if (projectId) {
+      if (typeof projectId === 'string' && projectId.length > 0) {
         await createWeb3Wallet(projectId);
         setIsWeb3WalletInitialized(true);
       } else {
@@ -76,6 +76,10 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
         (uri.includes('bridge') || uri.includes('relay-protocol'))
       ) {
         if (uri.includes('relay-protocol')) {
+          // Small delay to ensure event listeners are registered
+          // This addresses the race condition where pairing completes
+          // before useEffect has a chance to register listeners
+          await new Promise(resolve => setTimeout(resolve, 100));
           await web3WalletPair({ uri: decodeURIComponent(uri) });
         }
       }
@@ -87,7 +91,11 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
       isWeb3WalletInitialized &&
       ethereum?.wallets[ethereum?.currentIndex]?.address
     ) {
-      void initiateWalletConnection();
+      // Additional delay to ensure listener registration useEffect has run
+      const timer = setTimeout(() => {
+        void initiateWalletConnection();
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [initialUrl, isWeb3WalletInitialized, ethereum?.wallets]);
 

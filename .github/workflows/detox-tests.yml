@@ -13,11 +13,12 @@ jobs:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
       ENVIROINMENT: ${{secrets.ENVIROINMENT}}
       INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
-      WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
+      MOBILE_WALLETKIT_PROJECTID: ${{secrets.MOBILE_WALLETKIT_PROJECTID}}
+      MOBILE_APPKIT_PROJECTID: ${{secrets.MOBILE_APPKIT_PROJECTID}}
       HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
       WEB3_AUTH_CLIENT_ID: ${{ secrets.WEB3_AUTH_CLIENT_ID }}
       CI: true
-      IS_TESTING: 'true'
+      IS_TESTING: "true"
       NODE_ENV: development
 
     steps:
@@ -27,8 +28,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Cache Node.js dependencies
         uses: actions/cache@v4
@@ -91,7 +92,8 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "WALLET_CONNECT_PROJECTID=${{ secrets.WALLET_CONNECT_PROJECTID }}" >> .env
+          echo "MOBILE_WALLETKIT_PROJECTID=${{ secrets.MOBILE_WALLETKIT_PROJECTID }}" >> .env
+          echo "MOBILE_APPKIT_PROJECTID=${{ secrets.MOBILE_APPKIT_PROJECTID }}" >> .env
           echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
           echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env

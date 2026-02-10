@@ -39,7 +39,10 @@ import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { Holding } from '../../core/portfolio';
 import {
   ActivityContext,
+  extractAddressFromURI,
+  extractErrorDetails,
   formatAmount,
+  getBestErrorMessage,
   getMaskedAddress,
   getSendAddressFieldPlaceholder,
   getViemPublicClient,
@@ -47,17 +50,23 @@ import {
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
   isEthereumAddress,
+  isTimeoutError,
+  isUserRejectionError,
   isValidEns,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
   SendToAddressValidator,
-  extractAddressFromURI,
 } from '../../core/util';
 import useEns from '../../hooks/useEns';
 import useGasService from '../../hooks/useGasService';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import useTransactionManager from '../../hooks/useTransactionManager';
+import { useAppKitTransactionModal } from '../../hooks/useAppKitTransactionModal';
+import { AppKitTransactionModal } from '../../components/v2/AppKitTransactionModal';
+import { useWalletInfo } from '@reown/appkit-react-native';
+import { getConnectionType } from '../../core/asyncStorage';
+import { ConnectionTypes } from '../../constants/enum';
 import { TokenSendConfirmationParams } from '../../models/tokenSendConfirmationParams.interface';
 import {
   ActivityReducerAction,
@@ -137,6 +146,28 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const chainDetails = tokenData?.chainDetails;
   const { keyboardHeight } = useKeyboard();
+  const { walletInfo } = useWalletInfo();
+
+  // AppKit transaction modal state
+  const pendingTxParamsRef = useRef<any>(null);
+  const [connectionType, setConnectionTypeState] = useState<string | null>(
+    null,
+  );
+  const {
+    isModalVisible: isTxModalVisible,
+    modalState: txModalState,
+    abortController,
+    resendCount,
+    showModal: showTxModal,
+    hideModal: hideTxModal,
+    setTimedOut: setTxTimedOut,
+    handleResend,
+    handleCancel: handleTxCancel,
+  } = useAppKitTransactionModal({
+    walletName: walletInfo?.name ?? 'your wallet',
+    onTimeout: () => {},
+  });
+
   const [tokenSendConfirmationParams, setTokenSendConfirmationParams] =
     useState<TokenSendConfirmationParams>({
       isModalVisible: false,
@@ -163,6 +194,15 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
   const [nativeTokenDetails, setNativeTokenDetails] = useState<Holding>();
   const { refreshPortfolio } = usePortfolioRefresh();
+
+  // Check connection type for AppKit modal
+  useEffect(() => {
+    const checkConnectionType = async () => {
+      const connType = await getConnectionType();
+      setConnectionTypeState(connType);
+    };
+    void checkConnectionType();
+  }, []);
 
   let fuseByAddresses: Fuse<string>;
   if (Object.keys(addressDirectory).length) {
@@ -818,157 +858,341 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       isModalVisible: false,
     });
     setLoading(true);
-    let response;
-    if (chainDetails?.chainName === ChainNames.ETH) {
-      fromAddress = ethereum.address;
-      response = await sendEvmToken({
-        chain: tokenData.chainDetails.backendName,
-        amountToSend,
-        toAddress: addressRef.current as `0x${string}`,
-        contractAddress: tokenData.contractAddress as `0x${string}`,
-        contractDecimals: tokenData.contractDecimals,
-        symbol: tokenData.symbol,
-      });
-    } else if (chainDetails?.chainName === ChainNames.SOLANA) {
-      response = await sendSolanaTokens({
-        amountToSend,
-        toAddress: addressRef.current,
-        contractAddress: tokenData.contractAddress,
-        contractDecimals: tokenData.contractDecimals,
-      });
-    } else {
-      fromAddress = get(senderAddress, chainDetails.chainName, '');
-      response = await sendCosmosToken({
-        fromChain: chainDetails,
-        denom: tokenData.denom ?? '',
-        amount: amountToSend,
-        fromAddress,
-        toAddress: addressRef.current,
-        contractDecimals: tokenData.contractDecimals,
-      });
-    }
-    if (!response?.isError) {
-      let willPrompt: boolean;
-      if (
-        EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-          get(ChainNameToContactsChainNameMapping, chainDetails?.name),
-        )
-      ) {
-        willPrompt = !(addressText in addressDirectory.evmAddresses);
-      } else {
-        willPrompt = !(
-          addressText in
-          addressDirectory[
-            get(
-              ChainNameToContactsChainNameMapping,
-              tokenData.chainDetails?.name,
-            )
-          ]
-        );
-      }
-      try {
-        const finalArray = Data;
-        const toAddrBook = ensRef.current
-          ? `${ensRef.current}:${addressRef.current}`
-          : addressRef.current;
-        if (!finalArray.includes(toAddrBook)) {
-          finalArray.push(toAddrBook);
-        }
-        const chainName = tokenData.chainDetails.chainName;
-        if (chainName) {
-          const key = `address_book_${chainName}`;
-          const valueToStore = JSON.stringify(finalArray);
-          await AsyncStorage.setItem(key, valueToStore);
-        }
-      } catch (error) {}
 
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: {
-          ...activityRef.current,
-          gasAmount: response.gasFeeInCrypto
-            ? DecimalHelper.toString(
-                DecimalHelper.multiply(
-                  response?.gasFeeInCrypto ?? 0,
-                  tokenData?.price ?? 0,
-                ),
-                4,
-              )
-            : activityRef.current?.gasAmount,
-          status: ActivityStatus.SUCCESS,
-          transactionHash: response?.hash,
-        },
-      });
-      setLoading(false);
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.SUCCESS,
-        txnHash: response?.hash,
-        chain: chainDetails?.backendName ?? '',
-        screen: route.name,
-        address: get(senderAddress, chainDetails.chainName, ''),
-        other: {
-          token: tokenData.symbol,
-          balance: tokenData.balanceDecimal,
-          amount: valueForUsd,
-          toAddress: addressRef.current,
-        },
-      });
-      if (willPrompt) {
-        showModal('state', {
-          type: 'custom',
-          title: t('TRANSACTION_SUCCESS'),
-          modalImage: AppImages.CYPHER_SUCCESS,
-          modalButtonText: {
-            success: t('YES'),
-            failure: t('MAYBE_LATER').toUpperCase(),
+    // Store transaction params for resend functionality
+    const txParams = {
+      chain: tokenData.chainDetails.backendName,
+      amountToSend,
+      toAddress: addressRef.current,
+      contractAddress: tokenData.contractAddress,
+      contractDecimals: tokenData.contractDecimals,
+      symbol: tokenData.symbol,
+      chainName: chainDetails?.chainName,
+    };
+    pendingTxParamsRef.current = txParams;
+
+    // Show AppKit transaction modal for WalletConnect users
+    const isWalletConnect = connectionType === ConnectionTypes.WALLET_CONNECT;
+    if (isWalletConnect && chainDetails?.chainName === ChainNames.ETH) {
+      showTxModal();
+    }
+
+    let response;
+    try {
+      if (chainDetails?.chainName === ChainNames.ETH) {
+        fromAddress = ethereum.address;
+        response = await sendEvmToken(
+          {
+            chain: tokenData.chainDetails.backendName,
+            amountToSend,
+            toAddress: addressRef.current as `0x${string}`,
+            contractAddress: tokenData.contractAddress as `0x${string}`,
+            contractDecimals: tokenData.contractDecimals,
+            symbol: tokenData.symbol,
           },
-          description: renderSuccessTransaction(response?.hash, willPrompt),
-          onSuccess: onModalHide,
-          onFailure: onModalHideWithNo,
+          abortController.current?.signal,
+        );
+      } else if (chainDetails?.chainName === ChainNames.SOLANA) {
+        response = await sendSolanaTokens({
+          amountToSend,
+          toAddress: addressRef.current,
+          contractAddress: tokenData.contractAddress,
+          contractDecimals: tokenData.contractDecimals,
         });
       } else {
-        showModal('state', {
-          type: 'success',
-          title: t('TRANSACTION_SUCCESS'),
-          description: renderSuccessTransaction(response.hash, willPrompt),
-          onSuccess: onModalHideWithNo,
-          onFailure: onModalHideWithNo,
+        fromAddress = get(senderAddress, chainDetails.chainName, '');
+        response = await sendCosmosToken({
+          fromChain: chainDetails,
+          denom: tokenData.denom ?? '',
+          amount: amountToSend,
+          fromAddress,
+          toAddress: addressRef.current,
+          contractDecimals: tokenData.contractDecimals,
         });
       }
-      void refreshPortfolio();
-    } else {
+
+      // Hide AppKit modal on success for WalletConnect users
+      if (isWalletConnect && chainDetails?.chainName === ChainNames.ETH) {
+        hideTxModal();
+      }
+
+      if (!response?.isError) {
+        let willPrompt: boolean;
+        if (
+          EVM_CHAINS_FOR_ADDRESS_DIR.includes(
+            get(ChainNameToContactsChainNameMapping, chainDetails?.name),
+          )
+        ) {
+          willPrompt = !(addressText in addressDirectory.evmAddresses);
+        } else {
+          willPrompt = !(
+            addressText in
+            addressDirectory[
+              get(
+                ChainNameToContactsChainNameMapping,
+                tokenData.chainDetails?.name,
+              )
+            ]
+          );
+        }
+        try {
+          const finalArray = Data;
+          const toAddrBook = ensRef.current
+            ? `${ensRef.current}:${addressRef.current}`
+            : addressRef.current;
+          if (!finalArray.includes(toAddrBook)) {
+            finalArray.push(toAddrBook);
+          }
+          const chainName = tokenData.chainDetails.chainName;
+          if (chainName) {
+            const key = `address_book_${chainName}`;
+            const valueToStore = JSON.stringify(finalArray);
+            await AsyncStorage.setItem(key, valueToStore);
+          }
+        } catch (error) {}
+
+        activityContext.dispatch({
+          type: ActivityReducerAction.POST,
+          value: {
+            ...activityRef.current,
+            gasAmount: response.gasFeeInCrypto
+              ? DecimalHelper.toString(
+                  DecimalHelper.multiply(
+                    response?.gasFeeInCrypto ?? 0,
+                    tokenData?.price ?? 0,
+                  ),
+                  4,
+                )
+              : activityRef.current?.gasAmount,
+            status: ActivityStatus.SUCCESS,
+            transactionHash: response?.hash,
+          },
+        });
+        setLoading(false);
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.SUCCESS,
+          txnHash: response?.hash,
+          chain: chainDetails?.backendName ?? '',
+          screen: route.name,
+          address: get(senderAddress, chainDetails.chainName, ''),
+          other: {
+            token: tokenData.symbol,
+            balance: tokenData.balanceDecimal,
+            amount: valueForUsd,
+            toAddress: addressRef.current,
+          },
+        });
+        if (willPrompt) {
+          showModal('state', {
+            type: 'custom',
+            title: t('TRANSACTION_SUCCESS'),
+            modalImage: AppImages.CYPHER_SUCCESS,
+            modalButtonText: {
+              success: t('YES'),
+              failure: t('MAYBE_LATER').toUpperCase(),
+            },
+            description: renderSuccessTransaction(response?.hash, willPrompt),
+            onSuccess: onModalHide,
+            onFailure: onModalHideWithNo,
+          });
+        } else {
+          showModal('state', {
+            type: 'success',
+            title: t('TRANSACTION_SUCCESS'),
+            description: renderSuccessTransaction(response.hash, willPrompt),
+            onSuccess: onModalHideWithNo,
+            onFailure: onModalHideWithNo,
+          });
+        }
+        void refreshPortfolio();
+      } else {
+        setLoading(false);
+
+        // Check error type for WalletConnect users
+        const connType = connectionType ?? '';
+        const isWc = connType === ConnectionTypes.WALLET_CONNECT;
+        const { errorMessage: errorMsg, errorDetails, errorShortMessage } =
+          extractErrorDetails(response.error);
+
+        const isTimeout = isTimeoutError(errorMsg);
+        const isUserRejection = isUserRejectionError(response.error);
+
+        if (
+          isWc &&
+          isUserRejection &&
+          chainDetails?.chainName === ChainNames.ETH
+        ) {
+          // User rejected in wallet - just hide modal silently
+          hideTxModal();
+          return;
+        } else if (
+          isWc &&
+          isTimeout &&
+          chainDetails?.chainName === ChainNames.ETH
+        ) {
+          // Show timeout state in AppKit modal
+          setTxTimedOut();
+          // Modal will stay visible with timeout state
+          // Don't show the generic error modal
+        } else {
+          // Hide AppKit modal if it was shown
+          if (isWc && chainDetails?.chainName === ChainNames.ETH) {
+            hideTxModal();
+          }
+
+          // Show generic error modal
+          const displayMessage = getBestErrorMessage(
+            errorMsg,
+            errorDetails,
+            errorShortMessage,
+          );
+
+          showModal('state', {
+            type: 'error',
+            title: t('TRANSACTION_FAILED'),
+            description: displayMessage,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }
+
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: chainDetails?.backendName ?? '',
+          message: errorMsg,
+          screen: route.name,
+          address: get(senderAddress, chainDetails.chainName, ''),
+          other: {
+            token: tokenData.symbol,
+            amount: valueForUsd,
+            balance: tokenData.balanceDecimal,
+            toAddress: addressRef.current,
+          },
+        });
+        activityContext.dispatch({
+          type: ActivityReducerAction.POST,
+          value: {
+            ...activityRef.current,
+            status: ActivityStatus.FAILED,
+            reason: response.error,
+          },
+        });
+      }
+    } catch (error) {
       setLoading(false);
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: chainDetails?.backendName ?? '',
-        message: parseErrorMessage(response.error),
-        screen: route.name,
-        address: get(senderAddress, chainDetails.chainName, ''),
-        other: {
-          token: tokenData.symbol,
-          amount: valueForUsd,
-          balance: tokenData.balanceDecimal,
-          toAddress: addressRef.current,
-        },
-      });
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: {
-          ...activityRef.current,
-          status: ActivityStatus.FAILED,
-          reason: response.error,
-        },
-      });
-      showModal('state', {
-        type: 'error',
-        title: t('TRANSACTION_FAILED'),
-        description: parseErrorMessage(response.error),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
+
+      // Check if user cancelled/rejected the transaction
+      const { errorMessage, errorDetails, errorShortMessage } =
+        extractErrorDetails(error);
+      const isUserCancellation = isUserRejectionError(error);
+
+      // If user cancelled/rejected, just hide the modal silently
+      if (isUserCancellation) {
+        const connType = connectionType ?? '';
+        const isWc = connType === ConnectionTypes.WALLET_CONNECT;
+        if (isWc && chainDetails?.chainName === ChainNames.ETH) {
+          hideTxModal();
+        }
+        // Don't show error modal, don't log to analytics, don't record failed activity
+        return;
+      }
+
+      // Check if it's a timeout error for WalletConnect users
+      const connType = connectionType ?? '';
+      const isWc = connType === ConnectionTypes.WALLET_CONNECT;
+      const isTimeout = isTimeoutError(errorMessage);
+
+      // Record failed activity in activityContext
+      if (activityRef.current) {
+        activityContext.dispatch({
+          type: ActivityReducerAction.POST,
+          value: {
+            ...activityRef.current,
+            status: ActivityStatus.FAILED,
+            reason: error,
+          },
+        });
+      }
+
+      if (
+        isWc &&
+        isTimeout &&
+        chainDetails?.chainName === ChainNames.ETH
+      ) {
+        // Show timeout state in AppKit modal
+        setTxTimedOut();
+      } else {
+        // Hide AppKit modal if it was shown
+        if (isWc && chainDetails?.chainName === ChainNames.ETH) {
+          hideTxModal();
+        }
+
+        // Show generic error modal
+        const displayMessage = getBestErrorMessage(
+          errorMessage,
+          errorDetails,
+          errorShortMessage,
+        );
+
+        showModal('state', {
+          type: 'error',
+          title: t('TRANSACTION_FAILED'),
+          description: displayMessage,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+
+      Sentry.captureException(error);
     }
+  };
+
+  // Handle resend transaction request for AppKit modal
+  const handleResendTransaction = async () => {
+    const txParams = pendingTxParamsRef.current;
+    if (!txParams) return;
+
+    await handleResend(async () => {
+      const result = await sendEvmToken(
+        {
+          chain: txParams.chain,
+          amountToSend: txParams.amountToSend,
+          toAddress: txParams.toAddress as `0x${string}`,
+          contractAddress: txParams.contractAddress as `0x${string}`,
+          contractDecimals: txParams.contractDecimals,
+          symbol: txParams.symbol,
+        },
+        abortController.current?.signal,
+      );
+
+      if (result.isError === true) {
+        const isRejection = isUserRejectionError(result.error);
+        if (isRejection) {
+          // User rejected during resend - keep modal open so they can resend again
+          return;
+        }
+        throw result.error instanceof Error
+          ? result.error
+          : new Error(
+              result.error ? String(result.error) : 'Transaction failed',
+            );
+      }
+
+      hideTxModal();
+      void refreshPortfolio();
+    });
+  };
+
+  // Handle retry after timeout
+  const handleRetryTransaction = () => {
+    hideTxModal();
+    // Trigger the confirmation modal again
+    setTokenSendConfirmationParams({
+      ...tokenSendConfirmationParams,
+      isModalVisible: true,
+    });
   };
 
   const onSuccess = async (readEvent: QRScanEvent) => {
@@ -1098,6 +1322,18 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           isModalVisible={tokenSendConfirmationParams.isModalVisible}
           tokenSendParams={tokenSendConfirmationParams.tokenSendParams}
         />
+
+        {/* AppKit Transaction Modal for WalletConnect users */}
+        <AppKitTransactionModal
+          isVisible={isTxModalVisible}
+          walletName={walletInfo?.name ?? 'your wallet'}
+          onResend={() => void handleResendTransaction()}
+          onCancel={handleTxCancel}
+          onRetry={handleRetryTransaction}
+          state={txModalState}
+          resendCount={resendCount}
+        />
+
         <CyDView className='h-full mx-[20px] pt-[10px]'>
           {/* Address label with QR scanner icon */}
           <CyDView className='flex flex-row justify-between items-center'>

@@ -834,6 +834,25 @@ const resources = {
       WC_SESSION_EXPIRED: 'Session Expired',
       WC_SESSION_EXPIRED_DESCRIPTION:
         'The connection session has expired or was disconnected. Please reconnect the dApp and try again.',
+      WC_SIGNING_TIMEOUT: 'Transaction Request Expired',
+      WC_SIGNING_TIMEOUT_DESCRIPTION:
+        'The transaction request was not signed within the allowed time and has been automatically rejected.',
+      WC_SIGNING_TIME_REMAINING: 'Time remaining: %s',
+      APPKIT_TX_PENDING: 'Transaction Pending',
+      APPKIT_TX_CHECK_WALLET:
+        'Please check {{walletName}} and approve the transaction request',
+      APPKIT_TX_TIME_REMAINING: 'Time remaining: {{time}}',
+      APPKIT_TX_CONNECTED_TO: 'Connected to: {{walletName}}',
+      APPKIT_TX_RESEND_REQUEST: 'Resend Request (if not showing)',
+      APPKIT_TX_TIMEOUT: 'Request Expired',
+      APPKIT_TX_TIMEOUT_DESC:
+        'The transaction request timed out and was not signed.',
+      APPKIT_TX_TIMEOUT_ACTION:
+        'Important: Please open {{walletName}} and REJECT any pending requests to avoid confusion.',
+      APPKIT_TX_RETRY: 'Retry Transaction',
+      APPKIT_TX_PRO_TIP: 'Pro Tip',
+      APPKIT_TX_PRO_TIP_DESC:
+        'Close {{walletName}} from your recent apps and try again. This can help refresh the connection.',
       APPROVE_REQUEST: 'Approve Request',
       DEFAULT_AUTH_REMOVE:
         'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Clicking on "Proceed" will remove the exising wallet and you will be able to import the same wallet (if you have the seed phrase backed up) / create a new wallet without authentication.',
@@ -2361,12 +2380,21 @@ const resources = {
       YOU_HAVE_EARNED_BOOSTED_REWARDS: 'You have earned boosted rewards',
       WALLET_CONNECT_STATUS_DESCRIPTION:
         "Hang tight! We're connecting you to your wallet now.",
+      WALLET_CONNECT_AUTO_REDIRECT_MESSAGE:
+        'Automatic redirection to the {{walletName}} should happen. \nIf not please navigate to the {{walletName}}',
+      WALLET_CONNECT_SIGN_PHASE_MESSAGE:
+        "You'll be redirected to {{walletName}}. A sign message will be requested — confirm that to proceed.",
+      WALLET_CONNECT_SHOW_SIGN_AGAIN: 'Retrigger Sign Request',
+      WALLET_CONNECT_LOADING_WALLET_FUN:
+        "Setting up your wallet... You're almost in!",
       CONNECT: 'Connect',
       GOOD_MORNING: 'Good Morning!',
       GOOD_AFTERNOON: 'Good Afternoon!',
       GOOD_EVENING: 'Good Evening!',
       CAMERA_PERMISSION_REQUIRED_DESC:
         'We need camera access to scan QR codes. Please enable it in Settings -> Apps -> Cypher Wallet -> Camera',
+      WALLET_CONNECT_SIGN_PHASE_MESSAGE_DESCRIPTION:
+        "Don't see the sign request?",
     },
   },
 };
