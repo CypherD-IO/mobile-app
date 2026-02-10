@@ -331,13 +331,12 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
   /**
    * Smooth blink animation effect for the wallet redirection message
    * Fades in and out smoothly to draw user attention
-   * Shows during connecting and signing phases
+   * Shows during stage 1 (connecting) and stage 2 (signing) only; not during stage 3 (loading)
    */
   useEffect(() => {
-    // Determine if we should show the message
-    const shouldShowMessage =
-      (hasOpenedModal && !isConnected) || // Show during connecting phase
-      (hasTriggeredSigning && isSigning); // Show during signing phase
+    const isStage1 = hasOpenedModal && !isConnected;
+    const isStage2 = hasTriggeredSigning && isSigning;
+    const shouldShowMessage = (isStage1 || isStage2) && !signatureSuccess;
 
     if (!shouldShowMessage) {
       return;
@@ -371,6 +370,7 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
     isConnected,
     hasTriggeredSigning,
     isSigning,
+    signatureSuccess,
     blinkOpacity,
   ]);
 
@@ -477,9 +477,6 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         <CyDText className='text-center text-[20px] font-extrabold text-base400 mt-[8px]'>
           {t('WALLET_CONNECT_SMALL', 'Wallet Connect')}
         </CyDText>
-        <CyDText className='text-center text-[14px] text-n200 mt-[12px]'>
-          {t('WALLET_CONNECT_STATUS_DESCRIPTION')}
-        </CyDText>
 
         {/* Error message when signature is rejected OR verification fails */}
         {signStepFailed && !isSigning && (
@@ -527,9 +524,8 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
           </CyDView>
         )}
 
-        {/* Blinking redirection message - shown during connecting and signing phases */}
-        {((hasOpenedModal && !isConnected) ||
-          (hasTriggeredSigning && isSigning)) && (
+        {/* Stage 1: Connecting – redirect to wallet for connection (current text) */}
+        {hasOpenedModal && !isConnected && !signatureSuccess && (
           <Animated.Text
             className='text-center text-[13px] text-base400 mt-[16px] font-medium'
             style={{ opacity: blinkOpacity }}>
@@ -539,6 +535,53 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
               { walletName: walletInfo?.name ?? 'wallet' },
             )}
           </Animated.Text>
+        )}
+
+        {/* Stage 2: Signing – redirect + sign message hint + retrigger button */}
+        {isConnected &&
+          hasTriggeredSigning &&
+          isSigning &&
+          !signatureSuccess &&
+          !signStepFailed && (
+            <CyDView className='mt-[16px]'>
+              <Animated.Text
+                className='text-center text-[13px] text-base400 font-medium'
+                style={{ opacity: blinkOpacity }}>
+                {t(
+                  'WALLET_CONNECT_SIGN_PHASE_MESSAGE',
+                  "You'll be redirected to {{walletName}}. A sign message will be shown — sign that message to proceed.",
+                  { walletName: walletInfo?.name ?? 'wallet' },
+                )}
+              </Animated.Text>
+              <CyDText className='mt-[14px] text-[12px] text-n200 text-center'>
+                {t(
+                  'WALLET_CONNECT_SIGN_PHASE_MESSAGE_DESCRIPTION',
+                  "Don't see the sign request?",
+                )}
+              </CyDText>
+              <CyDTouchView
+                className='mt-[8px] bg-n0 border border-base400 rounded-[8px] py-[10px] px-[16px] items-center self-center'
+                onPress={() => {
+                  void handleRetrySignature();
+                }}>
+                <CyDText className='text-[14px] font-semibold text-base400'>
+                  {t(
+                    'WALLET_CONNECT_SHOW_SIGN_AGAIN',
+                    'Retrigger Sign Request',
+                  )}
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          )}
+
+        {/* Stage 3: Signed – brief wait while wallet loads; show fun message (no redirect) */}
+        {signatureSuccess && (
+          <CyDText className='text-center text-[15px] text-base400 mt-[16px] font-semibold'>
+            {t(
+              'WALLET_CONNECT_LOADING_WALLET_FUN',
+              "Setting up your wallet... You're almost in!",
+            )}
+          </CyDText>
         )}
 
         {/* Hero image */}

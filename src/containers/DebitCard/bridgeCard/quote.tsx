@@ -17,8 +17,12 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import {
   ActivityContext,
+  extractErrorDetails,
   formatAmount,
+  getBestErrorMessage,
   HdWalletContext,
+  isTimeoutError,
+  isUserRejectionError,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
@@ -28,6 +32,7 @@ import Button from '../../../components/v2/button';
 import {
   AnalyticsType,
   ButtonType,
+  ConnectionTypes,
   CypherPlanId,
   HyperLiquidAccount,
 } from '../../../constants/enum';
@@ -59,6 +64,9 @@ import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
 import { getConnectionType } from '../../../core/asyncStorage';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import { useAppKitTransactionModal } from '../../../hooks/useAppKitTransactionModal';
+import { AppKitTransactionModal } from '../../../components/v2/AppKitTransactionModal';
+import { useWalletInfo } from '@reown/appkit-react-native';
 import { clsx } from 'clsx';
 import LinearGradient from 'react-native-linear-gradient';
 import PriceFluctuationLearnMoreModal from '../../../components/priceFluctuationLearnMoreModal';
@@ -140,6 +148,44 @@ export default function CardQuote({
   const [targetAddress, setTargetAddress] = useState<string>('');
   const [isAddressLoading, setIsAddressLoading] = useState<boolean>(true);
   const prevQuoteRef = useRef<any>(null);
+  const [connectionType, setConnectionType] = useState<string | null>(null);
+  const { walletInfo } = useWalletInfo();
+  const {
+    isModalVisible: isTxModalVisible,
+    modalState: txModalState,
+    abortController,
+    resendCount,
+    showModal: showTxModal,
+    hideModal: hideTxModal,
+    setTimedOut: setTxTimedOut,
+    handleResend,
+    handleCancel: handleTxCancel,
+  } = useAppKitTransactionModal({
+    walletName: walletInfo?.name ?? 'your wallet',
+    onTimeout: () => {
+      /* WC tx timeout - modal shows timed_out state */
+    },
+  });
+  const pendingEvmParamsRef = useRef<{
+    chain: ChainBackendNames;
+    amountToSend: string;
+    toAddress: string;
+    contractAddress: string;
+    contractDecimals: number;
+    symbol: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const checkConnectionType = async () => {
+      try {
+        const connType = await getConnectionType();
+        setConnectionType(connType);
+      } catch (e) {
+        Sentry.captureException(e);
+      }
+    };
+    void checkConnectionType();
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -487,6 +533,19 @@ export default function CardQuote({
               symbol: selectedToken.symbol,
             });
           } else if (chainName === ChainNames.ETH) {
+            const isWalletConnect =
+              connectionType === ConnectionTypes.WALLET_CONNECT;
+            if (isWalletConnect) {
+              showTxModal();
+              pendingEvmParamsRef.current = {
+                chain: selectedToken.chainDetails.backendName,
+                amountToSend: actualTokensRequired,
+                toAddress: targetAddress,
+                contractAddress,
+                contractDecimals,
+                symbol: selectedToken.symbol,
+              };
+            }
             response = await sendEvmToken(
               {
                 chain: selectedToken.chainDetails.backendName,
@@ -496,7 +555,7 @@ export default function CardQuote({
                 contractDecimals,
                 symbol: selectedToken.symbol,
               },
-              undefined, // No abort signal for bridge card transactions
+              isWalletConnect ? abortController.current?.signal : undefined,
             );
           } else if (COSMOS_CHAINS.includes(chainName)) {
             const addressList = await getAddressList(
@@ -815,14 +874,13 @@ export default function CardQuote({
               contractAddress,
             });
           }
-          let connectionType;
-          try {
-            connectionType = await getConnectionType();
-          } catch (e) {
-            Sentry.captureException(e);
-            connectionType = undefined;
-          }
           if (response && !response?.isError) {
+            if (
+              chainName === ChainNames.ETH &&
+              connectionType === ConnectionTypes.WALLET_CONNECT
+            ) {
+              hideTxModal();
+            }
             void transferSentQuote(
               tokenQuote.fromAddress,
               tokenQuote.quoteId,
@@ -848,7 +906,56 @@ export default function CardQuote({
             });
             void refreshPortfolio();
           } else {
-            const errorMessage = parseErrorMessage(response?.error);
+            const { errorMessage, errorDetails, errorShortMessage } =
+              extractErrorDetails(response?.error);
+
+            const isWalletConnectErr =
+              chainName === ChainNames.ETH &&
+              connectionType === ConnectionTypes.WALLET_CONNECT;
+            const isUserRejection = isUserRejectionError(response?.error);
+            const isTimeout = isTimeoutError(errorMessage);
+
+            if (isWalletConnectErr && isUserRejection) {
+              // User rejected in wallet - update activity, cancel quote on backend, and hide modal
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.PATCH,
+                  value: {
+                    id: activityRef.current.id,
+                    status: ActivityStatus.FAILED,
+                    quoteId: tokenQuote.quoteId,
+                    reason: 'User rejected the transaction',
+                  },
+                });
+              void deleteWithAuth(
+                `/v1/funding/quote/${tokenQuote.quoteId}`,
+              );
+              hideTxModal();
+              setLoading(false);
+              return;
+            }
+            if (isWalletConnectErr && isTimeout) {
+              // Timeout - update activity, cancel quote on backend, and show timeout state
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.PATCH,
+                  value: {
+                    id: activityRef.current.id,
+                    status: ActivityStatus.FAILED,
+                    quoteId: tokenQuote.quoteId,
+                    reason: errorMessage,
+                  },
+                });
+              void deleteWithAuth(
+                `/v1/funding/quote/${tokenQuote.quoteId}`,
+              );
+              setTxTimedOut();
+              setLoading(false);
+              return;
+            }
+            if (isWalletConnectErr) {
+              hideTxModal();
+            }
             void logAnalytics({
               type: AnalyticsType.ERROR,
               chain: selectedToken?.chainDetails?.backendName ?? '',
@@ -892,10 +999,16 @@ export default function CardQuote({
               await deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
             }
             setLoading(false);
+            const displayMessage = getBestErrorMessage(
+              errorMessage,
+              errorDetails,
+              errorShortMessage,
+            );
+
             showModal('state', {
               type: 'error',
               title: 'Transaction Failed',
-              description: `${errorMessage}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
+              description: `${displayMessage}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
               onSuccess: onHideModalNavigateCardsScreen,
               onFailure: onHideModalNavigateCardsScreen,
             });
@@ -912,7 +1025,57 @@ export default function CardQuote({
         });
       }
     } catch (error) {
-      const errorMessage = parseErrorMessage(error);
+      const { errorMessage, errorDetails, errorShortMessage } =
+        extractErrorDetails(error);
+
+      const isWalletConnectCatch =
+        selectedToken?.chainDetails?.chainName === ChainNames.ETH &&
+        connectionType === ConnectionTypes.WALLET_CONNECT;
+      const isUserCancellation = isUserRejectionError(error);
+      const isTimeout = isTimeoutError(errorMessage);
+
+      if (isWalletConnectCatch && isUserCancellation) {
+        // User cancelled - update activity to failed, cancel quote on backend, and hide modal
+        activityRef.current &&
+          activityContext.dispatch({
+            type: ActivityReducerAction.PATCH,
+            value: {
+              id: activityRef.current.id,
+              status: ActivityStatus.FAILED,
+              quoteId: tokenQuote.quoteId,
+              reason: 'User cancelled the transaction',
+            },
+          });
+        void deleteWithAuth(
+          `/v1/funding/quote/${tokenQuote.quoteId}`,
+        );
+        hideTxModal();
+        setLoading(false);
+        return;
+      }
+      if (isWalletConnectCatch && isTimeout) {
+        // Timeout - update activity to failed, cancel quote on backend, and show timeout state
+        activityRef.current &&
+          activityContext.dispatch({
+            type: ActivityReducerAction.PATCH,
+            value: {
+              id: activityRef.current.id,
+              status: ActivityStatus.FAILED,
+              quoteId: tokenQuote.quoteId,
+              reason: errorMessage,
+            },
+          });
+        void deleteWithAuth(
+          `/v1/funding/quote/${tokenQuote.quoteId}`,
+        );
+        setTxTimedOut();
+        setLoading(false);
+        return;
+      }
+      if (isWalletConnectCatch) {
+        hideTxModal();
+      }
+
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: selectedToken?.chainDetails?.backendName ?? '',
@@ -943,10 +1106,16 @@ export default function CardQuote({
           },
         });
       setLoading(false);
+      const displayMessage = getBestErrorMessage(
+        errorMessage,
+        errorDetails,
+        errorShortMessage,
+      );
+
       showModal('state', {
         type: 'error',
         title: 'Transaction Failed',
-        description: `${errorMessage}, Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
+        description: `${displayMessage}, Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -960,7 +1129,69 @@ export default function CardQuote({
     solanaAddress,
     ethereumAddress,
     targetAddress,
+    connectionType,
+    showTxModal,
+    hideTxModal,
+    setTxTimedOut,
   ]);
+
+  const handleResendQuote = useCallback(async () => {
+    const params = pendingEvmParamsRef.current;
+    if (!params) return;
+    await handleResend(async () => {
+      const response = await sendEvmToken(
+        {
+          chain: params.chain,
+          amountToSend: params.amountToSend,
+          toAddress: params.toAddress as `0x${string}`,
+          contractAddress: params.contractAddress as `0x${string}`,
+          contractDecimals: params.contractDecimals,
+          symbol: params.symbol,
+        },
+        abortController.current?.signal,
+      );
+      if (response?.isError) {
+        const errMsg = parseErrorMessage(response.error);
+        const isRejection =
+          errMsg === 'User cancelled the request' ||
+          errMsg.includes('User disapproved') ||
+          errMsg.includes('User rejected') ||
+          errMsg.includes('User denied') ||
+          errMsg.includes("User didn't sign");
+        if (isRejection) {
+          // User rejected during resend - keep modal open so they can resend again
+          // but don't throw so the modal stays in WAITING state
+          return;
+        }
+        throw response.error instanceof Error
+          ? response.error
+          : new Error(
+              response.error ? String(response.error) : 'Transaction failed',
+            );
+      }
+      hideTxModal();
+      setLoading(false);
+      void transferSentQuote(
+        tokenQuote.fromAddress,
+        tokenQuote.quoteId,
+        response.hash,
+      );
+      void refreshPortfolio();
+    });
+  }, [
+    handleResend,
+    sendEvmToken,
+    hideTxModal,
+    tokenQuote.fromAddress,
+    tokenQuote.quoteId,
+    refreshPortfolio,
+    transferSentQuote,
+  ]);
+
+  const handleRetryQuote = useCallback(() => {
+    hideTxModal();
+    void sendTransaction();
+  }, [hideTxModal, sendTransaction]);
 
   const onLoadPress = async () => {
     try {
@@ -1005,6 +1236,17 @@ export default function CardQuote({
         setIsModalVisible={setPlanChangeModalVisible}
         cardProvider={cardProvider}
         cardId={cardId}
+      />
+
+      {/* AppKit Transaction Modal for WalletConnect users */}
+      <AppKitTransactionModal
+        isVisible={isTxModalVisible}
+        walletName={walletInfo?.name ?? 'your wallet'}
+        onResend={() => void handleResendQuote()}
+        onCancel={handleTxCancel}
+        onRetry={handleRetryQuote}
+        state={txModalState}
+        resendCount={resendCount}
       />
 
       {/* Scrollable content area */}

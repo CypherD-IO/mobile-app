@@ -850,6 +850,9 @@ const resources = {
       APPKIT_TX_TIMEOUT_ACTION:
         'Important: Please open {{walletName}} and REJECT any pending requests to avoid confusion.',
       APPKIT_TX_RETRY: 'Retry Transaction',
+      APPKIT_TX_PRO_TIP: 'Pro Tip',
+      APPKIT_TX_PRO_TIP_DESC:
+        'Close {{walletName}} from your recent apps and try again. This can help refresh the connection.',
       APPROVE_REQUEST: 'Approve Request',
       DEFAULT_AUTH_REMOVE:
         'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Clicking on "Proceed" will remove the exising wallet and you will be able to import the same wallet (if you have the seed phrase backed up) / create a new wallet without authentication.',
@@ -2377,12 +2380,21 @@ const resources = {
       YOU_HAVE_EARNED_BOOSTED_REWARDS: 'You have earned boosted rewards',
       WALLET_CONNECT_STATUS_DESCRIPTION:
         "Hang tight! We're connecting you to your wallet now.",
+      WALLET_CONNECT_AUTO_REDIRECT_MESSAGE:
+        'Automatic redirection to the {{walletName}} should happen. \nIf not please navigate to the {{walletName}}',
+      WALLET_CONNECT_SIGN_PHASE_MESSAGE:
+        "You'll be redirected to {{walletName}}. A sign message will be requested — confirm that to proceed.",
+      WALLET_CONNECT_SHOW_SIGN_AGAIN: 'Retrigger Sign Request',
+      WALLET_CONNECT_LOADING_WALLET_FUN:
+        "Setting up your wallet... You're almost in!",
       CONNECT: 'Connect',
       GOOD_MORNING: 'Good Morning!',
       GOOD_AFTERNOON: 'Good Afternoon!',
       GOOD_EVENING: 'Good Evening!',
       CAMERA_PERMISSION_REQUIRED_DESC:
         'We need camera access to scan QR codes. Please enable it in Settings -> Apps -> Cypher Wallet -> Camera',
+      WALLET_CONNECT_SIGN_PHASE_MESSAGE_DESCRIPTION:
+        "Don't see the sign request?",
     },
   },
 };

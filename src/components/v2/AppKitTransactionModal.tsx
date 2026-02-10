@@ -23,6 +23,7 @@ interface AppKitTransactionModalProps {
   onCancel: () => void;
   onRetry?: () => void;
   state: AppKitTransactionState;
+  resendCount?: number;
 }
 
 export const AppKitTransactionModal: React.FC<AppKitTransactionModalProps> = ({
@@ -32,6 +33,7 @@ export const AppKitTransactionModal: React.FC<AppKitTransactionModalProps> = ({
   onCancel,
   onRetry,
   state,
+  resendCount = 0,
 }) => {
   const { t } = useTranslation();
   const [timeRemaining, setTimeRemaining] = useState<number>(
@@ -190,6 +192,31 @@ export const AppKitTransactionModal: React.FC<AppKitTransactionModalProps> = ({
                 )}
               </CyDText>
             </CyDTouchView>
+
+            {/* Pro tip after 2+ resend attempts */}
+            {resendCount >= 2 && (
+              <CyDView className='bg-orange50 border border-orange200 rounded-[12px] p-[12px] mb-[12px]'>
+                <CyDView className='flex-row items-start'>
+                  <CyDMaterialDesignIcons
+                    name='lightbulb-on-outline'
+                    size={18}
+                    className='text-orange400 mt-[2px]'
+                  />
+                  <CyDView className='ml-[8px] flex-1'>
+                    <CyDText className='text-[13px] font-bold text-orange400 mb-[4px]'>
+                      {t('APPKIT_TX_PRO_TIP', 'Pro Tip')}
+                    </CyDText>
+                    <CyDText className='text-[13px] text-orange400'>
+                      {t(
+                        'APPKIT_TX_PRO_TIP_DESC',
+                        'Close {{walletName}} from your recent apps and try again. This can help refresh the connection.',
+                        { walletName },
+                      )}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+            )}
 
             {/* Cancel button */}
             <CyDTouchView

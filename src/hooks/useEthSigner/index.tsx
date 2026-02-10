@@ -34,7 +34,10 @@ import useAxios from '../../core/HttpRequest';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  extractErrorDetails,
+  getBestErrorMessage,
   HdWalletContext,
+  isUserRejectionError,
   sleepFor,
 } from '../../core/util';
 import {
@@ -446,19 +449,27 @@ export default function useEthSigner() {
         );
         return hash as `0x${string}`;
       } catch (error: unknown) {
-        // Don't show error modal or log to Sentry for user cancellations
-        if (
-          error instanceof Error &&
-          error.message === 'User cancelled the request'
-        ) {
+        const { errorMessage, errorDetails, errorShortMessage } =
+          extractErrorDetails(error);
+
+        // Don't show error modal or log to Sentry for user cancellations/rejections
+        if (isUserRejectionError(error)) {
           throw error;
         }
 
         Sentry.captureException(error);
+
+        // Show a cleaner error message if viem wraps the actual error
+        const displayMessage = getBestErrorMessage(
+          errorMessage,
+          errorDetails,
+          errorShortMessage,
+        );
+
         showModal('state', {
           type: 'error',
           title: 'Transaction Failed',
-          description: (error as Error).message,
+          description: displayMessage,
           onSuccess: () => {
             hideModal();
             navigation.goBack();

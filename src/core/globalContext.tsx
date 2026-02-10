@@ -125,7 +125,8 @@ export const gloabalContextReducer = (
     } else if (type === GlobalContextType.IS_APP_AUTHENTICATED) {
       return { ...state, isAuthenticated };
     } else if (type === GlobalContextType.RESET_GLOBAL_STATE) {
-      return initialGlobalState;
+      // Preserve rpcEndpoints across wallet deletion/reset.
+      return { ...initialGlobalState, rpcEndpoints: state.rpcEndpoints };
     }
   }
   return state;

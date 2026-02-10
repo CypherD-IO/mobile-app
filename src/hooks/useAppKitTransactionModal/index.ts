@@ -10,6 +10,7 @@ interface UseAppKitTransactionModalReturn {
   isModalVisible: boolean;
   modalState: AppKitTransactionState;
   abortController: React.MutableRefObject<AbortController | null>;
+  resendCount: number;
   showModal: () => void;
   hideModal: () => void;
   setTimedOut: () => void;
@@ -29,12 +30,14 @@ export function useAppKitTransactionModal({
   const [modalState, setModalState] = useState<AppKitTransactionState>(
     AppKitTransactionState.WAITING,
   );
+  const [resendCount, setResendCount] = useState(0);
   const abortController = useRef<AbortController | null>(null);
 
   const showModal = useCallback(() => {
     // Create a new AbortController for this transaction
     abortController.current = new AbortController();
     setModalState(AppKitTransactionState.WAITING);
+    setResendCount(0); // Reset resend count for new transaction
     setIsModalVisible(true);
   }, []);
 
@@ -53,6 +56,8 @@ export function useAppKitTransactionModal({
 
   const handleResend = useCallback(async (resendFn: () => Promise<void>) => {
     try {
+      // Increment resend count
+      setResendCount(prev => prev + 1);
       // Create a new AbortController for the resend
       abortController.current = new AbortController();
       // Reset to waiting state
@@ -78,6 +83,7 @@ export function useAppKitTransactionModal({
     isModalVisible,
     modalState,
     abortController,
+    resendCount,
     showModal,
     hideModal,
     setTimedOut,

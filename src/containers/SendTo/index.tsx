@@ -39,7 +39,10 @@ import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { Holding } from '../../core/portfolio';
 import {
   ActivityContext,
+  extractAddressFromURI,
+  extractErrorDetails,
   formatAmount,
+  getBestErrorMessage,
   getMaskedAddress,
   getSendAddressFieldPlaceholder,
   getViemPublicClient,
@@ -47,12 +50,13 @@ import {
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
   isEthereumAddress,
+  isTimeoutError,
+  isUserRejectionError,
   isValidEns,
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
   SendToAddressValidator,
-  extractAddressFromURI,
 } from '../../core/util';
 import useEns from '../../hooks/useEns';
 import useGasService from '../../hooks/useGasService';
@@ -153,6 +157,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     isModalVisible: isTxModalVisible,
     modalState: txModalState,
     abortController,
+    resendCount,
     showModal: showTxModal,
     hideModal: hideTxModal,
     setTimedOut: setTxTimedOut,
@@ -1004,16 +1009,26 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       } else {
         setLoading(false);
 
-        // Check if it's a timeout error for WalletConnect users
+        // Check error type for WalletConnect users
         const connType = connectionType ?? '';
         const isWc = connType === ConnectionTypes.WALLET_CONNECT;
-        const isTimeoutError =
-          response?.error?.message?.includes('timed out') ||
-          response?.error?.message?.includes('timeout');
+        const { errorMessage: errorMsg, errorDetails, errorShortMessage } =
+          extractErrorDetails(response.error);
+
+        const isTimeout = isTimeoutError(errorMsg);
+        const isUserRejection = isUserRejectionError(response.error);
 
         if (
           isWc &&
-          isTimeoutError &&
+          isUserRejection &&
+          chainDetails?.chainName === ChainNames.ETH
+        ) {
+          // User rejected in wallet - just hide modal silently
+          hideTxModal();
+          return;
+        } else if (
+          isWc &&
+          isTimeout &&
           chainDetails?.chainName === ChainNames.ETH
         ) {
           // Show timeout state in AppKit modal
@@ -1027,10 +1042,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           }
 
           // Show generic error modal
+          const displayMessage = getBestErrorMessage(
+            errorMsg,
+            errorDetails,
+            errorShortMessage,
+          );
+
           showModal('state', {
             type: 'error',
             title: t('TRANSACTION_FAILED'),
-            description: parseErrorMessage(response.error),
+            description: displayMessage,
             onSuccess: hideModal,
             onFailure: hideModal,
           });
@@ -1040,7 +1061,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: chainDetails?.backendName ?? '',
-          message: parseErrorMessage(response.error),
+          message: errorMsg,
           screen: route.name,
           address: get(senderAddress, chainDetails.chainName, ''),
           other: {
@@ -1062,11 +1083,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     } catch (error) {
       setLoading(false);
 
-      // Check if user cancelled the transaction
-      const errorMessage = (error as Error)?.message ?? '';
-      const isUserCancellation = errorMessage === 'User cancelled the request';
+      // Check if user cancelled/rejected the transaction
+      const { errorMessage, errorDetails, errorShortMessage } =
+        extractErrorDetails(error);
+      const isUserCancellation = isUserRejectionError(error);
 
-      // If user cancelled, just hide the modal silently
+      // If user cancelled/rejected, just hide the modal silently
       if (isUserCancellation) {
         const connType = connectionType ?? '';
         const isWc = connType === ConnectionTypes.WALLET_CONNECT;
@@ -1080,8 +1102,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       // Check if it's a timeout error for WalletConnect users
       const connType = connectionType ?? '';
       const isWc = connType === ConnectionTypes.WALLET_CONNECT;
-      const isTimeoutError =
-        errorMessage.includes('timed out') || errorMessage.includes('timeout');
+      const isTimeout = isTimeoutError(errorMessage);
 
       // Record failed activity in activityContext
       if (activityRef.current) {
@@ -1097,7 +1118,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
       if (
         isWc &&
-        isTimeoutError &&
+        isTimeout &&
         chainDetails?.chainName === ChainNames.ETH
       ) {
         // Show timeout state in AppKit modal
@@ -1109,10 +1130,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         }
 
         // Show generic error modal
+        const displayMessage = getBestErrorMessage(
+          errorMessage,
+          errorDetails,
+          errorShortMessage,
+        );
+
         showModal('state', {
           type: 'error',
           title: t('TRANSACTION_FAILED'),
-          description: parseErrorMessage(error),
+          description: displayMessage,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -1141,6 +1168,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       );
 
       if (result.isError === true) {
+        const isRejection = isUserRejectionError(result.error);
+        if (isRejection) {
+          // User rejected during resend - keep modal open so they can resend again
+          return;
+        }
         throw result.error instanceof Error
           ? result.error
           : new Error(
@@ -1299,6 +1331,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           onCancel={handleTxCancel}
           onRetry={handleRetryTransaction}
           state={txModalState}
+          resendCount={resendCount}
         />
 
         <CyDView className='h-full mx-[20px] pt-[10px]'>
