@@ -1,6 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { Dimensions, Linking } from 'react-native';
+import { Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 import { t } from 'i18next';
 import {
   CyDView,
@@ -11,6 +16,7 @@ import {
 } from '../../styles/tailwindComponents';
 import Button from './button';
 import { ButtonType } from '../../constants/enum';
+import { screenTitle } from '../../constants';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AppImages from '../../../assets/images/appImages';
 import { FREE_SAFEPAL_CLAIM_URL } from '../../constants/data';
@@ -36,6 +42,7 @@ export default function FreeSafepalClaimModal({
 }) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const bottomSheetRef = useRef<CyDBottomSheetRef>(null);
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const handleClaim = async () => {
     void logAnalyticsToFirebase(AnalyticEvent.FREE_SAFEPAL_CLAIM_CLICKED, {
@@ -48,12 +55,10 @@ export default function FreeSafepalClaimModal({
       await safeSetItem(STORAGE_KEY_DISMISSED, 'true');
     }
 
-    try {
-      await Linking.openURL(FREE_SAFEPAL_CLAIM_URL);
-    } catch (error) {
-      console.error('Failed to open URL:', error);
-    }
     bottomSheetRef.current?.dismiss();
+    navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
+      uri: FREE_SAFEPAL_CLAIM_URL,
+    });
   };
 
   const handleCheckboxChange = async () => {
