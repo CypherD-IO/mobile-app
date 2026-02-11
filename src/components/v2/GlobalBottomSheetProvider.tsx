@@ -23,6 +23,7 @@ interface BottomSheetConfig {
   scrollable?: boolean;
   content: React.ReactNode;
   backgroundColor?: string;
+  borderRadius?: number;
   onClose?: () => void;
   onOpen?: () => void;
   topBarColor?: string;
@@ -189,6 +190,7 @@ export const GlobalBottomSheetProvider: React.FC<
           topBarColor={config.topBarColor}
           backgroundColor={config.backgroundColor}
           showHandle={config.showHandle ?? true}
+          borderRadius={config.borderRadius ?? 16}
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}
           onClose={() => handleBottomSheetClose(config.id)}

@@ -84,8 +84,9 @@ import { useColorScheme } from 'nativewind';
 import useConnectionManager from '../../../hooks/useConnectionManager';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import FreeSafepalClaimModal, {
+import FreeSafepalClaimContent, {
   STORAGE_KEY_DISMISSED,
+  SAFEPAL_BOTTOM_SHEET_ID,
 } from '../../../components/v2/freeSafepalClaimModal';
 
 interface RouteParams {
@@ -181,15 +182,11 @@ export default function CypherCardScreen() {
   // Ref to track timeout IDs for cleanup on unmount
   const removalTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
 
-  // Free Safepal claim modal states
-  const [isSafepalModalVisible, setSafepalModalVisible] =
-    useState<boolean>(false);
-
-  // Free Safepal claim modal - show only for premium users
+  // Free Safepal claim modal - show only for premium users via global bottom sheet
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
 
-    const checkSafepalModal = async () => {
+    const checkSafepalModal = async (): Promise<void> => {
       try {
         const isPremiumUser =
           get(globalContext?.globalState, [
@@ -201,7 +198,21 @@ export default function CypherCardScreen() {
 
         if (isPremiumUser && dismissed !== 'true') {
           timer = setTimeout(() => {
-            setSafepalModalVisible(true);
+            showBottomSheet({
+              id: SAFEPAL_BOTTOM_SHEET_ID,
+              snapPoints: ['85%'],
+              showCloseButton: false,
+              showHandle: false,
+              scrollable: false,
+              backgroundColor: '#131426',
+              borderRadius: 24,
+              content: (
+                <FreeSafepalClaimContent
+                  onDismiss={() => hideBottomSheet(SAFEPAL_BOTTOM_SHEET_ID)}
+                  navigation={navigation}
+                />
+              ),
+            });
           }, 1000);
         }
       } catch (error) {
@@ -210,7 +221,7 @@ export default function CypherCardScreen() {
     };
 
     if (isFocused) {
-      checkSafepalModal();
+      void checkSafepalModal();
     }
 
     return () => {
@@ -1215,12 +1226,6 @@ export default function CypherCardScreen() {
           completedActivities={fundingsCompletedInLast5Mins}
           failedActivities={fundingsFailedInLast5Mins}
         />
-
-        {isSafepalModalVisible && (
-          <FreeSafepalClaimModal
-            onDismiss={() => setSafepalModalVisible(false)}
-          />
-        )}
       </CyDView>
     </CyDSafeAreaView>
   ) : (
