@@ -58,6 +58,7 @@ interface CyDBottomSheetProps {
    * `topBarStyle` when you only need to set a colour.
    */
   topBarColor?: string;
+  borderRadius?: number;
 }
 
 const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
@@ -84,6 +85,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       keyboardBlurBehavior = 'restore',
       androidKeyboardInputMode = 'adjustResize',
       topBarColor,
+      borderRadius = 16,
     },
     ref,
   ) => {
@@ -262,8 +264,8 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           backgroundStyle={{
             backgroundColor:
               backgroundColor ?? (isDarkMode ? '#161616' : '#F5F6F7'), // Force dark background
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
+            borderTopLeftRadius: borderRadius,
+            borderTopRightRadius: borderRadius,
           }}
           handleComponent={showHandle ? undefined : hiddenHandleComponent}
           handleIndicatorStyle={
@@ -281,8 +283,8 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
                     topBarColor ??
                     backgroundColor ??
                     (isDarkMode ? '#161616' : '#F5F6F7'),
-                  borderTopLeftRadius: 16,
-                  borderTopRightRadius: 16,
+                  borderTopLeftRadius: borderRadius,
+                  borderTopRightRadius: borderRadius,
                 }
               : { height: 0, padding: 0 }
           }
@@ -294,8 +296,8 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           style={[
             styles.bottomSheet,
             {
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
+              borderTopLeftRadius: borderRadius,
+              borderTopRightRadius: borderRadius,
               overflow: 'hidden',
             },
           ]}>

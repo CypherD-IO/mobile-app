@@ -1192,10 +1192,6 @@ export default function CypherCardScreen() {
                   />
                 </CyDView>
               )}
-              <FreeSafepalClaimModal
-                isModalVisible={isSafepalModalVisible}
-                setIsModalVisible={setSafepalModalVisible}
-              />
             </CyDView>
           </CyDScrollView>
         </CyDView>
@@ -1220,6 +1216,12 @@ export default function CypherCardScreen() {
           completedActivities={fundingsCompletedInLast5Mins}
           failedActivities={fundingsFailedInLast5Mins}
         />
+
+        {isSafepalModalVisible && (
+          <FreeSafepalClaimModal
+            onDismiss={() => setSafepalModalVisible(false)}
+          />
+        )}
       </CyDView>
     </CyDSafeAreaView>
   ) : (

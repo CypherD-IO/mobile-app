@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Dimensions, Linking, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { Dimensions, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'i18next';
 import {
@@ -7,15 +7,14 @@ import {
   CyDText,
   CyDTouchView,
   CyDImageBackground,
-  CyDImage,
   CyDMaterialDesignIcons,
 } from '../../styles/tailwindComponents';
-import CyDModalLayout from './modal';
 import Button from './button';
 import { ButtonType } from '../../constants/enum';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AppImages from '../../../assets/images/appImages';
 import { FREE_SAFEPAL_CLAIM_URL } from '../../constants/data';
+import CyDBottomSheet, { CyDBottomSheetRef } from './CyDBottomSheet';
 
 export const STORAGE_KEY_DISMISSED = '@free_safepal_claim_modal_dismissed';
 
@@ -28,22 +27,15 @@ const safeSetItem = async (key: string, value: string): Promise<void> => {
 };
 
 const windowHeight = Dimensions.get('window').height;
-const maxBgHeight = Math.min(windowHeight * 0.85, 750);
+const maxBgHeight = Math.min(windowHeight * 0.8, 750);
 
 export default function FreeSafepalClaimModal({
-  isModalVisible,
-  setIsModalVisible,
+  onDismiss,
 }: {
-  isModalVisible: boolean;
-  setIsModalVisible: (isModalVisible: boolean) => void;
+  onDismiss: () => void;
 }) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
-
-  useEffect(() => {
-    if (!isModalVisible && dontShowAgain) {
-      void safeSetItem(STORAGE_KEY_DISMISSED, 'true');
-    }
-  }, [isModalVisible, dontShowAgain]);
+  const bottomSheetRef = useRef<CyDBottomSheetRef>(null);
 
   const handleClaim = async () => {
     void logAnalyticsToFirebase(AnalyticEvent.FREE_SAFEPAL_CLAIM_CLICKED, {
@@ -61,10 +53,10 @@ export default function FreeSafepalClaimModal({
     } catch (error) {
       console.error('Failed to open URL:', error);
     }
-    setIsModalVisible(false);
+    bottomSheetRef.current?.dismiss();
   };
 
-  const handleCheckboxChange = () => {
+  const handleCheckboxChange = async () => {
     const newState = !dontShowAgain;
     setDontShowAgain(newState);
     void logAnalyticsToFirebase(AnalyticEvent.FREE_SAFEPAL_DONT_SHOW_CLICKED, {
@@ -72,45 +64,43 @@ export default function FreeSafepalClaimModal({
       action: 'dont_show_again_toggled',
       label: newState ? 'checked' : 'unchecked',
     });
+
+    if (newState) {
+      await safeSetItem(STORAGE_KEY_DISMISSED, 'true');
+      bottomSheetRef.current?.dismiss();
+    }
   };
 
   const handleClose = async () => {
     if (dontShowAgain) {
       await safeSetItem(STORAGE_KEY_DISMISSED, 'true');
     }
-    setIsModalVisible(false);
+    onDismiss();
   };
 
   return (
-    <CyDModalLayout
-      isModalVisible={isModalVisible}
-      setModalVisible={setIsModalVisible}
-      animationIn={'slideInUp'}
-      animationOut={'slideOutDown'}
-      onSwipeComplete={({ swipingDirection }) => {
-        if (swipingDirection === 'down') {
-          void handleClose();
-        }
-      }}
-      swipeDirection={['down']}
-      propagateSwipe={true}
-      style={styles.modalLayout}>
+    <CyDBottomSheet
+      ref={bottomSheetRef}
+      snapPoints={['90%']}
+      initialSnapIndex={0}
+      backgroundColor='#131426'
+      borderRadius={24}
+      scrollable={false}
+      enablePanDownToClose={true}
+      showHandle={false}
+      onClose={handleClose}>
       <CyDImageBackground
         source={AppImages.SAFEPAL_CLAIM_MODAL}
-        className='rounded-t-[20px] overflow-hidden'
+        className='rounded-t-[24px] overflow-hidden '
         style={{ height: maxBgHeight }}
-        resizeMode='cover'
-        imageStyle={{ borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
-        <CyDView className='flex-1 justify-between'>
-          <CyDView className='items-center pt-[12px]'>
-            <CyDView className='w-[40px] h-[4px] bg-[#555] rounded-full' />
-          </CyDView>
-
-          <CyDView className='px-[16px] pb-[12px]'>
+        imageStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+        resizeMode='cover'>
+        <CyDView className='flex-1 justify-end'>
+          <CyDView className='px-[16px] pb-[0px]'>
             <CyDTouchView
               activeOpacity={0.8}
               onPress={handleCheckboxChange}
-              className='flex-row items-center justify-center mb-[10px]'>
+              className='flex-row items-center justify-center mb-[5px]'>
               <CyDMaterialDesignIcons
                 name={
                   dontShowAgain ? 'checkbox-marked' : 'checkbox-blank-outline'
@@ -132,13 +122,6 @@ export default function FreeSafepalClaimModal({
           </CyDView>
         </CyDView>
       </CyDImageBackground>
-    </CyDModalLayout>
+    </CyDBottomSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
-});
