@@ -43,7 +43,7 @@ export function useAppKitTransactionModal({
 
   const hideModal = useCallback(() => {
     setIsModalVisible(false);
-    // Reset to WAITING state after animation completes
+    // Reset to WAITING state after bottom sheet unmounts
     setTimeout(() => {
       setModalState(AppKitTransactionState.WAITING);
     }, 300);
@@ -65,7 +65,6 @@ export function useAppKitTransactionModal({
       // Execute the resend function
       await resendFn();
     } catch (error) {
-      console.error('[useAppKitTransactionModal] Error resending:', error);
       // Keep modal open so user can try again
     }
   }, []);
