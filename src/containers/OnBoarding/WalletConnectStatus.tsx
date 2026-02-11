@@ -31,6 +31,7 @@ import useCardUtilities from '../../hooks/useCardUtilities';
 import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
 import type { AxiosError } from 'axios';
+import { retryOnNetworkError } from '../../utils/walletConnectModalUtils';
 
 /**
  * AsyncStorage key for persisting WalletConnect flow state during app backgrounding
@@ -166,15 +167,14 @@ const WalletConnectStatus: React.FC<WalletConnectStatusProps> = ({
         try {
           setVerificationFailed(false);
           setVerificationErrorMessage('');
-          // Verify signature with backend
           const verifyUrl = `${ARCH_HOST}/v1/authentication/verify-message/${String(
             address,
           ).toLowerCase()}?format=ERC-4361`;
-          const verifyMessageResponse = await axios.post(verifyUrl, {
-            signature,
-          });
+          const verifyMessageResponse = await retryOnNetworkError(
+            async () => await axios.post(verifyUrl, { signature }),
+          );
 
-          if (verifyMessageResponse?.data.token) {
+          if (verifyMessageResponse?.data?.token) {
             const { token, refreshToken } = verifyMessageResponse.data;
 
             // Mark signature as successful

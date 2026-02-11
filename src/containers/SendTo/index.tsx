@@ -100,6 +100,7 @@ import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
 import { isAddress } from 'web3-validator';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { waitForWalletConnectModalRender } from '../../utils/walletConnectModalUtils';
 import usePortfolio from '../../hooks/usePortfolio';
 import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import PageHeader from '../../components/PageHeader';
@@ -875,6 +876,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     const isWalletConnect = connectionType === ConnectionTypes.WALLET_CONNECT;
     if (isWalletConnect && chainDetails?.chainName === ChainNames.ETH) {
       showTxModal();
+      await waitForWalletConnectModalRender();
     }
 
     let response;
@@ -1012,8 +1014,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         // Check error type for WalletConnect users
         const connType = connectionType ?? '';
         const isWc = connType === ConnectionTypes.WALLET_CONNECT;
-        const { errorMessage: errorMsg, errorDetails, errorShortMessage } =
-          extractErrorDetails(response.error);
+        const {
+          errorMessage: errorMsg,
+          errorDetails,
+          errorShortMessage,
+        } = extractErrorDetails(response.error);
 
         const isTimeout = isTimeoutError(errorMsg);
         const isUserRejection = isUserRejectionError(response.error);
@@ -1116,11 +1121,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         });
       }
 
-      if (
-        isWc &&
-        isTimeout &&
-        chainDetails?.chainName === ChainNames.ETH
-      ) {
+      if (isWc && isTimeout && chainDetails?.chainName === ChainNames.ETH) {
         // Show timeout state in AppKit modal
         setTxTimedOut();
       } else {

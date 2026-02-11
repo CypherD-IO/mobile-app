@@ -4,6 +4,8 @@ import React, {
   useState,
   useRef,
   useEffect,
+  useCallback,
+  useMemo,
 } from 'react';
 import { CyDBottomSheet, CyDBottomSheetRef } from './bottomSheet';
 import { Platform, InteractionManager } from 'react-native';
@@ -99,7 +101,7 @@ export const GlobalBottomSheetProvider: React.FC<
     });
   }, [pendingPresentations, bottomSheets]);
 
-  const showBottomSheet = (config: BottomSheetConfig) => {
+  const showBottomSheet = useCallback((config: BottomSheetConfig) => {
     // Add or update the bottom sheet
     setBottomSheets(prev => {
       const existing = prev.find(sheet => sheet.id === config.id);
@@ -111,19 +113,17 @@ export const GlobalBottomSheetProvider: React.FC<
         return [...prev, config];
       }
     });
+  }, []);
 
-    // No queue needed any more.
-  };
-
-  const hideBottomSheet = (id: string) => {
+  const hideBottomSheet = useCallback((id: string) => {
     bottomSheetRefs.current[id]?.dismiss();
-  };
+  }, []);
 
-  const hideAllBottomSheets = () => {
+  const hideAllBottomSheets = useCallback(() => {
     Object.values(bottomSheetRefs.current).forEach(ref => {
       ref?.dismiss();
     });
-  };
+  }, []);
 
   const handleBottomSheetClose = (id: string) => {
     // Find the config and call its onClose callback
@@ -138,11 +138,14 @@ export const GlobalBottomSheetProvider: React.FC<
     layoutReady.current[id] = false;
   };
 
-  const contextValue: GlobalBottomSheetContextType = {
-    showBottomSheet,
-    hideBottomSheet,
-    hideAllBottomSheets,
-  };
+  const contextValue = useMemo<GlobalBottomSheetContextType>(
+    () => ({
+      showBottomSheet,
+      hideBottomSheet,
+      hideAllBottomSheets,
+    }),
+    [showBottomSheet, hideBottomSheet, hideAllBottomSheets],
+  );
 
   return (
     <GlobalBottomSheetContext.Provider value={contextValue}>
