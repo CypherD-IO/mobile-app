@@ -31,6 +31,7 @@ import { getToken } from '../../notification/pushNotification';
 import { get } from 'lodash';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { retryOnNetworkError } from '../../utils/walletConnectModalUtils';
 /**
  * AsyncStorage key to check if we're in onboarding WalletConnect flow
  * If this key is set, we should NOT automatically load the wallet on connection
@@ -77,11 +78,14 @@ export const WalletConnectListener: React.FC<PropsWithChildren> = ({
         if (!address) {
           return;
         }
-        const verifyMessageResponse = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${address.toLowerCase()}?format=ERC-4361`,
-          {
-            signature: data,
-          },
+        const verifyMessageResponse = await retryOnNetworkError(
+          async () =>
+            await axios.post(
+              `${ARCH_HOST}/v1/authentication/verify-message/${address.toLowerCase()}?format=ERC-4361`,
+              {
+                signature: data,
+              },
+            ),
         );
         if (verifyMessageResponse?.data.token) {
           const { token, refreshToken } = verifyMessageResponse.data;

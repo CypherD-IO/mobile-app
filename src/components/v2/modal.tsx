@@ -162,6 +162,8 @@ interface CyDModalLayoutProps {
   propagateSwipe?: boolean;
   swipeDirection?: Direction[];
   onSwipeComplete?: (params: OnSwipeCompleteParams) => void;
+  onModalShow?: () => void;
+  onModalWillShow?: () => void;
 }
 
 export default function CyDModalLayout({
@@ -184,6 +186,8 @@ export default function CyDModalLayout({
   propagateSwipe = true,
   swipeDirection = [],
   onSwipeComplete = () => {},
+  onModalShow,
+  onModalWillShow,
 }: CyDModalLayoutProps) {
   const { store } = useGlobalModalContext();
 
@@ -222,6 +226,8 @@ export default function CyDModalLayout({
       useNativeDriver={useNativeDriver}
       swipeDirection={swipeDirection}
       onSwipeComplete={onSwipeComplete}
+      onModalShow={onModalShow}
+      onModalWillShow={onModalWillShow}
       swipeThreshold={20}
       style={style}>
       {children}

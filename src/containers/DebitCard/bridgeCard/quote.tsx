@@ -62,6 +62,7 @@ import useAxios from '../../../core/HttpRequest';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
+import { waitForWalletConnectModalRender } from '../../../utils/walletConnectModalUtils';
 import { getConnectionType } from '../../../core/asyncStorage';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { useAppKitTransactionModal } from '../../../hooks/useAppKitTransactionModal';
@@ -537,6 +538,7 @@ export default function CardQuote({
               connectionType === ConnectionTypes.WALLET_CONNECT;
             if (isWalletConnect) {
               showTxModal();
+              await waitForWalletConnectModalRender();
               pendingEvmParamsRef.current = {
                 chain: selectedToken.chainDetails.backendName,
                 amountToSend: actualTokensRequired,
@@ -927,9 +929,7 @@ export default function CardQuote({
                     reason: 'User rejected the transaction',
                   },
                 });
-              void deleteWithAuth(
-                `/v1/funding/quote/${tokenQuote.quoteId}`,
-              );
+              void deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
               hideTxModal();
               setLoading(false);
               return;
@@ -946,9 +946,7 @@ export default function CardQuote({
                     reason: errorMessage,
                   },
                 });
-              void deleteWithAuth(
-                `/v1/funding/quote/${tokenQuote.quoteId}`,
-              );
+              void deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
               setTxTimedOut();
               setLoading(false);
               return;
@@ -1046,9 +1044,7 @@ export default function CardQuote({
               reason: 'User cancelled the transaction',
             },
           });
-        void deleteWithAuth(
-          `/v1/funding/quote/${tokenQuote.quoteId}`,
-        );
+        void deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
         hideTxModal();
         setLoading(false);
         return;
@@ -1065,9 +1061,7 @@ export default function CardQuote({
               reason: errorMessage,
             },
           });
-        void deleteWithAuth(
-          `/v1/funding/quote/${tokenQuote.quoteId}`,
-        );
+        void deleteWithAuth(`/v1/funding/quote/${tokenQuote.quoteId}`);
         setTxTimedOut();
         setLoading(false);
         return;
