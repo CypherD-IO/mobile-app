@@ -83,6 +83,10 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useConnectionManager from '../../../hooks/useConnectionManager';
 import CyDTokenValue from '../../../components/v2/tokenValue';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import FreeSafepalClaimModal, {
+  STORAGE_KEY_DISMISSED,
+} from '../../../components/v2/freeSafepalClaimModal';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -176,6 +180,45 @@ export default function CypherCardScreen() {
 
   // Ref to track timeout IDs for cleanup on unmount
   const removalTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+
+  // Free Safepal claim modal states
+  const [isSafepalModalVisible, setSafepalModalVisible] =
+    useState<boolean>(false);
+
+  // Free Safepal claim modal - show only for premium users
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+
+    const checkSafepalModal = async () => {
+      try {
+        const isPremiumUser =
+          get(globalContext?.globalState, [
+            'cardProfile',
+            'planInfo',
+            'planId',
+          ]) === CypherPlanId.PRO_PLAN;
+        const dismissed = await AsyncStorage.getItem(STORAGE_KEY_DISMISSED);
+
+        if (isPremiumUser && dismissed !== 'true') {
+          timer = setTimeout(() => {
+            setSafepalModalVisible(true);
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error checking safepal modal status', error);
+      }
+    };
+
+    if (isFocused) {
+      checkSafepalModal();
+    }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [isFocused, globalContext?.globalState?.cardProfile?.planInfo?.planId]);
 
   /**
    * Handles when an ongoing activity is completed
@@ -1172,6 +1215,12 @@ export default function CypherCardScreen() {
           completedActivities={fundingsCompletedInLast5Mins}
           failedActivities={fundingsFailedInLast5Mins}
         />
+
+        {isSafepalModalVisible && (
+          <FreeSafepalClaimModal
+            onDismiss={() => setSafepalModalVisible(false)}
+          />
+        )}
       </CyDView>
     </CyDSafeAreaView>
   ) : (

@@ -1000,7 +1000,8 @@ export const ASYNC_STORAGE_KEYS_TO_PRESERVE: string[] = [
   'ARCH_HOST',
 ];
 
-export const CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS = "0x2cAD10c323679Dbd6b4b7bCF0E6E0426F7019210";
+export const CYPHER_TARGET_ROUTER_CONTRACT_ADDRESS =
+  '0x2cAD10c323679Dbd6b4b7bCF0E6E0426F7019210';
 
 export const TargetRouterABI = [
   {
@@ -1205,12 +1206,12 @@ export const TargetRouterABI = [
             internalType: 'string',
             name: 'target',
             type: 'string',
-          }
+          },
         ],
         internalType: 'struct CypherTargetRouter.InitialTarget[]',
         name: 'newTargets',
         type: 'tuple[]',
-      }
+      },
     ],
     name: 'setTargets',
     outputs: [],
@@ -1260,3 +1261,7 @@ export const TargetRouterABI = [
     type: 'function',
   },
 ] as const;
+
+// Free SafePal Claim URL
+export const FREE_SAFEPAL_CLAIM_URL =
+  'https://www.safepal.com/en/claimX1/v2/#/v/party100912/pa3ln2';
