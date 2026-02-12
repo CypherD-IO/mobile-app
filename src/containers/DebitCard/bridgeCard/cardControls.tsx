@@ -7,7 +7,7 @@ import {
   RouteProp,
 } from '@react-navigation/native';
 import { StyleSheet, Animated } from 'react-native';
-import { capitalize, find, get } from 'lodash';
+import { capitalize, find, get, truncate } from 'lodash';
 import clsx from 'clsx';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { useTranslation } from 'react-i18next';
@@ -56,8 +56,6 @@ import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import EditCardColor from './editCardColour';
 import EditCardTag from './editCardTag';
 import { getCardColorByHex } from '../../../constants/cardColours';
-import { truncateText } from '../../../utils/textUtils';
-import CardTagBadge from '../../../components/CardTagBadge';
 
 interface RouteParams {
   cardId: string;
@@ -1544,7 +1542,7 @@ function RenderCustomization({
           </CyDView>
           <CyDView className='flex-row items-center gap-x-[8px]'>
             <CyDText className='text-[13px] text-primaryText'>
-              {currentTag ? truncateText(currentTag, 10) : t('NOT_SET')}
+              {truncate(currentTag ?? t('NOT_SET'), { length: 12 })}
             </CyDText>
             <CyDMaterialDesignIcons
               name='chevron-right'
