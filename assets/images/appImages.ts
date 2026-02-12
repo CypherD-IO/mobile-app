@@ -793,6 +793,10 @@ const CARD_COLOUR_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/cardColorIcon.png`,
 };
 
+const SAFEPAL_CLAIM_MODAL = {
+  uri: `${S3_BUCKET_URL_ICONS}/safepalClaimModal.png`,
+};
+
 export const AppImagesMap = {
   common: {
     EMPTY_PERSON,
@@ -1122,6 +1126,7 @@ export const AppImagesMap = {
     CARD_ELECTRIC_LIME,
     CARD_JET_BLACK,
     CARD_COLOUR_ICON,
+    SAFEPAL_CLAIM_MODAL,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1456,6 +1461,7 @@ enum AppImages {
   CARD_ELECTRIC_LIME = 'CARD_ELECTRIC_LIME',
   CARD_JET_BLACK = 'CARD_JET_BLACK',
   CARD_COLOUR_ICON = 'CARD_COLOUR_ICON',
+  SAFEPAL_CLAIM_MODAL = 'SAFEPAL_CLAIM_MODAL',
 }
 
 export default AppImages;
