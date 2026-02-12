@@ -68,6 +68,8 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import Loading from '../../../components/v2/loading';
+import { getCardColorByHex } from '../../../constants/cardColours';
+import CardTagBadge from '../../../components/CardTagBadge';
 
 interface CardSecrets {
   cvv: string;
@@ -189,6 +191,10 @@ export default function CardScreen({
       if (card.status === CardStatus.ADDITIONAL_CARD) {
         return AppImages.ADDITIONAL_CARD;
       }
+      if (card.type === CardType.VIRTUAL && card.cardColor) {
+        const colorData = getCardColorByHex(card.cardColor);
+        return colorData.cardImage;
+      }
       const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
         card.designId ?? ''
       }.png`;
@@ -301,6 +307,13 @@ export default function CardScreen({
                 })}>
                 {' xxxx ' + card.last4}
               </CyDText>
+            </CyDView>
+          )}
+        {card.cardTag &&
+          card.status !== CardStatus.HIDDEN &&
+          card.status !== CardStatus.ADDITIONAL_CARD && (
+            <CyDView className='absolute top-[85px] right-[14px]'>
+              <CardTagBadge tag={card.cardTag} />
             </CyDView>
           )}
         {card.status === CardStatus.ADDITIONAL_CARD && (

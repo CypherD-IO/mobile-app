@@ -7,6 +7,8 @@ import { ChainBackendNames } from '../constants/server';
 import { Holding, IHyperLiquidHolding } from '../core/portfolio';
 
 export interface Card {
+  cardColor?: string;
+  cardTag?: string;
   bin: string;
   cardId: string;
   last4: string;

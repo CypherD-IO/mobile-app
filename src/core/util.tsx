@@ -49,6 +49,7 @@ import {
   AnalyticsType,
   CardProviders,
   CardTransactionTypes,
+  CardType,
   CypherPlanId,
   ReapTxnStatus,
   EcosystemsEnum,
@@ -91,6 +92,7 @@ import { CardProfile } from '../models/cardProfile.model';
 import { CardDesign } from '../models/cardDesign.interface';
 import { CYPHER_CARD_IMAGES } from '../../assets/images/appImages';
 import { Card, ICardTransaction } from '../models/card.model';
+import { getCardColorByHex } from '../constants/cardColours';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1375,6 +1377,11 @@ export const getCardImage = (card: Card, provider: CardProviders) => {
   }
 
   if (provider === CardProviders.REAP_CARD) {
+    // For virtual cards with a custom color, use the color-based card image
+    if (card.type === CardType.VIRTUAL && card.cardColor) {
+      const colorData = getCardColorByHex(card.cardColor);
+      return colorData.cardImage;
+    }
     const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
       card.designId ?? ''
     }.png`;

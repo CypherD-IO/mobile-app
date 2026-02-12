@@ -129,6 +129,8 @@ export const AnalyticEvent = {
   EXCLUSIVE_OFFER_MODAL_VIEWED: 'exclusive_offer_modal_viewed',
   EXCLUSIVE_OFFER_SEE_DETAILS_CLICKED: 'exclusive_offer_see_details_clicked',
   EXCLUSIVE_OFFER_GOT_IT_CLICKED: 'exclusive_offer_got_it_clicked',
+  CARD_COLOUR_UPDATED: 'card_colour_updated',
+  CARD_TAG_UPDATED: 'card_tag_updated',
 };
 
 export const logAnalyticsToFirebase = (
