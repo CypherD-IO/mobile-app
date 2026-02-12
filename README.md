@@ -9,7 +9,100 @@ TBD: Next step is to prototype the interaction between React Native app back to 
 1. Sentry in sentry.properties file
 2. GoogleService in plist file
 
+### GitHub Packages Authentication
+
+This project uses private packages from GitHub Packages (`@cypherd-io` scope). You need to set up authentication before running `npm install`.
+
+**1. Generate a GitHub Personal Access Token:**
+- Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+- Click "Generate new token (classic)"
+- Select scope: `read:packages`
+- Copy the generated token
+
+**2. Add the token to your shell profile:**
+
+```bash
+# Open your shell profile
+nano ~/.zshrc
+
+# Add this line at the end (replace with your actual token)
+export NPM_TOKEN="your_github_token_here"
+
+# Save and exit (Ctrl+O, Enter, Ctrl+X)
+
+# Reload the profile
+source ~/.zshrc
+```
+
+**3. Verify the token is set:**
+
+```bash
+echo $NPM_TOKEN
+```
+
 [React Native MAC Setup Guide](https://reactnative.dev/docs/environment-setup)
+
+### Ruby, Bundler, and CocoaPods Troubleshooting
+
+If `npm run start`, `pod install`, or `bundle install` fails with errors like:
+- `Could not find 'bundler' (...) required by Gemfile.lock`
+- `Something went wrong while installing CocoaPods`
+
+use the steps below to verify and fix Ruby/Bundler versions.
+
+**1) Check currently active Ruby and Bundler**
+
+```bash
+which ruby
+ruby --version
+which bundle
+bundle --version
+```
+
+**2) Check what Bundler version the project expects**
+
+```bash
+tail -5 Gemfile.lock
+```
+
+Look at the `BUNDLED WITH` value. This repo currently expects:
+
+```text
+BUNDLED WITH
+  4.0.3
+```
+
+**3) If you are on macOS system Ruby (2.6), install a modern Ruby**
+
+```bash
+brew install rbenv ruby-build
+rbenv install 3.3.6
+rbenv global 3.3.6
+echo 'eval "$(rbenv init -)"' >> ~/.zshrc
+exec zsh
+ruby --version
+```
+
+**4) Install the required Bundler and gems for this repo**
+
+```bash
+gem install bundler:4.0.3
+bundle install
+```
+
+**5) Install JS deps and pods again**
+
+```bash
+npm install
+npx pod-install
+```
+
+If Ruby version still does not change after installing `rbenv`, verify:
+
+```bash
+which ruby
+echo $PATH
+```
 
 ```
 npm install (from the root folder)

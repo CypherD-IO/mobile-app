@@ -232,8 +232,6 @@ export default function CardQuote({
           globalContext,
         });
 
-        console.log('result', result);
-
         if (!result.success) {
           setIsAddressLoading(false);
           setLoading(false);

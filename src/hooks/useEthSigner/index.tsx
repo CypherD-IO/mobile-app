@@ -44,7 +44,6 @@ import {
   EthSingerParams,
   EthTransactionPayload,
 } from '../../models/ethSigner.interface';
-import { recoverTypedSignature } from '@metamask/eth-sig-util';
 import { WALLET_CONNECT_SIGNING_TIMEOUT } from '../../constants/timeOuts';
 
 export default function useEthSigner() {
@@ -373,11 +372,7 @@ export default function useEthSigner() {
   }
 
   const signEthTransaction = async (
-    {
-      rpc,
-      sendChain,
-      transactionToBeSigned,
-    }: EthSingerParams,
+    { rpc, sendChain, transactionToBeSigned }: EthSingerParams,
     abortSignal?: AbortSignal,
   ): Promise<`0x${string}`> => {
     const connectionType = await getConnectionType();

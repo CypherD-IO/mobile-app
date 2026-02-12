@@ -46,6 +46,34 @@ if (typeof process === 'undefined') {
 process.browser = false;
 if (typeof Buffer === 'undefined') global.Buffer = require('buffer').Buffer;
 
+// Ensure base64 globals expected by some web3/crypto libs are always present.
+// Use base64-js to avoid recursive paths through Buffer/polyfills.
+if (typeof global.base64ToArrayBuffer !== 'function') {
+  global.base64ToArrayBuffer = (b64, removeLinebreaks = false) => {
+    const { toByteArray } = require('base64-js');
+    const normalized = removeLinebreaks
+      ? b64.replace(/(\r\n|\n|\r)/gm, '')
+      : b64;
+    const base64 = normalized.replace(/-/g, '+').replace(/_/g, '/');
+    const bytes = toByteArray(base64);
+    return bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength,
+    );
+  };
+}
+
+if (typeof global.base64FromArrayBuffer !== 'function') {
+  global.base64FromArrayBuffer = (arrayBuffer, urlSafe = false) => {
+    const { fromByteArray } = require('base64-js');
+    const base64 = fromByteArray(new Uint8Array(arrayBuffer));
+    if (!urlSafe) {
+      return base64;
+    }
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  };
+}
+
 // Provide a minimal `location` so some node-core polyfills choose the correct defaults.
 // We use https here to avoid accidental "file:" browser paths.
 if (typeof location === 'undefined') {

@@ -482,6 +482,27 @@ export const clearAuthTokens = async () => {
   }
 };
 
+export const setDeviceLoginUsageReported = async (reported: boolean) => {
+  try {
+    await AsyncStorage.setItem(
+      'DEVICE_LOGIN_USAGE_REPORTED',
+      JSON.stringify(reported),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getDeviceLoginUsageReported = async (): Promise<boolean> => {
+  try {
+    const value = await AsyncStorage.getItem('DEVICE_LOGIN_USAGE_REPORTED');
+    return value != null ? JSON.parse(value) : false;
+  } catch (error) {
+    Sentry.captureException(error);
+    return false;
+  }
+};
+
 export const setConnectionType = async (token: ConnectionTypes) => {
   try {
     await AsyncStorage.setItem('CONNECTION_TYPE', token);
