@@ -296,14 +296,25 @@ jobs:
         run: |
           echo "=== Fast iOS Simulator Setup ==="
 
-          # Quick simulator check and setup
-          DEVICE_NAME="iPhone 16"
+          # Resolve a simulator type that actually exists on this runner.
+          DEVICE_NAME=""
+          for candidate in "iPhone 16" "iPhone 16 Pro" "iPhone 16e" "iPhone 17" "iPhone 17 Pro"; do
+            if xcrun simctl list devicetypes | grep -q "$candidate"; then
+              DEVICE_NAME="$candidate"
+              break
+            fi
+          done
 
-          # Find available iPhone 16 simulator
-          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' || echo "")
+          if [ -z "$DEVICE_NAME" ]; then
+            DEVICE_NAME="iPhone 16"
+          fi
+          echo "Selected simulator type: $DEVICE_NAME"
+
+          # Find any available simulator matching selected type
+          DEVICE_ID=$(xcrun simctl list devices available | grep "$DEVICE_NAME" | head -1 | sed 's/.*(\([^)]*\)).*/\1/' || echo "")
 
           if [ -n "$DEVICE_ID" ]; then
-            echo "✅ Found iPhone 16 simulator: $DEVICE_ID"
+            echo "✅ Found $DEVICE_NAME simulator: $DEVICE_ID"
             
             # Check if already booted
             if xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "Booted"; then
@@ -322,16 +333,17 @@ jobs:
               done
             fi
           else
-            echo "Creating iPhone 16 simulator..."
-            RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep -E "18\.|17\." | head -1 | awk '{print $NF}')
+            echo "Creating $DEVICE_NAME simulator..."
+            RUNTIME=$(xcrun simctl list runtimes | awk -F '[()]' '/iOS/ && /available/ {print $2}' | tail -1)
             if [ -n "$RUNTIME" ]; then
-              DEVICE_ID=$(xcrun simctl create "iPhone 16 CI" "iPhone 16" "$RUNTIME")
+              DEVICE_ID=$(xcrun simctl create "${DEVICE_NAME} CI" "$DEVICE_NAME" "$RUNTIME")
               xcrun simctl boot "$DEVICE_ID"
               echo "✅ Created and booted new simulator: $DEVICE_ID"
             fi
           fi
 
           echo "SIMULATOR_DEVICE_ID=$DEVICE_ID" >> $GITHUB_ENV
+          echo "DETOX_DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
 
       - name: Optimize CI Environment for E2E Tests
         run: |
@@ -369,6 +381,7 @@ jobs:
       - name: Build iOS app for testing (optimized)
         run: |
           echo "=== Starting Optimized iOS Build ==="
+          echo "Using simulator type: ${DETOX_DEVICE_NAME:-iPhone 16}"
 
           # Set build environment for speed
           export XCODE_XCCONFIG_FILE=""
@@ -384,7 +397,7 @@ jobs:
               -workspace ios/Cypherd.xcworkspace \
               -scheme Cypherd \
               -configuration Debug \
-              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -destination "platform=iOS Simulator,name=${DETOX_DEVICE_NAME:-iPhone 16}" \
               -derivedDataPath ios/build \
               -quiet \
               COMPILER_INDEX_STORE_ENABLE=NO \
@@ -408,7 +421,7 @@ jobs:
               echo "✅ Using cached build (less than 1 hour old)"
               
               # Quick verification build
-              if xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath ios/build -quiet build-for-testing; then
+              if xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -destination "platform=iOS Simulator,name=${DETOX_DEVICE_NAME:-iPhone 16}" -derivedDataPath ios/build -quiet build-for-testing; then
                 echo "✅ Cached build verified successfully"
                 exit 0
               else
@@ -547,11 +560,11 @@ jobs:
           curl -s "http://localhost:8081/index.bundle?platform=ios&dev=true" > /dev/null || echo "Bundle pre-warm attempted"
 
           # Ensure simulator is ready
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 16" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
+          DEVICE_ID=$(xcrun simctl list devices | grep "${DETOX_DEVICE_NAME:-iPhone 16}" | grep "Booted" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
           if [ -n "$DEVICE_ID" ]; then
             echo "✅ Simulator ready: $DEVICE_ID"
           else
-            echo "⚠️ No booted iPhone 16 simulator found"
+            echo "⚠️ No booted ${DETOX_DEVICE_NAME:-iPhone 16} simulator found"
           fi
 
       - name: Run E2E Tests - Full Parallel Suite
