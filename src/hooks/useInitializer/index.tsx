@@ -4,6 +4,7 @@ import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
 import {
   ConnectionTypes,
+  AllChainsEnum,
   GlobalContextType,
   PinPresentStates,
   RPCPreference,
@@ -14,10 +15,12 @@ import {
   getActivities,
   getAuthToken,
   getConnectionType,
+  getDeviceLoginUsageReported,
   getDeveloperMode,
   getReadOnlyWalletData,
   getRpcEndpoints,
   setAuthToken,
+  setDeviceLoginUsageReported,
   setRefreshToken,
   setRpcEndpoints,
   getUpdateReminderSnoozeUntil,
@@ -55,9 +58,10 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import useWeb3Auth from '../useWeb3Auth';
 
 export default function useInitializer() {
-  const { getWithoutAuth } = useAxios();
+  const { getWithoutAuth, postWithAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
@@ -65,6 +69,7 @@ export default function useInitializer() {
   const inAppUpdates = new SpInAppUpdates(!!__DEV__);
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile } = useCardUtilities();
+  const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
 
   // Data scrubbing is now handled in App.tsx Sentry initialization
 
@@ -345,6 +350,131 @@ export default function useInitializer() {
     });
   };
 
+  const getLoginMethod = (connectionType?: ConnectionTypes | null): string => {
+    switch (connectionType) {
+      case ConnectionTypes.SOCIAL_LOGIN_EVM:
+        return 'socialLoginEvm';
+      case ConnectionTypes.SOCIAL_LOGIN_SOLANA:
+        return 'socialLoginSolana';
+      case ConnectionTypes.SEED_PHRASE:
+        return 'seedPhrase';
+      case ConnectionTypes.PRIVATE_KEY:
+        return 'privateKey';
+      case ConnectionTypes.WALLET_CONNECT:
+      case ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN:
+        return 'walletConnect';
+      default:
+        return 'unknown';
+    }
+  };
+
+  const getSocialInfo = async (
+    connectionType?: ConnectionTypes | null,
+  ): Promise<{ email?: string; method?: 'email' | 'google' | 'apple' }> => {
+    try {
+      const parseMethod = (rawMethod?: string) => {
+        const normalized = (rawMethod ?? '').toLowerCase();
+        if (normalized.includes('google')) return 'google';
+        if (normalized.includes('apple')) return 'apple';
+        if (normalized.includes('email') || normalized.includes('passwordless'))
+          return 'email';
+        return undefined;
+      };
+
+      if (connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM) {
+        await web3AuthEvm.init();
+        const userInfo = web3AuthEvm.userInfo();
+        const email = userInfo?.email?.trim().toLowerCase();
+        const method = parseMethod(
+          String(
+            userInfo?.typeOfLogin ??
+              userInfo?.verifier ??
+              userInfo?.aggregateVerifier ??
+              '',
+          ),
+        );
+        return { email, method };
+      }
+      if (connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA) {
+        await web3AuthSolana.init();
+        const userInfo = web3AuthSolana.userInfo();
+        const email = userInfo?.email?.trim().toLowerCase();
+        const method = parseMethod(
+          String(
+            userInfo?.typeOfLogin ??
+              userInfo?.verifier ??
+              userInfo?.aggregateVerifier ??
+              '',
+          ),
+        );
+        return { email, method };
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+    return {};
+  };
+
+  const reportDeviceLoginUsage = async (authToken?: string) => {
+    try {
+      const alreadyReported = await getDeviceLoginUsageReported();
+      if (alreadyReported) {
+        return;
+      }
+
+      const connectionType = await getConnectionType();
+      const address = ethereum.address ?? solana.address ?? '';
+      if (!address) {
+        return;
+      }
+      const chain =
+        connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA ||
+        (!ethereum.address && solana.address)
+          ? AllChainsEnum.SOLANA
+          : AllChainsEnum.ETH;
+      const defaultMethod = getLoginMethod(connectionType);
+      const socialInfo = await getSocialInfo(connectionType);
+      const isSocialConnection =
+        connectionType === ConnectionTypes.SOCIAL_LOGIN_EVM ||
+        connectionType === ConnectionTypes.SOCIAL_LOGIN_SOLANA;
+      const resolvedMethod =
+        isSocialConnection && socialInfo.method
+          ? `${socialInfo.method}:${defaultMethod}`
+          : defaultMethod;
+
+      const payload: {
+        method: string;
+        chain: AllChainsEnum;
+        email?: string;
+      } = {
+        method: resolvedMethod,
+        chain,
+      };
+
+      if (socialInfo.email) {
+        payload.email = socialInfo.email;
+      }
+
+      const response = await postWithAuth(
+        '/v1/configuration/device/wallet-info',
+        payload,
+        undefined,
+        authToken
+          ? {
+              headers: {
+                Authorization: `Bearer ${String(authToken)}`,
+              },
+            }
+          : undefined,
+      );
+      if (!response?.isError) {
+        await setDeviceLoginUsageReported(true);
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+  };
+
   const getAuthTokenData = async (
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
@@ -378,6 +508,7 @@ export default function useInitializer() {
               await setRefreshToken(signInResponse?.refreshToken);
             }
             void getProfile(signInResponse.token);
+            void reportDeviceLoginUsage(signInResponse.token);
           } else if (
             signInResponse?.message === SignMessageValidationType.INVALID
           ) {
@@ -401,6 +532,7 @@ export default function useInitializer() {
         }
         authToken = JSON.parse(String(authToken));
         void getProfile(authToken ?? '');
+        void reportDeviceLoginUsage(authToken ?? '');
         globalContext.globalDispatch({
           type: GlobalContextType.IS_APP_AUTHENTICATED,
           isAuthenticated: true,

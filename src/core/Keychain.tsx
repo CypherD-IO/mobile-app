@@ -224,7 +224,6 @@ export async function loadFromKeyChain(
     // Default empty function - no action needed
   },
 ) {
-  console.log('loadFromKeyChain : ', key);
   // If biometric auth is already in progress, wait for it to complete
   // This prevents multiple Face ID prompts from appearing simultaneously
   if (biometricAuthInProgress) {

@@ -13,9 +13,6 @@ PODS:
   - Firebase/Messaging (11.11.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 11.11.0)
-  - Firebase/Performance (11.11.0):
-    - Firebase/CoreOnly
-    - FirebasePerformance (~> 11.11.0)
   - FirebaseABTesting (11.11.0):
     - FirebaseCore (~> 11.11.0)
   - FirebaseAnalytics/WithoutAdIdSupport (11.11.0):
@@ -47,16 +44,6 @@ PODS:
     - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/Reachability (~> 8.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
-    - nanopb (~> 3.30910.0)
-  - FirebasePerformance (11.11.0):
-    - FirebaseCore (~> 11.11.0)
-    - FirebaseInstallations (~> 11.0)
-    - FirebaseRemoteConfig (~> 11.0)
-    - FirebaseSessions (~> 11.0)
-    - GoogleDataTransport (~> 10.0)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/MethodSwizzler (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - nanopb (~> 3.30910.0)
   - FirebaseRemoteConfig (11.11.0):
@@ -2191,8 +2178,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-cookies (6.2.1):
-    - React-Core
   - react-native-document-picker (10.1.7):
     - boost
     - DoubleConversion
@@ -2283,8 +2268,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-quick-base64 (2.2.2):
-    - React-Core
   - react-native-quick-crypto (0.7.17):
     - boost
     - DoubleConversion
@@ -3249,10 +3232,6 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNFBPerf (21.14.0):
-    - Firebase/Performance (= 11.11.0)
-    - React-Core
-    - RNFBApp
   - RNGestureHandler (2.30.0):
     - boost
     - DoubleConversion
@@ -3770,14 +3749,12 @@ DEPENDENCIES:
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
   - react-native-config (from `../node_modules/react-native-config`)
-  - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
   - "react-native-document-picker (from `../node_modules/@react-native-documents/picker`)"
   - react-native-encrypted-storage (from `../node_modules/react-native-encrypted-storage`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-lottie-splash-screen (from `../node_modules/react-native-lottie-splash-screen`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
-  - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
@@ -3835,7 +3812,6 @@ DEPENDENCIES:
   - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
-  - "RNFBPerf (from `../node_modules/@react-native-firebase/perf`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
@@ -3863,7 +3839,6 @@ SPEC REPOS:
     - FirebaseCoreInternal
     - FirebaseInstallations
     - FirebaseMessaging
-    - FirebasePerformance
     - FirebaseRemoteConfig
     - FirebaseRemoteConfigInterop
     - FirebaseSessions
@@ -3991,8 +3966,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@walletconnect/react-native-compat"
   react-native-config:
     :path: "../node_modules/react-native-config"
-  react-native-cookies:
-    :path: "../node_modules/@react-native-cookies/cookies"
   react-native-document-picker:
     :path: "../node_modules/@react-native-documents/picker"
   react-native-encrypted-storage:
@@ -4005,8 +3978,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
-  react-native-quick-base64:
-    :path: "../node_modules/react-native-quick-base64"
   react-native-quick-crypto:
     :path: "../node_modules/react-native-quick-crypto"
   react-native-randombytes:
@@ -4121,8 +4092,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
-  RNFBPerf:
-    :path: "../node_modules/@react-native-firebase/perf"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNKeychain:
@@ -4168,7 +4137,6 @@ SPEC CHECKSUMS:
   FirebaseCoreInternal: 31ee350d87b30a9349e907f84bf49ef8e6791e5a
   FirebaseInstallations: 781e0e37aa0e1c92b44d00e739aba79ad31b2dba
   FirebaseMessaging: c7be9357fd8ba33bc45b9a6c3cdff0b466e1e2a4
-  FirebasePerformance: 788093952ee3df4774c8317f3670b4afecf796ee
   FirebaseRemoteConfig: ca2e03fdd86e31d79ded53e24fa4ac719494dc35
   FirebaseRemoteConfigInterop: 1c6135e8a094cc6368949f5faeeca7ee8948b8aa
   FirebaseSessions: f5c6bfeb66a7202deaf33352017bb6365e395820
@@ -4178,7 +4146,7 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 8a82b93a6400c8e6551c0bcd66a9177f2e067aed
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
-  hermes-engine: a5b42648a9a43afb2df452e354fc7d924c9bb557
+  hermes-engine: 5211d22d4a435082ad5a33537317c4d682f31024
   Intercom: aca703f001cf9470b1f13b72cb8cc969a09bafca
   intercom-react-native: 3593a9b2534caba5ed8b8e892a0b2cfc3bac028c
   jail-monkey: 425f5ea33b17a1ce5763d40614df66245421bf00
@@ -4231,14 +4199,12 @@ SPEC CHECKSUMS:
   react-native-blur: ba0e9ad6274783c8d45f42da82acae02e25784ad
   react-native-compat: 0321110371fbfcee615a0e9e1686b3b73a579410
   react-native-config: d11015cb98b2973fec0e49407181720225733567
-  react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-document-picker: ca6edbcee0abb1b92a06d34fc42ee31e9d559534
   react-native-encrypted-storage: db300a3f2f0aba1e818417c1c0a6be549038deb7
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-lottie-splash-screen: 4e1b1fd9d6633f9cd2106d6877eb5ba0147f3e2b
   react-native-netinfo: 5e036f49ab00a53569bcc0cbc2954b608b6532c3
   react-native-pager-view: 024dcc8b59a655cdada96a21652a79be6a3be8d5
-  react-native-quick-base64: d87272898345e0fc3c3afb8e5dff335d51214f3e
   react-native-quick-crypto: 96d796b74a7b1d266950d0f631b57818659e138e
   react-native-randombytes: ddf6edfd3fb9091af8c6ed1b35e57c308b5f5f2c
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
@@ -4296,7 +4262,6 @@ SPEC CHECKSUMS:
   RNFBAnalytics: 9e013537d8aa83f9b46971bb15d43c0ed9eabec2
   RNFBApp: fda4a8b08fe31bea8492808106aa638d1bb595b7
   RNFBMessaging: 099972ab397d61815f32610514b0573d1db2b1e1
-  RNFBPerf: 56dd9ca13143a2da6bb1fbef6c8a5034e5ab2a9d
   RNGestureHandler: 77eecab5fd636666ca73a55bb61e2f1a685b7e84
   RNKeychain: 182d986f809280edd9444a557adc21845f7d1e6f
   RNLocalize: d4b8af4e442d4bcca54e68fc687a2129b4d71a81

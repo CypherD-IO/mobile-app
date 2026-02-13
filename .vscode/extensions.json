@@ -1,0 +1,48 @@
+{
+  "recommendations": [
+    // Core TypeScript & JavaScript
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+
+    // React Native Development
+    "msjsdiag.vscode-react-native",
+
+    // Tailwind CSS (for NativeWind)
+    "bradlc.vscode-tailwindcss",
+
+    // TypeScript Enhancements
+    "usernamehw.errorlens",
+
+    // Git
+    "eamodio.gitlens",
+
+    // Path & Import Helpers
+    "christian-kohler.path-intellisense",
+    "christian-kohler.npm-intellisense",
+
+    // Code Quality & Productivity
+    "mikestead.dotenv",
+    "gruntfuggly.todo-tree",
+
+    // JSON & Config Files
+    "zainchen.json",
+
+    // Testing
+    "orta.vscode-jest",
+
+    // iOS/Android Development
+    "nickmillerdev.xcode-theme",
+
+    // File Icons
+    "catppuccin.catppuccin-vsc-icons",
+
+    // Visual Enhancements
+    "oderwat.indent-rainbow",
+    "kisstkondoros.vscode-gutter-preview",
+    "jock.svg",
+
+    // Developer Experience
+    "yoavbls.pretty-ts-errors"
+  ],
+  "unwantedRecommendations": []
+}
