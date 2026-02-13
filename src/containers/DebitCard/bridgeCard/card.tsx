@@ -306,12 +306,15 @@ export default function CardScreen({
           cardProfile.provider === CardProviders.REAP_CARD && (
             <CyDView className='absolute bottom-[14px] left-[14px]'>
               <CyDText
-                className={clsx('font-semibold text-[14px]', {
-                  'text-white':
-                    card.designId === 'dd6a68ce-bfc2-45b0-8ae8-06cc5220d5a1',
-                  'text-black': card.type === CardType.PHYSICAL,
-                  'text-n0': card.type === CardType.VIRTUAL,
-                })}>
+                className='font-semibold text-[14px]'
+                style={{
+                  color:
+                    card.type === CardType.VIRTUAL && card.cardColor
+                      ? getCardColorByHex(card.cardColor).textColor
+                      : card.type === CardType.PHYSICAL
+                        ? '#000000'
+                        : '#FFFFFF',
+                }}>
                 {' xxxx ' + card.last4}
               </CyDText>
             </CyDView>
