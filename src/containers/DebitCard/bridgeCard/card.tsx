@@ -413,7 +413,7 @@ export default function CardScreen({
           />
           <RenderCardActions
             key={
-              get(cardsWithUpgrade, currentCardIndex)?.cardId ??
+              get(cardsWithUpgrade, currentCardIndex)?.cardId ||
               `card-${currentCardIndex}`
             }
             card={get(cardsWithUpgrade, currentCardIndex)}
