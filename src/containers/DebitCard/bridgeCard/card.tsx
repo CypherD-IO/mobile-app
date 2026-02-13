@@ -240,6 +240,13 @@ export default function CardScreen({
         )}
         resizeMode='contain'
         source={getCardImage(card)}>
+        {card.cardTag &&
+          card.status !== CardStatus.HIDDEN &&
+          card.status !== CardStatus.ADDITIONAL_CARD && (
+            <CyDView className='absolute top-[85px] right-[14px]'>
+              <CardTagBadge tag={card.cardTag} />
+            </CyDView>
+          )}
         {(card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.BLOCKED) && (
           <CyDTouchView
@@ -307,13 +314,6 @@ export default function CardScreen({
                 })}>
                 {' xxxx ' + card.last4}
               </CyDText>
-            </CyDView>
-          )}
-        {card.cardTag &&
-          card.status !== CardStatus.HIDDEN &&
-          card.status !== CardStatus.ADDITIONAL_CARD && (
-            <CyDView className='absolute top-[85px] right-[14px]'>
-              <CardTagBadge tag={card.cardTag} />
             </CyDView>
           )}
         {card.status === CardStatus.ADDITIONAL_CARD && (
@@ -412,6 +412,10 @@ export default function CardScreen({
             renderItem={renderItem as any}
           />
           <RenderCardActions
+            key={
+              get(cardsWithUpgrade, currentCardIndex)?.cardId ??
+              `card-${currentCardIndex}`
+            }
             card={get(cardsWithUpgrade, currentCardIndex)}
             cardProvider={currentCardProvider}
             navigation={navigation}
