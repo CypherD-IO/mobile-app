@@ -1,4 +1,7 @@
 /** @type {Detox.DetoxConfig} */
+const iosDeviceName = process.env.DETOX_DEVICE_NAME || 'iPhone 16';
+const iosBuildCommand = `xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=${iosDeviceName}" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO`;
+
 module.exports = {
   testRunner: {
     args: {
@@ -24,6 +27,7 @@ module.exports = {
           testFailure: true,
         },
       },
+      
       video: process.env.CI ? {
         android: 'failing',
         simulator: 'failing',
@@ -37,8 +41,8 @@ module.exports = {
       type: 'ios.app',
       binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app',
       build: process.env.CI 
-        ? 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO -quiet'
-        : 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
+        ? `${iosBuildCommand} -quiet`
+        : iosBuildCommand,
     },
     'ios.release': {
       type: 'ios.app',
@@ -61,7 +65,7 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 16'  // Use iPhone 16 for both CI and local (iOS 18.x support)
+        type: iosDeviceName,
       },
     },
     emulator: {
