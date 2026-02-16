@@ -1,5 +1,6 @@
 const path = require('path');
 const dotenv = require('dotenv');
+const METRO_BASE_URL = process.env.METRO_BASE_URL || 'http://127.0.0.1:8081';
 
 // Load environment variables from .env.test file
 const envPath = path.join(__dirname, '.env.test');
@@ -8,7 +9,7 @@ dotenv.config({ path: envPath });
 // Function to check if Metro is running
 async function isMetroRunning() {
   try {
-    const response = await fetch('http://localhost:8081/status');
+    const response = await fetch(`${METRO_BASE_URL}/status`);
     return response.ok;
   } catch (error) {
     return false;
@@ -47,7 +48,9 @@ beforeAll(async () => {
   // Pre-warm the bundle
   console.log('🔥 Pre-warming React Native bundle...');
   try {
-    const response = await fetch('http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false');
+    const response = await fetch(
+      `${METRO_BASE_URL}/index.bundle?platform=ios&dev=true&minify=false`,
+    );
     if (response.ok) {
       console.log('✅ Bundle pre-warmed successfully');
     } else {

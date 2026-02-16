@@ -5,6 +5,7 @@ import {
   delay,
   debugVisibleElements,
 } from './helpers';
+const METRO_BASE_URL = process.env.METRO_BASE_URL ?? 'http://127.0.0.1:8081';
 
 describe('App Launch Tests', () => {
   beforeAll(
@@ -20,7 +21,7 @@ describe('App Launch Tests', () => {
     // First, verify Metro bundler is accessible
     try {
       console.log('Verifying Metro bundler connection...');
-      const response = await fetch('http://localhost:8081/status');
+      const response = await fetch(`${METRO_BASE_URL}/status`);
       if (response.ok) {
         console.log('✅ Metro bundler is accessible');
       } else {

@@ -20,6 +20,7 @@ jobs:
       CI: true
       IS_TESTING: "true"
       NODE_ENV: development
+      METRO_BASE_URL: "http://127.0.0.1:8081"
 
     steps:
       - name: Checkout code
@@ -494,7 +495,7 @@ jobs:
           pkill -f "Metro" || echo "No existing Metro processes found"
 
           # Clean Metro cache before starting
-          npx react-native start --reset-cache --port 8081 &
+          nohup npx react-native start --reset-cache --port 8081 > metro.log 2>&1 &
           METRO_PID=$!
           echo "Metro PID: $METRO_PID"
           echo $METRO_PID > metro.pid
@@ -528,7 +529,7 @@ jobs:
             echo "Checking Metro process..."
             ps aux | grep -i metro || echo "No Metro processes found"
             echo "Checking Metro logs..."
-            jobs -l || echo "No background jobs"
+            tail -n 120 metro.log || echo "No metro.log found"
             exit 1
           fi
 
@@ -583,8 +584,24 @@ jobs:
           # Verify Metro is running
           if ! curl -s http://localhost:8081/status >/dev/null 2>&1; then
             echo "❌ Metro bundler not running, restarting..."
-            npx react-native start --reset-cache &
-            sleep 15
+            nohup npx react-native start --reset-cache --port 8081 > metro.log 2>&1 &
+            METRO_PID=$!
+            echo $METRO_PID > metro.pid
+            echo "Restarted Metro PID: $METRO_PID"
+
+            # Wait for Metro after restart
+            MAX_ATTEMPTS=45
+            ATTEMPT=0
+            until curl -s http://localhost:8081/status >/dev/null 2>&1; do
+              ATTEMPT=$((ATTEMPT + 1))
+              if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+                echo "❌ Metro still not ready after restart"
+                tail -n 120 metro.log || true
+                exit 1
+              fi
+              sleep 2
+            done
+            echo "✅ Metro restarted and responding"
           fi
 
           # Monitor system resources for CI debugging
@@ -642,6 +659,8 @@ jobs:
             # Capture Metro logs
             echo "=== Metro bundler status ==="
             curl -s http://localhost:8081/status || echo "Metro not responding"
+            echo "=== Metro logs (tail) ==="
+            tail -n 200 metro.log || echo "No metro.log found"
             
             # Capture simulator logs for debugging
             echo "=== Capturing simulator logs ==="

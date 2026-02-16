@@ -1,4 +1,5 @@
 import { device, element, by, waitFor, expect } from 'detox';
+const METRO_BASE_URL = process.env.METRO_BASE_URL || 'http://127.0.0.1:8081';
 
 /**
  * Check if Metro bundler is accessible and ready
@@ -6,7 +7,7 @@ import { device, element, by, waitFor, expect } from 'detox';
  */
 export async function checkMetroConnection(): Promise<boolean> {
   try {
-    const response = await fetch('http://localhost:8081/status');
+    const response = await fetch(`${METRO_BASE_URL}/status`);
     if (!response.ok) {
       console.log('Metro status check failed:', response.status);
       return false;
@@ -14,7 +15,7 @@ export async function checkMetroConnection(): Promise<boolean> {
 
     // Also check if bundle endpoint is accessible
     const bundleResponse = await fetch(
-      'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
+      `${METRO_BASE_URL}/index.bundle?platform=ios&dev=true&minify=false`,
       { method: 'HEAD' }, // Use HEAD to avoid downloading the full bundle
     );
 
