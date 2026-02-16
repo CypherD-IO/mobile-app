@@ -70,6 +70,7 @@
     "@react-native-firebase/analytics": "^21.5.0",
     "@react-native-firebase/app": "^21.5.0",
     "@react-native-firebase/messaging": "^21.5.0",
+    "@react-native-firebase/perf": "^23.8.6",
     "@react-native-masked-view/masked-view": "^0.3.2",
     "@react-native-vector-icons/icomoon": "^12.3.0",
     "@react-native-vector-icons/material-design-icons": "^12.4.0",
