@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,7 +6,7 @@ import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CyDImage,
+  CyDFastImage,
   CyDIcons,
 } from '../../../styles/tailwindComponents';
 import Button from '../../../components/v2/button';
@@ -28,6 +28,7 @@ export default function EditCardColor({
   setIsModalVisible,
   currentColor,
   currentTag,
+  last4,
   provider,
   cardId,
   onUpdateCardColor,
@@ -36,6 +37,7 @@ export default function EditCardColor({
   setIsModalVisible: (visible: boolean) => void;
   currentColor?: string;
   currentTag?: string;
+  last4: string;
   provider: CardProviders;
   cardId: string;
   onUpdateCardColor: () => void;
@@ -49,8 +51,17 @@ export default function EditCardColor({
   const [selectedColor, setSelectedColor] = useState<string>(
     getCardColorByHex(currentColor)?.id ?? 'mimosa',
   );
+  // Tracks which color's image has finished loading so text color stays in sync with the card image
+  const [loadedColor, setLoadedColor] = useState<string>(
+    getCardColorByHex(currentColor)?.id ?? 'mimosa',
+  );
 
   const selectedColorData = CARD_COLOURS.find(c => c.id === selectedColor);
+  const loadedColorData = CARD_COLOURS.find(c => c.id === loadedColor);
+
+  const onCardImageLoad = useCallback((): void => {
+    setLoadedColor(selectedColor);
+  }, [selectedColor]);
 
   const updateCardColor = async (): Promise<void> => {
     setIsLoading(true);
@@ -144,11 +155,21 @@ export default function EditCardColor({
         <CyDView className='mt-[2px] items-center justify-center px-[16px]'>
           <CyDView className='relative w-full' style={{ aspectRatio: 1.6 }}>
             {selectedColorData?.cardImage && (
-              <CyDImage
+              <CyDFastImage
                 source={selectedColorData.cardImage}
                 className='w-full h-full rounded-[16px]'
                 resizeMode='contain'
+                onLoad={onCardImageLoad}
               />
+            )}
+            {last4 && (
+              <CyDView className='absolute bottom-[14px] left-[14px]'>
+                <CyDText
+                  className='font-semibold text-[14px]'
+                  style={{ color: loadedColorData?.textColor ?? '#FFFFFF' }}>
+                  {' xxxx ' + last4}
+                </CyDText>
+              </CyDView>
             )}
             {currentTag && (
               <CyDView className='absolute top-[45%] right-[5%]'>
