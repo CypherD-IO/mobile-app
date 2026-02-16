@@ -1347,6 +1347,7 @@ export default function CardControls() {
             <RenderCustomization
               provider={currentCardProvider as CardProviders}
               cardId={selectedCardId ?? ''}
+              last4={selectedCard?.last4 ?? ''}
               currentColor={selectedCard?.cardColor}
               currentTag={selectedCard?.cardTag}
               availableCards={activeCards}
@@ -1449,6 +1450,7 @@ export default function CardControls() {
 function RenderCustomization({
   provider,
   cardId,
+  last4,
   currentColor,
   currentTag,
   availableCards,
@@ -1459,6 +1461,7 @@ function RenderCustomization({
 }: {
   provider: CardProviders;
   cardId: string;
+  last4: string;
   currentColor?: string;
   currentTag?: string;
   availableCards: Card[];
@@ -1480,6 +1483,7 @@ function RenderCustomization({
         setIsModalVisible={setEditCardColorVisible}
         provider={provider}
         cardId={cardId}
+        last4={last4}
         currentColor={currentColor}
         currentTag={currentTag}
         onUpdateCardColor={onUpdateCardColor}
