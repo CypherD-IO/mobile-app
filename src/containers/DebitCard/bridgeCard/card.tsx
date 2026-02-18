@@ -3,6 +3,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useLayoutEffect,
   useState,
 } from 'react';
 import { useIsFocused } from '@react-navigation/native';
@@ -11,11 +12,7 @@ import clsx from 'clsx';
 import crypto from 'crypto';
 import { get, has, isEmpty, isUndefined, orderBy, trim } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  PixelRatio,
-  useWindowDimensions,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
@@ -54,7 +51,6 @@ import {
   CyDIcons,
   CyDImage,
   CyDImageBackground,
-  CyDLottieView,
   CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
@@ -62,14 +58,23 @@ import {
 } from '../../../styles/tailwindComponents';
 import { showToast } from '../../utilities/toastUtility';
 import { CardDesign } from '../../../models/cardDesign.interface';
-import Carousel from 'react-native-reanimated-carousel';
-import { isAndroid } from '../../../misc/checkers';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import Loading from '../../../components/v2/loading';
 import { getCardColorByHex } from '../../../constants/cardColours';
 import CardTagBadge from '../../../components/CardTagBadge';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  Easing,
+  withSequence,
+  FadeIn,
+} from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 interface CardSecrets {
   cvv: string;
@@ -84,6 +89,58 @@ const initialCardDetails: CardSecrets = {
   expiryYear: 'xxxx',
   cardNumber: 'xxxx xxxx xxxx xxxx',
 };
+
+const CARD_STACK_POSITIONS = [
+  { width: 364, height: 230, top: 43, borderRadius: 10 },
+  { width: 307, height: 194, top: 27, borderRadius: 10 },
+  { width: 256, height: 163, top: 10, borderRadius: 10 },
+] as const;
+
+const NEUTRAL_SHADE = {
+  width: 230,
+  height: 147,
+  top: 0,
+  borderRadius: 10,
+} as const;
+
+const STACK_CONTAINER_HEIGHT =
+  CARD_STACK_POSITIONS[0].top + CARD_STACK_POSITIONS[0].height;
+
+const stackStyles = StyleSheet.create({
+  container: {
+    height: STACK_CONTAINER_HEIGHT,
+    alignItems: 'center',
+  },
+  neutralShade: {
+    position: 'absolute',
+    top: NEUTRAL_SHADE.top,
+    width: NEUTRAL_SHADE.width,
+    height: NEUTRAL_SHADE.height,
+    borderRadius: NEUTRAL_SHADE.borderRadius,
+    borderWidth: 1,
+    borderColor: '#E0D9CC',
+    backgroundColor: '#F0EBE0',
+  },
+  topCardBase: {
+    position: 'absolute',
+    borderRadius: CARD_STACK_POSITIONS[0].borderRadius,
+    shadowColor: '#002AC1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 17,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  backgroundCardBase: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderColor: '#E0D9CC',
+    overflow: 'hidden',
+  },
+  cardImageBorderRadius: {
+    borderRadius: 10,
+  },
+});
 
 export default function CardScreen({
   navigation,
@@ -106,9 +163,6 @@ export default function CardScreen({
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
-  const pixelDensity = PixelRatio.get();
-  const fontScaleFactor = PixelRatio.getFontScale();
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
   const [userCardDetails, setUserCardDetails] = useState<UserCardDetails>({
@@ -129,10 +183,6 @@ export default function CardScreen({
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [trackingDetails, setTrackingDetails] = useState({});
   const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
-
-  const setUpgradeCorrectedCardIndex = (index: number) => {
-    setCurrentCardIndex(index);
-  };
 
   useEffect(() => {
     const checkIsRcUpgradableCardShown = async () => {
@@ -220,30 +270,28 @@ export default function CardScreen({
     return (
       <CyDImageBackground
         key={index}
-        className={clsx(
-          'w-[300px] h-[190px] flex flex-col self-center shadow-md',
-          {
-            'justify-center items-center':
-              [
-                CardStatus.IN_ACTIVE,
-                CardStatus.HIDDEN,
-                CardStatus.BLOCKED,
-                CardStatus.RC_UPGRADABLE,
-              ].includes(cardStatus) || isAccountLocked,
-            'justify-end': ![
+        className={clsx('w-full h-full flex flex-col rounded-[10px]', {
+          'justify-center items-center':
+            [
               CardStatus.IN_ACTIVE,
               CardStatus.HIDDEN,
               CardStatus.BLOCKED,
               CardStatus.RC_UPGRADABLE,
-            ].includes(cardStatus),
-          },
-        )}
-        resizeMode='contain'
+            ].includes(cardStatus) || isAccountLocked,
+          'justify-end': ![
+            CardStatus.IN_ACTIVE,
+            CardStatus.HIDDEN,
+            CardStatus.BLOCKED,
+            CardStatus.RC_UPGRADABLE,
+          ].includes(cardStatus),
+        })}
+        resizeMode='cover'
+        imageStyle={stackStyles.cardImageBorderRadius}
         source={getCardImage(card)}>
         {card.cardTag &&
           card.status !== CardStatus.HIDDEN &&
           card.status !== CardStatus.ADDITIONAL_CARD && (
-            <CyDView className='absolute top-[85px] right-[14px]'>
+            <CyDView className='absolute top-[105px] right-[14px]'>
               <CardTagBadge tag={card.cardTag} />
             </CyDView>
           )}
@@ -346,7 +394,7 @@ export default function CardScreen({
       currentCardProvider === CardProviders.REAP_CARD &&
       !hasHiddenCard
     ) {
-      actualCards.unshift({
+      actualCards.push({
         cardId: '',
         bin: '',
         last4: '',
@@ -356,7 +404,7 @@ export default function CardScreen({
         designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
         cardProvider: currentCardProvider,
       });
-      setCurrentCardIndex(1);
+      setCurrentCardIndex(0);
     }
 
     if (isRcUpgradableCardShown) {
@@ -375,7 +423,7 @@ export default function CardScreen({
     return actualCards;
   }, [currentCardProvider, userCardDetails.cards, cardProfile]);
 
-  const getTrackingDetails = async () => {
+  const getTrackingDetails = async (): Promise<any> => {
     const response = await getWithAuth(
       `/v1/cards/${currentCardProvider}/card/tracking`,
     );
@@ -386,46 +434,264 @@ export default function CardScreen({
     return response;
   };
 
+  const MAX_VISIBLE_CARDS = 3;
+  const [cardOrderIndices, setCardOrderIndices] = useState<number[]>([]);
+  const [pendingEntryAnimation, setPendingEntryAnimation] = useState(false);
+  const [pendingEntryFromBack, setPendingEntryFromBack] = useState(false);
+
+  const translateY = useSharedValue(0);
+  const dragScale = useSharedValue(1);
+
+  const topCardOpacity = useSharedValue(1);
+  const topCardZIndex = useSharedValue(10);
+
+  const isAnimating = useSharedValue(false);
+  const SWIPE_THRESHOLD = 80;
+
+  const EXIT_DURATION = 350;
+  useEffect(() => {
+    if (cardsWithUpgrade && cardsWithUpgrade.length > 0) {
+      const indices = cardsWithUpgrade.map((_: Card, i: number) => i);
+      setCardOrderIndices(indices);
+    }
+  }, [cardsWithUpgrade]);
+
+  const cycleCardToBack = (): void => {
+    setCardOrderIndices(prev => {
+      if (prev.length <= 1) return prev;
+      const [topIndex, ...rest] = prev;
+      const newOrder = [...rest, topIndex];
+      setCurrentCardIndex(newOrder[0]);
+      return newOrder;
+    });
+
+    translateY.value = 0;
+    dragScale.value = 0.843;
+    topCardOpacity.value = 1;
+    topCardZIndex.value = 10;
+
+    setPendingEntryFromBack(true);
+  };
+
+  const cycleCardToFront = (): void => {
+    setCardOrderIndices(prev => {
+      if (prev.length <= 1) return prev;
+      const lastIndex = prev[prev.length - 1];
+      const newOrder = [lastIndex, ...prev.slice(0, -1)];
+      setCurrentCardIndex(newOrder[0]);
+      return newOrder;
+    });
+
+    setPendingEntryAnimation(true);
+  };
+
+  useLayoutEffect(() => {
+    if (!pendingEntryAnimation) return;
+    setPendingEntryAnimation(false);
+
+    translateY.value = -89;
+    dragScale.value = 0.63;
+    topCardOpacity.value = 0;
+    topCardZIndex.value = 10;
+    translateY.value = withSequence(
+      withTiming(-110, { duration: 150, easing: Easing.out(Easing.ease) }),
+      withSpring(0, { damping: 14, stiffness: 120, mass: 0.8 }),
+    );
+    dragScale.value = withSpring(
+      1,
+      { damping: 14, stiffness: 120, mass: 0.8 },
+      () => {
+        isAnimating.value = false;
+      },
+    );
+    topCardOpacity.value = withTiming(1, { duration: 200 });
+  }, [pendingEntryAnimation]);
+
+  useLayoutEffect(() => {
+    if (!pendingEntryFromBack) return;
+    setPendingEntryFromBack(false);
+
+    dragScale.value = withSpring(
+      1,
+      { damping: 14, stiffness: 120, mass: 0.8 },
+      () => {
+        isAnimating.value = false;
+      },
+    );
+  }, [pendingEntryFromBack]);
+
+  const panGesture = Gesture.Pan()
+    .enabled(!isAccountLocked)
+    .onUpdate(event => {
+      if (isAnimating.value) return;
+      const MAX_DRAG_DOWN = 120;
+      const MAX_DRAG_UP = -150;
+      const clampedY = Math.min(
+        Math.max(event.translationY, MAX_DRAG_UP),
+        MAX_DRAG_DOWN,
+      );
+      translateY.value = clampedY;
+      dragScale.value = 1 - Math.abs(clampedY) * 0.001;
+    })
+    .onEnd(event => {
+      if (isAnimating.value) return;
+
+      const commitEasing = Easing.out(Easing.ease);
+
+      if (event.translationY < -SWIPE_THRESHOLD) {
+        isAnimating.value = true;
+        topCardZIndex.value = -1;
+
+        translateY.value = withTiming(-89, {
+          duration: EXIT_DURATION,
+          easing: commitEasing,
+        });
+
+        dragScale.value = withTiming(0.63, {
+          duration: EXIT_DURATION,
+          easing: commitEasing,
+        });
+
+        topCardOpacity.value = withTiming(
+          0,
+          { duration: EXIT_DURATION, easing: commitEasing },
+          () => {
+            scheduleOnRN(cycleCardToBack);
+          },
+        );
+      } else if (event.translationY > SWIPE_THRESHOLD) {
+        isAnimating.value = true;
+        scheduleOnRN(cycleCardToFront);
+      } else {
+        translateY.value = withSpring(0, { damping: 15, stiffness: 150 });
+        dragScale.value = withSpring(1, { damping: 15, stiffness: 150 });
+      }
+    });
+
+  const topCardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }, { scale: dragScale.value }],
+    opacity: topCardOpacity.value,
+    zIndex: topCardZIndex.value,
+  }));
+
+  const nonTopCardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: 0 }, { scale: 1 }],
+    opacity: 1,
+  }));
+
+  const onPressFundCard = (): void => {
+    navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
+      currentCardProvider,
+      currentCardIndex: 0,
+    });
+  };
   return (
     <>
-      {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) ? (
+      {cardsWithUpgrade &&
+      cardsWithUpgrade.length > 0 &&
+      cardOrderIndices.length > 0 ? (
         <CyDView>
-          <Carousel
-            enabled={!isAccountLocked}
-            loop={false}
-            width={width}
-            height={
-              cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250
-            }
-            autoPlay={false}
-            data={cardsWithUpgrade}
-            snapEnabled={true}
-            pagingEnabled={true}
-            defaultIndex={currentCardIndex}
-            mode='parallax'
-            modeConfig={{
-              parallaxScrollingScale: 0.92,
-              parallaxScrollingOffset: isAndroid()
-                ? width / (pixelDensity * fontScaleFactor)
-                : width * 0.31,
-              parallaxAdjacentItemScale: 0.74,
-            }}
-            scrollAnimationDuration={0}
-            onSnapToItem={setUpgradeCorrectedCardIndex}
-            renderItem={renderItem as any}
-          />
-          <RenderCardActions
-            card={get(cardsWithUpgrade, currentCardIndex)}
-            cardProvider={currentCardProvider}
-            navigation={navigation}
-            refreshProfile={refreshProfile}
-            onGetAdditionalCard={onGetAdditionalCard}
-            onPressActivateCard={onPressActivateCard}
-            cardProfile={cardProfile}
-            trackingDetails={trackingDetails}
-            cardDesignData={cardDesignData}
-            isAccountLocked={isAccountLocked}
-          />
+          <CyDView className='mt-[8px]' style={stackStyles.container}>
+            <CyDView style={stackStyles.neutralShade} />
+            {cardOrderIndices
+              .slice(0, MAX_VISIBLE_CARDS)
+              .map((cardIndex: number, stackPosition: number) => {
+                const card = cardsWithUpgrade[cardIndex];
+                if (!card) return null;
+
+                const isTopCard = stackPosition === 0;
+                const posConfig = CARD_STACK_POSITIONS[stackPosition];
+                const zIndex = MAX_VISIBLE_CARDS - stackPosition;
+
+                return (
+                  <GestureDetector
+                    key={`stack-${cardIndex}-${stackPosition}`}
+                    gesture={
+                      isTopCard ? panGesture : Gesture.Pan().enabled(false)
+                    }>
+                    <Animated.View
+                      entering={!isTopCard ? FadeIn.duration(300) : undefined}
+                      style={[
+                        isTopCard
+                          ? stackStyles.topCardBase
+                          : stackStyles.backgroundCardBase,
+                        {
+                          zIndex,
+                          top: posConfig.top,
+                          width: posConfig.width,
+                          height: posConfig.height,
+                          borderRadius: posConfig.borderRadius,
+                        },
+                        isTopCard
+                          ? topCardAnimatedStyle
+                          : nonTopCardAnimatedStyle,
+                      ]}>
+                      <CyDTouchView
+                        activeOpacity={isTopCard ? 0.95 : 1}
+                        disabled={!isTopCard}
+                        className='w-full h-full'
+                        onPress={() => {
+                          if (isTopCard) {
+                            // Card tap handler – will navigate to detail page (to be configured later)
+                          }
+                        }}>
+                        {renderItem({ item: card, index: cardIndex })}
+                      </CyDTouchView>
+                    </Animated.View>
+                  </GestureDetector>
+                );
+              })}
+          </CyDView>
+
+          <CyDView className='items-center mt-[4px] mb-[2px]'>
+            <CyDText className='text-[13px] text-n100 font-medium'>
+              {`${
+                cardsWithUpgrade
+                  .slice(0, currentCardIndex + 1)
+                  .filter(c => c.status !== CardStatus.ADDITIONAL_CARD).length
+              }/${
+                cardsWithUpgrade.filter(
+                  c => c.status !== CardStatus.ADDITIONAL_CARD,
+                ).length
+              }`}
+            </CyDText>
+          </CyDView>
+
+          <CyDView className='flex flex-row justify-center items-center gap-x-[12px] mt-[8px] mx-[16px]'>
+            <CyDTouchView
+              className='flex-1 flex-row items-center justify-center bg-p50 py-[10px] px-[16px] rounded-[24px]'
+              onPress={onPressFundCard}
+              disabled={isAccountLocked}>
+              <CyDText className='font-manrope font-semibold text-[14px] text-black mr-[6px] leading-[145%] tracking-[-0.6px]'>
+                {t('LOAD_CARD')}
+              </CyDText>
+              <CyDMaterialDesignIcons
+                name='plus-circle'
+                size={20}
+                className='text-black'
+              />
+            </CyDTouchView>
+
+            <CyDTouchView
+              className='flex-1 flex-row items-center justify-center bg-n30 py-[12px] px-[16px] rounded-[24px]'
+              onPress={() => {
+                // "View all cards" action – will be connected to a full card list page later
+              }}>
+              <CyDText className='font-manrope font-semibold text-[14px] text-black mr-[6px] leading-[145%] tracking-[-0.6px]'>
+                {t('VIEW_ALL_CARDS')}
+              </CyDText>
+              <CyDMaterialDesignIcons
+                name='arrow-down-circle'
+                size={20}
+                className='text-black'
+              />
+            </CyDTouchView>
+          </CyDView>
+          <CyDView className='items-center mt-[4px]'>
+            <CyDText className='font-manrope font-semibold text-[14px] text-n100 mr-[6px] leading-[145%] tracking-[-0.6px]'>
+              {t('TAP_CARD_HINT')}
+            </CyDText>
+          </CyDView>
         </CyDView>
       ) : (
         <CyDView>

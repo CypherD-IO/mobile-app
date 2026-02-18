@@ -2419,6 +2419,12 @@ const resources = {
       NAME_YOUR_CARD: 'Name your card',
       CARD_TAG_DESCRIPTION:
         'You can tag each card with its purpose or a name you prefer, making it easier to find in the card stack!',
+      LOAD_CARD: 'Load Card',
+      VIEW_ALL_CARDS: 'View all cards',
+      TAP_CARD_HINT: 'Just tap the card to see your card controls!',
+      AVAILABLE_TO_SPEND: 'Available to spend',
+      AVAILABLE_TO_SPEND_INFO:
+        'The available to spend balance is shared between all the cards',
     },
   },
 };

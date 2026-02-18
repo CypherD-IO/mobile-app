@@ -431,6 +431,7 @@ export default function CypherCardScreen() {
     setSelectedActivity(null);
   };
   const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
   const { refreshStatus: refreshOnboardingStatus, statusWiseRewards } =
     useOnboardingReward();
@@ -844,66 +845,66 @@ export default function CypherCardScreen() {
           />
         )} */}
 
-            {/* balance and add funds/activate card */}
-            <CyDView className={'h-[60px] mt-[24px]'}>
-              <CyDView className='flex flex-row justify-between items-center'>
-                <CyDView>
-                  <CyDText className={'font-semibold text-[10px]'}>
-                    {t<string>('TOTAL_BALANCE') + ' (USD)'}
-                  </CyDText>
-                  <CyDView className='flex flex-row justify-between items-center'>
-                    {!balanceLoading ? (
-                      <CyDTouchView
-                        onPress={() => {
-                          void fetchCardBalance();
-                        }}>
-                        <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                          <CyDTokenValue className='!text-[32px]'>
-                            {cardBalance === 'NA' ? '0.00' : cardBalance}
-                          </CyDTokenValue>
-                          <CyDMaterialDesignIcons
-                            name='refresh'
-                            size={20}
-                            className='text-base400'
-                          />
-                        </CyDView>
-                      </CyDTouchView>
-                    ) : (
-                      <CyDLottieView
-                        source={AppImages.LOADER_TRANSPARENT}
-                        autoPlay
-                        loop
-                        style={style.loaderStyle}
-                      />
-                    )}
-                  </CyDView>
-                </CyDView>
-                <CyDView className={'h-[36px] w-[42%]'}>
-                  <Button
-                    icon={
-                      <CyDMaterialDesignIcons
-                        name='plus'
-                        size={20}
-                        className='text-black mr-[4px]'
-                      />
-                    }
-                    disabled={shouldBlockAction()}
-                    onPress={() => {
-                      onPressFundCard();
-                    }}
-                    style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                    // imageStyle={'mr-[4px] h-[12px] w-[12px]'}
-                    title={t('ADD_FUNDS')}
-                    titleStyle='text-[14px] text-black font-extrabold'
+            {/* Available to spend balance */}
+            <CyDView
+              className='items-center mt-[24px]'
+              onTouchEnd={() => {
+                if (showTooltip) setShowTooltip(false);
+              }}>
+              <CyDView className='flex flex-row items-center justify-center gap-x-[4px]'>
+                <CyDText className='font-manrope font-semibold text-[10px] text-n200 leading-[160%]'>
+                  {t('AVAILABLE_TO_SPEND')}
+                </CyDText>
+                <CyDTouchView onPress={() => setShowTooltip(prev => !prev)}>
+                  <CyDMaterialDesignIcons
+                    name='information-outline'
+                    size={14}
+                    className='text-n200'
                   />
+                </CyDTouchView>
+              </CyDView>
+              {showTooltip && (
+                <CyDView className='absolute bottom-[60px] bg-n0 rounded-[8px] px-[12px] py-[8px] z-[100]'>
+                  <CyDText className='font-manrope text-[10px] text-base400 text-center'>
+                    {t('AVAILABLE_TO_SPEND_INFO')}
+                  </CyDText>
                 </CyDView>
+              )}
+              <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
+                {!balanceLoading ? (
+                  <CyDTouchView
+                    onPress={() => {
+                      void fetchCardBalance();
+                    }}>
+                    <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
+                      <CyDTokenValue className='font-manrope font-semibold text-[32px] leading-[145%] tracking-[-1px]'>
+                        {cardBalance === 'NA' ? '0.00' : cardBalance}
+                      </CyDTokenValue>
+                      <CyDMaterialDesignIcons
+                        name='refresh'
+                        size={20}
+                        className='text-base400'
+                      />
+                    </CyDView>
+                  </CyDTouchView>
+                ) : (
+                  <CyDLottieView
+                    source={AppImages.LOADER_TRANSPARENT}
+                    autoPlay
+                    loop
+                    style={style.loaderStyle}
+                  />
+                )}
               </CyDView>
             </CyDView>
           </CyDView>
 
           <CyDScrollView
             showsVerticalScrollIndicator={false}
-            className='bg-n20 '>
+            className='bg-n20 '
+            onTouchStart={() => {
+              if (showTooltip) setShowTooltip(false);
+            }}>
             {cardId !== CARD_IDS.HIDDEN_CARD &&
               cardProvider === CardProviders.PAYCADDY && (
                 <CyDView className='mx-[16px] my-[12px] bg-n0 rounded-[16px] p-[8px]'>
@@ -998,7 +999,7 @@ export default function CypherCardScreen() {
               </CyDView>
             )}
 
-            <CyDView className='w-full bg-n0 mt-[26px] pb-[120px] pt-[16px] gap-y-[16px]'>
+            <CyDView className='w-full bg-n0 mt-[12px] pb-[120px] pt-[16px] gap-y-[16px]'>
               {cardId === CARD_IDS.HIDDEN_CARD && (
                 <CyDTouchView
                   className='mx-[16px] bg-base250 rounded-[12px] p-[16px]'

@@ -51,7 +51,7 @@ export default function EditCardColor({
   const [selectedColor, setSelectedColor] = useState<string>(
     getCardColorByHex(currentColor)?.id ?? 'mimosa',
   );
-  // Tracks which color's image has finished loading so text color stays in sync with the card image
+
   const [loadedColor, setLoadedColor] = useState<string>(
     getCardColorByHex(currentColor)?.id ?? 'mimosa',
   );
@@ -71,7 +71,7 @@ export default function EditCardColor({
       action: 'update_CARD_COLOUR',
       label: selectedColor,
       card_id: cardId,
-      provider: provider,
+      provider,
       new_color: selectedColor,
     });
 
@@ -109,7 +109,7 @@ export default function EditCardColor({
     }
   };
 
-  const renderColorGrid = (colors: (typeof CARD_COLOURS)[number][]) => {
+  const renderColorGrid = (colors: any[]) => {
     return (
       <CyDView className='flex-row flex-wrap justify-between'>
         {colors.map(color => {
