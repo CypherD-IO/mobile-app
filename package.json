@@ -38,7 +38,7 @@
     "e2e:loadcard:clean": "npm run e2e:reset-sim && npm run e2e:loadcard",
     "check-build-readiness": "./scripts/test-build-readiness.sh",
     "pre-commit-check": "./scripts/test-build-readiness.sh",
-    "setup-skills": "npx skills add vercel-labs/agent-skills --skill vercel-composition-patterns vercel-react-best-practices --agent cursor claude-code --yes"
+    "setup-skills": "npx skills add vercel-labs/agent-skills --skill vercel-react-native-skills --agent cursor claude-code --yes"
   },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
