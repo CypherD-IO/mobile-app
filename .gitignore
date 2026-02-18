@@ -83,3 +83,9 @@ artifacts
 
 #specstory
 .specstory/
+
+
+# AI agents skills
+.cursor/skills/
+.agents/skills/
+.claude/skills/

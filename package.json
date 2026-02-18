@@ -37,7 +37,8 @@
     "e2e:loadcard": "detox test --configuration ios.sim.debug e2e/loadCardFlow.test.ts",
     "e2e:loadcard:clean": "npm run e2e:reset-sim && npm run e2e:loadcard",
     "check-build-readiness": "./scripts/test-build-readiness.sh",
-    "pre-commit-check": "./scripts/test-build-readiness.sh"
+    "pre-commit-check": "./scripts/test-build-readiness.sh",
+    "setup-skills": "npx skills add vercel-labs/agent-skills --skill vercel-react-native-skills --agent cursor claude-code --yes"
   },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
