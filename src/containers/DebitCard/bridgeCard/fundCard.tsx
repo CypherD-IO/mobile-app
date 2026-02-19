@@ -948,9 +948,16 @@ export default function BridgeFundCardScreen({
               tokenContractDecimals: contractDecimals,
             });
             if (!gasDetails?.isError) {
-              // not doing it or solana because if we are sending max amount, then there should be 0 SOL balance in the account, or there should SOL balance enough
-              // for handling the account rent, else we will get the error InsufficientFundsForRent, since we will not be having enough SOL
-              const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
+              const normalizedGasFeeEstimation = Number.isFinite(
+                Number(gasDetails.gasFeeInCrypto),
+              )
+                ? String(gasDetails.gasFeeInCrypto)
+                : '0';
+              const SOLANA_MAX_SEND_BUFFER = '0.00001';
+              const gasFeeEstimationForTxn = DecimalHelper.add(
+                normalizedGasFeeEstimation,
+                SOLANA_MAX_SEND_BUFFER,
+              ).toString();
               amountInCrypto = DecimalHelper.subtract(
                 balanceDecimal,
                 gasFeeEstimationForTxn,
