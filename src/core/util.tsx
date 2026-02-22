@@ -37,7 +37,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get, isEmpty, omit, omitBy } from 'lodash';
+import { find, get, isEmpty, omit } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
@@ -1497,9 +1497,7 @@ export const processMerchantName = (name: string) => {
 /**
  * Checks if an error represents a user rejection/cancellation
  */
-export const isUserRejectionError = (
-  error: unknown,
-): boolean => {
+export const isUserRejectionError = (error: unknown): boolean => {
   const errorMessage = (error as Error)?.message ?? '';
   const errorDetails = (error as any)?.details ?? '';
   const errorShortMessage = (error as any)?.shortMessage ?? '';
