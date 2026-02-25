@@ -311,15 +311,31 @@ export default function EnterAmount(props: any) {
         }
       }
 
-      const gasReserved =
+      const isNativeTokenOnCurrentChain =
         (NativeTokenMapping[tokenData?.chainDetails?.symbol as AllChainsEnum] ||
-          tokenData?.chainDetails?.symbol) === tokenData?.symbol
-          ? gasReservedForNativeToken
-          : 0;
+          tokenData?.chainDetails?.symbol) === tokenData?.symbol;
+
+      // Prevent invalid/NaN estimate values from turning max into full balance.
+      const normalizedNativeGasReserve = Number.isFinite(
+        Number(gasReservedForNativeToken),
+      )
+        ? String(gasReservedForNativeToken)
+        : '0';
+
+      // Keep a tiny reserve for SOL max sends because runtime fee can vary.
+      const SOLANA_MAX_SEND_BUFFER = '0.00001';
+      const gasReserved = isNativeTokenOnCurrentChain
+        ? tokenData.chainDetails.backendName === ChainBackendNames.SOLANA
+          ? DecimalHelper.add(
+              normalizedNativeGasReserve,
+              SOLANA_MAX_SEND_BUFFER,
+            ).toString()
+          : normalizedNativeGasReserve
+        : '0';
 
       const maxAmountDecimal = DecimalHelper.subtract(
         tokenData.balanceDecimal,
-        String(gasReserved),
+        gasReserved,
       );
 
       const textAmount = DecimalHelper.isLessThan(maxAmountDecimal, 0)

@@ -1,6 +1,11 @@
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
-import { CHAIN_ETH, Chain, CHAIN_NAMES } from '../constants/server';
+import {
+  CHAIN_ETH,
+  CHAIN_SOLANA,
+  Chain,
+  CHAIN_NAMES,
+} from '../constants/server';
 import { isAddressSet } from '../core/util';
 import { Dispatch } from 'react';
 
@@ -40,7 +45,7 @@ export class ChainWallet {
   public get path(): string {
     return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
       ? ''
-      : (this.wallets[this.currentIndex].path ?? '');
+      : this.wallets[this.currentIndex].path ?? '';
   }
 }
 
@@ -209,8 +214,13 @@ export function hdWalletStateReducer(
         }),
       };
 
-      // Handle analytics for ETH chain
-      if (chain === CHAIN_ETH.chainName) {
+      // Prefer ETH user id; fallback to SOL only when ETH is unavailable.
+      const ethAddress = state.wallet[CHAIN_ETH.chainName]?.address;
+      const shouldRegisterUser =
+        chain === CHAIN_ETH.chainName ||
+        (chain === CHAIN_SOLANA.chainName && !ethAddress);
+
+      if (shouldRegisterUser) {
         void Promise.all([
           Intercom.loginUserWithUserAttributes({ userId: address }).catch(
             () => {

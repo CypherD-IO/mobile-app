@@ -36,6 +36,7 @@ module.exports = {
         fuchsia: colors.fuchsia,
         pink: colors.pink,
         rose: colors.rose,
+        yellow: '#F8CC5D',
         primaryTextColor: '#000000',
         whiteColor: '#FFFFFF',
         appColor: '#F7C645',

@@ -1183,16 +1183,21 @@ export default function useTransactionManager() {
           recentBlockhash: blockhash,
         }).compileToV0Message(),
       );
+      simulationTransaction.sign([fromKeypair]);
 
       // Simulate transaction to get compute unit estimate
       const simulation = await connection.simulateTransaction(
         simulationTransaction,
+        {
+          sigVerify: true,
+          commitment: 'processed',
+        },
       );
 
       if (simulation.value.err) {
-        const errorMessage =
-          simulation.value.logs?.join('\n') ??
-          parseErrorMessage(simulation.value.err);
+        const parsedError = parseErrorMessage(simulation.value.err);
+        const logs = simulation.value.logs?.join('\n') ?? 'No simulation logs';
+        const errorMessage = `${parsedError}\n${logs}`;
         throw new Error(`Simulation failed: ${errorMessage}`);
       }
 

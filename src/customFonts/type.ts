@@ -141,4 +141,5 @@ export type IconNames =
   | 'seed'
   | 'arrow-forward'
   | 'portfolio'
+  | 'tap-and-pay'
   | 'offerIcon';

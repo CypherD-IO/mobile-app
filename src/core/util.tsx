@@ -37,7 +37,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get, isEmpty, omit, omitBy } from 'lodash';
+import { find, get, isEmpty, omit } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
@@ -49,6 +49,7 @@ import {
   AnalyticsType,
   CardProviders,
   CardTransactionTypes,
+  CardType,
   CypherPlanId,
   ReapTxnStatus,
   EcosystemsEnum,
@@ -91,6 +92,7 @@ import { CardProfile } from '../models/cardProfile.model';
 import { CardDesign } from '../models/cardDesign.interface';
 import { CYPHER_CARD_IMAGES } from '../../assets/images/appImages';
 import { Card, ICardTransaction } from '../models/card.model';
+import { getCardColorByHex } from '../constants/cardColours';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1375,6 +1377,11 @@ export const getCardImage = (card: Card, provider: CardProviders) => {
   }
 
   if (provider === CardProviders.REAP_CARD) {
+    // For virtual cards with a custom color, use the color-based card image
+    if (card.type === CardType.VIRTUAL && card.cardColor) {
+      const colorData = getCardColorByHex(card.cardColor);
+      return colorData.cardImage;
+    }
     const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
       card.designId ?? ''
     }.png`;
@@ -1490,9 +1497,7 @@ export const processMerchantName = (name: string) => {
 /**
  * Checks if an error represents a user rejection/cancellation
  */
-export const isUserRejectionError = (
-  error: unknown,
-): boolean => {
+export const isUserRejectionError = (error: unknown): boolean => {
   const errorMessage = (error as Error)?.message ?? '';
   const errorDetails = (error as any)?.details ?? '';
   const errorShortMessage = (error as any)?.shortMessage ?? '';

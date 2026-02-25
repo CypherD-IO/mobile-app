@@ -95,7 +95,9 @@ export async function sendTransaction(
       if (receipt?.transactionHash) {
         isHashGenerated = true;
         webviewRef.current.injectJavaScript(
-          `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(receipt.transactionHash)})`,
+          `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
+            receipt.transactionHash,
+          )})`,
         );
 
         Toast.show({

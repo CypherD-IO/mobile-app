@@ -170,7 +170,6 @@ export default function OnBoardingOptions() {
   const { showModal, hideModal } = useGlobalModalContext();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
-  const { openWalletConnectModal } = useConnectionManager();
   const { getWithoutAuth } = useAxios();
   const inset = useSafeAreaInsets();
 
@@ -460,8 +459,8 @@ export default function OnBoardingOptions() {
             socialLoginMethod === SocialLoginMethod.EMAIL
               ? 'email'
               : socialLoginMethod === SocialLoginMethod.GOOGLE
-                ? 'google'
-                : 'apple',
+              ? 'google'
+              : 'apple',
         });
       } else if (providerType === ProviderType.SOLANA) {
         _privateKey = (await provider.provider.request({
@@ -482,14 +481,14 @@ export default function OnBoardingOptions() {
             socialLoginMethod === SocialLoginMethod.EMAIL
               ? 'email'
               : socialLoginMethod === SocialLoginMethod.GOOGLE
-                ? 'google'
-                : 'apple',
+              ? 'google'
+              : 'apple',
         });
       } else {
         return;
       }
 
-      void setConnectionType(connectionType);
+      await setConnectionType(connectionType);
     }
   };
 

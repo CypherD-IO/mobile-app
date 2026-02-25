@@ -770,6 +770,33 @@ const WALLET_CONNECT_MOBILE = {
   uri: `${S3_BUCKET_URL_ICONS}/walletConnectMobile.png`,
 };
 
+const CARD_MIMOSA = {
+  uri: `${CYPHER_CARD_IMAGES}/cardMimosa.png`,
+};
+const CARD_ZED_BLUE = {
+  uri: `${CYPHER_CARD_IMAGES}/cardZedBlue.png`,
+};
+const CARD_CRIMSON = {
+  uri: `${CYPHER_CARD_IMAGES}/cardCrimson.png`,
+};
+const CARD_VENIAL = {
+  uri: `${CYPHER_CARD_IMAGES}/cardVenial.png`,
+};
+const CARD_ELECTRIC_LIME = {
+  uri: `${CYPHER_CARD_IMAGES}/cardElectricLime.png`,
+};
+const CARD_JET_BLACK = {
+  uri: `${CYPHER_CARD_IMAGES}/cardJetBlack.png`,
+};
+
+const CARD_COLOUR_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardColorIcon.png`,
+};
+
+const SAFEPAL_CLAIM_MODAL = {
+  uri: `${S3_BUCKET_URL_ICONS}/safepalClaimModal.png`,
+};
+
 export const AppImagesMap = {
   common: {
     EMPTY_PERSON,
@@ -1092,6 +1119,14 @@ export const AppImagesMap = {
     TREASURE_CHEST,
     SUCCESS_TICK_3D,
     WALLET_CONNECT_MOBILE,
+    CARD_MIMOSA,
+    CARD_ZED_BLUE,
+    CARD_CRIMSON,
+    CARD_VENIAL,
+    CARD_ELECTRIC_LIME,
+    CARD_JET_BLACK,
+    CARD_COLOUR_ICON,
+    SAFEPAL_CLAIM_MODAL,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1419,6 +1454,14 @@ enum AppImages {
   TREASURE_CHEST = 'TREASURE_CHEST',
   SUCCESS_TICK_3D = 'SUCCESS_TICK_3D',
   WALLET_CONNECT_MOBILE = 'WALLET_CONNECT_MOBILE',
+  CARD_MIMOSA = 'CARD_MIMOSA',
+  CARD_ZED_BLUE = 'CARD_ZED_BLUE',
+  CARD_CRIMSON = 'CARD_CRIMSON',
+  CARD_VENIAL = 'CARD_VENIAL',
+  CARD_ELECTRIC_LIME = 'CARD_ELECTRIC_LIME',
+  CARD_JET_BLACK = 'CARD_JET_BLACK',
+  CARD_COLOUR_ICON = 'CARD_COLOUR_ICON',
+  SAFEPAL_CLAIM_MODAL = 'SAFEPAL_CLAIM_MODAL',
 }
 
 export default AppImages;

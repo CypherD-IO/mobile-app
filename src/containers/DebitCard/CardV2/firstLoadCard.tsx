@@ -444,10 +444,19 @@ export default function FirstLoadCard() {
             isMaxGasEstimation: true,
           });
           if (gasDetails && !gasDetails.isError) {
-            const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
+            const normalizedGasFeeEstimation = Number.isFinite(
+              Number(gasDetails.gasFeeInCrypto),
+            )
+              ? String(gasDetails.gasFeeInCrypto)
+              : '0';
+            const SOLANA_MAX_SEND_BUFFER = '0.00001';
+            const gasFeeEstimationForTxn = DecimalHelper.add(
+              normalizedGasFeeEstimation,
+              SOLANA_MAX_SEND_BUFFER,
+            ).toString();
             amountInCrypto = DecimalHelper.subtract(
               balanceDecimal,
-              DecimalHelper.multiply(gasFeeEstimationForTxn, 1.1),
+              gasFeeEstimationForTxn,
             ).toString();
           } else {
             setIsMaxLoading(false);

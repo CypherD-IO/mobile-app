@@ -68,6 +68,8 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import Loading from '../../../components/v2/loading';
+import { getCardColorByHex } from '../../../constants/cardColours';
+import CardTagBadge from '../../../components/CardTagBadge';
 
 interface CardSecrets {
   cvv: string;
@@ -189,6 +191,10 @@ export default function CardScreen({
       if (card.status === CardStatus.ADDITIONAL_CARD) {
         return AppImages.ADDITIONAL_CARD;
       }
+      if (card.type === CardType.VIRTUAL && card.cardColor) {
+        const colorData = getCardColorByHex(card.cardColor);
+        return colorData.cardImage;
+      }
       const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
         card.designId ?? ''
       }.png`;
@@ -234,6 +240,13 @@ export default function CardScreen({
         )}
         resizeMode='contain'
         source={getCardImage(card)}>
+        {card.cardTag &&
+          card.status !== CardStatus.HIDDEN &&
+          card.status !== CardStatus.ADDITIONAL_CARD && (
+            <CyDView className='absolute top-[85px] right-[14px]'>
+              <CardTagBadge tag={card.cardTag} />
+            </CyDView>
+          )}
         {(card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.BLOCKED) && (
           <CyDTouchView
@@ -293,12 +306,15 @@ export default function CardScreen({
           cardProfile.provider === CardProviders.REAP_CARD && (
             <CyDView className='absolute bottom-[14px] left-[14px]'>
               <CyDText
-                className={clsx('font-semibold text-[14px]', {
-                  'text-white':
-                    card.designId === 'dd6a68ce-bfc2-45b0-8ae8-06cc5220d5a1',
-                  'text-black': card.type === CardType.PHYSICAL,
-                  'text-n0': card.type === CardType.VIRTUAL,
-                })}>
+                className='font-semibold text-[14px]'
+                style={{
+                  color:
+                    card.type === CardType.VIRTUAL && card.cardColor
+                      ? getCardColorByHex(card.cardColor).textColor
+                      : card.type === CardType.PHYSICAL
+                        ? '#000000'
+                        : '#FFFFFF',
+                }}>
                 {' xxxx ' + card.last4}
               </CyDText>
             </CyDView>
@@ -399,6 +415,10 @@ export default function CardScreen({
             renderItem={renderItem as any}
           />
           <RenderCardActions
+            key={
+              get(cardsWithUpgrade, currentCardIndex)?.cardId ||
+              `card-${currentCardIndex}`
+            }
             card={get(cardsWithUpgrade, currentCardIndex)}
             cardProvider={currentCardProvider}
             navigation={navigation}
