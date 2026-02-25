@@ -112,13 +112,15 @@ class MainApplication : Application(), ReactApplication, ShareApplication {
       Log.e(TAG, "Failed to register custom fonts; continuing startup.", t)
     }
 
-    // Intercom initialization (keep existing production behavior).
+    // Intercom initialization (uses INTERCOM_ANDROID_SDK_KEY from .env).
     try {
-      IntercomModule.initialize(
-        this,
-        "android_sdk-60866bc5b6b0e244ea48a178cb454791b75dff7a",
-        BuildConfig.INTERCOM_APP_KEY,
-      )
+      val sdkKey = BuildConfig.INTERCOM_ANDROID_SDK_KEY
+      val appId = BuildConfig.INTERCOM_APP_KEY
+      if (sdkKey.isNotBlank() && appId.isNotBlank()) {
+        IntercomModule.initialize(this, sdkKey, appId)
+      } else {
+        Log.w(TAG, "Skipping Intercom initialization: missing INTERCOM_ANDROID_SDK_KEY and/or INTERCOM_APP_KEY")
+      }
     } catch (t: Throwable) {
       Log.e(TAG, "Failed to initialize Intercom; continuing startup.", t)
     }
