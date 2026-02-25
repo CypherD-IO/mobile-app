@@ -507,18 +507,27 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_CONTROLS}
         component={CardControls}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Card Controls'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-              textAlign='start'
-              textStyle='text-[20px] font-medium'
-              backgroundColor='bg-n0'
-            />
-          ),
-        })}
+        options={({ navigation, route }) => {
+          const params = route.params as { showAsSheet?: boolean } | undefined;
+          if (params?.showAsSheet) {
+            return {
+              headerShown: false,
+              animation: 'slide_from_bottom' as const,
+            };
+          }
+          return {
+            header: () => (
+              <CustomHeader
+                title='Card Controls'
+                navigation={navigation}
+                keyboardHeight={keyboardHeight}
+                textAlign='start'
+                textStyle='text-[20px] font-medium'
+                backgroundColor='bg-n0'
+              />
+            ),
+          };
+        }}
       />
       <FundCardStack.Screen
         name={screenTitle.MERCHANT_REWARD_LIST}
