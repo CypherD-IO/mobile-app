@@ -34,7 +34,7 @@ export interface CyDBottomSheetRef {
 
 interface CyDBottomSheetProps {
   children: React.ReactNode;
-  snapPoints?: Array<string | number>;
+  snapPoints?: any[];
   initialSnapIndex?: number;
   enableDynamicSizing?: boolean;
   enablePanDownToClose?: boolean;
