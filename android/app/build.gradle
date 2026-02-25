@@ -59,6 +59,8 @@ react {
 
 // Keep react-native-config env support without relying on manual Gradle includes.
 apply from: file("../../node_modules/react-native-config/android/dotenv.gradle")
+// Ensure INTERCOM_ANDROID_SDK_KEY exists for BuildConfig (empty if not in .env).
+project.ext.get("env").putIfAbsent("INTERCOM_ANDROID_SDK_KEY", "")
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 
 /**

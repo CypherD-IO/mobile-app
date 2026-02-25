@@ -13,6 +13,7 @@ jobs:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
       ENVIROINMENT: ${{secrets.ENVIROINMENT}}
       INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
+      INTERCOM_ANDROID_SDK_KEY: ${{secrets.INTERCOM_ANDROID_SDK_KEY}}
       MOBILE_WALLETKIT_PROJECTID: ${{secrets.MOBILE_WALLETKIT_PROJECTID}}
       MOBILE_APPKIT_PROJECTID: ${{secrets.MOBILE_APPKIT_PROJECTID}}
       HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
@@ -95,6 +96,7 @@ jobs:
           echo "MOBILE_WALLETKIT_PROJECTID=${{ secrets.MOBILE_WALLETKIT_PROJECTID }}" >> .env
           echo "MOBILE_APPKIT_PROJECTID=${{ secrets.MOBILE_APPKIT_PROJECTID }}" >> .env
           echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
+          echo "INTERCOM_ANDROID_SDK_KEY=${{ secrets.INTERCOM_ANDROID_SDK_KEY }}" >> .env
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
           echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
           echo "HELIUS_API_KEY=${{ secrets.HELIUS_API_KEY }}" >> .env
