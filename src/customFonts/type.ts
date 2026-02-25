@@ -141,5 +141,15 @@ export type IconNames =
   | 'seed'
   | 'arrow-forward'
   | 'portfolio'
-  | 'tap-and-pay'
-  | 'offerIcon';
+  | 'offerIcon'
+  | 'spend-controls'
+  | 'card-color'
+  | 'card-tag'
+  | 'authentication-method'
+  | 'card-pin'
+  | 'select-countries'
+  | 'atm-withdrawals'
+  | 'merchant-outlet'
+  | 'mobile-wallets'
+  | 'online-transaction'
+  | 'tap-and-pay';

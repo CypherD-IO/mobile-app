@@ -63,7 +63,6 @@ import { CardProfile } from '../../../models/cardProfile.model';
 import { PlanInfo } from '../../../models/planInfo.interface';
 import {
   CyDFastImage,
-  CyDImage,
   CyDLottieView,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
@@ -108,7 +107,7 @@ export default function CypherCardScreen() {
   const cardProfile: CardProfile | undefined =
     globalContext?.globalState?.cardProfile;
   const [cardBalance, setCardBalance] = useState('0');
-  const [currentCardIndex] = useState(0); // Not setting anywhere.
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [
     isTermsAndConditionsModalVisible,
@@ -995,6 +994,8 @@ export default function CypherCardScreen() {
                     shouldShowLocked() ||
                     shouldShowContactSupport()
                   }
+                  initialCardIndex={currentCardIndex}
+                  onCardIndexChange={setCurrentCardIndex}
                 />
               </CyDView>
             )}
