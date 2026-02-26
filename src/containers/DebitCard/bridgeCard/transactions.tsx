@@ -127,7 +127,10 @@ export default function CardTransactions() {
   };
 
   const exportCardTransactions = async (type: 'pdf' | 'csv') => {
-    const exportEndpoint = `/v1/cards/${cardProvider}/card/transactions/export/${type}`;
+    const cardPath = cardId
+      ? `${cardProvider}/card/${cardId}`
+      : `${cardProvider}/card`;
+    const exportEndpoint = `/v1/cards/${cardPath}/transactions/export/${type}`;
     try {
       setIsExporting(true);
       const res = await postWithAuth(exportEndpoint, {});
