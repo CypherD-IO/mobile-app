@@ -312,8 +312,8 @@ export default function CardScreen({
                     card.type === CardType.VIRTUAL && card.cardColor
                       ? getCardColorByHex(card.cardColor).textColor
                       : card.type === CardType.PHYSICAL
-                        ? '#000000'
-                        : '#FFFFFF',
+                      ? '#000000'
+                      : '#FFFFFF',
                 }}>
                 {' xxxx ' + card.last4}
               </CyDText>
@@ -415,10 +415,6 @@ export default function CardScreen({
             renderItem={renderItem as any}
           />
           <RenderCardActions
-            key={
-              get(cardsWithUpgrade, currentCardIndex)?.cardId ||
-              `card-${currentCardIndex}`
-            }
             card={get(cardsWithUpgrade, currentCardIndex)}
             cardProvider={currentCardProvider}
             navigation={navigation}
