@@ -92,15 +92,12 @@ export default function CyDTokenValue(props: CyDTokenValueProps) {
           onPress={handlePress}
           disabled={!hideBalance}
           className={mainClasses}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.5}
           {...restProps}>
           {mainPart}
-        </CyDText>
-        <CyDText
-          onPress={handlePress}
-          disabled={!hideBalance}
-          className={decimalClasses}
-          {...restProps}>
-          {decimalPart}
+          <CyDText className={decimalClasses}>{decimalPart}</CyDText>
         </CyDText>
       </CyDView>
     );
@@ -112,6 +109,9 @@ export default function CyDTokenValue(props: CyDTokenValueProps) {
       onPress={handlePress}
       disabled={!hideBalance}
       className={mainClasses}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      minimumFontScale={0.5}
       {...restProps}>
       {formattedValue}
     </CyDText>

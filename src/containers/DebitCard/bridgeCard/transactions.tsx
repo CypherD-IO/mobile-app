@@ -41,6 +41,7 @@ import { isIOS } from '../../../misc/checkers';
 import { ICardTransaction } from '../../../models/card.model';
 import { CardProfile } from '../../../models/cardProfile.model';
 import {
+  CyDFastImage,
   CyDFlatList,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
@@ -48,18 +49,20 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
+import AppImages from '../../../../assets/images/appImages';
 import CardTxnFilterModal from '../CardV2/CardTxnFilterModal';
 import PageHeader from '../../../components/PageHeader';
 
 interface RouteParams {
   cardProvider: CardProviders;
+  cardId?: string;
 }
 
 export default function CardTransactions() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
-  const { cardProvider } = route.params;
+  const { cardProvider, cardId } = route.params;
   const { getWithAuth, postWithAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -177,7 +180,10 @@ export default function CardTransactions() {
     if (pullToRefresh) {
       txnRetrievalOffset.current = undefined;
     }
-    let txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=15&includeRewards=true`;
+    const cardPath = cardId
+      ? `${cardProvider}/card/${cardId}`
+      : `${cardProvider}/card`;
+    let txnURL = `/v1/cards/${cardPath}/transactions?newRoute=true&limit=15&includeRewards=true`;
     if (txnRetrievalOffset.current) {
       txnURL += `&offset=${txnRetrievalOffset.current}`;
     }
@@ -343,38 +349,40 @@ export default function CardTransactions() {
           modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
           filterState={[filter, setFilter]}
         />
-        <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
-          <CyDView className='flex flex-1 justify-center items-center'>
-            <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
-              {viewableTransactionsDate}
-            </CyDText>
+        {transactions.length > 0 && (
+          <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
+            <CyDView className='flex flex-1 justify-center items-center'>
+              <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
+                {viewableTransactionsDate}
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
+              <CyDTouchView
+                onPress={() => {
+                  setFilterModalVisible(true);
+                }}>
+                <CyDMaterialDesignIcons
+                  name='filter-variant'
+                  size={24}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+              <CyDTouchView
+                disabled={isExporting}
+                className={clsx({ 'opacity-40': isExporting })}
+                onPress={() => {
+                  setExportOptionOpen(true);
+                  // void exportCardTransactions();
+                }}>
+                <CyDMaterialDesignIcons
+                  name='export-variant'
+                  size={20}
+                  className='text-base400'
+                />
+              </CyDTouchView>
+            </CyDView>
           </CyDView>
-          <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
-            <CyDTouchView
-              onPress={() => {
-                setFilterModalVisible(true);
-              }}>
-              <CyDMaterialDesignIcons
-                name='filter-variant'
-                size={24}
-                className='text-base400'
-              />
-            </CyDTouchView>
-            <CyDTouchView
-              disabled={isExporting}
-              className={clsx({ 'opacity-40': isExporting })}
-              onPress={() => {
-                setExportOptionOpen(true);
-                // void exportCardTransactions();
-              }}>
-              <CyDMaterialDesignIcons
-                name='export-variant'
-                size={20}
-                className='text-base400'
-              />
-            </CyDTouchView>
-          </CyDView>
-        </CyDView>
+        )}
         <CyDView className='flex-1'>
           <CyDFlatList
             data={filteredTransactions}
@@ -393,6 +401,17 @@ export default function CardTransactions() {
             }
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
+            ListEmptyComponent={
+              !refreshing ? (
+                <CyDView className='py-[24px] justify-start items-center'>
+                  <CyDFastImage
+                    source={AppImages.NO_TRANSACTIONS_YET}
+                    className='h-[150px] w-[150px]'
+                    resizeMode='contain'
+                  />
+                </CyDView>
+              ) : null
+            }
             ListFooterComponent={
               <InfiniteScrollFooterLoader
                 refreshing={refreshing}

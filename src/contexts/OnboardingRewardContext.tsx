@@ -243,3 +243,14 @@ export function useOnboardingReward() {
   }
   return ctx;
 }
+
+/**
+ * Non-throwing variant of {@link useOnboardingReward}.
+ *
+ * Returns `null` when called outside an `OnboardingRewardProvider` instead of
+ * crashing.  Useful for components rendered in portals or bottom sheets that
+ * may sit above the provider in the React tree.
+ */
+export function useOnboardingRewardSafe(): OnboardingRewardContextProps | null {
+  return useContext(OnboardingRewardContext);
+}
