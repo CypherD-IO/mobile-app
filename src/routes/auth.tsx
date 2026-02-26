@@ -154,7 +154,9 @@ const CustomHeader = ({
   const insets = useSafeAreaInsets();
   return (
     <CyDView
-      className={`flex-row ${textAlign === 'center' ? 'justify-between' : 'items-center'} pb-[10px] ${backgroundColor ?? 'bg-n20'}`}
+      className={`flex-row ${
+        textAlign === 'center' ? 'justify-between' : 'items-center'
+      } pb-[10px] ${backgroundColor ?? 'bg-n20'}`}
       style={{ paddingTop: insets.top }}>
       <CyDTouchView
         className='px-[12px] mx-[4px]'
@@ -171,7 +173,9 @@ const CustomHeader = ({
         <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
       <CyDText
-        className={`text-base400 text-[20px] font-extrabold ${textAlign === 'center' ? 'mr-[44px]' : ''} ${textStyle ?? ''}`}>
+        className={`text-base400 text-[20px] font-extrabold ${
+          textAlign === 'center' ? 'mr-[44px]' : ''
+        } ${textStyle ?? ''}`}>
         {title}
       </CyDText>
       {textAlign === 'center' && <CyDView className='' />}

@@ -21,6 +21,7 @@ import {
   ActivityIndicator,
   StatusBar,
   Platform,
+  PanResponder,
 } from 'react-native';
 import { capitalize, find, get, trim, truncate } from 'lodash';
 import clsx from 'clsx';
@@ -32,6 +33,7 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 import {
   CyDImage,
+  CyDFastImage,
   CyDText,
   CyDView,
   CyDMaterialDesignIcons,
@@ -182,6 +184,23 @@ export default function CardControls(): React.JSX.Element {
 
   const sheetBgColor = isDarkMode ? '#161616' : '#F5F6F7';
   const sheetIndicatorColor = isDarkMode ? '#444' : '#ccc';
+
+  const SWIPE_DOWN_THRESHOLD = 80;
+  const swipeDownResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_evt, gestureState) =>
+          gestureState.dy > 15 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx * 1.5),
+        onPanResponderRelease: (_evt, gestureState) => {
+          if (gestureState.dy > SWIPE_DOWN_THRESHOLD) {
+            navigation.goBack();
+          }
+        },
+      }),
+    [navigation],
+  );
 
   const sheetStyles = useMemo(
     () => ({
@@ -1720,7 +1739,8 @@ export default function CardControls(): React.JSX.Element {
           />
           <CyDView
             className='items-center px-[24px]'
-            style={{ paddingTop: insets.top + 12 }}>
+            style={{ paddingTop: insets.top + 12 }}
+            {...swipeDownResponder.panHandlers}>
             <CyDView
               className='absolute left-[16px] flex-row items-center'
               style={{ top: insets.top + 12 }}>
@@ -1730,16 +1750,18 @@ export default function CardControls(): React.JSX.Element {
                 <CyDIcons name='arrow-left' size={24} className='text-white' />
               </CyDTouchView>
               <CyDText className='font-manrope font-medium text-[16px] text-white leading-[140%] tracking-[-0.8px]'>
-                {selectedCard?.type === CardType.PHYSICAL
-                  ? selectedCard?.physicalCardType === PhysicalCardType.METAL
-                    ? 'Metal Card'
-                    : 'Physical Card'
-                  : 'Virtual Card'}
+                {`${
+                  selectedCard?.type === CardType.PHYSICAL
+                    ? selectedCard?.physicalCardType === PhysicalCardType.METAL
+                      ? 'Metal Card'
+                      : 'Physical Card'
+                    : 'Virtual Card'
+                }${selectedCard?.last4 ? ` •• ${selectedCard.last4}` : ''}`}
               </CyDText>
             </CyDView>
 
             <CyDView className='w-full aspect-[1.586] rounded-[14px] overflow-hidden mt-[50px] shadow-lg shadow-black/30'>
-              <CyDImage
+              <CyDFastImage
                 source={getCardImage(
                   selectedCard,
                   currentCardProvider as CardProviders,
@@ -1753,6 +1775,23 @@ export default function CardControls(): React.JSX.Element {
                     <CardTagBadge tag={selectedCard.cardTag} />
                   </CyDView>
                 )}
+              {selectedCard.last4 && (
+                <CyDView className='absolute bottom-[14px] left-[14px]'>
+                  <CyDText
+                    className='font-semibold text-[14px]'
+                    style={{
+                      color:
+                        selectedCard.type === CardType.VIRTUAL &&
+                        selectedCard.cardColor
+                          ? getCardColorByHex(selectedCard.cardColor).textColor
+                          : selectedCard.type === CardType.PHYSICAL
+                          ? '#000000'
+                          : '#FFFFFF',
+                    }}>
+                    {`•••• ${selectedCard.last4}`}
+                  </CyDText>
+                </CyDView>
+              )}
             </CyDView>
 
             <CyDView className='flex-row justify-center items-center gap-x-[64px] mt-[20px] mb-[8px]'>
@@ -1828,6 +1867,7 @@ export default function CardControls(): React.JSX.Element {
                 onPress={() => {
                   navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                     cardProvider: currentCardProvider,
+                    cardId: selectedCardId,
                   });
                 }}>
                 <CyDView className='h-[54px] w-[54px] items-center justify-center rounded-full bg-white'>
@@ -1983,7 +2023,7 @@ export default function CardControls(): React.JSX.Element {
               </CyDView>
             ) : (
               <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                <CyDImage
+                <CyDFastImage
                   source={getCardImage(
                     selectedCard,
                     currentCardProvider as CardProviders,
@@ -2045,7 +2085,7 @@ export default function CardControls(): React.JSX.Element {
                   onPress={() => handleCardSelect(cardItem)}
                   className='flex flex-row items-center justify-between px-[14px] py-[12px] border-b border-n40'>
                   <CyDView className='flex flex-row items-center gap-x-[12px]'>
-                    <CyDImage
+                    <CyDFastImage
                       source={getCardImage(
                         cardItem,
                         currentCardProvider as CardProviders,
