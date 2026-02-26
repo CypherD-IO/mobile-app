@@ -149,17 +149,6 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   const isDarkMode =
     theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
 
-  if (!rewardCtx) {
-    return null;
-  }
-
-  const {
-    statusWiseRewards,
-    totalRewardsPossible,
-    totalRewardsEarned,
-    currentStage,
-  } = rewardCtx;
-
   // Map backend milestone keys → widget index
   const stageToIndex: Record<string, number> = {
     KYC_PENDING: 0,
@@ -168,7 +157,8 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
     COMPLETED: 2,
   };
 
-  const derivedIndex = stageToIndex[currentStage ?? 'KYC_PENDING'] ?? 0;
+  const derivedIndex =
+    stageToIndex[rewardCtx?.currentStage ?? 'KYC_PENDING'] ?? 0;
 
   // Keep internal index state in sync with backend stage changes
   const [selectedIndex, setSelectedIndex] = useState(derivedIndex);
@@ -177,6 +167,16 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   useEffect(() => {
     setSelectedIndex(derivedIndex);
   }, [derivedIndex]);
+
+  if (!rewardCtx) {
+    return null;
+  }
+
+  const {
+    statusWiseRewards,
+    totalRewardsPossible,
+    totalRewardsEarned,
+  } = rewardCtx;
 
   // Convenience helpers to read milestone data safely
   const milestone = (key: string) => statusWiseRewards?.[key] ?? {};
@@ -189,7 +189,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       reward: milestone('kycPending').amount ?? 0,
       status: milestone('kycPending').earned ? 'completed' : 'pending',
       description: `🎉 Awesome! You just earned ${
-        milestone('kycPending').amount
+        milestone('kycPending').amount ?? 0
       } $CYPR for joining the cypher card platform!`,
     },
     {
@@ -199,7 +199,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       reward: milestone('firstLoad').amount ?? 0,
       status: milestone('firstLoad').earned ? 'completed' : 'pending',
       description: `Add funds to your card to avail ${
-        milestone('firstLoad').amount
+        milestone('firstLoad').amount ?? 0
       } $CYPR as bonus rewards.`,
     },
     {
@@ -209,7 +209,7 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       reward: milestone('firstSpend').amount ?? 0,
       status: milestone('firstSpend').earned ? 'completed' : 'pending',
       description: `Make your first purchase with any merchant and you'll get ${
-        milestone('firstSpend').amount
+        milestone('firstSpend').amount ?? 0
       } $CYPR as bonus reward`,
     },
     // {

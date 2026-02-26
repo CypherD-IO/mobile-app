@@ -327,19 +327,20 @@ export default function CardScreen({
   };
 
   const cardsWithUpgrade = useMemo(() => {
-    const actualCards = userCardDetails.cards.filter(
+    return userCardDetails.cards.filter(
       card =>
         card.cardId !== CARD_IDS.METAL_CARD &&
         card.status !== CardStatus.ADDITIONAL_CARD &&
         card.status !== CardStatus.RC_UPGRADABLE &&
         card.status !== CardStatus.HIDDEN,
     );
+  }, [currentCardProvider, userCardDetails.cards, cardProfile]);
 
+  // Reset card index on first initialization — kept outside useMemo to avoid side effects during render
+  useEffect(() => {
     if (!hasInitializedOrder.current) {
       setCurrentCardIndex(0);
     }
-
-    return actualCards;
   }, [currentCardProvider, userCardDetails.cards, cardProfile]);
 
   const getTrackingDetails = async (): Promise<any> => {
