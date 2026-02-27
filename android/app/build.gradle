@@ -2,7 +2,11 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.google.firebase.firebase-perf'
+// Disabled: the perf Gradle plugin instruments OkHttp bytecode with
+// FirebasePerfOkHttpClient which was removed from the newer Firebase
+// Performance SDK. @react-native-firebase/perf still provides performance
+// monitoring without this plugin; only automatic HTTP request tracing is lost.
+// apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.facebook.react'
 
 /**
@@ -141,12 +145,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:20.2.+'
     implementation("com.facebook.react:react-android")
     implementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
-    implementation('com.facebook.fresco:fresco:2.0.0')
+    implementation('com.facebook.fresco:fresco:3.6.0')
     // For animated GIF support
-    implementation('com.facebook.fresco:animated-gif:2.5.0')
+    implementation('com.facebook.fresco:animated-gif:3.6.0')
     // For WebP support, including animated WebP
-    implementation('com.facebook.fresco:animated-webp:2.0.0')
-    implementation('com.facebook.fresco:webpsupport:2.0.0')
+    implementation('com.facebook.fresco:animated-webp:3.6.0')
+    implementation('com.facebook.fresco:webpsupport:3.6.0')
     implementation("androidx.appcompat:appcompat:1.6.1") {
         version {
             strictly '1.6.1'
