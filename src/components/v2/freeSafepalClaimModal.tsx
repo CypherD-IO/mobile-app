@@ -17,7 +17,10 @@ import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import AppImages from '../../../assets/images/appImages';
 import { FREE_SAFEPAL_CLAIM_URL } from '../../constants/data';
 
-export const STORAGE_KEY_DISMISSED = '@free_safepal_claim_modal_dismissed';
+export const STORAGE_KEY_DISMISSED_PREMIUM =
+  '@free_safepal_claim_modal_dismissed_premium';
+export const STORAGE_KEY_DISMISSED_NON_PREMIUM =
+  '@free_safepal_claim_modal_dismissed_non_premium';
 export const SAFEPAL_BOTTOM_SHEET_ID = 'free-safepal-claim';
 
 const safeSetItem = async (key: string, value: string): Promise<void> => {
@@ -31,30 +34,59 @@ const safeSetItem = async (key: string, value: string): Promise<void> => {
 const windowHeight = Dimensions.get('window').height;
 const maxBgHeight = Math.min(windowHeight * 0.85, 750);
 
+interface FreeSafepalClaimContentProps {
+  onDismiss: () => void;
+  navigation: NavigationProp<ParamListBase>;
+  isPremiumUser: boolean;
+}
+
 export default function FreeSafepalClaimContent({
   onDismiss,
   navigation,
-}: {
-  onDismiss: () => void;
-  navigation: NavigationProp<ParamListBase>;
-}): React.ReactElement {
+  isPremiumUser,
+}: FreeSafepalClaimContentProps): React.ReactElement {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
+  const storageKey = isPremiumUser
+    ? STORAGE_KEY_DISMISSED_PREMIUM
+    : STORAGE_KEY_DISMISSED_NON_PREMIUM;
+
+  const backgroundImage = isPremiumUser
+    ? AppImages.SAFEPAL_CLAIM_MODAL
+    : AppImages.SAFEPAL_CLAIM_MODAL_NON_PREMIUM;
+
+  const buttonTitle = isPremiumUser
+    ? t('Claim Free Safepal')
+    : t('Upgrade & Claim Safepal');
+
   const handleClaim = async (): Promise<void> => {
-    void logAnalyticsToFirebase(AnalyticEvent.FREE_SAFEPAL_CLAIM_CLICKED, {
-      category: 'free_safepal_claim_modal',
-      action: 'claim_button_clicked',
-      label: 'claim',
-    });
+    if (isPremiumUser) {
+      void logAnalyticsToFirebase(AnalyticEvent.FREE_SAFEPAL_CLAIM_CLICKED, {
+        category: 'free_safepal_claim_modal',
+        action: 'claim_button_clicked',
+        label: 'claim',
+      });
+    } else {
+      void logAnalyticsToFirebase(AnalyticEvent.FREE_SAFEPAL_UPGRADE_CLICKED, {
+        category: 'free_safepal_claim_modal',
+        action: 'upgrade_button_clicked',
+        label: 'upgrade_and_claim',
+      });
+    }
 
     if (dontShowAgain) {
-      await safeSetItem(STORAGE_KEY_DISMISSED, 'true');
+      await safeSetItem(storageKey, 'true');
     }
 
     onDismiss();
-    navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
-      uri: FREE_SAFEPAL_CLAIM_URL,
-    });
+
+    if (isPremiumUser) {
+      navigation.navigate(screenTitle.CARD_FAQ_SCREEN, {
+        uri: FREE_SAFEPAL_CLAIM_URL,
+      });
+    } else {
+      navigation.navigate(screenTitle.PREMIUM_SCREEN);
+    }
   };
 
   const handleCheckboxChange = async (): Promise<void> => {
@@ -67,18 +99,22 @@ export default function FreeSafepalClaimContent({
     });
 
     if (newState) {
-      await safeSetItem(STORAGE_KEY_DISMISSED, 'true');
+      await safeSetItem(storageKey, 'true');
       onDismiss();
     }
   };
 
   return (
     <CyDImageBackground
-      source={AppImages.SAFEPAL_CLAIM_MODAL}
+      source={backgroundImage}
       className='rounded-t-[24px] overflow-hidden flex-1'
-      imageStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
       style={{ height: maxBgHeight }}
       resizeMode='cover'>
+      {!isPremiumUser && (
+        <CyDView className='items-center pt-[8px]'>
+          <CyDView className='w-[32px] h-[4px] rounded-[5px] bg-[#C2C7D0]' />
+        </CyDView>
+      )}
       <CyDView className='flex-1 justify-end'>
         <CyDView
           className={`px-[16px] ${
@@ -96,12 +132,12 @@ export default function FreeSafepalClaimContent({
               className={dontShowAgain ? 'text-p100' : 'text-white'}
             />
             <CyDText className='ml-[10px] text-[14px] text-white opacity-70'>
-              {t("Don't show again") as string}
+              {t("Don't show again")}
             </CyDText>
           </CyDTouchView>
 
           <Button
-            title={t('Claim Free Safepal')}
+            title={buttonTitle}
             type={ButtonType.YELLOW_FILL}
             onPress={handleClaim}
             style='rounded-full'
