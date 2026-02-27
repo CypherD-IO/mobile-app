@@ -7,6 +7,7 @@ on:
     branches:
       - main
       - beta
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
