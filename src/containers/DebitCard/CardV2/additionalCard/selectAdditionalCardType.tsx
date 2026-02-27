@@ -252,30 +252,11 @@ export default function SelectAdditionalCardType() {
         />
       </CyDTouchView>
       <CyDText className='mt-[12px] text-[28px] font-bold'>
-        Select your card
+        Order new card
       </CyDText>
 
       <CyDView className='mt-[18px]'>
         <CyDView>
-          <CyDText className='text-[14px] font-medium text-n200'>
-            {'Virtual Cards'}
-          </CyDText>
-          {virtualCard.map((card: CardDesignCardMetaData, index: number) => (
-            <RenderCard
-              key={index}
-              metaData={card}
-              price={get(cardDesignData, 'feeDetails.virtual', 10)}
-              cardType={CardType.VIRTUAL}
-              cardCount={get(cardDesignData, ['allowedCount', 'virtual'], 0)}
-              hasStock={
-                get(cardDesignData, 'virtual')?.[index]?.isStockAvailable
-              }
-              isPremiumPlan={isPremiumPlan}
-              onSelectCard={onSelectCard}
-            />
-          ))}
-        </CyDView>
-        <CyDView className='mt-[16px]'>
           <CyDText className='text-[14px] font-medium text-n200'>
             {'Physical Cards'}
           </CyDText>
@@ -288,6 +269,25 @@ export default function SelectAdditionalCardType() {
               cardCount={get(cardDesignData, ['allowedCount', 'physical'], 0)}
               hasStock={
                 get(cardDesignData, 'physical')?.[index]?.isStockAvailable
+              }
+              isPremiumPlan={isPremiumPlan}
+              onSelectCard={onSelectCard}
+            />
+          ))}
+        </CyDView>
+        <CyDView className='mt-[16px]'>
+          <CyDText className='text-[14px] font-medium text-n200'>
+            {'Virtual Cards'}
+          </CyDText>
+          {virtualCard.map((card: CardDesignCardMetaData, index: number) => (
+            <RenderCard
+              key={index}
+              metaData={card}
+              price={get(cardDesignData, 'feeDetails.virtual', 10)}
+              cardType={CardType.VIRTUAL}
+              cardCount={get(cardDesignData, ['allowedCount', 'virtual'], 0)}
+              hasStock={
+                get(cardDesignData, 'virtual')?.[index]?.isStockAvailable
               }
               isPremiumPlan={isPremiumPlan}
               onSelectCard={onSelectCard}

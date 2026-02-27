@@ -194,64 +194,55 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
   };
 
   /**
-   * Renders a skeleton loader card that mimics the merchant card layout.
-   * Used during loading state to provide visual feedback to users.
-   * @param index - The index of the skeleton card for unique key
+   * Renders a skeleton loader row that mimics the merchant list row layout.
+   * @param index - The index of the skeleton row for unique key
    */
-  const renderSkeletonCard = (index: number): JSX.Element => {
-    const isRightColumn = index % 2 !== 0;
-    const hasBottomBorder = index < 4; // First 4 items (2 rows) have bottom border
+  const renderSkeletonRow = (index: number): JSX.Element => {
+    const merchants = merchantRewardsData?.items ?? [];
+    const isLast = index === Math.min(merchants.length, 5) - 1 || index === 4;
 
     return (
-      <CyDView
-        className={`w-[50%] p-4 flex-row justify-between items-center bg-n0 ${
-          !isRightColumn ? 'border-r border-n40' : ''
-        } ${hasBottomBorder ? 'border-b border-n40' : ''}`}
-        key={`skeleton-${index}`}>
-        <CyDView>
-          {/* Skeleton Merchant Icon */}
-          <CyDView className={`w-[34px] h-[34px] rounded-full bg-n20 mb-2`} />
-          {/* Skeleton Merchant Name */}
-          <CyDView className={`w-[80px] h-[16px] rounded bg-n20`} />
+      <CyDView key={`skeleton-${index}`}>
+        <CyDView className='flex-row items-center justify-between px-4 py-3'>
+          <CyDView className='flex-row items-center gap-3'>
+            <CyDView className='w-[34px] h-[34px] rounded-full bg-n40' />
+            <CyDView className='w-[80px] h-[16px] rounded bg-n40' />
+          </CyDView>
+          <CyDView className='flex-row items-center gap-1'>
+            <CyDView className='w-[24px] h-[24px] rounded-full bg-n40' />
+            <CyDView className='w-[40px] h-[16px] rounded bg-n40' />
+          </CyDView>
         </CyDView>
-
-        {/* Skeleton Reward */}
-        <CyDView className='flex-row items-center gap-1'>
-          <CyDView className='w-[24px] h-[24px] rounded-full bg-n20' />
-          <CyDView className='w-[40px] h-[16px] rounded bg-n20' />
-        </CyDView>
+        {!isLast && <CyDView className='h-[1px] bg-n30 mx-4' />}
       </CyDView>
     );
   };
 
   /**
-   * Renders an individual merchant card with logo, CYPR reward badge, and name
+   * Renders a single merchant row: logo + name on the left, reward on the right.
    * @param merchant - The merchant data to display
-   * @param index - The index of the merchant card for unique key
+   * @param index - The index for key and divider logic
+   * @param total - Total number of items being rendered
    */
-  const renderMerchantCard = (
+  const renderMerchantRow = (
     merchant: IMerchantRewardsListItemDto,
     index: number,
+    total: number,
   ): JSX.Element => {
-    // Format the projected CYPR reward value
     const cypRReward =
       limitDecimalPlaces(
         DecimalHelper.toDecimal(merchant.projectedCYPRReward, 18),
         2,
       ) || '0';
-    const isRightColumn = index % 2 !== 0;
-    const hasBottomBorder = index < 4; // First 4 items (2 rows) have bottom border
+    const isLast = index === total - 1;
 
     return (
-      <CyDTouchView
-        key={merchant.candidateId}
-        className={`w-[50%] p-4 flex-row justify-between items-center bg-n0 ${
-          !isRightColumn ? 'border-r border-n40' : ''
-        } ${hasBottomBorder ? 'border-b border-n40' : ''}`}
-        onPress={() => handleMerchantPress(merchant)}>
-        <CyDView className='flex-1'>
-          <CyDView className='flex-row items-center justify-between'>
-            {/* Merchant Logo */}
+      <CyDView key={merchant.candidateId}>
+        <CyDTouchView
+          className='flex-row items-center justify-between px-4 py-3'
+          onPress={() => handleMerchantPress(merchant)}>
+          {/* Merchant Logo and Name */}
+          <CyDView className='flex-row items-center gap-3 flex-1'>
             <MerchantLogo
               merchant={{
                 brand: merchant.brand ?? merchant.canonicalName,
@@ -262,31 +253,31 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
               hasUserVoted={false}
               showBorder={!isDarkMode}
             />
-            {/* Reward Value */}
-            <CyDView className='flex-row items-center gap-1'>
-              <CyDImage
-                source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
-                className='w-[24px] h-[24px]'
-                resizeMode='contain'
-              />
-              <CyDText className='text-[16px] font-bold'>{cypRReward}</CyDText>
-            </CyDView>
+            <CyDText
+              className='text-[16px] font-medium'
+              numberOfLines={1}
+              ellipsizeMode='tail'>
+              {merchant.brand ?? merchant.canonicalName}
+            </CyDText>
           </CyDView>
 
-          {/* Merchant Name */}
-          <CyDText
-            className={`text-[14px] font-medium mt-1`}
-            numberOfLines={1}
-            ellipsizeMode='tail'>
-            {merchant.brand ?? merchant.canonicalName}
-          </CyDText>
-        </CyDView>
-      </CyDTouchView>
+          {/* \ Reward Value */}
+          <CyDView className='flex-row items-center gap-1'>
+            <CyDImage
+              source={AppImages.CYPR_TOKEN_WITH_BASE_CHAIN}
+              className='w-[24px] h-[24px]'
+              resizeMode='contain'
+            />
+            <CyDText className='text-[16px] font-bold'>{cypRReward}</CyDText>
+          </CyDView>
+        </CyDTouchView>
+        {!isLast && <CyDView className='h-[1px] bg-n30 mx-4' />}
+      </CyDView>
     );
   };
 
   return (
-    <CyDView className={`mx-4 rounded-[12px] py-4 bg-n20`}>
+    <CyDView className='border-[1px] border-n40 rounded-[16px] py-4'>
       {/* Header Section */}
       <CyDView className='flex-row justify-between items-start mb-4 px-4'>
         <CyDView className='flex-1'>
@@ -352,46 +343,37 @@ const MerchantSpendRewardWidget: React.FC<MerchantSpendRewardWidgetProps> = ({
         </CyDView>
       </CyDView>
 
-      <CyDView className='w-full h-[1px] bg-n20' />
+      <CyDView className='w-full h-[1px] bg-n30' />
 
-      {/* Merchants Grid */}
-      <CyDView className='border-l border-r border-n20'>
+      {/* Merchants List */}
+      <CyDView>
         {loading ? (
-          <CyDView className='flex-row flex-wrap'>
-            {/* Skeleton loaders */}
-            {[0, 1, 2, 3, 4, 5].map(index => renderSkeletonCard(index))}
+          <CyDView>
+            {[0, 1, 2, 3, 4].map(index => renderSkeletonRow(index))}
           </CyDView>
         ) : (
-          <CyDView className='flex-row flex-wrap'>
-            {/* Actual merchant cards */}
-            {(merchantRewardsData?.items ?? [])
-              .slice(0, 6)
-              .map((merchant, index) => renderMerchantCard(merchant, index))}
+          <CyDView>
+            {(() => {
+              const items = (merchantRewardsData?.items ?? []).slice(0, 5);
+              return items.map((merchant, index) =>
+                renderMerchantRow(merchant, index, items.length),
+              );
+            })()}
           </CyDView>
         )}
       </CyDView>
 
-      <CyDView className='w-full h-[1px] bg-n20 mb-4' />
+      <CyDView className='w-full h-[1px] bg-n30' />
 
       {/* View All Button */}
-      <CyDView className='px-4 mb-4'>
+      <CyDView className='px-4 mt-4'>
         <CyDTouchView
-          className={`rounded-[25px] py-3 items-center ${
-            isDarkMode ? 'bg-base200' : 'bg-n30'
-          }`}
+          className='bg-n30 py-[14px] rounded-full justify-center items-center'
           onPress={handleViewAllPress}>
-          <CyDText className='text-[16px] font-medium'>
-            View all Merchant rewards
+          <CyDText className='text-base400 text-[14px] font-semibold'>
+            {'View all Merchant rewards'}
           </CyDText>
         </CyDTouchView>
-      </CyDView>
-
-      {/* Footer Text */}
-      <CyDView className='px-4'>
-        <CyDText className='text-n200 text-[12px] text-center'>
-          *rewards for every ${merchantRewardsData?.referenceAmount ?? '-'} you
-          spend with your Cypher card
-        </CyDText>
       </CyDView>
     </CyDView>
   );

@@ -1,89 +1,90 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import crypto from 'crypto';
-import { get, has, isEmpty, isUndefined, orderBy, trim } from 'lodash';
+import { get, isEmpty, orderBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  PixelRatio,
-  useWindowDimensions,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
-import Button from '../../../components/v2/button';
-import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import HiddenCardModal from '../../../components/v2/HiddenCardModal';
 import { screenTitle } from '../../../constants';
 import {
-  ButtonType,
   CARD_IDS,
   CardOperationsAuthType,
   CardProviders,
   CardStatus,
   CardType,
-  GlobalContextType,
   PhysicalCardType,
 } from '../../../constants/enum';
-import {
-  getCardRevealReuseToken,
-  setCardRevealReuseToken,
-} from '../../../core/asyncStorage';
 import { GlobalContext } from '../../../core/globalContext';
-import axios, { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
-import {
-  copyToClipboard,
-  decryptWithSecretKey,
-  sleepFor,
-} from '../../../core/util';
 import { Card } from '../../../models/card.model';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import {
-  CyDFastImage,
   CyDIcons,
   CyDImage,
   CyDImageBackground,
-  CyDLottieView,
-  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import { showToast } from '../../utilities/toastUtility';
 import { CardDesign } from '../../../models/cardDesign.interface';
-import Carousel from 'react-native-reanimated-carousel';
-import { isAndroid } from '../../../misc/checkers';
-import { Theme, useTheme } from '../../../reducers/themeReducer';
-import { useColorScheme } from 'nativewind';
-import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import Loading from '../../../components/v2/loading';
 import { getCardColorByHex } from '../../../constants/cardColours';
-import CardTagBadge from '../../../components/CardTagBadge';
 
-interface CardSecrets {
-  cvv: string;
-  expiryMonth: string;
-  expiryYear: string;
-  cardNumber: string;
-}
+const CARD_STACK_POSITIONS = [
+  { width: 364, height: 230, top: 43, borderRadius: 10 },
+  { width: 307, height: 194, top: 27, borderRadius: 10 },
+  { width: 256, height: 163, top: 10, borderRadius: 10 },
+] as const;
 
-const initialCardDetails: CardSecrets = {
-  cvv: 'xxx',
-  expiryMonth: 'xx',
-  expiryYear: 'xxxx',
-  cardNumber: 'xxxx xxxx xxxx xxxx',
-};
+const NEUTRAL_SHADE = {
+  width: 230,
+  height: 147,
+  top: 0,
+  borderRadius: 10,
+} as const;
+
+const STACK_CONTAINER_HEIGHT =
+  CARD_STACK_POSITIONS[0].top + CARD_STACK_POSITIONS[0].height;
+
+const stackStyles = StyleSheet.create({
+  container: {
+    height: STACK_CONTAINER_HEIGHT,
+    alignItems: 'center',
+  },
+  neutralShade: {
+    position: 'absolute',
+    top: NEUTRAL_SHADE.top,
+    width: NEUTRAL_SHADE.width,
+    height: NEUTRAL_SHADE.height,
+    borderRadius: NEUTRAL_SHADE.borderRadius,
+    borderWidth: 1,
+    borderColor: '#B3B9C4',
+    backgroundColor: '#C2C7D0',
+  },
+  topCardBase: {
+    position: 'absolute',
+    borderRadius: CARD_STACK_POSITIONS[0].borderRadius,
+    shadowColor: '#002AC1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 17,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  backgroundCardBase: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderColor: '#E0D9CC',
+    overflow: 'hidden',
+  },
+  cardImageBorderRadius: {
+    borderRadius: 10,
+  },
+});
 
 export default function CardScreen({
   navigation,
@@ -93,6 +94,9 @@ export default function CardScreen({
   refreshProfile,
   cardDesignData,
   isAccountLocked = false,
+  initialCardIndex = 0,
+  onCardIndexChange,
+  onCardPress,
 }: {
   navigation: any;
   currentCardProvider: CardProviders;
@@ -101,14 +105,14 @@ export default function CardScreen({
   refreshProfile: () => void;
   cardDesignData: CardDesign;
   isAccountLocked: boolean;
+  initialCardIndex?: number;
+  onCardIndexChange?: (index: number) => void;
+  onCardPress?: () => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
-  const pixelDensity = PixelRatio.get();
-  const fontScaleFactor = PixelRatio.getFontScale();
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
   const [userCardDetails, setUserCardDetails] = useState<UserCardDetails>({
@@ -126,24 +130,10 @@ export default function CardScreen({
     showCVVAndExpiry: false,
     isFetchingCardDetails: false,
   });
-  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
-  const [trackingDetails, setTrackingDetails] = useState({});
-  const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
-
-  const setUpgradeCorrectedCardIndex = (index: number) => {
-    setCurrentCardIndex(index);
-  };
-
+  const [currentCardIndex, setCurrentCardIndex] =
+    useState<number>(initialCardIndex);
+  const hasInitializedOrder = useRef(false);
   useEffect(() => {
-    const checkIsRcUpgradableCardShown = async () => {
-      setIsRcUpgradableCardShown(
-        !has(cardProfile, CardProviders.REAP_CARD) &&
-          has(cardProfile, CardProviders.PAYCADDY),
-      );
-    };
-
-    void checkIsRcUpgradableCardShown();
-
     if (isFocused && !isEmpty(currentCardProvider)) {
       const cardConfig = get(cardProfile, currentCardProvider);
       if (cardConfig?.cards) {
@@ -217,36 +207,27 @@ export default function CardScreen({
     // Some API models type `status` as string; normalize to our enum for comparisons.
     const cardStatus = card?.status as CardStatus;
 
-    return (
+    const cardContent = (
       <CyDImageBackground
         key={index}
-        className={clsx(
-          'w-[300px] h-[190px] flex flex-col self-center shadow-md',
-          {
-            'justify-center items-center':
-              [
-                CardStatus.IN_ACTIVE,
-                CardStatus.HIDDEN,
-                CardStatus.BLOCKED,
-                CardStatus.RC_UPGRADABLE,
-              ].includes(cardStatus) || isAccountLocked,
-            'justify-end': ![
+        className={clsx('w-full h-full flex flex-col rounded-[10px]', {
+          'justify-center items-center':
+            [
               CardStatus.IN_ACTIVE,
               CardStatus.HIDDEN,
               CardStatus.BLOCKED,
               CardStatus.RC_UPGRADABLE,
-            ].includes(cardStatus),
-          },
-        )}
-        resizeMode='contain'
+            ].includes(cardStatus) || isAccountLocked,
+          'justify-end': ![
+            CardStatus.IN_ACTIVE,
+            CardStatus.HIDDEN,
+            CardStatus.BLOCKED,
+            CardStatus.RC_UPGRADABLE,
+          ].includes(cardStatus),
+        })}
+        resizeMode='cover'
+        imageStyle={stackStyles.cardImageBorderRadius}
         source={getCardImage(card)}>
-        {card.cardTag &&
-          card.status !== CardStatus.HIDDEN &&
-          card.status !== CardStatus.ADDITIONAL_CARD && (
-            <CyDView className='absolute top-[85px] right-[14px]'>
-              <CardTagBadge tag={card.cardTag} />
-            </CyDView>
-          )}
         {(card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.BLOCKED) && (
           <CyDTouchView
@@ -329,53 +310,40 @@ export default function CardScreen({
         )}
       </CyDImageBackground>
     );
+
+    if (card.status !== CardStatus.ADDITIONAL_CARD && onCardPress) {
+      return (
+        <CyDTouchView
+          key={index}
+          className='w-full h-full'
+          activeOpacity={0.9}
+          onPress={onCardPress}>
+          {cardContent}
+        </CyDTouchView>
+      );
+    }
+
+    return cardContent;
   };
 
   const cardsWithUpgrade = useMemo(() => {
-    // dont show metal card in teh stack if it is not issued yet
-    const actualCards = userCardDetails.cards
-      .filter(card => card.cardId !== CARD_IDS.METAL_CARD)
-      .map(card => card);
-
-    const hasHiddenCard = actualCards.some(
-      card => card.status === CardStatus.HIDDEN,
+    return userCardDetails.cards.filter(
+      card =>
+        card.cardId !== CARD_IDS.METAL_CARD &&
+        card.status !== CardStatus.ADDITIONAL_CARD &&
+        card.status !== CardStatus.RC_UPGRADABLE &&
+        card.status !== CardStatus.HIDDEN,
     );
-
-    if (
-      actualCards.length > 0 &&
-      currentCardProvider === CardProviders.REAP_CARD &&
-      !hasHiddenCard
-    ) {
-      actualCards.unshift({
-        cardId: '',
-        bin: '',
-        last4: '',
-        network: 'rc',
-        status: CardStatus.ADDITIONAL_CARD,
-        type: CardType.PHYSICAL,
-        designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
-        cardProvider: currentCardProvider,
-      });
-      setCurrentCardIndex(1);
-    }
-
-    if (isRcUpgradableCardShown) {
-      actualCards.unshift({
-        cardId: '',
-        bin: '',
-        last4: '',
-        network: 'rc',
-        cardProvider: currentCardProvider,
-        status: CardStatus.RC_UPGRADABLE,
-        type: CardType.VIRTUAL,
-        designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
-      });
-      setCurrentCardIndex(1);
-    }
-    return actualCards;
   }, [currentCardProvider, userCardDetails.cards, cardProfile]);
 
-  const getTrackingDetails = async () => {
+  // Reset card index on first initialization — kept outside useMemo to avoid side effects during render
+  useEffect(() => {
+    if (!hasInitializedOrder.current) {
+      setCurrentCardIndex(0);
+    }
+  }, [currentCardProvider, userCardDetails.cards, cardProfile]);
+
+  const getTrackingDetails = async (): Promise<any> => {
     const response = await getWithAuth(
       `/v1/cards/${currentCardProvider}/card/tracking`,
     );
@@ -386,46 +354,78 @@ export default function CardScreen({
     return response;
   };
 
+  const MAX_VISIBLE_CARDS = 3;
+  const [cardOrderIndices, setCardOrderIndices] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (cardsWithUpgrade && cardsWithUpgrade.length > 0) {
+      const indices = cardsWithUpgrade.map((_: Card, i: number) => i);
+      if (hasInitializedOrder.current) {
+        const idx = indices.indexOf(currentCardIndex);
+        if (idx > 0) {
+          const rotated = [...indices.slice(idx), ...indices.slice(0, idx)];
+          setCardOrderIndices(rotated);
+          return;
+        }
+      }
+      hasInitializedOrder.current = true;
+      setCardOrderIndices(indices);
+    }
+  }, [cardsWithUpgrade]);
+
+  useEffect(() => {
+    onCardIndexChange?.(currentCardIndex);
+  }, [currentCardIndex]);
+
   return (
     <>
-      {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) ? (
+      {cardsWithUpgrade &&
+      cardsWithUpgrade.length > 0 &&
+      cardOrderIndices.length > 0 ? (
         <CyDView>
-          <Carousel
-            enabled={!isAccountLocked}
-            loop={false}
-            width={width}
-            height={
-              cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250
-            }
-            autoPlay={false}
-            data={cardsWithUpgrade}
-            snapEnabled={true}
-            pagingEnabled={true}
-            defaultIndex={currentCardIndex}
-            mode='parallax'
-            modeConfig={{
-              parallaxScrollingScale: 0.92,
-              parallaxScrollingOffset: isAndroid()
-                ? width / (pixelDensity * fontScaleFactor)
-                : width * 0.31,
-              parallaxAdjacentItemScale: 0.74,
-            }}
-            scrollAnimationDuration={0}
-            onSnapToItem={setUpgradeCorrectedCardIndex}
-            renderItem={renderItem as any}
-          />
-          <RenderCardActions
-            card={get(cardsWithUpgrade, currentCardIndex)}
-            cardProvider={currentCardProvider}
-            navigation={navigation}
-            refreshProfile={refreshProfile}
-            onGetAdditionalCard={onGetAdditionalCard}
-            onPressActivateCard={onPressActivateCard}
-            cardProfile={cardProfile}
-            trackingDetails={trackingDetails}
-            cardDesignData={cardDesignData}
-            isAccountLocked={isAccountLocked}
-          />
+          <CyDView className='mt-[8px]' style={stackStyles.container}>
+            {cardsWithUpgrade.length > MAX_VISIBLE_CARDS && (
+              <CyDView style={stackStyles.neutralShade} />
+            )}
+            {cardOrderIndices
+              .slice(0, MAX_VISIBLE_CARDS)
+              .map((cardIndex: number, stackPosition: number) => {
+                const card = cardsWithUpgrade[cardIndex];
+                if (!card) return null;
+
+                const isTopCard = stackPosition === 0;
+                const posConfig = CARD_STACK_POSITIONS[stackPosition];
+                const zIndex = MAX_VISIBLE_CARDS - stackPosition;
+
+                return (
+                  <CyDView
+                    key={`stack-${cardIndex}-${stackPosition}`}
+                    style={[
+                      isTopCard
+                        ? stackStyles.topCardBase
+                        : stackStyles.backgroundCardBase,
+                      {
+                        zIndex,
+                        top: posConfig.top,
+                        width: posConfig.width,
+                        height: posConfig.height,
+                        borderRadius: posConfig.borderRadius,
+                      },
+                    ]}>
+                    <CyDView className='w-full h-full'>
+                      {renderItem({ item: card, index: cardIndex })}
+                    </CyDView>
+                    {isTopCard && cardsWithUpgrade.length > 3 && (
+                      <CyDView className='absolute top-[32px] self-center bg-white/80 px-[14px] py-[4px] rounded-full'>
+                        <CyDText className='font-manrope text-[12px] font-medium text-black leading-[150%] tracking-[0px]'>
+                          {`${cardsWithUpgrade.length} Cards`}
+                        </CyDText>
+                      </CyDView>
+                    )}
+                  </CyDView>
+                );
+              })}
+          </CyDView>
         </CyDView>
       ) : (
         <CyDView>
@@ -435,729 +435,3 @@ export default function CardScreen({
     </>
   );
 }
-
-const RenderCardActions = ({
-  card,
-  cardProvider,
-  navigation,
-  refreshProfile,
-  onGetAdditionalCard,
-  onPressActivateCard,
-  cardProfile,
-  trackingDetails,
-  cardDesignData,
-  isAccountLocked,
-}: {
-  card: Card;
-  cardProvider: CardProviders;
-  navigation: any;
-  refreshProfile: () => void;
-  onGetAdditionalCard: () => void;
-  onPressActivateCard: (card: Card) => void;
-  cardProfile: CardProfile;
-  trackingDetails: any;
-  cardDesignData: CardDesign;
-  isAccountLocked: boolean;
-}) => {
-  const { t } = useTranslation();
-  const { theme } = useTheme();
-  const { colorScheme } = useColorScheme();
-  const { postWithAuth, patchWithAuth } = useAxios();
-  const [cardDetailsModal, setCardDetailsModal] = useState({
-    showCardDetailsModal: false,
-    card,
-    cardDetails: initialCardDetails,
-    webviewUrl: '',
-    userName: '',
-  });
-  const [showHiddenCardModal, setShowHiddenCardModal] =
-    useState<boolean>(false);
-  const { showModal, hideModal } = useGlobalModalContext();
-  const [isFetchingCardDetails, setIsFetchingCardDetails] =
-    useState<boolean>(false);
-  const [isStatusLoading, setIsStatusLoading] = useState<boolean>(false);
-  const { type, last4, status, cardId } = card;
-  const isFocused = useIsFocused();
-  const globalContext = useContext<any>(GlobalContext);
-  const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
-
-  useEffect(() => {
-    const checkIsRcUpgradableCardShown = async () => {
-      setIsRcUpgradableCardShown(
-        !has(cardProfile, CardProviders.REAP_CARD) &&
-          has(cardProfile, CardProviders.PAYCADDY),
-      );
-    };
-
-    void checkIsRcUpgradableCardShown();
-
-    if (isFocused && isFetchingCardDetails) {
-      setIsFetchingCardDetails(false);
-    }
-  }, [isFocused]);
-
-  const copyTrackingNumber = (trackingNumber: string) => {
-    copyToClipboard(trackingNumber);
-    showToast('Tracking number copied to clipboard');
-  };
-
-  const RenderTrackingItem = useCallback(() => {
-    const physicalCard = get(trackingDetails, cardId);
-    const trackingNumber = get(trackingDetails, cardId)?.trackingId;
-    return (
-      <CyDView className='flex flex-row bg-n0 self-center items-center w-[300px] mx-[20px] my-[12px] pt-[12px] pr-[12px] rounded-[12px]'>
-        <CyDFastImage
-          source={AppImages.CARD_SHIPMENT_ENVELOPE}
-          className='h-[64px] w-[64px] rounded-bl-[12px]'
-        />
-        <CyDView className='w-[72%] ml-[12px] pb-[4px]'>
-          <CyDText className='font-bold text-[14px]'>
-            {t('CARD_ON_WAY')}
-          </CyDText>
-          {trackingDetails &&
-          isUndefined(get(trackingDetails, physicalCard.cardId)?.trackingId) ? (
-            <CyDView>
-              <CyDText className='text-[12px] mt-[6px]'>
-                {t('CARD_PRINTING_DESCRIPTION_SUB1') +
-                  String(physicalCard.last4) +
-                  t('CARD_PRINTING_DESCRIPTION_SUB2')}
-              </CyDText>
-            </CyDView>
-          ) : (
-            <CyDView className='mt-[6px]'>
-              <CyDText className=''>{t('FEDEX_TRACKING_NO')}</CyDText>
-              <CyDView className='flex flex-row items-center'>
-                <CyDText className='max-w-[50%] text-highlightText mt-[4px]'>
-                  {trackingNumber}
-                </CyDText>
-                <CyDTouchView
-                  onPress={() => copyTrackingNumber(trackingNumber)}>
-                  <CyDMaterialDesignIcons
-                    name={'content-copy'}
-                    size={14}
-                    className='text-base400'
-                  />
-                </CyDTouchView>
-              </CyDView>
-            </CyDView>
-          )}
-        </CyDView>
-      </CyDView>
-    );
-  }, [trackingDetails, cardId]);
-
-  const getThemeToInject = (): Exclude<Theme, Theme.SYSTEM> => {
-    if (theme === Theme.SYSTEM) {
-      return colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT;
-    }
-    return theme;
-  };
-
-  const getThemeColor = (): {
-    bg: string;
-    color: string;
-    border: string;
-  } => {
-    let themeColor = '';
-    if (theme === Theme.SYSTEM) {
-      themeColor = colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT;
-    } else {
-      themeColor = theme;
-    }
-
-    if (themeColor === Theme.DARK) {
-      return {
-        bg: '#0d0d0d',
-        color: '#ffffff',
-        border: '#24292e',
-      };
-    } else {
-      return {
-        bg: '#ffffff',
-        color: '#000000',
-        border: '#dfe2e6',
-      };
-    }
-  };
-
-  const validateReuseToken = async () => {
-    setIsFetchingCardDetails(true);
-    const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
-    if (
-      (card.cardProvider || cardProfile.provider) === CardProviders.REAP_CARD &&
-      cardRevealReuseToken
-    ) {
-      const verifyReuseTokenUrl = `/v1/cards/${card.cardProvider}/card/${String(
-        cardId,
-      )}/verify/reuse-token`;
-      const payload = {
-        reuseToken: cardRevealReuseToken,
-        stylesheetUrl: `https://public.cypherd.io/css/${
-          card.physicalCardType === PhysicalCardType.METAL
-            ? 'cardRevealMobileOnMetal.css'
-            : 'cardRevealMobileOnCard.css'
-        }`,
-      };
-      try {
-        const response = await postWithAuth(verifyReuseTokenUrl, payload);
-        setIsFetchingCardDetails(false);
-        if (!response.isError) {
-          if (card.cardProvider === CardProviders.REAP_CARD) {
-            setCardDetailsModal({
-              ...cardDetailsModal,
-              showCardDetailsModal: true,
-              card,
-              webviewUrl: trim(response.data.token, '"'),
-              userName: response.data.userName,
-            });
-          } else {
-            void sendCardDetails(response.data);
-          }
-        } else {
-          verifyWithOTP();
-        }
-      } catch (e: any) {
-        verifyWithOTP();
-      }
-    } else {
-      verifyWithOTP();
-    }
-  };
-
-  const verifyWithOTP = () => {
-    navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
-      onSuccess: (data: any, cardProvider: CardProviders) => {
-        if (card.cardProvider === CardProviders.REAP_CARD) {
-          void decryptMessage(data);
-        } else if (card.cardProvider === CardProviders.RAIN_CARD) {
-          void decryptSecretKey(data);
-        } else if (card.cardProvider === CardProviders.PAYCADDY) {
-          void sendCardDetails(data);
-        }
-      },
-      currentCardProvider: cardProvider,
-      card,
-      triggerOTPParam: 'verify/show-token',
-      verifyOTPPayload: { isMobile: true },
-    });
-  };
-
-  const decryptMessage = async ({
-    privateKey,
-    base64Message,
-    reuseToken,
-    userNameValue,
-  }: {
-    privateKey: string;
-    base64Message: string;
-    reuseToken?: string;
-    userNameValue?: string;
-  }) => {
-    try {
-      await sleepFor(1000);
-      setIsFetchingCardDetails(true);
-      if (reuseToken) {
-        await setCardRevealReuseToken(cardId, reuseToken);
-      }
-      const buffer = Buffer.from(base64Message, 'base64');
-
-      const decrypted = crypto.privateDecrypt(
-        {
-          key: privateKey,
-          padding: 4,
-        },
-        buffer,
-      );
-      const decryptedBuffer = decrypted.toString('utf8');
-      setCardDetailsModal({
-        ...cardDetailsModal,
-        card,
-        showCardDetailsModal: true,
-        webviewUrl: trim(decryptedBuffer, '"'),
-        userName: userNameValue ?? '',
-      });
-      setIsFetchingCardDetails(false);
-      return decryptedBuffer;
-    } catch (error) {}
-  };
-
-  const decryptSecretKey = async ({
-    secretKey,
-    sessionId,
-    encryptedPan,
-    encryptedCvc,
-    expirationMonth,
-    expirationYear,
-    userNameValue,
-  }: {
-    secretKey: string;
-    sessionId: string;
-    encryptedPan: { data: string; iv: string };
-    encryptedCvc: { data: string; iv: string };
-    expirationMonth: string;
-    expirationYear: string;
-    userNameValue: string;
-  }) => {
-    try {
-      setIsFetchingCardDetails(true);
-      const decryptedPan = decryptWithSecretKey(
-        secretKey,
-        encryptedPan.data,
-        encryptedPan.iv,
-      );
-      const decryptedCvc = decryptWithSecretKey(
-        secretKey,
-        encryptedCvc.data,
-        encryptedCvc.iv,
-      );
-      const tempCardDetails = {
-        cvv: decryptedCvc,
-        expiryMonth: expirationMonth,
-        expiryYear: expirationYear,
-        cardNumber: decryptedPan,
-      };
-      setCardDetailsModal({
-        ...cardDetailsModal,
-        card,
-        showCardDetailsModal: true,
-        cardDetails: tempCardDetails,
-        userName: userNameValue,
-      });
-    } catch (error) {
-      showModal('state', {
-        type: 'error',
-        title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
-        description: t('CONTACT_CYPHERD_SUPPORT'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-      Sentry.captureException(error);
-    } finally {
-      setIsFetchingCardDetails(false);
-    }
-  };
-
-  const sendCardDetails = async ({
-    vaultId,
-    cardId,
-    token,
-    reuseToken,
-  }: {
-    vaultId: string;
-    cardId: string;
-    token: string;
-    reuseToken?: string;
-  }) => {
-    await sleepFor(1000);
-    setIsFetchingCardDetails(true);
-    if (reuseToken) {
-      await setCardRevealReuseToken(cardId, reuseToken);
-    }
-    const response = await axios.post(
-      vaultId,
-      { cardId, isProd: true },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-    setIsFetchingCardDetails(false);
-    if (response?.data) {
-      if (response?.data.result) {
-        const { result } = response.data;
-        const tempCardDetails = {
-          cvv: result.cvv,
-          expiryMonth: result.expDate.slice(-2),
-          expiryYear: result.expDate.slice(0, 4),
-          cardNumber: result.pan.match(/.{1,4}/g).join(' '),
-        };
-        setCardDetailsModal({
-          ...cardDetailsModal,
-          card,
-          showCardDetailsModal: true,
-          cardDetails: tempCardDetails,
-        });
-      }
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
-        description: t('CONTACT_CYPHERD_SUPPORT'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
-
-  const verifyCardUnlock = () => {
-    hideModal();
-    navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
-      onSuccess: () => {
-        showModal('state', {
-          type: 'success',
-          title: t('Card Successfully Activated'),
-          description: `Your card is active now!`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      },
-      currentCardProvider: cardProvider,
-      card,
-      authType:
-        card.status === CardStatus.BLOCKED
-          ? CardOperationsAuthType.UNBLOCK
-          : CardOperationsAuthType.UNLOCK,
-    });
-  };
-
-  const onCardStatusChange = async () => {
-    hideModal();
-    setIsStatusLoading(true);
-    const url = `/v1/cards/${cardProvider}/card/${cardId}/status`;
-    const payload = {
-      status:
-        status === CardStatus.ACTIVE ? CardStatus.IN_ACTIVE : CardStatus.ACTIVE,
-    };
-
-    try {
-      const response = await patchWithAuth(url, payload);
-      if (!response.isError) {
-        setIsStatusLoading(false);
-
-        showModal('state', {
-          type: 'success',
-          title:
-            status === CardStatus.ACTIVE
-              ? 'Card Successfully Frozen'
-              : 'Card Successfully Activated',
-          description: `${
-            status === CardStatus.ACTIVE
-              ? "Your card is successfully frozen. You can't make any transactions. You can unfreeze it anytime."
-              : 'Your card is active now'
-          }`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-        void refreshProfile();
-      } else {
-        setIsStatusLoading(false);
-        showModal('state', {
-          type: 'error',
-          title:
-            status === CardStatus.ACTIVE
-              ? 'Card Freeze Failed'
-              : 'Card Activation Failed',
-          description:
-            response.error.message ??
-            (status === CardStatus.ACTIVE
-              ? 'Unable to freeze card. Please try again later.'
-              : 'Unable to activate card. Please try again later.'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    } catch (error) {
-      Sentry.captureException(error);
-      setIsStatusLoading(false);
-      const errMessage =
-        typeof error === 'object' && error && 'message' in error
-          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            String((error as any).message ?? '')
-          : '';
-      showModal('state', {
-        type: 'error',
-        title:
-          status === CardStatus.ACTIVE
-            ? 'Card Freeze Failed'
-            : 'Card Activation Failed',
-        description:
-          errMessage ||
-          (status === CardStatus.ACTIVE
-            ? 'Unable to freeze card. Please try again later.'
-            : 'Unable to activate card. Please try again later.'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
-
-  const toggleCardStatus = () => {
-    showModal('state', {
-      type: 'warning',
-      title: `Are you sure you want to ${
-        status === CardStatus.ACTIVE ? 'freeze' : 'unfreeze'
-      } your card?`,
-      description: CardStatus.ACTIVE
-        ? 'This is just a temporary freeze. You can unfreeze it anytime'
-        : '',
-      onSuccess: onCardStatusChange,
-      onFailure: hideModal,
-    });
-  };
-
-  const handleCardActionClick = (functionToCall: () => void) => {
-    if (card.status === CardStatus.HIDDEN) {
-      setShowHiddenCardModal(true);
-    } else {
-      void functionToCall();
-    }
-  };
-
-  const onLoadCard = () => {
-    navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
-      currentCardProvider: cardProvider,
-      currentCardIndex: 0,
-    });
-  };
-
-  if (card.status === CardStatus.ADDITIONAL_CARD) {
-    // if (shouldShowGetPhysicalCardInStack(cardProfile, cardDesignData)) {
-    return (
-      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
-        <Button
-          title={'Get New Card'}
-          style='px-[28px] w-[300px] mt-[24px]'
-          onPress={() => {
-            logAnalyticsToFirebase(AnalyticEvent.GET_NEW_CARD, {
-              from: 'card_stack',
-              type: 'new_card',
-              address: cardProfile.primaryAddress,
-            });
-            onGetAdditionalCard();
-          }}
-        />
-      </CyDView>
-    );
-    // }
-  } else if (status === CardStatus.PENDING_ACTIVATION) {
-    return (
-      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
-        {get(trackingDetails, cardId) ? (
-          <RenderTrackingItem />
-        ) : (
-          <CyDView className='flex flex-col justify-center items-center mx-[20px] w-[300px]'>
-            <CyDText className='text-[14px] font-semibold text-center mt-[6px]'>
-              Activate Physical card and enjoy the convenience of making
-              purchases worldwide
-            </CyDText>
-          </CyDView>
-        )}
-        <Button
-          title='Activate Card'
-          type={ButtonType.PRIMARY}
-          style='px-[28px] w-[300px] mt-[12px]'
-          onPress={() => {
-            void onPressActivateCard(card);
-          }}
-        />
-      </CyDView>
-    );
-  } else if (isRcUpgradableCardShown && !card.cardId) {
-    return (
-      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
-        <CyDView className='flex flex-col justify-center items-center mb-[24px]'>
-          <CyDText className='text-[16px] font-bold text-center my-[12px]'>
-            Now get access to the much awaited {'\n'} Apple and Google pay
-          </CyDText>
-          <CyDImage
-            source={AppImages.UPGRADE_CARD_TIMELINE}
-            className='w-[272px] h-[12px] mb-[8px]'
-          />
-          <CyDView className='flex flex-row'>
-            <CyDText className='text-[12px] ml-[15px]'>{'Register'}</CyDText>
-            <CyDText className='text-[12px] ml-[55px] mr-[45px]'>
-              {'Complete your KYC'}
-            </CyDText>
-            <CyDText className='text-[12px]'>{'Get your card'}</CyDText>
-          </CyDView>
-        </CyDView>
-        <Button
-          title='UPGRADE'
-          style='px-[88px]'
-          onPress={() => {
-            const tempProfile = cardProfile;
-            tempProfile.provider = CardProviders.REAP_CARD;
-            globalContext.globalDispatch({
-              type: GlobalContextType.CARD_PROFILE,
-              cardProfile: tempProfile,
-            });
-            navigation.navigate(screenTitle.CARD_APPLICATION_WELCOME);
-          }}
-        />
-      </CyDView>
-    );
-  }
-
-  return (
-    <CyDView className='w-full'>
-      <CardDetailsModal
-        isModalVisible={cardDetailsModal.showCardDetailsModal}
-        setShowModal={(isModalVisible: boolean) => {
-          setCardDetailsModal({
-            ...cardDetailsModal,
-            cardDetails: initialCardDetails,
-            showCardDetailsModal: isModalVisible,
-          });
-        }}
-        card={cardDetailsModal.card}
-        cardDetails={cardDetailsModal.cardDetails}
-        webviewUrl={cardDetailsModal.webviewUrl}
-        manageLimits={() => {
-          setCardDetailsModal({
-            ...cardDetailsModal,
-            cardDetails: initialCardDetails,
-            showCardDetailsModal: false,
-          });
-          setTimeout(() => {
-            navigation.navigate(screenTitle.CARD_CONTROLS, {
-              currentCardProvider: cardProvider,
-              cardId: card.cardId,
-            });
-          }, MODAL_HIDE_TIMEOUT_250);
-        }}
-        userName={cardDetailsModal.userName}
-      />
-
-      <HiddenCardModal
-        isModalVisible={showHiddenCardModal}
-        setIsModalVisible={setShowHiddenCardModal}
-        onLoadCard={onLoadCard}
-      />
-
-      {cardProfile.provider === CardProviders.PAYCADDY && (
-        <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>
-          <CyDText className='font-bold text-[14px]'>
-            {t<string>(
-              type === CardType.VIRTUAL ? 'VIRTUAL_CARD' : 'PHYSICAL_CARD',
-            )}
-          </CyDText>
-          <CyDText className='font-bold text-[14px]'>
-            {' xxxx ' + last4}
-          </CyDText>
-        </CyDView>
-      )}
-
-      <CyDView className='flex flex-row justify-center items-center gap-x-[24px]'>
-        <CyDTouchView
-          className='flex flex-col justify-center items-center w-[72px]'
-          disabled={isAccountLocked}
-          onPress={() => {
-            handleCardActionClick(() => {
-              if (status === CardStatus.IN_ACTIVE) {
-                showModal('state', {
-                  type: 'error',
-                  title: t('UNLOCK_CARD_TO_REVEAL_CARD_DETAILS'),
-                  onSuccess: hideModal,
-                  onFailure: hideModal,
-                });
-              } else {
-                void validateReuseToken();
-              }
-            });
-          }}>
-          <CyDView
-            className={`${
-              isAccountLocked ? 'bg-n50' : 'bg-p50'
-            } h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
-            {isFetchingCardDetails ? (
-              <>
-                <ActivityIndicator size='small' color='#000000' />
-              </>
-            ) : (
-              <CyDIcons name='card' className='text-black text-[36px]' />
-            )}
-          </CyDView>
-          <CyDView className='mt-[6px]'>
-            <CyDText className='font-semibold text-[12px]'>
-              {'Reveal Card'}
-            </CyDText>
-          </CyDView>
-        </CyDTouchView>
-        <CyDTouchView
-          className='flex flex-col justify-center items-center w-[72px]  ml-[24px]'
-          disabled={isAccountLocked}
-          onPress={() => {
-            handleCardActionClick(() => {
-              if (status === CardStatus.ACTIVE) {
-                toggleCardStatus();
-              } else {
-                verifyCardUnlock();
-              }
-            });
-          }}>
-          <CyDView
-            className={clsx(
-              'h-[54px] w-[54px] items-center justify-center rounded-[50px]',
-              isAccountLocked
-                ? 'bg-n50'
-                : status !== CardStatus.ACTIVE
-                ? 'bg-base100'
-                : 'bg-p50',
-            )}>
-            {isStatusLoading ? (
-              <>
-                <ActivityIndicator size='small' color='#000000' />
-              </>
-            ) : (
-              <CyDImage
-                source={
-                  status === CardStatus.ACTIVE
-                    ? AppImages.FREEZE_ICON_BLACK
-                    : AppImages.UNFREEZE_ICON_BLACK
-                }
-                className='h-[24px] w-[24px]'
-                resizeMode='contain'
-              />
-              // <CydIcons
-              //   name={
-              //     status === CardStatus.ACTIVE ? 'freeze' : 'unfreeze'
-              //   }
-              //   className='text-black text-[36px]'
-              // />
-            )}
-          </CyDView>
-          <CyDView className='mt-[6px]'>
-            <CyDText className='font-semibold text-[12px]'>
-              {status === CardStatus.ACTIVE ? 'Freeze' : 'Unfreeze'}
-            </CyDText>
-          </CyDView>
-        </CyDTouchView>
-        <CyDTouchView
-          className='flex flex-col justify-center items-center ml-[24px]'
-          disabled={isAccountLocked}
-          onPress={() => {
-            handleCardActionClick(() => {
-              cardProvider === CardProviders.REAP_CARD
-                ? navigation.navigate(screenTitle.CARD_CONTROLS, {
-                    currentCardProvider: cardProvider,
-                    cardId: card.cardId,
-                  })
-                : navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
-                    currentCardProvider: cardProvider,
-                    card,
-                  });
-            });
-          }}>
-          <CyDView
-            className={`${
-              isAccountLocked ? 'bg-n50' : 'bg-p50'
-            } h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
-            {cardProvider === CardProviders.REAP_CARD ? (
-              <CyDIcons name='settings' className='text-black text-[28px]' />
-            ) : (
-              <CyDMaterialDesignIcons
-                name={'dots-vertical'}
-                size={32}
-                className={'text-black'}
-              />
-            )}
-          </CyDView>
-          <CyDView className='mt-[6px]'>
-            <CyDText className='font-semibold text-[12px]'>
-              {cardProvider === CardProviders.REAP_CARD
-                ? 'Controls'
-                : 'Set Pin'}
-            </CyDText>
-          </CyDView>
-        </CyDTouchView>
-      </CyDView>
-    </CyDView>
-  );
-};

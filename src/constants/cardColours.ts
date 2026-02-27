@@ -66,3 +66,37 @@ export const getCardColorByHex = (hex: string | undefined): CardColor => {
     DEFAULT_CARD_COLOUR
   );
 };
+
+/**
+ * Gradient colors for the card controls background, keyed by card color id.
+ */
+const CARD_GRADIENT_COLORS: Record<string, [string, string]> = {
+  jetBlack: ['rgba(9, 30, 66, 0.5)', 'rgba(23, 76, 168, 0.5)'],
+  mimosa: ['#694C00', '#E7A700'],
+  zedBlue: ['rgba(58, 58, 58, 0.5)', 'rgba(0, 43, 162, 0.5)'],
+  crimson: ['rgba(95, 0, 24, 0.5)', 'rgba(255, 0, 23, 0.5)'],
+  electricLime: ['rgba(0, 21, 12, 0.5)', 'rgba(37, 191, 73, 0.5)'],
+  metal: ['rgba(9, 30, 66, 0.5)', 'rgba(23, 76, 168, 0.5)'],
+};
+
+const DEFAULT_GRADIENT: [string, string] = ['#694C00', '#E7A700'];
+
+/**
+ * Get gradient colors for the card controls background based on card properties.
+ * @param cardColorHex - The card's color hex code (e.g., '#2D3436')
+ * @param isPhysical - Whether the card is a physical card
+ * @param isMetal - Whether the physical card is a metal card
+ * @returns Tuple of [startColor, endColor] for the gradient
+ */
+export const getCardGradientColors = (
+  cardColorHex: string | undefined,
+  isPhysical: boolean,
+  isMetal: boolean,
+): [string, string] => {
+  if (isPhysical) {
+    return isMetal ? CARD_GRADIENT_COLORS.metal : DEFAULT_GRADIENT;
+  }
+
+  const colorInfo = getCardColorByHex(cardColorHex);
+  return CARD_GRADIENT_COLORS[colorInfo.id] ?? DEFAULT_GRADIENT;
+};

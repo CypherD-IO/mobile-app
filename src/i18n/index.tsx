@@ -2396,17 +2396,17 @@ const resources = {
       WALLET_CONNECT_SIGN_PHASE_MESSAGE_DESCRIPTION:
         "Don't see the sign request?",
       CUSTOMIZATION: 'Customization',
-      CARD_COLOUR_UPDATED: 'Card Colour Updated',
+      CARD_COLOUR_UPDATED: 'Card Color Updated',
       CARD_COLOUR_UPDATED_DESC:
         'Your card colour has been updated successfully',
       CARD_TAG_UPDATED: 'Card Tag Updated',
       CARD_TAG_UPDATED_DESC: 'Your card tag has been updated successfully',
       CARD_TAG_REQUIRED: 'Please enter a card tag',
       NOT_SET: 'Not set',
-      CARD_COLOUR: 'Card Colour',
-      SELECT_CARD_COLOUR: 'Select Colour',
-      SELECT_COLOUR_DESC: 'You can customise card colour, as per your wish',
-      UPDATE_CARD_COLOUR: 'Update Colour',
+      CARD_COLOUR: 'Card Color',
+      SELECT_CARD_COLOUR: 'Select Color',
+      SELECT_COLOUR_DESC: 'You can customise card color, as per your wish',
+      UPDATE_CARD_COLOUR: 'Update Color',
       CARD_TAGS: 'Card Tags',
       TAG_CARD: 'Tag card',
       SELECT_TAG: 'Select Tag',
@@ -2419,6 +2419,12 @@ const resources = {
       NAME_YOUR_CARD: 'Name your card',
       CARD_TAG_DESCRIPTION:
         'You can tag each card with its purpose or a name you prefer, making it easier to find in the card stack!',
+      LOAD_CARD: 'Load Card',
+      VIEW_ALL_CARDS: 'View all cards',
+      TAP_CARD_HINT: 'Just tap the card to see your card controls!',
+      AVAILABLE_TO_SPEND: 'Available to spend',
+      AVAILABLE_TO_SPEND_INFO:
+        'The available to spend balance is shared between all the cards',
     },
   },
 };

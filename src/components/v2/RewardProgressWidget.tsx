@@ -10,7 +10,7 @@ import { Animated, Easing } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import WheelPicker from './WheelPicker';
 import TaskWheelItem from './TaskWheelItem';
-import { useOnboardingReward } from '../../contexts/OnboardingRewardContext';
+import { useOnboardingRewardSafe } from '../../contexts/OnboardingRewardContext';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 
@@ -143,12 +143,7 @@ const BottomInfoSection = ({ task }: { task: any }) => {
 const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   onTaskPress,
 }) => {
-  const {
-    statusWiseRewards,
-    totalRewardsPossible,
-    totalRewardsEarned,
-    currentStage,
-  } = useOnboardingReward();
+  const rewardCtx = useOnboardingRewardSafe();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
   const isDarkMode =
@@ -162,7 +157,8 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
     COMPLETED: 2,
   };
 
-  const derivedIndex = stageToIndex[currentStage ?? 'KYC_PENDING'] ?? 0;
+  const derivedIndex =
+    stageToIndex[rewardCtx?.currentStage ?? 'KYC_PENDING'] ?? 0;
 
   // Keep internal index state in sync with backend stage changes
   const [selectedIndex, setSelectedIndex] = useState(derivedIndex);
@@ -171,6 +167,16 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
   useEffect(() => {
     setSelectedIndex(derivedIndex);
   }, [derivedIndex]);
+
+  if (!rewardCtx) {
+    return null;
+  }
+
+  const {
+    statusWiseRewards,
+    totalRewardsPossible,
+    totalRewardsEarned,
+  } = rewardCtx;
 
   // Convenience helpers to read milestone data safely
   const milestone = (key: string) => statusWiseRewards?.[key] ?? {};
@@ -182,7 +188,9 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       completed: Boolean(milestone('kycPending').earned),
       reward: milestone('kycPending').amount ?? 0,
       status: milestone('kycPending').earned ? 'completed' : 'pending',
-      description: `🎉 Awesome! You just earned ${milestone('kycPending').amount} $CYPR for joining the cypher card platform!`,
+      description: `🎉 Awesome! You just earned ${
+        milestone('kycPending').amount ?? 0
+      } $CYPR for joining the cypher card platform!`,
     },
     {
       id: '2',
@@ -190,7 +198,9 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       completed: Boolean(milestone('firstLoad').earned),
       reward: milestone('firstLoad').amount ?? 0,
       status: milestone('firstLoad').earned ? 'completed' : 'pending',
-      description: `Add funds to your card to avail ${milestone('firstLoad').amount} $CYPR as bonus rewards.`,
+      description: `Add funds to your card to avail ${
+        milestone('firstLoad').amount ?? 0
+      } $CYPR as bonus rewards.`,
     },
     {
       id: '3',
@@ -198,7 +208,9 @@ const RewardProgressWidget: React.FC<RewardProgressWidgetProps> = ({
       completed: Boolean(milestone('firstSpend').earned),
       reward: milestone('firstSpend').amount ?? 0,
       status: milestone('firstSpend').earned ? 'completed' : 'pending',
-      description: `Make your first purchase with any merchant and you'll get ${milestone('firstSpend').amount} $CYPR as bonus reward`,
+      description: `Make your first purchase with any merchant and you'll get ${
+        milestone('firstSpend').amount ?? 0
+      } $CYPR as bonus reward`,
     },
     // {
     //   id: '4',
