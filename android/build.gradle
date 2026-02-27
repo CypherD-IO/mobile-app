@@ -4,7 +4,7 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 36
         targetSdkVersion = 36
-        ndkVersion = "27.1.12297006"
+        ndkVersion = "28.0.12916984"
         kotlinVersion = "2.1.20"
     }
     repositories {
@@ -21,7 +21,7 @@ buildscript {
         // "@react-native-firebase/app" -> "No Firebase App '[DEFAULT]' has been created".
         classpath("com.google.gms:google-services:4.4.2")
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.8.1")
-        classpath("com.google.firebase:perf-plugin:1.4.2")
+        classpath("com.google.firebase:perf-plugin:2.0.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }

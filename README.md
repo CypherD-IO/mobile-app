@@ -14,6 +14,7 @@ TBD: Next step is to prototype the interaction between React Native app back to 
 This project uses private packages from GitHub Packages (`@cypherd-io` scope). You need to set up authentication before running `npm install`.
 
 **1. Generate a GitHub Personal Access Token:**
+
 - Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
 - Click "Generate new token (classic)"
 - Select scope: `read:packages`
@@ -45,6 +46,7 @@ echo $NPM_TOKEN
 ### Ruby, Bundler, and CocoaPods Troubleshooting
 
 If `npm run start`, `pod install`, or `bundle install` fails with errors like:
+
 - `Could not find 'bundler' (...) required by Gemfile.lock`
 - `Something went wrong while installing CocoaPods`
 
