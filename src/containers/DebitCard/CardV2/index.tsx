@@ -343,7 +343,7 @@ export default function CypherCardScreen() {
       }
     };
 
-    if (isFocused) {
+    if (isFocused && isLayoutRendered) {
       void checkSafepalModal();
     }
 
@@ -355,6 +355,7 @@ export default function CypherCardScreen() {
   }, [
     isFocused,
     cardId,
+    isLayoutRendered,
     globalContext?.globalState?.cardProfile?.planInfo?.planId,
   ]);
 
