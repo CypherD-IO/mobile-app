@@ -85,7 +85,8 @@ import useConnectionManager from '../../../hooks/useConnectionManager';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FreeSafepalClaimContent, {
-  STORAGE_KEY_DISMISSED,
+  STORAGE_KEY_DISMISSED_PREMIUM,
+  STORAGE_KEY_DISMISSED_NON_PREMIUM,
   SAFEPAL_BOTTOM_SHEET_ID,
 } from '../../../components/v2/freeSafepalClaimModal';
 
@@ -182,7 +183,7 @@ export default function CypherCardScreen() {
   // Ref to track timeout IDs for cleanup on unmount
   const removalTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
 
-  // Free Safepal claim modal - show only for premium users via global bottom sheet
+  // Free Safepal claim modal
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
 
@@ -194,13 +195,16 @@ export default function CypherCardScreen() {
             'planInfo',
             'planId',
           ]) === CypherPlanId.PRO_PLAN;
-        const dismissed = await AsyncStorage.getItem(STORAGE_KEY_DISMISSED);
+        const storageKey = isPremiumUser
+          ? STORAGE_KEY_DISMISSED_PREMIUM
+          : STORAGE_KEY_DISMISSED_NON_PREMIUM;
+        const dismissed = await AsyncStorage.getItem(storageKey);
 
-        if (isPremiumUser && dismissed !== 'true') {
+        if (dismissed !== 'true') {
           timer = setTimeout(() => {
             showBottomSheet({
               id: SAFEPAL_BOTTOM_SHEET_ID,
-              snapPoints: ['85%'],
+              snapPoints: [Platform.OS === 'android' ? '90%' : '88%'],
               showCloseButton: false,
               showHandle: false,
               scrollable: false,
@@ -210,6 +214,7 @@ export default function CypherCardScreen() {
                 <FreeSafepalClaimContent
                   onDismiss={() => hideBottomSheet(SAFEPAL_BOTTOM_SHEET_ID)}
                   navigation={navigation}
+                  isPremiumUser={isPremiumUser}
                 />
               ),
             });

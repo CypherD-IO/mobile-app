@@ -133,6 +133,7 @@ export const AnalyticEvent = {
   CARD_TAG_UPDATED: 'card_tag_updated',
   FREE_SAFEPAL_CLAIM_CLICKED: 'free_safepal_claim_clicked',
   FREE_SAFEPAL_DONT_SHOW_CLICKED: 'free_safepal_dont_show_clicked',
+  FREE_SAFEPAL_UPGRADE_CLICKED: 'free_safepal_upgrade_clicked',
 };
 
 export const logAnalyticsToFirebase = (
