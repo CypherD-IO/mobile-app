@@ -41,6 +41,11 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "npm"
 
+      - name: Accept Android SDK licenses
+        run: yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=${ANDROID_HOME}
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+
       - name: Configure npm
         run: |
           echo "@cypherd-io:registry=https://npm.pkg.github.com/" > .npmrc
