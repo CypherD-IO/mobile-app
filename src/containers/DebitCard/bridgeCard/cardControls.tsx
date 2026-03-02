@@ -1900,7 +1900,7 @@ export default function CardControls(): React.JSX.Element {
             <BottomSheetScrollView
               contentContainerStyle={sheetStyles.scrollContent}
               showsVerticalScrollIndicator={false}
-              scrollEnabled={sheetIndex === 1}>
+              scrollEnabled={true}>
               {controlsContent}
             </BottomSheetScrollView>
           </BottomSheet>

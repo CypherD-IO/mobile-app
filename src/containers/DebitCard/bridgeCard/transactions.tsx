@@ -14,6 +14,7 @@ import React, {
   useRef,
   useState,
   useCallback,
+  useMemo,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl, StyleSheet, ViewToken } from 'react-native';
@@ -79,19 +80,19 @@ export default function CardTransactions() {
     dateRange: initialCardTxnDateRange,
     statuses: STATUSES,
   });
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
   const txnRetrievalOffset = useRef<string | undefined>();
-  const lastDate = useRef<string>('');
   const [viewableTransactionsDate, setViewableTransactionsDate] =
     useState<string>('');
   const lastViewableTransactionDate = useRef<string>('');
   const [exportOptionOpen, setExportOptionOpen] = useState(false);
   const [isEndReached, setIsEndReached] = useState(false);
   const fetchDebounced = useRef<ReturnType<typeof setTimeout>>();
+  const transactionsRef = useRef<ICardTransaction[]>([]);
 
   useEffect(() => {
     void fetchTransactions(true);
@@ -100,6 +101,7 @@ export default function CardTransactions() {
   const spliceTransactions = (txnsToSplice: ICardTransaction[]) => {
     if (txnsToSplice.length === 0) {
       setFilteredTransactions([]);
+      return;
     }
 
     const filteredTxns = txnsToSplice.filter(txn => {
@@ -108,8 +110,8 @@ export default function CardTransactions() {
         txn.tStatus === ReapTxnStatus.DECLINED
           ? CardTransactionStatuses.DECLINED
           : txn.isSettled
-            ? CardTransactionStatuses.SETTLED
-            : CardTransactionStatuses.PENDING;
+          ? CardTransactionStatuses.SETTLED
+          : CardTransactionStatuses.PENDING;
       const isIncludedStatus = filter.statuses.includes(statusString); // FILTERING THE STATUS
       // FILTERING THE DATERANGE
       const isIncludedInDateRange = moment
@@ -120,9 +122,6 @@ export default function CardTransactions() {
         );
       return isIncludedType && isIncludedStatus && isIncludedInDateRange;
     });
-    lastDate.current = filteredTxns?.[0]?.createdAt
-      ? parseMonthYear(moment.unix(filteredTxns[0].createdAt).toISOString())
-      : '';
     setFilteredTransactions(filteredTxns);
   };
 
@@ -206,11 +205,20 @@ export default function CardTransactions() {
         }
 
         if (pullToRefresh) {
+          transactionsRef.current = txnsToSet;
           setTransactions(txnsToSet);
           spliceTransactions(txnsToSet);
         } else {
-          setTransactions([...transactions, ...txnsToSet]);
-          spliceTransactions([...transactions, ...txnsToSet]);
+          const existingIds = new Set(
+            transactionsRef.current.map((txn: ICardTransaction) => txn.id),
+          );
+          const uniqueNewTxns = txnsToSet.filter(
+            (txn: ICardTransaction) => !existingIds.has(txn.id),
+          );
+          const merged = [...transactionsRef.current, ...uniqueNewTxns];
+          transactionsRef.current = merged;
+          setTransactions(merged);
+          spliceTransactions(merged);
         }
       } else {
         const errorObject = {
@@ -244,17 +252,18 @@ export default function CardTransactions() {
     }
   };
 
+  const fetchTransactionsRef = useRef(fetchTransactions);
+  fetchTransactionsRef.current = fetchTransactions;
+
   const handleEndReached = useCallback(() => {
     if (fetchDebounced.current) {
       clearTimeout(fetchDebounced.current);
     }
 
     fetchDebounced.current = setTimeout(() => {
-      if (!isEndReached && !refreshing) {
-        void fetchTransactions();
-      }
+      void fetchTransactionsRef.current();
     }, 100);
-  }, [isEndReached, refreshing]);
+  }, []);
 
   useEffect(() => {
     spliceTransactions(transactions);
@@ -283,11 +292,25 @@ export default function CardTransactions() {
     },
   );
 
+  const sectionFirstIds = useMemo(() => {
+    const ids = new Set<string>();
+    let prevDate = '';
+    for (const txn of filteredTransactions) {
+      const parsed = parseMonthYear(moment.unix(txn.createdAt).toISOString());
+      if (parsed !== prevDate) {
+        ids.add(txn.id);
+        prevDate = parsed;
+      }
+    }
+    return ids;
+  }, [filteredTransactions]);
+
   const renderTransaction = ({ item }: { item: ICardTransaction }) => {
-    const { createdAt } = item;
-    const parsedDate = parseMonthYear(moment.unix(createdAt).toISOString());
-    if (lastDate.current !== parsedDate) {
-      lastDate.current = parsedDate;
+    const parsedDate = parseMonthYear(
+      moment.unix(item.createdAt).toISOString(),
+    );
+
+    if (sectionFirstIds.has(item.id)) {
       return (
         <CyDView>
           <CyDView className='bg-n0 py-[10px] px-[12px]'>
@@ -390,7 +413,9 @@ export default function CardTransactions() {
           <CyDFlatList
             data={filteredTransactions}
             renderItem={renderTransaction as any}
-            keyExtractor={(_, index) => index.toString()}
+            keyExtractor={(item, index) =>
+              (item as ICardTransaction).id ?? index.toString()
+            }
             onViewableItemsChanged={handleViewableItemsChanged.current}
             refreshControl={
               <RefreshControl
@@ -406,12 +431,26 @@ export default function CardTransactions() {
             onEndReachedThreshold={0.5}
             ListEmptyComponent={
               !refreshing ? (
-                <CyDView className='py-[24px] justify-start items-center'>
-                  <CyDFastImage
-                    source={AppImages.NO_TRANSACTIONS_YET}
-                    className='h-[150px] w-[150px]'
-                    resizeMode='contain'
-                  />
+                <CyDView className='items-center mt-[250px]'>
+                  <CyDView
+                    className='w-[240px] bg-white rounded-[16px] items-center'
+                    style={styles.emptyContainer}>
+                    <CyDFastImage
+                      source={AppImages.NO_TRANSACTIONS_YET}
+                      className='w-[168px] h-[146px] mt-[40px]'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='font-manrope font-medium text-[16px] text-base100 text-center mt-[12px] leading-[140%] tracking-[-0.4px]'>
+                      {'No Transaction Found'}
+                    </CyDText>
+                    <CyDText
+                      className='font-manrope font-normal text-[10px] text-center mt-[4px] mb-[20px] leading-[160%] px-[19px]'
+                      style={styles.emptySubtext}>
+                      {
+                        'Use your cypher card and keep an eye on your transactions right here!'
+                      }
+                    </CyDText>
+                  </CyDView>
                 </CyDView>
               ) : null
             }
@@ -436,5 +475,11 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end',
+  },
+  emptyContainer: {
+    height: 283,
+  },
+  emptySubtext: {
+    color: '#A0A0A0',
   },
 });

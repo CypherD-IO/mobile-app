@@ -89,7 +89,7 @@ export const Banner = ({
   return (
     <CyDView className='bg-n20'>
       {/* Dark section with curved bottom */}
-      <CyDView className='bg-n0 rounded-b-[24px] px-[20px] pt-[12px] pb-[16px]'>
+      <CyDView className='bg-n0 rounded-b-[44px] px-[20px] pt-[44px] pb-[16px]'>
         {/* Chain Selector */}
         <CyDTouchView
           onPress={onChainPress}
@@ -102,7 +102,7 @@ export const Banner = ({
         </CyDTouchView>
 
         {/* Balance Display with Eye Icon */}
-        <CyDView className='mb-[24px] flex-row items-center gap-[12px] justify-center'>
+        <CyDView className='mb-[44px] flex-row items-center gap-[12px] justify-center'>
           <CyDView className='flex-shrink'>
             <CyDTokenValue className='text-[32px]'>
               {portfolioBalance}
