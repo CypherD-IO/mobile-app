@@ -153,7 +153,7 @@ const COLLAPSE_SPRING: WithSpringConfig = {
 };
 
 const COLLAPSE_FADE_DURATION = 600;
-const COLLAPSE_FADE_DELAY = 350;
+const COLLAPSE_FADE_DELAY = 100;
 
 const createDeckCollapseExiting = (
   index: number,
@@ -348,7 +348,11 @@ export default function CypherCardScreen() {
         clearTimeout(timer);
       }
     };
-  }, [isFocused, isLayoutRendered, globalContext?.globalState?.cardProfile?.planInfo?.planId]);
+  }, [
+    isFocused,
+    isLayoutRendered,
+    globalContext?.globalState?.cardProfile?.planInfo?.planId,
+  ]);
 
   /**
    * Handles when an ongoing activity is completed
@@ -914,7 +918,8 @@ export default function CypherCardScreen() {
             <Animated.View
               key={card.cardId || `card-${index}`}
               entering={deckSpreadAnimations[index]}
-              exiting={deckCollapseAnimations[index]}>
+              exiting={deckCollapseAnimations[index]}
+              style={{ width: '100%' }}>
               <CyDView className='bg-n0 rounded-[16px] p-[16px]'>
                 {/* Card label */}
                 <CyDText className='font-manrope font-semibold text-[16px] text-base400 mb-[8px]'>
@@ -1103,18 +1108,12 @@ export default function CypherCardScreen() {
         })}
 
         {/* Free Metal Card promotion */}
-        <Animated.View
-          entering={createDeckSpreadEntering(allDisplayableCards.length)}
-          exiting={FadeOut.duration(150)}>
-          <CyDView className='bg-n0 rounded-[16px] py-[16px]'>
-            <GetPhysicalCardComponent
-              cardProfile={cardProfile}
-              cardProvider={cardProvider}
-              cardDesignData={cardDesignData}
-              cardBalance={cardBalance}
-            />
-          </CyDView>
-        </Animated.View>
+        <GetPhysicalCardComponent
+          cardProfile={cardProfile}
+          cardProvider={cardProvider}
+          cardDesignData={cardDesignData}
+          cardBalance={cardBalance}
+        />
 
         {/* Get New Card entry */}
         <Animated.View
