@@ -133,6 +133,12 @@ export enum PhysicalCardType {
   METAL = 'metal',
 }
 
+export enum RC_PHYSICAL_CARD_TRACKING_STATUS {
+  CARD_ACTIVATED = 'cardActivated',
+  CARD_IN_PRODUCTION = 'cardInProduction',
+  CARD_SENT_TO_USER = 'cardSentToUser',
+}
+
 export enum CardDesignType {
   METAL = 'metal',
   PHYSICAL = 'physical',
