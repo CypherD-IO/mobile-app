@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import Intercom from '@intercom/intercom-react-native';
 import {
   NavigationProp,
@@ -9,7 +10,7 @@ import {
 } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
-import { get, isEmpty } from 'lodash';
+import { get, isEmpty, trim } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +33,7 @@ import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
 import { getCardColorByHex } from '../../../constants/cardColours';
+import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import GradientText from '../../../components/gradientText';
@@ -56,6 +58,7 @@ import {
   ButtonType,
   CARD_IDS,
   CardApplicationStatus,
+  CardOperationsAuthType,
   CardProviders,
   CardStatus,
   CardTransactionStatuses,
@@ -67,14 +70,20 @@ import {
   PhysicalCardType,
   RC_PHYSICAL_CARD_TRACKING_STATUS,
 } from '../../../constants/enum';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
+import axios, { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
-import { getOverchargeDccInfoModalShown } from '../../../core/asyncStorage';
+import {
+  getCardRevealReuseToken,
+  getOverchargeDccInfoModalShown,
+  setCardRevealReuseToken,
+} from '../../../core/asyncStorage';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import {
   copyToClipboard,
+  decryptWithSecretKey,
   isPotentiallyDccOvercharged,
+  sleepFor,
 } from '../../../core/util';
 import Toast from 'react-native-toast-message';
 import useActivityPolling from '../../../hooks/useActivityPolling';
@@ -346,7 +355,7 @@ export default function CypherCardScreen() {
   };
   const isFocused = useIsFocused();
   const { t } = useTranslation();
-  const { getWithAuth } = useAxios();
+  const { getWithAuth, postWithAuth, patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile: CardProfile | undefined =
@@ -952,6 +961,371 @@ export default function CypherCardScreen() {
     return false;
   };
 
+  const isAccountLocked =
+    shouldBlockAction() || shouldShowLocked() || shouldShowContactSupport();
+
+  const onCardStatusChange = async (card: Card): Promise<void> => {
+    hideModal();
+    const url = `/v1/cards/${cardProvider}/card/${card.cardId}/status`;
+    const payload = {
+      status:
+        card.status === CardStatus.ACTIVE
+          ? CardStatus.IN_ACTIVE
+          : CardStatus.ACTIVE,
+    };
+
+    try {
+      const response = await patchWithAuth(url, payload);
+      if (!response.isError) {
+        showModal('state', {
+          type: 'success',
+          title:
+            card.status === CardStatus.ACTIVE
+              ? 'Card Successfully Frozen'
+              : 'Card Successfully Activated',
+          description:
+            card.status === CardStatus.ACTIVE
+              ? "Your card is successfully frozen. You can't make any transactions. You can unfreeze it anytime."
+              : 'Your card is active now',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        void refreshProfile();
+      } else {
+        showModal('state', {
+          type: 'error',
+          title:
+            card.status === CardStatus.ACTIVE
+              ? 'Card Freeze Failed'
+              : 'Card Activation Failed',
+          description:
+            response.error.message ??
+            (card.status === CardStatus.ACTIVE
+              ? 'Unable to freeze card. Please try again later.'
+              : 'Unable to activate card. Please try again later.'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+      const errMessage =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as Record<string, unknown>).message ?? '')
+          : '';
+      showModal('state', {
+        type: 'error',
+        title:
+          card.status === CardStatus.ACTIVE
+            ? 'Card Freeze Failed'
+            : 'Card Activation Failed',
+        description:
+          errMessage ||
+          (card.status === CardStatus.ACTIVE
+            ? 'Unable to freeze card. Please try again later.'
+            : 'Unable to activate card. Please try again later.'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
+  const toggleCardStatus = (card: Card): void => {
+    showModal('state', {
+      type: 'warning',
+      title: `Are you sure you want to ${
+        card.status === CardStatus.ACTIVE ? 'freeze' : 'unfreeze'
+      } your card?`,
+      description:
+        card.status === CardStatus.ACTIVE
+          ? 'This is just a temporary freeze. You can unfreeze it anytime'
+          : '',
+      onSuccess: () => {
+        void onCardStatusChange(card);
+      },
+      onFailure: hideModal,
+    });
+  };
+
+  const handleFreezeUnfreezePress = (card: Card): void => {
+    if (card.status === CardStatus.ACTIVE) {
+      toggleCardStatus(card);
+    } else {
+      navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
+        onSuccess: () => {
+          showModal('state', {
+            type: 'success',
+            title: t('Card Successfully Activated'),
+            description: 'Your card is active now!',
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          void refreshProfile();
+        },
+        currentCardProvider: cardProvider,
+        card,
+        authType:
+          card.status === CardStatus.BLOCKED
+            ? CardOperationsAuthType.UNBLOCK
+            : CardOperationsAuthType.UNLOCK,
+      });
+    }
+  };
+
+  // ----- Card Reveal flow -----
+  const [isFetchingCardDetails, setIsFetchingCardDetails] = useState(false);
+
+  const initialCardSecrets = {
+    cvv: 'xxx',
+    expiryMonth: 'xx',
+    expiryYear: 'xxxx',
+    cardNumber: 'xxxx xxxx xxxx xxxx',
+  };
+
+  const [cardDetailsModal, setCardDetailsModal] = useState<{
+    showCardDetailsModal: boolean;
+    card: Card | null;
+    cardDetails: typeof initialCardSecrets;
+    webviewUrl: string;
+    userName: string;
+  }>({
+    showCardDetailsModal: false,
+    card: null,
+    cardDetails: initialCardSecrets,
+    webviewUrl: '',
+    userName: '',
+  });
+
+  const decryptMessage = async (
+    {
+      privateKey,
+      base64Message,
+      reuseToken,
+      userNameValue,
+    }: {
+      privateKey: string;
+      base64Message: string;
+      reuseToken?: string;
+      userNameValue?: string;
+    },
+    card: Card,
+  ): Promise<void> => {
+    try {
+      await sleepFor(1000);
+      setIsFetchingCardDetails(true);
+      if (reuseToken) {
+        await setCardRevealReuseToken(card.cardId, reuseToken);
+      }
+      const buffer = Buffer.from(base64Message, 'base64');
+      const decrypted = crypto.privateDecrypt(
+        { key: privateKey, padding: 4 },
+        buffer,
+      );
+      const decryptedBuffer = decrypted.toString('utf8');
+      setCardDetailsModal({
+        showCardDetailsModal: true,
+        card,
+        cardDetails: initialCardSecrets,
+        webviewUrl: trim(decryptedBuffer, '"'),
+        userName: userNameValue ?? '',
+      });
+    } catch (error) {
+      Sentry.captureException(error);
+    } finally {
+      setIsFetchingCardDetails(false);
+    }
+  };
+
+  const decryptSecretKeyData = async (
+    {
+      secretKey,
+      encryptedPan,
+      encryptedCvc,
+      expirationMonth,
+      expirationYear,
+      userNameValue,
+    }: {
+      secretKey: string;
+      sessionId: string;
+      encryptedPan: { data: string; iv: string };
+      encryptedCvc: { data: string; iv: string };
+      expirationMonth: string;
+      expirationYear: string;
+      userNameValue: string;
+    },
+    card: Card,
+  ): Promise<void> => {
+    try {
+      setIsFetchingCardDetails(true);
+      const decryptedPan = decryptWithSecretKey(
+        secretKey,
+        encryptedPan.data,
+        encryptedPan.iv,
+      );
+      const decryptedCvc = decryptWithSecretKey(
+        secretKey,
+        encryptedCvc.data,
+        encryptedCvc.iv,
+      );
+      setCardDetailsModal({
+        showCardDetailsModal: true,
+        card,
+        cardDetails: {
+          cvv: decryptedCvc,
+          expiryMonth: expirationMonth,
+          expiryYear: expirationYear,
+          cardNumber: decryptedPan,
+        },
+        webviewUrl: '',
+        userName: userNameValue,
+      });
+    } catch (error) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      Sentry.captureException(error);
+    } finally {
+      setIsFetchingCardDetails(false);
+    }
+  };
+
+  const sendCardDetailsForPaycaddy = async (
+    {
+      vaultId,
+      cardId: pcCardId,
+      token,
+      reuseToken,
+    }: {
+      vaultId: string;
+      cardId: string;
+      token: string;
+      reuseToken?: string;
+    },
+    card: Card,
+  ): Promise<void> => {
+    try {
+      setIsFetchingCardDetails(true);
+      await sleepFor(1000);
+      if (reuseToken) {
+        await setCardRevealReuseToken(card.cardId, reuseToken);
+      }
+      const response = await axios.post(
+        vaultId,
+        { cardId: pcCardId, isProd: true },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (response?.data?.result) {
+        const { result } = response.data;
+        setCardDetailsModal({
+          showCardDetailsModal: true,
+          card,
+          cardDetails: {
+            cvv: result.cvv,
+            expiryMonth: result.expDate.slice(-2),
+            expiryYear: result.expDate.slice(0, 4),
+            cardNumber: result.pan.match(/.{1,4}/g).join(' '),
+          },
+          webviewUrl: '',
+          userName: '',
+        });
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+          description: t('CONTACT_CYPHERD_SUPPORT'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+    } finally {
+      setIsFetchingCardDetails(false);
+    }
+  };
+
+  const validateReuseToken = async (card: Card): Promise<void> => {
+    const cardRevealReuseToken = await getCardRevealReuseToken(card.cardId);
+    if (
+      (card.cardProvider || cardProfile?.provider) ===
+        CardProviders.REAP_CARD &&
+      cardRevealReuseToken
+    ) {
+      setIsFetchingCardDetails(true);
+      setCardDetailsModal({
+        showCardDetailsModal: true,
+        card,
+        cardDetails: initialCardSecrets,
+        webviewUrl: '',
+        userName: '',
+      });
+
+      const verifyReuseTokenUrl = `/v1/cards/${card.cardProvider}/card/${String(
+        card.cardId,
+      )}/verify/reuse-token`;
+      const payload = {
+        reuseToken: cardRevealReuseToken,
+        stylesheetUrl: `https://public.cypherd.io/css/${
+          card.physicalCardType === PhysicalCardType.METAL
+            ? 'cardRevealMobileOnMetal.css'
+            : 'cardRevealMobileOnCard.css'
+        }`,
+      };
+      try {
+        const response = await postWithAuth(verifyReuseTokenUrl, payload);
+        if (!response.isError) {
+          if (card.cardProvider === CardProviders.REAP_CARD) {
+            setCardDetailsModal({
+              showCardDetailsModal: true,
+              card,
+              cardDetails: initialCardSecrets,
+              webviewUrl: trim(response.data.token, '"'),
+              userName: response.data.userName,
+            });
+            setIsFetchingCardDetails(false);
+          } else {
+            void sendCardDetailsForPaycaddy(response.data, card);
+          }
+          return;
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+      }
+      setIsFetchingCardDetails(false);
+      setCardDetailsModal({
+        ...cardDetailsModal,
+        showCardDetailsModal: false,
+      });
+    }
+    navigation.navigate(screenTitle.CARD_REVEAL_AUTH_SCREEN, {
+      onSuccess: (data: any, _provider: CardProviders) => {
+        setIsFetchingCardDetails(true);
+        setCardDetailsModal({
+          showCardDetailsModal: true,
+          card,
+          cardDetails: initialCardSecrets,
+          webviewUrl: '',
+          userName: '',
+        });
+        if (card.cardProvider === CardProviders.REAP_CARD) {
+          void decryptMessage(data, card);
+        } else if (card.cardProvider === CardProviders.RAIN_CARD) {
+          void decryptSecretKeyData(data, card);
+        } else if (card.cardProvider === CardProviders.PAYCADDY) {
+          void sendCardDetailsForPaycaddy(data, card);
+        }
+      },
+      currentCardProvider: cardProvider,
+      card,
+      triggerOTPParam: 'verify/show-token',
+      verifyOTPPayload: { isMobile: true },
+    });
+  };
+
   // Show merchant detail sheet
   const showMerchantDetailSheet = (merchant: any) => {
     setSelectedMerchantData(merchant);
@@ -1226,18 +1600,29 @@ export default function CypherCardScreen() {
                   />
                 ) : (
                   <CyDView className='flex-row justify-center items-center gap-x-[32px] mt-[12px]'>
+                    {/* Reveal Card */}
                     <CyDTouchView
                       className='flex-col justify-center items-center'
+                      disabled={isAccountLocked}
                       onPress={() => {
-                        navigation.navigate(
-                          screenTitle.CARD_REVEAL_AUTH_SCREEN,
-                          {
-                            currentCardProvider: cardProvider,
-                            card,
-                          },
-                        );
+                        if (
+                          card.status === CardStatus.IN_ACTIVE ||
+                          card.status === CardStatus.BLOCKED
+                        ) {
+                          showModal('state', {
+                            type: 'error',
+                            title: t('UNLOCK_CARD_TO_REVEAL_CARD_DETAILS'),
+                            onSuccess: hideModal,
+                            onFailure: hideModal,
+                          });
+                        } else {
+                          void validateReuseToken(card);
+                        }
                       }}>
-                      <CyDView className='h-[48px] w-[48px] items-center justify-center rounded-full bg-n30'>
+                      <CyDView
+                        className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
+                          isAccountLocked ? 'bg-n50' : 'bg-n30'
+                        }`}>
                         <CyDIcons
                           name='card'
                           className='text-base400 text-[24px]'
@@ -1248,19 +1633,17 @@ export default function CypherCardScreen() {
                       </CyDText>
                     </CyDTouchView>
 
-                    {/* Freeze / Unfreeze → unlock auth screen */}
+                    {/* Freeze / Unfreeze */}
                     <CyDTouchView
                       className='flex-col justify-center items-center'
-                      onPress={() => {
-                        navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
-                          currentCardProvider: cardProvider,
-                          card,
-                        });
-                      }}>
+                      disabled={isAccountLocked}
+                      onPress={() => handleFreezeUnfreezePress(card)}>
                       <CyDView
                         className={clsx(
                           'h-[48px] w-[48px] items-center justify-center rounded-full',
-                          card.status !== CardStatus.ACTIVE
+                          isAccountLocked
+                            ? 'bg-n50'
+                            : card.status !== CardStatus.ACTIVE
                             ? 'bg-base100'
                             : 'bg-n30',
                         )}>
@@ -1284,8 +1667,10 @@ export default function CypherCardScreen() {
                       </CyDText>
                     </CyDTouchView>
 
+                    {/* Transactions */}
                     <CyDTouchView
                       className='flex-col justify-center items-center'
+                      disabled={isAccountLocked}
                       onPress={() => {
                         navigation.navigate(
                           screenTitle.CARD_TRANSACTIONS_SCREEN,
@@ -1295,7 +1680,10 @@ export default function CypherCardScreen() {
                           },
                         );
                       }}>
-                      <CyDView className='h-[48px] w-[48px] items-center justify-center rounded-full bg-n30'>
+                      <CyDView
+                        className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
+                          isAccountLocked ? 'bg-n50' : 'bg-n30'
+                        }`}>
                         <CyDMaterialDesignIcons
                           name='format-list-bulleted'
                           size={22}
@@ -1307,17 +1695,30 @@ export default function CypherCardScreen() {
                       </CyDText>
                     </CyDTouchView>
 
+                    {/* Card Controls / Set Pin */}
                     <CyDTouchView
                       className='flex-col justify-center items-center'
+                      disabled={isAccountLocked}
                       onPress={() => {
-                        navigation.navigate(screenTitle.CARD_CONTROLS, {
-                          cardId: card.cardId,
-                          currentCardProvider: cardProvider,
-                          card,
-                          showAsSheet: true,
-                        });
+                        cardProvider === CardProviders.REAP_CARD
+                          ? navigation.navigate(screenTitle.CARD_CONTROLS, {
+                              cardId: card.cardId,
+                              currentCardProvider: cardProvider,
+                              card,
+                              showAsSheet: true,
+                            })
+                          : navigation.navigate(
+                              screenTitle.CARD_SET_PIN_SCREEN,
+                              {
+                                currentCardProvider: cardProvider,
+                                card,
+                              },
+                            );
                       }}>
-                      <CyDView className='h-[48px] w-[48px] items-center justify-center rounded-full bg-n30'>
+                      <CyDView
+                        className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
+                          isAccountLocked ? 'bg-n50' : 'bg-n30'
+                        }`}>
                         <CyDMaterialDesignIcons
                           name='cog-outline'
                           size={22}
@@ -1325,7 +1726,9 @@ export default function CypherCardScreen() {
                         />
                       </CyDView>
                       <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
-                        {'Card Controls'}
+                        {cardProvider === CardProviders.REAP_CARD
+                          ? 'Card Controls'
+                          : 'Set Pin'}
                       </CyDText>
                     </CyDTouchView>
                   </CyDView>
@@ -1342,6 +1745,39 @@ export default function CypherCardScreen() {
           cardDesignData={cardDesignData}
           cardBalance={cardBalance}
         />
+
+        {/* Card Details Reveal Modal */}
+        {cardDetailsModal.card && (
+          <CardDetailsModal
+            isModalVisible={cardDetailsModal.showCardDetailsModal}
+            setShowModal={(isModalVisible: boolean) => {
+              setIsFetchingCardDetails(false);
+              setCardDetailsModal({
+                ...cardDetailsModal,
+                cardDetails: initialCardSecrets,
+                showCardDetailsModal: isModalVisible,
+              });
+            }}
+            card={cardDetailsModal.card}
+            cardDetails={cardDetailsModal.cardDetails}
+            webviewUrl={cardDetailsModal.webviewUrl}
+            manageLimits={() => {
+              setCardDetailsModal({
+                ...cardDetailsModal,
+                cardDetails: initialCardSecrets,
+                showCardDetailsModal: false,
+              });
+              setTimeout(() => {
+                navigation.navigate(screenTitle.CARD_CONTROLS, {
+                  currentCardProvider: cardProvider,
+                  cardId: cardDetailsModal.card?.cardId,
+                });
+              }, MODAL_HIDE_TIMEOUT_250);
+            }}
+            userName={cardDetailsModal.userName}
+            loading={isFetchingCardDetails}
+          />
+        )}
 
         {/* Get New Card entry */}
         <Animated.View

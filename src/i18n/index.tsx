@@ -531,6 +531,7 @@ const resources = {
       FUND_CARD_INIT_CAPS: 'FUND CARD',
       RECENT_TRANSACTIONS: 'Recent Transactions',
       UNABLE_TO_REVEAL_CARD_DETAILS: 'Unable to reveal card details',
+      FETCHING_CARD_DETAILS: 'Fetching card details...',
       TRANSACTION_TYPE: 'Transaction Type',
       ALL_TRANSACTIONS: 'All Transactions',
       CREDIT: 'Credit',
