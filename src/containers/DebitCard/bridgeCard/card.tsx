@@ -18,7 +18,6 @@ import {
   PhysicalCardType,
 } from '../../../constants/enum';
 import { GlobalContext } from '../../../core/globalContext';
-import useAxios from '../../../core/HttpRequest';
 import { Card } from '../../../models/card.model';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
@@ -114,7 +113,6 @@ export default function CardScreen({
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-  const { getWithAuth } = useAxios();
   const [userCardDetails, setUserCardDetails] = useState<UserCardDetails>({
     cards: [],
     personId: '',
@@ -160,7 +158,6 @@ export default function CardScreen({
             cardId: '',
           },
         });
-        void getTrackingDetails();
       }
     }
   }, [currentCardProvider, isFocused, cardProfile]);
@@ -339,17 +336,6 @@ export default function CardScreen({
     }
     return actualCards;
   }, [currentCardProvider, userCardDetails.cards, cardProfile]);
-
-  const getTrackingDetails = async (): Promise<any> => {
-    const response = await getWithAuth(
-      `/v1/cards/${currentCardProvider}/card/tracking`,
-    );
-    if (!response.error) {
-      const tempTrackingDetails = response.data;
-      setTrackingDetails(tempTrackingDetails);
-    }
-    return response;
-  };
 
   const MAX_VISIBLE_CARDS = 3;
   const [cardOrderIndices, setCardOrderIndices] = useState<number[]>([]);
