@@ -40,6 +40,7 @@ import {
 } from '../../../constants/server';
 import clsx from 'clsx';
 import { get } from 'lodash';
+import TokenInitialsIcon from '../../../components/v2/TokenInitialsIcon';
 
 interface TxnItemProps {
   activity: TransactionObj;
@@ -68,28 +69,6 @@ const getInTransfer = (
 const getPrimaryTransfer = (
   transfers: TransactionTransfer[],
 ): TransactionTransfer | undefined => transfers[0];
-
-const TokenInitialsIcon = ({
-  symbol,
-  size = 36,
-}: {
-  symbol: string;
-  size?: number;
-}) => {
-  const initials = symbol.slice(0, 4).toUpperCase();
-  const fontSize = size * 0.32;
-  return (
-    <CyDView
-      className='rounded-full bg-n40 justify-center items-center'
-      style={{ width: size, height: size }}>
-      <CyDText
-        className='font-bold text-activityFontColor'
-        style={{ fontSize }}>
-        {initials}
-      </CyDText>
-    </CyDView>
-  );
-};
 
 const GetTransactionItemIcon = ({
   type,
@@ -409,7 +388,9 @@ const TxnScene = ({
         setTransactions(newTxns);
       }
       setNextCursor(response.data.nextCursor ?? null);
-    } catch (error) {}
+    } catch (error) {
+      setTransactions(prev => (cursor ? prev : []));
+    }
     setIsLoading(false);
     setIsLoadingMore(false);
   };
