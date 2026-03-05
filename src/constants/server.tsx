@@ -73,7 +73,7 @@ export const CHAIN_ETH: Chain = {
   chain_id: '0x1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   nativeTokenLogoUrl:
-    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+    'https://public.cypherd.io/assets/blockchains/ethereum/info/logo.png',
   chainIdNumber: 1,
 };
 
@@ -261,7 +261,7 @@ export const CHAIN_ZKSYNC_ERA: Chain = {
   chain_id: '0x144',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   nativeTokenLogoUrl:
-    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+    'https://public.cypherd.io/assets/blockchains/ethereum/info/logo.png',
   chainIdNumber: 324,
 };
 
@@ -275,7 +275,7 @@ export const CHAIN_BASE: Chain = {
   chain_id: '0x2105',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   nativeTokenLogoUrl:
-    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+    'https://public.cypherd.io/assets/blockchains/ethereum/info/logo.png',
   chainIdNumber: 8453,
 };
 
@@ -289,7 +289,7 @@ export const CHAIN_BASE_SEPOLIA: Chain = {
   chain_id: '0x14a34',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   nativeTokenLogoUrl:
-    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+    'https://public.cypherd.io/assets/blockchains/ethereum/info/logo.png',
   chainIdNumber: 84532,
 };
 
