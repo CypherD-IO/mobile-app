@@ -39,7 +39,8 @@ const TxnFilterModal = ({
 }: TxnFilterModalProps) => {
   const { t } = useTranslation();
   const [filter, setFilter] = filterState;
-  const [showSpam, setShowSpam] = showSpamState;
+  const [, setShowSpam] = showSpamState;
+  const [selectedShowSpam, setSelectedShowSpam] = useState(showSpamState[0]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(
     filter.types === TRANSACTION_TYPES ? [] : filter.types,
   );
@@ -56,12 +57,14 @@ const TxnFilterModal = ({
     };
     selectedTypes.length === 0 && setSelectedTypes([]);
     setFilter(data);
+    setShowSpam(selectedShowSpam);
     setModalVisible(false);
   }
 
   const onReset = () => {
     setSelectedTypes([]);
     setSelectedStatus(TXN_FILTER_STATUSES[2].id);
+    setSelectedShowSpam(false);
     setFilter({ types: TRANSACTION_TYPES, status: TXN_FILTER_STATUSES[2].id });
   };
 
@@ -147,11 +150,11 @@ const TxnFilterModal = ({
           {/* Show spam toggle */}
           <CyDTouchView
             className='flex flex-row items-center bg-n0 rounded-[12px] px-[16px] py-[14px] mb-[16px]'
-            onPress={() => setShowSpam(!showSpam)}>
+            onPress={() => setSelectedShowSpam(!selectedShowSpam)}>
             <CyDMaterialDesignIcons
-              name={showSpam ? 'checkbox-marked' : 'checkbox-blank-outline'}
+              name={selectedShowSpam ? 'checkbox-marked' : 'checkbox-blank-outline'}
               size={22}
-              className={showSpam ? 'text-appColor' : 'text-base400'}
+              className={selectedShowSpam ? 'text-appColor' : 'text-base400'}
             />
             <CyDText className='ml-[10px] text-[15px] font-bold text-activityFontColor'>
               Show spam
