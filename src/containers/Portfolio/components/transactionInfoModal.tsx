@@ -24,43 +24,7 @@ import { ChainConfigMapping } from '../../../constants/server';
 import { TransactionObj } from '../../../models/transaction.model';
 import { get } from 'lodash';
 import moment from 'moment';
-
-const TokenInitialsIcon = ({
-  symbol,
-  size = 36,
-}: {
-  symbol: string;
-  size?: number;
-}) => {
-  const initials = symbol.slice(0, 4).toUpperCase();
-  const fontSize = size * 0.32;
-  return (
-    <CyDView
-      className='rounded-full bg-n40 justify-center items-center'
-      style={{ width: size, height: size }}>
-      <CyDText
-        className='font-bold text-activityFontColor'
-        style={{ fontSize }}>
-        {initials}
-      </CyDText>
-    </CyDView>
-  );
-};
-
-export const chainExplorerMapping: Record<string, string> = {
-  ETH: 'https://etherscan.io/tx/',
-  POLYGON: 'https://polygonscan.com/tx/',
-  BSC: 'https://bscscan.com/tx/',
-  AVALANCHE: 'https://explorer.avax.network/tx/',
-  ARBITRUM: 'https://arbiscan.io/tx/',
-  OPTIMISM: 'https://optimistic.etherscan.io/tx/',
-  COSMOS: 'https://www.mintscan.io/cosmos/txs/',
-  OSMOSIS: 'https://www.mintscan.io/osmosis/txs/',
-  NOBLE: 'https://www.mintscan.io/noble/txs/',
-  COREUM: 'https://www.mintscan.io/coreum/txs/',
-  INJECTIVE: 'https://www.mintscan.io/injective/txs/',
-  SOLANA: 'https://solscan.io/tx/',
-};
+import TokenInitialsIcon from '../../../components/v2/TokenInitialsIcon';
 
 const getTransactionDestinationDetails = (
   type: string,
@@ -138,8 +102,8 @@ export default function TransactionInfoModal({
 
     const formattedTimestamp = moment.unix(timestamp).format('MMM D, YYYY HH:mm');
 
-    const outTransfer = transfers.find(t => t.direction === 'out') ?? transfers[0];
-    const inTransfer = transfers.find(t => t.direction === 'in') ?? (transfers[1] ?? transfers[0]);
+    const outTransfer = transfers.find(tr => tr.direction === 'out') ?? transfers[0];
+    const inTransfer = transfers.find(tr => tr.direction === 'in') ?? (transfers[1] ?? transfers[0]);
     const primaryTransfer = transfers[0];
 
     const fromToken = outTransfer?.tokenSymbol ?? null;
@@ -350,7 +314,9 @@ export default function TransactionInfoModal({
                     <CyDTouchView
                       onPress={() => {
                         setModalVisible(false);
-                        const addr = type === TransactionType.RECEIVE ? from : to;
+                        const addr = type === TransactionType.RECEIVE
+                          ? (relevantTransfer?.from ?? from)
+                          : (relevantTransfer?.to ?? to);
                         navigationRef.navigate(C.screenTitle.TRANS_DETAIL, {
                           url: getExplorerUrlFromBackendNames(blockchain, addr),
                         });

@@ -65,7 +65,6 @@ const TxnFilterModal = ({
     setSelectedTypes([]);
     setSelectedStatus(TXN_FILTER_STATUSES[2].id);
     setSelectedShowSpam(false);
-    setFilter({ types: TRANSACTION_TYPES, status: TXN_FILTER_STATUSES[2].id });
   };
 
   const toggleType = (type: string) => {
@@ -98,7 +97,7 @@ const TxnFilterModal = ({
           {/* Type section */}
           <CyDView className='bg-n0 rounded-[12px] mb-[12px]'>
             <CyDText className='text-[12px] text-subTextColor px-[16px] pt-[14px] pb-[8px]'>
-              Type
+              {t('TXN_FILTER_TYPE')}
             </CyDText>
             {TRANSACTION_TYPES.map((type, idx) => (
               <CyDTouchView
@@ -128,7 +127,7 @@ const TxnFilterModal = ({
           {/* Status section */}
           <CyDView className='bg-n0 rounded-[12px] mb-[12px]'>
             <CyDText className='text-[12px] text-subTextColor px-[16px] pt-[14px] pb-[8px]'>
-              Status
+              {t('STATUS')}
             </CyDText>
             {TXN_FILTER_STATUSES.map((status, idx) => (
               <CyDTouchView
@@ -157,7 +156,7 @@ const TxnFilterModal = ({
               className={selectedShowSpam ? 'text-appColor' : 'text-base400'}
             />
             <CyDText className='ml-[10px] text-[15px] font-bold text-activityFontColor'>
-              Show spam
+              {t('TXN_FILTER_SHOW_SPAM')}
             </CyDText>
           </CyDTouchView>
 
