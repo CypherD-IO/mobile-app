@@ -51,19 +51,23 @@ This directory contains the custom icon font for the Cypher mobile app. The font
    - Replace `CydFont.ttf` with the new font file
    - Update any other generated files as needed
 
-### Step 4: Link Fonts in React Native
+### Step 4: Run project font setup workflow
 
-After replacing the font files, run the following command to link the fonts:
+After replacing the IcoMoon files, run:
 
 ```bash
-npx react-native-asset
+npm run fonts:setup
 ```
 
-This command will:
+Then follow the full setup checklist in:
 
-- Copy the font files to the appropriate platform directories
-- Update the necessary configuration files
-- Ensure the fonts are properly linked for both iOS and Android
+- `src/customFonts/FONT_SETUP.md`
+
+This ensures all required updates are applied consistently across:
+
+- Android generated font resources
+- iOS font linking files
+- app font mappings (`typography.ts` / Tailwind aliases when needed)
 
 ## Important Notes
 
@@ -107,7 +111,7 @@ import { CUSTOM_FONT_FAMILY } from '../customFonts/type';
 
 ### Troubleshooting
 
-1. **Font not loading**: Run `npx react-native-asset` again
+1. **Font not loading**: Run `npm run fonts:setup` again
 2. **Icons not showing**: Check that the font family name matches in your code
 3. **Wrong icons**: Verify the unicode codes match the IcoMoon codes
 4. **Build issues**: Clean and rebuild the project after font changes
@@ -133,6 +137,6 @@ import { CUSTOM_FONT_FAMILY } from '../customFonts/type';
 For issues with the custom font system:
 
 1. Check the IcoMoon documentation
-2. Verify font linking with `npx react-native-asset`
+2. Verify font linking with `npm run fonts:setup`
 3. Test on both platforms (iOS/Android)
 4. Check the React Native asset linking documentation

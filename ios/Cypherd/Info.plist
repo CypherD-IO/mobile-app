@@ -130,12 +130,12 @@
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
 		<string>CypherNord.ttf</string>
-		<string>CydFont.ttf</string>
 		<string>Gambetta-Bold.ttf</string>
 		<string>Gambetta-Light.ttf</string>
 		<string>Gambetta-Medium.ttf</string>
 		<string>Gambetta-Regular.ttf</string>
 		<string>Gambetta-Semibold.ttf</string>
+		<string>CydFont.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
