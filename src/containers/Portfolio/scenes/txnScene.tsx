@@ -2,7 +2,6 @@ import React, { memo, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
   CyDFlatList,
-  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -596,22 +595,10 @@ const TxnScene = ({
             navigationRef={navigation}
           />
           <TxnFilterModal
-            navigation={navigation}
             modalVisibilityState={filterModalVisibilityState}
             filterState={[filter, setFilter]}
+            showSpamState={[showTrash, setShowTrash]}
           />
-          <CyDTouchView
-            className='flex flex-row items-center justify-end px-[16px] py-[8px]'
-            onPress={() => setShowTrash(!showTrash)}>
-            <CyDMaterialDesignIcons
-              name={showTrash ? 'checkbox-marked' : 'checkbox-blank-outline'}
-              size={18}
-              className={showTrash ? 'text-[#048A81]' : 'text-base400'}
-            />
-            <CyDText className='ml-[4px] text-[13px]'>
-              Show spam
-            </CyDText>
-          </CyDTouchView>
           <CyDFlatList
             data={transaction}
             scrollEnabled={false}

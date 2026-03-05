@@ -1,25 +1,18 @@
-import React, { memo, useLayoutEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
   CyDMaterialDesignIcons,
-  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
-import CheckBoxes from '../../../components/checkBoxes';
-import RadioButtons from '../../../components/radioButtons';
-import Button from '../../../components/v2/button';
 import CyDModalLayout from '../../../components/v2/modal';
-import { ButtonType } from '../../../constants/enum';
 import { TXN_FILTER_STATUSES } from '../../../constants/data';
 
-export const FILTERS = ['Type', 'Status'];
 export const TRANSACTION_TYPES = ['send', 'receive', 'swap', 'others'];
 
 interface TxnFilterModalProps {
-  navigation: any;
   modalVisibilityState: [
     boolean,
     React.Dispatch<React.SetStateAction<boolean>>,
@@ -36,16 +29,17 @@ interface TxnFilterModalProps {
       }>
     >,
   ];
+  showSpamState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
 
 const TxnFilterModal = ({
-  navigation,
   modalVisibilityState,
   filterState,
+  showSpamState,
 }: TxnFilterModalProps) => {
   const { t } = useTranslation();
-  const [index, setIndex] = useState<number>(0);
   const [filter, setFilter] = filterState;
+  const [showSpam, setShowSpam] = showSpamState;
   const [selectedTypes, setSelectedTypes] = useState<string[]>(
     filter.types === TRANSACTION_TYPES ? [] : filter.types,
   );
@@ -55,45 +49,12 @@ const TxnFilterModal = ({
 
   const [isModalVisible, setModalVisible] = modalVisibilityState;
 
-  const handleBackButton = () => {
-    navigation.goBack();
-    return true;
-  };
-
-  React.useEffect(() => {
-    const subscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackButton,
-    );
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <CyDTouchView
-          onPress={() => {
-            setSelectedStatus(TXN_FILTER_STATUSES[2].id);
-            setSelectedTypes(TRANSACTION_TYPES);
-          }}>
-          <CyDText className='color-[#048A81] font-bold text-[16px]'>
-            {t('RESET_ALL')}
-          </CyDText>
-        </CyDTouchView>
-      ),
-    });
-  }, [navigation]);
-
   function onApply() {
     const data = {
       types: selectedTypes.length === 0 ? TRANSACTION_TYPES : selectedTypes,
       status: selectedStatus,
     };
-
     selectedTypes.length === 0 && setSelectedTypes([]);
-
     setFilter(data);
     setModalVisible(false);
   }
@@ -104,6 +65,12 @@ const TxnFilterModal = ({
     setFilter({ types: TRANSACTION_TYPES, status: TXN_FILTER_STATUSES[2].id });
   };
 
+  const toggleType = (type: string) => {
+    setSelectedTypes(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type],
+    );
+  };
+
   return (
     <CyDModalLayout
       isModalVisible={isModalVisible}
@@ -111,72 +78,96 @@ const TxnFilterModal = ({
       style={styles.modalLayout}
       animationIn='slideInUp'
       animationOut='slideOutDown'>
-      <CyDSafeAreaView className='bg-n20 flex-1'>
-        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
-          <CyDTouchView
-            onPress={() => {
-              setModalVisible(false);
-            }}
-            className='p-[5px]'>
-            <CyDMaterialDesignIcons
-              name={'close'}
-              size={24}
-              className='text-base400'
-            />
-          </CyDTouchView>
-          <CyDText className='text-[20px] font-bold'>
+      <CyDView className='bg-n20 pb-[30px] rounded-t-[20px]'>
+        {/* Header */}
+        <CyDView className='flex flex-row justify-between items-center px-[20px] mt-[24px] mb-[16px]'>
+          <CyDText className='text-[20px] font-extrabold text-activityFontColor'>
             {t('TRANSACTIONS_FILTER')}
           </CyDText>
           <CyDTouchView onPress={onReset}>
-            <CyDText className='color-[#048A81] font-bold text-[16px]'>
+            <CyDText className='text-subTextColor font-bold text-[14px]'>
               {t('RESET_ALL')}
             </CyDText>
           </CyDTouchView>
         </CyDView>
-        <CyDView className={'h-full flex flex-row'}>
-          <CyDView
-            className={'border-r border-activityFilterBorderLine w-[30%]'}>
-            {FILTERS.map((filter, idx) => (
+
+        <CyDView className='px-[20px]'>
+          {/* Type section */}
+          <CyDView className='bg-n0 rounded-[12px] mb-[12px]'>
+            <CyDText className='text-[12px] text-subTextColor px-[16px] pt-[14px] pb-[8px]'>
+              Type
+            </CyDText>
+            {TRANSACTION_TYPES.map((type, idx) => (
               <CyDTouchView
-                key={idx}
-                onPress={() => setIndex(idx)}
-                className={`${
-                  index === idx ? 'bg-p50' : 'bg-n20 flex'
-                } justify-center py-[20px]`}>
-                <CyDText
-                  className={'text-left pl-[12px] text-[16px] font-bold'}>
-                  {filter + (idx === 0 ? ` (${selectedTypes.length})` : '')}
+                key={type}
+                className={`flex flex-row items-center px-[16px] py-[12px] ${idx < TRANSACTION_TYPES.length - 1 ? 'border-b-[1px] border-n40' : ''}`}
+                onPress={() => toggleType(type)}>
+                <CyDMaterialDesignIcons
+                  name={
+                    selectedTypes.length === 0 || selectedTypes.includes(type)
+                      ? 'checkbox-marked'
+                      : 'checkbox-blank-outline'
+                  }
+                  size={22}
+                  className={
+                    selectedTypes.length === 0 || selectedTypes.includes(type)
+                      ? 'text-appColor'
+                      : 'text-base400'
+                  }
+                />
+                <CyDText className='ml-[10px] text-[15px] font-bold text-activityFontColor capitalize'>
+                  {type}
                 </CyDText>
               </CyDTouchView>
             ))}
           </CyDView>
-          <CyDView className={'w-[70%]'}>
-            {index === 0 && (
-              <CheckBoxes
-                radioButtonsData={TRANSACTION_TYPES}
-                onPressRadioButton={setSelectedTypes}
-                initialValues={selectedTypes}
-              />
-            )}
-            {index === 1 && (
-              <RadioButtons
-                radioButtonsData={TXN_FILTER_STATUSES}
-                onPressRadioButton={value => setSelectedStatus(value)}
-                currentValue={selectedStatus}
-              />
-            )}
+
+          {/* Status section */}
+          <CyDView className='bg-n0 rounded-[12px] mb-[12px]'>
+            <CyDText className='text-[12px] text-subTextColor px-[16px] pt-[14px] pb-[8px]'>
+              Status
+            </CyDText>
+            {TXN_FILTER_STATUSES.map((status, idx) => (
+              <CyDTouchView
+                key={status.id}
+                className={`flex flex-row items-center px-[16px] py-[12px] ${idx < TXN_FILTER_STATUSES.length - 1 ? 'border-b-[1px] border-n40' : ''}`}
+                onPress={() => setSelectedStatus(status.id)}>
+                <CyDView className='h-[22px] w-[22px] rounded-full border-[1.5px] border-base100 justify-center items-center'>
+                  {selectedStatus === status.id && (
+                    <CyDView className='h-[10px] w-[10px] rounded-full bg-appColor' />
+                  )}
+                </CyDView>
+                <CyDText className='ml-[10px] text-[15px] font-bold text-activityFontColor'>
+                  {status.label}
+                </CyDText>
+              </CyDTouchView>
+            ))}
           </CyDView>
+
+          {/* Show spam toggle */}
+          <CyDTouchView
+            className='flex flex-row items-center bg-n0 rounded-[12px] px-[16px] py-[14px] mb-[16px]'
+            onPress={() => setShowSpam(!showSpam)}>
+            <CyDMaterialDesignIcons
+              name={showSpam ? 'checkbox-marked' : 'checkbox-blank-outline'}
+              size={22}
+              className={showSpam ? 'text-appColor' : 'text-base400'}
+            />
+            <CyDText className='ml-[10px] text-[15px] font-bold text-activityFontColor'>
+              Show spam
+            </CyDText>
+          </CyDTouchView>
+
+          {/* Apply button */}
+          <CyDTouchView
+            className='bg-appColor rounded-[12px] py-[16px] items-center'
+            onPress={onApply}>
+            <CyDText className='text-black text-[16px] font-bold'>
+              {t('APPLY')}
+            </CyDText>
+          </CyDTouchView>
         </CyDView>
-        <CyDView className='w-full absolute bottom-0'>
-          <Button
-            onPress={onApply}
-            title={t('APPLY')}
-            style='h-[60px] w-full rounded-[0px]'
-            titleStyle='text-[18px] font-bold'
-            type={ButtonType.PRIMARY}
-          />
-        </CyDView>
-      </CyDSafeAreaView>
+      </CyDView>
     </CyDModalLayout>
   );
 };
