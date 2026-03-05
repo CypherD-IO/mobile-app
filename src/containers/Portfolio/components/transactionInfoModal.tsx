@@ -138,8 +138,8 @@ export default function TransactionInfoModal({
 
     const formattedTimestamp = moment.unix(timestamp).format('MMM D, YYYY HH:mm');
 
-    const outTransfer = transfers.find(t => t.direction === 'out');
-    const inTransfer = transfers.find(t => t.direction === 'in');
+    const outTransfer = transfers.find(t => t.direction === 'out') ?? transfers[0];
+    const inTransfer = transfers.find(t => t.direction === 'in') ?? (transfers[1] ?? transfers[0]);
     const primaryTransfer = transfers[0];
 
     const fromToken = outTransfer?.tokenSymbol ?? null;
