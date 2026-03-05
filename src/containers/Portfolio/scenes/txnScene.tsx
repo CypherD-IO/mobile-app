@@ -21,7 +21,7 @@ import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../../components/v2/loading';
 import TransactionInfoModal from '../components/transactionInfoModal';
-import { RefreshControl } from 'react-native';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 import axios from '../../../core/Http';
 import { hostWorker } from '../../../global';
 import TxnFilterModal, {
@@ -390,22 +390,39 @@ const TxnScene = ({
   const [transaction, setTransaction] = useState<TransactionObj[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const fetchTxn = async (forceRefresh = false) => {
+  const fetchTxn = async (forceRefresh = false, cursor?: string) => {
     try {
       let txnURL = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
       if (showTrash) txnURL += '&showTrash=true';
       if (forceRefresh) txnURL += '&forceRefresh=true';
+      if (cursor) txnURL += `&nextCursor=${encodeURIComponent(cursor)}`;
       const response = await axios.get(txnURL);
-      setTransactions(response.data.transactions);
+      const newTxns = response.data.transactions ?? [];
+      if (cursor) {
+        setTransactions(prev => [...prev, ...newTxns]);
+      } else {
+        setTransactions(newTxns);
+      }
+      setNextCursor(response.data.nextCursor ?? null);
     } catch (error) {}
     setIsLoading(false);
+    setIsLoadingMore(false);
   };
 
   const onRefresh = async () => {
     setIsRefreshing(true);
+    setNextCursor(null);
     await fetchTxn(true);
     setIsRefreshing(false);
+  };
+
+  const loadMore = () => {
+    if (!nextCursor || isLoadingMore || isLoading) return;
+    setIsLoadingMore(true);
+    void fetchTxn(false, nextCursor);
   };
 
   useEffect(() => {
@@ -419,7 +436,7 @@ const TxnScene = ({
     if (!isLoading) {
       spliceTransactions();
     }
-  }, [isLoading, filter, selectedChain]);
+  }, [isLoading, filter, selectedChain, transactions]);
 
   const getIsIncludedStatus = (status: string) => {
     if (filter.status === TXN_FILTER_STATUSES[2].id) {
@@ -622,6 +639,15 @@ const TxnScene = ({
               );
             }}
             ListEmptyComponent={<NoTxnsFound />}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isLoadingMore ? (
+                <CyDView className='py-[20px] items-center'>
+                  <ActivityIndicator size='small' />
+                </CyDView>
+              ) : null
+            }
           />
         </CyDView>
       )}
