@@ -753,8 +753,8 @@ export const PEP_OPTIONS = [
   { id: 1, label: 'No', value: false },
 ];
 export const TXN_FILTER_STATUSES = [
-  { id: 0, label: 'completed', value: 'completed' },
-  { id: 1, label: 'error', value: 'error' },
+  { id: 0, label: 'completed', value: 'confirmed' },
+  { id: 1, label: 'error', value: 'failed' },
   { id: 2, label: 'all', value: 'all' },
 ];
 export const DEFI_FILTER_STATUSES = [
