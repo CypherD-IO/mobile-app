@@ -155,8 +155,8 @@ const GetTransactionItemIcon = ({
     }
     case TransactionType.SWAP:
     case TransactionType.TRADE: {
-      const outTransfer = getOutTransfer(transfers);
-      const inTransfer = getInTransfer(transfers);
+      const outTransfer = getOutTransfer(transfers) ?? transfers[0];
+      const inTransfer = getInTransfer(transfers) ?? transfers[1] ?? transfers[0];
 
       return (
         <CyDView
@@ -306,16 +306,18 @@ const getTransactionItemAmountDetails = (
   switch (type) {
     case TransactionType.SWAP:
     case TransactionType.TRADE: {
-      const fromToken = outTransfer?.tokenSymbol ?? '';
-      const fromTokenValue = String(outTransfer?.amount ?? '0');
+      const effectiveOut = outTransfer ?? primaryTransfer;
+      const effectiveIn = inTransfer ?? (transfers[1] ?? primaryTransfer);
+      const fromToken = effectiveOut?.tokenSymbol ?? '';
+      const fromTokenValue = String(effectiveOut?.amount ?? '0');
       formattedAmount =
         fromToken !== ''
           ? `- ${formatAmount(fromTokenValue)} ${fromToken}`
           : `- ${formatAmount(fromTokenValue)} Unknown`;
       amountColor = 'text-red-500';
-      if (inTransfer) {
-        const toToken = inTransfer.tokenSymbol ?? 'Unknown';
-        subtitle = `+ ${formatAmount(String(inTransfer.amount))} ${toToken}`;
+      if (effectiveIn) {
+        const toToken = effectiveIn.tokenSymbol ?? 'Unknown';
+        subtitle = `+ ${formatAmount(String(effectiveIn.amount))} ${toToken}`;
       }
       break;
     }
