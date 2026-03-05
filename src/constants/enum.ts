@@ -291,9 +291,11 @@ export enum ScrollableType {
 export enum TransactionType {
   SEND = 'send',
   SWAP = 'swap',
+  TRADE = 'trade',
   RECEIVE = 'receive',
   APPROVE = 'approve',
   REVOKE = 'revoke',
+  DEPLOY = 'deploy',
   OTHERS = 'others',
   SELF = 'self',
 }

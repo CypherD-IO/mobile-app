@@ -2,6 +2,7 @@ import React, { memo, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
   CyDFlatList,
+  CyDMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -28,7 +29,11 @@ import TxnFilterModal, {
   TRANSACTION_TYPES,
 } from '../components/TxnFilterModal';
 import { TransactionType } from '../../../constants/enum';
-import { TransactionObj } from '../../../models/transaction.model';
+import {
+  TransactionApproval,
+  TransactionObj,
+  TransactionTransfer,
+} from '../../../models/transaction.model';
 import {
   Chain,
   CHAIN_COLLECTION,
@@ -53,98 +58,181 @@ interface TxnSceneProps {
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
+const getOutTransfer = (
+  transfers: TransactionTransfer[],
+): TransactionTransfer | undefined => transfers.find(t => t.direction === 'out');
+
+const getInTransfer = (
+  transfers: TransactionTransfer[],
+): TransactionTransfer | undefined => transfers.find(t => t.direction === 'in');
+
+const getPrimaryTransfer = (
+  transfers: TransactionTransfer[],
+): TransactionTransfer | undefined => transfers[0];
+
+const TokenInitialsIcon = ({
+  symbol,
+  size = 36,
+}: {
+  symbol: string;
+  size?: number;
+}) => {
+  const initials = symbol.slice(0, 4).toUpperCase();
+  const fontSize = size * 0.32;
+  return (
+    <CyDView
+      className='rounded-full bg-n40 justify-center items-center'
+      style={{ width: size, height: size }}>
+      <CyDText
+        className='font-bold text-activityFontColor'
+        style={{ fontSize }}>
+        {initials}
+      </CyDText>
+    </CyDView>
+  );
+};
+
 const GetTransactionItemIcon = ({
   type,
   status,
-  tokenIcon,
-  fromTokenIcon,
-  toTokenIcon,
+  transfers,
+  protocolIcon,
+  chainIcon,
+  approvalIcon,
 }: {
   type: string;
   status: string;
-  tokenIcon: string | null;
-  fromTokenIcon: string | undefined;
-  toTokenIcon: string | undefined;
+  transfers: TransactionTransfer[];
+  protocolIcon: string | null | undefined;
+  chainIcon: any;
+  approvalIcon: string | null | undefined;
 }) => {
+  const isSuccess = status === 'confirmed';
   let transactionIcon;
   switch (type) {
-    case TransactionType.SEND:
-      transactionIcon =
-        status === 'completed'
-          ? tokenIcon
-            ? { uri: tokenIcon }
-            : AppImages.UNKNOWN_TXN_TOKEN
-          : AppImages.TXN_SEND_ERROR;
-      return (
+    case TransactionType.SEND: {
+      const transfer = getOutTransfer(transfers) ?? getPrimaryTransfer(transfers);
+      const tokenIcon = transfer?.tokenIcon;
+      if (!isSuccess) {
+        return (
+          <CyDFastImage
+            className='h-[36px] w-[36px] rounded-full'
+            resizeMode='contain'
+            source={AppImages.TXN_SEND_ERROR}
+          />
+        );
+      }
+      return tokenIcon ? (
         <CyDFastImage
-          className='h-[25px] w-[25px] rounded-full'
+          className='h-[36px] w-[36px] rounded-full'
           resizeMode='contain'
-          source={transactionIcon}
+          source={{ uri: tokenIcon }}
         />
+      ) : (
+        <TokenInitialsIcon symbol={transfer?.tokenSymbol ?? '?'} size={36} />
       );
-    case TransactionType.RECEIVE:
-      transactionIcon =
-        status === 'completed'
-          ? tokenIcon
-            ? { uri: tokenIcon }
-            : AppImages.UNKNOWN_TXN_TOKEN
-          : AppImages.TXN_RECEIVE_ERROR;
-      return (
+    }
+    case TransactionType.RECEIVE: {
+      const transfer = getInTransfer(transfers) ?? getPrimaryTransfer(transfers);
+      const tokenIcon = transfer?.tokenIcon;
+      if (!isSuccess) {
+        return (
+          <CyDFastImage
+            className='h-[36px] w-[36px] rounded-full'
+            resizeMode='contain'
+            source={AppImages.TXN_RECEIVE_ERROR}
+          />
+        );
+      }
+      return tokenIcon ? (
         <CyDFastImage
-          className='h-[25px] w-[25px] rounded-full'
+          className='h-[36px] w-[36px] rounded-full'
           resizeMode='contain'
-          source={transactionIcon}
+          source={{ uri: tokenIcon }}
         />
+      ) : (
+        <TokenInitialsIcon symbol={transfer?.tokenSymbol ?? '?'} size={36} />
       );
+    }
     case TransactionType.SWAP:
-      const fromTokenImg = fromTokenIcon
-        ? { uri: fromTokenIcon }
-        : AppImages.UNKNOWN_TXN_TOKEN;
-      const toTokenImg = toTokenIcon
-        ? { uri: toTokenIcon }
-        : AppImages.UNKNOWN_TXN_TOKEN;
+    case TransactionType.TRADE: {
+      const outTransfer = getOutTransfer(transfers);
+      const inTransfer = getInTransfer(transfers);
 
       return (
         <CyDView
-          className='h-[25px] w-[25px] justify-center items-center'
+          className='h-[36px] w-[36px] justify-center items-center'
           style={{ position: 'relative', backgroundColor: 'transparent' }}>
-          <CyDFastImage
-            className='h-[25px] w-[25px] absolute right-[8px] rounded-full'
-            resizeMode='contain'
-            source={fromTokenImg}
-          />
-          <CyDFastImage
-            className='h-[25px] w-[25px] absolute top-[10px] left-[8px] rounded-full'
-            resizeMode='contain'
-            source={toTokenImg}
-          />
+          <CyDView className='absolute top-[0px] left-[0px]'>
+            {outTransfer?.tokenIcon ? (
+              <CyDFastImage
+                className='h-[22px] w-[22px] rounded-full'
+                resizeMode='contain'
+                source={{ uri: outTransfer.tokenIcon }}
+              />
+            ) : (
+              <TokenInitialsIcon symbol={outTransfer?.tokenSymbol ?? '?'} size={22} />
+            )}
+          </CyDView>
+          <CyDView className='absolute bottom-[0px] right-[0px]'>
+            {inTransfer?.tokenIcon ? (
+              <CyDFastImage
+                className='h-[22px] w-[22px] rounded-full'
+                resizeMode='contain'
+                source={{ uri: inTransfer.tokenIcon }}
+              />
+            ) : (
+              <TokenInitialsIcon symbol={inTransfer?.tokenSymbol ?? '?'} size={22} />
+            )}
+          </CyDView>
         </CyDView>
       );
+    }
 
     case TransactionType.SELF:
-      transactionIcon =
-        status === 'completed'
-          ? AppImages.TXN_SELF_SUCCESS
-          : AppImages.TXN_SELF_ERROR;
+      transactionIcon = isSuccess
+        ? AppImages.TXN_SELF_SUCCESS
+        : AppImages.TXN_SELF_ERROR;
       return (
         <CyDFastImage
-          className='h-[25px] w-[25px] rounded-full'
+          className='h-[36px] w-[36px] rounded-full'
           resizeMode='contain'
           source={transactionIcon}
         />
       );
-    default:
-      transactionIcon =
-        status === 'completed'
-          ? AppImages.TXN_DEFAULT_SUCCESS
-          : AppImages.TXN_DEFAULT_ERROR;
+    default: {
+      if (!isSuccess) {
+        return (
+          <CyDFastImage
+            className='h-[36px] w-[36px] rounded-full'
+            resizeMode='contain'
+            source={AppImages.TXN_DEFAULT_ERROR}
+          />
+        );
+      }
+      const transfer = getInTransfer(transfers) ?? getOutTransfer(transfers) ?? getPrimaryTransfer(transfers);
+      const iconUri = approvalIcon ?? protocolIcon ?? transfer?.tokenIcon;
+      if (iconUri) {
+        return (
+          <CyDFastImage
+            className='h-[36px] w-[36px] rounded-full'
+            resizeMode='contain'
+            source={{ uri: iconUri }}
+          />
+        );
+      }
+      const symbol = transfer?.tokenSymbol;
+      if (symbol) {
+        return <TokenInitialsIcon symbol={symbol} size={36} />;
+      }
       return (
         <CyDFastImage
-          className='h-[25px] w-[25px] rounded-full'
+          className='h-[36px] w-[36px] rounded-full'
           resizeMode='contain'
-          source={transactionIcon}
+          source={chainIcon ?? AppImages.TXN_DEFAULT_SUCCESS}
         />
       );
+    }
   }
 };
 
@@ -152,81 +240,133 @@ const RenderTransactionItemDetails = ({
   type,
   from,
   to,
+  transferFrom,
+  transferTo,
+  protocolName,
 }: {
   type: string;
   from: string;
   to: string;
+  transferFrom?: string;
+  transferTo?: string;
+  protocolName: string | null | undefined;
 }) => {
   let transactionDetail;
   let transactionAddress;
   switch (type) {
     case TransactionType.SELF:
-      transactionDetail = `${getMaskedAddress(to)}`;
+      transactionDetail = `${getMaskedAddress(transferTo ?? to)}`;
       break;
     case TransactionType.SEND:
-      transactionDetail = `${getMaskedAddress(to)}`;
+      transactionDetail = `${getMaskedAddress(transferTo ?? to)}`;
       break;
     case TransactionType.RECEIVE:
-      transactionDetail = `${getMaskedAddress(from)}`;
+      transactionDetail = `${getMaskedAddress(transferFrom ?? from)}`;
       break;
     default:
-      transactionAddress = to;
-      if (APPLICATION_ADDRESS_NAME_MAP.has(transactionAddress)) {
-        transactionAddress = APPLICATION_ADDRESS_NAME_MAP.get(
-          transactionAddress,
-        ) as string;
+      if (protocolName) {
+        transactionDetail = protocolName;
+      } else if (to) {
+        transactionAddress = to;
+        if (APPLICATION_ADDRESS_NAME_MAP.has(transactionAddress)) {
+          transactionAddress = APPLICATION_ADDRESS_NAME_MAP.get(
+            transactionAddress,
+          ) as string;
+        } else {
+          transactionAddress = getMaskedAddress(transactionAddress);
+        }
+        transactionDetail = `${transactionAddress}`;
       } else {
-        transactionAddress = getMaskedAddress(transactionAddress);
+        transactionDetail = null;
       }
-      transactionDetail = `${transactionAddress}`;
   }
 
-  return <CyDText>{transactionDetail}</CyDText>;
+  return transactionDetail ? (
+    <CyDText className='text-subTextColor'>{transactionDetail}</CyDText>
+  ) : null;
+};
+
+const formatUsdValue = (valueUsd: number | null | undefined): string => {
+  if (valueUsd == null) return '';
+  return `$${valueUsd.toFixed(2)}`;
 };
 
 const getTransactionItemAmountDetails = (
   type: string,
-  value: string,
-  token: string | null,
-  fromTokenValue: string,
-  fromToken: string,
+  transfers: TransactionTransfer[],
+  approvals?: TransactionApproval[],
 ) => {
   let formattedAmount;
   let amountColor;
+  let subtitle = '';
+
+  const outTransfer = getOutTransfer(transfers);
+  const inTransfer = getInTransfer(transfers);
+  const primaryTransfer = getPrimaryTransfer(transfers);
+
   switch (type) {
     case TransactionType.SWAP:
+    case TransactionType.TRADE: {
+      const fromToken = outTransfer?.tokenSymbol ?? '';
+      const fromTokenValue = String(outTransfer?.amount ?? '0');
       formattedAmount =
         fromToken !== ''
           ? `- ${formatAmount(fromTokenValue)} ${fromToken}`
           : `- ${formatAmount(fromTokenValue)} Unknown`;
       amountColor = 'text-red-500';
+      if (inTransfer) {
+        const toToken = inTransfer.tokenSymbol ?? 'Unknown';
+        subtitle = `+ ${formatAmount(String(inTransfer.amount))} ${toToken}`;
+      }
       break;
+    }
     case TransactionType.SELF:
-    case TransactionType.SEND:
+    case TransactionType.SEND: {
+      const transfer = outTransfer ?? primaryTransfer;
+      const token = transfer?.tokenSymbol ?? null;
+      const value = String(transfer?.amount ?? '0');
       formattedAmount = token
         ? `- ${formatAmount(value)} ${token}`
         : `- ${formatAmount(value)} Unknown`;
       amountColor = 'text-red-500';
+      subtitle = formatUsdValue(transfer?.valueUsd);
       break;
-    case TransactionType.RECEIVE:
+    }
+    case TransactionType.RECEIVE: {
+      const transfer = inTransfer ?? primaryTransfer;
+      const token = transfer?.tokenSymbol ?? null;
+      const value = String(transfer?.amount ?? '0');
       formattedAmount = token
         ? `+ ${formatAmount(value)} ${token}`
         : `+ ${formatAmount(value)} Unknown`;
       amountColor = 'text-[#048A81]';
+      subtitle = formatUsdValue(transfer?.valueUsd);
       break;
+    }
     case TransactionType.REVOKE:
-    case TransactionType.APPROVE:
-      formattedAmount = token ? `${token}` : 'Unknown';
+    case TransactionType.APPROVE: {
+      const approval = approvals?.[0];
+      const token = approval?.tokenSymbol ?? primaryTransfer?.tokenSymbol ?? null;
+      const value = approval ? String(approval.amount) : null;
+      formattedAmount = token
+        ? value ? `${formatAmount(value)} ${token}` : `${token}`
+        : 'Unknown';
       amountColor = 'text-[#048A81]';
       break;
-    default:
+    }
+    default: {
+      const transfer = inTransfer ?? outTransfer ?? primaryTransfer;
+      const token = transfer?.tokenSymbol ?? null;
+      const value = String(transfer?.amount ?? '0');
       formattedAmount = token
         ? `${formatAmount(value)} ${token}`
         : `${formatAmount(value)}`;
       amountColor = 'text-[#048A81]';
+      subtitle = formatUsdValue(transfer?.valueUsd);
+    }
   }
 
-  return [formattedAmount, amountColor];
+  return [formattedAmount, amountColor, subtitle];
 };
 
 const TxnScene = ({
@@ -238,41 +378,25 @@ const TxnScene = ({
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { address: ethereumAddress }: { address: string } =
     hdWalletContext.state.wallet.ethereum;
-  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
 
   const [filter, setFilter] = useState({
     types: TRANSACTION_TYPES,
     status: TXN_FILTER_STATUSES[2].id,
   });
-  const [transactions, setTransactions] = useState([]);
+  const [showTrash, setShowTrash] = useState(false);
+  const [transactions, setTransactions] = useState<TransactionObj[]>([]);
   const [showTransactionInfo, setShowTransactionInfo] = useState(false);
-  const [transactionInfoParams, setTransactionInfoParams] = useState<{
-    timestamp: string;
-    blockchain: string;
-    hash: string;
-    gas: string;
-    type: string;
-    from: string;
-    to: string;
-    value: string;
-    token: string | null;
-    tokenIcon: string | null;
-    fromToken: string | null;
-    fromTokenValue: string | null;
-    toToken: string | null;
-    fromTokenIcon: string | null;
-    toTokenIcon: string | null;
-    status: string;
-  } | null>(null);
-  const [transaction, setTransaction] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(true); // Add isLoading state
+  const [transactionInfoParams, setTransactionInfoParams] =
+    useState<TransactionObj | null>(null);
+  const [transaction, setTransaction] = useState<TransactionObj[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchTxn = async (forceRefresh = false) => {
     try {
-      const txnURL = forceRefresh
-        ? `${getTransactionsUrl}&forceRefresh=true`
-        : getTransactionsUrl;
+      let txnURL = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
+      if (showTrash) txnURL += '&showTrash=true';
+      if (forceRefresh) txnURL += '&forceRefresh=true';
       const response = await axios.get(txnURL);
       setTransactions(response.data.transactions);
     } catch (error) {}
@@ -287,14 +411,14 @@ const TxnScene = ({
 
   useEffect(() => {
     if (isFocused) {
-      setIsLoading(true); // Start loading when the component is focused
-      void fetchTxn(); // Set isLoading to false after the data is fetched or in case of an error
+      setIsLoading(true);
+      void fetchTxn();
     }
-  }, [isFocused]); // Call the effect only when the component is focused
+  }, [isFocused, showTrash]);
 
   useEffect(() => {
     if (!isLoading) {
-      spliceTransactions(); // Process transaction when isLoading is false
+      spliceTransactions();
     }
   }, [isLoading, filter, selectedChain]);
 
@@ -310,18 +434,24 @@ const TxnScene = ({
 
   const spliceTransactions = () => {
     if (transactions.length === 0) {
-      return [];
+      setTransaction([]);
+      return;
     }
 
-    const transaction: TransactionObj[] = [...transactions];
+    const allTxns: TransactionObj[] = [...transactions];
 
-    const filteredActivities = transaction.filter(activity => {
-      const chain = activity.blockchain.toLowerCase();
+    const filteredActivities = allTxns.filter(activity => {
+      if (!activity.chain) return false;
+      const chain = activity.chain.toLowerCase();
       const isChainSelected =
         selectedChain === CHAIN_COLLECTION ||
         selectedChain === get(ChainConfigMapping, chain);
-      const isIncludedType = filter.types.includes(activity.type);
-      const isOtherType = !TRANSACTION_TYPES.includes(activity.type);
+      const effectiveType =
+        activity.operationType === TransactionType.TRADE
+          ? TransactionType.SWAP
+          : activity.operationType;
+      const isIncludedType = filter.types.includes(effectiveType);
+      const isOtherType = !TRANSACTION_TYPES.includes(effectiveType);
       const isIncludedStatus = getIsIncludedStatus(activity.status);
 
       return (
@@ -333,50 +463,14 @@ const TxnScene = ({
     });
 
     filteredActivities.sort(function (a, b) {
-      return b.timestamp - a.timestamp; // Sort in descending order based on Unix timestamps
+      return b.timestamp - a.timestamp;
     });
 
-    const activityByDate = filteredActivities.reduce((first: any, sec: any) => {
-      const formattedDate = moment.unix(sec.timestamp).format('MMM DD, YYYY'); // Format the date for display
-      if (!first[formattedDate]) first[formattedDate] = [];
-      first[formattedDate].push(sec);
-      return first;
-    }, {});
-
-    const now = new Date();
-    now.setDate(now.getDate() - 1);
-
-    const tActivities = [];
-    for (const date in activityByDate) {
-      for (const activity of activityByDate[date]) {
-        tActivities.push(activity);
-      }
-    }
-    setTransaction(tActivities);
+    setTransaction(filteredActivities);
   };
 
   const showTransactionDetails = (activity: TransactionObj) => {
-    const formatDate = moment.unix(activity.timestamp).format('MMM DD, h:mm a');
-
-    setTransactionInfoParams({
-      timestamp: formatDate,
-      blockchain: activity.blockchain,
-      hash: activity.hash,
-      gas: activity.gas,
-      type: activity.type,
-      from: activity.from,
-      to: activity.to,
-      value: activity.value,
-      token: activity.token ?? null,
-      tokenIcon: activity.tokenIcon ?? null,
-      fromToken: activity.additionalData?.fromToken ?? null,
-      fromTokenValue: activity.additionalData?.fromTokenValue ?? null,
-      toToken: activity.additionalData?.toToken ?? null,
-      fromTokenIcon: activity.additionalData?.fromTokenIcon ?? null,
-      toTokenIcon: activity.additionalData?.toTokenIcon ?? null,
-      status: activity.status,
-    });
-
+    setTransactionInfoParams(activity);
     setShowTransactionInfo(true);
   };
 
@@ -386,8 +480,9 @@ const TxnScene = ({
     index,
   }: TxnItemProps) {
     let transactionAddress = activity.to;
-    const chain = activity.blockchain.toLowerCase();
-    const chainImg = ChainConfigMapping[chain].logo_url;
+    const chain = activity.chain.toLowerCase();
+    const chainConfig = get(ChainConfigMapping, chain);
+    const chainImg = chainConfig?.logo_url;
     if (APPLICATION_ADDRESS_NAME_MAP.has(transactionAddress)) {
       transactionAddress = APPLICATION_ADDRESS_NAME_MAP.get(
         transactionAddress,
@@ -395,7 +490,6 @@ const TxnScene = ({
     } else {
       transactionAddress = getMaskedAddress(transactionAddress);
     }
-    const formatDate = moment.unix(activity.timestamp).format('h:mm a');
     const formatedDay = moment.unix(activity.timestamp).format('MMM DD, YYYY');
     const previousTransactionFormatedDay =
       index > 0
@@ -407,25 +501,23 @@ const TxnScene = ({
 
     let shouldRenderDate = false;
     if (formatedDay !== previousTransactionFormatedDay) {
-      dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY');
       shouldRenderDate = true;
     }
-    const [formattedAmount, amountColour] = getTransactionItemAmountDetails(
-      activity.type,
-      activity.value,
-      activity.token,
-      activity.additionalData?.fromTokenValue ?? '',
-      activity.additionalData?.fromToken ?? '',
+    const [formattedAmount, amountColour, subtitle] = getTransactionItemAmountDetails(
+      activity.operationType,
+      activity.transfers,
+      activity.approvals,
     );
-    const title = activity.type
-      ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1)
+    const title = activity.operationType
+      ? activity.operationType.charAt(0).toUpperCase() +
+        activity.operationType.slice(1)
       : 'Unknown';
     return (
       <CyDView className='mx-[8px]'>
         {shouldRenderDate && (
           <CyDView
             className={clsx(
-              ' border-n40 pl-[10px] pr-[30px] py-[10px] justify-center',
+              ' border-n40 px-[12px] py-[10px] justify-center',
               { 'mt-[28px]': index !== 0 },
             )}>
             <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
@@ -433,7 +525,7 @@ const TxnScene = ({
         )}
         <CyDTouchView
           className={clsx(
-            'flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-n40 pl-[10px] pr-[30px] bg-n0',
+            'flex flex-row items-center py-[12px] border-b-[0.5px] border-x border-n40 px-[12px] bg-n0',
             {
               'rounded-t-lg border-t-[0.5px]': shouldRenderDate,
               'rounded-b-lg': nextTransactionFormatedDay !== formatedDay,
@@ -443,27 +535,33 @@ const TxnScene = ({
             setTransactionInfoParams(activity);
           }}>
           <GetTransactionItemIcon
-            type={activity.type}
+            type={activity.operationType}
             status={activity.status}
-            tokenIcon={activity.tokenIcon}
-            fromTokenIcon={activity.additionalData?.fromTokenIcon}
-            toTokenIcon={activity.additionalData?.toTokenIcon}
+            transfers={activity.transfers}
+            protocolIcon={activity.protocol?.icon}
+            chainIcon={chainImg}
+            approvalIcon={activity.approvals?.[0]?.tokenIcon}
           />
-          <CyDView className='flex flex-row justify-between'>
+          <CyDView className='flex flex-row flex-1 justify-between'>
             <CyDView className='px-[10px] items-start justify-start'>
               <CyDView className='flex flex-row justify-center items-center'>
                 <CyDText className='font-bold text-[16px]'>{title}</CyDText>
               </CyDView>
               <CyDView className='flex flex-row justify-center items-center'>
-                <CyDFastImage
-                  className='h-[10px] w-[10px] mr-[5px]'
-                  resizeMode='contain'
-                  source={chainImg}
-                />
+                {chainImg && (
+                  <CyDFastImage
+                    className='h-[10px] w-[10px] mr-[5px]'
+                    resizeMode='contain'
+                    source={chainImg}
+                  />
+                )}
                 <RenderTransactionItemDetails
-                  type={activity.type}
+                  type={activity.operationType}
                   from={activity.from}
                   to={activity.to}
+                  transferFrom={activity.transfers[0]?.from}
+                  transferTo={activity.transfers[0]?.to}
+                  protocolName={activity.protocol?.name}
                 />
               </CyDView>
             </CyDView>
@@ -471,7 +569,11 @@ const TxnScene = ({
               <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>
                 {formattedAmount}
               </CyDText>
-              <CyDText>{formatDate}</CyDText>
+              {subtitle ? (
+                <CyDText numberOfLines={1} className='text-subTextColor'>
+                  {subtitle}
+                </CyDText>
+              ) : null}
             </CyDView>
           </CyDView>
         </CyDTouchView>
@@ -498,6 +600,18 @@ const TxnScene = ({
             modalVisibilityState={filterModalVisibilityState}
             filterState={[filter, setFilter]}
           />
+          <CyDTouchView
+            className='flex flex-row items-center justify-end px-[16px] py-[8px]'
+            onPress={() => setShowTrash(!showTrash)}>
+            <CyDMaterialDesignIcons
+              name={showTrash ? 'checkbox-marked' : 'checkbox-blank-outline'}
+              size={18}
+              className={showTrash ? 'text-[#048A81]' : 'text-base400'}
+            />
+            <CyDText className='ml-[4px] text-[13px]'>
+              Show spam
+            </CyDText>
+          </CyDTouchView>
           <CyDFlatList
             data={transaction}
             scrollEnabled={false}
