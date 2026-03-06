@@ -13,7 +13,7 @@ import { Platform, InteractionManager } from 'react-native';
 interface BottomSheetConfig {
   id: string;
   title?: string;
-  snapPoints?: Array<string | number>;
+  snapPoints?: any[];
   showCloseButton?: boolean;
   /**
    * Controls whether the native BottomSheet handle (the top bar + indicator) is shown.
@@ -27,12 +27,20 @@ interface BottomSheetConfig {
   onClose?: () => void;
   onOpen?: () => void;
   topBarColor?: string;
+  enablePanDownToClose?: boolean;
+  showBackdrop?: boolean;
+  bottomInset?: number;
+  fixedHeaderContent?: React.ReactNode;
+  onChange?: (index: number) => void;
+  onAnimate?: (fromIndex: number, toIndex: number) => void;
+  defaultPresentIndex?: number;
 }
 
 interface GlobalBottomSheetContextType {
   showBottomSheet: (config: BottomSheetConfig) => void;
   hideBottomSheet: (id: string) => void;
   hideAllBottomSheets: () => void;
+  snapSheetToIndex: (id: string, index: number) => void;
 }
 
 const GlobalBottomSheetContext = createContext<
@@ -126,6 +134,10 @@ export const GlobalBottomSheetProvider: React.FC<
     });
   }, []);
 
+  const snapSheetToIndex = useCallback((id: string, index: number) => {
+    bottomSheetRefs.current[id]?.snapToIndex(index);
+  }, []);
+
   const handleBottomSheetClose = (id: string) => {
     // Find the config and call its onClose callback
     const config = bottomSheets.find(sheet => sheet.id === id);
@@ -144,8 +156,9 @@ export const GlobalBottomSheetProvider: React.FC<
       showBottomSheet,
       hideBottomSheet,
       hideAllBottomSheets,
+      snapSheetToIndex,
     }),
-    [showBottomSheet, hideBottomSheet, hideAllBottomSheets],
+    [showBottomSheet, hideBottomSheet, hideAllBottomSheets, snapSheetToIndex],
   );
 
   return (
@@ -193,8 +206,15 @@ export const GlobalBottomSheetProvider: React.FC<
           borderRadius={config.borderRadius ?? 16}
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}
+          enablePanDownToClose={config.enablePanDownToClose ?? true}
+          showBackdrop={config.showBackdrop ?? true}
+          bottomInset={config.bottomInset ?? 0}
+          fixedHeaderContent={config.fixedHeaderContent}
+          defaultPresentIndex={config.defaultPresentIndex}
           onClose={() => handleBottomSheetClose(config.id)}
-          onOpen={config.onOpen}>
+          onOpen={config.onOpen}
+          onChange={config.onChange}
+          onAnimate={config.onAnimate}>
           {config.content}
         </CyDBottomSheet>
       ))}

@@ -89,11 +89,11 @@ export const Banner = ({
   return (
     <CyDView className='bg-n20'>
       {/* Dark section with curved bottom */}
-      <CyDView className='bg-n0 rounded-b-[24px] px-[20px] pt-[12px] pb-[16px]'>
+      <CyDView className='bg-n0 rounded-b-[44px] px-[20px] pt-[44px] pb-[16px]'>
         {/* Chain Selector */}
         <CyDTouchView
           onPress={onChainPress}
-          className='flex-row items-center mb-[2px]'>
+          className='flex-row items-center mb-[2px] justify-center'>
           <CyDIcons name='connect' size={24} className='text-base400' />
           <CyDText className='text-[14px] text-base400 font-medium ml-[4px]'>
             {capitalize(selectedChain.name)}
@@ -102,10 +102,12 @@ export const Banner = ({
         </CyDTouchView>
 
         {/* Balance Display with Eye Icon */}
-        <CyDView className='mb-[24px] flex-row items-center gap-[12px]'>
-          <CyDTokenValue className='text-[40px]'>
-            {portfolioBalance}
-          </CyDTokenValue>
+        <CyDView className='mb-[44px] flex-row items-center gap-[12px] justify-center'>
+          <CyDView className='flex-shrink'>
+            <CyDTokenValue className='text-[32px]'>
+              {portfolioBalance}
+            </CyDTokenValue>
+          </CyDView>
           <CyDTouchView
             onPress={handleToggleHideBalance}
             activeOpacity={0.7}
