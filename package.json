@@ -38,6 +38,8 @@
     "e2e:loadcard:clean": "npm run e2e:reset-sim && npm run e2e:loadcard",
     "check-build-readiness": "./scripts/test-build-readiness.sh",
     "pre-commit-check": "./scripts/test-build-readiness.sh",
+    "fonts:setup": "bash scripts/sync-font-assets.sh --clean-android-font-resources",
+    "fonts:check": "bash scripts/verify-font-assets.sh",
     "setup-skills": "npx skills add vercel-labs/agent-skills --skill vercel-react-native-skills --agent cursor claude-code --yes"
   },
   "dependencies": {
@@ -212,6 +214,7 @@
     "@babel/plugin-transform-private-methods": "^7.24.1",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
+    "@callstack/react-native-asset": "^3.1.0",
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",

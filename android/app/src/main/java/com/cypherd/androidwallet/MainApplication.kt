@@ -18,6 +18,8 @@ import com.facebook.soloader.SoLoader
 import com.google.firebase.FirebaseApp
 import com.intercom.reactnative.IntercomModule
 
+private interface MainApplicationContracts : ReactApplication, ShareApplication
+
 /**
  * Android Application entry-point.
  *
@@ -32,7 +34,7 @@ import com.intercom.reactnative.IntercomModule
  * - Manual packages that are app-specific (InstallReferrer, PreventScreenshot)
  * - Intercom init (guarded so failures don't crash startup)
  */
-class MainApplication : Application(), ReactApplication, ShareApplication {
+class MainApplication : Application(), MainApplicationContracts {
 
   override val reactNativeHost: ReactNativeHost =
     object : DefaultReactNativeHost(this) {
@@ -95,7 +97,7 @@ class MainApplication : Application(), ReactApplication, ShareApplication {
     try {
       ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope)
       ReactFontManager.getInstance().addCustomFont(this, "CydFont", R.font.cydfont)
-      ReactFontManager.getInstance().addCustomFont(this, "Cypher Nord", R.font.nord)
+      ReactFontManager.getInstance().addCustomFont(this, "Cypher Nord", R.font.cypher_nord)
       // NOTE:
       // JS uses NativeWind/Tailwind `font-gambetta` which maps to the family name "Gambetta"
       // (see `tailwind.config.js` -> theme.extend.fontFamily.gambetta).

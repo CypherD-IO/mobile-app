@@ -43,6 +43,17 @@ echo $NPM_TOKEN
 
 [React Native MAC Setup Guide](https://reactnative.dev/docs/environment-setup)
 
+### Font setup
+
+This project uses generated native font assets.
+
+- Add or update font files in `assets/fonts`
+- Run `npm run fonts:setup`
+- If you use NativeWind classes, update `fontFamily` in `tailwind.config.js`
+- If you use `typography` helpers, update `src/constants/typography.ts`
+
+Full guide: `FONT_SETUP.md`
+
 ### Ruby, Bundler, and CocoaPods Troubleshooting
 
 If `npm run start`, `pod install`, or `bundle install` fails with errors like:

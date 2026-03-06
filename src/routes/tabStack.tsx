@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../constants';
+import { typography } from '../constants/typography';
 import { CyDIcons, CyDView } from '../styles/tailwindComponents';
 import {
   DebitCardStackScreen,
@@ -506,8 +507,7 @@ const TabStack = React.memo(
             tabBarActiveTintColor: getTabBarTextColor(),
             tabBarLabelStyle: {
               fontSize: 10,
-              fontWeight: '600' as const,
-              fontFamily: 'Manrope',
+              ...typography.manrope('600'),
             },
             tabBarStyle,
             tabBarBackground: () => (
