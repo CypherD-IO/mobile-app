@@ -305,7 +305,7 @@ function PhysicalCardShipmentSection({
         <Button
           title='Activate Card'
           type={ButtonType.PRIMARY}
-          style='w-full mt-[12px]'
+          style='w-full mt-[20px]'
           onPress={() => {
             onActivate();
           }}
@@ -336,7 +336,7 @@ function PhysicalCardShipmentSection({
       <Button
         title='Activate Card'
         type={ButtonType.PRIMARY}
-        style='w-full mt-[12px]'
+        style='w-full mt-[24px]'
         onPress={() => {
           onActivate();
         }}
@@ -1462,13 +1462,6 @@ export default function CypherCardScreen() {
             />
           </CyDTouchView>
         </CyDView>
-        {showTooltip && (
-          <CyDView className='absolute bottom-[60px] bg-n0 rounded-[8px] px-[12px] py-[8px] z-[100]'>
-            <CyDText className='font-manrope text-[10px] text-base400 text-center'>
-              {t('AVAILABLE_TO_SPEND_INFO')}
-            </CyDText>
-          </CyDView>
-        )}
         <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
           {!balanceLoading ? (
             <CyDTouchView
@@ -1506,7 +1499,11 @@ export default function CypherCardScreen() {
       <CyDView className='pt-[8px] gap-y-[16px] px-[16px]'>
         {allDisplayableCards.map((card, index) => {
           const cardLabel =
-            card.type === CardType.PHYSICAL ? 'Physical Card' : 'Virtual Card';
+            card.type === CardType.PHYSICAL
+              ? card.physicalCardType === PhysicalCardType.METAL
+                ? 'Metal Card'
+                : 'Physical Card'
+              : 'Virtual Card';
           return (
             <Animated.View
               key={card.cardId || `card-${index}`}
@@ -1528,6 +1525,14 @@ export default function CypherCardScreen() {
                       : undefined
                   }
                   onPress={() => {
+                    if (card.status === CardStatus.PENDING_ACTIVATION) {
+                      Toast.show({
+                        type: 'info',
+                        text1: 'Activate your card to access card controls',
+                        position: 'top',
+                      });
+                      return;
+                    }
                     navigation.navigate(screenTitle.CARD_CONTROLS, {
                       cardId: card.cardId,
                       currentCardProvider: cardProvider,
@@ -1579,7 +1584,9 @@ export default function CypherCardScreen() {
                             color:
                               card.type === CardType.VIRTUAL && card.cardColor
                                 ? getCardColorByHex(card.cardColor).textColor
-                                : card.type === CardType.PHYSICAL
+                                : card.type === CardType.PHYSICAL &&
+                                  card.physicalCardType !==
+                                    PhysicalCardType.METAL
                                 ? '#000000'
                                 : '#FFFFFF',
                           }}>
@@ -1778,38 +1785,6 @@ export default function CypherCardScreen() {
             loading={isFetchingCardDetails}
           />
         )}
-
-        {/* Get New Card entry */}
-        <Animated.View
-          entering={createDeckSpreadEntering(allDisplayableCards.length + 1)}
-          exiting={FadeOut.duration(150)}>
-          <CyDView className='bg-n0 rounded-[16px] p-[16px]'>
-            <CyDText className='font-manrope font-semibold text-[16px] text-base400 mb-[8px]'>
-              {'Order New Cypher Card'}
-            </CyDText>
-
-            <CyDFastImage
-              className='w-full rounded-[12px]'
-              style={style.orderNewCardImage}
-              resizeMode='stretch'
-              source={AppImages.ADDITIONAL_CARD}
-            />
-
-            <CyDText className='font-manrope font-normal text-[14px] text-center leading-[140%] tracking-[-0.14px] text-base400 mt-[12px]'>
-              {
-                'You can get an extra physical or virtual card and enjoy the ease of shopping anywhere in the world.'
-              }
-            </CyDText>
-
-            <CyDTouchView
-              className='bg-p150 py-[11px] rounded-full mt-[16px]'
-              onPress={onGetAdditionalCard}>
-              <CyDText className='text-black text-[16px] font-bold text-center'>
-                {'Order new card'}
-              </CyDText>
-            </CyDTouchView>
-          </CyDView>
-        </Animated.View>
       </CyDView>
     );
   };
@@ -1842,7 +1817,10 @@ export default function CypherCardScreen() {
         {showAllCards ? (
           <CyDTouchView
             className='flex-1 flex-row items-center justify-between bg-n30 py-[12px] px-[16px] rounded-[24px]'
-            onPress={() => setShowAllCards(false)}>
+            onPress={() => {
+              setShowTooltip(false);
+              setShowAllCards(false);
+            }}>
             <CyDText className='font-manrope font-semibold text-[14px] text-base400 leading-[145%] tracking-[-0.6px]'>
               {'Hide cards'}
             </CyDText>
@@ -1855,7 +1833,10 @@ export default function CypherCardScreen() {
         ) : (
           <CyDTouchView
             className='flex-1 flex-row items-center justify-between bg-n30 py-[12px] px-[16px] rounded-[24px]'
-            onPress={() => setShowAllCards(true)}>
+            onPress={() => {
+              setShowTooltip(false);
+              setShowAllCards(true);
+            }}>
             <CyDText className='font-manrope font-semibold text-[14px] text-base400 leading-[145%] tracking-[-0.6px]'>
               {t('VIEW_ALL_CARDS')}
             </CyDText>
@@ -1882,6 +1863,7 @@ export default function CypherCardScreen() {
       showBackdrop: false,
       bottomInset: tabBarTotalHeight,
       onAnimate: (fromIndex: number, toIndex: number) => {
+        if (showTooltip) setShowTooltip(false);
         if (showAllCards && toIndex >= 1) {
           setShowAllCards(false);
         } else if (!showAllCards && toIndex === 0) {
@@ -1937,7 +1919,16 @@ export default function CypherCardScreen() {
               {recentTransactions.length ? (
                 <>
                   {recentTransactions.map((transaction, index) => (
-                    <CardTransactionItem item={transaction} key={index} />
+                    <CardTransactionItem
+                      item={transaction}
+                      key={index}
+                      onPress={txn => {
+                        navigation.navigate(
+                          screenTitle.CARD_TRANSACTION_DETAILS_SCREEN,
+                          { transaction: txn },
+                        );
+                      }}
+                    />
                   ))}
                   <CyDView className='px-[12px] pb-[12px] pt-[16px]'>
                     <CyDTouchView
@@ -2095,6 +2086,7 @@ export default function CypherCardScreen() {
     statusWiseRewards,
     showAllCards,
     allDisplayableCards,
+    showTooltip,
   ]);
 
   useEffect(() => {
@@ -2139,7 +2131,11 @@ export default function CypherCardScreen() {
         'bg-red400': shouldShowLocked(),
         'bg-p40': shouldShowActionNeeded() || shouldShowContactSupport(),
       })}>
-      <CyDView className='flex-1'>
+      <CyDView
+        className='flex-1'
+        onTouchEnd={() => {
+          if (showTooltip) setShowTooltip(false);
+        }}>
         <CyDView className='flex-1'>
           <TermsAndConditionsModal
             isModalVisible={isTermsAndConditionsModalVisible}
@@ -2285,10 +2281,6 @@ export default function CypherCardScreen() {
             }}
           />
         )} */}
-
-            {/* Available to spend balance */}
-
-            {!showAllCards && renderBalanceSection()}
           </CyDView>
 
           <CyDView className='bg-n40'>
@@ -2370,6 +2362,9 @@ export default function CypherCardScreen() {
               <CyDScrollView
                 className='mt-[2px]'
                 showsVerticalScrollIndicator={false}
+                onScrollBeginDrag={() => {
+                  if (showTooltip) setShowTooltip(false);
+                }}
                 contentContainerStyle={{
                   paddingBottom: tabBarTotalHeight + 200,
                 }}>
@@ -2377,12 +2372,13 @@ export default function CypherCardScreen() {
                 {renderAllCardsContent()}
               </CyDScrollView>
             ) : (
-              cardDesignData && (
-                <Animated.View
-                  key='stacked-cards'
-                  entering={FadeIn.duration(200).delay(COLLAPSE_FADE_DELAY)}
-                  exiting={FadeOut.duration(100)}>
-                  <CyDView className='mt-[2px]'>
+              <CyDView className='mt-[2px]'>
+                {renderBalanceSection()}
+                {cardDesignData && (
+                  <Animated.View
+                    key='stacked-cards'
+                    entering={FadeIn.duration(200).delay(COLLAPSE_FADE_DELAY)}
+                    exiting={FadeOut.duration(100)}>
                     <CardScreen
                       navigation={navigation}
                       currentCardProvider={cardProvider}
@@ -2399,9 +2395,21 @@ export default function CypherCardScreen() {
                       }
                       onCardPress={() => setShowAllCards(true)}
                     />
-                  </CyDView>
-                </Animated.View>
-              )
+                  </Animated.View>
+                )}
+              </CyDView>
+            )}
+
+            {showTooltip && (
+              <CyDView
+                className='absolute top-[2px] left-0 right-0 items-center z-[9999]'
+                style={style.tooltipElevation}>
+                <CyDView className='bg-n0 rounded-[8px] px-[12px] py-[8px]'>
+                  <CyDText className='font-manrope text-[10px] text-base400 text-center'>
+                    {t('AVAILABLE_TO_SPEND_INFO')}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
             )}
           </CyDView>
         </CyDView>
@@ -2484,9 +2492,10 @@ const style = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DFE2E6',
   },
-  orderNewCardImage: {
-    width: '100%',
-    aspectRatio: 1.5,
-    borderRadius: 12,
+  tooltipElevation: {
+    ...Platform.select({
+      android: { elevation: 10 },
+      ios: {},
+    }),
   },
 });

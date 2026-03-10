@@ -69,6 +69,7 @@ export const screenTitle = {
   CARD_ACTIVATION_CONSENT_SCREEN: 'CardActivationConsentScreen',
   CARD_ACTIAVTION_SCREEN: 'CardActivationScreen',
   CARD_SET_PIN_SCREEN: 'CardSetPinScreen',
+  EDIT_CARD_COLOUR_SCREEN: 'EditCardColourScreen',
   BRIDGE_FUND_CARD_SCREEN: 'BridgeFundCardScreen',
   PIN_VALIDATION: 'PinValidation',
   CONFIRM_PIN: 'ConfirmPin',

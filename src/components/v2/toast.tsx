@@ -81,7 +81,7 @@ const ModernToast = ({
           items-center justify-center
           mr-[10px]
         `}>
-        <CyDIcons name={config.icon} size={18} className={config.iconColor} />
+        <CyDIcons name={config.icon} size={24} className={config.iconColor} />
       </CyDView>
 
       {/* Toast message */}

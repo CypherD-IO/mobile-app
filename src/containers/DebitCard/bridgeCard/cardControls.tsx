@@ -78,7 +78,6 @@ import SaveChangesModal from '../../../components/v2/saveChangesModal';
 import SelectPlanModal from '../../../components/selectPlanModal';
 import { countryMaster } from '../../../../assets/datasets/countryMaster';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
-import EditCardColor from './editCardColour';
 import EditCardTag from './editCardTag';
 import {
   getCardColorByHex,
@@ -1702,9 +1701,6 @@ export default function CardControls(): React.JSX.Element {
         currentTag={selectedCard?.cardTag}
         availableCards={activeCards}
         isVirtualCard={selectedCard?.type === CardType.VIRTUAL}
-        onUpdateCardColor={() => {
-          void refreshProfile();
-        }}
         onUpdateCardTag={() => {
           void refreshProfile();
         }}
@@ -1784,7 +1780,9 @@ export default function CardControls(): React.JSX.Element {
                         selectedCard.type === CardType.VIRTUAL &&
                         selectedCard.cardColor
                           ? getCardColorByHex(selectedCard.cardColor).textColor
-                          : selectedCard.type === CardType.PHYSICAL
+                          : selectedCard.type === CardType.PHYSICAL &&
+                            selectedCard.physicalCardType !==
+                              PhysicalCardType.METAL
                           ? '#000000'
                           : '#FFFFFF',
                     }}>
@@ -2197,8 +2195,6 @@ function RenderCustomization({
   currentTag,
   availableCards,
   isVirtualCard,
-  onRefreshCards,
-  onUpdateCardColor,
   onUpdateCardTag,
 }: {
   provider: CardProviders;
@@ -2208,29 +2204,16 @@ function RenderCustomization({
   currentTag?: string;
   availableCards: Card[];
   isVirtualCard: boolean;
-  onRefreshCards?: () => void;
-  onUpdateCardColor: () => void;
   onUpdateCardTag: () => void;
 }) {
   const { t } = useTranslation();
-  const [editCardColorVisible, setEditCardColorVisible] = useState(false);
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [editCardTagVisible, setEditCardTagVisible] = useState(false);
 
   const colorDisplay = getCardColorByHex(currentColor);
 
   return (
     <CyDView className='w-full mt-[16px]'>
-      <EditCardColor
-        isModalVisible={editCardColorVisible}
-        setIsModalVisible={setEditCardColorVisible}
-        provider={provider}
-        cardId={cardId}
-        last4={last4}
-        currentColor={currentColor}
-        currentTag={currentTag}
-        onUpdateCardColor={onUpdateCardColor}
-      />
-
       <EditCardTag
         isModalVisible={editCardTagVisible}
         setIsModalVisible={setEditCardTagVisible}
@@ -2238,7 +2221,6 @@ function RenderCustomization({
         provider={provider}
         cardId={cardId}
         availableCards={availableCards}
-        onRefreshCards={onRefreshCards}
         onUpdateCardTag={onUpdateCardTag}
       />
 
@@ -2249,7 +2231,15 @@ function RenderCustomization({
         {isVirtualCard && (
           <CyDTouchView
             className='flex-row justify-between items-center py-[16px] border-b border-n40'
-            onPress={() => setEditCardColorVisible(true)}>
+            onPress={() =>
+              navigation.navigate(screenTitle.EDIT_CARD_COLOUR_SCREEN, {
+                provider,
+                cardId,
+                last4,
+                currentColor,
+                currentTag,
+              })
+            }>
             <CyDView className='flex-row items-center gap-x-[12px]'>
               <CyDView className='w-[36px] h-[36px] items-center justify-center rounded-[8px] bg-n30'>
                 <CyDIcons
@@ -2288,7 +2278,9 @@ function RenderCustomization({
           </CyDView>
           <CyDView className='flex-row items-center gap-x-[8px]'>
             <CyDText className='text-[13px] text-primaryText'>
-              {truncate(currentTag ?? t('NOT_SET'), { length: 12 })}
+              {truncate(currentTag?.length ? currentTag : t('NOT_SET'), {
+                length: 12,
+              })}
             </CyDText>
             <CyDMaterialDesignIcons
               name='chevron-right'

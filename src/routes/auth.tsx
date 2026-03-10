@@ -53,6 +53,7 @@ import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAut
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
+import EditCardColor from '../containers/DebitCard/bridgeCard/editCardColour';
 import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
 import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 import TransactionDetails from '../containers/DebitCard/bridgeCard/transactionDetails';
@@ -618,6 +619,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SET_PIN_SCREEN}
         component={SetPinScreen}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.EDIT_CARD_COLOUR_SCREEN}
+        component={EditCardColor}
         options={() => ({
           headerShown: false,
         })}

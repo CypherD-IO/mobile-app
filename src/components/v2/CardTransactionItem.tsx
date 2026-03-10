@@ -37,6 +37,7 @@ import { DecimalHelper } from '../../utils/decimalHelper';
 
 interface CardTransactionItemProps {
   item: ICardTransaction;
+  onPress?: (transaction: ICardTransaction) => void;
 }
 
 const getTransactionIndicator = (type: string) => {
@@ -79,7 +80,7 @@ const CHANNEL_MAP = {
 };
 const getChannelIcon = (channel: string) => get(CHANNEL_MAP, [channel], {});
 
-const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
+const CardTransactionItem = ({ item, onPress }: CardTransactionItemProps) => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const {
@@ -123,9 +124,13 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');
-          navigation.navigate(screenTitle.CARD_TRANSACTION_DETAILS_SCREEN, {
-            transaction: item,
-          });
+          if (onPress) {
+            onPress(item);
+          } else {
+            navigation.navigate(screenTitle.CARD_TRANSACTION_DETAILS_SCREEN, {
+              transaction: item,
+            });
+          }
         }}>
         <CyDView className='flex flex-row justify-between items-center w-full'>
           <CyDView

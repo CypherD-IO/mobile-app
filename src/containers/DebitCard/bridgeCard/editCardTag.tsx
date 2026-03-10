@@ -1,14 +1,25 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Animated } from 'react-native';
+import { StyleSheet, Modal } from 'react-native';
 import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet, {
+  BottomSheetScrollView,
+  BottomSheetBackdrop,
+} from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 import clsx from 'clsx';
 import {
   CyDView,
   CyDText,
   CyDTouchView,
-  CyDScrollView,
   CyDMaterialDesignIcons,
   CyDIcons,
   CyDTextInput,
@@ -27,6 +38,8 @@ import {
   parseCardTag,
 } from '../../../constants/cardTags';
 import { Card } from '../../../models/card.model';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 
 const MAX_TAG_NAME_LENGTH = 48;
 
@@ -53,69 +66,70 @@ export default function EditCardTag({
 }): React.ReactElement {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+
   const [view, setView] = useState<ViewMode>('select');
-  const [selectedTag, setSelectedTag] = useState<string | null>(
-    currentTag ?? null,
-  );
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [customEmoji, setCustomEmoji] = useState<string>('');
   const [customName, setCustomName] = useState<string>('');
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [isFullHeight, setIsFullHeight] = useState(false);
-  const heightAnim = useRef(new Animated.Value(80)).current;
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const isTransitioningToCreateRef = useRef(false);
+  const snapPoints = useMemo(() => ['60%', '93%'], []);
+
+  const sheetBgColor = isDarkMode ? '#161616' : '#F5F6F7';
+  const sheetIndicatorColor = isDarkMode ? '#444' : '#ccc';
 
   const { patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
 
   useEffect(() => {
     if (isModalVisible) {
-      setSelectedTag(currentTag ?? null);
+      setView('select');
+      setShowCreateModal(false);
     }
-  }, [isModalVisible, currentTag]);
+  }, [isModalVisible]);
 
   const handleClose = (): void => {
-    setSelectedTag(currentTag ?? null);
     setView('select');
+    setShowCreateModal(false);
     setCustomEmoji('');
     setCustomName('');
     setShowEmojiPicker(false);
-    setIsFullHeight(false);
-    heightAnim.setValue(80);
     setIsModalVisible(false);
   };
 
+  const handleBottomSheetClose = (): void => {
+    if (isTransitioningToCreateRef.current) {
+      isTransitioningToCreateRef.current = false;
+      setView('create');
+      setShowCreateModal(true);
+    } else {
+      handleClose();
+    }
+  };
+
   const handleBackFromCreate = (): void => {
-    setView('select');
     setCustomEmoji('');
     setCustomName('');
     setShowEmojiPicker(false);
+    setShowCreateModal(false);
+  };
+
+  const handleCreateModalHidden = (): void => {
+    if (view === 'create') {
+      setView('select');
+    }
   };
 
   const onEmojiClick = (emojiData: EmojiType): void => {
     setCustomEmoji(emojiData.emoji);
     setShowEmojiPicker(false);
-  };
-
-  const handleSelectPredefined = (emoji: string, name: string): void => {
-    setSelectedTag(formatCardTag(emoji, name));
-  };
-
-  const animateToFullHeight = (): void => {
-    if (!isFullHeight) {
-      setIsFullHeight(true);
-      Animated.timing(heightAnim, {
-        toValue: 95,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    }
-  };
-
-  const handleScroll = (event: any): void => {
-    if (event.nativeEvent.contentOffset.y > 0) {
-      animateToFullHeight();
-    }
   };
 
   const submitTag = async (tagValue: string): Promise<void> => {
@@ -126,7 +140,7 @@ export default function EditCardTag({
       action: 'update_card_tag',
       label: 'card_tag_updated',
       card_id: cardId,
-      provider: provider,
+      provider,
       tag_length: tagValue.length,
       is_custom: view === 'create',
     });
@@ -134,9 +148,7 @@ export default function EditCardTag({
     try {
       const response = await patchWithAuth(
         `/v1/cards/${provider}/card/${cardId}/metadata`,
-        {
-          cardTag: tagValue,
-        },
+        { cardTag: tagValue },
       );
 
       if (!response.isError) {
@@ -166,127 +178,57 @@ export default function EditCardTag({
     }
   };
 
-  const handleSubmit = (): void => {
-    if (view === 'select' && selectedTag) {
-      void submitTag(selectedTag);
-    } else if (view === 'create' && customName.trim()) {
+  const handleSelectTag = (tagValue: string): void => {
+    if (isLoading) return;
+    void submitTag(tagValue);
+  };
+
+  const handleRemoveTag = (): void => {
+    if (isLoading) return;
+    void submitTag('');
+  };
+
+  const handleNavigateToCreate = (): void => {
+    isTransitioningToCreateRef.current = true;
+    bottomSheetRef.current?.close();
+  };
+
+  const handleCreateSubmit = (): void => {
+    if (customName.trim()) {
       const tagValue = formatCardTag(customEmoji, customName.trim());
       void submitTag(tagValue);
     }
   };
 
+  const renderBackdrop = useCallback(
+    (props: BottomSheetDefaultBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+        pressBehavior='close'
+      />
+    ),
+    [],
+  );
+
   const customTags = availableCards
     .map((card: Card) => card.cardTag)
     .filter((tag): tag is string => !!tag && tag.trim() !== '')
-    .filter((tag, index, self) => self.indexOf(tag) === index);
+    .filter((tag, index, self) => self.indexOf(tag) === index)
+    .filter(
+      tag =>
+        !PREDEFINED_CARD_TAGS.some(
+          predefined =>
+            formatCardTag(predefined.emoji, predefined.name) === tag,
+        ),
+    );
 
-  const renderSelectContent = (): React.ReactElement => (
-    <CyDView className='flex flex-col justify-end h-full'>
-      <Animated.View
-        style={[
-          styles.modalContainer,
-          {
-            height: heightAnim.interpolate({
-              inputRange: [80, 95],
-              outputRange: ['80%', '100%'],
-            }),
-          },
-        ]}
-        className={clsx('bg-n20', {
-          'rounded-t-[24px]': !isFullHeight,
-        })}>
-        <CyDView className='w-[32px] h-[4px] bg-n100 self-center mt-[16px] mb-[8px] rounded-full' />
-
-        <CyDView className='flex flex-row justify-between mt-[16px] mx-[5%] items-center'>
-          <CyDText className='text-[16px] font-bold'>{t('SELECT_TAG')}</CyDText>
-          <CyDTouchView onPress={handleClose} className='ml-[18px]'>
-            <CyDMaterialDesignIcons
-              name='close'
-              size={24}
-              className='text-base400'
-            />
-          </CyDTouchView>
-        </CyDView>
-
-        <CyDView className='h-[1px] bg-n40 mt-[12px]' />
-
-        <CyDScrollView
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          className='flex-1'
-          contentContainerClassName='pb-[100px]'>
-          {customTags.map((tag, index) => {
-            const parsed = parseCardTag(tag);
-            const isPredefinedTag = PREDEFINED_CARD_TAGS.some(
-              predefined =>
-                formatCardTag(predefined.emoji, predefined.name) === tag,
-            );
-            if (isPredefinedTag) return null;
-            const isSelected = selectedTag === tag;
-            return (
-              <CyDTouchView
-                key={`custom-${index}`}
-                onPress={() => setSelectedTag(tag)}
-                className={clsx(
-                  'flex flex-row items-center px-[16px] py-[12px] my-[4px] mx-[12px] rounded-[8px] bg-n10/80',
-                  { 'border-[2px] border-appColor': isSelected },
-                )}>
-                {parsed.emoji && (
-                  <CyDText className='text-[24px]'>{parsed.emoji}</CyDText>
-                )}
-                <CyDText className='ml-[10px] font-semibold text-[16px]'>
-                  {parsed.name || tag}
-                </CyDText>
-              </CyDTouchView>
-            );
-          })}
-
-          {PREDEFINED_CARD_TAGS.map((tag, index) => {
-            const tagValue = formatCardTag(tag.emoji, tag.name);
-            const isSelected = selectedTag === tagValue;
-
-            return (
-              <CyDTouchView
-                key={`predefined-${index}`}
-                onPress={() => handleSelectPredefined(tag.emoji, tag.name)}
-                className={clsx(
-                  'flex flex-row items-center px-[16px] py-[12px] my-[4px] mx-[12px] rounded-[8px] bg-n10/80',
-                  { 'border-[2px] border-appColor': isSelected },
-                )}>
-                <CyDText className='text-[24px]'>{tag.emoji}</CyDText>
-                <CyDText className='ml-[10px] font-semibold text-[16px]'>
-                  {tag.name}
-                </CyDText>
-              </CyDTouchView>
-            );
-          })}
-
-          <CyDTouchView
-            className='flex flex-row items-center px-[16px] py-[12px] my-[4px] mx-[12px] rounded-[8px] bg-n10/80'
-            onPress={() => setView('create')}>
-            <CyDMaterialDesignIcons
-              name='plus-circle'
-              size={24}
-              className='text-base400'
-            />
-            <CyDText className='ml-[10px] font-semibold text-[16px]'>
-              {t('CREATE_NEW')}
-            </CyDText>
-          </CyDTouchView>
-        </CyDScrollView>
-
-        <CyDView className='absolute bottom-0 left-0 right-0 px-[16px] py-[16px] bg-n20 border-t-[1px] border-n40 pb-[32px]'>
-          <Button
-            title={t('SET_TAG')}
-            onPress={handleSubmit}
-            loading={isLoading}
-            disabled={!selectedTag}
-            style='rounded-full h-[54px]'
-          />
-        </CyDView>
-      </Animated.View>
-    </CyDView>
+  const predefinedTagValues = PREDEFINED_CARD_TAGS.map(tag =>
+    formatCardTag(tag.emoji, tag.name),
   );
+  const allDisplayTags = [...customTags, ...predefinedTagValues];
 
   const renderCreateContent = (): React.ReactElement => (
     <CyDView className='flex-1 bg-n20' style={{ paddingTop: insets.top }}>
@@ -312,9 +254,10 @@ export default function EditCardTag({
             className='flex-row justify-between items-center px-[16px] py-[14px] bg-n0 rounded-[10px] border border-n40'
             onPress={() => setShowEmojiPicker(true)}>
             <CyDText
-              className={`font-normal text-[14px] ${
-                customEmoji ? 'text-primaryText' : 'text-n200'
-              }`}>
+              className={clsx('font-normal text-[14px]', {
+                'text-primaryText': customEmoji,
+                'text-n200': !customEmoji,
+              })}>
               {customEmoji || t('SELECT_AN_EMOJI')}
             </CyDText>
             <CyDMaterialDesignIcons
@@ -354,16 +297,17 @@ export default function EditCardTag({
           </CyDView>
         </CyDView>
       </CyDView>
+
       <CyDView
         className='px-[16px]'
         style={{ paddingBottom: insets.bottom + 16 }}>
         <Button
           title={t('SET_TAG')}
-          onPress={handleSubmit}
+          onPress={handleCreateSubmit}
           loading={isLoading}
           type={ButtonType.PRIMARY}
           disabled={!customName.trim()}
-          style='rounded-full h-[54px]'
+          style='rounded-full h-[60px]'
           titleStyle='font-semibold text-[18px]'
         />
       </CyDView>
@@ -371,30 +315,186 @@ export default function EditCardTag({
   );
 
   return (
-    <CyDModalLayout
-      isModalVisible={isModalVisible}
-      setModalVisible={view === 'create' ? handleBackFromCreate : handleClose}
-      style={view === 'create' ? { margin: 0 } : styles.modalLayout}
-      animationIn={view === 'create' ? 'slideInRight' : 'slideInUp'}
-      animationOut={view === 'create' ? 'slideOutRight' : 'slideOutDown'}
-      swipeDirection={view === 'select' ? ['down'] : []}
-      onSwipeComplete={({ swipingDirection }) => {
-        if (swipingDirection === 'down' && view === 'select') {
-          handleClose();
-        }
-      }}
-      propagateSwipe={true}>
-      {view === 'select' ? renderSelectContent() : renderCreateContent()}
-    </CyDModalLayout>
+    <>
+      <Modal
+        visible={isModalVisible && view === 'select'}
+        transparent
+        animationType='none'
+        statusBarTranslucent
+        onRequestClose={handleClose}>
+        <GestureHandlerRootView style={styles.flex1}>
+          <BottomSheet
+            ref={bottomSheetRef}
+            snapPoints={snapPoints}
+            index={0}
+            enableDynamicSizing={false}
+            enablePanDownToClose
+            enableOverDrag={false}
+            onClose={handleBottomSheetClose}
+            backdropComponent={renderBackdrop}
+            backgroundStyle={[
+              styles.sheetBackground,
+              { backgroundColor: sheetBgColor },
+            ]}
+            handleIndicatorStyle={[
+              styles.handleIndicator,
+              { backgroundColor: sheetIndicatorColor },
+            ]}
+            handleStyle={[styles.handleBar, { backgroundColor: sheetBgColor }]}>
+            <BottomSheetScrollView
+              contentContainerStyle={[
+                styles.scrollContent,
+                { paddingBottom: insets.bottom + 24 },
+              ]}
+              showsVerticalScrollIndicator={false}>
+              <CyDView className='px-[20px] pt-[4px] pb-[16px]'>
+                <CyDText className='font-manrope text-[18px] font-bold'>
+                  {t('SELECT_TAG')}
+                </CyDText>
+              </CyDView>
+              <CyDView className='mx-[16px] bg-n0 rounded-[12px] overflow-hidden'>
+                {allDisplayTags.map((tagValue, index) => {
+                  const parsed = parseCardTag(tagValue);
+                  const isActive = currentTag === tagValue;
+                  const isLast = index === allDisplayTags.length - 1;
+
+                  return (
+                    <CyDTouchView
+                      key={`tag-${index}`}
+                      onPress={() => handleSelectTag(tagValue)}
+                      className={clsx(
+                        'flex-row items-center justify-between px-[16px] py-[14px]',
+                        { 'border-b border-n40': !isLast },
+                      )}>
+                      <CyDView className='flex-row items-center flex-1 mr-[12px]'>
+                        {parsed.emoji ? (
+                          <CyDText className='text-[24px]'>
+                            {parsed.emoji}
+                          </CyDText>
+                        ) : null}
+                        <CyDText className='ml-[10px] font-manrope font-semibold text-[16px] flex-1'>
+                          {parsed.name || tagValue}
+                        </CyDText>
+                      </CyDView>
+                      {isActive && (
+                        <CyDMaterialDesignIcons
+                          name='check-circle'
+                          size={24}
+                          className='text-appColor'
+                        />
+                      )}
+                    </CyDTouchView>
+                  );
+                })}
+              </CyDView>
+
+              <CyDView className='mx-[16px] mt-[16px] bg-n0 rounded-[12px] overflow-hidden'>
+                <CyDView className='px-[16px] pt-[16px] pb-[12px]'>
+                  <CyDText style={styles.descriptionText} className='text-n200'>
+                    {currentTag
+                      ? t(
+                          'CARD_TAG_CREATE_OR_REMOVE_DESC',
+                          'Create a custom tag with your own name, or you can easily remove a tag in this card.',
+                        )
+                      : t(
+                          'CARD_TAG_CREATE_DESC',
+                          'Create a custom tag with your own name',
+                        )}
+                  </CyDText>
+                </CyDView>
+
+                <CyDView className='h-[1px] bg-n40' />
+
+                <CyDTouchView
+                  onPress={handleNavigateToCreate}
+                  className='flex-row items-center px-[16px] py-[14px]'>
+                  <CyDMaterialDesignIcons
+                    name='plus-circle-outline'
+                    size={24}
+                    className='text-base400'
+                  />
+                  <CyDText style={styles.actionText} className='ml-[10px]'>
+                    {t('CREATE_NEW')}
+                  </CyDText>
+                </CyDTouchView>
+
+                {currentTag ? (
+                  <>
+                    <CyDView className='h-[1px] bg-n40' />
+                    <CyDTouchView
+                      onPress={handleRemoveTag}
+                      className='flex-row items-center px-[16px] py-[14px]'>
+                      <CyDMaterialDesignIcons
+                        name='minus-circle-outline'
+                        size={24}
+                        className='text-red400'
+                      />
+                      <CyDText
+                        style={styles.actionText}
+                        className='ml-[10px] text-red400'>
+                        {t('REMOVE_CARD_TAG', 'Remove card tag')}
+                      </CyDText>
+                    </CyDTouchView>
+                  </>
+                ) : null}
+              </CyDView>
+            </BottomSheetScrollView>
+          </BottomSheet>
+        </GestureHandlerRootView>
+      </Modal>
+
+      <CyDModalLayout
+        isModalVisible={showCreateModal}
+        setModalVisible={handleBackFromCreate}
+        style={styles.createModal}
+        animationIn='slideInRight'
+        animationOut='slideOutRight'
+        swipeDirection={[]}
+        statusBarTranslucent={true}
+        onModalHide={handleCreateModalHidden}>
+        {renderCreateContent()}
+      </CyDModalLayout>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
+  flex1: {
+    flex: 1,
   },
-  modalContainer: {
-    width: '100%',
+  sheetBackground: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  handleIndicator: {
+    width: 32,
+    height: 4,
+    borderRadius: 2,
+  },
+  handleBar: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  createModal: {
+    margin: 0,
+  },
+  descriptionText: {
+    fontFamily: 'Manrope',
+    fontWeight: '400',
+    fontSize: 12,
+    lineHeight: 18,
+    letterSpacing: 0,
+  },
+  actionText: {
+    fontFamily: 'Manrope',
+    fontWeight: '500',
+    fontSize: 16,
+    lineHeight: 22.4,
+    letterSpacing: -0.4,
   },
 });
