@@ -17,7 +17,12 @@ import React, {
   useMemo,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, StyleSheet, ViewToken } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  StyleSheet,
+  ViewToken,
+} from 'react-native';
 import Button from '../../../components/v2/button';
 import CardTransactionItem from '../../../components/v2/CardTransactionItem';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -51,6 +56,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import AppImages from '../../../../assets/images/appImages';
+import { Colors } from '../../../constants/theme';
 import CardTxnFilterModal from '../CardV2/CardTxnFilterModal';
 import PageHeader from '../../../components/PageHeader';
 
@@ -91,6 +97,7 @@ export default function CardTransactions() {
   const lastViewableTransactionDate = useRef<string>('');
   const [exportOptionOpen, setExportOptionOpen] = useState(false);
   const [isEndReached, setIsEndReached] = useState(false);
+  const hasLoadedOnce = useRef(false);
   const fetchDebounced = useRef<ReturnType<typeof setTimeout>>();
   const transactionsRef = useRef<ICardTransaction[]>([]);
 
@@ -248,6 +255,7 @@ export default function CardTransactions() {
         onFailure: hideModal,
       });
     } finally {
+      hasLoadedOnce.current = true;
       setRefreshing(false);
     }
   };
@@ -375,94 +383,101 @@ export default function CardTransactions() {
           modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
           filterState={[filter, setFilter]}
         />
-        {transactions.length > 0 && (
-          <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
-            <CyDView className='flex flex-1 justify-center items-center'>
-              <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
-                {viewableTransactionsDate}
-              </CyDText>
-            </CyDView>
-            <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
-              <CyDTouchView
-                onPress={() => {
-                  setFilterModalVisible(true);
-                }}>
-                <CyDMaterialDesignIcons
-                  name='filter-variant'
-                  size={24}
-                  className='text-base400'
-                />
-              </CyDTouchView>
-              <CyDTouchView
-                disabled={isExporting}
-                className={clsx({ 'opacity-40': isExporting })}
-                onPress={() => {
-                  setExportOptionOpen(true);
-                  // void exportCardTransactions();
-                }}>
-                <CyDMaterialDesignIcons
-                  name='export-variant'
-                  size={20}
-                  className='text-base400'
-                />
-              </CyDTouchView>
-            </CyDView>
+        {!hasLoadedOnce.current ? (
+          <CyDView className='flex-1 justify-center items-center'>
+            <ActivityIndicator size='large' color={Colors.appColor} />
           </CyDView>
-        )}
-        <CyDView className='flex-1'>
-          <CyDFlatList
-            data={filteredTransactions}
-            renderItem={renderTransaction as any}
-            keyExtractor={(item, index) =>
-              (item as ICardTransaction).id ?? index.toString()
-            }
-            onViewableItemsChanged={handleViewableItemsChanged.current}
-            refreshControl={
-              <RefreshControl
-                className={clsx({ 'bg-n0': isIOS() })}
-                refreshing={refreshing && !txnRetrievalOffset.current}
-                onRefresh={() => {
-                  void fetchTransactions(true);
-                }}
-                progressViewOffset={0}
-              />
-            }
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.5}
-            ListEmptyComponent={
-              !refreshing ? (
-                <CyDView className='items-center mt-[250px]'>
-                  <CyDView
-                    className='w-[240px] bg-white rounded-[16px] items-center'
-                    style={styles.emptyContainer}>
-                    <CyDFastImage
-                      source={AppImages.NO_TRANSACTIONS_YET}
-                      className='w-[168px] h-[146px] mt-[40px]'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='font-manrope font-medium text-[16px] text-base100 text-center mt-[12px] leading-[140%] tracking-[-0.4px]'>
-                      {'No Transaction Found'}
-                    </CyDText>
-                    <CyDText
-                      className='font-manrope font-normal text-[10px] text-center mt-[4px] mb-[20px] leading-[160%] px-[19px]'
-                      style={styles.emptySubtext}>
-                      {
-                        'Use your cypher card and keep an eye on your transactions right here!'
-                      }
-                    </CyDText>
-                  </CyDView>
+        ) : (
+          <>
+            {transactions.length > 0 && (
+              <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
+                <CyDView className='flex flex-1 justify-center items-center'>
+                  <CyDText className='text-[18px] font-bold text-center ml-[45px] text-base400'>
+                    {viewableTransactionsDate}
+                  </CyDText>
                 </CyDView>
-              ) : null
-            }
-            ListFooterComponent={
-              <InfiniteScrollFooterLoader
-                refreshing={refreshing}
-                style={styles.infiniteScrollFooterLoaderStyle}
+                <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
+                  <CyDTouchView
+                    onPress={() => {
+                      setFilterModalVisible(true);
+                    }}>
+                    <CyDMaterialDesignIcons
+                      name='filter-variant'
+                      size={24}
+                      className='text-base400'
+                    />
+                  </CyDTouchView>
+                  <CyDTouchView
+                    disabled={isExporting}
+                    className={clsx({ 'opacity-40': isExporting })}
+                    onPress={() => {
+                      setExportOptionOpen(true);
+                    }}>
+                    <CyDMaterialDesignIcons
+                      name='export-variant'
+                      size={20}
+                      className='text-base400'
+                    />
+                  </CyDTouchView>
+                </CyDView>
+              </CyDView>
+            )}
+            <CyDView className='flex-1'>
+              <CyDFlatList
+                data={filteredTransactions}
+                renderItem={renderTransaction as any}
+                keyExtractor={(item, index) =>
+                  (item as ICardTransaction).id ?? index.toString()
+                }
+                onViewableItemsChanged={handleViewableItemsChanged.current}
+                refreshControl={
+                  <RefreshControl
+                    className={clsx({ 'bg-n0': isIOS() })}
+                    refreshing={refreshing && !txnRetrievalOffset.current}
+                    onRefresh={() => {
+                      void fetchTransactions(true);
+                    }}
+                    progressViewOffset={0}
+                  />
+                }
+                onEndReached={handleEndReached}
+                onEndReachedThreshold={0.5}
+                ListEmptyComponent={
+                  !refreshing ? (
+                    <CyDView className='items-center mt-[250px]'>
+                      <CyDView
+                        className='w-[240px] bg-n0 rounded-[16px] items-center'
+                        style={styles.emptyContainer}>
+                        <CyDFastImage
+                          source={AppImages.NO_TRANSACTIONS_YET}
+                          className='w-[168px] h-[146px] mt-[40px]'
+                          resizeMode='contain'
+                        />
+                        <CyDText className='font-manrope font-medium text-[16px] text-base100 text-center mt-[12px] leading-[140%] tracking-[-0.4px]'>
+                          {'No Transaction Found'}
+                        </CyDText>
+                        <CyDText
+                          className='font-manrope font-normal text-[10px] text-center mt-[4px] mb-[20px] leading-[160%] px-[19px]'
+                          style={styles.emptySubtext}>
+                          {
+                            'Use your cypher card and keep an eye on your transactions right here!'
+                          }
+                        </CyDText>
+                      </CyDView>
+                    </CyDView>
+                  ) : null
+                }
+                ListFooterComponent={
+                  <InfiniteScrollFooterLoader
+                    refreshing={refreshing}
+                    style={styles.infiniteScrollFooterLoaderStyle}
+                  />
+                }
+                className='flex-1'
               />
-            }
-            className='flex-1'
-          />
-        </CyDView>
+            </CyDView>
+          </>
+        )}
       </CyDView>
     </CyDSafeAreaView>
   );
