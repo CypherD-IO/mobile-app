@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { get, isEmpty, orderBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
+import { Theme, useTheme } from '../../../reducers/themeReducer';
+import { useColorScheme } from 'nativewind';
 import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
@@ -83,6 +85,16 @@ const stackStyles = StyleSheet.create({
   cardImageBorderRadius: {
     borderRadius: 10,
   },
+  frozenOverlay: {
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+  },
+  frozenBadge: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
 });
 
 export default function CardScreen({
@@ -113,6 +125,10 @@ export default function CardScreen({
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+  const isDarkMode =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
   const [userCardDetails, setUserCardDetails] = useState<UserCardDetails>({
     cards: [],
     personId: '',
@@ -209,18 +225,13 @@ export default function CardScreen({
         key={index}
         className={clsx('w-full h-full flex flex-col rounded-[10px]', {
           'justify-center items-center':
-            [
-              CardStatus.IN_ACTIVE,
-              CardStatus.HIDDEN,
-              CardStatus.BLOCKED,
-              CardStatus.RC_UPGRADABLE,
-            ].includes(cardStatus) || isAccountLocked,
-          'justify-end': ![
-            CardStatus.IN_ACTIVE,
-            CardStatus.HIDDEN,
-            CardStatus.BLOCKED,
-            CardStatus.RC_UPGRADABLE,
-          ].includes(cardStatus),
+            [CardStatus.HIDDEN, CardStatus.RC_UPGRADABLE].includes(
+              cardStatus,
+            ) || isAccountLocked,
+          'justify-end':
+            ![CardStatus.HIDDEN, CardStatus.RC_UPGRADABLE].includes(
+              cardStatus,
+            ) && !isAccountLocked,
         })}
         resizeMode='cover'
         imageStyle={stackStyles.cardImageBorderRadius}
@@ -228,7 +239,8 @@ export default function CardScreen({
         {(card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.BLOCKED) && (
           <CyDTouchView
-            className='flex items-center bg-base400 p-[6px] rounded-[6px]'
+            className='absolute top-0 left-0 right-0 bottom-0 rounded-[10px] justify-center items-start pl-[12px]'
+            style={stackStyles.frozenOverlay}
             onPress={() => {
               navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
                 onSuccess: () => {
@@ -248,10 +260,21 @@ export default function CardScreen({
                     : CardOperationsAuthType.UNLOCK,
               });
             }}>
-            <CyDIcons name='freeze' size={32} className='text-n0' />
-            <CyDText className='font-extrabold text-[12px] mt-[4px] text-n0'>
-              Frozen
-            </CyDText>
+            <CyDView
+              className={clsx(
+                'rounded-[8px] flex-row items-center px-[10px] py-[6px] gap-x-[4px]',
+                isDarkMode ? 'bg-black' : 'bg-white',
+              )}
+              style={stackStyles.frozenBadge}>
+              <CyDIcons name='freeze' size={20} className='text-[#1A73E8]' />
+              <CyDText
+                className={clsx(
+                  'font-bold text-[12px] leading-[130%] text-center',
+                  isDarkMode ? 'text-white' : 'text-black',
+                )}>
+                Frozen
+              </CyDText>
+            </CyDView>
           </CyDTouchView>
         )}
         {isAccountLocked && (

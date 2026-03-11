@@ -91,9 +91,11 @@ export const GetPhysicalCardComponent = ({
 
   return (
     <CyDView className='bg-n0 rounded-[16px] py-[16px]'>
-      <CyDView className='flex flex-col mx-4 border border-[1px] border-n40 rounded-[8px] p-4'>
+      <CyDView className='flex flex-col mx-4 rounded-[8px] p-4'>
         <CyDView className='flex flex-row items-center justify-between mb-[6px] gap-1'>
-          <CyDText className='break-words'>{componentContent.title}</CyDText>
+          <CyDText className='flex-shrink text-wrap'>
+            {componentContent.title}
+          </CyDText>
           <CyDView
             className={clsx(
               'rounded-full py-[5px] px-[12px] whitespace-nowrap flex-shrink-0',

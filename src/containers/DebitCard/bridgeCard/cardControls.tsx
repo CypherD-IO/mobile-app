@@ -665,6 +665,7 @@ export default function CardControls(): React.JSX.Element {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
+        void refreshProfile();
       },
       currentCardProvider,
       card: selectedCard,
@@ -1428,7 +1429,10 @@ export default function CardControls(): React.JSX.Element {
               onClose={() => setShowAtmWithdrawalTooltip(false)}
               placement='top'
               backgroundColor='transparent'
-              useInteractionManager={true}>
+              useInteractionManager={true}
+              topAdjustment={
+                Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0
+              }>
               <CyDTouchView onPress={() => setShowAtmWithdrawalTooltip(true)}>
                 <CyDMaterialDesignIcons
                   name='information-outline'
@@ -1488,7 +1492,12 @@ export default function CardControls(): React.JSX.Element {
                 onClose={() => setShowMerchantOutletTooltip(false)}
                 placement='top'
                 backgroundColor='transparent'
-                useInteractionManager={true}>
+                useInteractionManager={true}
+                topAdjustment={
+                  Platform.OS === 'android'
+                    ? -(StatusBar.currentHeight ?? 0)
+                    : 0
+                }>
                 <CyDTouchView
                   onPress={() => setShowMerchantOutletTooltip(true)}>
                   <CyDMaterialDesignIcons
@@ -1533,7 +1542,12 @@ export default function CardControls(): React.JSX.Element {
                 onClose={() => setShowTapAndPayTooltip(false)}
                 placement='top'
                 backgroundColor='transparent'
-                useInteractionManager={true}>
+                useInteractionManager={true}
+                topAdjustment={
+                  Platform.OS === 'android'
+                    ? -(StatusBar.currentHeight ?? 0)
+                    : 0
+                }>
                 <CyDTouchView onPress={() => setShowTapAndPayTooltip(true)}>
                   <CyDMaterialDesignIcons
                     name='information-outline'
@@ -1574,7 +1588,10 @@ export default function CardControls(): React.JSX.Element {
               onClose={() => setShowMobileWalletTooltip(false)}
               placement='top'
               backgroundColor='transparent'
-              useInteractionManager={true}>
+              useInteractionManager={true}
+              topAdjustment={
+                Platform.OS === 'android' ? -(StatusBar.currentHeight ?? 0) : 0
+              }>
               <CyDTouchView onPress={() => setShowMobileWalletTooltip(true)}>
                 <CyDMaterialDesignIcons
                   name='information-outline'
@@ -1767,7 +1784,7 @@ export default function CardControls(): React.JSX.Element {
               />
               {selectedCard.cardTag &&
                 selectedCard.status !== CardStatus.HIDDEN && (
-                  <CyDView className='absolute top-[105px] right-[14px]'>
+                  <CyDView className='absolute top-[44%] right-[3%]'>
                     <CardTagBadge tag={selectedCard.cardTag} />
                   </CyDView>
                 )}

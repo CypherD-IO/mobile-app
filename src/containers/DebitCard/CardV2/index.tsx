@@ -253,7 +253,7 @@ function PhysicalCardShipmentSection({
         <Button
           title='Activate Card'
           type={ButtonType.PRIMARY}
-          style='w-full mt-[12px]'
+          style='w-full mt-[18px]'
           onPress={() => {
             onActivate();
           }}
@@ -1536,33 +1536,11 @@ export default function CypherCardScreen() {
                     });
                   }}>
                   <CyDImageBackground
-                    className={clsx(
-                      'w-full rounded-[12px] overflow-hidden flex flex-col',
-                      {
-                        'justify-center items-center': [
-                          CardStatus.IN_ACTIVE,
-                          CardStatus.BLOCKED,
-                        ].includes(card.status as CardStatus),
-                        'justify-end': ![
-                          CardStatus.IN_ACTIVE,
-                          CardStatus.BLOCKED,
-                        ].includes(card.status as CardStatus),
-                      },
-                    )}
+                    className='w-full rounded-[12px] overflow-hidden flex flex-col justify-end'
                     style={style.expandedCardImage}
                     resizeMode='cover'
                     imageStyle={style.expandedCardImageBorder}
                     source={getCardImage(card)}>
-                    {/* Frozen / Inactive overlay */}
-                    {(card.status === CardStatus.IN_ACTIVE ||
-                      card.status === CardStatus.BLOCKED) && (
-                      <CyDView className='flex items-center bg-base400 p-[6px] rounded-[6px]'>
-                        <CyDIcons name='freeze' size={32} className='text-n0' />
-                        <CyDText className='font-extrabold text-[12px] mt-[4px] text-n0'>
-                          Frozen
-                        </CyDText>
-                      </CyDView>
-                    )}
                     {card.cardTag && (
                       <CyDView
                         className='absolute'
@@ -1589,8 +1567,42 @@ export default function CypherCardScreen() {
                         </CyDText>
                       </CyDView>
                     )}
+                    {/* Frozen / Inactive overlay */}
+                    {(card.status === CardStatus.IN_ACTIVE ||
+                      card.status === CardStatus.BLOCKED) && (
+                      <CyDView
+                        className='absolute top-0 left-0 right-0 bottom-0 rounded-[12px] justify-center items-start pl-[16px]'
+                        style={style.frozenOverlay}>
+                        <CyDView
+                          className={clsx(
+                            'rounded-[8px] flex-row items-center px-[10px] py-[6px] gap-x-[4px]',
+                            isDarkMode ? 'bg-black' : 'bg-white',
+                          )}
+                          style={style.frozenBadge}>
+                          <CyDIcons
+                            name='freeze'
+                            size={20}
+                            className='text-[#1A73E8]'
+                          />
+                          <CyDText
+                            className={clsx(
+                              'font-bold text-[12px] leading-[130%] text-center',
+                              isDarkMode ? 'text-white' : 'text-black',
+                            )}>
+                            Frozen
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                    )}
                   </CyDImageBackground>
                 </CyDTouchView>
+
+                {(card.status === CardStatus.IN_ACTIVE ||
+                  card.status === CardStatus.BLOCKED) && (
+                  <CyDText className='font-manrope font-normal text-[14px] leading-[145%] tracking-[-0.2px] text-center text-n70 mt-[8px]'>
+                    {"Click on 'Unfreeze' to begin using your card again."}
+                  </CyDText>
+                )}
 
                 {card.status === CardStatus.PENDING_ACTIVATION &&
                 card.type === CardType.PHYSICAL &&
@@ -1601,7 +1613,7 @@ export default function CypherCardScreen() {
                     onActivate={() => onPressActivateCard(card)}
                   />
                 ) : (
-                  <CyDView className='flex-row justify-center items-center gap-x-[32px] mt-[12px]'>
+                  <CyDView className='flex-row justify-between items-center mt-[12px]'>
                     {/* Reveal Card */}
                     <CyDTouchView
                       className='flex-col justify-center items-center'
@@ -2480,8 +2492,18 @@ const style = StyleSheet.create({
     borderRadius: 12,
   },
   cardTagOverlay: {
-    top: 100,
-    right: 8,
+    top: '44%',
+    right: '3%',
+  },
+  frozenOverlay: {
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+  },
+  frozenBadge: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
   physicalCardBorder: {
     borderWidth: 1,
