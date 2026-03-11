@@ -37,6 +37,8 @@ import {
   useIsFocused,
   useNavigation,
 } from '@react-navigation/native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../../constants';
 import AutoLoadOptionsModal from '../DebitCard/bridgeCard/autoLoadOptions';
 import TelegramOptionsModal from '../../components/telegramOptionsModal';
@@ -46,11 +48,10 @@ import { get } from 'lodash';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import { isAndroid } from '../../misc/checkers';
-import { Linking, Alert } from 'react-native';
+import { Linking, Alert, Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import { getDeveloperMode, setDeveloperMode } from '../../core/asyncStorage';
 
@@ -103,6 +104,7 @@ const RenderSocialMedia = ({
 
 export default function OptionsHub() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { state: hdWallet } = hdWalletContext;
@@ -546,8 +548,11 @@ export default function OptionsHub() {
   return (
     <CyDSafeAreaView className='bg-base20' edges={['top']}>
       <CyDScrollView
-        className='bg-base20 '
-        contentContainerStyle={{ paddingBottom: insets.bottom }}>
+        className='bg-base20'
+        contentContainerStyle={{
+          paddingBottom:
+            Platform.OS === 'android' ? tabBarHeight * 0.6 : insets.bottom,
+        }}>
         {isAutoLoadOptionsvisible && (
           <AutoLoadOptionsModal
             isModalVisible={isAutoLoadOptionsvisible}

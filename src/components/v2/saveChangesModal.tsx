@@ -42,7 +42,7 @@ export default function SaveChangesModal({
       propagateSwipe={true}
       style={styles.modalLayout}>
       <CyDView
-        className={'bg-n30 rounded-t-[20px] p-[16px] pb-[28px] h-[340px]'}>
+        className={'bg-n30 rounded-t-[20px] p-[16px] pb-[28px]'}>
         <CyDView className='w-[32px] h-[4px] bg-[#d9d9d9] self-center mb-[16px] rounded-full' />
         <CyDText className='text-[16px] font-bold mt-[20px] text-center'>
           {t('SAVE_CHANGES_DESC', {
