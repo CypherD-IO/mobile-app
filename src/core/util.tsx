@@ -1384,7 +1384,7 @@ export const getCardImage = (card: Card, provider: CardProviders) => {
     }
     const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
       card.designId ?? ''
-    }.png`;
+    }.png?t=${Date.now()}`;
     return {
       uri: cardImage,
     };

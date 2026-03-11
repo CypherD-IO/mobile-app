@@ -54,6 +54,7 @@ import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAut
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
+import EditCardColor from '../containers/DebitCard/bridgeCard/editCardColour';
 import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
 import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 import TransactionDetails from '../containers/DebitCard/bridgeCard/transactionDetails';
@@ -154,7 +155,9 @@ const CustomHeader = ({
   const insets = useSafeAreaInsets();
   return (
     <CyDView
-      className={`flex-row ${textAlign === 'center' ? 'justify-between' : 'items-center'} pb-[10px] ${backgroundColor ?? 'bg-n20'}`}
+      className={`flex-row ${
+        textAlign === 'center' ? 'justify-between' : 'items-center'
+      } pb-[10px] ${backgroundColor ?? 'bg-n20'}`}
       style={{ paddingTop: insets.top }}>
       <CyDTouchView
         className='px-[12px] mx-[4px]'
@@ -171,7 +174,9 @@ const CustomHeader = ({
         <CyDIcons name='arrow-left' size={24} className='text-base400' />
       </CyDTouchView>
       <CyDText
-        className={`text-base400 text-[20px] font-extrabold ${textAlign === 'center' ? 'mr-[44px]' : ''} ${textStyle ?? ''}`}>
+        className={`text-base400 text-[20px] font-extrabold ${
+          textAlign === 'center' ? 'mr-[44px]' : ''
+        } ${textStyle ?? ''}`}>
         {title}
       </CyDText>
       {textAlign === 'center' && <CyDView className='' />}
@@ -507,18 +512,27 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_CONTROLS}
         component={CardControls}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Card Controls'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-              textAlign='start'
-              textStyle='text-[20px] font-medium'
-              backgroundColor='bg-n0'
-            />
-          ),
-        })}
+        options={({ navigation, route }) => {
+          const params = route.params as { showAsSheet?: boolean } | undefined;
+          if (params?.showAsSheet) {
+            return {
+              headerShown: false,
+              animation: 'slide_from_bottom' as const,
+            };
+          }
+          return {
+            header: () => (
+              <CustomHeader
+                title='Card Controls'
+                navigation={navigation}
+                keyboardHeight={keyboardHeight}
+                textAlign='start'
+                textStyle='text-[20px] font-medium'
+                backgroundColor='bg-n0'
+              />
+            ),
+          };
+        }}
       />
       <FundCardStack.Screen
         name={screenTitle.MERCHANT_REWARD_LIST}
@@ -606,6 +620,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SET_PIN_SCREEN}
         component={SetPinScreen}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.EDIT_CARD_COLOUR_SCREEN}
+        component={EditCardColor}
         options={() => ({
           headerShown: false,
         })}
