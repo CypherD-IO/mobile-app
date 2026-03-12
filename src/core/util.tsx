@@ -1051,10 +1051,17 @@ export const hasSufficientBalanceAndGasFee = (
 };
 
 export const isNativeToken = (tokenData: any) => {
-  const nativeTokenSymbol =
-    NativeTokenMapping[tokenData.chainDetails.symbol] ||
-    tokenData.chainDetails.symbol;
-  return tokenData.symbol === nativeTokenSymbol;
+  if (!tokenData) return false;
+  if (tokenData.isNativeToken === true) return true;
+
+  const tokenSymbol = String(get(tokenData, 'symbol', '')).toUpperCase();
+  const nativeSymbols = [
+    get(NativeTokenMapping, get(tokenData, 'chainDetails.backendName', '')),
+    get(tokenData, 'chainDetails.symbol', ''),
+  ]
+    .filter(Boolean)
+    .map((symbol: string) => symbol.toUpperCase());
+  return nativeSymbols.includes(tokenSymbol);
 };
 
 export const isValidMessage = (

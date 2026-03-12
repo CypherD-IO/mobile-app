@@ -140,8 +140,9 @@ export default function Overview({
   const [marketDistributionLoading, setMarketDistributionLoading] =
     useState(true);
   const chartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const marketDistributionTimeoutRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
+  const marketDistributionTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const [showMarketCapTip, setMarketCapTip] = useState(false);
   const [showCirculatingSupplyTip, setCirculatingSupplyTip] = useState(false);
   const [showVolumeTip, setVolumeTip] = useState(false);
@@ -378,7 +379,12 @@ export default function Overview({
               {tokenData.contractAddress && !isNativeToken(tokenData) && (
                 <CyDView className='flex flex-row items-center'>
                   <CyDText className={'text-[12px]'}>
-                    {`${tokenData.contractAddress.substring(0, 6)}...${tokenData.contractAddress.substring(tokenData.contractAddress.length - 6)}`}
+                    {`${tokenData.contractAddress.substring(
+                      0,
+                      6,
+                    )}...${tokenData.contractAddress.substring(
+                      tokenData.contractAddress.length - 6,
+                    )}`}
                   </CyDText>
                   <CyDTouchView
                     onPress={() => {

@@ -227,15 +227,15 @@ export const CHAIN_NOBLE: Chain = {
 
 export const CHAIN_COREUM: Chain = {
   chainName: 'coreum',
-  name: 'Coreum',
-  symbol: 'COREUM',
+  name: 'Tx',
+  symbol: 'TX',
   id: 22,
   logo_url: AppImages.COREUM_LOGO,
   backendName: ChainBackendNames.COREUM,
   chain_id: 'coreum-mainnet-1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   chainIdNumber: 0,
-  coinGeckoId: 'coreum',
+  coinGeckoId: 'tx',
 };
 
 export const CHAIN_INJECTIVE: Chain = {
@@ -570,6 +570,8 @@ export const ChainNameToContactsChainNameMapping = {
   'zkSync Era': 'zksync_era',
   Base: 'base',
   Solana: 'solana',
+  // Needed because Coreum UI display name is now "Tx".
+  Tx: 'coreum',
 };
 
 export const NativeTokenMapping: Record<AllChainsEnum, string> = {

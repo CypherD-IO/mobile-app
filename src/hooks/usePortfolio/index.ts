@@ -4,6 +4,7 @@ import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { hostWorker } from '../../global';
 import {
   ChainBackendNames,
+  ChainConfigMapping,
   ChainNameMapping,
   NativeTokenMapping,
   PORTFOLIO_CHAINS_BACKEND_NAMES,
@@ -84,19 +85,60 @@ export default function usePortfolio() {
     const localPortfolio = await getPortfolioData(
       ethereumAddress ?? solanaAddress ?? '',
     );
+    const chainKey = String(get(ChainNameMapping, chainName, ''));
     const chainHoldings = get(
-      localPortfolio.data,
-      get(ChainNameMapping, chainName, ''),
-    ).totalHoldings;
-    const nativeTokenSymbol = get(NativeTokenMapping, chainName);
+      localPortfolio,
+      ['data', chainKey, 'totalHoldings'],
+      [],
+    ) as Holding[];
+    const fallbackChainDetails = (get(ChainConfigMapping, chainKey) ??
+      get(ChainConfigMapping, 'eth')) as Holding['chainDetails'];
+    const nativeTokenSymbol = String(get(NativeTokenMapping, chainName, ''));
+    const symbolsToMatch = [
+      nativeTokenSymbol,
+      String(get(fallbackChainDetails, 'symbol', '')),
+    ]
+      .filter(Boolean)
+      .map(symbol => symbol.toLowerCase());
 
-    const nativeToken = find(
-      chainHoldings,
-      holding =>
-        holding.symbol.toLowerCase() ===
-        (nativeTokenSymbol ?? '').toLowerCase(),
-    );
-    return nativeToken;
+    const nativeToken =
+      find(chainHoldings, holding => holding?.isNativeToken) ??
+      find(chainHoldings, holding =>
+        symbolsToMatch.includes(
+          String(get(holding, 'symbol', '')).toLowerCase(),
+        ),
+      );
+
+    if (nativeToken) return nativeToken;
+
+    return {
+      name:
+        String(get(fallbackChainDetails, 'name', '')) ||
+        nativeTokenSymbol ||
+        '',
+      symbol:
+        String(get(fallbackChainDetails, 'symbol', '')) || nativeTokenSymbol,
+      logoUrl: String(get(fallbackChainDetails, 'logo_url', '')),
+      price: '0',
+      contractAddress: String(
+        get(fallbackChainDetails, 'native_token_address', ''),
+      ),
+      contractDecimals: 0,
+      totalValue: 0,
+      balanceInteger: '0',
+      balanceDecimal: '0',
+      isVerified: true,
+      coinGeckoId: String(get(fallbackChainDetails, 'coinGeckoId', '')),
+      about: '',
+      id: -1,
+      chainDetails: fallbackChainDetails,
+      denom: '',
+      price24h: 0,
+      isNativeToken: true,
+      isFundable: false,
+      isBridgeable: false,
+      isSwapable: false,
+    };
   }
 
   async function getLocalPortfolio(): Promise<WalletHoldings | null> {

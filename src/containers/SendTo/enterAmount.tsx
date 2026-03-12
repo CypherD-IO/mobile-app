@@ -12,7 +12,7 @@ import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
-import { AllChainsEnum, ButtonType } from '../../constants/enum';
+import { ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
@@ -172,10 +172,7 @@ export default function EnterAmount(props: any) {
     cryptoValue: string,
     gasReserved: number,
   ) => {
-    const nativeTokenSymbol =
-      get(NativeTokenMapping, tokenData.chainDetails.symbol) ||
-      tokenData.chainDetails.symbol;
-    const isNative = tokenData.symbol === nativeTokenSymbol;
+    const isNative = isNativeToken(tokenData);
     if (!isNative) return true;
     const balanceAfterGasReservation = DecimalHelper.subtract(
       tokenData.balanceDecimal,
@@ -206,9 +203,12 @@ export default function EnterAmount(props: any) {
 
   const _validateValueForUsd = async () => {
     setIsLoading(true);
-    const nativeTokenSymbol =
-      NativeTokenMapping[tokenData.chainDetails.symbol as AllChainsEnum] ||
-      tokenData.chainDetails.symbol;
+    const nativeTokenSymbol = String(
+      get(NativeTokenMapping, tokenData.chainDetails.backendName) ??
+        get(NativeTokenMapping, tokenData.chainDetails.symbol) ??
+        tokenData.chainDetails.symbol ??
+        '',
+    );
     const gasReserved = (await getGasFee(tokenData.chainDetails?.chainName))
       ?.gasFeeInCrypto;
 
@@ -311,9 +311,7 @@ export default function EnterAmount(props: any) {
         }
       }
 
-      const isNativeTokenOnCurrentChain =
-        (NativeTokenMapping[tokenData?.chainDetails?.symbol as AllChainsEnum] ||
-          tokenData?.chainDetails?.symbol) === tokenData?.symbol;
+      const isNativeTokenOnCurrentChain = isNativeToken(tokenData);
 
       // Prevent invalid/NaN estimate values from turning max into full balance.
       const normalizedNativeGasReserve = Number.isFinite(

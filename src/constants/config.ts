@@ -316,7 +316,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         coinDenom: 'CORE',
         coinMinimalDenom: 'ucore',
         coinDecimals: 6,
-        coinGeckoId: 'coreum',
+        coinGeckoId: 'tx',
       },
     ],
     feeCurrencies: [
@@ -324,7 +324,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         coinDenom: 'CORE',
         coinMinimalDenom: 'ucore',
         coinDecimals: 6,
-        coinGeckoId: 'coreum',
+        coinGeckoId: 'tx',
         gasPriceStep: {
           low: 0.0625,
           average: 0.0625,
@@ -336,7 +336,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       coinDenom: 'CORE',
       coinMinimalDenom: 'ucore',
       coinDecimals: 6,
-      coinGeckoId: 'coreum',
+      coinGeckoId: 'tx',
     },
     features: ['cosmwasm'],
     beta: true,
