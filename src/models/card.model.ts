@@ -116,6 +116,50 @@ export interface ICardTransaction {
   };
 }
 
+export interface CardQuoteEvmSwapTransaction {
+  to: string;
+  data: string;
+  value?: string;
+  chainId?: number;
+  gasPrice?: string;
+  gasLimit?: string;
+  from?: string;
+}
+
+export interface CardQuoteEvmSwapGasToken {
+  decimals: number;
+}
+
+export interface CardQuoteEvmSwapGasCost {
+  amount: string;
+  token: CardQuoteEvmSwapGasToken;
+}
+
+export interface CardQuoteEvmSwapProviderData {
+  estimate?: {
+    gasCosts?: CardQuoteEvmSwapGasCost[];
+  };
+}
+
+export interface CardQuoteEvmSwap {
+  provider: string;
+  fromChain: string;
+  toChain: string;
+  chainId: number;
+  sourceAddress: string;
+  destinationAddress: string;
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  toAmount: string;
+  toAmountMin: string;
+  approvalAddress: string;
+  routerAddress: string;
+  transaction?: CardQuoteEvmSwapTransaction;
+  transactionRequest?: CardQuoteEvmSwapTransaction;
+  providerData?: CardQuoteEvmSwapProviderData;
+}
+
 export interface CardQuoteResponse {
   quoteId: string;
   chain: string;
@@ -147,6 +191,7 @@ export interface CardQuoteResponse {
     requiredAddresses: string[];
     operations: string[];
   };
+  evmSwap?: CardQuoteEvmSwap;
   version: 2;
 }
 

@@ -66,7 +66,10 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
-import { formatUnits } from 'viem';
+import {
+  getCardQuoteActualTokensRequired,
+  getCardQuoteEvmGasFeeInCrypto,
+} from '../../../utils/cardQuote';
 import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
 
@@ -928,9 +931,10 @@ export default function FirstLoadCard() {
       denom,
     } = selectedToken as Holding;
 
-    const actualTokensRequired = quote?.cosmosSwap
-      ? formatUnits(BigInt(quote.cosmosSwap.amountIn), contractDecimals)
-      : limitDecimalPlaces(quote.tokensRequired, contractDecimals);
+    const actualTokensRequired = getCardQuoteActualTokensRequired(
+      quote,
+      contractDecimals,
+    );
     if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
       setLoading(false);
       setIsMaxLoading(false);
@@ -986,25 +990,33 @@ export default function FirstLoadCard() {
 
     try {
       if (chainDetails.chainName === ChainNames.ETH) {
-        const publicClient = getViemPublicClient(
-          getWeb3Endpoint(chainDetails, globalContext),
-        );
-        if (
-          DecimalHelper.isLessThanOrEqualTo(
-            actualTokensRequired,
-            balanceDecimal,
-          )
-        ) {
-          gasDetails = await estimateGasForEvm({
-            publicClient,
-            chain: chainDetails.backendName,
-            fromAddress: (ethereumAddress ?? '') as `0x${string}`,
-            toAddress: (targetWalletAddress ?? '') as `0x${string}`,
-            amountToSend: actualTokensRequired,
-            contractAddress: contractAddress as `0x${string}`,
-            contractDecimals,
-            isErc20: !selectedToken?.isNativeToken,
-          });
+        const quotedGasFeeInCrypto = getCardQuoteEvmGasFeeInCrypto(quote);
+        if (quote.evmSwap && quotedGasFeeInCrypto) {
+          gasDetails = {
+            isError: false,
+            gasFeeInCrypto: quotedGasFeeInCrypto,
+          };
+        } else {
+          const publicClient = getViemPublicClient(
+            getWeb3Endpoint(chainDetails, globalContext),
+          );
+          if (
+            DecimalHelper.isLessThanOrEqualTo(
+              actualTokensRequired,
+              balanceDecimal,
+            )
+          ) {
+            gasDetails = await estimateGasForEvm({
+              publicClient,
+              chain: chainDetails.backendName,
+              fromAddress: (ethereumAddress ?? '') as `0x${string}`,
+              toAddress: (targetWalletAddress ?? '') as `0x${string}`,
+              amountToSend: actualTokensRequired,
+              contractAddress: contractAddress as `0x${string}`,
+              contractDecimals,
+              isErc20: !selectedToken?.isNativeToken,
+            });
+          }
         }
       } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
         if (
