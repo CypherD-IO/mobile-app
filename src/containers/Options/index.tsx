@@ -73,8 +73,7 @@ const RenderOptions = ({
         className={clsx(
           'rounded-full border !border-base80 p-[12px] items-center justify-center',
           {
-            'animate-pulse': apiDependent && isLoading,
-            'animate-none': !apiDependent,
+            'opacity-60': apiDependent && isLoading,
           },
         )}
         onPress={onPress}
