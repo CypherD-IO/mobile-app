@@ -77,8 +77,8 @@ import SelectPlanModal from '../../../components/selectPlanModal';
 import useHyperLiquid from '../../../hooks/useHyperLiquid';
 import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
-import { formatUnits } from 'viem';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
+import { getCardQuoteActualTokensRequired } from '../../../utils/cardQuote';
 import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
 
@@ -108,6 +108,14 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
+  const actualSourceTokensRequired = useMemo(
+    () =>
+      getCardQuoteActualTokensRequired(
+        tokenQuote,
+        Number(get(selectedToken, 'contractDecimals', 0)),
+      ),
+    [selectedToken, tokenQuote],
+  );
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { globalState } = globalContext;
   const quoteExpiry = 60;
@@ -129,7 +137,8 @@ export default function CardQuote({
   const solanaAddress = get(hdWallet, 'state.wallet.solana.address', '');
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
-  const { sendEvmToken, sendSolanaTokens } = useTransactionManager();
+  const { sendEvmToken, sendSolanaTokens, swapWith7702 } =
+    useTransactionManager();
   const { skipApiSignAndBroadcast } = useSkipApiBridge();
   const { transferOnHyperLiquid } = useHyperLiquid();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -485,12 +494,8 @@ export default function CardQuote({
     } = selectedToken;
     setLoading(true);
 
-    let actualTokensRequired = '0';
+    const actualTokensRequired = actualSourceTokensRequired;
     try {
-      actualTokensRequired = limitDecimalPlaces(
-        tokenQuote.tokensRequired,
-        contractDecimals,
-      );
       const { chainName } = chainDetails;
       const activityData: DebitCardTransaction = {
         id: genId(),
@@ -500,7 +505,7 @@ export default function CardQuote({
         tokenSymbol: symbol ?? '',
         chainName: chainDetails?.backendName ?? '',
         tokenName: name.toString() ?? '',
-        amount: tokenQuote.tokensRequired.toString() ?? '',
+        amount: actualTokensRequired,
         amountInUsd: tokenQuote.amount ?? '',
         datetime: new Date(),
         transactionHash: '',
@@ -534,7 +539,8 @@ export default function CardQuote({
           } else if (chainName === ChainNames.ETH) {
             const isWalletConnect =
               connectionType === ConnectionTypes.WALLET_CONNECT;
-            if (isWalletConnect) {
+            pendingEvmParamsRef.current = null;
+            if (isWalletConnect && !tokenQuote.evmSwap) {
               showTxModal();
               await waitForWalletConnectModalRender();
               pendingEvmParamsRef.current = {
@@ -546,17 +552,31 @@ export default function CardQuote({
                 symbol: selectedToken.symbol,
               };
             }
-            response = await sendEvmToken(
-              {
-                chain: selectedToken.chainDetails.backendName,
-                amountToSend: actualTokensRequired,
-                toAddress: targetAddress as `0x${string}`,
-                contractAddress: contractAddress as `0x${string}`,
-                contractDecimals,
-                symbol: selectedToken.symbol,
-              },
-              isWalletConnect ? abortController.current?.signal : undefined,
-            );
+            console.log('tokenQuote.evmSwap', tokenQuote.evmSwap);
+            console.log('isWalletConnect', isWalletConnect);
+            if (tokenQuote.evmSwap) {
+              response = isWalletConnect
+                ? {
+                    isError: true as const,
+                    error:
+                      'WalletConnect card loads do not support smart account swap quotes',
+                  }
+                : await swapWith7702({
+                    evmSwap: tokenQuote.evmSwap,
+                  });
+            } else {
+              response = await sendEvmToken(
+                {
+                  chain: selectedToken.chainDetails.backendName,
+                  amountToSend: actualTokensRequired,
+                  toAddress: targetAddress as `0x${string}`,
+                  contractAddress: contractAddress as `0x${string}`,
+                  contractDecimals,
+                  symbol: selectedToken.symbol,
+                },
+                isWalletConnect ? abortController.current?.signal : undefined,
+              );
+            }
           } else if (COSMOS_CHAINS.includes(chainName)) {
             const addressList = await getAddressList(
               tokenQuote.cosmosSwap?.requiredAddresses ?? [],
@@ -1113,6 +1133,7 @@ export default function CardQuote({
       });
     }
   }, [
+    actualSourceTokensRequired,
     selectedToken,
     tokenQuote,
     tokenSendParams,
@@ -1125,6 +1146,7 @@ export default function CardQuote({
     showTxModal,
     hideTxModal,
     setTxTimedOut,
+    swapWith7702,
   ]);
 
   const handleResendQuote = useCallback(async () => {
@@ -1279,15 +1301,7 @@ export default function CardQuote({
             <CyDView
               className={'flex flex-col flex-wrap justify-between items-end'}>
               <CyDText className={'font-bold text-[14px] '}>
-                {limitDecimalPlaces(
-                  tokenQuote.cosmosSwap
-                    ? formatUnits(
-                        BigInt(tokenQuote.cosmosSwap.amountIn),
-                        selectedToken.contractDecimals,
-                      )
-                    : tokenQuote.tokensRequired,
-                  4,
-                ) +
+                {limitDecimalPlaces(actualSourceTokensRequired, 4) +
                   ' ' +
                   symbol}
               </CyDText>
