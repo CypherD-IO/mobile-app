@@ -1,4 +1,4 @@
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 
 export const AnalyticEvent = {
   TRANSACTION_RECEIPT_RECEIVED: 'transaction_receipt',
@@ -140,8 +140,7 @@ export const logAnalyticsToFirebase = (
   event: string,
   data: Record<string, any> = {},
 ): void => {
-  void analytics()
-    .logEvent(event, data)
+  void logEvent(getAnalytics(), event, data)
     .catch(error => {
       console.error('Error logging event to Firebase:', error);
     });

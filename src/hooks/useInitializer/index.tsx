@@ -49,7 +49,10 @@ import {
   getPlatformVersion,
 } from '../../core/util';
 import Intercom from '@intercom/intercom-react-native';
-import analytics from '@react-native-firebase/analytics';
+import {
+  getAnalytics,
+  setAnalyticsCollectionEnabled,
+} from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
 import { Platform } from 'react-native';
 import semver from 'semver';
@@ -100,7 +103,7 @@ export default function useInitializer() {
         // throws error if user is already registered
       });
     }
-    void analytics().setAnalyticsCollectionEnabled(!devMode);
+    void setAnalyticsCollectionEnabled(getAnalytics(), !devMode);
   }
 
   const exitIfJailBroken = async () => {

@@ -1,5 +1,5 @@
 import Intercom from '@intercom/intercom-react-native';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, setUserId } from '@react-native-firebase/analytics';
 import {
   CHAIN_ETH,
   CHAIN_SOLANA,
@@ -227,7 +227,7 @@ export function hdWalletStateReducer(
               // User already registered
             },
           ),
-          analytics().setUserId(address),
+          setUserId(getAnalytics(), address),
         ]);
       }
 

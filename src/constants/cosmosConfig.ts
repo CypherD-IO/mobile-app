@@ -126,7 +126,7 @@ export const cosmosConfig: Record<string, CosmosChainConfig> = {
       coreum: 'ucore',
       injective: '',
     },
-    rest: 'https://rest-coreum.ecostake.com',
+    rest: 'https://coreum-rest.publicnode.com',
   },
   injective: {
     prefix: 'inj',
