@@ -39,6 +39,7 @@ const GIFT_BOX_PNG = require('./giftBox.png');
 const COSMOS_LOGO = require('./cosmos.png');
 const OSMOSIS_LOGO = require('./osmo.png');
 const COREUM_LOGO = require('./coreum.png');
+const TX_LOGO = require('./txChain.png');
 const INJECTIVE_LOGO = require('./injective.png');
 const BG_SETTINGS = require('./bg_settings.png');
 const IBC = require('./ibc.png');
@@ -1132,6 +1133,7 @@ export const AppImagesMap = {
     CARD_COLOUR_ICON,
     SAFEPAL_CLAIM_MODAL,
     SAFEPAL_CLAIM_MODAL_NON_PREMIUM,
+    TX_LOGO,
   },
   [Theme.LIGHT]: {},
   [Theme.DARK]: {},
@@ -1468,6 +1470,7 @@ enum AppImages {
   CARD_COLOUR_ICON = 'CARD_COLOUR_ICON',
   SAFEPAL_CLAIM_MODAL = 'SAFEPAL_CLAIM_MODAL',
   SAFEPAL_CLAIM_MODAL_NON_PREMIUM = 'SAFEPAL_CLAIM_MODAL_NON_PREMIUM',
+  TX_LOGO = 'TX_LOGO',
 }
 
 export default AppImages;

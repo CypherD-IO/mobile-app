@@ -66,7 +66,7 @@ export default function ChooseChainModal({
         {/* Chain Logo */}
         <CyDImage
           source={item.logo_url}
-          className={'w-[36px] h-[36px] mb-[8px]'}
+          className={'w-[36px] h-[36px] mb-[8px] rounded-full'}
         />
 
         {/* Chain Name */}

@@ -13,7 +13,7 @@ import SlideToConfirmV2 from './slideToConfirmModalV2';
 import useAxios from '../../core/HttpRequest';
 import { useGlobalModalContext } from './GlobalModal';
 import { capitalize } from 'lodash';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 const styles = StyleSheet.create({
@@ -60,7 +60,7 @@ export default function ThreeDSecureApprovalModal({
   // Track modal view
   useEffect(() => {
     if (isModalVisible) {
-      void analytics().logScreenView({
+      void logEvent(getAnalytics(), 'screen_view', {
         screen_name: '3DSecureApprovalModal',
         screen_class: 'ThreeDSecureApprovalModal',
       });

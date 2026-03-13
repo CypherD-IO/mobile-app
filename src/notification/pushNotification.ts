@@ -2,8 +2,13 @@ import notifee, {
   AndroidImportance,
   AndroidStyle,
 } from '@notifee/react-native';
-import firebase from '@react-native-firebase/app';
-import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import {
+  AuthorizationStatus,
+  FirebaseMessagingTypes,
+  getMessaging,
+  getToken as getMessagingToken,
+  requestPermission as requestMessagingPermission,
+} from '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
 import { hostWorker } from '../global';
 import axios from '../core/Http';
@@ -30,7 +35,7 @@ export const getToken = async (address: string) => {
   }
 
   try {
-    const fcmToken = await firebase.messaging().getToken();
+    const fcmToken = await getMessagingToken(getMessaging());
     if (address?.trim() && isAddressSet(address)) {
       const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
       const payload = {
@@ -258,10 +263,10 @@ export async function RouteNotificationAction({
 }
 
 export async function requestUserPermission() {
-  const authStatus = await firebase.messaging().requestPermission();
+  const authStatus = await requestMessagingPermission(getMessaging());
   const enabled =
-    authStatus === firebase.messaging.AuthorizationStatus.AUTHORIZED ||
-    authStatus === firebase.messaging.AuthorizationStatus.PROVISIONAL;
+    authStatus === AuthorizationStatus.AUTHORIZED ||
+    authStatus === AuthorizationStatus.PROVISIONAL;
 
   if (enabled) {
     await notifee.requestPermission();

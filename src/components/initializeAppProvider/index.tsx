@@ -19,7 +19,7 @@ import { SPLASH_SCREEN_TIMEOUT } from '../../constants/timeOuts';
 import SplashScreen from 'react-native-lottie-splash-screen';
 import DefaultAuthRemoveModal from '../v2/defaultAuthRemoveModal';
 import * as Sentry from '@sentry/react-native';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { t } from 'i18next';
 import { CyDSafeAreaView } from '../../styles/tailwindComponents';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
@@ -27,7 +27,7 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, onMessage } from '@react-native-firebase/messaging';
 import { useGlobalModalContext } from '../v2/GlobalModal';
 import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
@@ -116,33 +116,34 @@ export const InitializeAppProvider = ({
   const [walletLoading, setWalletLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const initializeApp = async () => {
-      messaging().onMessage(response => {
-        if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
-          setTimeout(() => {
-            showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
-              data: response.data,
-              closeModal: hideModal,
-            });
-          }, 1000);
-        } else if (
-          response.data?.actionKey === NotificationEvents.CARD_TXN_UPDATE &&
-          (response.data?.declineCode === CypherDeclineCodes.MERCHANT_GLOBAL ||
-            response.data?.declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
-            response.data?.declineCode ===
-              CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE)
-        ) {
-          setTimeout(() => {
-            showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
-              data: response.data,
-              closeModal: hideModal,
-            });
-          }, 1000);
-        } else {
-          void showNotification(response.notification, response.data);
-        }
-      });
+    const messagingInstance = getMessaging();
+    const unsubscribeOnMessage = onMessage(messagingInstance, response => {
+      if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
+        setTimeout(() => {
+          showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+            data: response.data,
+            closeModal: hideModal,
+          });
+        }, 1000);
+      } else if (
+        response.data?.actionKey === NotificationEvents.CARD_TXN_UPDATE &&
+        (response.data?.declineCode === CypherDeclineCodes.MERCHANT_GLOBAL ||
+          response.data?.declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
+          response.data?.declineCode ===
+            CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE)
+      ) {
+        setTimeout(() => {
+          showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
+            data: response.data,
+            closeModal: hideModal,
+          });
+        }, 1000);
+      } else {
+        void showNotification(response.notification, response.data);
+      }
+    });
 
+    const initializeApp = async () => {
       try {
         const isAPIAccessible = await checkAPIAccessibility();
 
@@ -168,6 +169,10 @@ export const InitializeAppProvider = ({
     };
 
     void initializeApp();
+
+    return () => {
+      unsubscribeOnMessage();
+    };
   }, []);
 
   useEffect(() => {
@@ -207,60 +212,55 @@ export const InitializeAppProvider = ({
   useEffect(() => {
     if (referrerData) {
       // Log attribution data to Firebase Analytics
-      if (analytics()) {
-        // For Android: Full attribution data available
-        if (Platform.OS === 'android') {
-          const installAttribution = {
-            ...(referrerData.utm_source && {
-              utm_source: referrerData.utm_source,
-            }),
-            ...(referrerData.utm_medium && {
-              utm_medium: referrerData.utm_medium,
-            }),
-            ...(referrerData.utm_campaign && {
-              utm_campaign: referrerData.utm_campaign,
-            }),
-            ...(referrerData.utm_content && {
-              utm_content: referrerData.utm_content,
-            }),
-            ...(referrerData.channel && { channel: referrerData.channel }),
-            ...(referrerData.influencer && {
-              influencer: referrerData.influencer,
-            }),
-            ...(referrerData.utm_term && { utm_term: referrerData.utm_term }),
-            ...(referrerData.referral && { referral: referrerData.referral }),
-            ...(referrerData.ref && { ref: referrerData.ref }),
-            ...(referrerData.install_referrer && {
-              install_referrer: referrerData.install_referrer,
-            }),
-          };
+      // For Android: Full attribution data available
+      if (Platform.OS === 'android') {
+        const installAttribution = {
+          ...(referrerData.utm_source && {
+            utm_source: referrerData.utm_source,
+          }),
+          ...(referrerData.utm_medium && {
+            utm_medium: referrerData.utm_medium,
+          }),
+          ...(referrerData.utm_campaign && {
+            utm_campaign: referrerData.utm_campaign,
+          }),
+          ...(referrerData.utm_content && {
+            utm_content: referrerData.utm_content,
+          }),
+          ...(referrerData.channel && { channel: referrerData.channel }),
+          ...(referrerData.influencer && {
+            influencer: referrerData.influencer,
+          }),
+          ...(referrerData.utm_term && { utm_term: referrerData.utm_term }),
+          ...(referrerData.referral && { referral: referrerData.referral }),
+          ...(referrerData.ref && { ref: referrerData.ref }),
+          ...(referrerData.install_referrer && {
+            install_referrer: referrerData.install_referrer,
+          }),
+        };
 
-          void logAnalyticsToFirebase(
-            AnalyticEvent.INSTALL_ATTRIBUTION,
-            installAttribution,
-          );
+        void logAnalyticsToFirebase(
+          AnalyticEvent.INSTALL_ATTRIBUTION,
+          installAttribution,
+        );
 
-          // Save referral code to AsyncStorage if present
-          if (referrerData.referral) {
-            void setReferralCodeAsync(referrerData.referral);
-          }
-        }
-        // For iOS: Only attribution token available, needs server-side resolution
-        else if (Platform.OS === 'ios' && referrerData.attribution_token) {
-          void logAnalyticsToFirebase(
-            AnalyticEvent.IOS_ATTRIBUTION_TOKEN_RECEIVED,
-            {
-              attribution_token: referrerData.attribution_token,
-              requires_server_resolution: true,
-            },
-          );
-
-          // Note: Server needs to resolve the token and communicate back to the app
-          // for any referral code handling
+        // Save referral code to AsyncStorage if present
+        if (referrerData.referral) {
+          void setReferralCodeAsync(referrerData.referral);
         }
       }
+      // For iOS: Only attribution token available, needs server-side resolution
+      else if (Platform.OS === 'ios' && referrerData.attribution_token) {
+        void logAnalyticsToFirebase(AnalyticEvent.IOS_ATTRIBUTION_TOKEN_RECEIVED, {
+          attribution_token: referrerData.attribution_token,
+          requires_server_resolution: true,
+        });
+
+        // Note: Server needs to resolve the token and communicate back to the app
+        // for any referral code handling
+      }
     }
-  }, [referrerData, analytics]);
+  }, [referrerData]);
 
   useEffect(() => {
     if (address) {
@@ -442,7 +442,7 @@ export const InitializeAppProvider = ({
         : t<string>('NEW_MUST_UPDATE_MSG');
 
       const goToStore = () => {
-        analytics().logEvent('update_now', {}).catch(Sentry.captureException);
+        logEvent(getAnalytics(), 'update_now', {}).catch(Sentry.captureException);
         setUpdateModal(false);
         if (Platform.OS === 'android') {
           void Linking.openURL('market://details?id=com.cypherd.androidwallet');

@@ -1,6 +1,9 @@
 import notifee, { EventType } from '@notifee/react-native';
-import messaging, {
+import {
   FirebaseMessagingTypes,
+  getInitialNotification,
+  getMessaging,
+  onNotificationOpenedApp,
 } from '@react-native-firebase/messaging';
 import {
   ParamListBase,
@@ -784,15 +787,17 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   useEffect(() => {
-    void messaging()
-      .getInitialNotification()
-      .then(async response => {
-        await handlePushNotification(response);
-      });
-
-    void messaging().onNotificationOpenedApp(async response => {
+    const messagingInstance = getMessaging();
+    void getInitialNotification(messagingInstance).then(async response => {
       await handlePushNotification(response);
     });
+
+    const unsubscribeNotificationOpenedApp = onNotificationOpenedApp(
+      messagingInstance,
+      async response => {
+        await handlePushNotification(response);
+      },
+    );
 
     notifee
       .getInitialNotification()
@@ -858,7 +863,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
 
     void getBridgeData().catch;
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      unsubscribeNotificationOpenedApp();
+    };
   }, []);
 
   useEffect(() => {

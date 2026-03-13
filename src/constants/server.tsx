@@ -230,10 +230,12 @@ export const CHAIN_COREUM: Chain = {
   name: 'Tx',
   symbol: 'TX',
   id: 22,
-  logo_url: AppImages.COREUM_LOGO,
+  logo_url: AppImages.TX_LOGO,
   backendName: ChainBackendNames.COREUM,
   chain_id: 'coreum-mainnet-1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/coreum/info/logo.png',
   chainIdNumber: 0,
   coinGeckoId: 'tx',
 };

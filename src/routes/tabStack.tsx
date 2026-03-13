@@ -31,7 +31,7 @@ import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
 import { useColorScheme } from 'nativewind';
 import { handleDeepLink } from '../../App';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { useInstallReferrer } from '../hooks';
 import {
   getProcessedReferrerCode,
@@ -414,7 +414,7 @@ const TabStack = React.memo(
         const currentRouteName = getCurrentRouteName();
 
         if (previousRouteName !== currentRouteName && currentRouteName) {
-          void analytics().logScreenView({
+          void logEvent(getAnalytics(), 'screen_view', {
             screen_name: currentRouteName,
             screen_class: currentRouteName,
           });
@@ -462,7 +462,7 @@ const TabStack = React.memo(
           const currentRouteName = getCurrentRouteName();
 
           if (previousRouteName !== currentRouteName && currentRouteName) {
-            void analytics().logScreenView({
+            void logEvent(getAnalytics(), 'screen_view', {
               screen_name: currentRouteName,
               screen_class: currentRouteName,
             });

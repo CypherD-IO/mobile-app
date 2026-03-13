@@ -26,7 +26,7 @@ import AppImages from '../../../assets/images/appImages';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useAxios from '../../core/HttpRequest';
 import { useGlobalModalContext } from './GlobalModal';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import {
   ParamListBase,
@@ -136,7 +136,7 @@ export default function ReportTransactionModal({
   // Track modal opening
   React.useEffect(() => {
     if (isModalVisible) {
-      void analytics().logScreenView({
+      void logEvent(getAnalytics(), 'screen_view', {
         screen_name: 'ReportTransactionModal',
         screen_class: 'ReportTransactionModal',
       });
