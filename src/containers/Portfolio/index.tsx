@@ -788,9 +788,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   useEffect(() => {
     const messagingInstance = getMessaging();
-    void getInitialNotification(messagingInstance).then(async response => {
-      await handlePushNotification(response);
-    });
+    void getInitialNotification(messagingInstance)
+      .then(async response => {
+        await handlePushNotification(response);
+      })
+      .catch(error => {
+        Sentry.captureException(error);
+      });
 
     const unsubscribeNotificationOpenedApp = onNotificationOpenedApp(
       messagingInstance,

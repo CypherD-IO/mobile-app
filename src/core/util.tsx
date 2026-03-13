@@ -1052,7 +1052,7 @@ export const hasSufficientBalanceAndGasFee = (
 
 export const isNativeToken = (tokenData: any) => {
   if (!tokenData) return false;
-  if (tokenData.isNativeToken === true) return true;
+  if (tokenData.isNativeToken !== undefined) return tokenData.isNativeToken;
 
   const tokenSymbol = String(get(tokenData, 'symbol', '')).toUpperCase();
   const nativeSymbols = [

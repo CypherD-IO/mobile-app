@@ -587,7 +587,7 @@ export const NativeTokenMapping: Record<AllChainsEnum, string> = {
   COSMOS: 'ATOM',
   OSMOSIS: 'OSMO',
   NOBLE: 'USDC',
-  COREUM: 'COREUM',
+  COREUM: 'TX',
   INJECTIVE: 'INJ',
   ZKSYNC_ERA: 'ETH',
   BASE: 'ETH',

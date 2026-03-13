@@ -103,10 +103,14 @@ export default function usePortfolio() {
 
     const nativeToken =
       find(chainHoldings, holding => holding?.isNativeToken) ??
-      find(chainHoldings, holding =>
-        symbolsToMatch.includes(
-          String(get(holding, 'symbol', '')).toLowerCase(),
-        ),
+      find(
+        chainHoldings,
+        holding =>
+          (holding?.isNativeToken === undefined ||
+            holding?.isNativeToken === null) &&
+          symbolsToMatch.includes(
+            String(get(holding, 'symbol', '')).toLowerCase(),
+          ),
       );
 
     if (nativeToken) return nativeToken;

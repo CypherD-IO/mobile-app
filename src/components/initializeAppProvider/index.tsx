@@ -139,7 +139,9 @@ export const InitializeAppProvider = ({
           });
         }, 1000);
       } else {
-        void showNotification(response.notification, response.data);
+        void showNotification(response.notification, response.data).catch(
+          Sentry.captureException,
+        );
       }
     });
 
