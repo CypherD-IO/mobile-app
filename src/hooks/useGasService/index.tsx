@@ -149,7 +149,7 @@ export default function useGasService() {
           rewardPercentiles: [70, 75, 80, 85, 90, 95, 98],
         });
         // get the above percentiles and remove the outliers and take the max value.
-        const { reward = [] } = gasHistory;
+        const { reward = [], baseFeePerGas: baseFees = [] } = gasHistory;
         const percentileArr: number[] = [];
         reward.forEach(element => {
           percentileArr.push(
@@ -167,6 +167,31 @@ export default function useGasService() {
           b4: percentileArr,
           chain,
         });
+        // Use baseFeePerGas from fee history (last element = next block prediction)
+        // to build a proper EIP-1559 response with maxFee = baseFee * 2 + priorityFee
+        const nextBaseFeeWei = baseFees.length > 0 ? baseFees[baseFees.length - 1] : undefined;
+        if (nextBaseFeeWei !== undefined) {
+          const baseFeeGwei = DecimalHelper.multiply(
+            nextBaseFeeWei,
+            DecimalHelper.pow(10, -9),
+          ).toNumber();
+          const priorityFeeGwei = afterRemovingOutliers.at(afterRemovingOutliers.length - 1) ?? 0;
+          const maxFeeGwei = DecimalHelper.add(
+            DecimalHelper.multiply(baseFeeGwei, 2),
+            priorityFeeGwei,
+          ).toNumber();
+          return {
+            gasPrice: baseFeeGwei,
+            tokenPrice: tokenPrice.data.usd,
+            chainId: chain,
+            isEIP1559Supported: true,
+            baseFee: baseFeeGwei,
+            priorityFee: priorityFeeGwei,
+            maxFee: maxFeeGwei,
+          };
+        }
+
+        // Fallback for non-EIP-1559 chains: use priority fee percentile
         let percentileGasFee = afterRemovingOutliers.at(
           afterRemovingOutliers.length - 1,
         ); // since its sorted, take the last element.
@@ -175,12 +200,11 @@ export default function useGasService() {
         percentileGasFee = percentileGasFee === 0 ? 20 : percentileGasFee;
 
         if (percentileGasFee) {
-          const gasDetail = {
+          return {
             gasPrice: percentileGasFee,
             tokenPrice: tokenPrice.data.usd,
             chainId: chain,
           };
-          return gasDetail;
         }
         throw new Error(`Gas fee local calculation failed for ${chain}`);
       } else {
@@ -208,21 +232,27 @@ export default function useGasService() {
         ].includes(chain)
       ) {
         try {
-          const gasPrice = await getGasPriceLocallyUsingGasHistory(
+          const gasPriceDetail = await getGasPriceLocallyUsingGasHistory(
             chain,
             publicClient,
           );
           return {
             chainId: chain,
-            tokenPrice: gasPrice.tokenPrice,
-            gasPrice: gasPrice.gasPrice,
+            tokenPrice: gasPriceDetail.tokenPrice,
+            gasPrice: gasPriceDetail.gasPrice,
+            ...(gasPriceDetail.isEIP1559Supported && {
+              isEIP1559Supported: true,
+              maxFee: gasPriceDetail.maxFee,
+              priorityFee: gasPriceDetail.priorityFee,
+              baseFee: gasPriceDetail.baseFee,
+            }),
           };
         } catch (e) {
           Sentry.captureException(e);
         }
       }
     }
-    return { chainId: chain, gasPrice: 0, tokenPrice: 0 };
+    throw new Error(`Gas price estimation failed for ${chain}`);
   }
 
   async function getCosmosGasPrice(
@@ -313,7 +343,7 @@ export default function useGasService() {
       );
 
       // Determine final gas price based on EIP-1559 support
-      const finalGasPrice = gasPriceDetail.isEIP1599Supported
+      const finalGasPrice = gasPriceDetail.isEIP1559Supported
         ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
         : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
       let gasFeeInCrypto = '0';
@@ -321,11 +351,11 @@ export default function useGasService() {
       const totalFeeInWei = DecimalHelper.multiply(finalGasPrice, gasLimit);
       const totalGasFeeInBigInt = BigInt(totalFeeInWei.toFixed(0));
       gasFeeInCrypto = formatGwei(totalGasFeeInBigInt);
-      if (gasPriceDetail.isEIP1599Supported) {
+      if (gasPriceDetail.isEIP1559Supported) {
         return {
           gasFeeInCrypto,
           gasLimit,
-          isEIP1599Supported: true,
+          isEIP1559Supported: true,
           priorityFee: DecimalHelper.scientificNotationToNumberString(
             get(gasPriceDetail, 'priorityFee', 0),
           ),
@@ -342,7 +372,7 @@ export default function useGasService() {
           gasLimit,
           gasPrice:
             DecimalHelper.scientificNotationToNumberString(finalGasPrice),
-          isEIP1599Supported: false,
+          isEIP1559Supported: false,
         };
       }
     } catch (error) {
@@ -1250,7 +1280,7 @@ export default function useGasService() {
 
       const gasPriceDetail = await getGasPrice(chain.backendName, publicClient);
 
-      const gasPriceInGwei = gasPriceDetail.isEIP1599Supported
+      const gasPriceInGwei = gasPriceDetail.isEIP1559Supported
         ? gasPriceDetail.maxFee // Use maxFee for EIP-1559
         : gasPriceDetail.gasPrice; // Use regular gasPrice for legacy
 
@@ -1361,7 +1391,7 @@ export default function useGasService() {
           throw gasDetails.error;
         }
 
-        if (gasDetails?.isEIP1599Supported) {
+        if (gasDetails?.isEIP1559Supported) {
           const l1GasFee = await fetchEstimatedL1Fee(
             {
               chainId: tokenData.chainDetails.chain_id,
