@@ -77,9 +77,9 @@ export type EvmGasEstimation =
       gasLimit: number;
       gasFeeInCrypto: string;
     } & (
-      | { isEIP1599Supported: false; gasPrice: string }
+      | { isEIP1559Supported: false; gasPrice: string }
       | {
-          isEIP1599Supported: true;
+          isEIP1559Supported: true;
           priorityFee: string;
           baseFee: string;
           maxFee: string;
@@ -120,7 +120,7 @@ export type EvmGasPriceBackendResponse =
     }
   | {
       chainId: string;
-      isEIP1599Supported: true;
+      isEIP1559Supported: true;
       tokenPrice: number;
       factor: number;
       enforceFactor: boolean;
@@ -131,7 +131,7 @@ export type EvmGasPriceBackendResponse =
     }
   | {
       chainId: string;
-      isEIP1599Supported: false;
+      isEIP1559Supported: false;
       tokenPrice: number;
       factor: number;
       enforceFactor: boolean;

@@ -181,7 +181,7 @@ export default function useTransactionManager() {
           ? parseEther('0')
           : parseUnits(amountToSend, contractDecimals),
         ...(contractData && { data: contractData }),
-        ...(gasEstimateResponse.isEIP1599Supported
+        ...(gasEstimateResponse.isEIP1559Supported
           ? {
               maxPriorityFeePerGas: parseGwei(
                 DecimalHelper.scientificNotationToNumberString(
@@ -641,7 +641,7 @@ export default function useTransactionManager() {
         gas: BigInt(gasEstimateResponse.gasLimit),
         value: parseEther('0'),
         ...(contractData && { data: contractData }),
-        ...(gasEstimateResponse.isEIP1599Supported
+        ...(gasEstimateResponse.isEIP1559Supported
           ? {
               maxPriorityFeePerGas: parseGwei(
                 DecimalHelper.scientificNotationToNumberString(
@@ -996,7 +996,7 @@ export default function useTransactionManager() {
         gas: BigInt(quoteData?.data?.gas),
         value: BigInt(quoteData?.data?.value),
         data: quoteData?.data?.data,
-        ...(quoteData?.gasInfo?.isEIP1599Supported
+        ...(quoteData?.gasInfo?.isEIP1559Supported
           ? {
               maxPriorityFeePerGas: parseGwei(
                 DecimalHelper.scientificNotationToNumberString(
