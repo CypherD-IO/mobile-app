@@ -189,6 +189,10 @@ export default function CypherCardScreen() {
 
     const checkSafepalModal = async (): Promise<void> => {
       try {
+        if (cardId === CARD_IDS.HIDDEN_CARD) {
+          return;
+        }
+
         const isPremiumUser =
           get(globalContext?.globalState, [
             'cardProfile',
@@ -234,7 +238,11 @@ export default function CypherCardScreen() {
         clearTimeout(timer);
       }
     };
-  }, [isFocused, globalContext?.globalState?.cardProfile?.planInfo?.planId]);
+  }, [
+    isFocused,
+    cardId,
+    globalContext?.globalState?.cardProfile?.planInfo?.planId,
+  ]);
 
   /**
    * Handles when an ongoing activity is completed
