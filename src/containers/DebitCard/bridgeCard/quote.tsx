@@ -81,6 +81,7 @@ import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import { getCardQuoteActualTokensRequired } from '../../../utils/cardQuote';
 import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
+import { Holding } from '../../../core/portfolio';
 
 export default function CardQuote({
   navigation,
@@ -562,6 +563,7 @@ export default function CardQuote({
                       'WalletConnect card loads do not support smart account swap quotes',
                   }
                 : await swapWith7702({
+                    tokenData: selectedToken as Holding,
                     evmSwap: tokenQuote.evmSwap,
                   });
             } else {

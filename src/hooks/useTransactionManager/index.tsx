@@ -141,9 +141,7 @@ export default function useTransactionManager() {
 
     return [fromChain.native_token_address, fromChain.secondaryAddress]
       .filter((address): address is string => Boolean(address))
-      .some(
-        address => address.toLowerCase() === normalizedContractAddress,
-      );
+      .some(address => address.toLowerCase() === normalizedContractAddress);
   }
 
   const executeTransferContract = async (
@@ -1761,7 +1759,7 @@ export default function useTransactionManager() {
   };
 
   const SMART_ACCOUNT_IMPLEMENTATION_ADDRESS =
-    '0x6E1987077d9d74A3501Fc500766Aa3eCB61524D0' as const;
+    '0xd5A7b2cecD76A34328e483a2258b615109b71DeA' as const;
 
   const swapErc20Abi = [
     {
@@ -1799,8 +1797,10 @@ export default function useTransactionManager() {
   ] as const;
 
   const swapWith7702 = async ({
+    tokenData,
     evmSwap,
   }: {
+    tokenData: Holding;
     evmSwap: CardQuoteEvmSwap;
   }): Promise<TransactionResponse> => {
     try {
@@ -1850,7 +1850,7 @@ export default function useTransactionManager() {
 
       const swapRouter = (swapTransaction.to ??
         evmSwap.routerAddress) as Address;
-      const isNativeTokenIn = isNativeCurrency(chainConfig, evmSwap.fromToken);
+      const isNativeTokenIn = tokenData.isNativeToken;
       const rpcUrl = getWeb3Endpoint(chainConfig, globalContext);
       const publicClient = getViemPublicClient(rpcUrl);
 
@@ -1864,6 +1864,10 @@ export default function useTransactionManager() {
         contractAddress: SMART_ACCOUNT_IMPLEMENTATION_ADDRESS,
         executor: 'self',
       });
+
+      console.log('authorization', authorization);
+
+      console.log('isNativeTokenIn', isNativeTokenIn);
 
       const data = isNativeTokenIn
         ? encodeFunctionData({
