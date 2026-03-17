@@ -1,7 +1,7 @@
 import { Secp256k1HdWallet } from '@cosmjs-rn/amino';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { Bech32 } from '@cosmjs-rn/encoding';
-import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
+import { getInjectiveAddress } from '@injectivelabs/sdk-ts/utils';
 import { Mnemonic } from '@keplr-wallet/crypto';
 import { Keypair } from '@solana/web3.js';
 import * as bip39 from 'bip39';
