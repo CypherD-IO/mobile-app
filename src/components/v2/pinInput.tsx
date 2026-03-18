@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import React, { useRef, useEffect } from 'react';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { CyDView, CyDTextInput } from '../../styles/tailwindComponents';
 
 export const PinInput = ({
@@ -20,12 +21,43 @@ export const PinInput = ({
   className?: string;
 }) => {
   const inputRefs = useRef([]);
+  const keyPressedRef = useRef(false);
 
   useEffect(() => {
     inputRefs.current = inputRefs.current.slice(0, length);
   }, [length]);
 
-  const handleKeyPress = (index: number, e: any) => {
+  const handleChangeText = async (
+    text: string,
+    index: number,
+  ): Promise<void> => {
+    if (keyPressedRef.current) {
+      keyPressedRef.current = false;
+      return;
+    }
+    keyPressedRef.current = false;
+
+    try {
+      const clipboardContent = await Clipboard.getString();
+      const digits = clipboardContent.trim().replace(/\D/g, '');
+      if (digits.length >= length) {
+        onChange(digits.slice(0, length).split(''));
+        inputRefs?.current[length - 1]?.focus();
+        return;
+      }
+    } catch {}
+    if (text.length === 1 && /^\d$/.test(text)) {
+      const newValue = [...value];
+      newValue[index] = text;
+      onChange(newValue);
+      if (index < length - 1) {
+        inputRefs?.current[index + 1]?.focus();
+      }
+    }
+  };
+
+  const handleKeyPress = (index: number, e: any): void => {
+    keyPressedRef.current = true;
     const key = e.nativeEvent.key;
 
     if (/^\d$/.test(key)) {
@@ -72,9 +104,13 @@ export const PinInput = ({
           keyboardType='numeric'
           maxLength={1}
           value={value[index] || ''}
+          onChangeText={text => {
+            void handleChangeText(text, index);
+          }}
           onKeyPress={e => handleKeyPress(index, e)}
           secureTextEntry={isSecureTextEntry}
           onBlur={onBlur}
+          selectTextOnFocus
         />
       ))}
     </CyDView>

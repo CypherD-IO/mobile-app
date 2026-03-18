@@ -14,7 +14,12 @@ import { get, isEmpty, trim } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Platform } from 'react-native';
+import {
+  StyleSheet,
+  Platform,
+  FlatList,
+  ListRenderItemInfo,
+} from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -106,7 +111,6 @@ import {
   CyDLottieView,
   CyDMaterialDesignIcons,
   CyDSafeAreaView,
-  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -138,10 +142,27 @@ const DECK_SPRING: WithSpringConfig = {
   mass: 2.2,
 };
 
+const DECK_SPREAD_VISIBLE_THRESHOLD = 4;
+
 const createDeckSpreadEntering = (
   index: number,
 ): EntryExitAnimationFunction => {
   'worklet';
+
+  if (index > DECK_SPREAD_VISIBLE_THRESHOLD) {
+    return (targetValues: EntryAnimationsValues) => {
+      'worklet';
+      return {
+        initialValues: {
+          opacity: 0,
+        },
+        animations: {
+          opacity: withTiming(1, { duration: 300 }),
+        },
+      };
+    };
+  }
+
   return (targetValues: EntryAnimationsValues) => {
     'worklet';
     const offset = -(index * STACK_COMPRESSION_PER_CARD);
@@ -1402,19 +1423,13 @@ export default function CypherCardScreen() {
         card.status !== CardStatus.HIDDEN &&
         card.cardId !== CARD_IDS.METAL_CARD,
     );
-    const frozenStatuses = [CardStatus.IN_ACTIVE, CardStatus.BLOCKED];
     const pendingActivation = filtered.filter(
       c => c.status === CardStatus.PENDING_ACTIVATION,
     );
-    const active = filtered.filter(
-      c =>
-        c.status !== CardStatus.PENDING_ACTIVATION &&
-        !frozenStatuses.includes(c.status as CardStatus),
+    const rest = filtered.filter(
+      c => c.status !== CardStatus.PENDING_ACTIVATION,
     );
-    const frozen = filtered.filter(c =>
-      frozenStatuses.includes(c.status as CardStatus),
-    );
-    return [...pendingActivation, ...active, ...frozen];
+    return [...pendingActivation, ...rest];
   }, [cardProfile, cardProvider]);
 
   useEffect(() => {
@@ -1494,269 +1509,272 @@ export default function CypherCardScreen() {
     );
   };
 
-  const renderAllCardsContent = (): React.ReactElement => {
-    return (
-      <CyDView className='pt-[8px] gap-y-[16px] px-[16px]'>
-        {allDisplayableCards.map((card, index) => {
-          const cardLabel =
-            card.type === CardType.PHYSICAL
-              ? card.physicalCardType === PhysicalCardType.METAL
-                ? 'Metal Card'
-                : 'Physical Card'
-              : 'Virtual Card';
-          return (
-            <Animated.View
-              key={card.cardId || `card-${index}`}
-              entering={deckSpreadAnimations[index]}
-              exiting={deckCollapseAnimations[index]}
-              style={{ width: '100%' }}>
-              <CyDView className='bg-n0 rounded-[16px] p-[16px]'>
-                {/* Card label */}
-                <CyDText className='font-manrope font-semibold text-[16px] text-base400 mb-[8px]'>
-                  {cardLabel}
-                </CyDText>
+  const cardListKeyExtractor = React.useCallback(
+    (card: Card, index: number): string => card.cardId || `card-${index}`,
+    [],
+  );
 
-                {/* Card image with tag and frozen overlays */}
-                <CyDTouchView
-                  className='relative rounded-[12px] overflow-hidden'
-                  style={
-                    card.type === CardType.PHYSICAL
-                      ? style.physicalCardBorder
-                      : undefined
-                  }
-                  onPress={() => {
-                    if (card.status === CardStatus.PENDING_ACTIVATION) {
-                      Toast.show({
-                        type: 'info',
-                        text1: 'Activate your card to access card controls',
-                        position: 'top',
-                      });
-                      return;
-                    }
-                    navigation.navigate(screenTitle.CARD_CONTROLS, {
-                      cardId: card.cardId,
-                      currentCardProvider: cardProvider,
-                      card,
-                      showAsSheet: true,
-                    });
-                  }}>
-                  <CyDImageBackground
-                    className='w-full rounded-[12px] overflow-hidden flex flex-col justify-end'
-                    style={style.expandedCardImage}
-                    resizeMode='cover'
-                    imageStyle={style.expandedCardImageBorder}
-                    source={getCardImage(card)}>
-                    {card.cardTag && (
-                      <CyDView
-                        className='absolute'
-                        style={style.cardTagOverlay}>
-                        <CardTagBadge tag={card.cardTag} />
-                      </CyDView>
-                    )}
-                    {/* Last 4 digits overlay */}
-                    {card.last4 && (
-                      <CyDView className='absolute bottom-[14px] left-[14px]'>
-                        <CyDText
-                          className='font-semibold text-[14px]'
-                          style={{
-                            color:
-                              card.type === CardType.VIRTUAL && card.cardColor
-                                ? getCardColorByHex(card.cardColor).textColor
-                                : card.type === CardType.PHYSICAL &&
-                                  card.physicalCardType !==
-                                    PhysicalCardType.METAL
-                                ? '#000000'
-                                : '#FFFFFF',
-                          }}>
-                          {`•••• ${card.last4}`}
-                        </CyDText>
-                      </CyDView>
-                    )}
-                    {/* Frozen / Inactive overlay */}
-                    {(card.status === CardStatus.IN_ACTIVE ||
-                      card.status === CardStatus.BLOCKED) && (
-                      <CyDView
-                        className='absolute top-0 left-0 right-0 bottom-0 rounded-[12px] justify-center items-start pl-[16px]'
-                        style={style.frozenOverlay}>
-                        <CyDView
-                          className={clsx(
-                            'rounded-[8px] flex-row items-center px-[10px] py-[6px] gap-x-[4px]',
-                            isDarkMode ? 'bg-black' : 'bg-white',
-                          )}
-                          style={style.frozenBadge}>
-                          <CyDIcons
-                            name='freeze'
-                            size={20}
-                            className='text-[#1A73E8]'
-                          />
-                          <CyDText
-                            className={clsx(
-                              'font-bold text-[12px] leading-[130%] text-center',
-                              isDarkMode ? 'text-white' : 'text-black',
-                            )}>
-                            Frozen
-                          </CyDText>
-                        </CyDView>
-                      </CyDView>
-                    )}
-                  </CyDImageBackground>
-                </CyDTouchView>
+  const renderCardItem = React.useCallback(
+    ({ item: card, index }: ListRenderItemInfo<Card>): React.ReactElement => {
+      const cardLabel =
+        card.type === CardType.PHYSICAL
+          ? card.physicalCardType === PhysicalCardType.METAL
+            ? 'Metal Card'
+            : 'Physical Card'
+          : 'Virtual Card';
+      return (
+        <Animated.View
+          entering={deckSpreadAnimations[index]}
+          exiting={deckCollapseAnimations[index]}
+          style={{ width: '100%' }}>
+          <CyDView className='bg-n0 rounded-[16px] p-[16px]'>
+            {/* Card label */}
+            <CyDText className='font-manrope font-semibold text-[16px] text-base400 mb-[8px]'>
+              {cardLabel}
+            </CyDText>
 
-                {(card.status === CardStatus.IN_ACTIVE ||
-                  card.status === CardStatus.BLOCKED) && (
-                  <CyDText className='font-manrope font-normal text-[14px] leading-[145%] tracking-[-0.2px] text-center text-n70 mt-[8px]'>
-                    {"Click on 'Unfreeze' to begin using your card again."}
-                  </CyDText>
-                )}
-
-                {card.status === CardStatus.PENDING_ACTIVATION &&
-                card.type === CardType.PHYSICAL &&
-                trackingDetailsMap[card.cardId]?.trackingStatus !==
-                  RC_PHYSICAL_CARD_TRACKING_STATUS.CARD_ACTIVATED ? (
-                  <PhysicalCardShipmentSection
-                    trackingDetail={trackingDetailsMap[card.cardId]}
-                    onActivate={() => onPressActivateCard(card)}
-                  />
-                ) : (
-                  <CyDView className='flex-row justify-between items-center mt-[12px]'>
-                    {/* Reveal Card */}
-                    <CyDTouchView
-                      className='flex-col justify-center items-center'
-                      disabled={isAccountLocked}
-                      onPress={() => {
-                        if (
-                          card.status === CardStatus.IN_ACTIVE ||
-                          card.status === CardStatus.BLOCKED
-                        ) {
-                          showModal('state', {
-                            type: 'error',
-                            title: t('UNLOCK_CARD_TO_REVEAL_CARD_DETAILS'),
-                            onSuccess: hideModal,
-                            onFailure: hideModal,
-                          });
-                        } else {
-                          void validateReuseToken(card);
-                        }
-                      }}>
-                      <CyDView
-                        className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
-                          isAccountLocked ? 'bg-n50' : 'bg-n30'
-                        }`}>
-                        <CyDIcons
-                          name='card'
-                          className='text-base400 text-[24px]'
-                        />
-                      </CyDView>
-                      <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
-                        {'Reveal Card'}
-                      </CyDText>
-                    </CyDTouchView>
-
-                    {/* Freeze / Unfreeze */}
-                    <CyDTouchView
-                      className='flex-col justify-center items-center'
-                      disabled={isAccountLocked}
-                      onPress={() => handleFreezeUnfreezePress(card)}>
-                      <CyDView
-                        className={clsx(
-                          'h-[48px] w-[48px] items-center justify-center rounded-full',
-                          isAccountLocked
-                            ? 'bg-n50'
-                            : card.status !== CardStatus.ACTIVE
-                            ? 'bg-base100'
-                            : 'bg-n30',
-                        )}>
-                        <CyDImage
-                          source={
-                            card.status === CardStatus.ACTIVE
-                              ? AppImages.FREEZE_ICON_BLACK
-                              : AppImages.UNFREEZE_ICON_BLACK
-                          }
-                          className='h-[20px] w-[20px]'
-                          resizeMode='contain'
-                          style={
-                            isDarkMode ? { tintColor: '#FFFFFF' } : undefined
-                          }
-                        />
-                      </CyDView>
-                      <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
-                        {(card.status as CardStatus) === CardStatus.ACTIVE
-                          ? 'Freeze'
-                          : 'Unfreeze'}
-                      </CyDText>
-                    </CyDTouchView>
-
-                    {/* Transactions */}
-                    <CyDTouchView
-                      className='flex-col justify-center items-center'
-                      disabled={isAccountLocked}
-                      onPress={() => {
-                        navigation.navigate(
-                          screenTitle.CARD_TRANSACTIONS_SCREEN,
-                          {
-                            cardProvider,
-                            cardId: card.cardId,
-                          },
-                        );
-                      }}>
-                      <CyDView
-                        className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
-                          isAccountLocked ? 'bg-n50' : 'bg-n30'
-                        }`}>
-                        <CyDMaterialDesignIcons
-                          name='format-list-bulleted'
-                          size={22}
-                          className='text-base400'
-                        />
-                      </CyDView>
-                      <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
-                        {'Transactions'}
-                      </CyDText>
-                    </CyDTouchView>
-
-                    {/* Card Controls / Set Pin */}
-                    <CyDTouchView
-                      className='flex-col justify-center items-center'
-                      disabled={isAccountLocked}
-                      onPress={() => {
-                        cardProvider === CardProviders.REAP_CARD
-                          ? navigation.navigate(screenTitle.CARD_CONTROLS, {
-                              cardId: card.cardId,
-                              currentCardProvider: cardProvider,
-                              card,
-                              showAsSheet: true,
-                            })
-                          : navigation.navigate(
-                              screenTitle.CARD_SET_PIN_SCREEN,
-                              {
-                                currentCardProvider: cardProvider,
-                                card,
-                              },
-                            );
-                      }}>
-                      <CyDView
-                        className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
-                          isAccountLocked ? 'bg-n50' : 'bg-n30'
-                        }`}>
-                        <CyDMaterialDesignIcons
-                          name='cog-outline'
-                          size={22}
-                          className='text-base400'
-                        />
-                      </CyDView>
-                      <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
-                        {cardProvider === CardProviders.REAP_CARD
-                          ? 'Card Controls'
-                          : 'Set Pin'}
-                      </CyDText>
-                    </CyDTouchView>
+            {/* Card image with tag and frozen overlays */}
+            <CyDTouchView
+              className='relative rounded-[12px] overflow-hidden'
+              style={
+                card.type === CardType.PHYSICAL
+                  ? style.physicalCardBorder
+                  : undefined
+              }
+              onPress={() => {
+                if (card.status === CardStatus.PENDING_ACTIVATION) {
+                  Toast.show({
+                    type: 'info',
+                    text1: 'Activate your card to access card controls',
+                    position: 'top',
+                  });
+                  return;
+                }
+                navigation.navigate(screenTitle.CARD_CONTROLS, {
+                  cardId: card.cardId,
+                  currentCardProvider: cardProvider,
+                  card,
+                  showAsSheet: true,
+                });
+              }}>
+              <CyDImageBackground
+                className='w-full rounded-[12px] overflow-hidden flex flex-col justify-end'
+                style={style.expandedCardImage}
+                resizeMode='cover'
+                imageStyle={style.expandedCardImageBorder}
+                source={getCardImage(card)}>
+                {card.cardTag && (
+                  <CyDView className='absolute' style={style.cardTagOverlay}>
+                    <CardTagBadge tag={card.cardTag} />
                   </CyDView>
                 )}
-              </CyDView>
-            </Animated.View>
-          );
-        })}
+                {/* Last 4 digits overlay */}
+                {card.last4 && (
+                  <CyDView className='absolute bottom-[14px] left-[14px]'>
+                    <CyDText
+                      className='font-semibold text-[14px]'
+                      style={{
+                        color:
+                          card.type === CardType.VIRTUAL && card.cardColor
+                            ? getCardColorByHex(card.cardColor).textColor
+                            : card.type === CardType.PHYSICAL &&
+                              card.physicalCardType !== PhysicalCardType.METAL
+                            ? '#000000'
+                            : '#FFFFFF',
+                      }}>
+                      {`•••• ${card.last4}`}
+                    </CyDText>
+                  </CyDView>
+                )}
+                {/* Frozen / Inactive overlay */}
+                {(card.status === CardStatus.IN_ACTIVE ||
+                  card.status === CardStatus.BLOCKED) && (
+                  <CyDView
+                    className='absolute top-0 left-0 right-0 bottom-0 rounded-[12px] justify-center items-start pl-[16px]'
+                    style={style.frozenOverlay}>
+                    <CyDView
+                      className={clsx(
+                        'rounded-[8px] flex-row items-center px-[10px] py-[6px] gap-x-[4px]',
+                        isDarkMode ? 'bg-black' : 'bg-white',
+                      )}
+                      style={style.frozenBadge}>
+                      <CyDIcons
+                        name='freeze'
+                        size={20}
+                        className='text-[#1A73E8]'
+                      />
+                      <CyDText
+                        className={clsx(
+                          'font-bold text-[12px] leading-[130%] text-center',
+                          isDarkMode ? 'text-white' : 'text-black',
+                        )}>
+                        Frozen
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                )}
+              </CyDImageBackground>
+            </CyDTouchView>
 
+            {(card.status === CardStatus.IN_ACTIVE ||
+              card.status === CardStatus.BLOCKED) && (
+              <CyDText className='font-manrope font-normal text-[14px] leading-[145%] tracking-[-0.2px] text-center text-n70 mt-[8px]'>
+                {"Click on 'Unfreeze' to begin using your card again."}
+              </CyDText>
+            )}
+
+            {card.status === CardStatus.PENDING_ACTIVATION &&
+            card.type === CardType.PHYSICAL &&
+            trackingDetailsMap[card.cardId]?.trackingStatus !==
+              RC_PHYSICAL_CARD_TRACKING_STATUS.CARD_ACTIVATED ? (
+              <PhysicalCardShipmentSection
+                trackingDetail={trackingDetailsMap[card.cardId]}
+                onActivate={() => onPressActivateCard(card)}
+              />
+            ) : (
+              <CyDView className='flex-row justify-between items-center mt-[12px]'>
+                {/* Reveal Card */}
+                <CyDTouchView
+                  className='flex-col justify-center items-center'
+                  disabled={isAccountLocked}
+                  onPress={() => {
+                    if (
+                      card.status === CardStatus.IN_ACTIVE ||
+                      card.status === CardStatus.BLOCKED
+                    ) {
+                      showModal('state', {
+                        type: 'error',
+                        title: t('UNLOCK_CARD_TO_REVEAL_CARD_DETAILS'),
+                        onSuccess: hideModal,
+                        onFailure: hideModal,
+                      });
+                    } else {
+                      void validateReuseToken(card);
+                    }
+                  }}>
+                  <CyDView
+                    className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
+                      isAccountLocked ? 'bg-n50' : 'bg-n30'
+                    }`}>
+                    <CyDIcons
+                      name='card'
+                      className='text-base400 text-[24px]'
+                    />
+                  </CyDView>
+                  <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
+                    {'Reveal Card'}
+                  </CyDText>
+                </CyDTouchView>
+
+                {/* Freeze / Unfreeze */}
+                <CyDTouchView
+                  className='flex-col justify-center items-center'
+                  disabled={isAccountLocked}
+                  onPress={() => handleFreezeUnfreezePress(card)}>
+                  <CyDView
+                    className={clsx(
+                      'h-[48px] w-[48px] items-center justify-center rounded-full',
+                      isAccountLocked
+                        ? 'bg-n50'
+                        : card.status !== CardStatus.ACTIVE
+                        ? 'bg-base100'
+                        : 'bg-n30',
+                    )}>
+                    <CyDImage
+                      source={
+                        card.status === CardStatus.ACTIVE
+                          ? AppImages.FREEZE_ICON_BLACK
+                          : AppImages.UNFREEZE_ICON_BLACK
+                      }
+                      className='h-[20px] w-[20px]'
+                      resizeMode='contain'
+                      style={isDarkMode ? { tintColor: '#FFFFFF' } : undefined}
+                    />
+                  </CyDView>
+                  <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
+                    {(card.status as CardStatus) === CardStatus.ACTIVE
+                      ? 'Freeze'
+                      : 'Unfreeze'}
+                  </CyDText>
+                </CyDTouchView>
+
+                {/* Transactions */}
+                <CyDTouchView
+                  className='flex-col justify-center items-center'
+                  disabled={isAccountLocked}
+                  onPress={() => {
+                    navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
+                      cardProvider,
+                      cardId: card.cardId,
+                    });
+                  }}>
+                  <CyDView
+                    className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
+                      isAccountLocked ? 'bg-n50' : 'bg-n30'
+                    }`}>
+                    <CyDMaterialDesignIcons
+                      name='format-list-bulleted'
+                      size={22}
+                      className='text-base400'
+                    />
+                  </CyDView>
+                  <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
+                    {'Transactions'}
+                  </CyDText>
+                </CyDTouchView>
+
+                {/* Card Controls / Set Pin */}
+                <CyDTouchView
+                  className='flex-col justify-center items-center'
+                  disabled={isAccountLocked}
+                  onPress={() => {
+                    cardProvider === CardProviders.REAP_CARD
+                      ? navigation.navigate(screenTitle.CARD_CONTROLS, {
+                          cardId: card.cardId,
+                          currentCardProvider: cardProvider,
+                          card,
+                          showAsSheet: true,
+                        })
+                      : navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
+                          currentCardProvider: cardProvider,
+                          card,
+                        });
+                  }}>
+                  <CyDView
+                    className={`h-[48px] w-[48px] items-center justify-center rounded-full ${
+                      isAccountLocked ? 'bg-n50' : 'bg-n30'
+                    }`}>
+                    <CyDMaterialDesignIcons
+                      name='cog-outline'
+                      size={22}
+                      className='text-base400'
+                    />
+                  </CyDView>
+                  <CyDText className='font-semibold text-[11px] text-base400 mt-[4px]'>
+                    {cardProvider === CardProviders.REAP_CARD
+                      ? 'Card Controls'
+                      : 'Set Pin'}
+                  </CyDText>
+                </CyDTouchView>
+              </CyDView>
+            )}
+          </CyDView>
+        </Animated.View>
+      );
+    },
+    [
+      deckSpreadAnimations,
+      deckCollapseAnimations,
+      isDarkMode,
+      isAccountLocked,
+      cardProvider,
+      trackingDetailsMap,
+    ],
+  );
+
+  const renderCardListFooter = React.useCallback(
+    (): React.ReactElement => (
+      <CyDView>
         {/* Free Metal Card promotion */}
         <GetPhysicalCardComponent
           cardProfile={cardProfile}
@@ -1798,8 +1816,21 @@ export default function CypherCardScreen() {
           />
         )}
       </CyDView>
-    );
-  };
+    ),
+    [
+      cardProfile,
+      cardProvider,
+      cardDesignData,
+      cardBalance,
+      cardDetailsModal,
+      isFetchingCardDetails,
+    ],
+  );
+
+  const cardListItemSeparator = React.useCallback(
+    (): React.ReactElement => <CyDView style={style.cardListSeparator} />,
+    [],
+  );
 
   useEffect(() => {
     if (!isFocused || !isLayoutRendered) {
@@ -2371,18 +2402,27 @@ export default function CypherCardScreen() {
             )}
 
             {showAllCards ? (
-              <CyDScrollView
-                className='mt-[2px]'
+              <FlatList<Card>
+                data={allDisplayableCards}
+                keyExtractor={cardListKeyExtractor}
+                renderItem={renderCardItem}
+                ListHeaderComponent={renderBalanceSection}
+                ListFooterComponent={renderCardListFooter}
+                ItemSeparatorComponent={cardListItemSeparator}
                 showsVerticalScrollIndicator={false}
                 onScrollBeginDrag={() => {
                   if (showTooltip) setShowTooltip(false);
                 }}
-                contentContainerStyle={{
-                  paddingBottom: tabBarTotalHeight + 200,
-                }}>
-                {renderBalanceSection()}
-                {renderAllCardsContent()}
-              </CyDScrollView>
+                contentContainerStyle={[
+                  style.cardListContent,
+                  { paddingBottom: tabBarTotalHeight + 200 },
+                ]}
+                style={style.cardListContainer}
+                initialNumToRender={5}
+                maxToRenderPerBatch={3}
+                windowSize={5}
+                removeClippedSubviews={Platform.OS === 'android'}
+              />
             ) : (
               <CyDView className='mt-[2px]'>
                 {renderBalanceSection()}
@@ -2513,6 +2553,15 @@ const style = StyleSheet.create({
   physicalCardBorder: {
     borderWidth: 1,
     borderColor: '#DFE2E6',
+  },
+  cardListSeparator: {
+    height: 16,
+  },
+  cardListContent: {
+    paddingHorizontal: 16,
+  },
+  cardListContainer: {
+    marginTop: 2,
   },
   tooltipElevation: {
     ...Platform.select({

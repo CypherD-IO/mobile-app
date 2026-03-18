@@ -159,7 +159,8 @@ export default function CardScreen({
           showCVVAndExpiry: false,
           cards: orderBy(
             cardConfig?.cards,
-            card => (card.status === CardStatus.ACTIVE ? 0 : 1),
+            card =>
+              card.status === CardStatus.PENDING_ACTIVATION ? 1 : 0,
             'asc',
           ),
           // `personId` is required by downstream card flows. Guard against undefined values
