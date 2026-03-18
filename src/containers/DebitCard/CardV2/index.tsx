@@ -19,18 +19,22 @@ import {
   Platform,
   FlatList,
   ListRenderItemInfo,
+  Dimensions,
 } from 'react-native';
 import Animated, {
-  FadeIn,
   FadeOut,
+  interpolate,
+  SharedValue,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
-  Easing,
   WithSpringConfig,
   EntryAnimationsValues,
-  ExitAnimationsValues,
   EntryExitAnimationFunction,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import FastImage from 'react-native-fast-image';
@@ -136,10 +140,16 @@ import FreeSafepalClaimContent, {
 
 const STACK_COMPRESSION_PER_CARD = 340;
 
-const DECK_SPRING: WithSpringConfig = {
+const DECK_DOWN_SPRING: WithSpringConfig = {
   damping: 28,
   stiffness: 25,
   mass: 2.2,
+};
+
+const DECK_UP_SPRING: WithSpringConfig = {
+  damping: 32,
+  stiffness: 120,
+  mass: 0.8,
 };
 
 const DECK_SPREAD_VISIBLE_THRESHOLD = 4;
@@ -166,7 +176,10 @@ const createDeckSpreadEntering = (
   return (targetValues: EntryAnimationsValues) => {
     'worklet';
     const offset = -(index * STACK_COMPRESSION_PER_CARD);
-    const stiffness = Math.max((DECK_SPRING.stiffness ?? 120) - index * 5, 40);
+    const stiffness = Math.max(
+      (DECK_DOWN_SPRING.stiffness ?? 120) - index * 5,
+      40,
+    );
     return {
       initialValues: {
         originY: targetValues.targetOriginY + offset,
@@ -175,68 +188,167 @@ const createDeckSpreadEntering = (
       },
       animations: {
         originY: withSpring(targetValues.targetOriginY, {
-          ...DECK_SPRING,
+          ...DECK_DOWN_SPRING,
           stiffness,
         }),
-        opacity: index > 2 ? withSpring(1, DECK_SPRING) : 1,
-        transform: [{ scale: withSpring(1, DECK_SPRING) }],
+        opacity: index > 2 ? withSpring(1, DECK_DOWN_SPRING) : 1,
+        transform: [{ scale: withSpring(1, DECK_DOWN_SPRING) }],
       },
     };
   };
 };
 
-const STACK_SCALES = [1.0, 0.843, 0.703] as const;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const COLLAPSE_SPRING: WithSpringConfig = {
-  damping: 26,
-  stiffness: 28,
-  mass: 2.0,
-};
+const OVERLAY_CARD_WIDTH = SCREEN_WIDTH - 32;
 
-const COLLAPSE_FADE_DURATION = 600;
-const COLLAPSE_FADE_DELAY = 100;
+const STACK_POSITIONS = [
+  { width: 364, height: 230, top: 43 },
+  { width: 307, height: 194, top: 27 },
+  { width: 256, height: 163, top: 10 },
+] as const;
+const NEUTRAL_POS = { width: 230, height: 147, top: 0 } as const;
 
-const createDeckCollapseExiting = (
-  index: number,
-  _totalCards: number,
-): EntryExitAnimationFunction => {
-  'worklet';
-  return (values: ExitAnimationsValues) => {
-    'worklet';
+const COLLAPSE_CARD_HEIGHT = 250;
 
-    if (index > 2) {
-      return {
-        initialValues: {
-          originY: values.currentOriginY,
-          opacity: 1,
-        },
-        animations: {
-          originY: values.currentOriginY,
-          opacity: withTiming(0, { duration: 250 }),
-        },
-      };
-    }
+const CollapsingCardImage = React.memo(function CollapsingCardImage({
+  imageSource,
+  index,
+  totalCards,
+  deckProgress,
+  containerWidth,
+  cardCount,
+}: {
+  imageSource: number | { uri: string };
+  index: number;
+  totalCards: number;
+  deckProgress: SharedValue<number>;
+  containerWidth: number;
+  cardCount?: number;
+}): React.ReactElement {
+  const isNeutral = totalCards > 3 && index > 2;
+  const stackIndex = 2 - index;
+  const target =
+    totalCards <= 3
+      ? STACK_POSITIONS[stackIndex] ?? STACK_POSITIONS[2]
+      : index <= 2
+      ? STACK_POSITIONS[stackIndex]
+      : NEUTRAL_POS;
 
-    const offset = -(index * STACK_COMPRESSION_PER_CARD);
-    const targetScale = STACK_SCALES[index] ?? 0.7;
+  const initialWidth = containerWidth;
+  const initialHeight = containerWidth / 1.586;
+  const initialY = index * COLLAPSE_CARD_HEIGHT;
+  const initialLeft = 16;
+  const targetLeft = (SCREEN_WIDTH - target.width) / 2;
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const p = deckProgress.value;
     return {
-      initialValues: {
-        originY: values.currentOriginY,
-        opacity: 1,
-        transform: [{ scale: 1 }],
-      },
-      animations: {
-        originY: withSpring(values.currentOriginY + offset, COLLAPSE_SPRING),
-        transform: [{ scale: withSpring(targetScale, COLLAPSE_SPRING) }],
-        opacity: withTiming(0, {
-          duration: COLLAPSE_FADE_DURATION,
-          easing: Easing.in(Easing.ease),
-        }),
-      },
+      top: initialY + (target.top - initialY) * p,
+      left: initialLeft + (targetLeft - initialLeft) * p,
+      width: initialWidth + (target.width - initialWidth) * p,
+      height: initialHeight + (target.height - initialHeight) * p,
+      borderRadius: interpolate(p, [0, 1], [12, 10], 'clamp'),
+      opacity: isNeutral
+        ? interpolate(p, [0, 0.85, 1.0], [1, 1, 0], 'clamp')
+        : 1,
     };
-  };
-};
+  });
+
+  const badgeStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(deckProgress.value, [0, 0.7, 1], [0, 0, 1], 'clamp'),
+    };
+  });
+
+  return (
+    <Animated.View
+      style={[
+        collapseStyles.cardWrapper,
+        { zIndex: index <= 2 ? index + 1 : 0 },
+        animatedStyle,
+      ]}>
+      <CyDFastImage
+        className='w-full h-full overflow-hidden'
+        resizeMode={FastImage.resizeMode.cover}
+        style={collapseStyles.cardImageBorder}
+        source={imageSource}
+      />
+      {cardCount !== undefined && cardCount > 3 && (
+        <Animated.View style={[collapseStyles.cardCountBadge, badgeStyle]}>
+          <CyDText className='font-manrope text-[12px] font-medium text-black leading-[150%] tracking-[0px]'>
+            {`${cardCount} Cards`}
+          </CyDText>
+        </Animated.View>
+      )}
+    </Animated.View>
+  );
+});
+
+const CollapsingNeutralShade = React.memo(function CollapsingNeutralShade({
+  deckProgress,
+}: {
+  deckProgress: SharedValue<number>;
+}): React.ReactElement {
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        deckProgress.value,
+        [0, 0.6, 0.85],
+        [0, 0, 1],
+        'clamp',
+      ),
+    };
+  });
+
+  return (
+    <Animated.View
+      style={[
+        collapseStyles.neutralShade,
+        { left: (SCREEN_WIDTH - NEUTRAL_POS.width) / 2 },
+        animatedStyle,
+      ]}
+    />
+  );
+});
+
+const collapseStyles = StyleSheet.create({
+  cardWrapper: {
+    position: 'absolute',
+    overflow: 'hidden',
+  },
+  cardImageBorder: {
+    borderRadius: 10,
+  },
+  cardCountBadge: {
+    position: 'absolute',
+    top: 32,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 9999,
+  },
+  neutralShade: {
+    position: 'absolute',
+    top: NEUTRAL_POS.top,
+    width: NEUTRAL_POS.width,
+    height: NEUTRAL_POS.height,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#B3B9C4',
+    backgroundColor: '#C2C7D0',
+    zIndex: 0,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+    overflow: 'visible',
+  },
+});
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -423,6 +535,11 @@ export default function CypherCardScreen() {
   const accountStatus = get(cardProfile, ['accountStatus'], '');
   const rcApplicationStatus = get(cardProfile, ['rc', 'applicationStatus'], '');
   const [showAllCards, setShowAllCards] = useState(false);
+  const [isDeckingUp, setIsDeckingUp] = useState(false);
+  const [hasCollapsedOnce, setHasCollapsedOnce] = useState(false);
+  const deckProgress = useSharedValue(0);
+  const isCollapsingRef = useRef(false);
+  const balanceBottomY = useRef(0);
   const UNIFIED_SNAP_POINTS = useMemo(() => ['12%', '58%', '85%'], []);
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
@@ -1439,6 +1556,7 @@ export default function CypherCardScreen() {
         .filter(card => !(card.type === CardType.VIRTUAL && card.cardColor))
         .map(card => ({
           uri: `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`,
+          priority: FastImage.priority.high,
         }));
       if (imagesToPreload.length > 0) {
         FastImage.preload(imagesToPreload);
@@ -1450,18 +1568,58 @@ export default function CypherCardScreen() {
     () => allDisplayableCards.map((_, i) => createDeckSpreadEntering(i)),
     [allDisplayableCards.length],
   );
-  const deckCollapseAnimations = useMemo(
-    () =>
-      allDisplayableCards.map((_, i) =>
-        createDeckCollapseExiting(i, allDisplayableCards.length),
-      ),
-    [allDisplayableCards.length],
+
+  const sheetSnappedDuringDeckUp = useRef(false);
+
+  const snapSheetDuringDeckUp = React.useCallback((): void => {
+    if (!sheetSnappedDuringDeckUp.current) {
+      sheetSnappedDuringDeckUp.current = true;
+      snapSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, 1);
+    }
+  }, []);
+
+  const onDeckUpFinished = React.useCallback((): void => {
+    setIsDeckingUp(false);
+    setHasCollapsedOnce(true);
+    isCollapsingRef.current = false;
+    sheetSnappedDuringDeckUp.current = false;
+  }, []);
+
+  useAnimatedReaction(
+    () => deckProgress.value,
+    (current, previous) => {
+      if (previous !== null && previous < 0.99 && current >= 0.99) {
+        scheduleOnRN(snapSheetDuringDeckUp);
+      }
+    },
+    [deckProgress],
   );
+
+  const startDeckUp = React.useCallback((): void => {
+    isCollapsingRef.current = true;
+    sheetSnappedDuringDeckUp.current = false;
+    setIsDeckingUp(true);
+    setShowAllCards(false);
+    deckProgress.value = 0;
+    deckProgress.value = withSpring(1, DECK_UP_SPRING, finished => {
+      scheduleOnRN(onDeckUpFinished);
+    });
+
+    setTimeout(() => {
+      if (isCollapsingRef.current) {
+        onDeckUpFinished();
+      }
+    }, 3000);
+  }, [deckProgress, onDeckUpFinished]);
 
   const renderBalanceSection = (): React.ReactElement => {
     return (
       <CyDView
         className='items-center mt-[24px]'
+        onLayout={e => {
+          const { y, height } = e.nativeEvent.layout;
+          balanceBottomY.current = y + height;
+        }}
         onTouchEnd={() => {
           if (showTooltip) setShowTooltip(false);
         }}>
@@ -1525,7 +1683,6 @@ export default function CypherCardScreen() {
       return (
         <Animated.View
           entering={deckSpreadAnimations[index]}
-          exiting={deckCollapseAnimations[index]}
           style={{ width: '100%' }}>
           <CyDView className='bg-n0 rounded-[16px] p-[16px]'>
             {/* Card label */}
@@ -1764,7 +1921,6 @@ export default function CypherCardScreen() {
     },
     [
       deckSpreadAnimations,
-      deckCollapseAnimations,
       isDarkMode,
       isAccountLocked,
       cardProvider,
@@ -1861,8 +2017,9 @@ export default function CypherCardScreen() {
           <CyDTouchView
             className='flex-1 flex-row items-center justify-between bg-n30 py-[12px] px-[16px] rounded-[24px]'
             onPress={() => {
+              if (isCollapsingRef.current) return;
               setShowTooltip(false);
-              setShowAllCards(false);
+              startDeckUp();
             }}>
             <CyDText className='font-manrope font-semibold text-[14px] text-base400 leading-[145%] tracking-[-0.6px]'>
               {'Hide cards'}
@@ -1896,7 +2053,7 @@ export default function CypherCardScreen() {
     showBottomSheet({
       id: CARD_TRANSACTIONS_SHEET_ID,
       snapPoints: UNIFIED_SNAP_POINTS,
-      defaultPresentIndex: showAllCards ? 0 : 1,
+      defaultPresentIndex: showAllCards || isDeckingUp ? 0 : 1,
       showCloseButton: false,
       showHandle: true,
       scrollable: true,
@@ -1907,10 +2064,17 @@ export default function CypherCardScreen() {
       bottomInset: tabBarTotalHeight,
       onAnimate: (fromIndex: number, toIndex: number) => {
         if (showTooltip) setShowTooltip(false);
-        if (showAllCards && toIndex >= 1) {
-          setShowAllCards(false);
-        } else if (!showAllCards && toIndex === 0) {
+        if (!showAllCards && toIndex === 0) {
           setShowAllCards(true);
+          return;
+        }
+
+        if (isCollapsingRef.current) {
+          return;
+        }
+        if (showAllCards && fromIndex === 0 && toIndex >= 1) {
+          snapSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, 0);
+          startDeckUp();
         }
       },
       fixedHeaderContent: headerButtons,
@@ -2128,6 +2292,7 @@ export default function CypherCardScreen() {
     spendStats,
     statusWiseRewards,
     showAllCards,
+    isDeckingUp,
     allDisplayableCards,
     showTooltip,
   ]);
@@ -2426,10 +2591,10 @@ export default function CypherCardScreen() {
             ) : (
               <CyDView className='mt-[2px]'>
                 {renderBalanceSection()}
-                {cardDesignData && (
+                {cardDesignData && !hasCollapsedOnce && !isDeckingUp && (
                   <Animated.View
                     key='stacked-cards'
-                    entering={FadeIn.duration(200).delay(COLLAPSE_FADE_DELAY)}
+                    entering={undefined}
                     exiting={FadeOut.duration(100)}>
                     <CardScreen
                       navigation={navigation}
@@ -2448,6 +2613,40 @@ export default function CypherCardScreen() {
                       onCardPress={() => setShowAllCards(true)}
                     />
                   </Animated.View>
+                )}
+
+                {(isDeckingUp || hasCollapsedOnce) && (
+                  <CyDView
+                    style={[
+                      collapseStyles.overlay,
+                      { top: balanceBottomY.current + 8 },
+                    ]}
+                    pointerEvents={isDeckingUp ? 'none' : 'auto'}
+                    className='bg-n40'>
+                    <CyDTouchView
+                      onPress={() => {
+                        if (!isDeckingUp) {
+                          setShowAllCards(true);
+                        }
+                      }}>
+                      {allDisplayableCards.length > 3 && (
+                        <CollapsingNeutralShade deckProgress={deckProgress} />
+                      )}
+                      {allDisplayableCards.map((card, idx) => (
+                        <CollapsingCardImage
+                          key={card.cardId || `collapse-${idx}`}
+                          imageSource={getCardImage(card)}
+                          index={idx}
+                          totalCards={allDisplayableCards.length}
+                          deckProgress={deckProgress}
+                          containerWidth={OVERLAY_CARD_WIDTH}
+                          cardCount={
+                            idx === 2 ? allDisplayableCards.length : undefined
+                          }
+                        />
+                      ))}
+                    </CyDTouchView>
+                  </CyDView>
                 )}
               </CyDView>
             )}

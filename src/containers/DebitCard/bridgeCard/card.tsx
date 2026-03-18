@@ -159,8 +159,7 @@ export default function CardScreen({
           showCVVAndExpiry: false,
           cards: orderBy(
             cardConfig?.cards,
-            card =>
-              card.status === CardStatus.PENDING_ACTIVATION ? 1 : 0,
+            card => (card.status === CardStatus.ACTIVE ? 0 : 1),
             'asc',
           ),
           // `personId` is required by downstream card flows. Guard against undefined values
@@ -358,7 +357,13 @@ export default function CardScreen({
     if (!hasInitializedOrder.current) {
       setCurrentCardIndex(0);
     }
-    return actualCards;
+    const pending = actualCards.filter(
+      card => card.status === CardStatus.PENDING_ACTIVATION,
+    );
+    const rest = actualCards.filter(
+      card => card.status !== CardStatus.PENDING_ACTIVATION,
+    );
+    return [...pending, ...rest];
   }, [currentCardProvider, userCardDetails.cards, cardProfile]);
 
   const MAX_VISIBLE_CARDS = 3;
@@ -396,6 +401,7 @@ export default function CardScreen({
             )}
             {cardOrderIndices
               .slice(0, MAX_VISIBLE_CARDS)
+              .reverse()
               .map((cardIndex: number, stackPosition: number) => {
                 const card = cardsWithUpgrade[cardIndex];
                 if (!card) return null;
