@@ -123,22 +123,15 @@ export interface CardQuoteEvmSwapTransaction {
   chainId?: number;
   gasPrice?: string;
   gasLimit?: string;
+  gas?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
   from?: string;
 }
 
-export interface CardQuoteEvmSwapGasToken {
-  decimals: number;
-}
-
-export interface CardQuoteEvmSwapGasCost {
-  amount: string;
-  token: CardQuoteEvmSwapGasToken;
-}
-
 export interface CardQuoteEvmSwapProviderData {
-  estimate?: {
-    gasCosts?: CardQuoteEvmSwapGasCost[];
-  };
+  id?: string;
+  tool?: string;
 }
 
 export interface CardQuoteEvmSwap {

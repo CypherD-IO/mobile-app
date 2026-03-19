@@ -1366,7 +1366,7 @@ export default function CardQuote({
             <CyDView
               className={'flex flex-col flex-wrap justify-between items-end'}>
               <CyDText className={'font-bold text-[14px] '}>
-                {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
+                {formatAmount(gasFeeInCrypto, 4) + ' ' + nativeTokenSymbol}
               </CyDText>
               <CyDText className={'font-bold text-[14px] text-base100'}>
                 {'$' + formatAmount(gasFeeInFiat)}

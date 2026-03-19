@@ -351,7 +351,10 @@ export default function BridgeFundCardScreen({
           gasFeeInFiat: 0,
         };
       } else if (chainDetails.chainName === ChainNames.ETH) {
-        const quotedGasFeeInCrypto = getCardQuoteEvmGasFeeInCrypto(quote);
+        const quotedGasFeeInCrypto = getCardQuoteEvmGasFeeInCrypto(
+          quote,
+          nativeToken?.contractDecimals,
+        );
         if (quote.evmSwap && quotedGasFeeInCrypto) {
           gasDetails = {
             isError: false,
@@ -528,7 +531,7 @@ export default function BridgeFundCardScreen({
           provider: currentCardProvider,
           cardId,
           ...(connectionType !== ConnectionTypes.WALLET_CONNECT && {
-            isEVMV2: true,
+            isEVMV2: false,
           }),
         };
         if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {

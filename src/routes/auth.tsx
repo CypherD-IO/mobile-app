@@ -34,7 +34,6 @@ import CryptoWithdrawal from '../containers/DebitCard/CardV2/cryptoWithdrawal/cr
 import WithDrawSuccess from '../containers/DebitCard/CardV2/cryptoWithdrawal/withDrawSuccess';
 import WithdrawConfirmation from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawConfirmation';
 import WithdrawHistory from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawHistory';
-import FirstLoadCard from '../containers/DebitCard/CardV2/firstLoadCard';
 import ManageSubscription from '../containers/DebitCard/CardV2/manageSubscription';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import TelegramSetup from '../containers/DebitCard/CardV2/signup/telegramSetup';

@@ -2,6 +2,47 @@ import { formatUnits } from 'viem';
 import { limitDecimalPlaces } from '../core/util';
 import { CardQuoteResponse } from '../models/card.model';
 
+const parseGasValue = (value?: string): bigint | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    return BigInt(value);
+  } catch {
+    return undefined;
+  }
+};
+
+const getQuotedEvmGasFromTransaction = (
+  quote: CardQuoteResponse,
+  nativeTokenDecimals?: number,
+): string | undefined => {
+  if (
+    typeof nativeTokenDecimals !== 'number' ||
+    !Number.isInteger(nativeTokenDecimals) ||
+    nativeTokenDecimals <= 0
+  ) {
+    return undefined;
+  }
+
+  const transaction = quote.evmSwap?.transactionRequest ?? quote.evmSwap?.transaction;
+  if (!transaction) {
+    return undefined;
+  }
+
+  const gasLimit = parseGasValue(transaction.gasLimit ?? transaction.gas);
+  const gasPrice = parseGasValue(
+    transaction.maxFeePerGas ?? transaction.gasPrice,
+  );
+
+  if (gasLimit == null || gasPrice == null) {
+    return undefined;
+  }
+
+  return formatUnits(gasLimit * gasPrice, nativeTokenDecimals);
+};
+
 export const getCardQuoteActualTokensRequired = (
   quote: CardQuoteResponse,
   contractDecimals: number,
@@ -19,24 +60,7 @@ export const getCardQuoteActualTokensRequired = (
 
 export const getCardQuoteEvmGasFeeInCrypto = (
   quote: CardQuoteResponse,
+  nativeTokenDecimals?: number,
 ): string | undefined => {
-  const gasCosts = quote.evmSwap?.providerData?.estimate?.gasCosts;
-  if (!gasCosts?.length) {
-    return undefined;
-  }
-
-  const firstGasCost = gasCosts[0];
-  if (typeof firstGasCost?.token?.decimals !== 'number') {
-    return undefined;
-  }
-
-  const totalGasAmount = gasCosts.reduce((total, gasCost) => {
-    if (!gasCost?.amount) {
-      return total;
-    }
-
-    return total + BigInt(gasCost.amount);
-  }, 0n);
-
-  return formatUnits(totalGasAmount, firstGasCost.token.decimals);
+  return getQuotedEvmGasFromTransaction(quote, nativeTokenDecimals);
 };
