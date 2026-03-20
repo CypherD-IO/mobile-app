@@ -59,6 +59,7 @@ interface CyDBottomSheetProps {
    */
   topBarColor?: string;
   borderRadius?: number;
+  enableContentPanningGesture?: boolean;
 }
 
 const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
@@ -86,6 +87,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       androidKeyboardInputMode = 'adjustResize',
       topBarColor,
       borderRadius = 16,
+      enableContentPanningGesture = true,
     },
     ref,
   ) => {
@@ -222,8 +224,6 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       [backdropComponent],
     );
 
-    const ContentWrapper = scrollable ? BottomSheetScrollView : BottomSheetView;
-
     /**
      * When we want the handle to visually appear "inside" the content (e.g. inside a blurred header),
      * we hide the native handle area entirely and render a custom indicator inside the sheet content.
@@ -233,6 +233,24 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     const hiddenHandleComponent = useCallback(() => {
       return <CyDView style={{ height: 0 }} />;
     }, []);
+
+    const sheetInnerContent = (
+      <>
+        {/* Header with title and close button */}
+        {title && (
+          <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
+            <CyDView className='flex-1'>
+              {title && (
+                <CyDText className='text-[18px] font-bold'>{title}</CyDText>
+              )}
+            </CyDView>
+          </CyDView>
+        )}
+
+        {/* Content */}
+        <CyDView className='flex-1'>{children}</CyDView>
+      </>
+    );
 
     return (
       <CyDView
@@ -290,6 +308,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           }
           backdropComponent={renderBackdrop}
           onChange={handleSheetChanges}
+          enableContentPanningGesture={enableContentPanningGesture}
           keyboardBehavior={keyboardBehavior}
           keyboardBlurBehavior={keyboardBlurBehavior}
           android_keyboardInputMode={androidKeyboardInputMode}
@@ -301,26 +320,18 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
               overflow: 'hidden',
             },
           ]}>
-          <ContentWrapper
-            style={{ flex: 1 }}
-            contentContainerStyle={
-              scrollable ? { flexGrow: 1, paddingBottom: 24 } : undefined
-            }
-            showsVerticalScrollIndicator={false}>
-            {/* Header with title and close button */}
-            {title && (
-              <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
-                <CyDView className='flex-1'>
-                  {title && (
-                    <CyDText className='text-[18px] font-bold'>{title}</CyDText>
-                  )}
-                </CyDView>
-              </CyDView>
-            )}
-
-            {/* Content */}
-            <CyDView className='flex-1'>{children}</CyDView>
-          </ContentWrapper>
+          {scrollable ? (
+            <BottomSheetScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+              showsVerticalScrollIndicator={false}>
+              {sheetInnerContent}
+            </BottomSheetScrollView>
+          ) : enableContentPanningGesture ? (
+            <BottomSheetView style={{ flex: 1 }}>{sheetInnerContent}</BottomSheetView>
+          ) : (
+            <CyDView style={{ flex: 1 }}>{sheetInnerContent}</CyDView>
+          )}
         </BottomSheet>
       </CyDView>
     );

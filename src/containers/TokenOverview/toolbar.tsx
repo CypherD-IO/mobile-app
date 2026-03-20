@@ -11,11 +11,14 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { get } from 'lodash';
 import { Holding } from '../../core/portfolio';
+import { CHAIN_HYPERLIQUID } from '../../constants/server';
 import clsx from 'clsx';
+import useBridgeV2Sheet from '../../features/bridgeV2/hooks/useBridgeV2Sheet';
 
 interface TokenOverviewToolBarProps {
   tokenData: Holding;
   navigation: NavigationProp<ParamListBase>;
+  onBridgeSuccess?: () => void | Promise<void>;
 }
 
 /**
@@ -24,11 +27,17 @@ interface TokenOverviewToolBarProps {
 export default function TokenOverviewToolBar({
   tokenData,
   navigation,
+  onBridgeSuccess,
 }: TokenOverviewToolBarProps) {
   const { isBridgeable, isSwapable, isFundable } = tokenData;
+  const isHyperliquid =
+    tokenData.chainDetails.chain_id === CHAIN_HYPERLIQUID.chain_id;
+  const showBridgeSwap =
+    (isSwapable || isBridgeable) && !isHyperliquid;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext?.globalState?.cardProfile;
   const currentCardProvider = get(cardProfile, 'provider', '');
+  const { openBridgeV2 } = useBridgeV2Sheet();
 
   /**
    * Navigate to Fund Card screen in Card tab
@@ -62,11 +71,12 @@ export default function TokenOverviewToolBar({
   };
 
   /**
-   * Navigate to Swap screen
+   * Opens the Bridge V2 bottom sheet
    */
   const handleSwapPress = (): void => {
-    navigation.navigate(screenTitle.SWAP_SCREEN, {
-      tokenData,
+    openBridgeV2({
+      initialFromHolding: tokenData,
+      ...(onBridgeSuccess ? { onBridgeSuccess } : {}),
     });
   };
 
@@ -102,7 +112,7 @@ export default function TokenOverviewToolBar({
       </CyDView>
 
       {/* Swap Button - Round */}
-      {(isSwapable || isBridgeable) && (
+      {showBridgeSwap && (
         <CyDTouchView
           onPress={handleSwapPress}
           activeOpacity={0.8}

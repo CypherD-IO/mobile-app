@@ -236,6 +236,7 @@ export default function useTransactionManager() {
         gasFeeInCrypto: gasEstimateResponse.gasFeeInCrypto,
       };
     } catch (e) {
+      console.log(e)
       return { isError: true, error: e };
     }
   };

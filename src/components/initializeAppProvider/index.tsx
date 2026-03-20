@@ -15,6 +15,7 @@ import {
 import OnBoardingStack from '../../routes/onBoarding';
 import { HdWalletContext } from '../../core/util';
 import { WalletConnectV2Provider } from '../walletConnectV2Provider';
+import BridgeV2ExecutionRegistrar from '../../features/bridgeV2/BridgeV2ExecutionRegistrar';
 import { SPLASH_SCREEN_TIMEOUT } from '../../constants/timeOuts';
 import SplashScreen from 'react-native-lottie-splash-screen';
 import DefaultAuthRemoveModal from '../v2/defaultAuthRemoveModal';
@@ -519,6 +520,7 @@ export const InitializeAppProvider = ({
   return (
     <>
       <WalletConnectV2Provider>
+        <BridgeV2ExecutionRegistrar />
         <JoinDiscordModal
           isModalVisible={isJoinDiscordModalVisible}
           setIsModalVisible={setIsJoinDiscordModalVisible}

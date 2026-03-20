@@ -5,6 +5,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import {
+  CHAIN_HYPERLIQUID,
   ChainBackendNames,
   FundWalletAddressType,
 } from '../../constants/server';
@@ -30,10 +31,14 @@ interface PortfolioTokenItemProps {
   navigation: NativeStackNavigationProp<ParamListBase>;
   onSwipe: (key: number) => void;
   setSwipeableRefs: (index: number, ref: Swipeable | null) => void;
+  onBridgePress?: () => void;
 }
 
-const RenderRightActions = (navigation: any, tokenData: any) => {
+const RenderRightActions = (navigation: any, tokenData: any, onBridgePress?: () => void) => {
   const { isBridgeable, isSwapable } = tokenData;
+  const isHyperliquid =
+    tokenData?.chainDetails?.chain_id === CHAIN_HYPERLIQUID.chain_id;
+  const showBridgeSwap = (isSwapable || isBridgeable) && !isHyperliquid;
   return (
     <CyDView className={'flex flex-row justify-evenly items-center bg-n40'}>
       <CyDView>
@@ -54,14 +59,14 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
         </CyDText>
       </CyDView>
 
-      {(isSwapable || isBridgeable) && (
+      {showBridgeSwap && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.SWAP_SCREEN, {
-                tokenData,
-              });
+              if (onBridgePress) {
+                onBridgePress();
+              }
             }}>
             <CyDImage
               source={AppImages.SWAP_SHORTCUT}
@@ -152,6 +157,7 @@ const PortfolioTokenItem = ({
   navigation,
   onSwipe,
   setSwipeableRefs,
+  onBridgePress,
 }: PortfolioTokenItemProps) => {
   const randomColor = [
     AppImages.RED_COIN,
@@ -201,7 +207,7 @@ const PortfolioTokenItem = ({
           key={index}
           friction={1}
           rightThreshold={0}
-          renderRightActions={() => RenderRightActions(navigation, item)}
+          renderRightActions={() => RenderRightActions(navigation, item, onBridgePress)}
           onSwipeableWillOpen={() => {
             onSwipe(index);
           }}

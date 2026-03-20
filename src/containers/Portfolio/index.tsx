@@ -111,6 +111,7 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 import GetTokenBottomSheetContent from '../../components/v2/GetTokenBottomSheetContent';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
+import useBridgeV2Sheet from '../../features/bridgeV2/hooks/useBridgeV2Sheet';
 import { Theme, useTheme } from '../../reducers/themeReducer';
 import { colorScheme } from 'nativewind';
 import CyDModalLayout from '../../components/v2/modal';
@@ -192,6 +193,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+  const { openBridgeV2 } = useBridgeV2Sheet();
 
   // Buy modal states
   const [buyModalVisible, setBuyModalVisible] = useState<boolean>(false);
@@ -322,10 +324,15 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   /**
-   * Navigates to the swap screen
+   * Opens the Bridge V2 bottom sheet
    */
   const handleSwapPress = (): void => {
-    navigation.navigate(C.screenTitle.SWAP_SCREEN);
+    openBridgeV2({
+      portfolioHoldings: portfolioData?.portfolio?.totalHoldings,
+      onBridgeSuccess: () => {
+        void fetchPortfolioData();
+      },
+    });
   };
 
   /**
@@ -1106,6 +1113,15 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           navigation={navigation}
           onSwipe={onSwipe}
           setSwipeableRefs={setSwipeableRefs}
+          onBridgePress={() =>
+            openBridgeV2({
+              portfolioHoldings: portfolioData?.portfolio?.totalHoldings,
+              initialFromHolding: item,
+              onBridgeSuccess: () => {
+                void fetchPortfolioData();
+              },
+            })
+          }
         />
       </CyDView>
     );
