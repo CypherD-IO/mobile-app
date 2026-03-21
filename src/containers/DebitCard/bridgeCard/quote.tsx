@@ -77,10 +77,9 @@ import SelectPlanModal from '../../../components/selectPlanModal';
 import useHyperLiquid from '../../../hooks/useHyperLiquid';
 import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
-import { formatUnits } from 'viem';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
-import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
-import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
+import { getCardQuoteActualTokensRequired } from '../../../utils/cardQuote';
+import { Holding } from '../../../core/portfolio';
 
 export default function CardQuote({
   navigation,
@@ -108,6 +107,14 @@ export default function CardQuote({
     selectedToken,
     tokenQuote,
   } = tokenSendParams;
+  const actualSourceTokensRequired = useMemo(
+    () =>
+      getCardQuoteActualTokensRequired(
+        tokenQuote,
+        Number(get(selectedToken, 'contractDecimals', 0)),
+      ),
+    [selectedToken, tokenQuote],
+  );
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { globalState } = globalContext;
   const quoteExpiry = 60;
@@ -129,7 +136,8 @@ export default function CardQuote({
   const solanaAddress = get(hdWallet, 'state.wallet.solana.address', '');
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
-  const { sendEvmToken, sendSolanaTokens } = useTransactionManager();
+  const { sendEvmToken, sendSolanaTokens, swapWith7702 } =
+    useTransactionManager();
   const { skipApiSignAndBroadcast } = useSkipApiBridge();
   const { transferOnHyperLiquid } = useHyperLiquid();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -146,9 +154,7 @@ export default function CardQuote({
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
-  const [targetAddress, setTargetAddress] = useState<string>('');
-  const [isAddressLoading, setIsAddressLoading] = useState<boolean>(true);
-  const prevQuoteRef = useRef<any>(null);
+  const targetAddress = tokenSendParams.toAddress ?? '';
   const [connectionType, setConnectionType] = useState<string | null>(null);
   const { walletInfo } = useWalletInfo();
   const {
@@ -187,87 +193,6 @@ export default function CardQuote({
     };
     void checkConnectionType();
   }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    const getAddress = async () => {
-      const currentQuoteParams = {
-        programId: tokenQuote.programId,
-        cardProvider: tokenQuote.cardProvider,
-        chain: tokenQuote.chain,
-        targetAddress: tokenQuote.targetAddress,
-      };
-
-      if (
-        prevQuoteRef.current &&
-        prevQuoteRef.current.programId === currentQuoteParams.programId &&
-        prevQuoteRef.current.cardProvider === currentQuoteParams.cardProvider &&
-        prevQuoteRef.current.chain === currentQuoteParams.chain &&
-        prevQuoteRef.current.targetAddress ===
-          currentQuoteParams.targetAddress &&
-        targetAddress
-      ) {
-        if (isMounted) setIsAddressLoading(false);
-        return;
-      }
-
-      if (isMounted) setIsAddressLoading(true);
-
-      // -------------------------------------------------------------------------
-      // Target Address Resolution
-      // -------------------------------------------------------------------------
-      // On production: Fetch from smart contract and validate against quote
-      // On dev/staging: Use quote's target address directly (no contract validation)
-
-      const currentArchHost = hostWorker.getHost('ARCH_HOST');
-      const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
-
-      if (isProductionBackend) {
-        const result = await resolveAndValidateCardTargetAddress({
-          programId: tokenQuote.programId,
-          provider: route.params.cardProvider,
-          chainName: tokenQuote.chain as ChainBackendNames,
-          quoteTargetAddress: tokenQuote.targetAddress,
-          quoteId: tokenQuote.quoteId,
-          globalContext,
-        });
-
-        if (!result.success) {
-          setIsAddressLoading(false);
-          setLoading(false);
-          showModal('state', {
-            type: 'error',
-            title: 'Transaction Security Check Failed',
-            description: result.userFriendlyMessage,
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-          return;
-        }
-        if (isMounted) {
-          setTargetAddress(result.targetAddress);
-          prevQuoteRef.current = currentQuoteParams;
-          setIsAddressLoading(false);
-          setIsPayDisabled(false);
-        }
-      } else {
-        // Non-production: use quote address directly
-        if (isMounted && tokenQuote.targetAddress) {
-          setTargetAddress(tokenQuote.targetAddress);
-          prevQuoteRef.current = currentQuoteParams;
-          setIsAddressLoading(false);
-          setIsPayDisabled(false);
-        } else if (isMounted) {
-          setIsAddressLoading(false);
-        }
-      }
-    };
-
-    getAddress();
-    return () => {
-      isMounted = false;
-    };
-  }, [tokenQuote]);
 
   const cosmosAddresses = useMemo(
     () => ({
@@ -485,12 +410,8 @@ export default function CardQuote({
     } = selectedToken;
     setLoading(true);
 
-    let actualTokensRequired = '0';
+    const actualTokensRequired = actualSourceTokensRequired;
     try {
-      actualTokensRequired = limitDecimalPlaces(
-        tokenQuote.tokensRequired,
-        contractDecimals,
-      );
       const { chainName } = chainDetails;
       const activityData: DebitCardTransaction = {
         id: genId(),
@@ -500,7 +421,7 @@ export default function CardQuote({
         tokenSymbol: symbol ?? '',
         chainName: chainDetails?.backendName ?? '',
         tokenName: name.toString() ?? '',
-        amount: tokenQuote.tokensRequired.toString() ?? '',
+        amount: actualTokensRequired,
         amountInUsd: tokenQuote.amount ?? '',
         datetime: new Date(),
         transactionHash: '',
@@ -534,7 +455,8 @@ export default function CardQuote({
           } else if (chainName === ChainNames.ETH) {
             const isWalletConnect =
               connectionType === ConnectionTypes.WALLET_CONNECT;
-            if (isWalletConnect) {
+            pendingEvmParamsRef.current = null;
+            if (isWalletConnect && !tokenQuote.evmSwap) {
               showTxModal();
               await waitForWalletConnectModalRender();
               pendingEvmParamsRef.current = {
@@ -546,17 +468,31 @@ export default function CardQuote({
                 symbol: selectedToken.symbol,
               };
             }
-            response = await sendEvmToken(
-              {
-                chain: selectedToken.chainDetails.backendName,
-                amountToSend: actualTokensRequired,
-                toAddress: targetAddress as `0x${string}`,
-                contractAddress: contractAddress as `0x${string}`,
-                contractDecimals,
-                symbol: selectedToken.symbol,
-              },
-              isWalletConnect ? abortController.current?.signal : undefined,
-            );
+            if (tokenQuote.evmSwap) {
+              response = isWalletConnect
+                ? {
+                    isError: true as const,
+                    error:
+                      'WalletConnect card loads do not support smart account swap quotes',
+                  }
+                : await swapWith7702({
+                    tokenData: selectedToken as Holding,
+                    evmSwap: tokenQuote.evmSwap,
+                    quoteId: tokenQuote.quoteId,
+                  });
+            } else {
+              response = await sendEvmToken(
+                {
+                  chain: selectedToken.chainDetails.backendName,
+                  amountToSend: actualTokensRequired,
+                  toAddress: targetAddress as `0x${string}`,
+                  contractAddress: contractAddress as `0x${string}`,
+                  contractDecimals,
+                  symbol: selectedToken.symbol,
+                },
+                isWalletConnect ? abortController.current?.signal : undefined,
+              );
+            }
           } else if (COSMOS_CHAINS.includes(chainName)) {
             const addressList = await getAddressList(
               tokenQuote.cosmosSwap?.requiredAddresses ?? [],
@@ -1113,6 +1049,7 @@ export default function CardQuote({
       });
     }
   }, [
+    actualSourceTokensRequired,
     selectedToken,
     tokenQuote,
     tokenSendParams,
@@ -1125,6 +1062,7 @@ export default function CardQuote({
     showTxModal,
     hideTxModal,
     setTxTimedOut,
+    swapWith7702,
   ]);
 
   const handleResendQuote = useCallback(async () => {
@@ -1279,15 +1217,7 @@ export default function CardQuote({
             <CyDView
               className={'flex flex-col flex-wrap justify-between items-end'}>
               <CyDText className={'font-bold text-[14px] '}>
-                {limitDecimalPlaces(
-                  tokenQuote.cosmosSwap
-                    ? formatUnits(
-                        BigInt(tokenQuote.cosmosSwap.amountIn),
-                        selectedToken.contractDecimals,
-                      )
-                    : tokenQuote.tokensRequired,
-                  4,
-                ) +
+                {limitDecimalPlaces(actualSourceTokensRequired, 4) +
                   ' ' +
                   symbol}
               </CyDText>
@@ -1350,7 +1280,7 @@ export default function CardQuote({
             <CyDView
               className={'flex flex-col flex-wrap justify-between items-end'}>
               <CyDText className={'font-bold text-[14px] '}>
-                {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
+                {formatAmount(gasFeeInCrypto, 4) + ' ' + nativeTokenSymbol}
               </CyDText>
               <CyDText className={'font-bold text-[14px] text-base100'}>
                 {'$' + formatAmount(gasFeeInFiat)}
@@ -1504,7 +1434,6 @@ export default function CardQuote({
             loading={loading}
             disabled={
               isPayDisabled ||
-              isAddressLoading ||
               !targetAddress ||
               (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
             }

@@ -149,7 +149,6 @@ export const screenTitle = {
   TELEGRAM_SETUP: 'telegramSetup',
   TELEGRAM_PIN_SETUP: 'telegramPinSetup',
   MANAGE_SUBSCRIPTION: 'manageSubscription',
-  FIRST_LOAD_CARD: 'firstLoadCard',
   THEME: 'theme',
   SELECT_ADDITIONAL_CARD: 'selectAdditionalCard',
   ADDITIONAL_CARD_DESCRIPTION: 'additionalCardDescription',

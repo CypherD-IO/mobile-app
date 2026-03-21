@@ -10,7 +10,6 @@ import { floor, get, isEmpty, set } from 'lodash';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, Platform, useWindowDimensions } from 'react-native';
-import { formatUnits } from 'viem';
 import Button from '../../../components/v2/button';
 import ChooseTokenModalV2 from '../../../components/v2/chooseTokenModalV2';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
@@ -30,8 +29,10 @@ import {
 import {
   ButtonType,
   CardProviders,
+  ConnectionTypes,
   TokenModalType,
 } from '../../../constants/enum';
+import { getConnectionType } from '../../../core/asyncStorage';
 import {
   CAN_ESTIMATE_L1_FEE_CHAINS,
   CHAIN_ARBITRUM,
@@ -53,7 +54,6 @@ import {
   hasSufficientBalanceAndGasFee,
   HdWalletContext,
   isNativeToken,
-  limitDecimalPlaces,
   parseErrorMessage,
   validateAmount,
 } from '../../../core/util';
@@ -72,6 +72,10 @@ import {
 } from '../../../styles/tailwindComponents';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import InsufficientBalanceBottomSheetContent from './InsufficientBalanceBottomSheet';
+import {
+  getCardQuoteActualTokensRequired,
+  getCardQuoteEvmGasFeeInCrypto,
+} from '../../../utils/cardQuote';
 import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
 import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
 /**
@@ -92,7 +96,7 @@ export default function BridgeFundCardScreen({
   route,
 }: {
   route: { params: BridgeFundCardScreenParams };
-}): JSX.Element {
+}): React.JSX.Element {
   // Use navigation hook instead of receiving it as a param to avoid non-serializable warning
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
@@ -280,9 +284,10 @@ export default function BridgeFundCardScreen({
     } = selectedToken as Holding & IHyperLiquidHolding;
 
     const nativeToken = await getNativeToken(chainDetails.backendName);
-    const actualTokensRequired = quote?.cosmosSwap
-      ? formatUnits(BigInt(quote.cosmosSwap.amountIn), contractDecimals)
-      : limitDecimalPlaces(quote.tokensRequired, contractDecimals);
+    const actualTokensRequired = getCardQuoteActualTokensRequired(
+      quote,
+      contractDecimals,
+    );
 
     if (DecimalHelper.isGreaterThan(actualTokensRequired, balanceDecimal)) {
       setLoading(false);
@@ -346,7 +351,16 @@ export default function BridgeFundCardScreen({
           gasFeeInFiat: 0,
         };
       } else if (chainDetails.chainName === ChainNames.ETH) {
-        if (
+        const quotedGasFeeInCrypto = getCardQuoteEvmGasFeeInCrypto(
+          quote,
+          nativeToken?.contractDecimals,
+        );
+        if (quote.evmSwap && quotedGasFeeInCrypto) {
+          gasDetails = {
+            isError: false,
+            gasFeeInCrypto: quotedGasFeeInCrypto,
+          };
+        } else if (
           DecimalHelper.isLessThanOrEqualTo(
             actualTokensRequired,
             balanceDecimal,
@@ -506,6 +520,7 @@ export default function BridgeFundCardScreen({
     if (chainDetails.chainName === ChainNames.ETH) {
       try {
         const amountToQuote = isCrpytoInput ? cryptoAmount : usdAmount;
+        const connectionType = await getConnectionType();
         const payload = {
           ecosystem: 'evm',
           address: ethereumAddress,
@@ -515,6 +530,9 @@ export default function BridgeFundCardScreen({
           amountInCrypto: isCrpytoInput,
           provider: currentCardProvider,
           cardId,
+          ...(connectionType !== ConnectionTypes.WALLET_CONNECT && {
+            isEVMV2: true,
+          }),
         };
         if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {
           set(payload, 'hyperliquidTradeType', selectedToken?.accountType);

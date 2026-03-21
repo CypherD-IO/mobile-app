@@ -28,24 +28,30 @@ import Long from 'long';
 import { useContext } from 'react';
 import {
   Address,
+  createWalletClient,
   encodeFunctionData,
   getContract,
+  Hex,
+  http,
   parseEther,
   parseGwei,
   parseUnits,
   PublicClient,
   SignTypedDataParameters,
 } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { AnalyticsType } from '../../constants/enum';
 import {
   Chain,
+  CHAIN_BASE,
   CHAIN_OPTIMISM,
   ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
   COSMOS_CHAINS_LIST,
   EVM_CHAINS,
+  chainIdNumberMapping,
 } from '../../constants/server';
 import {
   CheckAllowanceResponse,
@@ -56,6 +62,7 @@ import { GlobalContext } from '../../core/globalContext';
 import { Holding } from '../../core/portfolio';
 import { allowanceApprovalContractABI } from '../../core/swap';
 import {
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   getTimeOutTime,
   getViemPublicClient,
   getWeb3Endpoint,
@@ -63,7 +70,9 @@ import {
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import { IAutoLoadResponse } from '../../models/autoLoadResponse.interface';
+import { CardQuoteEvmSwap } from '../../models/card.model';
 import {
   SendInEvmInterface,
   SendNativeToken,
@@ -71,12 +80,14 @@ import {
 import { SwapMetaData } from '../../models/swapMetaData';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { resolveAndValidateEip7702ImplementationAddress } from '../../utils/fetchCardTargetAddress';
 import useCosmosSigner from '../useCosmosSigner';
 import useEthSigner from '../useEthSigner';
 import useGasService from '../useGasService';
 import useSolanaSigner from '../useSolana';
 import useAxios from '../../core/HttpRequest';
 import Config from 'react-native-config';
+import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -89,7 +100,7 @@ export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
-  const { postToOtherSource } = useAxios();
+  const { postToOtherSource, postWithAuth } = useAxios();
 
   const {
     estimateGasForEvm,
@@ -127,11 +138,11 @@ export default function useTransactionManager() {
     fromChain: Chain,
     contractAddress: string,
   ): boolean {
-    const isNative = [
-      fromChain.native_token_address,
-      fromChain.secondaryAddress,
-    ].includes(contractAddress);
-    return isNative;
+    const normalizedContractAddress = contractAddress.toLowerCase();
+
+    return [fromChain.native_token_address, fromChain.secondaryAddress]
+      .filter((address): address is string => Boolean(address))
+      .some(address => address.toLowerCase() === normalizedContractAddress);
   }
 
   const executeTransferContract = async (
@@ -1748,6 +1759,260 @@ export default function useTransactionManager() {
     }
   };
 
+  const DEFAULT_SMART_ACCOUNT_IMPLEMENTATION_ADDRESS =
+    '0xd5A7b2cecD76A34328e483a2258b615109b71DeA' as const;
+
+  const swapErc20Abi = [
+    {
+      inputs: [
+        { name: 'tokenIn', type: 'address' },
+        { name: 'tokenOut', type: 'address' },
+        { name: 'amountIn', type: 'uint256' },
+        { name: 'approvalAddress', type: 'address' },
+        { name: 'swapRouter', type: 'address' },
+        { name: 'swapCalldata', type: 'bytes' },
+        { name: 'minOutAmount', type: 'uint256' },
+        { name: 'recipient', type: 'address' },
+      ],
+      name: 'swapERC20',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+  ] as const;
+
+  const swapNativeAbi = [
+    {
+      inputs: [
+        { name: 'tokenOut', type: 'address' },
+        { name: 'swapRouter', type: 'address' },
+        { name: 'swapCalldata', type: 'bytes' },
+        { name: 'minOutAmount', type: 'uint256' },
+        { name: 'recipient', type: 'address' },
+      ],
+      name: 'swapNative',
+      outputs: [],
+      stateMutability: 'payable',
+      type: 'function',
+    },
+  ] as const;
+
+  const swapWith7702 = async ({
+    tokenData,
+    evmSwap,
+    quoteId,
+  }: {
+    tokenData: Holding;
+    evmSwap: CardQuoteEvmSwap;
+    quoteId?: string;
+  }): Promise<TransactionResponse> => {
+    try {
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        false,
+        hdWalletContext.state.pinValue,
+      );
+
+      if (!privateKey || privateKey === _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        return {
+          isError: true,
+          error: 'Authentication failed, unable to retrieve private key',
+        };
+      }
+
+      const account = privateKeyToAccount(privateKey as Hex);
+      const mappedChainName =
+        get(ChainNameMapping, evmSwap.fromChain) ??
+        String(evmSwap.fromChain).toLowerCase();
+      const chainConfig =
+        get(ChainConfigMapping, mappedChainName) ??
+        get(chainIdNumberMapping, evmSwap.chainId);
+
+      if (!chainConfig) {
+        return {
+          isError: true,
+          error: `Unsupported smart account swap chain: ${evmSwap.fromChain}`,
+        };
+      }
+
+      if (
+        account.address.toLowerCase() !== evmSwap.sourceAddress.toLowerCase()
+      ) {
+        return {
+          isError: true,
+          error: 'Swap quote source address does not match the active wallet',
+        };
+      }
+
+      const swapTransaction = evmSwap.transactionRequest ?? evmSwap.transaction;
+      if (!swapTransaction?.data) {
+        return {
+          isError: true,
+          error: 'Missing swap transaction data for smart account flow',
+        };
+      }
+
+      const swapRouter = (swapTransaction.to ??
+        evmSwap.routerAddress) as Address;
+      const isNativeTokenIn = tokenData.isNativeToken;
+      const rpcUrl = getWeb3Endpoint(chainConfig, globalContext);
+      const publicClient = getViemPublicClient(rpcUrl);
+
+      const walletClient = createWalletClient({
+        account,
+        transport: http(rpcUrl),
+      });
+
+      const implementationValidation =
+        await resolveAndValidateEip7702ImplementationAddress({
+          chainName: evmSwap.fromChain as ChainBackendNames,
+          quoteImplementationAddress: evmSwap.eip7702ImplementationAddress,
+          quoteId,
+          globalContext,
+        });
+
+      if (!implementationValidation.success) {
+        return {
+          isError: true,
+          error: implementationValidation.userFriendlyMessage,
+        };
+      }
+
+      const authorization = await walletClient.signAuthorization({
+        account,
+        contractAddress:
+          implementationValidation.implementationAddress as Address,
+        executor: 'self',
+      });
+
+      const data = isNativeTokenIn
+        ? encodeFunctionData({
+            abi: swapNativeAbi,
+            functionName: 'swapNative',
+            args: [
+              evmSwap.toToken as Address,
+              swapRouter,
+              swapTransaction.data as Hex,
+              BigInt(evmSwap.toAmountMin),
+              evmSwap.destinationAddress as Address,
+            ],
+          })
+        : encodeFunctionData({
+            abi: swapErc20Abi,
+            functionName: 'swapERC20',
+            args: [
+              evmSwap.fromToken as Address,
+              evmSwap.toToken as Address,
+              BigInt(evmSwap.fromAmount),
+              evmSwap.approvalAddress as Address,
+              swapRouter,
+              swapTransaction.data as Hex,
+              BigInt(evmSwap.toAmountMin),
+              evmSwap.destinationAddress as Address,
+            ],
+          });
+
+      const hash = await walletClient.sendTransaction({
+        account,
+        chain: chainConfig,
+        to: account.address,
+        data,
+        value: isNativeTokenIn
+          ? BigInt(evmSwap.fromAmount)
+          : BigInt(swapTransaction.value ?? '0'),
+        ...(swapTransaction.gasLimit
+          ? { gas: BigInt(swapTransaction.gasLimit) }
+          : {}),
+        authorizationList: [authorization],
+      });
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status === 'reverted') {
+        return { isError: true, error: 'Transaction reverted' };
+      }
+
+      logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: receipt.transactionHash,
+        chain: chainConfig.backendName,
+        address: account.address,
+        message: 'Swap executed via EIP-7702',
+      });
+
+      return {
+        isError: false,
+        hash: receipt.transactionHash,
+      };
+    } catch (error) {
+      Sentry.captureException(error);
+      return { isError: true, error };
+    }
+  };
+
+  const upgradeEoaToSmartAccount = async (): Promise<TransactionResponse> => {
+    try {
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        false,
+        hdWalletContext.state.pinValue,
+      );
+
+      if (!privateKey || privateKey === _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        return {
+          isError: true,
+          error: 'Authentication failed, unable to retrieve private key',
+        };
+      }
+      const chain = CHAIN_BASE;
+      const { chainName, backendName } = chain;
+      const chainConfig = get(
+        ChainConfigMapping,
+        String(get(ChainNameMapping, chainName)),
+      );
+      const account = privateKeyToAccount(privateKey as Hex);
+      const rpcUrl = getWeb3Endpoint(chain, globalContext);
+      const publicClient = getViemPublicClient(rpcUrl);
+
+      const walletClient = createWalletClient({
+        account,
+        transport: http(rpcUrl),
+      });
+
+      const authorization = await walletClient.signAuthorization({
+        account,
+        contractAddress: DEFAULT_SMART_ACCOUNT_IMPLEMENTATION_ADDRESS,
+      });
+
+      const hash = await walletClient.sendTransaction({
+        account,
+        chain: chainConfig,
+        to: account.address,
+        authorizationList: [authorization],
+      });
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status === 'reverted') {
+        return { isError: true, error: 'Transaction reverted' };
+      }
+
+      logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: receipt.transactionHash,
+        chain: backendName,
+        address: ethereumAddress,
+        message: 'EOA upgraded to smart account via EIP-7702',
+      });
+
+      return {
+        isError: false,
+        hash: receipt.transactionHash,
+      };
+    } catch (error) {
+      Sentry.captureException(error);
+      return { isError: true, error };
+    }
+  };
+
   return {
     sendEvmToken,
     sendCosmosToken,
@@ -1763,5 +2028,7 @@ export default function useTransactionManager() {
     signTypedData,
     executeAirdropClaimContract,
     checkIfAirdropClaimed,
+    upgradeEoaToSmartAccount,
+    swapWith7702,
   };
 }

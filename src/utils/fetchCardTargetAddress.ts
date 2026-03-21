@@ -69,6 +69,26 @@ export interface ResolveTargetAddressFailure {
 
 export type ResolveTargetAddressResult = ResolveTargetAddressSuccess | ResolveTargetAddressFailure;
 
+export interface ResolveEip7702ImplementationAddressParams {
+  /** The blockchain network name from the quote (e.g. 'BASE', 'ARBITRUM') */
+  chainName: string | undefined | null;
+  /** The implementation address provided in the quote */
+  quoteImplementationAddress: string | undefined | null;
+  /** Quote ID for error reporting and support reference */
+  quoteId?: string;
+  /** Global context for the current user */
+  globalContext: GlobalContextDef;
+}
+
+export interface ResolveEip7702ImplementationAddressSuccess {
+  success: true;
+  implementationAddress: string;
+}
+
+export type ResolveEip7702ImplementationAddressResult =
+  | ResolveEip7702ImplementationAddressSuccess
+  | ResolveTargetAddressFailure;
+
 // ============================================================================
 // Private Helpers
 // ============================================================================
@@ -118,6 +138,15 @@ const isValidAddress = (address: string | undefined | null, chain: string): bool
       return false;
   }
 };
+
+const EIP7702_TARGET_PROGRAM_ID = 'CYPHER_CONTRACT';
+const EIP7702_TARGET_PROVIDER = 'EIP7702';
+
+function isRecognizedChainBackendName(
+  chainName: string,
+): chainName is ChainBackendNames {
+  return Object.values(ChainBackendNames).includes(chainName as ChainBackendNames);
+}
 
 /**
  * Maps a specific chain backend name to its chain family for target address lookup.
@@ -373,5 +402,134 @@ export async function resolveAndValidateCardTargetAddress(
   return {
     success: true,
     targetAddress: contractAddress,
+  };
+}
+
+export async function resolveAndValidateEip7702ImplementationAddress(
+  params: ResolveEip7702ImplementationAddressParams,
+): Promise<ResolveEip7702ImplementationAddressResult> {
+  const { chainName, quoteImplementationAddress, quoteId, globalContext } =
+    params;
+
+  if (!chainName) {
+    Sentry.captureMessage(
+      'EIP-7702 implementation lookup validation failed - missing chainName',
+      {
+        level: 'warning',
+        extra: { hasChainName: !!chainName, quoteId },
+      },
+    );
+
+    return {
+      success: false,
+      errorType: TargetAddressErrorType.MISSING_PARAMS,
+      errorMessage: 'Missing required parameters: chainName',
+      userFriendlyMessage: `We detected missing transaction details (chainName). To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
+    };
+  }
+
+  if (!isRecognizedChainBackendName(chainName)) {
+    Sentry.captureMessage(
+      'EIP-7702 implementation lookup failed - invalid chain',
+      {
+        level: 'warning',
+        extra: { chainName, quoteId },
+      },
+    );
+
+    return {
+      success: false,
+      errorType: TargetAddressErrorType.INVALID_CHAIN,
+      errorMessage: `Invalid chain name: ${chainName}`,
+      userFriendlyMessage: `Unsupported blockchain network. To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
+    };
+  }
+
+  let contractAddress: string;
+  try {
+    contractAddress = await fetchCardTargetAddress(
+      EIP7702_TARGET_PROGRAM_ID,
+      EIP7702_TARGET_PROVIDER,
+      chainName,
+      globalContext,
+    );
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
+    Sentry.captureException(error, {
+      extra: {
+        quoteId,
+        chainName,
+        programId: EIP7702_TARGET_PROGRAM_ID,
+        provider: EIP7702_TARGET_PROVIDER,
+        message: 'EIP-7702 implementation lookup failed',
+      },
+    });
+
+    return {
+      success: false,
+      errorType: TargetAddressErrorType.FETCH_FAILED,
+      errorMessage: `EIP-7702 implementation lookup failed: ${errorMessage}`,
+      userFriendlyMessage: `We were unable to verify the smart account implementation address (${errorMessage}). To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
+    };
+  }
+
+  if (!quoteImplementationAddress) {
+    return {
+      success: false,
+      errorType: TargetAddressErrorType.ADDRESS_MISMATCH,
+      errorMessage:
+        'Quote EIP-7702 implementation address is missing for validation',
+      userFriendlyMessage: `We detected missing quote data for verification. To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
+    };
+  }
+
+  const normalizedContractAddress = normalizeAddressForComparison(
+    contractAddress,
+    chainName,
+  );
+  const normalizedQuoteAddress = normalizeAddressForComparison(
+    quoteImplementationAddress,
+    chainName,
+  );
+
+  if (normalizedContractAddress !== normalizedQuoteAddress) {
+    Sentry.captureException(
+      new Error(
+        'EIP-7702 implementation address mismatch between contract and quote',
+      ),
+      {
+        extra: {
+          quoteId,
+          chainName,
+          programId: EIP7702_TARGET_PROGRAM_ID,
+          provider: EIP7702_TARGET_PROVIDER,
+          contractAddress,
+          quoteImplementationAddress,
+        },
+      },
+    );
+
+    return {
+      success: false,
+      errorType: TargetAddressErrorType.ADDRESS_MISMATCH,
+      errorMessage: `EIP-7702 implementation address mismatch: Contract(${contractAddress}) vs Quote(${quoteImplementationAddress})`,
+      userFriendlyMessage: `We detected a mismatch in the smart account implementation address. To protect your funds, this transaction has been stopped. Please contact Cypher support${
+        quoteId ? ` with Quote ID: ${quoteId}` : ''
+      }.`,
+    };
+  }
+
+  return {
+    success: true,
+    implementationAddress: contractAddress,
   };
 }
