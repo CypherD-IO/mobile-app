@@ -148,6 +148,7 @@ export interface CardQuoteEvmSwap {
   toAmountMin: string;
   approvalAddress: string;
   routerAddress: string;
+  eip7702ImplementationAddress?: string;
   transaction?: CardQuoteEvmSwapTransaction;
   transactionRequest?: CardQuoteEvmSwapTransaction;
   providerData?: CardQuoteEvmSwapProviderData;

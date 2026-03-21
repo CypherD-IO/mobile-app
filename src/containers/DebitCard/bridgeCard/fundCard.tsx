@@ -531,7 +531,7 @@ export default function BridgeFundCardScreen({
           provider: currentCardProvider,
           cardId,
           ...(connectionType !== ConnectionTypes.WALLET_CONNECT && {
-            isEVMV2: false,
+            isEVMV2: true,
           }),
         };
         if (chainDetails.backendName === ChainBackendNames.HYPERLIQUID) {

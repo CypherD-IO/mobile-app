@@ -80,6 +80,7 @@ import {
 import { SwapMetaData } from '../../models/swapMetaData';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { DecimalHelper } from '../../utils/decimalHelper';
+import { resolveAndValidateEip7702ImplementationAddress } from '../../utils/fetchCardTargetAddress';
 import useCosmosSigner from '../useCosmosSigner';
 import useEthSigner from '../useEthSigner';
 import useGasService from '../useGasService';
@@ -1758,7 +1759,7 @@ export default function useTransactionManager() {
     }
   };
 
-  const SMART_ACCOUNT_IMPLEMENTATION_ADDRESS =
+  const DEFAULT_SMART_ACCOUNT_IMPLEMENTATION_ADDRESS =
     '0xd5A7b2cecD76A34328e483a2258b615109b71DeA' as const;
 
   const swapErc20Abi = [
@@ -1799,9 +1800,11 @@ export default function useTransactionManager() {
   const swapWith7702 = async ({
     tokenData,
     evmSwap,
+    quoteId,
   }: {
     tokenData: Holding;
     evmSwap: CardQuoteEvmSwap;
+    quoteId?: string;
   }): Promise<TransactionResponse> => {
     try {
       const privateKey = await loadPrivateKeyFromKeyChain(
@@ -1859,15 +1862,27 @@ export default function useTransactionManager() {
         transport: http(rpcUrl),
       });
 
+      const implementationValidation =
+        await resolveAndValidateEip7702ImplementationAddress({
+          chainName: evmSwap.fromChain as ChainBackendNames,
+          quoteImplementationAddress: evmSwap.eip7702ImplementationAddress,
+          quoteId,
+          globalContext,
+        });
+
+      if (!implementationValidation.success) {
+        return {
+          isError: true,
+          error: implementationValidation.userFriendlyMessage,
+        };
+      }
+
       const authorization = await walletClient.signAuthorization({
         account,
-        contractAddress: SMART_ACCOUNT_IMPLEMENTATION_ADDRESS,
+        contractAddress:
+          implementationValidation.implementationAddress as Address,
         executor: 'self',
       });
-
-      console.log('authorization', authorization);
-
-      console.log('isNativeTokenIn', isNativeTokenIn);
 
       const data = isNativeTokenIn
         ? encodeFunctionData({
@@ -1964,10 +1979,8 @@ export default function useTransactionManager() {
 
       const authorization = await walletClient.signAuthorization({
         account,
-        contractAddress: SMART_ACCOUNT_IMPLEMENTATION_ADDRESS,
+        contractAddress: DEFAULT_SMART_ACCOUNT_IMPLEMENTATION_ADDRESS,
       });
-
-      console.log('authorization', authorization);
 
       const hash = await walletClient.sendTransaction({
         account,
@@ -1975,8 +1988,6 @@ export default function useTransactionManager() {
         to: account.address,
         authorizationList: [authorization],
       });
-
-      console.log('hash', hash);
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
 

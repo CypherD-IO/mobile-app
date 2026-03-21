@@ -79,8 +79,6 @@ import { TxRaw } from '@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx';
 import useSkipApiBridge from '../../../core/skipApi';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../../core/analytics';
 import { getCardQuoteActualTokensRequired } from '../../../utils/cardQuote';
-import { resolveAndValidateCardTargetAddress } from '../../../utils/fetchCardTargetAddress';
-import { hostWorker, PRODUCTION_ARCH_HOST } from '../../../global';
 import { Holding } from '../../../core/portfolio';
 
 export default function CardQuote({
@@ -156,9 +154,7 @@ export default function CardQuote({
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const injective = hdWallet.state.wallet.injective;
-  const [targetAddress, setTargetAddress] = useState<string>('');
-  const [isAddressLoading, setIsAddressLoading] = useState<boolean>(true);
-  const prevQuoteRef = useRef<any>(null);
+  const targetAddress = tokenSendParams.toAddress ?? '';
   const [connectionType, setConnectionType] = useState<string | null>(null);
   const { walletInfo } = useWalletInfo();
   const {
@@ -197,87 +193,6 @@ export default function CardQuote({
     };
     void checkConnectionType();
   }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    const getAddress = async () => {
-      const currentQuoteParams = {
-        programId: tokenQuote.programId,
-        cardProvider: tokenQuote.cardProvider,
-        chain: tokenQuote.chain,
-        targetAddress: tokenQuote.targetAddress,
-      };
-
-      if (
-        prevQuoteRef.current &&
-        prevQuoteRef.current.programId === currentQuoteParams.programId &&
-        prevQuoteRef.current.cardProvider === currentQuoteParams.cardProvider &&
-        prevQuoteRef.current.chain === currentQuoteParams.chain &&
-        prevQuoteRef.current.targetAddress ===
-          currentQuoteParams.targetAddress &&
-        targetAddress
-      ) {
-        if (isMounted) setIsAddressLoading(false);
-        return;
-      }
-
-      if (isMounted) setIsAddressLoading(true);
-
-      // -------------------------------------------------------------------------
-      // Target Address Resolution
-      // -------------------------------------------------------------------------
-      // On production: Fetch from smart contract and validate against quote
-      // On dev/staging: Use quote's target address directly (no contract validation)
-
-      const currentArchHost = hostWorker.getHost('ARCH_HOST');
-      const isProductionBackend = currentArchHost === PRODUCTION_ARCH_HOST;
-
-      if (isProductionBackend) {
-        const result = await resolveAndValidateCardTargetAddress({
-          programId: tokenQuote.programId,
-          provider: route.params.cardProvider,
-          chainName: tokenQuote.chain as ChainBackendNames,
-          quoteTargetAddress: tokenQuote.targetAddress,
-          quoteId: tokenQuote.quoteId,
-          globalContext,
-        });
-
-        if (!result.success) {
-          setIsAddressLoading(false);
-          setLoading(false);
-          showModal('state', {
-            type: 'error',
-            title: 'Transaction Security Check Failed',
-            description: result.userFriendlyMessage,
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-          return;
-        }
-        if (isMounted) {
-          setTargetAddress(result.targetAddress);
-          prevQuoteRef.current = currentQuoteParams;
-          setIsAddressLoading(false);
-          setIsPayDisabled(false);
-        }
-      } else {
-        // Non-production: use quote address directly
-        if (isMounted && tokenQuote.targetAddress) {
-          setTargetAddress(tokenQuote.targetAddress);
-          prevQuoteRef.current = currentQuoteParams;
-          setIsAddressLoading(false);
-          setIsPayDisabled(false);
-        } else if (isMounted) {
-          setIsAddressLoading(false);
-        }
-      }
-    };
-
-    getAddress();
-    return () => {
-      isMounted = false;
-    };
-  }, [tokenQuote]);
 
   const cosmosAddresses = useMemo(
     () => ({
@@ -553,8 +468,6 @@ export default function CardQuote({
                 symbol: selectedToken.symbol,
               };
             }
-            console.log('tokenQuote.evmSwap', tokenQuote.evmSwap);
-            console.log('isWalletConnect', isWalletConnect);
             if (tokenQuote.evmSwap) {
               response = isWalletConnect
                 ? {
@@ -565,6 +478,7 @@ export default function CardQuote({
                 : await swapWith7702({
                     tokenData: selectedToken as Holding,
                     evmSwap: tokenQuote.evmSwap,
+                    quoteId: tokenQuote.quoteId,
                   });
             } else {
               response = await sendEvmToken(
@@ -1520,7 +1434,6 @@ export default function CardQuote({
             loading={loading}
             disabled={
               isPayDisabled ||
-              isAddressLoading ||
               !targetAddress ||
               (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
             }
