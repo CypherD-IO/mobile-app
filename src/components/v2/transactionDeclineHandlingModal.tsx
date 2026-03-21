@@ -15,7 +15,7 @@ import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
 import { capitalize } from 'lodash';
 import useAxios from '../../core/HttpRequest';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
 
 export interface DeclineHandlingData {
@@ -75,7 +75,7 @@ const TransactionDeclineHandlingModal: React.FC<
   // Track modal appearance
   useEffect(() => {
     if (isModalVisible) {
-      void analytics().logScreenView({
+      void logEvent(getAnalytics(), 'screen_view', {
         screen_name: 'TransactionDeclineHandlingModal',
         screen_class: 'TransactionDeclineHandlingModal',
       });

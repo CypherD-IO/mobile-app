@@ -40,6 +40,7 @@ import Loading from '../../components/v2/loading';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import { screenTitle } from '../../constants';
+import { typography } from '../../constants/typography';
 import { Colors } from '../../constants/theme';
 import useAxios from '../../core/HttpRequest';
 import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
@@ -139,8 +140,9 @@ export default function Overview({
   const [marketDistributionLoading, setMarketDistributionLoading] =
     useState(true);
   const chartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const marketDistributionTimeoutRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
+  const marketDistributionTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const [showMarketCapTip, setMarketCapTip] = useState(false);
   const [showCirculatingSupplyTip, setCirculatingSupplyTip] = useState(false);
   const [showVolumeTip, setVolumeTip] = useState(false);
@@ -377,7 +379,12 @@ export default function Overview({
               {tokenData.contractAddress && !isNativeToken(tokenData) && (
                 <CyDView className='flex flex-row items-center'>
                   <CyDText className={'text-[12px]'}>
-                    {`${tokenData.contractAddress.substring(0, 6)}...${tokenData.contractAddress.substring(tokenData.contractAddress.length - 6)}`}
+                    {`${tokenData.contractAddress.substring(
+                      0,
+                      6,
+                    )}...${tokenData.contractAddress.substring(
+                      tokenData.contractAddress.length - 6,
+                    )}`}
                   </CyDText>
                   <CyDTouchView
                     onPress={() => {
@@ -475,10 +482,10 @@ export default function Overview({
         )} ${tokenData.name}`}</CyDText>
         <CyDView>
           <HTML
-            systemFonts={['Manrope']}
+            systemFonts={[typography.fontFamily('manrope', '400')]}
             baseStyle={{
               fontSize: '14px',
-              fontFamily: 'Manrope',
+              ...typography.manrope('400'),
               color: '#999999',
               lineHeight: 22,
             }}

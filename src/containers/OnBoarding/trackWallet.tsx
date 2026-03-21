@@ -1,4 +1,7 @@
-import firebase from '@react-native-firebase/app';
+import {
+  getMessaging,
+  getToken as getMessagingToken,
+} from '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
 import { t } from 'i18next';
 import React, { useContext, useState } from 'react';
@@ -48,7 +51,7 @@ export default function TrackWallet() {
     }
     if (ethAddress && isAddress(ethAddress)) {
       setLoading(true);
-      const fcmToken: any = await firebase.messaging().getToken();
+      const fcmToken: any = await getMessagingToken(getMessaging());
       if (fcmToken) {
         const payload = {
           fcmToken,

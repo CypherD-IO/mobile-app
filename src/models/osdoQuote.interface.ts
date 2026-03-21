@@ -7,7 +7,7 @@ export interface OdosInputToken {
 
 export interface EvmGasFeeInterface {
   chainId: EVM_CHAINS_TYPE;
-  isEIP1599Supported: boolean;
+  isEIP1559Supported: boolean;
   gasPrice: number;
   tokenPrice: number;
   maxFee?: number;

@@ -1,3 +1,5 @@
+import { typography } from './typography';
+
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
   ONBOARDING: 'OnBoarding',
@@ -161,9 +163,9 @@ export const screenTitle = {
 };
 
 export const fontsName = {
-  FONT_BLACK: 'Manrope',
-  FONT_BOLD: 'Manrope',
-  FONT_SEMI_BOLD: 'Manrope',
-  FONT_EXTRA_BOLD: 'Manrope',
-  FONT_REGULAR: 'Manrope',
+  FONT_BLACK: typography.fontFamily('manrope', '800'),
+  FONT_BOLD: typography.fontFamily('manrope', '700'),
+  FONT_SEMI_BOLD: typography.fontFamily('manrope', '600'),
+  FONT_EXTRA_BOLD: typography.fontFamily('manrope', '800'),
+  FONT_REGULAR: typography.fontFamily('manrope', '400'),
 };

@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../constants';
+import { typography } from '../constants/typography';
 import { CyDIcons, CyDView } from '../styles/tailwindComponents';
 import {
   DebitCardStackScreen,
@@ -30,7 +31,7 @@ import { Theme, useTheme } from '../reducers/themeReducer';
 import clsx from 'clsx';
 import { useColorScheme } from 'nativewind';
 import { handleDeepLink } from '../../App';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { useInstallReferrer } from '../hooks';
 import {
   getProcessedReferrerCode,
@@ -413,7 +414,7 @@ const TabStack = React.memo(
         const currentRouteName = getCurrentRouteName();
 
         if (previousRouteName !== currentRouteName && currentRouteName) {
-          void analytics().logScreenView({
+          void logEvent(getAnalytics(), 'screen_view', {
             screen_name: currentRouteName,
             screen_class: currentRouteName,
           });
@@ -461,7 +462,7 @@ const TabStack = React.memo(
           const currentRouteName = getCurrentRouteName();
 
           if (previousRouteName !== currentRouteName && currentRouteName) {
-            void analytics().logScreenView({
+            void logEvent(getAnalytics(), 'screen_view', {
               screen_name: currentRouteName,
               screen_class: currentRouteName,
             });
@@ -506,8 +507,7 @@ const TabStack = React.memo(
             tabBarActiveTintColor: getTabBarTextColor(),
             tabBarLabelStyle: {
               fontSize: 10,
-              fontWeight: '600' as const,
-              fontFamily: 'Manrope',
+              ...typography.manrope('600'),
             },
             tabBarStyle,
             tabBarBackground: () => (

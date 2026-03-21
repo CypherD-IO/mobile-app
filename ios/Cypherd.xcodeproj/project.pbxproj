@@ -11,12 +11,12 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		23471A945E244EAB8AE2A170 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C44A417437F048A7964EE149 /* CydFont.ttf */; };
 		2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */; };
 		23F83CC2789C45809FF4F794 /* Gambetta-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3171AF0057B4441895519E3C /* Gambetta-Semibold.ttf */; };
 		2FD51A45C3FE4435A1B6B697 /* Gambetta-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B5FFA807710644EDA3FBD05D /* Gambetta-Regular.ttf */; };
 		3A1CEB72E44540DB896A8106 /* Gambetta-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */; };
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
+		3F382AF518AA4B8AB57A4372 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6F574E6668A94945B50DABE0 /* CydFont.ttf */; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
 		62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A29F23708E9E4C56AAC109CA /* CypherNord.ttf */; };
@@ -73,6 +73,7 @@
 		5C433F6428E585ED00FA84F8 /* splash.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = splash.json; sourceTree = "<group>"; };
 		6449BD8EE34C403D8E1A3F0B /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		69B2D9D1A0834C91847AC860 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
+		6F574E6668A94945B50DABE0 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		7B69CC8348E34CA5B1F72BB9 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		7D992FCDCA1A451DBFBE582C /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Cypherd/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -90,7 +91,6 @@
 		BCB0BC6E280DF93100441CE3 /* Cypherd.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Cypherd.entitlements; path = Cypherd/Cypherd.entitlements; sourceTree = "<group>"; };
 		BCD4DAD068D0B869A0FCD636 /* Pods-Cypherd-CypherdTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd-CypherdTests.release.xcconfig"; path = "Target Support Files/Pods-Cypherd-CypherdTests/Pods-Cypherd-CypherdTests.release.xcconfig"; sourceTree = "<group>"; };
 		BE0EA44956C44C789908DC17 /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
-		C44A417437F048A7964EE149 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gambetta-Medium.ttf"; path = "../assets/fonts/Gambetta-Medium.ttf"; sourceTree = "<group>"; };
 		D85EC71D87BE43D8BF1C0222 /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 		DC96D072EC354EEEA96DDCAF /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
@@ -166,12 +166,12 @@
 				3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */,
 				29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */,
 				A29F23708E9E4C56AAC109CA /* CypherNord.ttf */,
-				C44A417437F048A7964EE149 /* CydFont.ttf */,
 				8B0BD94B009A477E95E76E20 /* Gambetta-Bold.ttf */,
 				E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */,
 				CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */,
 				B5FFA807710644EDA3FBD05D /* Gambetta-Regular.ttf */,
 				3171AF0057B4441895519E3C /* Gambetta-Semibold.ttf */,
+				6F574E6668A94945B50DABE0 /* CydFont.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -358,13 +358,13 @@
 				9051DFCC29A24E86A3C678EE /* Manrope-Regular.ttf in Resources */,
 				EC8AF5C1EF1942ADBFC836D3 /* Manrope-SemiBold.ttf in Resources */,
 				62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */,
-				23471A945E244EAB8AE2A170 /* CydFont.ttf in Resources */,
 				CCAC4103B75F4453B519587D /* Gambetta-Bold.ttf in Resources */,
 				3A1CEB72E44540DB896A8106 /* Gambetta-Light.ttf in Resources */,
 				E6894B9C48CE4E6590CCC2F6 /* Gambetta-Medium.ttf in Resources */,
 				2FD51A45C3FE4435A1B6B697 /* Gambetta-Regular.ttf in Resources */,
 				23F83CC2789C45809FF4F794 /* Gambetta-Semibold.ttf in Resources */,
 				9DD5FEDD929A49E8B079FCAF /* Colors.xcassets in Resources */,
+				3F382AF518AA4B8AB57A4372 /* CydFont.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

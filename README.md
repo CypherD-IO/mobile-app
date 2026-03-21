@@ -14,6 +14,7 @@ TBD: Next step is to prototype the interaction between React Native app back to 
 This project uses private packages from GitHub Packages (`@cypherd-io` scope). You need to set up authentication before running `npm install`.
 
 **1. Generate a GitHub Personal Access Token:**
+
 - Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
 - Click "Generate new token (classic)"
 - Select scope: `read:packages`
@@ -42,9 +43,21 @@ echo $NPM_TOKEN
 
 [React Native MAC Setup Guide](https://reactnative.dev/docs/environment-setup)
 
+### Font setup
+
+This project uses generated native font assets.
+
+- Add or update font files in `assets/fonts`
+- Run `npm run fonts:setup`
+- If you use NativeWind classes, update `fontFamily` in `tailwind.config.js`
+- If you use `typography` helpers, update `src/constants/typography.ts`
+
+Full guide: `FONT_SETUP.md`
+
 ### Ruby, Bundler, and CocoaPods Troubleshooting
 
 If `npm run start`, `pod install`, or `bundle install` fails with errors like:
+
 - `Could not find 'bundler' (...) required by Gemfile.lock`
 - `Something went wrong while installing CocoaPods`
 

@@ -186,7 +186,7 @@ export default function BridgeFundCardScreen({
   const fetchNativeTokenBalance = async (token: Holding): Promise<void> => {
     try {
       const nativeToken = await getNativeToken(token.chainDetails.backendName);
-      setNativeTokenBalance(nativeToken.balanceDecimal);
+      setNativeTokenBalance(nativeToken?.balanceDecimal ?? '0');
     } catch (error) {
       // Set to '0' on error to avoid undefined state
       setNativeTokenBalance('0');
@@ -234,7 +234,7 @@ export default function BridgeFundCardScreen({
           const nativeToken = await getNativeToken(
             defaultToken.chainDetails.backendName,
           );
-          setNativeTokenBalance(nativeToken.balanceDecimal);
+          setNativeTokenBalance(nativeToken?.balanceDecimal ?? '0');
 
           // Set suggested amounts
           const tempMinTokenValue =
@@ -707,7 +707,7 @@ export default function BridgeFundCardScreen({
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
     const nativeToken = await getNativeToken(item.chainDetails.backendName);
-    setNativeTokenBalance(nativeToken.balanceDecimal ?? '0');
+    setNativeTokenBalance(nativeToken?.balanceDecimal ?? '0');
     setIsCryptoInput(false);
     const tempMinTokenValue =
       item.chainDetails.backendName === CHAIN_ETH.backendName
@@ -737,11 +737,12 @@ export default function BridgeFundCardScreen({
       contractDecimals,
       chainDetails,
       balanceDecimal,
-      symbol: selectedTokenSymbol,
     } = selectedToken as Holding;
 
     const nativeTokenSymbol: string =
-      get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
+      get(NativeTokenMapping, chainDetails.backendName) ??
+      get(NativeTokenMapping, chainDetails.symbol) ??
+      chainDetails.symbol;
 
     let amountInCrypto = balanceDecimal;
 
@@ -787,7 +788,7 @@ export default function BridgeFundCardScreen({
         try {
           // Reserving gas for the txn if the selected token is a native token.
           if (
-            selectedTokenSymbol === nativeTokenSymbol &&
+            isNativeToken(selectedToken) &&
             !GASLESS_CHAINS.includes(chainDetails.backendName) &&
             chainDetails.backendName !== ChainBackendNames.HYPERLIQUID
           ) {
@@ -926,7 +927,7 @@ export default function BridgeFundCardScreen({
         // Reserving gas for the txn if the selected token is a native token.
         setIsMaxLoading(true);
         if (
-          selectedTokenSymbol === nativeTokenSymbol &&
+          isNativeToken(selectedToken) &&
           !GASLESS_CHAINS.includes(chainDetails.backendName)
         ) {
           try {
@@ -1061,7 +1062,7 @@ export default function BridgeFundCardScreen({
         // Reserving gas for the txn if the selected token is a native token.
         setIsMaxLoading(true);
         if (
-          selectedTokenSymbol === nativeTokenSymbol &&
+          isNativeToken(selectedToken) &&
           !GASLESS_CHAINS.includes(chainDetails.backendName)
         ) {
           try {
