@@ -64,6 +64,7 @@ import {
   GlobalContextType,
   CardOperationsAuthType,
 } from '../../../constants/enum';
+import { CARD_IMAGE_ASPECT_RATIO } from '../../../constants/cardPageV2';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import AppImages from '../../../../assets/images/appImages';
 import GradientText from '../../../components/gradientText';
@@ -1773,14 +1774,14 @@ export default function CardControls(): React.JSX.Element {
               </CyDText>
             </CyDView>
 
-            <CyDView className='w-full aspect-[1.586] rounded-[14px] overflow-hidden mt-[50px] shadow-lg shadow-black/30'>
+            <CyDView className='w-full mt-[50px] shadow-lg shadow-black/30' style={{ aspectRatio: CARD_IMAGE_ASPECT_RATIO }}>
               <CyDFastImage
                 source={getCardImage(
                   selectedCard,
                   currentCardProvider as CardProviders,
                 )}
-                className='w-full h-full bg-black'
-                resizeMode='cover'
+                className='w-full h-full'
+                resizeMode='contain'
               />
               {selectedCard.cardTag &&
                 selectedCard.status !== CardStatus.HIDDEN && (

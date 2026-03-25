@@ -23,9 +23,8 @@ import {
   CardType,
   CypherPlanId,
 } from '../../../../constants/enum';
-import AppImages, {
-  CYPHER_CARD_IMAGES,
-} from '../../../../../assets/images/appImages';
+import AppImages from '../../../../../assets/images/appImages';
+import { getCardImageUri } from '../../../../core/util';
 import { capitalize, get, isUndefined } from 'lodash';
 import { CardProfile } from '../../../../models/cardProfile.model';
 import {
@@ -48,10 +47,7 @@ interface RouteParams {
 
 const getCardImage = (type: CardType, designId: string) => {
   const cardType = type === 'virtual' ? 'virtual' : 'physical';
-  const cardImage = `${CYPHER_CARD_IMAGES}/${cardType}-${designId}.png`;
-  return {
-    uri: cardImage,
-  };
+  return getCardImageUri(cardType, designId);
 };
 
 const RenderPrice = ({

@@ -8,9 +8,7 @@ import {
   CyDMaterialDesignIcons,
 } from '../../../styles/tailwindComponents';
 import { StatusBar } from 'react-native';
-import AppImages, {
-  CYPHER_CARD_IMAGES,
-} from '../../../../assets/images/appImages';
+import AppImages from '../../../../assets/images/appImages';
 import {
   NavigationProp,
   ParamListBase,
@@ -26,7 +24,7 @@ import { capitalize } from 'lodash';
 import { screenTitle } from '../../../constants';
 import Button from '../../../components/v2/button';
 import clsx from 'clsx';
-import { getCountryNameById } from '../../../core/util';
+import { getCardImageUri, getCountryNameById } from '../../../core/util';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
@@ -39,10 +37,7 @@ interface RouteParams {
 }
 
 const getCardImage = (type: CardType, designId: string) => {
-  const cardImage = `${CYPHER_CARD_IMAGES}/${type}-${designId}.png`;
-  return {
-    uri: cardImage,
-  };
+  return getCardImageUri(type, designId);
 };
 
 export default function ShippingConfirmation() {

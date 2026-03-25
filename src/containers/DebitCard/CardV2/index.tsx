@@ -38,9 +38,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import FastImage from 'react-native-fast-image';
-import AppImages, {
-  CYPHER_CARD_IMAGES,
-} from '../../../../assets/images/appImages';
+import AppImages from '../../../../assets/images/appImages';
 import { getCardColorByHex } from '../../../constants/cardColours';
 import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
 import { GetPhysicalCardComponent } from '../../../components/getPhysicalCardComponent';
@@ -57,6 +55,7 @@ import Loading from '../../../components/v2/loading';
 import TermsAndConditionsModal from '../../../components/v2/termsAndConditionsModal';
 import { screenTitle } from '../../../constants';
 import {
+  CARD_IMAGE_ASPECT_RATIO,
   DateRange,
   STATUSES,
   TYPES,
@@ -91,6 +90,7 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import {
   copyToClipboard,
   decryptWithSecretKey,
+  getCardImageUri,
   isPotentiallyDccOvercharged,
   sleepFor,
 } from '../../../core/util';
@@ -203,11 +203,27 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const OVERLAY_CARD_WIDTH = SCREEN_WIDTH - 32;
 
 const STACK_POSITIONS = [
-  { width: 364, height: 230, top: 43 },
-  { width: 307, height: 194, top: 27 },
-  { width: 256, height: 163, top: 10 },
-] as const;
-const NEUTRAL_POS = { width: 230, height: 147, top: 0 } as const;
+  {
+    width: SCREEN_WIDTH * 0.926,
+    height: (SCREEN_WIDTH * 0.926) / CARD_IMAGE_ASPECT_RATIO,
+    top: 43,
+  },
+  {
+    width: SCREEN_WIDTH * 0.781,
+    height: (SCREEN_WIDTH * 0.781) / CARD_IMAGE_ASPECT_RATIO,
+    top: 27,
+  },
+  {
+    width: SCREEN_WIDTH * 0.651,
+    height: (SCREEN_WIDTH * 0.651) / CARD_IMAGE_ASPECT_RATIO,
+    top: 10,
+  },
+];
+const NEUTRAL_POS = {
+  width: SCREEN_WIDTH * 0.585,
+  height: (SCREEN_WIDTH * 0.585) / CARD_IMAGE_ASPECT_RATIO,
+  top: 0,
+};
 
 const COLLAPSE_CARD_HEIGHT = 250;
 
@@ -227,7 +243,7 @@ const CollapsingCardImage = React.memo(function CollapsingCardImage({
   cardCount?: number;
 }): React.ReactElement {
   const isNeutral = totalCards > 3 && index > 2;
-  const stackIndex = 2 - index;
+  const stackIndex = Math.min(totalCards, 3) - 1 - index;
   const target =
     totalCards <= 3
       ? STACK_POSITIONS[stackIndex] ?? STACK_POSITIONS[2]
@@ -236,7 +252,7 @@ const CollapsingCardImage = React.memo(function CollapsingCardImage({
       : NEUTRAL_POS;
 
   const initialWidth = containerWidth;
-  const initialHeight = containerWidth / 1.586;
+  const initialHeight = containerWidth / CARD_IMAGE_ASPECT_RATIO;
   const initialY = index * COLLAPSE_CARD_HEIGHT;
   const initialLeft = 16;
   const targetLeft = (SCREEN_WIDTH - target.width) / 2;
@@ -248,7 +264,6 @@ const CollapsingCardImage = React.memo(function CollapsingCardImage({
       left: initialLeft + (targetLeft - initialLeft) * p,
       width: initialWidth + (target.width - initialWidth) * p,
       height: initialHeight + (target.height - initialHeight) * p,
-      borderRadius: interpolate(p, [0, 1], [12, 10], 'clamp'),
       opacity: isNeutral
         ? interpolate(p, [0, 0.85, 1.0], [1, 1, 0], 'clamp')
         : 1,
@@ -269,9 +284,8 @@ const CollapsingCardImage = React.memo(function CollapsingCardImage({
         animatedStyle,
       ]}>
       <CyDFastImage
-        className='w-full h-full overflow-hidden'
-        resizeMode={FastImage.resizeMode.cover}
-        style={collapseStyles.cardImageBorder}
+        className='w-full h-full'
+        resizeMode={FastImage.resizeMode.contain}
         source={imageSource}
       />
       {cardCount !== undefined && cardCount > 3 && (
@@ -315,10 +329,6 @@ const CollapsingNeutralShade = React.memo(function CollapsingNeutralShade({
 const collapseStyles = StyleSheet.create({
   cardWrapper: {
     position: 'absolute',
-    overflow: 'hidden',
-  },
-  cardImageBorder: {
-    borderRadius: 10,
   },
   cardCountBadge: {
     position: 'absolute',
@@ -328,6 +338,8 @@ const collapseStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 4,
     borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
   },
   neutralShade: {
     position: 'absolute',
@@ -1520,9 +1532,7 @@ export default function CypherCardScreen() {
       if (card.type === CardType.VIRTUAL && card.cardColor) {
         return getCardColorByHex(card.cardColor).cardImage;
       }
-      return {
-        uri: `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`,
-      };
+      return getCardImageUri(card.type, card.designId ?? '');
     } else {
       if (card.type === CardType.PHYSICAL) {
         return AppImages.PHYSICAL_CARD_MASTER;
@@ -1555,7 +1565,7 @@ export default function CypherCardScreen() {
         .filter(card => card.type && card.designId)
         .filter(card => !(card.type === CardType.VIRTUAL && card.cardColor))
         .map(card => ({
-          uri: `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId ?? ''}.png`,
+          ...getCardImageUri(card.type, card.designId ?? ''),
           priority: FastImage.priority.high,
         }));
       if (imagesToPreload.length > 0) {
@@ -1615,7 +1625,7 @@ export default function CypherCardScreen() {
   const renderBalanceSection = (): React.ReactElement => {
     return (
       <CyDView
-        className='items-center mt-[24px]'
+        className='items-center mt-[24px] mb-[16px]'
         onLayout={e => {
           const { y, height } = e.nativeEvent.layout;
           balanceBottomY.current = y + height;
@@ -1692,12 +1702,7 @@ export default function CypherCardScreen() {
 
             {/* Card image with tag and frozen overlays */}
             <CyDTouchView
-              className='relative rounded-[12px] overflow-hidden'
-              style={
-                card.type === CardType.PHYSICAL
-                  ? style.physicalCardBorder
-                  : undefined
-              }
+              className='relative'
               onPress={() => {
                 if (card.status === CardStatus.PENDING_ACTIVATION) {
                   Toast.show({
@@ -1715,10 +1720,9 @@ export default function CypherCardScreen() {
                 });
               }}>
               <CyDImageBackground
-                className='w-full rounded-[12px] overflow-hidden flex flex-col justify-end'
+                className='w-full flex flex-col justify-end'
                 style={style.expandedCardImage}
-                resizeMode='cover'
-                imageStyle={style.expandedCardImageBorder}
+                resizeMode='contain'
                 source={getCardImage(card)}>
                 {card.cardTag && (
                   <CyDView className='absolute' style={style.cardTagOverlay}>
@@ -1747,7 +1751,7 @@ export default function CypherCardScreen() {
                 {(card.status === CardStatus.IN_ACTIVE ||
                   card.status === CardStatus.BLOCKED) && (
                   <CyDView
-                    className='absolute top-0 left-0 right-0 bottom-0 rounded-[12px] justify-center items-start pl-[16px]'
+                    className='absolute top-0 left-0 right-0 bottom-0 rounded-[8px] justify-center items-start pl-[16px]'
                     style={style.frozenOverlay}>
                     <CyDView
                       className={clsx(
@@ -1930,7 +1934,7 @@ export default function CypherCardScreen() {
 
   const renderCardListFooter = React.useCallback(
     (): React.ReactElement => (
-      <CyDView>
+      <CyDView className='mt-[16px]'>
         {/* Free Metal Card promotion */}
         <GetPhysicalCardComponent
           cardProfile={cardProfile}
@@ -2597,14 +2601,7 @@ export default function CypherCardScreen() {
                     entering={undefined}
                     exiting={FadeOut.duration(100)}>
                     <CardScreen
-                      navigation={navigation}
                       currentCardProvider={cardProvider}
-                      onGetAdditionalCard={onGetAdditionalCard}
-                      onPressActivateCard={onPressActivateCard}
-                      refreshProfile={() => {
-                        void refreshProfile();
-                      }}
-                      cardDesignData={cardDesignData}
                       isAccountLocked={
                         shouldBlockAction() ||
                         shouldShowLocked() ||
@@ -2619,11 +2616,15 @@ export default function CypherCardScreen() {
                   <CyDView
                     style={[
                       collapseStyles.overlay,
-                      { top: balanceBottomY.current + 8 },
+                      { top: balanceBottomY.current + 24 },
                     ]}
                     pointerEvents={isDeckingUp ? 'none' : 'auto'}
                     className='bg-n40'>
                     <CyDTouchView
+                      style={{
+                        height:
+                          STACK_POSITIONS[0].top + STACK_POSITIONS[0].height,
+                      }}
                       onPress={() => {
                         if (!isDeckingUp) {
                           setShowAllCards(true);
@@ -2729,18 +2730,14 @@ const style = StyleSheet.create({
   },
   expandedCardImage: {
     width: '100%',
-    aspectRatio: 1.586,
-    borderRadius: 12,
-  },
-  expandedCardImageBorder: {
-    borderRadius: 12,
+    aspectRatio: CARD_IMAGE_ASPECT_RATIO,
   },
   cardTagOverlay: {
     top: '44%',
     right: '3%',
   },
   frozenOverlay: {
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
   },
   frozenBadge: {
     shadowColor: 'transparent',
@@ -2748,10 +2745,6 @@ const style = StyleSheet.create({
     shadowOpacity: 0,
     shadowRadius: 0,
     elevation: 0,
-  },
-  physicalCardBorder: {
-    borderWidth: 1,
-    borderColor: '#DFE2E6',
   },
   cardListSeparator: {
     height: 16,

@@ -22,6 +22,7 @@ import {
   RefreshControl,
   StyleSheet,
   ViewToken,
+  useWindowDimensions,
 } from 'react-native';
 import Button from '../../../components/v2/button';
 import CardTransactionItem from '../../../components/v2/CardTransactionItem';
@@ -91,13 +92,15 @@ export default function CardTransactions() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
+  const { height: screenHeight } = useWindowDimensions();
+  const emptyStateMarginTop = (screenHeight - 283) / 2 - screenHeight * 0.06;
   const txnRetrievalOffset = useRef<string | undefined>();
   const [viewableTransactionsDate, setViewableTransactionsDate] =
     useState<string>('');
   const lastViewableTransactionDate = useRef<string>('');
   const [exportOptionOpen, setExportOptionOpen] = useState(false);
   const [isEndReached, setIsEndReached] = useState(false);
-  const hasLoadedOnce = useRef(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const fetchDebounced = useRef<ReturnType<typeof setTimeout>>();
   const transactionsRef = useRef<ICardTransaction[]>([]);
 
@@ -215,6 +218,9 @@ export default function CardTransactions() {
           transactionsRef.current = txnsToSet;
           setTransactions(txnsToSet);
           spliceTransactions(txnsToSet);
+          if (txnsToSet.length === 0) {
+            setIsEndReached(true);
+          }
         } else {
           const existingIds = new Set(
             transactionsRef.current.map((txn: ICardTransaction) => txn.id),
@@ -255,7 +261,7 @@ export default function CardTransactions() {
         onFailure: hideModal,
       });
     } finally {
-      hasLoadedOnce.current = true;
+      setHasLoadedOnce(true);
       setRefreshing(false);
     }
   };
@@ -383,7 +389,7 @@ export default function CardTransactions() {
           modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
           filterState={[filter, setFilter]}
         />
-        {!hasLoadedOnce.current ? (
+        {!hasLoadedOnce ? (
           <CyDView className='flex-1 justify-center items-center'>
             <ActivityIndicator size='large' color={Colors.appColor} />
           </CyDView>
@@ -444,7 +450,9 @@ export default function CardTransactions() {
                 onEndReachedThreshold={0.5}
                 ListEmptyComponent={
                   !refreshing ? (
-                    <CyDView className='items-center mt-[250px]'>
+                    <CyDView
+                      className='items-center'
+                      style={{ marginTop: emptyStateMarginTop }}>
                       <CyDView
                         className='w-[240px] bg-n0 rounded-[16px] items-center'
                         style={styles.emptyContainer}>

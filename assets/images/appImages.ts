@@ -113,7 +113,8 @@ const REFER = require('./refer.png');
 const CARD_KYC_BACKGROUND = require('./cardKYCBackground.png');
 const DEBIT_CARD_BACKGROUND = require('./debit-card-background.png');
 const LOAD_CARD_LOTTIE = require('./loadCardLottie.json');
-const NO_TRANSACTIONS_YET = require('./noTransactions.png');
+const NO_TRANSACTIONS_YET_LIGHT_THEME = require('./noTransactionsLightTheme.png');
+const NO_TRANSACTIONS_YET_DARK_THEME = require('./noTransactionsDarkTheme.png');
 const NOBLE_PNG = require('./noble.png');
 const APR_ICON = require('./apr.png');
 const CELEBRATE = require('./celebrate.png');
@@ -951,7 +952,6 @@ export const AppImagesMap = {
     CARD_KYC_BACKGROUND,
     DEBIT_CARD_BACKGROUND,
     LOAD_CARD_LOTTIE,
-    NO_TRANSACTIONS_YET,
     NOBLE_PNG,
     APR_ICON,
     CELEBRATE,
@@ -1141,8 +1141,12 @@ export const AppImagesMap = {
     SAFEPAL_CLAIM_MODAL_NON_PREMIUM,
     TX_LOGO,
   },
-  [Theme.LIGHT]: {},
-  [Theme.DARK]: {},
+  [Theme.LIGHT]: {
+    NO_TRANSACTIONS_YET: NO_TRANSACTIONS_YET_LIGHT_THEME,
+  },
+  [Theme.DARK]: {
+    NO_TRANSACTIONS_YET: NO_TRANSACTIONS_YET_DARK_THEME,
+  },
 };
 
 enum AppImages {
