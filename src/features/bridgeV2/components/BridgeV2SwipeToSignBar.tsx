@@ -118,7 +118,7 @@ export default function BridgeV2SwipeToSignBar({
                   <CyDMaterialDesignIcons
                     name={done ? 'check' : 'chevron-right'}
                     size={22}
-                    className='text-p0'
+                    className='text-black'
                   />
                 )}
               </CyDView>

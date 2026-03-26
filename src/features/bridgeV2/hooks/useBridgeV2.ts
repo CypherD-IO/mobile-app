@@ -196,6 +196,8 @@ export default function useBridgeV2() {
   });
 
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const quoteAbortRef = useRef<AbortController | null>(null);
+  const quoteRequestSeqRef = useRef(0);
 
   const emit = useCallback(
     (event: ExecutionEvent) => handleExecutionEvent(event, setExecutionSteps),
@@ -337,12 +339,22 @@ export default function useBridgeV2() {
         return null;
       }
 
+      quoteAbortRef.current?.abort();
+      const ac = new AbortController();
+      quoteAbortRef.current = ac;
+      const seq = ++quoteRequestSeqRef.current;
+
       setStep('quoting');
       setLoading(prev => ({ ...prev, quote: true }));
       setError(null);
       setQuote(null);
 
-      const resp = await postBridgeV2Quote(input);
+      const resp = await postBridgeV2Quote(input, { signal: ac.signal });
+
+      if (seq !== quoteRequestSeqRef.current) {
+        return null;
+      }
+
       setLoading(prev => ({ ...prev, quote: false }));
 
       if (resp.isError || !resp.data) {
@@ -982,6 +994,9 @@ export default function useBridgeV2() {
 
   const reset = useCallback(() => {
     stopPolling();
+    quoteAbortRef.current?.abort();
+    quoteAbortRef.current = null;
+    quoteRequestSeqRef.current += 1;
     setStep('idle');
     setQuote(null);
     setStatusInfo(null);

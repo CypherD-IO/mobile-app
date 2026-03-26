@@ -6,6 +6,7 @@ import useTransactionManager from '../../hooks/useTransactionManager';
 import { getViemPublicClient, getWeb3Endpoint } from '../../core/util';
 import { GlobalContext } from '../../core/globalContext';
 import {
+  bridgeTxMinGasFromQuote,
   normalizeEvmAddress,
   normalizeEvmCalldata,
   parseEvmTxValueToBigInt,
@@ -39,6 +40,7 @@ export default function useEvmExecution() {
 
     const valueWei = parseEvmTxValueToBigInt(tx.value);
     const isNativeTransfer = valueWei > 0n;
+    const minGasLimit = bridgeTxMinGasFromQuote(tx.gasLimit);
 
     const hash = await executeTransferContract(
       {
@@ -52,6 +54,7 @@ export default function useEvmExecution() {
         contractDecimals: isNativeTransfer ? 18 : 0,
         contractData,
         isErc20: !isNativeTransfer,
+        minGasLimit,
       },
       undefined,
     );

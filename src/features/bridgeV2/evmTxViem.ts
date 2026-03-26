@@ -81,3 +81,19 @@ export function tryDecodeErc20ApproveCalldata(
 export function normalizeEvmAddress(address: string): `0x${string}` {
   return getAddress(address as `0x${string}`);
 }
+
+/**
+ * LiFi / ARCH quote `gasLimit` — use as a floor when estimating (hex or decimal string).
+ * Adds 20% headroom so the signed tx is less likely to run out of gas vs simulation.
+ */
+export function bridgeTxMinGasFromQuote(gasLimitField: string | undefined): bigint | undefined {
+  if (gasLimitField == null || String(gasLimitField).trim() === '') return undefined;
+  try {
+    const t = String(gasLimitField).trim();
+    const base = t.startsWith('0x') || t.startsWith('0X') ? BigInt(t) : BigInt(t);
+    if (base <= 0n) return undefined;
+    return (base * 120n + 99n) / 100n;
+  } catch {
+    return undefined;
+  }
+}

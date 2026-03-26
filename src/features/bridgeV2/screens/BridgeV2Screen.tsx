@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -29,7 +30,15 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { formatUnits, parseUnits } from 'viem';
+import { CHAIN_SOLANA } from '../../../constants/server';
+import { GlobalContext } from '../../../core/globalContext';
+import {
+  getExplorerUrlFromChainId,
+  getWeb3Endpoint,
+} from '../../../core/util';
+import BridgeV2InlineSignPanel from '../components/BridgeV2InlineSignPanel';
 import useBridgeV2, { BridgeV2Executors } from '../hooks/useBridgeV2';
+import { BRIDGE_V2_SHEET_ID } from '../hooks/useBridgeV2Sheet';
 import {
   BridgeV2Chain,
   BridgeV2QuoteRequestDto,
@@ -37,21 +46,23 @@ import {
   BridgeV2SignReviewPayload,
   BridgeV2Token,
   ExecutionStep,
+  EVM_NATIVE_QUOTE_TOKEN_DENOM,
   getTxExplorerUrl,
   HYPERLIQUID_CHAIN_ID,
+  isEvmChainId,
   SOLANA_CHAIN_ID,
+  SOLANA_NATIVE_QUOTE_TOKEN_DENOM,
 } from '../types';
-import { getExplorerUrlFromChainId } from '../../../core/util';
-import BridgeV2InlineSignPanel from '../components/BridgeV2InlineSignPanel';
 import { DecimalHelper } from '../../../utils/decimalHelper';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetProvider';
-import { BRIDGE_V2_SHEET_ID } from '../hooks/useBridgeV2Sheet';
 import { Holding } from '../../../core/portfolio';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
+
+const BRIDGE_QUOTE_DEBOUNCE_MS = 1500;
 
 type TokenSide = 'source' | 'dest';
 
@@ -77,7 +88,7 @@ interface BridgeV2ContentProps {
   /** When opening from Token Overview, pre-fill From chain + token. */
   initialFromHolding?: Holding;
   /** Fires once when execution finishes successfully (LiFi/Skip polling complete). */
-  onBridgeSuccess?: () => void | Promise<void>;
+  onBridgeSuccess?: () => undefined | Promise<void>;
 }
 
 const SEARCH_DEBOUNCE_MS = 250;
@@ -89,6 +100,8 @@ const TOKEN_LIST_MAX_HEIGHT = SCREEN_HEIGHT * 0.95 - TOKEN_SELECTOR_HEADER_HEIGH
 type BridgeTokenWithBalance = BridgeV2Token & {
   balance?: string;
   rawBalance?: string;
+  /** Exact on-chain balance in smallest units — use for Max / arithmetic (see portfolio Holding). */
+  balanceInteger?: string;
   balanceUsd?: number;
 };
 
@@ -150,43 +163,63 @@ function holdingMatchesBridgeToken(h: Holding, token: BridgeV2Token): boolean {
   );
 }
 
-/** LiFi / bridge API expect this mint for native SOL (not `solana-native` or human labels). */
-const SOLANA_NATIVE_BRIDGE_DENOM = '11111111111111111111111111111111';
 const SOLANA_MINT_BASE58_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
+/** True if value is zero address or common “native” placeholder (0xeeee…) from token lists. */
+function isEvmNativeQuoteAlias(addr: string): boolean {
+  const a = addr.trim().toLowerCase();
+  return (
+    a === EVM_NATIVE_QUOTE_TOKEN_DENOM ||
+    a === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+  );
+}
+
+/**
+ * Token id string for POST /bridge/quote — native EVM must be 0x0…0; native SOL must be 1111…
+ * (not 0xeeee… or arbitrary backend labels).
+ */
 function bridgeQuoteTokenDenom(token: BridgeV2Token): string {
-  if (token.chainId !== SOLANA_CHAIN_ID) {
-    return token.denom;
-  }
+  if (token.chainId === SOLANA_CHAIN_ID) {
+    const d = (token.denom || '').trim();
+    const c = (token.tokenContract || '').trim();
 
-  const d = (token.denom || '').trim();
-  const c = (token.tokenContract || '').trim();
-
-  for (const candidate of [d, c]) {
-    if (candidate && SOLANA_MINT_BASE58_RE.test(candidate)) {
-      return candidate;
+    for (const candidate of [d, c]) {
+      if (candidate && SOLANA_MINT_BASE58_RE.test(candidate)) {
+        return candidate;
+      }
     }
+
+    const dTrim = d.trim();
+    const cTrim = c.trim();
+    /** Do not lowercase base58 mints — only treat plain “solana-native” labels (non-mint strings). */
+    const looksLikeNativeLabel =
+      token.isNative ||
+      /^solana[-\s]?native$/i.test(dTrim) ||
+      /^solana[-\s]?native$/i.test(cTrim) ||
+      (dTrim.length > 0 &&
+        !SOLANA_MINT_BASE58_RE.test(dTrim) &&
+        (dTrim.toLowerCase() === 'solana-native' || dTrim.toLowerCase() === 'solana native')) ||
+      (cTrim.length > 0 &&
+        !SOLANA_MINT_BASE58_RE.test(cTrim) &&
+        (cTrim.toLowerCase() === 'solana-native' || cTrim.toLowerCase() === 'solana native'));
+
+    if (looksLikeNativeLabel) {
+      return SOLANA_NATIVE_QUOTE_TOKEN_DENOM;
+    }
+
+    return d || c;
   }
 
-  const dTrim = d.trim();
-  const cTrim = c.trim();
-  /** Do not lowercase base58 mints — only treat plain “solana-native” labels (non-mint strings). */
-  const looksLikeNativeLabel =
-    token.isNative ||
-    /^solana[-\s]?native$/i.test(dTrim) ||
-    /^solana[-\s]?native$/i.test(cTrim) ||
-    (dTrim.length > 0 &&
-      !SOLANA_MINT_BASE58_RE.test(dTrim) &&
-      (dTrim.toLowerCase() === 'solana-native' || dTrim.toLowerCase() === 'solana native')) ||
-    (cTrim.length > 0 &&
-      !SOLANA_MINT_BASE58_RE.test(cTrim) &&
-      (cTrim.toLowerCase() === 'solana-native' || cTrim.toLowerCase() === 'solana native'));
-
-  if (looksLikeNativeLabel) {
-    return SOLANA_NATIVE_BRIDGE_DENOM;
+  if (token.isEvm || isEvmChainId(token.chainId)) {
+    const d = (token.denom || '').trim();
+    const c = (token.tokenContract || '').trim();
+    if (token.isNative || isEvmNativeQuoteAlias(d) || isEvmNativeQuoteAlias(c)) {
+      return EVM_NATIVE_QUOTE_TOKEN_DENOM;
+    }
+    return d || c;
   }
 
-  return d || c;
+  return token.denom || token.tokenContract || '';
 }
 
 function formatTokenAmount(amount: string, _decimals?: number): string {
@@ -221,6 +254,8 @@ export default function BridgeV2Content({
     caret: isDark ? '#FFC72F' : '#FFBF15',
   };
 
+  const globalContext = useContext<any>(GlobalContext);
+
   const {
     chains,
     tokensByChain,
@@ -251,6 +286,8 @@ export default function BridgeV2Content({
   const [tokenSearch, setTokenSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedFilterChain, setSelectedFilterChain] = useState<string | null>(null);
+  /** After a quote succeeds, user stays on the main form until tapping Review. */
+  const [transactionReviewOpen, setTransactionReviewOpen] = useState(false);
 
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const signReviewResolverRef = useRef<((approved: boolean) => void) | null>(null);
@@ -268,7 +305,6 @@ export default function BridgeV2Content({
   /** Processing screen: measure shell + scroll content so the Lottie can shrink when content below grows (max 35% window). */
   const [bridgeProcShellH, setBridgeProcShellH] = useState(0);
   const [bridgeProcBelowH, setBridgeProcBelowH] = useState(0);
-
   const isExecutionActiveForLayout = step === 'executing' || step === 'polling';
 
   const bridgeLoaderLayout = useMemo(() => {
@@ -417,7 +453,10 @@ export default function BridgeV2Content({
 
   // Build a balance lookup from portfolio holdings keyed by "bridgeChainId:identifier"
   const portfolioBalanceMap = useMemo(() => {
-    const map = new Map<string, { balance: string; rawBalance: string; balanceUsd: number }>();
+    const map = new Map<
+      string,
+      { balance: string; rawBalance: string; balanceInteger: string; balanceUsd: number }
+    >();
     if (!portfolioHoldings) return map;
 
     for (const h of portfolioHoldings) {
@@ -425,7 +464,12 @@ export default function BridgeV2Content({
       const bridgeChainId = getBridgeChainId(h.chainDetails);
       const rawBal = h.balanceDecimal;
       const bal = formatTokenAmount(rawBal, h.contractDecimals);
-      const value = { balance: bal, rawBalance: rawBal, balanceUsd: h.totalValue };
+      const value = {
+        balance: bal,
+        rawBalance: rawBal,
+        balanceInteger: h.balanceInteger,
+        balanceUsd: h.totalValue,
+      };
       const ca = normalizeBridgeTokenKey(bridgeChainId, h.contractAddress || '');
       const dm = normalizeBridgeTokenKey(bridgeChainId, h.denom || '');
       if (ca) map.set(`${bridgeChainId}:${ca}`, value);
@@ -436,7 +480,11 @@ export default function BridgeV2Content({
 
   // Find the balance for a source token from portfolio map (API token may key by contract or denom)
   const getTokenBalance = useCallback(
-    (token: BridgeV2Token): { balance: string; rawBalance: string; balanceUsd: number } | undefined => {
+    (
+      token: BridgeV2Token,
+    ):
+      | { balance: string; rawBalance: string; balanceInteger: string; balanceUsd: number }
+      | undefined => {
       const tc = normalizeBridgeTokenKey(token.chainId, token.tokenContract || '');
       const dm = normalizeBridgeTokenKey(token.chainId, token.denom || '');
       if (tc) {
@@ -457,6 +505,7 @@ export default function BridgeV2Content({
     return {
       balance: formatTokenAmount(rawBal, h.contractDecimals),
       rawBalance: rawBal,
+      balanceInteger: h.balanceInteger,
       balanceUsd: h.totalValue,
     };
   }, []);
@@ -507,15 +556,23 @@ export default function BridgeV2Content({
     }
   }, [quote, destToken]);
 
-  const canReview = useMemo(
+  const hasFromAmountNumber = useMemo(() => {
+    const t = amountInput.trim();
+    if (!t) return false;
+    const n = parseFloat(t);
+    return Number.isFinite(n) && n > 0;
+  }, [amountInput]);
+
+  /** From field has a valid positive amount in token units (for the quote API). */
+  const canRequestQuote = useMemo(
     () =>
       !!sourceChain &&
       !!destChain &&
       !!sourceToken &&
       !!destToken &&
-      !!amountInput &&
-      parseFloat(amountInput) > 0,
-    [sourceChain, destChain, sourceToken, destToken, amountInput],
+      hasFromAmountNumber &&
+      !!amountInSmallestUnit,
+    [sourceChain, destChain, sourceToken, destToken, hasFromAmountNumber, amountInSmallestUnit],
   );
 
   const handleQuote = useCallback(async () => {
@@ -538,6 +595,35 @@ export default function BridgeV2Content({
     await fetchQuote(input);
   }, [sourceChain, destChain, sourceToken, destToken, amountInSmallestUnit, slippage, getAddressForChainId, fetchQuote]);
 
+  useEffect(() => {
+    if (step !== 'quoted') {
+      setTransactionReviewOpen(false);
+    }
+  }, [step]);
+
+  const handleQuoteRef = useRef(handleQuote);
+  handleQuoteRef.current = handleQuote;
+
+  /** When the user has entered a from amount, fetch a quote after debounce (and when route/slippage changes). */
+  useEffect(() => {
+    if (!canRequestQuote) return;
+    const id = setTimeout(() => {
+      void handleQuoteRef.current();
+    }, BRIDGE_QUOTE_DEBOUNCE_MS);
+    return () => clearTimeout(id);
+  }, [
+    canRequestQuote,
+    amountInput,
+    amountInSmallestUnit,
+    slippage,
+    sourceChain?.chainId,
+    destChain?.chainId,
+    sourceToken?.chainId,
+    sourceToken?.tokenContract,
+    destToken?.chainId,
+    destToken?.tokenContract,
+  ]);
+
   const handleSignReviewReject = useCallback(() => {
     const resolve = signReviewResolverRef.current;
     signReviewResolverRef.current = null;
@@ -552,14 +638,12 @@ export default function BridgeV2Content({
     resolve?.(true);
   }, []);
 
-  const confirmBeforeSign = useCallback(
-    (payload: BridgeV2SignReviewPayload) =>
-      new Promise<boolean>(resolve => {
-        signReviewResolverRef.current = resolve;
-        setSignReviewPayload(payload);
-      }),
-    [],
-  );
+  const confirmBeforeSign = useCallback(async (payload: BridgeV2SignReviewPayload) => {
+    return await new Promise<boolean>(resolve => {
+      signReviewResolverRef.current = resolve;
+      setSignReviewPayload(payload);
+    });
+  }, []);
 
   const handleExecute = useCallback(async () => {
     if (!quote || !sourceToken || !sourceChain || !destChain || !destToken) return;
@@ -581,7 +665,19 @@ export default function BridgeV2Content({
     await executeRoute(quote, sourceToken, destToken, input, executors, {
       confirmBeforeSign,
     });
-  }, [quote, sourceToken, destToken, sourceChain, destChain, amountInSmallestUnit, slippage, getAddressForChainId, executeRoute, executors, confirmBeforeSign]);
+  }, [
+    quote,
+    sourceToken,
+    destToken,
+    sourceChain,
+    destChain,
+    amountInSmallestUnit,
+    slippage,
+    getAddressForChainId,
+    executeRoute,
+    executors,
+    confirmBeforeSign,
+  ]);
 
   const handleSwapDirection = useCallback(() => {
     const tempChain = sourceChain;
@@ -710,7 +806,13 @@ export default function BridgeV2Content({
       if (chainTokens) {
         const match = chainTokens.find(t => holdingMatchesBridgeToken(h, t));
         if (match) {
-          result.push({ ...match, balance: bal, rawBalance: rawBal, balanceUsd: h.totalValue });
+          result.push({
+            ...match,
+            balance: bal,
+            rawBalance: rawBal,
+            balanceInteger: h.balanceInteger,
+            balanceUsd: h.totalValue,
+          });
           continue;
         }
       }
@@ -733,6 +835,7 @@ export default function BridgeV2Content({
         price: parseFloat(h.price) || 0,
         balance: bal,
         rawBalance: rawBal,
+        balanceInteger: h.balanceInteger,
         balanceUsd: h.totalValue,
       });
     }
@@ -842,7 +945,7 @@ export default function BridgeV2Content({
     return `~${Math.round(seconds / 60)}m`;
   };
 
-  const showReview = step === 'quoted';
+  const showReview = step === 'quoted' && transactionReviewOpen;
 
   const isExecutionScreen = step === 'executing' || step === 'polling' || step === 'completed' || step === 'failed';
 
@@ -855,19 +958,48 @@ export default function BridgeV2Content({
   }, [showReview, isExecutionScreen, snapBottomSheetToIndex]);
 
   const handleMaxPress = useCallback(() => {
-    if (!sourceTokenBalance) return;
-    setAmountInput(sourceTokenBalance.rawBalance);
+    if (!sourceTokenBalance || !sourceToken) return;
+    const bi = sourceTokenBalance.balanceInteger;
+    if (bi) {
+      try {
+        setAmountInput(formatUnits(BigInt(bi), sourceToken.decimals));
+      } catch {
+        setAmountInput(sourceTokenBalance.rawBalance);
+      }
+    } else {
+      setAmountInput(sourceTokenBalance.rawBalance);
+    }
     reset();
-  }, [sourceTokenBalance, reset]);
+  }, [sourceTokenBalance, sourceToken, reset]);
 
   const handlePercentagePress = useCallback(
     (pct: number) => {
-      if (!sourceTokenBalance) return;
-      const val = DecimalHelper.multiply(sourceTokenBalance.rawBalance, pct).toString();
-      setAmountInput(val);
+      if (!sourceTokenBalance || !sourceToken) return;
+      const bi = sourceTokenBalance.balanceInteger;
+      if (!bi) {
+        const val = DecimalHelper.multiply(sourceTokenBalance.rawBalance, pct).toString();
+        setAmountInput(val);
+        reset();
+        return;
+      }
+      let balanceBigInt: bigint;
+      try {
+        balanceBigInt = BigInt(bi);
+      } catch {
+        const val = DecimalHelper.multiply(sourceTokenBalance.rawBalance, pct).toString();
+        setAmountInput(val);
+        reset();
+        return;
+      }
+
+      const scaled =
+        pct >= 1
+          ? balanceBigInt
+          : (balanceBigInt * BigInt(Math.round(pct * 1_000_000))) / 1_000_000n;
+      setAmountInput(formatUnits(scaled, sourceToken.decimals));
       reset();
     },
-    [sourceTokenBalance, reset],
+    [sourceTokenBalance, sourceToken, reset],
   );
 
   // ─── Token Selection View ──────────────────────────────────────
@@ -1089,9 +1221,11 @@ export default function BridgeV2Content({
                       />
                     )}
                   </CyDView>
-                  <CyDView className='flex-row items-center gap-[1px]'>
-                    <SplitAmountDisplay amount={estimatedOutput} fontSize={24} />
-                    <CyDText className='!font-gambetta font-normal text-base200 ml-[1px]' style={{ fontSize: 20, letterSpacing: -1 }}>
+                  <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
+                    <CyDView className='flex-1 min-w-0 overflow-hidden'>
+                      <SplitAmountDisplay amount={estimatedOutput} fontSize={24} />
+                    </CyDView>
+                    <CyDText className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0' style={{ fontSize: 20, letterSpacing: -1 }}>
                       {destToken.symbol}
                     </CyDText>
                   </CyDView>
@@ -1261,7 +1395,7 @@ export default function BridgeV2Content({
             <CyDTouchView
               onPress={() => { reset(); setAmountInput(''); setSourceToken(null); setDestToken(null); }}
               className='bg-p100 rounded-[39px] h-[44px] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-p0' style={{ letterSpacing: -0.8 }}>Done</CyDText>
+              <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Done</CyDText>
             </CyDTouchView>
           </CyDView>
         </CyDView>
@@ -1313,7 +1447,7 @@ export default function BridgeV2Content({
             <CyDTouchView
               onPress={() => { reset(); }}
               className='bg-p100 rounded-[39px] h-[44px] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-p0' style={{ letterSpacing: -0.8 }}>Try Again</CyDText>
+              <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Try Again</CyDText>
             </CyDTouchView>
           </CyDView>
         </CyDView>
@@ -1330,7 +1464,7 @@ export default function BridgeV2Content({
       .join(' + ') || '—';
 
     const handleBackToForm = () => {
-      reset();
+      setTransactionReviewOpen(false);
     };
 
     return (
@@ -1372,9 +1506,11 @@ export default function BridgeV2Content({
                     />
                   )}
                 </CyDView>
-                <CyDView className='flex-row items-center gap-[1px]'>
-                  <SplitAmountDisplay amount={amountInput || '0'} fontSize={22} />
-                  <CyDText className='!font-gambetta font-normal text-base200 ml-[1px]' style={{ fontSize: 18, letterSpacing: -1 }}>
+                <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
+                  <CyDView className='flex-1 min-w-0 overflow-hidden'>
+                    <SplitAmountDisplay amount={amountInput || '0'} fontSize={22} />
+                  </CyDView>
+                  <CyDText className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0' style={{ fontSize: 18, letterSpacing: -1 }}>
                     {sourceToken.symbol}
                   </CyDText>
                 </CyDView>
@@ -1385,7 +1521,7 @@ export default function BridgeV2Content({
             </CyDView>
 
             {/* Divider */}
-            <CyDView className='h-[1px] bg-base200' />
+            <CyDView className='h-[0.3px] bg-base200' />
 
             {/* Est. Received */}
             <CyDView className='px-[12px] py-[10px]'>
@@ -1400,9 +1536,11 @@ export default function BridgeV2Content({
                     />
                   )}
                 </CyDView>
-                <CyDView className='flex-row items-center gap-[1px]'>
-                  <SplitAmountDisplay amount={estimatedOutput || '0'} fontSize={22} />
-                  <CyDText className='!font-gambetta font-normal text-base200 ml-[1px]' style={{ fontSize: 18, letterSpacing: -1 }}>
+                <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
+                  <CyDView className='flex-1 min-w-0 overflow-hidden'>
+                    <SplitAmountDisplay amount={estimatedOutput || '0'} fontSize={22} />
+                  </CyDView>
+                  <CyDText className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0' style={{ fontSize: 18, letterSpacing: -1 }}>
                     {destToken.symbol}
                   </CyDText>
                 </CyDView>
@@ -1455,7 +1593,7 @@ export default function BridgeV2Content({
           {/* Bottom CTA */}
           <CyDView className='px-[16px] pt-[8px]'>
             <CyDTouchView onPress={handleExecute} className='bg-p100 rounded-[39px] h-[50px] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-p0' style={{ letterSpacing: -0.8 }}>Start Transaction</CyDText>
+              <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Start Transaction</CyDText>
             </CyDTouchView>
           </CyDView>
         </ScrollView>
@@ -1506,7 +1644,7 @@ export default function BridgeV2Content({
 
         {/* Row 2: Amount input + token selector */}
         <CyDView className='flex-row items-center justify-between h-[44px]'>
-          <CyDView className='flex-1 h-[44px] justify-center'>
+          <CyDView className='flex-1 min-w-0 mr-[8px] h-[44px] justify-center overflow-hidden'>
             <CyDTextInput
               value={amountInput}
               onChangeText={(text: string) => {
@@ -1520,17 +1658,25 @@ export default function BridgeV2Content({
               keyboardType='decimal-pad'
               selectionColor={colors.caret}
               className='!font-gambetta font-bold bg-transparent'
-              style={{ fontSize: 32, letterSpacing: -1, color: amountInput ? 'transparent' : colors.inputText }}
+              style={{
+                fontSize: 32,
+                letterSpacing: -1,
+                color: amountInput ? 'transparent' : colors.inputText,
+                minWidth: 0,
+                width: '100%',
+              }}
             />
             {amountInput ? (
-              <CyDView className='absolute left-0 top-0 bottom-0 justify-center' pointerEvents='none'>
+              <CyDView
+                className='absolute left-0 right-0 top-0 bottom-0 justify-center overflow-hidden'
+                pointerEvents='none'>
                 <SplitAmountDisplay amount={amountInput} fontSize={32} />
               </CyDView>
             ) : null}
           </CyDView>
           <CyDTouchView
             onPress={() => openTokenSelector('source')}
-            className='flex-row items-center gap-[4px]'>
+            className='flex-row items-center gap-[4px] shrink-0'>
             {sourceToken ? (
               <>
                 <CyDFastImage source={{ uri: sourceToken.logoUrl }} className='w-[28px] h-[28px] rounded-full' />
@@ -1588,7 +1734,7 @@ export default function BridgeV2Content({
 
         {/* Row 2: Estimated output + token selector */}
         <CyDView className='flex-row items-center justify-between h-[44px]'>
-          <CyDView className='flex-1'>
+          <CyDView className='flex-1 min-w-0 mr-[8px] overflow-hidden'>
             {step === 'quoting' ? (
               <CyDText className='!font-gambetta font-bold text-base150' style={{ fontSize: 32, letterSpacing: -1 }}>...</CyDText>
             ) : (
@@ -1597,7 +1743,7 @@ export default function BridgeV2Content({
           </CyDView>
           <CyDTouchView
             onPress={() => openTokenSelector('dest')}
-            className='flex-row items-center gap-[4px]'>
+            className='flex-row items-center gap-[4px] shrink-0'>
             {destToken ? (
               <>
                 <CyDFastImage source={{ uri: destToken.logoUrl }} className='w-[28px] h-[28px] rounded-full' />
@@ -1644,7 +1790,7 @@ export default function BridgeV2Content({
                     snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
                   }}
                   className={`flex-1 h-[36px] rounded-[8px] items-center justify-center ${slippage === val ? 'bg-p100' : 'bg-n30'}`}>
-                  <CyDText className={`text-[13px] font-semibold ${slippage === val ? 'text-p0' : 'text-base400'}`}>
+                  <CyDText className={`text-[13px] font-semibold ${slippage === val ? 'text-black' : 'text-base400'}`}>
                     {(val * 100).toFixed(1)}%
                   </CyDText>
                 </CyDTouchView>
@@ -1652,20 +1798,27 @@ export default function BridgeV2Content({
             </CyDView>
           </CyDView>
         )}
-        {step === 'idle' && !canReview && (
+        {!canRequestQuote && (
           <CyDView className='bg-n30 rounded-[39px] h-[54px] items-center justify-center'>
             <CyDText className='text-[16px] font-semibold text-base150'>Enter the amount</CyDText>
           </CyDView>
         )}
-        {step === 'idle' && canReview && (
-          <CyDTouchView onPress={handleQuote} className='bg-p100 rounded-[39px] h-[54px] items-center justify-center'>
-            <CyDText className='text-[16px] font-semibold text-p0' style={{ letterSpacing: -0.8 }}>Review</CyDText>
+        {canRequestQuote && step === 'quoted' && !transactionReviewOpen && (
+          <CyDTouchView
+            onPress={() => setTransactionReviewOpen(true)}
+            className='bg-p100 rounded-[39px] h-[54px] items-center justify-center'>
+            <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Review</CyDText>
           </CyDTouchView>
         )}
-        {step === 'quoting' && (
+        {canRequestQuote && step === 'quoting' && (
           <CyDView className='bg-n30 rounded-[39px] h-[54px] flex-row items-center justify-center'>
             <ActivityIndicator size='small' color={colors.activityIndicator} />
             <CyDText className='text-[16px] font-semibold text-base150 ml-[8px]'>Fetching quote...</CyDText>
+          </CyDView>
+        )}
+        {canRequestQuote && step === 'idle' && (
+          <CyDView className='bg-n30 rounded-[39px] h-[54px] items-center justify-center opacity-50'>
+            <CyDText className='text-[16px] font-semibold text-base150' style={{ letterSpacing: -0.8 }}>Review</CyDText>
           </CyDView>
         )}
       </CyDView>
@@ -1691,6 +1844,8 @@ function SplitAmountDisplay({
   if (dotIndex === -1) {
     return (
       <CyDText
+        numberOfLines={1}
+        ellipsizeMode='tail'
         className={`!font-gambetta font-bold ${wholeColor}`}
         style={{ fontSize, letterSpacing: -1 }}>
         {amount}
@@ -1700,18 +1855,18 @@ function SplitAmountDisplay({
   const intPart = amount.substring(0, dotIndex);
   const decPart = amount.substring(dotIndex);
   return (
-    <CyDView className='flex-row items-baseline'>
-      <CyDText
-        className={`!font-gambetta font-bold ${wholeColor}`}
-        style={{ fontSize, letterSpacing: -1 }}>
-        {intPart}
-      </CyDText>
+    <CyDText
+      numberOfLines={1}
+      ellipsizeMode='tail'
+      className={`!font-gambetta font-bold ${wholeColor}`}
+      style={{ fontSize, letterSpacing: -1 }}>
+      {intPart}
       <CyDText
         className='!font-gambetta font-normal text-base150'
         style={{ fontSize, letterSpacing: -1 }}>
         {decPart}
       </CyDText>
-    </CyDView>
+    </CyDText>
   );
 }
 

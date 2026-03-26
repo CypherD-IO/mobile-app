@@ -1,3 +1,4 @@
+import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 import useAxios from '../../core/HttpRequest';
 import {
   BridgeV2ChainsResponse,
@@ -51,8 +52,10 @@ export default function useBridgeV2Api() {
 
   async function postBridgeV2Quote(
     body: BridgeV2QuoteRequestDto,
+    opts?: { signal?: AbortSignal },
   ): Promise<{ isError: boolean; data?: BridgeV2QuoteResponse; error?: any }> {
-    const response = await postWithAuth(ENDPOINTS.QUOTE, body);
+    const config = opts?.signal != null ? { signal: opts.signal } : undefined;
+    const response = await postWithAuth(ENDPOINTS.QUOTE, body, DEFAULT_AXIOS_TIMEOUT, config);
     if (response.isError) {
       return { isError: true, error: response.error };
     }

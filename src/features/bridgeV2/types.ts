@@ -303,6 +303,14 @@ export const EVM_CHAIN_IDS = [
 
 export const SOLANA_CHAIN_ID = 'solana' as const;
 
+/** ARCH / quote API: native EVM asset — use zero address, not 0xeeee… placeholders. */
+export const EVM_NATIVE_QUOTE_TOKEN_DENOM =
+  '0x0000000000000000000000000000000000000000' as const;
+
+/** ARCH / LiFi quote API: native SOL mint id (not WSOL, not free-form labels). */
+export const SOLANA_NATIVE_QUOTE_TOKEN_DENOM =
+  '11111111111111111111111111111111' as const;
+
 export const HYPERLIQUID_CHAIN_ID = 'hyperliquid' as const;
 
 export function isCosmosChainId(chainId: string): boolean {
