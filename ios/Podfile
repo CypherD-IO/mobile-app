@@ -76,23 +76,6 @@ target 'Cypherd' do
       __apply_Xcode_12_5_M1_post_install_workaround(installer)
     end
 
-    # Fix fmt consteval errors with Xcode 26+ (newer Clang).
-    # The fmt version bundled with RN uses `consteval` which newer Clang rejects.
-    # Patch fmt/base.h to force-disable consteval detection.
-    fmt_base = File.join(installer.sandbox.root, 'fmt', 'include', 'fmt', 'base.h')
-    if File.exist?(fmt_base)
-      contents = File.read(fmt_base)
-      unless contents.include?('Xcode 26+ consteval fix')
-        patched = contents.gsub(
-          '#if !defined(__cpp_lib_is_constant_evaluated)',
-          '#if 1 // Xcode 26+ consteval fix: force disable consteval'
-        )
-        File.chmod(0644, fmt_base)
-        File.write(fmt_base, patched)
-        puts "Patched fmt base.h to disable consteval"
-      end
-    end
-
     # Comprehensive deployment target fix for all pod targets
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|

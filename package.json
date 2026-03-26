@@ -127,7 +127,7 @@
     "lodash": "^4.17.21",
     "long": "^5.2.0",
     "lottie-ios": "^4.6.0",
-    "lottie-react-native": "^7.3.4",
+    "lottie-react-native": "^7.3.6",
     "micro-ed25519-hdkey": "^0.1.2",
     "moment": "^2.29.1",
     "nativewind": "^4.1.23",
