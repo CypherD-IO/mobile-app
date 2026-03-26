@@ -711,6 +711,17 @@ export default function BridgeV2Content({
     destToken?.tokenContract,
   ]);
 
+  // Clean up pending sign-review promise on unmount to prevent hanging executeRoute
+  useEffect(() => {
+    return () => {
+      const resolve = signReviewResolverRef.current;
+      if (resolve) {
+        signReviewResolverRef.current = null;
+        resolve(false);
+      }
+    };
+  }, []);
+
   const handleSignReviewReject = useCallback(() => {
     const resolve = signReviewResolverRef.current;
     signReviewResolverRef.current = null;

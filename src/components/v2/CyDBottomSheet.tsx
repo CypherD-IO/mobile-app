@@ -237,13 +237,20 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     const sheetInnerContent = (
       <>
         {/* Header with title and close button */}
-        {title && (
+        {(title || showCloseButton) && (
           <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
             <CyDView className='flex-1'>
-              {title && (
+              {title ? (
                 <CyDText className='text-[18px] font-bold'>{title}</CyDText>
-              )}
+              ) : null}
             </CyDView>
+            {showCloseButton && (
+              <CyDTouchView
+                onPress={() => bottomSheetRef.current?.close()}
+                className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
+                <CyDMaterialDesignIcons name='close' size={18} className='text-base400' />
+              </CyDTouchView>
+            )}
           </CyDView>
         )}
 

@@ -319,8 +319,9 @@ export default function useBridgeV2() {
     if (!input.destChainId) return 'Destination chain is required';
     if (!input.sourceTokenDenom) return 'Source token is required';
     if (!input.destTokenDenom) return 'Destination token is required';
-    if (!input.amountIn || input.amountIn === '0') return 'Amount must be greater than 0';
+    if (!input.amountIn) return 'Amount must be greater than 0';
     if (!/^\d+$/.test(input.amountIn)) return 'Amount must be an integer string in smallest units';
+    if (BigInt(input.amountIn) <= 0n) return 'Amount must be greater than 0';
     if (!input.fromAddress?.trim()) return 'From address is required';
     if (
       input.slippage !== undefined &&

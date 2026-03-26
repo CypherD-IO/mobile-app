@@ -23,11 +23,22 @@ export default function useSolanaExecution() {
     const u8 = Uint8Array.from(decodedTxn);
 
     let rawSigned: Uint8Array;
+    let versionedTx: VersionedTransaction | null = null;
     try {
-      const versionedTx = VersionedTransaction.deserialize(u8);
-      versionedTx.sign([fromKeypair]);
-      rawSigned = versionedTx.serialize();
+      versionedTx = VersionedTransaction.deserialize(u8);
     } catch {
+      // Not a versioned transaction — fall through to legacy path
+    }
+
+    if (versionedTx) {
+      try {
+        versionedTx.sign([fromKeypair]);
+        rawSigned = versionedTx.serialize();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Failed to sign versioned Solana transaction';
+        return { isError: true, error: msg };
+      }
+    } else {
       try {
         const tx = Transaction.from(decodedTxn);
         tx.partialSign(fromKeypair);

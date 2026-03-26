@@ -103,6 +103,10 @@ export default function useCosmosExecution() {
       '',
     ) as ChainBackendNames;
 
+    if (!chainName || !chainBackendName) {
+      return { isError: true, error: `Unsupported Cosmos chain_id: ${cosmosTx.chain_id}` };
+    }
+
     const signer = await getCosmosSignerClient(chainName);
     if (!signer) {
       return { isError: true, error: 'Unable to fetch Cosmos signer' };
@@ -134,7 +138,7 @@ export default function useCosmosExecution() {
 
     const { gasPrice, gasLimitMultiplier } =
       await getCosmosGasPrice(chainBackendName);
-    const gasFee = DecimalHelper.multiply(simulation, [3, gasPrice]);
+    const gasFee = DecimalHelper.multiply(simulation, [gasLimitMultiplier, gasPrice]);
     const fee = {
       gas: DecimalHelper.multiply(simulation, gasLimitMultiplier)
         .floor()
@@ -153,6 +157,13 @@ export default function useCosmosExecution() {
       fee,
       'cypher bridge v2',
     );
+
+    if (response.code !== 0) {
+      return {
+        isError: true,
+        error: `Cosmos tx failed (code ${response.code}): ${response.rawLog ?? 'unknown error'}`,
+      };
+    }
 
     return {
       isError: false,

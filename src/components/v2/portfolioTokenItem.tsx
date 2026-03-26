@@ -38,7 +38,7 @@ const RenderRightActions = (navigation: any, tokenData: any, onBridgePress?: () 
   const { isBridgeable, isSwapable } = tokenData;
   const isHyperliquid =
     tokenData?.chainDetails?.chain_id === CHAIN_HYPERLIQUID.chain_id;
-  const showBridgeSwap = (isSwapable || isBridgeable) && !isHyperliquid;
+  const showBridgeSwap = (isSwapable || isBridgeable) && !isHyperliquid && !!onBridgePress;
   return (
     <CyDView className={'flex flex-row justify-evenly items-center bg-n40'}>
       <CyDView>
@@ -63,11 +63,7 @@ const RenderRightActions = (navigation: any, tokenData: any, onBridgePress?: () 
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
-            onPress={() => {
-              if (onBridgePress) {
-                onBridgePress();
-              }
-            }}>
+            onPress={onBridgePress}>
             <CyDImage
               source={AppImages.SWAP_SHORTCUT}
               className={'w-[30px] h-[30px]'}

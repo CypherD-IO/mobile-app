@@ -244,7 +244,7 @@ export default function useTransactionManager() {
         gasFeeInCrypto: gasEstimateResponse.gasFeeInCrypto,
       };
     } catch (e) {
-      console.log(e)
+      Sentry.captureException(e);
       return { isError: true, error: e };
     }
   };

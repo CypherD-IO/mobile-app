@@ -156,8 +156,10 @@ export function buildCosmosSignReview(
   cosmosTx: CosmosMessagePayload,
   route?: BridgeV2RouteLegSummary,
 ): BridgeV2SignReviewPayload {
-  const first = cosmosTx.msgs[0];
-  const detail = buildCosmosInlineSignDetail(first.msg_type_url, first.msg);
+  const first = cosmosTx.msgs?.[0];
+  const detail = first
+    ? buildCosmosInlineSignDetail(first.msg_type_url, first.msg)
+    : { messageType: 'Cosmos transaction', amountLabel: 'Info', amountValue: 'No messages' };
   const more = cosmosTx.msgs.length > 1 ? ` (+${cosmosTx.msgs.length - 1})` : '';
 
   return {

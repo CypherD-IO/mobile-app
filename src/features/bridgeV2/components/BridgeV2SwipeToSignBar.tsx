@@ -47,10 +47,14 @@ export default function BridgeV2SwipeToSignBar({
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
-  const fireComplete = useCallback(() => {
+  const fireComplete = useCallback(async () => {
     setSubmitting(true);
-    setDone(true);
-    onSwipeComplete();
+    try {
+      await onSwipeComplete();
+    } finally {
+      setSubmitting(false);
+      setDone(true);
+    }
   }, [onSwipeComplete]);
 
   useEffect(() => {
