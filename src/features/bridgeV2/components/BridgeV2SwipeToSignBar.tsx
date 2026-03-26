@@ -11,6 +11,7 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import Animated, {
+  interpolate,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -84,6 +85,16 @@ export default function BridgeV2SwipeToSignBar({
     width: translateX.value + 28,
   }));
 
+  /** Label fades out and shifts right as the knob sweeps across it. */
+  const labelStyle = useAnimatedStyle(() => {
+    const cap = maxTravelSv.value;
+    const progress = cap > 0 ? translateX.value / cap : 0;
+    return {
+      opacity: interpolate(progress, [0, 0.5, 0.8], [1, 0.4, 0]),
+      transform: [{ translateX: interpolate(progress, [0, 1], [0, 20]) }],
+    };
+  });
+
   const onTrackLayout = useCallback((e: LayoutChangeEvent) => {
     setTrackWidth(e.nativeEvent.layout.width);
   }, []);
@@ -100,11 +111,11 @@ export default function BridgeV2SwipeToSignBar({
             className='absolute left-0 top-0 bottom-0 bg-p100/25 rounded-full'
             style={fillStyle}
           />
-          <CyDView className='absolute inset-0 justify-center z-0 px-[52px]'>
+          <Animated.View className='absolute inset-0 justify-center z-0 px-[52px]' style={done ? undefined : labelStyle}>
             <CyDText className='text-[13px] font-semibold text-base150 text-center'>
               {done ? 'Signing…' : label}
             </CyDText>
-          </CyDView>
+          </Animated.View>
           <GestureDetector gesture={gesture}>
             <Animated.View style={[knobStyle, { zIndex: 1 }]} className='absolute left-[4px] top-[4px]'>
               <CyDView

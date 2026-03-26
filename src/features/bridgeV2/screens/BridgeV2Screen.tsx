@@ -30,12 +30,14 @@ import {
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { formatUnits, parseUnits } from 'viem';
-import { CHAIN_SOLANA } from '../../../constants/server';
+import { ALL_CHAINS, CHAIN_SOLANA } from '../../../constants/server';
 import { GlobalContext } from '../../../core/globalContext';
+import useAxios from '../../../core/HttpRequest';
 import {
   getExplorerUrlFromChainId,
   getWeb3Endpoint,
 } from '../../../core/util';
+import { getMaxBridgeSpendable, type BackendGasPriceResponse } from '../bridgeMaxSpendable';
 import BridgeV2InlineSignPanel from '../components/BridgeV2InlineSignPanel';
 import useBridgeV2, { BridgeV2Executors } from '../hooks/useBridgeV2';
 import { BRIDGE_V2_SHEET_ID } from '../hooks/useBridgeV2Sheet';
@@ -255,6 +257,7 @@ export default function BridgeV2Content({
   };
 
   const globalContext = useContext<any>(GlobalContext);
+  const { getWithoutAuth } = useAxios();
 
   const {
     chains,
@@ -273,12 +276,54 @@ export default function BridgeV2Content({
     getAddressForChainId,
   } = useBridgeV2();
 
-  const [sourceChain, setSourceChain] = useState<BridgeV2Chain | null>(null);
+  // Eagerly build initial chain/token from the holding so the UI shows them immediately
+  // instead of waiting for two sequential network calls (loadChains → loadTokens).
+  const [sourceChain, setSourceChain] = useState<BridgeV2Chain | null>(() => {
+    if (!initialFromHolding) return null;
+    const h = initialFromHolding;
+    const bridgeChainId = getBridgeChainId(h.chainDetails);
+    return {
+      chainId: bridgeChainId,
+      chainName: h.chainDetails.chainName ?? '',
+      prettyName: h.chainDetails.name ?? h.chainDetails.chainName ?? '',
+      chainType: (h.chainDetails.chain_id === 'solana'
+        ? 'solana'
+        : h.chainDetails.chainIdNumber > 0
+          ? 'evm'
+          : 'cosmos') as BridgeV2Chain['chainType'],
+      logoUrl: typeof h.chainDetails.logo_url === 'string' ? h.chainDetails.logo_url : h.logoUrl ?? '',
+      bech32Prefix: '',
+      isLifi: true,
+      isSkip: true,
+    };
+  });
   const [destChain, setDestChain] = useState<BridgeV2Chain | null>(null);
-  const [sourceToken, setSourceToken] = useState<BridgeV2Token | null>(null);
+  const [sourceToken, setSourceToken] = useState<BridgeV2Token | null>(() => {
+    if (!initialFromHolding) return null;
+    const h = initialFromHolding;
+    const bridgeChainId = getBridgeChainId(h.chainDetails);
+    return {
+      denom: h.denom || h.contractAddress || '',
+      chainId: bridgeChainId,
+      isNative: h.isNativeToken,
+      isEvm: h.chainDetails.chainIdNumber > 0 && h.chainDetails.chain_id !== 'solana',
+      isSvm: h.chainDetails.chain_id === 'solana',
+      symbol: h.symbol,
+      name: h.name,
+      logoUrl: h.logoUrl,
+      tokenContract: h.contractAddress || '',
+      decimals: h.contractDecimals,
+      coingeckoId: h.coinGeckoId,
+      recommendedSymbol: h.symbol,
+      isLifi: true,
+      isSkip: true,
+      price: parseFloat(h.price) || 0,
+    };
+  });
   const [destToken, setDestToken] = useState<BridgeV2Token | null>(null);
   const [amountInput, setAmountInput] = useState('');
   const [slippage, setSlippage] = useState(0.005);
+  const [maxLoading, setMaxLoading] = useState(false);
   const [showSlippagePanel, setShowSlippagePanel] = useState(false);
   const [showTokenSelector, setShowTokenSelector] = useState(false);
   const [tokenSelectorSide, setTokenSelectorSide] = useState<TokenSide>('source');
@@ -555,6 +600,48 @@ export default function BridgeV2Content({
       return quote.estimatedAmountOut;
     }
   }, [quote, destToken]);
+
+  /**
+   * For non-native source tokens, check if the user has enough native token
+   * balance to cover gas fees returned by the quote.
+   * Returns a warning string or null.
+   */
+  const insufficientGasWarning = useMemo((): string | null => {
+    if (!quote || !sourceToken || !sourceChain) return null;
+    // Only relevant for non-native tokens — native token gas is handled by max spendable
+    if (sourceToken.isNative) return null;
+
+    // Find native token holding for the source chain
+    const sourceChainId = sourceChain.chainId;
+    let nativeHolding: Holding | undefined;
+    if (portfolioHoldings) {
+      nativeHolding = portfolioHoldings.find(h => {
+        const hChainId = getBridgeChainId(h.chainDetails);
+        return hChainId === sourceChainId && h.isNativeToken;
+      });
+    }
+
+    // Sum gas fees from the quote for the source chain
+    const gasFees = quote.fees.filter(f => f.feeType === 'gas');
+    if (gasFees.length === 0) return null;
+
+    // Use USD comparison — simplest and works across all chains
+    const totalGasUsd = gasFees.reduce((sum, f) => {
+      return sum + (f.amountUsd ? parseFloat(f.amountUsd) : 0);
+    }, 0);
+
+    if (totalGasUsd <= 0) return null;
+
+    const nativeBalanceUsd = nativeHolding?.totalValue ?? 0;
+    if (nativeBalanceUsd < totalGasUsd) {
+      const nativeSymbol = nativeHolding?.symbol ?? (
+        sourceChain.chainType === 'evm' ? 'ETH' :
+        sourceChain.chainType === 'solana' ? 'SOL' : 'native token'
+      );
+      return `Insufficient ${nativeSymbol} for gas fees`;
+    }
+    return null;
+  }, [quote, sourceToken, sourceChain, portfolioHoldings]);
 
   const hasFromAmountNumber = useMemo(() => {
     const t = amountInput.trim();
@@ -957,20 +1044,81 @@ export default function BridgeV2Content({
     }
   }, [showReview, isExecutionScreen, snapBottomSheetToIndex]);
 
-  const handleMaxPress = useCallback(() => {
-    if (!sourceTokenBalance || !sourceToken) return;
+  const handleMaxPress = useCallback(async () => {
+    if (!sourceTokenBalance || !sourceToken || !sourceChain) return;
     const bi = sourceTokenBalance.balanceInteger;
-    if (bi) {
+    if (!bi) {
+      setAmountInput(sourceTokenBalance.rawBalance ?? '0');
+      reset();
+      return;
+    }
+
+    setMaxLoading(true);
+    try {
+      const chainType = sourceChain.chainType as 'evm' | 'cosmos' | 'solana';
+      const isNativeToken = sourceToken.isNative;
+      const isCrossChain = !!(destChain && sourceChain.chainId !== destChain.chainId);
+      const provider: 'lifi' | 'skip' =
+        sourceChain.isLifi ? 'lifi' : 'skip';
+
+      // Fetch EVM gas price from backend API if needed
+      let evmBackendGasPrice: BackendGasPriceResponse | undefined;
+      if (chainType === 'evm' && isNativeToken) {
+        const chainIdNum = Number(sourceChain.chainId);
+        const chain = ALL_CHAINS.find(c => c.chainIdNumber === chainIdNum);
+        if (chain) {
+          try {
+            const resp = await getWithoutAuth(`/v1/prices/gas/${chain.backendName}`);
+            if (!resp.isError && resp.data) {
+              evmBackendGasPrice = resp.data;
+            }
+          } catch {
+            // Will fall back to 30 gwei default in getMaxBridgeSpendable
+          }
+        }
+      }
+
+      // Build Solana params if needed
+      let solanaRpcUrl: string | undefined;
+      let solanaWalletAddress: string | undefined;
+      let solanaDestMint: string | undefined;
+      if (chainType === 'solana' && isNativeToken) {
+        const solChain = ALL_CHAINS.find(c => c.chain_id === 'solana');
+        if (solChain) {
+          solanaRpcUrl = getWeb3Endpoint(solChain, globalContext);
+        }
+        solanaWalletAddress = getAddressForChainId(SOLANA_CHAIN_ID)?.trim();
+        solanaDestMint = destToken?.tokenContract || destToken?.denom || undefined;
+      }
+
+      const result = await getMaxBridgeSpendable({
+        balanceInteger: bi,
+        decimals: sourceToken.decimals,
+        isNativeToken,
+        chainType,
+        chainIdNum: chainType === 'evm' ? Number(sourceChain.chainId) : undefined,
+        cosmosChainId: chainType === 'cosmos' ? sourceChain.chainId : undefined,
+        isCrossChain,
+        provider,
+        evmBackendGasPrice,
+        solanaRpcUrl,
+        solanaWalletAddress,
+        solanaDestMint,
+      });
+
+      setAmountInput(result.maxAmountDecimal);
+    } catch {
+      // Fallback: use full balance
       try {
         setAmountInput(formatUnits(BigInt(bi), sourceToken.decimals));
       } catch {
-        setAmountInput(sourceTokenBalance.rawBalance);
+        setAmountInput(sourceTokenBalance.rawBalance ?? '0');
       }
-    } else {
-      setAmountInput(sourceTokenBalance.rawBalance);
+    } finally {
+      setMaxLoading(false);
     }
     reset();
-  }, [sourceTokenBalance, sourceToken, reset]);
+  }, [sourceTokenBalance, sourceToken, sourceChain, destChain, destToken, globalContext, getAddressForChainId, getWithoutAuth, reset]);
 
   const handlePercentagePress = useCallback(
     (pct: number) => {
@@ -1643,8 +1791,8 @@ export default function BridgeV2Content({
         </CyDView>
 
         {/* Row 2: Amount input + token selector */}
-        <CyDView className='flex-row items-center justify-between h-[44px]'>
-          <CyDView className='flex-1 min-w-0 mr-[8px] h-[44px] justify-center overflow-hidden'>
+        <CyDView className='flex-row items-center justify-between h-[48px]'>
+          <CyDView className={`flex-1 min-w-0 mr-[8px] h-[48px] justify-center ${Platform.OS === 'ios' ? 'overflow-hidden' : ''}`}>
             <CyDTextInput
               value={amountInput}
               onChangeText={(text: string) => {
@@ -1659,14 +1807,14 @@ export default function BridgeV2Content({
               selectionColor={colors.caret}
               className='!font-gambetta font-bold bg-transparent'
               style={{
-                fontSize: 32,
-                letterSpacing: -1,
-                color: amountInput ? 'transparent' : colors.inputText,
+                fontSize: Platform.OS === 'ios' ? 32 : 28,
+                ...(Platform.OS === 'ios' ? { letterSpacing: -1 } : { padding: 0, includeFontPadding: false }),
+                color: Platform.OS === 'ios' && amountInput ? 'transparent' : colors.inputText,
                 minWidth: 0,
                 width: '100%',
               }}
             />
-            {amountInput ? (
+            {Platform.OS === 'ios' && amountInput ? (
               <CyDView
                 className='absolute left-0 right-0 top-0 bottom-0 justify-center overflow-hidden'
                 pointerEvents='none'>
@@ -1701,8 +1849,12 @@ export default function BridgeV2Content({
             <CyDTokenAmount className='text-[14px] text-base150'>
               {sourceTokenBalance ? sourceTokenBalance.rawBalance : '0'}
             </CyDTokenAmount>
-            <CyDTouchView onPress={handleMaxPress}>
-              <CyDText className='text-[14px] font-medium text-p300' style={{ letterSpacing: -0.6 }}>Max</CyDText>
+            <CyDTouchView onPress={handleMaxPress} disabled={maxLoading}>
+              {maxLoading ? (
+                <ActivityIndicator size='small' color={colors.activityIndicator} style={{ width: 28, height: 14 }} />
+              ) : (
+                <CyDText className='text-[14px] font-medium text-p300' style={{ letterSpacing: -0.6 }}>Max</CyDText>
+              )}
             </CyDTouchView>
           </CyDView>
         </CyDView>
@@ -1772,32 +1924,40 @@ export default function BridgeV2Content({
           </CyDText>
         </CyDView>
       )}
+      {insufficientGasWarning && !error && !isExecutionScreen && (
+        <CyDView className='mx-[16px] mt-[8px] mb-[4px] bg-red300/15 border border-red300/40 rounded-[10px] px-[12px] py-[10px]'>
+          <CyDText className='text-[13px] font-medium text-red300' style={{ letterSpacing: -0.3 }}>
+            {insufficientGasWarning}
+          </CyDText>
+        </CyDView>
+      )}
+
+      {/* Slippage Tolerance — sits between content and CTA so it doesn't push the button off screen */}
+      {showSlippagePanel && (
+        <CyDView className='mx-[16px] mt-[8px] bg-n20 rounded-[12px] p-[12px]'>
+          <CyDText className='text-[13px] font-medium text-base150 mb-[8px]'>Slippage Tolerance</CyDText>
+          <CyDView className='flex-row items-center gap-[8px]'>
+            {[0.001, 0.005, 0.01, 0.03].map(val => (
+              <CyDTouchView
+                key={val}
+                onPress={() => {
+                  setSlippage(val);
+                  reset();
+                  setShowSlippagePanel(false);
+                  snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
+                }}
+                className={`flex-1 h-[36px] rounded-[8px] items-center justify-center ${slippage === val ? 'bg-p100' : 'bg-n30'}`}>
+                <CyDText className={`text-[13px] font-semibold ${slippage === val ? 'text-black' : 'text-base400'}`}>
+                  {(val * 100).toFixed(1)}%
+                </CyDText>
+              </CyDTouchView>
+            ))}
+          </CyDView>
+        </CyDView>
+      )}
 
       {/* Bottom CTA */}
       <CyDView className='px-[16px] pb-[8px] pt-[16px]'>
-        {/* Slippage Tolerance */}
-        {showSlippagePanel && (
-          <CyDView className='bg-n20 rounded-[12px] p-[12px] mb-[12px]'>
-            <CyDText className='text-[13px] font-medium text-base150 mb-[8px]'>Slippage Tolerance</CyDText>
-            <CyDView className='flex-row items-center gap-[8px]'>
-              {[0.001, 0.005, 0.01, 0.03].map(val => (
-                <CyDTouchView
-                  key={val}
-                  onPress={() => {
-                    setSlippage(val);
-                    reset();
-                    setShowSlippagePanel(false);
-                    snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
-                  }}
-                  className={`flex-1 h-[36px] rounded-[8px] items-center justify-center ${slippage === val ? 'bg-p100' : 'bg-n30'}`}>
-                  <CyDText className={`text-[13px] font-semibold ${slippage === val ? 'text-black' : 'text-base400'}`}>
-                    {(val * 100).toFixed(1)}%
-                  </CyDText>
-                </CyDTouchView>
-              ))}
-            </CyDView>
-          </CyDView>
-        )}
         {!canRequestQuote && (
           <CyDView className='bg-n30 rounded-[39px] h-[54px] items-center justify-center'>
             <CyDText className='text-[16px] font-semibold text-base150'>Enter the amount</CyDText>
@@ -1806,8 +1966,9 @@ export default function BridgeV2Content({
         {canRequestQuote && step === 'quoted' && !transactionReviewOpen && (
           <CyDTouchView
             onPress={() => setTransactionReviewOpen(true)}
-            className='bg-p100 rounded-[39px] h-[54px] items-center justify-center'>
-            <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Review</CyDText>
+            disabled={!!insufficientGasWarning}
+            className={`rounded-[39px] h-[54px] items-center justify-center ${insufficientGasWarning ? 'bg-n30' : 'bg-p100'}`}>
+            <CyDText className={`text-[16px] font-semibold ${insufficientGasWarning ? 'text-base150' : 'text-black'}`} style={{ letterSpacing: -0.8 }}>Review</CyDText>
           </CyDTouchView>
         )}
         {canRequestQuote && step === 'quoting' && (
