@@ -38,6 +38,7 @@ import {
   isPinAuthenticated,
   loadCyRootData,
   loadFromKeyChain,
+  migrateKeychainIfNeeded,
   signIn,
 } from '../../core/Keychain';
 import { initialHdWalletState } from '../../reducers';
@@ -261,6 +262,10 @@ export default function useInitializer() {
     state = initialHdWalletState,
   ) => {
     const cyRootData = await loadCyRootData(state);
+
+    // Migrate keychain ACL if needed (e.g., fix Android USER_PRESENCE → BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE)
+    await migrateKeychainIfNeeded(state.pinValue);
+
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {

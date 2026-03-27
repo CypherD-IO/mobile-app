@@ -51,6 +51,8 @@ import {
   removeCyRootData,
   setConnectionType,
   getConnectionType,
+  getKeychainRefreshVersion,
+  setKeychainRefreshVersion,
 } from './asyncStorage';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
@@ -81,6 +83,10 @@ import { cosmosConfig } from '../constants/cosmosConfig';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 11;
+
+// Bump this when keychain ACL/security config changes require re-saving keychain items.
+// See docs/KEYCHAIN_REFRESH_VERSION.md for usage guide.
+const currentKeychainRefreshVersion = 1;
 
 // Global lock to prevent multiple concurrent Face ID prompts
 // When Face ID is already in progress, other callers will wait for the result
@@ -249,9 +255,11 @@ export async function loadFromKeyChain(
   });
 
   try {
-    // NOTE: We intentionally do NOT specify accessControl during retrieval.
-    // The keychain item's ACL is determined at save time. Specifying a different
-    // accessControl during retrieval can cause failures for items saved without ACL
+    // iOS: Do NOT specify accessControl during retrieval — mismatched ACL causes
+    //       hard failures for items saved with a different accessControl (e.g., USER_PRESENCE).
+    // Android: Specify accessControl to configure the BiometricPrompt to show
+    //          the "Use PIN/Pattern/Password" fallback option. On Android this
+    //          controls prompt UI behavior, not ACL enforcement.
     const options: GetOptions = {
       authenticationPrompt: isIOS()
         ? {
@@ -262,8 +270,10 @@ export async function loadFromKeyChain(
         : {
             title: requestMessage,
             subtitle: t('USE_BIOMETRIC_OR_PASSCODE'),
-            // Note: On Android, omitting 'cancel' enables "Use PIN/Pattern/Password" fallback
           },
+      ...(!isIOS() && {
+        accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+      }),
     };
     const credentials = await getInternetCredentials(key, options);
     // Auth succeeded - notify any waiting callers and clear the lock
@@ -527,7 +537,7 @@ export async function removeFromKeyChain(key: string) {
 }
 
 export async function doesKeyExistInKeyChain(key: string) {
-  const exists = await hasInternetCredentials(key);
+  const exists = await hasInternetCredentials({ server: key });
   return exists;
 }
 
@@ -559,9 +569,14 @@ export async function getPrivateACLOptions(): Promise<SetOptions> {
       isSimulator = __DEV__ && isEmulator;
     }
     if (canAuthenticate && !isSimulator) {
-      // Use USER_PRESENCE which works with either biometry or device passcode.
+      // iOS: USER_PRESENCE triggers Face ID/Touch ID/passcode prompt natively
+      // Android: BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE is required to trigger
+      //          the system auth prompt (fingerprint/PIN/pattern/password)
+      //          USER_PRESENCE on Android does NOT trigger any auth prompt
       res = {
-        accessControl: ACCESS_CONTROL.USER_PRESENCE,
+        accessControl: isIOS()
+          ? ACCESS_CONTROL.USER_PRESENCE
+          : ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
         accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
       };
     }
@@ -743,6 +758,94 @@ export const isBiometricEnabled = async () => {
     }
   }
   return canAuthenticate;
+};
+
+/**
+ * Migrates keychain items when the security configuration (ACL) changes.
+ * Each version bump contains its own platform-specific migration logic.
+ * See docs/KEYCHAIN_REFRESH_VERSION.md for details.
+ *
+ * @param pin - The user's PIN if PIN authentication is active (needed to re-encrypt after re-save)
+ */
+export const migrateKeychainIfNeeded = async (pin = '') => {
+  try {
+    const storedVersion = await getKeychainRefreshVersion();
+    if (storedVersion >= currentKeychainRefreshVersion) {
+      return;
+    }
+
+    // v1: Fix Android ACL — USER_PRESENCE doesn't trigger auth prompt on Android.
+    // Re-save all ACL-protected keychain items with BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE.
+    if (storedVersion < 1) {
+      if (!isIOS()) {
+        const walletExists = await doesKeyExistInKeyChain(DUMMY_AUTH);
+        if (walletExists) {
+          const aclOptions = await getPrivateACLOptions();
+
+          const keysToRefresh = [
+            CYPHERD_SEED_PHRASE_KEY,
+            CYPHERD_PRIVATE_KEY,
+            AUTHORIZE_WALLET_DELETION,
+            DUMMY_AUTH,
+            PIN_AUTH,
+          ];
+
+          // Phase 1: Read ALL values without triggering biometric prompts.
+          // Use getInternetCredentials directly with NO accessControl option.
+          // Items saved with USER_PRESENCE don't need biometric to read on Android.
+          interface KeyValue { key: string; value: string }
+          const keyValues: KeyValue[] = [];
+          for (const key of keysToRefresh) {
+            const exists = await doesKeyExistInKeyChain(key);
+            if (!exists) {
+              continue;
+            }
+            const credentials = await getInternetCredentials(key, {
+              authenticationPrompt: {
+                title: 'Migrating keychain security',
+              },
+            });
+            if (credentials?.password) {
+              keyValues.push({ key, value: credentials.password });
+            }
+          }
+
+          // Phase 2: Delete old entries.
+          // We must delete before saving because overwriting with setInternetCredentials
+          // can corrupt the entry if the biometric prompt is canceled mid-write.
+          // All values are safely held in memory from Phase 1.
+          for (const { key } of keyValues) {
+            await resetInternetCredentials({ server: key });
+          }
+
+          // Phase 3: Wait for any previous BiometricPrompt to fully settle.
+          // The pin_auth check before migration triggers a biometric prompt,
+          // and Android's BiometricPrompt can auto-cancel a new prompt if the
+          // previous one hasn't fully cleaned up.
+          await sleepFor(1500);
+
+          // Phase 4: Re-save each key with the correct ACL.
+          // This triggers a biometric prompt for Keystore key creation.
+          for (const { key, value } of keyValues) {
+            try {
+              await setInternetCredentials(key, key, value, aclOptions);
+            } catch (saveError) {
+              // If save with ACL fails, save WITHOUT ACL as fallback to prevent data loss.
+              // The data will be unprotected but not lost. Migration will retry next launch.
+              await setInternetCredentials(key, key, value);
+              throw saveError;
+            }
+          }
+        }
+      }
+    }
+
+    // Persist version AFTER all items are re-saved successfully
+    await setKeychainRefreshVersion(currentKeychainRefreshVersion);
+  } catch (e) {
+    // Do NOT persist version on failure — migration will retry on next app launch
+    Sentry.captureException(e);
+  }
 };
 
 export const removePin = async (hdWallet: any, pin = '') => {
