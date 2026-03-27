@@ -15,7 +15,7 @@ import {
   TokenOverviewTabIndices,
   TokenOverviewTabs,
 } from '../../constants/enum';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   useIsFocused,
   NavigationProp,
@@ -44,7 +44,7 @@ interface RouteParams {
 function TokenOverviewV2() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-  const { getLocalPortfolio } = usePortfolio();
+  const { getLocalPortfolio, fetchPortfolio } = usePortfolio();
 
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const isFocused = useIsFocused();
@@ -55,13 +55,18 @@ function TokenOverviewV2() {
     Record<string, Holding[]>
   >({});
 
-  const getTokenHoldingsByCoinGeckoId = async () => {
+  const getTokenHoldingsByCoinGeckoId = useCallback(async () => {
     const localPortfolio = await getLocalPortfolio();
     if (localPortfolio) {
       const holdings = groupBy(localPortfolio.totalHoldings, 'coinGeckoId');
       setTokenHoldingsByCoinGeckoId(holdings);
     }
-  };
+  }, [getLocalPortfolio]);
+
+  const handleBridgeSuccess = useCallback(async () => {
+    await fetchPortfolio(true);
+    await getTokenHoldingsByCoinGeckoId();
+  }, [fetchPortfolio, getTokenHoldingsByCoinGeckoId]);
 
   useEffect(() => {
     if (isFocused) {
@@ -148,7 +153,11 @@ function TokenOverviewV2() {
         <CyDAnimatedView
           className='absolute bottom-0 left-0 right-0 pb-[20px]'
           style={styles.floatingToolbar}>
-          <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
+          <TokenOverviewToolBar
+            tokenData={tokenData}
+            navigation={navigation}
+            onBridgeSuccess={handleBridgeSuccess}
+          />
         </CyDAnimatedView>
       )}
     </CyDView>

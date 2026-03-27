@@ -155,6 +155,7 @@ export default function useTransactionManager() {
       contractDecimals,
       contractData,
       isErc20 = true,
+      minGasLimit,
     }: {
       publicClient: PublicClient;
       chain: Chain;
@@ -164,6 +165,8 @@ export default function useTransactionManager() {
       contractDecimals: number;
       contractData?: `0x${string}`;
       isErc20?: boolean;
+      /** Floor for gas units (e.g. LiFi quote `gasLimit` + buffer) when estimate is too low. */
+      minGasLimit?: bigint;
     },
     abortSignal?: AbortSignal,
   ): Promise<TransactionResponse> => {
@@ -184,10 +187,15 @@ export default function useTransactionManager() {
         return { isError: true, error: gasEstimateResponse.error };
       }
 
+      let gasUnits = BigInt(gasEstimateResponse.gasLimit);
+      if (minGasLimit != null && minGasLimit > gasUnits) {
+        gasUnits = minGasLimit;
+      }
+
       const txnPayload = {
         from: ethereumAddress,
         to: isErc20 ? contractAddress : toAddress,
-        gas: BigInt(gasEstimateResponse.gasLimit),
+        gas: gasUnits,
         value: isErc20
           ? parseEther('0')
           : parseUnits(amountToSend, contractDecimals),
@@ -236,6 +244,7 @@ export default function useTransactionManager() {
         gasFeeInCrypto: gasEstimateResponse.gasFeeInCrypto,
       };
     } catch (e) {
+      Sentry.captureException(e);
       return { isError: true, error: e };
     }
   };
