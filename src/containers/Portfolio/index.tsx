@@ -310,7 +310,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
    * Navigates to the send/enter amount screen
    */
   const handleSendPress = (): void => {
-    navigation.navigate(C.screenTitle.ENTER_AMOUNT);
+    navigation.navigate(C.screenTitle.BLINDPAY_ONBOARDING);
   };
 
   /**
