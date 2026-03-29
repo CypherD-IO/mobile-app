@@ -159,6 +159,20 @@ export const screenTitle = {
   COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
   MERCHANT_REWARD_LIST: 'MerchantRewardList',
   PREMIUM_SCREEN: 'PremiumScreen',
+  BLINDPAY_ONBOARDING: 'blindpayOnboarding',
+  BLINDPAY_TOS_WEBVIEW: 'blindpayTosWebview',
+  BLINDPAY_KYC_STACK: 'blindpayKycStack',
+  BLINDPAY_SEND_MONEY: 'blindpaySendMoney',
+  BLINDPAY_ADD_RECIPIENT: 'blindpayAddRecipient',
+  BLINDPAY_BANK_ACCOUNTS: 'blindpayBankAccounts',
+  BLINDPAY_BANK_ACCOUNT_DETAIL: 'blindpayBankAccountDetail',
+  BLINDPAY_ADD_BANK_ACCOUNT: 'blindpayAddBankAccount',
+  BLINDPAY_VIRTUAL_ACCOUNTS: 'blindpayVirtualAccounts',
+  BLINDPAY_CREATE_VIRTUAL_ACCOUNT: 'blindpayCreateVirtualAccount',
+  BLINDPAY_VIRTUAL_ACCOUNT_DETAIL: 'blindpayVirtualAccountDetail',
+  BLINDPAY_LIMITS: 'blindpayLimits',
+  BLINDPAY_REQUEST_LIMIT_INCREASE: 'blindpayRequestLimitIncrease',
+  BLINDPAY_LIMIT_HISTORY: 'blindpayLimitHistory',
 };
 
 export const fontsName = {
