@@ -95,6 +95,13 @@ export default function useAxios() {
   // Add the same interceptor to the form instance
   axiosFormInstance.interceptors.request.use(
     async (req: any) => {
+      // Let React Native's XHR auto-set Content-Type with the multipart boundary
+      if (req.data instanceof FormData) {
+        delete req.headers['Content-Type'];
+        delete req.headers.common?.['Content-Type'];
+        delete req.headers.post?.['Content-Type'];
+        console.log('[HttpRequest] Stripped Content-Type for FormData upload');
+      }
       if (!isTokenValid(token)) {
         try {
           const signInResponse = await signIn(hdWalletContext);
