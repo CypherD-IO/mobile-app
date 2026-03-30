@@ -941,6 +941,8 @@ const resources = {
       STATUS: 'Status',
       RESET_ALL: 'Reset all',
       TRANSACTIONS_FILTER: 'Transactions Filter',
+      TXN_FILTER_TYPE: 'Type',
+      TXN_FILTER_SHOW_SPAM: 'Show spam',
       MINIMUM_AMOUNT_ETH: 'Minimum amount to transfer in ethereum chain is',
       MINIMUM_AMOUNT_PLAN: 'Amount should be greater than plan cost',
       BRIDGE_ACTIVITY: 'BRIDGE',

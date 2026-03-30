@@ -1663,10 +1663,11 @@ const TokenListEmptyComponent = ({
     );
   } else {
     return (
-      <CyDView className='flex flex-col justify-start items-center w-[100px] mt-8'>
+      <CyDView className='flex flex-col justify-start items-center w-full mt-8'>
         <CyDFastImage
           source={AppImages.EMPTY}
-          className='w-[150px] h-[150px]'
+          className='w-[200px] h-[150px]'
+          resizeMode='contain'
         />
         <CyDText className='mt-[15px] text-[14px]'>
           {t('NO_CURRENT_HOLDINGS')}

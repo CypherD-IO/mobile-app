@@ -150,6 +150,8 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
       return `https://www.mintscan.io/coreum/txs/${hash}`;
     case ChainBackendNames.INJECTIVE:
       return `https://www.mintscan.io/injective/txs/${hash}`;
+    case ChainBackendNames.SOLANA:
+      return `https://solscan.io/tx/${hash}`;
   }
 }
 
