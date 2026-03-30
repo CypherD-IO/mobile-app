@@ -30,6 +30,7 @@ export const initializeCustomerIO = async (): Promise<boolean> => {
       console.warn(
         '[CustomerIO] Missing CUSTOMERIO_CDP_API_KEY in env config. Skipping initialization.',
       );
+      initPromise = null;
       return false;
     }
 
@@ -54,6 +55,7 @@ export const initializeCustomerIO = async (): Promise<boolean> => {
     } catch (error) {
       Sentry.captureException(error);
       console.error('[CustomerIO] Failed to initialize SDK:', error);
+      initPromise = null;
       return false;
     }
   })();
@@ -94,14 +96,15 @@ export const identifyCustomerIOUser = async (
     return;
   }
 
-  if (!userId || userId.trim().length === 0) {
+  const trimmedUserId = userId?.trim();
+  if (!trimmedUserId || trimmedUserId.length === 0) {
     console.warn('[CustomerIO] Cannot identify user with empty userId.');
     return;
   }
 
   try {
     await CustomerIO.identify({
-      userId,
+      userId: trimmedUserId,
       traits: traits ?? {},
     });
 

@@ -18,16 +18,21 @@ public class CioNotificationServicePushHandler: NSObject {
   ) {
     // The extension runs in a separate process, so the SDK must be
     // initialized independently with its own CDP API key.
+    guard let cdpApiKey = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERIO_CDP_API_KEY") as? String,
+          !cdpApiKey.isEmpty else {
+      print("[CioExtension] CUSTOMERIO_CDP_API_KEY missing from Info.plist — skipping rich push")
+      contentHandler(request.content)
+      return
+    }
+
     MessagingPushFCM.initializeForExtension(
-      withConfig: MessagingPushConfigBuilder(cdpApiKey: "c7d94ba6ac97b07c3142")
+      withConfig: MessagingPushConfigBuilder(cdpApiKey: cdpApiKey)
         .build()
     )
 
     MessagingPush.shared.didReceive(request, withContentHandler: contentHandler)
   }
 
-  /// Delivers the best-effort notification content when the system is about
-  /// to terminate the extension before processing finishes.
   @objc(serviceExtensionTimeWillExpire)
   public func serviceExtensionTimeWillExpire() {
     MessagingPush.shared.serviceExtensionTimeWillExpire()
