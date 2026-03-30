@@ -11,6 +11,7 @@ import {
   Dimensions,
   FlatList,
   InteractionManager,
+  Keyboard,
   Linking,
   ListRenderItem,
   Platform,
@@ -33,11 +34,11 @@ import { formatUnits, parseUnits } from 'viem';
 import { ALL_CHAINS, CHAIN_SOLANA } from '../../../constants/server';
 import { GlobalContext } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
+import { getExplorerUrlFromChainId, getWeb3Endpoint } from '../../../core/util';
 import {
-  getExplorerUrlFromChainId,
-  getWeb3Endpoint,
-} from '../../../core/util';
-import { getMaxBridgeSpendable, type BackendGasPriceResponse } from '../bridgeMaxSpendable';
+  getMaxBridgeSpendable,
+  type BackendGasPriceResponse,
+} from '../bridgeMaxSpendable';
 import BridgeV2InlineSignPanel from '../components/BridgeV2InlineSignPanel';
 import useBridgeV2, { BridgeV2Executors } from '../hooks/useBridgeV2';
 import { BRIDGE_V2_SHEET_ID } from '../hooks/useBridgeV2Sheet';
@@ -68,7 +69,10 @@ const BRIDGE_QUOTE_DEBOUNCE_MS = 1500;
 
 type TokenSide = 'source' | 'dest';
 
-function resolveBridgeTxExplorerUrl(chainId: string, txHash: string): string | null {
+function resolveBridgeTxExplorerUrl(
+  chainId: string,
+  txHash: string,
+): string | null {
   const h = (txHash || '').trim();
   if (!h) return null;
   const fromBridge = getTxExplorerUrl(chainId, h);
@@ -77,10 +81,14 @@ function resolveBridgeTxExplorerUrl(chainId: string, txHash: string): string | n
   return fromCore || null;
 }
 
-function explorerChainForExecutionStep(step: ExecutionStep, quote: BridgeV2QuoteResponse): string {
+function explorerChainForExecutionStep(
+  step: ExecutionStep,
+  quote: BridgeV2QuoteResponse,
+): string {
   if (step.chainId) return step.chainId;
   if (step.id === 'lifi-status') return quote.destChainId;
-  if (step.id === 'lifi-approval' || step.id === 'lifi-swap') return quote.sourceChainId;
+  if (step.id === 'lifi-approval' || step.id === 'lifi-swap')
+    return quote.sourceChainId;
   return quote.sourceChainId;
 }
 
@@ -97,7 +105,8 @@ const SEARCH_DEBOUNCE_MS = 250;
 const TOKEN_ITEM_HEIGHT = 68;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const TOKEN_SELECTOR_HEADER_HEIGHT = 160;
-const TOKEN_LIST_MAX_HEIGHT = SCREEN_HEIGHT * 0.95 - TOKEN_SELECTOR_HEADER_HEIGHT;
+const TOKEN_LIST_MAX_HEIGHT =
+  SCREEN_HEIGHT * 0.95 - TOKEN_SELECTOR_HEADER_HEIGHT;
 
 type BridgeTokenWithBalance = BridgeV2Token & {
   balance?: string;
@@ -107,7 +116,10 @@ type BridgeTokenWithBalance = BridgeV2Token & {
   balanceUsd?: number;
 };
 
-function getBridgeChainId(chain: { chain_id: string; chainIdNumber: number }): string {
+function getBridgeChainId(chain: {
+  chain_id: string;
+  chainIdNumber: number;
+}): string {
   if (chain.chain_id === 'solana') return 'solana';
   if (chain.chainIdNumber === 0) return chain.chain_id;
   return String(chain.chainIdNumber);
@@ -136,7 +148,8 @@ function holdingMatchesBridgeToken(h: Holding, token: BridgeV2Token): boolean {
   if (isSolanaBridgeChainId(bridgeChainId)) {
     const hAddr = (h.contractAddress || '').trim();
     const hDenom = (h.denom || h.contractAddress || '').trim();
-    const solanaNativeSentinel = hAddr.length > 0 && hAddr.toLowerCase() === 'solana-native';
+    const solanaNativeSentinel =
+      hAddr.length > 0 && hAddr.toLowerCase() === 'solana-native';
 
     if (
       (solanaNativeSentinel || h.isNativeToken) &&
@@ -158,9 +171,15 @@ function holdingMatchesBridgeToken(h: Holding, token: BridgeV2Token): boolean {
   const holdingDenom = (h.denom || h.contractAddress || '').toLowerCase();
 
   return !!(
-    (token.tokenContract && holdingAddr && token.tokenContract.toLowerCase() === holdingAddr) ||
-    (token.denom && holdingDenom && token.denom.toLowerCase() === holdingDenom) ||
-    (token.tokenContract && holdingDenom && token.tokenContract.toLowerCase() === holdingDenom) ||
+    (token.tokenContract &&
+      holdingAddr &&
+      token.tokenContract.toLowerCase() === holdingAddr) ||
+    (token.denom &&
+      holdingDenom &&
+      token.denom.toLowerCase() === holdingDenom) ||
+    (token.tokenContract &&
+      holdingDenom &&
+      token.tokenContract.toLowerCase() === holdingDenom) ||
     (token.denom && holdingAddr && token.denom.toLowerCase() === holdingAddr)
   );
 }
@@ -200,10 +219,12 @@ function bridgeQuoteTokenDenom(token: BridgeV2Token): string {
       /^solana[-\s]?native$/i.test(cTrim) ||
       (dTrim.length > 0 &&
         !SOLANA_MINT_BASE58_RE.test(dTrim) &&
-        (dTrim.toLowerCase() === 'solana-native' || dTrim.toLowerCase() === 'solana native')) ||
+        (dTrim.toLowerCase() === 'solana-native' ||
+          dTrim.toLowerCase() === 'solana native')) ||
       (cTrim.length > 0 &&
         !SOLANA_MINT_BASE58_RE.test(cTrim) &&
-        (cTrim.toLowerCase() === 'solana-native' || cTrim.toLowerCase() === 'solana native'));
+        (cTrim.toLowerCase() === 'solana-native' ||
+          cTrim.toLowerCase() === 'solana native'));
 
     if (looksLikeNativeLabel) {
       return SOLANA_NATIVE_QUOTE_TOKEN_DENOM;
@@ -215,7 +236,11 @@ function bridgeQuoteTokenDenom(token: BridgeV2Token): string {
   if (token.isEvm || isEvmChainId(token.chainId)) {
     const d = (token.denom || '').trim();
     const c = (token.tokenContract || '').trim();
-    if (token.isNative || isEvmNativeQuoteAlias(d) || isEvmNativeQuoteAlias(c)) {
+    if (
+      token.isNative ||
+      isEvmNativeQuoteAlias(d) ||
+      isEvmNativeQuoteAlias(c)
+    ) {
       return EVM_NATIVE_QUOTE_TOKEN_DENOM;
     }
     return d || c;
@@ -248,7 +273,8 @@ export default function BridgeV2Content({
   const { snapBottomSheetToIndex } = useGlobalBottomSheet();
   const { theme } = useTheme();
   const { colorScheme } = useColorScheme();
-  const isDark = theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
+  const isDark =
+    theme === Theme.SYSTEM ? colorScheme === 'dark' : theme === Theme.DARK;
   const colors = {
     placeholder: isDark ? '#666666' : '#999999',
     activityIndicator: isDark ? '#FFC72F' : '#FFBF15',
@@ -289,9 +315,12 @@ export default function BridgeV2Content({
       chainType: (h.chainDetails.chain_id === 'solana'
         ? 'solana'
         : h.chainDetails.chainIdNumber > 0
-          ? 'evm'
-          : 'cosmos') as BridgeV2Chain['chainType'],
-      logoUrl: typeof h.chainDetails.logo_url === 'string' ? h.chainDetails.logo_url : h.logoUrl ?? '',
+        ? 'evm'
+        : 'cosmos') as BridgeV2Chain['chainType'],
+      logoUrl:
+        typeof h.chainDetails.logo_url === 'string'
+          ? h.chainDetails.logo_url
+          : h.logoUrl ?? '',
       bech32Prefix: '',
       isLifi: true,
       isSkip: true,
@@ -306,7 +335,9 @@ export default function BridgeV2Content({
       denom: h.denom || h.contractAddress || '',
       chainId: bridgeChainId,
       isNative: h.isNativeToken,
-      isEvm: h.chainDetails.chainIdNumber > 0 && h.chainDetails.chain_id !== 'solana',
+      isEvm:
+        h.chainDetails.chainIdNumber > 0 &&
+        h.chainDetails.chain_id !== 'solana',
       isSvm: h.chainDetails.chain_id === 'solana',
       symbol: h.symbol,
       name: h.name,
@@ -326,17 +357,23 @@ export default function BridgeV2Content({
   const [maxLoading, setMaxLoading] = useState(false);
   const [showSlippagePanel, setShowSlippagePanel] = useState(false);
   const [showTokenSelector, setShowTokenSelector] = useState(false);
-  const [tokenSelectorSide, setTokenSelectorSide] = useState<TokenSide>('source');
+  const [tokenSelectorSide, setTokenSelectorSide] =
+    useState<TokenSide>('source');
   const [showChainFilter, setShowChainFilter] = useState(false);
   const [tokenSearch, setTokenSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selectedFilterChain, setSelectedFilterChain] = useState<string | null>(null);
+  const [selectedFilterChain, setSelectedFilterChain] = useState<string | null>(
+    null,
+  );
   /** After a quote succeeds, user stays on the main form until tapping Review. */
   const [transactionReviewOpen, setTransactionReviewOpen] = useState(false);
 
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const signReviewResolverRef = useRef<((approved: boolean) => void) | null>(null);
-  const [signReviewPayload, setSignReviewPayload] = useState<BridgeV2SignReviewPayload | null>(null);
+  const signReviewResolverRef = useRef<((approved: boolean) => void) | null>(
+    null,
+  );
+  const [signReviewPayload, setSignReviewPayload] =
+    useState<BridgeV2SignReviewPayload | null>(null);
   const bridgeProcessingScrollRef = useRef<ScrollView>(null);
 
   const scrollBridgeProcessingToEnd = useCallback(() => {
@@ -393,7 +430,12 @@ export default function BridgeV2Content({
     if (step !== 'executing' && step !== 'polling') return;
     if (!signReviewPayload) return;
     scrollBridgeProcessingToEnd();
-  }, [step, signReviewPayload, executionSteps.length, scrollBridgeProcessingToEnd]);
+  }, [
+    step,
+    signReviewPayload,
+    executionSteps.length,
+    scrollBridgeProcessingToEnd,
+  ]);
 
   useEffect(() => {
     loadChains();
@@ -410,14 +452,19 @@ export default function BridgeV2Content({
 
   /** Avoid re-running prefill when unrelated chains’ token lists update. */
   const initialFromBridgeChainId = useMemo((): string | null => {
-    if (!initialFromHolding || initialFromHolding.chainDetails.chain_id === HYPERLIQUID_CHAIN_ID) {
+    if (
+      !initialFromHolding ||
+      initialFromHolding.chainDetails.chain_id === HYPERLIQUID_CHAIN_ID
+    ) {
       return null;
     }
     return getBridgeChainId(initialFromHolding.chainDetails);
   }, [initialFromHolding]);
 
   const initialFromChainTokens =
-    initialFromBridgeChainId != null ? tokensByChain[initialFromBridgeChainId] : undefined;
+    initialFromBridgeChainId != null
+      ? tokensByChain[initialFromBridgeChainId]
+      : undefined;
 
   useEffect(() => {
     if (!initialFromHolding || initialFromPrefillDoneRef.current) return;
@@ -439,7 +486,9 @@ export default function BridgeV2Content({
       return;
     }
 
-    const match = chainTokens.find(t => holdingMatchesBridgeToken(initialFromHolding, t));
+    const match = chainTokens.find(t =>
+      holdingMatchesBridgeToken(initialFromHolding, t),
+    );
 
     setSourceChain(chain);
     if (match) {
@@ -500,7 +549,12 @@ export default function BridgeV2Content({
   const portfolioBalanceMap = useMemo(() => {
     const map = new Map<
       string,
-      { balance: string; rawBalance: string; balanceInteger: string; balanceUsd: number }
+      {
+        balance: string;
+        rawBalance: string;
+        balanceInteger: string;
+        balanceUsd: number;
+      }
     >();
     if (!portfolioHoldings) return map;
 
@@ -515,7 +569,10 @@ export default function BridgeV2Content({
         balanceInteger: h.balanceInteger,
         balanceUsd: h.totalValue,
       };
-      const ca = normalizeBridgeTokenKey(bridgeChainId, h.contractAddress || '');
+      const ca = normalizeBridgeTokenKey(
+        bridgeChainId,
+        h.contractAddress || '',
+      );
       const dm = normalizeBridgeTokenKey(bridgeChainId, h.denom || '');
       if (ca) map.set(`${bridgeChainId}:${ca}`, value);
       if (dm && dm !== ca) map.set(`${bridgeChainId}:${dm}`, value);
@@ -528,9 +585,17 @@ export default function BridgeV2Content({
     (
       token: BridgeV2Token,
     ):
-      | { balance: string; rawBalance: string; balanceInteger: string; balanceUsd: number }
+      | {
+          balance: string;
+          rawBalance: string;
+          balanceInteger: string;
+          balanceUsd: number;
+        }
       | undefined => {
-      const tc = normalizeBridgeTokenKey(token.chainId, token.tokenContract || '');
+      const tc = normalizeBridgeTokenKey(
+        token.chainId,
+        token.tokenContract || '',
+      );
       const dm = normalizeBridgeTokenKey(token.chainId, token.denom || '');
       if (tc) {
         const hit = portfolioBalanceMap.get(`${token.chainId}:${tc}`);
@@ -561,7 +626,10 @@ export default function BridgeV2Content({
     const fromMap = getTokenBalance(sourceToken);
     if (fromMap) return fromMap;
 
-    if (initialFromHolding && holdingMatchesBridgeToken(initialFromHolding, sourceToken)) {
+    if (
+      initialFromHolding &&
+      holdingMatchesBridgeToken(initialFromHolding, sourceToken)
+    ) {
       return balanceFromHolding(initialFromHolding);
     }
     if (portfolioHoldings?.length) {
@@ -634,10 +702,13 @@ export default function BridgeV2Content({
 
     const nativeBalanceUsd = nativeHolding?.totalValue ?? 0;
     if (nativeBalanceUsd < totalGasUsd) {
-      const nativeSymbol = nativeHolding?.symbol ?? (
-        sourceChain.chainType === 'evm' ? 'ETH' :
-        sourceChain.chainType === 'solana' ? 'SOL' : 'native token'
-      );
+      const nativeSymbol =
+        nativeHolding?.symbol ??
+        (sourceChain.chainType === 'evm'
+          ? 'ETH'
+          : sourceChain.chainType === 'solana'
+          ? 'SOL'
+          : 'native token');
       return `Insufficient ${nativeSymbol} for gas fees`;
     }
     return null;
@@ -659,7 +730,14 @@ export default function BridgeV2Content({
       !!destToken &&
       hasFromAmountNumber &&
       !!amountInSmallestUnit,
-    [sourceChain, destChain, sourceToken, destToken, hasFromAmountNumber, amountInSmallestUnit],
+    [
+      sourceChain,
+      destChain,
+      sourceToken,
+      destToken,
+      hasFromAmountNumber,
+      amountInSmallestUnit,
+    ],
   );
 
   const handleQuote = useCallback(async () => {
@@ -680,7 +758,16 @@ export default function BridgeV2Content({
     };
 
     await fetchQuote(input);
-  }, [sourceChain, destChain, sourceToken, destToken, amountInSmallestUnit, slippage, getAddressForChainId, fetchQuote]);
+  }, [
+    sourceChain,
+    destChain,
+    sourceToken,
+    destToken,
+    amountInSmallestUnit,
+    slippage,
+    getAddressForChainId,
+    fetchQuote,
+  ]);
 
   useEffect(() => {
     if (step !== 'quoted') {
@@ -736,15 +823,19 @@ export default function BridgeV2Content({
     resolve?.(true);
   }, []);
 
-  const confirmBeforeSign = useCallback(async (payload: BridgeV2SignReviewPayload) => {
-    return await new Promise<boolean>(resolve => {
-      signReviewResolverRef.current = resolve;
-      setSignReviewPayload(payload);
-    });
-  }, []);
+  const confirmBeforeSign = useCallback(
+    async (payload: BridgeV2SignReviewPayload) => {
+      return await new Promise<boolean>(resolve => {
+        signReviewResolverRef.current = resolve;
+        setSignReviewPayload(payload);
+      });
+    },
+    [],
+  );
 
   const handleExecute = useCallback(async () => {
-    if (!quote || !sourceToken || !sourceChain || !destChain || !destToken) return;
+    if (!quote || !sourceToken || !sourceChain || !destChain || !destToken)
+      return;
 
     const fromAddress = getAddressForChainId(sourceChain.chainId)?.trim() ?? '';
     const toAddress = getAddressForChainId(destChain.chainId)?.trim() ?? '';
@@ -801,12 +892,12 @@ export default function BridgeV2Content({
         chains.length === 1
           ? chains[0].chainId
           : side === 'source'
-            ? sourceChain?.chainId ?? sourceToken?.chainId ?? null
-            : destChain?.chainId ??
-              destToken?.chainId ??
-              sourceChain?.chainId ??
-              sourceToken?.chainId ??
-              null;
+          ? sourceChain?.chainId ?? sourceToken?.chainId ?? null
+          : destChain?.chainId ??
+            destToken?.chainId ??
+            sourceChain?.chainId ??
+            sourceToken?.chainId ??
+            null;
       setSelectedFilterChain(focusChainId);
       setShowTokenSelector(true);
       snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 1);
@@ -852,7 +943,9 @@ export default function BridgeV2Content({
 
   const chainMap = useMemo(() => {
     const map: Record<string, BridgeV2Chain> = {};
-    chains.forEach(c => { map[c.chainId] = c; });
+    chains.forEach(c => {
+      map[c.chainId] = c;
+    });
     return map;
   }, [chains]);
 
@@ -919,7 +1012,9 @@ export default function BridgeV2Content({
         denom: h.denom || h.contractAddress || '',
         chainId: bridgeChainId,
         isNative: h.isNativeToken,
-        isEvm: h.chainDetails.chainIdNumber > 0 && h.chainDetails.chain_id !== 'solana',
+        isEvm:
+          h.chainDetails.chainIdNumber > 0 &&
+          h.chainDetails.chain_id !== 'solana',
         isSvm: h.chainDetails.chain_id === 'solana',
         symbol: h.symbol,
         name: h.name,
@@ -946,7 +1041,10 @@ export default function BridgeV2Content({
   const fuseInstance = useMemo(() => {
     let allTokens: BridgeTokenWithBalance[] = [];
 
-    if (tokenSelectorSide === 'source' && sourceTokensFromPortfolio.length > 0) {
+    if (
+      tokenSelectorSide === 'source' &&
+      sourceTokensFromPortfolio.length > 0
+    ) {
       allTokens = selectedFilterChain
         ? sourceTokensFromPortfolio.filter(
             t => String(t.chainId) === String(selectedFilterChain),
@@ -992,7 +1090,8 @@ export default function BridgeV2Content({
   }, [fuseInstance, debouncedSearch]);
 
   const keyExtractor = useCallback(
-    (item: BridgeV2Token, index: number) => `${item.chainId}-${item.denom}-${index}`,
+    (item: BridgeV2Token, index: number) =>
+      `${item.chainId}-${item.denom}-${index}`,
     [],
   );
 
@@ -1045,7 +1144,11 @@ export default function BridgeV2Content({
 
   const showReview = step === 'quoted' && transactionReviewOpen;
 
-  const isExecutionScreen = step === 'executing' || step === 'polling' || step === 'completed' || step === 'failed';
+  const isExecutionScreen =
+    step === 'executing' ||
+    step === 'polling' ||
+    step === 'completed' ||
+    step === 'failed';
 
   useEffect(() => {
     if (isExecutionScreen) {
@@ -1054,6 +1157,29 @@ export default function BridgeV2Content({
       snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
     }
   }, [showReview, isExecutionScreen, snapBottomSheetToIndex]);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      if (!isExecutionScreen && !showReview && !showTokenSelector) {
+        snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 1);
+      }
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      if (!isExecutionScreen && !showReview && !showTokenSelector) {
+        snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
+      }
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [isExecutionScreen, showReview, showTokenSelector, snapBottomSheetToIndex]);
 
   const handleMaxPress = useCallback(async () => {
     if (!sourceTokenBalance || !sourceToken || !sourceChain) return;
@@ -1068,9 +1194,10 @@ export default function BridgeV2Content({
     try {
       const chainType = sourceChain.chainType as 'evm' | 'cosmos' | 'solana';
       const isNativeToken = sourceToken.isNative;
-      const isCrossChain = !!(destChain && sourceChain.chainId !== destChain.chainId);
-      const provider: 'lifi' | 'skip' =
-        sourceChain.isLifi ? 'lifi' : 'skip';
+      const isCrossChain = !!(
+        destChain && sourceChain.chainId !== destChain.chainId
+      );
+      const provider: 'lifi' | 'skip' = sourceChain.isLifi ? 'lifi' : 'skip';
 
       // Fetch EVM gas price from backend API if needed
       let evmBackendGasPrice: BackendGasPriceResponse | undefined;
@@ -1079,7 +1206,9 @@ export default function BridgeV2Content({
         const chain = ALL_CHAINS.find(c => c.chainIdNumber === chainIdNum);
         if (chain) {
           try {
-            const resp = await getWithoutAuth(`/v1/prices/gas/${chain.backendName}`);
+            const resp = await getWithoutAuth(
+              `/v1/prices/gas/${chain.backendName}`,
+            );
             if (!resp.isError && resp.data) {
               evmBackendGasPrice = resp.data;
             }
@@ -1099,7 +1228,8 @@ export default function BridgeV2Content({
           solanaRpcUrl = getWeb3Endpoint(solChain, globalContext);
         }
         solanaWalletAddress = getAddressForChainId(SOLANA_CHAIN_ID)?.trim();
-        solanaDestMint = destToken?.tokenContract || destToken?.denom || undefined;
+        solanaDestMint =
+          destToken?.tokenContract || destToken?.denom || undefined;
       }
 
       const result = await getMaxBridgeSpendable({
@@ -1107,7 +1237,8 @@ export default function BridgeV2Content({
         decimals: sourceToken.decimals,
         isNativeToken,
         chainType,
-        chainIdNum: chainType === 'evm' ? Number(sourceChain.chainId) : undefined,
+        chainIdNum:
+          chainType === 'evm' ? Number(sourceChain.chainId) : undefined,
         cosmosChainId: chainType === 'cosmos' ? sourceChain.chainId : undefined,
         isCrossChain,
         provider,
@@ -1129,14 +1260,27 @@ export default function BridgeV2Content({
       setMaxLoading(false);
     }
     reset();
-  }, [sourceTokenBalance, sourceToken, sourceChain, destChain, destToken, globalContext, getAddressForChainId, getWithoutAuth, reset]);
+  }, [
+    sourceTokenBalance,
+    sourceToken,
+    sourceChain,
+    destChain,
+    destToken,
+    globalContext,
+    getAddressForChainId,
+    getWithoutAuth,
+    reset,
+  ]);
 
   const handlePercentagePress = useCallback(
     (pct: number) => {
       if (!sourceTokenBalance || !sourceToken) return;
       const bi = sourceTokenBalance.balanceInteger;
       if (!bi) {
-        const val = DecimalHelper.multiply(sourceTokenBalance.rawBalance, pct).toString();
+        const val = DecimalHelper.multiply(
+          sourceTokenBalance.rawBalance,
+          pct,
+        ).toString();
         setAmountInput(val);
         reset();
         return;
@@ -1145,7 +1289,10 @@ export default function BridgeV2Content({
       try {
         balanceBigInt = BigInt(bi);
       } catch {
-        const val = DecimalHelper.multiply(sourceTokenBalance.rawBalance, pct).toString();
+        const val = DecimalHelper.multiply(
+          sourceTokenBalance.rawBalance,
+          pct,
+        ).toString();
         setAmountInput(val);
         reset();
         return;
@@ -1165,122 +1312,158 @@ export default function BridgeV2Content({
   if (showTokenSelector) {
     return (
       <>
-      <CyDView className='flex-1'>
-        {/* Header */}
-        <CyDView className='flex-row items-center px-[16px] pb-[12px]'>
-          <CyDTouchView
-            onPress={() => {
-              setShowTokenSelector(false);
-              snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
-            }}
-            className='mr-[12px] p-[4px]'>
-            <CyDIcons name='arrow-left' className='text-[24px] text-base400' />
-          </CyDTouchView>
-          <CyDText className='text-[18px] font-semibold'>Select Token</CyDText>
-        </CyDView>
-
-        {/* Search + Chain filter */}
-        <CyDView className='flex-row items-center px-[16px] gap-[8px] mb-[12px]'>
-          <CyDView className='flex-1 flex-row items-center bg-n0 rounded-[12px] px-[12px] h-[44px]'>
-            <CyDIcons name='search' className='text-[18px] text-base150 mr-[8px]' />
-            <BottomSheetTextInput
-              placeholder='Search tokens'
-              placeholderTextColor={colors.placeholder}
-              value={tokenSearch}
-              onChangeText={handleSearchChange}
-              style={[styles.searchInput, { color: colors.inputText }]}
-            />
+        <CyDView className='flex-1'>
+          {/* Header */}
+          <CyDView className='flex-row items-center px-[16px] pb-[12px]'>
+            <CyDTouchView
+              onPress={() => {
+                setShowTokenSelector(false);
+                snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
+              }}
+              className='mr-[12px] p-[4px]'>
+              <CyDIcons
+                name='arrow-left'
+                className='text-[24px] text-base400'
+              />
+            </CyDTouchView>
+            <CyDText className='text-[18px] font-semibold'>
+              Select Token
+            </CyDText>
           </CyDView>
 
-          {chains.length > 1 && (
-            <CyDTouchView
-              onPress={() => setShowChainFilter(!showChainFilter)}
-              className='flex-row items-center bg-n20 rounded-[12px] px-[12px] h-[44px]'>
-              <CyDView className='w-[20px] h-[20px] rounded-full bg-base200 mr-[6px] items-center justify-center overflow-hidden'>
-                {selectedFilterChain ? (
-                  <CyDFastImage
-                    source={{ uri: chainMap[selectedFilterChain]?.logoUrl ?? '' }}
-                    className='w-[20px] h-[20px] rounded-full'
-                  />
-                ) : (
-                  <CyDText className='text-[8px] text-base400'>All</CyDText>
-                )}
-              </CyDView>
-              <CyDText className='text-[14px] font-medium text-base400 mr-[4px]'>
-                {selectedFilterChain
-                  ? chainMap[selectedFilterChain]?.prettyName ?? 'Chain'
-                  : 'All Chain'}
-              </CyDText>
-              <CyDIcons name='chevron-down' className='text-[14px] text-base150' />
-            </CyDTouchView>
-          )}
-        </CyDView>
+          {/* Search + Chain filter */}
+          <CyDView className='flex-row items-center px-[16px] gap-[8px] mb-[12px]'>
+            <CyDView className='flex-1 flex-row items-center bg-n0 rounded-[12px] px-[12px] h-[44px]'>
+              <CyDIcons
+                name='search'
+                className='text-[18px] text-base150 mr-[8px]'
+              />
+              <BottomSheetTextInput
+                placeholder='Search tokens'
+                placeholderTextColor={colors.placeholder}
+                value={tokenSearch}
+                onChangeText={handleSearchChange}
+                style={[styles.searchInput, { color: colors.inputText }]}
+              />
+            </CyDView>
 
-        {/* Chain filter dropdown overlay */}
-        {chains.length > 1 && showChainFilter && (
-          <CyDView className='absolute top-[110px] right-[16px] z-50 bg-n30 rounded-[16px] py-[8px] w-[200px]' style={styles.chainDropdownShadow}>
-            <ScrollView style={{ maxHeight: 350 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+            {chains.length > 1 && (
               <CyDTouchView
-                onPress={() => {
-                  setSelectedFilterChain(null);
-                  setShowChainFilter(false);
-                  if (tokenSelectorSide === 'dest') {
-                    const missing = chains
-                      .filter(c => c.chainId !== HYPERLIQUID_CHAIN_ID && !tokensByChain[c.chainId]?.length)
-                      .map(c => c.chainId);
-                    if (missing.length > 0) void loadTokens(missing);
-                  }
-                }}
-                className='flex-row items-center px-[16px] py-[10px]'>
-                <CyDView className='w-[24px] h-[24px] rounded-full bg-base200 mr-[10px] items-center justify-center'>
-                  <CyDText className='text-[8px] text-base400'>All</CyDText>
+                onPress={() => setShowChainFilter(!showChainFilter)}
+                className='flex-row items-center bg-n20 rounded-[12px] px-[12px] h-[44px]'>
+                <CyDView className='w-[20px] h-[20px] rounded-full bg-base200 mr-[6px] items-center justify-center overflow-hidden'>
+                  {selectedFilterChain ? (
+                    <CyDFastImage
+                      source={{
+                        uri: chainMap[selectedFilterChain]?.logoUrl ?? '',
+                      }}
+                      className='w-[20px] h-[20px] rounded-full'
+                    />
+                  ) : (
+                    <CyDText className='text-[8px] text-base400'>All</CyDText>
+                  )}
                 </CyDView>
-                <CyDText className='flex-1 text-[14px] text-base400'>All Chains</CyDText>
-                {!selectedFilterChain && <CyDIcons name='tick' className='text-[16px] text-p300' />}
+                <CyDText className='text-[14px] font-medium text-base400 mr-[4px]'>
+                  {selectedFilterChain
+                    ? chainMap[selectedFilterChain]?.prettyName ?? 'Chain'
+                    : 'All Chain'}
+                </CyDText>
+                <CyDIcons
+                  name='chevron-down'
+                  className='text-[14px] text-base150'
+                />
               </CyDTouchView>
-              {chains.map(chain => (
+            )}
+          </CyDView>
+
+          {/* Chain filter dropdown overlay */}
+          {chains.length > 1 && showChainFilter && (
+            <CyDView
+              className='absolute top-[110px] right-[16px] z-50 bg-n30 rounded-[16px] py-[8px] w-[200px]'
+              style={styles.chainDropdownShadow}>
+              <ScrollView
+                style={{ maxHeight: 350 }}
+                nestedScrollEnabled
+                showsVerticalScrollIndicator={false}>
                 <CyDTouchView
-                  key={chain.chainId}
                   onPress={() => {
-                    setSelectedFilterChain(chain.chainId);
+                    setSelectedFilterChain(null);
                     setShowChainFilter(false);
-                    if (!tokensByChain[chain.chainId]?.length) void loadTokens([chain.chainId]);
+                    if (tokenSelectorSide === 'dest') {
+                      const missing = chains
+                        .filter(
+                          c =>
+                            c.chainId !== HYPERLIQUID_CHAIN_ID &&
+                            !tokensByChain[c.chainId]?.length,
+                        )
+                        .map(c => c.chainId);
+                      if (missing.length > 0) void loadTokens(missing);
+                    }
                   }}
                   className='flex-row items-center px-[16px] py-[10px]'>
-                  <CyDFastImage source={{ uri: chain.logoUrl }} className='w-[24px] h-[24px] rounded-full mr-[10px]' />
-                  <CyDText className='flex-1 text-[14px] text-base400'>{chain.prettyName}</CyDText>
-                  {selectedFilterChain === chain.chainId && <CyDIcons name='tick' className='text-[16px] text-p300' />}
+                  <CyDView className='w-[24px] h-[24px] rounded-full bg-base200 mr-[10px] items-center justify-center'>
+                    <CyDText className='text-[8px] text-base400'>All</CyDText>
+                  </CyDView>
+                  <CyDText className='flex-1 text-[14px] text-base400'>
+                    All Chains
+                  </CyDText>
+                  {!selectedFilterChain && (
+                    <CyDIcons name='tick' className='text-[16px] text-p300' />
+                  )}
                 </CyDTouchView>
-              ))}
-            </ScrollView>
+                {chains.map(chain => (
+                  <CyDTouchView
+                    key={chain.chainId}
+                    onPress={() => {
+                      setSelectedFilterChain(chain.chainId);
+                      setShowChainFilter(false);
+                      if (!tokensByChain[chain.chainId]?.length)
+                        void loadTokens([chain.chainId]);
+                    }}
+                    className='flex-row items-center px-[16px] py-[10px]'>
+                    <CyDFastImage
+                      source={{ uri: chain.logoUrl }}
+                      className='w-[24px] h-[24px] rounded-full mr-[10px]'
+                    />
+                    <CyDText className='flex-1 text-[14px] text-base400'>
+                      {chain.prettyName}
+                    </CyDText>
+                    {selectedFilterChain === chain.chainId && (
+                      <CyDIcons name='tick' className='text-[16px] text-p300' />
+                    )}
+                  </CyDTouchView>
+                ))}
+              </ScrollView>
+            </CyDView>
+          )}
+
+          {/* Section label */}
+          <CyDView className='px-[16px] mb-[8px]'>
+            <CyDText className='text-[12px] font-medium text-base150'>
+              {isSourceSelector && sourceTokensFromPortfolio.length > 0
+                ? 'Your tokens'
+                : 'Available tokens'}
+            </CyDText>
           </CyDView>
-        )}
 
-        {/* Section label */}
-        <CyDView className='px-[16px] mb-[8px]'>
-          <CyDText className='text-[12px] font-medium text-base150'>
-            {isSourceSelector && sourceTokensFromPortfolio.length > 0 ? 'Your tokens' : 'Available tokens'}
-          </CyDText>
+          {/* Regular FlatList with explicit height – bypasses flex chain issues inside BottomSheet */}
+          <FlatList
+            data={filteredTokens}
+            keyExtractor={keyExtractor}
+            renderItem={renderTokenItem}
+            getItemLayout={getItemLayout}
+            ListEmptyComponent={tokenListEmptyComponent}
+            initialNumToRender={15}
+            maxToRenderPerBatch={20}
+            windowSize={7}
+            removeClippedSubviews={Platform.OS === 'android'}
+            style={{ height: TOKEN_LIST_MAX_HEIGHT }}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+            keyboardDismissMode='on-drag'
+            keyboardShouldPersistTaps='handled'
+            nestedScrollEnabled
+          />
         </CyDView>
-
-        {/* Regular FlatList with explicit height – bypasses flex chain issues inside BottomSheet */}
-        <FlatList
-          data={filteredTokens}
-          keyExtractor={keyExtractor}
-          renderItem={renderTokenItem}
-          getItemLayout={getItemLayout}
-          ListEmptyComponent={tokenListEmptyComponent}
-          initialNumToRender={15}
-          maxToRenderPerBatch={20}
-          windowSize={7}
-          removeClippedSubviews={Platform.OS === 'android'}
-          style={{ height: TOKEN_LIST_MAX_HEIGHT }}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-          keyboardDismissMode='on-drag'
-          keyboardShouldPersistTaps='handled'
-          nestedScrollEnabled
-        />
-      </CyDView>
       </>
     );
   }
@@ -1295,7 +1478,9 @@ export default function BridgeV2Content({
       : '0';
 
     const sourceTxHash = (() => {
-      const swapStep = executionSteps.find(s => s.id === 'lifi-swap' && s.txHash);
+      const swapStep = executionSteps.find(
+        s => s.id === 'lifi-swap' && s.txHash,
+      );
       return swapStep?.txHash ?? statusInfo?.sendingTxHash;
     })();
     const bridgeExplorerUrl = statusInfo?.bridgeExplorerUrl;
@@ -1304,18 +1489,26 @@ export default function BridgeV2Content({
 
     const stepStatusText = (status: string) => {
       switch (status) {
-        case 'completed': return 'Done';
-        case 'in_progress': return 'In progress';
-        case 'failed': return 'Failed';
-        default: return 'Pending';
+        case 'completed':
+          return 'Done';
+        case 'in_progress':
+          return 'In progress';
+        case 'failed':
+          return 'Failed';
+        default:
+          return 'Pending';
       }
     };
     const stepStatusColor = (status: string) => {
       switch (status) {
-        case 'completed': return 'text-green350';
-        case 'in_progress': return 'text-cyan400';
-        case 'failed': return 'text-red300';
-        default: return 'text-base200';
+        case 'completed':
+          return 'text-green350';
+        case 'in_progress':
+          return 'text-cyan400';
+        case 'failed':
+          return 'text-red300';
+        default:
+          return 'text-base200';
       }
     };
 
@@ -1363,16 +1556,23 @@ export default function BridgeV2Content({
                 setBridgeProcBelowH(e.nativeEvent.layout.height);
               }}>
               <CyDView className='items-center pt-[8px] pb-[10px]'>
-                <CyDText className='text-[17px] font-medium text-base400' style={{ letterSpacing: -1 }}>
+                <CyDText
+                  className='text-[17px] font-medium text-base400'
+                  style={{ letterSpacing: -1 }}>
                   Transaction In Progress
                 </CyDText>
               </CyDView>
 
               <CyDView className='mx-[16px] bg-n40 rounded-[10px] p-[12px] mb-[8px]'>
-                <CyDText className='text-[12px] font-medium text-base150 mb-[6px]'>Est. Received</CyDText>
+                <CyDText className='text-[12px] font-medium text-base150 mb-[6px]'>
+                  Est. Received
+                </CyDText>
                 <CyDView className='flex-row items-center gap-[8px] mb-[4px]'>
                   <CyDView className='relative'>
-                    <CyDFastImage source={{ uri: destToken.logoUrl }} className='w-[32px] h-[32px] rounded-full' />
+                    <CyDFastImage
+                      source={{ uri: destToken.logoUrl }}
+                      className='w-[32px] h-[32px] rounded-full'
+                    />
                     {destChain && (
                       <CyDFastImage
                         source={{ uri: destChain.logoUrl }}
@@ -1382,39 +1582,65 @@ export default function BridgeV2Content({
                   </CyDView>
                   <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
                     <CyDView className='flex-1 min-w-0 overflow-hidden'>
-                      <SplitAmountDisplay amount={estimatedOutput} fontSize={24} />
+                      <SplitAmountDisplay
+                        amount={estimatedOutput}
+                        fontSize={24}
+                      />
                     </CyDView>
-                    <CyDText className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0' style={{ fontSize: 20, letterSpacing: -1 }}>
+                    <CyDText
+                      className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0'
+                      style={{ fontSize: 20, letterSpacing: -1 }}>
                       {destToken.symbol}
                     </CyDText>
                   </CyDView>
                 </CyDView>
-                <CyDTokenValue className='text-[12px]' mainColorClass='text-base150' decimalColorClass='!text-base150'>
+                <CyDTokenValue
+                  className='text-[12px]'
+                  mainColorClass='text-base150'
+                  decimalColorClass='!text-base150'>
                   {quote.amountOutUsd ? parseFloat(quote.amountOutUsd) : 0}
                 </CyDTokenValue>
               </CyDView>
 
               {executionSteps.map(s => (
-                <CyDView key={s.id} className='mx-[16px] bg-n40 rounded-[10px] px-[12px] py-[12px] mb-[6px]'>
+                <CyDView
+                  key={s.id}
+                  className='mx-[16px] bg-n40 rounded-[10px] px-[12px] py-[12px] mb-[6px]'>
                   <CyDView className='flex-row items-center justify-between'>
                     <CyDView className='flex-row items-center gap-[10px] flex-1 mr-[12px]'>
                       {s.status === 'in_progress' && (
-                        <ActivityIndicator size={20} color={colors.activityIndicator} />
+                        <ActivityIndicator
+                          size={20}
+                          color={colors.activityIndicator}
+                        />
                       )}
                       {s.status === 'completed' && (
-                        <CyDIcons name='tick' className='text-[20px] text-green350' />
+                        <CyDIcons
+                          name='tick'
+                          className='text-[20px] text-green350'
+                        />
                       )}
                       {s.status === 'failed' && (
-                        <CyDIcons name='close' className='text-[20px] text-red300' />
+                        <CyDIcons
+                          name='close'
+                          className='text-[20px] text-red300'
+                        />
                       )}
                       {s.status === 'pending' && (
                         <CyDView className='w-[20px] h-[20px] rounded-full border border-base200' />
                       )}
-                      <CyDText className='text-[14px] font-medium text-base400 flex-shrink' style={{ letterSpacing: -0.6 }} numberOfLines={1}>
+                      <CyDText
+                        className='text-[14px] font-medium text-base400 flex-shrink'
+                        style={{ letterSpacing: -0.6 }}
+                        numberOfLines={1}>
                         {s.label}
                       </CyDText>
                     </CyDView>
-                    <CyDText className={`text-[14px] font-medium ${stepStatusColor(s.status)}`} style={{ letterSpacing: -0.6 }}>
+                    <CyDText
+                      className={`text-[14px] font-medium ${stepStatusColor(
+                        s.status,
+                      )}`}
+                      style={{ letterSpacing: -0.6 }}>
                       {stepStatusText(s.status)}
                     </CyDText>
                   </CyDView>
@@ -1447,117 +1673,177 @@ export default function BridgeV2Content({
 
       return (
         <>
-        <CyDView className='flex-1'>
-          <ScrollView className='flex-1' bounces={false} showsVerticalScrollIndicator={false}>
-            <CyDView className='items-center justify-center pt-[40px] pb-[24px]'>
-              <CyDView className='w-[100px] h-[100px] rounded-full bg-green350 items-center justify-center mb-[16px]'>
-                <CyDIcons name='tick' className='text-[48px] text-white' />
-              </CyDView>
-              <CyDText className='text-[20px] font-semibold text-base400' style={{ letterSpacing: -1 }}>
-                Transaction Successful
-              </CyDText>
-              <CyDText className='text-[12px] font-medium text-base150 text-center mx-[48px] mt-[6px]'>
-                Check out your wallet—you should see your bridged assets there now!
-              </CyDText>
-            </CyDView>
-
-            {/* Transaction summary */}
-            <CyDView className='mx-[16px] bg-n40 rounded-[10px] overflow-hidden'>
-              {/* Route */}
-              <CyDView className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
-                <CyDText className='text-[14px] font-medium text-base150' style={{ letterSpacing: -0.6 }}>Route</CyDText>
-                <CyDText className='text-[14px] font-semibold text-base400' style={{ letterSpacing: -0.6 }}>
-                  {sourceChainName} → {destChainName}
-                </CyDText>
-              </CyDView>
-
-              {/* Provider */}
-              <CyDView className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
-                <CyDText className='text-[14px] font-medium text-base150' style={{ letterSpacing: -0.6 }}>Provider</CyDText>
-                <CyDText className='text-[14px] font-semibold text-base400' style={{ letterSpacing: -0.6 }}>
-                  {(quote.provider === 'lifi' ? 'Lifi' : 'Skip')}{quote.routeTool ? ` (${quote.routeTool})` : ''}
-                </CyDText>
-              </CyDView>
-
-              {/* Source Tx */}
-              {sourceTxHash && (
-                <CyDView className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
-                  <CyDText className='text-[14px] font-medium text-base150' style={{ letterSpacing: -0.6 }}>
-                    Source Tx ({sourceChainName})
-                  </CyDText>
-                  <CyDTouchView
-                    className='flex-row items-center gap-[4px]'
-                    disabled={!sourceTxExplorerUrl}
-                    onPress={() => {
-                      if (sourceTxExplorerUrl) void Linking.openURL(sourceTxExplorerUrl);
-                    }}>
-                    <CyDText
-                      className='text-[14px] font-medium text-base400'
-                      style={{
-                        textDecorationLine: sourceTxExplorerUrl ? 'underline' : undefined,
-                        letterSpacing: -0.6,
-                      }}>
-                      {`${sourceTxHash.slice(0, 8)}....${sourceTxHash.slice(-5)}`}
-                    </CyDText>
-                  </CyDTouchView>
+          <CyDView className='flex-1'>
+            <ScrollView
+              className='flex-1'
+              bounces={false}
+              showsVerticalScrollIndicator={false}>
+              <CyDView className='items-center justify-center pt-[40px] pb-[24px]'>
+                <CyDView className='w-[100px] h-[100px] rounded-full bg-green350 items-center justify-center mb-[16px]'>
+                  <CyDIcons name='tick' className='text-[48px] text-white' />
                 </CyDView>
-              )}
+                <CyDText
+                  className='text-[20px] font-semibold text-base400'
+                  style={{ letterSpacing: -1 }}>
+                  Transaction Successful
+                </CyDText>
+                <CyDText className='text-[12px] font-medium text-base150 text-center mx-[48px] mt-[6px]'>
+                  Check out your wallet—you should see your bridged assets there
+                  now!
+                </CyDText>
+              </CyDView>
 
-              {/* Step tx hashes */}
-              {executionSteps.filter(s => s.txHash && s.id !== 'lifi-swap').map(s => {
-                const stepExplorerUrl = resolveBridgeTxExplorerUrl(
-                  explorerChainForExecutionStep(s, quote),
-                  s.txHash!,
-                );
-                return (
-                  <CyDView key={s.id} className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
-                    <CyDText className='text-[14px] font-medium text-base150 flex-1 mr-[12px]' style={{ letterSpacing: -0.6 }} numberOfLines={1}>
-                      {s.label}
+              {/* Transaction summary */}
+              <CyDView className='mx-[16px] bg-n40 rounded-[10px] overflow-hidden'>
+                {/* Route */}
+                <CyDView className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
+                  <CyDText
+                    className='text-[14px] font-medium text-base150'
+                    style={{ letterSpacing: -0.6 }}>
+                    Route
+                  </CyDText>
+                  <CyDText
+                    className='text-[14px] font-semibold text-base400'
+                    style={{ letterSpacing: -0.6 }}>
+                    {sourceChainName} → {destChainName}
+                  </CyDText>
+                </CyDView>
+
+                {/* Provider */}
+                <CyDView className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
+                  <CyDText
+                    className='text-[14px] font-medium text-base150'
+                    style={{ letterSpacing: -0.6 }}>
+                    Provider
+                  </CyDText>
+                  <CyDText
+                    className='text-[14px] font-semibold text-base400'
+                    style={{ letterSpacing: -0.6 }}>
+                    {quote.provider === 'lifi' ? 'Lifi' : 'Skip'}
+                    {quote.routeTool ? ` (${quote.routeTool})` : ''}
+                  </CyDText>
+                </CyDView>
+
+                {/* Source Tx */}
+                {sourceTxHash && (
+                  <CyDView className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
+                    <CyDText
+                      className='text-[14px] font-medium text-base150'
+                      style={{ letterSpacing: -0.6 }}>
+                      Source Tx ({sourceChainName})
                     </CyDText>
                     <CyDTouchView
-                      className='flex-shrink'
-                      disabled={!stepExplorerUrl}
+                      className='flex-row items-center gap-[4px]'
+                      disabled={!sourceTxExplorerUrl}
                       onPress={() => {
-                        if (stepExplorerUrl) void Linking.openURL(stepExplorerUrl);
+                        if (sourceTxExplorerUrl)
+                          void Linking.openURL(sourceTxExplorerUrl);
                       }}>
                       <CyDText
                         className='text-[14px] font-medium text-base400'
                         style={{
-                          textDecorationLine: stepExplorerUrl ? 'underline' : undefined,
+                          textDecorationLine: sourceTxExplorerUrl
+                            ? 'underline'
+                            : undefined,
                           letterSpacing: -0.6,
                         }}>
-                        {`${s.txHash!.slice(0, 8)}....${s.txHash!.slice(-5)}`}
+                        {`${sourceTxHash.slice(0, 8)}....${sourceTxHash.slice(
+                          -5,
+                        )}`}
                       </CyDText>
                     </CyDTouchView>
                   </CyDView>
-                );
-              })}
+                )}
 
-              {/* Bridge Explorer */}
-              {bridgeExplorerUrl && (
-                <CyDView className='flex-row items-center justify-between px-[16px] py-[14px]'>
-                  <CyDText className='text-[14px] font-medium text-base150' style={{ letterSpacing: -0.6 }}>Bridge Explorer</CyDText>
-                  <CyDTouchView
-                    className='flex-row items-center gap-[4px]'
-                    onPress={() => Linking.openURL(bridgeExplorerUrl)}>
-                    <CyDText className='text-[14px] font-medium text-base400' style={{ textDecorationLine: 'underline', letterSpacing: -0.6 }}>
-                      View
+                {/* Step tx hashes */}
+                {executionSteps
+                  .filter(s => s.txHash && s.id !== 'lifi-swap')
+                  .map(s => {
+                    const stepExplorerUrl = resolveBridgeTxExplorerUrl(
+                      explorerChainForExecutionStep(s, quote),
+                      s.txHash!,
+                    );
+                    return (
+                      <CyDView
+                        key={s.id}
+                        className='flex-row items-center justify-between px-[16px] py-[14px] border-b border-n20'>
+                        <CyDText
+                          className='text-[14px] font-medium text-base150 flex-1 mr-[12px]'
+                          style={{ letterSpacing: -0.6 }}
+                          numberOfLines={1}>
+                          {s.label}
+                        </CyDText>
+                        <CyDTouchView
+                          className='flex-shrink'
+                          disabled={!stepExplorerUrl}
+                          onPress={() => {
+                            if (stepExplorerUrl)
+                              void Linking.openURL(stepExplorerUrl);
+                          }}>
+                          <CyDText
+                            className='text-[14px] font-medium text-base400'
+                            style={{
+                              textDecorationLine: stepExplorerUrl
+                                ? 'underline'
+                                : undefined,
+                              letterSpacing: -0.6,
+                            }}>
+                            {`${s.txHash!.slice(0, 8)}....${s.txHash!.slice(
+                              -5,
+                            )}`}
+                          </CyDText>
+                        </CyDTouchView>
+                      </CyDView>
+                    );
+                  })}
+
+                {/* Bridge Explorer */}
+                {bridgeExplorerUrl && (
+                  <CyDView className='flex-row items-center justify-between px-[16px] py-[14px]'>
+                    <CyDText
+                      className='text-[14px] font-medium text-base150'
+                      style={{ letterSpacing: -0.6 }}>
+                      Bridge Explorer
                     </CyDText>
-                  </CyDTouchView>
-                </CyDView>
-              )}
-            </CyDView>
-          </ScrollView>
+                    <CyDTouchView
+                      className='flex-row items-center gap-[4px]'
+                      onPress={async () =>
+                        await Linking.openURL(bridgeExplorerUrl)
+                      }>
+                      <CyDText
+                        className='text-[14px] font-medium text-base400'
+                        style={{
+                          textDecorationLine: 'underline',
+                          letterSpacing: -0.6,
+                        }}>
+                        View
+                      </CyDText>
+                    </CyDTouchView>
+                  </CyDView>
+                )}
+              </CyDView>
+            </ScrollView>
 
-          {/* Done button pinned to bottom */}
-          <CyDView className='mx-[16px]' style={{ paddingBottom: insets.bottom + 16, paddingTop: 12 }}>
-            <CyDTouchView
-              onPress={() => { reset(); setAmountInput(''); setSourceToken(null); setDestToken(null); }}
-              className='bg-p100 rounded-[39px] h-[44px] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Done</CyDText>
-            </CyDTouchView>
+            {/* Done button pinned to bottom */}
+            <CyDView
+              className='mx-[16px]'
+              style={{ paddingBottom: insets.bottom + 16, paddingTop: 12 }}>
+              <CyDTouchView
+                onPress={() => {
+                  reset();
+                  setAmountInput('');
+                  setSourceToken(null);
+                  setDestToken(null);
+                }}
+                className='bg-p100 rounded-[39px] h-[44px] items-center justify-center'>
+                <CyDText
+                  className='text-[16px] font-semibold text-black'
+                  style={{ letterSpacing: -0.8 }}>
+                  Done
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
           </CyDView>
-        </CyDView>
         </>
       );
     }
@@ -1566,50 +1852,85 @@ export default function BridgeV2Content({
     if (step === 'failed') {
       return (
         <>
-        <CyDView className='flex-1'>
-          <CyDView className='flex-1 items-center justify-center'>
-            <CyDView className='w-[100px] h-[100px] rounded-full bg-red300 items-center justify-center mb-[16px]'>
-              <CyDIcons name='close' className='text-[48px] text-white' />
-            </CyDView>
-            <CyDText className='text-[20px] font-semibold text-base400' style={{ letterSpacing: -1 }}>
-              Transaction Failed
-            </CyDText>
-            {error && (
-              <CyDText className='text-[12px] font-medium text-base150 text-center mx-[48px] mt-[6px]' numberOfLines={4}>
-                {error}
-              </CyDText>
-            )}
-          </CyDView>
-
-          <CyDView className='mx-[16px]' style={{ paddingBottom: insets.bottom + 16 }}>
-            {/* Step summary */}
-            {executionSteps.length > 0 && (
-              <CyDView className='bg-n40 rounded-[10px] overflow-hidden mb-[16px]'>
-                {executionSteps.filter(s => s.status === 'completed' || s.status === 'failed').map(s => (
-                  <CyDView key={s.id} className='flex-row items-center justify-between px-[16px] py-[12px] border-b border-n20'>
-                    <CyDView className='flex-row items-center gap-[10px] flex-1 mr-[12px]'>
-                      {s.status === 'completed' && <CyDIcons name='tick' className='text-[18px] text-green350' />}
-                      {s.status === 'failed' && <CyDIcons name='close' className='text-[18px] text-red300' />}
-                      <CyDText className='text-[14px] font-medium text-base400 flex-shrink' style={{ letterSpacing: -0.6 }} numberOfLines={1}>
-                        {s.label}
-                      </CyDText>
-                    </CyDView>
-                    <CyDText className={`text-[14px] font-medium ${stepStatusColor(s.status)}`} style={{ letterSpacing: -0.6 }}>
-                      {stepStatusText(s.status)}
-                    </CyDText>
-                  </CyDView>
-                ))}
+          <CyDView className='flex-1'>
+            <CyDView className='flex-1 items-center justify-center'>
+              <CyDView className='w-[100px] h-[100px] rounded-full bg-red300 items-center justify-center mb-[16px]'>
+                <CyDIcons name='close' className='text-[48px] text-white' />
               </CyDView>
-            )}
+              <CyDText
+                className='text-[20px] font-semibold text-base400'
+                style={{ letterSpacing: -1 }}>
+                Transaction Failed
+              </CyDText>
+              {error && (
+                <CyDText
+                  className='text-[12px] font-medium text-base150 text-center mx-[48px] mt-[6px]'
+                  numberOfLines={4}>
+                  {error}
+                </CyDText>
+              )}
+            </CyDView>
 
-            {/* Try Again button */}
-            <CyDTouchView
-              onPress={() => { reset(); }}
-              className='bg-p100 rounded-[39px] h-[44px] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Try Again</CyDText>
-            </CyDTouchView>
+            <CyDView
+              className='mx-[16px]'
+              style={{ paddingBottom: insets.bottom + 16 }}>
+              {/* Step summary */}
+              {executionSteps.length > 0 && (
+                <CyDView className='bg-n40 rounded-[10px] overflow-hidden mb-[16px]'>
+                  {executionSteps
+                    .filter(
+                      s => s.status === 'completed' || s.status === 'failed',
+                    )
+                    .map(s => (
+                      <CyDView
+                        key={s.id}
+                        className='flex-row items-center justify-between px-[16px] py-[12px] border-b border-n20'>
+                        <CyDView className='flex-row items-center gap-[10px] flex-1 mr-[12px]'>
+                          {s.status === 'completed' && (
+                            <CyDIcons
+                              name='tick'
+                              className='text-[18px] text-green350'
+                            />
+                          )}
+                          {s.status === 'failed' && (
+                            <CyDIcons
+                              name='close'
+                              className='text-[18px] text-red300'
+                            />
+                          )}
+                          <CyDText
+                            className='text-[14px] font-medium text-base400 flex-shrink'
+                            style={{ letterSpacing: -0.6 }}
+                            numberOfLines={1}>
+                            {s.label}
+                          </CyDText>
+                        </CyDView>
+                        <CyDText
+                          className={`text-[14px] font-medium ${stepStatusColor(
+                            s.status,
+                          )}`}
+                          style={{ letterSpacing: -0.6 }}>
+                          {stepStatusText(s.status)}
+                        </CyDText>
+                      </CyDView>
+                    ))}
+                </CyDView>
+              )}
+
+              {/* Try Again button */}
+              <CyDTouchView
+                onPress={() => {
+                  reset();
+                }}
+                className='bg-p100 rounded-[39px] h-[44px] items-center justify-center'>
+                <CyDText
+                  className='text-[16px] font-semibold text-black'
+                  style={{ letterSpacing: -0.8 }}>
+                  Try Again
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
           </CyDView>
-        </CyDView>
         </>
       );
     }
@@ -1617,10 +1938,15 @@ export default function BridgeV2Content({
 
   // ─── Review Transaction ──────────────────────────────────────────
   if (showReview && quote && sourceToken && destToken) {
-    const totalGasFee = quote.fees
-      .filter(f => f.feeType === 'gas')
-      .map(f => (f.amountUsd ? `$${parseFloat(f.amountUsd).toFixed(4)}` : `${f.amount} ${f.tokenSymbol ?? ''}`))
-      .join(' + ') || '—';
+    const totalGasFee =
+      quote.fees
+        .filter(f => f.feeType === 'gas')
+        .map(f =>
+          f.amountUsd
+            ? `$${parseFloat(f.amountUsd).toFixed(4)}`
+            : `${f.amount} ${f.tokenSymbol ?? ''}`,
+        )
+        .join(' + ') || '—';
 
     const handleBackToForm = () => {
       setTransactionReviewOpen(false);
@@ -1628,135 +1954,209 @@ export default function BridgeV2Content({
 
     return (
       <>
-      <CyDView className='flex-1'>
-        {/* Header – stays fixed */}
-        <CyDView className='flex-row items-center gap-[10px] px-[16px] mb-[10px]'>
-          <CyDTouchView onPress={handleBackToForm}>
-            <CyDIcons name='arrow-left' className='text-[20px] text-base400' />
-          </CyDTouchView>
-          <CyDText className='text-[18px] font-medium text-base400' style={{ letterSpacing: -0.8 }}>
-            Review Transaction
-          </CyDText>
-        </CyDView>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-          nestedScrollEnabled
-          bounces={false}>
-          {/* Your Transaction label */}
-          <CyDView className='flex-row items-center gap-[5px] px-[16px] mb-[6px]'>
-            <CyDIcons name='wallet' className='text-[14px] text-n50' />
-            <CyDText className='text-[11px] font-medium text-n50'>Your Transaction</CyDText>
-          </CyDView>
-
-          {/* From / To Card */}
-          <CyDView className='mx-[16px] bg-n10 rounded-[10px] overflow-hidden'>
-            {/* From */}
-            <CyDView className='px-[12px] py-[10px]'>
-              <CyDText className='text-[11px] font-medium text-base150 mb-[6px]'>From</CyDText>
-              <CyDView className='flex-row items-center gap-[8px] mb-[4px]'>
-                <CyDView className='relative'>
-                  <CyDFastImage source={{ uri: sourceToken.logoUrl }} className='w-[28px] h-[28px] rounded-full' />
-                  {sourceChain && (
-                    <CyDFastImage
-                      source={{ uri: sourceChain.logoUrl }}
-                      className='w-[14px] h-[14px] rounded-full absolute -bottom-[1px] -right-[1px] border border-n0'
-                    />
-                  )}
-                </CyDView>
-                <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
-                  <CyDView className='flex-1 min-w-0 overflow-hidden'>
-                    <SplitAmountDisplay amount={amountInput || '0'} fontSize={22} />
-                  </CyDView>
-                  <CyDText className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0' style={{ fontSize: 18, letterSpacing: -1 }}>
-                    {sourceToken.symbol}
-                  </CyDText>
-                </CyDView>
-              </CyDView>
-              <CyDTokenValue className='text-[11px]' mainColorClass='text-base150' decimalColorClass='!text-base150'>
-                {quote.amountInUsd ? parseFloat(quote.amountInUsd) : 0}
-              </CyDTokenValue>
-            </CyDView>
-
-            {/* Divider */}
-            <CyDView className='h-[0.3px] bg-base200' />
-
-            {/* Est. Received */}
-            <CyDView className='px-[12px] py-[10px]'>
-              <CyDText className='text-[11px] font-medium text-base150 mb-[6px]'>Est. Received</CyDText>
-              <CyDView className='flex-row items-center gap-[8px] mb-[4px]'>
-                <CyDView className='relative'>
-                  <CyDFastImage source={{ uri: destToken.logoUrl }} className='w-[28px] h-[28px] rounded-full' />
-                  {destChain && (
-                    <CyDFastImage
-                      source={{ uri: destChain.logoUrl }}
-                      className='w-[14px] h-[14px] rounded-full absolute -bottom-[1px] -right-[1px] border border-n0'
-                    />
-                  )}
-                </CyDView>
-                <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
-                  <CyDView className='flex-1 min-w-0 overflow-hidden'>
-                    <SplitAmountDisplay amount={estimatedOutput || '0'} fontSize={22} />
-                  </CyDView>
-                  <CyDText className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0' style={{ fontSize: 18, letterSpacing: -1 }}>
-                    {destToken.symbol}
-                  </CyDText>
-                </CyDView>
-              </CyDView>
-              <CyDView className='flex-row items-center gap-[4px]'>
-                <CyDTokenValue className='text-[11px]' mainColorClass='text-base150' decimalColorClass='!text-base150'>
-                  {quote.amountOutUsd ? parseFloat(quote.amountOutUsd) : 0}
-                </CyDTokenValue>
-                {quote.amountInUsd && quote.amountOutUsd && (() => {
-                  const diff = ((parseFloat(quote.amountOutUsd) - parseFloat(quote.amountInUsd)) / parseFloat(quote.amountInUsd)) * 100;
-                  return (
-                    <CyDText className={`text-[11px] font-medium ${diff >= 0 ? 'text-green350' : 'text-base150'}`}>
-                      ({diff >= 0 ? '+' : ''}{diff.toFixed(2)}%)
-                    </CyDText>
-                  );
-                })()}
-              </CyDView>
-            </CyDView>
-          </CyDView>
-
-          {/* Transaction Details Card */}
-          <CyDView className='mx-[16px] mt-[8px] bg-n10 rounded-[10px] px-[12px] py-[8px]'>
-            <CyDView className='flex-row items-center justify-between py-[4px]'>
-              <CyDText className='text-[11px] font-medium text-base150'>Slippage Tolerance</CyDText>
-              <CyDView className='flex-row items-center gap-[2px]'>
-                <CyDIcons name='shield-tick' className='text-[14px] text-p150' />
-                <CyDText className='text-[11px] font-medium text-base400'>{(slippage * 100).toFixed(1)}%</CyDText>
-                <CyDIcons name='chevron-right' className='text-[14px] text-base150' />
-              </CyDView>
-            </CyDView>
-            <CyDView className='flex-row items-center justify-between py-[4px]'>
-              <CyDText className='text-[11px] font-medium text-base150'>Gas Fee / Transaction Fee</CyDText>
-              <CyDText className='text-[11px] font-medium text-base400'>{totalGasFee}</CyDText>
-            </CyDView>
-            <CyDView className='flex-row items-center justify-between py-[4px]'>
-              <CyDText className='text-[11px] font-medium text-base150'>Route Preference</CyDText>
-              <CyDView className='flex-row items-center gap-[2px]'>
-                <CyDText className='text-[11px] font-medium text-base400'>{quote.routeTool ?? 'Cheapest'}</CyDText>
-                <CyDIcons name='chevron-right' className='text-[14px] text-base150' />
-              </CyDView>
-            </CyDView>
-            {quote.estimatedDurationSeconds != null && (
-              <CyDView className='flex-row items-center justify-between py-[4px]'>
-                <CyDText className='text-[11px] font-medium text-base150'>Est. Time</CyDText>
-                <CyDText className='text-[11px] font-medium text-base400'>{formatDuration(quote.estimatedDurationSeconds)}</CyDText>
-              </CyDView>
-            )}
-          </CyDView>
-
-          {/* Bottom CTA */}
-          <CyDView className='px-[16px] pt-[8px]'>
-            <CyDTouchView onPress={handleExecute} className='bg-p100 rounded-[39px] h-[50px] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-black' style={{ letterSpacing: -0.8 }}>Start Transaction</CyDText>
+        <CyDView className='flex-1'>
+          {/* Header – stays fixed */}
+          <CyDView className='flex-row items-center gap-[10px] px-[16px] mb-[10px]'>
+            <CyDTouchView onPress={handleBackToForm}>
+              <CyDIcons
+                name='arrow-left'
+                className='text-[20px] text-base400'
+              />
             </CyDTouchView>
+            <CyDText
+              className='text-[18px] font-medium text-base400'
+              style={{ letterSpacing: -0.8 }}>
+              Review Transaction
+            </CyDText>
           </CyDView>
-        </ScrollView>
-      </CyDView>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+            nestedScrollEnabled
+            bounces={false}>
+            {/* Your Transaction label */}
+            <CyDView className='flex-row items-center gap-[5px] px-[16px] mb-[6px]'>
+              <CyDIcons name='wallet' className='text-[14px] text-n50' />
+              <CyDText className='text-[11px] font-medium text-n50'>
+                Your Transaction
+              </CyDText>
+            </CyDView>
+
+            {/* From / To Card */}
+            <CyDView className='mx-[16px] bg-n10 rounded-[10px] overflow-hidden'>
+              {/* From */}
+              <CyDView className='px-[12px] py-[10px]'>
+                <CyDText className='text-[11px] font-medium text-base150 mb-[6px]'>
+                  From
+                </CyDText>
+                <CyDView className='flex-row items-center gap-[8px] mb-[4px]'>
+                  <CyDView className='relative'>
+                    <CyDFastImage
+                      source={{ uri: sourceToken.logoUrl }}
+                      className='w-[28px] h-[28px] rounded-full'
+                    />
+                    {sourceChain && (
+                      <CyDFastImage
+                        source={{ uri: sourceChain.logoUrl }}
+                        className='w-[14px] h-[14px] rounded-full absolute -bottom-[1px] -right-[1px] border border-n0'
+                      />
+                    )}
+                  </CyDView>
+                  <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
+                    <CyDView className='flex-1 min-w-0 overflow-hidden'>
+                      <SplitAmountDisplay
+                        amount={amountInput || '0'}
+                        fontSize={22}
+                      />
+                    </CyDView>
+                    <CyDText
+                      className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0'
+                      style={{ fontSize: 18, letterSpacing: -1 }}>
+                      {sourceToken.symbol}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <CyDTokenValue
+                  className='text-[11px]'
+                  mainColorClass='text-base150'
+                  decimalColorClass='!text-base150'>
+                  {quote.amountInUsd ? parseFloat(quote.amountInUsd) : 0}
+                </CyDTokenValue>
+              </CyDView>
+
+              {/* Divider */}
+              <CyDView className='h-[0.3px] bg-base200' />
+
+              {/* Est. Received */}
+              <CyDView className='px-[12px] py-[10px]'>
+                <CyDText className='text-[11px] font-medium text-base150 mb-[6px]'>
+                  Est. Received
+                </CyDText>
+                <CyDView className='flex-row items-center gap-[8px] mb-[4px]'>
+                  <CyDView className='relative'>
+                    <CyDFastImage
+                      source={{ uri: destToken.logoUrl }}
+                      className='w-[28px] h-[28px] rounded-full'
+                    />
+                    {destChain && (
+                      <CyDFastImage
+                        source={{ uri: destChain.logoUrl }}
+                        className='w-[14px] h-[14px] rounded-full absolute -bottom-[1px] -right-[1px] border border-n0'
+                      />
+                    )}
+                  </CyDView>
+                  <CyDView className='flex-row items-center gap-[1px] flex-1 min-w-0'>
+                    <CyDView className='flex-1 min-w-0 overflow-hidden'>
+                      <SplitAmountDisplay
+                        amount={estimatedOutput || '0'}
+                        fontSize={22}
+                      />
+                    </CyDView>
+                    <CyDText
+                      className='!font-gambetta font-normal text-base200 ml-[1px] shrink-0'
+                      style={{ fontSize: 18, letterSpacing: -1 }}>
+                      {destToken.symbol}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <CyDView className='flex-row items-center gap-[4px]'>
+                  <CyDTokenValue
+                    className='text-[11px]'
+                    mainColorClass='text-base150'
+                    decimalColorClass='!text-base150'>
+                    {quote.amountOutUsd ? parseFloat(quote.amountOutUsd) : 0}
+                  </CyDTokenValue>
+                  {quote.amountInUsd &&
+                    quote.amountOutUsd &&
+                    (() => {
+                      const diff =
+                        ((parseFloat(quote.amountOutUsd) -
+                          parseFloat(quote.amountInUsd)) /
+                          parseFloat(quote.amountInUsd)) *
+                        100;
+                      return (
+                        <CyDText
+                          className={`text-[11px] font-medium ${
+                            diff >= 0 ? 'text-green350' : 'text-base150'
+                          }`}>
+                          ({diff >= 0 ? '+' : ''}
+                          {diff.toFixed(2)}%)
+                        </CyDText>
+                      );
+                    })()}
+                </CyDView>
+              </CyDView>
+            </CyDView>
+
+            {/* Transaction Details Card */}
+            <CyDView className='mx-[16px] mt-[8px] bg-n10 rounded-[10px] px-[12px] py-[8px]'>
+              <CyDView className='flex-row items-center justify-between py-[4px]'>
+                <CyDText className='text-[11px] font-medium text-base150'>
+                  Slippage Tolerance
+                </CyDText>
+                <CyDView className='flex-row items-center gap-[2px]'>
+                  <CyDIcons
+                    name='shield-tick'
+                    className='text-[14px] text-p150'
+                  />
+                  <CyDText className='text-[11px] font-medium text-base400'>
+                    {(slippage * 100).toFixed(1)}%
+                  </CyDText>
+                  <CyDIcons
+                    name='chevron-right'
+                    className='text-[14px] text-base150'
+                  />
+                </CyDView>
+              </CyDView>
+              <CyDView className='flex-row items-center justify-between py-[4px]'>
+                <CyDText className='text-[11px] font-medium text-base150'>
+                  Gas Fee / Transaction Fee
+                </CyDText>
+                <CyDText className='text-[11px] font-medium text-base400'>
+                  {totalGasFee}
+                </CyDText>
+              </CyDView>
+              <CyDView className='flex-row items-center justify-between py-[4px]'>
+                <CyDText className='text-[11px] font-medium text-base150'>
+                  Route Preference
+                </CyDText>
+                <CyDView className='flex-row items-center gap-[2px]'>
+                  <CyDText className='text-[11px] font-medium text-base400'>
+                    {quote.routeTool ?? 'Cheapest'}
+                  </CyDText>
+                  <CyDIcons
+                    name='chevron-right'
+                    className='text-[14px] text-base150'
+                  />
+                </CyDView>
+              </CyDView>
+              {quote.estimatedDurationSeconds != null && (
+                <CyDView className='flex-row items-center justify-between py-[4px]'>
+                  <CyDText className='text-[11px] font-medium text-base150'>
+                    Est. Time
+                  </CyDText>
+                  <CyDText className='text-[11px] font-medium text-base400'>
+                    {formatDuration(quote.estimatedDurationSeconds)}
+                  </CyDText>
+                </CyDView>
+              )}
+            </CyDView>
+
+            {/* Bottom CTA */}
+            <CyDView className='px-[16px] pt-[8px]'>
+              <CyDTouchView
+                onPress={handleExecute}
+                className='bg-p100 rounded-[39px] h-[50px] items-center justify-center'>
+                <CyDText
+                  className='text-[16px] font-semibold text-black'
+                  style={{ letterSpacing: -0.8 }}>
+                  Start Transaction
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          </ScrollView>
+        </CyDView>
       </>
     );
   }
@@ -1764,238 +2164,371 @@ export default function BridgeV2Content({
   // ─── Main Bridge Form ──────────────────────────────────────────
   return (
     <>
-    <CyDView className='flex-1' style={{ paddingBottom: insets.bottom }}>
-      {/* Header */}
-      <CyDView className='flex-row items-center justify-between px-[16px] mb-[16px]'>
-        <CyDText className='text-[20px] font-bold text-base400'>Bridge</CyDText>
-        <CyDTouchView
-          onPress={() => {
-            const next = !showSlippagePanel;
-            setShowSlippagePanel(next);
-          }}
-          className='w-[36px] h-[36px] rounded-full bg-n30 items-center justify-center'>
-          <CyDIcons name='settings' className='text-[18px] text-base200' />
-        </CyDTouchView>
-      </CyDView>
-
-      {/* From Card */}
-      <CyDView className='mx-[16px] bg-n10 rounded-[10px] p-[12px] h-[140px] justify-between'>
-        {/* Row 1: From chain + percentage shortcuts */}
-        <CyDView className='flex-row items-center justify-between'>
-          <CyDTouchView className='flex-row items-center gap-[6px]' onPress={() => openTokenSelector('source')}>
-            <CyDText className='text-[14px] text-base150' style={{ letterSpacing: -0.6 }}>From</CyDText>
-            {sourceChain && (
-              <CyDView className='flex-row items-center gap-[3px]'>
-                <CyDFastImage source={{ uri: sourceChain.logoUrl }} className='w-[16px] h-[16px] rounded-full' />
-                <CyDText className='text-[14px] font-medium text-base400' style={{ letterSpacing: -0.6 }}>{sourceChain.prettyName}</CyDText>
-              </CyDView>
-            )}
-          </CyDTouchView>
-          <CyDView className='flex-row items-center gap-[12px]'>
-            <CyDTouchView onPress={() => handlePercentagePress(0.25)}>
-              <CyDText className='text-[14px] font-medium text-base150' style={{ letterSpacing: -0.6 }}>25%</CyDText>
-            </CyDTouchView>
-            <CyDTouchView onPress={() => handlePercentagePress(0.5)}>
-              <CyDText className='text-[14px] font-medium text-base150' style={{ letterSpacing: -0.6 }}>50%</CyDText>
-            </CyDTouchView>
-          </CyDView>
-        </CyDView>
-
-        {/* Row 2: Amount input + token selector */}
-        <CyDView className='flex-row items-center justify-between h-[48px]'>
-          <CyDView className={`flex-1 min-w-0 mr-[8px] h-[48px] justify-center ${Platform.OS === 'ios' ? 'overflow-hidden' : ''}`}>
-            <CyDTextInput
-              value={amountInput}
-              onChangeText={(text: string) => {
-                const sanitized = text.replace(/[^0-9.]/g, '');
-                if (sanitized.split('.').length > 2) return;
-                setAmountInput(sanitized);
-                reset();
-              }}
-              placeholder='0.0'
-              placeholderTextColor={colors.placeholder}
-              keyboardType='decimal-pad'
-              selectionColor={colors.caret}
-              className='!font-gambetta font-bold bg-transparent'
-              style={{
-                fontSize: Platform.OS === 'ios' ? 32 : 28,
-                ...(Platform.OS === 'ios' ? { letterSpacing: -1 } : { padding: 0, includeFontPadding: false }),
-                color: Platform.OS === 'ios' && amountInput ? 'transparent' : colors.inputText,
-                minWidth: 0,
-                width: '100%',
-              }}
-            />
-            {Platform.OS === 'ios' && amountInput ? (
-              <CyDView
-                className='absolute left-0 right-0 top-0 bottom-0 justify-center overflow-hidden'
-                pointerEvents='none'>
-                <SplitAmountDisplay amount={amountInput} fontSize={32} />
-              </CyDView>
-            ) : null}
-          </CyDView>
+      <CyDView className='flex-1' style={{ paddingBottom: insets.bottom }}>
+        {/* Header */}
+        <CyDView className='flex-row items-center justify-between px-[16px] mb-[16px]'>
+          <CyDText className='text-[20px] font-bold text-base400'>
+            Bridge
+          </CyDText>
           <CyDTouchView
-            onPress={() => openTokenSelector('source')}
-            className='flex-row items-center gap-[4px] shrink-0'>
-            {sourceToken ? (
-              <>
-                <CyDFastImage source={{ uri: sourceToken.logoUrl }} className='w-[28px] h-[28px] rounded-full' />
-                <CyDText className='text-[22px] font-medium text-base400' style={{ letterSpacing: -1 }}>{sourceToken.symbol}</CyDText>
-              </>
-            ) : (
-              <CyDText className='text-[22px] font-medium text-base150' style={{ letterSpacing: -1 }}>Select</CyDText>
-            )}
-            <CyDIcons name='chevron-down' className='text-[20px] text-base150' />
+            onPress={() => {
+              const next = !showSlippagePanel;
+              setShowSlippagePanel(next);
+            }}
+            className='w-[36px] h-[36px] rounded-full bg-n30 items-center justify-center'>
+            <CyDIcons name='settings' className='text-[18px] text-base200' />
           </CyDTouchView>
         </CyDView>
 
-        {/* Row 3: USD value + wallet balance + Max */}
-        <CyDView className='flex-row items-center justify-between'>
-          <CyDTokenValue className='text-[14px]' mainColorClass='text-base150' decimalColorClass='!text-base150'>
-            {amountInput && sourceToken?.price
-              ? DecimalHelper.multiply(amountInput, sourceToken.price).toNumber()
-              : 0}
-          </CyDTokenValue>
-          <CyDView className='flex-row items-center gap-[4px]'>
-            <CyDIcons name='wallet' className='text-[16px] text-base150' />
-            <CyDTokenAmount className='text-[14px] text-base150'>
-              {sourceTokenBalance ? sourceTokenBalance.rawBalance : '0'}
-            </CyDTokenAmount>
-            <CyDTouchView onPress={handleMaxPress} disabled={maxLoading}>
-              {maxLoading ? (
-                <ActivityIndicator size='small' color={colors.activityIndicator} style={{ width: 28, height: 14 }} />
+        {/* From Card */}
+        <CyDView className='mx-[16px] bg-n10 rounded-[10px] p-[12px] h-[140px] justify-between'>
+          {/* Row 1: From chain + percentage shortcuts */}
+          <CyDView className='flex-row items-center justify-between'>
+            <CyDTouchView
+              className='flex-row items-center gap-[6px]'
+              onPress={() => openTokenSelector('source')}>
+              <CyDText
+                className='text-[14px] text-base150'
+                style={{ letterSpacing: -0.6 }}>
+                From
+              </CyDText>
+              {sourceChain && (
+                <CyDView className='flex-row items-center gap-[3px]'>
+                  <CyDFastImage
+                    source={{ uri: sourceChain.logoUrl }}
+                    className='w-[16px] h-[16px] rounded-full'
+                  />
+                  <CyDText
+                    className='text-[14px] font-medium text-base400'
+                    style={{ letterSpacing: -0.6 }}>
+                    {sourceChain.prettyName}
+                  </CyDText>
+                </CyDView>
+              )}
+            </CyDTouchView>
+            <CyDView className='flex-row items-center gap-[12px]'>
+              <CyDTouchView onPress={() => handlePercentagePress(0.25)}>
+                <CyDText
+                  className='text-[14px] font-medium text-base150'
+                  style={{ letterSpacing: -0.6 }}>
+                  25%
+                </CyDText>
+              </CyDTouchView>
+              <CyDTouchView onPress={() => handlePercentagePress(0.5)}>
+                <CyDText
+                  className='text-[14px] font-medium text-base150'
+                  style={{ letterSpacing: -0.6 }}>
+                  50%
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          </CyDView>
+
+          {/* Row 2: Amount input + token selector */}
+          <CyDView className='flex-row items-center justify-between h-[48px]'>
+            <CyDView
+              className={`flex-1 min-w-0 mr-[8px] h-[48px] justify-center ${
+                Platform.OS === 'ios' ? 'overflow-hidden' : ''
+              }`}>
+              <CyDTextInput
+                value={amountInput}
+                onChangeText={(text: string) => {
+                  const sanitized = text.replace(/[^0-9.]/g, '');
+                  if (sanitized.split('.').length > 2) return;
+                  setAmountInput(sanitized);
+                  reset();
+                }}
+                placeholder='0.0'
+                placeholderTextColor={colors.placeholder}
+                keyboardType='decimal-pad'
+                selectionColor={colors.caret}
+                className='!font-gambetta font-bold bg-transparent'
+                returnKeyType='done'
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                }}
+                style={{
+                  fontSize: Platform.OS === 'ios' ? 32 : 28,
+                  ...(Platform.OS === 'ios'
+                    ? { letterSpacing: -1 }
+                    : { padding: 0, includeFontPadding: false }),
+                  color:
+                    Platform.OS === 'ios' && amountInput
+                      ? 'transparent'
+                      : colors.inputText,
+                  minWidth: 0,
+                  width: '100%',
+                }}
+              />
+              {Platform.OS === 'ios' && amountInput ? (
+                <CyDView
+                  className='absolute left-0 right-0 top-0 bottom-0 justify-center overflow-hidden'
+                  pointerEvents='none'>
+                  <SplitAmountDisplay amount={amountInput} fontSize={32} />
+                </CyDView>
+              ) : null}
+            </CyDView>
+            <CyDTouchView
+              onPress={() => openTokenSelector('source')}
+              className='flex-row items-center gap-[4px] shrink-0'>
+              {sourceToken ? (
+                <>
+                  <CyDFastImage
+                    source={{ uri: sourceToken.logoUrl }}
+                    className='w-[28px] h-[28px] rounded-full'
+                  />
+                  <CyDText
+                    className='text-[22px] font-medium text-base400'
+                    style={{ letterSpacing: -1 }}>
+                    {sourceToken.symbol}
+                  </CyDText>
+                </>
               ) : (
-                <CyDText className='text-[14px] font-medium text-p300' style={{ letterSpacing: -0.6 }}>Max</CyDText>
+                <CyDText
+                  className='text-[22px] font-medium text-base150'
+                  style={{ letterSpacing: -1 }}>
+                  Select
+                </CyDText>
+              )}
+              <CyDIcons
+                name='chevron-down'
+                className='text-[20px] text-base150'
+              />
+            </CyDTouchView>
+          </CyDView>
+
+          {/* Row 3: USD value + wallet balance + Max */}
+          <CyDView className='flex-row items-center justify-between'>
+            <CyDTokenValue
+              className='text-[14px]'
+              mainColorClass='text-base150'
+              decimalColorClass='!text-base150'>
+              {amountInput && sourceToken?.price
+                ? DecimalHelper.multiply(
+                    amountInput,
+                    sourceToken.price,
+                  ).toNumber()
+                : 0}
+            </CyDTokenValue>
+            <CyDView className='flex-row items-center gap-[4px]'>
+              <CyDIcons name='wallet' className='text-[16px] text-base150' />
+              <CyDTokenAmount className='text-[14px] text-base150'>
+                {sourceTokenBalance ? sourceTokenBalance.rawBalance : '0'}
+              </CyDTokenAmount>
+              <CyDTouchView onPress={handleMaxPress} disabled={maxLoading}>
+                {maxLoading ? (
+                  <ActivityIndicator
+                    size='small'
+                    color={colors.activityIndicator}
+                    style={{ width: 28, height: 14 }}
+                  />
+                ) : (
+                  <CyDText
+                    className='text-[14px] font-medium text-p300'
+                    style={{ letterSpacing: -0.6 }}>
+                    Max
+                  </CyDText>
+                )}
+              </CyDTouchView>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+
+        {/* Swap Direction Button */}
+        <CyDView className='items-center z-10 -my-[8px]'>
+          <CyDTouchView
+            onPress={handleSwapDirection}
+            className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
+            <CyDIcons
+              name='swap-vertical'
+              className='text-[18px] text-base400'
+            />
+          </CyDTouchView>
+        </CyDView>
+
+        {/* To Card */}
+        <CyDView className='mx-[16px] bg-n10 rounded-[10px] p-[12px] h-[140px] justify-between'>
+          {/* Row 1: To chain */}
+          <CyDView className='flex-row items-center justify-between'>
+            <CyDTouchView
+              className='flex-row items-center gap-[6px]'
+              onPress={() => openTokenSelector('dest')}>
+              <CyDText
+                className='text-[14px] text-base150'
+                style={{ letterSpacing: -0.6 }}>
+                To
+              </CyDText>
+              {destChain && (
+                <CyDView className='flex-row items-center gap-[3px]'>
+                  <CyDFastImage
+                    source={{ uri: destChain.logoUrl }}
+                    className='w-[16px] h-[16px] rounded-full'
+                  />
+                  <CyDText
+                    className='text-[14px] font-medium text-base400'
+                    style={{ letterSpacing: -0.6 }}>
+                    {destChain.prettyName}
+                  </CyDText>
+                </CyDView>
               )}
             </CyDTouchView>
           </CyDView>
-        </CyDView>
-      </CyDView>
 
-      {/* Swap Direction Button */}
-      <CyDView className='items-center z-10 -my-[8px]'>
-        <CyDTouchView
-          onPress={handleSwapDirection}
-          className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
-          <CyDIcons name='swap-vertical' className='text-[18px] text-base400' />
-        </CyDTouchView>
-      </CyDView>
-
-      {/* To Card */}
-      <CyDView className='mx-[16px] bg-n10 rounded-[10px] p-[12px] h-[140px] justify-between'>
-        {/* Row 1: To chain */}
-        <CyDView className='flex-row items-center justify-between'>
-          <CyDTouchView className='flex-row items-center gap-[6px]' onPress={() => openTokenSelector('dest')}>
-            <CyDText className='text-[14px] text-base150' style={{ letterSpacing: -0.6 }}>To</CyDText>
-            {destChain && (
-              <CyDView className='flex-row items-center gap-[3px]'>
-                <CyDFastImage source={{ uri: destChain.logoUrl }} className='w-[16px] h-[16px] rounded-full' />
-                <CyDText className='text-[14px] font-medium text-base400' style={{ letterSpacing: -0.6 }}>{destChain.prettyName}</CyDText>
-              </CyDView>
-            )}
-          </CyDTouchView>
-        </CyDView>
-
-        {/* Row 2: Estimated output + token selector */}
-        <CyDView className='flex-row items-center justify-between h-[44px]'>
-          <CyDView className='flex-1 min-w-0 mr-[8px] overflow-hidden'>
-            {step === 'quoting' ? (
-              <CyDText className='!font-gambetta font-bold text-base150' style={{ fontSize: 32, letterSpacing: -1 }}>...</CyDText>
-            ) : (
-              <SplitAmountDisplay amount={estimatedOutput || '0.0'} fontSize={32} dimWhole={!estimatedOutput} />
-            )}
-          </CyDView>
-          <CyDTouchView
-            onPress={() => openTokenSelector('dest')}
-            className='flex-row items-center gap-[4px] shrink-0'>
-            {destToken ? (
-              <>
-                <CyDFastImage source={{ uri: destToken.logoUrl }} className='w-[28px] h-[28px] rounded-full' />
-                <CyDText className='text-[22px] font-medium text-base400' style={{ letterSpacing: -1 }}>{destToken.symbol}</CyDText>
-              </>
-            ) : (
-              <CyDText className='text-[22px] font-medium text-base150' style={{ letterSpacing: -1 }}>Select</CyDText>
-            )}
-            <CyDIcons name='chevron-down' className='text-[20px] text-base150' />
-          </CyDTouchView>
-        </CyDView>
-
-        {/* Row 3: USD value */}
-        <CyDView className='flex-row items-center justify-between'>
-          <CyDTokenValue className='text-[14px]' mainColorClass='text-base150' decimalColorClass='!text-base150'>
-            {quote?.amountOutUsd ? parseFloat(quote.amountOutUsd) : 0}
-          </CyDTokenValue>
-        </CyDView>
-      </CyDView>
-
-      {/* Quote / validation errors (execution errors use the dedicated failed screen) */}
-      {error && !isExecutionScreen && (
-        <CyDView className='mx-[16px] mt-[8px] mb-[4px] bg-red300/15 border border-red300/40 rounded-[10px] px-[12px] py-[10px]'>
-          <CyDText className='text-[13px] font-medium text-red300' style={{ letterSpacing: -0.3 }}>
-            {error}
-          </CyDText>
-        </CyDView>
-      )}
-      {insufficientGasWarning && !error && !isExecutionScreen && (
-        <CyDView className='mx-[16px] mt-[8px] mb-[4px] bg-red300/15 border border-red300/40 rounded-[10px] px-[12px] py-[10px]'>
-          <CyDText className='text-[13px] font-medium text-red300' style={{ letterSpacing: -0.3 }}>
-            {insufficientGasWarning}
-          </CyDText>
-        </CyDView>
-      )}
-
-      {/* Slippage Tolerance — sits between content and CTA so it doesn't push the button off screen */}
-      {showSlippagePanel && (
-        <CyDView className='mx-[16px] mt-[8px] bg-n20 rounded-[12px] p-[12px]'>
-          <CyDText className='text-[13px] font-medium text-base150 mb-[8px]'>Slippage Tolerance</CyDText>
-          <CyDView className='flex-row items-center gap-[8px]'>
-            {[0.001, 0.005, 0.01, 0.03].map(val => (
-              <CyDTouchView
-                key={val}
-                onPress={() => {
-                  setSlippage(val);
-                  reset();
-                  setShowSlippagePanel(false);
-                  snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
-                }}
-                className={`flex-1 h-[36px] rounded-[8px] items-center justify-center ${slippage === val ? 'bg-p100' : 'bg-n30'}`}>
-                <CyDText className={`text-[13px] font-semibold ${slippage === val ? 'text-black' : 'text-base400'}`}>
-                  {(val * 100).toFixed(1)}%
+          {/* Row 2: Estimated output + token selector */}
+          <CyDView className='flex-row items-center justify-between h-[44px]'>
+            <CyDView className='flex-1 min-w-0 mr-[8px] overflow-hidden'>
+              {step === 'quoting' ? (
+                <CyDText
+                  className='!font-gambetta font-bold text-base150'
+                  style={{ fontSize: 32, letterSpacing: -1 }}>
+                  ...
                 </CyDText>
-              </CyDTouchView>
-            ))}
+              ) : (
+                <SplitAmountDisplay
+                  amount={estimatedOutput || '0.0'}
+                  fontSize={32}
+                  dimWhole={!estimatedOutput}
+                />
+              )}
+            </CyDView>
+            <CyDTouchView
+              onPress={() => openTokenSelector('dest')}
+              className='flex-row items-center gap-[4px] shrink-0'>
+              {destToken ? (
+                <>
+                  <CyDFastImage
+                    source={{ uri: destToken.logoUrl }}
+                    className='w-[28px] h-[28px] rounded-full'
+                  />
+                  <CyDText
+                    className='text-[22px] font-medium text-base400'
+                    style={{ letterSpacing: -1 }}>
+                    {destToken.symbol}
+                  </CyDText>
+                </>
+              ) : (
+                <CyDText
+                  className='text-[22px] font-medium text-base150'
+                  style={{ letterSpacing: -1 }}>
+                  Select
+                </CyDText>
+              )}
+              <CyDIcons
+                name='chevron-down'
+                className='text-[20px] text-base150'
+              />
+            </CyDTouchView>
+          </CyDView>
+
+          {/* Row 3: USD value */}
+          <CyDView className='flex-row items-center justify-between'>
+            <CyDTokenValue
+              className='text-[14px]'
+              mainColorClass='text-base150'
+              decimalColorClass='!text-base150'>
+              {quote?.amountOutUsd ? parseFloat(quote.amountOutUsd) : 0}
+            </CyDTokenValue>
           </CyDView>
         </CyDView>
-      )}
 
-      {/* Bottom CTA */}
-      <CyDView className='px-[16px] pb-[8px] pt-[16px]'>
-        {!canRequestQuote && (
-          <CyDView className='bg-n30 rounded-[39px] h-[54px] items-center justify-center'>
-            <CyDText className='text-[16px] font-semibold text-base150'>Enter the amount</CyDText>
+        {/* Quote / validation errors (execution errors use the dedicated failed screen) */}
+        {error && !isExecutionScreen && (
+          <CyDView className='mx-[16px] mt-[8px] mb-[4px] bg-red300/15 border border-red300/40 rounded-[10px] px-[12px] py-[10px]'>
+            <CyDText
+              className='text-[13px] font-medium text-red300'
+              style={{ letterSpacing: -0.3 }}>
+              {error}
+            </CyDText>
           </CyDView>
         )}
-        {canRequestQuote && step === 'quoted' && !transactionReviewOpen && (
-          <CyDTouchView
-            onPress={() => setTransactionReviewOpen(true)}
-            disabled={!!insufficientGasWarning}
-            className={`rounded-[39px] h-[54px] items-center justify-center ${insufficientGasWarning ? 'bg-n30' : 'bg-p100'}`}>
-            <CyDText className={`text-[16px] font-semibold ${insufficientGasWarning ? 'text-base150' : 'text-black'}`} style={{ letterSpacing: -0.8 }}>Review</CyDText>
-          </CyDTouchView>
-        )}
-        {canRequestQuote && step === 'quoting' && (
-          <CyDView className='bg-n30 rounded-[39px] h-[54px] flex-row items-center justify-center'>
-            <ActivityIndicator size='small' color={colors.activityIndicator} />
-            <CyDText className='text-[16px] font-semibold text-base150 ml-[8px]'>Fetching quote...</CyDText>
+        {insufficientGasWarning && !error && !isExecutionScreen && (
+          <CyDView className='mx-[16px] mt-[8px] mb-[4px] bg-red300/15 border border-red300/40 rounded-[10px] px-[12px] py-[10px]'>
+            <CyDText
+              className='text-[13px] font-medium text-red300'
+              style={{ letterSpacing: -0.3 }}>
+              {insufficientGasWarning}
+            </CyDText>
           </CyDView>
         )}
-        {canRequestQuote && step === 'idle' && (
-          <CyDView className='bg-n30 rounded-[39px] h-[54px] items-center justify-center opacity-50'>
-            <CyDText className='text-[16px] font-semibold text-base150' style={{ letterSpacing: -0.8 }}>Review</CyDText>
+
+        {/* Slippage Tolerance — sits between content and CTA so it doesn't push the button off screen */}
+        {showSlippagePanel && (
+          <CyDView className='mx-[16px] mt-[8px] bg-n20 rounded-[12px] p-[12px]'>
+            <CyDText className='text-[13px] font-medium text-base150 mb-[8px]'>
+              Slippage Tolerance
+            </CyDText>
+            <CyDView className='flex-row items-center gap-[8px]'>
+              {[0.001, 0.005, 0.01, 0.03].map(val => (
+                <CyDTouchView
+                  key={val}
+                  onPress={() => {
+                    setSlippage(val);
+                    reset();
+                    setShowSlippagePanel(false);
+                    snapBottomSheetToIndex(BRIDGE_V2_SHEET_ID, 0);
+                  }}
+                  className={`flex-1 h-[36px] rounded-[8px] items-center justify-center ${
+                    slippage === val ? 'bg-p100' : 'bg-n30'
+                  }`}>
+                  <CyDText
+                    className={`text-[13px] font-semibold ${
+                      slippage === val ? 'text-black' : 'text-base400'
+                    }`}>
+                    {(val * 100).toFixed(1)}%
+                  </CyDText>
+                </CyDTouchView>
+              ))}
+            </CyDView>
           </CyDView>
         )}
+
+        {/* Bottom CTA */}
+        <CyDView className='px-[16px] pb-[8px] pt-[16px]'>
+          {!canRequestQuote && (
+            <CyDView className='bg-n30 rounded-[39px] h-[54px] items-center justify-center'>
+              <CyDText className='text-[16px] font-semibold text-base150'>
+                Enter the amount
+              </CyDText>
+            </CyDView>
+          )}
+          {canRequestQuote && step === 'quoted' && !transactionReviewOpen && (
+            <CyDTouchView
+              onPress={() => setTransactionReviewOpen(true)}
+              disabled={!!insufficientGasWarning}
+              className={`rounded-[39px] h-[54px] items-center justify-center ${
+                insufficientGasWarning ? 'bg-n30' : 'bg-p100'
+              }`}>
+              <CyDText
+                className={`text-[16px] font-semibold ${
+                  insufficientGasWarning ? 'text-base150' : 'text-black'
+                }`}
+                style={{ letterSpacing: -0.8 }}>
+                Review
+              </CyDText>
+            </CyDTouchView>
+          )}
+          {canRequestQuote && step === 'quoting' && (
+            <CyDView className='bg-n30 rounded-[39px] h-[54px] flex-row items-center justify-center'>
+              <ActivityIndicator
+                size='small'
+                color={colors.activityIndicator}
+              />
+              <CyDText className='text-[16px] font-semibold text-base150 ml-[8px]'>
+                Fetching quote...
+              </CyDText>
+            </CyDView>
+          )}
+          {canRequestQuote && step === 'idle' && (
+            <CyDView className='bg-n30 rounded-[39px] h-[54px] items-center justify-center opacity-50'>
+              <CyDText
+                className='text-[16px] font-semibold text-base150'
+                style={{ letterSpacing: -0.8 }}>
+                Review
+              </CyDText>
+            </CyDView>
+          )}
+        </CyDView>
       </CyDView>
-
-    </CyDView>
     </>
   );
 }
@@ -2060,9 +2593,15 @@ const MemoizedTokenRow = React.memo(function TokenRow({
   showBalance?: boolean;
 }) {
   return (
-    <CyDTouchView onPress={onPress} className='flex-row items-center px-[16px]' style={{ height: TOKEN_ITEM_HEIGHT }}>
+    <CyDTouchView
+      onPress={onPress}
+      className='flex-row items-center px-[16px]'
+      style={{ height: TOKEN_ITEM_HEIGHT }}>
       <CyDView className='relative mr-[12px]'>
-        <CyDFastImage source={{ uri: token.logoUrl }} className='w-[40px] h-[40px] rounded-full' />
+        <CyDFastImage
+          source={{ uri: token.logoUrl }}
+          className='w-[40px] h-[40px] rounded-full'
+        />
         {chain && (
           <CyDFastImage
             source={{ uri: chain.logoUrl }}
@@ -2071,8 +2610,12 @@ const MemoizedTokenRow = React.memo(function TokenRow({
         )}
       </CyDView>
       <CyDView className='flex-1'>
-        <CyDText className='text-[16px] font-semibold text-base400'>{token.symbol}</CyDText>
-        <CyDText className='text-[12px] text-base150'>{chain?.prettyName ?? token.chainId}</CyDText>
+        <CyDText className='text-[16px] font-semibold text-base400'>
+          {token.symbol}
+        </CyDText>
+        <CyDText className='text-[12px] text-base150'>
+          {chain?.prettyName ?? token.chainId}
+        </CyDText>
       </CyDView>
       <CyDView className='items-end'>
         {showBalance && balance ? (
@@ -2081,10 +2624,15 @@ const MemoizedTokenRow = React.memo(function TokenRow({
               <CyDTokenAmount className='text-[16px] font-semibold text-base400'>
                 {balance}
               </CyDTokenAmount>
-              <CyDText className='text-[14px] font-medium text-base400'>{token.symbol}</CyDText>
+              <CyDText className='text-[14px] font-medium text-base400'>
+                {token.symbol}
+              </CyDText>
             </CyDView>
             {balanceUsd != null && balanceUsd > 0 && (
-              <CyDTokenValue className='text-[12px]' mainColorClass='text-base150' decimalColorClass='!text-base150'>
+              <CyDTokenValue
+                className='text-[12px]'
+                mainColorClass='text-base150'
+                decimalColorClass='!text-base150'>
                 {balanceUsd}
               </CyDTokenValue>
             )}
@@ -2092,7 +2640,10 @@ const MemoizedTokenRow = React.memo(function TokenRow({
         ) : (
           <>
             {token.price > 0 && (
-              <CyDTokenValue className='text-[16px]' mainColorClass='text-base400' decimalColorClass='!text-base150'>
+              <CyDTokenValue
+                className='text-[16px]'
+                mainColorClass='text-base400'
+                decimalColorClass='!text-base150'>
                 {token.price}
               </CyDTokenValue>
             )}

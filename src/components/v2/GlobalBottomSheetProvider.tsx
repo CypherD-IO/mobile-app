@@ -28,6 +28,9 @@ interface BottomSheetConfig {
   onClose?: () => void;
   onOpen?: () => void;
   topBarColor?: string;
+  keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
+  keyboardBlurBehavior?: 'none' | 'restore';
+  androidKeyboardInputMode?: 'adjustPan' | 'adjustResize';
 }
 
 interface GlobalBottomSheetContextType {
@@ -201,6 +204,9 @@ export const GlobalBottomSheetProvider: React.FC<
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}
           enableContentPanningGesture={config.enableContentPanningGesture ?? true}
+          keyboardBehavior={config.keyboardBehavior}
+          keyboardBlurBehavior={config.keyboardBlurBehavior}
+          androidKeyboardInputMode={config.androidKeyboardInputMode}
           onClose={() => handleBottomSheetClose(config.id)}
           onOpen={config.onOpen}>
           {config.content}
