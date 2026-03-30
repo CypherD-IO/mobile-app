@@ -44,6 +44,8 @@ import { usePortfolioRefresh } from '../../hooks/usePortfolioRefresh';
 import { screenTitle } from '../../constants';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../../core/analytics';
+import { CustomerIO } from 'customerio-reactnative';
+import { initializeCustomerIO } from '../../services/customerio';
 
 interface UseInitializerReturn {
   exitIfJailBroken: () => Promise<void>;
@@ -118,33 +120,43 @@ export const InitializeAppProvider = ({
 
   useEffect(() => {
     const messagingInstance = getMessaging();
-    const unsubscribeOnMessage = onMessage(messagingInstance, response => {
-      if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
-        setTimeout(() => {
-          showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
-            data: response.data,
-            closeModal: hideModal,
-          });
-        }, 1000);
-      } else if (
-        response.data?.actionKey === NotificationEvents.CARD_TXN_UPDATE &&
-        (response.data?.declineCode === CypherDeclineCodes.MERCHANT_GLOBAL ||
-          response.data?.declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
-          response.data?.declineCode ===
-            CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE)
-      ) {
-        setTimeout(() => {
-          showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
-            data: response.data,
-            closeModal: hideModal,
-          });
-        }, 1000);
-      } else {
-        void showNotification(response.notification, response.data).catch(
-          Sentry.captureException,
+    const unsubscribeOnMessage = onMessage(
+      messagingInstance,
+      async response => {
+        const handledByCio = await CustomerIO.pushMessaging.onMessageReceived(
+          response,
         );
-      }
-    });
+        if (handledByCio) {
+          return;
+        }
+
+        if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
+          setTimeout(() => {
+            showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+              data: response.data,
+              closeModal: hideModal,
+            });
+          }, 1000);
+        } else if (
+          response.data?.actionKey === NotificationEvents.CARD_TXN_UPDATE &&
+          (response.data?.declineCode === CypherDeclineCodes.MERCHANT_GLOBAL ||
+            response.data?.declineCode === CypherDeclineCodes.MERCHANT_DENIED ||
+            response.data?.declineCode ===
+              CypherDeclineCodes.NEW_MERCHANT_HIGH_SPEND_RULE)
+        ) {
+          setTimeout(() => {
+            showModal(GlobalModalType.TRANSACTION_DECLINE_HANDLING, {
+              data: response.data,
+              closeModal: hideModal,
+            });
+          }, 1000);
+        } else {
+          void showNotification(response.notification, response.data).catch(
+            Sentry.captureException,
+          );
+        }
+      },
+    );
 
     const initializeApp = async () => {
       try {
@@ -154,6 +166,7 @@ export const InitializeAppProvider = ({
           await exitIfJailBroken();
           void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
           void loadActivitiesFromAsyncStorage();
+          await initializeCustomerIO();
           await requestUserPermission();
         }
       } catch (e) {
@@ -254,10 +267,13 @@ export const InitializeAppProvider = ({
       }
       // For iOS: Only attribution token available, needs server-side resolution
       else if (Platform.OS === 'ios' && referrerData.attribution_token) {
-        void logAnalyticsToFirebase(AnalyticEvent.IOS_ATTRIBUTION_TOKEN_RECEIVED, {
-          attribution_token: referrerData.attribution_token,
-          requires_server_resolution: true,
-        });
+        void logAnalyticsToFirebase(
+          AnalyticEvent.IOS_ATTRIBUTION_TOKEN_RECEIVED,
+          {
+            attribution_token: referrerData.attribution_token,
+            requires_server_resolution: true,
+          },
+        );
 
         // Note: Server needs to resolve the token and communicate back to the app
         // for any referral code handling
@@ -445,7 +461,9 @@ export const InitializeAppProvider = ({
         : t<string>('NEW_MUST_UPDATE_MSG');
 
       const goToStore = () => {
-        logEvent(getAnalytics(), 'update_now', {}).catch(Sentry.captureException);
+        logEvent(getAnalytics(), 'update_now', {}).catch(
+          Sentry.captureException,
+        );
         setUpdateModal(false);
         if (Platform.OS === 'android') {
           void Linking.openURL('market://details?id=com.cypherd.androidwallet');
