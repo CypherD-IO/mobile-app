@@ -30,12 +30,16 @@ target 'Cypherd' do
   pod 'FirebaseABTesting', :modular_headers => true
   pod 'FirebaseSessions', :modular_headers => true
   pod 'FirebaseRemoteConfig', :modular_headers => true
+  pod 'FirebaseMessaging', :modular_headers => true
 
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
 
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
-  
+
+  # Customer.io push notification support (FCM provider)
+  pod 'customerio-reactnative/fcm', :path => '../node_modules/customerio-reactnative'
+
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => hermes_enabled,
@@ -291,5 +295,20 @@ target 'Cypherd' do
       raise "[Podfile][ArchiveFix] Failed while patching modulemap flags for Archive stability: #{e}"
     end
   end
+end
+
+# Customer.io rich push support (images, deep links) for the Notification Service Extension
+target 'NotificationServiceExtension' do
+  # Firebase pods need modular headers for Swift interop in the extension too
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'FirebaseCoreExtension', :modular_headers => true
+  pod 'FirebaseInstallations', :modular_headers => true
+  pod 'FirebaseMessaging', :modular_headers => true
+
+  pod 'customerio-reactnative-richpush/fcm', :path => '../node_modules/customerio-reactnative'
 end
 

@@ -5,6 +5,7 @@ import 'whatwg-fetch';
 import './shim';
 import { AppRegistry, UIManager } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import { CustomerIO } from 'customerio-reactnative';
 import { name as appName } from './app.json';
 import { showNotification } from './src/notification/pushNotification';
 import Sentry from '@sentry/react-native';
@@ -44,11 +45,15 @@ if (__DEV__) {
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   try {
-    await showNotification(remoteMessage.notification, remoteMessage.data);
+    const handled =
+      await CustomerIO.pushMessaging.onBackgroundMessageReceived(remoteMessage);
+    if (!handled) {
+      await showNotification(remoteMessage.notification, remoteMessage.data);
+    }
   } catch (e) {
     Sentry.captureException(e);
   }
-return Promise.resolve();
+  return Promise.resolve();
 });
 
 // NOTE: Use `require()` here (instead of static `import App from './App'`) so our
