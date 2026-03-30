@@ -479,6 +479,7 @@ export default function CardQuote({
                     tokenData: selectedToken as Holding,
                     evmSwap: tokenQuote.evmSwap,
                     quoteId: tokenQuote.quoteId,
+                    destinationAddress: targetAddress,
                   });
             } else {
               response = await sendEvmToken(

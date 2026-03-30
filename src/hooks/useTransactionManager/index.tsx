@@ -1810,10 +1810,12 @@ export default function useTransactionManager() {
     tokenData,
     evmSwap,
     quoteId,
+    destinationAddress,
   }: {
     tokenData: Holding;
     evmSwap: CardQuoteEvmSwap;
     quoteId?: string;
+    destinationAddress: string;
   }): Promise<TransactionResponse> => {
     try {
       const privateKey = await loadPrivateKeyFromKeyChain(
@@ -1902,7 +1904,7 @@ export default function useTransactionManager() {
               swapRouter,
               swapTransaction.data as Hex,
               BigInt(evmSwap.toAmountMin),
-              evmSwap.destinationAddress as Address,
+              destinationAddress as Address,
             ],
           })
         : encodeFunctionData({
@@ -1916,7 +1918,7 @@ export default function useTransactionManager() {
               swapRouter,
               swapTransaction.data as Hex,
               BigInt(evmSwap.toAmountMin),
-              evmSwap.destinationAddress as Address,
+              destinationAddress as Address,
             ],
           });
 
