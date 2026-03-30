@@ -1808,6 +1808,32 @@ export default function CardControls(): React.JSX.Element {
                   </CyDText>
                 </CyDView>
               )}
+              {(selectedCard.status === CardStatus.IN_ACTIVE ||
+                selectedCard.status === CardStatus.BLOCKED) && (
+                <CyDView
+                  className='absolute top-0 left-0 right-0 bottom-0 rounded-[14px] justify-center items-start pl-[16px]'
+                  style={styles.frozenOverlay}>
+                  <CyDView
+                    className={clsx(
+                      'rounded-[8px] flex-row items-center px-[10px] py-[6px] gap-x-[4px]',
+                      isDarkMode ? 'bg-black' : 'bg-white',
+                    )}
+                    style={styles.frozenBadge}>
+                    <CyDIcons
+                      name='freeze'
+                      size={20}
+                      className='text-[#1A73E8]'
+                    />
+                    <CyDText
+                      className={clsx(
+                        'font-bold text-[12px] leading-[130%] text-center',
+                        isDarkMode ? 'text-white' : 'text-black',
+                      )}>
+                      Frozen
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              )}
             </CyDView>
 
             <CyDView className='flex-row justify-center items-center gap-x-[64px] mt-[20px] mb-[8px]'>
@@ -2329,5 +2355,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  frozenOverlay: {
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+  },
+  frozenBadge: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
 });

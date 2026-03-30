@@ -462,14 +462,12 @@ export default function CardTransactions() {
                           resizeMode='contain'
                         />
                         <CyDText className='font-manrope font-medium text-[16px] text-base100 text-center mt-[12px] leading-[140%] tracking-[-0.4px]'>
-                          {'No Transaction Found'}
+                          {t('NO_TRANSACTION_FOUND')}
                         </CyDText>
                         <CyDText
                           className='font-manrope font-normal text-[10px] text-center mt-[4px] mb-[20px] leading-[160%] px-[19px]'
                           style={styles.emptySubtext}>
-                          {
-                            'Use your cypher card and keep an eye on your transactions right here!'
-                          }
+                          {t('NO_TRANSACTION_SUBTITLE')}
                         </CyDText>
                       </CyDView>
                     </CyDView>

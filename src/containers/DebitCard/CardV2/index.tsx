@@ -1280,6 +1280,17 @@ export default function CypherCardScreen() {
         userName: userNameValue ?? '',
       });
     } catch (error) {
+      setCardDetailsModal(prev => ({
+        ...prev,
+        showCardDetailsModal: false,
+      }));
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
       Sentry.captureException(error);
     } finally {
       setIsFetchingCardDetails(false);
@@ -1330,6 +1341,10 @@ export default function CypherCardScreen() {
         userName: userNameValue,
       });
     } catch (error) {
+      setCardDetailsModal(prev => ({
+        ...prev,
+        showCardDetailsModal: false,
+      }));
       showModal('state', {
         type: 'error',
         title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
@@ -1383,6 +1398,10 @@ export default function CypherCardScreen() {
           userName: '',
         });
       } else {
+        setCardDetailsModal(prev => ({
+          ...prev,
+          showCardDetailsModal: false,
+        }));
         showModal('state', {
           type: 'error',
           title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
@@ -1392,6 +1411,10 @@ export default function CypherCardScreen() {
         });
       }
     } catch (error) {
+      setCardDetailsModal(prev => ({
+        ...prev,
+        showCardDetailsModal: false,
+      }));
       Sentry.captureException(error);
     } finally {
       setIsFetchingCardDetails(false);
@@ -1399,10 +1422,10 @@ export default function CypherCardScreen() {
   };
 
   const validateReuseToken = async (card: Card): Promise<void> => {
+    const resolvedProvider = card.cardProvider || cardProfile?.provider;
     const cardRevealReuseToken = await getCardRevealReuseToken(card.cardId);
     if (
-      (card.cardProvider || cardProfile?.provider) ===
-        CardProviders.REAP_CARD &&
+      resolvedProvider === CardProviders.REAP_CARD &&
       cardRevealReuseToken
     ) {
       setIsFetchingCardDetails(true);
@@ -1414,7 +1437,7 @@ export default function CypherCardScreen() {
         userName: '',
       });
 
-      const verifyReuseTokenUrl = `/v1/cards/${card.cardProvider}/card/${String(
+      const verifyReuseTokenUrl = `/v1/cards/${resolvedProvider}/card/${String(
         card.cardId,
       )}/verify/reuse-token`;
       const payload = {
@@ -1428,7 +1451,7 @@ export default function CypherCardScreen() {
       try {
         const response = await postWithAuth(verifyReuseTokenUrl, payload);
         if (!response.isError) {
-          if (card.cardProvider === CardProviders.REAP_CARD) {
+          if (resolvedProvider === CardProviders.REAP_CARD) {
             setCardDetailsModal({
               showCardDetailsModal: true,
               card,
@@ -1461,11 +1484,11 @@ export default function CypherCardScreen() {
           webviewUrl: '',
           userName: '',
         });
-        if (card.cardProvider === CardProviders.REAP_CARD) {
+        if (resolvedProvider === CardProviders.REAP_CARD) {
           void decryptMessage(data, card);
-        } else if (card.cardProvider === CardProviders.RAIN_CARD) {
+        } else if (resolvedProvider === CardProviders.RAIN_CARD) {
           void decryptSecretKeyData(data, card);
-        } else if (card.cardProvider === CardProviders.PAYCADDY) {
+        } else if (resolvedProvider === CardProviders.PAYCADDY) {
           void sendCardDetailsForPaycaddy(data, card);
         }
       },

@@ -2426,6 +2426,9 @@ const resources = {
       AVAILABLE_TO_SPEND: 'Available to spend',
       AVAILABLE_TO_SPEND_INFO:
         'The available to spend balance is shared between all the cards',
+      NO_TRANSACTION_FOUND: 'No Transaction Found',
+      NO_TRANSACTION_SUBTITLE:
+        'Use your cypher card and keep an eye on your transactions right here!',
     },
   },
 };

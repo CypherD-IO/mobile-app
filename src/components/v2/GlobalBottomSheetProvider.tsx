@@ -142,14 +142,6 @@ export const GlobalBottomSheetProvider: React.FC<
     bottomSheetRefs.current[id]?.snapToIndex(index);
   }, []);
 
-<<<<<<< HEAD
-  const snapBottomSheetToIndex = useCallback((id: string, index: number) => {
-=======
-  const snapSheetToIndex = useCallback((id: string, index: number) => {
->>>>>>> 34a08ba0 (refactor(CyDBottomSheet): enhance props for better customization and functionality; update package.json and image assets)
-    bottomSheetRefs.current[id]?.snapToIndex(index);
-  }, []);
-
   const handleBottomSheetClose = (id: string) => {
     // Find the config and call its onClose callback
     const config = bottomSheets.find(sheet => sheet.id === id);
@@ -170,7 +162,12 @@ export const GlobalBottomSheetProvider: React.FC<
       hideAllBottomSheets,
       snapBottomSheetToIndex,
     }),
-    [showBottomSheet, hideBottomSheet, hideAllBottomSheets, snapBottomSheetToIndex],
+    [
+      showBottomSheet,
+      hideBottomSheet,
+      hideAllBottomSheets,
+      snapBottomSheetToIndex,
+    ],
   );
 
   return (
@@ -218,7 +215,9 @@ export const GlobalBottomSheetProvider: React.FC<
           borderRadius={config.borderRadius ?? 16}
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}
-          enableContentPanningGesture={config.enableContentPanningGesture ?? true}
+          enableContentPanningGesture={
+            config.enableContentPanningGesture ?? true
+          }
           keyboardBehavior={config.keyboardBehavior}
           keyboardBlurBehavior={config.keyboardBlurBehavior}
           androidKeyboardInputMode={config.androidKeyboardInputMode}

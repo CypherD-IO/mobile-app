@@ -50,15 +50,18 @@ export default function CardDetailsModal({
   const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
   const [timerStarted, setTimerStarted] = useState(false);
   const [webviewLoaded, setWebviewLoaded] = useState(false);
+  const [webviewLoadFailed, setWebviewLoadFailed] = useState(false);
   const { t } = useTranslation();
 
   const needsWebviewLoad =
     card.cardProvider === CardProviders.REAP_CARD && !!webviewUrl;
-  const isContentReady = !loading && (!needsWebviewLoad || webviewLoaded);
+  const isContentReady =
+    !loading && (!needsWebviewLoad || (webviewLoaded && !webviewLoadFailed));
 
   useEffect(() => {
     if (!isModalVisible) {
       setWebviewLoaded(false);
+      setWebviewLoadFailed(false);
     }
   }, [isModalVisible]);
 
@@ -234,7 +237,8 @@ export default function CardDetailsModal({
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
               allowUniversalAccessFromFileURLs={true}
-              onLoadEnd={() => setWebviewLoaded(true)}
+              onLoad={() => setWebviewLoaded(true)}
+              onError={() => setWebviewLoadFailed(true)}
             />
           </CyDView>
         );

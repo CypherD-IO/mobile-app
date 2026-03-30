@@ -100,15 +100,24 @@ export const GetPhysicalCardComponent = ({
             className={clsx(
               'rounded-full py-[5px] px-[12px] whitespace-nowrap flex-shrink-0',
               {
-                'bg-green20 text-green400 font-semibold':
-                  componentContent.cost === 0,
-                'bg-n30 text-primaryText': componentContent.cost > 0,
+                'bg-green20': componentContent.cost === 0,
+                'bg-n30':
+                  typeof componentContent.cost === 'number' &&
+                  componentContent.cost > 0,
               },
             )}>
-            <CyDText>
+            <CyDText
+              className={clsx({
+                'text-green400 font-semibold': componentContent.cost === 0,
+                'text-primaryText':
+                  typeof componentContent.cost === 'number' &&
+                  componentContent.cost > 0,
+              })}>
               {componentContent.cost === 0
                 ? '🎉  Free'
-                : `$${String(componentContent.cost)}`}
+                : typeof componentContent.cost === 'number'
+                  ? `$${String(componentContent.cost)}`
+                  : '--'}
             </CyDText>
           </CyDView>
         </CyDView>
