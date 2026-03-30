@@ -1,6 +1,7 @@
 import {
   CardProviders,
   PhysicalCardType,
+  RC_PHYSICAL_CARD_TRACKING_STATUS,
   ReapTxnStatus,
 } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
@@ -18,6 +19,16 @@ export interface Card {
   cardProvider: CardProviders;
   physicalCardType?: PhysicalCardType;
   designId?: string;
+}
+
+export interface ITrackingDetailsResponse {
+  [key: string]: {
+    last4: string;
+    trackingId: string;
+    trackingStatus: RC_PHYSICAL_CARD_TRACKING_STATUS;
+    trackingMessage?: string;
+    shippingCarrier?: string;
+  };
 }
 
 export interface ICardSubObjectMerchant {

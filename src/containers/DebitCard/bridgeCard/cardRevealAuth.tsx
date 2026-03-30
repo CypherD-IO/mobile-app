@@ -173,7 +173,11 @@ export default function CardRevealAuthScreen() {
           const key = await generateKeys();
           payload = {
             otp: +num,
-            stylesheetUrl: `https://public.cypherd.io/css/${card.physicalCardType === PhysicalCardType.METAL ? 'cardRevealMobileOnMetal.css' : 'cardRevealMobileOnCard.css'}`,
+            stylesheetUrl: `https://public.cypherd.io/css/${
+              card.physicalCardType === PhysicalCardType.METAL
+                ? 'cardRevealMobileOnMetal.css'
+                : 'cardRevealMobileOnCard.css'
+            }`,
             publicKey: key?.publicKeyBase64,
             ...(verifyOTPPayload || {}),
           };
@@ -296,7 +300,9 @@ export default function CardRevealAuthScreen() {
     setOtpValue(value);
     setOtpError(false);
     if (value.every(digit => digit !== '')) {
-      void verifyOTP(parseInt(value.join(''), 10));
+      setTimeout(() => {
+        void verifyOTP(parseInt(value.join(''), 10));
+      }, 200);
     }
   };
 

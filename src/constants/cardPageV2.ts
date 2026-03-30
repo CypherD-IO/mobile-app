@@ -24,3 +24,5 @@ export const initialCardTxnDateRange = {
 };
 
 export const PRESET_OFFSET_DAYS = [7, 30, 60];
+
+export const CARD_IMAGE_ASPECT_RATIO = 900 / 570;

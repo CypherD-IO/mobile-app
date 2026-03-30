@@ -164,6 +164,7 @@ interface CyDModalLayoutProps {
   onSwipeComplete?: (params: OnSwipeCompleteParams) => void;
   onModalShow?: () => void;
   onModalWillShow?: () => void;
+  statusBarTranslucent?: boolean;
 }
 
 export default function CyDModalLayout({
@@ -188,6 +189,7 @@ export default function CyDModalLayout({
   onSwipeComplete = () => {},
   onModalShow,
   onModalWillShow,
+  statusBarTranslucent = false,
 }: CyDModalLayoutProps) {
   const { store } = useGlobalModalContext();
 
@@ -229,6 +231,7 @@ export default function CyDModalLayout({
       onModalShow={onModalShow}
       onModalWillShow={onModalWillShow}
       swipeThreshold={20}
+      statusBarTranslucent={statusBarTranslucent}
       style={style}>
       {children}
     </Modal>

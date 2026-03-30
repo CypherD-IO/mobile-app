@@ -34,7 +34,7 @@ export interface CyDBottomSheetRef {
 
 interface CyDBottomSheetProps {
   children: React.ReactNode;
-  snapPoints?: Array<string | number>;
+  snapPoints?: any[];
   initialSnapIndex?: number;
   enableDynamicSizing?: boolean;
   enablePanDownToClose?: boolean;
@@ -46,6 +46,7 @@ interface CyDBottomSheetProps {
   onClose?: () => void;
   onOpen?: () => void;
   onChange?: (index: number) => void;
+  onAnimate?: (fromIndex: number, toIndex: number) => void;
   title?: string;
   showHandle?: boolean;
   showCloseButton?: boolean;
@@ -60,6 +61,10 @@ interface CyDBottomSheetProps {
   topBarColor?: string;
   borderRadius?: number;
   enableContentPanningGesture?: boolean;
+  showBackdrop?: boolean;
+  bottomInset?: number;
+  fixedHeaderContent?: React.ReactNode;
+  defaultPresentIndex?: number;
 }
 
 const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
@@ -78,6 +83,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       onClose,
       onOpen,
       onChange,
+      onAnimate,
       title,
       showHandle = true,
       showCloseButton = false,
@@ -88,6 +94,10 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       topBarColor,
       borderRadius = 16,
       enableContentPanningGesture = true,
+      showBackdrop = true,
+      bottomInset = 0,
+      fixedHeaderContent,
+      defaultPresentIndex = 0,
     },
     ref,
   ) => {
@@ -109,16 +119,14 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
 
     // Auto-present the bottom sheet when component mounts if no initialSnapIndex is provided
     useEffect(() => {
-      // If no initial snap index is provided, auto-present the sheet
-      // OR if initialSnapIndex is -1 (closed), we still want to auto-present for GlobalBottomSheetProvider
       if (initialSnapIndex === undefined || initialSnapIndex === -1) {
         const timer = setTimeout(() => {
-          bottomSheetRef.current?.snapToIndex(0);
-        }, 200); // Slightly longer delay to ensure the provider's present() calls happen first
+          bottomSheetRef.current?.snapToIndex(defaultPresentIndex);
+        }, 200);
 
         return () => clearTimeout(timer);
       }
-    }, [initialSnapIndex]);
+    }, [initialSnapIndex, defaultPresentIndex]);
 
     // Expose methods through ref
     useImperativeHandle(
@@ -126,7 +134,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       () => ({
         present: () => {
           try {
-            bottomSheetRef.current?.snapToIndex(0);
+            bottomSheetRef.current?.snapToIndex(defaultPresentIndex);
           } catch (error) {
             console.error('CyDBottomSheet: Error in present():', error);
           }
@@ -174,7 +182,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           }
         },
       }),
-      [],
+      [defaultPresentIndex],
     );
 
     // Handle sheet changes
@@ -235,7 +243,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     }, []);
 
     const sheetInnerContent = (
-      <>
+      <CyDView style={{ flex: 1 }}>
         {/* Header with title and close button */}
         {(title || showCloseButton) && (
           <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
@@ -248,15 +256,30 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
               <CyDTouchView
                 onPress={() => bottomSheetRef.current?.close()}
                 className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
-                <CyDMaterialDesignIcons name='close' size={18} className='text-base400' />
+                <CyDMaterialDesignIcons
+                  name='close'
+                  size={18}
+                  className='text-base400'
+                />
               </CyDTouchView>
             )}
           </CyDView>
         )}
 
+        {/* Fixed header content (sticky when scrollable) */}
+        {fixedHeaderContent && (
+          <CyDView
+            style={{
+              backgroundColor:
+                backgroundColor ?? (isDarkMode ? '#161616' : '#FFFFFF'),
+            }}>
+            {fixedHeaderContent}
+          </CyDView>
+        )}
+
         {/* Content */}
         <CyDView className='flex-1'>{children}</CyDView>
-      </>
+      </CyDView>
     );
 
     return (
@@ -278,6 +301,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           enablePanDownToClose={enablePanDownToClose}
           enableOverDrag={enableOverDrag}
           enableDynamicSizing={enableDynamicSizing}
+          bottomInset={bottomInset}
           containerStyle={{
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -4 },
@@ -288,7 +312,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
           }}
           backgroundStyle={{
             backgroundColor:
-              backgroundColor ?? (isDarkMode ? '#161616' : '#F5F6F7'), // Force dark background
+              backgroundColor ?? (isDarkMode ? '#161616' : '#F5F6F7'),
             borderTopLeftRadius: borderRadius,
             borderTopRightRadius: borderRadius,
           }}
@@ -313,9 +337,10 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
                 }
               : { height: 0, padding: 0 }
           }
-          backdropComponent={renderBackdrop}
+          backdropComponent={showBackdrop ? renderBackdrop : undefined}
           onChange={handleSheetChanges}
           enableContentPanningGesture={enableContentPanningGesture}
+          onAnimate={onAnimate}
           keyboardBehavior={keyboardBehavior}
           keyboardBlurBehavior={keyboardBlurBehavior}
           android_keyboardInputMode={androidKeyboardInputMode}
@@ -331,11 +356,47 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
             <BottomSheetScrollView
               style={{ flex: 1 }}
               contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
-              showsVerticalScrollIndicator={false}>
-              {sheetInnerContent}
+              showsVerticalScrollIndicator={false}
+              {...(fixedHeaderContent
+                ? { stickyHeaderIndices: [title || showCloseButton ? 1 : 0] }
+                : {})}>
+              {(title || showCloseButton) && (
+                <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
+                  <CyDView className='flex-1'>
+                    {title ? (
+                      <CyDText className='text-[18px] font-bold'>
+                        {title}
+                      </CyDText>
+                    ) : null}
+                  </CyDView>
+                  {showCloseButton && (
+                    <CyDTouchView
+                      onPress={() => bottomSheetRef.current?.close()}
+                      className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
+                      <CyDMaterialDesignIcons
+                        name='close'
+                        size={18}
+                        className='text-base400'
+                      />
+                    </CyDTouchView>
+                  )}
+                </CyDView>
+              )}
+              {fixedHeaderContent && (
+                <CyDView
+                  style={{
+                    backgroundColor:
+                      backgroundColor ?? (isDarkMode ? '#161616' : '#FFFFFF'),
+                  }}>
+                  {fixedHeaderContent}
+                </CyDView>
+              )}
+              <CyDView className='flex-1'>{children}</CyDView>
             </BottomSheetScrollView>
           ) : enableContentPanningGesture ? (
-            <BottomSheetView style={{ flex: 1 }}>{sheetInnerContent}</BottomSheetView>
+            <BottomSheetView style={{ flex: 1 }}>
+              {sheetInnerContent}
+            </BottomSheetView>
           ) : (
             <CyDView style={{ flex: 1 }}>{sheetInnerContent}</CyDView>
           )}
