@@ -380,7 +380,10 @@ export default function useInitializer() {
     });
 
     const email = data?.email?.trim();
-    const walletAddr = pendingWalletAddresses.ethereumAddress;
+    const walletAddr =
+      pendingWalletAddresses.ethereumAddress ||
+      ethereum?.address ||
+      solana?.address;
     const cioUserId = email || walletAddr;
 
     if (cioUserId) {
