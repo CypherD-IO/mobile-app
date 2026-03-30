@@ -243,7 +243,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
     }, []);
 
     const sheetInnerContent = (
-      <>
+      <CyDView style={{ flex: 1 }}>
         {/* Header with title and close button */}
         {(title || showCloseButton) && (
           <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
@@ -279,7 +279,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
 
         {/* Content */}
         <CyDView className='flex-1'>{children}</CyDView>
-      </>
+      </CyDView>
     );
 
     return (
@@ -358,9 +358,40 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
               contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
               showsVerticalScrollIndicator={false}
               {...(fixedHeaderContent
-                ? { stickyHeaderIndices: [(title || showCloseButton) ? 1 : 0] }
+                ? { stickyHeaderIndices: [title || showCloseButton ? 1 : 0] }
                 : {})}>
-              {sheetInnerContent}
+              {(title || showCloseButton) && (
+                <CyDView className='flex-row items-center justify-between px-4 py-3 border-b border-n40'>
+                  <CyDView className='flex-1'>
+                    {title ? (
+                      <CyDText className='text-[18px] font-bold'>
+                        {title}
+                      </CyDText>
+                    ) : null}
+                  </CyDView>
+                  {showCloseButton && (
+                    <CyDTouchView
+                      onPress={() => bottomSheetRef.current?.close()}
+                      className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
+                      <CyDMaterialDesignIcons
+                        name='close'
+                        size={18}
+                        className='text-base400'
+                      />
+                    </CyDTouchView>
+                  )}
+                </CyDView>
+              )}
+              {fixedHeaderContent && (
+                <CyDView
+                  style={{
+                    backgroundColor:
+                      backgroundColor ?? (isDarkMode ? '#161616' : '#FFFFFF'),
+                  }}>
+                  {fixedHeaderContent}
+                </CyDView>
+              )}
+              <CyDView className='flex-1'>{children}</CyDView>
             </BottomSheetScrollView>
           ) : enableContentPanningGesture ? (
             <BottomSheetView style={{ flex: 1 }}>

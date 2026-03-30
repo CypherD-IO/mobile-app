@@ -134,9 +134,7 @@ const RenderCard = ({
         <CyDView className='flex flex-row gap-x-[12px] items-center'>
           <CyDImage
             source={getCardImage(cardType, get(metaData, 'id', ''))}
-            className={clsx('h-[44px] w-[60px]', {
-              'border border-n40 rounded-[4px]': cardType === CardType.PHYSICAL,
-            })}
+            className='h-[44px] w-[60px] rounded-[4px]'
             resizeMode='contain'
           />
           <CyDView>

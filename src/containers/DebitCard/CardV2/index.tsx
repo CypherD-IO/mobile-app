@@ -852,7 +852,7 @@ export default function CypherCardScreen() {
   };
   const [selectedMerchantData, setSelectedMerchantData] = useState<any>(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  const { showBottomSheet, hideBottomSheet, snapSheetToIndex } =
+  const { showBottomSheet, hideBottomSheet, snapBottomSheetToIndex } =
     useGlobalBottomSheet();
   const { refreshStatus: refreshOnboardingStatus, statusWiseRewards } =
     useOnboardingReward();
@@ -1607,7 +1607,7 @@ export default function CypherCardScreen() {
   const snapSheetDuringDeckUp = React.useCallback((): void => {
     if (!sheetSnappedDuringDeckUp.current) {
       sheetSnappedDuringDeckUp.current = true;
-      snapSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, 1);
+      snapBottomSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, 1);
     }
   }, []);
 
@@ -2100,7 +2100,7 @@ export default function CypherCardScreen() {
           return;
         }
         if (showAllCards && fromIndex === 0 && toIndex >= 1) {
-          snapSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, 0);
+          snapBottomSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, 0);
           startDeckUp();
         }
       },
@@ -2330,7 +2330,7 @@ export default function CypherCardScreen() {
     }
     const targetIndex = showAllCards ? 0 : 1;
     const timer = setTimeout(() => {
-      snapSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, targetIndex);
+      snapBottomSheetToIndex(CARD_TRANSACTIONS_SHEET_ID, targetIndex);
     }, 50);
     return () => clearTimeout(timer);
   }, [showAllCards]);
@@ -2518,7 +2518,7 @@ export default function CypherCardScreen() {
         )} */}
           </CyDView>
 
-          <CyDView className='bg-n40'>
+          <CyDView className='flex-1 bg-n40'>
             {cardId !== CARD_IDS.HIDDEN_CARD &&
               cardProvider === CardProviders.PAYCADDY && (
                 <CyDView className='mx-[16px] my-[12px] bg-n0 rounded-[16px] p-[8px]'>
