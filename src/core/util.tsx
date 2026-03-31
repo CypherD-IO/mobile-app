@@ -37,7 +37,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find, get, isEmpty, omit } from 'lodash';
+import { find, get, has, isEmpty, omit } from 'lodash';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
 import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
@@ -1378,6 +1378,21 @@ export const shouldShowGetPhysicalCardInStack = (
   return false;
 };
 
+/**
+ * Builds the S3 URI for a card image. Physical/metal cards get a cache-busting
+ * timestamp so the app always fetches the latest asset when the design changes.
+ */
+export const getCardImageUri = (
+  type: string,
+  designId: string,
+): { uri: string } => {
+  const isPhysical = type === CardType.PHYSICAL || type === CardType.METAL;
+  const uri = `${CYPHER_CARD_IMAGES}/${type}-${designId ?? ''}.png${
+    isPhysical ? `?t=1774428721000` : ''
+  }`;
+  return { uri };
+};
+
 export const getCardImage = (card: Card, provider: CardProviders) => {
   if (!card || !card.type) {
     return undefined;
@@ -1389,12 +1404,7 @@ export const getCardImage = (card: Card, provider: CardProviders) => {
       const colorData = getCardColorByHex(card.cardColor);
       return colorData.cardImage;
     }
-    const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${
-      card.designId ?? ''
-    }.png`;
-    return {
-      uri: cardImage,
-    };
+    return getCardImageUri(card.type, card.designId ?? '');
   }
 };
 

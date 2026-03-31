@@ -17,6 +17,7 @@ const ARBITRUM = require('./arbitrum.png');
 const OPTIMISM = require('./optimism.png');
 const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
+const BRIDGE_LOADER = require('./bridgeLoader.json');
 const APP_LOGO = require('./appLogo.png');
 const CARD = require('./card.png');
 const ETHEREUM = require('./ethereum.png');
@@ -112,7 +113,8 @@ const REFER = require('./refer.png');
 const CARD_KYC_BACKGROUND = require('./cardKYCBackground.png');
 const DEBIT_CARD_BACKGROUND = require('./debit-card-background.png');
 const LOAD_CARD_LOTTIE = require('./loadCardLottie.json');
-const NO_TRANSACTIONS_YET = require('./noTransactions.png');
+const NO_TRANSACTIONS_YET_LIGHT_THEME = require('./noTransactionsLightTheme.png');
+const NO_TRANSACTIONS_YET_DARK_THEME = require('./noTransactionsDarkTheme.png');
 const NOBLE_PNG = require('./noble.png');
 const APR_ICON = require('./apr.png');
 const CELEBRATE = require('./celebrate.png');
@@ -441,6 +443,9 @@ const USDC_TOKEN = {
 };
 const CARD_SHIPMENT_ENVELOPE = {
   uri: `${S3_BUCKET_URL_ICONS}/cardShipmentEnvelope.png`,
+};
+const CARDS_IN_PRODUCTION = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardsInProduction.png`,
 };
 const REPLACE_VIRTUAL_CARD = {
   uri: `${S3_BUCKET_URL_ICONS}/replaceVirtualCard.png`,
@@ -872,6 +877,7 @@ export const AppImagesMap = {
     STARS_RIGHT,
     INSIGHT_BULB,
     LOADING_SPINNER,
+    BRIDGE_LOADER,
     COINS,
     NEW,
     GIFT_BOX_PNG,
@@ -946,7 +952,6 @@ export const AppImagesMap = {
     CARD_KYC_BACKGROUND,
     DEBIT_CARD_BACKGROUND,
     LOAD_CARD_LOTTIE,
-    NO_TRANSACTIONS_YET,
     NOBLE_PNG,
     APR_ICON,
     CELEBRATE,
@@ -1030,6 +1035,7 @@ export const AppImagesMap = {
     VISA_CARDS_GROUP,
     TELEGRAM_BLUE_ICON,
     CARD_SHIPMENT_ENVELOPE,
+    CARDS_IN_PRODUCTION,
     REPLACE_VIRTUAL_CARD,
     MULTIPLE_CARDS,
     PREMIUM_LABEL,
@@ -1135,8 +1141,12 @@ export const AppImagesMap = {
     SAFEPAL_CLAIM_MODAL_NON_PREMIUM,
     TX_LOGO,
   },
-  [Theme.LIGHT]: {},
-  [Theme.DARK]: {},
+  [Theme.LIGHT]: {
+    NO_TRANSACTIONS_YET: NO_TRANSACTIONS_YET_LIGHT_THEME,
+  },
+  [Theme.DARK]: {
+    NO_TRANSACTIONS_YET: NO_TRANSACTIONS_YET_DARK_THEME,
+  },
 };
 
 enum AppImages {
@@ -1213,6 +1223,7 @@ enum AppImages {
   STARS_RIGHT = 'STARS_RIGHT',
   INSIGHT_BULB = 'INSIGHT_BULB',
   LOADING_SPINNER = 'LOADING_SPINNER',
+  BRIDGE_LOADER = 'BRIDGE_LOADER',
   COINS = 'COINS',
   NEW = 'NEW',
   GIFT_BOX_PNG = 'GIFT_BOX_PNG',
@@ -1374,6 +1385,7 @@ enum AppImages {
   VISA_CARDS_GROUP = 'VISA_CARDS_GROUP',
   TELEGRAM_BLUE_ICON = 'TELEGRAM_BLUE_ICON',
   CARD_SHIPMENT_ENVELOPE = 'CARD_SHIPMENT_ENVELOPE',
+  CARDS_IN_PRODUCTION = 'CARDS_IN_PRODUCTION',
   REPLACE_VIRTUAL_CARD = 'REPLACE_VIRTUAL_CARD',
   MULTIPLE_CARDS = 'MULTIPLE_CARDS',
   PREMIUM_LABEL = 'PREMIUM_LABEL',

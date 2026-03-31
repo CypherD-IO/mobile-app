@@ -34,7 +34,6 @@ import CryptoWithdrawal from '../containers/DebitCard/CardV2/cryptoWithdrawal/cr
 import WithDrawSuccess from '../containers/DebitCard/CardV2/cryptoWithdrawal/withDrawSuccess';
 import WithdrawConfirmation from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawConfirmation';
 import WithdrawHistory from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawHistory';
-import FirstLoadCard from '../containers/DebitCard/CardV2/firstLoadCard';
 import ManageSubscription from '../containers/DebitCard/CardV2/manageSubscription';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import TelegramSetup from '../containers/DebitCard/CardV2/signup/telegramSetup';
@@ -54,6 +53,7 @@ import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAut
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
+import EditCardColor from '../containers/DebitCard/bridgeCard/editCardColour';
 import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
 import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 import TransactionDetails from '../containers/DebitCard/bridgeCard/transactionDetails';
@@ -511,18 +511,27 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_CONTROLS}
         component={CardControls}
-        options={({ navigation }) => ({
-          header: () => (
-            <CustomHeader
-              title='Card Controls'
-              navigation={navigation}
-              keyboardHeight={keyboardHeight}
-              textAlign='start'
-              textStyle='text-[20px] font-medium'
-              backgroundColor='bg-n0'
-            />
-          ),
-        })}
+        options={({ navigation, route }) => {
+          const params = route.params as { showAsSheet?: boolean } | undefined;
+          if (params?.showAsSheet) {
+            return {
+              headerShown: false,
+              animation: 'slide_from_bottom' as const,
+            };
+          }
+          return {
+            header: () => (
+              <CustomHeader
+                title='Card Controls'
+                navigation={navigation}
+                keyboardHeight={keyboardHeight}
+                textAlign='start'
+                textStyle='text-[20px] font-medium'
+                backgroundColor='bg-n0'
+              />
+            ),
+          };
+        }}
       />
       <FundCardStack.Screen
         name={screenTitle.MERCHANT_REWARD_LIST}
@@ -610,6 +619,13 @@ export function DebitCardStackScreen({ route }: { route: AnyRoute }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SET_PIN_SCREEN}
         component={SetPinScreen}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.EDIT_CARD_COLOUR_SCREEN}
+        component={EditCardColor}
         options={() => ({
           headerShown: false,
         })}

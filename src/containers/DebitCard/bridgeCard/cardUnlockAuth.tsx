@@ -163,8 +163,8 @@ export default function CardUnlockAuth() {
       ...(authType === CardOperationsAuthType.UNBLOCK
         ? {}
         : authType === CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON
-          ? { godm: true, godmExpiryInMinutes }
-          : { status: CardStatus.ACTIVE }),
+        ? { godm: true, godmExpiryInMinutes }
+        : { status: CardStatus.ACTIVE }),
       otp: num,
       ...(forAllCards ? { forAllCards: true } : {}),
     };
@@ -197,7 +197,9 @@ export default function CardUnlockAuth() {
     setOtpValue(value);
     setOtpError(false);
     if (value.length === 4 && value.every(digit => digit !== '')) {
-      void verifyOTP(parseInt(value.join(''), 10));
+      setTimeout(() => {
+        void verifyOTP(parseInt(value.join(''), 10));
+      }, 200);
     }
   };
 

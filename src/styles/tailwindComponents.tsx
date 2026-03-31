@@ -26,7 +26,7 @@ import FastImage, { FastImageProps } from 'react-native-fast-image';
 import { Dropdown } from 'react-native-element-dropdown';
 import Animated from 'react-native-reanimated';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { cssInterop } from 'nativewind';
+import { cssInterop, useColorScheme } from 'nativewind';
 import {
   GestureHandlerRootView,
   Swipeable,
@@ -83,9 +83,22 @@ export const _CyDImageBackground = cssInterop(ImageBackground, {
   className: 'style',
 });
 
+/**
+ * Resolves Theme.SYSTEM to the effective light/dark theme using the OS color scheme.
+ * Must be called from within a React component (uses hooks).
+ */
+const useResolvedTheme = (): Exclude<Theme, Theme.SYSTEM> => {
+  const { theme } = useTheme();
+  const { colorScheme } = useColorScheme();
+  if (theme === Theme.SYSTEM) {
+    return colorScheme === 'dark' ? Theme.DARK : Theme.LIGHT;
+  }
+  return theme;
+};
+
 const getImageSource = (
   source: AppImages | { uri: string } | number | undefined,
-  theme: Theme,
+  theme: Exclude<Theme, Theme.SYSTEM>,
 ) => {
   return source && typeof source === 'object' && 'uri' in source
     ? source
@@ -99,7 +112,7 @@ export const CyDFastImage = (
     defaultSource?: AppImages | { uri: string } | number;
   },
 ) => {
-  const { theme } = useTheme();
+  const theme = useResolvedTheme();
   return (
     <_CyDFastImage
       {...props}
@@ -114,7 +127,7 @@ export const CyDImage = (
     source?: AppImages | { uri: string } | number;
   },
 ) => {
-  const { theme } = useTheme();
+  const theme = useResolvedTheme();
   return <_CyDImage {...props} source={getImageSource(props.source, theme)} />;
 };
 
@@ -123,7 +136,7 @@ export const CyDImageBackground = (
     source?: AppImages | { uri: string } | number;
   },
 ) => {
-  const { theme } = useTheme();
+  const theme = useResolvedTheme();
   return (
     <_CyDImageBackground
       {...props}
@@ -213,7 +226,7 @@ export const CyDLottieView = (
     source?: AppImages | { uri: string } | number;
   },
 ) => {
-  const { theme } = useTheme();
+  const theme = useResolvedTheme();
   return (
     <_CyDLottieView {...props} source={getImageSource(props.source, theme)} />
   );

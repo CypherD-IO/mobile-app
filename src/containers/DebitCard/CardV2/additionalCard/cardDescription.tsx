@@ -28,9 +28,8 @@ import {
 } from '../../../../constants/enum';
 import { CardProfile } from '../../../../models/cardProfile.model';
 import { get } from 'lodash';
-import AppImages, {
-  CYPHER_CARD_IMAGES,
-} from '../../../../../assets/images/appImages';
+import AppImages from '../../../../../assets/images/appImages';
+import { getCardImageUri } from '../../../../core/util';
 import LinearGradient from 'react-native-linear-gradient';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
@@ -56,10 +55,7 @@ interface RouteParams {
 
 const getCardImage = (type: CardType, designId: string) => {
   const cardType = type === CardType.VIRTUAL ? 'virtual' : 'physical';
-  const cardImage = `${CYPHER_CARD_IMAGES}/${cardType}-${designId}.png`;
-  return {
-    uri: cardImage,
-  };
+  return getCardImageUri(cardType, designId);
 };
 
 const GetCardArrivingDuration = ({ cardType }: { cardType: CardType }) => {

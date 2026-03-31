@@ -23,9 +23,8 @@ import {
   CardType,
   CypherPlanId,
 } from '../../../../constants/enum';
-import AppImages, {
-  CYPHER_CARD_IMAGES,
-} from '../../../../../assets/images/appImages';
+import AppImages from '../../../../../assets/images/appImages';
+import { getCardImageUri } from '../../../../core/util';
 import { capitalize, get, isUndefined } from 'lodash';
 import { CardProfile } from '../../../../models/cardProfile.model';
 import {
@@ -48,10 +47,7 @@ interface RouteParams {
 
 const getCardImage = (type: CardType, designId: string) => {
   const cardType = type === 'virtual' ? 'virtual' : 'physical';
-  const cardImage = `${CYPHER_CARD_IMAGES}/${cardType}-${designId}.png`;
-  return {
-    uri: cardImage,
-  };
+  return getCardImageUri(cardType, designId);
 };
 
 const RenderPrice = ({
@@ -138,9 +134,7 @@ const RenderCard = ({
         <CyDView className='flex flex-row gap-x-[12px] items-center'>
           <CyDImage
             source={getCardImage(cardType, get(metaData, 'id', ''))}
-            className={clsx('h-[44px] w-[60px]', {
-              'border border-n40 rounded-[4px]': cardType === CardType.PHYSICAL,
-            })}
+            className='h-[44px] w-[60px] rounded-[4px]'
             resizeMode='contain'
           />
           <CyDView>
@@ -252,30 +246,11 @@ export default function SelectAdditionalCardType() {
         />
       </CyDTouchView>
       <CyDText className='mt-[12px] text-[28px] font-bold'>
-        Select your card
+        Order new card
       </CyDText>
 
       <CyDView className='mt-[18px]'>
         <CyDView>
-          <CyDText className='text-[14px] font-medium text-n200'>
-            {'Virtual Cards'}
-          </CyDText>
-          {virtualCard.map((card: CardDesignCardMetaData, index: number) => (
-            <RenderCard
-              key={index}
-              metaData={card}
-              price={get(cardDesignData, 'feeDetails.virtual', 10)}
-              cardType={CardType.VIRTUAL}
-              cardCount={get(cardDesignData, ['allowedCount', 'virtual'], 0)}
-              hasStock={
-                get(cardDesignData, 'virtual')?.[index]?.isStockAvailable
-              }
-              isPremiumPlan={isPremiumPlan}
-              onSelectCard={onSelectCard}
-            />
-          ))}
-        </CyDView>
-        <CyDView className='mt-[16px]'>
           <CyDText className='text-[14px] font-medium text-n200'>
             {'Physical Cards'}
           </CyDText>
@@ -288,6 +263,25 @@ export default function SelectAdditionalCardType() {
               cardCount={get(cardDesignData, ['allowedCount', 'physical'], 0)}
               hasStock={
                 get(cardDesignData, 'physical')?.[index]?.isStockAvailable
+              }
+              isPremiumPlan={isPremiumPlan}
+              onSelectCard={onSelectCard}
+            />
+          ))}
+        </CyDView>
+        <CyDView className='mt-[16px]'>
+          <CyDText className='text-[14px] font-medium text-n200'>
+            {'Virtual Cards'}
+          </CyDText>
+          {virtualCard.map((card: CardDesignCardMetaData, index: number) => (
+            <RenderCard
+              key={index}
+              metaData={card}
+              price={get(cardDesignData, 'feeDetails.virtual', 10)}
+              cardType={CardType.VIRTUAL}
+              cardCount={get(cardDesignData, ['allowedCount', 'virtual'], 0)}
+              hasStock={
+                get(cardDesignData, 'virtual')?.[index]?.isStockAvailable
               }
               isPremiumPlan={isPremiumPlan}
               onSelectCard={onSelectCard}

@@ -13,7 +13,7 @@ import { Platform, InteractionManager } from 'react-native';
 interface BottomSheetConfig {
   id: string;
   title?: string;
-  snapPoints?: Array<string | number>;
+  snapPoints?: any[];
   showCloseButton?: boolean;
   /**
    * Controls whether the native BottomSheet handle (the top bar + indicator) is shown.
@@ -21,18 +21,30 @@ interface BottomSheetConfig {
    */
   showHandle?: boolean;
   scrollable?: boolean;
+  enableContentPanningGesture?: boolean;
   content: React.ReactNode;
   backgroundColor?: string;
   borderRadius?: number;
   onClose?: () => void;
   onOpen?: () => void;
   topBarColor?: string;
+  keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
+  keyboardBlurBehavior?: 'none' | 'restore';
+  androidKeyboardInputMode?: 'adjustPan' | 'adjustResize';
+  enablePanDownToClose?: boolean;
+  showBackdrop?: boolean;
+  bottomInset?: number;
+  fixedHeaderContent?: React.ReactNode;
+  onChange?: (index: number) => void;
+  onAnimate?: (fromIndex: number, toIndex: number) => void;
+  defaultPresentIndex?: number;
 }
 
 interface GlobalBottomSheetContextType {
   showBottomSheet: (config: BottomSheetConfig) => void;
   hideBottomSheet: (id: string) => void;
   hideAllBottomSheets: () => void;
+  snapBottomSheetToIndex: (id: string, index: number) => void;
 }
 
 const GlobalBottomSheetContext = createContext<
@@ -126,6 +138,10 @@ export const GlobalBottomSheetProvider: React.FC<
     });
   }, []);
 
+  const snapBottomSheetToIndex = useCallback((id: string, index: number) => {
+    bottomSheetRefs.current[id]?.snapToIndex(index);
+  }, []);
+
   const handleBottomSheetClose = (id: string) => {
     // Find the config and call its onClose callback
     const config = bottomSheets.find(sheet => sheet.id === id);
@@ -144,8 +160,14 @@ export const GlobalBottomSheetProvider: React.FC<
       showBottomSheet,
       hideBottomSheet,
       hideAllBottomSheets,
+      snapBottomSheetToIndex,
     }),
-    [showBottomSheet, hideBottomSheet, hideAllBottomSheets],
+    [
+      showBottomSheet,
+      hideBottomSheet,
+      hideAllBottomSheets,
+      snapBottomSheetToIndex,
+    ],
   );
 
   return (
@@ -193,8 +215,21 @@ export const GlobalBottomSheetProvider: React.FC<
           borderRadius={config.borderRadius ?? 16}
           showCloseButton={config.showCloseButton ?? true}
           scrollable={config.scrollable ?? true}
+          enableContentPanningGesture={
+            config.enableContentPanningGesture ?? true
+          }
+          keyboardBehavior={config.keyboardBehavior}
+          keyboardBlurBehavior={config.keyboardBlurBehavior}
+          androidKeyboardInputMode={config.androidKeyboardInputMode}
+          enablePanDownToClose={config.enablePanDownToClose ?? true}
+          showBackdrop={config.showBackdrop ?? true}
+          bottomInset={config.bottomInset ?? 0}
+          fixedHeaderContent={config.fixedHeaderContent}
+          defaultPresentIndex={config.defaultPresentIndex}
           onClose={() => handleBottomSheetClose(config.id)}
-          onOpen={config.onOpen}>
+          onOpen={config.onOpen}
+          onChange={config.onChange}
+          onAnimate={config.onAnimate}>
           {config.content}
         </CyDBottomSheet>
       ))}

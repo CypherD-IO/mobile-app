@@ -16,11 +16,7 @@ import AppImages, {
   CYPHER_CARD_IMAGES,
 } from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
-import {
-  CardDesignType,
-  CardProviders,
-  PhysicalCardType,
-} from '../../../constants/enum';
+import { CardProviders, PhysicalCardType } from '../../../constants/enum';
 import WebView from 'react-native-webview';
 import Loading from '../loading';
 import { copyToClipboard as copyToClipboardUtil } from '../../../core/util';
@@ -33,6 +29,7 @@ export default function CardDetailsModal({
   userName,
   webviewUrl,
   manageLimits,
+  loading = false,
 }: {
   isModalVisible: boolean;
   setShowModal: (arg1: boolean) => void;
@@ -46,38 +43,61 @@ export default function CardDetailsModal({
   userName: string;
   webviewUrl?: string;
   manageLimits?: () => void;
+  loading?: boolean;
 }) {
-  const [hideTimer, setHideTimer] = useState(0);
-  const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
   const detailsAutoCloseTime = 60;
+  const [hideTimer, setHideTimer] = useState(detailsAutoCloseTime);
+  const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [webviewLoaded, setWebviewLoaded] = useState(false);
+  const [webviewLoadFailed, setWebviewLoadFailed] = useState(false);
   const { t } = useTranslation();
+
+  const needsWebviewLoad =
+    card.cardProvider === CardProviders.REAP_CARD && !!webviewUrl;
+  const isContentReady =
+    !loading && (!needsWebviewLoad || (webviewLoaded && !webviewLoadFailed));
+
   useEffect(() => {
-    if (isModalVisible) {
+    if (!isModalVisible) {
+      setWebviewLoaded(false);
+      setWebviewLoadFailed(false);
+    }
+  }, [isModalVisible]);
+
+  useEffect(() => {
+    if (isModalVisible && isContentReady) {
       let hideTime = detailsAutoCloseTime;
-      setHideInterval(
-        setInterval(() => {
-          hideTime--;
-          setHideTimer(hideTime);
-        }, 1000),
-      );
+      setHideTimer(hideTime);
+      setTimerStarted(true);
+      const interval = setInterval(() => {
+        hideTime--;
+        setHideTimer(hideTime);
+      }, 1000);
+      setHideInterval(interval);
+      return () => clearInterval(interval);
     }
     if (!isModalVisible) {
       clearInterval(hideInterval);
+      setTimerStarted(false);
+      setHideTimer(detailsAutoCloseTime);
     }
     return () => {
       clearInterval(hideInterval);
     };
-  }, [isModalVisible]);
+  }, [isModalVisible, isContentReady]);
 
   useEffect(() => {
-    if (hideTimer === 0) {
+    if (timerStarted && hideTimer === 0) {
       clearInterval(hideInterval);
       setShowModal(false);
     }
-  }, [hideTimer]);
+  }, [hideTimer, timerStarted]);
 
   const getCardImage = () => {
-    const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-reveal-${card.designId ?? ''}.png`;
+    const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-reveal-${
+      card.designId ?? ''
+    }.png`;
     return {
       uri: cardImage,
     };
@@ -217,6 +237,8 @@ export default function CardDetailsModal({
               allowFileAccess={true}
               allowFileAccessFromFileURLs={true}
               allowUniversalAccessFromFileURLs={true}
+              onLoad={() => setWebviewLoaded(true)}
+              onError={() => setWebviewLoadFailed(true)}
             />
           </CyDView>
         );
@@ -252,18 +274,26 @@ export default function CardDetailsModal({
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center w-full'>
           <CyDText className='text-center text-[14px] text-lightThemeGrayText w-full'>
-            Details will be hidden in {hideTimer} sec
+            {isContentReady
+              ? `Details will be hidden in ${hideTimer} sec`
+              : t('FETCHING_CARD_DETAILS')}
           </CyDText>
         </CyDView>
         <CyDImageBackground
           source={getCardImage()}
           className='w-[380px] h-[246px] rounded-[12px] mt-[8px] self-center'
           resizeMode='stretch'>
-          <RenderCardDetails
-            card={card}
-            cardDetails={cardDetails}
-            webviewUrl={webviewUrl}
-          />
+          {loading ? (
+            <CyDView className='w-full h-full flex items-center justify-center'>
+              <Loading isTransparent={true} />
+            </CyDView>
+          ) : (
+            <RenderCardDetails
+              card={card}
+              cardDetails={cardDetails}
+              webviewUrl={webviewUrl}
+            />
+          )}
         </CyDImageBackground>
 
         <CyDView className='mt-[8px] bg-base40 border-[0.5px] border-base80 px-[6px] py-[8px] rounded-[6px]'>

@@ -85,42 +85,57 @@ export const GetPhysicalCardComponent = ({
         },
       };
 
-  return showGetFirstPvcCard || isMetalFreeCardEligible ? (
-    <CyDView className='flex flex-col mx-4 border border-[1px] border-n40 rounded-[8px] p-4'>
-      <CyDView className='flex flex-row items-center justify-between mb-[6px] gap-2'>
-        <CyDText className='break-words'>{componentContent.title}</CyDText>
-        <CyDView
-          className={clsx(
-            'rounded-full py-[5px] px-[12px] whitespace-nowrap flex-shrink-0',
-            {
-              'bg-green20 text-green400 font-semibold':
-                componentContent.cost === 0,
-              'bg-n30 text-primaryText': componentContent.cost > 0,
-            },
-          )}>
-          <CyDText>
-            {componentContent.cost === 0
-              ? '🎉  Free'
-              : `$${String(componentContent.cost)}`}
+  if (!showGetFirstPvcCard && !isMetalFreeCardEligible) {
+    return null;
+  }
+
+  return (
+    <CyDView className='bg-n0 rounded-[16px] py-[16px]'>
+      <CyDView className='flex flex-col mx-4 rounded-[8px] p-4'>
+        <CyDView className='flex flex-row items-center justify-between mb-[6px] gap-1'>
+          <CyDText className='flex-shrink text-wrap'>
+            {componentContent.title}
           </CyDText>
+          <CyDView
+            className={clsx(
+              'rounded-full py-[5px] px-[12px] whitespace-nowrap flex-shrink-0',
+              {
+                'bg-green20': componentContent.cost === 0,
+                'bg-n30':
+                  typeof componentContent.cost === 'number' &&
+                  componentContent.cost > 0,
+              },
+            )}>
+            <CyDText
+              className={clsx({
+                'text-green400 font-semibold': componentContent.cost === 0,
+                'text-primaryText':
+                  typeof componentContent.cost === 'number' &&
+                  componentContent.cost > 0,
+              })}>
+              {componentContent.cost === 0
+                ? '🎉  Free'
+                : typeof componentContent.cost === 'number'
+                  ? `$${String(componentContent.cost)}`
+                  : '--'}
+            </CyDText>
+          </CyDView>
         </CyDView>
+        <CyDFastImage
+          source={componentContent.image}
+          className='w-full h-[90px] mb-4'
+          resizeMode='contain'
+        />
+        <CyDTouchView
+          className='bg-p150 py-[11px] rounded-full'
+          onPress={() => {
+            componentContent.buttonAction();
+          }}>
+          <CyDText className='text-black text-[16px] font-bold text-center'>
+            {componentContent.buttonText}
+          </CyDText>
+        </CyDTouchView>
       </CyDView>
-      <CyDFastImage
-        source={componentContent.image}
-        className='w-full h-[90px] mb-4'
-        resizeMode='contain'
-      />
-      <CyDTouchView
-        className='bg-p150 py-[11px] rounded-full'
-        onPress={() => {
-          componentContent.buttonAction();
-        }}>
-        <CyDText className='text-black text-[16px] font-bold text-center'>
-          {componentContent.buttonText}
-        </CyDText>
-      </CyDTouchView>
     </CyDView>
-  ) : (
-    <></>
   );
 };

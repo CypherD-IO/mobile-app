@@ -1,6 +1,7 @@
 import {
   CardProviders,
   PhysicalCardType,
+  RC_PHYSICAL_CARD_TRACKING_STATUS,
   ReapTxnStatus,
 } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
@@ -18,6 +19,16 @@ export interface Card {
   cardProvider: CardProviders;
   physicalCardType?: PhysicalCardType;
   designId?: string;
+}
+
+export interface ITrackingDetailsResponse {
+  [key: string]: {
+    last4: string;
+    trackingId: string;
+    trackingStatus: RC_PHYSICAL_CARD_TRACKING_STATUS;
+    trackingMessage?: string;
+    shippingCarrier?: string;
+  };
 }
 
 export interface ICardSubObjectMerchant {
@@ -116,6 +127,44 @@ export interface ICardTransaction {
   };
 }
 
+export interface CardQuoteEvmSwapTransaction {
+  to: string;
+  data: string;
+  value?: string;
+  chainId?: number;
+  gasPrice?: string;
+  gasLimit?: string;
+  gas?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+  from?: string;
+}
+
+export interface CardQuoteEvmSwapProviderData {
+  id?: string;
+  tool?: string;
+}
+
+export interface CardQuoteEvmSwap {
+  provider: string;
+  fromChain: string;
+  toChain: string;
+  chainId: number;
+  sourceAddress: string;
+  destinationAddress: string;
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  toAmount: string;
+  toAmountMin: string;
+  approvalAddress: string;
+  routerAddress: string;
+  eip7702ImplementationAddress?: string;
+  transaction?: CardQuoteEvmSwapTransaction;
+  transactionRequest?: CardQuoteEvmSwapTransaction;
+  providerData?: CardQuoteEvmSwapProviderData;
+}
+
 export interface CardQuoteResponse {
   quoteId: string;
   chain: string;
@@ -147,6 +196,7 @@ export interface CardQuoteResponse {
     requiredAddresses: string[];
     operations: string[];
   };
+  evmSwap?: CardQuoteEvmSwap;
   version: 2;
 }
 
