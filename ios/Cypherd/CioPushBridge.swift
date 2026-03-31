@@ -1,6 +1,5 @@
 import Foundation
 import CioMessagingPushFCM
-import CioDataPipelines
 import FirebaseMessaging
 
 /// React Native native module that exposes Customer.io push token
@@ -14,9 +13,9 @@ class CioPushBridge: NSObject {
   @objc
   static func requiresMainQueueSetup() -> Bool { return false }
 
-  /// Re-forwards the current FCM token to Customer.io via both the
-  /// MessagingPush module and the DataPipelines direct registration.
-  /// Call from JS after CustomerIO.initialize() and CustomerIO.identify().
+  /// Re-forwards the current FCM token to Customer.io via the
+  /// MessagingPush module. Call from JS after CustomerIO.initialize()
+  /// and CustomerIO.identify() have completed.
   @objc(refreshPushToken:rejecter:)
   func refreshPushToken(
     _ resolve: @escaping RCTPromiseResolveBlock,
@@ -29,12 +28,7 @@ class CioPushBridge: NSObject {
       return
     }
 
-    // Route 1: Forward through MessagingPush (the standard FCM path)
     MessagingPush.shared.messaging(messaging, didReceiveRegistrationToken: token)
-
-    // Route 2: Register directly with the DataPipelines SDK as a fallback
-    CustomerIO.shared.registerDeviceToken(token)
-
     resolve(true)
   }
 }
