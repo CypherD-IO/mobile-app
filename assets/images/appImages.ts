@@ -18,6 +18,7 @@ const OPTIMISM = require('./optimism.png');
 const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
 const BRIDGE_LOADER = require('./bridgeLoader.json');
+const MONEY_TRANSFER = require('./moneyTransfer.json');
 const APP_LOGO = require('./appLogo.png');
 const CARD = require('./card.png');
 const ETHEREUM = require('./ethereum.png');
@@ -874,6 +875,7 @@ export const AppImagesMap = {
     INSIGHT_BULB,
     LOADING_SPINNER,
     BRIDGE_LOADER,
+    MONEY_TRANSFER,
     COINS,
     NEW,
     GIFT_BOX_PNG,
@@ -1216,6 +1218,7 @@ enum AppImages {
   INSIGHT_BULB = 'INSIGHT_BULB',
   LOADING_SPINNER = 'LOADING_SPINNER',
   BRIDGE_LOADER = 'BRIDGE_LOADER',
+  MONEY_TRANSFER = 'MONEY_TRANSFER',
   COINS = 'COINS',
   NEW = 'NEW',
   GIFT_BOX_PNG = 'GIFT_BOX_PNG',

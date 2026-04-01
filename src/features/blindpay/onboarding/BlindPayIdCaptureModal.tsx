@@ -126,7 +126,7 @@ function TipsBottomSheet({ onClose }: { onClose: () => void }) {
             <CyDTouchView
               onPress={onClose}
               className='h-[48px] rounded-full bg-[#F7C645] items-center justify-center shadow-sm'>
-              <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+              <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
                 {String(t('CONTINUE', 'Continue'))}
               </CyDText>
             </CyDTouchView>
@@ -242,7 +242,7 @@ export default function BlindPayIdCaptureModal({
         onRequestClose={handleClose}>
         <StatusBar barStyle='dark-content' />
         <CyDView
-          className='flex-1 bg-white'
+          className='flex-1 bg-n0'
           style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
           {/* Header */}
           <CyDView className='flex-row items-center px-[16px] h-[64px]'>
@@ -307,7 +307,7 @@ export default function BlindPayIdCaptureModal({
               onPress={() => {
                 void pickFile();
               }}
-              className='h-[58px] rounded-full border border-n30 bg-white items-center justify-center'>
+              className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
               <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
                 {String(t('BLINDPAY_UPLOAD_PHOTO', 'Upload a photo'))}
               </CyDText>
@@ -317,7 +317,7 @@ export default function BlindPayIdCaptureModal({
                 void openCamera();
               }}
               className='h-[58px] rounded-full bg-[#FBC02D] items-center justify-center'>
-              <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+              <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
                 {String(t('BLINDPAY_OPEN_CAMERA', 'Open Camera'))}
               </CyDText>
             </CyDTouchView>
@@ -426,7 +426,7 @@ export default function BlindPayIdCaptureModal({
               onPress={() => {
                 void takePhoto();
               }}
-              className='h-[58px] rounded-full border border-n30 bg-white items-center justify-center'>
+              className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
               <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
                 {String(t('BLINDPAY_SNAP', 'Snap a photo'))}
               </CyDText>
@@ -511,7 +511,7 @@ export default function BlindPayIdCaptureModal({
         <CyDView className='px-[16px] gap-[16px] pb-[16px]'>
           <CyDTouchView
             onPress={handleRetake}
-            className='h-[58px] rounded-full border border-n30 bg-white items-center justify-center'>
+            className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
             <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
               {String(t('BLINDPAY_RETAKE', 'Retake photo'))}
             </CyDText>
@@ -519,7 +519,7 @@ export default function BlindPayIdCaptureModal({
           <CyDTouchView
             onPress={handleContinue}
             className='h-[58px] rounded-full bg-[#FFDE59] items-center justify-center'>
-            <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+            <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
               {String(t('CONTINUE', 'Continue'))}
             </CyDText>
           </CyDTouchView>

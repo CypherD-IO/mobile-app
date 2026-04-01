@@ -60,7 +60,7 @@ function getGroupedFields(type: string, account: any): FieldSection[] {
     rows: [
       { label: 'Account Name', value: account.name },
       { label: 'Type', value: RAIL_LABELS[type] ?? type },
-      { label: 'Created', value: account.created_at ? new Date(account.created_at).toLocaleDateString() : null },
+      { label: 'Created', value: account.createdAt ? new Date(account.createdAt).toLocaleDateString() : null },
     ],
   };
 
@@ -73,24 +73,24 @@ function getGroupedFields(type: string, account: any): FieldSection[] {
         {
           title: 'Bank Details',
           rows: [
-            { label: 'Beneficiary Name', value: account.beneficiary_name },
-            { label: 'Routing Number', value: account.routing_number },
-            { label: 'Account Number', value: account.account_number },
-            { label: 'Account Type', value: account.account_type },
-            { label: 'Account Class', value: account.account_class },
-            { label: 'Relationship', value: account.recipient_relationship?.replace(/_/g, ' ') },
+            { label: 'Beneficiary Name', value: account.beneficiaryName },
+            { label: 'Routing Number', value: account.routingNumber },
+            { label: 'Account Number', value: account.accountNumber },
+            { label: 'Account Type', value: account.accountType },
+            { label: 'Account Class', value: account.accountClass },
+            { label: 'Relationship', value: account.recipientRelationship?.replace(/_/g, ' ') },
           ],
         },
         {
           title: 'Address',
           rows: [
-            { label: 'Street', value: [account.address_line_1, account.address_line_2].filter(Boolean).join(', ') || null },
+            { label: 'Street', value: [account.addressLine1, account.addressLine2].filter(Boolean).join(', ') || null },
             { label: 'City', value: account.city },
-            { label: 'State', value: account.state_province_region },
+            { label: 'State', value: account.stateProvinceRegion },
             { label: 'Country', value: account.country },
-            { label: 'Postal Code', value: account.postal_code },
-            { label: 'Phone', value: account.phone_number },
-            { label: 'Industry (NAICS)', value: account.business_industry },
+            { label: 'Postal Code', value: account.postalCode },
+            { label: 'Phone', value: account.phoneNumber },
+            { label: 'Industry (NAICS)', value: account.businessIndustry },
           ],
         },
       ];
@@ -98,71 +98,71 @@ function getGroupedFields(type: string, account: any): FieldSection[] {
       return [
         accountInfo,
         { title: 'PIX Details', rows: [
-          { label: 'Beneficiary Name', value: account.beneficiary_name },
-          { label: 'PIX Key', value: account.pix_key },
+          { label: 'Beneficiary Name', value: account.beneficiaryName },
+          { label: 'PIX Key', value: account.pixKey },
         ]},
       ];
     case 'pix_safe':
       return [
         accountInfo,
         { title: 'PIX Safe Details', rows: [
-          { label: 'Beneficiary Name', value: account.beneficiary_name },
-          { label: 'CPF / CNPJ', value: account.pix_safe_cpf_cnpj },
-          { label: 'Bank Code', value: account.pix_safe_bank_code },
-          { label: 'Branch Code', value: account.pix_safe_branch_code },
+          { label: 'Beneficiary Name', value: account.beneficiaryName },
+          { label: 'CPF / CNPJ', value: account.pixSafeCpfCnpj },
+          { label: 'Bank Code', value: account.pixSafeBankCode },
+          { label: 'Branch Code', value: account.pixSafeBranchCode },
         ]},
       ];
     case 'spei_bitso':
       return [
         accountInfo,
         { title: 'SPEI Details', rows: [
-          { label: 'Beneficiary Name', value: account.beneficiary_name },
-          { label: 'Protocol', value: account.spei_protocol },
-          { label: 'CLABE', value: account.spei_clabe },
-          { label: 'Institution Code', value: account.spei_institution_code },
+          { label: 'Beneficiary Name', value: account.beneficiaryName },
+          { label: 'Protocol', value: account.speiProtocol },
+          { label: 'CLABE', value: account.speiClabe },
+          { label: 'Institution Code', value: account.speiInstitutionCode },
         ]},
       ];
     case 'transfers_bitso':
       return [
         accountInfo,
         { title: 'Transfer Details', rows: [
-          { label: 'Beneficiary Name', value: account.beneficiary_name },
-          { label: 'Transfer Type', value: account.transfers_type },
-          { label: 'Account', value: account.transfers_account },
+          { label: 'Beneficiary Name', value: account.beneficiaryName },
+          { label: 'Transfer Type', value: account.transfersType },
+          { label: 'Account', value: account.transfersAccount },
         ]},
       ];
     case 'ach_cop_bitso':
       return [
         accountInfo,
         { title: 'Beneficiary', rows: [
-          { label: 'First Name', value: account.ach_cop_beneficiary_first_name },
-          { label: 'Last Name', value: account.ach_cop_beneficiary_last_name },
-          { label: 'Document Type', value: account.ach_cop_document_type },
-          { label: 'Document ID', value: account.ach_cop_document_id },
-          { label: 'Email', value: account.ach_cop_email },
+          { label: 'First Name', value: account.achCopBeneficiaryFirstName },
+          { label: 'Last Name', value: account.achCopBeneficiaryLastName },
+          { label: 'Document Type', value: account.achCopDocumentType },
+          { label: 'Document ID', value: account.achCopDocumentId },
+          { label: 'Email', value: account.achCopEmail },
         ]},
         { title: 'Bank Account', rows: [
-          { label: 'Bank Code', value: account.ach_cop_bank_code },
-          { label: 'Bank Account', value: account.ach_cop_bank_account },
-          { label: 'Account Type', value: account.account_type },
+          { label: 'Bank Code', value: account.achCopBankCode },
+          { label: 'Bank Account', value: account.achCopBankAccount },
+          { label: 'Account Type', value: account.accountType },
         ]},
       ];
     case 'international_swift':
       return [
         accountInfo,
         { title: 'SWIFT Account', rows: [
-          { label: 'SWIFT / BIC', value: account.swift_code_bic },
-          { label: 'Account Holder', value: account.swift_account_holder_name },
-          { label: 'Account / IBAN', value: account.swift_account_number_iban },
+          { label: 'SWIFT / BIC', value: account.swiftCodeBic },
+          { label: 'Account Holder', value: account.swiftAccountHolderName },
+          { label: 'Account / IBAN', value: account.swiftAccountNumberIban },
         ]},
         { title: 'Bank & Beneficiary', rows: [
-          { label: 'Bank Name', value: account.swift_bank_name },
-          { label: 'Bank Country', value: account.swift_bank_country },
-          { label: 'Beneficiary Address', value: account.swift_beneficiary_address_line_1 },
-          { label: 'Beneficiary City', value: account.swift_beneficiary_city },
-          { label: 'Beneficiary Country', value: account.swift_beneficiary_country },
-          { label: 'Intermediary SWIFT', value: account.swift_intermediary_bank_swift_code_bic },
-          { label: 'Intermediary Bank', value: account.swift_intermediary_bank_name },
+          { label: 'Bank Name', value: account.swiftBankName },
+          { label: 'Bank Country', value: account.swiftBankCountry },
+          { label: 'Beneficiary Address', value: account.swiftBeneficiaryAddressLine1 },
+          { label: 'Beneficiary City', value: account.swiftBeneficiaryCity },
+          { label: 'Beneficiary Country', value: account.swiftBeneficiaryCountry },
+          { label: 'Intermediary SWIFT', value: account.swiftIntermediaryBankSwiftCodeBic },
+          { label: 'Intermediary Bank', value: account.swiftIntermediaryBankName },
         ]},
       ];
     default:
@@ -178,12 +178,12 @@ function GroupedDetailCard({ section }: { section: FieldSection }) {
       <CyDText className='text-[14px] font-normal text-n200 tracking-[-0.6px] leading-[1.45]'>
         {section.title}
       </CyDText>
-      <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+      <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
         {visibleRows.map((row, idx) => (
           <CyDView key={row.label}>
             <CyDView className='px-[16px] min-h-[48px] justify-center'>
               <CyDView className='py-[8px]'>
-                <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>
+                <CyDText className='text-[11px] text-n100 leading-[1.5]'>
                   {row.label}
                 </CyDText>
                 <CyDText className='text-[16px] font-medium text-base400 tracking-[-0.8px]'>
@@ -304,7 +304,7 @@ export default function BlindPayBankAccountDetailScreen() {
         <CyDTouchView
           onPress={handleDelete}
           disabled={deleting}
-          className='rounded-full h-[48px] border border-red-300 bg-red-50 items-center justify-center'>
+          className='rounded-full h-[48px] border border-red-300 bg-red20 items-center justify-center'>
           {deleting ? (
             <ActivityIndicator color='#DC2626' />
           ) : (

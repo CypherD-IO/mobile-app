@@ -64,7 +64,7 @@ export default function BlindPayVirtualAccountDetailScreen() {
     if (!res.isError && res.data) {
       setAccount(res.data);
       setEditToken(res.data.token ?? '');
-      setEditWalletId(res.data.blockchain_wallet_id ?? '');
+      setEditWalletId(res.data.blockchainWalletId ?? '');
     }
     setLoading(false);
   }, [accountId, getVirtualAccount]);
@@ -161,16 +161,16 @@ export default function BlindPayVirtualAccountDetailScreen() {
             <CyDText className={LABEL_CLASS}>
               {String(t('EDIT_DETAILS', 'Edit Details'))}
             </CyDText>
-            <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+            <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
               {/* Banking partner (read-only) */}
               <CyDView className='px-[16px] min-h-[52px] justify-center bg-n20'>
                 <CyDView className='py-[8px]'>
-                  <CyDText className='text-[10px] text-[#B3B9C4] leading-[1.6]'>
+                  <CyDText className='text-[10px] text-n100 leading-[1.6]'>
                     Banking Partner
                   </CyDText>
                   <CyDText className='text-[16px] font-medium text-n200 tracking-[-0.8px]'>
-                    {PARTNER_LABELS[account.banking_partner] ??
-                      account.banking_partner}
+                    {PARTNER_LABELS[account.bankingPartner] ??
+                      account.bankingPartner}
                   </CyDText>
                 </CyDView>
               </CyDView>
@@ -179,11 +179,11 @@ export default function BlindPayVirtualAccountDetailScreen() {
               {/* Token (editable) */}
               <CyDView
                 className={`px-[16px] min-h-[52px] justify-center ${
-                  focusedField === 'token' ? 'bg-white' : ''
+                  focusedField === 'token' ? 'bg-n0' : ''
                 }`}>
                 <CyDView className='py-[8px]'>
                   {editToken ? (
-                    <CyDText className='text-[10px] text-[#B3B9C4] leading-[1.6]'>
+                    <CyDText className='text-[10px] text-n100 leading-[1.6]'>
                       Token
                     </CyDText>
                   ) : null}
@@ -204,11 +204,11 @@ export default function BlindPayVirtualAccountDetailScreen() {
               {/* Wallet ID (editable) */}
               <CyDView
                 className={`px-[16px] min-h-[52px] justify-center ${
-                  focusedField === 'walletId' ? 'bg-white' : ''
+                  focusedField === 'walletId' ? 'bg-n0' : ''
                 }`}>
                 <CyDView className='py-[8px]'>
                   {editWalletId ? (
-                    <CyDText className='text-[10px] text-[#B3B9C4] leading-[1.6]'>
+                    <CyDText className='text-[10px] text-n100 leading-[1.6]'>
                       Blockchain Wallet ID
                     </CyDText>
                   ) : null}
@@ -236,8 +236,8 @@ export default function BlindPayVirtualAccountDetailScreen() {
             <DetailRow
               label={String(t('BANKING_PARTNER', 'Banking Partner'))}
               value={
-                PARTNER_LABELS[account.banking_partner] ??
-                account.banking_partner
+                PARTNER_LABELS[account.bankingPartner] ??
+                account.bankingPartner
               }
             />
             <DetailRow
@@ -246,7 +246,7 @@ export default function BlindPayVirtualAccountDetailScreen() {
             />
             <DetailRow
               label={String(t('WALLET_ID', 'Blockchain Wallet ID'))}
-              value={account.blockchain_wallet_id}
+              value={account.blockchainWalletId}
             />
             <DetailRow
               label={String(t('STATUS', 'Status'))}
@@ -255,20 +255,20 @@ export default function BlindPayVirtualAccountDetailScreen() {
             <DetailRow
               label={String(t('CREATED', 'Created'))}
               value={
-                account.created_at
-                  ? new Date(account.created_at).toLocaleDateString()
+                account.createdAt
+                  ? new Date(account.createdAt).toLocaleDateString()
                   : '—'
               }
             />
 
             {/* Account details (bank-specific) */}
-            {account.account_details &&
-            typeof account.account_details === 'object' ? (
+            {account.accountDetails &&
+            typeof account.accountDetails === 'object' ? (
               <CyDView className='mt-[16px]'>
                 <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px] mb-[8px]'>
                   {String(t('BANK_DETAILS', 'Bank Details'))}
                 </CyDText>
-                {Object.entries(account.account_details).map(
+                {Object.entries(account.accountDetails).map(
                   ([key, val]) => (
                     <DetailRow
                       key={key}
@@ -298,7 +298,7 @@ export default function BlindPayVirtualAccountDetailScreen() {
             className='rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center'>
             <CyDView className='relative items-center justify-center'>
               <CyDText
-                className={`text-[16px] font-semibold text-base400 tracking-[-0.8px] ${
+                className={`text-[16px] font-semibold text-black tracking-[-0.8px] ${
                   saving ? 'opacity-0' : ''
                 }`}>
                 {String(t('SAVE', 'Save'))}
@@ -314,7 +314,7 @@ export default function BlindPayVirtualAccountDetailScreen() {
           <CyDTouchView
             onPress={() => setEditing(true)}
             className='rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center'>
-            <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
+            <CyDText className='text-[16px] font-semibold text-black tracking-[-0.8px]'>
               {String(t('EDIT', 'Edit'))}
             </CyDText>
           </CyDTouchView>

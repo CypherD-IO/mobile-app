@@ -144,7 +144,7 @@ export default function BlindPayLimitsScreen() {
           />
         }>
         {/* Current limits card */}
-        <CyDView className='bg-white border border-n30 rounded-[12px] p-[16px] gap-[12px]'>
+        <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[12px]'>
           <CyDText className='text-[14px] font-semibold text-base400'>
             Current Limits
           </CyDText>
@@ -198,7 +198,7 @@ export default function BlindPayLimitsScreen() {
             </CyDView>
           </CyDView>
         ) : limitIncrease?.status === 'rejected' ? (
-          <CyDView className='bg-red-50 border border-red-200 rounded-[12px] p-[16px] gap-[4px]'>
+          <CyDView className='bg-red20 border border-red-200 rounded-[12px] p-[16px] gap-[4px]'>
             <CyDView className='flex-row items-center gap-[8px]'>
               <CyDMaterialDesignIcons name='close-circle' size={20} className='text-red-700' />
               <CyDText className='text-[14px] font-semibold text-red-700'>
@@ -229,7 +229,7 @@ export default function BlindPayLimitsScreen() {
           }`}>
           <CyDText
             className={`text-[16px] font-bold tracking-[-0.16px] ${
-              hasPending ? 'text-n200' : 'text-base400'
+              hasPending ? 'text-n200' : 'text-black'
             }`}>
             {hasPending ? 'Request Pending' : 'Request Increase'}
           </CyDText>

@@ -126,7 +126,7 @@ function HelpSheet({
             <CyDTouchView
               onPress={onClose}
               className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center mt-[20px]'>
-              <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+              <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
                 Got it
               </CyDText>
             </CyDTouchView>
@@ -158,7 +158,7 @@ function GroupedFieldCard({
   onDropdownOpen: (field: FieldDef) => void;
 }) {
   return (
-    <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+    <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
       {group.fields.map((field, idx) => {
         const isLast = idx === group.fields.length - 1;
         const hasError = !!fieldErrors[field.key];
@@ -176,12 +176,12 @@ function GroupedFieldCard({
               <CyDTouchView
                 onPress={() => onDropdownOpen(field)}
                 className={`px-[16px] min-h-[52px] flex-row items-center justify-between ${
-                  hasError ? 'bg-red-50' : ''
+                  hasError ? 'bg-red20' : ''
                 }`}>
                 <CyDView className='flex-1 py-[8px]'>
                   {hasValue ? (
                     <>
-                      <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>
+                      <CyDText className='text-[11px] text-n100 leading-[1.5]'>
                         {displayLabel}
                       </CyDText>
                       <CyDText className='text-[16px] font-medium text-base400 tracking-[-0.8px]'>
@@ -189,7 +189,7 @@ function GroupedFieldCard({
                       </CyDText>
                     </>
                   ) : (
-                    <CyDText className='text-[16px] font-normal text-[#A6AEBB] tracking-[-0.8px]'>
+                    <CyDText className='text-[16px] font-normal text-n70 tracking-[-0.8px]'>
                       {displayLabel}
                     </CyDText>
                   )}
@@ -197,7 +197,7 @@ function GroupedFieldCard({
                 <CyDMaterialDesignIcons
                   name='chevron-down'
                   size={20}
-                  className='text-[#A6AEBB]'
+                  className='text-n70'
                 />
               </CyDTouchView>
               {hasError ? (
@@ -214,11 +214,11 @@ function GroupedFieldCard({
           <CyDView key={field.key}>
             <CyDView
               className={`px-[16px] min-h-[52px] justify-center ${
-                hasError ? 'bg-red-50' : ''
+                hasError ? 'bg-red20' : ''
               }`}>
               <CyDView className='py-[8px]'>
                 {hasValue ? (
-                  <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>
+                  <CyDText className='text-[11px] text-n100 leading-[1.5]'>
                     {displayLabel}
                   </CyDText>
                 ) : null}
@@ -442,7 +442,7 @@ export default function BlindPayAddBankAccountScreen() {
               </CyDText>
               <CyDTouchView
                 onPress={() => setRailPickerOpen(true)}
-                className={`bg-white border ${
+                className={`bg-n0 border ${
                   fieldErrors.type ? 'border-errorText' : 'border-n40'
                 } rounded-[8px] px-[12px] h-[48px] flex-row items-center justify-between`}>
                 {selectedRail ? (
@@ -455,7 +455,7 @@ export default function BlindPayAddBankAccountScreen() {
                     </CyDText>
                   </CyDView>
                 ) : (
-                  <CyDText className='text-[16px] font-medium text-[#A6AEBB] tracking-[-0.8px]'>
+                  <CyDText className='text-[16px] font-medium text-n70 tracking-[-0.8px]'>
                     {String(
                       t('SELECT_METHOD', 'Select payment method'),
                     )}
@@ -480,7 +480,7 @@ export default function BlindPayAddBankAccountScreen() {
                 {String(t('ACCOUNT_NAME', 'Account Name'))}
               </CyDText>
               <CyDView
-                className={`bg-white border ${
+                className={`bg-n0 border ${
                   fieldErrors.name
                     ? 'border-errorText'
                     : focusedField === 'name'
@@ -551,7 +551,7 @@ export default function BlindPayAddBankAccountScreen() {
           <CyDView
             className='h-full rounded-full bg-base400'
             style={{
-              width: `${(((wizardStep + 1) / totalSteps) * 100).toFixed(1)}%`,
+              width: `${(((wizardStep + 1) / totalSteps) * 100).toFixed(1)}%` as any,
             }}
           />
         </CyDView>
@@ -565,7 +565,7 @@ export default function BlindPayAddBankAccountScreen() {
           className='rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center'>
           <CyDView className='relative items-center justify-center'>
             <CyDText
-              className={`text-[16px] font-semibold text-base400 tracking-[-0.8px] ${
+              className={`text-[16px] font-semibold text-black tracking-[-0.8px] ${
                 submitting ? 'opacity-0' : ''
               }`}>
               {isLastStep

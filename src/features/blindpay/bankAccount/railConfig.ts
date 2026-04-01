@@ -212,18 +212,18 @@ export const RAIL_TYPES: RailDef[] = [
       {
         title: 'Beneficiary Details',
         fields: [
-          { key: 'achCopBeneficiaryFirstName', label: 'First Name', placeholder: 'First name', type: 'text', required: true },
-          { key: 'achCopBeneficiaryLastName', label: 'Last Name', placeholder: 'Last name', type: 'text', required: true },
+          { key: 'achCopBeneficiaryFirstName', label: 'First Name', placeholder: 'First name', type: 'text', required: true, maxLength: 128 },
+          { key: 'achCopBeneficiaryLastName', label: 'Last Name', placeholder: 'Last name', type: 'text', required: true, maxLength: 128 },
           { key: 'achCopDocumentType', label: 'Document Type', placeholder: 'Select type', type: 'dropdown', required: true, options: [{ value: 'CC', label: 'CC' }, { value: 'CE', label: 'CE' }, { value: 'NIT', label: 'NIT' }, { value: 'PASS', label: 'PASS' }, { value: 'PEP', label: 'PEP' }] },
-          { key: 'achCopDocumentId', label: 'Document ID', placeholder: 'Document number', type: 'text', required: true },
-          { key: 'achCopEmail', label: 'Email', placeholder: 'email@example.com', type: 'text', required: true, keyboardType: 'email-address', autoCapitalize: 'none' },
+          { key: 'achCopDocumentId', label: 'Document ID', placeholder: 'Document number', type: 'text', required: true, maxLength: 20 },
+          { key: 'achCopEmail', label: 'Email', placeholder: 'email@example.com', type: 'text', required: true, keyboardType: 'email-address', autoCapitalize: 'none', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, regexMessage: 'Enter a valid email' },
         ],
       },
       {
         title: 'Bank Account',
         fields: [
-          { key: 'achCopBankCode', label: 'Bank Code', placeholder: 'Bank code', type: 'text', required: true },
-          { key: 'achCopBankAccount', label: 'Bank Account', placeholder: 'Account number', type: 'text', required: true },
+          { key: 'achCopBankCode', label: 'Bank Code', placeholder: 'Bank code', type: 'text', required: true, maxLength: 10 },
+          { key: 'achCopBankAccount', label: 'Bank Account', placeholder: 'Account number', type: 'text', required: true, maxLength: 20 },
           { key: 'accountType', label: 'Account Type', placeholder: 'Select type', type: 'dropdown', required: true, options: ACCOUNT_TYPE_OPTIONS },
         ],
       },
