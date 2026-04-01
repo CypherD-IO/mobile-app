@@ -451,7 +451,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
               <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
                 Who is eligible?
               </CyDText>
-              <CyDText className='text-[14px] font-medium text-[#C99200] leading-[1.5] tracking-[-0.4px]'>
+              <CyDText className='text-[14px] font-medium text-n200 leading-[1.5] tracking-[-0.4px]'>
                 Only US individuals and sole proprietors
               </CyDText>
               <CyDText className='text-[13px] font-normal text-n200 leading-[1.5] tracking-[-0.4px]'>
@@ -472,7 +472,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
                 </CyDView>
               ))}
               <CyDView className='bg-[#FDF3D8] rounded-[8px] p-[10px] mt-[4px]'>
-                <CyDText className='text-[12px] font-medium text-[#846000] leading-[1.5]'>
+                <CyDText className='text-[12px] font-medium text-n200 leading-[1.5]'>
                   Salaried employees receiving personal transfers are not eligible for a virtual account.
                 </CyDText>
               </CyDView>
@@ -648,7 +648,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
                   className={`rounded-[16px] overflow-hidden border ${
                     doc.error || uploadErrors[doc.key] ? 'border-errorText' : 'border-transparent'
                   }`}>
-                  <CyDView className='bg-[#FFF8E1] items-center py-[20px] gap-[6px]'>
+                  <CyDView className='bg-n10 items-center py-[20px] gap-[6px]'>
                     {uploadErrors[doc.key] ? (
                       <CyDView className='w-[48px] h-[48px] bg-red200 rounded-[12px] items-center justify-center'>
                         <CyDMaterialDesignIcons name='alert-circle-outline' size={24} className='text-white' />
@@ -662,7 +662,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
                         <CyDMaterialDesignIcons name='file-document-outline' size={24} className='text-white' />
                       </CyDView>
                     )}
-                    <CyDText className='text-[14px] font-semibold text-[#C99200] tracking-[-0.6px]'>
+                    <CyDText className='text-[14px] font-semibold text-n200 tracking-[-0.6px]'>
                       {doc.label}
                     </CyDText>
                   </CyDView>
@@ -672,11 +672,11 @@ export default function BlindPayCreateVirtualAccountScreen() {
                     <CyDMaterialDesignIcons
                       name={uploadErrors[doc.key] ? 'alert-circle-outline' : 'information-outline'}
                       size={14}
-                      className={uploadErrors[doc.key] ? 'text-red-600' : 'text-[#C99200]'}
+                      className={uploadErrors[doc.key] ? 'text-red-600' : 'text-n200'}
                     />
                     <CyDText
                       className={`text-[12px] font-medium tracking-[-0.4px] flex-1 ${
-                        uploadErrors[doc.key] ? 'text-red-600' : 'text-[#C99200]'
+                        uploadErrors[doc.key] ? 'text-red-600' : 'text-n200'
                       }`}
                       numberOfLines={1}>
                       {uploadErrors[doc.key] || (doc.url ? 'Uploaded' : 'Tap to upload')}

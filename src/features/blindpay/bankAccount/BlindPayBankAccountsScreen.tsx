@@ -154,7 +154,7 @@ export default function BlindPayBankAccountsScreen() {
         className='px-[16px] pt-[12px] border-t border-n40'
         style={{ paddingBottom: Math.max(8, insets.bottom) }}>
         <CyDTouchView
-          onPress={() => navigation.navigate(screenTitle.BLINDPAY_ADD_RECIPIENT)}
+          onPress={() => navigation.navigate(screenTitle.BLINDPAY_ADD_BANK_ACCOUNT)}
           className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center'>
           <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
             Add Bank Account

@@ -787,6 +787,43 @@ export default function OptionsHub() {
 
           <CyDView className='mt-[44px]'>
             <CyDText className='text-[12px] text-n200 tracking-[2px]'>
+              {'BANK TRANSFERS'}
+            </CyDText>
+
+            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
+              <RenderOptions
+                isLoading={false}
+                apiDependent={false}
+                icon={'wallet' as IconNames}
+                title='Bank Accounts'
+                onPress={() => navigation.navigate(screenTitle.BLINDPAY_BANK_ACCOUNTS)}
+              />
+              <RenderOptions
+                isLoading={false}
+                apiDependent={false}
+                icon={'card' as IconNames}
+                title='Virtual Accounts'
+                onPress={() => navigation.navigate(screenTitle.BLINDPAY_VIRTUAL_ACCOUNTS)}
+              />
+              <RenderOptions
+                isLoading={false}
+                apiDependent={false}
+                icon={'arrow-up-right' as IconNames}
+                title='Limit Increase'
+                onPress={() => navigation.navigate(screenTitle.BLINDPAY_LIMITS)}
+              />
+              <RenderOptions
+                isLoading={false}
+                apiDependent={false}
+                icon={'coins-stacked' as IconNames}
+                title='Transactions'
+                onPress={() => navigation.navigate(screenTitle.BLINDPAY_PAYOUT_HISTORY)}
+              />
+            </CyDView>
+          </CyDView>
+
+          <CyDView className='mt-[44px]'>
+            <CyDText className='text-[12px] text-n200 tracking-[2px]'>
               {'ACCOUNT & SECURITY'}
             </CyDText>
 

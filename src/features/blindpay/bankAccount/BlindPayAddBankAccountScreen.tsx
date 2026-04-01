@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Keyboard, Modal, ScrollView } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -33,69 +33,7 @@ const LABEL_CLASS =
   'text-[14px] font-normal text-n200 tracking-[-0.6px] leading-[1.45]';
 const PLACEHOLDER_COLOR = '#A6AEBB';
 
-// ── Dropdown bottom sheet ────────────────────────────────────────
-function DropdownSheet({
-  visible,
-  title,
-  options,
-  selected,
-  onSelect,
-  onClose,
-}: {
-  visible: boolean;
-  title: string;
-  options: { value: string; label: string }[];
-  selected: string;
-  onSelect: (value: string) => void;
-  onClose: () => void;
-}) {
-  if (!visible) return null;
-  return (
-    <Modal
-      visible
-      transparent
-      animationType='fade'
-      onRequestClose={onClose}>
-      <CyDView className='flex-1 justify-end bg-black/40'>
-        <CyDTouchView className='flex-1' onPress={onClose} />
-        <Animated.View entering={SlideInDown.duration(300)}>
-          <CyDView className='bg-n0 rounded-t-[24px] px-[16px] pb-[32px]'>
-            <CyDView className='items-center pt-[12px] pb-[16px]'>
-              <CyDView className='w-[32px] h-[4px] bg-[#C2C7D0] rounded-[5px]' />
-            </CyDView>
-            <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] mb-[8px]'>
-              {title}
-            </CyDText>
-            <ScrollView
-              style={{ maxHeight: 300 }}
-              showsVerticalScrollIndicator={false}>
-              {options.map(opt => (
-                <CyDTouchView
-                  key={opt.value}
-                  onPress={() => {
-                    onSelect(opt.value);
-                    onClose();
-                  }}
-                  className='py-[14px] border-b border-n40 flex-row items-center justify-between'>
-                  <CyDText className='text-[16px] font-medium text-base400'>
-                    {opt.label}
-                  </CyDText>
-                  {selected === opt.value ? (
-                    <CyDMaterialDesignIcons
-                      name='check'
-                      size={20}
-                      className='text-[#FBC02D]'
-                    />
-                  ) : null}
-                </CyDTouchView>
-              ))}
-            </ScrollView>
-          </CyDView>
-        </Animated.View>
-      </CyDView>
-    </Modal>
-  );
-}
+import useBlindPayDropdown from '../components/BlindPayDropdownSheet';
 
 // ── Help bottom sheet ────────────────────────────────────────────
 function HelpSheet({
@@ -265,17 +203,16 @@ export default function BlindPayAddBankAccountScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
   const { addBankAccount } = useBlindPayApi();
+  const { openDropdown: openDropdownSheet } = useBlindPayDropdown();
 
   // Step 0 = rail + account name, step 1..N = rail-specific field groups
   const [wizardStep, setWizardStep] = useState(0);
   const [selectedRail, setSelectedRail] = useState<RailDef | null>(null);
-  const [railPickerOpen, setRailPickerOpen] = useState(false);
   const [accountName, setAccountName] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<FieldDef | null>(null);
   const [showHelp, setShowHelp] = useState(false);
 
   // Total steps: 1 (rail+name) + number of rail step groups
@@ -441,7 +378,24 @@ export default function BlindPayAddBankAccountScreen() {
                 {String(t('PAYMENT_METHOD', 'Payment Method'))}
               </CyDText>
               <CyDTouchView
-                onPress={() => setRailPickerOpen(true)}
+                onPress={() => openDropdownSheet({
+                  title: 'Transfer method',
+                  options: RAIL_TYPES.filter(r => !r.comingSoon).map(r => ({
+                    value: r.type,
+                    label: r.label,
+                    icon: r.flag,
+                  })),
+                  selected: selectedRail?.type ?? '',
+                  onSelect: value => {
+                    const rail = RAIL_TYPES.find(r => r.type === value);
+                    if (rail) {
+                      setSelectedRail(rail);
+                      setFormValues({});
+                      setFieldErrors({});
+                      setWizardStep(0);
+                    }
+                  },
+                })}
                 className={`bg-n0 border ${
                   fieldErrors.type ? 'border-errorText' : 'border-n40'
                 } rounded-[8px] px-[12px] h-[48px] flex-row items-center justify-between`}>
@@ -537,7 +491,16 @@ export default function BlindPayAddBankAccountScreen() {
                 }));
               }
             }}
-            onDropdownOpen={setOpenDropdown}
+            onDropdownOpen={(field: FieldDef) => {
+              if (field.options) {
+                openDropdownSheet({
+                  title: field.label,
+                  options: field.options,
+                  selected: formValues[field.key] ?? '',
+                  onSelect: value => setField(field.key, value),
+                });
+              }
+            }}
           />
         ) : null}
       </CyDKeyboardAwareScrollView>
@@ -548,12 +511,14 @@ export default function BlindPayAddBankAccountScreen() {
         style={{ paddingBottom: Math.max(8, insets.bottom) }}>
         {/* Progress bar */}
         <CyDView className='flex-1 h-[6px] rounded-full bg-n40 overflow-hidden'>
-          <CyDView
-            className='h-full rounded-full bg-base400'
-            style={{
-              width: `${(((wizardStep + 1) / totalSteps) * 100).toFixed(1)}%` as any,
-            }}
-          />
+          {wizardStep > 0 ? (
+            <CyDView
+              className='h-full rounded-full bg-base400'
+              style={{
+                width: `${(((wizardStep + 1) / totalSteps) * 100).toFixed(1)}%` as any,
+              }}
+            />
+          ) : null}
         </CyDView>
 
         {/* Action button */}
@@ -580,41 +545,6 @@ export default function BlindPayAddBankAccountScreen() {
           </CyDView>
         </CyDTouchView>
       </CyDView>
-
-      {/* Rail type picker */}
-      <DropdownSheet
-        visible={railPickerOpen}
-        title={String(t('SELECT_METHOD', 'Payment Method'))}
-        options={RAIL_TYPES.filter(r => !r.comingSoon).map(r => ({
-          value: r.type,
-          label: `${r.flag}  ${r.label}`,
-        }))}
-        selected={selectedRail?.type ?? ''}
-        onSelect={value => {
-          const rail = RAIL_TYPES.find(r => r.type === value);
-          if (rail) {
-            setSelectedRail(rail);
-            setFormValues({});
-            setFieldErrors({});
-            setWizardStep(0);
-          }
-        }}
-        onClose={() => setRailPickerOpen(false)}
-      />
-
-      {/* Dynamic field dropdowns */}
-      {openDropdown?.options ? (
-        <DropdownSheet
-          visible
-          title={openDropdown.label}
-          options={openDropdown.options}
-          selected={formValues[openDropdown.key] ?? ''}
-          onSelect={value => {
-            setField(openDropdown.key, value);
-          }}
-          onClose={() => setOpenDropdown(null)}
-        />
-      ) : null}
 
       <HelpSheet
         visible={showHelp}

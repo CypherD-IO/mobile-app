@@ -139,7 +139,7 @@ export default function BlindPayPayoutHistoryScreen() {
             {amount}
           </CyDText>
           <CyDText className={`text-[11px] font-medium capitalize ${
-            txStatus === 'completed' ? 'text-green-600' : txStatus === 'on_hold' ? 'text-[#C99200]' : txStatus === 'failed' ? 'text-red-500' : 'text-n200'
+            txStatus === 'completed' ? 'text-green-600' : txStatus === 'on_hold' ? 'text-n200' : txStatus === 'failed' ? 'text-red-500' : 'text-n200'
           }`}>
             {txStatus.replace(/_/g, ' ')}
           </CyDText>

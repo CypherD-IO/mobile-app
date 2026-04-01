@@ -175,12 +175,12 @@ export default function BlindPayLimitsScreen() {
         {hasPending ? (
           <CyDView className='bg-[#FDF3D8] border border-[#F7C645] rounded-[12px] p-[16px] gap-[8px]'>
             <CyDView className='flex-row items-center gap-[8px]'>
-              <CyDMaterialDesignIcons name='clock-outline' size={20} className='text-[#846000]' />
-              <CyDText className='text-[14px] font-semibold text-[#846000]'>
+              <CyDMaterialDesignIcons name='clock-outline' size={20} className='text-n200' />
+              <CyDText className='text-[14px] font-semibold text-n200'>
                 Limit increase pending
               </CyDText>
             </CyDView>
-            <CyDText className='text-[13px] font-medium text-[#846000] leading-[1.45]'>
+            <CyDText className='text-[13px] font-medium text-n200 leading-[1.45]'>
               Requested on{' '}
               {limitIncrease.requestedAt
                 ? new Date(limitIncrease.requestedAt).toLocaleDateString()

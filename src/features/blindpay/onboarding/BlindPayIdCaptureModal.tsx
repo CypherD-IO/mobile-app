@@ -271,7 +271,7 @@ export default function BlindPayIdCaptureModal({
 
             {/* Card */}
             <CyDView className='mt-[24px] rounded-[16px] overflow-hidden'>
-              <CyDView className='bg-[#FFF8E1] items-center py-[32px] gap-[8px]'>
+              <CyDView className='bg-n10 items-center py-[32px] gap-[8px]'>
                 <CyDView className='w-[56px] h-[56px] bg-[#FBC02D] rounded-[14px] items-center justify-center'>
                   <CyDMaterialDesignIcons
                     name='card-account-details-outline'
@@ -279,7 +279,7 @@ export default function BlindPayIdCaptureModal({
                     className='text-white'
                   />
                 </CyDView>
-                <CyDText className='text-[16px] font-semibold text-[#C99200] tracking-[-0.8px]'>
+                <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
                   {sideLabel}
                 </CyDText>
               </CyDView>
@@ -287,9 +287,9 @@ export default function BlindPayIdCaptureModal({
                 <CyDMaterialDesignIcons
                   name='information-outline'
                   size={18}
-                  className='text-[#C99200]'
+                  className='text-n200'
                 />
-                <CyDText className='text-[13px] font-medium text-[#C99200] tracking-[-0.4px] flex-1'>
+                <CyDText className='text-[13px] font-medium text-n200 tracking-[-0.4px] flex-1'>
                   {String(
                     t(
                       'BLINDPAY_CAPTURE_HINT',
