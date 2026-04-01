@@ -21,6 +21,8 @@ import {
 } from '../../styles/tailwindComponents';
 import { screenTitle } from '../../constants';
 import { navigateToBlindPayKycStack } from './navigateToBlindPayKyc';
+import BlindPaySendMoneyScreen from './BlindPaySendMoneyScreen';
+import BlindPayFxPreviewScreen from './BlindPayFxPreviewScreen';
 import useBlindPayApi from './api';
 import { BLINDPAY_FIGMA_ASSETS } from './figmaAssets';
 import { showToast } from '../../containers/utilities/toastUtility';
@@ -76,7 +78,7 @@ function KycInProgressScreen({
           <CyDView className='border border-n40 rounded-[8px] px-[12px] py-[12px] flex-row items-center justify-between'>
             <CyDView className='flex-row items-center gap-[10px]'>
               <CyDView className='w-[10px] h-[10px] rounded-full bg-[#ECAB00]' />
-              <CyDText className='text-[20px] font-medium text-[#C99200] tracking-[-1px]'>
+              <CyDText className='text-[20px] font-medium text-n200 tracking-[-1px]'>
                 {String(t('BLINDPAY_IN_PROGRESS', 'In progress'))}
               </CyDText>
             </CyDView>
@@ -225,7 +227,7 @@ function KycVerifyingScreen({
           <CyDView className='border border-n40 rounded-[8px] px-[12px] py-[12px] flex-row items-center justify-between'>
             <CyDView className='flex-row items-center gap-[10px]'>
               <CyDView className='w-[10px] h-[10px] rounded-full bg-[#ECAB00]' />
-              <CyDText className='text-[20px] font-medium text-[#C99200] tracking-[-1px]'>
+              <CyDText className='text-[20px] font-medium text-n200 tracking-[-1px]'>
                 {String(t('BLINDPAY_IN_PROGRESS', 'In progress'))}
               </CyDText>
             </CyDView>
@@ -552,7 +554,7 @@ function DashboardScreen({
               <CyDMaterialDesignIcons
                 name={item.icon}
                 size={22}
-                className='text-[#846000]'
+                className='text-n200'
               />
             </CyDView>
             <CyDView className='flex-1'>
@@ -611,7 +613,7 @@ const StepRow = ({ step, title, subtitle, imageUri }: StepRowProps) => (
 
 // ── Main screen ─────────────────────────────────────────────────
 
-type ScreenPhase = 'loading' | 'onboarding' | 'in_progress' | 'verifying' | 'rejected' | 'approved' | 'dashboard';
+type ScreenPhase = 'loading' | 'onboarding' | 'in_progress' | 'verifying' | 'rejected' | 'approved' | 'dashboard' | 'send_money' | 'fx_preview';
 
 export default function BlindPayOnboardingScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -676,21 +678,23 @@ export default function BlindPayOnboardingScreen() {
           }
           const bp = result.data?.blindpay;
           const phase = resolvePhase(bp);
-          if (phase === 'approved') {
-            setScreenPhase('dashboard');
-            return;
-          }
           if (phase === 'rejected') {
             setRejectedReason(extractWarnings(bp));
           }
 
-          // No receiver and no TOS → show FX preview
+          // No receiver and no TOS → show FX preview inline
           if (phase === 'onboarding') {
             const hasAcceptedTos = Boolean(bp?.tosId) || Boolean(bp?.tosAcceptedAt);
             if (!hasAcceptedTos) {
-              navigation.navigate(screenTitle.BLINDPAY_FX_PREVIEW);
+              setScreenPhase('fx_preview');
               return;
             }
+          }
+
+          // KYC approved → show send money inline
+          if (phase === 'approved') {
+            setScreenPhase('send_money');
+            return;
           }
 
           setScreenPhase(phase);
@@ -799,8 +803,8 @@ export default function BlindPayOnboardingScreen() {
         return;
       }
 
-      // No TOS accepted yet — show FX preview instead of going directly to TOS
-      navigation.navigate(screenTitle.BLINDPAY_FX_PREVIEW);
+      // No TOS accepted yet — show FX preview inline
+      setScreenPhase('fx_preview');
       return;
 
     } catch (e) {
@@ -809,6 +813,14 @@ export default function BlindPayOnboardingScreen() {
       setSubmitting(false);
     }
   };
+
+  // Render inline screens (no navigation transition)
+  if (screenPhase === 'send_money') {
+    return <BlindPaySendMoneyScreen />;
+  }
+  if (screenPhase === 'fx_preview') {
+    return <BlindPayFxPreviewScreen />;
+  }
 
   return (
     <CyDSafeAreaView className='flex-1 bg-n0' edges={['top']}>
@@ -820,7 +832,7 @@ export default function BlindPayOnboardingScreen() {
 
       {screenPhase === 'loading' ? (
         <CyDView className='flex-1 items-center justify-center'>
-          <ActivityIndicator size='large' />
+          <ActivityIndicator size='large' color='#FBC02D' />
         </CyDView>
       ) : screenPhase === 'in_progress' ? (
         <KycInProgressScreen

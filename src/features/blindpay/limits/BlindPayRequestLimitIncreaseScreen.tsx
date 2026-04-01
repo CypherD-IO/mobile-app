@@ -394,7 +394,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
               className={`rounded-[16px] overflow-hidden border ${
                 errors.docFile || uploadError ? 'border-errorText' : 'border-transparent'
               }`}>
-              <CyDView className='bg-[#FFF8E1] items-center py-[20px] gap-[6px]'>
+              <CyDView className='bg-n10 items-center py-[20px] gap-[6px]'>
                 {uploadError ? (
                   <CyDView className='w-[48px] h-[48px] bg-red200 rounded-[12px] items-center justify-center'>
                     <CyDMaterialDesignIcons name='alert-circle-outline' size={24} className='text-white' />
@@ -408,7 +408,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
                     <CyDMaterialDesignIcons name='file-document-outline' size={24} className='text-white' />
                   </CyDView>
                 )}
-                <CyDText className='text-[14px] font-semibold text-[#C99200] tracking-[-0.6px]'>
+                <CyDText className='text-[14px] font-semibold text-n200 tracking-[-0.6px]'>
                   Supporting Document
                 </CyDText>
               </CyDView>
@@ -419,11 +419,11 @@ export default function BlindPayRequestLimitIncreaseScreen() {
                 <CyDMaterialDesignIcons
                   name={uploadError ? 'alert-circle-outline' : 'information-outline'}
                   size={14}
-                  className={uploadError ? 'text-red-600' : 'text-[#C99200]'}
+                  className={uploadError ? 'text-red-600' : 'text-n200'}
                 />
                 <CyDText
                   className={`text-[12px] font-medium tracking-[-0.4px] flex-1 ${
-                    uploadError ? 'text-red-600' : 'text-[#C99200]'
+                    uploadError ? 'text-red-600' : 'text-n200'
                   }`}
                   numberOfLines={1}>
                   {uploadError || (docUrl ? 'Uploaded' : 'Tap to upload')}

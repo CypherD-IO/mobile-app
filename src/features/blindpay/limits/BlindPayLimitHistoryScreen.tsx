@@ -180,9 +180,9 @@ export default function BlindPayLimitHistoryScreen() {
                   <CyDMaterialDesignIcons
                     name='open-in-new'
                     size={14}
-                    className='text-[#846000]'
+                    className='text-n200'
                   />
-                  <CyDText className='text-[12px] font-medium text-[#846000] tracking-[-0.4px]'>
+                  <CyDText className='text-[12px] font-medium text-n200 tracking-[-0.4px]'>
                     View Document
                   </CyDText>
                 </CyDTouchView>

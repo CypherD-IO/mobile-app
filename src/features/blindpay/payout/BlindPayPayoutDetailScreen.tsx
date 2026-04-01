@@ -125,12 +125,20 @@ function DetailPill({ label, value }: { label: string; value: string }) {
 }
 
 /** Step icon based on step value */
-function StepIcon({ step, stepStatus }: { step: string; stepStatus?: string | null }) {
+function StepIcon({ step, stepStatus, allCompleted }: { step: string; stepStatus?: string | null; allCompleted?: boolean }) {
   // completed + failed → red X
   if (step === 'completed' && stepStatus === 'failed') {
     return (
       <CyDView className='w-[20px] h-[20px] rounded-full bg-red-500 items-center justify-center'>
         <CyDMaterialDesignIcons name='close' size={14} className='text-white' />
+      </CyDView>
+    );
+  }
+  // completed + all steps done → green check
+  if (step === 'completed' && allCompleted) {
+    return (
+      <CyDView className='w-[20px] h-[20px] rounded-full bg-[#20804C] items-center justify-center'>
+        <CyDMaterialDesignIcons name='check' size={14} className='text-white' />
       </CyDView>
     );
   }
@@ -167,9 +175,9 @@ function StepIcon({ step, stepStatus }: { step: string; stepStatus?: string | nu
 }
 
 // ── Timeline step ──
-function TimelineStep({ title, date, step, stepStatus, isLast, content }: {
+function TimelineStep({ title, date, step, stepStatus, isLast, content, allCompleted }: {
   title: string; date?: string | null; step: string; stepStatus?: string | null;
-  isLast: boolean; content?: React.ReactNode;
+  isLast: boolean; content?: React.ReactNode; allCompleted?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const hasContent = !!content;
@@ -180,7 +188,7 @@ function TimelineStep({ title, date, step, stepStatus, isLast, content }: {
     <CyDView className='flex-row gap-[10px]'>
       {/* Icon + line */}
       <CyDView className='items-center' style={{ width: 20 }}>
-        <StepIcon step={step} stepStatus={stepStatus} />
+        <StepIcon step={step} stepStatus={stepStatus} allCompleted={allCompleted} />
         {!isLast ? <CyDView className='w-[1px] flex-1 bg-n50 my-[4px]' style={{ minHeight: 20 }} /> : null}
       </CyDView>
 
@@ -202,10 +210,10 @@ function TimelineStep({ title, date, step, stepStatus, isLast, content }: {
         {/* Expand toggle */}
         {hasContent && isActive ? (
           <CyDTouchView onPress={() => setExpanded(!expanded)} className='flex-row items-center'>
-            <CyDText className='text-[12px] font-bold text-[#0070C0] underline'>
+            <CyDText className='text-[12px] font-bold text-p200 underline'>
               {expanded ? 'Hide details' : 'View details'}
             </CyDText>
-            <CyDMaterialDesignIcons name={expanded ? 'chevron-up' : 'chevron-right'} size={16} className='text-[#0070C0]' />
+            <CyDMaterialDesignIcons name={expanded ? 'chevron-up' : 'chevron-right'} size={16} className='text-p200' />
           </CyDTouchView>
         ) : null}
 
@@ -296,8 +304,8 @@ export default function BlindPayPayoutDetailScreen() {
       </CyDTouchView>
       {explorerBase ? (
         <CyDTouchView onPress={() => void Linking.openURL(explorerBase + txHash)} className='flex-row items-center gap-[2px]'>
-          <CyDText className='text-[11px] font-bold text-[#0070C0] underline'>View on explorer</CyDText>
-          <CyDMaterialDesignIcons name='open-in-new' size={12} className='text-[#0070C0]' />
+          <CyDText className='text-[11px] font-bold text-p200 underline'>View on explorer</CyDText>
+          <CyDMaterialDesignIcons name='open-in-new' size={12} className='text-p200' />
         </CyDTouchView>
       ) : null}
     </CyDView>
@@ -369,7 +377,7 @@ export default function BlindPayPayoutDetailScreen() {
 
         {/* On-hold banner */}
         {(overallStatus === 'on_hold' || payout.status === 'on_hold') ? (
-          <CyDView className='mx-[16px] mt-[12px] bg-[#FFF9EA] border border-n30 rounded-[12px] p-[16px] gap-[16px]'>
+          <CyDView className='mx-[16px] mt-[12px] bg-n10 border border-n30 rounded-[12px] p-[16px] gap-[16px]'>
             <CyDView className='flex-row items-center gap-[8px]'>
               <CyDMaterialDesignIcons name='information-outline' size={24} className='text-base400' />
               <CyDText className='text-[14px] font-medium text-base400 tracking-[-0.28px] flex-1'>
@@ -385,7 +393,7 @@ export default function BlindPayPayoutDetailScreen() {
                   });
                 },
               })}
-              className='bg-[#F9D26C] rounded-full h-[36px] items-center justify-center'>
+              className='bg-p50 rounded-full h-[36px] items-center justify-center'>
               <CyDText className='text-[14px] font-semibold text-black tracking-[-0.28px]'>
                 Review & Upload files
               </CyDText>
@@ -472,6 +480,7 @@ export default function BlindPayPayoutDetailScreen() {
               date={trackingTx?.completedAt ?? payout.createdAt}
               isLast={false}
               content={step1Content}
+              allCompleted={overallStatus === 'completed'}
             />
 
             {/* Documents step (if applicable) */}
@@ -482,6 +491,7 @@ export default function BlindPayPayoutDetailScreen() {
                 stepStatus={null}
                 date={trackingDocs.completedAt}
                 isLast={false}
+                allCompleted={overallStatus === 'completed'}
               />
             ) : null}
 
@@ -493,6 +503,7 @@ export default function BlindPayPayoutDetailScreen() {
               date={trackingPayment?.completedAt}
               isLast={false}
               content={step2Content}
+              allCompleted={overallStatus === 'completed'}
             />
 
             {/* Step 3: Complete payout */}
@@ -503,6 +514,7 @@ export default function BlindPayPayoutDetailScreen() {
               date={trackingComplete?.completedAt}
               isLast
               content={step3Content}
+              allCompleted={overallStatus === 'completed'}
             />
           </CyDView>
         )}
