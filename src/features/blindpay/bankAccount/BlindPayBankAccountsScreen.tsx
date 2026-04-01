@@ -121,7 +121,7 @@ export default function BlindPayBankAccountsScreen() {
           {accounts.map(account => {
             const railLabel = RAIL_LABELS[account.type] ?? account.type;
             const flag = COUNTRY_FLAGS[account.country] ?? '\uD83C\uDF10';
-            const lastFour = account.lastFour ?? account.last_four ?? account.account_number?.slice(-4);
+            const lastFour = account.lastFour ?? account.accountNumber?.slice(-4);
             return (
               <CyDTouchView
                 key={account.id}
@@ -130,7 +130,7 @@ export default function BlindPayBankAccountsScreen() {
                     accountId: account.id,
                   })
                 }
-                className='bg-white border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
+                className='bg-n0 border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
                 <CyDView className='w-[44px] h-[44px] rounded-[12px] bg-[#FDF3D8] items-center justify-center'>
                   <CyDText className='text-[20px]'>{flag}</CyDText>
                 </CyDView>
@@ -156,7 +156,7 @@ export default function BlindPayBankAccountsScreen() {
         <CyDTouchView
           onPress={() => navigation.navigate(screenTitle.BLINDPAY_ADD_RECIPIENT)}
           className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center'>
-          <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+          <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
             Add Bank Account
           </CyDText>
         </CyDTouchView>

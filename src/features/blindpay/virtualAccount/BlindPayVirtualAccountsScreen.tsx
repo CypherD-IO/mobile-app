@@ -118,16 +118,16 @@ export default function BlindPayVirtualAccountsScreen() {
                   { accountId: account.id },
                 )
               }
-              className='bg-white border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
+              className='bg-n0 border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
               <CyDView className='w-[44px] h-[44px] rounded-[12px] bg-[#FDF3D8] items-center justify-center'>
                 <CyDText className='text-[20px]'>
-                  {PARTNER_ICONS[account.banking_partner] ?? '\uD83C\uDFE6'}
+                  {PARTNER_ICONS[account.bankingPartner] ?? '\uD83C\uDFE6'}
                 </CyDText>
               </CyDView>
               <CyDView className='flex-1'>
                 <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
-                  {PARTNER_LABELS[account.banking_partner] ??
-                    account.banking_partner}
+                  {PARTNER_LABELS[account.bankingPartner] ??
+                    account.bankingPartner}
                 </CyDText>
                 <CyDText className='text-[13px] font-medium text-n200 tracking-[-0.4px] mt-[2px]'>
                   {account.token} · {account.status ?? 'Active'}
@@ -154,7 +154,7 @@ export default function BlindPayVirtualAccountsScreen() {
             )
           }
           className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center'>
-          <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+          <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
             {String(t('CREATE_VA', 'Create Virtual Account'))}
           </CyDText>
         </CyDTouchView>

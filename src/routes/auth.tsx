@@ -128,6 +128,7 @@ import ReferralsViewAll from '../containers/Rewards/ReferralsViewAll';
 import AllReferralCodes from '../containers/Referrals/AllReferralCodes';
 import MerchantRewardListScreen from '../containers/DebitCard/CardV2/MerchantRewardListScreen';
 import PremiumScreen from '../containers/Premium';
+import BlindPayFxPreviewScreen from '../features/blindpay/BlindPayFxPreviewScreen';
 import BlindPayOnboardingScreen from '../features/blindpay/BlindPayOnboardingScreen';
 import BlindPayTosWebViewScreen from '../features/blindpay/BlindPayTosWebViewScreen';
 import BlindPayKycNavigator from '../features/blindpay/onboarding/BlindPayKycNavigator';
@@ -135,6 +136,9 @@ import BlindPaySendMoneyScreen from '../features/blindpay/BlindPaySendMoneyScree
 import BlindPayBankAccountsScreen from '../features/blindpay/bankAccount/BlindPayBankAccountsScreen';
 import BlindPayBankAccountDetailScreen from '../features/blindpay/bankAccount/BlindPayBankAccountDetailScreen';
 import BlindPayAddBankAccountScreen from '../features/blindpay/bankAccount/BlindPayAddBankAccountScreen';
+import BlindPayPayoutStatusScreen from '../features/blindpay/payout/BlindPayPayoutStatusScreen';
+import BlindPayPayoutHistoryScreen from '../features/blindpay/payout/BlindPayPayoutHistoryScreen';
+import BlindPayPayoutDetailScreen from '../features/blindpay/payout/BlindPayPayoutDetailScreen';
 import BlindPayLimitsScreen from '../features/blindpay/limits/BlindPayLimitsScreen';
 import BlindPayRequestLimitIncreaseScreen from '../features/blindpay/limits/BlindPayRequestLimitIncreaseScreen';
 import BlindPayLimitHistoryScreen from '../features/blindpay/limits/BlindPayLimitHistoryScreen';
@@ -353,6 +357,12 @@ export function PortfolioStackScreen() {
       />
 
       <PortfolioStack.Screen
+        name={screenTitle.BLINDPAY_FX_PREVIEW}
+        component={BlindPayFxPreviewScreen}
+        options={{ headerShown: false }}
+      />
+
+      <PortfolioStack.Screen
         name={screenTitle.BLINDPAY_ONBOARDING}
         component={BlindPayOnboardingScreen}
         options={{ headerShown: false }}
@@ -391,6 +401,24 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.BLINDPAY_ADD_RECIPIENT}
         component={BlindPayAddBankAccountScreen}
+        options={{ headerShown: false }}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.BLINDPAY_PAYOUT_STATUS}
+        component={BlindPayPayoutStatusScreen}
+        options={{ headerShown: false }}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.BLINDPAY_PAYOUT_HISTORY}
+        component={BlindPayPayoutHistoryScreen}
+        options={{ headerShown: false }}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.BLINDPAY_PAYOUT_DETAIL}
+        component={BlindPayPayoutDetailScreen}
         options={{ headerShown: false }}
       />
 

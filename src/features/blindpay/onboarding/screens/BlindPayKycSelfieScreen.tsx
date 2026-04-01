@@ -8,7 +8,7 @@ import {
 } from '../../../../styles/tailwindComponents';
 import { showToast } from '../../../../containers/utilities/toastUtility';
 import useBlindPayApi, { type BlindPayUploadFilePart } from '../../api';
-import { BlindpayUploadCategory } from '../../types';
+import { BlindpayUploadBucket } from '../../types';
 import { blindPayKycSelfieSchema } from '../blindpayKycFormSchemas';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
 import { omitFieldError, zodErrorToFieldMap } from '../blindpayKycZodUtils';
@@ -43,19 +43,18 @@ export function BlindPayKycSelfieStep({
       };
       const res = await uploadDocument(
         filePart,
-        BlindpayUploadCategory.SELFIE,
+        BlindpayUploadBucket.ONBOARDING,
       );
       setUploading(false);
-      if (res.isError || !res.data?.url) {
-        const msg =
-          res.errorMessage ??
-          t('UNEXPECTED_ERROR', 'Something went wrong');
+      if (res.isError || !res.data?.fileUrl) {
+        const msg = String(
+          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(msg);
         showToast(msg, 'error');
         return;
       }
-      setSelfieUrl(res.data.url);
-      mergeDraft({ selfieFile: res.data.url });
+      setSelfieUrl(res.data.fileUrl);
+      mergeDraft({ selfieFile: res.data.fileUrl });
       setFieldErrors(prev => omitFieldError(prev, 'selfieFile'));
       setUploadError('');
     },
@@ -101,7 +100,7 @@ export function BlindPayKycSelfieStep({
           }`}>
           <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
             {uploadError ? (
-              <CyDView className='w-[56px] h-[56px] bg-red-500 rounded-[14px] items-center justify-center'>
+              <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
                 <CyDMaterialDesignIcons
                   name='alert-circle-outline'
                   size={28}

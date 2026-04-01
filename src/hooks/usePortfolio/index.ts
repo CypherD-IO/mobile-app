@@ -42,10 +42,13 @@ export default function usePortfolio() {
         solanaAddress,
       ].filter(address => address !== undefined);
 
+      const chains = __DEV__
+        ? [...PORTFOLIO_CHAINS_BACKEND_NAMES, ChainBackendNames.BASE_SEPOLIA]
+        : PORTFOLIO_CHAINS_BACKEND_NAMES;
       const payload = {
-        chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
+        chains,
         addresses,
-        allowTestNets: false,
+        allowTestNets: __DEV__,
         isVerified: isVerifyCoinChecked,
         inclHyperliquidBalances: true,
       };

@@ -12,6 +12,7 @@ import {
   CHAIN_NOBLE,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
+  CHAIN_BASE_SEPOLIA,
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_SOLANA,
@@ -113,6 +114,7 @@ export interface WalletHoldings {
   noble: ChainHoldings;
   zksync_era: ChainHoldings;
   base: ChainHoldings;
+  base_sepolia?: ChainHoldings;
   coreum: ChainHoldings;
   injective: ChainHoldings;
   solana: ChainHoldings;
@@ -182,6 +184,8 @@ export function getCurrentChainHoldings(
       return portfolio.zksync_era;
     case CHAIN_BASE.backendName:
       return portfolio.base;
+    case CHAIN_BASE_SEPOLIA.backendName:
+      return portfolio.base_sepolia ?? portfolio.base;
     case CHAIN_COREUM.backendName:
       return portfolio.coreum;
     case CHAIN_INJECTIVE.backendName:
@@ -224,6 +228,7 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let optimismHoldings;
   let zksyncEraHoldings;
   let baseHoldings;
+  let baseSepoliaHoldings;
   let solanaHoldings;
   let hyperliquidHoldings;
 
@@ -320,6 +325,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         case CHAIN_BASE.backendName:
           tokenHolding.chainDetails = CHAIN_BASE;
           break;
+        case CHAIN_BASE_SEPOLIA.backendName:
+          tokenHolding.chainDetails = CHAIN_BASE_SEPOLIA;
+          break;
         case CHAIN_COREUM.backendName:
           tokenHolding.chainDetails = CHAIN_COREUM;
           break;
@@ -391,6 +399,9 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
       case CHAIN_BASE.backendName:
         baseHoldings = chainHoldings;
         break;
+      case CHAIN_BASE_SEPOLIA.backendName:
+        baseSepoliaHoldings = chainHoldings;
+        break;
       case CHAIN_COREUM.backendName:
         coreumHoldings = chainHoldings;
         break;
@@ -431,6 +442,7 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     arbitrum: arbitrumHoldings as ChainHoldings,
     zksync_era: zksyncEraHoldings as ChainHoldings,
     base: baseHoldings as ChainHoldings,
+    base_sepolia: baseSepoliaHoldings,
     coreum: coreumHoldings as ChainHoldings,
     injective: injectiveHoldings as ChainHoldings,
     solana: solanaHoldings as ChainHoldings,

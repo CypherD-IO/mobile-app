@@ -14,6 +14,20 @@ export enum BlindpayReceiverStatus {
   VERIFYING = 'verifying',
   APPROVED = 'approved',
   REJECTED = 'rejected',
+  DEPRECATED = 'deprecated',
+  PENDING_REVIEW = 'pending_review',
+}
+
+export enum BlindpayKycType {
+  LIGHT = 'light',
+  STANDARD = 'standard',
+  ENHANCED = 'enhanced',
+}
+
+export enum BlindpayAmlStatus {
+  CLEAR = 'clear',
+  HIT = 'hit',
+  ERROR = 'error',
 }
 
 export enum BlindpayIdDocType {
@@ -210,6 +224,94 @@ export enum BlindpayAchCopDocumentType {
   PEP = 'PEP',
 }
 
+export enum BlindpayBankAccountStatus {
+  VERIFYING = 'verifying',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  DEPRECATED = 'deprecated',
+}
+
+export interface IBlindpayOfframpWallet {
+  id: string;
+  externalId: string | null;
+  circleWalletId: string | null;
+  network: BlindpayOfframpWalletNetwork;
+  address: string;
+}
+
+/** POST/GET /v1/blindpay/bank-accounts response */
+export interface IBlindpayBankAccountResponse {
+  id: string;
+  type: BlindpayBankAccountType;
+  name: string;
+  status: BlindpayBankAccountStatus | null;
+  // US domestic (ACH/Wire/RTP)
+  recipientRelationship: BlindpayRecipientRelationship | null;
+  routingNumber: string | null;
+  accountNumber: string | null;
+  accountType: BlindpayBankAccountCheckType | null;
+  accountClass: BlindpayBankAccountClass | null;
+  beneficiaryName: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  stateProvinceRegion: string | null;
+  country: string | null;
+  postalCode: string | null;
+  businessIndustry: string | null;
+  phoneNumber: string | null;
+  // Shared optional
+  taxId: string | null;
+  dateOfBirth: string | null;
+  // PIX
+  pixKey: string | null;
+  // PIX Safe
+  pixSafeCpfCnpj: string | null;
+  pixSafeBankCode: string | null;
+  pixSafeBranchCode: string | null;
+  // SPEI
+  speiProtocol: BlindpaySpeiProtocol | null;
+  speiClabe: string | null;
+  speiInstitutionCode: string | null;
+  // Transfers (Argentina)
+  transfersType: BlindpayTransfersType | null;
+  transfersAccount: string | null;
+  // ACH COP (Colombia)
+  achCopBeneficiaryFirstName: string | null;
+  achCopBeneficiaryLastName: string | null;
+  achCopDocumentId: string | null;
+  achCopDocumentType: BlindpayAchCopDocumentType | null;
+  achCopEmail: string | null;
+  achCopBankCode: string | null;
+  achCopBankAccount: string | null;
+  // SWIFT
+  swiftCodeBic: string | null;
+  swiftAccountHolderName: string | null;
+  swiftAccountNumberIban: string | null;
+  swiftPaymentCode: string | null;
+  swiftBeneficiaryAddressLine1: string | null;
+  swiftBeneficiaryAddressLine2: string | null;
+  swiftBeneficiaryCountry: string | null;
+  swiftBeneficiaryCity: string | null;
+  swiftBeneficiaryStateProvinceRegion: string | null;
+  swiftBeneficiaryPostalCode: string | null;
+  swiftBankName: string | null;
+  swiftBankAddressLine1: string | null;
+  swiftBankAddressLine2: string | null;
+  swiftBankCountry: string | null;
+  swiftBankCity: string | null;
+  swiftBankStateProvinceRegion: string | null;
+  swiftBankPostalCode: string | null;
+  swiftIntermediaryBankSwiftCodeBic: string | null;
+  swiftIntermediaryBankAccountNumberIban: string | null;
+  swiftIntermediaryBankName: string | null;
+  swiftIntermediaryBankCountry: string | null;
+  // Tron / wallets
+  tronWalletHash: string | null;
+  offrampWallets: IBlindpayOfframpWallet[] | null;
+  createdAt: string;
+}
+
 // ── Payouts ──
 
 export enum BlindpayPayoutStatus {
@@ -218,6 +320,236 @@ export enum BlindpayPayoutStatus {
   FAILED = 'failed',
   REFUNDED = 'refunded',
   ON_HOLD = 'on_hold',
+}
+
+export enum BlindpayPayoutTrackingStep {
+  PROCESSING = 'processing',
+  ON_HOLD = 'on_hold',
+  PENDING_REVIEW = 'pending_review',
+  COMPLETED = 'completed',
+}
+
+export enum BlindpayPaymentEta {
+  FIVE_MIN = '5_min',
+  THIRTY_MIN = '30_min',
+  TWO_HOURS = '2_hours',
+  ONE_BUSINESS_DAY = '1_business_day',
+  TWO_BUSINESS_DAYS = '2_business_days',
+  FIVE_BUSINESS_DAYS = '5_business_days',
+}
+
+export enum BlindpayProviderName {
+  NVIO_PAGOS = 'Nvio Pagos',
+  BREX = 'Brex',
+  STARK_BANK = 'Stark Bank',
+  JPMORGAN_CHASE = 'JPMorgan Chase',
+  HSBC = 'HSBC',
+  INTER = 'Inter',
+  JP_MORGAN_CHASE = 'JP Morgan Chase',
+  BITSO = 'Bitso',
+  CITI = 'Citi',
+  CFSB = 'CFSB',
+}
+
+export enum BlindpayProviderStatus {
+  CANCELED = 'canceled',
+  FAILED = 'failed',
+  RETURNED = 'returned',
+  SENT = 'sent',
+  DEPOSITED = 'deposited',
+  CONVERTED = 'converted',
+  WITHDRAWN = 'withdrawn',
+}
+
+export enum BlindpayTrackingStatus {
+  FAILED = 'failed',
+  FOUND = 'found',
+  TOKENS_REFUNDED = 'tokens_refunded',
+  PAID = 'paid',
+  WAITING_DOCUMENTS = 'waiting_documents',
+  COMPLIANCE_REVIEWING = 'compliance_reviewing',
+}
+
+export enum BlindpayVirtualAccountType {
+  PERSONAL_CHECKING = 'Personal checking',
+  BUSINESS_CHECKING = 'Business checking',
+}
+
+export enum BlindpayOfframpWalletNetwork {
+  TRON = 'tron',
+  SOLANA = 'solana',
+}
+
+export enum BlindpayBankingPartner {
+  JPMORGAN = 'jpmorgan',
+  CITI = 'citi',
+  HSBC = 'hsbc',
+  CFSB = 'cfsb',
+}
+
+export enum BlindpaySoleProprietorDocType {
+  MASTER_SERVICE_AGREEMENT = 'master_service_agreement',
+  SALARY_SLIP = 'salary_slip',
+  BANK_STATEMENT = 'bank_statement',
+}
+
+// ── Virtual Account response types ──
+
+export interface IBlindpayVirtualAccountBankDetails {
+  routingNumber: string;
+  accountNumber: string;
+}
+
+export interface IBlindpayVirtualAccountAddress {
+  name: string;
+  addressLine1: string;
+  addressLine2: string | null;
+}
+
+export interface IBlindpayVirtualAccountUs {
+  ach: IBlindpayVirtualAccountBankDetails | null;
+  wire: IBlindpayVirtualAccountBankDetails;
+  rtp: IBlindpayVirtualAccountBankDetails | null;
+  swiftBicCode: string | null;
+  swiftAccountNumber: string | null;
+  accountType: BlindpayVirtualAccountType | null;
+  beneficiary: IBlindpayVirtualAccountAddress | null;
+  receivingBank: IBlindpayVirtualAccountAddress | null;
+  swiftReceivingBank: IBlindpayVirtualAccountAddress | null;
+}
+
+export interface IBlindpayVirtualAccountBlockchainWallet {
+  network: BlindpayNetwork;
+  address: string | null;
+}
+
+/** POST/GET /v1/blindpay/virtual-accounts response */
+export interface IBlindpayVirtualAccountResponse {
+  id: string;
+  bankingPartner: BlindpayBankingPartner;
+  kycStatus: BlindpayReceiverStatus;
+  us: IBlindpayVirtualAccountUs;
+  token: BlindpayToken;
+  blockchainWalletId: string | null;
+  blockchainWallet: IBlindpayVirtualAccountBlockchainWallet | null;
+}
+
+/** @deprecated Use IBlindpayPayoutTracking instead */
+export type BlindpayTrackingStage = IBlindpayPayoutTracking;
+
+/** Full tracking stage nested in PayoutResponse */
+export interface IBlindpayPayoutTracking {
+  step: BlindpayPayoutTrackingStep;
+  status: BlindpayTrackingStatus | null;
+  transactionHash: string | null;
+  completedAt: string | null;
+  providerName: BlindpayProviderName | null;
+  providerTransactionId: string | null;
+  providerStatus: BlindpayProviderStatus | null;
+  providerErrorReason: string | null;
+  providerUetr: string | null;
+  estimatedTimeOfArrival: BlindpayPaymentEta | null;
+  recipientName: string | null;
+  recipientTaxId: string | null;
+  recipientBankCode: string | null;
+  recipientBranchCode: string | null;
+  recipientAccountNumber: string | null;
+  recipientAccountType: string | null;
+  coelsaId: string | null;
+  ledgerInTransactionId: string | null;
+  ledgerOutTransactionId: string | null;
+  refundReason: string | null;
+  reviewedBy: string | null;
+}
+
+/** JPMorgan tracking data nested in PayoutResponse */
+export interface IBlindpayJpmTrackData {
+  jpmTraceNumber: string | null;
+  jpmProcessingStatus: string | null;
+  extendedTrackingStatus: string | null;
+  jpmReferenceNumber: string | null;
+  uetr: string | null;
+  fedImad: string | null;
+  paymentDate: string | null;
+  paymentAmount: string | null;
+  paymentCurrency: string | null;
+}
+
+/** GET /v1/blindpay/payouts/:id, POST /v1/blindpay/payouts/evm, POST /v1/blindpay/payouts/solana */
+export interface BlindpayPayoutResponse {
+  id: string;
+  status: BlindpayPayoutStatus;
+  senderWalletAddress: string;
+  quoteId: string;
+  bankAccountId: string | null;
+  offrampWalletId: string | null;
+  network: BlindpayNetwork;
+  token: BlindpayToken;
+  currency: BlindpayFiatCurrency;
+  description: string | null;
+  signedTransaction: string | null;
+  senderAmount: number | null;
+  receiverAmount: number | null;
+  receiverLocalAmount: number | null;
+  blindpayQuotation: number | null;
+  transactionFeeAmount: number | null;
+  billingFeeAmount: number | null;
+  totalFeeAmount: number | null;
+  // Tracking
+  trackingTransaction: IBlindpayPayoutTracking | null;
+  trackingPayment: IBlindpayPayoutTracking | null;
+  trackingLiquidity: IBlindpayPayoutTracking | null;
+  trackingComplete: IBlindpayPayoutTracking | null;
+  trackingPartnerFee: IBlindpayPayoutTracking | null;
+  trackingDocuments: IBlindpayPayoutTracking | null;
+  jpmTrackData: IBlindpayJpmTrackData | null;
+  // Inline bank account fields
+  name: string | null;
+  type: BlindpayBankAccountType | null;
+  pixKey: string | null;
+  pixSafeBankCode: string | null;
+  pixSafeBranchCode: string | null;
+  pixSafeCpfCnpj: string | null;
+  accountNumber: string | null;
+  routingNumber: string | null;
+  country: string | null;
+  accountClass: BlindpayBankAccountClass | null;
+  accountType: BlindpayBankAccountCheckType | null;
+  beneficiaryName: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  stateProvinceRegion: string | null;
+  postalCode: string | null;
+  speiClabe: string | null;
+  speiProtocol: BlindpaySpeiProtocol | null;
+  speiInstitutionCode: string | null;
+  transfersAccount: string | null;
+  transfersType: BlindpayTransfersType | null;
+  achCopBeneficiaryFirstName: string | null;
+  achCopBeneficiaryLastName: string | null;
+  achCopDocumentId: string | null;
+  achCopDocumentType: BlindpayAchCopDocumentType | null;
+  achCopEmail: string | null;
+  achCopBankCode: string | null;
+  achCopBankAccount: string | null;
+  swiftCodeBic: string | null;
+  swiftAccountHolderName: string | null;
+  swiftAccountNumberIban: string | null;
+  swiftBeneficiaryCountry: string | null;
+  // Sender info
+  firstName: string | null;
+  lastName: string | null;
+  legalName: string | null;
+  // Transaction documents
+  transactionDocumentFile: string | null;
+  transactionDocumentType: BlindpayDocumentType | null;
+  transactionDocumentId: string | null;
+  // Flags
+  hasVirtualAccount: boolean | null;
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
 }
 
 export enum BlindpayDocumentType {
@@ -232,6 +564,7 @@ export enum BlindpayDocumentType {
 
 // ── Document Uploads ──
 
+/** @deprecated Old per-category upload type. Use BlindpayUploadBucket instead. */
 export enum BlindpayUploadCategory {
   ID_DOC_FRONT = 'id_doc_front',
   ID_DOC_BACK = 'id_doc_back',
@@ -242,6 +575,13 @@ export enum BlindpayUploadCategory {
   PROOF_OF_OWNERSHIP = 'proof_of_ownership',
   TRANSACTION_DOCUMENT = 'transaction_document',
   PROFILE_IMAGE = 'profile_image',
+}
+
+/** New bucket-based upload. POST /v1/blindpay/documents form field: "bucket" */
+export enum BlindpayUploadBucket {
+  ONBOARDING = 'onboarding',
+  LIMIT_INCREASE = 'limit_increase',
+  AVATAR = 'avatar',
 }
 
 // ── Limit Increase ──
@@ -255,8 +595,37 @@ export enum BlindpaySupportingDocumentType {
   BUSINESS_TAX_RETURN = 'business_tax_return',
 }
 
-// ── Response interfaces ──
+// ── Shared response types ──
 
+export interface IBlindpaySuccessResponse {
+  success: boolean;
+}
+
+export interface IBlindpayKycWarning {
+  code: string | null;
+  message: string | null;
+  resolutionStatus: string | null;
+  warningId: string | null;
+}
+
+export interface IBlindpayFraudWarning {
+  id: string | null;
+  name: string | null;
+  operation: string | null;
+  score: number | null;
+}
+
+export interface IBlindpayAmlHits {
+  hasSanctionMatch: boolean;
+  hasPepMatch: boolean;
+  hasWatchlistMatch: boolean;
+  hasCrimelistMatch: boolean;
+  hasAdversemediaMatch: boolean;
+}
+
+// ── Limits ──
+
+/** @deprecated Old flat limits structure used in status response */
 export interface IBlindpayLimits {
   perTransaction?: number;
   daily?: number;
@@ -264,13 +633,55 @@ export interface IBlindpayLimits {
   updatedAt?: string;
 }
 
+export interface IBlindpayDirectionLimits {
+  daily: number;
+  monthly: number;
+}
+
+/** GET /v1/blindpay/limits response */
+export interface IBlindpayLimitsResponse {
+  limits: {
+    payin: IBlindpayDirectionLimits;
+    payout: IBlindpayDirectionLimits;
+  };
+}
+
+export enum BlindpayLimitIncreaseStatus {
+  IN_REVIEW = 'in_review',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
+/** Nested in status response — summary of latest limit increase */
 export interface IBlindpayLimitIncreaseStatus {
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: BlindpayLimitIncreaseStatus;
   requestedPerTransaction?: number;
   requestedDaily?: number;
   requestedMonthly?: number;
   requestedAt?: string;
   updatedAt?: string;
+}
+
+/** POST /v1/blindpay/limits/increase response */
+export interface IBlindpayLimitIncreaseResponse {
+  id: string;
+}
+
+/** GET /v1/blindpay/limits/increase response item */
+export interface IBlindpayLimitIncreaseHistoryItem {
+  id: string;
+  status: BlindpayLimitIncreaseStatus;
+  receiverId: string;
+  perTransaction: number | null;
+  daily: number | null;
+  monthly: number | null;
+  approvedPerTransaction: number | null;
+  approvedDaily: number | null;
+  approvedMonthly: number | null;
+  supportingDocumentType: BlindpaySupportingDocumentType | null;
+  supportingDocumentFile: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface IBlindpayBankAccountSummary {
@@ -298,12 +709,14 @@ export interface BlindpayUserConfig {
   bankAccounts?: IBlindpayBankAccountSummary[];
   tosId?: string;
   tosAcceptedAt?: string;
-  // Profile endpoint returns snake_case fields directly
+  // Profile endpoint fields (same shape as status now — all camelCase)
   id?: string;
-  kyc_status?: string;
-  kyc_warnings?: string[] | null;
-  fraud_warnings?: string[] | null;
-  is_tos_accepted?: boolean;
+  kycStatus?: string;
+  email?: string;
+  occupation?: string;
+  accountPurpose?: string;
+  estimatedAnnualRevenue?: string;
+  sourceOfFundsDocType?: string;
 }
 
 /** GET /v1/blindpay/status */
@@ -320,11 +733,10 @@ export interface InitiateTermsResponse {
 /** POST /v1/blindpay/terms/complete — safe fields only; same shape as `blindpay` in status */
 export type CompleteTermsResponse = BlindpayUserConfig;
 
-/** POST /v1/blindpay/documents */
+/** POST /v1/blindpay/documents (new bucket-based response) */
 export interface UploadDocumentResponse {
-  url: string;
-  key: string;
-  documentType: BlindpayUploadCategory;
+  fileUrl: string;
+  bucket: BlindpayUploadBucket | string;
 }
 
 // ── Request DTOs ──
@@ -496,6 +908,41 @@ export interface CreateFxQuoteRequest {
   currencyType: BlindpayCurrencyType;
 }
 
+/** POST /v1/blindpay/quotes/fx response (indicative rate preview, no binding) */
+export interface IBlindpayFxQuoteResponse {
+  commercialQuotation: number | null;
+  blindpayQuotation: number | null;
+  resultAmount: number;
+  instanceFlatFee: number | null;
+  instancePercentageFee: number;
+}
+
+/** ERC-20 approval contract data nested in quote response */
+export interface IBlindpayQuoteContract {
+  abi: Record<string, unknown>[];
+  address: string;
+  functionName: string;
+  blindpayContractAddress: string;
+  amount: string;
+  network: { name: string; chainId: number };
+}
+
+/** POST /v1/blindpay/quotes response */
+export interface IBlindpayQuoteResponse {
+  id: string;
+  expiresAt: number | null;
+  commercialQuotation: number | null;
+  blindpayQuotation: number | null;
+  receiverAmount: number | null;
+  senderAmount: number | null;
+  partnerFeeAmount: number | null;
+  flatFee: number | null;
+  billingFeeAmount: number | null;
+  contract: IBlindpayQuoteContract | null;
+  receiverLocalAmount: number | null;
+  description: string | null;
+}
+
 /** POST /v1/blindpay/payouts/evm */
 export interface CreatePayoutEvmRequest {
   quoteId: string;
@@ -509,6 +956,13 @@ export interface CreatePayoutSolanaRequest {
   signedTransaction?: string;
 }
 
+/** POST /v1/blindpay/payouts/solana/prepare-delegate response */
+export interface IBlindpayPrepareDelegateResponse {
+  success: boolean;
+  transaction: string;
+  debug?: unknown;
+}
+
 /** POST /v1/blindpay/payouts/:id/documents */
 export interface SubmitPayoutDocumentsRequest {
   transactionDocumentType: BlindpayDocumentType;
@@ -519,12 +973,17 @@ export interface SubmitPayoutDocumentsRequest {
 
 /** GET /v1/blindpay/payouts */
 export interface ListPayoutsQuery {
-  limit?: string;
-  offset?: string;
+  limit?: '10' | '50' | '100' | '200' | '500' | '1000';
+  offset?: '0' | '10' | '50' | '100' | '200' | '500' | '1000';
   startingAfter?: string;
   endingBefore?: string;
-  receiverId?: string;
   status?: BlindpayPayoutStatus;
+  receiverName?: string;
+  bankAccountId?: string;
+  country?: string;
+  paymentMethod?: BlindpayBankAccountType;
+  network?: BlindpayNetwork;
+  token?: BlindpayToken;
 }
 
 /** POST /v1/blindpay/limits/increase */
