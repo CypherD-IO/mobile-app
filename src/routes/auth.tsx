@@ -387,18 +387,6 @@ export function PortfolioStackScreen() {
       />
 
       <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_BANK_ACCOUNTS}
-        component={BlindPayBankAccountsScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_BANK_ACCOUNT_DETAIL}
-        component={BlindPayBankAccountDetailScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
         name={screenTitle.BLINDPAY_ADD_RECIPIENT}
         component={BlindPayAddBankAccountScreen}
         options={{ headerShown: false }}
@@ -407,54 +395,6 @@ export function PortfolioStackScreen() {
       <PortfolioStack.Screen
         name={screenTitle.BLINDPAY_PAYOUT_STATUS}
         component={BlindPayPayoutStatusScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_PAYOUT_HISTORY}
-        component={BlindPayPayoutHistoryScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_PAYOUT_DETAIL}
-        component={BlindPayPayoutDetailScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_LIMITS}
-        component={BlindPayLimitsScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_REQUEST_LIMIT_INCREASE}
-        component={BlindPayRequestLimitIncreaseScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_LIMIT_HISTORY}
-        component={BlindPayLimitHistoryScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_VIRTUAL_ACCOUNTS}
-        component={BlindPayVirtualAccountsScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_CREATE_VIRTUAL_ACCOUNT}
-        component={BlindPayCreateVirtualAccountScreen}
-        options={{ headerShown: false }}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.BLINDPAY_VIRTUAL_ACCOUNT_DETAIL}
-        component={BlindPayVirtualAccountDetailScreen}
         options={{ headerShown: false }}
       />
 
@@ -1455,6 +1395,62 @@ export function OptionsStackScreen({
       <OptionsStack.Screen
         name={screenTitle.PREMIUM_SCREEN}
         component={PremiumScreen}
+        options={{ headerShown: false }}
+      />
+      {/* BlindPay management screens */}
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_BANK_ACCOUNTS}
+        component={BlindPayBankAccountsScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_BANK_ACCOUNT_DETAIL}
+        component={BlindPayBankAccountDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_ADD_BANK_ACCOUNT}
+        component={BlindPayAddBankAccountScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_PAYOUT_HISTORY}
+        component={BlindPayPayoutHistoryScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_PAYOUT_DETAIL}
+        component={BlindPayPayoutDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_LIMITS}
+        component={BlindPayLimitsScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_REQUEST_LIMIT_INCREASE}
+        component={BlindPayRequestLimitIncreaseScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_LIMIT_HISTORY}
+        component={BlindPayLimitHistoryScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_VIRTUAL_ACCOUNTS}
+        component={BlindPayVirtualAccountsScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_CREATE_VIRTUAL_ACCOUNT}
+        component={BlindPayCreateVirtualAccountScreen}
+        options={{ headerShown: false }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BLINDPAY_VIRTUAL_ACCOUNT_DETAIL}
+        component={BlindPayVirtualAccountDetailScreen}
         options={{ headerShown: false }}
       />
     </OptionsStack.Navigator>

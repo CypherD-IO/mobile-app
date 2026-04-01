@@ -161,7 +161,7 @@ export function BlindPayKycSourceOfFundsStep({
               ? 'border-errorText'
               : 'border-transparent'
           }`}>
-          <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
+          <CyDView className='bg-n10 items-center py-[24px] gap-[8px]'>
             {fileUrl ? (
               <CyDView className='w-[56px] h-[56px] bg-green-500 rounded-[14px] items-center justify-center'>
                 <CyDMaterialDesignIcons
@@ -179,7 +179,7 @@ export function BlindPayKycSourceOfFundsStep({
                 />
               </CyDView>
             )}
-            <CyDText className='text-[16px] font-semibold text-[#C99200] tracking-[-0.8px]'>
+            <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
               {String(t('BLINDPAY_SOF_LABEL', 'Source of Funds'))}
             </CyDText>
           </CyDView>
@@ -187,9 +187,9 @@ export function BlindPayKycSourceOfFundsStep({
             <CyDMaterialDesignIcons
               name='information-outline'
               size={16}
-              className='text-[#C99200]'
+              className='text-n200'
             />
-            <CyDText className='text-[13px] font-medium text-[#C99200] tracking-[-0.4px] flex-1'>
+            <CyDText className='text-[13px] font-medium text-n200 tracking-[-0.4px] flex-1'>
               {fileUrl
                 ? String(t('BLINDPAY_PHOTO_UPLOADED', 'Photo uploaded'))
                 : String(
