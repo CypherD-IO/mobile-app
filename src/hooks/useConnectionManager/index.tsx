@@ -35,6 +35,7 @@ import useWalletConnectMobile from '../useWalletConnectMobile';
 // import { web3AuthEvm, web3AuthSolana } from '../../constants/web3Auth';
 import Web3Auth from '@web3auth/react-native-sdk/dist/types/Web3Auth';
 import useWeb3Auth from '../useWeb3Auth';
+import { clearCustomerIOUser } from '../../services/customerio';
 
 export default function useConnectionManager() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -64,6 +65,7 @@ export default function useConnectionManager() {
     } else {
       await removeCredentialsFromKeychain();
     }
+    await clearCustomerIOUser();
     await clearAllData();
     await hdWalletContext.dispatch({ type: 'RESET_WALLET' });
     await activityContext.dispatch({ type: ActivityReducerAction.RESET });
@@ -97,9 +99,9 @@ export default function useConnectionManager() {
       if (data) {
         const readOnlyWalletData = JSON.parse(data);
         await deleteWithoutAuth(
-          `/v1/configuration/address/${String(
-            address,
-          )}/observer/${String(readOnlyWalletData.observerId)}`,
+          `/v1/configuration/address/${String(address)}/observer/${String(
+            readOnlyWalletData.observerId,
+          )}`,
         );
       }
     }

@@ -62,6 +62,7 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { CardProfile } from '../../models/cardProfile.model';
 import { getToken } from '../../notification/pushNotification';
+import { identifyCustomerIOUser } from '../../services/customerio';
 import useWeb3Auth from '../useWeb3Auth';
 
 export default function useInitializer() {
@@ -74,6 +75,8 @@ export default function useInitializer() {
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile } = useCardUtilities();
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
+
+  let pendingWalletAddresses: Record<string, string> = {};
 
   // Data scrubbing is now handled in App.tsx Sentry initialization
 
@@ -104,6 +107,9 @@ export default function useInitializer() {
         // throws error if user is already registered
       });
     }
+
+    pendingWalletAddresses = { ...walletAddresses };
+
     void setAnalyticsCollectionEnabled(getAnalytics(), !devMode);
   }
 
@@ -356,6 +362,21 @@ export default function useInitializer() {
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
     });
+
+    const email = data?.email?.trim();
+    const walletAddr =
+      pendingWalletAddresses.ethereumAddress ||
+      ethereum?.address ||
+      solana?.address;
+    const cioUserId = email || walletAddr;
+
+    if (cioUserId) {
+      void identifyCustomerIOUser(cioUserId, {
+        ...pendingWalletAddresses,
+        email: email ?? '',
+        appVersion: DeviceInfo.getVersion(),
+      });
+    }
   };
 
   const getLoginMethod = (connectionType?: ConnectionTypes | null): string => {

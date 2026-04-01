@@ -14,21 +14,29 @@
 		2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */; };
 		23F83CC2789C45809FF4F794 /* Gambetta-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3171AF0057B4441895519E3C /* Gambetta-Semibold.ttf */; };
 		2FD51A45C3FE4435A1B6B697 /* Gambetta-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B5FFA807710644EDA3FBD05D /* Gambetta-Regular.ttf */; };
+		365E86F49367B97E2E5CCE87 /* NotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C63BCC91A321E9A6DCD67D4 /* NotificationService.m */; };
 		3A1CEB72E44540DB896A8106 /* Gambetta-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */; };
+		3A9C8DAE06E4CA1A8736AC70 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9EB5885DA80713AC1CBB26C /* Foundation.framework */; };
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
 		3F382AF518AA4B8AB57A4372 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6F574E6668A94945B50DABE0 /* CydFont.ttf */; };
+		40B6B27B03EF7247E362AAF2 /* NotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DDCC26B2DB1D2CD3F58F545D /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
 		62B1A8A06522436897F795CC /* CypherNord.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A29F23708E9E4C56AAC109CA /* CypherNord.ttf */; };
 		63948B4D9075475B8A0C2CE4 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */; };
+		70DAB0D2BF20DAAEAD3EB6F7 /* libPods-NotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 888ACA728BF5EA5D3751C533 /* libPods-NotificationServiceExtension.a */; };
 		7A10E59221E64F2881B4F8EC /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D85EC71D87BE43D8BF1C0222 /* Manrope-Medium.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		86D7B40038CB43C1A9BA0329 /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A25717E7C02E454B955A69A4 /* Manrope-ExtraLight.ttf */; };
 		9051DFCC29A24E86A3C678EE /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */; };
 		9DD5FEDD929A49E8B079FCAF /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A726BE91F004F59ADCA1705 /* Colors.xcassets */; };
+		A37D97C2F905B2B96C8F3FE4 /* CioNotificationServicePushHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31EDDD9264D9A54770275B46 /* CioNotificationServicePushHandler.swift */; };
 		B76522972792A50F002A2E46 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B76522962792A50F002A2E46 /* GoogleService-Info.plist */; };
+		BEFCBE07B0DA332638C9C930 /* CioPushBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = EC8FBF99E5658F398E260E2F /* CioPushBridge.m */; };
+		C2B76E7869D5BA874793547C /* CioPushBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588CC48887F9E2917B86C885 /* CioPushBridge.swift */; };
 		CCAC4103B75F4453B519587D /* Gambetta-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8B0BD94B009A477E95E76E20 /* Gambetta-Bold.ttf */; };
 		CFD1E93603024C288F7A5B12 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1D7A6FE1B6745E2A1FEC3CC /* Manrope-ExtraBold.ttf */; };
+		D89317ACE46091B17900C65F /* CioAppPushNotificationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08125F6C6EB3BF8E6A10C7F2 /* CioAppPushNotificationsHandler.swift */; };
 		DA4EFF8144104B61B81880A0 /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E7A3B5BB16A41F9BE9CC0FB /* Manrope-Light.ttf */; };
 		E6894B9C48CE4E6590CCC2F6 /* Gambetta-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */; };
 		E9978F60E5B01199651AF2FE /* libPods-Cypherd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */; };
@@ -43,12 +51,34 @@
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = Cypherd;
 		};
+		F08D75F07904BC09D6EB2635 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7AB46286DF5B5FCA012BDE87;
+			remoteInfo = NotificationServiceExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CC024F100F8084CA2820271F /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				40B6B27B03EF7247E362AAF2 /* NotificationServiceExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		00E356EE1AD99517003FC87E /* CypherdTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CypherdTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* CypherdTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CypherdTests.m; sourceTree = "<group>"; };
+		08125F6C6EB3BF8E6A10C7F2 /* CioAppPushNotificationsHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CioAppPushNotificationsHandler.swift; path = Cypherd/CioAppPushNotificationsHandler.swift; sourceTree = "<group>"; };
 		087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd-CypherdTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		127D4C06EDB04D5BAEA58723 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Cypherd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cypherd.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,32 +87,41 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Cypherd/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Cypherd/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Cypherd/main.m; sourceTree = "<group>"; };
+		1D60BBDD6DA1A235F89004DD /* Pods-NotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-NotificationServiceExtension/Pods-NotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
 		2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2431CFA5B0BCAC52F737D785 /* Pods-NotificationServiceExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationServiceExtension.debug.xcconfig"; path = "Target Support Files/Pods-NotificationServiceExtension/Pods-NotificationServiceExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		269DC18927D02F8F00BB54A8 /* Pods-Cypherd-CypherdTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd-CypherdTests.debug.xcconfig"; path = "Target Support Files/Pods-Cypherd-CypherdTests/Pods-Cypherd-CypherdTests.debug.xcconfig"; sourceTree = "<group>"; };
 		26D55C3DED51232041978D65 /* Pods-Cypherd.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Cypherd.release.xcconfig"; path = "Target Support Files/Pods-Cypherd/Pods-Cypherd.release.xcconfig"; sourceTree = "<group>"; };
 		29133417AEEC4DD1BCBA80A3 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		2A726BE91F004F59ADCA1705 /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = Cypherd/Colors.xcassets; sourceTree = "<group>"; };
+		2C63BCC91A321E9A6DCD67D4 /* NotificationService.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = NotificationService.m; sourceTree = "<group>"; };
 		2E7A3B5BB16A41F9BE9CC0FB /* Manrope-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Light.ttf"; path = "../assets/fonts/Manrope-Light.ttf"; sourceTree = "<group>"; };
 		3171AF0057B4441895519E3C /* Gambetta-Semibold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gambetta-Semibold.ttf"; path = "../assets/fonts/Gambetta-Semibold.ttf"; sourceTree = "<group>"; };
+		31EDDD9264D9A54770275B46 /* CioNotificationServicePushHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CioNotificationServicePushHandler.swift; sourceTree = "<group>"; };
 		3A162BC5334D4B1AB6F6C602 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CC408C1228D48B28D032D9C /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
+		3D27DC345A9E2806C320F394 /* NotificationService.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = NotificationService.h; sourceTree = "<group>"; };
 		411B234B971E4DBDB7CCAA08 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
+		55947639C014E41E94118770 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		588CC48887F9E2917B86C885 /* CioPushBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CioPushBridge.swift; path = Cypherd/CioPushBridge.swift; sourceTree = "<group>"; };
 		5C433F5928E49B2100FA84F8 /* Cypherd-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Cypherd-Bridging-Header.h"; sourceTree = "<group>"; };
 		5C433F5A28E49B2100FA84F8 /* Dynamic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dynamic.swift; sourceTree = "<group>"; };
 		5C433F6428E585ED00FA84F8 /* splash.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = splash.json; sourceTree = "<group>"; };
 		6449BD8EE34C403D8E1A3F0B /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		69B2D9D1A0834C91847AC860 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
-		6F574E6668A94945B50DABE0 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
+		6F574E6668A94945B50DABE0 /* CydFont.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CydFont.ttf; path = ../assets/fonts/CydFont.ttf; sourceTree = "<group>"; };
 		7B69CC8348E34CA5B1F72BB9 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		7D992FCDCA1A451DBFBE582C /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Cypherd/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8344FF6AB5AA4763AEE029F2 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
+		888ACA728BF5EA5D3751C533 /* libPods-NotificationServiceExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NotificationServiceExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A37B86548A041D78BDC106D /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
 		8B0BD94B009A477E95E76E20 /* Gambetta-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gambetta-Bold.ttf"; path = "../assets/fonts/Gambetta-Bold.ttf"; sourceTree = "<group>"; };
 		A25717E7C02E454B955A69A4 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
 		A29F23708E9E4C56AAC109CA /* CypherNord.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CypherNord.ttf; path = ../assets/fonts/CypherNord.ttf; sourceTree = "<group>"; };
 		A6D50395BA894C54A0F2412F /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
+		A9EB5885DA80713AC1CBB26C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		AB6789855D4A4DC7B6648FFE /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		B1D7A6FE1B6745E2A1FEC3CC /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
 		B5FFA807710644EDA3FBD05D /* Gambetta-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gambetta-Regular.ttf"; path = "../assets/fonts/Gambetta-Regular.ttf"; sourceTree = "<group>"; };
@@ -94,10 +133,12 @@
 		CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gambetta-Medium.ttf"; path = "../assets/fonts/Gambetta-Medium.ttf"; sourceTree = "<group>"; };
 		D85EC71D87BE43D8BF1C0222 /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 		DC96D072EC354EEEA96DDCAF /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
+		DDCC26B2DB1D2CD3F58F545D /* NotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE141B9D8B3542528157F3F8 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		DFE95E5ECA9945E989B08078 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gambetta-Light.ttf"; path = "../assets/fonts/Gambetta-Light.ttf"; sourceTree = "<group>"; };
 		E98C8950ECC14CBFB7B00508 /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
+		EC8FBF99E5658F398E260E2F /* CioPushBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = CioPushBridge.m; path = Cypherd/CioPushBridge.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F805352840AE4EE2B8EDA9FA /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -116,6 +157,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9978F60E5B01199651AF2FE /* libPods-Cypherd.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		223163E17857D3F21E7DE595 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3A9C8DAE06E4CA1A8736AC70 /* Foundation.framework in Frameworks */,
+				70DAB0D2BF20DAAEAD3EB6F7 /* libPods-NotificationServiceExtension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,6 +240,9 @@
 				5C433F5A28E49B2100FA84F8 /* Dynamic.swift */,
 				5C433F5928E49B2100FA84F8 /* Cypherd-Bridging-Header.h */,
 				2A726BE91F004F59ADCA1705 /* Colors.xcassets */,
+				08125F6C6EB3BF8E6A10C7F2 /* CioAppPushNotificationsHandler.swift */,
+				588CC48887F9E2917B86C885 /* CioPushBridge.swift */,
+				EC8FBF99E5658F398E260E2F /* CioPushBridge.m */,
 			);
 			name = Cypherd;
 			sourceTree = "<group>";
@@ -200,6 +253,8 @@
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				3AC35C000C5A68838DA9DE84 /* libPods-Cypherd.a */,
 				087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */,
+				DA7C06A9F8885DEA9D99AA3E /* iOS */,
+				888ACA728BF5EA5D3751C533 /* libPods-NotificationServiceExtension.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -211,6 +266,8 @@
 				26D55C3DED51232041978D65 /* Pods-Cypherd.release.xcconfig */,
 				269DC18927D02F8F00BB54A8 /* Pods-Cypherd-CypherdTests.debug.xcconfig */,
 				BCD4DAD068D0B869A0FCD636 /* Pods-Cypherd-CypherdTests.release.xcconfig */,
+				1D60BBDD6DA1A235F89004DD /* Pods-NotificationServiceExtension.release.xcconfig */,
+				2431CFA5B0BCAC52F737D785 /* Pods-NotificationServiceExtension.debug.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -234,6 +291,8 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				3F77D20B6B0718D0D006B6E1 /* Pods */,
 				0C402003438048FBA76DCAB3 /* Resources */,
+				DDCC26B2DB1D2CD3F58F545D /* NotificationServiceExtension.appex */,
+				F7310B25A2B1722B1F142E1F /* NotificationServiceExtension */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -247,6 +306,26 @@
 				00E356EE1AD99517003FC87E /* CypherdTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DA7C06A9F8885DEA9D99AA3E /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				A9EB5885DA80713AC1CBB26C /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		F7310B25A2B1722B1F142E1F /* NotificationServiceExtension */ = {
+			isa = PBXGroup;
+			children = (
+				31EDDD9264D9A54770275B46 /* CioNotificationServicePushHandler.swift */,
+				3D27DC345A9E2806C320F394 /* NotificationService.h */,
+				2C63BCC91A321E9A6DCD67D4 /* NotificationService.m */,
+				55947639C014E41E94118770 /* Info.plist */,
+			);
+			name = NotificationServiceExtension;
+			path = NotificationServiceExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -282,6 +361,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				CC024F100F8084CA2820271F /* Embed App Extensions */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				B43D053C1F1140DA9F6BC3B9 /* Upload Debug Symbols to Sentry */,
 				3AF4ACDDA9171F12683EF267 /* [CP] Embed Pods Frameworks */,
@@ -291,11 +371,31 @@
 			buildRules = (
 			);
 			dependencies = (
+				221DE26D36A2DD6BBF91E4C1 /* PBXTargetDependency */,
 			);
 			name = Cypherd;
 			productName = Cypherd;
 			productReference = 13B07F961A680F5B00A75B9A /* Cypherd.app */;
 			productType = "com.apple.product-type.application";
+		};
+		7AB46286DF5B5FCA012BDE87 /* NotificationServiceExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4552AD8D5512E25CC4A58C56 /* Build configuration list for PBXNativeTarget "NotificationServiceExtension" */;
+			buildPhases = (
+				75B7430B8FD8288410A40C04 /* [CP] Check Pods Manifest.lock */,
+				05776AC6DD7CAD2B12264EEF /* Sources */,
+				223163E17857D3F21E7DE595 /* Frameworks */,
+				8FD9F72E6C8A492B073BAAE1 /* Resources */,
+				3522ADDF366A1678F87BB9DD /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NotificationServiceExtension;
+			productName = NotificationServiceExtension;
+			productReference = DDCC26B2DB1D2CD3F58F545D /* NotificationServiceExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -329,6 +429,7 @@
 			targets = (
 				13B07F861A680F5B00A75B9A /* Cypherd */,
 				00E356ED1AD99517003FC87E /* CypherdTests */,
+				7AB46286DF5B5FCA012BDE87 /* NotificationServiceExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -368,6 +469,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8FD9F72E6C8A492B073BAAE1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -384,6 +492,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/zsh;
 			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\n# Use node from PATH (works for both local nvm and CI Homebrew installs)\nexport NODE_BINARY=$(which node)\nexport USE_HERMES=true\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
+		};
+		3522ADDF366A1678F87BB9DD /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NotificationServiceExtension/Pods-NotificationServiceExtension-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NotificationServiceExtension/Pods-NotificationServiceExtension-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NotificationServiceExtension/Pods-NotificationServiceExtension-resources.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		3AF4ACDDA9171F12683EF267 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -448,6 +573,28 @@
 			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-Cypherd-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		75B7430B8FD8288410A40C04 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-NotificationServiceExtension-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -554,6 +701,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		05776AC6DD7CAD2B12264EEF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A37D97C2F905B2B96C8F3FE4 /* CioNotificationServicePushHandler.swift in Sources */,
+				365E86F49367B97E2E5CCE87 /* NotificationService.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		13B07F871A680F5B00A75B9A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -561,6 +717,9 @@
 				5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				D89317ACE46091B17900C65F /* CioAppPushNotificationsHandler.swift in Sources */,
+				C2B76E7869D5BA874793547C /* CioPushBridge.swift in Sources */,
+				BEFCBE07B0DA332638C9C930 /* CioPushBridge.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -571,6 +730,12 @@
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* Cypherd */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
+		};
+		221DE26D36A2DD6BBF91E4C1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = NotificationServiceExtension;
+			target = 7AB46286DF5B5FCA012BDE87 /* NotificationServiceExtension */;
+			targetProxy = F08D75F07904BC09D6EB2635 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -704,6 +869,36 @@
 				SWIFT_USE_INTEGRATED_DRIVER = NO;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		594E5FD461D26FE5073C11AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1D60BBDD6DA1A235F89004DD /* Pods-NotificationServiceExtension.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 7FZT7KSBXD;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.86.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cypherd.ioswalletv1.NotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "NotificationServiceExtension-Swift.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -864,6 +1059,35 @@
 			};
 			name = Release;
 		};
+		86FCDD56CDBB91D7E0BDEF87 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2431CFA5B0BCAC52F737D785 /* Pods-NotificationServiceExtension.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 7FZT7KSBXD;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.86.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cypherd.ioswalletv1.NotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "NotificationServiceExtension-Swift.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -881,6 +1105,15 @@
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
 				13B07F951A680F5B00A75B9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4552AD8D5512E25CC4A58C56 /* Build configuration list for PBXNativeTarget "NotificationServiceExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				594E5FD461D26FE5073C11AC /* Release */,
+				86FCDD56CDBB91D7E0BDEF87 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

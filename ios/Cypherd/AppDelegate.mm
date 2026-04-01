@@ -32,10 +32,16 @@ static void InitializeFlipper(UIApplication *application) {
 
 @implementation AppDelegate
 
+// Customer.io push notification handler (Swift bridge)
+CioAppPushNotificationsHandler *cioPnHandlerObj = [[CioAppPushNotificationsHandler alloc] init];
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   [FIRApp configure];
-  
+
+  // Set FCM messaging delegate so Customer.io receives token refresh events
+  [FIRMessaging messaging].delegate = self;
+
 #ifdef FB_SONARKIT_ENABLED
   InitializeFlipper(application);
 #endif
@@ -97,6 +103,9 @@ static void InitializeFlipper(UIApplication *application) {
   NSLog(@"[Splash] Added Lottie splash to WINDOW (above all RN content). Frame: %@",
         NSStringFromCGRect(animationUIView.frame));
 
+  // Initialize Customer.io push click handling
+  [cioPnHandlerObj setupCustomerIOClickHandling];
+
   // Define UNUserNotificationCenter
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   center.delegate = self;
@@ -114,6 +123,8 @@ static void InitializeFlipper(UIApplication *application) {
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
  [RNCPushNotificationIOS didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+ // Forward APNs token to Firebase so Customer.io can reach this device via FCM
+ [FIRMessaging messaging].APNSToken = deviceToken;
 }
 // Required for the notification event. You must call the completion handler after handling the remote notification.
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
@@ -133,6 +144,11 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 {
   [RNCPushNotificationIOS didReceiveNotificationResponse:response];
   completionHandler();
+}
+
+// FIRMessagingDelegate: forward FCM token refreshes to Customer.io
+- (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(NSString *)fcmToken {
+  [cioPnHandlerObj didReceiveRegistrationToken:messaging fcmToken:fcmToken];
 }
 
 // RN 0.83 factory delegate method
