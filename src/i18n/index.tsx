@@ -1466,6 +1466,7 @@ const resources = {
       POSTAL_CODE_INVALID_CHARACTERS: 'Postal code contains invalid characters',
 
       STATE_REQUIRED: 'State is required',
+      VALID_STATE_REQUIRED: 'Please enter a valid state',
       STATE_TOO_LONG: 'State name must be 20 characters or less',
       STATE_INVALID_CHARACTERS: 'State name contains invalid characters',
       SPECIAL_CHARACTERS_NOT_ALLOWED: `Special characters ;:!?<>~'%^@{}[] are not allowed`,
