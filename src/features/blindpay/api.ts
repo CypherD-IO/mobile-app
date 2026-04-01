@@ -5,14 +5,17 @@ import useAxios from '../../core/HttpRequest';
 import { parseErrorMessage } from '../../core/util';
 import type {
   AddBankAccountRequest,
-  BlindpayUploadCategory,
+  BlindpayPayoutResponse,
   BlindpayStatusResponse,
   CompleteTermsResponse,
   CreateReceiverRequest,
   CreateReceiverResponse,
   InitiateTermsResponse,
+  ListPayoutsQuery,
+  SubmitPayoutDocumentsRequest,
   UploadDocumentResponse,
 } from './types';
+import { BlindpayUploadBucket } from './types';
 
 const ENDPOINTS = {
   STATUS: '/v1/blindpay/status',
@@ -24,6 +27,12 @@ const ENDPOINTS = {
   BANK_ACCOUNTS: '/v1/blindpay/bank-accounts',
   RECEIVER: '/v1/blindpay/receiver',
   VIRTUAL_ACCOUNTS: '/v1/blindpay/virtual-accounts',
+  QUOTES: '/v1/blindpay/quotes',
+  QUOTES_FX: '/v1/blindpay/quotes/fx',
+  PAYOUTS_EVM: '/v1/blindpay/payouts/evm',
+  PAYOUTS_SOLANA: '/v1/blindpay/payouts/solana',
+  PAYOUTS_SOLANA_PREPARE: '/v1/blindpay/payouts/solana/prepare-delegate',
+  PAYOUTS: '/v1/blindpay/payouts',
   LIMITS: '/v1/blindpay/limits',
   LIMITS_INCREASE: '/v1/blindpay/limits/increase',
 } as const;
@@ -121,10 +130,11 @@ export default function useBlindPayApi() {
 
   /**
    * Multipart upload. React Native `FormData` file part uses `{ uri, name, type }`.
+   * Bucket: "onboarding" for KYC docs, "limit_increase" for limit docs, "avatar" for profile.
    */
   async function uploadDocument(
     file: BlindPayUploadFilePart,
-    documentType: BlindpayUploadCategory,
+    bucket: BlindpayUploadBucket,
   ): Promise<{
     isError: boolean;
     data?: UploadDocumentResponse;
@@ -136,7 +146,7 @@ export default function useBlindPayApi() {
       name: file.name,
       type: file.type,
     } as unknown as Blob);
-    form.append('documentType', documentType);
+    form.append('bucket', bucket);
 
     // Use fetch directly — axios v0.24 sends Content-Type without the
     // multipart boundary, which prevents multer from parsing the file.
@@ -160,13 +170,11 @@ export default function useBlindPayApi() {
             'Upload failed',
         };
       }
-      const docUrl = (data as UploadDocumentResponse)?.url;
-      // Validate the returned URL has a real path (not just a bare bucket root)
-      if (!docUrl || docUrl.endsWith('/') || docUrl.split('/').length < 5) {
-        console.log('[BlindPay] uploadDocument: invalid URL returned:', docUrl);
+      const fileUrl = (data as UploadDocumentResponse)?.fileUrl;
+      if (!fileUrl) {
         return {
           isError: true,
-          errorMessage: 'Upload failed — invalid file URL returned. Please try again.',
+          errorMessage: 'Upload failed — no file URL returned.',
         };
       }
       return {
@@ -263,6 +271,72 @@ export default function useBlindPayApi() {
       return { isError: true, errorMessage: parseErrorMessage(response.error) };
     }
     return { isError: false, data: response.data };
+  }
+
+  async function getFxQuote(body: {
+    from: string; to: string; requestAmount: number; currencyType: string;
+  }): Promise<{ isError: boolean; data?: any; errorMessage?: string }> {
+    const response = await postWithAuth(ENDPOINTS.QUOTES_FX, body);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    return { isError: false, data: response.data };
+  }
+
+  async function createQuote(body: {
+    bankAccountId: string; currencyType: string; requestAmount: number;
+    network: string; token: string; coverFees?: boolean; description?: string;
+  }): Promise<{ isError: boolean; data?: any; errorMessage?: string }> {
+    const response = await postWithAuth(ENDPOINTS.QUOTES, body);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    return { isError: false, data: response.data };
+  }
+
+  async function createEvmPayout(body: {
+    quoteId: string; senderWalletAddress: string;
+  }): Promise<{ isError: boolean; data?: BlindpayPayoutResponse; errorMessage?: string }> {
+    const response = await postWithAuth(ENDPOINTS.PAYOUTS_EVM, body);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    return { isError: false, data: response.data as BlindpayPayoutResponse };
+  }
+
+  async function prepareSolanaDelegate(body: {
+    ownerAddress: string; quoteId?: string; tokenAddress?: string; amount?: string;
+  }): Promise<{ isError: boolean; data?: any; errorMessage?: string }> {
+    const response = await postWithAuth(ENDPOINTS.PAYOUTS_SOLANA_PREPARE, body);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    return { isError: false, data: response.data };
+  }
+
+  async function createSolanaPayout(body: {
+    quoteId: string; senderWalletAddress: string; signedTransaction?: string;
+  }): Promise<{ isError: boolean; data?: BlindpayPayoutResponse; errorMessage?: string }> {
+    const response = await postWithAuth(ENDPOINTS.PAYOUTS_SOLANA, body);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    return { isError: false, data: response.data as BlindpayPayoutResponse };
+  }
+
+  async function getPayout(id: string): Promise<{ isError: boolean; data?: BlindpayPayoutResponse; errorMessage?: string }> {
+    const response = await getWithAuth(`${ENDPOINTS.PAYOUTS}/${id}`);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    return { isError: false, data: response.data as BlindpayPayoutResponse };
+  }
+
+  async function listPayouts(query?: ListPayoutsQuery): Promise<{ isError: boolean; data?: BlindpayPayoutResponse[]; errorMessage?: string }> {
+    let url = ENDPOINTS.PAYOUTS;
+    if (query) {
+      const params = Object.entries(query).filter(([, v]) => v != null).map(([k, v]) => `${k}=${v}`).join('&');
+      if (params) url += `?${params}`;
+    }
+    const response = await getWithAuth(url);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    const data = response.data;
+    const list = Array.isArray(data) ? data : (data as any)?.payouts ?? (data as any)?.data ?? [];
+    return { isError: false, data: list as BlindpayPayoutResponse[] };
+  }
+
+  async function submitPayoutDocuments(payoutId: string, body: SubmitPayoutDocumentsRequest): Promise<{ isError: boolean; data?: BlindpayPayoutResponse; errorMessage?: string }> {
+    const response = await postWithAuth(`${ENDPOINTS.PAYOUTS}/${payoutId}/documents`, body);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    return { isError: false, data: response.data as BlindpayPayoutResponse };
   }
 
   async function getLimits(): Promise<{
@@ -375,6 +449,14 @@ export default function useBlindPayApi() {
     onboard,
     addBankAccount,
     listBankAccounts,
+    getFxQuote,
+    createQuote,
+    createEvmPayout,
+    prepareSolanaDelegate,
+    createSolanaPayout,
+    getPayout,
+    listPayouts,
+    submitPayoutDocuments,
     getBankAccount,
     deleteBankAccount,
     updateReceiver,

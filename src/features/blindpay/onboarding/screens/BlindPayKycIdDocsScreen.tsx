@@ -8,7 +8,7 @@ import {
 } from '../../../../styles/tailwindComponents';
 import { showToast } from '../../../../containers/utilities/toastUtility';
 import useBlindPayApi, { type BlindPayUploadFilePart } from '../../api';
-import { BlindpayIdDocType, BlindpayUploadCategory } from '../../types';
+import { BlindpayIdDocType, BlindpayUploadBucket } from '../../types';
 import { blindPayKycIdDocsSchema } from '../blindpayKycFormSchemas';
 import BlindPayCountryPickerModal from '../BlindPayCountryPickerModal';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
@@ -85,19 +85,18 @@ export function BlindPayKycIdDocsStep({
       };
       const res = await uploadDocument(
         filePart,
-        BlindpayUploadCategory.ID_DOC_FRONT,
+        BlindpayUploadBucket.ONBOARDING,
       );
       setUploading(false);
-      if (res.isError || !res.data?.url) {
-        const msg =
-          res.errorMessage ??
-          t('UNEXPECTED_ERROR', 'Something went wrong');
+      if (res.isError || !res.data?.fileUrl) {
+        const msg = String(
+          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(prev => ({ ...prev, front: msg }));
         showToast(msg, 'error');
         return;
       }
-      setFrontUrl(res.data.url);
-      mergeDraft({ idDocFrontFile: res.data.url });
+      setFrontUrl(res.data.fileUrl);
+      mergeDraft({ idDocFrontFile: res.data.fileUrl });
       clearKey('idDocFrontFile');
       setUploadError(prev => ({ ...prev, front: '' }));
     },
@@ -116,19 +115,18 @@ export function BlindPayKycIdDocsStep({
       };
       const res = await uploadDocument(
         filePart,
-        BlindpayUploadCategory.ID_DOC_BACK,
+        BlindpayUploadBucket.ONBOARDING,
       );
       setUploading(false);
-      if (res.isError || !res.data?.url) {
-        const msg =
-          res.errorMessage ??
-          t('UNEXPECTED_ERROR', 'Something went wrong');
+      if (res.isError || !res.data?.fileUrl) {
+        const msg = String(
+          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(prev => ({ ...prev, back: msg }));
         showToast(msg, 'error');
         return;
       }
-      setBackUrl(res.data.url);
-      mergeDraft({ idDocBackFile: res.data.url });
+      setBackUrl(res.data.fileUrl);
+      mergeDraft({ idDocBackFile: res.data.fileUrl });
       clearKey('idDocBackFile');
       setUploadError(prev => ({ ...prev, back: '' }));
     },
@@ -218,7 +216,7 @@ export function BlindPayKycIdDocsStep({
           }`}>
           <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
             {uploadError.front ? (
-              <CyDView className='w-[56px] h-[56px] bg-red-500 rounded-[14px] items-center justify-center'>
+              <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
                 <CyDMaterialDesignIcons
                   name='alert-circle-outline'
                   size={28}
@@ -294,7 +292,7 @@ export function BlindPayKycIdDocsStep({
             }`}>
             <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
               {uploadError.back ? (
-                <CyDView className='w-[56px] h-[56px] bg-red-500 rounded-[14px] items-center justify-center'>
+                <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
                   <CyDMaterialDesignIcons
                     name='alert-circle-outline'
                     size={28}

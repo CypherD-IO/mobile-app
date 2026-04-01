@@ -10,7 +10,7 @@ import { showToast } from '../../../../containers/utilities/toastUtility';
 import useBlindPayApi, { type BlindPayUploadFilePart } from '../../api';
 import {
   BlindpayProofOfAddressDocType,
-  BlindpayUploadCategory,
+  BlindpayUploadBucket,
 } from '../../types';
 import { blindPayKycProofSchema } from '../blindpayKycFormSchemas';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
@@ -61,19 +61,18 @@ export function BlindPayKycProofOfAddressStep({
       };
       const res = await uploadDocument(
         filePart,
-        BlindpayUploadCategory.PROOF_OF_ADDRESS,
+        BlindpayUploadBucket.ONBOARDING,
       );
       setUploading(false);
-      if (res.isError || !res.data?.url) {
-        const msg =
-          res.errorMessage ??
-          t('UNEXPECTED_ERROR', 'Something went wrong');
+      if (res.isError || !res.data?.fileUrl) {
+        const msg = String(
+          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(msg);
         showToast(msg, 'error');
         return;
       }
-      setFileUrl(res.data.url);
-      mergeDraft({ proofOfAddressDocFile: res.data.url });
+      setFileUrl(res.data.fileUrl);
+      mergeDraft({ proofOfAddressDocFile: res.data.fileUrl });
       setFieldErrors(prev => omitFieldError(prev, 'proofOfAddressDocFile'));
       setUploadError('');
     },
@@ -123,7 +122,7 @@ export function BlindPayKycProofOfAddressStep({
           }`}>
           <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
             {uploadError ? (
-              <CyDView className='w-[56px] h-[56px] bg-red-500 rounded-[14px] items-center justify-center'>
+              <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
                 <CyDMaterialDesignIcons
                   name='alert-circle-outline'
                   size={28}

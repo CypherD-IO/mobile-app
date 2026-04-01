@@ -12,7 +12,7 @@ import { showToast } from '../../../../containers/utilities/toastUtility';
 import useBlindPayApi, { type BlindPayUploadFilePart } from '../../api';
 import {
   BlindpaySourceOfFundsDocType,
-  BlindpayUploadCategory,
+  BlindpayUploadBucket,
 } from '../../types';
 import { blindPayKycSourceOfFundsSchema } from '../blindpayKycFormSchemas';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
@@ -72,10 +72,10 @@ export function BlindPayKycSourceOfFundsStep({
       };
       const res = await uploadDocument(
         filePart,
-        BlindpayUploadCategory.SOURCE_OF_FUNDS,
+        BlindpayUploadBucket.ONBOARDING,
       );
       setUploading(false);
-      if (res.isError || !res.data?.url) {
+      if (res.isError || !res.data?.fileUrl) {
         showToast(
           res.errorMessage ??
             t('UNEXPECTED_ERROR', 'Something went wrong'),
@@ -83,8 +83,8 @@ export function BlindPayKycSourceOfFundsStep({
         );
         return;
       }
-      setFileUrl(res.data.url);
-      mergeDraft({ sourceOfFundsDocFile: res.data.url });
+      setFileUrl(res.data.fileUrl);
+      mergeDraft({ sourceOfFundsDocFile: res.data.fileUrl });
       clearKey('sourceOfFundsDocFile');
     },
     [clearKey, mergeDraft, uploadDocument],

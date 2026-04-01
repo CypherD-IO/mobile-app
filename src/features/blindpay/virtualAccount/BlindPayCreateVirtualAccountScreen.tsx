@@ -22,7 +22,7 @@ import { showToast } from '../../../containers/utilities/toastUtility';
 import useBlindPayApi from '../api';
 import type { BlindPayUploadFilePart } from '../api';
 import ReviewCard from '../components/ReviewCard';
-import { BlindpayUploadCategory } from '../types';
+import { BlindpayUploadBucket } from '../types';
 import { HdWalletContext } from '../../../core/util';
 import BlindPayIdCaptureModal, {
   type CapturedFile,
@@ -136,24 +136,24 @@ function GroupedRow({
         onPress={onPress}
         disabled={!isDropdown}
         className={`px-[16px] min-h-[52px] flex-row items-center justify-between ${
-          hasError ? 'bg-red-50' : ''
+          hasError ? 'bg-red20' : ''
         }`}>
         <CyDView className='flex-1 py-[8px]'>
           {value ? (
             <>
-              <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>{label}</CyDText>
+              <CyDText className='text-[11px] text-n100 leading-[1.5]'>{label}</CyDText>
               <CyDText className='text-[16px] font-medium text-base400 tracking-[-0.8px]'>
                 {value}
               </CyDText>
             </>
           ) : (
-            <CyDText className='text-[16px] font-normal text-[#A6AEBB] tracking-[-0.8px]'>
+            <CyDText className='text-[16px] font-normal text-n70 tracking-[-0.8px]'>
               {label}
             </CyDText>
           )}
         </CyDView>
         {isDropdown ? (
-          <CyDMaterialDesignIcons name='chevron-down' size={20} className='text-[#A6AEBB]' />
+          <CyDMaterialDesignIcons name='chevron-down' size={20} className='text-n70' />
         ) : null}
       </CyDTouchView>
       {!isLast ? <CyDView className='h-px bg-n50' /> : null}
@@ -223,10 +223,10 @@ export default function BlindPayCreateVirtualAccountScreen() {
         setProfileEmail(p.email ?? '');
         setProfileCountry(p.country ?? '');
         // Pre-fill if already set
-        if (p.account_purpose) setAccountPurpose(p.account_purpose);
-        if (p.estimated_annual_revenue) setEstimatedRevenue(p.estimated_annual_revenue);
+        if (p.accountPurpose) setAccountPurpose(p.accountPurpose);
+        if (p.estimatedAnnualRevenue) setEstimatedRevenue(p.estimatedAnnualRevenue);
         if (p.occupation) setOccupation(p.occupation);
-        if (p.source_of_funds_doc_type) setSourceOfFunds(p.source_of_funds_doc_type);
+        if (p.sourceOfFundsDocType) setSourceOfFunds(p.sourceOfFundsDocType);
       }
       setProfileLoaded(true);
     });
@@ -270,14 +270,11 @@ export default function BlindPayCreateVirtualAccountScreen() {
 
       setUploading(true);
       setUploadErrors(prev => ({ ...prev, [target]: '' }));
-      const category = target === 'soleProp'
-        ? BlindpayUploadCategory.INCORPORATION_DOC
-        : BlindpayUploadCategory.SOURCE_OF_FUNDS;
       const filePart: BlindPayUploadFilePart = { uri: file.uri, name: file.name, type: file.type };
-      const res = await uploadDocument(filePart, category);
+      const res = await uploadDocument(filePart, BlindpayUploadBucket.ONBOARDING);
       setUploading(false);
 
-      if (res.isError || !res.data?.url) {
+      if (res.isError || !res.data?.fileUrl) {
         const msg = res.errorMessage ?? 'Upload failed';
         setUploadErrors(prev => ({ ...prev, [target]: msg }));
         showToast(msg, 'error');
@@ -285,10 +282,10 @@ export default function BlindPayCreateVirtualAccountScreen() {
       }
 
       if (target === 'soleProp') {
-        setSolePropDocUrl(res.data.url);
+        setSolePropDocUrl(res.data.fileUrl);
         clearError('solePropDoc');
       } else {
-        setSourceOfFundsDocUrl(res.data.url);
+        setSourceOfFundsDocUrl(res.data.fileUrl);
         clearError('sourceFundsDoc');
       }
       setUploadErrors(prev => ({ ...prev, [target]: '' }));
@@ -331,14 +328,14 @@ export default function BlindPayCreateVirtualAccountScreen() {
 
     // 2. Create virtual account
     const vaBody: Record<string, any> = {
-      bankingPartner: 'cfsb',
+      bankingPartner: 'citi',
       token: 'USDC',
       blockchainWalletId: walletAddress,
     };
     if (solePropDocType) vaBody.soleProprietorDocType = solePropDocType;
     if (solePropDocUrl) vaBody.soleProprietorDocFile = solePropDocUrl;
 
-    const vaRes = await createVirtualAccount(vaBody);
+    const vaRes = await createVirtualAccount(vaBody as { bankingPartner: string; token: string; blockchainWalletId: string });
     setSubmitting(false);
 
     if (vaRes.isError) {
@@ -440,7 +437,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
             </CyDText>
 
             {/* What is it */}
-            <CyDView className='bg-white border border-n30 rounded-[12px] p-[16px] gap-[8px]'>
+            <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[8px]'>
               <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
                 What is a virtual account?
               </CyDText>
@@ -450,7 +447,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
             </CyDView>
 
             {/* Eligibility */}
-            <CyDView className='bg-white border border-n30 rounded-[12px] p-[16px] gap-[8px]'>
+            <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[8px]'>
               <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
                 Who is eligible?
               </CyDText>
@@ -482,7 +479,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
             </CyDView>
 
             {/* Payment rails */}
-            <CyDView className='bg-white border border-n30 rounded-[12px] p-[16px] gap-[8px]'>
+            <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[8px]'>
               <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
                 Supported payment rails
               </CyDText>
@@ -518,7 +515,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
         ) : step === 1 ? (
           <CyDView className='gap-[6px]'>
             <CyDText className={LABEL_CLASS}>Account Information</CyDText>
-            <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+            <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
               <GroupedRow
                 label='Account Purpose'
 
@@ -531,11 +528,11 @@ export default function BlindPayCreateVirtualAccountScreen() {
                 <>
                   <CyDView
                     className={`px-[16px] min-h-[52px] justify-center ${
-                      errors.accountPurposeOther ? 'bg-red-50' : ''
+                      errors.accountPurposeOther ? 'bg-red20' : ''
                     }`}>
                     <CyDView className='py-[8px]'>
                       {accountPurposeOther ? (
-                        <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>
+                        <CyDText className='text-[11px] text-n100 leading-[1.5]'>
                           Please specify
                         </CyDText>
                       ) : null}
@@ -576,15 +573,15 @@ export default function BlindPayCreateVirtualAccountScreen() {
         ) : step === 2 ? (
           <CyDView className='gap-[6px]'>
             <CyDText className={LABEL_CLASS}>Occupation & Source of Funds</CyDText>
-            <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+            <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
               {/* Occupation text input */}
               <CyDView
                 className={`px-[16px] min-h-[52px] justify-center ${
-                  errors.occupation ? 'bg-red-50' : ''
+                  errors.occupation ? 'bg-red20' : ''
                 }`}>
                 <CyDView className='py-[8px]'>
                   {occupation ? (
-                    <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>Occupation</CyDText>
+                    <CyDText className='text-[11px] text-n100 leading-[1.5]'>Occupation</CyDText>
                   ) : null}
                   <CyDTextInput
                     className='text-[16px] font-medium text-base400 tracking-[-0.8px] leading-[1.4] py-0 bg-transparent'
@@ -622,7 +619,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
             {/* Sole Proprietor Doc */}
             <CyDView className='gap-[6px]'>
               <CyDText className={LABEL_CLASS}>Sole Proprietor Document</CyDText>
-              <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+              <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
                 <GroupedRow
                   label='Document Type'
 
@@ -653,7 +650,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
                   }`}>
                   <CyDView className='bg-[#FFF8E1] items-center py-[20px] gap-[6px]'>
                     {uploadErrors[doc.key] ? (
-                      <CyDView className='w-[48px] h-[48px] bg-red-500 rounded-[12px] items-center justify-center'>
+                      <CyDView className='w-[48px] h-[48px] bg-red200 rounded-[12px] items-center justify-center'>
                         <CyDMaterialDesignIcons name='alert-circle-outline' size={24} className='text-white' />
                       </CyDView>
                     ) : doc.url ? (
@@ -732,7 +729,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
         <CyDView className='flex-1 h-[6px] rounded-full bg-n40 overflow-hidden'>
           <CyDView
             className='h-full rounded-full bg-base400'
-            style={{ width: `${(((step + 1) / totalSteps) * 100).toFixed(1)}%` }}
+            style={{ width: `${(((step + 1) / totalSteps) * 100).toFixed(1)}%` as any }}
           />
         </CyDView>
         <CyDTouchView
@@ -741,7 +738,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
           className='rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center'>
           <CyDView className='relative items-center justify-center'>
             <CyDText
-              className={`text-[16px] font-semibold text-base400 tracking-[-0.8px] ${
+              className={`text-[16px] font-semibold text-black tracking-[-0.8px] ${
                 submitting ? 'opacity-0' : ''
               }`}>
               {isLastStep ? 'Submit' : 'Next'}
@@ -820,7 +817,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
                 <CyDTouchView
                   onPress={() => setShowHelp(false)}
                   className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center mt-[20px]'>
-                  <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+                  <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
                     Got it
                   </CyDText>
                 </CyDTouchView>

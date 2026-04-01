@@ -139,7 +139,7 @@ function KycInProgressScreen({
         <CyDTouchView
           onPress={onGoHome}
           className='rounded-full h-[52px] bg-[#FBC02D] items-center justify-center mt-[8px]'>
-          <CyDText className='text-[20px] font-semibold text-base400 tracking-[-1px]'>
+          <CyDText className='text-[20px] font-semibold text-black tracking-[-1px]'>
             {String(t('GO_HOME', 'Go Home'))}
           </CyDText>
         </CyDTouchView>
@@ -253,7 +253,7 @@ function KycVerifyingScreen({
         <CyDTouchView
           onPress={onGoHome}
           className='rounded-full h-[52px] bg-[#FBC02D] items-center justify-center mt-[8px]'>
-          <CyDText className='text-[20px] font-semibold text-base400 tracking-[-1px]'>
+          <CyDText className='text-[20px] font-semibold text-black tracking-[-1px]'>
             {String(t('GO_HOME', 'Go Home'))}
           </CyDText>
         </CyDTouchView>
@@ -305,7 +305,7 @@ function KycApprovedScreen({ onContinue }: { onContinue: () => void }) {
         <CyDTouchView
           onPress={onContinue}
           className='rounded-full h-[48px] w-full bg-[#FFDE59] items-center justify-center shadow-sm'>
-          <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+          <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
             {String(t('BLINDPAY_START_SENDING', 'Start sending money'))}
           </CyDText>
         </CyDTouchView>
@@ -380,7 +380,7 @@ function KycRejectedScreen({
         <CyDTouchView
           onPress={onGoHome}
           className='rounded-full h-[52px] bg-[#FBC02D] items-center justify-center'>
-          <CyDText className='text-[20px] font-semibold text-base400 tracking-[-1px]'>
+          <CyDText className='text-[20px] font-semibold text-black tracking-[-1px]'>
             {String(t('GO_HOME', 'Go Home'))}
           </CyDText>
         </CyDTouchView>
@@ -498,9 +498,8 @@ function DashboardScreen({
       subtitle: String(
         t('TX_HISTORY_DESC', 'View past transactions'),
       ),
-      onPress: () => {
-        showToast(t('COMING_SOON', 'Coming soon'));
-      },
+      onPress: () =>
+        navigation.navigate(screenTitle.BLINDPAY_PAYOUT_HISTORY),
     },
   ];
 
@@ -548,7 +547,7 @@ function DashboardScreen({
           <CyDTouchView
             key={item.title}
             onPress={item.onPress}
-            className='bg-white border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
+            className='bg-n0 border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
             <CyDView className='w-[44px] h-[44px] rounded-[12px] bg-[#FDF3D8] items-center justify-center'>
               <CyDMaterialDesignIcons
                 name={item.icon}
@@ -633,12 +632,10 @@ export default function BlindPayOnboardingScreen() {
   const resolvePhase = useCallback(
     (data?: BlindpayUserConfig): ScreenPhase => {
       if (!data) return 'onboarding';
-      // Profile endpoint returns `id` + `kyc_status` (snake_case, flat).
-      // Status endpoint returns `receiverId` + `receiverStatus` (camelCase, nested under blindpay).
       const hasReceiver = Boolean(data.receiverId ?? data.id);
       if (!hasReceiver) return 'onboarding';
       const status = (
-        data.receiverStatus ?? data.kyc_status ?? ''
+        data.receiverStatus ?? data.kycStatus ?? ''
       ).toLowerCase();
       if (status === 'approved') return 'approved';
       if (status === 'rejected') return 'rejected';
@@ -651,8 +648,8 @@ export default function BlindPayOnboardingScreen() {
   /** Extract warnings from both camelCase and snake_case response shapes. */
   const extractWarnings = useCallback(
     (data?: BlindpayUserConfig): string | undefined => {
-      const kyc = data?.kycWarnings ?? data?.kyc_warnings ?? [];
-      const fraud = data?.fraudWarnings ?? data?.fraud_warnings ?? [];
+      const kyc = data?.kycWarnings ?? [];
+      const fraud = data?.fraudWarnings ?? [];
       const combined = [...kyc, ...fraud].join('\n');
       return combined || undefined;
     },
@@ -686,6 +683,16 @@ export default function BlindPayOnboardingScreen() {
           if (phase === 'rejected') {
             setRejectedReason(extractWarnings(bp));
           }
+
+          // No receiver and no TOS → show FX preview
+          if (phase === 'onboarding') {
+            const hasAcceptedTos = Boolean(bp?.tosId) || Boolean(bp?.tosAcceptedAt);
+            if (!hasAcceptedTos) {
+              navigation.navigate(screenTitle.BLINDPAY_FX_PREVIEW);
+              return;
+            }
+          }
+
           setScreenPhase(phase);
         })
         .catch(() => {
@@ -792,26 +799,10 @@ export default function BlindPayOnboardingScreen() {
         return;
       }
 
-      const init = await initiateTerms();
-      if (init.isError) {
-        showToast(
-          init.errorMessage ??
-            t('UNEXPECTED_ERROR', 'Something went wrong'),
-          'error',
-        );
-        return;
-      }
-      if (!init.data?.url) {
-        showToast(
-          t('UNEXPECTED_ERROR', 'Something went wrong'),
-          'error',
-        );
-        return;
-      }
-      navigation.navigate(screenTitle.BLINDPAY_TOS_WEBVIEW, {
-        url: init.data.url,
-        idempotencyKey: init.data.idempotencyKey,
-      });
+      // No TOS accepted yet — show FX preview instead of going directly to TOS
+      navigation.navigate(screenTitle.BLINDPAY_FX_PREVIEW);
+      return;
+
     } catch (e) {
       showToast(parseErrorMessage(e), 'error');
     } finally {
@@ -911,7 +902,7 @@ export default function BlindPayOnboardingScreen() {
                 className='bg-[#FBC02D] rounded-full min-h-[52px] min-w-[120px] px-[32px] flex-row items-center justify-center'>
                 <CyDView className='relative min-w-[72px] items-center justify-center py-[2px]'>
                   <CyDText
-                    className={`text-[20px] font-semibold text-base400 tracking-[-1px] leading-[1.3] ${
+                    className={`text-[20px] font-semibold text-black tracking-[-1px] leading-[1.3] ${
                       submitting ? 'opacity-0' : ''
                     }`}>
                     {String(t('NEXT', 'Next'))}

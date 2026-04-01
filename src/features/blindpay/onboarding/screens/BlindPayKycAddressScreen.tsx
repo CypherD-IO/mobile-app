@@ -1,15 +1,11 @@
 import React, {
   useCallback,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 import { Keyboard, TextInput } from 'react-native';
 import { t } from 'i18next';
-import countryMaster from '../../../../../assets/datasets/countryMaster';
-import ChooseCountryModal from '../../../../components/v2/ChooseCountryModal';
-import type { ICountry } from '../../../../models/cardApplication.model';
 import {
   CyDIcons,
   CyDText,
@@ -31,22 +27,6 @@ const INPUT_CLASS =
   'flex-1 bg-transparent text-[16px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] py-0';
 const PLACEHOLDER_COLOR = '#A6AEBB';
 
-function resolveCountryFromIso2(iso2: string): ICountry | undefined {
-  const entry = countryMaster.find(
-    c => c.Iso2?.toUpperCase() === iso2.toUpperCase(),
-  );
-  if (!entry) return undefined;
-  return {
-    name: entry.name,
-    dialCode: entry.dial_code ?? '',
-    flag: entry.unicode_flag ?? '',
-    Iso2: entry.Iso2 ?? '',
-    Iso3: entry.Iso3 ?? '',
-    currency: entry.currency ?? '',
-    unicode_flag: entry.unicode_flag ?? '',
-  };
-}
-
 export function BlindPayKycAddressStep({
   advance,
   onReady,
@@ -62,27 +42,11 @@ export function BlindPayKycAddressStep({
     draft.stateProvinceRegion ?? '',
   );
   const [postalCode, setPostalCode] = useState(draft.postalCode ?? '');
-  const [phoneInput, setPhoneInput] = useState(() => {
-    const saved = draft.phoneNumber ?? '';
-    // Strip dial code if already present from a previous visit
-    const dial = resolveCountryFromIso2(draft.country || 'US')?.dialCode ?? '+1';
-    return saved.startsWith(dial) ? saved.slice(dial.length) : saved;
-  });
+  const [phoneInput, setPhoneInput] = useState(draft.phoneNumber ?? '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const countryLabel =
     BLINDPAY_COUNTRY_OPTIONS.find(c => c.code === country)?.name ?? '';
-
-  const defaultPhoneCountry = useMemo(
-    () => resolveCountryFromIso2(country || 'US'),
-    [country],
-  );
-
-  const [selectedPhoneCountry, setSelectedPhoneCountry] = useState<
-    ICountry | undefined
-  >(defaultPhoneCountry);
-  const [phoneCountryModalVisible, setPhoneCountryModalVisible] =
-    useState(false);
 
   const addr2Ref = useRef<TextInput>(null);
   const cityRef = useRef<TextInput>(null);
@@ -95,10 +59,9 @@ export function BlindPayKycAddressStep({
   }, []);
 
   const handleNext = useCallback(() => {
-    const fullPhone = `${selectedPhoneCountry?.dialCode ?? ''}${phoneInput.trim()}`;
     const parsed = blindPayKycAddressSchema.safeParse({
       country,
-      phoneNumber: fullPhone,
+      phoneNumber: phoneInput.trim(),
       addressLine1,
       city,
       stateProvinceRegion,
@@ -129,7 +92,6 @@ export function BlindPayKycAddressStep({
     phoneInput,
     postalCode,
     stateProvinceRegion,
-    selectedPhoneCountry?.dialCode,
   ]);
 
   useLayoutEffect(() => {
@@ -138,11 +100,6 @@ export function BlindPayKycAddressStep({
 
   return (
     <>
-      <ChooseCountryModal
-        isModalVisible={phoneCountryModalVisible}
-        setModalVisible={setPhoneCountryModalVisible}
-        selectedCountryState={[selectedPhoneCountry, setSelectedPhoneCountry]}
-      />
       <BlindPayCountryPickerModal
         visible={countryPickerOpen}
         selectedCode={country}
@@ -290,42 +247,25 @@ export function BlindPayKycAddressStep({
           {String(t('PHONE_NUMBER', 'Phone Number'))}
         </CyDText>
 
-        <CyDView className='flex-row gap-[4px]'>
-          <CyDTouchView
-            className='w-[80px] min-h-[48px] rounded-[8px] bg-n20 flex-row items-center justify-center'
-            onPress={() => setPhoneCountryModalVisible(true)}>
-            <CyDText className='text-[16px] font-medium text-base400 tracking-[-0.8px]'>
-              {selectedPhoneCountry?.dialCode ?? '+1'}
-            </CyDText>
-            <CyDIcons
-              name='chevron-down'
-              size={16}
-              className='text-n400 ml-[4px]'
-            />
-          </CyDTouchView>
-
-          <CyDView className='flex-1 min-h-[48px] rounded-[8px] bg-n20 justify-center px-[12px]'>
-            <CyDTextInput
-              ref={phoneRef}
-              className={INPUT_CLASS}
-              value={phoneInput}
-              onChangeText={v => {
-                setPhoneInput(v);
-                clearKey('phoneNumber');
-              }}
-              placeholder={String(
-                t('BLINDPAY_PHONE_PLACEHOLDER', 'Phone number'),
-              )}
-              placeholderTextColor={PLACEHOLDER_COLOR}
-              keyboardType='phone-pad'
-              autoCorrect={false}
-              returnKeyType='done'
-              blurOnSubmit
-              onSubmitEditing={() => {
-                Keyboard.dismiss();
-              }}
-            />
-          </CyDView>
+        <CyDView className='min-h-[48px] rounded-[8px] bg-n20 justify-center px-[12px]'>
+          <CyDTextInput
+            ref={phoneRef}
+            className={INPUT_CLASS}
+            value={phoneInput}
+            onChangeText={v => {
+              setPhoneInput(v);
+              clearKey('phoneNumber');
+            }}
+            placeholder='+12025551234'
+            placeholderTextColor={PLACEHOLDER_COLOR}
+            keyboardType='phone-pad'
+            autoCorrect={false}
+            returnKeyType='done'
+            blurOnSubmit
+            onSubmitEditing={() => {
+              Keyboard.dismiss();
+            }}
+          />
         </CyDView>
 
         <BlindPayKycFieldError message={fieldErrors.phoneNumber} />

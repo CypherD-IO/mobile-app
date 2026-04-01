@@ -74,8 +74,8 @@ export default function BlindPayLimitHistoryScreen() {
       setHistory(
         [...res.data].sort(
           (a: any, b: any) =>
-            new Date(b.created_at).getTime() -
-            new Date(a.created_at).getTime(),
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime(),
         ),
       );
     }
@@ -127,11 +127,11 @@ export default function BlindPayLimitHistoryScreen() {
           {history.map((item: any) => (
             <CyDView
               key={item.id}
-              className='bg-white border border-n30 rounded-[12px] p-[16px] gap-[10px]'>
+              className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[10px]'>
               {/* Header: date + status */}
               <CyDView className='flex-row items-center justify-between'>
                 <CyDText className='text-[14px] font-semibold text-base400'>
-                  {new Date(item.created_at).toLocaleDateString('en-US', {
+                  {new Date(item.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
@@ -142,7 +142,7 @@ export default function BlindPayLimitHistoryScreen() {
 
               {/* Requested limits */}
               {[
-                { label: 'Per Transaction', val: item.per_transaction },
+                { label: 'Per Transaction', val: item.perTransaction },
                 { label: 'Daily', val: item.daily },
                 { label: 'Monthly', val: item.monthly },
               ]
@@ -166,15 +166,15 @@ export default function BlindPayLimitHistoryScreen() {
                   Document
                 </CyDText>
                 <CyDText className='text-[13px] font-medium text-base400'>
-                  {humanizeDocType(item.supporting_document_type)}
+                  {humanizeDocType(item.supportingDocumentType)}
                 </CyDText>
               </CyDView>
 
               {/* Doc link */}
-              {item.supporting_document_file ? (
+              {item.supportingDocumentFile ? (
                 <CyDTouchView
                   onPress={() => {
-                    void Linking.openURL(item.supporting_document_file);
+                    void Linking.openURL(item.supportingDocumentFile);
                   }}
                   className='flex-row items-center gap-[4px]'>
                   <CyDMaterialDesignIcons
@@ -191,10 +191,10 @@ export default function BlindPayLimitHistoryScreen() {
               {/* Resolved date */}
               {item.status !== 'pending' &&
               item.status !== 'in_review' &&
-              item.updated_at ? (
+              item.updatedAt ? (
                 <CyDText className='text-[11px] text-n200'>
                   Resolved:{' '}
-                  {new Date(item.updated_at).toLocaleDateString('en-US', {
+                  {new Date(item.updatedAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',

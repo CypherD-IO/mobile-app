@@ -192,7 +192,7 @@ export default function BlindPaySelfieCaptureModal({
               onPress={() => {
                 void takePhoto();
               }}
-              className='h-[58px] rounded-full border border-n30 bg-white items-center justify-center'>
+              className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
               <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
                 {String(t('BLINDPAY_SNAP', 'Snap a photo'))}
               </CyDText>
@@ -257,7 +257,7 @@ export default function BlindPaySelfieCaptureModal({
         <CyDView className='px-[16px] gap-[16px] pb-[16px]'>
           <CyDTouchView
             onPress={handleRetake}
-            className='h-[58px] rounded-full border border-n30 bg-white items-center justify-center'>
+            className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
             <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
               {String(t('BLINDPAY_RETAKE', 'Retake photo'))}
             </CyDText>
@@ -265,7 +265,7 @@ export default function BlindPaySelfieCaptureModal({
           <CyDTouchView
             onPress={handleContinue}
             className='h-[58px] rounded-full bg-[#FFDE59] items-center justify-center'>
-            <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+            <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
               {String(t('CONTINUE', 'Continue'))}
             </CyDText>
           </CyDTouchView>
