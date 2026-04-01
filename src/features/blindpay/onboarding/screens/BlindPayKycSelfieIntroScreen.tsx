@@ -42,7 +42,7 @@ export function BlindPayKycSelfieIntroStep({
         </CyDText>
       </CyDView>
 
-      <CyDText className='text-[14px] font-semibold text-[#C99200] leading-[1.45] tracking-[-0.6px]'>
+      <CyDText className='text-[14px] font-semibold text-n200 leading-[1.45] tracking-[-0.6px]'>
         {String(
           t(
             'BLINDPAY_SELFIE_INTRO_WARNING',

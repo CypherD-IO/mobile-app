@@ -98,7 +98,7 @@ export function BlindPayKycSelfieStep({
               ? 'border-errorText'
               : 'border-transparent'
           }`}>
-          <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
+          <CyDView className='bg-n10 items-center py-[24px] gap-[8px]'>
             {uploadError ? (
               <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
                 <CyDMaterialDesignIcons
@@ -124,7 +124,7 @@ export function BlindPayKycSelfieStep({
                 />
               </CyDView>
             )}
-            <CyDText className='text-[16px] font-semibold text-[#C99200] tracking-[-0.8px]'>
+            <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
               {String(t('BLINDPAY_SELFIE_LABEL', 'Selfie'))}
             </CyDText>
           </CyDView>
@@ -135,11 +135,11 @@ export function BlindPayKycSelfieStep({
             <CyDMaterialDesignIcons
               name={uploadError ? 'alert-circle-outline' : 'information-outline'}
               size={16}
-              className={uploadError ? 'text-red-600' : 'text-[#C99200]'}
+              className={uploadError ? 'text-red-600' : 'text-n200'}
             />
             <CyDText
               className={`text-[13px] font-medium tracking-[-0.4px] flex-1 ${
-                uploadError ? 'text-red-600' : 'text-[#C99200]'
+                uploadError ? 'text-red-600' : 'text-n200'
               }`}
               numberOfLines={2}>
               {uploadError

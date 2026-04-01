@@ -738,9 +738,9 @@ export default function BlindPaySendMoneyScreen() {
 
           {/* Low balance warning */}
           {balanceLow ? (
-            <CyDView className='flex-row items-start gap-[8px] bg-[#FFF8E1] rounded-[8px] p-[10px]'>
-              <CyDMaterialDesignIcons name='information-outline' size={18} className='text-[#C99200]' />
-              <CyDText className='text-[13px] font-medium text-[#846000] flex-1 leading-[1.45]'>
+            <CyDView className='flex-row items-start gap-[8px] bg-n10 rounded-[8px] p-[10px]'>
+              <CyDMaterialDesignIcons name='information-outline' size={18} className='text-n200' />
+              <CyDText className='text-[13px] font-medium text-n200 flex-1 leading-[1.45]'>
                 It seems your balance is a bit low to send funds. You might want to top up your wallet or switch tokens.
               </CyDText>
             </CyDView>

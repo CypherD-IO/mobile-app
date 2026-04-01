@@ -288,34 +288,13 @@ export default function BlindPayFxPreviewScreen() {
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] flex-1'>
-          Convert Preview
+          Send Money
         </CyDText>
       </CyDView>
 
       <CyDKeyboardAwareScrollView className='flex-1' enableOnAndroid enableAutomaticScroll
         keyboardShouldPersistTaps='handled'
         contentContainerClassName='px-[16px] pb-[24px] gap-[12px]'>
-
-        {/* Complete KYC button */}
-        <CyDTouchView
-          onPress={handleCompleteKyc}
-          disabled={tosLoading}
-          className={`rounded-full h-[44px] items-center justify-center ${tosLoading ? 'bg-n40' : 'bg-[#F7C645]'}`}>
-          <CyDView className='relative items-center justify-center'>
-            <CyDText className={`text-[14px] font-bold text-black tracking-[-0.16px] ${tosLoading ? 'opacity-0' : ''}`}>
-              Complete KYC to Get Started
-            </CyDText>
-            {tosLoading ? <CyDView className='absolute inset-0 items-center justify-center'><ActivityIndicator color='#0D0D0D' /></CyDView> : null}
-          </CyDView>
-        </CyDTouchView>
-
-        {/* Info banner */}
-        <CyDView className='bg-[#FFF9EA] border border-n30 rounded-[12px] p-[12px] flex-row items-center gap-[8px]'>
-          <CyDMaterialDesignIcons name='information-outline' size={18} className='text-[#C99200]' />
-          <CyDText className='text-[12px] font-medium text-base400 flex-1 leading-[1.45]'>
-            Preview exchange rates. Complete KYC to start sending money.
-          </CyDText>
-        </CyDView>
 
         {/* Amount card */}
         <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[14px]'>
@@ -381,24 +360,49 @@ export default function BlindPayFxPreviewScreen() {
             ) : null}
           </CyDView>
         ) : null}
+
+        {/* KYC info box */}
+        <CyDView className='bg-n10 border border-n50 rounded-[12px] p-[14px] flex-row items-start gap-[10px]'>
+          <CyDMaterialDesignIcons name='information-outline' size={18} className='text-n200 mt-[1px]' />
+          <CyDText className='text-[13px] font-medium text-n200 flex-1 leading-[1.45]'>
+            To send money, you need to complete identity verification.{' '}
+            <CyDText onPress={handleCompleteKyc} className='text-[13px] font-bold text-p200 underline'>
+              Complete KYC
+            </CyDText>
+          </CyDText>
+        </CyDView>
       </CyDKeyboardAwareScrollView>
 
-      {/* Bottom: Get Quote */}
+      {/* Bottom CTA */}
       <CyDView className='px-[16px] pt-[12px] border-t border-n40'
         style={{ paddingBottom: Math.max(8, insets.bottom) }}>
-        <CyDTouchView
-          onPress={() => void handleGetQuote()}
-          disabled={quoteLoading || (!cryptoAmount && !fiatAmount)}
-          className={`rounded-full h-[48px] items-center justify-center ${
-            (cryptoAmount || fiatAmount) && !quoteLoading ? 'bg-[#F7C645]' : 'bg-n40'
-          }`}>
-          <CyDView className='relative items-center justify-center'>
-            <CyDText className={`text-[16px] font-bold text-black tracking-[-0.16px] ${quoteLoading ? 'opacity-0' : ''}`}>
-              Get Quote
-            </CyDText>
-            {quoteLoading ? <CyDView className='absolute inset-0 items-center justify-center'><ActivityIndicator color='#0D0D0D' /></CyDView> : null}
-          </CyDView>
-        </CyDTouchView>
+        {quoteResult ? (
+          <CyDTouchView
+            onPress={handleCompleteKyc}
+            disabled={tosLoading}
+            className={`rounded-full h-[48px] items-center justify-center ${tosLoading ? 'bg-n40' : 'bg-[#F7C645]'}`}>
+            <CyDView className='relative items-center justify-center'>
+              <CyDText className={`text-[16px] font-bold text-black tracking-[-0.16px] ${tosLoading ? 'opacity-0' : ''}`}>
+                Complete KYC to Get Started
+              </CyDText>
+              {tosLoading ? <CyDView className='absolute inset-0 items-center justify-center'><ActivityIndicator color='#0D0D0D' /></CyDView> : null}
+            </CyDView>
+          </CyDTouchView>
+        ) : (
+          <CyDTouchView
+            onPress={() => void handleGetQuote()}
+            disabled={quoteLoading || (!cryptoAmount && !fiatAmount)}
+            className={`rounded-full h-[48px] items-center justify-center ${
+              (cryptoAmount || fiatAmount) && !quoteLoading ? 'bg-[#F7C645]' : 'bg-n40'
+            }`}>
+            <CyDView className='relative items-center justify-center'>
+              <CyDText className={`text-[16px] font-bold text-black tracking-[-0.16px] ${quoteLoading ? 'opacity-0' : ''}`}>
+                Get Quote
+              </CyDText>
+              {quoteLoading ? <CyDView className='absolute inset-0 items-center justify-center'><ActivityIndicator color='#0D0D0D' /></CyDView> : null}
+            </CyDView>
+          </CyDTouchView>
+        )}
       </CyDView>
 
       {tokenPickerOpen ? renderTokenPicker() : null}

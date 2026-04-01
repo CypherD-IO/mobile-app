@@ -214,7 +214,7 @@ export function BlindPayKycIdDocsStep({
               ? 'border-errorText'
               : 'border-transparent'
           }`}>
-          <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
+          <CyDView className='bg-n10 items-center py-[24px] gap-[8px]'>
             {uploadError.front ? (
               <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
                 <CyDMaterialDesignIcons
@@ -240,7 +240,7 @@ export function BlindPayKycIdDocsStep({
                 />
               </CyDView>
             )}
-            <CyDText className='text-[16px] font-semibold text-[#C99200] tracking-[-0.8px]'>
+            <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
               {String(t('BLINDPAY_FRONT_SIDE', 'Front Side'))}
             </CyDText>
           </CyDView>
@@ -251,11 +251,11 @@ export function BlindPayKycIdDocsStep({
             <CyDMaterialDesignIcons
               name={uploadError.front ? 'alert-circle-outline' : 'information-outline'}
               size={16}
-              className={uploadError.front ? 'text-red-600' : 'text-[#C99200]'}
+              className={uploadError.front ? 'text-red-600' : 'text-n200'}
             />
             <CyDText
               className={`text-[13px] font-medium tracking-[-0.4px] flex-1 ${
-                uploadError.front ? 'text-red-600' : 'text-[#C99200]'
+                uploadError.front ? 'text-red-600' : 'text-n200'
               }`}
               numberOfLines={2}>
               {uploadError.front
@@ -290,7 +290,7 @@ export function BlindPayKycIdDocsStep({
                 ? 'border-errorText'
                 : 'border-transparent'
             }`}>
-            <CyDView className='bg-[#FFF8E1] items-center py-[24px] gap-[8px]'>
+            <CyDView className='bg-n10 items-center py-[24px] gap-[8px]'>
               {uploadError.back ? (
                 <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
                   <CyDMaterialDesignIcons
@@ -316,7 +316,7 @@ export function BlindPayKycIdDocsStep({
                   />
                 </CyDView>
               )}
-              <CyDText className='text-[16px] font-semibold text-[#C99200] tracking-[-0.8px]'>
+              <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
                 {String(t('BLINDPAY_BACK_SIDE', 'Back Side'))}
               </CyDText>
             </CyDView>
@@ -327,11 +327,11 @@ export function BlindPayKycIdDocsStep({
               <CyDMaterialDesignIcons
                 name={uploadError.back ? 'alert-circle-outline' : 'information-outline'}
                 size={16}
-                className={uploadError.back ? 'text-red-600' : 'text-[#C99200]'}
+                className={uploadError.back ? 'text-red-600' : 'text-n200'}
               />
               <CyDText
                 className={`text-[13px] font-medium tracking-[-0.4px] flex-1 ${
-                  uploadError.back ? 'text-red-600' : 'text-[#C99200]'
+                  uploadError.back ? 'text-red-600' : 'text-n200'
                 }`}
                 numberOfLines={2}>
                 {uploadError.back

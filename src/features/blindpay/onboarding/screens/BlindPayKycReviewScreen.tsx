@@ -131,10 +131,10 @@ export function BlindPayKycReviewStep({
       />
 
       {highRisk ? (
-        <CyDView className='rounded-[12px] bg-[#FFF8E1] px-[16px] py-[14px] flex-row gap-[10px]'>
+        <CyDView className='rounded-[12px] bg-n10 px-[16px] py-[14px] flex-row gap-[10px]'>
           <CyDText className='text-[18px] leading-[1]'>{'\u23F3'}</CyDText>
           <CyDView className='flex-1 gap-[4px]'>
-            <CyDText className='text-[14px] font-semibold text-[#C99200] tracking-[-0.6px]'>
+            <CyDText className='text-[14px] font-semibold text-n200 tracking-[-0.6px]'>
               {String(
                 t(
                   'BLINDPAY_ENHANCED_KYC_TITLE',
@@ -142,7 +142,7 @@ export function BlindPayKycReviewStep({
                 ),
               )}
             </CyDText>
-            <CyDText className='text-[13px] font-medium text-[#C99200] tracking-[-0.4px] leading-[1.45]'>
+            <CyDText className='text-[13px] font-medium text-n200 tracking-[-0.4px] leading-[1.45]'>
               {String(
                 t(
                   'BLINDPAY_ENHANCED_KYC_TIME',
