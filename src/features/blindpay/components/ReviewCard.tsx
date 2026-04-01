@@ -15,7 +15,7 @@ export default function ReviewCard({ title, rows }: ReviewCardProps) {
   if (visibleRows.length === 0) return null;
 
   return (
-    <CyDView className='bg-white border border-n30 rounded-[12px] p-[16px] shadow-sm gap-[6px]'>
+    <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] shadow-sm gap-[6px]'>
       <CyDText className='text-[14px] font-semibold text-base400 mb-[2px]'>
         {title}
       </CyDText>
@@ -23,7 +23,7 @@ export default function ReviewCard({ title, rows }: ReviewCardProps) {
         <CyDView
           key={`${row.label}-${idx}`}
           className='flex-row items-center justify-between'>
-          <CyDText className='text-[14px] font-normal text-[#A6AEBB] tracking-[-0.6px]'>
+          <CyDText className='text-[14px] font-normal text-n70 tracking-[-0.6px]'>
             {row.label}
           </CyDText>
           <CyDText className='text-[14px] font-medium text-base400 tracking-[-0.6px]'>

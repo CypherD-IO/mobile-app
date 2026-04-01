@@ -24,7 +24,7 @@ import { showToast } from '../../../containers/utilities/toastUtility';
 import useBlindPayApi from '../api';
 import type { BlindPayUploadFilePart } from '../api';
 import ReviewCard from '../components/ReviewCard';
-import { BlindpayUploadCategory } from '../types';
+import { BlindpayUploadBucket } from '../types';
 import BlindPayIdCaptureModal, {
   type CapturedFile,
 } from '../onboarding/BlindPayIdCaptureModal';
@@ -174,15 +174,15 @@ export default function BlindPayRequestLimitIncreaseScreen() {
       setUploading(true);
       setUploadError('');
       const filePart: BlindPayUploadFilePart = { uri: file.uri, name: file.name, type: file.type };
-      const res = await uploadDocument(filePart, BlindpayUploadCategory.TRANSACTION_DOCUMENT);
+      const res = await uploadDocument(filePart, BlindpayUploadBucket.LIMIT_INCREASE);
       setUploading(false);
-      if (res.isError || !res.data?.url) {
+      if (res.isError || !res.data?.fileUrl) {
         const msg = res.errorMessage ?? 'Upload failed';
         setUploadError(msg);
         showToast(msg, 'error');
         return;
       }
-      setDocUrl(res.data.url);
+      setDocUrl(res.data.fileUrl);
       clearError('docFile');
       setUploadError('');
     },
@@ -275,7 +275,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
         contentContainerClassName='px-[16px] pb-[24px] gap-[16px]'>
 
         {step === 0 ? (
-          <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+          <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
             {[
               {
                 key: 'perTx',
@@ -303,11 +303,11 @@ export default function BlindPayRequestLimitIncreaseScreen() {
               <CyDView key={row.key}>
                 <CyDView
                   className={`px-[16px] min-h-[52px] justify-center ${
-                    errors[row.key] ? 'bg-red-50' : ''
+                    errors[row.key] ? 'bg-red20' : ''
                   }`}>
                   <CyDView className='py-[8px]'>
                     {row.value ? (
-                      <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>
+                      <CyDText className='text-[11px] text-n100 leading-[1.5]'>
                         {row.label}
                         {row.current != null
                           ? ` (current: ${formatCents(row.current)})`
@@ -356,16 +356,16 @@ export default function BlindPayRequestLimitIncreaseScreen() {
         ) : step === 1 ? (
           <>
             {/* Document type in grouped card */}
-            <CyDView className='border border-n50 rounded-[8px] bg-[#FAFBFB] overflow-hidden'>
+            <CyDView className='border border-n50 rounded-[8px] bg-n10 overflow-hidden'>
               <CyDTouchView
                 onPress={() => setDocPickerOpen(true)}
                 className={`px-[16px] min-h-[52px] flex-row items-center justify-between ${
-                  errors.docType ? 'bg-red-50' : ''
+                  errors.docType ? 'bg-red20' : ''
                 }`}>
                 <CyDView className='flex-1 py-[8px]'>
                   {docType ? (
                     <>
-                      <CyDText className='text-[11px] text-[#B3B9C4] leading-[1.5]'>
+                      <CyDText className='text-[11px] text-n100 leading-[1.5]'>
                         Document Type
                       </CyDText>
                       <CyDText className='text-[16px] font-medium text-base400 tracking-[-0.8px]'>
@@ -373,12 +373,12 @@ export default function BlindPayRequestLimitIncreaseScreen() {
                       </CyDText>
                     </>
                   ) : (
-                    <CyDText className='text-[16px] font-normal text-[#A6AEBB] tracking-[-0.8px]'>
+                    <CyDText className='text-[16px] font-normal text-n70 tracking-[-0.8px]'>
                       Document Type
                     </CyDText>
                   )}
                 </CyDView>
-                <CyDMaterialDesignIcons name='chevron-down' size={20} className='text-[#A6AEBB]' />
+                <CyDMaterialDesignIcons name='chevron-down' size={20} className='text-n70' />
               </CyDTouchView>
               {errors.docType ? (
                 <CyDText className='text-[11px] text-errorText px-[16px] pb-[4px]'>
@@ -396,7 +396,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
               }`}>
               <CyDView className='bg-[#FFF8E1] items-center py-[20px] gap-[6px]'>
                 {uploadError ? (
-                  <CyDView className='w-[48px] h-[48px] bg-red-500 rounded-[12px] items-center justify-center'>
+                  <CyDView className='w-[48px] h-[48px] bg-red200 rounded-[12px] items-center justify-center'>
                     <CyDMaterialDesignIcons name='alert-circle-outline' size={24} className='text-white' />
                   </CyDView>
                 ) : docUrl ? (
@@ -469,7 +469,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
         <CyDView className='flex-1 h-[6px] rounded-full bg-n40 overflow-hidden'>
           <CyDView
             className='h-full rounded-full bg-base400'
-            style={{ width: `${(((step + 1) / totalSteps) * 100).toFixed(1)}%` }}
+            style={{ width: `${(((step + 1) / totalSteps) * 100).toFixed(1)}%` as any }}
           />
         </CyDView>
         <CyDTouchView
@@ -478,7 +478,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
           className='rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center'>
           <CyDView className='relative items-center justify-center'>
             <CyDText
-              className={`text-[16px] font-semibold text-base400 tracking-[-0.8px] ${
+              className={`text-[16px] font-semibold text-black tracking-[-0.8px] ${
                 submitting ? 'opacity-0' : ''
               }`}>
               {isLastStep ? 'Submit' : 'Next'}
@@ -528,7 +528,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
                 <CyDTouchView
                   onPress={() => setShowHelp(false)}
                   className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center mt-[20px]'>
-                  <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+                  <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
                     Got it
                   </CyDText>
                 </CyDTouchView>

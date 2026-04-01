@@ -85,7 +85,7 @@ export default function BlindPayKycChrome({
           <CyDView
             className='h-full rounded-full bg-base400'
             style={{
-              width: `${(((stepIndex + 1) / totalSteps) * 100).toFixed(1)}%`,
+              width: `${(((stepIndex + 1) / totalSteps) * 100).toFixed(1)}%` as any,
             }}
           />
         </CyDView>
@@ -98,7 +98,7 @@ export default function BlindPayKycChrome({
             className='rounded-full min-h-[52px] min-w-[120px] bg-[#FBC02D] px-[32px] flex-row items-center justify-center'>
             <CyDView className='relative min-w-[72px] items-center justify-center py-[2px]'>
               <CyDText
-                className={`text-[20px] font-semibold text-base400 tracking-[-1px] leading-[1.3] ${
+                className={`text-[20px] font-semibold text-black tracking-[-1px] leading-[1.3] ${
                   nextLoading ? 'opacity-0' : ''
                 }`}>
                 {nextLabel ?? String(t('NEXT', 'Next'))}
