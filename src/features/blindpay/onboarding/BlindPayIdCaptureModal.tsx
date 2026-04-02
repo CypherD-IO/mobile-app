@@ -11,13 +11,13 @@ import {
   CyDIcons,
   CyDImage,
   CyDMaterialDesignIcons,
-  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindComponents';
 import { pickBlindPaySingleFile } from './pickBlindPayFile';
 import { showToast } from '../../../containers/utilities/toastUtility';
+
 
 export interface CapturedFile {
   uri: string;
@@ -37,105 +37,13 @@ interface BlindPayIdCaptureModalProps {
 type CaptureState = 'options' | 'capture' | 'preview';
 
 // ── Tips bottom sheet ────────────────────────────────────────────
-function TipsBottomSheet({ onClose }: { onClose: () => void }) {
-  const insets = useSafeAreaInsets();
-  return (
-    <Modal
-      visible
-      transparent
-      animationType='slide'
-      onRequestClose={onClose}>
-      <CyDView className='flex-1 bg-black/60'>
-        <CyDTouchView className='flex-1' onPress={onClose} />
-        <CyDView
-          className='bg-n20 rounded-t-[24px]'
-          style={{ paddingBottom: Math.max(8, insets.bottom) }}>
-          {/* Drag handle */}
-          <CyDView className='items-center pt-[12px] pb-[16px]'>
-            <CyDView className='w-[32px] h-[4px] bg-[#C2C7D0] rounded-[5px]' />
-          </CyDView>
+const TIPS_TEXT = `1. Avoid backlighting from windows or bright light sources when taking your ID photo.
 
-          <CyDScrollView className='px-[16px]'>
-            {/* Title */}
-            <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] mb-[16px]'>
-              {String(
-                t('BLINDPAY_TIPS_TITLE', 'Tips on capturing'),
-              )}
-            </CyDText>
+2. If the image appears blurry, gradually move your ID closer to the camera until it comes into focus.
 
-            {/* ID frame illustration */}
-            <CyDView className='bg-black rounded-[16px] h-[206px] items-center justify-center mb-[20px]'>
-              {/* Scanner corners */}
-              <CyDView className='w-[310px] h-[160px]'>
-                {/* Top-left corner */}
-                <CyDView className='absolute top-0 left-0 w-[40px] h-[40px] border-t-2 border-l-2 border-white rounded-tl-[8px]' />
-                {/* Top-right corner */}
-                <CyDView className='absolute top-0 right-0 w-[40px] h-[40px] border-t-2 border-r-2 border-white rounded-tr-[8px]' />
-                {/* Bottom-left corner */}
-                <CyDView className='absolute bottom-0 left-0 w-[40px] h-[40px] border-b-2 border-l-2 border-white rounded-bl-[8px]' />
-                {/* Bottom-right corner */}
-                <CyDView className='absolute bottom-0 right-0 w-[40px] h-[40px] border-b-2 border-r-2 border-white rounded-br-[8px]' />
-                {/* Center icon */}
-                <CyDView className='flex-1 items-center justify-center'>
-                  <CyDMaterialDesignIcons
-                    name='card-account-details-outline'
-                    size={52}
-                    className='text-white'
-                  />
-                </CyDView>
-              </CyDView>
-            </CyDView>
+3. Ensure that the entire ID is visible within the frame.
 
-            {/* Tips */}
-            <CyDView className='gap-[12px] mb-[24px]'>
-              <CyDText className='text-[14px] font-medium text-[#444] leading-[1.45] tracking-[-0.6px]'>
-                {String(
-                  t(
-                    'BLINDPAY_TIP_1',
-                    '1. Avoid backlighting from windows or bright light sources when taking your ID photo.',
-                  ),
-                )}
-              </CyDText>
-              <CyDText className='text-[14px] font-medium text-[#444] leading-[1.45] tracking-[-0.6px]'>
-                {String(
-                  t(
-                    'BLINDPAY_TIP_2',
-                    '2. If the image appears blurry, gradually move your ID closer to the camera until it comes into focus.',
-                  ),
-                )}
-              </CyDText>
-              <CyDText className='text-[14px] font-medium text-[#444] leading-[1.45] tracking-[-0.6px]'>
-                {String(
-                  t(
-                    'BLINDPAY_TIP_3',
-                    '3. Ensure that the entire ID is visible within the frame.',
-                  ),
-                )}
-              </CyDText>
-              <CyDText className='text-[14px] font-medium text-[#444] leading-[1.45] tracking-[-0.6px]'>
-                {String(
-                  t(
-                    'BLINDPAY_TIP_4',
-                    '4. Make sure the ID fits neatly within the four corners of the photo.',
-                  ),
-                )}
-              </CyDText>
-            </CyDView>
-
-            {/* Continue button */}
-            <CyDTouchView
-              onPress={onClose}
-              className='h-[48px] rounded-full bg-[#F7C645] items-center justify-center shadow-sm'>
-              <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
-                {String(t('CONTINUE', 'Continue'))}
-              </CyDText>
-            </CyDTouchView>
-          </CyDScrollView>
-        </CyDView>
-      </CyDView>
-    </Modal>
-  );
-}
+4. Make sure the ID fits neatly within the four corners of the photo.`;
 
 // ── Main modal ───────────────────────────────────────────────────
 export default function BlindPayIdCaptureModal({
@@ -156,9 +64,11 @@ export default function BlindPayIdCaptureModal({
 
   useEffect(() => {
     if (visible) {
-      setState('options');
+      setState('capture');
       setCapturedFile(null);
       setShowTips(false);
+      // Auto-request camera permission when opening
+      if (!hasPermission) void requestPermission();
     }
   }, [visible]);
 
@@ -169,8 +79,8 @@ export default function BlindPayIdCaptureModal({
 
   const headerTitle =
     side === 'front'
-      ? String(t('BLINDPAY_FRONT_ID', 'Front of your ID'))
-      : String(t('BLINDPAY_BACK_ID', 'Back of your ID'));
+      ? `Front of your ${docTypeName}`
+      : `Back of your ${docTypeName}`;
 
   const pickFile = useCallback(async () => {
     const file = await pickBlindPaySingleFile();
@@ -199,7 +109,7 @@ export default function BlindPayIdCaptureModal({
 
   const handleRetake = useCallback(() => {
     setCapturedFile(null);
-    setState('options');
+    setState('capture');
   }, []);
 
   const handleContinue = useCallback(() => {
@@ -210,7 +120,7 @@ export default function BlindPayIdCaptureModal({
 
   const handleClose = useCallback(() => {
     setCapturedFile(null);
-    setState('options');
+    setState('capture');
     onClose();
   }, [onClose]);
 
@@ -332,7 +242,7 @@ export default function BlindPayIdCaptureModal({
     return (
       <Modal
         visible={visible}
-        animationType='fade'
+        animationType='slide'
         presentationStyle='fullScreen'
         onRequestClose={handleClose}>
         <StatusBar barStyle='light-content' />
@@ -340,17 +250,16 @@ export default function BlindPayIdCaptureModal({
           className='flex-1 bg-black'
           style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
           {/* Header */}
-          <CyDView className='flex-row items-center px-[16px] h-[64px] gap-[12px]'>
-            <CyDTouchView
-              onPress={() => {
-                setState('options');
-              }}
-              hitSlop={12}>
+          <CyDView className='flex-row items-center justify-between px-[16px] h-[64px]'>
+            <CyDTouchView onPress={handleClose} hitSlop={12}>
               <CyDIcons name='arrow-left' size={24} className='text-white' />
             </CyDTouchView>
-            <CyDText className='text-[20px] font-normal text-white tracking-[-1px] leading-[1.4] flex-1'>
+            <CyDText className='text-[16px] font-semibold text-white tracking-[-0.4px]'>
               {headerTitle}
             </CyDText>
+            <CyDTouchView onPress={() => setShowTips(true)} hitSlop={12}>
+              <CyDMaterialDesignIcons name='help-circle-outline' size={22} className='text-white' />
+            </CyDTouchView>
           </CyDView>
 
           {/* Instruction */}
@@ -406,36 +315,51 @@ export default function BlindPayIdCaptureModal({
             </CyDText>
           </CyDView>
 
-          {/* Bottom */}
-          <CyDView className='px-[16px] gap-[16px] pb-[16px]'>
+          {/* Bottom buttons */}
+          <CyDView className='px-[16px] gap-[10px] pb-[16px]'>
             <CyDTouchView
-              onPress={() => {
-                setShowTips(true);
-              }}
-              className='flex-row items-center justify-center gap-[6px]'>
-              <CyDIcons
-                name='help-circle-outline'
-                size={24}
-                className='text-white'
-              />
-              <CyDText className='text-[14px] font-medium text-white tracking-[-0.6px]'>
-                {String(t('BLINDPAY_HELP_CAPTURE', 'Help on capturing'))}
+              onPress={() => { void pickFile(); }}
+              className='h-[52px] rounded-full border border-[#444] items-center justify-center'>
+              <CyDText className='text-[16px] font-semibold text-white tracking-[-0.16px]'>
+                Upload a photo
               </CyDText>
             </CyDTouchView>
             <CyDTouchView
-              onPress={() => {
-                void takePhoto();
-              }}
-              className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
-              <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
-                {String(t('BLINDPAY_SNAP', 'Snap a photo'))}
+              onPress={() => { void takePhoto(); }}
+              className='h-[52px] rounded-full bg-[#F7C645] items-center justify-center'>
+              <CyDText className='text-[16px] font-semibold text-black tracking-[-0.16px]'>
+                Snap a photo
               </CyDText>
             </CyDTouchView>
           </CyDView>
         </CyDView>
 
+        {/* Tips overlay */}
         {showTips ? (
-          <TipsBottomSheet onClose={() => setShowTips(false)} />
+          <Modal visible transparent animationType='slide' onRequestClose={() => setShowTips(false)}>
+            <CyDView className='flex-1 justify-end bg-black/60'>
+              <CyDTouchView className='flex-1' onPress={() => setShowTips(false)} />
+              <CyDView>
+                <CyDView className='bg-n20 rounded-t-[24px] px-[16px]'
+                  style={{ paddingBottom: Math.max(16, insets.bottom) }}>
+                  <CyDView className='items-center pt-[12px] pb-[16px]'>
+                    <CyDView className='w-[32px] h-[4px] bg-n50 rounded-[5px]' />
+                  </CyDView>
+                  <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] mb-[12px]'>
+                    Tips on capturing
+                  </CyDText>
+                  <CyDText className='text-[14px] font-medium text-n200 leading-[1.5] tracking-[-0.4px] mb-[20px]'>
+                    {TIPS_TEXT}
+                  </CyDText>
+                  <CyDTouchView
+                    onPress={() => setShowTips(false)}
+                    className='h-[48px] rounded-full bg-[#F7C645] items-center justify-center'>
+                    <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>Got it</CyDText>
+                  </CyDTouchView>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+          </Modal>
         ) : null}
       </Modal>
     );
@@ -445,8 +369,8 @@ export default function BlindPayIdCaptureModal({
   return (
     <Modal
       visible={visible}
-      animationType='fade'
-      presentationStyle='fullScreen'
+      animationType='slide'
+      presentationStyle='pageSheet'
       onRequestClose={handleClose}>
       <StatusBar barStyle='light-content' />
       <CyDView
@@ -456,7 +380,7 @@ export default function BlindPayIdCaptureModal({
         <CyDView className='flex-row items-center px-[16px] h-[64px] gap-[12px]'>
           <CyDTouchView
             onPress={() => {
-              setState('options');
+              setState('capture');
             }}
             hitSlop={12}>
             <CyDIcons name='arrow-left' size={24} className='text-white' />

@@ -349,7 +349,7 @@ export default function BlindPayRequestLimitIncreaseScreen() {
                     {errors[row.key]}
                   </CyDText>
                 ) : null}
-                {!row.isLast ? <CyDView className='h-px bg-n50' /> : null}
+                {!row.isLast ? <CyDView className='h-[0.5px] bg-n50' /> : null}
               </CyDView>
             ))}
           </CyDView>

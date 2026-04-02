@@ -50,3 +50,12 @@ export const hostWorker = {
   setHost,
   getHost,
 };
+
+/**
+ * Returns true when NOT running against production backend.
+ * Covers both __DEV__ (local) and TestFlight/beta builds that use dev API.
+ * Use this instead of __DEV__ to gate testnet features.
+ */
+export function isNonProdEnv(): boolean {
+  return ARCH_HOST !== PRODUCTION_ARCH_HOST;
+}

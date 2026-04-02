@@ -192,7 +192,7 @@ function GroupedDetailCard({ section }: { section: FieldSection }) {
               </CyDView>
             </CyDView>
             {idx < visibleRows.length - 1 ? (
-              <CyDView className='h-px bg-n50' />
+              <CyDView className='h-[0.5px] bg-n50' />
             ) : null}
           </CyDView>
         ))}

@@ -1,7 +1,5 @@
 import React, { useCallback, useLayoutEffect, useState } from 'react';
-import { Modal } from 'react-native';
 import { t } from 'i18next';
-import Animated, { SlideInDown } from 'react-native-reanimated';
 import {
   CyDMaterialDesignIcons,
   CyDText,
@@ -17,6 +15,7 @@ import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
 import { omitFieldError, zodErrorToFieldMap } from '../blindpayKycZodUtils';
 import BlindPayKycFieldError from '../BlindPayKycFieldError';
 import { useBlindPayOnboardingForm } from '../BlindPayOnboardingFormContext';
+import useBlindPaySheet from '../../components/BlindPayDropdownSheet';
 
 const ID_TYPE_OPTIONS = [
   { value: BlindpayIdDocType.PASSPORT, label: 'Passport' },
@@ -25,26 +24,11 @@ const ID_TYPE_OPTIONS = [
 ] as const;
 
 const POA_TYPE_OPTIONS = [
-  {
-    value: BlindpayProofOfAddressDocType.UTILITY_BILL,
-    label: 'Utility bill',
-  },
-  {
-    value: BlindpayProofOfAddressDocType.BANK_STATEMENT,
-    label: 'Bank statement',
-  },
-  {
-    value: BlindpayProofOfAddressDocType.RENTAL_AGREEMENT,
-    label: 'Rental agreement',
-  },
-  {
-    value: BlindpayProofOfAddressDocType.TAX_DOCUMENT,
-    label: 'Tax document',
-  },
-  {
-    value: BlindpayProofOfAddressDocType.GOVERNMENT_CORRESPONDENCE,
-    label: 'Government correspondence',
-  },
+  { value: BlindpayProofOfAddressDocType.UTILITY_BILL, label: 'Utility bill' },
+  { value: BlindpayProofOfAddressDocType.BANK_STATEMENT, label: 'Bank statement' },
+  { value: BlindpayProofOfAddressDocType.RENTAL_AGREEMENT, label: 'Rental agreement' },
+  { value: BlindpayProofOfAddressDocType.TAX_DOCUMENT, label: 'Tax document' },
+  { value: BlindpayProofOfAddressDocType.GOVERNMENT_CORRESPONDENCE, label: 'Government correspondence' },
 ] as const;
 
 function selectorClass(hasError: boolean): string {
@@ -58,15 +42,10 @@ export function BlindPayKycDocTypeStep({
   onReady,
 }: BlindPayKycStepProps) {
   const { draft, mergeDraft } = useBlindPayOnboardingForm();
+  const { openDropdown } = useBlindPaySheet();
 
-  const [idDocType, setIdDocType] = useState<BlindpayIdDocType | undefined>(
-    draft.idDocType,
-  );
-  const [poaDocType, setPoaDocType] = useState<
-    BlindpayProofOfAddressDocType | undefined
-  >(draft.proofOfAddressDocType);
-  const [idTypeOpen, setIdTypeOpen] = useState(false);
-  const [poaTypeOpen, setPoaTypeOpen] = useState(false);
+  const [idDocType, setIdDocType] = useState<BlindpayIdDocType | undefined>(draft.idDocType);
+  const [poaDocType, setPoaDocType] = useState<BlindpayProofOfAddressDocType | undefined>(draft.proofOfAddressDocType);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const clearKey = useCallback((key: string) => {
@@ -102,7 +81,17 @@ export function BlindPayKycDocTypeStep({
         </CyDText>
         <CyDTouchView
           onPress={() => {
-            setIdTypeOpen(true);
+            openDropdown({
+              title: String(t('BLINDPAY_IDENTITY_DOC', 'Identity Document')),
+              options: ID_TYPE_OPTIONS.map(o => ({ value: o.value, label: o.label })),
+              selected: idDocType ?? '',
+              onSelect: value => {
+                const v = value as BlindpayIdDocType;
+                setIdDocType(v);
+                mergeDraft({ idDocType: v });
+                clearKey('idDocType');
+              },
+            });
           }}
           className={selectorClass(!!fieldErrors.idDocType)}>
           <CyDText
@@ -113,11 +102,7 @@ export function BlindPayKycDocTypeStep({
               ? ID_TYPE_OPTIONS.find(o => o.value === idDocType)?.label
               : String(t('SELECT', 'Select'))}
           </CyDText>
-          <CyDMaterialDesignIcons
-            name='chevron-right'
-            size={24}
-            className='text-base400'
-          />
+          <CyDMaterialDesignIcons name='chevron-right' size={24} className='text-base400' />
         </CyDTouchView>
         <BlindPayKycFieldError message={fieldErrors.idDocType} />
       </CyDView>
@@ -128,7 +113,17 @@ export function BlindPayKycDocTypeStep({
         </CyDText>
         <CyDTouchView
           onPress={() => {
-            setPoaTypeOpen(true);
+            openDropdown({
+              title: String(t('BLINDPAY_POA_DOC', 'Proof of address')),
+              options: POA_TYPE_OPTIONS.map(o => ({ value: o.value, label: o.label })),
+              selected: poaDocType ?? '',
+              onSelect: value => {
+                const v = value as BlindpayProofOfAddressDocType;
+                setPoaDocType(v);
+                mergeDraft({ proofOfAddressDocType: v });
+                clearKey('proofOfAddressDocType');
+              },
+            });
           }}
           className={selectorClass(!!fieldErrors.proofOfAddressDocType)}>
           <CyDText
@@ -139,112 +134,10 @@ export function BlindPayKycDocTypeStep({
               ? POA_TYPE_OPTIONS.find(o => o.value === poaDocType)?.label
               : String(t('SELECT', 'Select'))}
           </CyDText>
-          <CyDMaterialDesignIcons
-            name='chevron-right'
-            size={24}
-            className='text-base400'
-          />
+          <CyDMaterialDesignIcons name='chevron-right' size={24} className='text-base400' />
         </CyDTouchView>
         <BlindPayKycFieldError message={fieldErrors.proofOfAddressDocType} />
       </CyDView>
-
-      <Modal
-        visible={idTypeOpen}
-        transparent
-        animationType='fade'
-        onRequestClose={() => {
-          setIdTypeOpen(false);
-        }}>
-        <CyDView className='flex-1 justify-end bg-black/40'>
-          <CyDTouchView
-            className='flex-1'
-            onPress={() => {
-              setIdTypeOpen(false);
-            }}
-          />
-          <Animated.View entering={SlideInDown.duration(300)}>
-            <CyDView className='bg-n0 rounded-t-[24px] px-[16px] pb-[32px]'>
-              <CyDView className='items-center pt-[12px] pb-[16px]'>
-                <CyDView className='w-[32px] h-[4px] bg-[#C2C7D0] rounded-[5px]' />
-              </CyDView>
-              <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] mb-[8px]'>
-                {String(t('BLINDPAY_IDENTITY_DOC', 'Identity Document'))}
-              </CyDText>
-              {ID_TYPE_OPTIONS.map(opt => (
-                <CyDTouchView
-                  key={opt.value}
-                  onPress={() => {
-                    setIdDocType(opt.value);
-                    mergeDraft({ idDocType: opt.value });
-                    setIdTypeOpen(false);
-                    clearKey('idDocType');
-                  }}
-                  className='py-[14px] border-b border-n40 flex-row items-center justify-between'>
-                  <CyDText className='text-[16px] font-medium text-base400'>
-                    {opt.label}
-                  </CyDText>
-                  {idDocType === opt.value ? (
-                    <CyDMaterialDesignIcons
-                      name='check'
-                      size={20}
-                      className='text-[#FBC02D]'
-                    />
-                  ) : null}
-                </CyDTouchView>
-              ))}
-            </CyDView>
-          </Animated.View>
-        </CyDView>
-      </Modal>
-
-      <Modal
-        visible={poaTypeOpen}
-        transparent
-        animationType='fade'
-        onRequestClose={() => {
-          setPoaTypeOpen(false);
-        }}>
-        <CyDView className='flex-1 justify-end bg-black/40'>
-          <CyDTouchView
-            className='flex-1'
-            onPress={() => {
-              setPoaTypeOpen(false);
-            }}
-          />
-          <Animated.View entering={SlideInDown.duration(300)}>
-            <CyDView className='bg-n0 rounded-t-[24px] px-[16px] pb-[32px]'>
-              <CyDView className='items-center pt-[12px] pb-[16px]'>
-                <CyDView className='w-[32px] h-[4px] bg-[#C2C7D0] rounded-[5px]' />
-              </CyDView>
-              <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] mb-[8px]'>
-                {String(t('BLINDPAY_POA_DOC', 'Proof of address'))}
-              </CyDText>
-              {POA_TYPE_OPTIONS.map(opt => (
-                <CyDTouchView
-                  key={opt.value}
-                  onPress={() => {
-                    setPoaDocType(opt.value);
-                    mergeDraft({ proofOfAddressDocType: opt.value });
-                    setPoaTypeOpen(false);
-                    clearKey('proofOfAddressDocType');
-                  }}
-                  className='py-[14px] border-b border-n40 flex-row items-center justify-between'>
-                  <CyDText className='text-[16px] font-medium text-base400'>
-                    {opt.label}
-                  </CyDText>
-                  {poaDocType === opt.value ? (
-                    <CyDMaterialDesignIcons
-                      name='check'
-                      size={20}
-                      className='text-[#FBC02D]'
-                    />
-                  ) : null}
-                </CyDTouchView>
-              ))}
-            </CyDView>
-          </Animated.View>
-        </CyDView>
-      </Modal>
     </>
   );
 }

@@ -20,15 +20,13 @@ import { useBlindPayOnboardingForm } from '../BlindPayOnboardingFormContext';
 import BlindPayIdCaptureModal, {
   type CapturedFile,
 } from '../BlindPayIdCaptureModal';
-import BlindPayPhotoRequirements from '../BlindPayPhotoRequirements';
 
 const POA_TYPE_LABELS: Record<BlindpayProofOfAddressDocType, string> = {
   [BlindpayProofOfAddressDocType.UTILITY_BILL]: 'Utility Bill',
   [BlindpayProofOfAddressDocType.BANK_STATEMENT]: 'Bank Statement',
   [BlindpayProofOfAddressDocType.RENTAL_AGREEMENT]: 'Rental Agreement',
   [BlindpayProofOfAddressDocType.TAX_DOCUMENT]: 'Tax Document',
-  [BlindpayProofOfAddressDocType.GOVERNMENT_CORRESPONDENCE]:
-    'Government Correspondence',
+  [BlindpayProofOfAddressDocType.GOVERNMENT_CORRESPONDENCE]: 'Government Correspondence',
 };
 
 export function BlindPayKycProofOfAddressStep({
@@ -59,14 +57,10 @@ export function BlindPayKycProofOfAddressStep({
         name: file.name,
         type: file.type,
       };
-      const res = await uploadDocument(
-        filePart,
-        BlindpayUploadBucket.ONBOARDING,
-      );
+      const res = await uploadDocument(filePart, BlindpayUploadBucket.ONBOARDING);
       setUploading(false);
       if (res.isError || !res.data?.fileUrl) {
-        const msg = String(
-          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
+        const msg = String(res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(msg);
         showToast(msg, 'error');
         return;
@@ -101,8 +95,10 @@ export function BlindPayKycProofOfAddressStep({
       canNext: !uploading,
       onNext: handleNext,
       nextLoading: uploading,
+      titleOverride: docTypeName,
+      subtitleOverride: `Upload a clear photo of your ${docTypeName.toLowerCase()}. Must match the address provided earlier.`,
     });
-  }, [handleNext, onReady, uploading]);
+  }, [handleNext, onReady, uploading, docTypeName]);
 
   return (
     <>
@@ -111,85 +107,44 @@ export function BlindPayKycProofOfAddressStep({
           {String(t('BLINDPAY_POA_UPLOAD', 'Proof of address document'))}
         </CyDText>
         <CyDTouchView
-          onPress={() => {
-            setCaptureOpen(true);
-          }}
+          onPress={() => setCaptureOpen(true)}
           disabled={uploading}
           className={`rounded-[16px] overflow-hidden border ${
-            fieldErrors.proofOfAddressDocFile || uploadError
-              ? 'border-errorText'
-              : 'border-transparent'
+            fieldErrors.proofOfAddressDocFile || uploadError ? 'border-errorText' : 'border-n30'
           }`}>
           <CyDView className='bg-n10 items-center py-[24px] gap-[8px]'>
             {uploadError ? (
-              <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
-                <CyDMaterialDesignIcons
-                  name='alert-circle-outline'
-                  size={28}
-                  className='text-white'
-                />
+              <CyDView className='w-[48px] h-[48px] bg-red-500 rounded-[12px] items-center justify-center'>
+                <CyDMaterialDesignIcons name='alert-circle-outline' size={24} className='text-white' />
               </CyDView>
             ) : fileUrl ? (
-              <CyDView className='w-[56px] h-[56px] bg-green-500 rounded-[14px] items-center justify-center'>
-                <CyDMaterialDesignIcons
-                  name='check'
-                  size={28}
-                  className='text-white'
-                />
+              <CyDView className='w-[48px] h-[48px] bg-green-500 rounded-[12px] items-center justify-center'>
+                <CyDMaterialDesignIcons name='check' size={24} className='text-white' />
               </CyDView>
             ) : (
-              <CyDView className='w-[56px] h-[56px] bg-[#FBC02D] rounded-[14px] items-center justify-center'>
-                <CyDMaterialDesignIcons
-                  name='file-document-outline'
-                  size={28}
-                  className='text-white'
-                />
+              <CyDView className='w-[48px] h-[48px] bg-[#FBC02D] rounded-[12px] items-center justify-center'>
+                <CyDMaterialDesignIcons name='file-document-outline' size={24} className='text-white' />
               </CyDView>
             )}
-            <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
-              {docTypeName}
+            <CyDText className='text-[14px] font-semibold text-n200 tracking-[-0.6px]'>
+              {fileUrl
+                ? String(t('BLINDPAY_PHOTO_UPLOADED', 'Photo uploaded'))
+                : docTypeName}
             </CyDText>
-          </CyDView>
-          <CyDView
-            className={`px-[16px] py-[10px] flex-row items-center gap-[6px] ${
-              uploadError ? 'bg-red-100' : 'bg-[#FFE082]'
-            }`}>
-            <CyDMaterialDesignIcons
-              name={uploadError ? 'alert-circle-outline' : 'information-outline'}
-              size={16}
-              className={uploadError ? 'text-red-600' : 'text-n200'}
-            />
-            <CyDText
-              className={`text-[13px] font-medium tracking-[-0.4px] flex-1 ${
-                uploadError ? 'text-red-600' : 'text-n200'
-              }`}
-              numberOfLines={2}>
-              {uploadError
-                ? uploadError
-                : fileUrl
-                  ? String(t('BLINDPAY_PHOTO_UPLOADED', 'Photo uploaded'))
-                  : String(
-                      t(
-                        'BLINDPAY_CAPTURE_HINT_SHORT',
-                        'Capture or upload a photo',
-                      ),
-                    )}
-            </CyDText>
+            {uploadError ? (
+              <CyDText className='text-[12px] font-medium text-red-500 px-[16px] text-center'>{uploadError}</CyDText>
+            ) : null}
           </CyDView>
         </CyDTouchView>
         <BlindPayKycFieldError message={fieldErrors.proofOfAddressDocFile} />
       </CyDView>
-
-      <BlindPayPhotoRequirements />
 
       <BlindPayIdCaptureModal
         visible={captureOpen}
         docTypeName={docTypeName}
         side='front'
         onContinue={handleCapture}
-        onClose={() => {
-          setCaptureOpen(false);
-        }}
+        onClose={() => setCaptureOpen(false)}
       />
     </>
   );

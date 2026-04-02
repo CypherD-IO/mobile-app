@@ -152,7 +152,7 @@ export function BlindPayKycAddressStep({
             />
           </CyDView>
 
-          <CyDView className='h-px bg-n50' />
+          <CyDView className='h-[0.5px] bg-n50' />
 
           <CyDView className='min-h-[48px] justify-center px-[12px]'>
             <CyDTextInput
@@ -173,7 +173,7 @@ export function BlindPayKycAddressStep({
             />
           </CyDView>
 
-          <CyDView className='h-px bg-n50' />
+          <CyDView className='h-[0.5px] bg-n50' />
 
           <CyDView className='min-h-[48px] justify-center px-[12px]'>
             <CyDTextInput
@@ -192,7 +192,7 @@ export function BlindPayKycAddressStep({
             />
           </CyDView>
 
-          <CyDView className='h-px bg-n50' />
+          <CyDView className='h-[0.5px] bg-n50' />
 
           <CyDView className='min-h-[48px] justify-center px-[12px]'>
             <CyDTextInput
@@ -215,7 +215,7 @@ export function BlindPayKycAddressStep({
             />
           </CyDView>
 
-          <CyDView className='h-px bg-n50' />
+          <CyDView className='h-[0.5px] bg-n50' />
 
           <CyDView className='min-h-[48px] justify-center px-[12px]'>
             <CyDTextInput
