@@ -7,6 +7,8 @@ import type {
   AddBankAccountRequest,
   BlindpayPayoutResponse,
   BlindpayStatusResponse,
+  IBlindpayAvailableRail,
+  IBlindpaySwiftLookupResult,
   CompleteTermsResponse,
   CreateReceiverRequest,
   CreateReceiverResponse,
@@ -35,6 +37,9 @@ const ENDPOINTS = {
   PAYOUTS: '/v1/blindpay/payouts',
   LIMITS: '/v1/blindpay/limits',
   LIMITS_INCREASE: '/v1/blindpay/limits/increase',
+  AVAILABLE_RAILS: '/v1/blindpay/available/rails',
+  AVAILABLE_SWIFT: '/v1/blindpay/available/swift',
+  AVAILABLE_NAICS: '/v1/blindpay/available/naics',
 } as const;
 
 export interface BlindPayUploadFilePart {
@@ -440,7 +445,36 @@ export default function useBlindPayApi() {
     return { isError: false, data: response.data };
   }
 
+  async function lookupSwift(code: string): Promise<{ isError: boolean; data?: IBlindpaySwiftLookupResult; errorMessage?: string }> {
+    const response = await getWithAuth(`${ENDPOINTS.AVAILABLE_SWIFT}/${code}`);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    // API may return a single object or an array — normalize to first result
+    const raw = response.data;
+    const result = Array.isArray(raw) ? raw[0] : raw;
+    if (!result) return { isError: true, errorMessage: 'No bank found' };
+    return { isError: false, data: result as IBlindpaySwiftLookupResult };
+  }
+
+  async function getAvailableNaics(): Promise<{ isError: boolean; data?: Array<{ label: string; value: string }>; errorMessage?: string }> {
+    const response = await getWithAuth(ENDPOINTS.AVAILABLE_NAICS);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    const data = response.data;
+    const list = Array.isArray(data) ? data : (data as any)?.naics ?? [];
+    return { isError: false, data: list as Array<{ label: string; value: string }> };
+  }
+
+  async function getAvailableRails(): Promise<{ isError: boolean; data?: IBlindpayAvailableRail[]; errorMessage?: string }> {
+    const response = await getWithAuth(ENDPOINTS.AVAILABLE_RAILS);
+    if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
+    const data = response.data;
+    const list = Array.isArray(data) ? data : (data as any)?.rails ?? [];
+    return { isError: false, data: list as IBlindpayAvailableRail[] };
+  }
+
   return {
+    lookupSwift,
+    getAvailableNaics,
+    getAvailableRails,
     getStatus,
     getProfile,
     initiateTerms,

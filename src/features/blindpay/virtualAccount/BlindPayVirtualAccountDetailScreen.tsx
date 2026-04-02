@@ -174,7 +174,7 @@ export default function BlindPayVirtualAccountDetailScreen() {
                   </CyDText>
                 </CyDView>
               </CyDView>
-              <CyDView className='h-px bg-n50' />
+              <CyDView className='h-[0.5px] bg-n50' />
 
               {/* Token (editable) */}
               <CyDView
@@ -199,7 +199,7 @@ export default function BlindPayVirtualAccountDetailScreen() {
                   />
                 </CyDView>
               </CyDView>
-              <CyDView className='h-px bg-n50' />
+              <CyDView className='h-[0.5px] bg-n50' />
 
               {/* Wallet ID (editable) */}
               <CyDView
