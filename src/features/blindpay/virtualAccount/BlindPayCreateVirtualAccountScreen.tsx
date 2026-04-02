@@ -156,7 +156,7 @@ function GroupedRow({
           <CyDMaterialDesignIcons name='chevron-down' size={20} className='text-n70' />
         ) : null}
       </CyDTouchView>
-      {!isLast ? <CyDView className='h-px bg-n50' /> : null}
+      {!isLast ? <CyDView className='h-[0.5px] bg-n50' /> : null}
     </>
   );
 }
@@ -547,7 +547,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
                       />
                     </CyDView>
                   </CyDView>
-                  <CyDView className='h-px bg-n50' />
+                  <CyDView className='h-[0.5px] bg-n50' />
                 </>
               ) : null}
               <GroupedRow
@@ -596,7 +596,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
                   />
                 </CyDView>
               </CyDView>
-              <CyDView className='h-px bg-n50' />
+              <CyDView className='h-[0.5px] bg-n50' />
               <GroupedRow
                 label='Source of Funds'
 

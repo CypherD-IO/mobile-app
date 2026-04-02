@@ -88,8 +88,9 @@ export default function BlindPayKycWizardScreen() {
     <BlindPayKycChrome
       stepIndex={step}
       totalSteps={steps.length}
-      title={chrome.title}
-      subtitle={chrome.subtitle}
+      title={handlers.titleOverride ?? chrome.title}
+      subtitle={handlers.subtitleOverride ?? chrome.subtitle}
+      helpText={chrome.helpText}
       onBack={goBack}
       onNext={() => {
         handlers.onNext();

@@ -253,7 +253,11 @@ export function PortfolioStackScreen() {
   }, []);
 
   return (
-    <PortfolioStack.Navigator initialRouteName={screenTitle.PORTFOLIO_SCREEN}>
+    <PortfolioStack.Navigator
+      initialRouteName={screenTitle.PORTFOLIO_SCREEN}
+      screenOptions={{
+        contentStyle: { backgroundColor: 'transparent' },
+      }}>
       <PortfolioStack.Screen
         name={screenTitle.PORTFOLIO_SCREEN}
         component={PortfolioScreen}
@@ -1045,7 +1049,11 @@ export function OptionsStackScreen({
   }, []);
 
   return (
-    <OptionsStack.Navigator initialRouteName={screenTitle.OPTIONS_SCREEN}>
+    <OptionsStack.Navigator
+      initialRouteName={screenTitle.OPTIONS_SCREEN}
+      screenOptions={{
+        contentStyle: { backgroundColor: 'transparent' },
+      }}>
       <OptionsStack.Screen
         name={screenTitle.OPTIONS_SCREEN}
         component={OptionsHub}

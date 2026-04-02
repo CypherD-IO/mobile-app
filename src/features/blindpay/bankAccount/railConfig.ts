@@ -1,5 +1,8 @@
 import { t } from 'i18next';
 import type { BlindpayBankAccountType } from '../types';
+import { BLINDPAY_COUNTRIES } from '../countries';
+
+const COUNTRY_OPTIONS = BLINDPAY_COUNTRIES.map(c => ({ value: c.value, label: c.label }));
 
 /** Field types for dynamic rendering. */
 export type FieldType = 'text' | 'dropdown' | 'phone';
@@ -16,6 +19,7 @@ export interface FieldDef {
   maxLength?: number;
   regex?: RegExp;
   regexMessage?: string;
+  searchable?: boolean;
 }
 
 export interface FieldGroup {
@@ -61,6 +65,101 @@ const ACCOUNT_CLASS_OPTIONS = [
   { value: 'business', label: 'Business' },
 ];
 
+const SPEI_INSTITUTION_OPTIONS = [
+  { value: '37006', label: 'BANCOMEXT' },
+  { value: '37009', label: 'BANOBRAS' },
+  { value: '37019', label: 'BANJERCITO' },
+  { value: '37135', label: 'NAFIN' },
+  { value: '37166', label: 'BABIEN' },
+  { value: '37168', label: 'HIPOTECARIA FED' },
+  { value: '40002', label: 'BANAMEX' },
+  { value: '40012', label: 'BBVA BANCOMER' },
+  { value: '40014', label: 'SANTANDER' },
+  { value: '40021', label: 'HSBC' },
+  { value: '40030', label: 'BAJIO' },
+  { value: '40036', label: 'INBURSA' },
+  { value: '40042', label: 'MIFEL' },
+  { value: '40044', label: 'SCOTIABANK' },
+  { value: '40058', label: 'BANREGIO' },
+  { value: '40059', label: 'INVEX' },
+  { value: '40060', label: 'BANSI' },
+  { value: '40062', label: 'AFIRME' },
+  { value: '40072', label: 'BANORTE' },
+  { value: '40106', label: 'BANK OF AMERICA' },
+  { value: '40108', label: 'MUFG' },
+  { value: '40110', label: 'JP MORGAN' },
+  { value: '40112', label: 'BMONEX' },
+  { value: '40113', label: 'VE POR MAS' },
+  { value: '40124', label: 'CITI MEXICO' },
+  { value: '40127', label: 'AZTECA' },
+  { value: '40128', label: 'KAPITAL' },
+  { value: '40129', label: 'BARCLAYS' },
+  { value: '40130', label: 'COMPARTAMOS' },
+  { value: '40132', label: 'MULTIVA BANCO' },
+  { value: '40133', label: 'ACTINVER' },
+  { value: '40136', label: 'INTERCAM BANCO' },
+  { value: '40137', label: 'BANCOPPEL' },
+  { value: '40138', label: 'UALA' },
+  { value: '40140', label: 'CONSUBANCO' },
+  { value: '40141', label: 'VOLKSWAGEN' },
+  { value: '40145', label: 'BBASE' },
+  { value: '40147', label: 'BANKAOOL' },
+  { value: '40148', label: 'PAGATODO' },
+  { value: '40150', label: 'INMOBILIARIO' },
+  { value: '40151', label: 'DONDE' },
+  { value: '40152', label: 'BANCREA' },
+  { value: '40154', label: 'BANCO COVALTO' },
+  { value: '40155', label: 'ICBC' },
+  { value: '40156', label: 'SABADELL' },
+  { value: '40157', label: 'SHINHAN' },
+  { value: '40158', label: 'MIZUHO BANK' },
+  { value: '40159', label: 'BANK OF CHINA' },
+  { value: '40160', label: 'BANCO S3' },
+  { value: '40167', label: 'HEY BANCO' },
+  { value: '90600', label: 'MONEXCB' },
+  { value: '90601', label: 'GBM' },
+  { value: '90602', label: 'MASARI' },
+  { value: '90605', label: 'VALUE' },
+  { value: '90616', label: 'FINAMEX' },
+  { value: '90617', label: 'VALMEX' },
+  { value: '90620', label: 'PROFUTURO' },
+  { value: '90631', label: 'CI BOLSA' },
+  { value: '90634', label: 'FINCOMUN' },
+  { value: '90638', label: 'NU MEXICO' },
+  { value: '90646', label: 'STP' },
+  { value: '90652', label: 'CREDICAPITAL' },
+  { value: '90653', label: 'KUSPIT' },
+  { value: '90656', label: 'UNAGRA' },
+  { value: '90659', label: 'ASP INTEGRA OPC' },
+  { value: '90661', label: 'KLAR' },
+  { value: '90670', label: 'LIBERTAD' },
+  { value: '90677', label: 'CAJA POP MEXICA' },
+  { value: '90680', label: 'CRISTOBAL COLON' },
+  { value: '90683', label: 'CAJA TELEFONIST' },
+  { value: '90684', label: 'TRANSFER' },
+  { value: '90685', label: 'FONDO (FIRA)' },
+  { value: '90688', label: 'CREDICLUB' },
+  { value: '90699', label: 'FONDEADORA' },
+  { value: '90703', label: 'Tesored' },
+  { value: '90706', label: 'ARCUS FI' },
+  { value: '90710', label: 'NVIO Pagos Mexico' },
+  { value: '90714', label: 'PPBALANCEMX' },
+  { value: '90715', label: 'CASHI CUENTA' },
+  { value: '90720', label: 'MexPago' },
+  { value: '90721', label: 'ALBO' },
+  { value: '90722', label: 'Mercado Pago W' },
+  { value: '90723', label: 'Cuenca' },
+  { value: '90725', label: 'COOPDESARROLLO' },
+  { value: '90727', label: 'TRANSFER DIRECTO' },
+  { value: '90728', label: 'SPIN BY OXXO' },
+  { value: '90729', label: 'Dep y Pag Dig' },
+  { value: '90730', label: 'SWAP' },
+  { value: '90732', label: 'PEIBO' },
+  { value: '90734', label: 'FINCO PAY' },
+  { value: '90738', label: 'FINTOC' },
+  { value: '90902', label: 'INDEVAL' },
+];
+
 // ── US address fields (shared by ach, wire, rtp) ──
 
 const US_ADDRESS_FIELDS: FieldDef[] = [
@@ -68,7 +167,7 @@ const US_ADDRESS_FIELDS: FieldDef[] = [
   { key: 'addressLine2', label: 'Apt / Suite', placeholder: 'Apartment, Suite', type: 'text', required: true, maxLength: 256 },
   { key: 'city', label: 'City', placeholder: 'City', type: 'text', required: true },
   { key: 'stateProvinceRegion', label: 'State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
-  { key: 'country', label: 'Country', placeholder: 'e.g. US', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter country code' },
+  { key: 'country', label: 'Country', placeholder: 'Select country', type: 'dropdown', required: true, options: COUNTRY_OPTIONS, searchable: true },
   { key: 'postalCode', label: 'Postal Code', placeholder: 'Postal code', type: 'text', required: true },
 ];
 
@@ -84,7 +183,7 @@ const US_BANK_COMMON: FieldDef[] = [
 // ── Helpers ──
 
 const PHONE_FIELD: FieldDef = { key: 'phoneNumber', label: 'Phone Number', placeholder: '+14155551234', type: 'text', required: true, keyboardType: 'phone-pad', regex: /^\+\d{7,15}$/, regexMessage: 'E.164 format (e.g. +14155551234)' };
-const INDUSTRY_FIELD: FieldDef = { key: 'businessIndustry', label: 'Business Industry (NAICS)', placeholder: 'e.g. 541511', type: 'text', required: true, keyboardType: 'number-pad' };
+const INDUSTRY_FIELD: FieldDef = { key: 'businessIndustry', label: 'Business Industry (NAICS)', placeholder: 'Select industry', type: 'dropdown', required: true, options: [], searchable: true };
 
 function buildRail(
   r: Omit<RailDef, 'fields'>,
@@ -187,7 +286,7 @@ export const RAIL_TYPES: RailDef[] = [
         { key: 'speiProtocol', label: 'SPEI Protocol', placeholder: 'Select protocol', type: 'dropdown', required: true, options: [{ value: 'clabe', label: 'CLABE' }, { value: 'debitcard', label: 'Debit Card' }, { value: 'phonenum', label: 'Phone Number' }] },
         { key: 'speiClabe', label: 'CLABE', placeholder: '18-digit CLABE', type: 'text', required: true, keyboardType: 'number-pad', maxLength: 18, regex: /^\d{18}$/, regexMessage: 'Must be exactly 18 digits' },
         { key: 'beneficiaryName', label: 'Beneficiary Name', placeholder: 'Full legal name', type: 'text', required: true, maxLength: 128 },
-        { key: 'speiInstitutionCode', label: 'Institution Code', placeholder: '5-digit code', type: 'text', required: true, keyboardType: 'number-pad', maxLength: 5, regex: /^\d{5}$/, regexMessage: 'Must be exactly 5 digits' },
+        { key: 'speiInstitutionCode', label: 'Institution Code', placeholder: 'Select institution', type: 'dropdown', required: true, searchable: true, options: SPEI_INSTITUTION_OPTIONS },
       ],
     }],
   }),
@@ -246,7 +345,6 @@ export const RAIL_TYPES: RailDef[] = [
           { key: 'swiftCodeBic', label: 'SWIFT / BIC Code', placeholder: '8 or 11 characters', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 11, regex: /^[A-Z0-9]{8}$|^[A-Z0-9]{11}$/, regexMessage: 'Must be 8 or 11 alphanumeric characters' },
           { key: 'swiftAccountHolderName', label: 'Account Holder Name', placeholder: 'Full name', type: 'text', required: true, maxLength: 50 },
           { key: 'swiftAccountNumberIban', label: 'Account Number / IBAN', placeholder: 'Up to 34 characters', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 34, regex: /^[A-Z0-9]{1,34}$/i, regexMessage: 'Must be up to 34 alphanumeric characters' },
-          { key: 'swiftPaymentCode', label: 'Payment Purpose Code', placeholder: 'Payment code (optional)', type: 'text' },
         ],
       },
       {
@@ -256,8 +354,8 @@ export const RAIL_TYPES: RailDef[] = [
           { key: 'swiftBeneficiaryAddressLine1', label: 'Beneficiary Address', placeholder: 'Street address', type: 'text', required: true, maxLength: 256 },
           { key: 'swiftBeneficiaryAddressLine2', label: 'Beneficiary Address Line 2', placeholder: 'Apt, Suite', type: 'text', required: true, maxLength: 256 },
           { key: 'swiftBeneficiaryCity', label: 'Beneficiary City', placeholder: 'City', type: 'text', required: true, maxLength: 128 },
-          { key: 'swiftBeneficiaryStateProvinceRegion', label: 'Beneficiary State', placeholder: 'State/Province', type: 'text', required: true, maxLength: 128 },
-          { key: 'swiftBeneficiaryCountry', label: 'Beneficiary Country', placeholder: 'e.g. US', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter country code' },
+          { key: 'swiftBeneficiaryStateProvinceRegion', label: 'Beneficiary State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
+          { key: 'swiftBeneficiaryCountry', label: 'Beneficiary Country', placeholder: 'Select country', type: 'dropdown', required: true, options: COUNTRY_OPTIONS, searchable: true },
           { key: 'swiftBeneficiaryPostalCode', label: 'Beneficiary Postal Code', placeholder: 'Postal code', type: 'text', required: true, maxLength: 20 },
         ],
       },
@@ -269,8 +367,8 @@ export const RAIL_TYPES: RailDef[] = [
           { key: 'swiftBankAddressLine1', label: 'Bank Address', placeholder: 'Bank address', type: 'text', required: true, maxLength: 256 },
           { key: 'swiftBankAddressLine2', label: 'Bank Address Line 2', placeholder: 'Bank address line 2', type: 'text', required: true, maxLength: 256 },
           { key: 'swiftBankCity', label: 'Bank City', placeholder: 'City', type: 'text', required: true, maxLength: 128 },
-          { key: 'swiftBankStateProvinceRegion', label: 'Bank State', placeholder: 'State/Province', type: 'text', required: true, maxLength: 128 },
-          { key: 'swiftBankCountry', label: 'Bank Country', placeholder: 'e.g. US', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter country code' },
+          { key: 'swiftBankStateProvinceRegion', label: 'Bank State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
+          { key: 'swiftBankCountry', label: 'Bank Country', placeholder: 'Select country', type: 'dropdown', required: true, options: COUNTRY_OPTIONS, searchable: true },
           { key: 'swiftBankPostalCode', label: 'Bank Postal Code', placeholder: 'Postal code', type: 'text', required: true, maxLength: 20 },
         ],
       },
@@ -281,7 +379,7 @@ export const RAIL_TYPES: RailDef[] = [
           { key: 'swiftIntermediaryBankSwiftCodeBic', label: 'Intermediary SWIFT', placeholder: 'SWIFT code (optional)', type: 'text', autoCapitalize: 'characters', maxLength: 11, regex: /^$|^[A-Z0-9]{8}$|^[A-Z0-9]{11}$/, regexMessage: 'Must be 8 or 11 alphanumeric characters' },
           { key: 'swiftIntermediaryBankAccountNumberIban', label: 'Intermediary Account / IBAN', placeholder: 'Account (optional)', type: 'text', maxLength: 34 },
           { key: 'swiftIntermediaryBankName', label: 'Intermediary Bank Name', placeholder: 'Bank name (optional)', type: 'text', maxLength: 128 },
-          { key: 'swiftIntermediaryBankCountry', label: 'Intermediary Country', placeholder: 'e.g. US (optional)', type: 'text', autoCapitalize: 'characters', maxLength: 2 },
+          { key: 'swiftIntermediaryBankCountry', label: 'Intermediary Country', placeholder: 'Select country (optional)', type: 'dropdown', options: COUNTRY_OPTIONS, searchable: true },
         ],
       },
     ],
