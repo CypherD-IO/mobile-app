@@ -19,7 +19,7 @@ import { BLINDPAY_COUNTRY_OPTIONS } from '../blindpayCountryList';
 import BlindPayIdCaptureModal, {
   type CapturedFile,
 } from '../BlindPayIdCaptureModal';
-import BlindPayPhotoRequirements from '../BlindPayPhotoRequirements';
+import { pickBlindPaySingleFile } from '../pickBlindPayFile';
 
 const ID_TYPE_LABELS: Record<BlindpayIdDocType, string> = {
   [BlindpayIdDocType.PASSPORT]: 'Passport',
@@ -133,6 +133,16 @@ export function BlindPayKycIdDocsStep({
     [clearKey, mergeDraft, uploadDocument],
   );
 
+  const handlePickFront = useCallback(async () => {
+    const file = await pickBlindPaySingleFile();
+    if (file) void handleFrontCapture(file as CapturedFile);
+  }, [handleFrontCapture]);
+
+  const handlePickBack = useCallback(async () => {
+    const file = await pickBlindPaySingleFile();
+    if (file) void handleBackCapture(file as CapturedFile);
+  }, [handleBackCapture]);
+
   const handleNext = useCallback(() => {
     const parsed = blindPayKycIdDocsSchema.safeParse({
       idDocType,
@@ -167,6 +177,10 @@ export function BlindPayKycIdDocsStep({
       canNext: !uploading,
       onNext: handleNext,
       nextLoading: uploading,
+      titleOverride: docTypeName,
+      subtitleOverride: `Upload clear photos of your ${docTypeName.toLowerCase()}. ${
+        idDocType === BlindpayIdDocType.PASSPORT ? 'Only the photo page is needed.' : 'Both front and back are required.'
+      }`,
     });
   }, [handleNext, onReady, uploading]);
 
@@ -197,161 +211,83 @@ export function BlindPayKycIdDocsStep({
         <BlindPayKycFieldError message={fieldErrors.idDocCountry} />
       </CyDView>
 
-      {/* Front side card */}
+      {/* Front side */}
       <CyDView className='gap-[4px]'>
         <CyDText className='text-[12px] font-bold text-base400'>
-          {String(
-            t('BLINDPAY_ID_FRONT', 'ID document — front / main page'),
-          )}
+          {String(t('BLINDPAY_ID_FRONT', 'ID document — front / main page'))}
         </CyDText>
         <CyDTouchView
-          onPress={() => {
-            setCaptureTarget('front');
-          }}
+          onPress={() => setCaptureTarget('front')}
           disabled={uploading}
           className={`rounded-[16px] overflow-hidden border ${
-            fieldErrors.idDocFrontFile || uploadError.front
-              ? 'border-errorText'
-              : 'border-transparent'
+            fieldErrors.idDocFrontFile || uploadError.front ? 'border-errorText' : 'border-n30'
           }`}>
           <CyDView className='bg-n10 items-center py-[24px] gap-[8px]'>
             {uploadError.front ? (
-              <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
-                <CyDMaterialDesignIcons
-                  name='alert-circle-outline'
-                  size={28}
-                  className='text-white'
-                />
+              <CyDView className='w-[48px] h-[48px] bg-red-500 rounded-[12px] items-center justify-center'>
+                <CyDMaterialDesignIcons name='alert-circle-outline' size={24} className='text-white' />
               </CyDView>
             ) : frontUrl ? (
-              <CyDView className='w-[56px] h-[56px] bg-green-500 rounded-[14px] items-center justify-center'>
-                <CyDMaterialDesignIcons
-                  name='check'
-                  size={28}
-                  className='text-white'
-                />
+              <CyDView className='w-[48px] h-[48px] bg-green-500 rounded-[12px] items-center justify-center'>
+                <CyDMaterialDesignIcons name='check' size={24} className='text-white' />
               </CyDView>
             ) : (
-              <CyDView className='w-[56px] h-[56px] bg-[#FBC02D] rounded-[14px] items-center justify-center'>
-                <CyDMaterialDesignIcons
-                  name='card-account-details-outline'
-                  size={28}
-                  className='text-white'
-                />
+              <CyDView className='w-[48px] h-[48px] bg-[#FBC02D] rounded-[12px] items-center justify-center'>
+                <CyDMaterialDesignIcons name='card-account-details-outline' size={24} className='text-white' />
               </CyDView>
             )}
-            <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
-              {String(t('BLINDPAY_FRONT_SIDE', 'Front Side'))}
+            <CyDText className='text-[14px] font-semibold text-n200 tracking-[-0.6px]'>
+              {frontUrl
+                ? String(t('BLINDPAY_PHOTO_UPLOADED', 'Photo uploaded'))
+                : String(t('BLINDPAY_FRONT_SIDE', 'Front Side'))}
             </CyDText>
-          </CyDView>
-          <CyDView
-            className={`px-[16px] py-[10px] flex-row items-center gap-[6px] ${
-              uploadError.front ? 'bg-red-100' : 'bg-[#FFE082]'
-            }`}>
-            <CyDMaterialDesignIcons
-              name={uploadError.front ? 'alert-circle-outline' : 'information-outline'}
-              size={16}
-              className={uploadError.front ? 'text-red-600' : 'text-n200'}
-            />
-            <CyDText
-              className={`text-[13px] font-medium tracking-[-0.4px] flex-1 ${
-                uploadError.front ? 'text-red-600' : 'text-n200'
-              }`}
-              numberOfLines={2}>
-              {uploadError.front
-                ? uploadError.front
-                : frontUrl
-                  ? String(t('BLINDPAY_PHOTO_UPLOADED', 'Photo uploaded'))
-                  : String(
-                      t(
-                        'BLINDPAY_CAPTURE_HINT_SHORT',
-                        'Capture or upload a photo',
-                      ),
-                    )}
-            </CyDText>
+            {uploadError.front ? (
+              <CyDText className='text-[12px] font-medium text-red-500 px-[16px] text-center'>{uploadError.front}</CyDText>
+            ) : null}
           </CyDView>
         </CyDTouchView>
         <BlindPayKycFieldError message={fieldErrors.idDocFrontFile} />
       </CyDView>
 
-      {/* Back side card */}
+      {/* Back side */}
       {needsBack ? (
         <CyDView className='gap-[4px]'>
           <CyDText className='text-[12px] font-bold text-base400'>
             {String(t('BLINDPAY_ID_BACK', 'ID document — back'))}
           </CyDText>
           <CyDTouchView
-            onPress={() => {
-              setCaptureTarget('back');
-            }}
+            onPress={() => setCaptureTarget('back')}
             disabled={uploading}
             className={`rounded-[16px] overflow-hidden border ${
-              fieldErrors.idDocBackFile || uploadError.back
-                ? 'border-errorText'
-                : 'border-transparent'
+              fieldErrors.idDocBackFile || uploadError.back ? 'border-errorText' : 'border-n30'
             }`}>
             <CyDView className='bg-n10 items-center py-[24px] gap-[8px]'>
               {uploadError.back ? (
-                <CyDView className='w-[56px] h-[56px] bg-red200 rounded-[14px] items-center justify-center'>
-                  <CyDMaterialDesignIcons
-                    name='alert-circle-outline'
-                    size={28}
-                    className='text-white'
-                  />
+                <CyDView className='w-[48px] h-[48px] bg-red-500 rounded-[12px] items-center justify-center'>
+                  <CyDMaterialDesignIcons name='alert-circle-outline' size={24} className='text-white' />
                 </CyDView>
               ) : backUrl ? (
-                <CyDView className='w-[56px] h-[56px] bg-green-500 rounded-[14px] items-center justify-center'>
-                  <CyDMaterialDesignIcons
-                    name='check'
-                    size={28}
-                    className='text-white'
-                  />
+                <CyDView className='w-[48px] h-[48px] bg-green-500 rounded-[12px] items-center justify-center'>
+                  <CyDMaterialDesignIcons name='check' size={24} className='text-white' />
                 </CyDView>
               ) : (
-                <CyDView className='w-[56px] h-[56px] bg-[#FBC02D] rounded-[14px] items-center justify-center'>
-                  <CyDMaterialDesignIcons
-                    name='card-account-details-outline'
-                    size={28}
-                    className='text-white'
-                  />
+                <CyDView className='w-[48px] h-[48px] bg-[#FBC02D] rounded-[12px] items-center justify-center'>
+                  <CyDMaterialDesignIcons name='card-account-details-outline' size={24} className='text-white' />
                 </CyDView>
               )}
-              <CyDText className='text-[16px] font-semibold text-n200 tracking-[-0.8px]'>
-                {String(t('BLINDPAY_BACK_SIDE', 'Back Side'))}
+              <CyDText className='text-[14px] font-semibold text-n200 tracking-[-0.6px]'>
+                {backUrl
+                  ? String(t('BLINDPAY_PHOTO_UPLOADED', 'Photo uploaded'))
+                  : String(t('BLINDPAY_BACK_SIDE', 'Back Side'))}
               </CyDText>
-            </CyDView>
-            <CyDView
-              className={`px-[16px] py-[10px] flex-row items-center gap-[6px] ${
-                uploadError.back ? 'bg-red-100' : 'bg-[#FFE082]'
-              }`}>
-              <CyDMaterialDesignIcons
-                name={uploadError.back ? 'alert-circle-outline' : 'information-outline'}
-                size={16}
-                className={uploadError.back ? 'text-red-600' : 'text-n200'}
-              />
-              <CyDText
-                className={`text-[13px] font-medium tracking-[-0.4px] flex-1 ${
-                  uploadError.back ? 'text-red-600' : 'text-n200'
-                }`}
-                numberOfLines={2}>
-                {uploadError.back
-                  ? uploadError.back
-                  : backUrl
-                    ? String(t('BLINDPAY_PHOTO_UPLOADED', 'Photo uploaded'))
-                    : String(
-                        t(
-                        'BLINDPAY_CAPTURE_HINT_SHORT',
-                        'Capture or upload a photo',
-                      ),
-                    )}
-              </CyDText>
+              {uploadError.back ? (
+                <CyDText className='text-[12px] font-medium text-red-500 px-[16px] text-center'>{uploadError.back}</CyDText>
+              ) : null}
             </CyDView>
           </CyDTouchView>
           <BlindPayKycFieldError message={fieldErrors.idDocBackFile} />
         </CyDView>
       ) : null}
-
-      <BlindPayPhotoRequirements />
 
       {/* Country picker modal */}
       <BlindPayCountryPickerModal

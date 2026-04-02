@@ -595,6 +595,27 @@ export enum BlindpaySupportingDocumentType {
   BUSINESS_TAX_RETURN = 'business_tax_return',
 }
 
+// ── Reference data types ──
+
+/** GET /v1/blindpay/available/rails */
+export interface IBlindpayAvailableRail {
+  label: string;
+  value: BlindpayBankAccountType;
+  country: string;
+}
+
+/** GET /v1/blindpay/available/swift/:code */
+export interface IBlindpaySwiftLookupResult {
+  id: string;
+  bank: string;
+  city: string;
+  branch: string;
+  swiftCode: string;
+  swiftCodeLink: string;
+  country: string;
+  countrySlug: string;
+}
+
 // ── Shared response types ──
 
 export interface IBlindpaySuccessResponse {

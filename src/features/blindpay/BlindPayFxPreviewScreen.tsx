@@ -1,11 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Keyboard, Modal, FlatList } from 'react-native';
+import { ActivityIndicator, Keyboard } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
-import Animated, { SlideInDown } from 'react-native-reanimated';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDIcons,
@@ -23,8 +23,13 @@ import useBlindPayApi from './api';
 
 // ── Config ──
 
+import { isNonProdEnv } from '../../global';
+import useBlindPaySheet from './components/BlindPayDropdownSheet';
+
 const PROD_TOKENS = ['USDC', 'USDT'];
-const TOKEN_OPTIONS = __DEV__ ? [...PROD_TOKENS, 'USDB'] : PROD_TOKENS;
+function getTokenOptions() {
+  return isNonProdEnv() ? [...PROD_TOKENS, 'USDB'] : PROD_TOKENS;
+}
 
 const FIAT_CONFIG: Record<string, { code: string; symbol: string; flag: string }> = {
   USD: { code: 'USD', symbol: '$', flag: '\uD83C\uDDFA\uD83C\uDDF8' },
@@ -60,7 +65,29 @@ function NumPad({ onPress }: { onPress: (key: string) => void }) {
 export default function BlindPayFxPreviewScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
-  const { getFxQuote, initiateTerms } = useBlindPayApi();
+  const { getFxQuote, initiateTerms, getAvailableRails } = useBlindPayApi();
+  const [availableRailOptions, setAvailableRailOptions] = useState<Array<{ value: string; label: string; icon: string }>>([]);
+
+  // Fetch available rails to know supported currencies
+  React.useEffect(() => {
+    void getAvailableRails().then(res => {
+      if (!res.isError && res.data) {
+        const COUNTRY_TO_FIAT: Record<string, string> = {
+          US: 'USD', BR: 'BRL', MX: 'MXN', CO: 'COP', AR: 'ARS',
+        };
+        const seen = new Set<string>();
+        const opts: Array<{ value: string; label: string; icon: string }> = [];
+        for (const r of res.data) {
+          const fiatCode = COUNTRY_TO_FIAT[r.country];
+          if (fiatCode && !seen.has(fiatCode) && FIAT_CONFIG[fiatCode]) {
+            seen.add(fiatCode);
+            opts.push({ value: fiatCode, label: fiatCode, icon: FIAT_CONFIG[fiatCode].flag });
+          }
+        }
+        if (opts.length > 0) setAvailableRailOptions(opts);
+      }
+    });
+  }, []);
 
   const [fromToken, setFromToken] = useState('USDC');
   const [toFiatCode, setToFiatCode] = useState('USD');
@@ -71,8 +98,7 @@ export default function BlindPayFxPreviewScreen() {
   const [quoteResult, setQuoteResult] = useState<any>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [tosLoading, setTosLoading] = useState(false);
-  const [tokenPickerOpen, setTokenPickerOpen] = useState(false);
-  const [fiatPickerOpen, setFiatPickerOpen] = useState(false);
+  const { openDropdown } = useBlindPaySheet();
 
   const fiat = FIAT_CONFIG[toFiatCode] ?? FIAT_CONFIG.USD;
 
@@ -213,72 +239,6 @@ export default function BlindPayFxPreviewScreen() {
     );
   }
 
-  // ── Token picker ──
-  function renderTokenPicker() {
-    return (
-      <Modal visible transparent animationType='fade' onRequestClose={() => setTokenPickerOpen(false)}>
-        <CyDView className='flex-1 justify-end bg-black/50'>
-          <CyDTouchView className='flex-1' onPress={() => setTokenPickerOpen(false)} />
-          <Animated.View entering={SlideInDown.duration(300)} style={{ maxHeight: '60%' }}>
-            <CyDView className='bg-n20 rounded-t-[24px]'>
-              <CyDView className='items-center pt-[12px] pb-[8px]'>
-                <CyDView className='w-[32px] h-[4px] bg-n50 rounded-[5px]' />
-              </CyDView>
-              <CyDView className='px-[16px] pb-[10px]'>
-                <CyDText className='text-[16px] font-semibold text-n90 tracking-[-0.8px]'>Select Token</CyDText>
-              </CyDView>
-              {TOKEN_OPTIONS.map(token => (
-                <CyDTouchView key={token}
-                  onPress={() => { setFromToken(token); setTokenPickerOpen(false); setQuoteResult(null); }}
-                  className='bg-n0 px-[16px] py-[14px] flex-row items-center justify-between border-b border-n40'>
-                  <CyDText className='text-[16px] font-semibold text-base400'>{token}</CyDText>
-                  {token === fromToken ? <CyDMaterialDesignIcons name='check-circle' size={20} className='text-[#FBC02D]' /> : null}
-                </CyDTouchView>
-              ))}
-              <CyDView style={{ height: insets.bottom + 16 }} />
-            </CyDView>
-          </Animated.View>
-        </CyDView>
-      </Modal>
-    );
-  }
-
-  // ── Fiat picker ──
-  function renderFiatPicker() {
-    return (
-      <Modal visible transparent animationType='fade' onRequestClose={() => setFiatPickerOpen(false)}>
-        <CyDView className='flex-1 justify-end bg-black/50'>
-          <CyDTouchView className='flex-1' onPress={() => setFiatPickerOpen(false)} />
-          <Animated.View entering={SlideInDown.duration(300)} style={{ maxHeight: '60%' }}>
-            <CyDView className='bg-n20 rounded-t-[24px]'>
-              <CyDView className='items-center pt-[12px] pb-[8px]'>
-                <CyDView className='w-[32px] h-[4px] bg-n50 rounded-[5px]' />
-              </CyDView>
-              <CyDView className='px-[16px] pb-[10px]'>
-                <CyDText className='text-[16px] font-semibold text-n90 tracking-[-0.8px]'>Select Currency</CyDText>
-              </CyDView>
-              {FIAT_CODES.map(code => {
-                const f = FIAT_CONFIG[code];
-                return (
-                  <CyDTouchView key={code}
-                    onPress={() => { setToFiatCode(code); setFiatPickerOpen(false); setQuoteResult(null); }}
-                    className='bg-n0 px-[16px] py-[14px] flex-row items-center justify-between border-b border-n40'>
-                    <CyDView className='flex-row items-center gap-[10px]'>
-                      <CyDText className='text-[18px]'>{f.flag}</CyDText>
-                      <CyDText className='text-[16px] font-semibold text-base400'>{code}</CyDText>
-                    </CyDView>
-                    {code === toFiatCode ? <CyDMaterialDesignIcons name='check-circle' size={20} className='text-[#FBC02D]' /> : null}
-                  </CyDTouchView>
-                );
-              })}
-              <CyDView style={{ height: insets.bottom + 16 }} />
-            </CyDView>
-          </Animated.View>
-        </CyDView>
-      </Modal>
-    );
-  }
-
   // ── Main page ──
   return (
     <CyDSafeAreaView className='flex-1 bg-n20' edges={['top']}>
@@ -296,13 +256,32 @@ export default function BlindPayFxPreviewScreen() {
         keyboardShouldPersistTaps='handled'
         contentContainerClassName='px-[16px] pb-[24px] gap-[12px]'>
 
+        {/* KYC info box */}
+        <CyDView className='bg-n10 border border-n50 rounded-[12px] p-[14px] flex-row items-start gap-[10px]'>
+          <CyDMaterialDesignIcons name='information-outline' size={18} className='text-n200 mt-[1px]' />
+          <CyDText className='text-[13px] font-medium text-n200 flex-1 leading-[1.45]'>
+            To send money, you need to complete identity verification.{' '}
+            <CyDText onPress={handleCompleteKyc} className='text-[13px] font-bold text-p200 underline'>
+              Complete KYC
+            </CyDText>
+          </CyDText>
+        </CyDView>
+
         {/* Amount card */}
         <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[14px]'>
           {/* You send */}
           <CyDView className='gap-[6px]'>
             <CyDText className='text-[14px] font-medium text-n90 tracking-[-0.6px]'>You send exactly</CyDText>
             <CyDView className='flex-row items-center justify-between'>
-              <CyDTouchView onPress={() => setTokenPickerOpen(true)}
+              <CyDTouchView onPress={() => openDropdown({
+                title: 'Select Token',
+                options: getTokenOptions().map(t => ({ value: t, label: t })),
+                selected: fromToken,
+                onSelect: (token: string) => {
+                  setFromToken(token);
+                  setQuoteResult(null);
+                },
+              })}
                 className='flex-row items-center gap-[6px] bg-n30 rounded-[24px] px-[10px] py-[5px]'>
                 <CyDText className='text-[14px] font-semibold text-base400'>{fromToken}</CyDText>
                 <CyDMaterialDesignIcons name='chevron-down' size={16} className='text-base400' />
@@ -319,7 +298,17 @@ export default function BlindPayFxPreviewScreen() {
           <CyDView className='gap-[6px]'>
             <CyDText className='text-[14px] font-medium text-n90 tracking-[-0.6px]'>Recipient gets</CyDText>
             <CyDView className='flex-row items-center justify-between'>
-              <CyDTouchView onPress={() => setFiatPickerOpen(true)}
+              <CyDTouchView onPress={() => openDropdown({
+                title: 'Select Currency',
+                options: availableRailOptions.length > 0
+                  ? availableRailOptions
+                  : FIAT_CODES.map(code => ({ value: code, label: code, icon: FIAT_CONFIG[code].flag })),
+                selected: toFiatCode,
+                onSelect: (fiatCode: string) => {
+                  setToFiatCode(fiatCode);
+                  setQuoteResult(null);
+                },
+              })}
                 className='flex-row items-center gap-[4px] bg-n30 rounded-[24px] px-[10px] py-[5px]'>
                 <CyDText className='text-[14px]'>{fiat.flag}</CyDText>
                 <CyDText className='text-[14px] font-semibold text-base400'>{toFiatCode}</CyDText>
@@ -347,30 +336,9 @@ export default function BlindPayFxPreviewScreen() {
                 1 {fromToken} = {((quoteResult.blindpayQuotation ?? 0) / 100).toFixed(2)} {toFiatCode}
               </CyDText>
             </CyDView>
-            {quoteResult.instanceFlatFee != null ? (
-              <>
-                <CyDView className='h-px bg-n30' />
-                <CyDView className='flex-row items-center justify-between'>
-                  <CyDText className='text-[14px] font-medium text-n90'>Fees</CyDText>
-                  <CyDText className='text-[14px] font-semibold text-base400'>
-                    {quoteResult.instanceFlatFee === 0 ? 'Free' : `${fiat.symbol}${(quoteResult.instanceFlatFee / 100).toFixed(2)}`}
-                  </CyDText>
-                </CyDView>
-              </>
-            ) : null}
           </CyDView>
         ) : null}
 
-        {/* KYC info box */}
-        <CyDView className='bg-n10 border border-n50 rounded-[12px] p-[14px] flex-row items-start gap-[10px]'>
-          <CyDMaterialDesignIcons name='information-outline' size={18} className='text-n200 mt-[1px]' />
-          <CyDText className='text-[13px] font-medium text-n200 flex-1 leading-[1.45]'>
-            To send money, you need to complete identity verification.{' '}
-            <CyDText onPress={handleCompleteKyc} className='text-[13px] font-bold text-p200 underline'>
-              Complete KYC
-            </CyDText>
-          </CyDText>
-        </CyDView>
       </CyDKeyboardAwareScrollView>
 
       {/* Bottom CTA */}
@@ -405,8 +373,6 @@ export default function BlindPayFxPreviewScreen() {
         )}
       </CyDView>
 
-      {tokenPickerOpen ? renderTokenPicker() : null}
-      {fiatPickerOpen ? renderFiatPicker() : null}
     </CyDSafeAreaView>
   );
 }

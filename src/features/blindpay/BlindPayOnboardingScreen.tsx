@@ -668,12 +668,8 @@ export default function BlindPayOnboardingScreen() {
         .then(result => {
           if (cancelled) return;
           if (result.isError) {
-            showToast(
-              result.errorMessage ??
-                t('UNEXPECTED_ERROR', 'Something went wrong'),
-              'error',
-            );
-            setScreenPhase('onboarding');
+            // Error or 404 — treat as new user, show FX playground
+            setScreenPhase('fx_preview');
             return;
           }
           const bp = result.data?.blindpay;

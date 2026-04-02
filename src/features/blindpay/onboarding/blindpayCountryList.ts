@@ -1,15 +1,20 @@
-import { countryMaster } from '../../../../assets/datasets/countryMaster';
+import { BLINDPAY_COUNTRIES } from '../countries';
 import { BLINDPAY_PROHIBITED_COUNTRIES } from './blindpayCountryRisk';
 
+function countryFlag(code: string): string {
+  return [...code.toUpperCase()]
+    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
+    .join('');
+}
+
 /**
- * All countries from countryMaster, excluding BlindPay-prohibited countries.
+ * All BlindPay countries, excluding prohibited countries.
  * Sorted alphabetically by name.
  */
 export const BLINDPAY_COUNTRY_OPTIONS: ReadonlyArray<{
   code: string;
   name: string;
   flag: string;
-}> = countryMaster
-  .filter(c => c.Iso2 && !BLINDPAY_PROHIBITED_COUNTRIES.has(c.Iso2))
-  .map(c => ({ code: c.Iso2!, name: c.name, flag: c.unicode_flag ?? '' }))
-  .sort((a, b) => a.name.localeCompare(b.name));
+}> = BLINDPAY_COUNTRIES
+  .filter(c => !BLINDPAY_PROHIBITED_COUNTRIES.has(c.value))
+  .map(c => ({ code: c.value, name: c.label, flag: countryFlag(c.value) }));

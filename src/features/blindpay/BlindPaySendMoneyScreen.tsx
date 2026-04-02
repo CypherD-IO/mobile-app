@@ -22,6 +22,7 @@ import {
 import { screenTitle } from '../../constants';
 import { showToast } from '../../containers/utilities/toastUtility';
 import useBlindPayApi from './api';
+import useBlindPaySheet from './components/BlindPayDropdownSheet';
 import { HdWalletContext } from '../../core/util';
 import { useGlobalBottomSheet } from '../../components/v2/GlobalBottomSheetProvider';
 import type { Holding } from '../../core/portfolio';
@@ -52,15 +53,18 @@ const RAIL_SETTLEMENT: Record<string, string> = {
   ach_cop_bitso: '~1 business day',
   transfers_bitso: 'Instant',
 };
+import { isNonProdEnv } from '../../global';
+
 const PROD_CHAINS = ['eth', 'arbitrum', 'polygon', 'base', 'solana'];
-const SUPPORTED_CHAINS = __DEV__
-  ? [...PROD_CHAINS, 'base_sepolia']
-  : PROD_CHAINS;
 const PROD_TOKEN_SYMBOLS = ['USDC', 'USDT'];
 const TEST_TOKEN_SYMBOLS = ['USDB'];
-const TOKEN_SYMBOLS = __DEV__
-  ? [...PROD_TOKEN_SYMBOLS, ...TEST_TOKEN_SYMBOLS]
-  : PROD_TOKEN_SYMBOLS;
+
+function getSupportedChains() {
+  return isNonProdEnv() ? [...PROD_CHAINS, 'base_sepolia'] : PROD_CHAINS;
+}
+function getTokenSymbols() {
+  return isNonProdEnv() ? [...PROD_TOKEN_SYMBOLS, ...TEST_TOKEN_SYMBOLS] : PROD_TOKEN_SYMBOLS;
+}
 
 const CHAIN_TO_NETWORK: Record<string, string> = {
   eth: 'ethereum', arbitrum: 'arbitrum', polygon: 'polygon', base: 'base',
@@ -175,6 +179,7 @@ export default function BlindPaySendMoneyScreen() {
   const hdWallet = useContext(HdWalletContext) as any;
   const evmAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+  const { openDropdown: openRecipientSheet } = useBlindPaySheet();
 
   // Data
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -195,7 +200,6 @@ export default function BlindPaySendMoneyScreen() {
   const [quoteTimeLeft, setQuoteTimeLeft] = useState(0);
 
   // Pickers
-  const [recipientPickerOpen, setRecipientPickerOpen] = useState(false);
   const [tokenPickerOpen, setTokenPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -222,10 +226,10 @@ export default function BlindPaySendMoneyScreen() {
           const portfolio = await getPortfolioData(addr);
           if (!portfolio?.data || cancelled) return;
           const items: TokenChainItem[] = [];
-          for (const chainKey of SUPPORTED_CHAINS) {
+          for (const chainKey of getSupportedChains()) {
             const holdings: Holding[] = (portfolio.data as any)[chainKey]?.totalHoldings ?? [];
             for (const h of holdings) {
-              if (TOKEN_SYMBOLS.includes(h.symbol?.toUpperCase())) {
+              if (getTokenSymbols().includes(h.symbol?.toUpperCase())) {
                 items.push({
                   symbol: h.symbol?.toUpperCase(),
                   chain: chainKey,
@@ -688,7 +692,23 @@ export default function BlindPaySendMoneyScreen() {
           <CyDView className='h-px bg-n30' />
           <CyDTouchView onPress={() => {
             if (accounts.length === 0) navigation.navigate(screenTitle.BLINDPAY_ADD_RECIPIENT);
-            else { setSearchQuery(''); setRecipientPickerOpen(true); }
+            else {
+              openRecipientSheet({
+                title: 'Select Recipient',
+                options: accounts.map(a => ({
+                  value: a.id,
+                  label: a.name ?? 'Account',
+                  icon: RAIL_FLAGS[a.type] ?? '\uD83C\uDF10',
+                  subtitle: `${RAIL_LABELS[a.type] ?? a.type}${a.lastFour ? ` · ****${a.lastFour}` : ''}`,
+                })),
+                selected: selectedAccount?.id ?? '',
+                searchable: true,
+                onSelect: (id) => {
+                  const acct = accounts.find(a => a.id === id);
+                  if (acct) { setSelectedAccount(acct); setQuote(null); }
+                },
+              });
+            }
           }} className='px-[16px] py-[12px] flex-row items-center justify-between'>
             {selectedAccount ? (
               <CyDView className='flex-row items-center gap-[10px] flex-1'>
@@ -856,57 +876,6 @@ export default function BlindPaySendMoneyScreen() {
       {/* Token picker */}
       {tokenPickerOpen ? renderTokenPicker() : null}
 
-      {/* Recipient picker */}
-      <Modal visible={recipientPickerOpen} animationType='slide' presentationStyle='pageSheet'
-        onRequestClose={() => setRecipientPickerOpen(false)}>
-        <CyDView className='flex-1 bg-n20' style={{ paddingTop: 16 }}>
-          <CyDView className='items-center pb-[12px]'>
-            <CyDView className='w-[32px] h-[4px] bg-n50 rounded-[5px]' />
-          </CyDView>
-          <CyDView className='px-[16px] pb-[12px]'>
-            <CyDView className='flex-row items-center bg-n0 rounded-[10px] px-[10px] h-[40px] gap-[6px]'>
-              <CyDMaterialDesignIcons name='magnify' size={20} className='text-n200' />
-              <CyDTextInput
-                className='flex-1 text-[16px] font-normal text-base400 tracking-[-0.8px] py-0 bg-transparent'
-                placeholder='Search Recipient' placeholderTextColor='#C2C7D0'
-                value={searchQuery} onChangeText={setSearchQuery}
-                autoCapitalize='none' autoCorrect={false} />
-            </CyDView>
-          </CyDView>
-          <CyDView className='px-[16px] pb-[12px]'>
-            <CyDTouchView onPress={() => { setRecipientPickerOpen(false); navigation.navigate(screenTitle.BLINDPAY_ADD_RECIPIENT); }}
-              className='bg-n0 rounded-[16px] px-[16px] py-[14px] flex-row items-center gap-[6px]'>
-              <CyDMaterialDesignIcons name='plus' size={24} className='text-base400' />
-              <CyDText className='text-[16px] font-medium text-base400'>Create new</CyDText>
-            </CyDTouchView>
-          </CyDView>
-          <FlatList
-            data={accounts.filter(a => !searchQuery.trim() ||
-              (a.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()))}
-            keyExtractor={i => i.id}
-            keyboardShouldPersistTaps='handled'
-            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}
-            renderItem={({ item }) => (
-              <CyDTouchView
-                onPress={() => { setSelectedAccount(item); setRecipientPickerOpen(false); setQuote(null); }}
-                className='bg-n0 px-[16px] py-[12px] flex-row items-center gap-[10px] border-b border-n40'>
-                <CyDView className='w-[36px] h-[36px] rounded-full bg-n20 items-center justify-center'>
-                  <CyDText className='text-[18px]'>{RAIL_FLAGS[item.type] ?? '\uD83C\uDF10'}</CyDText>
-                </CyDView>
-                <CyDView className='flex-1'>
-                  <CyDText className='text-[16px] font-medium text-base400'>{item.name ?? 'Account'}</CyDText>
-                  <CyDText className='text-[12px] text-n200'>
-                    {RAIL_LABELS[item.type] ?? item.type}{item.lastFour ? ` · ****${item.lastFour}` : ''}
-                  </CyDText>
-                </CyDView>
-                {selectedAccount?.id === item.id ? (
-                  <CyDMaterialDesignIcons name='check-circle' size={20} className='text-[#FBC02D]' />
-                ) : null}
-              </CyDTouchView>
-            )}
-          />
-        </CyDView>
-      </Modal>
 
     </CyDSafeAreaView>
   );

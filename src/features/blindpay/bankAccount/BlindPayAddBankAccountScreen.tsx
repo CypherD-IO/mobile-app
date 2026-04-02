@@ -1,12 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Keyboard, Modal } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Keyboard } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
 import { t } from 'i18next';
-import Animated, { SlideInDown } from 'react-native-reanimated';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDIcons,
@@ -26,60 +26,27 @@ import {
   isSpeiInstitutionRequired,
   type FieldDef,
   type FieldGroup,
+  type FieldType,
   type RailDef,
 } from './railConfig';
+import { getSwiftPurposeCodesForCountry } from './swiftPurposeCodes';
+import { BLINDPAY_COUNTRIES } from '../countries';
 
 const LABEL_CLASS =
   'text-[14px] font-normal text-n200 tracking-[-0.6px] leading-[1.45]';
 const PLACEHOLDER_COLOR = '#A6AEBB';
 
-import useBlindPayDropdown from '../components/BlindPayDropdownSheet';
+import useBlindPaySheet from '../components/BlindPayDropdownSheet';
+import ProgressBarButton from '../../../components/v2/ProgressBarButton';
 
-// ── Help bottom sheet ────────────────────────────────────────────
-function HelpSheet({
-  visible,
-  helpText,
-  onClose,
-}: {
-  visible: boolean;
-  helpText: string;
-  onClose: () => void;
-}) {
-  if (!visible) return null;
-  return (
-    <Modal visible transparent animationType='fade' onRequestClose={onClose}>
-      <CyDView className='flex-1 justify-end bg-black/40'>
-        <CyDTouchView className='flex-1' onPress={onClose} />
-        <Animated.View entering={SlideInDown.duration(300)}>
-          <CyDView className='bg-n0 rounded-t-[24px] px-[16px] pb-[32px]'>
-            <CyDView className='items-center pt-[12px] pb-[16px]'>
-              <CyDView className='w-[32px] h-[4px] bg-[#C2C7D0] rounded-[5px]' />
-            </CyDView>
-            <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] mb-[12px]'>
-              Help
-            </CyDText>
-            <CyDText className='text-[14px] font-medium text-n200 leading-[1.5] tracking-[-0.4px]'>
-              {helpText}
-            </CyDText>
-            <CyDTouchView
-              onPress={onClose}
-              className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center mt-[20px]'>
-              <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
-                Got it
-              </CyDText>
-            </CyDTouchView>
-          </CyDView>
-        </Animated.View>
-      </CyDView>
-    </Modal>
-  );
-}
 
 // ── Grouped card field renderer (floating label pattern) ─────────
 function GroupedFieldCard({
   group,
   formValues,
   fieldErrors,
+  fieldLoading,
+  fieldInfo,
   focusedField,
   onFieldChange,
   onFocus,
@@ -89,6 +56,8 @@ function GroupedFieldCard({
   group: FieldGroup;
   formValues: Record<string, string>;
   fieldErrors: Record<string, string>;
+  fieldLoading?: Record<string, boolean>;
+  fieldInfo?: Record<string, { message: string; success: boolean }>;
   focusedField: string | null;
   onFieldChange: (key: string, value: string) => void;
   onFocus: (key: string) => void;
@@ -132,21 +101,28 @@ function GroupedFieldCard({
                     </CyDText>
                   )}
                 </CyDView>
-                <CyDMaterialDesignIcons
-                  name='chevron-down'
-                  size={20}
-                  className='text-n70'
-                />
+                {fieldLoading?.[field.key] ? (
+                  <ActivityIndicator size='small' color='#A6AEBB' />
+                ) : (
+                  <CyDMaterialDesignIcons
+                    name='chevron-down'
+                    size={20}
+                    className='text-n70'
+                  />
+                )}
               </CyDTouchView>
               {hasError ? (
                 <CyDText className='text-[11px] text-errorText px-[16px] pb-[4px]'>
                   {fieldErrors[field.key]}
                 </CyDText>
               ) : null}
-              {!isLast ? <CyDView className='h-px bg-n50' /> : null}
+              {!isLast ? <CyDView className='h-[0.5px] bg-n50' /> : null}
             </CyDView>
           );
         }
+
+        const isLoading = !!fieldLoading?.[field.key];
+        const info = fieldInfo?.[field.key];
 
         return (
           <CyDView key={field.key}>
@@ -154,35 +130,40 @@ function GroupedFieldCard({
               className={`px-[16px] min-h-[52px] justify-center ${
                 hasError ? 'bg-red20' : ''
               }`}>
-              <CyDView className='py-[8px]'>
-                {hasValue ? (
-                  <CyDText className='text-[11px] text-n100 leading-[1.5]'>
-                    {displayLabel}
-                  </CyDText>
+              <CyDView className='flex-row items-center'>
+                <CyDView className='flex-1 py-[8px]'>
+                  {hasValue ? (
+                    <CyDText className='text-[11px] text-n100 leading-[1.5]'>
+                      {displayLabel}
+                    </CyDText>
+                  ) : null}
+                  <CyDTextInput
+                    className='text-[16px] font-medium text-base400 tracking-[-0.8px] leading-[1.4] py-0 bg-transparent'
+                    value={formValues[field.key] ?? ''}
+                    onChangeText={v => {
+                      let processed = v;
+                      if (field.autoCapitalize === 'characters') {
+                        processed = v.toUpperCase();
+                      }
+                      if (field.maxLength) {
+                        processed = processed.slice(0, field.maxLength);
+                      }
+                      onFieldChange(field.key, processed);
+                    }}
+                    placeholder={hasValue ? '' : displayLabel}
+                    placeholderTextColor={PLACEHOLDER_COLOR}
+                    autoCapitalize={field.autoCapitalize ?? 'none'}
+                    keyboardType={field.keyboardType ?? 'default'}
+                    maxLength={field.maxLength}
+                    returnKeyType='next'
+                    autoCorrect={false}
+                    onFocus={() => onFocus(field.key)}
+                    onBlur={() => onBlur(field)}
+                  />
+                </CyDView>
+                {isLoading ? (
+                  <ActivityIndicator size='small' color='#A6AEBB' />
                 ) : null}
-                <CyDTextInput
-                  className='text-[16px] font-medium text-base400 tracking-[-0.8px] leading-[1.4] py-0 bg-transparent'
-                  value={formValues[field.key] ?? ''}
-                  onChangeText={v => {
-                    let processed = v;
-                    if (field.autoCapitalize === 'characters') {
-                      processed = v.toUpperCase();
-                    }
-                    if (field.maxLength) {
-                      processed = processed.slice(0, field.maxLength);
-                    }
-                    onFieldChange(field.key, processed);
-                  }}
-                  placeholder={hasValue ? '' : displayLabel}
-                  placeholderTextColor={PLACEHOLDER_COLOR}
-                  autoCapitalize={field.autoCapitalize ?? 'none'}
-                  keyboardType={field.keyboardType ?? 'default'}
-                  maxLength={field.maxLength}
-                  returnKeyType='next'
-                  autoCorrect={false}
-                  onFocus={() => onFocus(field.key)}
-                  onBlur={() => onBlur(field)}
-                />
               </CyDView>
             </CyDView>
             {hasError ? (
@@ -190,7 +171,12 @@ function GroupedFieldCard({
                 {fieldErrors[field.key]}
               </CyDText>
             ) : null}
-            {!isLast ? <CyDView className='h-px bg-n50' /> : null}
+            {!hasError && info ? (
+              <CyDText className={`text-[11px] px-[16px] pb-[4px] ${info.success ? 'text-successTextGreen' : 'text-errorText'}`}>
+                {info.message}
+              </CyDText>
+            ) : null}
+            {!isLast ? <CyDView className='h-[0.5px] bg-n50' /> : null}
           </CyDView>
         );
       })}
@@ -202,8 +188,36 @@ function GroupedFieldCard({
 export default function BlindPayAddBankAccountScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
-  const { addBankAccount } = useBlindPayApi();
-  const { openDropdown: openDropdownSheet } = useBlindPayDropdown();
+  const { addBankAccount, getAvailableRails, getAvailableNaics, lookupSwift } = useBlindPayApi();
+  const { openDropdown: openDropdownSheet, openHelpSheet } = useBlindPaySheet();
+  const [availableRails, setAvailableRails] = useState<Array<{ value: string; label: string; icon: string }>>([]);
+  const [naicsOptions, setNaicsOptions] = useState<Array<{ value: string; label: string }>>([]);
+  const [naicsLoading, setNaicsLoading] = useState(false);
+
+  // Fetch available rails and NAICS codes on mount
+  useEffect(() => {
+    void getAvailableRails().then(res => {
+      if (!res.isError && res.data) {
+        const COUNTRY_FLAGS: Record<string, string> = {
+          US: '\uD83C\uDDFA\uD83C\uDDF8', BR: '\uD83C\uDDE7\uD83C\uDDF7',
+          MX: '\uD83C\uDDF2\uD83C\uDDFD', AR: '\uD83C\uDDE6\uD83C\uDDF7',
+          CO: '\uD83C\uDDE8\uD83C\uDDF4', '': '\uD83C\uDF10',
+        };
+        setAvailableRails(res.data.map(r => ({
+          value: r.value,
+          label: r.label,
+          icon: COUNTRY_FLAGS[r.country] ?? '\uD83C\uDF10',
+        })));
+      }
+    });
+    setNaicsLoading(true);
+    void getAvailableNaics().then(res => {
+      setNaicsLoading(false);
+      if (!res.isError && res.data) {
+        setNaicsOptions(res.data);
+      }
+    });
+  }, []);
 
   // Step 0 = rail + account name, step 1..N = rail-specific field groups
   const [wizardStep, setWizardStep] = useState(0);
@@ -213,7 +227,6 @@ export default function BlindPayAddBankAccountScreen() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
 
   // Total steps: 1 (rail+name) + number of rail step groups
   const totalSteps = 1 + (selectedRail?.steps.length ?? 0);
@@ -233,6 +246,126 @@ export default function BlindPayAddBankAccountScreen() {
     });
   }, []);
 
+  // ── SWIFT code lookup: auto-fill bank name, country & city ──
+  const swiftLookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSwiftLookup = useRef('');
+  const [swiftLookupLoading, setSwiftLookupLoading] = useState(false);
+  const [swiftLookupInfo, setSwiftLookupInfo] = useState<{ message: string; success: boolean } | null>(null);
+
+  useEffect(() => {
+    if (selectedRail?.type !== 'international_swift') return;
+    const code = (formValues.swiftCodeBic ?? '').trim();
+    const isValid = /^[A-Z0-9]{8}$|^[A-Z0-9]{11}$/i.test(code);
+
+    if (!isValid) {
+      setSwiftLookupInfo(null);
+      return;
+    }
+    if (code === lastSwiftLookup.current) return;
+
+    if (swiftLookupTimer.current) clearTimeout(swiftLookupTimer.current);
+    swiftLookupTimer.current = setTimeout(() => {
+      lastSwiftLookup.current = code;
+      setSwiftLookupLoading(true);
+      setSwiftLookupInfo(null);
+      void lookupSwift(code).then(res => {
+        setSwiftLookupLoading(false);
+        if (!res.isError && res.data) {
+          // Resolve country name (e.g. "India") to 2-letter code (e.g. "IN")
+          const countryName = (res.data.country ?? '').trim().toLowerCase();
+          const match = BLINDPAY_COUNTRIES.find(
+            c => c.label.toLowerCase() === countryName,
+          );
+          const countryCode = match?.value ?? res.data.countrySlug?.toUpperCase() ?? '';
+
+          const updates: Record<string, string> = {};
+          if (res.data!.bank) updates.swiftBankName = res.data!.bank;
+          if (res.data!.city) updates.swiftBankCity = res.data!.city;
+          if (countryCode) updates.swiftBankCountry = countryCode;
+          setFormValues(prev => ({ ...prev, ...updates }));
+          setFieldErrors(prev => {
+            const next = { ...prev };
+            delete next.swiftCodeBic;
+            delete next.swiftBankName;
+            delete next.swiftBankCountry;
+            delete next.swiftBankCity;
+            return next;
+          });
+          setSwiftLookupInfo({ message: 'Bank details found', success: true });
+        } else {
+          setFieldErrors(prev => ({
+            ...prev,
+            swiftCodeBic: 'Invalid SWIFT/BIC code',
+          }));
+          setSwiftLookupInfo({ message: 'No bank details found', success: false });
+        }
+      });
+    }, 500);
+
+    return () => {
+      if (swiftLookupTimer.current) clearTimeout(swiftLookupTimer.current);
+    };
+  }, [formValues.swiftCodeBic, selectedRail?.type]);
+
+  // ── Dynamic field augmentation ──
+  const displayGroup = useMemo((): FieldGroup | null => {
+    if (!currentGroup) return null;
+
+    let group = currentGroup;
+
+    // Inject NAICS options into businessIndustry dropdown
+    const hasNaics = group.fields.some(f => f.key === 'businessIndustry');
+    if (hasNaics && naicsOptions.length > 0) {
+      group = {
+        ...group,
+        fields: group.fields.map(f =>
+          f.key === 'businessIndustry' ? { ...f, options: naicsOptions } : f,
+        ),
+      };
+    }
+
+    // SWIFT: append payment purpose code when country has codes
+    if (selectedRail?.type === 'international_swift' && group.title === 'Bank Details') {
+      const country = (formValues.swiftBankCountry ?? '').trim();
+      const purposeCodes = getSwiftPurposeCodesForCountry(country);
+      if (purposeCodes.length > 0) {
+        group = {
+          ...group,
+          fields: [
+            ...group.fields,
+            {
+              key: 'swiftPaymentCode',
+              label: 'Payment Purpose',
+              placeholder: 'Select purpose',
+              type: 'dropdown' as FieldType,
+              required: true,
+              options: purposeCodes,
+              searchable: true,
+            },
+          ],
+        };
+      }
+    }
+
+    return group;
+  }, [currentGroup, selectedRail?.type, formValues.swiftBankCountry, naicsOptions]);
+
+  // Clear stale purpose code when country changes
+  useEffect(() => {
+    if (selectedRail?.type !== 'international_swift') return;
+    const country = (formValues.swiftBankCountry ?? '').trim();
+    const purposeCode = (formValues.swiftPaymentCode ?? '').trim();
+    if (!purposeCode) return;
+    const codes = getSwiftPurposeCodesForCountry(country);
+    if (codes.length === 0 || !codes.some(c => c.value === purposeCode)) {
+      setFormValues(prev => {
+        const next = { ...prev };
+        delete next.swiftPaymentCode;
+        return next;
+      });
+    }
+  }, [formValues.swiftBankCountry, selectedRail?.type]);
+
   const validateCurrentStep = useCallback((): boolean => {
     const errors: Record<string, string> = {};
     const req = String(t('FIELD_REQUIRED', 'This field is required'));
@@ -244,8 +377,8 @@ export default function BlindPayAddBankAccountScreen() {
       if (!accountName.trim()) {
         errors.name = req;
       }
-    } else if (currentGroup) {
-      for (const field of currentGroup.fields) {
+    } else if (displayGroup) {
+      for (const field of displayGroup.fields) {
         const val = (formValues[field.key] ?? '').trim();
         const isRequired =
           field.required ||
@@ -271,7 +404,7 @@ export default function BlindPayAddBankAccountScreen() {
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [wizardStep, selectedRail, accountName, currentGroup, formValues]);
+  }, [wizardStep, selectedRail, accountName, displayGroup, formValues]);
 
   const handleNext = useCallback(async () => {
     Keyboard.dismiss();
@@ -292,6 +425,9 @@ export default function BlindPayAddBankAccountScreen() {
       const val = (formValues[field.key] ?? '').trim();
       if (val) body[field.key] = val;
     }
+    // Include dynamic purpose code (not in static rail fields)
+    const purposeCode = (formValues.swiftPaymentCode ?? '').trim();
+    if (purposeCode) body.swiftPaymentCode = purposeCode;
 
     setSubmitting(true);
     const res = await addBankAccount(body as AddBankAccountRequest);
@@ -346,9 +482,9 @@ export default function BlindPayAddBankAccountScreen() {
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
         </CyDTouchView>
         <CyDTouchView
-          onPress={() => setShowHelp(true)}
+          onPress={() => openHelpSheet({ title: 'Help', text: helpText })}
           className='flex-row items-center gap-[6px] rounded-full bg-n20 px-[12px] py-[6px]'>
-          <CyDIcons name='help-circle-outline' size={20} className='text-base400' />
+          <CyDMaterialDesignIcons name='help-circle-outline' size={18} className='text-base400' />
           <CyDText className='text-[14px] font-normal text-base400 tracking-[-0.6px]'>
             Questions
           </CyDText>
@@ -380,11 +516,13 @@ export default function BlindPayAddBankAccountScreen() {
               <CyDTouchView
                 onPress={() => openDropdownSheet({
                   title: 'Transfer method',
-                  options: RAIL_TYPES.filter(r => !r.comingSoon).map(r => ({
-                    value: r.type,
-                    label: r.label,
-                    icon: r.flag,
-                  })),
+                  options: availableRails.length > 0
+                    ? availableRails
+                    : RAIL_TYPES.filter(r => !r.comingSoon).map(r => ({
+                        value: r.type,
+                        label: r.label,
+                        icon: r.flag,
+                      })),
                   selected: selectedRail?.type ?? '',
                   onSelect: value => {
                     const rail = RAIL_TYPES.find(r => r.type === value);
@@ -472,11 +610,16 @@ export default function BlindPayAddBankAccountScreen() {
               ) : null}
             </CyDView>
           </>
-        ) : currentGroup ? (
+        ) : displayGroup ? (
           <GroupedFieldCard
-            group={currentGroup}
+            group={displayGroup}
             formValues={formValues}
             fieldErrors={fieldErrors}
+            fieldLoading={{
+              ...(selectedRail?.type === 'international_swift' && swiftLookupLoading ? { swiftCodeBic: true } : {}),
+              ...(naicsLoading ? { businessIndustry: true } : {}),
+            }}
+            fieldInfo={selectedRail?.type === 'international_swift' && swiftLookupInfo ? { swiftCodeBic: swiftLookupInfo } : undefined}
             focusedField={focusedField}
             onFieldChange={setField}
             onFocus={setFocusedField}
@@ -498,6 +641,7 @@ export default function BlindPayAddBankAccountScreen() {
                   options: field.options,
                   selected: formValues[field.key] ?? '',
                   onSelect: value => setField(field.key, value),
+                  ...(field.searchable ? { searchable: true } : {}),
                 });
               }
             }}
@@ -505,52 +649,21 @@ export default function BlindPayAddBankAccountScreen() {
         ) : null}
       </CyDKeyboardAwareScrollView>
 
-      {/* Bottom bar: progress + button inline */}
-      <CyDView
-        className='px-[16px] pt-[12px] border-t border-n40 flex-row items-center gap-[16px]'
+      {/* Bottom bar: progress + button */}
+      <CyDView className='h-[0.5px] bg-n50' />
+      <CyDView className='px-[16px] pt-[12px]'
         style={{ paddingBottom: Math.max(8, insets.bottom) }}>
-        {/* Progress bar */}
-        <CyDView className='flex-1 h-[6px] rounded-full bg-n40 overflow-hidden'>
-          {wizardStep > 0 ? (
-            <CyDView
-              className='h-full rounded-full bg-base400'
-              style={{
-                width: `${(((wizardStep + 1) / totalSteps) * 100).toFixed(1)}%` as any,
-              }}
-            />
-          ) : null}
-        </CyDView>
-
-        {/* Action button */}
-        <CyDTouchView
-          onPress={() => {
-            void handleNext();
-          }}
+        <ProgressBarButton
+          step={wizardStep}
+          totalSteps={totalSteps}
+          onPress={() => { void handleNext(); }}
           disabled={submitting}
-          className='rounded-full min-h-[48px] min-w-[120px] bg-[#FBC02D] px-[24px] flex-row items-center justify-center'>
-          <CyDView className='relative items-center justify-center'>
-            <CyDText
-              className={`text-[16px] font-semibold text-black tracking-[-0.8px] ${
-                submitting ? 'opacity-0' : ''
-              }`}>
-              {isLastStep
-                ? String(t('ADD_ACCOUNT', 'Add Account'))
-                : String(t('NEXT', 'Next'))}
-            </CyDText>
-            {submitting ? (
-              <CyDView className='absolute inset-0 items-center justify-center'>
-                <ActivityIndicator color='#0D0D0D' />
-              </CyDView>
-            ) : null}
-          </CyDView>
-        </CyDTouchView>
+          loading={submitting}
+          isLastStep={isLastStep}
+          lastStepLabel={String(t('ADD_ACCOUNT', 'Add Account'))}
+        />
       </CyDView>
 
-      <HelpSheet
-        visible={showHelp}
-        helpText={helpText}
-        onClose={() => setShowHelp(false)}
-      />
     </CyDSafeAreaView>
   );
 }
