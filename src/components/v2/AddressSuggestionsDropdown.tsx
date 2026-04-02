@@ -1,12 +1,11 @@
 import React from 'react';
 import { ActivityIndicator, ScrollView } from 'react-native';
 import {
-  CyDFastImage,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindComponents';
-import AppImages from '../../../assets/images/appImages';
+
 import type { GoogleAutocompleteSuggestion } from '../../hooks/useGoogleAddressAutocomplete';
 
 interface AddressSuggestionsDropdownProps {
@@ -90,16 +89,6 @@ export default function AddressSuggestionsDropdown({
         </>
       )}
 
-      <CyDView className='flex-row items-center justify-end px-[12px] py-[8px] border-t border-n30 bg-n10'>
-        <CyDText className='text-[9px] font-medium text-n200 mr-[4px] uppercase tracking-wider'>
-          Powered by
-        </CyDText>
-        <CyDFastImage
-          source={AppImages.GOOGLE_LOGO}
-          className='h-[12px] w-[36px]'
-          resizeMode='contain'
-        />
-      </CyDView>
     </CyDView>
   );
 }

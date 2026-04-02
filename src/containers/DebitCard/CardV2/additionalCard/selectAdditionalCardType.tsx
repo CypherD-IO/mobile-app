@@ -130,9 +130,7 @@ const RenderCard = ({
             'opacity-50': isGetCardLimitReached(),
           },
         )}
-        // testChange
-        // disabled={isGetCardLimitReached() || !hasStock}
-      >
+        disabled={isGetCardLimitReached() || !hasStock}>
         <CyDView className='flex flex-row gap-x-[12px] items-center'>
           <CyDImage
             source={getCardImage(cardType, get(metaData, 'id', ''))}

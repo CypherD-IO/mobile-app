@@ -526,10 +526,7 @@ const CardAddressForm = forwardRef<
       </CyDView>
     );
 
-    const renderDeliveryLabel = (
-      label: string,
-      fieldName: FormFieldName,
-    ) => (
+    const renderDeliveryLabel = (label: string, fieldName: FormFieldName) => (
       <CyDView className='mt-[20px] flex flex-row items-center'>
         <CyDText className='text-[12px] font-bold'>{label}</CyDText>
         {getFieldError(fieldName) ? (
@@ -594,22 +591,13 @@ const CardAddressForm = forwardRef<
           <CyDTouchView
             className='bg-n20 rounded-lg flex-row items-center px-4 py-3'
             onPress={() => setSelectCountryModalVisible(true)}>
-            <CyDMaterialDesignIcons
-              name='earth'
-              size={20}
-              className='text-n400 mr-2'
-            />
             <CyDText className='text-[16px] mr-2'>
               {selectedCountry?.flag}
             </CyDText>
             <CyDText className='text-[16px] font-semibold flex-1'>
               {selectedCountry?.name ?? t('SELECT_COUNTRY')}
             </CyDText>
-            <CyDIcons
-              name='chevron-down'
-              size={20}
-              className='text-n400'
-            />
+            <CyDIcons name='chevron-down' size={20} className='text-n400' />
           </CyDTouchView>
         </CyDView>
 
@@ -676,7 +664,7 @@ const CardAddressForm = forwardRef<
               onBlur={() => {
                 void formik.setFieldTouched('state', true);
               }}
-              placeholder={t('State or province')}
+              placeholder={t('State or Province')}
               className='py-[16px] px-[12px] bg-n20 font-semibold border-n40 border-b-[1px]'
               returnKeyType='next'
               placeholderTextColor={'#A6AEBB'}
@@ -741,15 +729,13 @@ const CardAddressForm = forwardRef<
               onBlur={() => {
                 void formik.setFieldTouched('phoneNumber', true);
               }}
-              placeholder={t('Your Phone number')}
+              placeholder={t('Your Phone Number')}
               className='flex-1 py-[16px] px-[12px] rounded-[8px] bg-n20 font-semibold'
               keyboardType='phone-pad'
               ref={phoneNumberRef}
               placeholderTextColor={'#A6AEBB'}
               returnKeyType={
-                includeTaxId && selectedCountry?.Iso2 === 'MX'
-                  ? 'next'
-                  : 'done'
+                includeTaxId && selectedCountry?.Iso2 === 'MX' ? 'next' : 'done'
               }
               onSubmitEditing={() =>
                 includeTaxId && selectedCountry?.Iso2 === 'MX'
@@ -977,9 +963,7 @@ const CardAddressForm = forwardRef<
                 void formik.setFieldTouched('phoneNumber', true);
               }}
               returnKeyType={
-                includeTaxId && selectedCountry?.Iso2 === 'MX'
-                  ? 'next'
-                  : 'done'
+                includeTaxId && selectedCountry?.Iso2 === 'MX' ? 'next' : 'done'
               }
               onSubmitEditing={() =>
                 includeTaxId && selectedCountry?.Iso2 === 'MX'

@@ -207,7 +207,7 @@ export default function VerifyShippingAddress() {
               <CyDMaterialDesignIcons
                 name={'chevron-right'}
                 size={20}
-                className=''
+                className='text-n900'
               />
             </CyDTouchView>
           </CyDView>
