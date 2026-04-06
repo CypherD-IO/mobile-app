@@ -131,9 +131,13 @@ export const InitializeAppProvider = ({
     const unsubscribeOnMessage = isE2ETesting
       ? () => {}
       : onMessage(getMessaging(), async response => {
-          const handledByCio = await CustomerIO.pushMessaging.onMessageReceived(
-            response,
-          );
+          let handledByCio = false;
+          try {
+            handledByCio =
+              await CustomerIO.pushMessaging.onMessageReceived(response);
+          } catch (error) {
+            Sentry.captureException(error);
+          }
           if (handledByCio) {
             return;
           }
