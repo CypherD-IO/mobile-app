@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Config from 'react-native-config';
 import useAxios from '../../core/HttpRequest';
 
-const GOOGLE_PLACES_AUTOCOMPLETE_ENDPOINT =
-  'https://places.googleapis.com/v1/places:autocomplete';
-const GOOGLE_ADDRESS_VALIDATION_ENDPOINT =
-  'https://addressvalidation.googleapis.com/v1:validateAddress';
-const GOOGLE_PLACES_API_KEY: string =
-  (Config.GOOGLE_ADDRESS_VALIDATION_API_KEY as string) ?? '';
 const DEBOUNCE_MS = 250;
 const MIN_INPUT_LENGTH = 3;
 
@@ -128,7 +121,7 @@ export default function useGoogleAddressAutocomplete({
   addressLine1,
   enabled = true,
 }: UseGoogleAddressAutocompleteProps) {
-  const { getFromOtherSource, postToOtherSource } = useAxios();
+  const { getWithAuth, postWithAuth } = useAxios();
   const [suggestions, setSuggestions] = useState<
     GoogleAutocompleteSuggestion[]
   >([]);
@@ -152,7 +145,7 @@ export default function useGoogleAddressAutocomplete({
   }, [countryIso2]);
 
   useEffect(() => {
-    if (!enabled || !showSuggestions || !countryIso2 || !GOOGLE_PLACES_API_KEY) {
+    if (!enabled || !showSuggestions || !countryIso2) {
       return;
     }
 
@@ -176,26 +169,11 @@ export default function useGoogleAddressAutocomplete({
     }
 
     const debounceId = setTimeout(() => {
-      void postToOtherSource(
-        GOOGLE_PLACES_AUTOCOMPLETE_ENDPOINT,
-        {
-          includeQueryPredictions: false,
-          includedRegionCodes: [regionCode],
-          input: trimmedInput,
-          inputOffset: trimmedInput.length,
-          regionCode,
-          sessionToken: sessionTokenRef.current,
-        },
-        undefined,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-            'X-Goog-FieldMask':
-              'suggestions.placePrediction.place,suggestions.placePrediction.placeId,suggestions.placePrediction.text.text,suggestions.placePrediction.structuredFormat',
-          },
-        },
-      ).then(response => {
+      void postWithAuth('/v1/cards/address/autocomplete', {
+        input: trimmedInput,
+        regionCode,
+        sessionToken: sessionTokenRef.current,
+      }).then(response => {
         if (requestId !== requestIdRef.current) return;
 
         setLoading(false);
@@ -219,22 +197,15 @@ export default function useGoogleAddressAutocomplete({
       currentAddress: AutofilledAddress,
     ): Promise<AutofilledAddress | null> => {
       const placeResourceName = suggestion.placePrediction?.place;
-      if (!placeResourceName || !GOOGLE_PLACES_API_KEY) return null;
+      if (!placeResourceName) return null;
 
       setLoading(true);
       setLoadFailed(false);
 
-      const response = await getFromOtherSource(
-        `https://places.googleapis.com/v1/${placeResourceName}`,
-        undefined,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-            'X-Goog-FieldMask':
-              'postalAddress,addressComponents,formattedAddress',
-          },
-        },
+      const response = await getWithAuth(
+        `/v1/cards/address/place-details?placeResourceName=${encodeURIComponent(
+          placeResourceName,
+        )}`,
       );
 
       setLoading(false);
@@ -270,34 +241,20 @@ export default function useGoogleAddressAutocomplete({
 
   const validateStateWithGoogle = useCallback(
     async (address: AutofilledAddress): Promise<boolean> => {
-      if (!GOOGLE_PLACES_API_KEY) return true;
-
       try {
-        const response = await postToOtherSource(
-          `${GOOGLE_ADDRESS_VALIDATION_ENDPOINT}?key=${GOOGLE_PLACES_API_KEY}`,
-          {
-            address: {
-              regionCode: countryRef.current,
-              addressLines: [address.line1, address.line2].filter(Boolean),
-              locality: address.city,
-              administrativeArea: address.state,
-              postalCode: address.postalCode,
-            },
-          },
-          undefined,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-            },
-          },
-        );
+        const response = await postWithAuth('/v1/cards/address/validate', {
+          regionCode: countryRef.current,
+          addressLines: [address.line1, address.line2].filter(Boolean),
+          locality: address.city,
+          administrativeArea: address.state,
+          postalCode: address.postalCode,
+        });
 
         if (response.isError) return true;
 
         const googleState =
-          response.data?.result?.address?.postalAddress?.administrativeArea
-            ?.trim() ?? '';
+          response.data?.result?.address?.postalAddress?.administrativeArea?.trim() ??
+          '';
 
         if (
           !googleState ||
@@ -314,14 +271,12 @@ export default function useGoogleAddressAutocomplete({
     [],
   );
 
-  const isAvailable = Boolean(GOOGLE_PLACES_API_KEY);
-
   return {
     suggestions,
     showSuggestions,
     loading,
     loadFailed,
-    isAvailable,
+    isAvailable: true,
     selectSuggestion,
     validateStateWithGoogle,
     openSuggestions,
