@@ -160,6 +160,8 @@ export const screenTitle = {
   COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
   MERCHANT_REWARD_LIST: 'MerchantRewardList',
   PREMIUM_SCREEN: 'PremiumScreen',
+  CYPHER_AGENT: 'CypherAgent',
+  CYPHER_AGENT_SCREEN: 'CypherAgentScreen',
 };
 
 export const fontsName = {

@@ -20,8 +20,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { screenTitle } from '../constants';
 import { typography } from '../constants/typography';
-import { CyDIcons, CyDView } from '../styles/tailwindComponents';
+import { CyDIcons, CyDMaterialDesignIcons, CyDView } from '../styles/tailwindComponents';
 import {
+  CypherAgentStackScreen,
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
@@ -73,12 +74,14 @@ const screensToHaveNavBar = [
   screenTitle.CARD_SCREEN,
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,
+  screenTitle.CYPHER_AGENT_SCREEN,
 ];
 
 const TabStack = React.memo(
   function TabStack(props: TabStackProps) {
-    const { theme } = useTheme();
+    const { theme, changeTheme } = useTheme();
     const { colorScheme } = useColorScheme();
+    const savedThemeRef = useRef<Theme | null>(null);
     const { deepLinkData, setDeepLinkData } = props;
     const [showTabBar, setShowTabBar] = useState(true);
     const tabBarAnimation = useState(new Animated.Value(1))[0];
@@ -280,6 +283,13 @@ const TabStack = React.memo(
             });
             break;
 
+          case screenTitle.CYPHER_AGENT_SCREEN:
+            navigateToScreenInTab(screenTitle.CYPHER_AGENT, {
+              screen: data.screenToNavigate,
+              params: data.params,
+            });
+            break;
+
           default:
           // Do not navigate to CARD for unmatched deep link data
           // This prevents double navigation issues during wallet creation
@@ -475,6 +485,24 @@ const TabStack = React.memo(
               ? screensToHaveNavBar.includes(currentRouteName)
               : false,
           );
+
+          // Force dark theme when entering agent, restore when leaving
+          const isAgent =
+            currentRouteName === screenTitle.CYPHER_AGENT_SCREEN;
+          const wasAgent =
+            previousRouteName === screenTitle.CYPHER_AGENT_SCREEN;
+
+          if (isAgent && !wasAgent) {
+            savedThemeRef.current = theme;
+            if (theme !== Theme.DARK) {
+              changeTheme(Theme.DARK, false);
+            }
+          } else if (!isAgent && wasAgent && savedThemeRef.current !== null) {
+            if (savedThemeRef.current !== Theme.DARK) {
+              changeTheme(savedThemeRef.current, false);
+            }
+            savedThemeRef.current = null;
+          }
         }}>
         <Tab.Navigator
           screenOptions={({ route }) => ({
@@ -485,6 +513,17 @@ const TabStack = React.memo(
                 iconSource = 'portfolio';
               } else if (route.name === screenTitle.CARD) {
                 iconSource = 'card-filled';
+              } else if (route.name === screenTitle.CYPHER_AGENT) {
+                return (
+                  <CyDMaterialDesignIcons
+                    name='creation'
+                    size={28}
+                    className={clsx('', {
+                      'text-base400': focused,
+                      'text-n200': !focused,
+                    })}
+                  />
+                );
               } else if (route.name === screenTitle.REWARDS) {
                 iconSource = 'rewards-icon';
               } else if (route.name === screenTitle.OPTIONS) {
@@ -528,6 +567,15 @@ const TabStack = React.memo(
             options={{
               lazy: true,
               headerShown: false,
+            }}
+          />
+          <Tab.Screen
+            name={screenTitle.CYPHER_AGENT}
+            component={CypherAgentStackScreen}
+            options={{
+              lazy: true,
+              headerShown: false,
+              tabBarLabel: 'Cypher AI',
             }}
           />
           <Tab.Screen
