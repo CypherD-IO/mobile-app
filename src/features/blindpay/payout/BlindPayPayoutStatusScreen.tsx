@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Clipboard } from 'react-native';
+import { ActivityIndicator, Clipboard, Linking } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -34,6 +34,16 @@ const RAIL_FLAGS: Record<string, string> = {
   pix_safe: '\uD83C\uDDE7\uD83C\uDDF7', spei_bitso: '\uD83C\uDDF2\uD83C\uDDFD',
   transfers_bitso: '\uD83C\uDDE6\uD83C\uDDF7', ach_cop_bitso: '\uD83C\uDDE8\uD83C\uDDF4',
   international_swift: '\uD83C\uDF10',
+};
+
+const NETWORK_EXPLORERS: Record<string, string> = {
+  ethereum: 'https://etherscan.io/tx/',
+  base: 'https://basescan.org/tx/',
+  base_sepolia: 'https://sepolia.basescan.org/tx/',
+  polygon: 'https://polygonscan.com/tx/',
+  arbitrum: 'https://arbiscan.io/tx/',
+  solana: 'https://solscan.io/tx/',
+  optimism: 'https://optimistic.etherscan.io/tx/',
 };
 
 type ScreenPhase = 'sign' | 'processing' | 'success' | 'failed';
@@ -327,14 +337,6 @@ export default function BlindPayPayoutStatusScreen() {
             </CyDText>
           </CyDView>
 
-          {/* Done button so user is never stuck */}
-          <CyDTouchView
-            onPress={() => navigation.goBack()}
-            className='rounded-full h-[48px] bg-n0 border border-n30 items-center justify-center'>
-            <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.4px]'>
-              Done
-            </CyDText>
-          </CyDTouchView>
         </CyDView>
       </CyDSafeAreaView>
     );
@@ -367,12 +369,20 @@ export default function BlindPayPayoutStatusScreen() {
 
       <CyDView className='px-[16px] gap-[24px]' style={{ paddingBottom: Math.max(16, insets.bottom) }}>
         {txHash ? (
-          <CyDTouchView onPress={copyHash} className='bg-n0 rounded-[8px] p-[12px] gap-[10px]'>
+          <CyDView className='bg-n0 rounded-[8px] p-[12px] gap-[10px]'>
             <CyDView className='flex-row items-center justify-between'>
               <CyDText className='text-[12px] font-medium text-n200'>Transaction Hash</CyDText>
-              <CyDMaterialDesignIcons name='chevron-right' size={20} className='text-base400' />
+              {(() => {
+                const network = (quote?.contract?.network?.name ?? payoutData?.network ?? '').toLowerCase();
+                const explorerUrl = NETWORK_EXPLORERS[network];
+                return explorerUrl ? (
+                  <CyDTouchView onPress={() => void Linking.openURL(explorerUrl + txHash)} hitSlop={12}>
+                    <CyDMaterialDesignIcons name='open-in-new' size={18} className='text-base400' />
+                  </CyDTouchView>
+                ) : null;
+              })()}
             </CyDView>
-            <CyDView className='flex-row items-center justify-between'>
+            <CyDTouchView onPress={copyHash} className='flex-row items-center justify-between'>
               <CyDText
                 className='text-[14px] font-medium text-n100 tracking-[-0.8px] flex-1 mr-[12px]'
                 numberOfLines={2}
@@ -380,8 +390,8 @@ export default function BlindPayPayoutStatusScreen() {
                 {txHash}
               </CyDText>
               <CyDMaterialDesignIcons name='content-copy' size={20} className='text-n200' />
-            </CyDView>
-          </CyDTouchView>
+            </CyDTouchView>
+          </CyDView>
         ) : null}
 
         <CyDTouchView
