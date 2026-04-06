@@ -20,6 +20,11 @@ export interface FieldDef {
   regex?: RegExp;
   regexMessage?: string;
   searchable?: boolean;
+  requiredWhen?: {
+    field: string;
+    operator: 'eq' | 'in';
+    values: string[];
+  };
 }
 
 export interface FieldGroup {

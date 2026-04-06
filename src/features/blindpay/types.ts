@@ -616,6 +616,23 @@ export interface IBlindpaySwiftLookupResult {
   countrySlug: string;
 }
 
+// ── Dynamic form schema (API-driven bank account fields) ──
+
+export interface ApiFieldSchemaRequiredWhen {
+  field: string;
+  operator: 'eq' | 'in';
+  values: string[];
+}
+
+export interface ApiFieldSchema {
+  label: string;
+  regex: string;
+  key: string;
+  items?: Array<{ label: string; value: string }>;
+  required: boolean;
+  requiredWhen?: ApiFieldSchemaRequiredWhen;
+}
+
 // ── Shared response types ──
 
 export interface IBlindpaySuccessResponse {
