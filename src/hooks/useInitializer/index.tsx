@@ -380,15 +380,9 @@ export default function useInitializer() {
     });
 
     const email = data?.email?.trim();
-    const walletAddr =
-      pendingWalletAddresses.ethereumAddress ||
-      ethereum?.address ||
-      solana?.address;
-    const cioUserId = email || walletAddr;
-
+    const cioUserId = data?.rc?.accountId;
     if (cioUserId) {
       void identifyCustomerIOUser(cioUserId, {
-        ...pendingWalletAddresses,
         email: email ?? '',
         appVersion: DeviceInfo.getVersion(),
       });

@@ -59,6 +59,7 @@ yarn-error.log
 /ios/tmp.xcconfig
 /ios/GoogleService-Info.plist
 /ios/sentry.properties
+/ios/CioSecrets.xcconfig
 /vendor/bundle/
 Gemfile.lock  # Avoid Ruby/Bundler version conflicts between local and CI
 # Temporary files created by Metro to check the health of the file watcher
