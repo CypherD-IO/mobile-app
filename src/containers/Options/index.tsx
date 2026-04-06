@@ -47,6 +47,7 @@ import Intercom from '@intercom/intercom-react-native';
 import { get } from 'lodash';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import useAxios from '../../core/HttpRequest';
+import useBlindPayApi from '../../features/blindpay/api';
 import clsx from 'clsx';
 import DeviceInfo from 'react-native-device-info';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
@@ -69,7 +70,7 @@ const RenderOptions = ({
   apiDependent: boolean;
 }) => {
   return (
-    <CyDView className='items-center justify-center w-[100px]'>
+    <CyDView className='items-center justify-start px-[4px]' style={{ width: '33.33%' }}>
       <CyDTouchView
         className={clsx(
           'rounded-full border !border-base80 p-[12px] items-center justify-center',
@@ -81,7 +82,7 @@ const RenderOptions = ({
         disabled={apiDependent && isLoading}>
         <CyDIcons name={icon} size={24} className='text-base400' />
       </CyDTouchView>
-      <CyDText className='text-[14px] font-normal text-center mt-[6px] tracking-[-0.2px]'>
+      <CyDText className='text-[12px] font-normal text-center mt-[6px] tracking-[-0.2px]' numberOfLines={2}>
         {title}
       </CyDText>
     </CyDView>
@@ -151,6 +152,8 @@ export default function OptionsHub() {
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [updateModal, setUpdateModal] = useState<boolean>(false);
+  const [blindpayReceiverStatus, setBlindpayReceiverStatus] = useState<string | null>(null);
+  const { getStatus: getBlindpayStatus } = useBlindPayApi();
 
   // Developer mode toggle state
   const [versionClickCount, setVersionClickCount] = useState<number>(0);
@@ -423,6 +426,14 @@ export default function OptionsHub() {
   useEffect(() => {
     if (isFocused) {
       void refreshProfile();
+      void getBlindpayStatus().then(res => {
+        if (!res.isError && res.data?.blindpay) {
+          const bp = res.data.blindpay;
+          setBlindpayReceiverStatus(
+            (bp.receiverStatus ?? bp.kycStatus ?? '').toLowerCase() || null,
+          );
+        }
+      });
     }
   }, [isFocused]);
 
@@ -754,7 +765,7 @@ export default function OptionsHub() {
                 {'PREMIUM BENEFITS'}
               </CyDText>
 
-              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
+              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-y-[16px]'>
                 {premiumBenefits.map(benefit => (
                   <RenderOptions
                     isLoading={isLoading}
@@ -775,7 +786,7 @@ export default function OptionsHub() {
                 {'CYPHER CARD'}
               </CyDText>
 
-              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
+              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-y-[16px]'>
                 {cypherCardOptions.map(benefit => (
                   <RenderOptions
                     isLoading={isLoading}
@@ -790,49 +801,51 @@ export default function OptionsHub() {
             </CyDView>
           )}
 
-          <CyDView className='mt-[44px]'>
-            <CyDText className='text-[12px] text-n200 tracking-[2px]'>
-              {'BANK TRANSFERS'}
-            </CyDText>
+          {blindpayReceiverStatus === 'approved' ? (
+            <CyDView className='mt-[44px]'>
+              <CyDText className='text-[12px] text-n200 tracking-[2px]'>
+                {'BANK TRANSFERS'}
+              </CyDText>
 
-            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
-              <RenderOptions
-                isLoading={false}
-                apiDependent={false}
-                icon={'wallet' as IconNames}
-                title='Bank Accounts'
-                onPress={() => navigation.navigate(screenTitle.BLINDPAY_BANK_ACCOUNTS)}
-              />
-              <RenderOptions
-                isLoading={false}
-                apiDependent={false}
-                icon={'card' as IconNames}
-                title='Virtual Accounts'
-                onPress={() => navigation.navigate(screenTitle.BLINDPAY_VIRTUAL_ACCOUNTS)}
-              />
-              <RenderOptions
-                isLoading={false}
-                apiDependent={false}
-                icon={'arrow-up-right' as IconNames}
-                title='Limit Increase'
-                onPress={() => navigation.navigate(screenTitle.BLINDPAY_LIMITS)}
-              />
-              <RenderOptions
-                isLoading={false}
-                apiDependent={false}
-                icon={'coins-stacked' as IconNames}
-                title='Transactions'
-                onPress={() => navigation.navigate(screenTitle.BLINDPAY_PAYOUT_HISTORY)}
-              />
+              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-y-[16px]'>
+                <RenderOptions
+                  isLoading={false}
+                  apiDependent={false}
+                  icon={'bank' as IconNames}
+                  title='Bank Accounts'
+                  onPress={() => navigation.navigate(screenTitle.BLINDPAY_BANK_ACCOUNTS)}
+                />
+                <RenderOptions
+                  isLoading={false}
+                  apiDependent={false}
+                  icon={'globe' as IconNames}
+                  title='Virtual Accounts'
+                  onPress={() => navigation.navigate(screenTitle.BLINDPAY_VIRTUAL_ACCOUNTS)}
+                />
+                <RenderOptions
+                  isLoading={false}
+                  apiDependent={false}
+                  icon={'arrow-up-right' as IconNames}
+                  title='Limit Increase'
+                  onPress={() => navigation.navigate(screenTitle.BLINDPAY_LIMITS)}
+                />
+                <RenderOptions
+                  isLoading={false}
+                  apiDependent={false}
+                  icon={'clock-3' as IconNames}
+                  title='Transactions'
+                  onPress={() => navigation.navigate(screenTitle.BLINDPAY_PAYOUT_HISTORY)}
+                />
+              </CyDView>
             </CyDView>
-          </CyDView>
+          ) : null}
 
           <CyDView className='mt-[44px]'>
             <CyDText className='text-[12px] text-n200 tracking-[2px]'>
               {'ACCOUNT & SECURITY'}
             </CyDText>
 
-            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[16px]'>
+            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-y-[16px]'>
               {accountAndSecurityOptions.map(benefit => (
                 <RenderOptions
                   isLoading={isLoading}
@@ -852,7 +865,7 @@ export default function OptionsHub() {
                 {'NOTIFICATIONS & INTEGRATIONS'}
               </CyDText>
 
-              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[24px]'>
+              <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-y-[16px]'>
                 {notificationsAndIntegrationsOptions.map(benefit => (
                   <RenderOptions
                     isLoading={isLoading}
@@ -872,7 +885,7 @@ export default function OptionsHub() {
               {'SUPPORT & OTHER'}
             </CyDText>
 
-            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-x-[24px] gap-y-[24px]'>
+            <CyDView className='mt-[16px] flex flex-wrap flex-row items-start gap-y-[16px]'>
               {supportAndOtherOptions.map(benefit => (
                 <RenderOptions
                   isLoading={true}

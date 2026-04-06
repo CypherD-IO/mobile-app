@@ -995,4 +995,4 @@ export const BLINDPAY_COUNTRIES: Array<{ label: string; value: string }> = [
     "label": "Åland Islands",
     "value": "AX"
   }
-]
+];

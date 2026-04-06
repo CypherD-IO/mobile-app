@@ -461,6 +461,16 @@ export default function BlindPaySendMoneyScreen() {
             </CyDView>
           </CyDView>
 
+          {/* SWIFT compliance notice */}
+          {selectedAccount?.type === 'international_swift' ? (
+            <CyDView className='bg-n0 rounded-[10px] p-[12px] flex-row items-start gap-[8px]'>
+              <CyDMaterialDesignIcons name='file-document-outline' size={18} className='text-p100' />
+              <CyDText className='text-[12px] font-normal text-n200 flex-1 tracking-[-0.24px]'>
+                SWIFT transfers require compliance documents after submission. You'll be asked to upload them on the transaction detail page.
+              </CyDText>
+            </CyDView>
+          ) : null}
+
           {/* Timer */}
           <CyDText className='text-[14px] font-medium text-base200 text-center tracking-[-0.6px]'>
             Your quote will get refreshed in{' '}

@@ -317,10 +317,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
    * Opens the receive modal with chain selection
    */
   const handleReceivePress = (): void => {
-    if (hdWallet) {
-      setChainData(getAvailableChains(hdWallet));
-    }
-    setChooseChainModal(true);
+    navigation.navigate(C.screenTitle.CARD);
   };
 
   /**
@@ -338,18 +335,28 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   /**
    * Opens the more options bottom sheet with Buy and Sell options
    */
+  const handleReceiveFromMore = (): void => {
+    hideBottomSheet('moreOptions');
+    setTimeout(() => {
+      if (hdWallet) {
+        setChainData(getAvailableChains(hdWallet));
+      }
+      setChooseChainModal(true);
+    }, 250);
+  };
+
   const handleMorePress = (): void => {
     showBottomSheet({
       id: 'moreOptions',
-      snapPoints: ['40%'],
-      showCloseButton: true,
+      snapPoints: ['45%'],
+      showCloseButton: false,
       scrollable: false,
-      topBarColor: isDarkMode ? '#0D0D0D' : '#FFFFFF',
       content: (
         <GetTokenBottomSheetContent
           close={() => hideBottomSheet('moreOptions')}
           onBuyPress={handleBuyFromMore}
           onSellPress={handleSellFromMore}
+          onReceivePress={handleReceiveFromMore}
           mode='moreOptions'
         />
       ),

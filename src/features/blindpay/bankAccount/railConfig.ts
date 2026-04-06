@@ -1,8 +1,5 @@
 import { t } from 'i18next';
 import type { BlindpayBankAccountType } from '../types';
-import { BLINDPAY_COUNTRIES } from '../countries';
-
-const COUNTRY_OPTIONS = BLINDPAY_COUNTRIES.map(c => ({ value: c.value, label: c.label }));
 
 /** Field types for dynamic rendering. */
 export type FieldType = 'text' | 'dropdown' | 'phone';
@@ -172,7 +169,7 @@ const US_ADDRESS_FIELDS: FieldDef[] = [
   { key: 'addressLine2', label: 'Apt / Suite', placeholder: 'Apartment, Suite', type: 'text', required: true, maxLength: 256 },
   { key: 'city', label: 'City', placeholder: 'City', type: 'text', required: true },
   { key: 'stateProvinceRegion', label: 'State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
-  { key: 'country', label: 'Country', placeholder: 'Select country', type: 'dropdown', required: true, options: COUNTRY_OPTIONS, searchable: true },
+  { key: 'country', label: 'Country', placeholder: 'Select country', type: 'dropdown', required: true, options: [], searchable: true },
   { key: 'postalCode', label: 'Postal Code', placeholder: 'Postal code', type: 'text', required: true },
 ];
 
@@ -360,7 +357,7 @@ export const RAIL_TYPES: RailDef[] = [
           { key: 'swiftBeneficiaryAddressLine2', label: 'Beneficiary Address Line 2', placeholder: 'Apt, Suite', type: 'text', required: true, maxLength: 256 },
           { key: 'swiftBeneficiaryCity', label: 'Beneficiary City', placeholder: 'City', type: 'text', required: true, maxLength: 128 },
           { key: 'swiftBeneficiaryStateProvinceRegion', label: 'Beneficiary State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
-          { key: 'swiftBeneficiaryCountry', label: 'Beneficiary Country', placeholder: 'Select country', type: 'dropdown', required: true, options: COUNTRY_OPTIONS, searchable: true },
+          { key: 'swiftBeneficiaryCountry', label: 'Beneficiary Country', placeholder: 'Select country', type: 'dropdown', required: true, options: [], searchable: true },
           { key: 'swiftBeneficiaryPostalCode', label: 'Beneficiary Postal Code', placeholder: 'Postal code', type: 'text', required: true, maxLength: 20 },
         ],
       },
@@ -373,7 +370,7 @@ export const RAIL_TYPES: RailDef[] = [
           { key: 'swiftBankAddressLine2', label: 'Bank Address Line 2', placeholder: 'Bank address line 2', type: 'text', required: true, maxLength: 256 },
           { key: 'swiftBankCity', label: 'Bank City', placeholder: 'City', type: 'text', required: true, maxLength: 128 },
           { key: 'swiftBankStateProvinceRegion', label: 'Bank State', placeholder: 'e.g. CA, NY', type: 'text', required: true, autoCapitalize: 'characters', maxLength: 2, regex: /^[A-Z]{2}$/, regexMessage: 'Enter a 2-letter state code' },
-          { key: 'swiftBankCountry', label: 'Bank Country', placeholder: 'Select country', type: 'dropdown', required: true, options: COUNTRY_OPTIONS, searchable: true },
+          { key: 'swiftBankCountry', label: 'Bank Country', placeholder: 'Select country', type: 'dropdown', required: true, options: [], searchable: true },
           { key: 'swiftBankPostalCode', label: 'Bank Postal Code', placeholder: 'Postal code', type: 'text', required: true, maxLength: 20 },
         ],
       },
@@ -384,7 +381,7 @@ export const RAIL_TYPES: RailDef[] = [
           { key: 'swiftIntermediaryBankSwiftCodeBic', label: 'Intermediary SWIFT', placeholder: 'SWIFT code (optional)', type: 'text', autoCapitalize: 'characters', maxLength: 11, regex: /^$|^[A-Z0-9]{8}$|^[A-Z0-9]{11}$/, regexMessage: 'Must be 8 or 11 alphanumeric characters' },
           { key: 'swiftIntermediaryBankAccountNumberIban', label: 'Intermediary Account / IBAN', placeholder: 'Account (optional)', type: 'text', maxLength: 34 },
           { key: 'swiftIntermediaryBankName', label: 'Intermediary Bank Name', placeholder: 'Bank name (optional)', type: 'text', maxLength: 128 },
-          { key: 'swiftIntermediaryBankCountry', label: 'Intermediary Country', placeholder: 'Select country (optional)', type: 'dropdown', options: COUNTRY_OPTIONS, searchable: true },
+          { key: 'swiftIntermediaryBankCountry', label: 'Intermediary Country', placeholder: 'Select country (optional)', type: 'dropdown', options: [], searchable: true },
         ],
       },
     ],
