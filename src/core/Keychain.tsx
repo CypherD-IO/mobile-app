@@ -88,6 +88,11 @@ const currentSchemaVersion = 11;
 // See docs/KEYCHAIN_REFRESH_VERSION.md for usage guide.
 const currentKeychainRefreshVersion = 1;
 
+export const isKeychainMigrationPending = async (): Promise<boolean> => {
+  const storedVersion = await getKeychainRefreshVersion();
+  return storedVersion < currentKeychainRefreshVersion;
+};
+
 // Global lock to prevent multiple concurrent Face ID prompts
 // When Face ID is already in progress, other callers will wait for the result
 let biometricAuthInProgress: Promise<boolean> | null = null;
@@ -790,9 +795,15 @@ export const migrateKeychainIfNeeded = async (pin = '') => {
             PIN_AUTH,
           ];
 
-          // Phase 1: Read ALL values without triggering biometric prompts.
-          // Use getInternetCredentials directly with NO accessControl option.
-          // Items saved with USER_PRESENCE don't need biometric to read on Android.
+          // Wait for any prior BiometricPrompt (e.g. from init) to fully settle.
+          // Android auto-cancels a new prompt if the previous one hasn't fully
+          // cleaned up, causing CryptoFailedException code 5.
+          await sleepFor(1500);
+
+          // Phase 1: Read ALL values.
+          // On Android, USER_PRESENCE items still require biometric to read,
+          // so we pass accessControl to show the passcode fallback button
+          // (matching loadFromKeyChain behavior).
           interface KeyValue { key: string; value: string }
           const keyValues: KeyValue[] = [];
           for (const key of keysToRefresh) {
@@ -803,7 +814,10 @@ export const migrateKeychainIfNeeded = async (pin = '') => {
             const credentials = await getInternetCredentials(key, {
               authenticationPrompt: {
                 title: 'Migrating keychain security',
+                subtitle: 'Authenticate to continue',
               },
+              accessControl:
+                ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
             });
             if (credentials?.password) {
               keyValues.push({ key, value: credentials.password });
@@ -818,23 +832,39 @@ export const migrateKeychainIfNeeded = async (pin = '') => {
             await resetInternetCredentials({ server: key });
           }
 
-          // Phase 3: Wait for any previous BiometricPrompt to fully settle.
-          // The pin_auth check before migration triggers a biometric prompt,
-          // and Android's BiometricPrompt can auto-cancel a new prompt if the
-          // previous one hasn't fully cleaned up.
+          // Phase 3: Wait for Phase 1 BiometricPrompt to fully settle
+          // before Phase 4 triggers new prompts for Keystore key creation.
           await sleepFor(1500);
 
           // Phase 4: Re-save each key with the correct ACL.
           // This triggers a biometric prompt for Keystore key creation.
-          for (const { key, value } of keyValues) {
+          // With device passcode auth, Android's crypto auth window is shorter
+          // than biometric — the token can expire between saves, causing
+          // IllegalBlockSizeException. We retry once (triggers a new prompt)
+          // and fall back to no-ACL only as last resort to prevent data loss.
+          let allSavedWithACL = true;
+          for (let i = 0; i < keyValues.length; i++) {
+            const { key, value } = keyValues[i];
             try {
               await setInternetCredentials(key, key, value, aclOptions);
             } catch (saveError) {
-              // If save with ACL fails, save WITHOUT ACL as fallback to prevent data loss.
-              // The data will be unprotected but not lost. Migration will retry next launch.
-              await setInternetCredentials(key, key, value);
-              throw saveError;
+              // Auth window likely expired — wait for prompt to settle, then retry.
+              // The retry will trigger a fresh BiometricPrompt.
+              await sleepFor(1500);
+              try {
+                await setInternetCredentials(key, key, value, aclOptions);
+              } catch (retryError) {
+                // Retry also failed — save without ACL to prevent data loss.
+                // Do NOT throw — continue saving remaining keys.
+                await setInternetCredentials(key, key, value);
+                allSavedWithACL = false;
+              }
             }
+          }
+          if (!allSavedWithACL) {
+            // Some keys saved without ACL protection.
+            // Don't persist version — migration will retry next launch.
+            return;
           }
         }
       }

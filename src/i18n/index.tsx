@@ -1094,6 +1094,8 @@ const resources = {
         'We found these wallets associated with your recovery phrase',
       CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
       LOADING_TEXT: 'Almost there, please hold on...',
+      ALMOST_THERE_MIGRATION:
+        'Almost there! Additional authentication may be prompted this once.',
       LOADING_TEXT_WALLET_CREATION:
         'Updating with new chain support, this might take upto 1 min. Please do not go back or close the app.',
       INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION:

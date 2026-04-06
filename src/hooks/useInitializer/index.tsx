@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useContext } from 'react';
+import { Dispatch, SetStateAction, useContext, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
 import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
@@ -35,7 +35,8 @@ import useAxios from '../../core/HttpRequest';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   isBiometricEnabled,
-  isPinAuthenticated,
+  doesKeyExistInKeyChain,
+  isKeychainMigrationPending,
   loadCyRootData,
   loadFromKeyChain,
   migrateKeychainIfNeeded,
@@ -46,6 +47,7 @@ import {
   ActivityContext,
   DUMMY_AUTH,
   HdWalletContext,
+  PIN_AUTH,
   getPlatform,
   getPlatformVersion,
 } from '../../core/util';
@@ -74,6 +76,7 @@ export default function useInitializer() {
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile } = useCardUtilities();
   const { web3AuthEvm, web3AuthSolana } = useWeb3Auth();
+  const [isMigrating, setIsMigrating] = useState(false);
 
   // Data scrubbing is now handled in App.tsx Sentry initialization
 
@@ -238,8 +241,14 @@ export default function useInitializer() {
   };
 
   const pinAlreadySetStatus = async (): Promise<PinPresentStates> => {
-    const pinAuthenticated = await isPinAuthenticated();
-    if (pinAuthenticated) {
+    // Use doesKeyExistInKeyChain (hasInternetCredentials) instead of isPinAuthenticated
+    // (loadFromKeyChain). hasInternetCredentials is a metadata check that does NOT trigger
+    // a BiometricPrompt. isPinAuthenticated triggers biometric, and if that prompt fails
+    // (e.g. auto-canceled on Android), loadFromKeyChain returns undefined, which
+    // isPinAuthenticated misinterprets as "PIN is set" — showing a PIN screen to users
+    // who have no PIN.
+    const pinExists = await doesKeyExistInKeyChain(PIN_AUTH);
+    if (pinExists) {
       return PinPresentStates.TRUE;
     } else {
       return PinPresentStates.FALSE;
@@ -264,7 +273,14 @@ export default function useInitializer() {
     const cyRootData = await loadCyRootData(state);
 
     // Migrate keychain ACL if needed (e.g., fix Android USER_PRESENCE → BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE)
+    const migrationNeeded = await isKeychainMigrationPending();
+    if (migrationNeeded) {
+      setIsMigrating(true);
+    }
     await migrateKeychainIfNeeded(state.pinValue);
+    if (migrationNeeded) {
+      setIsMigrating(false);
+    }
 
     if (cyRootData) {
       const { accounts } = cyRootData;
@@ -583,5 +599,6 @@ export default function useInitializer() {
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
+    isMigrating,
   };
 }
