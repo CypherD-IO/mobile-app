@@ -23,14 +23,12 @@ import useBlindPayApi from '../api';
 import type { AddBankAccountRequest } from '../types';
 import {
   RAIL_TYPES,
-  isSpeiInstitutionRequired,
   type FieldDef,
   type FieldGroup,
-  type FieldType,
   type RailDef,
 } from './railConfig';
-import { getSwiftPurposeCodesForCountry } from './swiftPurposeCodes';
 import { BLINDPAY_COUNTRIES } from '../countries';
+import { transformApiSchemaToRailDef, evaluateRequiredWhen, camelToSnake } from './transformSchema';
 
 const LABEL_CLASS =
   'text-[14px] font-normal text-n200 tracking-[-0.6px] leading-[1.45]';
@@ -188,13 +186,11 @@ function GroupedFieldCard({
 export default function BlindPayAddBankAccountScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
-  const { addBankAccount, getAvailableRails, getAvailableNaics, lookupSwift } = useBlindPayApi();
+  const { addBankAccount, getAvailableRails, getBankAccountFields, lookupSwift } = useBlindPayApi();
   const { openDropdown: openDropdownSheet, openHelpSheet } = useBlindPaySheet();
   const [availableRails, setAvailableRails] = useState<Array<{ value: string; label: string; icon: string }>>([]);
-  const [naicsOptions, setNaicsOptions] = useState<Array<{ value: string; label: string }>>([]);
-  const [naicsLoading, setNaicsLoading] = useState(false);
 
-  // Fetch available rails and NAICS codes on mount
+  // Fetch available rails on mount
   useEffect(() => {
     void getAvailableRails().then(res => {
       if (!res.isError && res.data) {
@@ -210,18 +206,13 @@ export default function BlindPayAddBankAccountScreen() {
         })));
       }
     });
-    setNaicsLoading(true);
-    void getAvailableNaics().then(res => {
-      setNaicsLoading(false);
-      if (!res.isError && res.data) {
-        setNaicsOptions(res.data);
-      }
-    });
   }, []);
 
   // Step 0 = rail + account name, step 1..N = rail-specific field groups
   const [wizardStep, setWizardStep] = useState(0);
   const [selectedRail, setSelectedRail] = useState<RailDef | null>(null);
+  const [schemaLoading, setSchemaLoading] = useState(false);
+  const schemaRequestRef = useRef('');
   const [accountName, setAccountName] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -313,42 +304,33 @@ export default function BlindPayAddBankAccountScreen() {
 
     let group = currentGroup;
 
-    // Inject NAICS options into businessIndustry dropdown
-    const hasNaics = group.fields.some(f => f.key === 'businessIndustry');
-    if (hasNaics && naicsOptions.length > 0) {
-      group = {
-        ...group,
-        fields: group.fields.map(f =>
-          f.key === 'businessIndustry' ? { ...f, options: naicsOptions } : f,
-        ),
-      };
-    }
-
-    // SWIFT: append payment purpose code when country has codes
-    if (selectedRail?.type === 'international_swift' && group.title === 'Bank Details') {
+    // SWIFT: filter payment purpose code options by selected bank country
+    const hasPurposeField = group.fields.some(f => f.key === 'swiftPaymentCode');
+    if (hasPurposeField && selectedRail?.type === 'international_swift') {
       const country = (formValues.swiftBankCountry ?? '').trim();
-      const purposeCodes = getSwiftPurposeCodesForCountry(country);
-      if (purposeCodes.length > 0) {
+      if (country && country.length === 2) {
+        const prefix = `${country.toLowerCase()}_swift_`;
         group = {
           ...group,
-          fields: [
-            ...group.fields,
-            {
-              key: 'swiftPaymentCode',
-              label: 'Payment Purpose',
-              placeholder: 'Select purpose',
-              type: 'dropdown' as FieldType,
-              required: true,
-              options: purposeCodes,
-              searchable: true,
-            },
-          ],
+          fields: group.fields.map(f => {
+            if (f.key !== 'swiftPaymentCode') return f;
+            const filtered = (f.options ?? []).filter(o => o.value.startsWith(prefix));
+            // Hide field entirely if no codes match this country
+            if (filtered.length === 0) return null;
+            return { ...f, options: filtered };
+          }).filter(Boolean) as FieldDef[],
+        };
+      } else {
+        // No country selected — hide purpose code field
+        group = {
+          ...group,
+          fields: group.fields.filter(f => f.key !== 'swiftPaymentCode'),
         };
       }
     }
 
     return group;
-  }, [currentGroup, selectedRail?.type, formValues.swiftBankCountry, naicsOptions]);
+  }, [currentGroup, selectedRail?.type, formValues.swiftBankCountry]);
 
   // Clear stale purpose code when country changes
   useEffect(() => {
@@ -356,8 +338,8 @@ export default function BlindPayAddBankAccountScreen() {
     const country = (formValues.swiftBankCountry ?? '').trim();
     const purposeCode = (formValues.swiftPaymentCode ?? '').trim();
     if (!purposeCode) return;
-    const codes = getSwiftPurposeCodesForCountry(country);
-    if (codes.length === 0 || !codes.some(c => c.value === purposeCode)) {
+    const prefix = country.length === 2 ? `${country.toLowerCase()}_swift_` : '';
+    if (!prefix || !purposeCode.startsWith(prefix)) {
       setFormValues(prev => {
         const next = { ...prev };
         delete next.swiftPaymentCode;
@@ -382,8 +364,7 @@ export default function BlindPayAddBankAccountScreen() {
         const val = (formValues[field.key] ?? '').trim();
         const isRequired =
           field.required ||
-          (field.key === 'speiInstitutionCode' &&
-            isSpeiInstitutionRequired(formValues));
+          (field.requiredWhen ? evaluateRequiredWhen(field.requiredWhen, formValues) : false);
 
         if (isRequired && !val) {
           errors[field.key] = req;
@@ -423,11 +404,19 @@ export default function BlindPayAddBankAccountScreen() {
     };
     for (const field of selectedRail.fields) {
       const val = (formValues[field.key] ?? '').trim();
-      if (val) body[field.key] = val;
+      if (val) {
+        // Send both camelCase and snake_case for compatibility
+        body[field.key] = val;
+        const snakeKey = camelToSnake(field.key);
+        if (snakeKey !== field.key) body[snakeKey] = val;
+      }
     }
     // Include dynamic purpose code (not in static rail fields)
     const purposeCode = (formValues.swiftPaymentCode ?? '').trim();
-    if (purposeCode) body.swiftPaymentCode = purposeCode;
+    if (purposeCode) {
+      body.swiftPaymentCode = purposeCode;
+      body.swift_payment_code = purposeCode;
+    }
 
     setSubmitting(true);
     const res = await addBankAccount(body as AddBankAccountRequest);
@@ -525,13 +514,29 @@ export default function BlindPayAddBankAccountScreen() {
                       })),
                   selected: selectedRail?.type ?? '',
                   onSelect: value => {
-                    const rail = RAIL_TYPES.find(r => r.type === value);
-                    if (rail) {
-                      setSelectedRail(rail);
-                      setFormValues({});
-                      setFieldErrors({});
-                      setWizardStep(0);
-                    }
+                    setFormValues({});
+                    setFieldErrors({});
+                    setWizardStep(0);
+                    // Fetch dynamic schema from API, fallback to static config
+                    const railMeta = availableRails.find(r => r.value === value);
+                    schemaRequestRef.current = value;
+                    setSchemaLoading(true);
+                    void getBankAccountFields(value).then(res => {
+                      if (schemaRequestRef.current !== value) return; // stale
+                      setSchemaLoading(false);
+                      if (!res.isError && res.data?.length) {
+                        setSelectedRail(transformApiSchemaToRailDef(
+                          value,
+                          railMeta?.label ?? value,
+                          railMeta?.icon ?? '\uD83C\uDF10',
+                          res.data,
+                        ));
+                      } else {
+                        // Fallback to static rail config
+                        const rail = RAIL_TYPES.find(r => r.type === value);
+                        if (rail) setSelectedRail(rail);
+                      }
+                    });
                   },
                 })}
                 className={`bg-n0 border ${
@@ -615,10 +620,7 @@ export default function BlindPayAddBankAccountScreen() {
             group={displayGroup}
             formValues={formValues}
             fieldErrors={fieldErrors}
-            fieldLoading={{
-              ...(selectedRail?.type === 'international_swift' && swiftLookupLoading ? { swiftCodeBic: true } : {}),
-              ...(naicsLoading ? { businessIndustry: true } : {}),
-            }}
+            fieldLoading={selectedRail?.type === 'international_swift' && swiftLookupLoading ? { swiftCodeBic: true } : undefined}
             fieldInfo={selectedRail?.type === 'international_swift' && swiftLookupInfo ? { swiftCodeBic: swiftLookupInfo } : undefined}
             focusedField={focusedField}
             onFieldChange={setField}
@@ -657,8 +659,8 @@ export default function BlindPayAddBankAccountScreen() {
           step={wizardStep}
           totalSteps={totalSteps}
           onPress={() => { void handleNext(); }}
-          disabled={submitting}
-          loading={submitting}
+          disabled={submitting || schemaLoading}
+          loading={submitting || schemaLoading}
           isLastStep={isLastStep}
           lastStepLabel={String(t('ADD_ACCOUNT', 'Add Account'))}
         />

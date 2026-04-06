@@ -5,6 +5,7 @@ import useAxios from '../../core/HttpRequest';
 import { parseErrorMessage } from '../../core/util';
 import type {
   AddBankAccountRequest,
+  ApiFieldSchema,
   BlindpayPayoutResponse,
   BlindpayStatusResponse,
   IBlindpayAvailableRail,
@@ -39,7 +40,7 @@ const ENDPOINTS = {
   LIMITS_INCREASE: '/v1/blindpay/limits/increase',
   AVAILABLE_RAILS: '/v1/blindpay/available/rails',
   AVAILABLE_SWIFT: '/v1/blindpay/available/swift',
-  AVAILABLE_NAICS: '/v1/blindpay/available/naics',
+  AVAILABLE_BANK_DETAILS: '/v1/blindpay/available/bank-details',
 } as const;
 
 export interface BlindPayUploadFilePart {
@@ -455,12 +456,12 @@ export default function useBlindPayApi() {
     return { isError: false, data: result as IBlindpaySwiftLookupResult };
   }
 
-  async function getAvailableNaics(): Promise<{ isError: boolean; data?: Array<{ label: string; value: string }>; errorMessage?: string }> {
-    const response = await getWithAuth(ENDPOINTS.AVAILABLE_NAICS);
+  async function getBankAccountFields(railType: string): Promise<{ isError: boolean; data?: ApiFieldSchema[]; errorMessage?: string }> {
+    const response = await getWithAuth(`${ENDPOINTS.AVAILABLE_BANK_DETAILS}?rail=${railType}`);
     if (response.isError) return { isError: true, errorMessage: parseErrorMessage(response.error) };
     const data = response.data;
-    const list = Array.isArray(data) ? data : (data as any)?.naics ?? [];
-    return { isError: false, data: list as Array<{ label: string; value: string }> };
+    const list = Array.isArray(data) ? data : (data as any)?.fields ?? [];
+    return { isError: false, data: list as ApiFieldSchema[] };
   }
 
   async function getAvailableRails(): Promise<{ isError: boolean; data?: IBlindpayAvailableRail[]; errorMessage?: string }> {
@@ -473,7 +474,7 @@ export default function useBlindPayApi() {
 
   return {
     lookupSwift,
-    getAvailableNaics,
+    getBankAccountFields,
     getAvailableRails,
     getStatus,
     getProfile,
