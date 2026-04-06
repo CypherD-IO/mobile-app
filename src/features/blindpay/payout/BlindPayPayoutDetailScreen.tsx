@@ -88,8 +88,8 @@ function StatusBadge({ status }: { status: string }) {
   const isCompleted = s === 'completed';
   const isProcessing = s === 'processing' || s === 'pending';
   const isOnHold = s === 'onhold';
-  const bgColor = isCompleted ? 'bg-green-100' : isProcessing ? 'bg-n30' : isOnHold ? 'bg-[#FFF9EA]' : 'bg-red20';
-  const textColor = isCompleted ? 'text-green-700' : isProcessing ? 'text-n200' : isOnHold ? 'text-[#846000]' : 'text-red-700';
+  const bgColor = isCompleted ? 'bg-n30' : isProcessing ? 'bg-n30' : isOnHold ? 'bg-n30' : 'bg-n30';
+  const textColor = isCompleted ? 'text-successTextGreen' : isProcessing ? 'text-n200' : isOnHold ? 'text-p100' : 'text-errorText';
   const iconName = isCompleted ? 'check-circle' : isProcessing ? 'clock-outline' : isOnHold ? 'alert-circle-outline' : 'close-circle';
   return (
     <CyDView className={`flex-row items-center gap-[4px] px-[8px] py-[4px] rounded-[20px] ${bgColor}`}>
@@ -105,9 +105,9 @@ function StatusBadge({ status }: { status: string }) {
 function StepStatusBadge({ status }: { status: string }) {
   const isFailed = status === 'failed';
   return (
-    <CyDView className={`flex-row items-center gap-[2px] px-[6px] py-[2px] rounded-[4px] ${isFailed ? 'bg-red20' : 'bg-n30'}`}>
-      {isFailed ? <CyDMaterialDesignIcons name='alert' size={12} className='text-red-500' /> : null}
-      <CyDText className={`text-[10px] font-semibold capitalize ${isFailed ? 'text-red-500' : 'text-n200'}`}>
+    <CyDView className={`flex-row items-center gap-[2px] px-[6px] py-[2px] rounded-[4px] bg-n30`}>
+      {isFailed ? <CyDMaterialDesignIcons name='alert' size={12} className='text-errorText' /> : null}
+      <CyDText className={`text-[10px] font-semibold capitalize ${isFailed ? 'text-errorText' : 'text-n200'}`}>
         {status.replace(/_/g, ' ')}
       </CyDText>
     </CyDView>
@@ -150,11 +150,11 @@ function StepIcon({ step, stepStatus, allCompleted }: { step: string; stepStatus
       </CyDView>
     );
   }
-  // processing → spinner
+  // processing → spinner inside circle border
   if (step === 'processing') {
     return (
-      <CyDView className='w-[20px] h-[20px] items-center justify-center'>
-        <ActivityIndicator size='small' color='#FBC02D' style={{ transform: [{ scale: 0.6 }] }} />
+      <CyDView className='w-[20px] h-[20px] rounded-full border border-n50 items-center justify-center'>
+        <ActivityIndicator size='small' color='#A6AEBB' style={{ transform: [{ scale: 0.5 }] }} />
       </CyDView>
     );
   }
@@ -358,8 +358,8 @@ export default function BlindPayPayoutDetailScreen() {
         {/* Hero */}
         <CyDView className='bg-n20 items-center pt-[16px] pb-[24px] gap-[12px]'>
           <CyDView className='items-center gap-[3px]'>
-            <CyDView className='w-[44px] h-[44px] rounded-full bg-base400 items-center justify-center'>
-              <CyDMaterialDesignIcons name='arrow-top-right' size={24} className='text-white' />
+            <CyDView className='w-[44px] h-[44px] rounded-full bg-n40 items-center justify-center'>
+              <CyDMaterialDesignIcons name='arrow-top-right' size={24} className='text-base400' />
             </CyDView>
             <CyDText className='text-[10px] font-medium text-base400 tracking-[-0.2px]'>Money Sent</CyDText>
           </CyDView>
@@ -375,31 +375,52 @@ export default function BlindPayPayoutDetailScreen() {
           </CyDView>
         </CyDView>
 
-        {/* On-hold banner */}
-        {(overallStatus === 'on_hold' || payout.status === 'on_hold') ? (
-          <CyDView className='mx-[16px] mt-[12px] bg-n10 border border-n30 rounded-[12px] p-[16px] gap-[16px]'>
-            <CyDView className='flex-row items-center gap-[8px]'>
-              <CyDMaterialDesignIcons name='information-outline' size={24} className='text-base400' />
-              <CyDText className='text-[14px] font-medium text-base400 tracking-[-0.28px] flex-1'>
-                We need a few more documents to get your payout processed.
-              </CyDText>
+        {/* On-hold / compliance banner */}
+        {(overallStatus === 'on_hold' || payout.status === 'on_hold') ? (() => {
+          const docStatus = trackingDocs?.status as string | undefined;
+          const isRejected = docStatus === 'waiting_documents' && trackingDocs?.step === 'on_hold';
+          const isReviewing = docStatus === 'compliance_reviewing';
+          const isSwift = railType === 'international_swift';
+          return (
+            <CyDView className='mx-[16px] mt-[12px] bg-n10 border border-n30 rounded-[12px] p-[16px] gap-[12px]'>
+              <CyDView className='flex-row items-start gap-[8px]'>
+                <CyDMaterialDesignIcons name={isReviewing ? 'file-search-outline' : 'information-outline'} size={24} className='text-base400' />
+                <CyDView className='flex-1 gap-[4px]'>
+                  <CyDText className='text-[14px] font-medium text-base400 tracking-[-0.28px]'>
+                    {isReviewing
+                      ? 'Your documents are under compliance review.'
+                      : isRejected
+                        ? 'Your documents need to be resubmitted.'
+                        : 'We need compliance documents to process your payout.'}
+                  </CyDText>
+                  {isSwift ? (
+                    <CyDText className='text-[12px] font-normal text-n200 tracking-[-0.24px]'>
+                      {isReviewing
+                        ? 'Review typically takes up to 8 business days.'
+                        : 'Documents must show the relationship between sender and receiver. Submit within 30 days.'}
+                    </CyDText>
+                  ) : null}
+                </CyDView>
+              </CyDView>
+              {!isReviewing ? (
+                <CyDTouchView
+                  onPress={() => openDocumentUpload({
+                    payoutId: payout.id,
+                    onSuccess: () => {
+                      void getPayoutRef.current(payout.id).then(res => {
+                        if (!res.isError && res.data) setPayout(res.data);
+                      });
+                    },
+                  })}
+                  className='bg-p50 rounded-full h-[36px] items-center justify-center'>
+                  <CyDText className='text-[14px] font-semibold text-black tracking-[-0.28px]'>
+                    {isRejected ? 'Resubmit Documents' : 'Review & Upload files'}
+                  </CyDText>
+                </CyDTouchView>
+              ) : null}
             </CyDView>
-            <CyDTouchView
-              onPress={() => openDocumentUpload({
-                payoutId: payout.id,
-                onSuccess: () => {
-                  void getPayoutRef.current(payout.id).then(res => {
-                    if (!res.isError && res.data) setPayout(res.data);
-                  });
-                },
-              })}
-              className='bg-p50 rounded-full h-[36px] items-center justify-center'>
-              <CyDText className='text-[14px] font-semibold text-black tracking-[-0.28px]'>
-                Review & Upload files
-              </CyDText>
-            </CyDTouchView>
-          </CyDView>
-        ) : null}
+          );
+        })() : null}
 
         {/* Tabs */}
         <CyDView className='px-[16px] pt-[24px]'>
@@ -484,16 +505,29 @@ export default function BlindPayPayoutDetailScreen() {
             />
 
             {/* Documents step (if applicable) */}
-            {trackingDocs ? (
-              <TimelineStep
-                title={trackingDocs.step === 'on_hold' ? 'Additional Documents Requested' : 'Documents Submitted'}
-                step={trackingDocs.step ?? 'pending'}
-                stepStatus={null}
-                date={trackingDocs.completedAt}
-                isLast={false}
-                allCompleted={overallStatus === 'completed'}
-              />
-            ) : null}
+            {trackingDocs ? (() => {
+              const docStatus = (trackingDocs.status ?? '') as string;
+              const docStep = trackingDocs.step ?? 'pending';
+              const isRejected = docStatus === 'waiting_documents' && docStep === 'on_hold';
+              let docTitle = 'Documents Submitted';
+              if (isRejected) docTitle = 'Documents Rejected — Resubmit';
+              else if (docStatus === 'waiting_documents') docTitle = 'Awaiting Compliance Documents';
+              else if (docStatus === 'compliance_reviewing') docTitle = 'Documents Under Compliance Review';
+              else if (docStep === 'completed') docTitle = 'Documents Approved';
+              else if (docStep === 'processing') docTitle = 'Documents Under Review';
+              else if (docStep === 'on_hold') docTitle = 'Additional Documents Requested';
+
+              return (
+                <TimelineStep
+                  title={docTitle}
+                  step={isRejected ? 'pending_review' : docStep}
+                  stepStatus={docStatus || undefined}
+                  date={trackingDocs.completedAt}
+                  isLast={false}
+                  allCompleted={overallStatus === 'completed'}
+                />
+              );
+            })() : null}
 
             {/* Step 2: Initiate fiat transfer */}
             <TimelineStep

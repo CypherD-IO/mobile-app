@@ -84,7 +84,7 @@ export default function BlindPayBankAccountsScreen() {
   );
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0' edges={['top']}>
+    <CyDSafeAreaView className='flex-1 bg-n20' edges={['top']}>
       <CyDView className='flex-row items-center px-[16px] h-[64px]'>
         <CyDTouchView onPress={() => navigation.goBack()} hitSlop={12}>
           <CyDIcons name='arrow-left' size={24} className='text-base400' />
@@ -114,39 +114,56 @@ export default function BlindPayBankAccountsScreen() {
       ) : (
         <CyDScrollView
           className='flex-1'
-          contentContainerClassName='px-[16px] pb-[24px] gap-[10px]'
+          contentContainerClassName='px-[16px] pb-[24px]'
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={() => { void fetchFull(); }} />
           }>
-          {accounts.map(account => {
-            const railLabel = RAIL_LABELS[account.type] ?? account.type;
-            const flag = COUNTRY_FLAGS[account.country] ?? '\uD83C\uDF10';
-            const lastFour = account.lastFour ?? account.accountNumber?.slice(-4);
-            return (
-              <CyDTouchView
-                key={account.id}
-                onPress={() =>
-                  navigation.navigate(screenTitle.BLINDPAY_BANK_ACCOUNT_DETAIL, {
-                    accountId: account.id,
-                  })
-                }
-                className='bg-n0 border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
-                <CyDView className='w-[44px] h-[44px] rounded-[12px] bg-[#FDF3D8] items-center justify-center'>
-                  <CyDText className='text-[20px]'>{flag}</CyDText>
+          {(() => {
+            // Group accounts by rail type
+            const grouped: Record<string, typeof accounts> = {};
+            for (const account of accounts) {
+              const rail = account.type ?? 'other';
+              if (!grouped[rail]) grouped[rail] = [];
+              grouped[rail].push(account);
+            }
+            return Object.entries(grouped).map(([rail, items]) => (
+              <CyDView key={rail} className='mb-[16px]'>
+                <CyDText className='text-[12px] font-semibold text-base400 tracking-[-0.12px] mb-[8px]'>
+                  {RAIL_LABELS[rail] ?? rail}
+                </CyDText>
+                <CyDView className='bg-n10 rounded-[12px] border border-n40 overflow-hidden'>
+                  {items.map((account, idx) => {
+                    const flag = COUNTRY_FLAGS[account.country] ?? '\uD83C\uDF10';
+                    const lastFour = account.lastFour ?? account.accountNumber?.slice(-4);
+                    const isLast = idx === items.length - 1;
+                    return (
+                      <CyDTouchView
+                        key={account.id}
+                        onPress={() =>
+                          navigation.navigate(screenTitle.BLINDPAY_BANK_ACCOUNT_DETAIL, {
+                            accountId: account.id,
+                          })
+                        }
+                        className={`px-[16px] py-[16px] flex-row items-center gap-[12px] ${!isLast ? 'border-b border-n40' : ''}`}>
+                        <CyDView className='w-[37px] h-[37px] rounded-[6px] bg-n40 items-center justify-center'>
+                          <CyDText className='text-[18px]'>{flag}</CyDText>
+                        </CyDView>
+                        <CyDView className='flex-1'>
+                          <CyDText className='text-[14px] font-semibold text-base400 tracking-[-0.6px]'>
+                            {account.name ?? 'Bank Account'}
+                          </CyDText>
+                          <CyDText className='text-[11px] font-normal text-n200 mt-[2px]'>
+                            {lastFour ? `**** ${lastFour}` : ''}
+                          </CyDText>
+                        </CyDView>
+                        <CyDMaterialDesignIcons name='chevron-right' size={22} className='text-n200' />
+                      </CyDTouchView>
+                    );
+                  })}
                 </CyDView>
-                <CyDView className='flex-1'>
-                  <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
-                    {account.name ?? 'Bank Account'}
-                  </CyDText>
-                  <CyDText className='text-[13px] font-medium text-n200 tracking-[-0.4px] mt-[2px]'>
-                    {railLabel}
-                    {lastFour ? ` · ****${lastFour}` : ''}
-                  </CyDText>
-                </CyDView>
-                <CyDMaterialDesignIcons name='chevron-right' size={22} className='text-n200' />
-              </CyDTouchView>
-            );
-          })}
+              </CyDView>
+            ));
+          })()}
         </CyDScrollView>
       )}
 

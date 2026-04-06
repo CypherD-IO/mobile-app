@@ -28,7 +28,7 @@ import {
   type RailDef,
 } from './railConfig';
 import { BLINDPAY_COUNTRIES } from '../countries';
-import { transformApiSchemaToRailDef, evaluateRequiredWhen, camelToSnake } from './transformSchema';
+import { transformApiSchemaToRailDef, evaluateRequiredWhen } from './transformSchema';
 
 const LABEL_CLASS =
   'text-[14px] font-normal text-n200 tracking-[-0.6px] leading-[1.45]';
@@ -68,7 +68,9 @@ function GroupedFieldCard({
         const isLast = idx === group.fields.length - 1;
         const hasError = !!fieldErrors[field.key];
         const hasValue = !!(formValues[field.key] ?? '').trim();
-        const displayLabel = field.required
+        const isRequired = field.required ||
+          (field.requiredWhen ? evaluateRequiredWhen(field.requiredWhen, formValues) : false);
+        const displayLabel = isRequired
           ? field.label
           : `${field.label} (optional)`;
 
@@ -81,7 +83,7 @@ function GroupedFieldCard({
               <CyDTouchView
                 onPress={() => onDropdownOpen(field)}
                 className={`px-[16px] min-h-[52px] flex-row items-center justify-between ${
-                  hasError ? 'bg-red20' : ''
+                  hasError ? 'bg-n20' : ''
                 }`}>
                 <CyDView className='flex-1 py-[8px]'>
                   {hasValue ? (
@@ -126,7 +128,7 @@ function GroupedFieldCard({
           <CyDView key={field.key}>
             <CyDView
               className={`px-[16px] min-h-[52px] justify-center ${
-                hasError ? 'bg-red20' : ''
+                hasError ? 'bg-n20' : ''
               }`}>
               <CyDView className='flex-row items-center'>
                 <CyDView className='flex-1 py-[8px]'>
@@ -404,19 +406,11 @@ export default function BlindPayAddBankAccountScreen() {
     };
     for (const field of selectedRail.fields) {
       const val = (formValues[field.key] ?? '').trim();
-      if (val) {
-        // Send both camelCase and snake_case for compatibility
-        body[field.key] = val;
-        const snakeKey = camelToSnake(field.key);
-        if (snakeKey !== field.key) body[snakeKey] = val;
-      }
+      if (val) body[field.key] = val;
     }
     // Include dynamic purpose code (not in static rail fields)
     const purposeCode = (formValues.swiftPaymentCode ?? '').trim();
-    if (purposeCode) {
-      body.swiftPaymentCode = purposeCode;
-      body.swift_payment_code = purposeCode;
-    }
+    if (purposeCode) body.swiftPaymentCode = purposeCode;
 
     setSubmitting(true);
     const res = await addBankAccount(body as AddBankAccountRequest);
