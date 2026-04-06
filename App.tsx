@@ -323,6 +323,13 @@ export const handleDeepLink = async (
           screenToNavigate: screenTitle.PREMIUM_SCREEN,
         };
       }
+
+      // Deep link for cypher agent: https://app.cypherhq.io/agent
+      if (pathname === '/agent' || pathname === '/agent/') {
+        return {
+          screenToNavigate: screenTitle.CYPHER_AGENT_SCREEN,
+        };
+      }
     } catch (error) {
       // Log and swallow URL parsing errors so they never break app startup from a malformed link
       // eslint-disable-next-line no-console
