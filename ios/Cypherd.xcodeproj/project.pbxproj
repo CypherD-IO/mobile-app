@@ -18,7 +18,6 @@
 		3A1CEB72E44540DB896A8106 /* Gambetta-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E703DD25D9F74C8D91A6DE1B /* Gambetta-Light.ttf */; };
 		3A9C8DAE06E4CA1A8736AC70 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9EB5885DA80713AC1CBB26C /* Foundation.framework */; };
 		3DD5DE89F8020F4A4511AA2F /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 087E33EF7E3A0D502379644F /* libPods-Cypherd-CypherdTests.a */; };
-		3F382AF518AA4B8AB57A4372 /* CydFont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6F574E6668A94945B50DABE0 /* CydFont.ttf */; };
 		40B6B27B03EF7247E362AAF2 /* NotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DDCC26B2DB1D2CD3F58F545D /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5C433F5B28E49B2100FA84F8 /* Dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C433F5A28E49B2100FA84F8 /* Dynamic.swift */; };
 		5C433F6528E585ED00FA84F8 /* splash.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C433F6428E585ED00FA84F8 /* splash.json */; };
@@ -222,7 +221,6 @@
 				CA7AEE2011D5455185778698 /* Gambetta-Medium.ttf */,
 				B5FFA807710644EDA3FBD05D /* Gambetta-Regular.ttf */,
 				3171AF0057B4441895519E3C /* Gambetta-Semibold.ttf */,
-				6F574E6668A94945B50DABE0 /* CydFont.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";

@@ -47,23 +47,21 @@ export const Banner = ({
     {
       id: 'bank',
       label: t('BANK_TRANSFER', 'Bank Transfer'),
-      icon: 'bank',
-      isMaterialIcon: true,
+      icon: 'bank' as IconNames,
       onPress: onSendPress,
       testID: 'portfolio-send-btn',
     },
     {
       id: 'card',
       label: t('CARD_LOAD', 'Card Load'),
-      icon: 'credit-card-outline',
-      isMaterialIcon: true,
+      icon: 'card-load' as IconNames,
       onPress: onReceivePress,
       testID: 'portfolio-receive-btn',
     },
     {
       id: 'bridge',
       label: t('BRIDGE', 'Bridge'),
-      icon: 'swap-horizontal',
+      icon: 'bridge' as IconNames,
       onPress: onSwapPress,
     },
     {

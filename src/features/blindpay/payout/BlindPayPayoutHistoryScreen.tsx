@@ -120,7 +120,7 @@ export default function BlindPayPayoutHistoryScreen() {
     return (
       <CyDTouchView
         onPress={() => navigation.navigate(screenTitle.BLINDPAY_PAYOUT_DETAIL, { payoutId: p.id, payout: p })}
-        className={`bg-n0 px-[16px] py-[16px] flex-row items-center justify-between ${!isLast ? 'border-b border-n40' : ''}`}>
+        className={`bg-n10 px-[16px] py-[16px] flex-row items-center justify-between ${!isLast ? 'border-b border-n40' : ''}`}>
         <CyDView className='flex-row items-center gap-[12px] flex-1'>
           <CyDView className='w-[37px] h-[37px] rounded-[6px] bg-n40 items-center justify-center'>
             <CyDText className='text-[18px]'>{flag}</CyDText>
@@ -151,7 +151,7 @@ export default function BlindPayPayoutHistoryScreen() {
   return (
     <CyDSafeAreaView className='flex-1 bg-n20' edges={['top']}>
       {/* Header */}
-      <CyDView className='bg-n0 flex-row items-center gap-[4px] px-[4px] py-[8px] h-[64px]'>
+      <CyDView className='bg-n20 flex-row items-center gap-[4px] px-[4px] py-[8px] h-[64px]'>
         <CyDTouchView onPress={() => navigation.goBack()} hitSlop={12}
           className='w-[48px] h-[48px] items-center justify-center'>
           <CyDIcons name='arrow-left' size={24} className='text-base400' />

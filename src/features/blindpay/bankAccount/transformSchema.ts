@@ -47,18 +47,23 @@ const RAIL_GROUPS: Record<string, GroupRule[]> = {
     },
     {
       title: 'Beneficiary Details',
-      match: k => k.startsWith('swiftBeneficiary'),
-      helpText: 'Enter the full address of the account holder receiving the SWIFT transfer.',
+      match: k => k.startsWith('swiftBeneficiary') || ['phoneNumber', 'taxId'].includes(k),
+      helpText: 'Enter the full address and details of the account holder receiving the SWIFT transfer.',
     },
     {
       title: 'Bank Details',
-      match: k => k.startsWith('swiftBank'),
+      match: k => k.startsWith('swiftBank') || k === 'swiftPaymentCode',
       helpText: 'Enter the details of the receiving bank.',
     },
     {
       title: 'Intermediary Bank',
       match: k => k.startsWith('swiftIntermediary'),
       helpText: 'Intermediary/correspondent bank details. Only fill these if the receiving bank requires transfers to go through an intermediary bank.',
+    },
+    {
+      title: 'Business Details',
+      match: k => k === 'businessIndustry',
+      helpText: 'Select your business industry NAICS code. Required for business accounts.',
     },
   ],
   ach: [
@@ -135,8 +140,8 @@ function transformField(apiField: ApiFieldSchema): FieldDef {
     };
   }
 
-  // Heuristics for better UX
-  if (!isDropdown && apiField.regex) {
+  // Keyboard type from API regex
+  if (!isDropdown && apiField.regex && !def.keyboardType) {
     const isNumeric = /^\^\\d|^\^\[0-9\]/.test(apiField.regex);
     if (isNumeric) {
       def.keyboardType = 'number-pad';

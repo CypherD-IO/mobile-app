@@ -6,6 +6,7 @@ TARGETS=(
   "android/app/src/main/res/font"
   "ios/Cypherd/Info.plist"
   "ios/Cypherd.xcodeproj/project.pbxproj"
+  "rnvi-fonts/icomoon"
 )
 
 cd "$ROOT_DIR"
