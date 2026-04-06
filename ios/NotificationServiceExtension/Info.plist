@@ -28,6 +28,6 @@
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>CUSTOMERIO_CDP_API_KEY</key>
-	<string>c7d94ba6ac97b07c3142</string>
+	<string>$(CUSTOMERIO_CDP_API_KEY)</string>
 </dict>
 </plist>
