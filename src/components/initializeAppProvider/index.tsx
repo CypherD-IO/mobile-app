@@ -64,6 +64,7 @@ interface UseInitializerReturn {
     setUpdateModal: React.Dispatch<React.SetStateAction<boolean>>,
   ) => Promise<void>;
   checkAPIAccessibility: () => Promise<boolean>;
+  isMigrating: boolean;
 }
 
 export const InitializeAppProvider = ({
@@ -81,6 +82,7 @@ export const InitializeAppProvider = ({
     getHosts,
     checkForUpdatesAndShowModal,
     checkAPIAccessibility,
+    isMigrating,
   } = useInitializer() as UseInitializerReturn;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -324,6 +326,13 @@ export const InitializeAppProvider = ({
   }, [biometricEnabled, pinAuthenticated, pinSetStatus]);
 
   const RenderNavStack = useCallback(() => {
+    // During keychain migration, show a dedicated screen so users aren't confused
+    // by biometric/passcode prompts. This only triggers once for users updating
+    // from a version that needs ACL migration.
+    if (isMigrating) {
+      return <Loading loadingText={t('ALMOST_THERE_MIGRATION')} />;
+    }
+
     if (pinSetStatus === PinPresentStates.NOTSET) {
       return <Loading />;
     }
@@ -435,6 +444,7 @@ export const InitializeAppProvider = ({
     biometricEnabled,
     pinSetStatus,
     isAuthenticated,
+    isMigrating,
   ]);
 
   useEffect(() => {
