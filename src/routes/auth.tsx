@@ -128,12 +128,14 @@ import ReferralsViewAll from '../containers/Rewards/ReferralsViewAll';
 import AllReferralCodes from '../containers/Referrals/AllReferralCodes';
 import MerchantRewardListScreen from '../containers/DebitCard/CardV2/MerchantRewardListScreen';
 import PremiumScreen from '../containers/Premium';
+import CypherAgentScreen from '../containers/CypherAgent';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
 const SwapStack = createNativeStackNavigator();
 const RewardsStack = createNativeStackNavigator();
+const CypherAgentStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
 
 const CustomHeader = ({
@@ -930,6 +932,19 @@ export function RewardsStackScreen() {
         options={{ headerShown: false }}
       />
     </RewardsStack.Navigator>
+  );
+}
+
+export function CypherAgentStackScreen() {
+  return (
+    <CypherAgentStack.Navigator
+      initialRouteName={screenTitle.CYPHER_AGENT_SCREEN}>
+      <CypherAgentStack.Screen
+        name={screenTitle.CYPHER_AGENT_SCREEN}
+        component={CypherAgentScreen}
+        options={{ headerShown: false }}
+      />
+    </CypherAgentStack.Navigator>
   );
 }
 

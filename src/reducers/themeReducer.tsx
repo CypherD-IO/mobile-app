@@ -18,7 +18,7 @@ export enum Theme {
 
 interface ThemeContextType {
   theme: Theme;
-  changeTheme: (newTheme: Theme) => void;
+  changeTheme: (newTheme: Theme, persist?: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -192,14 +192,19 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  const changeTheme = async (newTheme: Theme): Promise<void> => {
+  const changeTheme = async (
+    newTheme: Theme,
+    persist = true,
+  ): Promise<void> => {
     if (!isValidTheme(newTheme)) {
       throw new Error(`Invalid theme: ${String(newTheme)}`);
     }
 
     try {
       setTheme(newTheme);
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
+      if (persist) {
+        await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
+      }
     } catch (error) {
       Sentry.captureException(error);
     }
@@ -216,8 +221,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     <ThemeContext.Provider
       value={{
         theme,
-        changeTheme: (newTheme: Theme) => {
-          void changeTheme(newTheme);
+        changeTheme: (newTheme: Theme, persist?: boolean) => {
+          void changeTheme(newTheme, persist);
         },
       }}>
       <View style={themes[getThemeToInject()]} className='flex-1'>
