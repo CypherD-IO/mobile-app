@@ -298,24 +298,24 @@ target 'Cypherd' do
     # Inject CioSecrets.xcconfig into the extension's Pods xcconfig files so the
     # CUSTOMERIO_CDP_API_KEY build setting is available without hardcoding the key.
     secrets_xcconfig = File.join(__dir__, 'CioSecrets.xcconfig')
-    unless File.exist?(secrets_xcconfig)
+    if !File.exist?(secrets_xcconfig)
       UI.warn "[CioSecrets] ios/CioSecrets.xcconfig not found — copy CioSecrets.xcconfig.example and fill in your values."
-    end
+    else
+      pods_root = installer.sandbox.root.to_s
+      %w[debug release].each do |cfg|
+        xcconfig_path = File.join(
+          pods_root,
+          'Target Support Files',
+          'Pods-NotificationServiceExtension',
+          "Pods-NotificationServiceExtension.#{cfg}.xcconfig"
+        )
+        next unless File.exist?(xcconfig_path)
 
-    pods_root = installer.sandbox.root.to_s
-    %w[debug release].each do |cfg|
-      xcconfig_path = File.join(
-        pods_root,
-        'Target Support Files',
-        'Pods-NotificationServiceExtension',
-        "Pods-NotificationServiceExtension.#{cfg}.xcconfig"
-      )
-      next unless File.exist?(xcconfig_path)
-
-      content = File.read(xcconfig_path)
-      include_line = '#include "../../../CioSecrets.xcconfig"'
-      unless content.include?(include_line)
-        File.write(xcconfig_path, "#{include_line}\n#{content}")
+        content = File.read(xcconfig_path)
+        include_line = '#include "../../../CioSecrets.xcconfig"'
+        unless content.include?(include_line)
+          File.write(xcconfig_path, "#{include_line}\n#{content}")
+        end
       end
     end
   end
