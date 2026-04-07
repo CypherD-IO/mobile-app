@@ -361,16 +361,10 @@ const ClaimRewardsBottomSheetContent = ({
                 title={t<string>('PROCEED_TO_LOCK') ?? 'Proceed to Lock'}
                 onPress={() => {
                   hideModal();
-                  navigation.navigate(screenTitle.OPTIONS);
-                  setTimeout(() => {
-                    navigation.navigate(screenTitle.OPTIONS, {
-                      screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-                      params: {
-                        title: t('DEPOSIT_AND_BOOST'),
-                        uri: redirectURI,
-                      },
-                    });
-                  }, 250);
+                  navigation.navigate(screenTitle.REWARDS_LOCK_WEB_VIEW, {
+                    title: t('DEPOSIT_AND_BOOST'),
+                    uri: redirectURI,
+                  });
                 }}
                 type={ButtonType.PRIMARY}
                 style={'rounded-full'}

@@ -15,8 +15,7 @@ import useWeb3 from './useWeb3';
 import { getInjectedJavascript } from '../containers/Browser/injectedJs';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../core/analytics';
 
-// const AGENT_BASE_URL = 'https://app.cypherhq.io/#/agent';
-   const AGENT_BASE_URL = 'http://localhost:3000/#/agent';
+const AGENT_BASE_URL = 'https://app.cypherhq.io/#/agent';
 
 export default function useCypherAgent() {
   const hdWalletContext = useContext<any>(HdWalletContext);
