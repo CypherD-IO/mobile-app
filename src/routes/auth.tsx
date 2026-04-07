@@ -931,6 +931,11 @@ export function RewardsStackScreen() {
         component={TokenRewardEarned}
         options={{ headerShown: false }}
       />
+      <RewardsStack.Screen
+        name={screenTitle.REWARDS_LOCK_WEB_VIEW}
+        component={SocialMediaScreen}
+        options={{ headerShown: false }}
+      />
     </RewardsStack.Navigator>
   );
 }

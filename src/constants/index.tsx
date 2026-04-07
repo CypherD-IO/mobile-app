@@ -137,6 +137,7 @@ export const screenTitle = {
   CARD_CREATION: 'cardCreation',
   REWARDS: 'Rewards',
   REWARDS_SCREEN: 'RewardsScreen',
+  REWARDS_LOCK_WEB_VIEW: 'RewardsLockWebView',
   CLAIM_REWARD: 'ClaimReward',
   REFERRALS_VIEW_ALL: 'ReferralsViewAll',
   ALL_REFERRAL_CODES: 'AllReferralCodes',

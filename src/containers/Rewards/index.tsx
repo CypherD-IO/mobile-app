@@ -1070,7 +1070,7 @@ export default function Rewards() {
   };
   /**
    * Handle deposit token button press
-   * Navigates to social media screen with locks URL
+   * Pushes the locks webview directly within the Rewards stack
    */
   const handleDepositTokenPress = () => {
     const sessionToken = globalContext.globalState.token;
@@ -1083,16 +1083,10 @@ export default function Rewards() {
     // Construct the URI with sessionToken as a query parameter
     const baseURI = 'https://app.cypherhq.io/#/locks';
     const redirectURI = `${baseURI}?sessionToken=${encodeURIComponent(sessionToken)}`;
-    navigation.navigate(screenTitle.OPTIONS);
-    setTimeout(() => {
-      navigation.navigate(screenTitle.OPTIONS, {
-        screen: screenTitle.SOCIAL_MEDIA_SCREEN,
-        params: {
-          title: 'Deposit Tokens',
-          uri: redirectURI,
-        },
-      });
-    }, 250);
+    navigation.navigate(screenTitle.REWARDS_LOCK_WEB_VIEW, {
+      title: 'Deposit Tokens',
+      uri: redirectURI,
+    });
   };
 
   /**
