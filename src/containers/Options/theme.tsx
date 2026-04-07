@@ -25,7 +25,9 @@ export default function AppearanceSelector() {
       <CyDView className='flex-1 bg-n20 pt-[24px]'>
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
-          onPress={() => changeTheme(Theme.SYSTEM)}>
+          onPress={() => {
+            void changeTheme(Theme.SYSTEM);
+          }}>
           <CyDText className='font-semibold text-xl'>
             {t('THEME_SYSTEM_DEFAULT')}
           </CyDText>
@@ -37,7 +39,9 @@ export default function AppearanceSelector() {
         </CyDTouchView>
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
-          onPress={() => changeTheme(Theme.LIGHT)}>
+          onPress={() => {
+            void changeTheme(Theme.LIGHT);
+          }}>
           <CyDText className='font-semibold text-xl'>
             {t('THEME_LIGHT')}
           </CyDText>
@@ -49,7 +53,9 @@ export default function AppearanceSelector() {
         </CyDTouchView>
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
-          onPress={() => changeTheme(Theme.DARK)}>
+          onPress={() => {
+            void changeTheme(Theme.DARK);
+          }}>
           <CyDText className='font-semibold text-xl'>{t('THEME_DARK')}</CyDText>
           {theme === Theme.DARK && (
             <CyDView className='w-4 h-4 rounded-full bg-p150 flex-row items-center justify-center'>

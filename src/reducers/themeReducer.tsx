@@ -18,7 +18,7 @@ export enum Theme {
 
 interface ThemeContextType {
   theme: Theme;
-  changeTheme: (newTheme: Theme, persist?: boolean) => void;
+  changeTheme: (newTheme: Theme, persist?: boolean) => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -221,9 +221,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     <ThemeContext.Provider
       value={{
         theme,
-        changeTheme: (newTheme: Theme, persist?: boolean) => {
-          void changeTheme(newTheme, persist);
-        },
+        changeTheme,
       }}>
       <View style={themes[getThemeToInject()]} className='flex-1'>
         {children}

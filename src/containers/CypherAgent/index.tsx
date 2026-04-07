@@ -17,8 +17,14 @@ import AgentErrorState from './AgentErrorState';
 
 const TAB_BAR_HEIGHT = Platform.OS === 'android' ? 65 : 50;
 
+// NOTE: Cypher Agent screen is intentionally forced to a dark theme so the
+// transition between the native shell and the dApp WebView feels seamless.
+// Hex colors are pinned (not driven by theme variables) so the agent surface
+// stays dark regardless of the user's app-wide theme preference.
+const AGENT_DARK_BG = '#0D0D0D';
+
 const styles = StyleSheet.create({
-  webview: { backgroundColor: '#0D0D0D' },
+  webview: { backgroundColor: AGENT_DARK_BG },
   webviewContainer: { paddingBottom: TAB_BAR_HEIGHT },
 });
 
@@ -35,57 +41,45 @@ export default function CypherAgentScreen() {
     retryLoad,
   } = useCypherAgent();
 
-  console.log('[CypherAgent] WebView URL:', agentUrl);
-
   return (
     <CyDSafeAreaView className='flex-1 bg-[#0D0D0D]' edges={['top']}>
       <StatusBar barStyle='light-content' />
       <KeyboardAvoidingView
         className='flex-1'
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
-        <CyDView className='flex-1 bg-[#0D0D0D]' style={styles.webviewContainer}>
-          {isLoading && !error && <AgentLoadingSparkle />}
-          {error && <AgentErrorState onRetry={retryLoad} />}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <CyDView
+          className='flex-1 bg-[#0D0D0D]'
+          style={styles.webviewContainer}>
+          {isLoading && !error ? <AgentLoadingSparkle /> : null}
+          {error ? <AgentErrorState onRetry={retryLoad} /> : null}
           <WebView
             ref={webviewRef}
             source={{ uri: agentUrl }}
             injectedJavaScriptBeforeContentLoaded={injectedCode}
-            onLoadStart={({ nativeEvent }) => {
-              console.log('[CypherAgent] onLoadStart:', nativeEvent.url);
+            onLoadStart={() => {
               setIsLoading(true);
               setError(null);
             }}
-            onLoadEnd={({ nativeEvent }) => {
-              console.log('[CypherAgent] onLoadEnd:', nativeEvent.url);
+            onLoadEnd={() => {
               setIsLoading(false);
             }}
-            onLoad={({ nativeEvent }) => {
-              console.log(
-                '[CypherAgent] onLoad - page rendered:',
-                nativeEvent.url,
-                'title:',
-                nativeEvent.title,
-              );
-            }}
             onError={syntheticEvent => {
-              const { code, description, url } = syntheticEvent.nativeEvent;
-              console.log(
-                '[CypherAgent] onError:',
-                code,
-                description,
-                url,
-              );
+              const { description } = syntheticEvent.nativeEvent;
               setError(description || 'Failed to load');
               setIsLoading(false);
             }}
             onHttpError={syntheticEvent => {
-              console.log(
-                '[CypherAgent] onHttpError:',
-                syntheticEvent.nativeEvent.statusCode,
-                syntheticEvent.nativeEvent.url,
+              const { statusCode, url } = syntheticEvent.nativeEvent;
+              const httpError = new Error(
+                `HTTP Error ${statusCode} ${url}`,
               );
-              Sentry.captureException(syntheticEvent);
+              Sentry.captureException(httpError, {
+                extra: {
+                  statusCode,
+                  url,
+                  nativeEvent: syntheticEvent.nativeEvent,
+                },
+              });
             }}
             onMessage={onWebviewMessage}
             javaScriptEnabled={true}
