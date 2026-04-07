@@ -15,6 +15,10 @@ const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 const SPARKLE_PATH =
   'M12 2C12 2 13.5 8.5 15.5 10.5C17.5 12.5 22 12 22 12C22 12 17.5 13.5 15.5 15.5C13.5 17.5 12 22 12 22C12 22 10.5 17.5 8.5 15.5C6.5 13.5 2 12 2 12C2 12 6.5 10.5 8.5 8.5C10.5 6.5 12 2 12 2Z';
 
+// Cypher Agent screen forces a dark theme so the native loading state matches
+// the dApp's own sparkle animation. The background (#0D0D0D) and the gold
+// sparkle (#FFC72F, equivalent to dark-theme `--color-p100`) are pinned on
+// purpose so this surface stays dark regardless of the user's theme choice.
 const SPARKLE_COLOR = '#FFC72F';
 
 export default function AgentLoadingSparkle() {

@@ -52,13 +52,35 @@ export default function useCypherAgent() {
       const resp = await getWithAuth(
         '/v1/configuration/checksum/injectedWeb3',
       );
-      if (!resp.isError) {
-        const { data } = resp;
-        const { hash: hashFromServerForInjectedWeb3 } = data;
-        if (hashForInjectedWeb3 === hashFromServerForInjectedWeb3) {
-          setCdnInjectedCode(response.data);
-        }
+      if (resp.isError) {
+        Sentry.captureMessage(
+          '[CypherAgent] Failed to fetch injectedWeb3 checksum from server',
+          {
+            level: 'error',
+            extra: {
+              cdnUrl: INJECTED_WEB3_CDN,
+              hashForInjectedWeb3,
+            },
+          },
+        );
+        return;
       }
+      const { hash: hashFromServerForInjectedWeb3 } = resp.data;
+      if (hashForInjectedWeb3 !== hashFromServerForInjectedWeb3) {
+        Sentry.captureMessage(
+          '[CypherAgent] Injected Web3 checksum mismatch',
+          {
+            level: 'error',
+            extra: {
+              cdnUrl: INJECTED_WEB3_CDN,
+              hashForInjectedWeb3,
+              hashFromServerForInjectedWeb3,
+            },
+          },
+        );
+        return;
+      }
+      setCdnInjectedCode(response.data);
     } catch (e) {
       Sentry.captureException(e);
     }
@@ -77,15 +99,45 @@ export default function useCypherAgent() {
       const jsonObj = JSON.parse(event.nativeEvent.data);
       const { type } = jsonObj;
 
-      console.log(
-        '[CypherAgent] onMessage:',
-        JSON.stringify({
-          type,
-          method: jsonObj.method,
-          payloadMethod: jsonObj.payload?.method,
-          id: jsonObj.id ?? jsonObj.payload?.id,
-        }),
-      );
+      const websiteInfo = {
+        host: 'app.cypherhq.io',
+        title: 'Cypher Agent',
+        origin: 'https://app.cypherhq.io',
+        url: agentUrl,
+      };
+
+      // Auto-approve account and permission requests for our own agent
+      // (no permission popup). Returns true if a reply was posted so the
+      // caller can short-circuit further handling.
+      const handleAutoApprovalMethods = (
+        method: string | undefined,
+        id: string | number | undefined,
+      ): boolean => {
+        if (
+          method === Web3Method.REQUEST_ACCOUNTS ||
+          method === Web3Method.ACCOUNTS
+        ) {
+          webviewRef.current?.postMessage(
+            JSON.stringify({
+              id,
+              type: CommunicationEvents.WEB3,
+              result: [ethereumAddress],
+            }),
+          );
+          return true;
+        }
+        if (method === Web3Method.WALLET_PUSH_PERRMISSION) {
+          webviewRef.current?.postMessage(
+            JSON.stringify({
+              id,
+              type: CommunicationEvents.WEB3,
+              result: WALLET_PERMISSIONS.ALLOW,
+            }),
+          );
+          return true;
+        }
+        return false;
+      };
 
       switch (type) {
         case CommunicationEvents.WEBINFO: {
@@ -105,37 +157,10 @@ export default function useCypherAgent() {
         case CommunicationEvents.WEB3: {
           const { payload } = jsonObj;
 
-          // Auto-approve for our own agent — no permission popup
-          if (
-            payload.method === Web3Method.REQUEST_ACCOUNTS ||
-            payload.method === Web3Method.ACCOUNTS
-          ) {
-            webviewRef.current?.postMessage(
-              JSON.stringify({
-                id: payload.id,
-                type: CommunicationEvents.WEB3,
-                result: [ethereumAddress],
-              }),
-            );
-            break;
-          }
-          if (payload.method === Web3Method.WALLET_PUSH_PERRMISSION) {
-            webviewRef.current?.postMessage(
-              JSON.stringify({
-                id: payload.id,
-                type: CommunicationEvents.WEB3,
-                result: WALLET_PERMISSIONS.ALLOW,
-              }),
-            );
+          if (handleAutoApprovalMethods(payload.method, payload.id)) {
             break;
           }
 
-          const websiteInfo = {
-            host: 'app.cypherhq.io',
-            title: 'Cypher Agent',
-            origin: 'https://app.cypherhq.io',
-            url: agentUrl,
-          };
           const response = await handleWeb3(payload, websiteInfo);
           webviewRef.current?.postMessage(
             JSON.stringify({
@@ -148,12 +173,6 @@ export default function useCypherAgent() {
         }
         case CommunicationEvents.WEB3COSMOS: {
           const { id, method } = jsonObj;
-          const websiteInfo = {
-            host: 'app.cypherhq.io',
-            title: 'Cypher Agent',
-            origin: 'https://app.cypherhq.io',
-            url: agentUrl,
-          };
           const response = await handleWeb3Cosmos(jsonObj, websiteInfo);
           webviewRef.current?.postMessage(
             JSON.stringify({
@@ -168,37 +187,10 @@ export default function useCypherAgent() {
         default: {
           // Handle non-typed messages (direct Web3 RPC calls from injected provider)
           if (jsonObj.method) {
-            // Auto-approve account and permission requests for our own agent
-            if (
-              jsonObj.method === Web3Method.REQUEST_ACCOUNTS ||
-              jsonObj.method === Web3Method.ACCOUNTS
-            ) {
-              webviewRef.current?.postMessage(
-                JSON.stringify({
-                  id: jsonObj.id,
-                  type: CommunicationEvents.WEB3,
-                  result: [ethereumAddress],
-                }),
-              );
-              break;
-            }
-            if (jsonObj.method === Web3Method.WALLET_PUSH_PERRMISSION) {
-              webviewRef.current?.postMessage(
-                JSON.stringify({
-                  id: jsonObj.id,
-                  type: CommunicationEvents.WEB3,
-                  result: WALLET_PERMISSIONS.ALLOW,
-                }),
-              );
+            if (handleAutoApprovalMethods(jsonObj.method, jsonObj.id)) {
               break;
             }
 
-            const websiteInfo = {
-              host: 'app.cypherhq.io',
-              title: 'Cypher Agent',
-              origin: 'https://app.cypherhq.io',
-              url: agentUrl,
-            };
             const response = await handleWeb3(jsonObj, websiteInfo);
             webviewRef.current?.postMessage(
               JSON.stringify({

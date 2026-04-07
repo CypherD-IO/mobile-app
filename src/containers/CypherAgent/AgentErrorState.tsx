@@ -16,6 +16,10 @@ interface AgentErrorStateProps {
 export default function AgentErrorState({ onRetry }: AgentErrorStateProps) {
   const { t } = useTranslation();
 
+  // Cypher Agent screen forces a dark theme to keep the native shell visually
+  // continuous with the dApp WebView. The hex colors below (#0D0D0D background
+  // and #8A8A8A muted text, plus `text-white` for the title) are pinned on
+  // purpose so this surface stays dark regardless of the user's theme choice.
   return (
     <CyDView className='absolute top-0 left-0 right-0 bottom-0 bg-[#0D0D0D] z-10 flex items-center justify-center px-[32px]'>
       <CyDImage
