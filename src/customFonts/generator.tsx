@@ -1,10 +1,19 @@
 import createIconSet from '@react-native-vector-icons/icomoon';
-import icoMoonConfig from './selection.json';
+import rawConfig from './selection.json';
 import { IconNames } from './type';
 
-export const iconNames = icoMoonConfig.icons.map(icon => icon.properties.name);
+// v13 expects { icons: [{ properties: { name, code } }] } but the new IcoMoon App
+// exports { glyphs: [{ extras: { name, codePoint } }] }. Transform if needed.
+const raw = rawConfig as any;
+const icoMoonConfig = raw.icons ? raw : {
+  icons: (raw.glyphs ?? []).map((g: any) => ({
+    properties: { name: g.extras?.name ?? '', code: g.extras?.codePoint ?? 0 },
+  })),
+  preferences: { fontPref: { metadata: { fontFamily: 'CydFont' } } },
+};
 
-// Create the icon component with type-safe name prop
+export const iconNames = icoMoonConfig.icons.map((i: any) => i.properties.name);
+
 export const CyDIconsPack = createIconSet(
   icoMoonConfig,
   'CydFont',

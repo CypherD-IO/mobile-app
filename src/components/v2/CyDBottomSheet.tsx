@@ -10,7 +10,9 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
   BottomSheetScrollView,
+  BottomSheetFooter,
 } from '@gorhom/bottom-sheet';
+import type { BottomSheetFooterProps } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 import {
   CyDView,
@@ -61,6 +63,8 @@ interface CyDBottomSheetProps {
   topBarColor?: string;
   borderRadius?: number;
   enableContentPanningGesture?: boolean;
+  /** Optional footer rendered as Gorhom BottomSheetFooter (always visible at bottom regardless of snap point) */
+  footer?: React.ReactNode;
   showBackdrop?: boolean;
   bottomInset?: number;
   fixedHeaderContent?: React.ReactNode;
@@ -94,6 +98,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
       topBarColor,
       borderRadius = 16,
       enableContentPanningGesture = true,
+      footer,
       showBackdrop = true,
       bottomInset = 0,
       fixedHeaderContent,
@@ -206,6 +211,19 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
         onChange?.(index);
       },
       [onClose, onOpen, onChange],
+    );
+
+    // Render footer using Gorhom's BottomSheetFooter so it stays pinned to the
+    // visible bottom across snap points (vs. plain absolute positioning which
+    // anchors to the maximum snap height).
+    const renderFooter = useCallback(
+      (props: BottomSheetFooterProps) =>
+        footer ? (
+          <BottomSheetFooter {...props} bottomInset={0}>
+            {footer}
+          </BottomSheetFooter>
+        ) : null,
+      [footer],
     );
 
     // Custom backdrop component
@@ -338,6 +356,7 @@ const CyDBottomSheet = forwardRef<CyDBottomSheetRef, CyDBottomSheetProps>(
               : { height: 0, padding: 0 }
           }
           backdropComponent={showBackdrop ? renderBackdrop : undefined}
+          footerComponent={footer ? renderFooter : undefined}
           onChange={handleSheetChanges}
           enableContentPanningGesture={enableContentPanningGesture}
           onAnimate={onAnimate}

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   CyDIcons,
@@ -11,17 +11,13 @@ import CyDTokenValue from '../../../components/v2/tokenValue';
 import { Chain } from '../../../constants/server';
 import { capitalize } from 'lodash';
 import { IconNames } from '../../../customFonts';
-import { HdWalletContext } from '../../../core/util';
-import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 
-/**
- * Action button configuration
- */
 interface ActionButton {
   id: string;
   label: string;
-  icon: IconNames | 'dots-horizontal';
+  icon: IconNames | string;
   isMaterialIcon?: boolean;
+  isText?: boolean;
   onPress: () => void;
 }
 
@@ -43,110 +39,90 @@ export const Banner = ({
   onReceivePress,
   onSwapPress,
   onMorePress,
-}: BannerProps): JSX.Element => {
+}: BannerProps) => {
   const { t } = useTranslation();
-  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
-  const { hideBalance } = hdWalletContext.state;
-
-  /**
-   * Toggle hide balance visibility
-   */
-  const handleToggleHideBalance = (): void => {
-    hdWalletContext.dispatch({
-      type: 'TOGGLE_BALANCE_VISIBILITY',
-      value: { hideBalance: !hideBalance },
-    });
-  };
 
   const actionButtons: ActionButton[] = [
     {
-      id: 'send',
-      label: t('SEND', 'Send'),
-      icon: 'arrow-up-right',
+      id: 'bank',
+      label: t('BANK_TRANSFER', 'Bank Transfer'),
+      icon: 'bank' as IconNames,
       onPress: onSendPress,
     },
     {
-      id: 'receive',
-      label: t('RECEIVE', 'Receive'),
-      icon: 'arrow-down-left',
+      id: 'card',
+      label: t('CARD_LOAD', 'Card Load'),
+      icon: 'card-load' as IconNames,
       onPress: onReceivePress,
     },
     {
-      id: 'swap',
-      label: t('SWAP', 'Swap'),
-      icon: 'swap-horizontal',
+      id: 'bridge',
+      label: t('BRIDGE', 'Bridge'),
+      icon: 'bridge' as IconNames,
       onPress: onSwapPress,
     },
     {
       id: 'more',
       label: t('MORE', 'More'),
-      icon: 'dots-horizontal',
-      isMaterialIcon: true,
+      icon: '',
+      isText: true,
       onPress: onMorePress,
     },
   ];
 
   return (
-    <CyDView className='bg-n20'>
-      {/* Dark section with curved bottom */}
-      <CyDView className='bg-n0 rounded-b-[44px] px-[20px] pt-[16px] pb-[16px]'>
-        {/* Chain Selector */}
+    <CyDView className='bg-n0'>
+      {/* Balance section */}
+      <CyDView className='items-center py-[20px] gap-[9px]'>
+        <CyDText className='text-[13px] font-medium text-n200 tracking-[0.26px] text-center'>
+          Total Portfolio Value
+        </CyDText>
+
+        <CyDTokenValue className='text-[40px]' parentClass='justify-center'>
+          {portfolioBalance}
+        </CyDTokenValue>
+
+        {/* Chain selector pill */}
         <CyDTouchView
           onPress={onChainPress}
-          className='flex-row items-center mb-[2px] justify-center'>
-          <CyDIcons name='connect' size={24} className='text-base400' />
-          <CyDText className='text-[14px] text-base400 font-medium ml-[4px]'>
-            {capitalize(selectedChain.name)}
+          className='bg-n20 border border-n40 rounded-[16px] h-[30px] flex-row items-center px-[11px] gap-[4px]'>
+          <CyDText className='text-[13px] font-semibold text-base400 text-center'>
+            {selectedChain.name === 'All Chains' ? 'All Chains' : capitalize(selectedChain.name)}
           </CyDText>
-          <CyDIcons name='chevron-down' size={20} className='text-base400' />
+          <CyDIcons name='chevron-down' size={10} className='text-base400' />
         </CyDTouchView>
+      </CyDView>
 
-        {/* Balance Display with Eye Icon */}
-        <CyDView className='mb-[24px] flex-row items-center gap-[2px] justify-center'>
-          <CyDView className='flex-shrink'>
-            <CyDTokenValue className='text-[32px]'>
-              {portfolioBalance}
-            </CyDTokenValue>
-          </CyDView>
+      {/* Quick actions */}
+      <CyDView className='flex-row items-start justify-center gap-[16px] px-[22px] pt-[20px] pb-[16px]'>
+        {actionButtons.map(button => (
           <CyDTouchView
-            onPress={handleToggleHideBalance}
+            key={button.id}
+            onPress={button.onPress}
             activeOpacity={0.7}
-            className='p-[4px]'>
-            <CyDIcons
-              name={hideBalance ? 'eye-closed' : 'eye'}
-              size={24}
-              className='text-base400'
-            />
-          </CyDTouchView>
-        </CyDView>
-
-        {/* Action Buttons */}
-        <CyDView className='flex-row justify-between gap-[8px]'>
-          {actionButtons.map(button => (
-            <CyDTouchView
-              key={button.id}
-              onPress={button.onPress}
-              activeOpacity={0.7}
-              className='flex-1 bg-p0 rounded-[12px] px-[8px] py-[6px] flex-row items-center justify-center gap-[2px]'>
-              {button.isMaterialIcon ? (
+            className='w-[80px] items-center gap-[8px]'>
+            <CyDView className='w-[56px] h-[56px] rounded-[16px] bg-n20 border border-n40 items-center justify-center'>
+              {button.isText ? (
+                <CyDText className='text-[24px] font-normal text-base400'>⋯</CyDText>
+              ) : button.isMaterialIcon ? (
                 <CyDMaterialDesignIcons
-                  name={button.icon as 'dots-horizontal'}
-                  size={20}
-                  className='text-p300'
+                  name={button.icon as any}
+                  size={24}
+                  className='text-base400'
                 />
               ) : (
                 <CyDIcons
                   name={button.icon as IconNames}
-                  size={20}
-                  className='text-p300'
+                  size={24}
+                  className='text-base400'
                 />
               )}
-              <CyDText className='text-p300 text-[14px] font-semibold'>
-                {capitalize(button.label)}
-              </CyDText>
-            </CyDTouchView>
-          ))}
-        </CyDView>
+            </CyDView>
+            <CyDText className='text-[11px] font-semibold text-n200 text-center leading-[14px]'>
+              {button.label}
+            </CyDText>
+          </CyDTouchView>
+        ))}
       </CyDView>
     </CyDView>
   );

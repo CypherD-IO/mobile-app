@@ -152,4 +152,11 @@ export type IconNames =
   | 'merchant-outlet'
   | 'mobile-wallets'
   | 'online-transaction'
-  | 'tap-and-pay';
+  | 'tap-and-pay'
+  | 'bank'
+  | 'mail'
+  | 'clock-3'
+  | 'reload'
+  | 'question-circle'
+  | 'add-new'
+  | 'offerIcon';

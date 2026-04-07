@@ -85,17 +85,40 @@ Notes:
 
 ## 2) Update the CydFont icon font
 
-`CydFont` is the custom icon font used by `CyDIconsPack`.
+`CydFont` is the custom icon font used by `CyDIconsPack` via `@react-native-vector-icons/icomoon` v13.
 
-### Step 1: Replace icon font artifacts
+### How it works
 
-Usually from IcoMoon export:
+- **Source of truth**: `assets/fonts/CydFont.ttf` + `src/customFonts/selection.json`
+- **v13 native font**: `rnvi-fonts/icomoon/CydFont.ttf` (copied by `fonts:setup`)
+- **Icon config**: `src/customFonts/generator.tsx` transforms the IcoMoon App JSON format to v13 format
+- CydFont.ttf is NOT linked via `react-native-asset` — it's managed by the icomoon pod/gradle plugin
 
-- replace `assets/fonts/CydFont.ttf`
-- update `src/customFonts/selection.json`
-- update icon types in `src/customFonts/type.ts` if icon names changed
+### Step 1: Export from IcoMoon App
 
-### Step 2: Regenerate native assets
+Export your icon set from [IcoMoon App](https://icomoon.io/app/).
+
+The new IcoMoon App exports a JSON with this structure:
+```json
+{
+  "glyphs": [
+    { "extras": { "name": "icon-name", "codePoint": 61445 }, ... }
+  ]
+}
+```
+
+`generator.tsx` automatically transforms this to the v13 expected format.
+
+### Step 2: Replace icon font artifacts
+
+- Replace `rnvi-fonts/icomoon/CydFont.ttf` with the new `.ttf` from the export
+- Replace `src/customFonts/selection.json` with the new JSON from the export
+- Update `src/customFonts/type.ts` if icon names changed (add/remove from `IconNames` union)
+
+> **Important:** CydFont.ttf lives in `rnvi-fonts/icomoon/`, NOT `assets/fonts/`.
+> Placing it in `assets/fonts/` causes duplicate build errors.
+
+### Step 3: Regenerate native assets
 
 Run:
 
@@ -103,13 +126,26 @@ Run:
 npm run fonts:setup
 ```
 
-### Step 3: Validate icon usage
+This copies `CydFont.ttf` → `rnvi-fonts/icomoon/CydFont.ttf` and relinks text fonts.
+
+### Step 4: Rebuild
+
+```bash
+# iOS
+cd ios && pod install && cd ..
+npm run ios
+
+# Android
+cd android && ./gradlew clean && cd ..
+npm run android
+```
+
+### Step 5: Validate icon usage
 
 Confirm icons render correctly in screens that use:
 
 - `CyDIconsPack`
 - `CyDIcons`
-- `typography.icon` (where relevant)
 
 ---
 
@@ -130,15 +166,25 @@ If `react-native-asset` does not insert the registration line for a new family, 
 After setup, commit all relevant files:
 
 - `assets/fonts/*` (the source fonts)
+- `rnvi-fonts/icomoon/CydFont.ttf` (v13 managed copy)
 - `android/app/src/main/res/font/*` (generated Android fonts/xml)
 - `ios/Cypherd/Info.plist`
 - `ios/Cypherd.xcodeproj/project.pbxproj`
-- `src/constants/typography.ts` (if updated)
 - `src/customFonts/selection.json` and `src/customFonts/type.ts` (if `CydFont` changed)
 
 ---
 
 ## 5) Troubleshooting
+
+### "Multiple commands produce CydFont.ttf"
+
+CydFont.ttf must NOT be in both `react-native-asset` linking AND `rnvi-fonts/icomoon/`.
+The `fonts:setup` script handles this automatically by hiding CydFont.ttf during asset linking.
+
+If you still get this error:
+1. Remove `CydFont.ttf` from `ios/Cypherd/Info.plist` UIAppFonts array
+2. Clean Xcode derived data: `rm -rf ~/Library/Developer/Xcode/DerivedData/Cypherd-*`
+3. Re-run `npm run fonts:setup` and `pod install`
 
 ### Duplicate Android font resources
 
@@ -151,10 +197,12 @@ cd android && ./gradlew clean && cd ..
 
 The setup script already resolves `xml + same-name ttf` collisions automatically.
 
-### "Class MainApplication not found"
+### Icons not rendering / wrong glyphs
 
-If this appears during asset linking, do not revert `MainApplication` signature changes in this repo.
-The current class structure is intentionally compatible with the font linker tool.
+1. Verify `selection.json` has the correct `glyphs[].extras.name` and `glyphs[].extras.codePoint`
+2. Verify `type.ts` `IconNames` union matches the names in `selection.json`
+3. Run `npm run fonts:setup` to re-sync the font file
+4. Clear Metro cache: `npx react-native start --reset-cache`
 
 ### Fonts are out of sync in CI/local
 

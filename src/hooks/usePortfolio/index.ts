@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { HdWalletContext } from '../../core/util';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
-import { hostWorker } from '../../global';
+import { hostWorker, isNonProdEnv } from '../../global';
 import {
   ChainBackendNames,
   ChainConfigMapping,
@@ -42,10 +42,14 @@ export default function usePortfolio() {
         solanaAddress,
       ].filter(address => address !== undefined);
 
+      const nonProd = isNonProdEnv();
+      const chains = nonProd
+        ? [...PORTFOLIO_CHAINS_BACKEND_NAMES, ChainBackendNames.BASE_SEPOLIA]
+        : PORTFOLIO_CHAINS_BACKEND_NAMES;
       const payload = {
-        chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
+        chains,
         addresses,
-        allowTestNets: false,
+        allowTestNets: nonProd,
         isVerified: isVerifyCoinChecked,
         inclHyperliquidBalances: true,
       };

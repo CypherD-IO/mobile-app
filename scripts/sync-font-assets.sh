@@ -6,6 +6,7 @@ ASSETS_DIR="$ROOT_DIR/assets/fonts"
 ANDROID_FONT_DIR="$ROOT_DIR/android/app/src/main/res/font"
 ANDROID_LINK_MANIFEST="$ROOT_DIR/android/link-assets-manifest.json"
 IOS_LINK_MANIFEST="$ROOT_DIR/ios/link-assets-manifest.json"
+RNVI_ICOMOON_DIR="$ROOT_DIR/rnvi-fonts/icomoon"
 CLEAN_ANDROID_RESOURCES=false
 BACKUP_DIR=""
 
@@ -47,6 +48,36 @@ if [ "${#font_files[@]}" -eq 0 ]; then
   exit 1
 fi
 
+# ── Verify CydFont.ttf is in rnvi-fonts/icomoon/ (NOT in assets/fonts/) ──
+# @react-native-vector-icons/icomoon v13 manages CydFont via rnvi-fonts/icomoon/.
+# CydFont.ttf must NOT be in assets/fonts/ — that causes duplicate build errors.
+echo "Checking CydFont setup..."
+if [ -f "$ASSETS_DIR/CydFont.ttf" ]; then
+  echo "  ⚠ Moving CydFont.ttf out of assets/fonts/ (managed by rnvi-fonts/icomoon/)"
+  mkdir -p "$RNVI_ICOMOON_DIR"
+  mv "$ASSETS_DIR/CydFont.ttf" "$RNVI_ICOMOON_DIR/CydFont.ttf"
+fi
+
+if [ -f "$RNVI_ICOMOON_DIR/CydFont.ttf" ]; then
+  echo "  ✓ CydFont.ttf in rnvi-fonts/icomoon/"
+else
+  echo "  ✗ CydFont.ttf not found in rnvi-fonts/icomoon/ — icon font will not work"
+  echo "    Place CydFont.ttf in rnvi-fonts/icomoon/"
+  exit 1
+fi
+
+# ── Ensure CydFont.ttf is in Info.plist UIAppFonts ──
+# The pod bundles the font file, but iOS needs it in UIAppFonts to register it.
+INFOPLIST="$ROOT_DIR/ios/cypherd/Info.plist"
+if [ -f "$INFOPLIST" ] && ! grep -q '<string>CydFont.ttf</string>' "$INFOPLIST"; then
+  echo "  Adding CydFont.ttf to Info.plist UIAppFonts..."
+  sed -i '' '/<key>UIAppFonts<\/key>/,/<\/array>/ {
+    /<\/array>/ i\
+\		<string>CydFont.ttf</string>
+  }' "$INFOPLIST"
+  echo "  ✓ Added CydFont.ttf to Info.plist"
+fi
+
 if [ "$CLEAN_ANDROID_RESOURCES" = true ]; then
   echo "Cleaning Android font resources directory..."
   echo "Resetting react-native-asset manifests to force full relink..."
@@ -62,7 +93,7 @@ else
   mkdir -p "$ANDROID_FONT_DIR"
 fi
 
-echo "Linking fonts from assets/fonts with react-native-asset..."
+echo "Linking text fonts from assets/fonts with react-native-asset..."
 if ! (
   cd "$ROOT_DIR"
   npx --no-install react-native-asset
@@ -139,10 +170,15 @@ fi
 
 echo
 echo "Font sync complete."
+echo
+echo "  Icon font:  rnvi-fonts/icomoon/CydFont.ttf  (managed by @react-native-vector-icons/icomoon v13)"
+echo "  Text fonts: assets/fonts/*.ttf               (linked by react-native-asset)"
+echo
 echo "Generated Android resources:"
 ls -1 "$ANDROID_FONT_DIR" || true
 echo
 echo "Review and commit these generated files:"
+echo "  rnvi-fonts/icomoon/CydFont.ttf"
 echo "  android/app/src/main/res/font/*"
 echo "  ios/Cypherd/Info.plist"
 echo "  ios/Cypherd.xcodeproj/project.pbxproj"
