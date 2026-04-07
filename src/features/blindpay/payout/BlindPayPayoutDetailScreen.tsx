@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Clipboard, Linking } from 'react-native';
+import { ActivityIndicator, Clipboard, Linking, StyleSheet } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -154,7 +154,7 @@ function StepIcon({ step, stepStatus, allCompleted }: { step: string; stepStatus
   if (step === 'processing') {
     return (
       <CyDView className='w-[20px] h-[20px] rounded-full border border-n50 items-center justify-center'>
-        <ActivityIndicator size='small' color='#A6AEBB' style={{ transform: [{ scale: 0.5 }] }} />
+        <ActivityIndicator size='small' color='#A6AEBB' style={styles.spinnerSmall} />
       </CyDView>
     );
   }
@@ -187,9 +187,9 @@ function TimelineStep({ title, date, step, stepStatus, isLast, content, allCompl
   return (
     <CyDView className='flex-row gap-[10px]'>
       {/* Icon + line */}
-      <CyDView className='items-center' style={{ width: 20 }}>
+      <CyDView className='items-center w-[20px]'>
         <StepIcon step={step} stepStatus={stepStatus} allCompleted={allCompleted} />
-        {!isLast ? <CyDView className='w-[1px] flex-1 bg-n50 my-[4px]' style={{ minHeight: 20 }} /> : null}
+        {!isLast ? <CyDView className='w-[1px] flex-1 bg-n50 my-[4px] min-h-[20px]' /> : null}
       </CyDView>
 
       {/* Content */}
@@ -556,3 +556,7 @@ export default function BlindPayPayoutDetailScreen() {
     </CyDSafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  spinnerSmall: { transform: [{ scale: 0.5 }] },
+});

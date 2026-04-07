@@ -3,7 +3,7 @@ import { useGlobalBottomSheet } from '../../../components/v2/GlobalBottomSheetPr
 import PayoutDocumentUploadModal from './PayoutDocumentUploadModal';
 
 /**
- * Hook to open the payout document upload modal from anywhere.
+ * Hook to open the payout document upload sheet from anywhere.
  *
  * Usage:
  *   const { openDocumentUpload } = usePayoutDocumentUpload();
@@ -21,8 +21,8 @@ export default function usePayoutDocumentUpload() {
       snapPoints: ['65%', '95%'],
       showHandle: true,
       showCloseButton: false,
-      scrollable: true,
-      enableContentPanningGesture: false,
+      scrollable: false,
+      enableContentPanningGesture: true,
       onClose: () => hideBottomSheet('payout-doc-upload'),
       content: (
         <PayoutDocumentUploadModal

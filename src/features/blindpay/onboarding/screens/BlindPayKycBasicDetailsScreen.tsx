@@ -1,6 +1,7 @@
 import React, {
   useCallback,
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
@@ -76,6 +77,17 @@ export function BlindPayKycBasicDetailsStep({
   const [emailInput, setEmailInput] = useState(() => draft.email?.trim() ?? '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<FieldFocus>(null);
+
+  // Sync local state when draft is populated by async prefill (e.g. card user-data)
+  useEffect(() => {
+    if (draft.firstName && !firstName) setFirstName(draft.firstName);
+  }, [draft.firstName]);
+  useEffect(() => {
+    if (draft.lastName && !lastName) setLastName(draft.lastName);
+  }, [draft.lastName]);
+  useEffect(() => {
+    if (draft.dateOfBirth && !dob) setDob(draft.dateOfBirth);
+  }, [draft.dateOfBirth]);
 
   const maxDob = useMemo(() => {
     const d = new Date();

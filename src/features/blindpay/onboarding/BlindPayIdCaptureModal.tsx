@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, Modal, StatusBar } from 'react-native';
+import { Linking, Modal, StatusBar, StyleSheet } from 'react-native';
 import { t } from 'i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -280,7 +280,7 @@ export default function BlindPayIdCaptureModal({
               {device ? (
                 <Camera
                   ref={cameraRef}
-                  style={{ width: '100%', height: '100%' }}
+                  style={styles.camera}
                   device={device}
                   isActive={state === 'capture' && visible}
                   photo
@@ -319,15 +319,15 @@ export default function BlindPayIdCaptureModal({
           <CyDView className='px-[16px] gap-[10px] pb-[16px]'>
             <CyDTouchView
               onPress={() => { void pickFile(); }}
-              className='h-[52px] rounded-full border border-[#444] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-white tracking-[-0.16px]'>
+              className='h-[58px] rounded-full border border-n40 bg-n0 items-center justify-center'>
+              <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
                 Upload a photo
               </CyDText>
             </CyDTouchView>
             <CyDTouchView
               onPress={() => { void takePhoto(); }}
-              className='h-[52px] rounded-full bg-[#F7C645] items-center justify-center'>
-              <CyDText className='text-[16px] font-semibold text-black tracking-[-0.16px]'>
+              className='h-[58px] rounded-full bg-p50 items-center justify-center'>
+              <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
                 Snap a photo
               </CyDText>
             </CyDTouchView>
@@ -452,3 +452,7 @@ export default function BlindPayIdCaptureModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  camera: { width: '100%', height: '100%' },
+});

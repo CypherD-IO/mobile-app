@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -14,7 +15,7 @@ import {
   CyDView,
 } from '../../../../styles/tailwindComponents';
 import { BLINDPAY_COUNTRY_OPTIONS } from '../blindpayCountryList';
-import BlindPayCountryPickerModal from '../BlindPayCountryPickerModal';
+import useBlindPaySheet from '../../components/BlindPayDropdownSheet';
 import { blindPayKycAddressSchema } from '../blindpayKycFormSchemas';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
 import { omitFieldError, zodErrorToFieldMap } from '../blindpayKycZodUtils';
@@ -32,9 +33,9 @@ export function BlindPayKycAddressStep({
   onReady,
 }: BlindPayKycStepProps) {
   const { draft, mergeDraft } = useBlindPayOnboardingForm();
+  const { openDropdown } = useBlindPaySheet();
 
   const [country, setCountry] = useState(draft.country ?? '');
-  const [countryPickerOpen, setCountryPickerOpen] = useState(false);
   const [addressLine1, setAddressLine1] = useState(draft.addressLine1 ?? '');
   const [addressLine2, setAddressLine2] = useState(draft.addressLine2 ?? '');
   const [city, setCity] = useState(draft.city ?? '');
@@ -44,6 +45,23 @@ export function BlindPayKycAddressStep({
   const [postalCode, setPostalCode] = useState(draft.postalCode ?? '');
   const [phoneInput, setPhoneInput] = useState(draft.phoneNumber ?? '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Sync local state when draft is populated by async prefill (e.g. card user-data)
+  useEffect(() => {
+    if (draft.country && !country) setCountry(draft.country);
+  }, [draft.country]);
+  useEffect(() => {
+    if (draft.addressLine1 && !addressLine1) setAddressLine1(draft.addressLine1);
+  }, [draft.addressLine1]);
+  useEffect(() => {
+    if (draft.addressLine2 && !addressLine2) setAddressLine2(draft.addressLine2);
+  }, [draft.addressLine2]);
+  useEffect(() => {
+    if (draft.city && !city) setCity(draft.city);
+  }, [draft.city]);
+  useEffect(() => {
+    if (draft.phoneNumber && !phoneInput) setPhoneInput(draft.phoneNumber);
+  }, [draft.phoneNumber]);
 
   const countryLabel =
     BLINDPAY_COUNTRY_OPTIONS.find(c => c.code === country)?.name ?? '';
@@ -100,23 +118,28 @@ export function BlindPayKycAddressStep({
 
   return (
     <>
-      <BlindPayCountryPickerModal
-        visible={countryPickerOpen}
-        selectedCode={country}
-        onSelect={code => {
-          setCountry(code);
-          clearKey('country');
-        }}
-        onClose={() => setCountryPickerOpen(false)}
-      />
-
       {/* ── Country ── */}
       <CyDView className='gap-[4px]'>
         <CyDText className={LABEL_CLASS}>
           {String(t('COUNTRY', 'Country'))}
         </CyDText>
         <CyDTouchView
-          onPress={() => setCountryPickerOpen(true)}
+          onPress={() => {
+            openDropdown({
+              title: String(t('BLINDPAY_SELECT_COUNTRY', 'Select country')),
+              options: BLINDPAY_COUNTRY_OPTIONS.map(c => ({
+                value: c.code,
+                label: c.name,
+                icon: c.flag,
+              })),
+              selected: country,
+              searchable: true,
+              onSelect: code => {
+                setCountry(code);
+                clearKey('country');
+              },
+            });
+          }}
           className={`min-h-[48px] rounded-[8px] bg-n20 flex-row items-center justify-between px-[12px] border ${
             fieldErrors.country ? 'border-errorText' : 'border-transparent'
           }`}>

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Keyboard, Modal } from 'react-native';
+import { ActivityIndicator, FlatList, Keyboard, Modal, StyleSheet } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -7,6 +7,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import Animated, { SlideInDown } from 'react-native-reanimated';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDIcons,
@@ -374,14 +375,17 @@ export default function BlindPaySendMoneyScreen() {
 
     showBottomSheet({
       id: 'blindpay-review',
-      snapPoints: ['75%', '95%'],
+      snapPoints: ['65%', '95%'],
       showHandle: true,
-      showCloseButton: true,
+      showCloseButton: false,
       scrollable: false,
-      enableContentPanningGesture: false,
+      enableContentPanningGesture: true,
       onClose: () => hideBottomSheet('blindpay-review'),
       content: (
-        <CyDView className='px-[16px] pb-[16px] gap-[12px]'>
+        <BottomSheetScrollView
+          style={styles.reviewScroll}
+          contentContainerStyle={styles.reviewScrollContentWithFooter}
+          showsVerticalScrollIndicator={false}>
           {/* Title */}
           <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px]'>
             Review Transaction
@@ -470,21 +474,21 @@ export default function BlindPaySendMoneyScreen() {
               </CyDText>
             </CyDView>
           ) : null}
-
-          {/* Timer */}
+        </BottomSheetScrollView>
+      ),
+      footer: (
+        <CyDView className='px-[16px] pt-[12px] pb-[16px] gap-[12px] border-t border-n30 bg-n20'>
           <CyDText className='text-[14px] font-medium text-base200 text-center tracking-[-0.6px]'>
             Your quote will get refreshed in{' '}
             <CyDText style={{ fontVariant: ['tabular-nums'] }} className='text-[14px] font-medium text-base200 tracking-[-0.6px]'>
               {formatTimer(quoteTimeLeft)}
             </CyDText>
           </CyDText>
-
-          {/* Continue button */}
           <CyDTouchView
             onPress={handleConfirm}
             disabled={quoteTimeLeft <= 0}
             className={`rounded-full h-[48px] items-center justify-center shadow-sm ${
-              quoteTimeLeft > 0 ? 'bg-[#F7C645]' : 'bg-n40'
+              quoteTimeLeft > 0 ? 'bg-p50' : 'bg-n40'
             }`}>
             <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
               Continue
@@ -619,9 +623,8 @@ export default function BlindPaySendMoneyScreen() {
         onRequestClose={() => setTokenPickerOpen(false)}>
         <CyDView className='flex-1 justify-end bg-black/50'>
           <CyDTouchView className='flex-1' onPress={() => setTokenPickerOpen(false)} />
-          <Animated.View entering={SlideInDown.duration(300)}
-            style={{ maxHeight: '60%' }}>
-            <CyDView className='bg-n20 rounded-t-[24px]'>
+          <Animated.View entering={SlideInDown.duration(300)}>
+            <CyDView className='bg-n20 rounded-t-[24px] max-h-[60%]'>
               {/* Drag handle */}
               <CyDView className='items-center pt-[12px] pb-[8px]'>
                 <CyDView className='w-[32px] h-[4px] bg-n50 rounded-[5px]' />
@@ -705,12 +708,19 @@ export default function BlindPaySendMoneyScreen() {
             else {
               openRecipientSheet({
                 title: 'Select Recipient',
-                options: accounts.map(a => ({
-                  value: a.id,
-                  label: a.name ?? 'Account',
-                  icon: RAIL_FLAGS[a.type] ?? '\uD83C\uDF10',
-                  subtitle: `${RAIL_LABELS[a.type] ?? a.type}${a.lastFour ? ` · ****${a.lastFour}` : ''}`,
-                })),
+                options: accounts.map(a => {
+                  const railLabel = RAIL_LABELS[a.type] ?? a.type;
+                  const lastFour = a.lastFour ? `**** ${a.lastFour}` : '';
+                  const beneficiary = a.beneficiaryName ? a.beneficiaryName : '';
+                  // Build subtitle: rail · beneficiary · ****1234
+                  const parts = [railLabel, beneficiary, lastFour].filter(Boolean);
+                  return {
+                    value: a.id,
+                    label: a.name ?? 'Account',
+                    icon: RAIL_FLAGS[a.type] ?? '\uD83C\uDF10',
+                    subtitle: parts.join(' · '),
+                  };
+                }),
                 selected: selectedAccount?.id ?? '',
                 searchable: true,
                 onSelect: (id) => {
@@ -726,8 +736,13 @@ export default function BlindPaySendMoneyScreen() {
                   <CyDText className='text-[18px]'>{RAIL_FLAGS[selectedAccount.type] ?? '\uD83C\uDF10'}</CyDText>
                 </CyDView>
                 <CyDView className='flex-1'>
-                  <CyDText className='text-[15px] font-semibold text-base400 tracking-[-0.6px]'>{selectedAccount.name}</CyDText>
-                  <CyDText className='text-[12px] font-medium text-n200'>
+                  <CyDText className='text-[15px] font-semibold text-base400 tracking-[-0.6px]' numberOfLines={1}>{selectedAccount.name}</CyDText>
+                  {selectedAccount.beneficiaryName ? (
+                    <CyDText className='text-[12px] font-medium text-n200' numberOfLines={1}>
+                      {selectedAccount.beneficiaryName}
+                    </CyDText>
+                  ) : null}
+                  <CyDText className='text-[11px] font-normal text-n100 mt-[1px]'>
                     {RAIL_LABELS[selectedAccount.type] ?? selectedAccount.type}
                     {selectedAccount.lastFour ? ` · ****${selectedAccount.lastFour}` : ''}
                   </CyDText>
@@ -852,7 +867,7 @@ export default function BlindPaySendMoneyScreen() {
           <>
             <CyDText className='text-[14px] font-medium text-base200 text-center tracking-[-0.6px] mb-[8px]'>
               Your quote will get refreshed in{' '}
-              <CyDText style={{ fontVariant: ['tabular-nums'], width: 40 }} className='text-[14px] font-medium text-base200 tracking-[-0.6px]'>
+              <CyDText style={{ fontVariant: ['tabular-nums'] }} className='text-[14px] font-medium text-base200 tracking-[-0.6px] w-[40px]'>
                 {formatTimer(quoteTimeLeft)}
               </CyDText>
             </CyDText>
@@ -890,3 +905,9 @@ export default function BlindPaySendMoneyScreen() {
     </CyDSafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  reviewScroll: { flex: 1 },
+  // Bottom padding leaves room for the absolutely positioned footer (~130px tall)
+  reviewScrollContentWithFooter: { paddingHorizontal: 16, paddingBottom: 140, gap: 12 },
+});
