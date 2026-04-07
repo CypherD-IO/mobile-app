@@ -4269,7 +4269,7 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 72c9a682fec6290327ea5e3c4b829b247fcb2c17
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
-  hermes-engine: 18fc808bd89c3eede80e7e55c15d46d1cfc4c745
+  hermes-engine: 5211d22d4a435082ad5a33537317c4d682f31024
   Intercom: 67b84e19b6db623c48fb10c1f30d82deac4cbc4d
   intercom-react-native: 819acf76f5d503b6f7e129766c8e630d8a247e54
   jail-monkey: 561b37e135171fae4576181d87137b0400442c40
@@ -4281,7 +4281,7 @@ SPEC CHECKSUMS:
   Permission-Camera: 77c59d13303c1ce600ac9aee143fb9c2de8818bd
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
-  RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
+  RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: 2b70c6e3abe00396cefd8913efbf6a2db01a2b36
   RCTRequired: f3540eee8094231581d40c5c6d41b0f170237a81
   RCTSwiftUI: 5928f7ca7e9e2f1a82d85d4c79ea3065137ad81c
