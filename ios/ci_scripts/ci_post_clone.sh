@@ -11,21 +11,47 @@ export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 brew install cocoapods
 
 # ================================================================================
-# Install Node.js via Homebrew (most reliable in Xcode Cloud)
+# Use the Node.js that Xcode Cloud's macOS image already ships with.
 # ================================================================================
 #
-# Previously we used nvm, but Xcode Cloud's network environment blocks or fails
-# GitHub tarball/git downloads (exit code 3). Homebrew is already working
-# (cocoapods installed above), so we use it for Node as well.
+# Xcode Cloud's worker image pre-installs `node@22` via Homebrew (a recent
+# successful build showed `/usr/local/Cellar/node@22/22.22.2` and
+# `/usr/local/bin/node`), so the only thing we actually need to do here is
+# make sure the `node`/`npm` symlinks are in place.
 #
-# We install node@22 to match the version in .nvmrc (v22.12.0).
-# Homebrew's node@22 formula tracks the latest 22.x LTS.
+# We deliberately do NOT run an unconditional `brew install node@22` because:
+#
+#   - Apple's image pins `node@22` at upstream version 22.22.2, but the
+#     Homebrew formula recently shipped a revision bump (22.22.2_1, same
+#     upstream, rebuilt bottle).
+#   - An unconditional `brew install node@22` then sees "installed version
+#     older than formula" and tries to UPGRADE to 22.22.2_1, which forces
+#     a fresh bottle fetch from `ghcr.io`.
+#   - Xcode Cloud cannot resolve `ghcr.io`
+#     (`curl: (6) Could not resolve host: ghcr.io`), so the upgrade — and
+#     therefore the entire build — fails.
+#
+# Guarding the install on `brew list node@22` makes us a no-op when the
+# image already has it (the common case today) and only falls back to
+# installing when a future image drops the pre-install. The `brew link` is
+# kept (with `|| true` for the harmless "Already linked" warning) so we
+# still get `node`/`npm` on PATH whether the install ran or not.
+#
+# History note: an earlier version of this script used nvm, which was
+# abandoned because Xcode Cloud blocks GitHub tarball/git downloads
+# (exit code 3) that nvm needs to fetch its release archives.
 # ================================================================================
-echo "Installing Node.js via Homebrew..."
-brew install node@22
+if ! brew list node@22 >/dev/null 2>&1; then
+  echo "node@22 not pre-installed on this image — installing via Homebrew..."
+  brew install node@22
+else
+  echo "Using pre-installed node@22 from Xcode Cloud image."
+fi
 
-# Link node@22 so it's available as `node` in PATH
-brew link --overwrite node@22 || true  # --overwrite in case node is already linked
+# Link node@22 so it's available as `node`/`npm`/`npx` on PATH.
+# `|| true` swallows the harmless "Already linked" warning when the image
+# already linked it for us.
+brew link --overwrite node@22 || true
 
 # Resolve repo root deterministically (Xcode Cloud does not guarantee the current working directory).
 # - Prefer CI_PRIMARY_REPOSITORY_PATH when available.
