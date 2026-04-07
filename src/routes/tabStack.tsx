@@ -495,11 +495,11 @@ const TabStack = React.memo(
           if (isAgent && !wasAgent) {
             savedThemeRef.current = theme;
             if (theme !== Theme.DARK) {
-              changeTheme(Theme.DARK, false);
+              void changeTheme(Theme.DARK, false);
             }
           } else if (!isAgent && wasAgent && savedThemeRef.current !== null) {
             if (savedThemeRef.current !== Theme.DARK) {
-              changeTheme(savedThemeRef.current, false);
+              void changeTheme(savedThemeRef.current, false);
             }
             savedThemeRef.current = null;
           }
