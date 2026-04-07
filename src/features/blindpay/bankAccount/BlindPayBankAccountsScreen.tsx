@@ -149,12 +149,19 @@ export default function BlindPayBankAccountsScreen() {
                           <CyDText className='text-[18px]'>{flag}</CyDText>
                         </CyDView>
                         <CyDView className='flex-1'>
-                          <CyDText className='text-[14px] font-semibold text-base400 tracking-[-0.6px]'>
+                          <CyDText className='text-[14px] font-semibold text-base400 tracking-[-0.6px]' numberOfLines={1}>
                             {account.name ?? 'Bank Account'}
                           </CyDText>
-                          <CyDText className='text-[11px] font-normal text-n200 mt-[2px]'>
-                            {lastFour ? `**** ${lastFour}` : ''}
-                          </CyDText>
+                          {account.beneficiaryName ? (
+                            <CyDText className='text-[12px] font-medium text-n200 mt-[2px]' numberOfLines={1}>
+                              {account.beneficiaryName}
+                            </CyDText>
+                          ) : null}
+                          {lastFour ? (
+                            <CyDText className='text-[11px] font-normal text-n100 mt-[1px]'>
+                              **** {lastFour}
+                            </CyDText>
+                          ) : null}
                         </CyDView>
                         <CyDMaterialDesignIcons name='chevron-right' size={22} className='text-n200' />
                       </CyDTouchView>

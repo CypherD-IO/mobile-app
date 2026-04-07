@@ -2,7 +2,7 @@ import type { CreateReceiverRequest } from '../types';
 import { BlindpayReceiverType } from '../types';
 
 /**
- * Builds the JSON body for POST /v1/blindpay/onboard from the wizard draft.
+ * Builds the JSON body for POST /v1/bp/onboard from the wizard draft.
  * Only includes fields present in `CreateReceiverRequest` (no IP).
  */
 export function buildBlindPayOnboardPayload(

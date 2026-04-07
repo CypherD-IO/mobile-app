@@ -22,7 +22,11 @@ interface BottomSheetConfig {
   showHandle?: boolean;
   scrollable?: boolean;
   enableContentPanningGesture?: boolean;
+  /** Enables Gorhom dynamic sizing — sheet height adjusts to content */
+  enableDynamicSizing?: boolean;
   content: React.ReactNode;
+  /** Optional footer rendered via Gorhom BottomSheetFooter — stays pinned to visible bottom */
+  footer?: React.ReactNode;
   backgroundColor?: string;
   borderRadius?: number;
   onClose?: () => void;
@@ -206,7 +210,7 @@ export const GlobalBottomSheetProvider: React.FC<
               }
             }
           }}
-          snapPoints={config.snapPoints ?? ['80%', '95%']}
+          snapPoints={config.enableDynamicSizing ? undefined : (config.snapPoints ?? ['80%', '95%'])}
           initialSnapIndex={-1}
           title={config.title}
           topBarColor={config.topBarColor}
@@ -226,6 +230,8 @@ export const GlobalBottomSheetProvider: React.FC<
           bottomInset={config.bottomInset ?? 0}
           fixedHeaderContent={config.fixedHeaderContent}
           defaultPresentIndex={config.defaultPresentIndex}
+          enableDynamicSizing={config.enableDynamicSizing ?? false}
+          footer={config.footer}
           onClose={() => handleBottomSheetClose(config.id)}
           onOpen={config.onOpen}
           onChange={config.onChange}
