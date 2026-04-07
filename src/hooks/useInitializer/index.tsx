@@ -378,9 +378,8 @@ export default function useInitializer() {
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
     });
-
     const email = data?.email?.trim();
-    const cioUserId = data?.rc?.accountId;
+    const cioUserId = data?.rcAccountId;
     if (cioUserId) {
       void identifyCustomerIOUser(cioUserId, {
         email: email ?? '',

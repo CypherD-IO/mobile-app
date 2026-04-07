@@ -39,5 +39,6 @@ export interface CardProfile {
   child?: string;
   planInfo?: PlanInfo;
   telegramId: string | null;
+  rcAccountId?: string;
   evmAddress?: string;
 }
