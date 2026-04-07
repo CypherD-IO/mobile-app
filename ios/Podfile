@@ -97,6 +97,21 @@ target 'Cypherd' do
       end
     end
 
+    # Helper: pod targets sometimes store xcconfig flags as Ruby Arrays
+    # (e.g. ["$(inherited)", "-DNDEBUG"]). String-interpolating an Array calls
+    # `Array#to_s`, which produces the literal `["$(inherited)", "-DNDEBUG"]` —
+    # with brackets, quotes, and commas — and that broken token gets baked into
+    # Pods.xcodeproj. clang then chokes on a token like `[ -DNDEBUG,` during
+    # Archive. Always normalize to a space-joined String before interpolating.
+    normalize_setting = lambda do |value|
+      return '$(inherited)' if value.nil?
+      if value.is_a?(Array)
+        # Strip wrapping quotes the same way RN's add_flag_for_key does, then join.
+        return value.map { |v| v.to_s.gsub('"', '').gsub('\"', '') }.join(' ')
+      end
+      value.to_s
+    end
+
     # Comprehensive deployment target fix for all pod targets
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
@@ -133,7 +148,7 @@ target 'Cypherd' do
         # `-Werror=non-modular-include-in-framework-module` when building as modules.
         # Treat these as warnings (or allow) to avoid build breaks.
         config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-        existing_other_cflags = config.build_settings['OTHER_CFLAGS'] || '$(inherited)'
+        existing_other_cflags = normalize_setting.call(config.build_settings['OTHER_CFLAGS'])
         unless existing_other_cflags.include?('non-modular-include-in-framework-module')
           config.build_settings['OTHER_CFLAGS'] = "#{existing_other_cflags} -Wno-non-modular-include-in-framework-module -Wno-error=non-modular-include-in-framework-module"
         end
@@ -142,7 +157,7 @@ target 'Cypherd' do
         # Newer Folly headers enable coroutine integration by default when the compiler supports it,
         # which leads to missing includes like <folly/coro/Coroutine.h>.
         # Force coroutines off for this vendored Folly.
-        existing_cppflags = config.build_settings['OTHER_CPLUSPLUSFLAGS'] || '$(inherited)'
+        existing_cppflags = normalize_setting.call(config.build_settings['OTHER_CPLUSPLUSFLAGS'])
         unless existing_cppflags.include?('FOLLY_CFG_NO_COROUTINES')
           config.build_settings['OTHER_CPLUSPLUSFLAGS'] = "#{existing_cppflags} -DFOLLY_CFG_NO_COROUTINES=1"
         end
@@ -151,7 +166,7 @@ target 'Cypherd' do
         # by the Yoga pod (e.g. <yoga/style/Style.h>). Those headers live under:
         #   Pods/Headers/Private/Yoga/yoga/...
         # Ensure the private Yoga headers are visible to compilation units that include them.
-        existing_hsp = config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
+        existing_hsp = normalize_setting.call(config.build_settings['HEADER_SEARCH_PATHS'])
         unless existing_hsp.include?('Headers/Private/Yoga')
           config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing_hsp} \"$(PODS_ROOT)/Headers/Private/Yoga\""
         end
@@ -162,7 +177,7 @@ target 'Cypherd' do
         #   Pods/Headers/Public/ReactCodegen/react/renderer/...
         # but not every pod target gets that search path by default.
         # Add it globally to prevent "ComponentDescriptors.h file not found" errors.
-        existing_hsp = config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
+        existing_hsp = normalize_setting.call(config.build_settings['HEADER_SEARCH_PATHS'])
         unless existing_hsp.include?('Headers/Public/ReactCodegen')
           config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing_hsp} \"$(PODS_ROOT)/Headers/Public/ReactCodegen\""
         end
