@@ -417,9 +417,11 @@ export default function BlindPayAddBankAccountScreen() {
     setSubmitting(false);
 
     if (res.isError) {
+      // Strip backend field-key prefix like "pix_safe_cpf_cnpj: Invalid CPF or CNPJ" → "Invalid CPF or CNPJ"
+      const raw = res.errorMessage ?? '';
+      const cleaned = raw.replace(/^[a-z_][a-z0-9_]*:\s*/i, '').trim();
       showToast(
-        res.errorMessage ??
-          t('UNEXPECTED_ERROR', 'Something went wrong'),
+        cleaned || String(t('UNEXPECTED_ERROR', 'Something went wrong')),
         'error',
       );
       return;

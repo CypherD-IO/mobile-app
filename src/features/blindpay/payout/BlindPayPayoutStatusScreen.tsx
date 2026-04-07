@@ -223,7 +223,7 @@ export default function BlindPayPayoutStatusScreen() {
               source={AppImages.MONEY_TRANSFER}
               autoPlay
               loop
-              style={{ width: 150, height: 150 }}
+              className='w-[150px] h-[150px]'
             />
             <CyDText className='text-[20px] font-normal text-base400 text-center tracking-[-0.4px]'>
               Transaction In Progress
@@ -301,7 +301,7 @@ export default function BlindPayPayoutStatusScreen() {
             source={AppImages.MONEY_TRANSFER}
             autoPlay
             loop
-            style={{ width: 170, height: 170 }}
+            className='w-[170px] h-[170px]'
           />
           <CyDText className='text-[20px] font-normal text-base400 text-center tracking-[-0.4px]'>
             Transaction In Progress
@@ -385,8 +385,7 @@ export default function BlindPayPayoutStatusScreen() {
             <CyDTouchView onPress={copyHash} className='flex-row items-center justify-between'>
               <CyDText
                 className='text-[14px] font-medium text-n100 tracking-[-0.8px] flex-1 mr-[12px]'
-                numberOfLines={2}
-                style={{ fontFamily: 'monospace' }}>
+                numberOfLines={2}>
                 {txHash}
               </CyDText>
               <CyDMaterialDesignIcons name='content-copy' size={20} className='text-n200' />

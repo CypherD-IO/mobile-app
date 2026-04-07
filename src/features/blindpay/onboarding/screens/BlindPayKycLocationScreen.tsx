@@ -7,7 +7,7 @@ import {
   CyDView,
 } from '../../../../styles/tailwindComponents';
 import { blindPayKycLocationSchema } from '../blindpayKycFormSchemas';
-import BlindPayCountryPickerModal from '../BlindPayCountryPickerModal';
+import useBlindPaySheet from '../../components/BlindPayDropdownSheet';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
 import { omitFieldError, zodErrorToFieldMap } from '../blindpayKycZodUtils';
 import BlindPayKycFieldError from '../BlindPayKycFieldError';
@@ -25,8 +25,8 @@ export function BlindPayKycLocationStep({
   onReady,
 }: BlindPayKycStepProps) {
   const { draft, mergeDraft } = useBlindPayOnboardingForm();
+  const { openDropdown } = useBlindPaySheet();
   const [country, setCountry] = useState(draft.country ?? '');
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const label = BLINDPAY_COUNTRY_OPTIONS.find(c => c.code === country)?.name;
@@ -57,7 +57,20 @@ export function BlindPayKycLocationStep({
         </CyDText>
         <CyDTouchView
           onPress={() => {
-            setPickerOpen(true);
+            openDropdown({
+              title: String(t('BLINDPAY_SELECT_COUNTRY', 'Select country')),
+              options: BLINDPAY_COUNTRY_OPTIONS.map(c => ({
+                value: c.code,
+                label: c.name,
+                icon: c.flag,
+              })),
+              selected: country,
+              searchable: true,
+              onSelect: code => {
+                setCountry(code);
+                setFieldErrors(prev => omitFieldError(prev, 'country'));
+              },
+            });
           }}
           className={rowFrameClass(!!fieldErrors.country)}>
           <CyDText
@@ -75,17 +88,6 @@ export function BlindPayKycLocationStep({
         <BlindPayKycFieldError message={fieldErrors.country} />
       </CyDView>
 
-      <BlindPayCountryPickerModal
-        visible={pickerOpen}
-        selectedCode={country}
-        onSelect={code => {
-          setCountry(code);
-          setFieldErrors(prev => omitFieldError(prev, 'country'));
-        }}
-        onClose={() => {
-          setPickerOpen(false);
-        }}
-      />
     </>
   );
 }

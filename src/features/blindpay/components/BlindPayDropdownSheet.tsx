@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Dimensions, Keyboard } from 'react-native';
 import {
   CyDMaterialDesignIcons,
@@ -129,10 +129,18 @@ function DropdownContent({
  */
 export default function useBlindPaySheet() {
   const { showBottomSheet, hideBottomSheet } = useGlobalBottomSheet();
+  const currentIdRef = useRef<string | null>(null);
 
   const close = useCallback(() => {
-    hideBottomSheet('blindpay-sheet');
+    if (currentIdRef.current) {
+      hideBottomSheet(currentIdRef.current);
+      currentIdRef.current = null;
+    }
   }, [hideBottomSheet]);
+
+  // Generate a unique ID per open call so the provider always re-mounts
+  // and re-presents the sheet (avoids flaky open when an ID is in mid-dismiss state).
+  const nextId = () => `blindpay-sheet-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   const openDropdown = useCallback(({
     title,
@@ -147,28 +155,39 @@ export default function useBlindPaySheet() {
     onSelect: (value: string) => void;
     searchable?: boolean;
   }) => {
+    // Close any existing sheet first
+    if (currentIdRef.current) hideBottomSheet(currentIdRef.current);
+
     const contentHeight = HEADER_HEIGHT + (options.length * ITEM_HEIGHT) + BOTTOM_PADDING + (searchable ? 60 : 0);
     const contentPercent = Math.round((contentHeight / SCREEN_HEIGHT) * 100);
     const minSnap = contentPercent > 50 ? 65 : contentPercent;
+    const id = nextId();
+    currentIdRef.current = id;
 
     showBottomSheet({
-      id: 'blindpay-sheet',
+      id,
       snapPoints: [`${minSnap}%`, '95%'],
       showHandle: true,
       showCloseButton: false,
       scrollable: true,
-      onClose: close,
+      onClose: () => {
+        if (currentIdRef.current === id) currentIdRef.current = null;
+      },
       content: (
         <DropdownContent
           title={title}
           options={options}
           selected={selected}
           searchable={searchable}
-          onSelect={(value) => { onSelect(value); close(); }}
+          onSelect={(value) => {
+            onSelect(value);
+            hideBottomSheet(id);
+            if (currentIdRef.current === id) currentIdRef.current = null;
+          }}
         />
       ),
     });
-  }, [showBottomSheet, close]);
+  }, [showBottomSheet, hideBottomSheet]);
 
   const openHelpSheet = useCallback(({
     title,
@@ -177,19 +196,25 @@ export default function useBlindPaySheet() {
     title: string;
     text: string;
   }) => {
+    if (currentIdRef.current) hideBottomSheet(currentIdRef.current);
+
     const estimatedLines = Math.ceil(text.length / 45);
     const textHeight = estimatedLines * 22;
     const contentHeight = HEADER_HEIGHT + textHeight + 60;
     const contentPercent = Math.round((contentHeight / SCREEN_HEIGHT) * 100);
     const minSnap = contentPercent > 50 ? 65 : contentPercent;
+    const id = nextId();
+    currentIdRef.current = id;
 
     showBottomSheet({
-      id: 'blindpay-sheet',
+      id,
       snapPoints: [`${minSnap}%`, '95%'],
       showHandle: true,
       showCloseButton: false,
       scrollable: true,
-      onClose: close,
+      onClose: () => {
+        if (currentIdRef.current === id) currentIdRef.current = null;
+      },
       content: (
         <CyDView className='px-[16px] pb-[16px] gap-[12px]'>
           <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3]'>
@@ -203,7 +228,7 @@ export default function useBlindPaySheet() {
         </CyDView>
       ),
     });
-  }, [showBottomSheet, close]);
+  }, [showBottomSheet, hideBottomSheet]);
 
   const openSheet = useCallback(({
     content,
@@ -214,16 +239,22 @@ export default function useBlindPaySheet() {
     snapPoints?: Array<string | number>;
     scrollable?: boolean;
   }) => {
+    if (currentIdRef.current) hideBottomSheet(currentIdRef.current);
+    const id = nextId();
+    currentIdRef.current = id;
+
     showBottomSheet({
-      id: 'blindpay-sheet',
+      id,
       snapPoints,
       showHandle: true,
       showCloseButton: false,
       scrollable,
-      onClose: close,
+      onClose: () => {
+        if (currentIdRef.current === id) currentIdRef.current = null;
+      },
       content,
     });
-  }, [showBottomSheet, close]);
+  }, [showBottomSheet, hideBottomSheet]);
 
   return { openDropdown, openHelpSheet, openSheet, close };
 }

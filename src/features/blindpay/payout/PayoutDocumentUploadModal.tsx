@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import {
   CyDMaterialDesignIcons,
   CyDText,
@@ -29,6 +30,11 @@ interface Props {
   onSuccess?: () => void;
 }
 
+/**
+ * Document upload form rendered inside a bottom sheet.
+ * Uses BottomSheetScrollView so the form scrolls inside the sheet,
+ * with the submit button at the bottom of the scrollable content.
+ */
 export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props) {
   const { uploadDocument, submitPayoutDocuments } = useBlindPayApi();
 
@@ -60,7 +66,6 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
 
     setSubmitting(true);
     try {
-      // Step 1: Upload file
       setUploading(true);
       const uploadRes = await uploadDocument(file, BlindpayUploadBucket.ONBOARDING);
       setUploading(false);
@@ -71,7 +76,6 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
         return;
       }
 
-      // Step 2: Submit to payout with auto-generated UUID
       const submitRes = await submitPayoutDocuments(payoutId, {
         transactionDocumentType: docType as any,
         transactionDocumentId: uuidv4(),
@@ -96,7 +100,10 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
   const canSubmit = !!file && !!description.trim() && !submitting;
 
   return (
-    <CyDView className='px-[16px] pb-[24px] gap-[16px]'>
+    <BottomSheetScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}>
       {/* Title */}
       <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px]'>
         Additional Documents Required
@@ -129,7 +136,7 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
                 onPress={() => { setDocType(opt.value); setDocTypeOpen(false); }}
                 className={`px-[12px] py-[10px] flex-row items-center justify-between ${opt.value === docType ? 'bg-n20' : ''}`}>
                 <CyDText className='text-[14px] font-medium text-base400 tracking-[-0.6px]'>{opt.label}</CyDText>
-                {opt.value === docType ? <CyDMaterialDesignIcons name='check' size={18} className='text-[#FBC02D]' /> : null}
+                {opt.value === docType ? <CyDMaterialDesignIcons name='check' size={18} className='text-p100' /> : null}
               </CyDTouchView>
             ))}
           </CyDView>
@@ -151,11 +158,10 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
 
       {/* File upload card */}
       <CyDView className='bg-n0 rounded-[10px] p-[12px] gap-[10px]'>
-        {/* Header: icon + upload button */}
         <CyDView className='flex-row items-start justify-between'>
-          <CyDMaterialDesignIcons name='cloud-upload' size={36} className='text-[#2685CA]' />
+          <CyDMaterialDesignIcons name='cloud-upload' size={36} className='text-p100' />
           <CyDTouchView onPress={handlePickFile}
-            className='bg-n10 border border-[#D3D3D3] rounded-full px-[12px] py-[6px]'>
+            className='bg-n10 border border-n40 rounded-full px-[12px] py-[6px]'>
             <CyDText className='text-[12px] font-bold text-base400'>
               Upload File
             </CyDText>
@@ -166,21 +172,19 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
           Upload Required Files
         </CyDText>
 
-        {/* Uploading state */}
         {uploading ? (
           <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] gap-[8px]'>
             <CyDView className='flex-row items-center justify-between'>
               <CyDView className='flex-1 gap-[2px]'>
                 <CyDText className='text-[14px] font-semibold text-base400 tracking-[-0.6px]'>Uploading...</CyDText>
               </CyDView>
-              <CyDMaterialDesignIcons name='delete-outline' size={24} className='text-red-400' />
+              <CyDMaterialDesignIcons name='delete-outline' size={24} className='text-errorText' />
             </CyDView>
             <CyDView className='h-[8px] bg-n20 rounded-full overflow-hidden'>
-              <CyDView className='h-full w-[20%] bg-[#2685CA] rounded-full' />
+              <CyDView className='h-full w-[20%] bg-p100 rounded-full' />
             </CyDView>
           </CyDView>
         ) : file ? (
-          /* File selected */
           <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px]'>
             <CyDView className='flex-row items-center gap-[8px]'>
               <CyDMaterialDesignIcons name='file-document-outline' size={24} className='text-base400' />
@@ -195,7 +199,7 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
                 ) : null}
               </CyDView>
               <CyDTouchView onPress={handleRemoveFile} hitSlop={8}>
-                <CyDMaterialDesignIcons name='delete-outline' size={24} className='text-red-400' />
+                <CyDMaterialDesignIcons name='delete-outline' size={24} className='text-errorText' />
               </CyDTouchView>
             </CyDView>
           </CyDView>
@@ -206,13 +210,13 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
         )}
       </CyDView>
 
-      {/* Submit button */}
+      {/* Submit button (in scroll content — short form, always reachable) */}
       <CyDTouchView
         onPress={handleSubmit}
         disabled={!canSubmit}
-        className={`rounded-full h-[44px] items-center justify-center ${canSubmit ? 'bg-[#FFDE59]' : 'bg-n40'}`}>
+        className={`rounded-full h-[48px] items-center justify-center mt-[8px] ${canSubmit ? 'bg-p50' : 'bg-n40'}`}>
         <CyDView className='relative items-center justify-center'>
-          <CyDText className={`text-[16px] font-semibold text-black tracking-[-0.4px] ${submitting ? 'opacity-0' : ''}`}>
+          <CyDText className={`text-[16px] font-bold text-black tracking-[-0.16px] ${submitting ? 'opacity-0' : ''}`}>
             Submit Documents
           </CyDText>
           {submitting ? (
@@ -222,6 +226,11 @@ export default function PayoutDocumentUploadModal({ payoutId, onSuccess }: Props
           ) : null}
         </CyDView>
       </CyDTouchView>
-    </CyDView>
+    </BottomSheetScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 24, gap: 16 },
+});

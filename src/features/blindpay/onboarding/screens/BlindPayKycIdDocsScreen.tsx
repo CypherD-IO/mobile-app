@@ -10,7 +10,7 @@ import { showToast } from '../../../../containers/utilities/toastUtility';
 import useBlindPayApi, { type BlindPayUploadFilePart } from '../../api';
 import { BlindpayIdDocType, BlindpayUploadBucket } from '../../types';
 import { blindPayKycIdDocsSchema } from '../blindpayKycFormSchemas';
-import BlindPayCountryPickerModal from '../BlindPayCountryPickerModal';
+import useBlindPaySheet from '../../components/BlindPayDropdownSheet';
 import type { BlindPayKycStepProps } from '../blindpayKycWizardTypes';
 import { omitFieldError, zodErrorToFieldMap } from '../blindpayKycZodUtils';
 import BlindPayKycFieldError from '../BlindPayKycFieldError';
@@ -39,6 +39,7 @@ export function BlindPayKycIdDocsStep({
 }: BlindPayKycStepProps) {
   const { draft, mergeDraft } = useBlindPayOnboardingForm();
   const { uploadDocument } = useBlindPayApi();
+  const { openDropdown } = useBlindPaySheet();
 
   const idDocType = draft.idDocType;
   const docTypeName = idDocType
@@ -48,7 +49,6 @@ export function BlindPayKycIdDocsStep({
   const [idDocCountry, setIdDocCountry] = useState(draft.idDocCountry ?? '');
   const [frontUrl, setFrontUrl] = useState(draft.idDocFrontFile ?? '');
   const [backUrl, setBackUrl] = useState(draft.idDocBackFile ?? '');
-  const [countryOpen, setCountryOpen] = useState(false);
   const [captureTarget, setCaptureTarget] = useState<'front' | 'back' | null>(
     null,
   );
@@ -193,7 +193,21 @@ export function BlindPayKycIdDocsStep({
         </CyDText>
         <CyDTouchView
           onPress={() => {
-            setCountryOpen(true);
+            openDropdown({
+              title: String(t('BLINDPAY_SELECT_COUNTRY', 'Select country')),
+              options: BLINDPAY_COUNTRY_OPTIONS.map(c => ({
+                value: c.code,
+                label: c.name,
+                icon: c.flag,
+              })),
+              selected: idDocCountry,
+              searchable: true,
+              onSelect: code => {
+                setIdDocCountry(code);
+                mergeDraft({ idDocCountry: code });
+                clearKey('idDocCountry');
+              },
+            });
           }}
           className={selectRowClass(!!fieldErrors.idDocCountry)}>
           <CyDText
@@ -288,20 +302,6 @@ export function BlindPayKycIdDocsStep({
           <BlindPayKycFieldError message={fieldErrors.idDocBackFile} />
         </CyDView>
       ) : null}
-
-      {/* Country picker modal */}
-      <BlindPayCountryPickerModal
-        visible={countryOpen}
-        selectedCode={idDocCountry}
-        onSelect={code => {
-          setIdDocCountry(code);
-          mergeDraft({ idDocCountry: code });
-          clearKey('idDocCountry');
-        }}
-        onClose={() => {
-          setCountryOpen(false);
-        }}
-      />
 
       {/* Capture modals */}
       <BlindPayIdCaptureModal

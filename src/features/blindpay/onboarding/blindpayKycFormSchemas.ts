@@ -132,7 +132,9 @@ const idNeedsBack = (type: BlindpayIdDocType) =>
 
 export const blindPayKycIdDocsSchema = z
   .object({
-    idDocType: z.nativeEnum(BlindpayIdDocType),
+    idDocType: z.nativeEnum(BlindpayIdDocType, {
+      errorMap: () => ({ message: String(t('BLINDPAY_ZOD_SELECT_ID_DOC', 'Select an ID document type')) }),
+    }),
     idDocCountry: z
       .string()
       .trim()
@@ -153,12 +155,18 @@ export const blindPayKycIdDocsSchema = z
   );
 
 export const blindPayKycDocTypeSchema = z.object({
-  idDocType: z.nativeEnum(BlindpayIdDocType),
-  proofOfAddressDocType: z.nativeEnum(BlindpayProofOfAddressDocType),
+  idDocType: z.nativeEnum(BlindpayIdDocType, {
+    errorMap: () => ({ message: String(t('BLINDPAY_ZOD_SELECT_ID_DOC', 'Select an ID document type')) }),
+  }),
+  proofOfAddressDocType: z.nativeEnum(BlindpayProofOfAddressDocType, {
+    errorMap: () => ({ message: String(t('BLINDPAY_ZOD_SELECT_POA_DOC', 'Select a proof of address document')) }),
+  }),
 });
 
 export const blindPayKycProofSchema = z.object({
-  proofOfAddressDocType: z.nativeEnum(BlindpayProofOfAddressDocType),
+  proofOfAddressDocType: z.nativeEnum(BlindpayProofOfAddressDocType, {
+    errorMap: () => ({ message: String(t('BLINDPAY_ZOD_SELECT_POA_DOC', 'Select a proof of address document')) }),
+  }),
   proofOfAddressDocFile: fileUrlSchema.min(1, String(t('BLINDPAY_ZOD_UPLOAD_POA', 'Upload a document'))),
 });
 
@@ -183,7 +191,9 @@ export const blindPayKycPurposeSchema = z
   );
 
 export const blindPayKycSourceOfFundsSchema = z.object({
-  sourceOfFundsDocType: z.nativeEnum(BlindpaySourceOfFundsDocType),
+  sourceOfFundsDocType: z.nativeEnum(BlindpaySourceOfFundsDocType, {
+    errorMap: () => ({ message: String(t('BLINDPAY_ZOD_SELECT_SOF_DOC', 'Select a source of funds document')) }),
+  }),
   sourceOfFundsDocFile: fileUrlSchema.min(1, String(t('BLINDPAY_ZOD_UPLOAD_SOF', 'Upload a source of funds document'))),
 });
 
@@ -204,7 +214,7 @@ export const blindPayKycPurposeOfTxSchema = z
     },
   );
 
-// ── Full onboard request schema (POST /v1/blindpay/onboard) ──
+// ── Full onboard request schema (POST /v1/bp/onboard) ──
 // Validates the complete payload sent to the backend.
 // Server-injected fields NOT included: kycType, tosId, ipAddress, externalId
 
@@ -268,7 +278,7 @@ export const blindPayOnboardRequestSchema = z
 
 export type BlindPayOnboardRequest = z.infer<typeof blindPayOnboardRequestSchema>;
 
-// ── Update receiver schema (PUT /v1/blindpay/receiver) ──
+// ── Update receiver schema (PUT /v1/bp/receiver) ──
 // Same fields as onboard minus `type`. Server derives receiverId from JWT.
 
 export const blindPayUpdateReceiverRequestSchema = z

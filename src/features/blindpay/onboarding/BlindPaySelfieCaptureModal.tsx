@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, Modal, StatusBar } from 'react-native';
+import { Linking, Modal, StatusBar, StyleSheet } from 'react-native';
 import { t } from 'i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -155,7 +155,7 @@ export default function BlindPaySelfieCaptureModal({
               {device && permissionReady ? (
                 <Camera
                   ref={cameraRef}
-                  style={{ width: '100%', height: '100%' }}
+                  style={styles.camera}
                   device={device}
                   isActive={state === 'capture' && visible}
                   photo
@@ -178,13 +178,13 @@ export default function BlindPaySelfieCaptureModal({
               onPress={() => {
                 void pickFile();
               }}
-              className='flex-row items-center justify-center gap-[6px]'>
+              className='h-[58px] rounded-full border border-n40 bg-n0 flex-row items-center justify-center gap-[6px]'>
               <CyDMaterialDesignIcons
                 name='upload'
                 size={20}
-                className='text-white'
+                className='text-base400'
               />
-              <CyDText className='text-[14px] font-medium text-white tracking-[-0.6px]'>
+              <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
                 {String(t('BLINDPAY_UPLOAD_INSTEAD', 'Upload a photo instead'))}
               </CyDText>
             </CyDTouchView>
@@ -192,8 +192,8 @@ export default function BlindPaySelfieCaptureModal({
               onPress={() => {
                 void takePhoto();
               }}
-              className='h-[58px] rounded-full border border-n30 bg-n0 items-center justify-center'>
-              <CyDText className='text-[16px] font-bold text-base400 tracking-[-0.16px]'>
+              className='h-[58px] rounded-full bg-p50 items-center justify-center'>
+              <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
                 {String(t('BLINDPAY_SNAP', 'Snap a photo'))}
               </CyDText>
             </CyDTouchView>
@@ -274,3 +274,7 @@ export default function BlindPaySelfieCaptureModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  camera: { width: '100%', height: '100%' },
+});

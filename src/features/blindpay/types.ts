@@ -1,6 +1,6 @@
 /**
  * BlindPay API — enums, DTOs, and responses (camelCase, aligned with backend).
- * @see GET/POST /v1/blindpay/*
+ * @see GET/POST /v1/bp/*
  */
 
 // ── Receiver / KYC ──
@@ -239,7 +239,7 @@ export interface IBlindpayOfframpWallet {
   address: string;
 }
 
-/** POST/GET /v1/blindpay/bank-accounts response */
+/** POST/GET /v1/bp/bank-accounts response */
 export interface IBlindpayBankAccountResponse {
   id: string;
   type: BlindpayBankAccountType;
@@ -423,7 +423,7 @@ export interface IBlindpayVirtualAccountBlockchainWallet {
   address: string | null;
 }
 
-/** POST/GET /v1/blindpay/virtual-accounts response */
+/** POST/GET /v1/bp/virtual-accounts response */
 export interface IBlindpayVirtualAccountResponse {
   id: string;
   bankingPartner: BlindpayBankingPartner;
@@ -475,7 +475,7 @@ export interface IBlindpayJpmTrackData {
   paymentCurrency: string | null;
 }
 
-/** GET /v1/blindpay/payouts/:id, POST /v1/blindpay/payouts/evm, POST /v1/blindpay/payouts/solana */
+/** GET /v1/bp/payouts/:id, POST /v1/bp/payouts/evm, POST /v1/bp/payouts/solana */
 export interface BlindpayPayoutResponse {
   id: string;
   status: BlindpayPayoutStatus;
@@ -577,7 +577,7 @@ export enum BlindpayUploadCategory {
   PROFILE_IMAGE = 'profile_image',
 }
 
-/** New bucket-based upload. POST /v1/blindpay/documents form field: "bucket" */
+/** New bucket-based upload. POST /v1/bp/documents form field: "bucket" */
 export enum BlindpayUploadBucket {
   ONBOARDING = 'onboarding',
   LIMIT_INCREASE = 'limit_increase',
@@ -597,14 +597,14 @@ export enum BlindpaySupportingDocumentType {
 
 // ── Reference data types ──
 
-/** GET /v1/blindpay/available/rails */
+/** GET /v1/bp/available/rails */
 export interface IBlindpayAvailableRail {
   label: string;
   value: BlindpayBankAccountType;
   country: string;
 }
 
-/** GET /v1/blindpay/available/swift/:code */
+/** GET /v1/bp/available/swift/:code */
 export interface IBlindpaySwiftLookupResult {
   id: string;
   bank: string;
@@ -676,7 +676,7 @@ export interface IBlindpayDirectionLimits {
   monthly: number;
 }
 
-/** GET /v1/blindpay/limits response */
+/** GET /v1/bp/limits response */
 export interface IBlindpayLimitsResponse {
   limits: {
     payin: IBlindpayDirectionLimits;
@@ -700,12 +700,12 @@ export interface IBlindpayLimitIncreaseStatus {
   updatedAt?: string;
 }
 
-/** POST /v1/blindpay/limits/increase response */
+/** POST /v1/bp/limits/increase response */
 export interface IBlindpayLimitIncreaseResponse {
   id: string;
 }
 
-/** GET /v1/blindpay/limits/increase response item */
+/** GET /v1/bp/limits/increase response item */
 export interface IBlindpayLimitIncreaseHistoryItem {
   id: string;
   status: BlindpayLimitIncreaseStatus;
@@ -757,21 +757,21 @@ export interface BlindpayUserConfig {
   sourceOfFundsDocType?: string;
 }
 
-/** GET /v1/blindpay/status */
+/** GET /v1/bp/status */
 export interface BlindpayStatusResponse {
   blindpay?: BlindpayUserConfig;
 }
 
-/** POST /v1/blindpay/terms/initiate — response only; app sends `{}`; redirect URL is set server-side for BlindPay. */
+/** POST /v1/bp/terms/initiate — response only; app sends `{}`; redirect URL is set server-side for BlindPay. */
 export interface InitiateTermsResponse {
   url: string;
   idempotencyKey: string;
 }
 
-/** POST /v1/blindpay/terms/complete — safe fields only; same shape as `blindpay` in status */
+/** POST /v1/bp/terms/complete — safe fields only; same shape as `blindpay` in status */
 export type CompleteTermsResponse = BlindpayUserConfig;
 
-/** POST /v1/blindpay/documents (new bucket-based response) */
+/** POST /v1/bp/documents (new bucket-based response) */
 export interface UploadDocumentResponse {
   fileUrl: string;
   bucket: BlindpayUploadBucket | string;
@@ -784,7 +784,7 @@ export interface CompleteTermsRequest {
 }
 
 /**
- * Multipart body for POST /v1/blindpay/documents.
+ * Multipart body for POST /v1/bp/documents.
  * `file`: web `File`; React Native typically appends `{ uri, name, type }` via FormData.
  */
 export interface UploadDocumentRequest {
@@ -815,12 +815,12 @@ export interface ReceiverOwner {
   taxType?: string;
 }
 
-/** POST /v1/blindpay/onboard — response mirrors status `blindpay` where applicable */
+/** POST /v1/bp/onboard — response mirrors status `blindpay` where applicable */
 export interface CreateReceiverResponse {
   blindpay?: BlindpayUserConfig;
 }
 
-/** POST /v1/blindpay/onboard */
+/** POST /v1/bp/onboard */
 export interface CreateReceiverRequest {
   type: BlindpayReceiverType;
   country: string;
@@ -864,7 +864,7 @@ export interface CreateReceiverRequest {
   owners?: ReceiverOwner[];
 }
 
-/** POST /v1/blindpay/bank-accounts */
+/** POST /v1/bp/bank-accounts */
 export interface AddBankAccountRequest {
   type: BlindpayBankAccountType;
   name: string;
@@ -923,7 +923,7 @@ export interface AddBankAccountRequest {
   onemoneyExternalAccountId?: string;
 }
 
-/** POST /v1/blindpay/quotes */
+/** POST /v1/bp/quotes */
 export interface CreateQuoteRequest {
   bankAccountId: string;
   currencyType: BlindpayCurrencyType;
@@ -938,7 +938,7 @@ export interface CreateQuoteRequest {
   transactionDocumentFile?: string;
 }
 
-/** POST /v1/blindpay/quotes/fx */
+/** POST /v1/bp/quotes/fx */
 export interface CreateFxQuoteRequest {
   from: BlindpayToken;
   to: BlindpayFiatCurrency;
@@ -946,7 +946,7 @@ export interface CreateFxQuoteRequest {
   currencyType: BlindpayCurrencyType;
 }
 
-/** POST /v1/blindpay/quotes/fx response (indicative rate preview, no binding) */
+/** POST /v1/bp/quotes/fx response (indicative rate preview, no binding) */
 export interface IBlindpayFxQuoteResponse {
   commercialQuotation: number | null;
   blindpayQuotation: number | null;
@@ -965,7 +965,7 @@ export interface IBlindpayQuoteContract {
   network: { name: string; chainId: number };
 }
 
-/** POST /v1/blindpay/quotes response */
+/** POST /v1/bp/quotes response */
 export interface IBlindpayQuoteResponse {
   id: string;
   expiresAt: number | null;
@@ -981,27 +981,27 @@ export interface IBlindpayQuoteResponse {
   description: string | null;
 }
 
-/** POST /v1/blindpay/payouts/evm */
+/** POST /v1/bp/payouts/evm */
 export interface CreatePayoutEvmRequest {
   quoteId: string;
   senderWalletAddress: string;
 }
 
-/** POST /v1/blindpay/payouts/solana */
+/** POST /v1/bp/payouts/solana */
 export interface CreatePayoutSolanaRequest {
   quoteId: string;
   senderWalletAddress: string;
   signedTransaction?: string;
 }
 
-/** POST /v1/blindpay/payouts/solana/prepare-delegate response */
+/** POST /v1/bp/payouts/solana/prepare-delegate response */
 export interface IBlindpayPrepareDelegateResponse {
   success: boolean;
   transaction: string;
   debug?: unknown;
 }
 
-/** POST /v1/blindpay/payouts/:id/documents */
+/** POST /v1/bp/payouts/:id/documents */
 export interface SubmitPayoutDocumentsRequest {
   transactionDocumentType: BlindpayDocumentType;
   transactionDocumentId: string;
@@ -1009,7 +1009,7 @@ export interface SubmitPayoutDocumentsRequest {
   description?: string;
 }
 
-/** GET /v1/blindpay/payouts */
+/** GET /v1/bp/payouts */
 export interface ListPayoutsQuery {
   limit?: '10' | '50' | '100' | '200' | '500' | '1000';
   offset?: '0' | '10' | '50' | '100' | '200' | '500' | '1000';
@@ -1024,7 +1024,7 @@ export interface ListPayoutsQuery {
   token?: BlindpayToken;
 }
 
-/** POST /v1/blindpay/limits/increase */
+/** POST /v1/bp/limits/increase */
 export interface RequestLimitIncreaseRequest {
   perTransaction?: number | null;
   daily?: number | null;

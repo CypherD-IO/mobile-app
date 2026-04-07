@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Keyboard, Modal, ScrollView } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal } from 'react-native';
 import {
   NavigationProp,
   ParamListBase,
@@ -17,6 +17,7 @@ import {
   CyDTouchView,
   CyDView,
   CyDKeyboardAwareScrollView,
+  CyDScrollView,
 } from '../../../styles/tailwindComponents';
 import { showToast } from '../../../containers/utilities/toastUtility';
 import useBlindPayApi from '../api';
@@ -104,7 +105,7 @@ function DropdownSheet({
             <CyDText className='text-[20px] font-medium text-base400 tracking-[-0.8px] leading-[1.3] mb-[8px]'>
               {title}
             </CyDText>
-            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
+            <CyDScrollView className='max-h-[300px]' showsVerticalScrollIndicator={false}>
               {options.map(opt => (
                 <CyDTouchView
                   key={opt.value}
@@ -116,7 +117,7 @@ function DropdownSheet({
                   ) : null}
                 </CyDTouchView>
               ))}
-            </ScrollView>
+            </CyDScrollView>
           </CyDView>
         </Animated.View>
       </CyDView>

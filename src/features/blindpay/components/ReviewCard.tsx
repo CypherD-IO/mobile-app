@@ -15,7 +15,7 @@ export default function ReviewCard({ title, rows }: ReviewCardProps) {
   if (visibleRows.length === 0) return null;
 
   return (
-    <CyDView className='bg-n0 border border-n30 rounded-[12px] p-[16px] shadow-sm gap-[6px]'>
+    <CyDView className='bg-n10 border border-n40 rounded-[12px] p-[16px] gap-[6px]'>
       <CyDText className='text-[14px] font-semibold text-base400 mb-[2px]'>
         {title}
       </CyDText>

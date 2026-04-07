@@ -16,7 +16,7 @@ import {
   BlindpayToken,
 } from './types';
 
-// ── POST /v1/blindpay/quotes ──
+// ── POST /v1/bp/quotes ──
 
 export const blindPayCreateQuoteSchema = z.object({
   bankAccountId: z.string().trim().length(15, 'Invalid bank account ID'),
@@ -33,7 +33,7 @@ export const blindPayCreateQuoteSchema = z.object({
 
 export type BlindPayCreateQuoteInput = z.infer<typeof blindPayCreateQuoteSchema>;
 
-// ── POST /v1/blindpay/quotes/fx ──
+// ── POST /v1/bp/quotes/fx ──
 
 export const blindPayFxQuoteSchema = z.object({
   from: z.nativeEnum(BlindpayToken),
@@ -44,7 +44,7 @@ export const blindPayFxQuoteSchema = z.object({
 
 export type BlindPayFxQuoteInput = z.infer<typeof blindPayFxQuoteSchema>;
 
-// ── POST /v1/blindpay/payouts/evm ──
+// ── POST /v1/bp/payouts/evm ──
 
 export const blindPayCreateEvmPayoutSchema = z.object({
   quoteId: z.string().trim().length(15, 'Invalid quote ID'),
@@ -53,7 +53,7 @@ export const blindPayCreateEvmPayoutSchema = z.object({
 
 export type BlindPayCreateEvmPayoutInput = z.infer<typeof blindPayCreateEvmPayoutSchema>;
 
-// ── POST /v1/blindpay/payouts/:id/documents ──
+// ── POST /v1/bp/payouts/:id/documents ──
 
 export const blindPaySubmitPayoutDocumentsSchema = z.object({
   transactionDocumentType: z.nativeEnum(BlindpayDocumentType),
@@ -64,7 +64,7 @@ export const blindPaySubmitPayoutDocumentsSchema = z.object({
 
 export type BlindPaySubmitPayoutDocumentsInput = z.infer<typeof blindPaySubmitPayoutDocumentsSchema>;
 
-// ── POST /v1/blindpay/limits/increase ──
+// ── POST /v1/bp/limits/increase ──
 
 const MAX_LIMIT_CENTS = 100_000_000_000;
 
@@ -78,7 +78,7 @@ export const blindPayRequestLimitIncreaseSchema = z.object({
 
 export type BlindPayRequestLimitIncreaseInput = z.infer<typeof blindPayRequestLimitIncreaseSchema>;
 
-// ── POST /v1/blindpay/virtual-accounts ──
+// ── POST /v1/bp/virtual-accounts ──
 
 export const blindPayCreateVirtualAccountSchema = z.object({
   bankingPartner: z.nativeEnum(BlindpayBankingPartner),
@@ -91,7 +91,7 @@ export const blindPayCreateVirtualAccountSchema = z.object({
 
 export type BlindPayCreateVirtualAccountInput = z.infer<typeof blindPayCreateVirtualAccountSchema>;
 
-// ── PUT /v1/blindpay/virtual-accounts/:id ──
+// ── PUT /v1/bp/virtual-accounts/:id ──
 
 export const blindPayUpdateVirtualAccountSchema = z.object({
   token: z.nativeEnum(BlindpayToken),
@@ -100,7 +100,7 @@ export const blindPayUpdateVirtualAccountSchema = z.object({
 
 export type BlindPayUpdateVirtualAccountInput = z.infer<typeof blindPayUpdateVirtualAccountSchema>;
 
-// ── POST /v1/blindpay/payouts/solana/prepare-delegate ──
+// ── POST /v1/bp/payouts/solana/prepare-delegate ──
 
 export const blindPayPrepareSolanaDelegateSchema = z
   .object({
@@ -116,7 +116,7 @@ export const blindPayPrepareSolanaDelegateSchema = z
 
 export type BlindPayPrepareSolanaDelegateInput = z.infer<typeof blindPayPrepareSolanaDelegateSchema>;
 
-// ── GET /v1/blindpay/payouts (query params) ──
+// ── GET /v1/bp/payouts (query params) ──
 
 const PAYOUT_LIMIT_VALUES = ['10', '50', '100', '200', '500', '1000'] as const;
 const PAYOUT_OFFSET_VALUES = ['0', '10', '50', '100', '200', '500', '1000'] as const;
