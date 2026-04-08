@@ -16,12 +16,57 @@ set -euo pipefail
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 export HOMEBREW_NO_AUTO_UPDATE=1
 
-# NOTE: CocoaPods is installed via Bundler (see `bundle install` further down),
-# NOT via Homebrew. Installing cocoapods through `brew install cocoapods` would
-# force a bottle download from ghcr.io, which Xcode Cloud cannot reach. Bundler
-# fetches gems from rubygems.org instead — that host works fine from the CI
-# image — and the cocoapods version is pinned by the repo's Gemfile.lock so the
-# build is reproducible across CI and local dev machines.
+# ================================================================================
+# CocoaPods: use the version pre-installed on the Xcode Cloud image.
+# ================================================================================
+#
+# Why not Bundler? A previous attempt installed cocoapods via Bundler to avoid
+# ghcr.io. It looked clean on paper but failed in practice: the Xcode Cloud
+# worker's only Ruby on PATH is system Ruby 2.6.10 at `/usr/bin/ruby`, and
+# modern cocoapods (>= 1.15) plus its transitive gems (activesupport 7.2+,
+# concurrent-ruby 1.3+) require Ruby >= 3.1. Running `bundle install` under
+# Ruby 2.6.10 fails either at lockfile activation (BUNDLED WITH) or at gem
+# load. There is no reachable path to a modern Ruby on this image: brew
+# bottles live on ghcr.io (blocked) and rbenv/nvm fetch from GitHub tarballs
+# (also blocked). So Bundler is not viable for CocoaPods on Xcode Cloud.
+#
+# Why not `brew install cocoapods` unconditionally? Homebrew bottles are
+# served from ghcr.io, so a fresh install has to fetch a bottle and fails.
+#
+# Strategy: rely on the worker's pre-installed cocoapods (same shape as the
+# node@22 guard below). If a future image drops the pre-install, the brew
+# fallback will likely still fail (bottle fetch), but the diagnostic block
+# will dump enough state to pick a new strategy without blind guessing. The
+# cocoapods version is still pinned for reproducibility — we assert that
+# `pod --version` matches `ios/Podfile.lock`'s `COCOAPODS:` footer further
+# down, so image drift surfaces immediately with a clear error.
+# ================================================================================
+if ! brew list cocoapods >/dev/null 2>&1; then
+  echo "cocoapods not pre-installed on this image — attempting fallback install..."
+  if ! brew install cocoapods; then
+    echo ""
+    echo "========================================================================"
+    echo "CocoaPods is neither pre-installed nor reachable via brew. Diagnostics:"
+    echo "========================================================================"
+    echo "-- which pod (if any):"
+    command -v pod || echo "  pod: not on PATH"
+    echo "-- which ruby, version:"
+    command -v ruby || echo "  ruby: not on PATH"
+    ruby -v || true
+    echo "-- brew opt rubies:"
+    ls /usr/local/opt 2>/dev/null | grep -i ruby || echo "  none under /usr/local/opt"
+    echo "-- brew cellar rubies:"
+    ls /usr/local/Cellar 2>/dev/null | grep -i ruby || echo "  none under /usr/local/Cellar"
+    echo "-- rbenv / asdf:"
+    command -v rbenv || echo "  rbenv: absent"
+    command -v asdf || echo "  asdf: absent"
+    echo "========================================================================"
+    echo "ACTION: investigate whether Apple has added a modern Ruby to the image."
+    echo "If so, switch CocoaPods install to Bundler under that Ruby."
+    echo "========================================================================"
+    exit 1
+  fi
+fi
 
 # ================================================================================
 # Use the Node.js that Xcode Cloud's macOS image already ships with.
@@ -88,43 +133,40 @@ cd "$REPO_ROOT"
 npm install --legacy-peer-deps
 
 # ================================================================================
-# Install Ruby gem dependencies (cocoapods + friends) via Bundler.
+# CocoaPods version assertion: fail fast if the image's pre-installed pod has
+# drifted from what ios/Podfile.lock was generated with.
 # ================================================================================
 #
-# Bundler is Ruby's package manager — it reads `Gemfile` + `Gemfile.lock`, pulls
-# each pinned gem from rubygems.org, and vendors them locally. We use it instead
-# of `brew install cocoapods` because rubygems.org is reachable from Xcode Cloud
-# while ghcr.io (where brew keeps its bottles) is not.
-#
-# `BUNDLE_GEMFILE` is exported so that any later `bundle exec <cmd>` — even from
-# a different cwd like `ios/` — always resolves to the repo-root Gemfile.
+# ios/Podfile.lock's last line records the cocoapods version used to generate
+# it (e.g., `COCOAPODS: 1.16.2`). If the worker's installed pod differs, the
+# install may succeed but produce subtly different outputs that break the
+# build later. Catch that drift now with a clear message, before `pod install`
+# runs.
 # ================================================================================
-export BUNDLE_GEMFILE="${REPO_ROOT}/Gemfile"
-
-if ! command -v bundle >/dev/null 2>&1; then
-  echo "Bundler not found on this image — installing to user gem dir..."
-  # --user-install keeps us out of /Library/Ruby and avoids needing sudo.
-  # --no-document skips rdoc/ri generation to save time in CI.
-  gem install bundler --no-document --user-install
-  # Put the user gem bin dir on PATH so `bundle` resolves below.
-  USER_GEM_BIN="$(ruby -r rubygems -e 'puts Gem.user_dir')/bin"
-  export PATH="${USER_GEM_BIN}:${PATH}"
+EXPECTED_POD_VERSION="$(awk '/^COCOAPODS:/ {print $2}' "${REPO_ROOT}/ios/Podfile.lock")"
+ACTUAL_POD_VERSION="$(pod --version)"
+if [ -z "$EXPECTED_POD_VERSION" ]; then
+  echo "WARNING: could not parse COCOAPODS version from ios/Podfile.lock — skipping version check."
+elif [ "$EXPECTED_POD_VERSION" != "$ACTUAL_POD_VERSION" ]; then
+  echo "ERROR: CocoaPods version mismatch."
+  echo "  Podfile.lock expects: ${EXPECTED_POD_VERSION}"
+  echo "  Image provides:       ${ACTUAL_POD_VERSION}"
+  echo ""
+  echo "Either:"
+  echo "  - Regenerate ios/Podfile.lock under cocoapods ${ACTUAL_POD_VERSION} and commit, OR"
+  echo "  - Pin cocoapods ${EXPECTED_POD_VERSION} explicitly in the image."
+  exit 1
 fi
-
-echo "Bundler version: $(bundle --version)"
-bundle install
-echo "CocoaPods version (via Bundler): $(bundle exec pod --version)"
+echo "CocoaPods version: ${ACTUAL_POD_VERSION} (matches ios/Podfile.lock)"
 
 # Clean up DerivedData folder if it exists
 rm -rf /Volumes/workspace/DerivedData
 
-# Deintegrate and reinstall CocoaPods dependencies from `ios/`.
-# `bundle exec` runs pod with the exact cocoapods version pinned in
-# Gemfile.lock — not whatever happens to be on PATH — so CI and local builds
-# stay in lockstep.
+# Deintegrate and reinstall CocoaPods dependencies from `ios/` using the
+# pre-installed pod verified above.
 cd "${REPO_ROOT}/ios"
-bundle exec pod deintegrate
-bundle exec pod install --repo-update
+pod deintegrate
+pod install --repo-update
 
 
 # Create .env file in project root (REPO_ROOT, not relative to current directory)
