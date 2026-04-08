@@ -516,7 +516,7 @@ const TabStack = React.memo(
               } else if (route.name === screenTitle.CYPHER_AGENT) {
                 return (
                   <CyDMaterialDesignIcons
-                    name='creation'
+                    name='star-four-points'
                     size={28}
                     className={clsx('', {
                       'text-base400': focused,
