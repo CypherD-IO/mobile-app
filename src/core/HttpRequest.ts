@@ -182,23 +182,23 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'GET_FROM_OTHER_SOURCE') {
-          const _config = {
-            ...config,
-            headers: {
+          const _config = { ...config };
+          if (!_config.headers) {
+            _config.headers = {
               accept: 'application/json',
-            },
-          };
-
+              'Content-Type': 'application/json',
+            };
+          }
           const { data } = await axios.get(endpoint, _config);
           response.data = data;
         } else if (method === 'POST_TO_OTHER_SOURCE') {
-          const _config = {
-            ...config,
-            headers: {
+          const _config = { ...config };
+          if (!_config.headers) {
+            _config.headers = {
               accept: 'application/json',
               'Content-Type': 'application/json',
-            },
-          };
+            };
+          }
 
           const { data } = await axios.post(endpoint, body, _config);
           response.data = data;
