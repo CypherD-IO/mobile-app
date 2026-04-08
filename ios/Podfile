@@ -106,10 +106,18 @@ target 'Cypherd' do
     normalize_setting = lambda do |value|
       return '$(inherited)' if value.nil?
       if value.is_a?(Array)
-        # Strip wrapping quotes the same way RN's add_flag_for_key does, then join.
-        return value.map { |v| v.to_s.gsub('"', '').gsub('\"', '') }.join(' ')
+        # Strip only a single pair of wrapping double quotes per element (preserving
+        # any inner quotes), then join with spaces. CocoaPods stores quoted paths like
+        # `"$(PODS_ROOT)/Headers/Public/ReactCodegen"` as Array elements, and we want
+        # those outer quotes gone without mangling internal quoting.
+        joined = value.map { |v|
+          s = v.to_s
+          (s.length >= 2 && s.start_with?('"') && s.end_with?('"')) ? s[1..-2] : s
+        }.join(' ')
+        return joined.empty? ? '$(inherited)' : joined
       end
-      value.to_s
+      result = value.to_s
+      result.empty? ? '$(inherited)' : result
     end
 
     # Comprehensive deployment target fix for all pod targets
