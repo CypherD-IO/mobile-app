@@ -4,11 +4,24 @@
 # and Xcode later fails with missing `Pods-*.xcconfig` / `.xcfilelist` files during the Analyze/Build phase.
 set -euo pipefail
 
-# Prevent Homebrew from auto-cleanup
+# Prevent Homebrew from auto-cleanup, and from auto-updating on every invocation.
+#
+# HOMEBREW_NO_AUTO_UPDATE=1 is load-bearing in CI: on each `brew` invocation,
+# Homebrew normally self-updates, and that self-update tries to fetch a fresher
+# `portable-ruby` bottle from `ghcr.io` (redirected to
+# `pkg-containers.githubusercontent.com`). Xcode Cloud workers cannot resolve
+# those hosts — the same DNS wall documented for node@22 below — so leaving
+# auto-update on causes `curl: (6) Could not resolve host` failures that abort
+# the entire script before any real work runs.
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
+export HOMEBREW_NO_AUTO_UPDATE=1
 
-# Install CocoaPods using Homebrew
-brew install cocoapods
+# NOTE: CocoaPods is installed via Bundler (see `bundle install` further down),
+# NOT via Homebrew. Installing cocoapods through `brew install cocoapods` would
+# force a bottle download from ghcr.io, which Xcode Cloud cannot reach. Bundler
+# fetches gems from rubygems.org instead — that host works fine from the CI
+# image — and the cocoapods version is pinned by the repo's Gemfile.lock so the
+# build is reproducible across CI and local dev machines.
 
 # ================================================================================
 # Use the Node.js that Xcode Cloud's macOS image already ships with.
@@ -74,13 +87,44 @@ echo "Node.js binary: $(which node)"
 cd "$REPO_ROOT"
 npm install --legacy-peer-deps
 
+# ================================================================================
+# Install Ruby gem dependencies (cocoapods + friends) via Bundler.
+# ================================================================================
+#
+# Bundler is Ruby's package manager — it reads `Gemfile` + `Gemfile.lock`, pulls
+# each pinned gem from rubygems.org, and vendors them locally. We use it instead
+# of `brew install cocoapods` because rubygems.org is reachable from Xcode Cloud
+# while ghcr.io (where brew keeps its bottles) is not.
+#
+# `BUNDLE_GEMFILE` is exported so that any later `bundle exec <cmd>` — even from
+# a different cwd like `ios/` — always resolves to the repo-root Gemfile.
+# ================================================================================
+export BUNDLE_GEMFILE="${REPO_ROOT}/Gemfile"
+
+if ! command -v bundle >/dev/null 2>&1; then
+  echo "Bundler not found on this image — installing to user gem dir..."
+  # --user-install keeps us out of /Library/Ruby and avoids needing sudo.
+  # --no-document skips rdoc/ri generation to save time in CI.
+  gem install bundler --no-document --user-install
+  # Put the user gem bin dir on PATH so `bundle` resolves below.
+  USER_GEM_BIN="$(ruby -r rubygems -e 'puts Gem.user_dir')/bin"
+  export PATH="${USER_GEM_BIN}:${PATH}"
+fi
+
+echo "Bundler version: $(bundle --version)"
+bundle install
+echo "CocoaPods version (via Bundler): $(bundle exec pod --version)"
+
 # Clean up DerivedData folder if it exists
 rm -rf /Volumes/workspace/DerivedData
 
-# Deintegrate and reinstall CocoaPods dependencies from `ios/`
+# Deintegrate and reinstall CocoaPods dependencies from `ios/`.
+# `bundle exec` runs pod with the exact cocoapods version pinned in
+# Gemfile.lock — not whatever happens to be on PATH — so CI and local builds
+# stay in lockstep.
 cd "${REPO_ROOT}/ios"
-pod deintegrate
-pod install --repo-update
+bundle exec pod deintegrate
+bundle exec pod install --repo-update
 
 
 # Create .env file in project root (REPO_ROOT, not relative to current directory)
