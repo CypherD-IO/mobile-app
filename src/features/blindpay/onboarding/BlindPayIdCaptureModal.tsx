@@ -37,13 +37,16 @@ interface BlindPayIdCaptureModalProps {
 type CaptureState = 'options' | 'capture' | 'preview';
 
 // ── Tips bottom sheet ────────────────────────────────────────────
-const TIPS_TEXT = `1. Avoid backlighting from windows or bright light sources when taking your ID photo.
+function buildTipsText(docTypeName: string): string {
+  const doc = docTypeName.toLowerCase();
+  return `1. Avoid backlighting from windows or bright light sources when taking your ${doc} photo.
 
-2. If the image appears blurry, gradually move your ID closer to the camera until it comes into focus.
+2. If the image appears blurry, gradually move your ${doc} closer to the camera until it comes into focus.
 
-3. Ensure that the entire ID is visible within the frame.
+3. Ensure that the entire ${doc} is visible within the frame.
 
-4. Make sure the ID fits neatly within the four corners of the photo.`;
+4. Make sure the ${doc} fits neatly within the four corners of the photo.`;
+}
 
 // ── Main modal ───────────────────────────────────────────────────
 export default function BlindPayIdCaptureModal({
@@ -349,7 +352,7 @@ export default function BlindPayIdCaptureModal({
                     Tips on capturing
                   </CyDText>
                   <CyDText className='text-[14px] font-medium text-n200 leading-[1.5] tracking-[-0.4px] mb-[20px]'>
-                    {TIPS_TEXT}
+                    {buildTipsText(docTypeName)}
                   </CyDText>
                   <CyDTouchView
                     onPress={() => setShowTips(false)}

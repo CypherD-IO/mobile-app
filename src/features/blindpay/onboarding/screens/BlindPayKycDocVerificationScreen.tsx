@@ -29,7 +29,7 @@ export function BlindPayKycDocVerificationStep({
       <CyDView className='gap-[11px]'>
 
         <CyDView className='gap-[12px]'>
-          <CyDText className='text-[32px] font-normal text-base400 tracking-[-1x] leading-[1.4]'>
+          <CyDText className='text-[32px] font-normal text-base400 tracking-[-1px] leading-[1.4]'>
             {String(
               t('BLINDPAY_DOC_VERIFY_TITLE', 'Document Verification'),
             )}

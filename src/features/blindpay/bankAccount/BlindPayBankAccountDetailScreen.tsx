@@ -213,7 +213,10 @@ export default function BlindPayBankAccountDetailScreen() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (!accountId) return;
+    if (!accountId) {
+      setLoading(false);
+      return;
+    }
     void getBankAccount(accountId).then(res => {
       if (!res.isError && res.data) setAccount(res.data);
       setLoading(false);

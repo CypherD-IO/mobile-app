@@ -58,15 +58,21 @@ export default function BlindPayVirtualAccountDetailScreen() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const fetchAccount = useCallback(async () => {
-    if (!accountId) return;
-    setLoading(true);
-    const res = await getVirtualAccount(accountId);
-    if (!res.isError && res.data) {
-      setAccount(res.data);
-      setEditToken(res.data.token ?? '');
-      setEditWalletId(res.data.blockchainWalletId ?? '');
+    if (!accountId) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    setLoading(true);
+    try {
+      const res = await getVirtualAccount(accountId);
+      if (!res.isError && res.data) {
+        setAccount(res.data);
+        setEditToken(res.data.token ?? '');
+        setEditWalletId(res.data.blockchainWalletId ?? '');
+      }
+    } finally {
+      setLoading(false);
+    }
   }, [accountId, getVirtualAccount]);
 
   useEffect(() => {
@@ -135,6 +141,9 @@ export default function BlindPayVirtualAccountDetailScreen() {
         <CyDTouchView
           onPress={() => {
             if (editing) {
+              // Reset edit buffers back to the saved account values
+              setEditToken(account?.token ?? '');
+              setEditWalletId(account?.blockchainWalletId ?? '');
               setEditing(false);
             } else {
               navigation.goBack();

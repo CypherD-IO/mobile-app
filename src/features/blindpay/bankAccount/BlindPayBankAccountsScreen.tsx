@@ -56,11 +56,16 @@ export default function BlindPayBankAccountsScreen() {
   // Pull-to-refresh from full API
   const fetchFull = useCallback(async () => {
     setRefreshing(true);
-    const res = await listBankAccountsRef.current();
-    if (!res.isError && res.data) {
-      setAccounts(res.data);
+    try {
+      const res = await listBankAccountsRef.current();
+      if (!res.isError && res.data) {
+        setAccounts(res.data);
+      }
+    } catch {
+      // swallow — refresh control will still stop in finally
+    } finally {
+      setRefreshing(false);
     }
-    setRefreshing(false);
   }, []);
 
   useFocusEffect(

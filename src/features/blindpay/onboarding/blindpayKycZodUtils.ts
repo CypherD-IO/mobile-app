@@ -35,7 +35,7 @@ export function omitFieldError(
   prev: Record<string, string>,
   key: string,
 ): Record<string, string> {
-  if (!prev[key]) {
+  if (!Object.prototype.hasOwnProperty.call(prev, key)) {
     return prev;
   }
   return Object.fromEntries(

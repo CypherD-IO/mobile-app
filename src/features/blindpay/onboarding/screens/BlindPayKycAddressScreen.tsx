@@ -228,7 +228,7 @@ export function BlindPayKycAddressStep({
                 clearKey('stateProvinceRegion');
               }}
               placeholder={String(
-                t('STATE_PROVINCE', 'State code (e.g. CA, NY)'),
+                t('STATE_PROVINCE', '2-letter state/province code (e.g. CA, NY, ON)'),
               )}
               placeholderTextColor={PLACEHOLDER_COLOR}
               autoCapitalize='characters'

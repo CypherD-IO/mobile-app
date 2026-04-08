@@ -27,3 +27,7 @@ export const BLINDPAY_HIGH_RISK_COUNTRIES = new Set([
 export function isHighRiskCountry(code: string): boolean {
   return BLINDPAY_HIGH_RISK_COUNTRIES.has(code.toUpperCase());
 }
+
+export function isProhibitedCountry(code: string): boolean {
+  return BLINDPAY_PROHIBITED_COUNTRIES.has(code.toUpperCase());
+}

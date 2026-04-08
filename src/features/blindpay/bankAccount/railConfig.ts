@@ -1,4 +1,3 @@
-import { t } from 'i18next';
 import type { BlindpayBankAccountType } from '../types';
 
 /** Field types for dynamic rendering. */

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { t } from 'i18next';
@@ -66,6 +66,11 @@ export default function BlindPayKycWizardScreen() {
         : [...BASE_STEPS, BlindPayKycReviewStep],
     [highRisk],
   );
+
+  // Clamp step index when steps array length changes (e.g. country changes high-risk status)
+  useEffect(() => {
+    setStep(prev => Math.max(0, Math.min(prev, steps.length - 1)));
+  }, [steps.length]);
 
   const advance = useCallback(() => {
     setHandlers(IDLE_HANDLERS);
