@@ -182,9 +182,19 @@ export function BlindPayKycPurposeOfTxStep({
                   key={opt.value}
                   onPress={() => {
                     setPurpose(opt.value);
-                    mergeDraft({
-                      purposeOfTransactions: opt.value,
-                    });
+                    if (opt.value !== 'OTHER') {
+                      // Clear stale explanation when switching away from OTHER
+                      setExplanation('');
+                      mergeDraft({
+                        purposeOfTransactions: opt.value,
+                        purposeOfTransactionsExplanation: '',
+                      });
+                      clearKey('purposeOfTransactionsExplanation');
+                    } else {
+                      mergeDraft({
+                        purposeOfTransactions: opt.value,
+                      });
+                    }
                     setPickerOpen(false);
                     clearKey('purposeOfTransactions');
                   }}

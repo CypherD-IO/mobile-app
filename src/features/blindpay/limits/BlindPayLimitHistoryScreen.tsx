@@ -20,8 +20,8 @@ import useBlindPayApi from '../api';
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })}`;
 }
 
@@ -37,10 +37,15 @@ function humanizeDocType(type: string): string {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function isPendingStatus(status: string): boolean {
+  const s = (status ?? '').toLowerCase().replace(/_/g, '');
+  return s === 'pending' || s === 'inreview' || s === 'inprogress';
+}
+
 function StatusBadge({ status }: { status: string }) {
   const s = (status ?? '').toLowerCase().replace(/_/g, '');
   const isApproved = s === 'approved';
-  const isPending = s === 'pending' || s === 'inreview' || s === 'inprogress';
+  const isPending = isPendingStatus(status);
   const color = isApproved
     ? 'bg-green-100 text-green-700'
     : isPending
@@ -69,18 +74,23 @@ export default function BlindPayLimitHistoryScreen() {
   const fetchHistory = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
-    const res = await getHistoryRef.current();
-    if (!res.isError && res.data) {
-      setHistory(
-        [...res.data].sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime(),
-        ),
-      );
+    try {
+      const res = await getHistoryRef.current();
+      if (!res.isError && res.data) {
+        setHistory(
+          [...res.data].sort(
+            (a: any, b: any) =>
+              new Date(b.createdAt).getTime() -
+              new Date(a.createdAt).getTime(),
+          ),
+        );
+      }
+    } catch {
+      // swallow — UI flags will still reset in finally
+    } finally {
+      if (isRefresh) setRefreshing(false);
+      else setLoading(false);
     }
-    if (isRefresh) setRefreshing(false);
-    else setLoading(false);
   }, []);
 
   useFocusEffect(
@@ -189,9 +199,7 @@ export default function BlindPayLimitHistoryScreen() {
               ) : null}
 
               {/* Resolved date */}
-              {item.status !== 'pending' &&
-              item.status !== 'in_review' &&
-              item.updatedAt ? (
+              {!isPendingStatus(item.status) && item.updatedAt ? (
                 <CyDText className='text-[11px] text-n200'>
                   Resolved:{' '}
                   {new Date(item.updatedAt).toLocaleDateString('en-US', {

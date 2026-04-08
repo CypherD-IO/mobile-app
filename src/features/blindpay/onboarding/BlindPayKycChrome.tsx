@@ -1,5 +1,4 @@
 import React from 'react';
-import { Keyboard } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import ProgressBarButton from '../../../components/v2/ProgressBarButton';
 import useBlindPaySheet from '../components/BlindPayDropdownSheet';
@@ -89,8 +88,7 @@ export default function BlindPayKycChrome({
           extraScrollHeight={32}
           extraHeight={88}
           viewIsInsideTabBar
-          contentContainerClassName='pb-[24px]'
-          onLayout={() => Keyboard.dismiss()}>
+          contentContainerClassName='pb-[24px]'>
           <CyDView className='px-[16px] gap-[16px]'>{children}</CyDView>
         </CyDKeyboardAwareScrollView>
       </CyDView>

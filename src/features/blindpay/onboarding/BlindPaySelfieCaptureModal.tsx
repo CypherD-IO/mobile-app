@@ -217,9 +217,7 @@ export default function BlindPaySelfieCaptureModal({
         {/* Header */}
         <CyDView className='flex-row items-center px-[16px] h-[64px] gap-[12px]'>
           <CyDTouchView
-            onPress={() => {
-              setState('capture');
-            }}
+            onPress={handleRetake}
             hitSlop={12}>
             <CyDIcons name='arrow-left' size={24} className='text-white' />
           </CyDTouchView>

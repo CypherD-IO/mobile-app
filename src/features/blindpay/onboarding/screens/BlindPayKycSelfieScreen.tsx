@@ -41,22 +41,30 @@ export function BlindPayKycSelfieStep({
         name: file.name,
         type: file.type,
       };
-      const res = await uploadDocument(
-        filePart,
-        BlindpayUploadBucket.ONBOARDING,
-      );
-      setUploading(false);
-      if (res.isError || !res.data?.fileUrl) {
+      try {
+        const res = await uploadDocument(
+          filePart,
+          BlindpayUploadBucket.ONBOARDING,
+        );
+        if (res.isError || !res.data?.fileUrl) {
+          const msg = String(
+            res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
+          setUploadError(msg);
+          showToast(msg, 'error');
+          return;
+        }
+        setSelfieUrl(res.data.fileUrl);
+        mergeDraft({ selfieFile: res.data.fileUrl });
+        setFieldErrors(prev => omitFieldError(prev, 'selfieFile'));
+        setUploadError('');
+      } catch (e: any) {
         const msg = String(
-          res.errorMessage ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
+          e?.message ?? t('UNEXPECTED_ERROR', 'Something went wrong'));
         setUploadError(msg);
         showToast(msg, 'error');
-        return;
+      } finally {
+        setUploading(false);
       }
-      setSelfieUrl(res.data.fileUrl);
-      mergeDraft({ selfieFile: res.data.fileUrl });
-      setFieldErrors(prev => omitFieldError(prev, 'selfieFile'));
-      setUploadError('');
     },
     [mergeDraft, uploadDocument],
   );
