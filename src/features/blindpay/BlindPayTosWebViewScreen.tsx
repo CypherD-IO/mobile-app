@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -76,6 +76,17 @@ export default function BlindPayTosWebViewScreen() {
     },
     [finalizeTerms],
   );
+
+  // If url is missing, surface an error and navigate back instead of leaving a blank screen
+  useEffect(() => {
+    if (!url) {
+      showToast(
+        String(t('BLINDPAY_TOS_URL_MISSING', 'Terms URL is unavailable. Please try again.')),
+        'error',
+      );
+      navigation.goBack();
+    }
+  }, [url, navigation]);
 
   if (!url) {
     return null;

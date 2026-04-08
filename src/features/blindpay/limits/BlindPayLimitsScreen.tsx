@@ -22,8 +22,8 @@ import useBlindPayApi from '../api';
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })}`;
 }
 

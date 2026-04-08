@@ -58,6 +58,7 @@ const REVENUE_OPTIONS = [
   { value: '1000000_9999999', label: '$1M – $10M' },
   { value: '10000000_49999999', label: '$10M – $50M' },
   { value: '50000000_249999999', label: '$50M – $250M' },
+  { value: '250000000_2499999999', label: '$250M – $2.5B' },
   { value: '2500000000_plus', label: '$2.5B+' },
 ];
 
@@ -261,7 +262,7 @@ export default function BlindPayCreateVirtualAccountScreen() {
     }
     setErrors(e);
     return Object.keys(e).length === 0;
-  }, [step, accountPurpose, estimatedRevenue, occupation, sourceOfFunds, solePropDocType, solePropDocUrl, sourceOfFundsDocUrl]);
+  }, [step, accountPurpose, accountPurposeOther, estimatedRevenue, occupation, sourceOfFunds, solePropDocType, solePropDocUrl, sourceOfFundsDocUrl]);
 
   const handleCapture = useCallback(
     async (file: CapturedFile) => {

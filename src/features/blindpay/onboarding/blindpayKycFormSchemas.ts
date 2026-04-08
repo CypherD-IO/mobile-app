@@ -120,7 +120,7 @@ export const blindPayKycAddressSchema = z.object({
       String(
         t(
           'BLINDPAY_ZOD_STATE',
-          'Enter a 2-letter state code (e.g. CA, NY)',
+          'Enter a 2-letter state/province code (e.g. CA, NY, ON)',
         ),
       ),
     ),

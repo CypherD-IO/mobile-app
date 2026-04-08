@@ -1,5 +1,6 @@
 import { pick } from '@react-native-documents/picker';
 import { Platform } from 'react-native';
+import { showToast } from '../../../containers/utilities/toastUtility';
 import type { BlindPayUploadFilePart } from '../api';
 
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -20,6 +21,7 @@ export async function pickBlindPaySingleFile(): Promise<
           'com.adobe.pdf',
         ],
         android: ['image/*', 'application/pdf'],
+        default: ['image/*', 'application/pdf'],
       }),
     });
   } catch {
@@ -31,6 +33,7 @@ export async function pickBlindPaySingleFile(): Promise<
     return null;
   }
   if (typeof file.size === 'number' && file.size > MAX_BYTES) {
+    showToast('File must be smaller than 15 MB', 'error');
     return null;
   }
   const inferredType = file.name.endsWith('.pdf')

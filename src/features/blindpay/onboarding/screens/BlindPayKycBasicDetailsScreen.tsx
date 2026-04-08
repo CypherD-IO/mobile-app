@@ -24,7 +24,11 @@ import BlindPayKycFieldError from '../BlindPayKycFieldError';
 import { useBlindPayOnboardingForm } from '../BlindPayOnboardingFormContext';
 
 function formatYmd(d: Date): string {
-  return d.toISOString().split('T')[0];
+  // Use local date parts (not UTC) so users east of UTC don't see the day shift
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function formatDobDisplay(ymd: string): string {

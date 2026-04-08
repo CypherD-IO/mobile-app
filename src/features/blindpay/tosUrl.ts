@@ -9,7 +9,13 @@ export function extractTermsIdFromUrl(url: string): string | null {
   if (!match?.[1]) {
     return null;
   }
-  const raw = decodeURIComponent(match[1].trim());
+  let raw: string;
+  try {
+    raw = decodeURIComponent(match[1].trim());
+  } catch {
+    // Malformed percent-encoding — treat as no match
+    return null;
+  }
   if (raw.length === 15) {
     return raw;
   }
