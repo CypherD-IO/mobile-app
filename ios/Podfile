@@ -76,6 +76,27 @@ target 'Cypherd' do
       __apply_Xcode_12_5_M1_post_install_workaround(installer)
     end
 
+    # Xcode 26.4 (Apple Clang 21) enables consteval for fmt 11.0.2 but the implementation is buggy,
+    # causing "Call to consteval function is not a constant expression" errors.
+    # Patch fmt/base.h to force-disable consteval until RN ships fmt 12.1.0+.
+    # See: https://github.com/facebook/react-native/issues/55601
+    fmt_base_paths = Dir.glob(File.join(installer.sandbox.root, '**', 'fmt', 'base.h'))
+    fmt_base_paths.each do |fmt_base|
+      # Skip symlinks — only patch real files to avoid "Permission denied" on xcframework internals.
+      next unless File.exist?(fmt_base)
+      real_path = File.realpath(fmt_base) rescue next
+      next unless File.writable?(real_path) || (File.chmod(0644, real_path) rescue nil)
+      content = File.read(real_path)
+      patched = content.gsub(
+        /^(#elif defined\(__cpp_consteval\)\n#  define FMT_USE_CONSTEVAL) 1$/,
+        "\\1 0  // Xcode 26 workaround: consteval is buggy in Apple Clang 21"
+      )
+      if patched != content
+        File.write(real_path, patched)
+        puts "[Podfile] Patched fmt consteval workaround in: #{real_path}"
+      end
+    end
+
     # Comprehensive deployment target fix for all pod targets
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
@@ -85,10 +106,11 @@ target 'Cypherd' do
         # IMPORTANT: PODS_ROOT is `<repo>/ios/Pods`, so repo root is `$(PODS_ROOT)/../..`.
         config.build_settings['REACT_NATIVE_PATH'] = '$(PODS_ROOT)/../../node_modules/react-native'
 
-        # Xcode's "explicit modules" / dependency scanner can break on some RN pods that transitively
-        # pull in C++ headers through module umbrella headers (e.g. React-jsi -> <cassert>).
-        # Disabling explicit modules for Pods avoids "Clang dependency scanner failure" cascades.
+        # Xcode 26+ enables explicit modules by default. This breaks many CocoaPods that don't
+        # define proper modulemaps (RN pods, C++ headers, etc.).
+        # Disable both Clang and Swift explicit modules to avoid compilation & Libtool failures.
         config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
+        config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
 
         # Don't disable clang modules globally — Swift pods (e.g. Sentry, Lottie) rely on modules.
         # Historically we disabled modules for some Lottie pods to avoid dependency scanner issues,
