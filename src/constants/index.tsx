@@ -137,6 +137,7 @@ export const screenTitle = {
   CARD_CREATION: 'cardCreation',
   REWARDS: 'Rewards',
   REWARDS_SCREEN: 'RewardsScreen',
+  REWARDS_LOCK_WEB_VIEW: 'RewardsLockWebView',
   CLAIM_REWARD: 'ClaimReward',
   REFERRALS_VIEW_ALL: 'ReferralsViewAll',
   ALL_REFERRAL_CODES: 'AllReferralCodes',
@@ -160,6 +161,8 @@ export const screenTitle = {
   COUNTRY_TEMPORARILY_UNSUPPORTED: 'countryTemporarilyUnsupported',
   MERCHANT_REWARD_LIST: 'MerchantRewardList',
   PREMIUM_SCREEN: 'PremiumScreen',
+  CYPHER_AGENT: 'CypherAgent',
+  CYPHER_AGENT_SCREEN: 'CypherAgentScreen',
 };
 
 export const fontsName = {
