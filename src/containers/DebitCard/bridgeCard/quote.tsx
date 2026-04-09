@@ -29,6 +29,7 @@ import {
   toBase64,
 } from '../../../core/util';
 import Button from '../../../components/v2/button';
+import LongPressConfirmButton from '../../../components/v2/LongPressConfirmButton';
 import {
   AnalyticsType,
   ButtonType,
@@ -119,7 +120,7 @@ export default function CardQuote({
   const { globalState } = globalContext;
   const quoteExpiry = 60;
   const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
-  const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
+  const expiryTimerRef = useRef<NodeJS.Timer | null>(null);
   const [isPayDisabled, setIsPayDisabled] = useState<boolean>(
     hasSufficientBalanceAndGasFee,
   );
@@ -222,35 +223,39 @@ export default function CardQuote({
   )?.logo_url;
 
   useEffect(() => {
-    let tempIsPayDisabled = false;
-    tempIsPayDisabled = !hasSufficientBalanceAndGasFee;
+    let tempIsPayDisabled = !hasSufficientBalanceAndGasFee;
     setIsPayDisabled(tempIsPayDisabled);
     if (quoteExpiry && !tempIsPayDisabled) {
-      let tempTokenExpiryTime = quoteExpiry;
       setIsPayDisabled(false);
-      setTokenExpiryTime(tempTokenExpiryTime);
-      setExpiryTimer(
-        setInterval(() => {
-          tempTokenExpiryTime--;
-          setTokenExpiryTime(tempTokenExpiryTime);
-        }, 1000),
-      );
+      setTokenExpiryTime(quoteExpiry);
+      let remaining = quoteExpiry;
+      expiryTimerRef.current = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          if (expiryTimerRef.current) clearInterval(expiryTimerRef.current);
+          expiryTimerRef.current = null;
+          setTokenExpiryTime(0);
+          setIsPayDisabled(true);
+        } else {
+          setTokenExpiryTime(remaining);
+        }
+      }, 1000);
     }
+    return () => {
+      if (expiryTimerRef.current) {
+        clearInterval(expiryTimerRef.current);
+        expiryTimerRef.current = null;
+      }
+    };
   }, []);
-
-  useEffect(() => {
-    if (tokenExpiryTime === 0 && quoteExpiry) {
-      clearInterval(expiryTimer);
-      setIsPayDisabled(true);
-    }
-  }, [tokenExpiryTime]);
 
   const onCancel = () => {
     void intercomAnalyticsLog('cancel_transfer_token', {
       from: ethereumAddress,
     });
-    if (quoteExpiry && tokenExpiryTime !== 0) {
-      clearInterval(expiryTimer);
+    if (expiryTimerRef.current) {
+      clearInterval(expiryTimerRef.current);
+      expiryTimerRef.current = null;
     }
     activityRef.current &&
       activityContext.dispatch({
@@ -1126,8 +1131,9 @@ export default function CardQuote({
         if (response.isError) {
           throw response.error;
         }
-        if (expiryTimer) {
-          clearInterval(expiryTimer);
+        if (expiryTimerRef.current) {
+          clearInterval(expiryTimerRef.current);
+          expiryTimerRef.current = null;
         }
         await sendTransaction();
       }
@@ -1401,42 +1407,32 @@ export default function CardQuote({
             </CyDTouchView>
           </CyDView>
         )}
-        <CyDView
-          className={'flex flex-row justify-between items-center px-[10px]'}>
-          <Button
-            title={t<string>('CANCEL')}
-            titleStyle='text-[14px]'
-            disabled={loading}
-            type={ButtonType.SECONDARY}
-            onPress={() => {
-              onCancel();
-            }}
-            style={'h-[60px] w-[46%] mr-[6px]'}
-          />
-          <Button
-            title={
-              t<string>('LOAD_ALL_CAPS') +
-              (!isPayDisabled
-                ? tokenExpiryTime
-                  ? ' (' + String(tokenExpiryTime) + ')'
-                  : ''
-                : '')
-            }
-            titleStyle='text-[14px]'
-            loading={loading}
-            disabled={
-              isPayDisabled ||
-              !targetAddress ||
-              (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent)
-            }
-            onPress={() => {
-              if (!isPayDisabled) {
-                void onLoadPress();
-              }
-            }}
-            isPrivateKeyDependent={true}
-            style={'h-[60px] w-[46%] ml-[6px]'}
-          />
+        {!isPayDisabled && tokenExpiryTime > 0 && (
+          <CyDView className='flex-row items-center justify-center gap-[6px] mb-[10px]'>
+            <CyDMaterialDesignIcons name='clock-outline' size={16} className='text-n200' />
+            <CyDText className='text-[13px] font-medium text-n200'>
+              {`Quote expires in ${String(tokenExpiryTime)}s`}
+            </CyDText>
+          </CyDView>
+        )}
+        <CyDView className='px-[10px]'>
+          {isPayDisabled || !targetAddress || (tokenQuote.isInstSwapEnabled && !hasPriceFluctuationConsent) ? (
+            <Button
+              title={t<string>('LOAD_ALL_CAPS')}
+              titleStyle='text-[14px]'
+              loading={loading}
+              disabled={true}
+              onPress={() => {}}
+              style={'h-[60px] w-full'}
+            />
+          ) : (
+            <LongPressConfirmButton
+              label='Press and hold to load'
+              holdLabel='Hold to confirm'
+              onConfirm={() => onLoadPress()}
+              disabled={loading}
+            />
+          )}
         </CyDView>
       </CyDView>
     </CyDView>
