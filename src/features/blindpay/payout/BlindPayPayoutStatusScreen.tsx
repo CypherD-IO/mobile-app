@@ -25,7 +25,7 @@ import { GlobalContext } from '../../../core/globalContext';
 import { ALL_CHAINS, CHAIN_BASE_SEPOLIA } from '../../../constants/server';
 import useTransactionManager from '../../../hooks/useTransactionManager';
 import { encodeErc20ApproveData, normalizeEvmAddress } from '../../bridgeV2/evmTxViem';
-import SwipeToConfirmBar from '../../../components/v2/SwipeToConfirmBar';
+import LongPressConfirmButton from '../../../components/v2/LongPressConfirmButton';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 
 const RAIL_FLAGS: Record<string, string> = {
@@ -281,11 +281,10 @@ export default function BlindPayPayoutStatusScreen() {
             ))}
           </CyDView>
 
-          {/* Swipe to sign */}
-          <SwipeToConfirmBar
-            visible
-            onSwipeComplete={handleSwipeComplete}
-            label='Swipe to approve & send'
+          {/* Long press to approve */}
+          <LongPressConfirmButton
+            onConfirm={handleSwipeComplete}
+            label='Hold to approve & send'
           />
         </CyDScrollView>
       </CyDSafeAreaView>

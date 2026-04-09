@@ -36,21 +36,25 @@ const PARTNER_ICONS: Record<string, string> = {
 export default function BlindPayVirtualAccountsScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const insets = useSafeAreaInsets();
-  const { listVirtualAccounts } = useBlindPayApi();
+  const { listVirtualAccounts, getProfile } = useBlindPayApi();
 
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isUS, setIsUS] = useState<boolean | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
       setLoading(true);
-      listVirtualAccounts()
-        .then(res => {
+      Promise.all([listVirtualAccounts(), getProfile()])
+        .then(([vaRes, profileRes]) => {
           if (cancelled) return;
-          if (!res.isError && res.data) {
-            setAccounts(res.data);
+          if (!vaRes.isError && vaRes.data) {
+            setAccounts(vaRes.data);
           }
+          const country =
+            profileRes.data?.blindpay?.country ?? '';
+          setIsUS(country.toUpperCase() === 'US');
           setLoading(false);
         })
         .catch(() => {
@@ -89,6 +93,28 @@ export default function BlindPayVirtualAccountsScreen() {
         <CyDView className='flex-1 items-center justify-center'>
           <ActivityIndicator size='large' />
         </CyDView>
+      ) : isUS === false ? (
+        /* Coming Soon for non-US users */
+        <CyDView className='flex-1 items-center justify-center px-[32px]'>
+          <CyDView className='w-[72px] h-[72px] rounded-full bg-n20 items-center justify-center mb-[16px]'>
+            <CyDMaterialDesignIcons
+              name='bank-outline'
+              size={36}
+              className='text-n200'
+            />
+          </CyDView>
+          <CyDText className='text-[22px] font-semibold text-base400 tracking-[-1px] text-center'>
+            {String(t('VA_COMING_SOON', 'Coming Soon'))}
+          </CyDText>
+          <CyDText className='text-[14px] font-medium text-n200 tracking-[-0.6px] text-center mt-[8px] leading-[1.5]'>
+            {String(
+              t(
+                'VA_COMING_SOON_DESC',
+                'Virtual accounts are currently available for US residents only. We\'re working on expanding to more countries soon.',
+              ),
+            )}
+          </CyDText>
+        </CyDView>
       ) : accounts.length === 0 ? (
         <CyDView className='flex-1 items-center justify-center px-[32px]'>
           <CyDMaterialDesignIcons
@@ -119,7 +145,7 @@ export default function BlindPayVirtualAccountsScreen() {
                 )
               }
               className='bg-n0 border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
-              <CyDView className='w-[44px] h-[44px] rounded-[12px] bg-[#FDF3D8] items-center justify-center'>
+              <CyDView className='w-[44px] h-[44px] rounded-[12px] bg-n20 items-center justify-center'>
                 <CyDText className='text-[20px]'>
                   {PARTNER_ICONS[account.bankingPartner] ?? '\uD83C\uDFE6'}
                 </CyDText>
@@ -143,22 +169,24 @@ export default function BlindPayVirtualAccountsScreen() {
         </CyDScrollView>
       )}
 
-      {/* Bottom CTA */}
-      <CyDView
-        className='px-[16px] pt-[12px] border-t border-n40'
-        style={{ paddingBottom: Math.max(8, insets.bottom) }}>
-        <CyDTouchView
-          onPress={() =>
-            navigation.navigate(
-              screenTitle.BLINDPAY_CREATE_VIRTUAL_ACCOUNT,
-            )
-          }
-          className='rounded-full h-[48px] bg-[#FBC02D] items-center justify-center'>
-          <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
-            {String(t('CREATE_VA', 'Create Virtual Account'))}
-          </CyDText>
-        </CyDTouchView>
-      </CyDView>
+      {/* Bottom CTA — only for US users */}
+      {isUS === true && (
+        <CyDView
+          className='px-[16px] pt-[12px] border-t border-n40'
+          style={{ paddingBottom: Math.max(8, insets.bottom) }}>
+          <CyDTouchView
+            onPress={() =>
+              navigation.navigate(
+                screenTitle.BLINDPAY_CREATE_VIRTUAL_ACCOUNT,
+              )
+            }
+            className='rounded-full h-[48px] bg-p100 items-center justify-center'>
+            <CyDText className='text-[16px] font-bold text-black tracking-[-0.16px]'>
+              {String(t('CREATE_VA', 'Create Virtual Account'))}
+            </CyDText>
+          </CyDTouchView>
+        </CyDView>
+      )}
     </CyDSafeAreaView>
   );
 }
