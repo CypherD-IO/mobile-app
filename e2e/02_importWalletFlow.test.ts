@@ -1,9 +1,7 @@
-import { element, by, waitFor } from 'detox';
+import { device, element, by, waitFor } from 'detox';
 import {
   navigateThroughOnboarding,
-  delay,
   resetAppCompletely,
-  findButton,
   checkForPortfolioScreen,
   getSecureTestSeedPhrase,
   secureLog,
@@ -19,145 +17,124 @@ describe('Import Wallet Flow', () => {
       await resetAppCompletely();
     },
     process.env.CI ? 180000 : 90000,
-  ); // 3 minutes in CI, 1.5 minutes locally
+  );
 
   it('should navigate through onboarding screens and import a wallet', async () => {
     secureLog('Starting import wallet flow test...');
 
-    // Navigate through first onboarding screens
+    // Navigate through the 3-screen carousel (manages its own sync)
     await navigateThroughOnboarding();
 
-    // ------ Screen 3: "Let's get started" ------
-    try {
-      const getStartedTextWithNewline = element(by.text("LET'S \nGET STARTED"));
-      await waitFor(getStartedTextWithNewline).toBeVisible().withTimeout(5000);
-      secureLog("Successfully found 'LET'S GET STARTED' text");
-    } catch (e) {
-      secureLog('Could not find newline version, trying alternatives...');
-      try {
-        const getStartedText = element(by.text("LET'S GET STARTED"));
-        await waitFor(getStartedText).toBeVisible().withTimeout(3000);
-        secureLog('Found "LET\'S GET STARTED" text without newline');
-      } catch (e) {
-        secureLog(
-          'Could not find "LET\'S GET STARTED" text, proceeding anyway',
-        );
-      }
-    }
+    // Disable sync for the rest of the import flow
+    await device.disableSynchronization();
 
-    // Find and press "Import Wallet" button
-    const importWalletButton = await findButton(
-      'Import Wallet',
-      ['IMPORT WALLET', 'Import wallet'],
-      'import-wallet-button',
-    );
-    await importWalletButton.tap();
-    secureLog('Tapped Import Wallet button');
-    await delay(1000);
+    // Tap "Continue with Wallets"
+    await waitFor(element(by.id('options-wallets-btn')))
+      .toExist()
+      .withTimeout(10000);
+    await element(by.id('options-wallets-btn')).tap();
+    secureLog('Tapped "Continue with Wallets"');
 
-    // ------ Import Wallet Options Modal ------
-    secureLog('Proceeding with Import Seed Phrase selection...');
+    // Tap "Import Existing Wallet"
+    await waitFor(element(by.id('options-import-wallet-btn')))
+      .toExist()
+      .withTimeout(5000);
+    await element(by.id('options-import-wallet-btn')).tap();
+    secureLog('Tapped "Import Existing Wallet"');
 
-    // Select "Import Seed Phrase"
-    const importSeedPhraseButton = await findButton(
-      'Import Seed Phrase',
-      ['Import seed phrase', 'IMPORT SEED PHRASE'],
-      'import-seed-phrase-button',
-    );
-    await importSeedPhraseButton.tap();
+    // Wait for modal slide-in animation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Tap "Import Seed Phrase"
+    await waitFor(element(by.id('options-import-seed-option')))
+      .toExist()
+      .withTimeout(5000);
+    await element(by.id('options-import-seed-option')).tap();
     secureLog('Selected Import Seed Phrase');
-    await delay(2000);
 
-    // ------ Enter Recovery Phrase Screen ------
-    try {
-      const recoveryPhraseTitle = element(by.text('Enter recovery phrase'));
-      await waitFor(recoveryPhraseTitle).toBeVisible().withTimeout(5000);
-      secureLog('Found "Enter recovery phrase" screen');
-    } catch (e) {
-      secureLog('Could not find recovery phrase title, proceeding...');
-    }
+    // Wait for EnterKey screen to appear after modal navigation
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Enter the recovery phrase using secure operation
-    secureLog('Entering recovery phrase...');
+    // Enter seed phrase — use replaceText WITHOUT tap() to avoid triggering
+    // the keyboard, which covers the Continue button at the bottom.
     await performSecureOperation(async () => {
-      try {
-        const multilineInput = element(
-          by.type('RCTMultilineTextInputView'),
-        ).atIndex(0);
-        await waitFor(multilineInput).toBeVisible().withTimeout(5000);
-        await multilineInput.tap();
-        await delay(500);
-        await multilineInput.replaceText(TEST_RECOVERY_PHRASE);
-        secureLog('Successfully entered recovery phrase', TEST_RECOVERY_PHRASE);
-      } catch (e) {
-        secureLog(
-          'RCTMultilineTextInputView failed, trying UITextView fallback...',
-          TEST_RECOVERY_PHRASE,
-        );
-        const uiTextView = element(by.type('UITextView')).atIndex(0);
-        await waitFor(uiTextView).toBeVisible().withTimeout(3000);
-        await uiTextView.tap();
-        await delay(500);
-        await uiTextView.replaceText(TEST_RECOVERY_PHRASE);
-        secureLog(
-          'Successfully entered recovery phrase using UITextView fallback',
-          TEST_RECOVERY_PHRASE,
-        );
-      }
+      const seedInput = element(by.type('UITextView')).atIndex(0);
+      await waitFor(seedInput).toExist().withTimeout(10000);
+      // replaceText sets native text but may not fire onChangeText in Fabric.
+      // Type+backspace to ensure onChange fires with the correct 12 words.
+      await seedInput.replaceText(TEST_RECOVERY_PHRASE + 'x');
+      await seedInput.tapBackspaceKey();
+      secureLog(
+        'Successfully entered recovery phrase',
+        TEST_RECOVERY_PHRASE,
+      );
     }, 'Seed Phrase Entry');
 
-    await delay(1000);
+    // Tap the Return/Enter key on the keyboard to dismiss it
+    await element(by.type('UITextView')).atIndex(0).tapReturnKey();
 
-    // Click Submit button
-    const submitButton = await findButton(
-      'Submit',
-      ['SUBMIT', 'submit'],
-      'submit-button',
-    );
-    await submitButton.tap();
-    secureLog('Tapped Submit button for recovery phrase');
-    await delay(3000);
+    // Now Continue button should be visible
+    await waitFor(element(by.id('enterkey-continue-btn')))
+      .toExist()
+      .withTimeout(5000);
+    await element(by.id('enterkey-continue-btn')).tap();
+    secureLog('Tapped Continue on import screen');
 
-    // ------ Wallets Screen ------
+    // Handle ChooseWalletIndex screen — wait for navigation, then tap Submit
+    await new Promise(resolve => setTimeout(resolve, 3000));
     try {
-      const walletsTitle = element(by.text('Wallets'));
-      await waitFor(walletsTitle).toBeVisible().withTimeout(8000);
-      secureLog('Found "Wallets" screen');
-    } catch (e) {
-      secureLog('Could not find Wallets title, proceeding...');
+      await waitFor(element(by.id('choose-wallet-submit-btn')))
+        .toExist()
+        .withTimeout(10000);
+      await element(by.id('choose-wallet-submit-btn')).tap();
+    } catch {
+      // Fallback: testID may not propagate on Button in Fabric
+      await waitFor(element(by.text('Submit')))
+        .toExist()
+        .withTimeout(5000);
+      await element(by.text('Submit')).tap();
+    }
+    secureLog('Tapped Submit on wallet index screen');
+
+    // Wait for wallet setup to complete
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // Dismiss post-import interstitials if they appear (promo + card welcome)
+    try {
+      await waitFor(element(by.id('exclusive-offer-got-it-btn')))
+        .toExist()
+        .withTimeout(10000);
+      await element(by.id('exclusive-offer-got-it-btn')).tap();
+      secureLog('Dismissed promo interstitial');
+    } catch {
+      secureLog('No promo screen, continuing');
     }
 
     try {
-      const walletFoundText = element(
-        by.text('We found these wallets associated with your recovery phrase'),
-      );
-      await waitFor(walletFoundText).toBeVisible().withTimeout(5000);
-      secureLog('Found wallet discovery message');
-    } catch (e) {
-      secureLog('Could not find wallet discovery message, continuing...');
+      await waitFor(element(by.id('card-welcome-skip-btn')))
+        .toExist()
+        .withTimeout(10000);
+      await element(by.id('card-welcome-skip-btn')).tap();
+      secureLog('Skipped card application screen');
+    } catch {
+      secureLog('No card application screen, continuing');
     }
 
-    // Click the final Submit button on wallets screen
-    const finalSubmitButton = await findButton(
-      'Submit',
-      ['SUBMIT', 'submit'],
-      'final-submit-button',
-    );
-    await finalSubmitButton.tap();
-    secureLog('Tapped final Submit button on wallets screen');
+    // Navigate to Portfolio tab
+    try {
+      await element(by.id('tab-portfolio')).tap();
+      secureLog('Tapped Portfolio tab');
+    } catch {
+      secureLog('Portfolio tab tap failed, may already be on portfolio');
+    }
 
-    // ------ Check Portfolio Screen ------
-    await delay(5000);
-
+    // Verify we reached the portfolio screen
     const portfolioDetected = await checkForPortfolioScreen();
-    if (portfolioDetected) {
-      secureLog(
-        '✅ TEST PASSED: Successfully navigated to portfolio screen after wallet import',
-      );
-    } else {
-      secureLog(
-        '❌ TEST FAILED: Could not detect portfolio screen after wallet import',
+    if (!portfolioDetected) {
+      throw new Error(
+        'Wallet import failed - could not reach portfolio screen',
       );
     }
+    secureLog('Import wallet flow completed successfully');
   });
 });

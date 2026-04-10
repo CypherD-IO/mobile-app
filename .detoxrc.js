@@ -36,9 +36,9 @@ module.exports = {
     'ios.sim.debug': {
       type: 'ios.app',
       binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/Cypherd.app',
-      build: process.env.CI 
-        ? 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO -quiet'
-        : 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
+      build: process.env.CI
+        ? 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 17 Pro" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO -quiet'
+        : 'xcodebuild -workspace ios/Cypherd.xcworkspace -scheme Cypherd -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 17 Pro" -derivedDataPath ios/build ONLY_ACTIVE_ARCH=NO',
     },
     'ios.release': {
       type: 'ios.app',
@@ -61,7 +61,7 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 16'  // Use iPhone 16 for both CI and local (iOS 18.x support)
+        type: 'iPhone 17 Pro'  // Use available simulator (CI may override via --device-name)
       },
     },
     emulator: {
@@ -82,11 +82,11 @@ module.exports = {
     },
     'android.emu.debug': {
       app: 'android.debug',
-      device: 'android.emu.debug'
+      device: 'emulator'
     },
     'android.emu.release': {
       app: 'android.release',
-      device: 'android.emu.release'
+      device: 'emulator'
     }
   },
 }; 

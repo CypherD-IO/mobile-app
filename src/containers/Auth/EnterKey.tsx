@@ -94,7 +94,11 @@ export default function Login(props) {
     const seedPhrase = seedPhraseTextValue;
     const cleanedStr = seedPhrase.trim().replace(/\s+/g, ' ');
     const wordCount = cleanedStr ? cleanedStr.split(' ').length : 0;
-    setDisableSubmit(!(wordCount === 12 || wordCount === 24));
+    const isValid = wordCount === 12 || wordCount === 24;
+    setDisableSubmit(!isValid);
+    if (isValid) {
+      Keyboard.dismiss();
+    }
   }, [seedPhraseTextValue]);
 
   const debouncedTextChange = useCallback(
@@ -343,6 +347,9 @@ export default function Login(props) {
             justifyContent: 'space-between',
           }}
           keyboardShouldPersistTaps='handled'
+          keyboardDismissMode='on-drag'
+          enableAutomaticScroll={true}
+          extraScrollHeight={150}
           showsVerticalScrollIndicator={false}>
           {createWalletLoading && <Loading />}
 
@@ -380,6 +387,7 @@ export default function Login(props) {
               activeOpacity={1}>
               <CyDView className='h-[160px] p-[12px]'>
                 <CyDTextInput
+                  testID='enterkey-seed-input'
                   placeholder={t('ENTER_KEY_PLACEHOLDER')}
                   placeholderTextColor='#7A8699'
                   value={seedPhraseTextValue}
@@ -388,6 +396,7 @@ export default function Login(props) {
                     handleTextChange(text);
                   }}
                   multiline={true}
+                  blurOnSubmit={true}
                   textAlignVertical={'top'}
                   secureTextEntry={true}
                   scrollEnabled={true}
@@ -406,7 +415,9 @@ export default function Login(props) {
                     size={16}
                     className='text-red400'
                   />
-                  <CyDText className='text-[12px] ml-[4px] text-errorTextRed text-center'>
+                  <CyDText
+                    testID='enterkey-error-text'
+                    className='text-[12px] ml-[4px] text-errorTextRed text-center'>
                     {t('BAD_KEY_PHARSE')}
                   </CyDText>
                 </CyDView>
@@ -416,6 +427,7 @@ export default function Login(props) {
             {/* Paste and QR Buttons */}
             <CyDView className='flex-row'>
               <CyDTouchView
+                testID='enterkey-paste-btn'
                 onPress={() => {
                   void fetchCopiedText();
                 }}
@@ -431,6 +443,7 @@ export default function Login(props) {
               </CyDTouchView>
 
               <CyDTouchView
+                testID='enterkey-scan-btn'
                 onPress={() => {
                   props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
                     fromPage: QRScannerScreens.IMPORT,
@@ -467,6 +480,7 @@ export default function Login(props) {
           {/* Continue Button */}
           <CyDView className='mb-[22px] mx-[16px]'>
             <Button
+              testID='enterkey-continue-btn'
               title='Continue'
               onPress={() => {
                 void submitImportWallet();

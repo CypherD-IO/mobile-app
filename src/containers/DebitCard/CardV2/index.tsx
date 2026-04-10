@@ -131,13 +131,6 @@ import { Theme, useTheme } from '../../../reducers/themeReducer';
 import { useColorScheme } from 'nativewind';
 import useConnectionManager from '../../../hooks/useConnectionManager';
 import CyDTokenValue from '../../../components/v2/tokenValue';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import FreeSafepalClaimContent, {
-  STORAGE_KEY_DISMISSED_PREMIUM,
-  STORAGE_KEY_DISMISSED_NON_PREMIUM,
-  SAFEPAL_BOTTOM_SHEET_ID,
-} from '../../../components/v2/freeSafepalClaimModal';
-
 const STACK_COMPRESSION_PER_CARD = 340;
 
 const DECK_DOWN_SPRING: WithSpringConfig = {
@@ -593,68 +586,6 @@ export default function CypherCardScreen() {
 
   // Ref to track timeout IDs for cleanup on unmount
   const removalTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
-
-  // Free Safepal claim modal
-  useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-
-    const checkSafepalModal = async (): Promise<void> => {
-      try {
-        if (cardId === CARD_IDS.HIDDEN_CARD) {
-          return;
-        }
-
-        const isPremiumUser =
-          get(globalContext?.globalState, [
-            'cardProfile',
-            'planInfo',
-            'planId',
-          ]) === CypherPlanId.PRO_PLAN;
-        const storageKey = isPremiumUser
-          ? STORAGE_KEY_DISMISSED_PREMIUM
-          : STORAGE_KEY_DISMISSED_NON_PREMIUM;
-        const dismissed = await AsyncStorage.getItem(storageKey);
-
-        if (dismissed !== 'true') {
-          timer = setTimeout(() => {
-            showBottomSheet({
-              id: SAFEPAL_BOTTOM_SHEET_ID,
-              snapPoints: [Platform.OS === 'android' ? '90%' : '88%'],
-              showCloseButton: false,
-              showHandle: false,
-              scrollable: false,
-              backgroundColor: '#131426',
-              borderRadius: 24,
-              content: (
-                <FreeSafepalClaimContent
-                  onDismiss={() => hideBottomSheet(SAFEPAL_BOTTOM_SHEET_ID)}
-                  navigation={navigation}
-                  isPremiumUser={isPremiumUser}
-                />
-              ),
-            });
-          }, 1000);
-        }
-      } catch (error) {
-        console.error('Error checking safepal modal status', error);
-      }
-    };
-
-    if (isFocused && isLayoutRendered) {
-      void checkSafepalModal();
-    }
-
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [
-    isFocused,
-    cardId,
-    isLayoutRendered,
-    globalContext?.globalState?.cardProfile?.planInfo?.planId,
-  ]);
 
   /**
    * Handles when an ongoing activity is completed
@@ -2023,6 +1954,7 @@ export default function CypherCardScreen() {
     const headerButtons = (
       <CyDView className='flex flex-row justify-center items-center gap-x-[12px] pt-[16px] px-[16px] pb-[8px]'>
         <CyDTouchView
+          testID='card-load-btn'
           className='flex-1 flex-row items-center justify-between bg-p50 py-[10px] px-[16px] rounded-[24px]'
           onPress={onPressFundCard}
           disabled={

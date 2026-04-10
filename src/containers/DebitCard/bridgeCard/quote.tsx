@@ -1404,6 +1404,7 @@ export default function CardQuote({
         <CyDView
           className={'flex flex-row justify-between items-center px-[10px]'}>
           <Button
+            testID='quote-cancel-btn'
             title={t<string>('CANCEL')}
             titleStyle='text-[14px]'
             disabled={loading}
@@ -1414,6 +1415,7 @@ export default function CardQuote({
             style={'h-[60px] w-[46%] mr-[6px]'}
           />
           <Button
+            testID='quote-load-btn'
             title={
               t<string>('LOAD_ALL_CAPS') +
               (!isPayDisabled

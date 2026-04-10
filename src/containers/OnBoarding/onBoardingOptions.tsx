@@ -726,6 +726,7 @@ export default function OnBoardingOptions() {
             </CyDView>
 
             <CyDTouchView
+              testID='options-provider-continue-btn'
               className='flex flex-row items-center justify-center gap-x-[4px] mt-[16px] bg-p100 rounded-[30px] py-[14px]'
               onPress={() => {
                 void handleSubmit();
@@ -767,6 +768,7 @@ export default function OnBoardingOptions() {
               <CyDView className='flex flex-col mb-[48px]'>
                 {/* Header */}
                 <CyDTouchView
+                  testID='options-back-btn'
                   onPress={handleBackFromEmail}
                   className='bg-n0 flex-row items-center mb-[8px] rounded-full py-[6px] px-[8px] self-start'>
                   <CyDMaterialDesignIcons
@@ -795,6 +797,7 @@ export default function OnBoardingOptions() {
                 </CyDText>
                 <CyDView className='bg-n20 rounded-[8px] mb-[12px]'>
                   <CyDTextInput
+                    testID='options-email-input'
                     className='text-primaryText bg-n20 text-[18px] py-[16px] px-[16px] rounded-[8px]'
                     placeholder={t('ONBOARDING_EMAIL_PLACEHOLDER')}
                     placeholderTextColor='#8993A4'
@@ -812,6 +815,7 @@ export default function OnBoardingOptions() {
 
                 {/* Continue Button */}
                 <CyDTouchView
+                  testID='options-email-continue-btn'
                   onPress={handleEmailContinue}
                   className={`rounded-full py-[16px] px-[24px] mb-[24px] bg-n0`}>
                   <CyDText
@@ -833,6 +837,7 @@ export default function OnBoardingOptions() {
 
                 {/* Google Button */}
                 <CyDTouchView
+                  testID='options-google-btn'
                   onPress={handleGoogleLogin}
                   className='flex-row items-center justify-center bg-blue-600 rounded-full py-[16px] px-[24px] mb-[16px]'>
                   <CyDView className='bg-white rounded-full p-[1px] mr-[8px]'>
@@ -850,6 +855,7 @@ export default function OnBoardingOptions() {
                 {/* Apple Button - iOS Only */}
                 {Platform.OS === 'ios' && (
                   <CyDTouchView
+                    testID='options-apple-btn'
                     onPress={handleAppleLogin}
                     className='flex-row items-center justify-center bg-black rounded-full py-[16px] px-[24px] mb-[40px]'>
                     <CyDImage
@@ -928,6 +934,7 @@ export default function OnBoardingOptions() {
             </CyDText>
             <CyDView className='mt-[24px] bg-n0 rounded-[8px] p-[16px]'>
               <CyDTouchView
+                testID='options-12word-option'
                 className='flex flex-row items-center justify-between '
                 onPress={() => {
                   setSelectedSeedPhraseCount(SeedPhraseType.TWELVE_WORDS);
@@ -951,6 +958,7 @@ export default function OnBoardingOptions() {
               <CyDView className='h-[1px] bg-n40 w-full my-[16px]' />
 
               <CyDTouchView
+                testID='options-24word-option'
                 className='flex flex-row items-center justify-between '
                 onPress={() => {
                   setSelectedSeedPhraseCount(SeedPhraseType.TWENTY_FOUR_WORDS);
@@ -984,6 +992,7 @@ export default function OnBoardingOptions() {
             </CyDView>
 
             <CyDTouchView
+              testID='options-seedcount-continue-btn'
               className='flex flex-row items-center justify-center gap-x-[4px] mt-[16px] bg-p100 rounded-[30px] py-[14px]'
               onPress={() => {
                 navigateToSeedPhraseGeneration(selectedSeedPhraseCount);
@@ -1020,6 +1029,7 @@ export default function OnBoardingOptions() {
             </CyDText>
             <CyDView className='mt-[24px] bg-n0 rounded-[8px] p-[16px]'>
               <CyDTouchView
+                testID='options-import-seed-option'
                 className='flex flex-row items-center justify-between '
                 onPress={() => {
                   setIsImportWalletModalVisible(false);
@@ -1040,6 +1050,7 @@ export default function OnBoardingOptions() {
               <CyDView className='h-[1px] bg-n40 w-full my-[16px]' />
 
               <CyDTouchView
+                testID='options-import-key-option'
                 className='flex flex-row items-center justify-between '
                 onPress={() => {
                   setIsImportWalletModalVisible(false);
@@ -1090,6 +1101,7 @@ export default function OnBoardingOptions() {
               <CyDView className='flex flex-col mb-[48px]'>
                 {/* Back Button */}
                 <CyDTouchView
+                  testID='options-back-btn'
                   onPress={handleBackFromWallet}
                   className='bg-n0 flex-row items-center mb-[8px] rounded-full py-[6px] px-[8px] self-start'>
                   <CyDMaterialDesignIcons
@@ -1112,6 +1124,7 @@ export default function OnBoardingOptions() {
 
                 {/* Create New Wallet Button */}
                 <CyDTouchView
+                  testID='options-create-wallet-btn'
                   onPress={handleCreateNewWallet}
                   className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[16px]'>
                   <CyDImage
@@ -1146,6 +1159,7 @@ export default function OnBoardingOptions() {
 
                 {/* Import existing wallet Button */}
                 <CyDTouchView
+                  testID='options-import-wallet-btn'
                   onPress={handleImportWallet}
                   className='flex-row items-center bg-n0 rounded-full p-[16px] mb-[16px]'>
                   <CyDImage
@@ -1167,6 +1181,7 @@ export default function OnBoardingOptions() {
 
                 {/* Wallet Connect Button */}
                 <CyDTouchView
+                  testID='options-walletconnect-btn'
                   onPress={() => {
                     void handleConnectWallet();
                   }}
@@ -1244,6 +1259,7 @@ export default function OnBoardingOptions() {
 
               {/* Continue with Email Button */}
               <CyDTouchView
+                testID='options-email-btn'
                 onPress={handleContinueWithEmail}
                 className='flex-row items-center bg-n0 border border-n40 rounded-full p-[16px] mb-[16px]'>
                 <CyDView className='flex-1 flex-row items-center'>
@@ -1265,6 +1281,7 @@ export default function OnBoardingOptions() {
 
               {/* Continue with Wallets Button */}
               <CyDTouchView
+                testID='options-wallets-btn'
                 onPress={handleContinueWithWallets}
                 className='flex-row items-center bg-p40 border border-n40 rounded-full p-[16px] mb-[24px]'>
                 <CyDView className='flex-1 flex-row items-center mr-[12px]'>

@@ -1209,6 +1209,7 @@ export default function BridgeFundCardScreen({
   const RenderSelectedToken = useCallback(() => {
     return (
       <CyDTouchView
+        testID='fundcard-token-selector'
         className={
           'bg-n0 py-[6px] px-[16px] my-[16px] border-[1px] border-n40 rounded-[34px] self-center'
         }
@@ -1460,6 +1461,7 @@ export default function BridgeFundCardScreen({
             <CyDView className={'flex flex-row justify-center items-center'}>
               {!isCrpytoInput && !isSmallScreenMobile && (
                 <CyDTokenValue
+                  testID='fundcard-amount-input'
                   className={clsx('text-mandarin font-bold text-[28px]', {
                     'text-[40px]': amount.length <= 10,
                     'text-[50px]': amount.length <= 7,
@@ -1479,6 +1481,7 @@ export default function BridgeFundCardScreen({
                     {'$'}
                   </CyDText>
                   <CyDTextInput
+                    testID='fundcard-amount-input'
                     className={clsx('text-mandarin font-bold', {
                       'text-[32px]': amount.length <= 15,
                       'text-[60px]': amount.length <= 7,
@@ -1497,6 +1500,7 @@ export default function BridgeFundCardScreen({
               )}
               {isCrpytoInput && !isSmallScreenMobile && (
                 <CyDText
+                  testID='fundcard-amount-input'
                   className={clsx(
                     'font-extrabold text-center text-mandarin  ml-[4px]',
                     {
@@ -1510,6 +1514,7 @@ export default function BridgeFundCardScreen({
               )}
               {isCrpytoInput && isSmallScreenMobile && (
                 <CyDTextInput
+                  testID='fundcard-amount-input'
                   className={clsx(
                     'font-extrabold text-center text-mandarin  ml-[4px]',
                     {
@@ -1608,6 +1613,7 @@ export default function BridgeFundCardScreen({
             </CyDTouchView>
           )}
           <CyDTouchView
+            testID='fundcard-max-btn'
             onPress={() => {
               void onMax();
             }}
@@ -1640,6 +1646,7 @@ export default function BridgeFundCardScreen({
               })}
             />
             <Button
+              testID='fundcard-quote-btn'
               onPress={() => {
                 if (validateAmount(amount)) {
                   void fundCard();

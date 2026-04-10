@@ -190,6 +190,7 @@ const ExclusiveOfferModal: React.FC<ExclusiveOfferModalProps> = ({
 
           {/* Got It Button with checkmark */}
           <CyDTouchView
+            testID='exclusive-offer-got-it-btn'
             onPress={() => {
               if (!isLoading) {
                 void handleGotIt();

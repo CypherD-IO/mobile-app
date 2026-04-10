@@ -11,6 +11,7 @@ interface CyDTokenValueProps {
   decimalColorClass?: string;
   mainColorClass?: string;
   parentClass?: string;
+  testID?: string;
 }
 
 export default function CyDTokenValue(props: CyDTokenValueProps) {
