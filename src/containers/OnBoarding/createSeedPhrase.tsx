@@ -273,6 +273,7 @@ function CreateSeedPhrase() {
                 {/* Show/Hide Toggle */}
                 <CyDView className='flex-row justify-end mb-[16px]'>
                   <CyDTouchView
+                    testID='seedphrase-toggle-visibility'
                     onPress={toggleSeedPhraseVisibility}
                     className='flex-row items-center'>
                     <CyDMaterialDesignIcons
@@ -287,7 +288,7 @@ function CreateSeedPhrase() {
                 </CyDView>
 
                 {/* Seed Phrase Words Grid */}
-                <CyDView className='flex-row flex-wrap justify-start px-[8px] py-[16px] bg-base40 rounded-[12px]'>
+                <CyDView testID='seedphrase-display' className='flex-row flex-wrap justify-start px-[8px] py-[16px] bg-base40 rounded-[12px]'>
                   {(showSeedPhrase
                     ? seedPhrase.split(' ')
                     : maskedSeedPhrase
@@ -325,6 +326,7 @@ function CreateSeedPhrase() {
             {/* Action Buttons */}
             <CyDView className='flex-row justify-center px-[20px] mb-[30px]'>
               <CyDTouchView
+                testID='seedphrase-show-qr-btn'
                 onPress={handleShowQR}
                 className='flex-row items-center justify-center bg-n0 border border-n40 rounded-[25px] py-[12px] px-[24px] mr-[12px] flex-1'>
                 <CyDMaterialDesignIcons
@@ -338,6 +340,7 @@ function CreateSeedPhrase() {
               </CyDTouchView>
 
               <CyDTouchView
+                testID='seedphrase-copy-btn'
                 onPress={handleCopySeedPhrase}
                 className='flex-row items-center justify-center bg-n0 border border-n40 rounded-[25px] py-[12px] px-[24px] flex-1'>
                 <CyDMaterialDesignIcons
@@ -357,6 +360,7 @@ function CreateSeedPhrase() {
             {/* Continue Button */}
             <CyDView className='px-[20px] mb-[20px]'>
               <Button
+                testID='seedphrase-continue-btn'
                 title='Continue'
                 loading={isProceeding}
                 onPress={() => {

@@ -1,11 +1,9 @@
-import { element, by, waitFor } from 'detox';
+import { device, element, by, waitFor } from 'detox';
 import {
   navigateThroughOnboarding,
-  delay,
   resetAppCompletely,
-  findButton,
   checkForPortfolioScreen,
-  debugVisibleElements,
+  dismissPromotionalModals,
 } from './helpers';
 
 describe('Onboarding Flow', () => {
@@ -14,132 +12,106 @@ describe('Onboarding Flow', () => {
       await resetAppCompletely();
     },
     process.env.CI ? 180000 : 90000,
-  ); // 3 minutes in CI, 1.5 minutes locally
+  );
 
-  it('should navigate through onboarding screens and create a wallet', async () => {
+  it('should navigate through onboarding and create a wallet', async () => {
     console.log('Starting onboarding flow test...');
 
-    // Navigate through first onboarding screens
+    // Navigate through the 3-screen carousel (manages its own sync)
     await navigateThroughOnboarding();
 
-    // ------ Screen 3: "Let's get started" ------
-    try {
-      const getStartedTextWithNewline = element(by.text("LET'S \nGET STARTED"));
-      await waitFor(getStartedTextWithNewline).toBeVisible().withTimeout(5000);
-      console.log("Successfully found 'LET'S GET STARTED' text");
-    } catch (e) {
-      console.log('Could not find exact text, trying alternatives...');
-      try {
-        const getStartedAltText = element(by.text("Let's get started"));
-        await waitFor(getStartedAltText).toBeVisible().withTimeout(3000);
-        console.log('Found alternative "Let\'s get started" text');
-      } catch (e) {
-        console.log(
-          'Could not find "Let\'s get started" text, proceeding anyway',
-        );
-      }
-    }
+    // Disable sync for the rest of the onboarding flow
+    await device.disableSynchronization();
 
-    // Find and press "Create New Wallet" button
-    const createWalletButton = await findButton(
-      'Create New Wallet',
-      ['CREATE NEW WALLET', 'Create Wallet'],
-      'create-wallet-button',
-    );
-    await createWalletButton.tap();
-    console.log('Tapped Create New Wallet button');
-    await delay(1000);
+    // Tap "Continue with Wallets"
+    await waitFor(element(by.id('options-wallets-btn')))
+      .toExist()
+      .withTimeout(10000);
+    await element(by.id('options-wallets-btn')).tap();
+    console.log('Tapped "Continue with Wallets"');
 
-    // ------ Seed Phrase Type Selection Modal ------
-    try {
-      const createWalletTitle = element(by.text('Create a Wallet'));
-      await waitFor(createWalletTitle).toBeVisible().withTimeout(5000);
-      console.log('Found "Create a Wallet" modal');
-    } catch (e) {
-      console.log('Could not find modal title, proceeding...');
-    }
+    // Tap "Create New Wallet"
+    await waitFor(element(by.id('options-create-wallet-btn')))
+      .toExist()
+      .withTimeout(10000);
+    await element(by.id('options-create-wallet-btn')).tap();
+    console.log('Tapped "Create New Wallet"');
 
-    // Select 12-word seed phrase
-    const twelveWordButton = await findButton(
-      '12 Word Phrase',
-      ['12 Word', '12 words', 'TWELVE_WORD_SEEDPHRASE'],
-      'twelve-word-button',
-    );
-    await twelveWordButton.tap();
+    // Wait for modal slide-in animation to complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Wait for the seed phrase count modal to appear
+    await waitFor(element(by.id('options-12word-option')))
+      .toExist()
+      .withTimeout(10000);
+    await element(by.id('options-12word-option')).tap();
     console.log('Selected 12 Word Phrase');
 
-    // Click Continue in the modal
-    await delay(500);
-    const continueButton = await findButton(
-      'Continue',
-      ['CONTINUE', 'continue'],
-      'continue-button',
-    );
-    await continueButton.tap();
-    console.log('Tapped Continue button in modal');
+    // Tap Continue in seed phrase count modal
+    await waitFor(element(by.id('options-seedcount-continue-btn')))
+      .toExist()
+      .withTimeout(10000);
+    await element(by.id('options-seedcount-continue-btn')).tap();
+    console.log('Tapped Continue in modal');
 
-    // ------ Create Seed Phrase Screen ------
-    await delay(2000);
+    // On seed phrase screen, tap Continue
+    await waitFor(element(by.id('seedphrase-continue-btn')))
+      .toExist()
+      .withTimeout(15000);
+    await element(by.id('seedphrase-continue-btn')).tap();
+    console.log('Tapped Continue on seed phrase screen');
 
-    // Try scrolling to make CONFIRM button visible
+    // Promo popup should appear after wallet creation
+    // Assert it EXISTS (verifies flow), then tap (may fail on some devices
+    // due to Detox window-bounds hit-test on bottom-positioned modals).
+    await waitFor(element(by.id('exclusive-offer-got-it-btn')))
+      .toExist()
+      .withTimeout(10000);
+    console.log('Verified: promo popup appeared after wallet creation');
     try {
-      console.log(
-        'Attempting to scroll down to make CONFIRM button visible...',
-      );
-      await element(by.type('RCTScrollView')).scroll(200, 'down');
-      await delay(1000);
-    } catch (scrollError) {
-      console.log('Could not scroll, continuing without scroll...');
+      await element(by.id('exclusive-offer-got-it-btn')).tap();
+      console.log('Dismissed Cypher Card promo screen');
+    } catch {
+      // Tap failed due to visibility — wait for auto-dismiss or swipe
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
 
-    // Look for CONFIRM button
+    // Card application welcome should appear
     try {
-      console.log('Looking for CONFIRM button...');
-      const confirmButton = await findButton(
-        'CONFIRM',
-        ['Confirm', 'CONTINUE', 'Continue'],
-        'button-CONFIRM',
-      );
-      await confirmButton.tap();
-      console.log('✅ Successfully tapped CONFIRM button');
-    } catch (e) {
-      console.log('findButton helper failed, trying direct tap...');
-      try {
-        const directConfirmButton = element(by.id('button-CONFIRM'));
-        await directConfirmButton.tap();
-        console.log('✅ Successfully tapped CONFIRM button directly');
-      } catch (directError) {
-        console.log('Direct tap also failed');
-        await debugVisibleElements('CONFIRM button not found');
-        throw new Error('Could not find or tap CONFIRM button');
-      }
+      await waitFor(element(by.id('card-welcome-skip-btn')))
+        .toExist()
+        .withTimeout(10000);
+      console.log('Verified: card application welcome appeared');
+      await element(by.id('card-welcome-skip-btn')).tap();
+      console.log('Skipped card application screen');
+    } catch {
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
 
-    // ------ Seed Phrase Verification Screen ------
-    await delay(2000);
+    // Dismiss any promotional modals on the Card screen
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await dismissPromotionalModals();
 
-    // Try to skip verification if available
-    try {
-      const skipForNowButton = await findButton(
-        'SKIP FOR NOW',
-        ['Skip for now'],
-        'skip-for-now-button',
-      );
-      await skipForNowButton.tap();
-      console.log('Tapped Skip for now button');
-      await delay(2000);
-    } catch (e) {
-      console.log('No skip button found, trying alternative flow');
+    // Verify card tab exists (confirms initial landing on Card page)
+    await waitFor(element(by.id('tab-card')))
+      .toExist()
+      .withTimeout(10000);
+    console.log('Confirmed: Card tab exists after wallet creation');
+
+    // Relaunch app to land on Portfolio (tab taps fail due to Detox
+    // window-bounds hit-test on iPhone 17 Pro). The wallet persists in
+    // keychain and firstLaunchAfterWalletCreation is cleared, so the app
+    // defaults to the Portfolio tab on relaunch.
+    await device.terminateApp();
+    await device.launchApp({ newInstance: true });
+    await device.disableSynchronization();
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // Verify portfolio screen
+    const detected = await checkForPortfolioScreen();
+    if (!detected) {
+      throw new Error('Failed to reach portfolio screen after wallet creation');
     }
-
-    // ------ Check Portfolio Screen ------
-    await delay(5000);
-
-    const portfolioDetected = await checkForPortfolioScreen();
-    if (portfolioDetected) {
-      console.log('✅ TEST PASSED: Successfully navigated to portfolio screen');
-    } else {
-      console.log('❌ TEST FAILED: Could not detect portfolio screen');
-    }
+    console.log('Wallet creation flow completed successfully');
   });
 });

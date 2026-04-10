@@ -88,6 +88,12 @@ const isTestingFromEnv =
   process.env.NODE_ENV === 'test' || process.env.CI === 'true';
 const isTesting = isTestingFromConfig || isTestingFromEnv;
 
+// During E2E testing, suppress ALL LogBox output so banners don't overlay UI
+// and block Detox element interactions.
+if (isTesting) {
+  LogBox.ignoreAllLogs(true);
+}
+
 // Comprehensive warning suppression - especially critical during testing
 // This configuration suppresses common warnings that appear during E2E testing
 // Add new warning patterns here as needed

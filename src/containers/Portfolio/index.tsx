@@ -1317,7 +1317,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   ];
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
+    <CyDSafeAreaView testID='portfolio-screen' className='flex-1 bg-n0'>
       {isPortfolioLoading && (
         <CyDView className='justify-center items-center bg-n20'>
           <Loading />
