@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useAxios from '../../core/HttpRequest';
+import { subdivisionsEquivalent } from '../../utils/subdivisionNormalization';
 
 const DEBOUNCE_MS = 250;
 const MIN_INPUT_LENGTH = 3;
@@ -258,7 +259,11 @@ export default function useGoogleAddressAutocomplete({
 
         if (
           !googleState ||
-          googleState.toLowerCase() === address.state.trim().toLowerCase()
+          subdivisionsEquivalent(
+            countryRef.current,
+            googleState,
+            address.state,
+          )
         ) {
           return true;
         }
