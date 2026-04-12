@@ -52,6 +52,9 @@ const getGoogleRegionCode = (iso2: string) =>
 const createGoogleSessionToken = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+const fallbackIfBlank = (value: string | undefined, fallback: string) =>
+  value && value.length > 0 ? value : fallback;
+
 function buildAddressFromPlaceDetails(
   placeDetails: GooglePlaceDetailsResponse,
   fallback: AutofilledAddress,
@@ -60,9 +63,15 @@ function buildAddressFromPlaceDetails(
   const addressLines = postalAddress?.addressLines ?? [];
   let line1 = addressLines[0]?.trim() || fallback.line1;
   let line2 = addressLines.slice(1).join(', ').trim() || fallback.line2;
-  let city = postalAddress?.locality?.trim() || fallback.city;
-  let state = postalAddress?.administrativeArea?.trim() || fallback.state;
-  let postalCode = postalAddress?.postalCode?.trim() || fallback.postalCode;
+  let city = fallbackIfBlank(postalAddress?.locality?.trim(), fallback.city);
+  let state = fallbackIfBlank(
+    postalAddress?.administrativeArea?.trim(),
+    fallback.state,
+  );
+  let postalCode = fallbackIfBlank(
+    postalAddress?.postalCode?.trim(),
+    fallback.postalCode,
+  );
   let streetNumber = '';
   let route = '';
 
@@ -239,38 +248,6 @@ export default function useGoogleAddressAutocomplete({
     setShowSuggestions(false);
   }, []);
 
-  const validateStateWithGoogle = useCallback(
-    async (address: AutofilledAddress): Promise<boolean> => {
-      try {
-        const response = await postWithAuth('/v1/cards/address/validate', {
-          regionCode: countryRef.current,
-          addressLines: [address.line1, address.line2].filter(Boolean),
-          locality: address.city,
-          administrativeArea: address.state,
-          postalCode: address.postalCode,
-        });
-
-        if (response.isError) return true;
-
-        const googleState =
-          response.data?.result?.address?.postalAddress?.administrativeArea?.trim() ??
-          '';
-
-        if (
-          !googleState ||
-          googleState.toLowerCase() === address.state.trim().toLowerCase()
-        ) {
-          return true;
-        }
-
-        return false;
-      } catch {
-        return true;
-      }
-    },
-    [],
-  );
-
   return {
     suggestions,
     showSuggestions,
@@ -278,7 +255,6 @@ export default function useGoogleAddressAutocomplete({
     loadFailed,
     isAvailable: true,
     selectSuggestion,
-    validateStateWithGoogle,
     openSuggestions,
     closeSuggestions,
     setShowSuggestions,
