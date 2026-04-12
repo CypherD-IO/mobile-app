@@ -52,6 +52,7 @@ import {
   COSMOS_CHAINS_LIST,
   EVM_CHAINS,
   chainIdNumberMapping,
+  chainIdToViemChain,
 } from '../../constants/server';
 import {
   CheckAllowanceResponse,
@@ -1867,9 +1868,12 @@ export default function useTransactionManager() {
       const isNativeTokenIn = tokenData.isNativeToken;
       const rpcUrl = getWeb3Endpoint(chainConfig, globalContext);
       const publicClient = getViemPublicClient(rpcUrl);
+      const viemChain =
+        chainIdToViemChain[evmSwap.chainId as keyof typeof chainIdToViemChain];
 
       const walletClient = createWalletClient({
         account,
+        chain: viemChain,
         transport: http(rpcUrl),
       });
 
@@ -1924,7 +1928,6 @@ export default function useTransactionManager() {
 
       const hash = await walletClient.sendTransaction({
         account,
-        chain: chainConfig,
         to: account.address,
         data,
         value: isNativeTokenIn

@@ -12,7 +12,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // NOTE: RN 0.83 requires a modern Android toolchain.
+        // NOTE: RN 0.84 requires a modern Android toolchain.
         // We pin AGP explicitly because this repo does not use a version catalog.
         classpath("com.android.tools.build:gradle:8.7.3")
         classpath("com.facebook.react:react-native-gradle-plugin")

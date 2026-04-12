@@ -9,6 +9,7 @@ import {
   bsc,
   zkSync,
   base,
+  baseSepolia,
 } from 'wagmi/chains';
 import { AllChainsEnum } from './enum';
 export interface Chain {
@@ -397,6 +398,18 @@ export const chainIdNumberMapping: Record<number, Chain> = {
   324: CHAIN_ZKSYNC_ERA,
   8453: CHAIN_BASE,
 };
+
+export const chainIdToViemChain = {
+  [mainnet.id]: mainnet,
+  [polygon.id]: polygon,
+  [bsc.id]: bsc,
+  [avalanche.id]: avalanche,
+  [optimism.id]: optimism,
+  [arbitrum.id]: arbitrum,
+  [zkSync.id]: zkSync,
+  [base.id]: base,
+  [baseSepolia.id]: baseSepolia,
+} as const;
 
 export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.ETH,

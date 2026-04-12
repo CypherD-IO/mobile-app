@@ -1,0 +1,48 @@
+diff --git a/node_modules/react-native-view-shot/ios/RNViewShot.mm b/node_modules/react-native-view-shot/ios/RNViewShot.mm
+index 2cf632f..3cfa394 100644
+--- a/node_modules/react-native-view-shot/ios/RNViewShot.mm
++++ b/node_modules/react-native-view-shot/ios/RNViewShot.mm
+@@ -4,7 +4,9 @@
+ #import <React/UIView+React.h>
+ #import <React/RCTUtils.h>
+ #import <React/RCTConvert.h>
++#ifndef RCT_REMOVE_LEGACY_ARCH
+ #import <React/RCTScrollView.h>
++#endif
+ #import <React/RCTUIManager.h>
+ #if __has_include(<React/RCTUIManagerUtils.h>)
+ #import <React/RCTUIManagerUtils.h>
+@@ -80,6 +82,25 @@ RCT_EXPORT_METHOD(captureRef:(nonnull NSNumber *)target
+     UIView* rendered;
+     UIScrollView* scrollView;
+     if (snapshotContentContainer) {
++#ifdef RCT_REMOVE_LEGACY_ARCH
++      // New Architecture: RCTScrollView is removed. Find the UIScrollView directly.
++      if ([view isKindOfClass:[UIScrollView class]]) {
++        scrollView = (UIScrollView *)view;
++      } else {
++        // The Fabric ScrollView wraps a UIScrollView as a subview.
++        for (UIView *subview in view.subviews) {
++          if ([subview isKindOfClass:[UIScrollView class]]) {
++            scrollView = (UIScrollView *)subview;
++            break;
++          }
++        }
++      }
++      if (!scrollView) {
++        reject(RCTErrorUnspecified, [NSString stringWithFormat:@"snapshotContentContainer can only be used on a ScrollView. instead got: %@", view], nil);
++        return;
++      }
++      rendered = scrollView;
++#else
+       if (![view isKindOfClass:[RCTScrollView class]]) {
+         reject(RCTErrorUnspecified, [NSString stringWithFormat:@"snapshotContentContainer can only be used on a RCTScrollView. instead got: %@", view], nil);
+         return;
+@@ -87,6 +108,7 @@ RCT_EXPORT_METHOD(captureRef:(nonnull NSNumber *)target
+       RCTScrollView* rctScrollView = view;
+       scrollView = rctScrollView.scrollView;
+       rendered = scrollView;
++#endif
+     }
+     else {
+       rendered = view;

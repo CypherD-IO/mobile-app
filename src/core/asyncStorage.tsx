@@ -219,6 +219,27 @@ export const getSchemaVersion = async () => {
   }
 };
 
+export const setKeychainRefreshVersion = async (version: number) => {
+  try {
+    await AsyncStorage.setItem(
+      'keychainRefreshVersion',
+      JSON.stringify(version),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getKeychainRefreshVersion = async (): Promise<number> => {
+  try {
+    const version = await AsyncStorage.getItem('keychainRefreshVersion');
+    return version ? JSON.parse(version) : 0;
+  } catch (error) {
+    Sentry.captureException(error);
+    return 0;
+  }
+};
+
 export const getRpcEndpoints = async () => {
   try {
     const RPCEndpoints = await AsyncStorage.getItem('RPC_ENDPOINTS');

@@ -333,16 +333,7 @@ export default function CardQuote({
           title: t('FUNDING_IN_PROGRESS'),
           description:
             'Your card funding is in progress and will be done within 5 mins!',
-          onSuccess: () => {
-            hideModal();
-            setTimeout(() => {
-              navigation.navigate(screenTitle.OPTIONS, {
-                screen: screenTitle.ACTIVITIES,
-                initial: false,
-              });
-              navigation.popToTop();
-            }, MODAL_HIDE_TIMEOUT_250);
-          },
+          onSuccess: onHideModalNavigateCardsScreen,
           onFailure: hideModal,
         });
         const connectedType = await getConnectionType();

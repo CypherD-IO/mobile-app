@@ -1094,6 +1094,8 @@ const resources = {
         'We found these wallets associated with your recovery phrase',
       CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
       LOADING_TEXT: 'Almost there, please hold on...',
+      ALMOST_THERE_MIGRATION:
+        'Almost there! Additional authentication may be prompted this once.',
       LOADING_TEXT_WALLET_CREATION:
         'Updating with new chain support, this might take upto 1 min. Please do not go back or close the app.',
       INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION:
@@ -1466,6 +1468,7 @@ const resources = {
       POSTAL_CODE_INVALID_CHARACTERS: 'Postal code contains invalid characters',
 
       STATE_REQUIRED: 'State is required',
+      VALID_STATE_REQUIRED: 'Please enter a valid state',
       STATE_TOO_LONG: 'State name must be 20 characters or less',
       STATE_INVALID_CHARACTERS: 'State name contains invalid characters',
       SPECIAL_CHARACTERS_NOT_ALLOWED: `Special characters ;:!?<>~'%^@{}[] are not allowed`,
@@ -1637,7 +1640,7 @@ const resources = {
       FUNDS_AVAILABLE: 'Funds Added',
       CANCELLED: 'Cancelled',
       CRYPTO_WITHDRAWAL_INFO_MESSAGE:
-        'Crypto withdrawals are processed in 3-5 business days. Note that you will receive the funds in USDC on BASE chain.',
+        'Crypto withdrawals are processed in 1-2 days. Note that you will receive the funds in USDC on BASE chain.',
       LEGACY_CARD_TRANSACTIONS: 'Legacy Card Transactions',
       OTHERS: 'Others',
       MAXIMUM_AMOUNT_POSSIBLE: 'Enter amount less than ',
