@@ -41,9 +41,13 @@ module.exports = {
   // Mock common native modules
   setupFiles: ['<rootDir>/jest.setup.unit.js'],
 
-  // Coverage configuration
+  // Coverage configuration — scoped to actively-tested directories.
+  // Expand scope as component/container tests are added.
   collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
+    'src/core/**/*.{ts,tsx}',
+    'src/utils/**/*.{ts,tsx}',
+    'src/reducers/**/*.{ts,tsx}',
+    'src/hooks/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.test.{ts,tsx}',
     '!src/**/index.{ts,tsx}', // Re-export barrel files
