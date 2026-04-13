@@ -126,7 +126,7 @@ export default function useCypherAgent() {
           );
           return true;
         }
-        if (method === Web3Method.WALLET_PUSH_PERRMISSION) {
+        if (method === Web3Method.WALLET_PUSH_PERMISSION) {
           webviewRef.current?.postMessage(
             JSON.stringify({
               id,

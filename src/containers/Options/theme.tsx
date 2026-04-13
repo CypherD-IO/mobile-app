@@ -26,7 +26,7 @@ export default function AppearanceSelector() {
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
           onPress={() => {
-            void changeTheme(Theme.SYSTEM);
+            changeTheme(Theme.SYSTEM).catch(() => undefined);
           }}>
           <CyDText className='font-semibold text-xl'>
             {t('THEME_SYSTEM_DEFAULT')}
@@ -40,7 +40,7 @@ export default function AppearanceSelector() {
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
           onPress={() => {
-            void changeTheme(Theme.LIGHT);
+            changeTheme(Theme.LIGHT).catch(() => undefined);
           }}>
           <CyDText className='font-semibold text-xl'>
             {t('THEME_LIGHT')}
@@ -54,7 +54,7 @@ export default function AppearanceSelector() {
         <CyDTouchView
           className='mx-6 p-6 border-b border-n40 flex-row items-center justify-between'
           onPress={() => {
-            void changeTheme(Theme.DARK);
+            changeTheme(Theme.DARK).catch(() => undefined);
           }}>
           <CyDText className='font-semibold text-xl'>{t('THEME_DARK')}</CyDText>
           {theme === Theme.DARK && (

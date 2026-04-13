@@ -70,6 +70,8 @@ export default function CypherAgentScreen() {
                 nativeEvent: syntheticEvent.nativeEvent,
               },
             });
+            setError(`HTTP Error ${statusCode}`);
+            setIsLoading(false);
           }}
           onMessage={onWebviewMessage}
           javaScriptEnabled={true}

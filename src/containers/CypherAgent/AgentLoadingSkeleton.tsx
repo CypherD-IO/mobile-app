@@ -62,7 +62,7 @@ export default function AgentLoadingSparkle() {
       -1,
       false,
     );
-  }, []);
+  }, [rotation, scale, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

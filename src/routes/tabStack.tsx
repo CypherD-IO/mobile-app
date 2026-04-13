@@ -496,7 +496,9 @@ const TabStack = React.memo(
             previousRouteName === screenTitle.CYPHER_AGENT_SCREEN;
 
           if (isAgent && !wasAgent) {
-            savedThemeRef.current = theme;
+            if (savedThemeRef.current === null) {
+              savedThemeRef.current = theme;
+            }
             if (theme !== Theme.DARK) {
               void changeTheme(Theme.DARK, false);
             }

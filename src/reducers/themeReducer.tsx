@@ -207,6 +207,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       }
     } catch (error) {
       Sentry.captureException(error);
+      throw error;
     }
   };
 

@@ -1016,6 +1016,12 @@ export function OptionsStackScreen({
       />
 
       <OptionsStack.Screen
+        name={screenTitle.REWARDS_LOCK_WEB_VIEW}
+        component={SocialMediaScreen}
+        options={{ headerShown: false }}
+      />
+
+      <OptionsStack.Screen
         name={screenTitle.REFERRALS_VIEW_ALL}
         component={ReferralsViewAll}
         options={() => ({
