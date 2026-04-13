@@ -22,6 +22,11 @@ module.exports = {
       'ts-jest',
       {
         tsconfig: '<rootDir>/tsconfig.json',
+        // Override "jsx": "react-native" from base tsconfig so ts-jest
+        // compiles JSX to React.createElement() calls instead of preserving it
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
       },
     ],
   },
@@ -30,7 +35,7 @@ module.exports = {
 
   // Handle common RN module resolution issues
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|react-native-reanimated|react-native-vector-icons|react-native-config|@gorhom|@sentry|react-native-encrypted-storage|react-native-keychain)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|react-native-reanimated|react-native-vector-icons|react-native-config|@gorhom|@sentry|react-native-encrypted-storage|react-native-keychain|uuid)/)',
   ],
 
   // Mock common native modules
