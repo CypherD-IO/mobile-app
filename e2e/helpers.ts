@@ -134,9 +134,9 @@ export async function handlePermissionDialog(): Promise<boolean> {
 export async function navigateThroughOnboarding(): Promise<void> {
   await device.disableSynchronization();
 
-  // Wait for the GetStarted screen to render.
+  // Wait for the GetStarted screen to render — CI needs more time.
   const screen = element(by.id('getstarted-screen'));
-  await waitFor(screen).toExist().withTimeout(20000);
+  await waitFor(screen).toExist().withTimeout(60000);
   console.log('GetStarted carousel is loaded');
 
   // The carousel has 3 sections. We swipe left to advance.
@@ -166,8 +166,9 @@ export const reOpenApp = async () => {
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
       detoxHandleSystemAlerts: 'YES',
-          detoxVisibilityPercentage: 75,
+      detoxVisibilityPercentage: 75,
       detoxURLBlacklistRegex: blacklistRegex,
+      detoxEnableSynchronization: 0,
     },
   });
   await device.setURLBlacklist(URL_BLACKLIST);
@@ -249,92 +250,39 @@ export async function resetAppCompletely(): Promise<void> {
   }
 
   console.log('Launching app with clean state...');
-  try {
-    const launchTimeout = isCI ? 120000 : 60000;
-    console.log(`Using launch timeout: ${launchTimeout / 1000}s`);
+  // Blacklist noisy URLs via launch args so Detox sync ignores them
+  const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
 
-    // Blacklist noisy URLs via launch args so Detox sync ignores them
-    const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
-
-    await Promise.race([
-      device.launchApp({
-        newInstance: true,
-        permissions: { notifications: 'YES', camera: 'YES' },
-        launchArgs: {
-          detoxHandleSystemAlerts: 'YES',
-          detoxVisibilityPercentage: 75,
-          detoxURLBlacklistRegex: blacklistRegex,
-          RCTDevLoadingViewGetLogLevel: '0',
-          'RCTBundleURLProvider.jsBundleURLForBundleRoot':
-            'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
-          ...(isCI && {
-            detoxDisableHierarchyDump: 'YES',
-            detoxDisableScreenshotOnFailure: 'YES',
-          }),
-        },
-        url: isCI
-          ? 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false'
-          : undefined,
+  // IMPORTANT: Do NOT wrap device.launchApp() in Promise.race — if the
+  // manual timeout fires first, Detox's internal launch keeps running in
+  // the background, corrupting device state for all subsequent operations.
+  // Instead, let Detox manage its own launch timeout (setupTimeout in
+  // .detoxrc.js: 180s CI / 120s local) and disable synchronization so it
+  // doesn't wait for the app to become "idle" (it never will, due to
+  // persistent background services).
+  await device.launchApp({
+    newInstance: true,
+    permissions: { notifications: 'YES', camera: 'YES' },
+    launchArgs: {
+      detoxHandleSystemAlerts: 'YES',
+      detoxVisibilityPercentage: 75,
+      detoxURLBlacklistRegex: blacklistRegex,
+      detoxEnableSynchronization: 0,
+      RCTDevLoadingViewGetLogLevel: '0',
+      ...(isCI && {
+        detoxDisableHierarchyDump: 'YES',
       }),
-      new Promise((resolve, reject) =>
-        setTimeout(
-          () =>
-            reject(
-              new Error(`App launch timeout after ${launchTimeout / 1000}s`),
-            ),
-          launchTimeout,
-        ),
-      ),
-    ]);
+    },
+  });
 
-    // Also set the blacklist via API for any subsequent navigations
-    await device.setURLBlacklist(URL_BLACKLIST);
+  // Set the blacklist via API for any subsequent navigations
+  await device.setURLBlacklist(URL_BLACKLIST);
 
-    // Dismiss any React Native debug banners (LogBox warnings/errors)
-    // that may overlay the UI and block element visibility.
-    await dismissDebugBanners();
+  // Dismiss any React Native debug banners (LogBox warnings/errors)
+  // that may overlay the UI and block element visibility.
+  await dismissDebugBanners();
 
-    console.log('Fast app reset completed successfully');
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('App launch failed:', error);
-
-    if (isCI) {
-      console.log('Attempting CI fallback: simpler launch...');
-      try {
-        const fallbackBlacklist = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
-        await Promise.race([
-          device.launchApp({
-            newInstance: true,
-            permissions: { notifications: 'YES', camera: 'YES' },
-            launchArgs: {
-              detoxHandleSystemAlerts: 'YES',
-          detoxVisibilityPercentage: 75,
-              detoxURLBlacklistRegex: fallbackBlacklist,
-              'RCTBundleURLProvider.jsBundleURLForBundleRoot':
-                'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
-            },
-          }),
-          new Promise((resolve, reject) =>
-            setTimeout(
-              () => reject(new Error('Fallback launch timeout after 60s')),
-              60000,
-            ),
-          ),
-        ]);
-        await device.setURLBlacklist(URL_BLACKLIST);
-        await dismissDebugBanners();
-        console.log('CI fallback launch successful');
-      } catch (fallbackError) {
-        console.error('CI fallback also failed:', fallbackError);
-        throw new Error(
-          `App reset failed: ${errorMessage}. Fallback also failed: ${String(fallbackError)}`,
-        );
-      }
-    } else {
-      throw new Error(`App reset failed: ${errorMessage}`);
-    }
-  }
+  console.log('Fast app reset completed successfully');
 }
 
 // ---------------------------------------------------------------------------

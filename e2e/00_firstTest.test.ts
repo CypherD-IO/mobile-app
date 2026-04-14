@@ -34,10 +34,11 @@ describe('App Launch Tests', () => {
     // Disable sync — the app is perpetually "busy" during onboarding.
     await device.disableSynchronization();
 
-    // Wait for the first onboarding screen
+    // Wait for the first onboarding screen — CI runners (3 cores, 7GB)
+    // need more time for the app's JS thread to finish initialization.
     await waitFor(element(by.id('getstarted-screen')))
       .toExist()
-      .withTimeout(20000);
+      .withTimeout(60000);
 
     console.log('App launched successfully - onboarding screen visible');
     await device.enableSynchronization();
