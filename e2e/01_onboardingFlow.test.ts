@@ -2,6 +2,7 @@ import { device, element, by, waitFor } from 'detox';
 import {
   navigateThroughOnboarding,
   resetAppCompletely,
+  reOpenApp,
   checkForPortfolioScreen,
   dismissPromotionalModals,
 } from './helpers';
@@ -99,13 +100,13 @@ describe('Onboarding Flow', () => {
     console.log('Confirmed: Card tab exists after wallet creation');
 
     // Relaunch app to land on Portfolio (tab taps fail due to Detox
-    // window-bounds hit-test on iPhone 17 Pro). The wallet persists in
-    // keychain and firstLaunchAfterWalletCreation is cleared, so the app
-    // defaults to the Portfolio tab on relaunch.
-    await device.terminateApp();
-    await device.launchApp({ newInstance: true });
+    // window-bounds hit-test). The wallet persists in keychain and
+    // firstLaunchAfterWalletCreation is cleared, so the app defaults to
+    // the Portfolio tab on relaunch. Must use reOpenApp() which includes
+    // sync disable and URL blacklist args — bare launchApp hangs.
+    await reOpenApp();
     await device.disableSynchronization();
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 8000));
 
     // Verify portfolio screen
     const detected = await checkForPortfolioScreen();

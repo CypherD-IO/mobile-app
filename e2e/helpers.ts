@@ -181,28 +181,17 @@ export async function resetAppForCIOnly(): Promise<void> {
   console.log('Using ultra-lightweight CI reset...');
 
   try {
-    console.log('Clearing keychain...');
-    await Promise.race([
-      device.clearKeychain(),
-      new Promise((resolve, reject) =>
-        setTimeout(() => reject(new Error('Keychain clear timeout')), 10000),
-      ),
-    ]);
-    console.log('Keychain cleared successfully');
-  } catch (error) {
-    console.log('Keychain clear failed, but continuing:', error);
-  }
-
-  try {
-    console.log('Launching app with minimal configuration...');
+    console.log('Launching app with delete: true...');
     const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
     await device.launchApp({
+      delete: true,
       newInstance: true,
       permissions: { notifications: 'YES', camera: 'YES' },
       launchArgs: {
         detoxHandleSystemAlerts: 'YES',
-          detoxVisibilityPercentage: 75,
+        detoxVisibilityPercentage: 75,
         detoxURLBlacklistRegex: blacklistRegex,
+        detoxEnableSynchronization: 0,
       },
     });
     await device.setURLBlacklist(URL_BLACKLIST);
@@ -222,45 +211,21 @@ export async function resetAppCompletely(): Promise<void> {
     `Performing fast app reset for E2E tests... (CI: ${String(isCI)})`,
   );
 
-  try {
-    console.log('Terminating app...');
-    await Promise.race([
-      device.terminateApp(),
-      new Promise((resolve, reject) =>
-        setTimeout(() => reject(new Error('Terminate timeout')), 10000),
-      ),
-    ]);
-  } catch (error) {
-    console.log(
-      'App terminate failed or timed out (app might not be running):',
-      error,
-    );
-  }
-
-  try {
-    console.log('Clearing keychain...');
-    await Promise.race([
-      device.clearKeychain(),
-      new Promise((resolve, reject) =>
-        setTimeout(() => reject(new Error('Keychain timeout')), 15000),
-      ),
-    ]);
-  } catch (error) {
-    console.log('Keychain clear failed or timed out:', error);
-  }
-
-  console.log('Launching app with clean state...');
+  console.log('Launching app with clean state (delete: true wipes all data)...');
   // Blacklist noisy URLs via launch args so Detox sync ignores them
   const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
 
-  // IMPORTANT: Do NOT wrap device.launchApp() in Promise.race — if the
-  // manual timeout fires first, Detox's internal launch keeps running in
-  // the background, corrupting device state for all subsequent operations.
-  // Instead, let Detox manage its own launch timeout (setupTimeout in
-  // .detoxrc.js: 180s CI / 120s local) and disable synchronization so it
-  // doesn't wait for the app to become "idle" (it never will, due to
-  // persistent background services).
+  // `delete: true` uninstalls + reinstalls the app, clearing BOTH
+  // keychain AND AsyncStorage. This is slower than clearKeychain() but
+  // avoids the keychain timeout issues seen on CI and guarantees no
+  // stale AsyncStorage data (e.g. keychainRefreshVersion) can interfere
+  // with the initialization flow.
+  //
+  // Do NOT wrap device.launchApp() in Promise.race — if the manual
+  // timeout fires first, Detox's internal launch keeps running in the
+  // background, corrupting device state for all subsequent operations.
   await device.launchApp({
+    delete: true,
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
@@ -278,9 +243,12 @@ export async function resetAppCompletely(): Promise<void> {
   // Set the blacklist via API for any subsequent navigations
   await device.setURLBlacklist(URL_BLACKLIST);
 
-  // Dismiss any React Native debug banners (LogBox warnings/errors)
-  // that may overlay the UI and block element visibility.
-  await dismissDebugBanners();
+  // Give the JS thread time to finish initialization (loading reducers,
+  // checking keychain/AsyncStorage, resolving the navigation stack).
+  // CI hardware (3 cores, 7GB) is significantly slower than dev machines.
+  const initDelay = isCI ? 10000 : 3000;
+  console.log(`Waiting ${initDelay / 1000}s for JS initialization...`);
+  await new Promise(resolve => setTimeout(resolve, initDelay));
 
   console.log('Fast app reset completed successfully');
 }
@@ -683,10 +651,10 @@ export async function completeWalletImport(): Promise<void> {
   // 9. Relaunch app to land on Portfolio tab reliably.
   // Tab taps fail on some devices due to Detox window-bounds hit-test.
   // Relaunching preserves the wallet (keychain) and defaults to Portfolio.
-  await device.terminateApp();
-  await device.launchApp({ newInstance: true });
+  // Must use the same sync/blacklist args as initial launch.
+  await reOpenApp();
   await device.disableSynchronization();
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 8000));
 
   // 10. Verify portfolio screen (manages its own sync)
   const portfolioDetected = await checkForPortfolioScreen();

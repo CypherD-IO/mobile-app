@@ -1,5 +1,9 @@
 import { device, element, by, waitFor } from 'detox';
-import { handlePermissionDialog, resetAppCompletely } from './helpers';
+import {
+  handlePermissionDialog,
+  resetAppCompletely,
+  debugVisibleElements,
+} from './helpers';
 
 describe('App Launch Tests', () => {
   beforeAll(
@@ -12,35 +16,38 @@ describe('App Launch Tests', () => {
   it('should launch successfully and show onboarding screen', async () => {
     console.log('Running app launch and onboarding validation test');
 
-    // Verify Metro bundler is accessible
-    try {
-      console.log('Verifying Metro bundler connection...');
-      const response = await fetch('http://localhost:8081/status');
-      if (response.ok) {
-        console.log('Metro bundler is accessible');
-      } else {
-        console.log(
-          'Metro bundler returned non-200 status:',
-          response.status,
-        );
-      }
-    } catch (error) {
-      console.log('Metro bundler connection failed:', error);
-    }
-
-    // Handle any permission dialogs
-    await handlePermissionDialog();
-
-    // Disable sync — the app is perpetually "busy" during onboarding.
+    // Handle any permission dialogs (sync is already disabled from launch)
     await device.disableSynchronization();
+    await handlePermissionDialog();
 
     // Wait for the first onboarding screen — CI runners (3 cores, 7GB)
     // need more time for the app's JS thread to finish initialization.
-    await waitFor(element(by.id('getstarted-screen')))
-      .toExist()
-      .withTimeout(60000);
+    try {
+      await waitFor(element(by.id('getstarted-screen')))
+        .toExist()
+        .withTimeout(60000);
 
-    console.log('App launched successfully - onboarding screen visible');
-    await device.enableSynchronization();
+      console.log('App launched successfully - onboarding screen visible');
+    } catch (error) {
+      // Diagnostic: capture what the app IS showing so we can debug
+      console.log('getstarted-screen NOT found — capturing diagnostics...');
+      try {
+        await device.takeScreenshot('getstarted-screen-not-found');
+      } catch {
+        console.log('Screenshot failed');
+      }
+      await debugVisibleElements('After 60s wait for getstarted-screen');
+
+      // Check if the app is stuck on a Loading screen
+      try {
+        const loadingText = element(by.text('Loading'));
+        await waitFor(loadingText).toExist().withTimeout(2000);
+        console.log('DIAGNOSTIC: App appears stuck on Loading screen');
+      } catch {
+        console.log('DIAGNOSTIC: No Loading text found');
+      }
+
+      throw error; // Re-throw to fail the test
+    }
   });
 });
