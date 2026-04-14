@@ -6,8 +6,9 @@ module.exports = {
   // Increase timeout for CI environment (individual tests may be longer now)
   testTimeout: process.env.CI ? 360000 : 180000, // 6 min CI, 3 min local (tests include import flow)
   
-  // Maximum parallel execution - all tests are now independent
-  maxWorkers: process.env.CI ? 4 : 2, // Use 4 workers in CI for full parallelization
+  // CI has a single simulator — multiple workers just waste memory and
+  // cause sequential device-allocation queuing. Use 1 worker in CI.
+  maxWorkers: process.env.CI ? 1 : 2,
   maxConcurrency: 1, // Keep test cases within files sequential (safer for E2E)
   
   // Global setup and teardown

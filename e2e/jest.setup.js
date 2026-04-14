@@ -16,7 +16,7 @@ async function isMetroRunning() {
 }
 
 // Function to wait for Metro to be ready
-async function waitForMetro(maxAttempts = 60) { // Increased attempts
+async function waitForMetro(maxAttempts = 30) {
   for (let i = 0; i < maxAttempts; i++) {
     if (await isMetroRunning()) {
       console.log('✅ Metro bundler is ready');
@@ -28,6 +28,19 @@ async function waitForMetro(maxAttempts = 60) { // Increased attempts
   return false;
 }
 
+// Attempt to spawn Metro if it died mid-run (CI only)
+async function tryRestartMetro() {
+  if (process.env.CI !== 'true') return false;
+
+  console.log('⚠️ Metro not responding — attempting restart...');
+  const { exec } = require('child_process');
+  exec('npx react-native start --reset-cache --port 8081 &');
+
+  // Give Metro time to boot before polling
+  await new Promise(resolve => setTimeout(resolve, 10000));
+  return waitForMetro(30);
+}
+
 // Global setup before all tests
 beforeAll(async () => {
   console.log('🚀 Setting up E2E test environment...');
@@ -35,11 +48,17 @@ beforeAll(async () => {
   // Set environment variable for E2E testing
   process.env.IS_TESTING = 'true'; // Single variable for testing mode
   process.env.DETOX_DISABLE_POSTINSTALL = '1'; // Optimize Detox
-  
+
   // Wait for Metro to be ready (CI workflow should have started it)
   console.log('📦 Waiting for Metro bundler to be ready...');
-  
-  const isReady = await waitForMetro();
+
+  let isReady = await waitForMetro();
+
+  // If Metro died (e.g. after a previous test's failure), try restarting it
+  if (!isReady) {
+    isReady = await tryRestartMetro();
+  }
+
   if (!isReady) {
     throw new Error('❌ Metro bundler is not running or not ready. Make sure Metro is started before running E2E tests.');
   }

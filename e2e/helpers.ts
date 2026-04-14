@@ -13,12 +13,24 @@ const TIMEOUT_LONG = 10000;
 // app "busy" and Detox never considers it idle.
 // ---------------------------------------------------------------------------
 const URL_BLACKLIST = [
+  // Analytics & monitoring
   '.*app-analytics-services.*',
-  '.*api.web3modal.org.*',
   '.*firebaselogging.*',
   '.*googleapis.com.*',
   '.*sentry.io.*',
   '.*intercom.*',
+  // WalletConnect & Web3
+  '.*api.web3modal.org.*',
+  '.*relay.walletconnect.com.*',
+  '.*cloud.web3auth.io.*',
+  // Backend API (device registration, config fetches on startup)
+  '.*arch.cypherhq.io.*',
+  '.*arch-dev.cypherd.io.*',
+  // Bridge / swap
+  '.*api.skip.money.*',
+  // RPC endpoints (Cosmos chains, Solana)
+  '.*keplr.app.*',
+  '.*api.solana.com.*',
 ];
 
 // ---------------------------------------------------------------------------
