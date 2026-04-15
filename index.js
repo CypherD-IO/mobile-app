@@ -6,13 +6,24 @@ import './shim';
 import { AppRegistry, LogBox, NativeModules, UIManager } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 
-// E2E Testing: suppress ALL LogBox UI when running under Detox.
-// LogBox.ignoreAllLogs() only hides notification banners.
-// LogBox.uninstall() makes addLog/addException no-ops, which also
-// suppresses the full-screen error inspector and RN 0.84's Fusebox
-// warning — both of which cover bottom-positioned buttons.
-const isDetox = NativeModules.DetoxHelper != null || NativeModules.DetoxManager != null;
-if (isDetox) {
+// E2E Testing: suppress ALL LogBox UI during test runs.
+// LogBox banners cover bottom-positioned buttons and block Detox taps.
+// ignoreAllLogs() hides notification banners; uninstall() also prevents
+// the full-screen error inspector from appearing.
+//
+// Detection priority:
+// 1. react-native-config IS_TESTING — build-time baked, always works
+// 2. SettingsManager (iOS UserDefaults) — reads Detox launchArgs at runtime
+// 3. NativeModules.DetoxHelper — works in old bridge mode only
+import { Config } from 'react-native-config';
+const detoxSettings = NativeModules.SettingsManager?.settings ?? {};
+const isE2ETesting =
+  String(Config.IS_TESTING) === 'true' ||
+  detoxSettings.detoxHandleSystemAlerts === 'YES' ||
+  detoxSettings.detoxHandleSystemAlerts === true ||
+  NativeModules.DetoxHelper != null ||
+  NativeModules.DetoxManager != null;
+if (isE2ETesting) {
   LogBox.ignoreAllLogs(true);
   LogBox.uninstall();
 }

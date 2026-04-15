@@ -48,28 +48,43 @@ const URL_BLACKLIST = [
 
 /**
  * Dismiss React Native LogBox notification banners that overlay the UI.
- * On CI, LogBox.uninstall() may not work (NativeModules.DetoxHelper is
- * unavailable in bridgeless mode), so banners cover bottom-positioned buttons.
- * Uses manual expect() polling — waitFor() is blocked by internal sync.
+ * On CI, LogBox.uninstall() may not work, so banners cover buttons.
  *
- * The dismiss buttons have IDs: logbox_dismiss_button_warn (yellow)
- * and logbox_dismiss_button_error (red). The close icon is an Image,
- * not text — so by.text('✕') won't work.
+ * The dismiss X buttons have no testID or accessibilityLabel — they use
+ * RN's `id` prop which maps to nativeID, not accessibilityIdentifier.
+ * So by.id() can't find them.
+ *
+ * Strategy: tap the banner text to open the full LogBox inspector,
+ * then tap the "Dismiss" text button in the inspector footer.
  */
 async function dismissLogBoxBanners(): Promise<void> {
-  const bannerIds = ['logbox_dismiss_button_error', 'logbox_dismiss_button_warn'];
-  for (const bannerId of bannerIds) {
-    // Each type can appear multiple times (stacked), try up to 3 per type
-    for (let i = 0; i < 3; i++) {
+  // Known banner texts that appear on CI
+  const bannerTexts = [
+    'Open debugger to view warnings.',
+    'Cannot update a component',
+  ];
+
+  for (const text of bannerTexts) {
+    try {
+      // Check if this banner exists
+      await expect(element(by.text(text)).atIndex(0)).toExist();
+      // Tap the banner to open the full LogBox inspector
+      await element(by.text(text)).atIndex(0).tap();
+      console.log(`Opened LogBox inspector for: "${text}"`);
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Tap "Dismiss" in the inspector footer to dismiss this log
       try {
-        const btn = element(by.id(bannerId)).atIndex(0);
-        await expect(btn).toExist();
-        await btn.tap();
-        console.log(`Dismissed ${bannerId} (${i + 1})`);
+        await expect(element(by.text('Dismiss'))).toExist();
+        await element(by.text('Dismiss')).tap();
+        console.log('Tapped Dismiss in LogBox inspector');
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch {
-        break; // No more banners of this type
+        // Inspector might auto-dismiss or have different layout
+        console.log('Dismiss button not found in inspector');
       }
+    } catch {
+      // Banner not present — skip
     }
   }
 }
