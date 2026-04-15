@@ -1838,7 +1838,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-vector-icons-icomoon (12.4.0)
+  - react-native-vector-icons-icomoon (13.1.0)
   - react-native-vector-icons-material-design-icons (12.5.0)
   - react-native-video (6.19.1):
     - hermes-engine
@@ -3447,7 +3447,7 @@ SPEC CHECKSUMS:
   react-native-restart: df7caae89026a8ab2ecdd82839978f657701f51d
   react-native-rsa-native: a7931cdda1f73a8576a46d7f431378c5550f0c38
   react-native-safe-area-context: ae7587b95fb580d1800c5b0b2a7bd48c2868e67a
-  react-native-vector-icons-icomoon: 6f0da764068cec2208a2abe8a5f974f9e683250f
+  react-native-vector-icons-icomoon: 9150616a2917d6067aa303872694532d7e0860d3
   react-native-vector-icons-material-design-icons: 95914f2f6b18e26e5c9563afe33184e110afe674
   react-native-video: fd30887fff60629061769a21af574fd9dd52b2ff
   react-native-view-shot: fb3c0774edb448f42705491802a455beac1502a2
