@@ -35,6 +35,7 @@ interface MerchantRewardDetailContentProps {
    */
   merchantData?: MerchantBaseData;
   navigation?: any;
+  onClose?: () => void;
 }
 
 interface MerchantBaseData {
@@ -176,7 +177,7 @@ interface RewardCycle {
 
 const MerchantRewardDetailContent: React.FC<
   MerchantRewardDetailContentProps
-> = ({ merchantData, navigation: navigationProp }) => {
+> = ({ merchantData, navigation: navigationProp, onClose }) => {
   const { t } = useTranslation();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const { theme } = useTheme();
@@ -526,6 +527,21 @@ const MerchantRewardDetailContent: React.FC<
                   }}
                 />
               </CyDView>
+              {onClose ? (
+                <CyDView className='absolute top-[6px] right-4 z-[60]'>
+                  <CyDTouchView
+                    accessibilityRole='button'
+                    accessibilityLabel={t('CLOSE_SHEET_A11Y')}
+                    onPress={onClose}
+                    className='w-[32px] h-[32px] rounded-full bg-n30 items-center justify-center'>
+                    <CyDMaterialDesignIcons
+                      name='close'
+                      size={18}
+                      className='text-base400'
+                    />
+                  </CyDTouchView>
+                </CyDView>
+              ) : null}
               {currentMerchantData.logoUrl ? (
                 <CyDImage
                   source={{ uri: currentMerchantData.logoUrl }}
