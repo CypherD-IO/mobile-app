@@ -15,7 +15,8 @@ import useWeb3 from './useWeb3';
 import { getInjectedJavascript } from '../containers/Browser/injectedJs';
 import { AnalyticEvent, logAnalyticsToFirebase } from '../core/analytics';
 
-const AGENT_BASE_URL = 'https://app.cypherhq.io/#/agent';
+// const AGENT_BASE_URL = 'https://app.cypherhq.io/#/agent';
+const AGENT_BASE_URL = 'http://localhost:3000/#/agent';
 
 export default function useCypherAgent() {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -26,6 +27,7 @@ export default function useCypherAgent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cdnInjectedCode, setCdnInjectedCode] = useState('');
+  const [fetchingInjection, setFetchingInjection] = useState(true);
 
   const ethereumAddress = get(
     hdWalletContext,
@@ -46,6 +48,7 @@ export default function useCypherAgent() {
 
   const injectWeb3FromCDN = async () => {
     try {
+      setFetchingInjection(true);
       const response = await axios.get(INJECTED_WEB3_CDN);
       const hash = CryptoJS.SHA256(response.data);
       const hashForInjectedWeb3 = hash.toString(CryptoJS.enc.Hex);
@@ -83,6 +86,8 @@ export default function useCypherAgent() {
       setCdnInjectedCode(response.data);
     } catch (e) {
       Sentry.captureException(e);
+    } finally {
+      setFetchingInjection(false);
     }
   };
 
@@ -106,6 +111,41 @@ export default function useCypherAgent() {
         url: agentUrl,
       };
 
+      /**
+       * Send an RPC response back to the WebView via injectJavaScript.
+       *
+       * Delivers through two paths so the response reaches whichever
+       * provider is currently `window.ethereum`:
+       *
+       * 1. CustomProvider (injectedJs.ts) — resolves via sendResponse(id, result)
+       *    using its internal callbacks Map. This is the same pattern Browser.tsx
+       *    and transaction.ts use.
+       *
+       * 2. CDN EthereumProvider (injected.web3.js) — resolves via
+       *    addEventListener("message") matching by id. We dispatch via
+       *    window.postMessage() which creates a proper MessageEvent.
+       */
+      const sendResponseToWebView = (
+        id: string | number | undefined,
+        responsePayload: Record<string, unknown>,
+      ) => {
+        const resultJSON = JSON.stringify(responsePayload.result);
+        const fullResponse = JSON.stringify(
+          JSON.stringify({ id, type: CommunicationEvents.WEB3, ...responsePayload }),
+        );
+        webviewRef.current?.injectJavaScript(`
+          (function(){
+            try {
+              if (typeof window.ethereum?.sendResponse === 'function') {
+                window.ethereum.sendResponse(${String(id)}, ${resultJSON});
+              }
+              window.postMessage(${fullResponse}, '*');
+            } catch(e) {}
+          })();
+          true;
+        `);
+      };
+
       // Auto-approve account and permission requests for our own agent
       // (no permission popup). Returns true if a reply was posted so the
       // caller can short-circuit further handling.
@@ -117,23 +157,11 @@ export default function useCypherAgent() {
           method === Web3Method.REQUEST_ACCOUNTS ||
           method === Web3Method.ACCOUNTS
         ) {
-          webviewRef.current?.postMessage(
-            JSON.stringify({
-              id,
-              type: CommunicationEvents.WEB3,
-              result: [ethereumAddress],
-            }),
-          );
+          sendResponseToWebView(id, { result: [ethereumAddress] });
           return true;
         }
         if (method === Web3Method.WALLET_PUSH_PERMISSION) {
-          webviewRef.current?.postMessage(
-            JSON.stringify({
-              id,
-              type: CommunicationEvents.WEB3,
-              result: WALLET_PERMISSIONS.ALLOW,
-            }),
-          );
+          sendResponseToWebView(id, { result: WALLET_PERMISSIONS.ALLOW });
           return true;
         }
         return false;
@@ -162,13 +190,7 @@ export default function useCypherAgent() {
           }
 
           const response = await handleWeb3(payload, websiteInfo);
-          webviewRef.current?.postMessage(
-            JSON.stringify({
-              id: payload.id,
-              type: CommunicationEvents.WEB3,
-              ...response,
-            }),
-          );
+          sendResponseToWebView(payload.id, response);
           break;
         }
         case CommunicationEvents.WEB3COSMOS: {
@@ -192,13 +214,7 @@ export default function useCypherAgent() {
             }
 
             const response = await handleWeb3(jsonObj, websiteInfo);
-            webviewRef.current?.postMessage(
-              JSON.stringify({
-                id: jsonObj.id,
-                type: CommunicationEvents.WEB3,
-                ...response,
-              }),
-            );
+            sendResponseToWebView(jsonObj.id, response);
           }
           break;
         }
@@ -221,6 +237,7 @@ export default function useCypherAgent() {
     setIsLoading,
     error,
     setError,
+    fetchingInjection,
     injectedCode: combinedInjectedCode,
     onWebviewMessage,
     retryLoad,

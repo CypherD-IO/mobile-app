@@ -31,10 +31,23 @@ export default function CypherAgentScreen() {
     setIsLoading,
     error,
     setError,
+    fetchingInjection,
     injectedCode,
     onWebviewMessage,
     retryLoad,
   } = useCypherAgent();
+
+  // Wait for the CDN EthereumProvider to be fetched + checksum-verified
+  // before mounting the WebView, so injectedJavaScriptBeforeContentLoaded
+  // includes the full provider. Same pattern as Browser.tsx.
+  if (fetchingInjection) {
+    return (
+      <CyDSafeAreaView className='flex-1 bg-[#0D0D0D]' edges={['top']}>
+        <StatusBar barStyle='light-content' />
+        <AgentLoadingSparkle />
+      </CyDSafeAreaView>
+    );
+  }
 
   return (
     <CyDSafeAreaView className='flex-1 bg-[#0D0D0D]' edges={['top']}>
@@ -45,6 +58,7 @@ export default function CypherAgentScreen() {
         {isLoading && !error ? <AgentLoadingSparkle /> : null}
         {error ? <AgentErrorState onRetry={retryLoad} /> : null}
         <WebView
+          webviewDebuggingEnabled={__DEV__}
           ref={webviewRef}
           source={{ uri: agentUrl }}
           injectedJavaScriptBeforeContentLoaded={injectedCode}
