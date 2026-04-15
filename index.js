@@ -3,8 +3,19 @@
  */
 import 'whatwg-fetch';
 import './shim';
-import { AppRegistry, UIManager } from 'react-native';
+import { AppRegistry, LogBox, NativeModules, UIManager } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+
+// E2E Testing: suppress ALL LogBox UI when running under Detox.
+// LogBox.ignoreAllLogs() only hides notification banners.
+// LogBox.uninstall() makes addLog/addException no-ops, which also
+// suppresses the full-screen error inspector and RN 0.84's Fusebox
+// warning — both of which cover bottom-positioned buttons.
+const isDetox = NativeModules.DetoxHelper != null || NativeModules.DetoxManager != null;
+if (isDetox) {
+  LogBox.ignoreAllLogs(true);
+  LogBox.uninstall();
+}
 import { name as appName } from './app.json';
 import { showNotification } from './src/notification/pushNotification';
 import Sentry from '@sentry/react-native';

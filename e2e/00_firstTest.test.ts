@@ -1,9 +1,5 @@
-import { device, element, by, waitFor } from 'detox';
-import {
-  handlePermissionDialog,
-  resetAppCompletely,
-  debugVisibleElements,
-} from './helpers';
+import { device, element, by, expect as detoxExpect } from 'detox';
+import { handlePermissionDialog, resetAppCompletely } from './helpers';
 
 describe('App Launch Tests', () => {
   beforeAll(
@@ -16,42 +12,20 @@ describe('App Launch Tests', () => {
   it('should launch successfully and show onboarding screen', async () => {
     console.log('Running app launch and onboarding validation test');
 
-    // Disable sync for manual element queries — the app has persistent
-    // background activity (timers, WebSocket connections) that prevent
-    // Detox from ever considering it "idle" during interaction.
     await device.disableSynchronization();
-
-    // Handle any permission dialogs
     await handlePermissionDialog();
 
-    // Wait for the first onboarding screen — CI runners (3 cores, 7GB)
-    // need more time for the app's JS thread to finish initialization.
-    try {
-      await waitFor(element(by.id('getstarted-screen')))
-        .toExist()
-        .withTimeout(60000);
-
-      console.log('App launched successfully - onboarding screen visible');
-    } catch (error) {
-      // Diagnostic: capture what the app IS showing so we can debug
-      console.log('getstarted-screen NOT found — capturing diagnostics...');
+    // Manual polling — Detox's waitFor() is blocked by internal sync
+    // (main queue busy with JS timers) even after disableSynchronization().
+    for (let i = 0; i < 30; i++) {
       try {
-        await device.takeScreenshot('getstarted-screen-not-found');
+        await detoxExpect(element(by.text('Continue'))).toExist();
+        console.log(`App launched successfully - onboarding visible (attempt ${i + 1})`);
+        return; // PASS
       } catch {
-        console.log('Screenshot failed');
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
-      await debugVisibleElements('After 60s wait for getstarted-screen');
-
-      // Check if the app is stuck on a Loading screen
-      try {
-        const loadingText = element(by.text('Loading'));
-        await waitFor(loadingText).toExist().withTimeout(2000);
-        console.log('DIAGNOSTIC: App appears stuck on Loading screen');
-      } catch {
-        console.log('DIAGNOSTIC: No Loading text found');
-      }
-
-      throw error; // Re-throw to fail the test
     }
+    throw new Error('Onboarding screen did not appear within 90s');
   });
 });

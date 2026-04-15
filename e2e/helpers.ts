@@ -140,24 +140,53 @@ export async function handlePermissionDialog(): Promise<boolean> {
 export async function navigateThroughOnboarding(): Promise<void> {
   await device.disableSynchronization();
 
-  // Wait for the GetStarted screen to render — CI needs more time.
-  const screen = element(by.id('getstarted-screen'));
-  await waitFor(screen).toExist().withTimeout(60000);
+  // Wait for the onboarding screen using manual polling.
+  // Detox's waitFor() is blocked by internal sync (main queue busy with
+  // JS timers + Firebase) even after disableSynchronization(). Manual
+  // expect() in a try/catch loop bypasses this completely.
+  for (let i = 0; i < 30; i++) {
+    try {
+      await expect(element(by.text('Continue'))).toExist();
+      break;
+    } catch {
+      if (i === 29) throw new Error('Onboarding screen did not load within 90s');
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
   console.log('GetStarted carousel is loaded');
 
-  // The carousel has 3 sections. We swipe left to advance.
-  for (let i = 1; i <= 3; i++) {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    await screen.swipe('left', 'fast', 0.5);
-    console.log(`Swiped left on carousel section ${i}`);
+  // Take a diagnostic screenshot to see actual screen state
+  try { await device.takeScreenshot('carousel-loaded'); } catch { /* ignore */ }
+
+  // The carousel has 3 sections. Tap "Continue" to advance.
+  // The splash screen may cover the button initially — retry until
+  // it dismisses and the button becomes hittable.
+  for (let section = 1; section <= 3; section++) {
+    for (let attempt = 0; attempt < 20; attempt++) {
+      try {
+        await element(by.text('Continue')).tap();
+        console.log(`Tapped Continue on section ${section} (attempt ${attempt + 1})`);
+        break;
+      } catch {
+        if (attempt === 19) throw new Error(`Continue not tappable on section ${section}`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, 300));
   }
 
   // Confirm we arrived at the OnBoardingOptions screen
-  const walletsBtn = element(by.id('options-wallets-btn'));
-  await waitFor(walletsBtn).toExist().withTimeout(TIMEOUT_LONG);
+  for (let i = 0; i < 10; i++) {
+    try {
+      await expect(element(by.id('options-wallets-btn'))).toExist();
+      break;
+    } catch {
+      if (i === 9) throw new Error('OnBoardingOptions screen not found');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
   console.log('Arrived at OnBoardingOptions screen');
 
-  // Re-enable sync briefly — gives Detox a chance to sync the screen
   await device.enableSynchronization();
 }
 
@@ -174,7 +203,6 @@ export const reOpenApp = async () => {
       detoxHandleSystemAlerts: 'YES',
       detoxVisibilityPercentage: 75,
       detoxURLBlacklistRegex: blacklistRegex,
-      detoxEnableSynchronization: 0,
     },
   });
   await device.setURLBlacklist(URL_BLACKLIST);
@@ -196,7 +224,6 @@ export async function resetAppForCIOnly(): Promise<void> {
         detoxHandleSystemAlerts: 'YES',
         detoxVisibilityPercentage: 75,
         detoxURLBlacklistRegex: blacklistRegex,
-        detoxEnableSynchronization: 0,
       },
     });
     await device.setURLBlacklist(URL_BLACKLIST);
@@ -285,11 +312,10 @@ export async function resetAppCompletely(): Promise<void> {
   // to development server" and no React views render.
   await ensureMetroIsAlive();
 
-  // Step 4: Launch the app with sync DISABLED
-  // The Lottie splash screen animation loops indefinitely. With sync
-  // enabled, Detox waits for all animations to finish — but a looping
-  // Lottie never finishes, so launchApp() would hang until setupTimeout.
-  // We disable sync and manually wait for views to render instead.
+  // Step 4: Launch the app with sync ENABLED (no detoxEnableSynchronization: 0).
+  // Sync-enabled launch makes Detox wait for JS to load and the app to settle.
+  // The URL blacklist ensures background requests don't block idle.
+  // NOTE: waitFor() is still broken by sync, but launch itself works fine.
   console.log('Launching app...');
   const blacklistRegex = `(${URL_BLACKLIST.map(u => `"${u}"`).join(',')})`;
 
@@ -300,7 +326,6 @@ export async function resetAppCompletely(): Promise<void> {
       detoxHandleSystemAlerts: 'YES',
       detoxVisibilityPercentage: 75,
       detoxURLBlacklistRegex: blacklistRegex,
-      detoxEnableSynchronization: 0,
       RCTDevLoadingViewGetLogLevel: '0',
       ...(isCI && {
         detoxDisableHierarchyDump: 'YES',
@@ -308,17 +333,8 @@ export async function resetAppCompletely(): Promise<void> {
     },
   });
 
-  // Set the blacklist via the runtime API too (for subsequent navigations)
   await device.setURLBlacklist(URL_BLACKLIST);
-
-  // With sync disabled, Detox returns as soon as the app process starts.
-  // The JS bundle still needs to load from Metro, React needs to render,
-  // and the splash screen needs to dismiss. Wait for this to complete.
-  const initDelay = isCI ? 15000 : 5000;
-  console.log(`Waiting ${initDelay / 1000}s for JS init + splash dismiss...`);
-  await new Promise(resolve => setTimeout(resolve, initDelay));
-
-  console.log('App reset completed');
+  console.log('App launched and ready');
 }
 
 // ---------------------------------------------------------------------------

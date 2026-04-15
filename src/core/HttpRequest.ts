@@ -45,6 +45,7 @@ export default function useAxios() {
   const baseURL: string = ARCH_HOST;
   const axiosInstance = axios.create({
     baseURL,
+    timeout: 30000,
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
