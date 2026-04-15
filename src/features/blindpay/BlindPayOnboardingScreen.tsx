@@ -1,9 +1,10 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   NavigationProp,
   ParamListBase,
+  StackActions,
   useFocusEffect,
   useIsFocused,
   useNavigation,
@@ -21,7 +22,6 @@ import {
 } from '../../styles/tailwindComponents';
 import { screenTitle } from '../../constants';
 import { navigateToBlindPayKycStack } from './navigateToBlindPayKyc';
-import BlindPaySendMoneyScreen from './BlindPaySendMoneyScreen';
 import BlindPayFxPreviewScreen from './BlindPayFxPreviewScreen';
 import useBlindPayApi from './api';
 import { BLINDPAY_FIGMA_ASSETS } from './figmaAssets';
@@ -29,8 +29,6 @@ import { showToast } from '../../containers/utilities/toastUtility';
 import { parseErrorMessage } from '../../core/util';
 import type { BlindpayUserConfig } from './types';
 import { BlindpayReceiverStatus } from './types';
-import { HdWalletContext } from '../../core/util';
-import type { Holding } from '../../core/portfolio';
 
 // ── Status screens ──────────────────────────────────────────────
 
@@ -391,192 +389,6 @@ function KycRejectedScreen({
   );
 }
 
-// ── Dashboard (approved) ────────────────────────────────────────
-
-const PAYOUT_CHAINS = ['eth', 'base', 'polygon', 'arbitrum', 'solana'] as const;
-const STABLE_SYMBOLS = ['USDC', 'USDT'];
-
-function useStableBalance(): { balance: number; loading: boolean } {
-  const [balance, setBalance] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  const hdWallet = useContext(HdWalletContext) as any;
-  const address =
-    hdWallet?.state?.wallet?.ethereum?.address ??
-    hdWallet?.state?.wallet?.solana?.address ??
-    '';
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      if (!address) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const { getPortfolioData } = await import('../../core/asyncStorage');
-        const portfolio = await getPortfolioData(address);
-        if (cancelled || !portfolio?.data) {
-          setLoading(false);
-          return;
-        }
-        let total = 0;
-        for (const chain of PAYOUT_CHAINS) {
-          const holdings: Holding[] =
-            (portfolio.data as any)[chain]?.totalHoldings ?? [];
-          for (const h of holdings) {
-            if (
-              STABLE_SYMBOLS.includes(h.symbol?.toUpperCase()) &&
-              typeof h.totalValue === 'number'
-            ) {
-              total += h.totalValue;
-            }
-          }
-        }
-        if (!cancelled) {
-          setBalance(total);
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [address]);
-
-  return { balance, loading };
-}
-
-function DashboardScreen({
-  navigation,
-}: {
-  navigation: NavigationProp<ParamListBase>;
-}) {
-  const { balance, loading } = useStableBalance();
-
-  const menuItems = [
-    {
-      icon: 'send' as const,
-      title: String(t('SEND_MONEY', 'Send Money')),
-      subtitle: String(
-        t('SEND_MONEY_DESC', 'Transfer funds to a recipient'),
-      ),
-      onPress: () =>
-        navigation.navigate(screenTitle.BLINDPAY_SEND_MONEY),
-    },
-    {
-      icon: 'bank-outline' as const,
-      title: String(t('BANK_ACCOUNTS', 'Bank Accounts')),
-      subtitle: String(
-        t('BANK_ACCOUNTS_DESC', 'Manage your linked bank accounts'),
-      ),
-      onPress: () =>
-        navigation.navigate(screenTitle.BLINDPAY_BANK_ACCOUNTS),
-    },
-    {
-      icon: 'credit-card-outline' as const,
-      title: String(t('VIRTUAL_ACCOUNT', 'Virtual Accounts')),
-      subtitle: String(
-        t('VIRTUAL_ACCOUNT_DESC', 'Manage virtual bank accounts'),
-      ),
-      onPress: () =>
-        navigation.navigate(screenTitle.BLINDPAY_VIRTUAL_ACCOUNTS),
-    },
-    {
-      icon: 'arrow-up-circle-outline' as const,
-      title: String(t('LIMIT_INCREASE', 'Request Limit Increase')),
-      subtitle: String(
-        t('LIMIT_INCREASE_DESC', 'Increase your transaction limits'),
-      ),
-      onPress: () =>
-        navigation.navigate(screenTitle.BLINDPAY_LIMITS),
-    },
-    {
-      icon: 'history' as const,
-      title: String(t('TX_HISTORY', 'Transaction History')),
-      subtitle: String(
-        t('TX_HISTORY_DESC', 'View past transactions'),
-      ),
-      onPress: () =>
-        navigation.navigate(screenTitle.BLINDPAY_PAYOUT_HISTORY),
-    },
-  ];
-
-  return (
-    <CyDScrollView className='flex-1' contentContainerClassName='pb-[24px]'>
-      {/* Balance card */}
-      <CyDView className='px-[16px] pt-[16px] pb-[20px]'>
-        <CyDView className='bg-base400 rounded-[16px] p-[20px]'>
-          <CyDText className='text-[13px] font-medium text-white/60 tracking-[-0.4px]'>
-            {String(t('AVAILABLE_BALANCE', 'Available to send'))}
-          </CyDText>
-          <CyDView className='flex-row items-baseline gap-[4px] mt-[4px]'>
-            {loading ? (
-              <ActivityIndicator color='#FBC02D' size='small' />
-            ) : (
-              <CyDText className='text-[32px] font-semibold text-white tracking-[-1px]'>
-                {`$${balance.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`}
-              </CyDText>
-            )}
-          </CyDView>
-          <CyDText className='text-[11px] font-medium text-white/40 mt-[6px]'>
-            {String(
-              t(
-                'BALANCE_CHAINS',
-                'USDC & USDT on Ethereum, Base, Polygon, Arbitrum, Solana',
-              ),
-            )}
-          </CyDText>
-        </CyDView>
-      </CyDView>
-
-      {/* Title */}
-      <CyDView className='px-[16px] pb-[12px]'>
-        <CyDText className='text-[20px] font-semibold text-base400 tracking-[-0.8px]'>
-          {String(t('QUICK_ACTIONS', 'Quick Actions'))}
-        </CyDText>
-      </CyDView>
-
-      {/* Menu items */}
-      <CyDView className='px-[16px] gap-[10px]'>
-        {menuItems.map(item => (
-          <CyDTouchView
-            key={item.title}
-            onPress={item.onPress}
-            className='bg-n0 border border-n30 rounded-[12px] p-[16px] flex-row items-center gap-[12px]'>
-            <CyDView className='w-[44px] h-[44px] rounded-[12px] bg-[#FDF3D8] items-center justify-center'>
-              <CyDMaterialDesignIcons
-                name={item.icon}
-                size={22}
-                className='text-n200'
-              />
-            </CyDView>
-            <CyDView className='flex-1'>
-              <CyDText className='text-[16px] font-semibold text-base400 tracking-[-0.8px]'>
-                {item.title}
-              </CyDText>
-              <CyDText className='text-[13px] font-medium text-n200 tracking-[-0.4px] mt-[2px]'>
-                {item.subtitle}
-              </CyDText>
-            </CyDView>
-            <CyDMaterialDesignIcons
-              name='chevron-right'
-              size={22}
-              className='text-n200'
-            />
-          </CyDTouchView>
-        ))}
-      </CyDView>
-    </CyDScrollView>
-  );
-}
-
 // ── Onboarding intro ────────────────────────────────────────────
 
 interface StepRowProps {
@@ -613,7 +425,7 @@ const StepRow = ({ step, title, subtitle, imageUri }: StepRowProps) => (
 
 // ── Main screen ─────────────────────────────────────────────────
 
-type ScreenPhase = 'loading' | 'onboarding' | 'in_progress' | 'verifying' | 'rejected' | 'approved' | 'dashboard' | 'send_money' | 'fx_preview';
+type ScreenPhase = 'loading' | 'onboarding' | 'in_progress' | 'verifying' | 'rejected' | 'approved' | 'fx_preview';
 
 export default function BlindPayOnboardingScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -687,9 +499,9 @@ export default function BlindPayOnboardingScreen() {
             }
           }
 
-          // KYC approved → show send money inline
+          // KYC approved → navigate to send money, replacing this screen
           if (phase === 'approved') {
-            setScreenPhase('send_money');
+            navigationRef.current.dispatch(StackActions.replace(screenTitle.BLINDPAY_SEND_MONEY));
             return;
           }
 
@@ -725,8 +537,10 @@ export default function BlindPayOnboardingScreen() {
         if (phase === 'rejected') {
           setRejectedReason(extractWarnings(bp));
         }
-        if (phase !== 'in_progress') {
-          setScreenPhase(phase === 'approved' ? 'dashboard' : phase);
+        if (phase === 'approved') {
+          navigationRef.current.dispatch(StackActions.replace(screenTitle.BLINDPAY_SEND_MONEY));
+        } else if (phase !== 'in_progress') {
+          setScreenPhase(phase);
         }
       } catch {
         // silent — will retry on next interval
@@ -750,14 +564,18 @@ export default function BlindPayOnboardingScreen() {
         if (phase === 'rejected') {
           setRejectedReason(extractWarnings(bp));
         }
-        setScreenPhase(phase === 'approved' ? 'dashboard' : phase);
+        if (phase === 'approved') {
+          navigation.dispatch(StackActions.replace(screenTitle.BLINDPAY_SEND_MONEY));
+        } else {
+          setScreenPhase(phase);
+        }
       }
     } catch {
       // ignore
     } finally {
       setRefreshing(false);
     }
-  }, [getProfile, resolvePhase, extractWarnings]);
+  }, [getProfile, resolvePhase, extractWarnings, navigation]);
 
   const handleGoHome = useCallback(() => {
     navigation.goBack();
@@ -780,7 +598,7 @@ export default function BlindPayOnboardingScreen() {
       if (blindpay?.receiverId || blindpay?.id) {
         const phase = resolvePhase(blindpay);
         if (phase === 'approved') {
-          setScreenPhase('dashboard');
+          navigation.dispatch(StackActions.replace(screenTitle.BLINDPAY_SEND_MONEY));
           return;
         }
         if (phase === 'rejected') {
@@ -811,9 +629,6 @@ export default function BlindPayOnboardingScreen() {
   };
 
   // Render inline screens (no navigation transition)
-  if (screenPhase === 'send_money') {
-    return <BlindPaySendMoneyScreen />;
-  }
   if (screenPhase === 'fx_preview') {
     return <BlindPayFxPreviewScreen />;
   }
@@ -847,11 +662,9 @@ export default function BlindPayOnboardingScreen() {
       ) : screenPhase === 'approved' ? (
         <KycApprovedScreen
           onContinue={() => {
-            setScreenPhase('dashboard');
+            navigation.dispatch(StackActions.replace(screenTitle.BLINDPAY_SEND_MONEY));
           }}
         />
-      ) : screenPhase === 'dashboard' ? (
-        <DashboardScreen navigation={navigation} />
       ) : (
         <CyDView className='flex-1'>
           <CyDScrollView
